@@ -67,6 +67,30 @@ foreach(child ${children})
         target_include_directories(${child} PRIVATE
             ${CMAKE_CURRENT_LIST_DIR}/projects/${child}/include
         )
+
+        # ==== Shaders (copy to build dir so the exe can load them) ====
+        set(${child}_SHADER_DIR "${CMAKE_CURRENT_LIST_DIR}/projects/${child}/shaders")
+
+        # (Optional) If the shaders folder exists, copy it next to the target binary
+        if (EXISTS "${${child}_SHADER_DIR}")
+          # Show shader files in IDE (they're not compiled, just for convenience)
+          file(GLOB_RECURSE ${child}_shader_files
+               "${${child}_SHADER_DIR}/*.vert"
+               "${${child}_SHADER_DIR}/*.frag"
+               "${${child}_SHADER_DIR}/*.glsl")
+          if(${child}_shader_files)
+            set_source_files_properties(${${child}_shader_files} PROPERTIES HEADER_FILE_ONLY TRUE)
+            target_sources(${child} PRIVATE ${${child}_shader_files})
+          endif()
+
+          # Copy the entire shaders directory into the runtime dir (next to the exe)
+          add_custom_command(TARGET ${child} POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy_directory
+                    "${${child}_SHADER_DIR}"
+                    "$<TARGET_FILE_DIR:${child}>/shaders"
+            COMMENT "Copying shaders for ${child} to runtime directory"
+          )
+          endif()
     endif()
 endforeach()
 
