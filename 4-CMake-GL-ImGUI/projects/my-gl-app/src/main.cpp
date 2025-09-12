@@ -10,6 +10,7 @@
 #include <imgui.h>
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_opengl3.h>
+#include "renderer.h"
 class Cube {
 public:
     Cube() : m_programId(0), m_vertexBuffer(0), m_vertexArrayId(0) {}
@@ -64,8 +65,8 @@ public:
         m_cube(std::make_shared<Cube>())
     {
         if (!glfwInit()) throw std::runtime_error("GLFW initialization failed");
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 5);
         glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
         glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
         m_window = glfwCreateWindow(p_width, p_height, p_title, nullptr, nullptr);
@@ -137,9 +138,13 @@ public:
     }
 
     void run() {
+        renderer::init();
+        renderer::setup_shdrpgm();
         while (glfwGetKey(m_window, GLFW_KEY_ESCAPE) != GLFW_PRESS && !glfwWindowShouldClose(m_window)) {
             update();
-            render();
+            renderer::update();
+            //render();
+            //renderer::draw();
             glfwPollEvents();
         }
     }

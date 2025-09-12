@@ -1,3 +1,84 @@
 #include "renderer.h"
 
+std::vector<renderer::model> renderer::models;
+void renderer::init()
+{
+	models.push_back(setup_square(glm::vec3(1.f, 1.f, 1.f)));
+}
 
+renderer::model renderer::setup_square(glm::vec3 clr)
+{
+	model mdl;
+	std::array<glm::vec2, 4> pos_vtx{ // vertex position attributes
+	glm::vec2(0.5f, -0.5f), glm::vec2(0.5f, 0.5f),
+	glm::vec2(-0.5f, 0.5f), glm::vec2(-0.5f, -0.5f)
+	};
+
+	std::array<glm::vec3, 4> clr_vtx{
+	clr, clr,
+	clr,clr
+	};
+
+	
+	GLsizei position_data_offset = 0;
+	GLsizei position_attribute_size = sizeof(glm::vec2);
+	GLsizei position_data_size = position_attribute_size * static_cast<GLsizei>(pos_vtx.size());
+	GLsizei color_data_offset = position_data_size;
+	GLsizei color_attribute_size = sizeof(glm::vec3);
+	GLsizei color_data_size = color_attribute_size * static_cast<GLsizei>(clr_vtx.size());
+
+	glCreateVertexArrays(1, &mdl.vaoid);
+	glNamedBufferStorage(mdl.vbo, position_data_size + color_data_size, nullptr, 0);                     // immutable
+	glNamedBufferSubData(mdl.vbo, 0, position_attribute_size, pos_vtx.data());   // upload positions
+	glNamedBufferSubData(mdl.vbo, color_data_offset, color_data_size, clr_vtx.data());   // upload colors
+
+	glEnableVertexArrayAttrib(mdl.vaoid, 0);
+	glVertexArrayVertexBuffer(mdl.vaoid, 0, mdl.vbo, position_data_offset, position_attribute_size);
+	glVertexArrayAttribFormat(mdl.vaoid, 0, 2, GL_FLOAT, GL_FALSE, 0);
+	glVertexArrayAttribBinding(mdl.vaoid, 0, 0);
+
+	glEnableVertexArrayAttrib(mdl.vaoid, 1);
+	glVertexArrayVertexBuffer(mdl.vaoid, 1, mdl.vbo, color_data_offset, color_attribute_size);
+	glVertexArrayAttribFormat(mdl.vaoid, 1, 3, GL_FLOAT, GL_FALSE, 0);
+	glVertexArrayAttribBinding(mdl.vaoid, 1, 1);
+	mdl.primitive_type = GL_TRIANGLES;
+	std::array<GLushort, 6> idx_vtx{ 0, 1, 2, 2, 3, 0 };
+	mdl.elem_cnt = static_cast<GLuint>(idx_vtx.size());
+	GLuint ebo_hdl;
+	glCreateBuffers(1, &ebo_hdl);
+	glNamedBufferStorage(ebo_hdl, sizeof(GLushort) * mdl.elem_cnt, reinterpret_cast<GLvoid*>(idx_vtx.data()), GL_DYNAMIC_STORAGE_BIT);
+	glVertexArrayElementBuffer(mdl.vaoid, ebo_hdl);
+	mdl.ebo = ebo_hdl;
+	glBindVertexArray(0);
+	mdl.draw_cnt = static_cast<GLsizei>(pos_vtx.size());
+	return mdl;
+}
+
+void renderer::setup_shdrpgm()//const glm::mat4& p_modelMat)
+{
+	for (model &mdl : models)
+	{
+		mdl.shdr_pgm = LoadShaders("../projects/my-gl-app/shaders/funny.vert", "../projects/my-gl-app/shaders/funny.frag", true);
+	}
+}
+
+void renderer::draw()
+{
+	for (model &mdl : models)
+	{
+		glUseProgram(mdl.shdr_pgm);
+		glBindVertexArray(mdl.vaoid);
+		//GLint vTransformLoc = glGetUniformLocation(mdl.shdr_pgm, "vertexTransform");
+		//glUniformMatrix4fv(vTransformLoc, 1, GL_FALSE, &p_modelMat[0][0]);
+		glDrawElements(mdl.primitive_type, mdl.elem_cnt, GL_UNSIGNED_SHORT, nullptr);
+		glBindVertexArray(0);
+	}
+}
+
+void renderer::update()
+{
+	glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
+	std::string title{ "testing" };
+	glfwSetWindowTitle(GLHelper::ptr_window, title.c_str());
+	draw();
+}
