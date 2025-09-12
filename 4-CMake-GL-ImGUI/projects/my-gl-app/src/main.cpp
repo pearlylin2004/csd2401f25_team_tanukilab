@@ -142,7 +142,7 @@ public:
         renderer::setup_shdrpgm();
         while (glfwGetKey(m_window, GLFW_KEY_ESCAPE) != GLFW_PRESS && !glfwWindowShouldClose(m_window)) {
             update();
-            renderer::update();
+            renderer::update(m_window);
             //render();
             //renderer::draw();
             glfwPollEvents();

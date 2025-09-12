@@ -18,7 +18,7 @@ enum class shape
 struct renderer
 {
 	static void init();
-	static void update();
+	static void update(GLFWwindow*);
 	static void cleanup();
 
 	

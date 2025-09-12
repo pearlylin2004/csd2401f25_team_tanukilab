@@ -27,11 +27,13 @@ renderer::model renderer::setup_square(glm::vec3 clr)
 	GLsizei color_attribute_size = sizeof(glm::vec3);
 	GLsizei color_data_size = color_attribute_size * static_cast<GLsizei>(clr_vtx.size());
 
-	glCreateVertexArrays(1, &mdl.vaoid);
+	
+	glCreateBuffers(1, &mdl.vbo);
 	glNamedBufferStorage(mdl.vbo, position_data_size + color_data_size, nullptr, 0);                     // immutable
-	glNamedBufferSubData(mdl.vbo, 0, position_attribute_size, pos_vtx.data());   // upload positions
+	glNamedBufferSubData(mdl.vbo, 0, position_data_size, pos_vtx.data());   // upload positions
 	glNamedBufferSubData(mdl.vbo, color_data_offset, color_data_size, clr_vtx.data());   // upload colors
 
+	glCreateVertexArrays(1, &mdl.vaoid);
 	glEnableVertexArrayAttrib(mdl.vaoid, 0);
 	glVertexArrayVertexBuffer(mdl.vaoid, 0, mdl.vbo, position_data_offset, position_attribute_size);
 	glVertexArrayAttribFormat(mdl.vaoid, 0, 2, GL_FLOAT, GL_FALSE, 0);
@@ -75,10 +77,12 @@ void renderer::draw()
 	}
 }
 
-void renderer::update()
+void renderer::update(GLFWwindow* window)
 {
 	glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
-	std::string title{ "testing" };
-	glfwSetWindowTitle(GLHelper::ptr_window, title.c_str());
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	//std::string title{ "testing" };
+	//glfwSetWindowTitle(GLHelper::ptr_window, title.c_str());
 	draw();
+	glfwSwapBuffers(window);
 }
