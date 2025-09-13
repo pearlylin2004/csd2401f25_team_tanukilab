@@ -61,8 +61,8 @@ class GLApp {
 public:
     GLApp(int p_width, int p_height, const char* p_title) : m_angleOfRotation(0.0f),
         m_rotationSpeed(0.01f),
-        m_window(nullptr), 
-        m_cube(std::make_shared<Cube>())
+        m_window(nullptr)//, 
+        //m_cube(std::make_shared<Cube>())
     {
         if (!glfwInit()) throw std::runtime_error("GLFW initialization failed");
         glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
@@ -75,6 +75,7 @@ public:
             throw std::runtime_error("Window creation failed");
         }
         glfwMakeContextCurrent(m_window);
+        glViewport(0, 0, p_width, p_height);
         glewExperimental = GL_TRUE;
         if (glewInit() != GLEW_OK) {
             glfwTerminate();
@@ -82,7 +83,8 @@ public:
         }
         glEnable(GL_DEPTH_TEST);
         glfwSetInputMode(m_window, GLFW_STICKY_KEYS, GL_TRUE);
-        m_cube->initialize();
+        //m_cube->initialize();
+        renderer::init();
         
         // Setup ImGui
         IMGUI_CHECKVERSION();
@@ -111,9 +113,10 @@ public:
         glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        glm::mat4 modelMat = glm::mat4(1.0f);
-        modelMat = glm::rotate(modelMat, m_angleOfRotation, glm::vec3(0.0f, 0.0f, 1.0f));
-        m_cube->render(modelMat);
+        //glm::mat4 modelMat = glm::mat4(1.0f);
+        //modelMat = glm::rotate(modelMat, m_angleOfRotation, glm::vec3(0.0f, 0.0f, 1.0f));
+        //m_cube->render(modelMat);
+        renderer::draw();
 
         // Start ImGui frame
         ImGui_ImplOpenGL3_NewFrame();
@@ -138,12 +141,10 @@ public:
     }
 
     void run() {
-        renderer::init();
-        renderer::setup_shdrpgm();
         while (glfwGetKey(m_window, GLFW_KEY_ESCAPE) != GLFW_PRESS && !glfwWindowShouldClose(m_window)) {
-            update();
-            renderer::update(m_window);
-            //render();
+            //renderer::update(m_window);
+            render();
+            //update();
             //renderer::draw();
             glfwPollEvents();
         }
@@ -155,7 +156,8 @@ public:
 
 private:
     GLFWwindow* m_window;
-    std::shared_ptr<Cube> m_cube;
+    //std::shared_ptr<Cube> m_cube;
+    renderer::model model;
 };
 
 int main() {

@@ -4,6 +4,7 @@ std::vector<renderer::model> renderer::models;
 void renderer::init()
 {
 	models.push_back(setup_square(glm::vec3(1.f, 1.f, 1.f)));
+	setup_shdrpgm();
 }
 
 renderer::model renderer::setup_square(glm::vec3 clr)
@@ -29,7 +30,7 @@ renderer::model renderer::setup_square(glm::vec3 clr)
 
 	
 	glCreateBuffers(1, &mdl.vbo);
-	glNamedBufferStorage(mdl.vbo, position_data_size + color_data_size, nullptr, 0);                     // immutable
+	glNamedBufferStorage(mdl.vbo, position_data_size + color_data_size, nullptr, GL_DYNAMIC_STORAGE_BIT);                     // immutable
 	glNamedBufferSubData(mdl.vbo, 0, position_data_size, pos_vtx.data());   // upload positions
 	glNamedBufferSubData(mdl.vbo, color_data_offset, color_data_size, clr_vtx.data());   // upload colors
 
@@ -81,10 +82,10 @@ void renderer::draw()
 
 void renderer::update(GLFWwindow* window)
 {
-	glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	//glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
+	//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	//std::string title{ "testing" };
 	//glfwSetWindowTitle(GLHelper::ptr_window, title.c_str());
 	draw();
-	glfwSwapBuffers(window);
+	//glfwSwapBuffers(window);
 }
