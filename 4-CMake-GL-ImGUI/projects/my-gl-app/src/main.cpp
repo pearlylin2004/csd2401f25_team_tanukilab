@@ -128,10 +128,15 @@ public:
         ImGui::Text("Hello, ImGui!");
         ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
         ImGui::SliderFloat("Rotation Speed", &m_rotationSpeed, 0.0f, 0.1f);
+        //ImGui::SliderFloat("Rotation fk u", &m_rotationSpeed, 0.0f, 0.1f);
         if (ImGui::Button("Reset Rotation")) {
             m_angleOfRotation = 0.0f;
         }
         ImGui::End();
+
+        /*ImGui::Begin("OpenGL funny");
+        ImGui::Text("fml");
+        ImGui::End();*/
 
         // Render ImGui
         ImGui::Render();
