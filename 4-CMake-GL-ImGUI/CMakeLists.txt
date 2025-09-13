@@ -32,6 +32,9 @@ include_directories(${CMAKE_CURRENT_LIST_DIR}/lib/glm)
 # Get all subdirectories in the projects folder
 file(GLOB children RELATIVE "${CMAKE_CURRENT_LIST_DIR}/projects" "${CMAKE_CURRENT_LIST_DIR}/projects/*")
 
+
+
+
 foreach(child ${children})
     if(IS_DIRECTORY "${CMAKE_CURRENT_LIST_DIR}/projects/${child}")
         message(STATUS "Configuring project: ${child}")
@@ -94,4 +97,20 @@ foreach(child ${children})
     endif()
 endforeach()
 
+target_link_directories(my-gl-app PRIVATE
+	${CMAKE_CURRENT_LIST_DIR}/projects/my-gl-app/lib)
+
+target_link_libraries(my-gl-app PRIVATE
+	fmod_vc.lib
+	fmodL_vc.lib)
+
+add_custom_command(TARGET Editor POST_BUILD
+	COMMAND ${CMAKE_COMMAND} -E copy
+		"${CMAKE_CURRENT_LIST_DIR}/projects/my-gl-app/lib/fmod.dll"
+		"${CMAKE_CURRENT_LIST_DIR}/build/Debug/fmod.dll"
+
+	COMMAND ${CMAKE_COMMAND} -E copy
+		"${CMAKE_CURRENT_LIST_DIR}/projects/my-gl-app/lib/fmodL.dll"
+		"${CMAKE_CURRENT_LIST_DIR}/build/Debug/fmodL.dll"
+		)
 # ======================= END AUTO CONFIGURATION =========================
