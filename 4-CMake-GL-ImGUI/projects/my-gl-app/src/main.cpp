@@ -22,7 +22,7 @@ public:
 
     void initialize() {
 
-        m_programId = LoadShaders("../projects/my-gl-app/shaders/funny.vert", "../projects/my-gl-app/shaders/funny.frag", true);
+        m_programId = LoadShaders("shaders/funny.vert", "shaders/funny.frag", true);
         m_geometryBuffer = {
             //  x      y     z      r     g     b
             -0.5f, -0.5f, 0.0f,   0.0f, 1.0f, 1.0f,   // Bottom-left, cyan

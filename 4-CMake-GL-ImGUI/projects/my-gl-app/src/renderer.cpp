@@ -61,7 +61,7 @@ void renderer::setup_shdrpgm()//const glm::mat4& p_modelMat)
 {
 	for (model &mdl : models)
 	{
-		mdl.shdr_pgm = LoadShaders("../projects/my-gl-app/shaders/funny.vert", "../projects/my-gl-app/shaders/funny.frag", true);
+		mdl.shdr_pgm = LoadShaders("shaders/funny.vert", "shaders/funny.frag", true);
 		if (mdl.shdr_pgm == 0)
 			fprintf(stderr, "Shader program failed to link/load.\n");
 	}

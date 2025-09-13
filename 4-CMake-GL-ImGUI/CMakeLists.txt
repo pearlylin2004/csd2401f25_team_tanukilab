@@ -93,6 +93,13 @@ foreach(child ${children})
                     "$<TARGET_FILE_DIR:${child}>/shaders"
             COMMENT "Copying shaders for ${child} to runtime directory"
           )
+
+	  add_custom_command(TARGET ${child} POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy_directory
+                    "${${child}_SHADER_DIR}"
+                    "${CMAKE_CURRENT_LIST_DIR}/build/shaders"
+            COMMENT "Copying shaders for ${child} to runtime directory"
+          )
           endif()
     endif()
 endforeach()
@@ -104,7 +111,7 @@ target_link_libraries(my-gl-app PRIVATE
 	fmod_vc.lib
 	fmodL_vc.lib)
 
-add_custom_command(TARGET Editor POST_BUILD
+add_custom_command(TARGET my-gl-app POST_BUILD
 	COMMAND ${CMAKE_COMMAND} -E copy
 		"${CMAKE_CURRENT_LIST_DIR}/projects/my-gl-app/lib/fmod.dll"
 		"${CMAKE_CURRENT_LIST_DIR}/build/Debug/fmod.dll"
