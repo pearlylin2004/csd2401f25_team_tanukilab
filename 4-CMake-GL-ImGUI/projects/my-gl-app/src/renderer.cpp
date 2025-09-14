@@ -4,6 +4,7 @@ std::vector<renderer::model> renderer::models;
 void renderer::init()
 {
 	models.push_back(setup_square(glm::vec3(1.f, 1.f, 1.f)));
+	models.push_back(setup_circle(glm::vec3(0.5f, 0.5f, 0.5f), 20));
 	setup_shdrpgm();
 }
 
@@ -54,6 +55,61 @@ renderer::model renderer::setup_square(glm::vec3 clr)
 	mdl.ebo = ebo_hdl;
 	glBindVertexArray(0);
 	mdl.draw_cnt = static_cast<GLsizei>(pos_vtx.size());
+	mdl.primitive_cnt = mdl.elem_cnt;
+	mdl.shape = shape::square;
+	return mdl;
+}
+
+renderer::model renderer::setup_circle(glm::vec3 clr, int slices)
+{
+	std::vector<glm::vec2> pos_vtx;
+	std::vector<glm::vec3> clr_vtx;
+	pos_vtx.reserve(slices + 2);
+	clr_vtx.reserve(slices + 2);
+	pos_vtx.emplace_back(0, 0);
+	clr_vtx.emplace_back(clr);
+	for (int i = 0; i < slices + 1; ++i)
+	{
+		float theta = glm::radians(360.0f * i / slices);
+		pos_vtx.emplace_back(cos(theta), sin(theta));
+		if (i == slices)
+		{
+			clr_vtx.emplace_back(clr_vtx[1]);
+		}
+		else
+		{
+			clr_vtx.emplace_back(clr.r, clr.g, clr.b);
+
+		}
+	}
+	model mdl;
+	GLsizei pos_size = static_cast<GLsizei>(sizeof(glm::vec2) * pos_vtx.size());
+	GLsizei clr_size = static_cast<GLsizei>(sizeof(glm::vec3) * clr_vtx.size());
+	// set up VAO as in GLApp::points_model
+	GLuint vbo_hdl;
+	glCreateBuffers(1, &vbo_hdl);
+	glNamedBufferStorage(vbo_hdl, pos_size + clr_size, pos_vtx.data(), GL_DYNAMIC_STORAGE_BIT);
+	glNamedBufferSubData(vbo_hdl, 0, pos_size, pos_vtx.data());
+	glNamedBufferSubData(vbo_hdl, pos_size, clr_size, clr_vtx.data());
+
+	glCreateVertexArrays(1, &mdl.vaoid);
+	glEnableVertexArrayAttrib(mdl.vaoid, 0);
+	glVertexArrayVertexBuffer(mdl.vaoid, 0, vbo_hdl, 0, sizeof(glm::vec2));
+	glVertexArrayAttribFormat(mdl.vaoid, 0, 2, GL_FLOAT, GL_FALSE, 0);
+	glVertexArrayAttribBinding(mdl.vaoid, 0, 0);
+	//gernerate color
+	glEnableVertexArrayAttrib(mdl.vaoid, 1);
+	glVertexArrayVertexBuffer(mdl.vaoid, 1, vbo_hdl, pos_size, sizeof(glm::vec3));
+	glVertexArrayAttribFormat(mdl.vaoid, 1, 3, GL_FLOAT, GL_FALSE, 0);
+	glVertexArrayAttribBinding(mdl.vaoid, 1, 1);
+	glBindVertexArray(0);
+	// and then set up the rest of object mdl ...
+	mdl.primitive_type = GL_TRIANGLE_FAN;
+	mdl.draw_cnt = static_cast<GLuint>(pos_vtx.size()); // number of vertices
+	mdl.elem_cnt = 0;       // no EBO
+	mdl.ebo = 0;
+	mdl.primitive_cnt = slices; // number of primitives
+	mdl.shape = shape::circle;
 	return mdl;
 }
 
@@ -75,7 +131,10 @@ void renderer::draw()
 		glBindVertexArray(mdl.vaoid);
 		//GLint vTransformLoc = glGetUniformLocation(mdl.shdr_pgm, "vertexTransform");
 		//glUniformMatrix4fv(vTransformLoc, 1, GL_FALSE, &p_modelMat[0][0]);
-		glDrawElements(mdl.primitive_type, mdl.elem_cnt, GL_UNSIGNED_SHORT, nullptr);
+		if (mdl.shape == shape::square)
+			glDrawElements(mdl.primitive_type, mdl.primitive_cnt, GL_UNSIGNED_SHORT, nullptr);
+		else if(mdl.shape == shape::circle)
+			glDrawArrays(mdl.primitive_type, 0, mdl.draw_cnt);
 		glBindVertexArray(0);
 	}
 }

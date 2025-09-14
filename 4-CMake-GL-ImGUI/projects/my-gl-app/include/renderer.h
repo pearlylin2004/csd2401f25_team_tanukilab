@@ -33,10 +33,12 @@ struct renderer
 		GLuint ebo;
 		GLuint elem_cnt;
 		GLuint draw_cnt;
+		GLuint primitive_cnt;
 
 	};
 
 	static model setup_square(glm::vec3);
+	static model setup_circle(glm::vec3, int);
 	static void setup_shdrpgm();//const glm::mat4& p_modelMat);
 	static void draw();
 	static std::vector<model>models;

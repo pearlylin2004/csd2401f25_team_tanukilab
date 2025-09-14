@@ -162,7 +162,7 @@ public:
 private:
     GLFWwindow* m_window;
     //std::shared_ptr<Cube> m_cube;
-    renderer::model model;
+    //renderer::model model;
 };
 
 int main() {
