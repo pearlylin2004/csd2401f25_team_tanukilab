@@ -29,7 +29,6 @@ renderer::model renderer::setup_square(glm::vec3 clr)
 	GLsizei color_attribute_size = sizeof(glm::vec3);
 	GLsizei color_data_size = color_attribute_size * static_cast<GLsizei>(clr_vtx.size());
 
-	
 	glCreateBuffers(1, &mdl.vbo);
 	glNamedBufferStorage(mdl.vbo, position_data_size + color_data_size, nullptr, GL_DYNAMIC_STORAGE_BIT);                     // immutable
 	glNamedBufferSubData(mdl.vbo, 0, position_data_size, pos_vtx.data());   // upload positions
@@ -141,10 +140,5 @@ void renderer::draw()
 
 void renderer::update(GLFWwindow* window)
 {
-	//glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
-	//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	//std::string title{ "testing" };
-	//glfwSetWindowTitle(GLHelper::ptr_window, title.c_str());
 	draw();
-	//glfwSwapBuffers(window);
 }
