@@ -1,10 +1,22 @@
 #include "renderer.h"
 
 std::vector<renderer::model> renderer::models;
-void renderer::init()
+std::vector<renderer::object> renderer::objects;
+
+void renderer::init(int w, int h)
 {
 	models.push_back(setup_square(glm::vec3(1.f, 1.f, 1.f)));
 	models.push_back(setup_circle(glm::vec3(0.5f, 0.5f, 0.5f), 20));
+	object obj1;
+	objects.push_back(obj1);
+	objects.push_back(obj1);
+	objects[0].model_ref = models[0];
+	objects[1].model_ref = models[1];
+	for (object& obj : objects)
+	{
+		obj.ar = static_cast<float>(w) / h;
+		obj.update();
+	}
 	setup_shdrpgm();
 }
 
@@ -87,7 +99,7 @@ renderer::model renderer::setup_circle(glm::vec3 clr, int slices)
 	// set up VAO as in GLApp::points_model
 	GLuint vbo_hdl;
 	glCreateBuffers(1, &vbo_hdl);
-	glNamedBufferStorage(vbo_hdl, pos_size + clr_size, pos_vtx.data(), GL_DYNAMIC_STORAGE_BIT);
+	glNamedBufferStorage(vbo_hdl, pos_size + clr_size, nullptr, GL_DYNAMIC_STORAGE_BIT);
 	glNamedBufferSubData(vbo_hdl, 0, pos_size, pos_vtx.data());
 	glNamedBufferSubData(vbo_hdl, pos_size, clr_size, clr_vtx.data());
 
@@ -124,21 +136,51 @@ void renderer::setup_shdrpgm()//const glm::mat4& p_modelMat)
 
 void renderer::draw()
 {
-	for (model &mdl : models)
+	//for (model &mdl : models)
+	//{
+	//	glUseProgram(mdl.shdr_pgm);
+	//	glBindVertexArray(mdl.vaoid);
+	//	//GLint vTransformLoc = glGetUniformLocation(mdl.shdr_pgm, "vertexTransform");
+	//	//glUniformMatrix4fv(vTransformLoc, 1, GL_FALSE, &p_modelMat[0][0]);
+	//	if (mdl.shape == shape::square)
+	//		glDrawElements(mdl.primitive_type, mdl.primitive_cnt, GL_UNSIGNED_SHORT, nullptr);
+	//	else if(mdl.shape == shape::circle)
+	//		glDrawArrays(mdl.primitive_type, 0, mdl.draw_cnt);
+	//	glBindVertexArray(0);
+	//}
+	for (object obj : objects)
 	{
-		glUseProgram(mdl.shdr_pgm);
-		glBindVertexArray(mdl.vaoid);
-		//GLint vTransformLoc = glGetUniformLocation(mdl.shdr_pgm, "vertexTransform");
-		//glUniformMatrix4fv(vTransformLoc, 1, GL_FALSE, &p_modelMat[0][0]);
-		if (mdl.shape == shape::square)
-			glDrawElements(mdl.primitive_type, mdl.primitive_cnt, GL_UNSIGNED_SHORT, nullptr);
-		else if(mdl.shape == shape::circle)
-			glDrawArrays(mdl.primitive_type, 0, mdl.draw_cnt);
-		glBindVertexArray(0);
+		obj.draw();
 	}
 }
 
 void renderer::update(GLFWwindow* window)
 {
 	draw();
+}
+
+void renderer::object::update()
+{
+	model_to_view = glm::mat4(
+		ar, 0, 0, 0,
+		0, 1, 0, 0,
+		0, 0, 1, 0,
+		0, 0, 0, 1
+	);
+}
+
+void renderer::object::draw()
+{
+	glUseProgram(model_ref.shdr_pgm);
+	glBindVertexArray(model_ref.vaoid);
+	GLint vTransformLoc = glGetUniformLocation(model_ref.shdr_pgm, "vertexTransform");
+	glUniformMatrix4fv(vTransformLoc, 1, GL_FALSE, glm::value_ptr(glm::transpose(model_to_view)));
+	
+	//GLint vTransformLoc = glGetUniformLocation(mdl.shdr_pgm, "vertexTransform");
+	//glUniformMatrix4fv(vTransformLoc, 1, GL_FALSE, &p_modelMat[0][0]);
+	if (model_ref.shape == shape::square)
+		glDrawElements(model_ref.primitive_type, model_ref.primitive_cnt, GL_UNSIGNED_SHORT, nullptr);
+	else if (model_ref.shape == shape::circle)
+		glDrawArrays(model_ref.primitive_type, 0, model_ref.draw_cnt);
+	glBindVertexArray(0);
 }

@@ -5,6 +5,7 @@
 #include <glm/glm.hpp>
 #include <iostream>
 #include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 #include <array>
 #include "openGLwindow.h"
 
@@ -17,7 +18,7 @@ enum class shape
 
 struct renderer
 {
-	static void init();
+	static void init(int, int);
 	static void update(GLFWwindow*);
 	static void cleanup();
 
@@ -42,5 +43,17 @@ struct renderer
 	static void setup_shdrpgm();//const glm::mat4& p_modelMat);
 	static void draw();
 	static std::vector<model>models;
+
+	struct object
+	{
+		GLfloat ar;
+		glm::mat4 model_to_view;
+		model model_ref;
+		void update();
+		void draw();
+	};
+
+	static std::vector<object> objects;
+	static void modelxform();
 	
 };

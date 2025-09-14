@@ -84,7 +84,7 @@ public:
         glEnable(GL_DEPTH_TEST);
         glfwSetInputMode(m_window, GLFW_STICKY_KEYS, GL_TRUE);
         //m_cube->initialize();
-        renderer::init();
+        renderer::init(p_width, p_height);
         
         // Setup ImGui
         IMGUI_CHECKVERSION();
@@ -167,7 +167,7 @@ private:
 
 int main() {
     try {
-        GLApp app(800, 800, "Render Cube");
+        GLApp app(1600, 800, "Render Cube");
         app.run();
         return 0;
     }
