@@ -46,11 +46,24 @@ struct renderer
 
 	struct object
 	{
-		GLfloat ar;
-		glm::mat4 model_to_view;
+		glm::vec2 scale;
+		glm::vec2 rot;
+		glm::vec2 translate;
 		model model_ref;
+		std::string texture_ref;
+		void init();
 		void update();
 		void draw();
+	};
+
+	struct camera
+	{
+		static GLfloat ar;
+		static int width;
+		static glm::vec2 campos;
+		static int zoom;
+		void init();
+		void update(int w, int h);
 	};
 
 	static std::vector<object> objects;

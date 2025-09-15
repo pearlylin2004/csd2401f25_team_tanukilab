@@ -2,6 +2,7 @@
 
 std::vector<renderer::model> renderer::models;
 std::vector<renderer::object> renderer::objects;
+int renderer::camera::zoom;
 
 void renderer::init(int w, int h)
 {
@@ -14,7 +15,6 @@ void renderer::init(int w, int h)
 	objects[1].model_ref = models[1];
 	for (object& obj : objects)
 	{
-		obj.ar = static_cast<float>(w) / h;
 		obj.update();
 	}
 	setup_shdrpgm();
@@ -136,18 +136,6 @@ void renderer::setup_shdrpgm()//const glm::mat4& p_modelMat)
 
 void renderer::draw()
 {
-	//for (model &mdl : models)
-	//{
-	//	glUseProgram(mdl.shdr_pgm);
-	//	glBindVertexArray(mdl.vaoid);
-	//	//GLint vTransformLoc = glGetUniformLocation(mdl.shdr_pgm, "vertexTransform");
-	//	//glUniformMatrix4fv(vTransformLoc, 1, GL_FALSE, &p_modelMat[0][0]);
-	//	if (mdl.shape == shape::square)
-	//		glDrawElements(mdl.primitive_type, mdl.primitive_cnt, GL_UNSIGNED_SHORT, nullptr);
-	//	else if(mdl.shape == shape::circle)
-	//		glDrawArrays(mdl.primitive_type, 0, mdl.draw_cnt);
-	//	glBindVertexArray(0);
-	//}
 	for (object obj : objects)
 	{
 		obj.draw();
@@ -159,14 +147,30 @@ void renderer::update(GLFWwindow* window)
 	draw();
 }
 
+void renderer::object::init()
+{
+	scale = glm::vec2(0, 0);
+	rot = glm::vec2(0, 0);
+	translate = glm::vec2(0, 0);
+}
+
 void renderer::object::update()
 {
-	model_to_view = glm::mat4(
-		ar, 0, 0, 0,
-		0, 1, 0, 0,
-		0, 0, 1, 0,
-		0, 0, 0, 1
-	);
+	
+
+}
+
+void renderer::camera::init()
+{
+	zoom = 10;
+	campos = glm::vec2(0, 0);
+}
+
+void renderer::camera::update(int w, int h)
+{
+	ar = w / h;
+	width = w;
+
 }
 
 void renderer::object::draw()
