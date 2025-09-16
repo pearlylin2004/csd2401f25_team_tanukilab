@@ -150,14 +150,36 @@ void renderer::update(GLFWwindow* window)
 void renderer::object::init()
 {
 	scale = glm::vec2(0, 0);
-	rot = glm::vec2(0, 0);
+	rot = 0;
 	translate = glm::vec2(0, 0);
 }
 
 void renderer::object::update()
 {
-	
+	float x{}, y{}, rot{};
+	//if(keyinput == 'A') x = -2;
+	//if(keyinput == 'D') x = 2;
+	//if(keyinput == 'W') y = 2;
+	//if(keyinput == 'S') y = -2;
+	movex(x);
+	movey(y);
+	rotate(rot);
 
+}
+
+void renderer::object::movex(float x)
+{
+	translate.x += x;
+}
+
+void renderer::object::movey(float y)
+{
+	translate.y += y;
+}
+
+void renderer::object::rotate(float thetha)
+{
+	rot += thetha;
 }
 
 void renderer::camera::init()
@@ -172,6 +194,8 @@ void renderer::camera::update(int w, int h)
 	width = w;
 
 }
+
+
 
 void renderer::object::draw()
 {

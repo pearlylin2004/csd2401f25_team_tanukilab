@@ -47,13 +47,18 @@ struct renderer
 	struct object
 	{
 		glm::vec2 scale;
-		glm::vec2 rot;
+		float rot;
 		glm::vec2 translate;
 		model model_ref;
 		std::string texture_ref;
+		glm::mat3 mdl_world;
+		glm::mat3 mdl_ndc;
 		void init();
 		void update();
 		void draw();
+		void movex(float x);
+		void movey(float y);
+		void rotate(float thetha);
 	};
 
 	struct camera
