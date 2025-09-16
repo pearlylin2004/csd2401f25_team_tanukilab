@@ -86,7 +86,7 @@ public:
         glfwSetInputMode(m_window, GLFW_STICKY_KEYS, GL_TRUE);
         //m_cube->initialize();
         InputHandler::init(m_window);
-        renderer::init();
+        renderer::init(p_width, p_height);
 
         // Setup ImGui
         IMGUI_CHECKVERSION();
@@ -125,7 +125,7 @@ public:
         //glm::mat4 modelMat = glm::mat4(1.0f);
         //modelMat = glm::rotate(modelMat, m_angleOfRotation, glm::vec3(0.0f, 0.0f, 1.0f));
         //m_cube->render(modelMat);
-        renderer::draw();
+        renderer::update();
 
         // Start ImGui frame
         ImGui_ImplOpenGL3_NewFrame();
@@ -176,7 +176,7 @@ private:
 
 int main() {
     try {
-        GLApp app(800, 800, "Render Cube");
+        GLApp app(1600, 800, "Render Cube");
         app.run();
         return 0;
     }
