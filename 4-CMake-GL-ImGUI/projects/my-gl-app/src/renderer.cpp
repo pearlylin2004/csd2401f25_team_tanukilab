@@ -2,10 +2,15 @@
 
 std::vector<renderer::model> renderer::models;
 std::vector<renderer::object> renderer::objects;
-int renderer::camera::zoom;
+GLuint renderer::shdr_pgm;
+renderer::camera renderer::cam;
+
+#define GLM_ENABLE_EXPERIMENTAL
+#include <glm/gtx/string_cast.hpp>
 
 void renderer::init(int w, int h)
 {
+	cam.init(w, h);
 	models.push_back(setup_square(glm::vec3(1.f, 1.f, 1.f)));
 	models.push_back(setup_circle(glm::vec3(0.5f, 0.5f, 0.5f), 20));
 	object obj1;
@@ -126,32 +131,41 @@ renderer::model renderer::setup_circle(glm::vec3 clr, int slices)
 
 void renderer::setup_shdrpgm()//const glm::mat4& p_modelMat)
 {
-	for (model &mdl : models)
+	shdr_pgm = LoadShaders("shaders/funny.vert", "shaders/funny.frag", true);
+	/*for (model &mdl : models)
 	{
 		mdl.shdr_pgm = LoadShaders("shaders/funny.vert", "shaders/funny.frag", true);
 		if (mdl.shdr_pgm == 0)
 			fprintf(stderr, "Shader program failed to link/load.\n");
-	}
+	}*/
 }
 
 void renderer::draw()
 {
+	glUseProgram(shdr_pgm);
+	GLint vTransformView = glGetUniformLocation(shdr_pgm, "V");
+	glUniformMatrix4fv(vTransformView, 1, GL_FALSE, glm::value_ptr(cam.view));
+	GLint vTransformProj = glGetUniformLocation(shdr_pgm, "P");
+	glUniformMatrix4fv(vTransformProj, 1, GL_FALSE, glm::value_ptr(cam.proj));
 	for (object obj : objects)
 	{
+		obj.update();
 		obj.draw();
 	}
 }
 
-void renderer::update(GLFWwindow* window)
+void renderer::update()
 {
+	cam.update();
 	draw();
+	
 }
 
 void renderer::object::init()
 {
-	scale = glm::vec2(0, 0);
+	scaling = glm::vec3(1, 1, 1);
 	rot = 0;
-	translate = glm::vec2(0, 0);
+	translate = glm::vec3(0, 0, 0);
 }
 
 void renderer::object::update()
@@ -164,7 +178,32 @@ void renderer::object::update()
 	movex(x);
 	movey(y);
 	rotate(rot);
+	float angle = glm::radians(rot);
+	mdl_world = glm::mat4(1.f);
+	glm::scale(mdl_world, scaling);
+	glm::rotate(mdl_world, angle, glm::vec3(0, 0, 1.f));
+	glm::translate(mdl_world, translate);
+}
 
+
+
+void renderer::object::draw()
+{
+	
+	glBindVertexArray(model_ref.vaoid);
+	GLint vTransformLoc = glGetUniformLocation(shdr_pgm, "M");
+	glUniformMatrix4fv(vTransformLoc, 1, GL_FALSE, glm::value_ptr(mdl_world));
+
+	std::cout << glm::to_string(mdl_world) << std::endl;
+
+	//GLint vTransformLoc = glGetUniformLocation(mdl.shdr_pgm, "vertexTransform");
+	//glUniformMatrix4fv(vTransformLoc, 1, GL_FALSE, &p_modelMat[0][0]);
+	if (model_ref.shape == shape::square)
+		//glDrawElements(model_ref.primitive_type, model_ref.primitive_cnt, GL_UNSIGNED_SHORT, nullptr);
+		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, nullptr);
+	else if (model_ref.shape == shape::circle)
+		glDrawArrays(model_ref.primitive_type, 0, model_ref.draw_cnt);
+	glBindVertexArray(0);
 }
 
 void renderer::object::movex(float x)
@@ -182,33 +221,23 @@ void renderer::object::rotate(float thetha)
 	rot += thetha;
 }
 
-void renderer::camera::init()
+void renderer::camera::init(int w, int h)
 {
-	zoom = 10;
-	campos = glm::vec2(0, 0);
-}
-
-void renderer::camera::update(int w, int h)
-{
-	ar = w / h;
+	ar = static_cast<float>(w) / h;
 	width = w;
+	rot = 0;
+	zoom = 10;
+	campos = glm::vec3(0, 0, 0);
+	up = glm::vec3(0, 1, 0);
 
-}
-
-
-
-void renderer::object::draw()
-{
-	glUseProgram(model_ref.shdr_pgm);
-	glBindVertexArray(model_ref.vaoid);
-	GLint vTransformLoc = glGetUniformLocation(model_ref.shdr_pgm, "vertexTransform");
-	glUniformMatrix4fv(vTransformLoc, 1, GL_FALSE, glm::value_ptr(glm::transpose(model_to_view)));
 	
-	//GLint vTransformLoc = glGetUniformLocation(mdl.shdr_pgm, "vertexTransform");
-	//glUniformMatrix4fv(vTransformLoc, 1, GL_FALSE, &p_modelMat[0][0]);
-	if (model_ref.shape == shape::square)
-		glDrawElements(model_ref.primitive_type, model_ref.primitive_cnt, GL_UNSIGNED_SHORT, nullptr);
-	else if (model_ref.shape == shape::circle)
-		glDrawArrays(model_ref.primitive_type, 0, model_ref.draw_cnt);
-	glBindVertexArray(0);
 }
+
+void renderer::camera::update()
+{
+	view = glm::lookAt(campos, glm::vec3(0, 0, -1), up);
+	proj = glm::ortho(-zoom * ar, zoom * ar, -zoom, zoom, -1.f, 1.f);
+}
+
+
+
