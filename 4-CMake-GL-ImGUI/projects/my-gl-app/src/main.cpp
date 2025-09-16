@@ -11,6 +11,7 @@
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_opengl3.h>
 #include "renderer.h"
+#include "input.h"
 //class Cube {
 //public:
 //    Cube() : m_programId(0), m_vertexBuffer(0), m_vertexArrayId(0) {}
@@ -84,16 +85,17 @@ public:
         glEnable(GL_DEPTH_TEST);
         glfwSetInputMode(m_window, GLFW_STICKY_KEYS, GL_TRUE);
         //m_cube->initialize();
+        InputHandler::init(m_window);
         renderer::init();
-        
+
         // Setup ImGui
         IMGUI_CHECKVERSION();
         ImGui::CreateContext();
         ImGuiIO& io = ImGui::GetIO(); (void)io;
         io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
-        
+
         ImGui::StyleColorsDark();
-        
+
         ImGui_ImplGlfw_InitForOpenGL(m_window, true);
         ImGui_ImplOpenGL3_Init("#version 330");
     }
@@ -106,6 +108,13 @@ public:
     }
 
     void update() {
+        /* Poll for User Input */
+        InputHandler::update();
+
+        // input test code
+        /*if (InputHandler::isKeyPressed(GLFW_KEY_SPACE))
+            std::cout << InputHandler::getMouseY() << std::endl;*/
+
         m_angleOfRotation += m_rotationSpeed;
     }
 
