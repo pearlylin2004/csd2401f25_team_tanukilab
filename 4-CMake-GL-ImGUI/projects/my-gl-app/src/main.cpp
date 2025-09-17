@@ -86,7 +86,7 @@ public:
         glfwSetInputMode(m_window, GLFW_STICKY_KEYS, GL_TRUE);
         //m_cube->initialize();
         InputHandler::init(m_window);
-        renderer::init();
+        renderer::init(p_width, p_height);
 
         // Setup ImGui
         IMGUI_CHECKVERSION();
@@ -97,7 +97,7 @@ public:
         ImGui::StyleColorsDark();
 
         ImGui_ImplGlfw_InitForOpenGL(m_window, true);
-        ImGui_ImplOpenGL3_Init("#version 330");
+        ImGui_ImplOpenGL3_Init("#version 450");
     }
 
     ~GLApp() {
@@ -125,7 +125,7 @@ public:
         //glm::mat4 modelMat = glm::mat4(1.0f);
         //modelMat = glm::rotate(modelMat, m_angleOfRotation, glm::vec3(0.0f, 0.0f, 1.0f));
         //m_cube->render(modelMat);
-        renderer::draw();
+        renderer::update();
 
         // Start ImGui frame
         ImGui_ImplOpenGL3_NewFrame();
@@ -157,6 +157,16 @@ public:
     void run() {
         while (glfwGetKey(m_window, GLFW_KEY_ESCAPE) != GLFW_PRESS && !glfwWindowShouldClose(m_window)) {
             //renderer::update(m_window);
+            if (InputHandler::isKeyPressed(GLFW_KEY_A))
+                renderer::objects.find("player")->second.movex(-0.01f);
+            if (InputHandler::isKeyPressed(GLFW_KEY_D))
+                renderer::objects.find("player")->second.movex(0.01f);
+            if (InputHandler::isKeyPressed(GLFW_KEY_W))
+                renderer::objects.find("player")->second.movey(0.01f);
+            if (InputHandler::isKeyPressed(GLFW_KEY_S))
+                renderer::objects.find("player")->second.movey(-0.01f);
+            
+                
             render();
             //update();
             //renderer::draw();
@@ -176,7 +186,7 @@ private:
 
 int main() {
     try {
-        GLApp app(800, 800, "Render Cube");
+        GLApp app(1600, 800, "Render Cube");
         app.run();
         return 0;
     }
