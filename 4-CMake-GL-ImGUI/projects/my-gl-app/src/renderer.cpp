@@ -41,7 +41,6 @@ renderer::model renderer::setup_square(glm::vec3 clr)
 	clr, clr,
 	clr,clr
 	};
-
 	
 	GLsizei position_data_offset = 0;
 	GLsizei position_attribute_size = sizeof(glm::vec2);
@@ -51,7 +50,7 @@ renderer::model renderer::setup_square(glm::vec3 clr)
 	GLsizei color_data_size = color_attribute_size * static_cast<GLsizei>(clr_vtx.size());
 
 	glCreateBuffers(1, &mdl.vbo);
-	glNamedBufferStorage(mdl.vbo, position_data_size + color_data_size, nullptr, GL_DYNAMIC_STORAGE_BIT);                     // immutable
+	glNamedBufferStorage(mdl.vbo, position_data_size + color_data_size, nullptr, GL_DYNAMIC_STORAGE_BIT);// immutable
 	glNamedBufferSubData(mdl.vbo, 0, position_data_size, pos_vtx.data());   // upload positions
 	glNamedBufferSubData(mdl.vbo, color_data_offset, color_data_size, clr_vtx.data());   // upload colors
 
@@ -214,8 +213,6 @@ void renderer::camera::init(int w, int h)
 	zoom = 10;
 	campos = glm::vec3(0, 0, 0);
 	up = glm::vec3(0, 1, 0);
-
-	
 }
 
 void renderer::camera::update()
@@ -223,6 +220,3 @@ void renderer::camera::update()
 	view = glm::lookAt(campos, glm::vec3(0, 0, -1), up);
 	proj = glm::ortho(-zoom * ar, zoom * ar, -zoom, zoom, -1.f, 1.f);
 }
-
-
-
