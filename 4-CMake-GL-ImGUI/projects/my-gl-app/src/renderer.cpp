@@ -33,8 +33,8 @@ renderer::model renderer::setup_square(glm::vec3 clr)
 {
 	model mdl;
 	std::array<glm::vec2, 4> pos_vtx{ // vertex position attributes
-	glm::vec2(0.5f, -0.5f), glm::vec2(0.5f, 0.5f),
-	glm::vec2(-0.5f, 0.5f), glm::vec2(-0.5f, -0.5f)
+	glm::vec2(1.f, -1.f), glm::vec2(1.f, 1.f),
+	glm::vec2(-1.f, 1.f), glm::vec2(-1.f, -1.f)
 	};
 
 	std::array<glm::vec3, 4> clr_vtx{
@@ -133,15 +133,9 @@ renderer::model renderer::setup_circle(glm::vec3 clr, int slices)
 	return mdl;
 }
 
-void renderer::setup_shdrpgm()//const glm::mat4& p_modelMat)
+void renderer::setup_shdrpgm()
 {
 	shdr_pgm = LoadShaders("shaders/funny.vert", "shaders/funny.frag", true);
-	/*for (model &mdl : models)
-	{
-		mdl.shdr_pgm = LoadShaders("shaders/funny.vert", "shaders/funny.frag", true);
-		if (mdl.shdr_pgm == 0)
-			fprintf(stderr, "Shader program failed to link/load.\n");
-	}*/
 }
 
 void renderer::draw()
@@ -162,7 +156,6 @@ void renderer::update()
 {
 	cam.update();
 	draw();
-	
 }
 
 void renderer::object::init()
@@ -175,12 +168,6 @@ void renderer::object::init()
 void renderer::object::update()
 {
 	float x{}, y{}, rot{};
-	//if(keyinput == 'A') x = -2;
-	//if(keyinput == 'D') x = 2;
-	//if(keyinput == 'W') y = 2;
-	//if(keyinput == 'S') y = -2;
-
-	
 	movex(x);
 	movey(y);
 	rotate(rot);
@@ -191,21 +178,13 @@ void renderer::object::update()
 	mdl_world = glm::translate(mdl_world, translate);
 }
 
-
-
 void renderer::object::draw()
 {
 	
 	glBindVertexArray(model_ref.vaoid);
 	GLint vTransformLoc = glGetUniformLocation(shdr_pgm, "M");
 	glUniformMatrix4fv(vTransformLoc, 1, GL_FALSE, glm::value_ptr(mdl_world));
-
-	//std::cout << glm::to_string(objects.find("player")->second.mdl_world) << std::endl;
-
-	//GLint vTransformLoc = glGetUniformLocation(mdl.shdr_pgm, "vertexTransform");
-	//glUniformMatrix4fv(vTransformLoc, 1, GL_FALSE, &p_modelMat[0][0]);
 	if (model_ref.shape == shape::square)
-		//glDrawElements(model_ref.primitive_type, model_ref.primitive_cnt, GL_UNSIGNED_SHORT, nullptr);
 		glDrawElements(GL_TRIANGLES, model_ref.elem_cnt, GL_UNSIGNED_SHORT, nullptr);
 	else if (model_ref.shape == shape::circle)
 		glDrawArrays(model_ref.primitive_type, 0, model_ref.draw_cnt);
