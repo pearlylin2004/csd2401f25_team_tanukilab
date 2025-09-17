@@ -12,51 +12,6 @@
 #include <imgui_impl_opengl3.h>
 #include "renderer.h"
 #include "input.h"
-//class Cube {
-//public:
-//    Cube() : m_programId(0), m_vertexBuffer(0), m_vertexArrayId(0) {}
-//    ~Cube() {
-//        glDeleteBuffers(1, &m_vertexBuffer);
-//        glDeleteVertexArrays(1, &m_vertexArrayId);
-//        glDeleteProgram(m_programId);
-//    }
-//
-//    void initialize() {
-//
-//        m_programId = LoadShaders("shaders/funny.vert", "shaders/funny.frag", true);
-//        m_geometryBuffer = {
-//            //  x      y     z      r     g     b
-//            -0.5f, -0.5f, 0.0f,   0.0f, 1.0f, 1.0f,   // Bottom-left, cyan
-//             0.5f, -0.5f, 0.0f,   1.0f, 0.0f, 1.0f,   // Bottom-right, magenta
-//             0.5f,  0.5f, 0.0f,   1.0f, 1.0f, 0.0f,   // Top-right, yellow
-//
-//             0.5f,  0.5f, 0.0f,   1.0f, 0.0f, 0.0f,   // Top-right (repeat), red
-//            -0.5f,  0.5f, 0.0f,   0.0f, 1.0f, 0.0f,   // Top-left, green
-//            -0.5f, -0.5f, 0.0f,   0.0f, 0.0f, 1.0f    // Bottom-left (repeat), blue
-//        };
-//        glGenVertexArrays(1, &m_vertexArrayId);
-//        glBindVertexArray(m_vertexArrayId);
-//        glGenBuffers(1, &m_vertexBuffer);
-//        glBindBuffer(GL_ARRAY_BUFFER, m_vertexBuffer);
-//        glBufferData(GL_ARRAY_BUFFER, m_geometryBuffer.size() * sizeof(GLfloat), m_geometryBuffer.data(), GL_STATIC_DRAW);
-//        glEnableVertexAttribArray(0);
-//        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (void*)0);
-//        glEnableVertexAttribArray(1);
-//        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (void*)(3 * sizeof(GLfloat)));
-//    }
-//
-//    void render(const glm::mat4& p_modelMat) {
-//        glUseProgram(m_programId);
-//        glBindVertexArray(m_vertexArrayId);
-//        GLint vTransformLoc = glGetUniformLocation(m_programId, "vertexTransform");
-//        glUniformMatrix4fv(vTransformLoc, 1, GL_FALSE, &p_modelMat[0][0]);
-//        glDrawArrays(GL_TRIANGLES, 0, 6);
-//    }
-//
-//private:
-//    GLuint m_programId, m_vertexBuffer, m_vertexArrayId;
-//    std::vector<GLfloat> m_geometryBuffer;
-//};
 
 class GLApp {
 public:
