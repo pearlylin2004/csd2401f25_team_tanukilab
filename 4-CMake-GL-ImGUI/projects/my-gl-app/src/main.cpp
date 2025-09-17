@@ -156,7 +156,9 @@ public:
 
     void run() {
         while (glfwGetKey(m_window, GLFW_KEY_ESCAPE) != GLFW_PRESS && !glfwWindowShouldClose(m_window)) {
-            //renderer::update(m_window);
+            
+            
+                
             render();
             //update();
             //renderer::draw();

@@ -8,6 +8,8 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <array>
 #include "openGLwindow.h"
+#include <map>
+#include <input.h>
 
 enum class shape
 {
@@ -74,6 +76,6 @@ struct renderer
 		void update();
 	};
 
-	static std::vector<object> objects;
+	static std::map<std::string, object> objects;
 	static camera cam;
 };
