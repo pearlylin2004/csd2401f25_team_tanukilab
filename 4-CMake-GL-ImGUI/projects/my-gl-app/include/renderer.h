@@ -60,6 +60,7 @@ struct renderer
 		void movex(float x);
 		void movey(float y);
 		void rotate(float thetha);
+		void scale(float x, float y);
 	};
 
 	struct camera
@@ -67,6 +68,7 @@ struct renderer
 		GLfloat ar;
 		int width;
 		glm::vec3 campos;
+		glm::vec3 center;
 		float zoom;
 		float rot;
 		glm::vec3 up;
@@ -74,6 +76,8 @@ struct renderer
 		glm::mat4 proj;
 		void init(int w, int h);
 		void update();
+		void movex(float);
+		void movey(float);
 	};
 
 	static std::map<std::string, object> objects;

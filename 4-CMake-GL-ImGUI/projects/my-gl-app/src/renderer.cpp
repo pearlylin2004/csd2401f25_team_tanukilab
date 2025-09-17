@@ -161,20 +161,16 @@ void renderer::object::init()
 {
 	scaling = glm::vec3(1, 1, 1);
 	rot = 0;
-	translate = glm::vec3(5, 0, 0);
+	translate = glm::vec3(0, 0, 0);
 }
 
 void renderer::object::update()
 {
-	float x{}, y{}, rot{};
-	movex(x);
-	movey(y);
-	rotate(rot);
 	float angle = glm::radians(rot);
 	mdl_world = glm::mat4(1.f);
-	mdl_world = glm::scale(mdl_world, scaling);
-	mdl_world = glm::rotate(mdl_world, angle, glm::vec3(0, 0, 1.f));
 	mdl_world = glm::translate(mdl_world, translate);
+	mdl_world = glm::rotate(mdl_world, angle, glm::vec3(0, 0.f, 1.f));
+	mdl_world = glm::scale(mdl_world, scaling);
 }
 
 void renderer::object::draw()
@@ -205,6 +201,12 @@ void renderer::object::rotate(float thetha)
 	rot += thetha;
 }
 
+void renderer::object::scale(float x, float y)
+{
+	scaling.x += x;
+	scaling.y += y;
+}
+
 void renderer::camera::init(int w, int h)
 {
 	ar = static_cast<float>(w) / h;
@@ -212,11 +214,23 @@ void renderer::camera::init(int w, int h)
 	rot = 0;
 	zoom = 10;
 	campos = glm::vec3(0, 0, 0);
+	center = glm::vec3(campos.x, campos.y, -1.f);
 	up = glm::vec3(0, 1, 0);
 }
 
 void renderer::camera::update()
 {
-	view = glm::lookAt(campos, glm::vec3(0, 0, -1), up);
+	center = glm::vec3(campos.x, campos.y, -1.f);
+	view = glm::lookAt(campos, center, up);
 	proj = glm::ortho(-zoom * ar, zoom * ar, -zoom, zoom, -1.f, 1.f);
+}
+
+void renderer::camera::movex(float x)
+{
+	campos.x += x;
+}
+
+void renderer::camera::movey(float y)
+{
+	campos.y += y;
 }

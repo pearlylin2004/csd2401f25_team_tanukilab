@@ -120,6 +120,18 @@ public:
                 renderer::objects.find("player")->second.movey(0.01f);
             if (InputHandler::isKeyPressed(GLFW_KEY_S))
                 renderer::objects.find("player")->second.movey(-0.01f);
+            if (InputHandler::isKeyPressed(GLFW_KEY_Q))
+                renderer::objects.find("player")->second.rotate(-1.f);
+            if (InputHandler::isKeyPressed(GLFW_KEY_E))
+                renderer::objects.find("player")->second.rotate(1.f);
+            if (InputHandler::isKeyPressed(GLFW_KEY_R))
+                renderer::objects.find("player")->second.scale(0.01f, 0.01f);
+            if (InputHandler::isKeyPressed(GLFW_KEY_F))
+                renderer::objects.find("player")->second.scale(-0.01f, -0.01f);
+            if (InputHandler::isKeyPressed(GLFW_KEY_P))
+                renderer::cam.movex(0.01f);
+            if (InputHandler::isKeyPressed(GLFW_KEY_L))
+                renderer::cam.movex(-0.01f);
             
                 
             render();
