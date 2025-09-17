@@ -156,7 +156,15 @@ public:
 
     void run() {
         while (glfwGetKey(m_window, GLFW_KEY_ESCAPE) != GLFW_PRESS && !glfwWindowShouldClose(m_window)) {
-            
+            //renderer::update(m_window);
+            if (InputHandler::isKeyPressed(GLFW_KEY_A))
+                renderer::objects.find("player")->second.movex(-0.01f);
+            if (InputHandler::isKeyPressed(GLFW_KEY_D))
+                renderer::objects.find("player")->second.movex(0.01f);
+            if (InputHandler::isKeyPressed(GLFW_KEY_W))
+                renderer::objects.find("player")->second.movey(0.01f);
+            if (InputHandler::isKeyPressed(GLFW_KEY_S))
+                renderer::objects.find("player")->second.movey(-0.01f);
             
                 
             render();

@@ -22,6 +22,8 @@ void renderer::init(int w, int h)
 	{
 		std::cout << (*i).first << "\n";
 		(*i).second.init();
+		if ((*i).first == "player")
+			i->second.translate.z = 0.01;
 		(*i).second.update();
 	}
 	setup_shdrpgm();
@@ -178,14 +180,7 @@ void renderer::object::update()
 	//if(keyinput == 'W') y = 2;
 	//if(keyinput == 'S') y = -2;
 
-	if (InputHandler::isKeyPressed(GLFW_KEY_A))
-		x = -0.01;
-	if (InputHandler::isKeyPressed(GLFW_KEY_D))
-		x = 0.01;
-	if (InputHandler::isKeyPressed(GLFW_KEY_W))
-		y = 0.01;
-	if (InputHandler::isKeyPressed(GLFW_KEY_S))
-		y = -0.01;
+	
 	movex(x);
 	movey(y);
 	rotate(rot);
