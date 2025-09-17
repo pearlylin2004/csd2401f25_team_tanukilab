@@ -78,6 +78,7 @@ struct renderer
 		void update();
 		void movex(float);
 		void movey(float);
+		bool zooming(float);
 	};
 
 	static std::map<std::string, object> objects;

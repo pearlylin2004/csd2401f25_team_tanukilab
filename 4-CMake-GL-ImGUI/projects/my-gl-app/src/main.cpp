@@ -132,12 +132,14 @@ public:
                 renderer::cam.movex(0.01f);
             if (InputHandler::isKeyPressed(GLFW_KEY_L))
                 renderer::cam.movex(-0.01f);
+            if (renderer::cam.zooming(InputHandler::getMouseScroll()));
             
                 
             render();
             //update();
             //renderer::draw();
-            glfwPollEvents();
+            InputHandler::update();
+            //glfwPollEvents();
         }
     }
 

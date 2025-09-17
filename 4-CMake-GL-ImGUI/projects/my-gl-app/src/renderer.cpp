@@ -234,3 +234,10 @@ void renderer::camera::movey(float y)
 {
 	campos.y += y;
 }
+
+bool renderer::camera::zooming(float input)
+{
+	if (input == 0) return false;
+	zoom += input;
+	return true;
+}
