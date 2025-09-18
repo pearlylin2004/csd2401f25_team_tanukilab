@@ -12,7 +12,6 @@
 #include <imgui_impl_opengl3.h>
 #include "renderer.h"
 #include "input.h"
-#include "engine.h"
 //class Cube {
 //public:
 //    Cube() : m_programId(0), m_vertexBuffer(0), m_vertexArrayId(0) {}
@@ -187,19 +186,12 @@ private:
 
 int main() {
     try {
-        Engine engine;
-
-        if (!engine.init(1600, 800, "Tanuki Lab")) {
-            return -1; // failed to initialize
-        }
-
-        engine.run();       // main loop (handles input, rendering, FPS, etc.)
-        engine.shutdown();  // cleanup resources
-
+        GLApp app(1600, 800, "Render Cube");
+        app.run();
         return 0;
     }
     catch (const std::exception& e) {
-        std::cerr << "Unhandled exception: " << e.what() << std::endl;
+        std::cerr << "Error: " << e.what() << std::endl;
         return -1;
     }
 }
