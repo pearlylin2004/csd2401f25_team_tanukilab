@@ -184,22 +184,25 @@ public:
                 renderer::objects.find("player")->second.movey(0.01f);
             if (InputHandler::isKeyPressed(GLFW_KEY_S))
                 renderer::objects.find("player")->second.movey(-0.01f);
-                
+
+            Circle playerCircle = getObjectCircle(renderer::objects["player"]);
+
+            for (auto& [name, obj] : renderer::objects) {
+                if (name == "player") continue;
+                AABB objAABB = getObjectAABB(obj);
+                float firstCollisionTime = 0.0f;
+
+                if (CollisionIntersection_CircleAABB(playerCircle, movement, objAABB, Vec2(0, 0), firstCollisionTime)) {
+                    std::cout << "Collision with " << name << "!" << std::endl;
+                }
+                else {
+                    std::cout << "no collision with " << name << "!" << std::endl;
+                }
+            }
             render();
             //update();
             //renderer::draw();
             glfwPollEvents();
-        }
-        Circle playerCircle = getObjectCircle(renderer::objects["player"]);
-
-        for (auto& [name, obj] : renderer::objects) {
-            if (name == "player") continue;
-            AABB objAABB = getObjectAABB(obj);
-            float firstCollisionTime = 0.0f;
-
-            if (CollisionIntersection_CircleAABB(playerCircle, movement, objAABB, Vec2(0, 0), firstCollisionTime)) {
-                std::cout << "Collision with " << name << "!" << std::endl;
-            }
         }
     }
 
