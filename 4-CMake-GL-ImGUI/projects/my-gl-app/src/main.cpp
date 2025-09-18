@@ -187,14 +187,16 @@ private:
 
 int main() {
     try {
-        Engine engine;
+        GLApp app(1600, 800, "Render Cube");
+        app.run();
+        //Engine engine;
 
-        if (!engine.init(1600, 800, "Tanuki Lab")) {
-            return -1; // failed to initialize
-        }
+        //if (!engine.init(1600, 800, "Tanuki Lab")) {
+        //    return -1; // failed to initialize
+        //}
 
-        engine.run();       // main loop (handles input, rendering, FPS, etc.)
-        engine.shutdown();  // cleanup resources
+        //engine.run();       // main loop (handles input, rendering, FPS, etc.)
+        //engine.shutdown();  // cleanup resources
 
         return 0;
     }
