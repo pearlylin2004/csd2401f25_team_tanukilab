@@ -52,6 +52,7 @@ struct renderer
 		float rot;
 		glm::vec3 translate;
 		model model_ref;
+		std::string object_type;
 		std::string texture_ref;
 		glm::mat4 mdl_world;
 		void init();
