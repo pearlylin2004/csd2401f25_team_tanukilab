@@ -60,26 +60,24 @@
 //    std::vector<GLfloat> m_geometryBuffer;
 //};
 
+
+//collision testing
+//helper function to get an AABB from a renderer object
+AABB getObjectAABB(const renderer::object& obj) {
+    float halfWidth = obj.scaling.x * 0.5f;
+    float halfHeight = obj.scaling.y * 0.5f;
+    Vec2 min(obj.translate.x - halfWidth, obj.translate.y - halfHeight);
+    Vec2 max(obj.translate.x + halfWidth, obj.translate.y + halfHeight);
+    return AABB(min, max);
+}
+Circle getObjectCircle(const renderer::object& obj) {
+    float radius = obj.scaling.x * 0.5f;
+    return Circle(Vec2(obj.translate.x, obj.translate.y), radius);
+}
+
+
 class GLApp {
 public:
-    //collision test code
-    AABB m_box1{ Vec2(0.0f, 0.0f), Vec2(0.2f, 0.2f) };
-    Vec2 m_vel1{ 0.01f, 0.0f };
-
-    AABB m_box2{ Vec2(0.5f, 0.0f), Vec2(0.7f, 0.2f) };
-    Vec2 m_vel2{ -0.01f, 0.0f };
-
-    //collision test code
-    void renderAABB(const AABB& box) {
-        glBegin(GL_QUADS);
-        glColor3f(1.0f, 0.0f, 0.0f); // red
-        glVertex2f(box.getMin().getX(), box.getMin().getY());
-        glVertex2f(box.getMax().getX(), box.getMin().getY());
-        glVertex2f(box.getMax().getX(), box.getMax().getY());
-        glVertex2f(box.getMin().getX(), box.getMax().getY());
-        glEnd();
-    }
-
     GLApp(int p_width, int p_height, const char* p_title) : m_angleOfRotation(0.0f),
         m_rotationSpeed(0.01f),
         m_window(nullptr)//, 
@@ -147,10 +145,6 @@ public:
         //m_cube->render(modelMat);
         renderer::update();
 
-		//collision test code
-        renderAABB(m_box1);
-        renderAABB(m_box2);
-
         // Start ImGui frame
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
@@ -190,25 +184,25 @@ public:
             if (InputHandler::isKeyPressed(GLFW_KEY_S))
                 renderer::objects.find("player")->second.movey(-0.01f);
             
+            //check collision testing
+            renderer::object& player = renderer::objects["player"];
+            Circle playerCircle = getObjectCircle(player);
+
+            for (auto& [name, obj] : renderer::objects) {
+                if (name == "player") continue; // skip self
+
+                AABB objAABB = getObjectAABB(obj);
+                float firstCollisionTime = 0.0f;
+                if (CollisionIntersection_CircleAABB(playerCircle, Vec2(0, 0), objAABB, Vec2(0, 0), firstCollisionTime)) {
+                    std::cout << "Collision with " << name << "!" << std::endl;
+                }
+            }
+
                 
             render();
             //update();
             //renderer::draw();
             glfwPollEvents();
-
-
-			//collision test code
-            float firstCollisionTime = 0.0f;
-            if (CollisionIntersection_RectRect(m_box1, m_vel1, m_box2, m_vel2, firstCollisionTime)) {
-                std::cout << "Collision detected! First time of collision: " << firstCollisionTime << std::endl;
-            }
-            else {
-                // move objects if no collision
-                m_box1.setMin(Vec2(m_box1.getMin().getX() + m_vel1.getX(), m_box1.getMin().getY() + m_vel1.getY()));
-                m_box1.setMax(Vec2(m_box1.getMax().getX() + m_vel1.getX(), m_box1.getMax().getY() + m_vel1.getY()));
-                m_box2.setMin(Vec2(m_box2.getMin().getX() + m_vel2.getX(), m_box2.getMin().getY() + m_vel2.getY()));
-                m_box2.setMax(Vec2(m_box2.getMax().getX() + m_vel2.getX(), m_box2.getMax().getY() + m_vel2.getY()));
-            }
         }
     }
 
