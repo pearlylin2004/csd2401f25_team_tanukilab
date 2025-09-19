@@ -160,9 +160,6 @@ public:
                 renderer::objects.find("player")->second.movey(0.01f);
             if (InputHandler::isKeyHeld(GLFW_KEY_S))
                 renderer::objects.find("player")->second.movey(-0.01f);
-
-			if (InputHandler::isCursorInsideWindow()) std::cout << "clicked inside window\n";
-			else std::cout << "clicked outside window\n";
             
                 
             render();
