@@ -110,11 +110,6 @@ public:
 
     void update() {
         /* Poll for User Input */
-        InputHandler::update();
-
-        // input test code
-        /*if (InputHandler::isKeyPressed(GLFW_KEY_SPACE))
-            std::cout << InputHandler::getMouseY() << std::endl;*/
 
         m_angleOfRotation += m_rotationSpeed;
     }
@@ -158,20 +153,24 @@ public:
     void run() {
         while (glfwGetKey(m_window, GLFW_KEY_ESCAPE) != GLFW_PRESS && !glfwWindowShouldClose(m_window)) {
             //renderer::update(m_window);
-            if (InputHandler::isKeyPressed(GLFW_KEY_A))
+            if (InputHandler::isKeyHeld(GLFW_KEY_A))
                 renderer::objects.find("player")->second.movex(-0.01f);
-            if (InputHandler::isKeyPressed(GLFW_KEY_D))
+            if (InputHandler::isKeyHeld(GLFW_KEY_D))
                 renderer::objects.find("player")->second.movex(0.01f);
-            if (InputHandler::isKeyPressed(GLFW_KEY_W))
+            if (InputHandler::isKeyHeld(GLFW_KEY_W))
                 renderer::objects.find("player")->second.movey(0.01f);
-            if (InputHandler::isKeyPressed(GLFW_KEY_S))
+            if (InputHandler::isKeyHeld(GLFW_KEY_S))
                 renderer::objects.find("player")->second.movey(-0.01f);
+
+			if (InputHandler::isCursorInsideWindow()) std::cout << "clicked inside window\n";
+			else std::cout << "clicked outside window\n";
             
                 
             render();
             //update();
             //renderer::draw();
-            glfwPollEvents();
+            //glfwPollEvents();
+            InputHandler::update();
         }
     }
 
