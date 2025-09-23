@@ -1,30 +1,31 @@
 #pragma once
-
+#include <string>
+#include <memory> //for unique_ptr
 
 
 // basic component class
 class Component {
 public:
+    // virtual just means that the child class can overwrite 
+    // these functions
     virtual ~Component() = default;
-    virtual void Update(float deltaTime) {}
-    virtual void Render() {}
 };
 
 struct Transform : public Component {
-public:
-    Transform(float a = 0.0f, float b = 0.0f) : x(a), y(b) {}
+    Transform(float x, float y, float rot, float sx, float sy) 
+        : x(x), y(y), rotation(rot), scaleX(sx), scaleY(sy) {}
 
-public:
-    float x, y;
-
+    float x = 0.0f, y = 0.0f;
+    float rotation = 0.0f;
+    float scaleX = 1.0f, scaleY = 1.0f;
 };
 
 struct Velocity : public Component {
 public:
-    Velocity(float a = 0.0f, float b = 0.0f) : dx(a), dy(b) {}
+    Velocity(float a, float b) : dx(a), dy(b) {}
 
 public:
-    float dx, dy;
+    float dx = 0.0f, dy = 0.0f;
 };
 
 struct Render : public Component {
@@ -34,7 +35,7 @@ public:
 
 public:
     std::string modelType = "square"; // "square", "circle", etc.
-    float r = 1.0f, g = 1.0f, b = 1.0f, a = 1.0f; // Color
+
     bool visible = true;
 
 };

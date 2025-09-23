@@ -23,6 +23,15 @@ public:
 		return nullptr; // not found
 	}
 
+	void removeGameObject(const std::string& name) {
+		m_gameObjects.erase(name);
+	}
+
+	void updateAll(float deltaTime) {
+		for (auto& pair : m_gameObjects) {
+			pair.second->update(deltaTime);
+		}
+	}
 
 private:
 	std::unordered_map<std::string, std::unique_ptr<GameObject>> m_gameObjects;
