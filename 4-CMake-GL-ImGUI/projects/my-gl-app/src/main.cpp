@@ -13,7 +13,7 @@
 #include "renderer.h"
 #include "input.h"
 #include "collision.h"
-
+#include "engine.h"
 //class Cube {
 //public:
 //    Cube() : m_programId(0), m_vertexBuffer(0), m_vertexArrayId(0) {}
@@ -127,11 +127,6 @@ public:
 
     void update() {
         /* Poll for User Input */
-        InputHandler::update();
-
-        // input test code
-        /*if (InputHandler::isKeyPressed(GLFW_KEY_SPACE))
-            std::cout << InputHandler::getMouseY() << std::endl;*/
 
         m_angleOfRotation += m_rotationSpeed;
     }
@@ -176,13 +171,13 @@ public:
         Vec2 movement(0, 0);
         while (glfwGetKey(m_window, GLFW_KEY_ESCAPE) != GLFW_PRESS && !glfwWindowShouldClose(m_window)) {
             //renderer::update(m_window);
-            if (InputHandler::isKeyPressed(GLFW_KEY_A))
+            if (InputHandler::isKeyHeld(GLFW_KEY_A))
                 renderer::objects.find("player")->second.movex(-0.01f);
-            if (InputHandler::isKeyPressed(GLFW_KEY_D))
+            if (InputHandler::isKeyHeld(GLFW_KEY_D))
                 renderer::objects.find("player")->second.movex(0.01f);
-            if (InputHandler::isKeyPressed(GLFW_KEY_W))
+            if (InputHandler::isKeyHeld(GLFW_KEY_W))
                 renderer::objects.find("player")->second.movey(0.01f);
-            if (InputHandler::isKeyPressed(GLFW_KEY_S))
+            if (InputHandler::isKeyHeld(GLFW_KEY_S))
                 renderer::objects.find("player")->second.movey(-0.01f);
 
             Circle playerCircle = getObjectCircle(renderer::objects["player"]);
@@ -202,7 +197,8 @@ public:
             render();
             //update();
             //renderer::draw();
-            glfwPollEvents();
+            //glfwPollEvents();
+            InputHandler::update();
         }
     }
 
@@ -220,10 +216,19 @@ int main() {
     try {
         GLApp app(1600, 800, "Render Cube");
         app.run();
+        //Engine engine;
+
+        //if (!engine.init(1600, 800, "Tanuki Lab")) {
+        //    return -1; // failed to initialize
+        //}
+
+        //engine.run();       // main loop (handles input, rendering, FPS, etc.)
+        //engine.shutdown();  // cleanup resources
+
         return 0;
     }
     catch (const std::exception& e) {
-        std::cerr << "Error: " << e.what() << std::endl;
+        std::cerr << "Unhandled exception: " << e.what() << std::endl;
         return -1;
     }
 }
