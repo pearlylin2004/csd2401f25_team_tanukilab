@@ -40,7 +40,7 @@ foreach(child ${children})
         message(STATUS "Configuring project: ${child}")
 
         # Collect sources
-        file(GLOB_RECURSE ${child}_source_files 
+        file(GLOB_RECURSE ${child}_source_files
             ${CMAKE_CURRENT_LIST_DIR}/projects/${child}/src/*.cpp
             ${CMAKE_CURRENT_LIST_DIR}/projects/${child}/include/*.h
             ${CMAKE_CURRENT_LIST_DIR}/projects/${child}/include/*.hpp
@@ -105,8 +105,7 @@ foreach(child ${children})
 endforeach()
 
 target_include_directories(my-gl-app PRIVATE
-    ${CMAKE_CURRENT_LIST_DIR}/projects/my-gl-app/lib
-)
+    ${CMAKE_CURRENT_LIST_DIR}/projects/my-gl-app/lib/FMOD)
 
 target_link_directories(my-gl-app PRIVATE
 	${CMAKE_CURRENT_LIST_DIR}/projects/my-gl-app/lib)
