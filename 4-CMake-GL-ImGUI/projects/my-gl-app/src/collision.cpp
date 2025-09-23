@@ -111,13 +111,12 @@ bool CollisionIntersection_CircleCircle_Dynamic(const Circle& c1, const Vector2D
 //AABB with circles 
 bool CollisionIntersection_CircleAABB_Static(const Circle& c, const AABB& aabb)
 {
-    float closestX = Math_Max(aabb.getMin().x, Math_Min(c.getCenter().x, aabb.getMax().x));
-    float closestY = Math_Max(aabb.getMin().y, Math_Min(c.getCenter().y, aabb.getMax().y));
+    float minX = aabb.getMin().x - c.getRadius();
+    float maxX = aabb.getMax().x + c.getRadius();
+    float minY = aabb.getMin().y - c.getRadius();
+    float maxY = aabb.getMax().y + c.getRadius();
 
-    float dx = c.getCenter().x - closestX;
-    float dy = c.getCenter().y - closestY;
-
-    return (dx*dx + dy*dy) <= c.getRadius()*c.getRadius();
+    return (c.getCenter().x >= minX && c.getCenter().x <= maxX && c.getCenter().y >= minY && c.getCenter().y <= maxY);
 }
 bool CollisionIntersection_CircleAABB_Dynamic(const Circle& c, const Vector2D& velC, const AABB& aabb, const Vector2D& velAABB, float& firstTimeOfCollision)
 {
@@ -152,8 +151,8 @@ bool CollisionIntersection_CircleAABB_Dynamic(const Circle& c, const Vector2D& v
         tyEntry = maxY - cy;
         tyExit  = minY - cy;
     } else {
-        tyEntry = -1e30f;
-        tyExit  = 1e30f;
+        tyEntry = -INFINITY; //infinity might need to change
+        tyExit  = INFINITY; //infinity might need to change
     }
 
     if (relVelX != 0.0f) {
@@ -165,8 +164,8 @@ bool CollisionIntersection_CircleAABB_Dynamic(const Circle& c, const Vector2D& v
         tyExit  /= relVelY;
     }
 
-    float entryTime = (txEntry > tyEntry) ? txEntry : tyEntry;
-    float exitTime  = (txExit < tyExit) ? txExit : tyExit;
+    float entryTime = Math_Max(txEntry, tyEntry);
+    float exitTime = Math_Min(txExit, tyExit);
 
     if (entryTime > exitTime || entryTime < 0.0f || entryTime > 1.0f)
         return false;
