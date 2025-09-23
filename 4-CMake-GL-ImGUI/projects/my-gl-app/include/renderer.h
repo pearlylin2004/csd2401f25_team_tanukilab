@@ -52,6 +52,7 @@ struct renderer
 		float rot;
 		glm::vec3 translate;
 		model model_ref;
+		std::string object_type;
 		std::string texture_ref;
 		glm::mat4 mdl_world;
 		void init();
@@ -60,6 +61,7 @@ struct renderer
 		void movex(float x);
 		void movey(float y);
 		void rotate(float thetha);
+		void scale(float x, float y);
 	};
 
 	struct camera
@@ -67,6 +69,7 @@ struct renderer
 		GLfloat ar;
 		int width;
 		glm::vec3 campos;
+		glm::vec3 center;
 		float zoom;
 		float rot;
 		glm::vec3 up;
@@ -74,6 +77,9 @@ struct renderer
 		glm::mat4 proj;
 		void init(int w, int h);
 		void update();
+		void movex(float);
+		void movey(float);
+		bool zooming(float);
 	};
 
 	static std::map<std::string, object> objects;
