@@ -1,38 +1,37 @@
-#include "Component.cpp"
-#include <unordered_map>
+#include "GameObjectManager.h"
 
-class GameObjectManager {
-public:
-	GameObject* createGameObject(const std::string& name) {
+//create objects
+GameObject* GameObjectManager::createGameObject(const std::string& name) {
+	//create object
+	auto newObject = std::make_unique<GameObject>(name);
+	//get raw pointer to return
+	GameObject* ptr = newObject.get();
+	//move object into the map
+	m_gameObjects[name] = std::move(newObject);
 
-		//creates the thing to be returned
-		std::unique_ptr<GameObject> gameObject = std::make_unique<GameObject>();
-		GameObject* ptr = gameObject.get();//gets the ptr
-		// use std::move() cus unique_ptr cant be copied
-		m_gameObjects[name] = std::move(gameObject);
-		return ptr;
+	return ptr;
+}
+
+//use this when objects need to interact with each other
+GameObject* GameObjectManager::getGameObject(const std::string& name) {
+	//find object in map
+	auto iterator = m_gameObjects.find(name);
+	if (iterator != m_gameObjects.end()) {//if found
+		return iterator->second.get();
 	}
 
-	GameObject* getGameObject(const std::string& name) {
-		//it is iterator btw
-		//auto will auto-detect the type of the iterator
-		auto it = m_gameObjects.find(name);
-		if (it != m_gameObjects.end()) {
-			return it->second.get();
-		}
-		return nullptr; // not found
-	}
+	return nullptr;
+}
 
-	void removeGameObject(const std::string& name) {
-		m_gameObjects.erase(name);
-	}
+//used for the all the component systems
+void GameObjectManager::getAllGameObjects(std::vector<GameObject*> gameObjects) {
+	//clear vector just in case
+	gameObjects.clear();
 
-	void updateAll(float deltaTime) {
-		for (auto& pair : m_gameObjects) {
-			pair.second->update(deltaTime);
-		}
-	}
+	gameObjects.reserve(m_gameObjects.size());
 
-private:
-	std::unordered_map<std::string, std::unique_ptr<GameObject>> m_gameObjects;
-};
+	for (const auto& iterator : m_gameObjects) {
+		gameObjects.push_back(iterator.second.get());
+	}
+}
+
