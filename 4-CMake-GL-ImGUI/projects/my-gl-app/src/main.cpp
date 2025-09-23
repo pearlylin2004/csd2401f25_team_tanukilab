@@ -66,13 +66,13 @@
 AABB getObjectAABB(const renderer::object& obj) {
     float halfWidth = obj.scaling.x * 0.5f;
     float halfHeight = obj.scaling.y * 0.5f;
-    Vec2 min(obj.translate.x - halfWidth, obj.translate.y - halfHeight);
-    Vec2 max(obj.translate.x + halfWidth, obj.translate.y + halfHeight);
+    Vector2D min(obj.translate.x - halfWidth, obj.translate.y - halfHeight);
+    Vector2D max(obj.translate.x + halfWidth, obj.translate.y + halfHeight);
     return AABB(min, max);
 }
 Circle getObjectCircle(const renderer::object& obj) {
     float radius = obj.scaling.x * 0.5f;
-    return Circle(Vec2(obj.translate.x, obj.translate.y), radius);
+    return Circle(Vector2D(obj.translate.x, obj.translate.y), radius);
 }
 
 
@@ -168,7 +168,7 @@ public:
     }
 
     void run() {
-        Vec2 movement(0, 0);
+        Vector2D movement(0, 0);
         while (glfwGetKey(m_window, GLFW_KEY_ESCAPE) != GLFW_PRESS && !glfwWindowShouldClose(m_window)) {
             //renderer::update(m_window);
             if (InputHandler::isKeyHeld(GLFW_KEY_A))
@@ -187,7 +187,7 @@ public:
                 AABB objAABB = getObjectAABB(obj);
                 float firstCollisionTime = 0.0f;
 
-                if (CollisionIntersection_CircleAABB(playerCircle, movement, objAABB, Vec2(0, 0), firstCollisionTime)) {
+                if (CollisionIntersection_CircleAABB(playerCircle, movement, objAABB, Vector2D(0, 0), firstCollisionTime)) {
                     std::cout << "Collision with " << name << "!" << std::endl;
                 }
                 else {
