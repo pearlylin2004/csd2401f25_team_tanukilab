@@ -12,6 +12,8 @@ public:
 };
 
 struct Transform : public Component {
+public:
+	Transform() = default;
     Transform(float x, float y, float rot, float sx, float sy) 
         : x(x), y(y), rotation(rot), scaleX(sx), scaleY(sy) {}
 
@@ -22,6 +24,7 @@ struct Transform : public Component {
 
 struct Velocity : public Component {
 public:
+	Velocity() = default;
     Velocity(float a, float b) : dx(a), dy(b) {}
 
 public:
