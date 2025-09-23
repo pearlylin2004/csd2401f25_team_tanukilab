@@ -1,7 +1,6 @@
 #include <iostream>
 #include "Component.h"
 
-
 class GameObject {
 public:
     // Add components
@@ -14,19 +13,30 @@ public:
         velocityComponent = std::make_unique<Velocity>(dx, dy);
     }
 
-    void addHealth(float hp) {
-        healthComponent = std::make_unique<Health>(hp);
-    }
-
     void addRender(const char* sprite) {
         renderComponent = std::make_unique<Render>(sprite);
+
+        //add sin le rendering stuff here
+
     }
+
+    void addInput(float speed) {
+        inputComponent = std::make_unique<Input>(speed);
+	}
+
+    //add physics stuff
+    /*
+    void addPhysics() {
+        physicsComponent = std::make_unique<Physics>();
+	}
+    */
 
     // Get components (returns nullptr if not present)
     Transform* getTransform() { return transformComponent.get(); }
     Velocity* getVelocity() { return velocityComponent.get(); }
-    Health* getHealth() { return healthComponent.get(); }
-	Render* getRender() { return renderComponent.get(); }
+    Render* getRender() { return renderComponent.get(); }
+	Input* getInput() { return inputComponent.get(); }
+    //physics
 
     // Convenience update methods
     void update(float deltaTime) {
@@ -43,11 +53,15 @@ public:
             std::cout << "Rendering at (" << transformComponent->x << ", " << transformComponent->y << ")\n";
         }
     }
+
 private:
     // unique_ptr to store data
+    // unique_ptrs are basically a better way to do new and delete
     std::unique_ptr<Transform> transformComponent;
     std::unique_ptr<Velocity> velocityComponent;
-    std::unique_ptr<Health> healthComponent;
-	std::unique_ptr<Render> renderComponent;
+    std::unique_ptr<Render> renderComponent;
+	std::unique_ptr<Input> inputComponent;
+    //physics
+
     // Add more as needed...
 };
