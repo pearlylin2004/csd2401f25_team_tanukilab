@@ -59,7 +59,7 @@ bool InputHandler::isKeyDown(int key) {
 }
 
 
-/* ----- KEYBOARD ----- */
+/* ----- MOUSE ----- */
 bool InputHandler::isMouseButtonPressed(int button) {
 	if (button < 0 || button >= 8) return false;
 
