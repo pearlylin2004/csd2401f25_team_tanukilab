@@ -13,6 +13,8 @@
 #include "renderer.h"
 #include "input.h"
 #include "engine.h"
+#include "config.h"
+
 //class Cube {
 //public:
 //    Cube() : m_programId(0), m_vertexBuffer(0), m_vertexArrayId(0) {}
@@ -181,19 +183,45 @@ private:
     //renderer::model model;
 };
 
+//int main() {
+//    try {
+//        GLApp app(1600, 800, "Render Cube");
+//        app.run();
+//        //Engine engine;
+//
+//        //if (!engine.init(1600, 800, "Tanuki Lab")) {
+//        //    return -1; // failed to initialize
+//        //}
+//
+//        //engine.run();       // main loop (handles input, rendering, FPS, etc.)
+//        //engine.shutdown();  // cleanup resources
+//
+//        return 0;
+//    }
+//    catch (const std::exception& e) {
+//        std::cerr << "Unhandled exception: " << e.what() << std::endl;
+//        return -1;
+//    }
+//}
+
 int main() {
     try {
-        GLApp app(1600, 800, "Render Cube");
+        // Load config.txt (key=value)
+        AppConfig cfg;
+        std::string err;
+		LoadConfig("../projects/my-gl-app/resources/config.txt", cfg, &err); // adjust path as needed
+        if (!err.empty()) std::cout << err << "\n";  // okay if missing; defaults apply
+
+        // Create app with config-driven window settings
+        GLApp app(cfg.width, cfg.height, cfg.title.c_str()); 
+
+       
+        glfwSwapInterval(cfg.vsync ? 1 : 0);
+        if (cfg.msaa_samples > 0) glEnable(GL_MULTISAMPLE);
+        glClearColor(cfg.clear_color[0], cfg.clear_color[1], cfg.clear_color[2], cfg.clear_color[3]);
+
+        
         app.run();
-        //Engine engine;
-
-        //if (!engine.init(1600, 800, "Tanuki Lab")) {
-        //    return -1; // failed to initialize
-        //}
-
-        //engine.run();       // main loop (handles input, rendering, FPS, etc.)
-        //engine.shutdown();  // cleanup resources
-
         return 0;
     }
     catch (const std::exception& e) {
