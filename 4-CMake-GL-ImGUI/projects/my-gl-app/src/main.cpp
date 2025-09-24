@@ -156,6 +156,15 @@ public:
         }
         ImGui::End();
 
+        //testing new windows
+        ImGui::Begin("Controls");
+        ImGui::Text("Player Controls");
+        ImGui::Text("WASD to move");
+        if (ImGui::Button("Print Hello")) {
+            std::cout << "Hello from second window!" << std::endl;
+        }
+        ImGui::End();
+
         /*ImGui::Begin("OpenGL funny");
         ImGui::Text("fml");
         ImGui::End();*/
