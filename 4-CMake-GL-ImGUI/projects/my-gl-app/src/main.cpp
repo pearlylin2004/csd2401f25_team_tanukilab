@@ -64,16 +64,16 @@
 
 //collision testing
 //helper function to get an AABB from a renderer object
-AABB getObjectAABB(const renderer::object& obj) {
+Collision::AABB getObjectAABB(const renderer::object& obj) {
     float halfWidth = obj.scaling.x * 0.5f;
     float halfHeight = obj.scaling.y * 0.5f;
     Vector2D min(obj.translate.x - halfWidth, obj.translate.y - halfHeight);
     Vector2D max(obj.translate.x + halfWidth, obj.translate.y + halfHeight);
-    return AABB(min, max);
+    return Collision::AABB(min, max);
 }
-Circle getObjectCircle(const renderer::object& obj) {
+Collision::Circle getObjectCircle(const renderer::object& obj) {
     float radius = obj.scaling.x * 0.5f;
-    return Circle(Vector2D(obj.translate.x, obj.translate.y), radius);
+    return Collision::Circle(Vector2D(obj.translate.x, obj.translate.y), radius);
 }
 
 
@@ -146,7 +146,7 @@ public:
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
 
-        //imgui testing
+        //imgui frames
         UI::drawDemo(m_rotationSpeed, m_angleOfRotation);
         UI::drawControls();
 
@@ -174,14 +174,14 @@ public:
             if (InputHandler::isKeyHeld(GLFW_KEY_S))
                 renderer::objects.find("player")->second.movey(-0.01f);
 
-            Circle playerCircle = getObjectCircle(renderer::objects["player"]);
+            Collision::Circle playerCircle = getObjectCircle(renderer::objects["player"]);
 
             for (auto& [name, obj] : renderer::objects) {
                 if (name == "player") continue;
-                AABB objAABB = getObjectAABB(obj);
+                Collision::AABB objAABB = getObjectAABB(obj);
                 float firstCollisionTime = 0.0f;
 
-                if (CollisionIntersection_CircleAABB(playerCircle, movement, objAABB, Vector2D(0, 0), firstCollisionTime)) {
+                if (Collision::CollisionIntersection_CircleAABB(playerCircle, movement, objAABB, Vector2D(0, 0), firstCollisionTime)) {
                     std::cout << "Collision with " << name << "!" << std::endl;
                 }
                 else {
