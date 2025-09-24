@@ -24,7 +24,7 @@ GameObject* GameObjectManager::getGameObject(const std::string& name) {
 }
 
 //used for the all the component systems
-void GameObjectManager::getAllGameObjects(std::vector<GameObject*> gameObjects) {
+void GameObjectManager::getAllGameObjects(std::vector<GameObject*>& gameObjects) {
 	//clear vector just in case
 	gameObjects.clear();
 
