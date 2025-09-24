@@ -16,9 +16,6 @@ public:
 
 class RenderSystem {
 public:
-	RenderSystem(renderer& renderer);
+	void update(GameObjectManager& manager, float deltaTime);
 
-
-private:
-	renderer& m_renderer;
 };

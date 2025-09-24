@@ -61,6 +61,7 @@ public:
     const std::string& getName() const {
         return m_name;
     }
+
 private:
     std::string m_name;//name of object
 

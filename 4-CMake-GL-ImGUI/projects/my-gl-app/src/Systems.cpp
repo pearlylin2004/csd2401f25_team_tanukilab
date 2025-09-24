@@ -28,20 +28,54 @@ void InputSystem::update(GameObjectManager& manager, float deltaTime) {
 				velocity->dx = 0.0f;
 				velocity->dy = 0.0f;
 
-				if (InputHandler::isKeyDown(GLFW_KEY_W)) {
+				if (InputHandler::isKeyDown(GLFW_KEY_UP)) {
 					velocity->dy = input->moveSpeed;
 				}
-				if (InputHandler::isKeyDown(GLFW_KEY_S)) {
+				if (InputHandler::isKeyDown(GLFW_KEY_DOWN)) {
 					velocity->dy = -input->moveSpeed;
 				}
-				if (InputHandler::isKeyDown(GLFW_KEY_A)) {
+				if (InputHandler::isKeyDown(GLFW_KEY_LEFT)) {
 					velocity->dx = -input->moveSpeed;
 				}
-				if (InputHandler::isKeyDown(GLFW_KEY_D)) {
+				if (InputHandler::isKeyDown(GLFW_KEY_RIGHT)) {
 					velocity->dx = input->moveSpeed;
 				}
 				//so far so good i think?
 			}
+		}
+	}
+}
+
+void RenderSystem::update(GameObjectManager& manager, float deltaTime) {
+	std::vector<GameObject*> gameObjects;
+	manager.getAllGameObjects(gameObjects);
+
+	for (auto object : gameObjects) {
+		if (object->hasComponent<Render>() && object->hasComponent<Transform>()) {
+			Transform* transform = object->getComponent<Transform>();
+			Render* render = object->getComponent<Render>();
+
+			if (render->visible) {
+				auto iterator = renderer::objects.find(object->getName());
+				if (iterator != renderer::objects.end()) {
+					iterator->second.translate.x = transform->x;
+					iterator->second.translate.y = transform->y;
+				}
+			}
+		}
+	}
+}
+
+void PhysicsSystem::update(GameObjectManager& manager, float deltaTime) {
+	std::vector<GameObject*> gameObjects;
+	manager.getAllGameObjects(gameObjects);
+
+	for(auto object : gameObjects) {
+		if (object->hasComponent<Transform>() && object->hasComponent<Velocity>()) {
+			Transform* transform = object->getComponent<Transform>();
+			Velocity* velocity = object->getComponent<Velocity>();
+			transform->x += velocity->dx * deltaTime;
+			transform->y += velocity->dy * deltaTime;
 		}
 	}
 }

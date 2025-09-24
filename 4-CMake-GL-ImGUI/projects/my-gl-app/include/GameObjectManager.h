@@ -17,10 +17,10 @@ public:
 	//use this when objects need to interact with each other
 	GameObject* getGameObject(const std::string& name);
 
-	//used for the all the component systems
+	//used for all the component systems
 	void getAllGameObjects(std::vector<GameObject*> gameObjects);
 
 private:
-	//using unordered map quit a lot huh
+	//using unordered map quite a lot huh
 	std::unordered_map<std::string, std::unique_ptr<GameObject>> m_gameObjects;
 };
