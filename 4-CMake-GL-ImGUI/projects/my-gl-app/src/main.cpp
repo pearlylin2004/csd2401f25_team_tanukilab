@@ -76,6 +76,8 @@ Collision::Circle getObjectCircle(const renderer::object& obj) {
     return Collision::Circle(Vector2D(obj.translate.x, obj.translate.y), radius);
 }
 std::string outputC = "No collision";
+//to test adding of circles for imgui
+std::vector<Collision::Circle> circles;
 
 
 class GLApp {
@@ -142,6 +144,18 @@ public:
         //m_cube->render(modelMat);
         renderer::update();
 
+		//draw circles from imgui
+        /*for (const auto& c : circles) {
+            renderer::object temp;
+            temp.model_ref = renderer::models[1];
+            temp.translate = glm::vec3(c.getCenter().x, c.getCenter().y, 0.02);
+            temp.scaling = glm::vec3(c.getRadius()+1, c.getRadius()+1, 2.0f + 1);
+            temp.draw();
+        }*/
+
+        //how many circles
+        std::cout << circles.size() << std::endl;
+             
         //start ImGui frame -- just need to call once
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
@@ -149,7 +163,7 @@ public:
 
         //imgui frames
         UI::drawDemo(m_rotationSpeed, m_angleOfRotation);
-        UI::drawControls();
+        UI::drawControls(circles);
 		UI::drawDebug(outputC);
 
         /*ImGui::Begin("OpenGL funny");

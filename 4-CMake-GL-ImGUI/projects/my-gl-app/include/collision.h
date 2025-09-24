@@ -38,6 +38,10 @@ namespace Collision {
         //setters
         void setMin(const Vector2D& _min) { min = _min; }
         void setMax(const Vector2D& _max) { max = _max; }
+
+        //for imgui
+        Vector2D& getMinRef() { return min; }
+        Vector2D& getMaxRef() { return max; }
     };
 
     //circles
@@ -57,6 +61,10 @@ namespace Collision {
         //setters
         void setCenter(const Vector2D& _center) { center = _center; }
         void setRadius(float _radius) { radius = _radius; }
+
+        //for imgui
+        Vector2D& getCenterRef() { return center; }
+        float& getRadiusRef() { return radius; }
     };
 
     //collision function for AABB
