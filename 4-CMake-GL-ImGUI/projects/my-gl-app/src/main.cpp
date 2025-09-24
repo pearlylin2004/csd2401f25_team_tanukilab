@@ -12,6 +12,56 @@
 #include <imgui_impl_opengl3.h>
 #include "renderer.h"
 #include "input.h"
+#include "engine.h"
+#include "GameObjectManager.h"
+#include "Component.h"
+#include "Systems.h"
+
+//class Cube {
+//public:
+//    Cube() : m_programId(0), m_vertexBuffer(0), m_vertexArrayId(0) {}
+//    ~Cube() {
+//        glDeleteBuffers(1, &m_vertexBuffer);
+//        glDeleteVertexArrays(1, &m_vertexArrayId);
+//        glDeleteProgram(m_programId);
+//    }
+//
+//    void initialize() {
+//
+//        m_programId = LoadShaders("shaders/funny.vert", "shaders/funny.frag", true);
+//        m_geometryBuffer = {
+//            //  x      y     z      r     g     b
+//            -0.5f, -0.5f, 0.0f,   0.0f, 1.0f, 1.0f,   // Bottom-left, cyan
+//             0.5f, -0.5f, 0.0f,   1.0f, 0.0f, 1.0f,   // Bottom-right, magenta
+//             0.5f,  0.5f, 0.0f,   1.0f, 1.0f, 0.0f,   // Top-right, yellow
+//
+//             0.5f,  0.5f, 0.0f,   1.0f, 0.0f, 0.0f,   // Top-right (repeat), red
+//            -0.5f,  0.5f, 0.0f,   0.0f, 1.0f, 0.0f,   // Top-left, green
+//            -0.5f, -0.5f, 0.0f,   0.0f, 0.0f, 1.0f    // Bottom-left (repeat), blue
+//        };
+//        glGenVertexArrays(1, &m_vertexArrayId);
+//        glBindVertexArray(m_vertexArrayId);
+//        glGenBuffers(1, &m_vertexBuffer);
+//        glBindBuffer(GL_ARRAY_BUFFER, m_vertexBuffer);
+//        glBufferData(GL_ARRAY_BUFFER, m_geometryBuffer.size() * sizeof(GLfloat), m_geometryBuffer.data(), GL_STATIC_DRAW);
+//        glEnableVertexAttribArray(0);
+//        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (void*)0);
+//        glEnableVertexAttribArray(1);
+//        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (void*)(3 * sizeof(GLfloat)));
+//    }
+//
+//    void render(const glm::mat4& p_modelMat) {
+//        glUseProgram(m_programId);
+//        glBindVertexArray(m_vertexArrayId);
+//        GLint vTransformLoc = glGetUniformLocation(m_programId, "vertexTransform");
+//        glUniformMatrix4fv(vTransformLoc, 1, GL_FALSE, &p_modelMat[0][0]);
+//        glDrawArrays(GL_TRIANGLES, 0, 6);
+//    }
+//
+//private:
+//    GLuint m_programId, m_vertexBuffer, m_vertexArrayId;
+//    std::vector<GLfloat> m_geometryBuffer;
+//};
 
 class GLApp {
 public:
@@ -43,6 +93,15 @@ public:
         InputHandler::init(m_window);
         renderer::init(p_width, p_height);
 
+		//create new player object using game object manager
+		GameObject* player = m_manager.createGameObject("player");
+		player->addComponent<Transform>();
+		player->addComponent<Velocity>(0.0f, 0.0f);
+		player->addComponent<Input>(1.0f);
+        player->addComponent<Render>();
+
+
+
         // Setup ImGui
         IMGUI_CHECKVERSION();
         ImGui::CreateContext();
@@ -66,9 +125,14 @@ public:
         /* Poll for User Input */
         InputHandler::update();
 
+        const float deltaTime = 1.0f / 60.0f; // simulate 60fps
+
         // input test code
         /*if (InputHandler::isKeyPressed(GLFW_KEY_SPACE))
             std::cout << InputHandler::getMouseY() << std::endl;*/
+        m_inputSystem.update(m_manager, deltaTime);
+        m_physicsSystem.update(m_manager, deltaTime);
+        m_renderSystem.update(m_manager, deltaTime);
 
         m_angleOfRotation += m_rotationSpeed;
     }
@@ -110,36 +174,16 @@ public:
     }
 
     void run() {
+        
         while (glfwGetKey(m_window, GLFW_KEY_ESCAPE) != GLFW_PRESS && !glfwWindowShouldClose(m_window)) {
-            //renderer::update(m_window);
-            if (InputHandler::isKeyPressed(GLFW_KEY_A))
-                renderer::objects.find("player")->second.movex(-0.01f);
-            if (InputHandler::isKeyPressed(GLFW_KEY_D))
-                renderer::objects.find("player")->second.movex(0.01f);
-            if (InputHandler::isKeyPressed(GLFW_KEY_W))
-                renderer::objects.find("player")->second.movey(0.01f);
-            if (InputHandler::isKeyPressed(GLFW_KEY_S))
-                renderer::objects.find("player")->second.movey(-0.01f);
-            if (InputHandler::isKeyPressed(GLFW_KEY_Q))
-                renderer::objects.find("player")->second.rotate(-1.f);
-            if (InputHandler::isKeyPressed(GLFW_KEY_E))
-                renderer::objects.find("player")->second.rotate(1.f);
-            if (InputHandler::isKeyPressed(GLFW_KEY_R))
-                renderer::objects.find("player")->second.scale(0.01f, 0.01f);
-            if (InputHandler::isKeyPressed(GLFW_KEY_F))
-                renderer::objects.find("player")->second.scale(-0.01f, -0.01f);
-            if (InputHandler::isKeyPressed(GLFW_KEY_P))
-                renderer::cam.movex(0.01f);
-            if (InputHandler::isKeyPressed(GLFW_KEY_L))
-                renderer::cam.movex(-0.01f);
-            if (renderer::cam.zooming(InputHandler::getMouseScroll()));
             
-                
+			
+
+            update();
             render();
             //update();
             //renderer::draw();
-            InputHandler::update();
-            //glfwPollEvents();
+            glfwPollEvents();
         }
     }
 
@@ -148,6 +192,11 @@ public:
     float m_rotationSpeed;
 
 private:
+    GameObjectManager m_manager;
+	InputSystem m_inputSystem;
+	PhysicsSystem m_physicsSystem;
+	RenderSystem m_renderSystem;
+
     GLFWwindow* m_window;
     //std::shared_ptr<Cube> m_cube;
     //renderer::model model;
@@ -157,10 +206,19 @@ int main() {
     try {
         GLApp app(1600, 800, "Render Cube");
         app.run();
+        //Engine engine;
+
+        //if (!engine.init(1600, 800, "Tanuki Lab")) {
+        //    return -1; // failed to initialize
+        //}
+
+        //engine.run();       // main loop (handles input, rendering, FPS, etc.)
+        //engine.shutdown();  // cleanup resources
+
         return 0;
     }
     catch (const std::exception& e) {
-        std::cerr << "Error: " << e.what() << std::endl;
+        std::cerr << "Unhandled exception: " << e.what() << std::endl;
         return -1;
     }
 }
