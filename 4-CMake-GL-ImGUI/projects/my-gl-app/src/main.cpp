@@ -13,10 +13,6 @@
 #include "renderer.h"
 #include "input.h"
 #include "engine.h"
-#include "GameObjectManager.h"
-#include "Component.h"
-#include "Systems.h"
-
 //class Cube {
 //public:
 //    Cube() : m_programId(0), m_vertexBuffer(0), m_vertexArrayId(0) {}
@@ -93,15 +89,6 @@ public:
         InputHandler::init(m_window);
         renderer::init(p_width, p_height);
 
-		//create new player object using game object manager
-		GameObject* player = m_manager.createGameObject("player");
-		player->addComponent<Transform>();
-		player->addComponent<Velocity>(0.0f, 0.0f);
-		player->addComponent<Input>(1.0f);
-        player->addComponent<Render>();
-
-
-
         // Setup ImGui
         IMGUI_CHECKVERSION();
         ImGui::CreateContext();
@@ -125,14 +112,9 @@ public:
         /* Poll for User Input */
         InputHandler::update();
 
-        const float deltaTime = 1.0f / 60.0f; // simulate 60fps
-
         // input test code
         /*if (InputHandler::isKeyPressed(GLFW_KEY_SPACE))
             std::cout << InputHandler::getMouseY() << std::endl;*/
-        m_inputSystem.update(m_manager, deltaTime);
-        m_physicsSystem.update(m_manager, deltaTime);
-        m_renderSystem.update(m_manager, deltaTime);
 
         m_angleOfRotation += m_rotationSpeed;
     }
@@ -174,12 +156,18 @@ public:
     }
 
     void run() {
-        
         while (glfwGetKey(m_window, GLFW_KEY_ESCAPE) != GLFW_PRESS && !glfwWindowShouldClose(m_window)) {
+            //renderer::update(m_window);
+            if (InputHandler::isKeyPressed(GLFW_KEY_A))
+                renderer::objects.find("player")->second.movex(-0.01f);
+            if (InputHandler::isKeyPressed(GLFW_KEY_D))
+                renderer::objects.find("player")->second.movex(0.01f);
+            if (InputHandler::isKeyPressed(GLFW_KEY_W))
+                renderer::objects.find("player")->second.movey(0.01f);
+            if (InputHandler::isKeyPressed(GLFW_KEY_S))
+                renderer::objects.find("player")->second.movey(-0.01f);
             
-			
-
-            update();
+                
             render();
             //update();
             //renderer::draw();
@@ -192,11 +180,6 @@ public:
     float m_rotationSpeed;
 
 private:
-    GameObjectManager m_manager;
-	InputSystem m_inputSystem;
-	PhysicsSystem m_physicsSystem;
-	RenderSystem m_renderSystem;
-
     GLFWwindow* m_window;
     //std::shared_ptr<Cube> m_cube;
     //renderer::model model;

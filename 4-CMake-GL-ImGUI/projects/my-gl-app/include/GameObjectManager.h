@@ -18,7 +18,7 @@ public:
 	GameObject* getGameObject(const std::string& name);
 
 	//used for all the component systems
-	void getAllGameObjects(std::vector<GameObject*>& gameObjects);
+	void getAllGameObjects(std::vector<GameObject*> gameObjects);
 
 private:
 	//using unordered map quite a lot huh
