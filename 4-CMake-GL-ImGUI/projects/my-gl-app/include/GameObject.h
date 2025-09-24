@@ -24,13 +24,16 @@ public:
         //pretty cool tbh
 
         //prasanna my GOAT
+        //std::forward reverts the argument to its state before
+        //it was passed through the function
         auto newComponent = std::make_unique<T>(std::forward<TArgs>(args)...);
         T* componentPtr = newComponent.get();
 
         //attach this new component to a map of them
         m_components[std::type_index(typeid(T))] = std::move(newComponent);
-        //typeid() creates a unique id so its easier to find in the map
-        //type_index() makes it actually usable in an unordered map
+        //typeid() creates a unique id of type type_info
+		//type_info is a unique type information that can only have one instance
+		//type_index is a wrapper around type_info that allows it to be used in any container
 
         return componentPtr;
     }
