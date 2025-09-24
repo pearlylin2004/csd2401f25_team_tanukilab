@@ -105,7 +105,10 @@ foreach(child ${children})
 endforeach()
 
 target_include_directories(my-gl-app PRIVATE
-    ${CMAKE_CURRENT_LIST_DIR}/projects/my-gl-app/lib/FMOD)
+	${CMAKE_CURRENT_LIST_DIR}/projects/my-gl-app/assets)
+
+target_include_directories(my-gl-app PRIVATE
+	${CMAKE_CURRENT_LIST_DIR}/projects/my-gl-app/lib/FMOD)
 
 target_link_directories(my-gl-app PRIVATE
 	${CMAKE_CURRENT_LIST_DIR}/projects/my-gl-app/lib)
