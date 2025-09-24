@@ -14,6 +14,7 @@
 #include "input.h"
 #include "collision.h"
 #include "engine.h"
+#include "ui.h"
 //class Cube {
 //public:
 //    Cube() : m_programId(0), m_vertexBuffer(0), m_vertexArrayId(0) {}
@@ -140,30 +141,14 @@ public:
         //m_cube->render(modelMat);
         renderer::update();
 
-        // Start ImGui frame
+        //start ImGui frame -- just need to call once
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
 
-        // Create ImGui window
-        ImGui::Begin("OpenGL 3.3 Demo");
-        ImGui::Text("Hello, ImGui!");
-        ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
-        ImGui::SliderFloat("Rotation Speed", &m_rotationSpeed, 0.0f, 0.1f);
-        //ImGui::SliderFloat("Rotation fk u", &m_rotationSpeed, 0.0f, 0.1f);
-        if (ImGui::Button("Reset Rotation")) {
-            m_angleOfRotation = 0.0f;
-        }
-        ImGui::End();
-
-        //testing new windows
-        ImGui::Begin("Controls");
-        ImGui::Text("Player Controls");
-        ImGui::Text("WASD to move");
-        if (ImGui::Button("Print Hello")) {
-            std::cout << "Hello from second window!" << std::endl;
-        }
-        ImGui::End();
+        //imgui testing
+        UI::drawDemo(m_rotationSpeed, m_angleOfRotation);
+        UI::drawControls();
 
         /*ImGui::Begin("OpenGL funny");
         ImGui::Text("fml");
