@@ -9,13 +9,13 @@
 */
 /* End Header **************************************************************************/
 #ifndef COLLISION_H
-#define COLLISION_H_
+#define COLLISION_H
 
 #include <cstdint>
 #include <cstddef>
 #include "Math_Lib.h"
 
-namespace Collision{
+namespace Collision {
     using f64 = double;
     extern f64 g_fixedDT;
     extern f64 g_dt;
@@ -99,7 +99,5 @@ namespace Collision{
 
         return CollisionIntersection_CircleAABB_Dynamic(c, velC, aabb, velAABB, firstTimeOfCollision);
     }
-
-#endif
 }
 #endif

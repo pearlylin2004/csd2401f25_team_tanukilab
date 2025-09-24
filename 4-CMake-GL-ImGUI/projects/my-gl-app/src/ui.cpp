@@ -24,6 +24,7 @@ namespace UI {
         ImGui::End();
     }
 
+    //testing
     void drawControls() {
         ImGui::Begin("Controls");
         ImGui::Text("Player Controls");
@@ -34,5 +35,19 @@ namespace UI {
         ImGui::End();
     }
 
+    //debugging window
+    void drawDebug(std::string messages) {
+        ImGui::Begin("Debug Info");
+        ImGui::Text("This is a debug window.");
+        ImGui::Text("%s", messages.c_str());
 
+        /*for (const auto& msg : messages) {
+            ImGui::Text("%s", msg.c_str());
+        }
+
+        // auto-scroll
+        if (ImGui::GetScrollY() >= ImGui::GetScrollMaxY())
+            ImGui::SetScrollHereY(1.0f);*/
+        ImGui::End();
+	}
 }

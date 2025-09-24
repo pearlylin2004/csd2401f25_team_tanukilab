@@ -9,12 +9,14 @@
 /* End Header **************************************************************************/
 
 #ifndef UI_H
-#define UI_H_
+#define UI_H
 #include <imgui.h>
 #include <iostream>
+#include <vector>
 
 namespace UI{
     void drawDemo(float& rotationSpeed, float& angleOfRotation);
     void drawControls();
+	void drawDebug(std::string messages);
 }
 #endif

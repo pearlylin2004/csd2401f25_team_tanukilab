@@ -75,6 +75,7 @@ Collision::Circle getObjectCircle(const renderer::object& obj) {
     float radius = obj.scaling.x * 0.5f;
     return Collision::Circle(Vector2D(obj.translate.x, obj.translate.y), radius);
 }
+std::string outputC = "No collision";
 
 
 class GLApp {
@@ -149,6 +150,7 @@ public:
         //imgui frames
         UI::drawDemo(m_rotationSpeed, m_angleOfRotation);
         UI::drawControls();
+		UI::drawDebug(outputC);
 
         /*ImGui::Begin("OpenGL funny");
         ImGui::Text("fml");
@@ -182,10 +184,10 @@ public:
                 float firstCollisionTime = 0.0f;
 
                 if (Collision::CollisionIntersection_CircleAABB(playerCircle, movement, objAABB, Vector2D(0, 0), firstCollisionTime)) {
-                    std::cout << "Collision with " << name << "!" << std::endl;
+                    outputC = "Collision with " + name + "!";
                 }
                 else {
-                    std::cout << "no collision with " << name << "!" << std::endl;
+                    outputC = "no collision with " + name + "!";
                 }
             }
             render();
