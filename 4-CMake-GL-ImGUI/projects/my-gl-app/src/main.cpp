@@ -12,6 +12,7 @@
 #include <imgui_impl_opengl3.h>
 #include "renderer.h"
 #include "input.h"
+#include "audio.h"
 
 class GLApp {
 public:
@@ -53,6 +54,9 @@ public:
 
         ImGui_ImplGlfw_InitForOpenGL(m_window, true);
         ImGui_ImplOpenGL3_Init("#version 450");
+
+        // initialize audio
+        audio.init();
     }
 
     ~GLApp() {
@@ -113,7 +117,12 @@ public:
                 renderer::objects.find("player")->second.movey(0.01f);
             if (InputHandler::isKeyHeld(GLFW_KEY_S))
                 renderer::objects.find("player")->second.movey(-0.01f);
+
+            if (InputHandler::isKeyTriggered(GLFW_KEY_SPACE)) {
+				audio.playSound(soundID::water);
+            }
             
+			audio.update();
                 
             render();
             //update();
@@ -129,6 +138,7 @@ public:
 
 private:
     GLFWwindow* m_window;
+    AudioSystem& audio = AudioSystem::getInstance();
     //std::shared_ptr<Cube> m_cube;
     //renderer::model model;
 };
