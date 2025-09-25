@@ -14,10 +14,12 @@
 #include "collision.h" //for using circles
 #include <iostream>
 #include <vector>
+#include <string>
 
 namespace UI{
+    extern std::vector<std::string> debugMessages;
     void drawDemo(float& rotationSpeed, float& angleOfRotation);
     void drawControls(std::vector<Collision::Circle>& circles);
-	void drawDebug(std::string messages);
+	void drawDebug(std::vector<std::string> debugMessages);
 }
 #endif

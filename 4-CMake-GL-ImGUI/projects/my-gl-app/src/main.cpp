@@ -75,9 +75,10 @@ Collision::Circle getObjectCircle(const renderer::object& obj) {
     float radius = obj.scaling.x * 0.5f;
     return Collision::Circle(Vector2D(obj.translate.x, obj.translate.y), radius);
 }
-std::string outputC = "No collision";
+//std::string outputC = "No collision";
 //to test adding of circles for imgui
 std::vector<Collision::Circle> circles;
+//static std::vector<std::string> debugMessages;
 
 
 class GLApp {
@@ -154,7 +155,7 @@ public:
         }*/
 
         //how many circles
-        std::cout << circles.size() << std::endl;
+        //std::cout << circles.size() << std::endl;
              
         //start ImGui frame -- just need to call once
         ImGui_ImplOpenGL3_NewFrame();
@@ -164,7 +165,8 @@ public:
         //imgui frames
         UI::drawDemo(m_rotationSpeed, m_angleOfRotation);
         UI::drawControls(circles);
-		UI::drawDebug(outputC);
+		//UI::drawDebug(outputC);
+        UI::drawDebug(UI::debugMessages);
 
         /*ImGui::Begin("OpenGL funny");
         ImGui::Text("fml");
@@ -183,14 +185,19 @@ public:
             //renderer::update(m_window);
             if (InputHandler::isKeyHeld(GLFW_KEY_A))
                 renderer::objects.find("player")->second.movex(-0.01f);
+                //movement.x -= 0.01f;
             if (InputHandler::isKeyHeld(GLFW_KEY_D))
                 renderer::objects.find("player")->second.movex(0.01f);
+                //movement.x += 0.01f;    
             if (InputHandler::isKeyHeld(GLFW_KEY_W))
                 renderer::objects.find("player")->second.movey(0.01f);
+                //movement.y += 0.01f;
             if (InputHandler::isKeyHeld(GLFW_KEY_S))
                 renderer::objects.find("player")->second.movey(-0.01f);
+                //movement.y -= 0.01f;
 
             Collision::Circle playerCircle = getObjectCircle(renderer::objects["player"]);
+            //bool collided = false;
 
             for (auto& [name, obj] : renderer::objects) {
                 if (name == "player") continue;
@@ -198,12 +205,21 @@ public:
                 float firstCollisionTime = 0.0f;
 
                 if (Collision::CollisionIntersection_CircleAABB(playerCircle, movement, objAABB, Vector2D(0, 0), firstCollisionTime)) {
-                    outputC = "Collision with " + name + "!";
+                    UI::debugMessages.push_back("Collision with " + name + "!");
+                    //collided = true;
+					//std::cout << collided << std::endl;
+                    //break;
                 }
                 else {
-                    outputC = "no collision with " + name + "!";
+                    UI::debugMessages.push_back("no collision with " + name + "!");
                 }
             }
+            /*
+            if (collided) {
+                renderer::objects["player"].movex(movement.x);
+                renderer::objects["player"].movey(movement.y);
+            }*/
+
             render();
             //update();
             //renderer::draw();

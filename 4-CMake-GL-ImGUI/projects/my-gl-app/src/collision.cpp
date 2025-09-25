@@ -182,6 +182,4 @@ namespace Collision {
         firstTimeOfCollision = entryTime;
         return true;
     }
-
-
 }
