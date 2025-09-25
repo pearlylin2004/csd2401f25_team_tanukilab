@@ -116,54 +116,73 @@ namespace Collision {
     //AABB with circles 
     bool CollisionIntersection_CircleAABB_Static(const Circle& c, const AABB& aabb)
     {
-        float minX = aabb.getMin().x - c.getRadius();
-        float maxX = aabb.getMax().x + c.getRadius();
-        float minY = aabb.getMin().y - c.getRadius();
-        float maxY = aabb.getMax().y + c.getRadius();
+        const Vector2D& center = c.getCenter();
+        float radius = c.getRadius();
 
-        return (c.getCenter().x >= minX && c.getCenter().x <= maxX && c.getCenter().y >= minY && c.getCenter().y <= maxY);
+		//find closest point on AABB to circle center
+        float closestX = Math_Max(aabb.getMin().x, Math_Min(center.x, aabb.getMax().x));
+        float closestY = Math_Max(aabb.getMin().y, Math_Min(center.y, aabb.getMax().y));
+
+		//distance between center to closest point
+        float dx = center.x - closestX;
+        float dy = center.y - closestY;
+
+        return (dx * dx + dy * dy) <= radius * radius;
     }
     bool CollisionIntersection_CircleAABB_Dynamic(const Circle& c, const Vector2D& velC, const AABB& aabb, const Vector2D& velAABB, float& firstTimeOfCollision)
     {
         float relVelX = velC.x - velAABB.x;
         float relVelY = velC.y - velAABB.y;
 
-        float minX = aabb.getMin().x - c.getRadius();
-        float minY = aabb.getMin().y - c.getRadius();
-        float maxX = aabb.getMax().x + c.getRadius();
-        float maxY = aabb.getMax().y + c.getRadius();
+        float closestX = Math_Max(aabb.getMin().x, Math_Min(c.getCenter().x, aabb.getMax().x));
+        float closestY = Math_Max(aabb.getMin().y, Math_Min(c.getCenter().y, aabb.getMax().y));
 
-        float cx = c.getCenter().x;
-        float cy = c.getCenter().y;
+        float dx = c.getCenter().x - closestX;
+        float dy = c.getCenter().y - closestY;
+
+        float distSq = dx * dx + dy * dy;
+        if (distSq <= c.getRadius() * c.getRadius()) {
+            firstTimeOfCollision = 0.0f;
+            return true;
+        }
+
+		//expanded AABB by circle radius
+        float minX = aabb.getMin().x - c.getRadius();
+        float maxX = aabb.getMax().x + c.getRadius();
+        float minY = aabb.getMin().y - c.getRadius();
+        float maxY = aabb.getMax().y + c.getRadius();
 
         float txEntry, txExit, tyEntry, tyExit;
 
+		//calculate entry and exit times for x axes
         if (relVelX > 0.0f) {
-            txEntry = minX - cx;
-            txExit = maxX - cx;
+            txEntry = minX - c.getCenter().x;
+            txExit = maxX - c.getCenter().x;
         }
         else if (relVelX < 0.0f) {
-            txEntry = maxX - cx;
-            txExit = minX - cx;
+            txEntry = maxX - c.getCenter().x;
+            txExit = minX - c.getCenter().x;
         }
         else {
-            txEntry = -INFINITY; //infinity might need to change
-            txExit = INFINITY; //infinity might need to change
+            txEntry = -INFINITY;
+            txExit = INFINITY;
         }
 
+		//calculate entry and exit times for y axis
         if (relVelY > 0.0f) {
-            tyEntry = minY - cy;
-            tyExit = maxY - cy;
+            tyEntry = minY - c.getCenter().y;
+            tyExit = maxY - c.getCenter().y;
         }
         else if (relVelY < 0.0f) {
-            tyEntry = maxY - cy;
-            tyExit = minY - cy;
+            tyEntry = maxY - c.getCenter().y;
+            tyExit = minY - c.getCenter().y;
         }
         else {
-            tyEntry = -INFINITY; //infinity might need to change
-            tyExit = INFINITY; //infinity might need to change
+            tyEntry = -INFINITY;
+            tyExit = INFINITY;
         }
 
+		//convert to time
         if (relVelX != 0.0f) {
             txEntry /= relVelX;
             txExit /= relVelX;
@@ -176,8 +195,7 @@ namespace Collision {
         float entryTime = Math_Max(txEntry, tyEntry);
         float exitTime = Math_Min(txExit, tyExit);
 
-        if (entryTime > exitTime || entryTime < 0.0f || entryTime > 1.0f)
-            return false;
+        if (entryTime > exitTime || entryTime < 0.0f || entryTime > 1.0f) return false;
 
         firstTimeOfCollision = entryTime;
         return true;

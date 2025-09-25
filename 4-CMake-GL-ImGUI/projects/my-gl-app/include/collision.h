@@ -101,6 +101,7 @@ namespace Collision {
         return CollisionIntersection_CircleCircle_Dynamic(c1, vel1, c2, vel2, firstTimeOfCollision);
     }
 
+	//simple collision between circle and AABB d + s
     inline bool CollisionIntersection_CircleAABB(const Circle& c, const Vector2D& velC, const AABB& aabb, const Vector2D& velAABB, float& firstTimeOfCollision) {
         if (CollisionIntersection_CircleAABB_Static(c, aabb))
             return true;

@@ -180,45 +180,46 @@ public:
     }
 
     void run() {
-        Vector2D movement(0, 0);
         while (glfwGetKey(m_window, GLFW_KEY_ESCAPE) != GLFW_PRESS && !glfwWindowShouldClose(m_window)) {
+            Vector2D movement(0, 0);
             //renderer::update(m_window);
             if (InputHandler::isKeyHeld(GLFW_KEY_A))
-                renderer::objects.find("player")->second.movex(-0.01f);
-                //movement.x -= 0.01f;
+                //renderer::objects.find("player")->second.movex(-0.01f);
+                movement.x -= 0.01f;
             if (InputHandler::isKeyHeld(GLFW_KEY_D))
-                renderer::objects.find("player")->second.movex(0.01f);
-                //movement.x += 0.01f;    
+                //renderer::objects.find("player")->second.movex(0.01f);
+                movement.x += 0.01f;    
             if (InputHandler::isKeyHeld(GLFW_KEY_W))
-                renderer::objects.find("player")->second.movey(0.01f);
-                //movement.y += 0.01f;
+                //renderer::objects.find("player")->second.movey(0.01f);
+                movement.y += 0.01f;
             if (InputHandler::isKeyHeld(GLFW_KEY_S))
-                renderer::objects.find("player")->second.movey(-0.01f);
-                //movement.y -= 0.01f;
+                //renderer::objects.find("player")->second.movey(-0.01f);
+                movement.y -= 0.01f;
+
 
             Collision::Circle playerCircle = getObjectCircle(renderer::objects["player"]);
-            //bool collided = false;
 
+            //check collision
             for (auto& [name, obj] : renderer::objects) {
                 if (name == "player") continue;
                 Collision::AABB objAABB = getObjectAABB(obj);
                 float firstCollisionTime = 0.0f;
 
-                if (Collision::CollisionIntersection_CircleAABB(playerCircle, movement, objAABB, Vector2D(0, 0), firstCollisionTime)) {
+                if (Collision::CollisionIntersection_CircleAABB(playerCircle, movement, objAABB, Vector2D(0, 0), firstCollisionTime) || Collision::CollisionIntersection_CircleAABB_Static(playerCircle, objAABB)) {
                     UI::debugMessages.push_back("Collision with " + name + "!");
-                    //collided = true;
-					//std::cout << collided << std::endl;
-                    //break;
                 }
                 else {
                     UI::debugMessages.push_back("no collision with " + name + "!");
                 }
             }
+
             /*
             if (collided) {
                 renderer::objects["player"].movex(movement.x);
                 renderer::objects["player"].movey(movement.y);
             }*/
+            renderer::objects["player"].movex(movement.x);
+            renderer::objects["player"].movey(movement.y);
 
             render();
             //update();

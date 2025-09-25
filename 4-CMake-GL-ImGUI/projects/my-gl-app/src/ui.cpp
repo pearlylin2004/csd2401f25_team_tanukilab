@@ -35,6 +35,7 @@ namespace UI {
         }
         if (!circles.empty() && ImGui::Button("Remove Last Circle")) {
             circles.pop_back();
+            debugMessages.push_back("Removed a circle. Total circles: " + std::to_string(circles.size()));
         }
         ImGui::Separator();
         for (size_t i = 0; i < circles.size(); i++) {
