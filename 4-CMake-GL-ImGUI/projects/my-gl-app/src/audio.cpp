@@ -94,6 +94,40 @@ FMOD::Channel* AudioSystem::playSound(soundID id, float volume) {
 
 	return channel;
 }
+
+void AudioSystem::toggleSoundPause(soundID id) {
+	size_t pos = static_cast<size_t>(id);
+	bool isPaused = false;
+
+	if (channels[pos]) {
+		FMODErrorCheck(channels[pos]->getPaused(&isPaused));
+		// if paused, resume playing, if playing, pause
+		FMODErrorCheck(channels[pos]->setPaused(!isPaused));
+	}
+}
+
+void AudioSystem::toggleAllSoundPause() {
+	for (size_t i = 0; i < channels.size(); ++i) {
+		if (channels[i]) {
+			bool isPaused = false;
+			FMODErrorCheck(channels[i]->getPaused(&isPaused));
+			FMODErrorCheck(channels[i]->setPaused(!isPaused));
+		}
+	}
+}
+
+bool AudioSystem::isSoundPaused(soundID id) {
+	size_t pos = static_cast<size_t>(id);
+	bool isPaused = false;
+
+	if (channels[pos]) {
+		FMODErrorCheck(channels[pos]->getPaused(&isPaused));
+		return isPaused;
+	}
+
+	return false;
+}
+
 void AudioSystem::stopSound(soundID id) {
 	size_t pos = static_cast<size_t>(id);
 
