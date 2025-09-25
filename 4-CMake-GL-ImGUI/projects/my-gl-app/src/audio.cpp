@@ -103,6 +103,13 @@ void AudioSystem::stopSound(soundID id) {
 	}
 }
 
+void AudioSystem::setSoundVolume(soundID id, float volume) {
+	size_t pos = static_cast<size_t>(id);
+
+	if (channels[pos])
+		FMODErrorCheck(channels[pos]->setVolume(volume));
+}
+
 bool AudioSystem::isSoundPlaying(soundID id) {
 	size_t pos = static_cast<size_t>(id);
 

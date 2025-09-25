@@ -24,6 +24,7 @@ public:
 	bool loadSound(soundID id, const std::string& filePath, bool loop = false);
 	FMOD::Channel* playSound(soundID id, float volume = 1.0f);
 
+	void setSoundVolume(soundID id, float volume); // 0.0f (muted) to 1.0f (full)
 	void stopSound(soundID id); 
 	bool isSoundPlaying(soundID id); // to check whether channel still alive (ie. sound finished playing)
 
