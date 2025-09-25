@@ -94,6 +94,26 @@ FMOD::Channel* AudioSystem::playSound(soundID id, float volume) {
 
 	return channel;
 }
+void AudioSystem::stopSound(soundID id) {
+	size_t pos = static_cast<size_t>(id);
+
+	if (channels[pos]) {
+		FMODErrorCheck(channels[pos]->stop());
+		channels[pos] = nullptr;
+	}
+}
+
+bool AudioSystem::isSoundPlaying(soundID id) {
+	size_t pos = static_cast<size_t>(id);
+
+	if (channels[pos]) {
+		bool isPlaying = false;
+		FMODErrorCheck(channels[pos]->isPlaying(&isPlaying));
+		return isPlaying;
+	}
+	return false;
+}
+
 /* HELPER FUNCTION */
 std::string AudioSystem::soundIDToFilePath(soundID id) {
 	// for now file paths are hardcoded, to change once deserialization is implemented

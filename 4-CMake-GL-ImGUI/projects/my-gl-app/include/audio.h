@@ -23,14 +23,20 @@ public:
 
 	bool loadSound(soundID id, const std::string& filePath, bool loop = false);
 	FMOD::Channel* playSound(soundID id, float volume = 1.0f);
+
+	void stopSound(soundID id); 
+	bool isSoundPlaying(soundID id); // to check whether channel still alive (ie. sound finished playing)
+
 	static void FMODErrorCheck(FMOD_RESULT result);
 
 private: 
 	AudioSystem() : system(nullptr) {}
 	~AudioSystem() { shutdown(); } // auto shutdown once instance is destroyed
+
 	// helper function to convert soundID to file path
 	// currently hardcoded the path, to change once deserialization is implemented
 	std::string soundIDToFilePath(soundID id);
+
 	FMOD::System* system;
 	std::vector<FMOD::Sound*> sounds;
 	std::vector<FMOD::Channel*> channels;
