@@ -21,6 +21,8 @@ public:
 	void update();
 	void shutdown();
 
+	bool loadSound(soundID id, const std::string& filePath, bool loop = false);
+	FMOD::Channel* playSound(soundID id, float volume = 1.0f);
 	static void FMODErrorCheck(FMOD_RESULT result);
 
 private: 
