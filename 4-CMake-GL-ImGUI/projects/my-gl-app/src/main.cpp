@@ -63,8 +63,6 @@ public:
     }
 
     void update() {
-        /* Poll for User Input */
-
         m_angleOfRotation += m_rotationSpeed;
     }
 
