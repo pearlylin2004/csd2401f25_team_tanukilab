@@ -180,6 +180,7 @@ public:
     }
 
     void run() {
+        renderer::objects["player"].translate = glm::vec3(0, 0, 0.0f);
         while (glfwGetKey(m_window, GLFW_KEY_ESCAPE) != GLFW_PRESS && !glfwWindowShouldClose(m_window)) {
             Vector2D movement(0, 0);
             //renderer::update(m_window);
@@ -198,26 +199,22 @@ public:
 
 
             Collision::Circle playerCircle = getObjectCircle(renderer::objects["player"]);
-
+            float firstCollisionTime = 0.0f;
             //check collision
             for (auto& [name, obj] : renderer::objects) {
                 if (name == "player") continue;
                 Collision::AABB objAABB = getObjectAABB(obj);
-                float firstCollisionTime = 0.0f;
+                Vector2D objVel{ 0.0f, 0.0f };
 
-                if (Collision::CollisionIntersection_CircleAABB(playerCircle, movement, objAABB, Vector2D(0, 0), firstCollisionTime) || Collision::CollisionIntersection_CircleAABB_Static(playerCircle, objAABB)) {
+                if (Collision::CollisionIntersection_CircleAABB_Dynamic(playerCircle, movement, objAABB, objVel, firstCollisionTime)) {
                     UI::debugMessages.push_back("Collision with " + name + "!");
+                    //movement.x *= firstCollisionTime;
+                    //movement.y *= firstCollisionTime;
                 }
                 else {
                     UI::debugMessages.push_back("no collision with " + name + "!");
                 }
             }
-
-            /*
-            if (collided) {
-                renderer::objects["player"].movex(movement.x);
-                renderer::objects["player"].movey(movement.y);
-            }*/
             renderer::objects["player"].movex(movement.x);
             renderer::objects["player"].movey(movement.y);
 

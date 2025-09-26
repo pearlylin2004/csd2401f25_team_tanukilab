@@ -10,12 +10,14 @@
 /* End Header **************************************************************************/
 
 #include "collision.h"
+#include <iostream>
 
 namespace Collision {
     //all can change to fit our game later
     f64 g_fixedDT = 0.016;
     f64 g_dt = 0.016;
     f64 g_appTime = 0.0;
+    const float EPSILON = 1e-5f;
 
     //AABB
     bool CollisionIntersection_RectRect_Static(const AABB& aabb1, const AABB& aabb2)
@@ -87,7 +89,7 @@ namespace Collision {
         float dy = c2.getCenter().y - c1.getCenter().y;
         float distanceSq = dx * dx + dy * dy;
         float radiusSum = c1.getRadius() + c2.getRadius();
-        return distanceSq <= radiusSum * radiusSum;
+        return distanceSq <= (radiusSum * radiusSum + EPSILON);
     }
     bool CollisionIntersection_CircleCircle_Dynamic(const Circle& c1, const Vector2D& vel1, const Circle& c2, const Vector2D& vel2, float& firstTimeOfCollision)
     {
@@ -104,11 +106,8 @@ namespace Collision {
         if (discriminant < 0.0f || a == 0.0f)
             return false;
 
-        float t = (-b - Math_Sqrt(discriminant)) / (2 * a);
-        if (t < 0.0f || t > 1.0f)
+        if (discriminant < -EPSILON || a == 0.0f)
             return false;
-
-        firstTimeOfCollision = t;
         return true;
     }
 
@@ -127,7 +126,7 @@ namespace Collision {
         float dx = center.x - closestX;
         float dy = center.y - closestY;
 
-        return (dx * dx + dy * dy) <= radius * radius;
+        return (dx * dx + dy * dy) <= (radius * radius + EPSILON);
     }
     bool CollisionIntersection_CircleAABB_Dynamic(const Circle& c, const Vector2D& velC, const AABB& aabb, const Vector2D& velAABB, float& firstTimeOfCollision)
     {
@@ -141,7 +140,7 @@ namespace Collision {
         float dy = c.getCenter().y - closestY;
 
         float distSq = dx * dx + dy * dy;
-        if (distSq <= c.getRadius() * c.getRadius()) {
+        if (distSq <= c.getRadius() * c.getRadius() + EPSILON) {
             firstTimeOfCollision = 0.0f;
             return true;
         }
