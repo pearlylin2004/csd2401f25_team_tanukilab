@@ -35,3 +35,42 @@ void GameObjectManager::getAllGameObjects(std::vector<GameObject*>& gameObjects)
 	}
 }
 
+void GameObjectManager::init()
+{
+	std::ifstream is{ "shaders/temp_serialize.txt" };
+	if (!is)
+		std::cout << "file not found \n";
+	std::cout << "file opened\n";
+	std::string checker{};
+	std::string objectName;
+	std::string shape;
+	while (!is.eof())
+	{
+		for (; is >> checker, checker == "object";);
+		if (checker == "object")
+		{
+			is >> objectName;
+			std::unique_ptr<GameObject> newObject = std::make_unique<GameObject>(objectName);
+			m_gameObjects.emplace(objectName, std::move(newObject));
+		}
+		for (; is >> checker, checker == "renderer";);
+		if (checker == "renderer")
+		{
+			Render* renderptr = m_gameObjects[objectName]->addComponent<Render>();
+			is >> shape;
+			if (shape == "square")
+			{
+				renderptr->modelRef = renderer::models[static_cast<int>(shape::square)];
+			}
+		}
+		for (; is >> checker, checker == "transform";);
+		if (checker == "transform")
+		{
+			Transform* transformptr = m_gameObjects[objectName]->addComponent<Transform>();
+			is >> transformptr->x >> transformptr->y >> transformptr->z;
+			is >> transformptr->rotation;
+			is >> transformptr->scaleX >> transformptr->scaleY >> transformptr->scaleZ;
+		}
+	}
+}
+

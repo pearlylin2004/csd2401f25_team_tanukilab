@@ -1,7 +1,7 @@
 #include "renderer.h"
 
 std::vector<renderer::model> renderer::models;
-std::map<std::string, renderer::object> renderer::objects;
+//std::map<std::string, renderer::object> renderer::objects;
 GLuint renderer::shdr_pgm;
 renderer::camera renderer::cam;
 
@@ -13,7 +13,7 @@ void renderer::init(int w, int h)
 	cam.init(w, h);
 	models.push_back(setup_square(glm::vec3(1.f, 1.f, 1.f)));
 	models.push_back(setup_circle(glm::vec3(1.f, 0.f, 0.f), 20));
-	object obj1;
+	/*object obj1;
 	objects.emplace("player", obj1);
 	objects.emplace("platform",obj1);
 	objects["player"].model_ref = models[0];
@@ -25,7 +25,7 @@ void renderer::init(int w, int h)
 		if ((*i).first == "player")
 			i->second.translate.z = 0.01;
 		(*i).second.update();
-	}
+	}*/
 	setup_shdrpgm();
 }
 
@@ -144,88 +144,88 @@ void renderer::setup_shdrpgm()//const glm::mat4& p_modelMat)
 	}*/
 }
 
-void renderer::draw()
-{
-	glUseProgram(shdr_pgm);
-	GLint vTransformView = glGetUniformLocation(shdr_pgm, "V");
-	glUniformMatrix4fv(vTransformView, 1, GL_FALSE, glm::value_ptr(cam.view));
-	GLint vTransformProj = glGetUniformLocation(shdr_pgm, "P");
-	glUniformMatrix4fv(vTransformProj, 1, GL_FALSE, glm::value_ptr(cam.proj));
-	for (std::map<std::string, object>::iterator i = objects.begin(); i != objects.end(); ++i)
-	{
-		(*i).second.update();
-		(*i).second.draw();
-	}
-}
+//void renderer::draw()
+//{
+//	glUseProgram(shdr_pgm);
+//	GLint vTransformView = glGetUniformLocation(shdr_pgm, "V");
+//	glUniformMatrix4fv(vTransformView, 1, GL_FALSE, glm::value_ptr(cam.view));
+//	GLint vTransformProj = glGetUniformLocation(shdr_pgm, "P");
+//	glUniformMatrix4fv(vTransformProj, 1, GL_FALSE, glm::value_ptr(cam.proj));
+//	for (std::map<std::string, object>::iterator i = objects.begin(); i != objects.end(); ++i)
+//	{
+//		(*i).second.update();
+//		(*i).second.draw();
+//	}
+//}
 
-void renderer::update()
-{
-	cam.update();
-	draw();
-	
-}
+//void renderer::update()
+//{
+//	cam.update();
+//	draw();
+//	
+//}
 
-void renderer::object::init()
-{
-	scaling = glm::vec3(1, 1, 1);
-	rot = 0;
-	translate = glm::vec3(5, 0, 0);
-}
+//void renderer::object::init()
+//{
+//	scaling = glm::vec3(1, 1, 1);
+//	rot = 0;
+//	translate = glm::vec3(5, 0, 0);
+//}
 
-void renderer::object::update()
-{
-	float x{}, y{}, rot{};
-	//if(keyinput == 'A') x = -2;
-	//if(keyinput == 'D') x = 2;
-	//if(keyinput == 'W') y = 2;
-	//if(keyinput == 'S') y = -2;
+//void renderer::object::update()
+//{
+//	float x{}, y{}, rot{};
+//	//if(keyinput == 'A') x = -2;
+//	//if(keyinput == 'D') x = 2;
+//	//if(keyinput == 'W') y = 2;
+//	//if(keyinput == 'S') y = -2;
+//
+//	
+//	movex(x);
+//	movey(y);
+//	rotate(rot);
+//	float angle = glm::radians(rot);
+//	mdl_world = glm::mat4(1.f);
+//	mdl_world = glm::scale(mdl_world, scaling);
+//	mdl_world = glm::rotate(mdl_world, angle, glm::vec3(0, 0, 1.f));
+//	mdl_world = glm::translate(mdl_world, translate);
+//}
 
-	
-	movex(x);
-	movey(y);
-	rotate(rot);
-	float angle = glm::radians(rot);
-	mdl_world = glm::mat4(1.f);
-	mdl_world = glm::scale(mdl_world, scaling);
-	mdl_world = glm::rotate(mdl_world, angle, glm::vec3(0, 0, 1.f));
-	mdl_world = glm::translate(mdl_world, translate);
-}
 
 
+//void renderer::object::draw()
+//{
+//	
+//	glBindVertexArray(model_ref.vaoid);
+//	GLint vTransformLoc = glGetUniformLocation(shdr_pgm, "M");
+//	glUniformMatrix4fv(vTransformLoc, 1, GL_FALSE, glm::value_ptr(mdl_world));
+//
+//	//std::cout << glm::to_string(objects.find("player")->second.mdl_world) << std::endl;
+//
+//	//GLint vTransformLoc = glGetUniformLocation(mdl.shdr_pgm, "vertexTransform");
+//	//glUniformMatrix4fv(vTransformLoc, 1, GL_FALSE, &p_modelMat[0][0]);
+//	if (model_ref.shape == shape::square)
+//		//glDrawElements(model_ref.primitive_type, model_ref.primitive_cnt, GL_UNSIGNED_SHORT, nullptr);
+//		glDrawElements(GL_TRIANGLES, model_ref.elem_cnt, GL_UNSIGNED_SHORT, nullptr);
+//	else if (model_ref.shape == shape::circle)
+//		glDrawArrays(model_ref.primitive_type, 0, model_ref.draw_cnt);
+//	glBindVertexArray(0);
+//}
 
-void renderer::object::draw()
-{
-	
-	glBindVertexArray(model_ref.vaoid);
-	GLint vTransformLoc = glGetUniformLocation(shdr_pgm, "M");
-	glUniformMatrix4fv(vTransformLoc, 1, GL_FALSE, glm::value_ptr(mdl_world));
-
-	//std::cout << glm::to_string(objects.find("player")->second.mdl_world) << std::endl;
-
-	//GLint vTransformLoc = glGetUniformLocation(mdl.shdr_pgm, "vertexTransform");
-	//glUniformMatrix4fv(vTransformLoc, 1, GL_FALSE, &p_modelMat[0][0]);
-	if (model_ref.shape == shape::square)
-		//glDrawElements(model_ref.primitive_type, model_ref.primitive_cnt, GL_UNSIGNED_SHORT, nullptr);
-		glDrawElements(GL_TRIANGLES, model_ref.elem_cnt, GL_UNSIGNED_SHORT, nullptr);
-	else if (model_ref.shape == shape::circle)
-		glDrawArrays(model_ref.primitive_type, 0, model_ref.draw_cnt);
-	glBindVertexArray(0);
-}
-
-void renderer::object::movex(float x)
-{
-	translate.x += x;
-}
-
-void renderer::object::movey(float y)
-{
-	translate.y += y;
-}
-
-void renderer::object::rotate(float thetha)
-{
-	rot += thetha;
-}
+//void renderer::object::movex(float x)
+//{
+//	translate.x += x;
+//}
+//
+//void renderer::object::movey(float y)
+//{
+//	translate.y += y;
+//}
+//
+//void renderer::object::rotate(float thetha)
+//{
+//	rot += thetha;
+//}
 
 void renderer::camera::init(int w, int h)
 {

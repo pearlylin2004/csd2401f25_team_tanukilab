@@ -1,6 +1,7 @@
 #pragma once
 #include <string>
 #include <memory> //for unique_ptr
+#include <renderer.h>
 
 
 // basic component class
@@ -17,9 +18,10 @@ public:
     Transform(float x, float y, float rot, float sx, float sy) 
         : x(x), y(y), rotation(rot), scaleX(sx), scaleY(sy) {}
 
-    float x = 0.0f, y = 0.0f;
+    float x{ 0.f }, y{ 0.f }, z{ 0.f };
     float rotation = 0.0f;
-    float scaleX = 1.0f, scaleY = 1.0f;
+    float scaleX = 1.0f, scaleY = 1.0f, scaleZ{ 0.f };
+    glm::mat4 mdlWorld;
 };
 
 struct Velocity : public Component {
@@ -34,13 +36,12 @@ public:
 struct Render : public Component {
     // idk add render stuff here
 public:
-    Render(const std::string& model = "square") : modelType(model) {}
+    Render() = default;
 
 public:
-    std::string modelType = "square"; // "square", "circle", etc.
-
     bool visible = true;
-
+    std::string texID;
+    renderer::model modelRef;
 };
 
 struct Physics : public Component {

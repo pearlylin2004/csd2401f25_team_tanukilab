@@ -46,13 +46,7 @@ public:
         //m_cube->initialize();
         InputHandler::init(m_window);
         renderer::init(p_width, p_height);
-
-		//create new player object using game object manager
-		GameObject* player = m_manager.createGameObject("player");
-		player->addComponent<Transform>();
-		player->addComponent<Velocity>(0.0f, 0.0f);
-		player->addComponent<Input>(1.0f);
-        player->addComponent<Render>();
+        m_manager.init();
 
 
 
@@ -98,7 +92,7 @@ public:
         //glm::mat4 modelMat = glm::mat4(1.0f);
         //modelMat = glm::rotate(modelMat, m_angleOfRotation, glm::vec3(0.0f, 0.0f, 1.0f));
         //m_cube->render(modelMat);
-        renderer::update();
+        //renderer::update();
 
         // Start ImGui frame
         ImGui_ImplOpenGL3_NewFrame();
