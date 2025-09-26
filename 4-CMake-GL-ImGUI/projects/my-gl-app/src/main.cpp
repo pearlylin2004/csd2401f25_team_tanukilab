@@ -71,6 +71,8 @@ public:
 
     void update() {
         /* Poll for User Input */
+        glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         InputHandler::update();
 
         const float deltaTime = 1.0f / 60.0f; // simulate 60fps
@@ -82,12 +84,11 @@ public:
         m_physicsSystem.update(m_manager, deltaTime);
         m_renderSystem.update(m_manager, deltaTime);
 
-        m_angleOfRotation += m_rotationSpeed;
+        //m_angleOfRotation += m_rotationSpeed;
     }
 
     void render() {
-        glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        
 
         //glm::mat4 modelMat = glm::mat4(1.0f);
         //modelMat = glm::rotate(modelMat, m_angleOfRotation, glm::vec3(0.0f, 0.0f, 1.0f));
@@ -117,20 +118,18 @@ public:
         // Render ImGui
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+        const float deltaTime = 1.0f / 60.0f;
+        
 
         glfwSwapBuffers(m_window);
     }
 
     void run() {
         
-        while (glfwGetKey(m_window, GLFW_KEY_ESCAPE) != GLFW_PRESS && !glfwWindowShouldClose(m_window)) {
-            
-			
-
+        while (glfwGetKey(m_window, GLFW_KEY_ESCAPE) != GLFW_PRESS && !glfwWindowShouldClose(m_window)) 
+        {
             update();
             render();
-            //update();
-            //renderer::draw();
             glfwPollEvents();
         }
     }

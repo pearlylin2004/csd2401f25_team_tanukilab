@@ -47,10 +47,13 @@ void RenderSystem::update(GameObjectManager& manager, float deltaTime) {
 	std::vector<GameObject*> gameObjects;
 	manager.getAllGameObjects(gameObjects);
 
+	renderer::cam.update();
 	glUseProgram(renderer::shdr_pgm);
 	GLint vTransformView = glGetUniformLocation(renderer::shdr_pgm, "V");
+	//renderer::cam.view = glm::mat4{ 1 };
 	glUniformMatrix4fv(vTransformView, 1, GL_FALSE, glm::value_ptr(renderer::cam.view));
 	GLint vTransformProj = glGetUniformLocation(renderer::shdr_pgm, "P");
+	//renderer::cam.proj = glm::mat4{ 1 };
 	glUniformMatrix4fv(vTransformProj, 1, GL_FALSE, glm::value_ptr(renderer::cam.proj));
 
 	for (auto object : gameObjects) {
