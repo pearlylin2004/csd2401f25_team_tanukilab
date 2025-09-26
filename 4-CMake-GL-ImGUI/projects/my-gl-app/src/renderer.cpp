@@ -12,7 +12,7 @@ void renderer::init(int w, int h)
 {
 	cam.init(w, h);
 	models.push_back(setup_square(glm::vec3(1.f, 1.f, 1.f)));
-	models.push_back(setup_circle(glm::vec3(1.f, 0.f, 0.f), 20));
+	models.push_back(setup_circle(glm::vec3(0.5f, 0.5f, 0.5f), 20));
 	/*object obj1;
 	objects.emplace("player", obj1);
 	objects.emplace("platform",obj1);

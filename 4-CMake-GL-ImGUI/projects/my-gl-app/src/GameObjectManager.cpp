@@ -68,6 +68,10 @@ void GameObjectManager::init()
 			{
 				renderptr->modelRef = renderer::models[static_cast<int>(shape::square)];
 			}
+			if (shape == "circle")
+			{
+				renderptr->modelRef = renderer::models[static_cast<int>(shape::circle)];
+			}
 			std::cout << shape << "\n";
 		}
 		/*for (; is >> checker, checker == "transform";)
