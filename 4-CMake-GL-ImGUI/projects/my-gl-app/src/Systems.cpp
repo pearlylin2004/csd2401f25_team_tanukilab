@@ -63,9 +63,9 @@ void RenderSystem::update(GameObjectManager& manager, float deltaTime) {
 			Render* render = object->getComponent<Render>();
 			float angle = glm::radians(transform->rotation);
 			transform->mdlWorld = glm::mat4{ 1 };
-			transform->mdlWorld = glm::scale(transform->mdlWorld, glm::vec3(transform->scaleX, transform->scaleY, transform->scaleZ));
-			transform->mdlWorld = glm::rotate(transform->mdlWorld, angle, glm::vec3(0, 0, 1.f));
 			transform->mdlWorld = glm::translate(transform->mdlWorld, glm::vec3(transform->x, transform->y, transform->z));
+			transform->mdlWorld = glm::rotate(transform->mdlWorld, angle, glm::vec3(0, 0, 1.f));
+			transform->mdlWorld = glm::scale(transform->mdlWorld, glm::vec3(transform->scaleX, transform->scaleY, transform->scaleZ));
 
 			glBindVertexArray(render->modelRef.vaoid);
 			GLint vTransformLoc = glGetUniformLocation(renderer::shdr_pgm, "M");

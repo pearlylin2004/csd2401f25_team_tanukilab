@@ -60,7 +60,7 @@ public:
     bool buoancy = false;
 
     const float gravity = -2.0f;      // gravity pulling down
-    const float waterBounce = 60.0f;   // upward velocity when entering water
+    const float waterBounce = 2.0f;   // upward velocity when entering water
     const float damping = 0.98f;       // slows motion gradually
     const float floorY = -8.0f;       // bottom limit
 };
