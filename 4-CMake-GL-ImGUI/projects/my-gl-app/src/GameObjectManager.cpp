@@ -86,6 +86,15 @@ void GameObjectManager::init()
 			std::cout << "rotation :" << transformptr->rotation << "\n";
 			std::cout << "scale :" << transformptr->scaleX << " ," << transformptr->scaleY << " ," << transformptr->scaleZ << "\n";
 		}
+		if (checker == "physics") {
+			Physics* phyptr = m_gameObjects[objectName]->addComponent<Physics>();
+			is >> phyptr->inWater >> phyptr->buoancy;
+			std::cout << "inwater : " << phyptr->inWater << ", " << phyptr->buoancy << "\n";
+		}
+
+		m_gameObjects["player"]->addComponent<Input>(1.f);
+		m_gameObjects[objectName]->addComponent<Velocity>();
+		
 	}
 }
 

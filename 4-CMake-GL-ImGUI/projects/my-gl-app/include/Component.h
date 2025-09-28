@@ -47,7 +47,22 @@ public:
 struct Physics : public Component {
     //idk add physics stuff here
 public:
+    float posX;
+    float posY;
+    float velY;
+    float velX;
 
+    bool inWaterTriggered; // true only when W is pressed
+
+   // Physics(float x = 0.0f, float y = 0.0f);
+
+    bool inWater = false;
+    bool buoancy = false;
+
+    const float gravity = -9.81f * 5;      // gravity pulling down
+    const float waterBounce = 60.0f;   // upward velocity when entering water
+    const float damping = 0.98f;       // slows motion gradually
+    const float floorY = -50.0f;       // bottom limit
 };
 
 struct Input : public Component {

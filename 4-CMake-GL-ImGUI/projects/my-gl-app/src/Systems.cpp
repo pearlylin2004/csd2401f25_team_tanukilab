@@ -18,24 +18,24 @@ void InputSystem::update(GameObjectManager& manager, float deltaTime) {
 		//check for objects that have input 
 		if (iterator->hasComponent<Input>()) {
 			Input* input = iterator->getComponent<Input>();
-			if (iterator->hasComponent<Velocity>()) {//player got that velocity in him
-				Velocity* velocity = iterator->getComponent<Velocity>();
+			if (iterator->hasComponent<Physics>()) {//player got that velocity in him
+				Physics* velocity = iterator->getComponent<Physics>();
 
 				//reset to 0 every frame
-				velocity->dx = 0.0f;
-				velocity->dy = 0.0f;
+				velocity->velX = 0.0f;
+				velocity->velY = 0.0f;
 
 				if (InputHandler::isKeyDown(GLFW_KEY_W)) {
-					velocity->dy = input->moveSpeed;
+					velocity->velY = input->moveSpeed;
 				}
 				if (InputHandler::isKeyDown(GLFW_KEY_S)) {
-					velocity->dy = -input->moveSpeed;
+					velocity->velY = -input->moveSpeed;
 				}
 				if (InputHandler::isKeyDown(GLFW_KEY_A)) {
-					velocity->dx = -input->moveSpeed;
+					velocity->velX = -input->moveSpeed;
 				}
 				if (InputHandler::isKeyDown(GLFW_KEY_D)) {
-					velocity->dx = input->moveSpeed;
+					velocity->velX = input->moveSpeed;
 				}
 				//so far so good i think?
 			}
@@ -85,11 +85,37 @@ void PhysicsSystem::update(GameObjectManager& manager, float deltaTime) {
 	manager.getAllGameObjects(gameObjects);
 
 	for(auto object : gameObjects) {
-		if (object->hasComponent<Transform>() && object->hasComponent<Velocity>()) {
+		if (object->hasComponent<Transform>() && object->hasComponent<Physics>()) {
 			Transform* transform = object->getComponent<Transform>();
-			Velocity* velocity = object->getComponent<Velocity>();
-			transform->x += velocity->dx * deltaTime;
-			transform->y += velocity->dy * deltaTime;
+			Physics* physics = object->getComponent<Physics>();
+			transform->x += physics->velX * deltaTime;
+			transform->y += physics->velY * deltaTime;
+		
+
+		/*if (object->hasComponent<Physics>() && !object->hasComponent<Input>()) {
+			*/
+			/*Physics* physics = object->getComponent<Physics>();*/
+
+		if (InputHandler::isKeyDown(GLFW_KEY_B)) { ///Needa update
+			if (!physics->inWaterTriggered) {
+				physics->velY = physics->waterBounce;     // instant upward push
+				physics->inWaterTriggered = true;
+			}
+		}
+
+		if (physics->inWaterTriggered) {
+			// Apply gravity and damping only after entering water
+			physics->velY += physics->gravity * deltaTime;
+			physics->velY *= physics->damping;
+
+			physics->posY += physics->velY * deltaTime;
+
+			// Floor collision
+			if (physics->posY < physics->floorY) {
+				physics->posY = physics->floorY;
+				physics->velY = 0.0f;
+			}
+		}
 		}
 	}
 }
