@@ -1,7 +1,7 @@
 #pragma once
 
-#include <fmod/fmod.hpp>
-#include <fmod/fmod_errors.h>
+#include <../lib/FMOD/fmod.hpp>
+#include <../lib/FMOD/fmod_errors.h>
 #include <vector>
 #include <string>
 #include <iostream>
