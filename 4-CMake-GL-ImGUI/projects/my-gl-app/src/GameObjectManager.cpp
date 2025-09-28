@@ -87,5 +87,8 @@ void GameObjectManager::init()
 			std::cout << "scale :" << transformptr->scaleX << " ," << transformptr->scaleY << " ," << transformptr->scaleZ << "\n";
 		}
 	}
+
+	m_gameObjects["player"]->addComponent<Input>(1.0f);
+	m_gameObjects["player"]->addComponent<Velocity>();
 }
 
