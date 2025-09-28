@@ -35,3 +35,57 @@ void GameObjectManager::getAllGameObjects(std::vector<GameObject*>& gameObjects)
 	}
 }
 
+void GameObjectManager::init()
+{
+	std::ifstream is{ "shaders/temp_serialize.txt" };
+	if (!is) 
+	{
+		std::cerr << "file not found: shaders/temp_serialize.txt\n";
+		return;
+	}
+	std::cout << "file opened\n";
+	std::string checker{};
+	std::string objectName;
+	std::string shape;
+	while (is >> checker)
+	{
+		/*for (; is >> checker, checker == "object";)
+			if (checker == "object") break;*/
+		if (checker == "object")
+		{
+			is >> objectName;
+			std::unique_ptr<GameObject> newObject = std::make_unique<GameObject>(objectName);
+			m_gameObjects.emplace(objectName, std::move(newObject));
+			std::cout << objectName << "\n";
+		}
+		/*for (; is >> checker, checker == "renderer";)
+			if (checker == "renderer") break;*/
+		if (checker == "renderer")
+		{
+			Render* renderptr = m_gameObjects[objectName]->addComponent<Render>();
+			is >> shape;
+			if (shape == "square")
+			{
+				renderptr->modelRef = renderer::models[static_cast<int>(shape::square)];
+			}
+			if (shape == "circle")
+			{
+				renderptr->modelRef = renderer::models[static_cast<int>(shape::circle)];
+			}
+			std::cout << shape << "\n";
+		}
+		/*for (; is >> checker, checker == "transform";)
+			if (checker == "transform") break;*/
+		if (checker == "transform")
+		{
+			Transform* transformptr = m_gameObjects[objectName]->addComponent<Transform>();
+			is >> transformptr->x >> transformptr->y >> transformptr->z;
+			is >> transformptr->rotation;
+			is >> transformptr->scaleX >> transformptr->scaleY >> transformptr->scaleZ;
+			std::cout << "transform :" << transformptr->x << " ," << transformptr->y << " ," << transformptr->z << "\n";
+			std::cout << "rotation :" << transformptr->rotation << "\n";
+			std::cout << "scale :" << transformptr->scaleX << " ," << transformptr->scaleY << " ," << transformptr->scaleZ << "\n";
+		}
+	}
+}
+

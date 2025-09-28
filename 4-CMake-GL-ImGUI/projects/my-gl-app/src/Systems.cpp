@@ -1,10 +1,7 @@
 #pragma once
 
-#include "systems.h"
-#include "Component.h"
-#include "renderer.h" //RenderSystem needs the full definition of the renderer
-#include "input.h" //InputSystem needs access to the InputHandler
-#include <vector>
+#include "Systems.h"
+
 
 //here we go buddies
 
@@ -50,18 +47,35 @@ void RenderSystem::update(GameObjectManager& manager, float deltaTime) {
 	std::vector<GameObject*> gameObjects;
 	manager.getAllGameObjects(gameObjects);
 
+	renderer::cam.update();
+	glUseProgram(renderer::shdr_pgm);
+	GLint vTransformView = glGetUniformLocation(renderer::shdr_pgm, "V");
+	//renderer::cam.view = glm::mat4{ 1 };
+	glUniformMatrix4fv(vTransformView, 1, GL_FALSE, glm::value_ptr(renderer::cam.view));
+	GLint vTransformProj = glGetUniformLocation(renderer::shdr_pgm, "P");
+	//renderer::cam.proj = glm::mat4{ 1 };
+	glUniformMatrix4fv(vTransformProj, 1, GL_FALSE, glm::value_ptr(renderer::cam.proj));
+
 	for (auto object : gameObjects) {
-		if (object->hasComponent<Render>() && object->hasComponent<Transform>()) {
+		if (object->hasComponent<Render>() && object->hasComponent<Transform>()) 
+		{
 			Transform* transform = object->getComponent<Transform>();
 			Render* render = object->getComponent<Render>();
+			float angle = glm::radians(transform->rotation);
+			transform->mdlWorld = glm::mat4{ 1 };
+			transform->mdlWorld = glm::scale(transform->mdlWorld, glm::vec3(transform->scaleX, transform->scaleY, transform->scaleZ));
+			transform->mdlWorld = glm::rotate(transform->mdlWorld, angle, glm::vec3(0, 0, 1.f));
+			transform->mdlWorld = glm::translate(transform->mdlWorld, glm::vec3(transform->x, transform->y, transform->z));
 
-			if (render->visible) {
-				auto iterator = renderer::objects.find(object->getName());
-				if (iterator != renderer::objects.end()) {
-					iterator->second.translate.x = transform->x;
-					iterator->second.translate.y = transform->y;
-				}
-			}
+			glBindVertexArray(render->modelRef.vaoid);
+			GLint vTransformLoc = glGetUniformLocation(renderer::shdr_pgm, "M");
+			glUniformMatrix4fv(vTransformLoc, 1, GL_FALSE, glm::value_ptr(transform->mdlWorld));
+
+			if (render->modelRef.shape == shape::square)
+				glDrawElements(GL_TRIANGLES, render->modelRef.elem_cnt, GL_UNSIGNED_SHORT, nullptr);
+			else if (render->modelRef.shape == shape::circle)
+				glDrawArrays(render->modelRef.primitive_type, 0, render->modelRef.draw_cnt);
+			glBindVertexArray(0);
 		}
 	}
 }

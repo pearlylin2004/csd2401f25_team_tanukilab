@@ -1,9 +1,10 @@
 #pragma once
-#include "GameObject.h"
+#include <fstream>
 #include <string>
 #include <unordered_map>
 #include <memory>
 #include <vector>
+#include "GameObject.h"
 
 //GameObjectManager should hold every existing GameObject in a smart pointer
 //so when this manager is destroyed, 
@@ -19,6 +20,8 @@ public:
 
 	//used for all the component systems
 	void getAllGameObjects(std::vector<GameObject*>& gameObjects);
+
+	void init();
 
 private:
 	//using unordered map quite a lot huh
