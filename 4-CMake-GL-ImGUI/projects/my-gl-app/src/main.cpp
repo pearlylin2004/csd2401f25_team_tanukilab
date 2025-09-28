@@ -13,51 +13,9 @@
 #include "renderer.h"
 #include "input.h"
 #include "engine.h"
-//class Cube {
-//public:
-//    Cube() : m_programId(0), m_vertexBuffer(0), m_vertexArrayId(0) {}
-//    ~Cube() {
-//        glDeleteBuffers(1, &m_vertexBuffer);
-//        glDeleteVertexArrays(1, &m_vertexArrayId);
-//        glDeleteProgram(m_programId);
-//    }
-//
-//    void initialize() {
-//
-//        m_programId = LoadShaders("shaders/funny.vert", "shaders/funny.frag", true);
-//        m_geometryBuffer = {
-//            //  x      y     z      r     g     b
-//            -0.5f, -0.5f, 0.0f,   0.0f, 1.0f, 1.0f,   // Bottom-left, cyan
-//             0.5f, -0.5f, 0.0f,   1.0f, 0.0f, 1.0f,   // Bottom-right, magenta
-//             0.5f,  0.5f, 0.0f,   1.0f, 1.0f, 0.0f,   // Top-right, yellow
-//
-//             0.5f,  0.5f, 0.0f,   1.0f, 0.0f, 0.0f,   // Top-right (repeat), red
-//            -0.5f,  0.5f, 0.0f,   0.0f, 1.0f, 0.0f,   // Top-left, green
-//            -0.5f, -0.5f, 0.0f,   0.0f, 0.0f, 1.0f    // Bottom-left (repeat), blue
-//        };
-//        glGenVertexArrays(1, &m_vertexArrayId);
-//        glBindVertexArray(m_vertexArrayId);
-//        glGenBuffers(1, &m_vertexBuffer);
-//        glBindBuffer(GL_ARRAY_BUFFER, m_vertexBuffer);
-//        glBufferData(GL_ARRAY_BUFFER, m_geometryBuffer.size() * sizeof(GLfloat), m_geometryBuffer.data(), GL_STATIC_DRAW);
-//        glEnableVertexAttribArray(0);
-//        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (void*)0);
-//        glEnableVertexAttribArray(1);
-//        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (void*)(3 * sizeof(GLfloat)));
-//    }
-//
-//    void render(const glm::mat4& p_modelMat) {
-//        glUseProgram(m_programId);
-//        glBindVertexArray(m_vertexArrayId);
-//        GLint vTransformLoc = glGetUniformLocation(m_programId, "vertexTransform");
-//        glUniformMatrix4fv(vTransformLoc, 1, GL_FALSE, &p_modelMat[0][0]);
-//        glDrawArrays(GL_TRIANGLES, 0, 6);
-//    }
-//
-//private:
-//    GLuint m_programId, m_vertexBuffer, m_vertexArrayId;
-//    std::vector<GLfloat> m_geometryBuffer;
-//};
+#include "GameObjectManager.h"
+#include "Component.h"
+#include "Systems.h"
 
 class GLApp {
 public:
@@ -88,6 +46,9 @@ public:
         //m_cube->initialize();
         InputHandler::init(m_window);
         renderer::init(p_width, p_height);
+        m_manager.init();
+
+
 
         // Setup ImGui
         IMGUI_CHECKVERSION();
@@ -110,18 +71,29 @@ public:
 
     void update() {
         /* Poll for User Input */
+        glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        InputHandler::update();
 
-        m_angleOfRotation += m_rotationSpeed;
+        const float deltaTime = 1.0f / 60.0f; // simulate 60fps
+
+        // input test code
+        /*if (InputHandler::isKeyPressed(GLFW_KEY_SPACE))
+            std::cout << InputHandler::getMouseY() << std::endl;*/
+        m_inputSystem.update(m_manager, deltaTime);
+        m_physicsSystem.update(m_manager, deltaTime);
+        m_renderSystem.update(m_manager, deltaTime);
+
+        //m_angleOfRotation += m_rotationSpeed;
     }
 
     void render() {
-        glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        
 
         //glm::mat4 modelMat = glm::mat4(1.0f);
         //modelMat = glm::rotate(modelMat, m_angleOfRotation, glm::vec3(0.0f, 0.0f, 1.0f));
         //m_cube->render(modelMat);
-        renderer::update();
+        //renderer::update();
 
         // Start ImGui frame
         ImGui_ImplOpenGL3_NewFrame();
@@ -146,28 +118,19 @@ public:
         // Render ImGui
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+        const float deltaTime = 1.0f / 60.0f;
+        
 
         glfwSwapBuffers(m_window);
     }
 
     void run() {
-        while (glfwGetKey(m_window, GLFW_KEY_ESCAPE) != GLFW_PRESS && !glfwWindowShouldClose(m_window)) {
-            //renderer::update(m_window);
-            if (InputHandler::isKeyHeld(GLFW_KEY_A))
-                renderer::objects.find("player")->second.movex(-0.01f);
-            if (InputHandler::isKeyHeld(GLFW_KEY_D))
-                renderer::objects.find("player")->second.movex(0.01f);
-            if (InputHandler::isKeyHeld(GLFW_KEY_W))
-                renderer::objects.find("player")->second.movey(0.01f);
-            if (InputHandler::isKeyHeld(GLFW_KEY_S))
-                renderer::objects.find("player")->second.movey(-0.01f);
-            
-                
+        
+        while (glfwGetKey(m_window, GLFW_KEY_ESCAPE) != GLFW_PRESS && !glfwWindowShouldClose(m_window)) 
+        {
+            update();
             render();
-            //update();
-            //renderer::draw();
-            //glfwPollEvents();
-            InputHandler::update();
+            glfwPollEvents();
         }
     }
 
@@ -176,6 +139,11 @@ public:
     float m_rotationSpeed;
 
 private:
+    GameObjectManager m_manager;
+	InputSystem m_inputSystem;
+	PhysicsSystem m_physicsSystem;
+	RenderSystem m_renderSystem;
+
     GLFWwindow* m_window;
     //std::shared_ptr<Cube> m_cube;
     //renderer::model model;
