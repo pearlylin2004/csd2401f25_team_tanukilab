@@ -105,15 +105,20 @@ void PhysicsSystem::update(GameObjectManager& manager, float deltaTime) {
 
 		if (physics->inWaterTriggered) {
 			// Apply gravity and damping only after entering water
-			physics->velY += physics->gravity * deltaTime;
+			physics->velY += (physics->gravity * 0.3f) * deltaTime;
 			physics->velY *= physics->damping;
 
-			physics->posY += physics->velY * deltaTime;
+
+
+
+			transform->y += physics->velY * deltaTime;
 
 			// Floor collision
-			if (physics->posY < physics->floorY) {
-				physics->posY = physics->floorY;
+			if (transform->y< physics->floorY) {
+				transform->y = physics->floorY;
 				physics->velY = 0.0f;
+
+				physics->inWaterTriggered = false;
 			}
 		}
 		}

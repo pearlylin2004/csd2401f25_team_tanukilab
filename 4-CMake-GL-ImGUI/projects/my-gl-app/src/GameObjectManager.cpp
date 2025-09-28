@@ -93,7 +93,7 @@ void GameObjectManager::init()
 		}
 
 		m_gameObjects["player"]->addComponent<Input>(1.f);
-		m_gameObjects[objectName]->addComponent<Velocity>();
+		/*m_gameObjects[objectName]->addComponent<Velocity>();*/
 		
 	}
 }
