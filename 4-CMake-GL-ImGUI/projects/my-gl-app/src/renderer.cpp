@@ -1,7 +1,7 @@
 #include "renderer.h"
 
 std::vector<renderer::model> renderer::models;
-std::map<std::string, renderer::object> renderer::objects;
+//std::map<std::string, renderer::object> renderer::objects;
 GLuint renderer::shdr_pgm;
 renderer::camera renderer::cam;
 
@@ -13,7 +13,7 @@ void renderer::init(int w, int h)
 	cam.init(w, h);
 	models.push_back(setup_square(glm::vec3(1.f, 1.f, 1.f)));
 	models.push_back(setup_circle(glm::vec3(0.5f, 0.5f, 0.5f), 20));
-	object obj1;
+	/*object obj1;
 	objects.emplace("player", obj1);
 	objects.emplace("platform",obj1);
 	objects["player"].model_ref = models[0];
@@ -25,7 +25,7 @@ void renderer::init(int w, int h)
 		if ((*i).first == "player")
 			i->second.translate.z = 0.01;
 		(*i).second.update();
-	}
+	}*/
 	setup_shdrpgm();
 }
 
@@ -33,14 +33,15 @@ renderer::model renderer::setup_square(glm::vec3 clr)
 {
 	model mdl;
 	std::array<glm::vec2, 4> pos_vtx{ // vertex position attributes
-	glm::vec2(1.f, -1.f), glm::vec2(1.f, 1.f),
-	glm::vec2(-1.f, 1.f), glm::vec2(-1.f, -1.f)
+	glm::vec2(0.5f, -0.5f), glm::vec2(0.5f, 0.5f),
+	glm::vec2(-0.5f, 0.5f), glm::vec2(-0.5f, -0.5f)
 	};
 
 	std::array<glm::vec3, 4> clr_vtx{
 	clr, clr,
 	clr,clr
 	};
+
 	
 	GLsizei position_data_offset = 0;
 	GLsizei position_attribute_size = sizeof(glm::vec2);
@@ -50,7 +51,7 @@ renderer::model renderer::setup_square(glm::vec3 clr)
 	GLsizei color_data_size = color_attribute_size * static_cast<GLsizei>(clr_vtx.size());
 
 	glCreateBuffers(1, &mdl.vbo);
-	glNamedBufferStorage(mdl.vbo, position_data_size + color_data_size, nullptr, GL_DYNAMIC_STORAGE_BIT);// immutable
+	glNamedBufferStorage(mdl.vbo, position_data_size + color_data_size, nullptr, GL_DYNAMIC_STORAGE_BIT);                     // immutable
 	glNamedBufferSubData(mdl.vbo, 0, position_data_size, pos_vtx.data());   // upload positions
 	glNamedBufferSubData(mdl.vbo, color_data_offset, color_data_size, clr_vtx.data());   // upload colors
 
@@ -132,112 +133,117 @@ renderer::model renderer::setup_circle(glm::vec3 clr, int slices)
 	return mdl;
 }
 
-void renderer::setup_shdrpgm()
+void renderer::setup_shdrpgm()//const glm::mat4& p_modelMat)
 {
 	shdr_pgm = LoadShaders("shaders/funny.vert", "shaders/funny.frag", true);
-}
-
-void renderer::draw()
-{
-	glUseProgram(shdr_pgm);
-	GLint vTransformView = glGetUniformLocation(shdr_pgm, "V");
-	glUniformMatrix4fv(vTransformView, 1, GL_FALSE, glm::value_ptr(cam.view));
-	GLint vTransformProj = glGetUniformLocation(shdr_pgm, "P");
-	glUniformMatrix4fv(vTransformProj, 1, GL_FALSE, glm::value_ptr(cam.proj));
-	for (std::map<std::string, object>::iterator i = objects.begin(); i != objects.end(); ++i)
+	/*for (model &mdl : models)
 	{
-		(*i).second.update();
-		(*i).second.draw();
-	}
+		mdl.shdr_pgm = LoadShaders("shaders/funny.vert", "shaders/funny.frag", true);
+		if (mdl.shdr_pgm == 0)
+			fprintf(stderr, "Shader program failed to link/load.\n");
+	}*/
 }
 
-void renderer::update()
-{
-	cam.update();
-	draw();
-}
+//void renderer::draw()
+//{
+//	glUseProgram(shdr_pgm);
+//	GLint vTransformView = glGetUniformLocation(shdr_pgm, "V");
+//	glUniformMatrix4fv(vTransformView, 1, GL_FALSE, glm::value_ptr(cam.view));
+//	GLint vTransformProj = glGetUniformLocation(shdr_pgm, "P");
+//	glUniformMatrix4fv(vTransformProj, 1, GL_FALSE, glm::value_ptr(cam.proj));
+//	for (std::map<std::string, object>::iterator i = objects.begin(); i != objects.end(); ++i)
+//	{
+//		(*i).second.update();
+//		(*i).second.draw();
+//	}
+//}
 
-void renderer::object::init()
-{
-	scaling = glm::vec3(1, 1, 1);
-	rot = 0;
-	translate = glm::vec3(0, 0, 0);
-}
+//void renderer::update()
+//{
+//	cam.update();
+//	draw();
+//	
+//}
 
-void renderer::object::update()
-{
-	float angle = glm::radians(rot);
-	mdl_world = glm::mat4(1.f);
-	mdl_world = glm::translate(mdl_world, translate);
-	mdl_world = glm::rotate(mdl_world, angle, glm::vec3(0, 0.f, 1.f));
-	mdl_world = glm::scale(mdl_world, scaling);
-}
+//void renderer::object::init()
+//{
+//	scaling = glm::vec3(1, 1, 1);
+//	rot = 0;
+//	translate = glm::vec3(5, 0, 0);
+//}
 
-void renderer::object::draw()
-{
-	
-	glBindVertexArray(model_ref.vaoid);
-	GLint vTransformLoc = glGetUniformLocation(shdr_pgm, "M");
-	glUniformMatrix4fv(vTransformLoc, 1, GL_FALSE, glm::value_ptr(mdl_world));
-	if (model_ref.shape == shape::square)
-		glDrawElements(GL_TRIANGLES, model_ref.elem_cnt, GL_UNSIGNED_SHORT, nullptr);
-	else if (model_ref.shape == shape::circle)
-		glDrawArrays(model_ref.primitive_type, 0, model_ref.draw_cnt);
-	glBindVertexArray(0);
-}
+//void renderer::object::update()
+//{
+//	float x{}, y{}, rot{};
+//	//if(keyinput == 'A') x = -2;
+//	//if(keyinput == 'D') x = 2;
+//	//if(keyinput == 'W') y = 2;
+//	//if(keyinput == 'S') y = -2;
+//
+//	
+//	movex(x);
+//	movey(y);
+//	rotate(rot);
+//	float angle = glm::radians(rot);
+//	mdl_world = glm::mat4(1.f);
+//	mdl_world = glm::scale(mdl_world, scaling);
+//	mdl_world = glm::rotate(mdl_world, angle, glm::vec3(0, 0, 1.f));
+//	mdl_world = glm::translate(mdl_world, translate);
+//}
 
-void renderer::object::movex(float x)
-{
-	translate.x += x;
-}
 
-void renderer::object::movey(float y)
-{
-	translate.y += y;
-}
 
-void renderer::object::rotate(float thetha)
-{
-	rot += thetha;
-}
+//void renderer::object::draw()
+//{
+//	
+//	glBindVertexArray(model_ref.vaoid);
+//	GLint vTransformLoc = glGetUniformLocation(shdr_pgm, "M");
+//	glUniformMatrix4fv(vTransformLoc, 1, GL_FALSE, glm::value_ptr(mdl_world));
+//
+//	//std::cout << glm::to_string(objects.find("player")->second.mdl_world) << std::endl;
+//
+//	//GLint vTransformLoc = glGetUniformLocation(mdl.shdr_pgm, "vertexTransform");
+//	//glUniformMatrix4fv(vTransformLoc, 1, GL_FALSE, &p_modelMat[0][0]);
+//	if (model_ref.shape == shape::square)
+//		//glDrawElements(model_ref.primitive_type, model_ref.primitive_cnt, GL_UNSIGNED_SHORT, nullptr);
+//		glDrawElements(GL_TRIANGLES, model_ref.elem_cnt, GL_UNSIGNED_SHORT, nullptr);
+//	else if (model_ref.shape == shape::circle)
+//		glDrawArrays(model_ref.primitive_type, 0, model_ref.draw_cnt);
+//	glBindVertexArray(0);
+//}
 
-void renderer::object::scale(float x, float y)
-{
-	scaling.x += x;
-	scaling.y += y;
-}
+//void renderer::object::movex(float x)
+//{
+//	translate.x += x;
+//}
+//
+//void renderer::object::movey(float y)
+//{
+//	translate.y += y;
+//}
+//
+//void renderer::object::rotate(float thetha)
+//{
+//	rot += thetha;
+//}
 
 void renderer::camera::init(int w, int h)
 {
 	ar = static_cast<float>(w) / h;
 	width = w;
 	rot = 0;
-	zoom = 10;
+	zoom = 20;
 	campos = glm::vec3(0, 0, 0);
-	center = glm::vec3(campos.x, campos.y, -1.f);
 	up = glm::vec3(0, 1, 0);
+
+	
 }
 
 void renderer::camera::update()
 {
-	center = glm::vec3(campos.x, campos.y, -1.f);
-	view = glm::lookAt(campos, center, up);
+	view = glm::lookAt(campos, glm::vec3(0, 0, -1), up);
 	proj = glm::ortho(-zoom * ar, zoom * ar, -zoom, zoom, -1.f, 1.f);
 }
 
-void renderer::camera::movex(float x)
-{
-	campos.x += x;
-}
 
-void renderer::camera::movey(float y)
-{
-	campos.y += y;
-}
 
-bool renderer::camera::zooming(float input)
-{
-	if (input == 0) return false;
-	zoom += input;
-	return true;
-}

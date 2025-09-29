@@ -21,8 +21,8 @@ enum class shape
 struct renderer
 {
 	static void init(int, int);
-	static void update();
-	static void cleanup();
+	//static void update();
+	//static void cleanup();
 
 	
 
@@ -43,16 +43,15 @@ struct renderer
 	static model setup_square(glm::vec3);
 	static model setup_circle(glm::vec3, int);
 	static void setup_shdrpgm();//const glm::mat4& p_modelMat);
-	static void draw();
+	//static void draw();
 	static std::vector<model>models;
 
-	struct object
+	/*struct object
 	{
 		glm::vec3 scaling;
 		float rot;
 		glm::vec3 translate;
 		model model_ref;
-		std::string object_type;
 		std::string texture_ref;
 		glm::mat4 mdl_world;
 		void init();
@@ -61,15 +60,13 @@ struct renderer
 		void movex(float x);
 		void movey(float y);
 		void rotate(float thetha);
-		void scale(float x, float y);
-	};
+	};*/
 
 	struct camera
 	{
 		GLfloat ar;
 		int width;
 		glm::vec3 campos;
-		glm::vec3 center;
 		float zoom;
 		float rot;
 		glm::vec3 up;
@@ -77,11 +74,8 @@ struct renderer
 		glm::mat4 proj;
 		void init(int w, int h);
 		void update();
-		void movex(float);
-		void movey(float);
-		bool zooming(float);
 	};
 
-	static std::map<std::string, object> objects;
+	//static std::map<std::string, object> objects;
 	static camera cam;
 };

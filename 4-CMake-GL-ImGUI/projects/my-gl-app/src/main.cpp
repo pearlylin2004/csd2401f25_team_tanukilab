@@ -13,6 +13,10 @@
 #include "renderer.h"
 #include "input.h"
 #include "audio.h"
+#include "engine.h"
+#include "GameObjectManager.h"
+#include "Component.h"
+#include "Systems.h"
 
 class GLApp {
 public:
@@ -43,6 +47,9 @@ public:
         //m_cube->initialize();
         InputHandler::init(m_window);
         renderer::init(p_width, p_height);
+        m_manager.init();
+
+
 
         // Setup ImGui
         IMGUI_CHECKVERSION();
@@ -67,17 +74,30 @@ public:
     }
 
     void update() {
-        m_angleOfRotation += m_rotationSpeed;
+        /* Poll for User Input */
+        glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        InputHandler::update();
+
+        const float deltaTime = 1.0f / 60.0f; // simulate 60fps
+
+        // input test code
+        /*if (InputHandler::isKeyPressed(GLFW_KEY_SPACE))
+            std::cout << InputHandler::getMouseY() << std::endl;*/
+        m_inputSystem.update(m_manager, deltaTime);
+        m_physicsSystem.update(m_manager, deltaTime);
+        m_renderSystem.update(m_manager, deltaTime);
+
+        //m_angleOfRotation += m_rotationSpeed;
     }
 
     void render() {
-        glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        
 
         //glm::mat4 modelMat = glm::mat4(1.0f);
         //modelMat = glm::rotate(modelMat, m_angleOfRotation, glm::vec3(0.0f, 0.0f, 1.0f));
         //m_cube->render(modelMat);
-        renderer::update();
+        //renderer::update();
 
         // Start ImGui frame
         ImGui_ImplOpenGL3_NewFrame();
@@ -102,33 +122,19 @@ public:
         // Render ImGui
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+        const float deltaTime = 1.0f / 60.0f;
+        
 
         glfwSwapBuffers(m_window);
     }
 
     void run() {
-        while (glfwGetKey(m_window, GLFW_KEY_ESCAPE) != GLFW_PRESS && !glfwWindowShouldClose(m_window)) {
-            //renderer::update(m_window);
-            if (InputHandler::isKeyHeld(GLFW_KEY_A))
-                renderer::objects.find("player")->second.movex(-0.01f);
-            if (InputHandler::isKeyHeld(GLFW_KEY_D))
-                renderer::objects.find("player")->second.movex(0.01f);
-            if (InputHandler::isKeyHeld(GLFW_KEY_W))
-                renderer::objects.find("player")->second.movey(0.01f);
-            if (InputHandler::isKeyHeld(GLFW_KEY_S))
-                renderer::objects.find("player")->second.movey(-0.01f);
 
-            if (InputHandler::isKeyTriggered(GLFW_KEY_SPACE)) {
-				audio.playSound(soundID::water);
-            }
-            
-			audio.update();
-                
+        while (glfwGetKey(m_window, GLFW_KEY_ESCAPE) != GLFW_PRESS && !glfwWindowShouldClose(m_window)) 
+        {
+            update();
             render();
-            //update();
-            //renderer::draw();
-            InputHandler::update();
-            //glfwPollEvents();
+            glfwPollEvents();
         }
     }
 
@@ -137,6 +143,11 @@ public:
     float m_rotationSpeed;
 
 private:
+    GameObjectManager m_manager;
+	InputSystem m_inputSystem;
+	PhysicsSystem m_physicsSystem;
+	RenderSystem m_renderSystem;
+
     GLFWwindow* m_window;
     AudioSystem& audio = AudioSystem::getInstance();
     //std::shared_ptr<Cube> m_cube;
@@ -147,6 +158,15 @@ int main() {
     try {
         GLApp app(1600, 800, "Render Cube");
         app.run();
+        //Engine engine;
+
+        //if (!engine.init(1600, 800, "Tanuki Lab")) {
+        //    return -1; // failed to initialize
+        //}
+
+        //engine.run();       // main loop (handles input, rendering, FPS, etc.)
+        //engine.shutdown();  // cleanup resources
+
         return 0;
     }
     catch (const std::exception& e) {
