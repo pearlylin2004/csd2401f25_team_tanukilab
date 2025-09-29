@@ -16,6 +16,17 @@
 #include "Math_Lib.h"
 
 namespace Collision {
+    enum class CollisionResponseMode {
+        Stop, 
+        Bounce,
+        Slide 
+    };
+    struct CollisionInfo {
+        bool collided = false;
+        float timeOfImpact = 0.0f;   
+        Vector2D normal{ 0,0 };      
+    };
+
     using f64 = double;
     extern f64 g_fixedDT;
     extern f64 g_dt;
@@ -69,44 +80,27 @@ namespace Collision {
 
     //collision function for AABB
     bool CollisionIntersection_RectRect_Static(const AABB& aabb1, const AABB& aabb2);
-    bool CollisionIntersection_RectRect_Dynamic(const AABB& aabb1, const Vector2D& vel1, const AABB& aabb2, const Vector2D& vel2, float& firstTimeOfCollision);
+    CollisionInfo CollisionIntersection_RectRect_Dynamic_Info(const AABB& aabb1, const Vector2D& vel1, const AABB& aabb2, const Vector2D& vel2);
 
     //collision function for circles
     bool CollisionIntersection_CircleCircle_Static(const Circle& c1, const Circle& c2);
-    bool CollisionIntersection_CircleCircle_Dynamic(const Circle& c1, const Vector2D& vel1, const Circle& c2, const Vector2D& vel2, float& firstTimeOfCollision);
+    CollisionInfo CollisionIntersection_CircleCircle_Dynamic_Info(const Circle& c1, const Vector2D& vel1, const Circle& c2, const Vector2D& vel2);
 
     //circle and AABB
     bool CollisionIntersection_CircleAABB_Static(const Circle& c, const AABB& aabb);
-    bool CollisionIntersection_CircleAABB_Dynamic(const Circle& c, const Vector2D& velC, const AABB& aabb, const Vector2D& velAABB, float& firstTimeOfCollision);
+    CollisionInfo CollisionIntersection_CircleAABB_Dynamic_Info(const Circle& c, const Vector2D& velC, const AABB& aabb, const Vector2D& velAABB);
 
-    //simple collision between 2 AABB d + s
-    inline bool CollisionIntersection_RectRect(const AABB& aabb1, const Vector2D& vel1, const AABB& aabb2, const Vector2D& vel2, float& firstTimeOfCollision)
-    {
-        //static intersection
-        if (CollisionIntersection_RectRect_Static(aabb1, aabb2))
-            return true;
+    //response functions apply on velocities and optionally translate objects to time of impact
+    void Resolve_AABB_AABB(Collision::AABB& aabbA, Vector2D& velA, float massA,
+        Collision::AABB& aabbB, Vector2D& velB, float massB,
+        const CollisionInfo& info, CollisionResponseMode mode, float restitution = 0.0f);
 
-        //dynamic intersection
-        return CollisionIntersection_RectRect_Dynamic(aabb1, vel1, aabb2, vel2, firstTimeOfCollision);
-    }
+    void Resolve_Circle_Circle(Collision::Circle& cA, Vector2D& velA, float massA,
+        Collision::Circle& cB, Vector2D& velB, float massB,
+        const CollisionInfo& info, CollisionResponseMode mode, float restitution = 0.0f);
 
-    //simple collision between circles d + s
-    inline bool CollisionIntersection_CircleCircle(const Circle& c1, const Vector2D& vel1, const Circle& c2, const Vector2D& vel2, float& firstTimeOfCollision)
-    {
-        //static collision check
-        if (CollisionIntersection_CircleCircle_Static(c1, c2))
-            return true;
-
-        //dynamic collision check
-        return CollisionIntersection_CircleCircle_Dynamic(c1, vel1, c2, vel2, firstTimeOfCollision);
-    }
-
-	//simple collision between circle and AABB d + s
-    inline bool CollisionIntersection_CircleAABB(const Circle& c, const Vector2D& velC, const AABB& aabb, const Vector2D& velAABB, float& firstTimeOfCollision) {
-        if (CollisionIntersection_CircleAABB_Static(c, aabb))
-            return true;
-
-        return CollisionIntersection_CircleAABB_Dynamic(c, velC, aabb, velAABB, firstTimeOfCollision);
-    }
+    void Resolve_Circle_AABB(Collision::Circle& c, Vector2D& velC, float massC,
+        Collision::AABB& aabb, Vector2D& velAABB, float massAABB,
+        const CollisionInfo& info, CollisionResponseMode mode, float restitution = 0.0f);
 }
 #endif

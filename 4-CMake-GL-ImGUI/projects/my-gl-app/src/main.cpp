@@ -65,15 +65,22 @@
 //collision testing
 //helper function to get an AABB from a renderer object
 Collision::AABB getObjectAABB(const renderer::object& obj) {
+    Vector2D center(obj.translate.x + obj.scaling.x * 0.5f,
+        obj.translate.y + obj.scaling.y * 0.5f);
+
     float halfWidth = obj.scaling.x * 0.5f;
     float halfHeight = obj.scaling.y * 0.5f;
-    Vector2D min(obj.translate.x - halfWidth, obj.translate.y - halfHeight);
-    Vector2D max(obj.translate.x + halfWidth, obj.translate.y + halfHeight);
+
+    Vector2D min(center.x - halfWidth, center.y - halfHeight);
+    Vector2D max(center.x + halfWidth, center.y + halfHeight);
     return Collision::AABB(min, max);
 }
+
 Collision::Circle getObjectCircle(const renderer::object& obj) {
+    Vector2D center(obj.translate.x + obj.scaling.x * 0.5f,
+        obj.translate.y + obj.scaling.y * 0.5f);
     float radius = obj.scaling.x * 0.5f;
-    return Collision::Circle(Vector2D(obj.translate.x, obj.translate.y), radius);
+    return Collision::Circle(center, radius);
 }
 //std::string outputC = "No collision";
 //to test adding of circles for imgui
@@ -180,7 +187,7 @@ public:
     }
 
     void run() {
-        renderer::objects["player"].translate = glm::vec3(0, 0, 0.0f);
+        /*renderer::objects["player"].translate = glm::vec3(0, 0, 0.0f);
         while (glfwGetKey(m_window, GLFW_KEY_ESCAPE) != GLFW_PRESS && !glfwWindowShouldClose(m_window)) {
             Vector2D movement(0, 0);
             //renderer::update(m_window);
@@ -197,31 +204,51 @@ public:
                 //renderer::objects.find("player")->second.movey(-0.01f);
                 movement.y -= 0.01f;
 
-
-            Collision::Circle playerCircle = getObjectCircle(renderer::objects["player"]);
-            float firstCollisionTime = 0.0f;
-            //check collision
-            for (auto& [name, obj] : renderer::objects) {
-                if (name == "player") continue;
-                Collision::AABB objAABB = getObjectAABB(obj);
-                Vector2D objVel{ 0.0f, 0.0f };
-
-                if (Collision::CollisionIntersection_CircleAABB_Dynamic(playerCircle, movement, objAABB, objVel, firstCollisionTime)) {
-                    UI::debugMessages.push_back("Collision with " + name + "!");
-                    //movement.x *= firstCollisionTime;
-                    //movement.y *= firstCollisionTime;
-                }
-                else {
-                    UI::debugMessages.push_back("no collision with " + name + "!");
-                }
-            }
-            renderer::objects["player"].movex(movement.x);
-            renderer::objects["player"].movey(movement.y);
-
             render();
             //update();
             //renderer::draw();
             //glfwPollEvents();
+            InputHandler::update();
+        }*/
+        renderer::objects["player"].translate = glm::vec3(0, 0, 0.0f);
+
+        while (glfwGetKey(m_window, GLFW_KEY_ESCAPE) != GLFW_PRESS &&
+            !glfwWindowShouldClose(m_window)) {
+
+            Vector2D movement{ 0, 0 };
+            if (InputHandler::isKeyHeld(GLFW_KEY_A)) movement.x -= 0.01f;
+            if (InputHandler::isKeyHeld(GLFW_KEY_D)) movement.x += 0.01f;
+            if (InputHandler::isKeyHeld(GLFW_KEY_W)) movement.y += 0.01f;
+            if (InputHandler::isKeyHeld(GLFW_KEY_S)) movement.y -= 0.01f;
+
+            Collision::AABB playerAABB = getObjectAABB(renderer::objects["player"]);
+            Collision::Circle platformCircle = getObjectCircle(renderer::objects["platform"]);
+
+            Vector2D circleVel{ 0, 0 };
+            Vector2D playerVel = movement;
+
+            //dynamic collision
+            Collision::CollisionInfo info = Collision::CollisionIntersection_CircleAABB_Dynamic_Info(
+                platformCircle, circleVel, playerAABB, playerVel
+            );
+
+            if (info.collided) {
+                UI::debugMessages.push_back(
+                    "Collision with platform! t=" + std::to_string(info.timeOfImpact)
+                );
+
+                //stop player at contact
+                Collision::Resolve_Circle_AABB(
+                    platformCircle, circleVel, 0.0f,  
+                    playerAABB, playerVel, 1.0f, 
+                    info, Collision::CollisionResponseMode::Stop
+                );
+            }
+
+            renderer::objects["player"].movex(playerVel.x);
+            renderer::objects["player"].movey(playerVel.y);
+
+            render();
             InputHandler::update();
         }
     }
