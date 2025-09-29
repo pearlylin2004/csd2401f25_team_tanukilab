@@ -4,8 +4,7 @@
 \author
 \par
 \date		September, 17, 2025
-\brief		This file declares the static and dynamic collision functions, as well as
-            the main AABB-AABB collision function implementation.
+\brief		Using namespace of Collision
 */
 /* End Header **************************************************************************/
 
@@ -114,7 +113,7 @@ namespace Collision {
         Vector2D normal{ 0,0 };
         if (txEntry > tyEntry) {
             //collision on x axis
-            if (relVel.x > 0.0f) normal = Vector2D{ -1, 0 }; //B moving right relative to A contact normal points left
+            if (relVel.x > 0.0f) normal = Vector2D{ -1, 0 };
             else normal = Vector2D{ 1, 0 };
         }
         else {
@@ -221,7 +220,7 @@ namespace Collision {
             info.timeOfImpact = 0.0f;
             Vector2D n = NormalizeSafe(Vector2D{ dx, dy });
             if (Length(n) <= EPSILON) {
-                // if center inside, pick nearest axis normal by distance to edges
+                //if center inside pick nearest axis normal by distance to edges
                 float left = std::abs(c.getCenter().x - aabb.getMin().x);
                 float right = std::abs(aabb.getMax().x - c.getCenter().x);
                 float bottom = std::abs(c.getCenter().y - aabb.getMin().y);
@@ -306,52 +305,20 @@ namespace Collision {
     {
         if (!info.collided) return;
 
-        // Move objects to time of impact (translate by velocity * toi)
-        // Note: AABB stores min/max; move both min/max by delta
         Vector2D moveA = Mul(velA, info.timeOfImpact);
         Vector2D moveB = Mul(velB, info.timeOfImpact);
         aabbA.setMin(AddV(aabbA.getMin(), moveA)); aabbA.setMax(AddV(aabbA.getMax(), moveA));
         aabbB.setMin(AddV(aabbB.getMin(), moveB)); aabbB.setMax(AddV(aabbB.getMax(), moveB));
 
-        // For dynamic-dynamic use impulse-like approach if mode != Stop and masses provided
         if (mode == CollisionResponseMode::Stop) {
             velA = Vector2D{ 0,0 };
             velB = Vector2D{ 0,0 };
             return;
         }
 
-        // Compute relative velocity along normal
         Vector2D n = info.normal;
         Vector2D relVel = SubV(velB, velA);
         float velAlongNormal = Dot(relVel, n);
-
-        if (mode == CollisionResponseMode::Bounce) {
-            // if moving apart do nothing
-            if (velAlongNormal > 0.0f) return;
-
-            // compute impulse scalar for perfectly elastic-ish collision:
-            // j = -(1 + e) * (v_rel n) / (1/m1 + 1/m2)
-            float invMassA = (massA > 0.0f) ? (1.0f / massA) : 0.0f;
-            float invMassB = (massB > 0.0f) ? (1.0f / massB) : 0.0f;
-            float j = -(1.0f + restitution) * velAlongNormal / (invMassA + invMassB + EPSILON);
-
-            Vector2D impulse = Mul(n, j);
-            // apply impulse
-            velA = SubV(velA, Mul(impulse, invMassA));
-            velB = AddV(velB, Mul(impulse, invMassB));
-            return;
-        }
-
-        if (mode == CollisionResponseMode::Slide) {
-            // remove normal component from velocity for the dynamic object(s)
-            // For dynamic vs static (massB==0) stop/resist B accordingly
-            // Apply to A and B both: project velocities onto tangent
-            Vector2D tangentA = RemoveNormalComponent(velA, n);
-            Vector2D tangentB = RemoveNormalComponent(velB, n);
-            velA = tangentA;
-            velB = tangentB;
-            return;
-        }
     }
 
     void Resolve_Circle_Circle(Collision::Circle& cA, Vector2D& velA, float massA,
@@ -360,7 +327,7 @@ namespace Collision {
     {
         if (!info.collided) return;
 
-        // move to contact
+        //move to contact
         Vector2D deltaA = Mul(velA, info.timeOfImpact);
         Vector2D deltaB = Mul(velB, info.timeOfImpact);
         cA.setCenter(AddV(cA.getCenter(), deltaA));
@@ -375,23 +342,6 @@ namespace Collision {
             velB = Vector2D{ 0,0 };
             return;
         }
-
-        if (mode == CollisionResponseMode::Bounce) {
-            if (velAlongNormal > 0.0f) return;
-            float invMassA = (massA > 0.0f) ? 1.0f / massA : 0.0f;
-            float invMassB = (massB > 0.0f) ? 1.0f / massB : 0.0f;
-            float j = -(1.0f + restitution) * velAlongNormal / (invMassA + invMassB + EPSILON);
-            Vector2D impulse = Mul(n, j);
-            velA = SubV(velA, Mul(impulse, invMassA));
-            velB = AddV(velB, Mul(impulse, invMassB));
-            return;
-        }
-
-        if (mode == CollisionResponseMode::Slide) {
-            velA = RemoveNormalComponent(velA, n);
-            velB = RemoveNormalComponent(velB, n);
-            return;
-        }
     }
 
     void Resolve_Circle_AABB(Collision::Circle& c, Vector2D& velC, float massC,
@@ -400,7 +350,7 @@ namespace Collision {
     {
         if (!info.collided) return;
 
-        // move to contact
+        //move to contact
         Vector2D deltaC = Mul(velC, info.timeOfImpact);
         Vector2D deltaA = Mul(velAABB, info.timeOfImpact);
         c.setCenter(AddV(c.getCenter(), deltaC));
@@ -408,35 +358,17 @@ namespace Collision {
         aabb.setMax(AddV(aabb.getMax(), deltaA));
 
         Vector2D n = info.normal;
-        // relative velocity: aabb treated as B
+        //relative velocity: aabb treated as B
         Vector2D relVel = SubV(velAABB, velC);
         float velAlongNormal = Dot(relVel, n);
 
         if (mode == CollisionResponseMode::Stop) {
-            // if static AABB (massAABB==0) stop circle
+            //if static AABB (massAABB==0) stop circle
             if (massAABB <= 0.0f) velC = Vector2D{ 0,0 };
             else {
                 velC = Vector2D{ 0,0 };
                 velAABB = Vector2D{ 0,0 };
             }
-            return;
-        }
-
-        if (mode == CollisionResponseMode::Bounce) {
-            // if moving away, nothing
-            if (velAlongNormal > 0.0f) return;
-            float invMassC = (massC > 0.0f) ? 1.0f / massC : 0.0f;
-            float invMassA = (massAABB > 0.0f) ? 1.0f / massAABB : 0.0f;
-            float j = -(1.0f + restitution) * velAlongNormal / (invMassC + invMassA + EPSILON);
-            Vector2D impulse = Mul(n, j);
-            velC = SubV(velC, Mul(impulse, invMassC));
-            velAABB = AddV(velAABB, Mul(impulse, invMassA));
-            return;
-        }
-
-        if (mode == CollisionResponseMode::Slide) {
-            velC = RemoveNormalComponent(velC, n);
-            if (massAABB > 0.0f) velAABB = RemoveNormalComponent(velAABB, n);
             return;
         }
     }

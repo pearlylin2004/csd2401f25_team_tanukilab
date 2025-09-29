@@ -1,3 +1,13 @@
+/* Start Header ************************************************************************/
+/*!
+\file		Component.h
+\author
+\par
+\date		Month, Day, 2025
+\brief
+*/
+/* End Header **************************************************************************/
+
 #pragma once
 #include <string>
 #include <memory> //for unique_ptr
@@ -77,9 +87,7 @@ public:
 };
 
 enum class CollisionResponseMode {
-    Stop,
-    Bounce,
-    Slide
+    Stop
 };
 struct CollisionInfo : public Component {
 public:

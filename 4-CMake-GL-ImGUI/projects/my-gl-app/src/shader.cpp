@@ -1,3 +1,12 @@
+/* Start Header ************************************************************************/
+/*!
+\file		shader.cpp
+\author
+\par
+\date		Month, Day, 2025
+\brief
+*/
+/* End Header **************************************************************************/
 /**
  * @file shader.cpp
  * @brief Helper functions to load, compile, and link GLSL shaders (vertex, fragment, geometry).

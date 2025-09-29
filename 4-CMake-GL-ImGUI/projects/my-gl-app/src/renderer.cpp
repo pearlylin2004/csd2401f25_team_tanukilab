@@ -1,3 +1,12 @@
+/* Start Header ************************************************************************/
+/*!
+\file		renderer.cpp
+\author
+\par
+\date		Month, Day, 2025
+\brief
+*/
+/* End Header **************************************************************************/
 #include "renderer.h"
 
 std::vector<renderer::model> renderer::models;

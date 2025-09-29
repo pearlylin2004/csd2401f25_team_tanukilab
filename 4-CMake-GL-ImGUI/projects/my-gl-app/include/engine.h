@@ -1,3 +1,13 @@
+/* Start Header ************************************************************************/
+/*!
+\file		Engine.h
+\author
+\par
+\date		Month, Day, 2025
+\brief
+*/
+/* End Header **************************************************************************/
+
 #pragma once
 #include <string>
 #include <GL/glew.h>

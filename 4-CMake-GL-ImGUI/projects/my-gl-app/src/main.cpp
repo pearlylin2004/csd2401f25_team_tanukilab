@@ -1,3 +1,13 @@
+/* Start Header ************************************************************************/
+/*!
+\file		main.hpp
+\author
+\par
+\date		Month, Day, 2025
+\brief		
+*/
+/* End Header **************************************************************************/
+
 // Hungarian notation: https://en.wikipedia.org/wiki/Hungarian_notation
 #include <shader.hpp>
 #include <memory>
