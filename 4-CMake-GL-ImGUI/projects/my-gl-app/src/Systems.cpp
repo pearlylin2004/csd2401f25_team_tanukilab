@@ -25,16 +25,16 @@ void InputSystem::update(GameObjectManager& manager, float deltaTime) {
 				velocity->velX = 0.0f;
 				velocity->velY = 0.0f;
 
-				if (InputHandler::isKeyDown(GLFW_KEY_W)) {
+				if (InputHandler::isKeyHeld(GLFW_KEY_W)) {
 					velocity->velY = input->moveSpeed;
 				}
-				if (InputHandler::isKeyDown(GLFW_KEY_S)) {
+				if (InputHandler::isKeyHeld(GLFW_KEY_S)) {
 					velocity->velY = -input->moveSpeed;
 				}
-				if (InputHandler::isKeyDown(GLFW_KEY_A)) {
+				if (InputHandler::isKeyHeld(GLFW_KEY_A)) {
 					velocity->velX = -input->moveSpeed;
 				}
-				if (InputHandler::isKeyDown(GLFW_KEY_D)) {
+				if (InputHandler::isKeyHeld(GLFW_KEY_D)) {
 					velocity->velX = input->moveSpeed;
 				}
 				//so far so good i think?
@@ -96,7 +96,7 @@ void PhysicsSystem::update(GameObjectManager& manager, float deltaTime) {
 			*/
 			/*Physics* physics = object->getComponent<Physics>();*/
 
-		if (InputHandler::isKeyDown(GLFW_KEY_B)) { ///Needa update
+		if (InputHandler::isKeyHeld(GLFW_KEY_B)) { ///Needa update
 			if (!physics->inWaterTriggered) {
 				physics->velY = physics->waterBounce;     // instant upward push
 				physics->inWaterTriggered = true;
