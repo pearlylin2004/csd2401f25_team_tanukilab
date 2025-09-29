@@ -22,7 +22,7 @@ public:
 class RenderSystem {
 public:
 	void update(GameObjectManager& manager, float deltaTime);
-
+	GLuint uploadtex(std::string const& filename, std::pair<int const, int const> resolution);
 };
 
 class TransformSystem {

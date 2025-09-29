@@ -1,11 +1,11 @@
 object player
-renderer square 
+renderer square 1 256 256 shaders/Sample_tilemap.jpg
 transform 0 0 0.01 1 1 1 0
 physics 0 0
 
 
 object platform
-renderer circle
+renderer circle 0
 transform 0 0 0.0 1 5 5 0 
 physics 0 0
 

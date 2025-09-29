@@ -72,6 +72,11 @@ void GameObjectManager::init()
 			{
 				renderptr->modelRef = renderer::models[static_cast<int>(shape::circle)];
 			}
+			is >> renderptr->hasTex;
+			if (renderptr->hasTex == true)
+			{
+				is >> renderptr->resolution.first >> renderptr->resolution.second >> renderptr->texFile;
+			}
 			std::cout << shape << "\n";
 		}
 		/*for (; is >> checker, checker == "transform";)

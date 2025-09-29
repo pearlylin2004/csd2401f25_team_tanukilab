@@ -61,23 +61,72 @@ void RenderSystem::update(GameObjectManager& manager, float deltaTime) {
 		{
 			Transform* transform = object->getComponent<Transform>();
 			Render* render = object->getComponent<Render>();
+
+			//position and orientation of mesh
 			float angle = glm::radians(transform->rotation);
 			transform->mdlWorld = glm::mat4{ 1 };
 			transform->mdlWorld = glm::translate(transform->mdlWorld, glm::vec3(transform->x, transform->y, transform->z));
 			transform->mdlWorld = glm::rotate(transform->mdlWorld, angle, glm::vec3(0, 0, 1.f));
 			transform->mdlWorld = glm::scale(transform->mdlWorld, glm::vec3(transform->scaleX, transform->scaleY, transform->scaleZ));
 
+			//texture bs
+			render->texHDL = uploadtex(render->texFile, render->resolution);
+			glBindTextureUnit(0, render->texHDL);
+			glm::mat4 texRot{ 1 };
+			texRot = glm::rotate(texRot, angle, glm::vec3(0, 0, 1.f));
+			glm::vec2 rotationCenter{ 0,0 }; //if needed in the future it can be a member variable, now just for sanity
+
+			//binding model to world matrix
 			glBindVertexArray(render->modelRef.vaoid);
 			GLint vTransformLoc = glGetUniformLocation(renderer::shdr_pgm, "M");
 			glUniformMatrix4fv(vTransformLoc, 1, GL_FALSE, glm::value_ptr(transform->mdlWorld));
+
+			//binding texture rotation and id
+			GLint texid = glGetUniformLocation(renderer::shdr_pgm, "uTex2d");
+			GLint rotmat = glGetUniformLocation(renderer::shdr_pgm, "uRotMtx");
+			GLint rotcenter = glGetUniformLocation(renderer::shdr_pgm, "uMcn");
+			GLint hastex = glGetUniformLocation(renderer::shdr_pgm, "uHasTex");
+			glUniform1i(texid, 0);
+			glUniformMatrix2fv(rotmat, 1, GL_FALSE, glm::value_ptr(texRot));
+			glUniform2fv(rotcenter, 1, glm::value_ptr(rotationCenter));
+			glUniform1i(hastex, static_cast<int>(render->hasTex));
 
 			if (render->modelRef.shape == shape::square)
 				glDrawElements(GL_TRIANGLES, render->modelRef.elem_cnt, GL_UNSIGNED_SHORT, nullptr);
 			else if (render->modelRef.shape == shape::circle)
 				glDrawArrays(render->modelRef.primitive_type, 0, render->modelRef.draw_cnt);
 			glBindVertexArray(0);
+
 		}
 	}
+}
+
+GLuint RenderSystem::uploadtex(std::string const& filename, std::pair<int const, int const> resolution)
+{
+	GLuint width{ static_cast<GLuint>(resolution.first) }, height{ static_cast<GLuint>(resolution.second) };
+	std::ifstream ifs{ filename, std::ios::binary | std::ios::ate };
+	if (!ifs)
+	{
+		std::cerr << "Failed to open texture file: " << filename << std::endl;
+		return 0;
+	}
+	size_t texel_file_size = static_cast<size_t>(ifs.tellg()); //get file size
+	ifs.seekg(0, std::ios::beg); //back to start
+	unsigned char* ptr_texels = new unsigned char[texel_file_size];
+	if (ifs.read(reinterpret_cast<char*>(ptr_texels), texel_file_size)) {
+		std::cout << "Loaded " << texel_file_size << " bytes from " << filename << std::endl;
+	}
+	else {
+		std::cerr << "Error reading file contents." << std::endl;
+	}
+
+	GLuint texobj_hdl;
+	glCreateTextures(GL_TEXTURE_2D, 1, &texobj_hdl);
+	glTextureStorage2D(texobj_hdl, 1, GL_RGBA8, width, height);
+	glTextureSubImage2D(texobj_hdl, 0, 0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, ptr_texels);
+	delete[] ptr_texels;
+	ifs.close();
+	return texobj_hdl;
 }
 
 void PhysicsSystem::update(GameObjectManager& manager, float deltaTime) {

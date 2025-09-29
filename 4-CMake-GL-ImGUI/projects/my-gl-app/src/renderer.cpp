@@ -42,6 +42,11 @@ renderer::model renderer::setup_square(glm::vec3 clr)
 	clr,clr
 	};
 
+	std::array<glm::vec2, 4> texpos{
+	glm::vec2(1.f, 0.f), glm::vec2(1.f,1.f),
+	glm::vec2(0.f, 1.f), glm::vec2(0.f, 0.f)
+	};
+
 	
 	GLsizei position_data_offset = 0;
 	GLsizei position_attribute_size = sizeof(glm::vec2);
@@ -49,11 +54,15 @@ renderer::model renderer::setup_square(glm::vec3 clr)
 	GLsizei color_data_offset = position_data_size;
 	GLsizei color_attribute_size = sizeof(glm::vec3);
 	GLsizei color_data_size = color_attribute_size * static_cast<GLsizei>(clr_vtx.size());
+	GLsizei texture_data_offset = position_data_size + color_data_size;
+	GLsizei texture_attibute_size = sizeof(glm::vec2);
+	GLsizei texture_data_size = texture_attibute_size * static_cast<GLsizei>(texpos.size());
 
 	glCreateBuffers(1, &mdl.vbo);
-	glNamedBufferStorage(mdl.vbo, position_data_size + color_data_size, nullptr, GL_DYNAMIC_STORAGE_BIT);                     // immutable
+	glNamedBufferStorage(mdl.vbo, position_data_size + color_data_size + texture_data_size, nullptr, GL_DYNAMIC_STORAGE_BIT);                     // immutable
 	glNamedBufferSubData(mdl.vbo, 0, position_data_size, pos_vtx.data());   // upload positions
 	glNamedBufferSubData(mdl.vbo, color_data_offset, color_data_size, clr_vtx.data());   // upload colors
+	glNamedBufferSubData(mdl.vbo, texture_data_offset, texture_data_size, texpos.data());   // upload colors
 
 	glCreateVertexArrays(1, &mdl.vaoid);
 	glEnableVertexArrayAttrib(mdl.vaoid, 0);
@@ -65,6 +74,12 @@ renderer::model renderer::setup_square(glm::vec3 clr)
 	glVertexArrayVertexBuffer(mdl.vaoid, 1, mdl.vbo, color_data_offset, color_attribute_size);
 	glVertexArrayAttribFormat(mdl.vaoid, 1, 3, GL_FLOAT, GL_FALSE, 0);
 	glVertexArrayAttribBinding(mdl.vaoid, 1, 1);
+
+	glEnableVertexArrayAttrib(mdl.vaoid, 2);
+	glVertexArrayVertexBuffer(mdl.vaoid, 2, mdl.vbo, texture_data_offset, texture_data_size);
+	glVertexArrayAttribFormat(mdl.vaoid, 2, 2, GL_FLOAT, GL_FALSE, 0);
+	glVertexArrayAttribBinding(mdl.vaoid, 2, 2);
+
 	mdl.primitive_type = GL_TRIANGLES;
 	std::array<GLushort, 6> idx_vtx{ 0, 1, 2, 2, 3, 0 };
 	mdl.elem_cnt = static_cast<GLuint>(idx_vtx.size());

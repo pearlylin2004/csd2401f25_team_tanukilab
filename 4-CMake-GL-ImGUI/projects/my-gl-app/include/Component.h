@@ -40,7 +40,11 @@ public:
 
 public:
     bool visible = true;
-    std::string texID;
+    bool hasTex = false;
+    std::pair<int, int> resolution;
+    GLuint texHDL;
+    std::string texFile;
+    
     renderer::model modelRef;
 };
 
