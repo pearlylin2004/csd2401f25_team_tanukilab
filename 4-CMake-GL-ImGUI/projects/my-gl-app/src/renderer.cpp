@@ -236,7 +236,7 @@ void renderer::camera::init(int w, int h)
 	campos = glm::vec3(0, 0, 0);
 	up = glm::vec3(0, 1, 0);
 
-	
+
 }
 
 void renderer::camera::update()

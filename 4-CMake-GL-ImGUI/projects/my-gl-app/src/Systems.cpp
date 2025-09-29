@@ -109,8 +109,6 @@ void PhysicsSystem::update(GameObjectManager& manager, float deltaTime) {
 			physics->velY *= physics->damping;
 
 
-
-
 			transform->y += physics->velY * deltaTime;
 
 			// Floor collision
