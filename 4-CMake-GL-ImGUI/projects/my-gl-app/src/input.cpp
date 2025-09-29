@@ -8,8 +8,8 @@ bool InputHandler::m_keysPrevious[1024] = { false };
 
 bool InputHandler::m_mouseButtons[8] = { false };
 bool InputHandler::m_mouseButtonsPrevious[8] = { false };
-glm::vec2 InputHandler::m_mousePosition = glm::vec2(0.0f);
-glm::vec2 InputHandler::m_mousePositionPrevious = glm::vec2(0.0f);
+Vector2D InputHandler::m_mousePosition = Vector2D(0.0f);
+Vector2D InputHandler::m_mousePositionPrevious = Vector2D(0.0f);
 bool InputHandler::m_isCursorInside = false;
 
 float InputHandler::m_scrollOffset = 0.0f;
@@ -81,7 +81,7 @@ bool InputHandler::isMouseLeftReleased() {
 	return (!m_mouseButtons[GLFW_MOUSE_BUTTON_LEFT] && m_mouseButtonsPrevious[GLFW_MOUSE_BUTTON_LEFT]);
 }
 
-glm::vec2 InputHandler::getCursorPosition() {
+Vector2D InputHandler::getCursorPosition() {
 	return m_mousePosition;
 }
 
@@ -93,8 +93,8 @@ float InputHandler::getMouseY() {
 	return m_mousePosition.y;
 }
 
-glm::vec2 InputHandler::getMouseDelta() {
-	return m_mousePosition - m_mousePositionPrevious;
+Vector2D InputHandler::getMouseDelta() {
+	return Vec_Sub(&m_mousePosition, &m_mousePositionPrevious);
 }
 
 bool InputHandler::isCursorInsideWindow() {
@@ -124,7 +124,7 @@ void InputHandler::mouseButtonCallback(GLFWwindow* window, int button, int actio
 }
 
 void InputHandler::cursorPositionCallback(GLFWwindow* window, double xpos, double ypos) {
-	m_mousePosition = glm::vec2(static_cast<float>(xpos), static_cast<float>(ypos));
+	m_mousePosition = Vector2D(static_cast<float>(xpos), static_cast<float>(ypos));
 }
 
 void InputHandler::CursorEnterCallback(GLFWwindow* window, int entered) {

@@ -1,7 +1,7 @@
 #pragma once
 
 #include <GLFW/glfw3.h>
-#include <glm/glm.hpp>
+#include <mathlib.h>
 
 /*
 Keyboard key tokens
@@ -33,10 +33,10 @@ public:
 	static bool isMouseButtonClicked(int button); // ONLY use if you need other buttons
 
 	// get mouse position AND whether cursor is inside window
-	static glm::vec2 getCursorPosition(); // get current cursor position
+	static Vector2D getCursorPosition(); // get current cursor position
 	static float getMouseX(); // get current cursor x position
 	static float getMouseY(); // get current cursor y position
-	static glm::vec2 getMouseDelta(); // get change in mouse position since last frame
+	static Vector2D getMouseDelta(); // get change in mouse position since last frame
 	static bool isCursorInsideWindow(); // check if cursor is inside window
 
 	static float getMouseScroll(); // get scroll offset since last frame
@@ -56,8 +56,8 @@ private:
 
 	static bool m_mouseButtons[8];
 	static bool m_mouseButtonsPrevious[8];
-	static glm::vec2 m_mousePosition;
-	static glm::vec2 m_mousePositionPrevious;
+	static Vector2D m_mousePosition;
+	static Vector2D m_mousePositionPrevious;
 	static bool m_isCursorInside;
 
 	static float m_scrollOffset;
