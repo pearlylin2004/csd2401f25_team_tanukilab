@@ -64,6 +64,7 @@ public:
 
         // initialize audio
         audio.init();
+        audio.playSound(soundID::water, 0.8f);
     }
 
     ~GLApp() {
@@ -135,6 +136,8 @@ public:
             update();
             render();
             glfwPollEvents();
+            
+            audio.update();
         }
     }
 
