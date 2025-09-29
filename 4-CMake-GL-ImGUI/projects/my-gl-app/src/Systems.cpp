@@ -80,6 +80,7 @@ void RenderSystem::update(GameObjectManager& manager, float deltaTime) {
 					glBindTextureUnit(0, render->texHDL);
 				}
 				else glBindTextureUnit(0, 0);
+				render->wireframe = false;
 
 				glm::mat4 texRot{ 1 };
 				texRot = glm::rotate(texRot, angle, glm::vec3(0, 0, 1.f));
@@ -95,10 +96,12 @@ void RenderSystem::update(GameObjectManager& manager, float deltaTime) {
 				GLint rotmat = glGetUniformLocation(renderer::shdr_pgm, "uRotMtx");
 				GLint rotcenter = glGetUniformLocation(renderer::shdr_pgm, "uMcn");
 				GLint hastex = glGetUniformLocation(renderer::shdr_pgm, "uHasTex");
+				GLint wireframe = glGetUniformLocation(renderer::shdr_pgm, "uIsWireframe");
 				glUniform1i(texid, 0);
 				glUniformMatrix2fv(rotmat, 1, GL_FALSE, glm::value_ptr(texRot));
 				glUniform2fv(rotcenter, 1, glm::value_ptr(rotationCenter));
 				glUniform1i(hastex, static_cast<int>(render->hasTex));
+				glUniform1i(wireframe, static_cast<int>(render->wireframe));
 
 				if (render->modelRef.shape == shape::square)
 					glDrawElements(GL_TRIANGLES, render->modelRef.elem_cnt, GL_UNSIGNED_SHORT, nullptr);
@@ -135,6 +138,7 @@ void RenderSystem::update(GameObjectManager& manager, float deltaTime) {
 					glBindTextureUnit(0, render->texHDL);
 				}
 				else glBindTextureUnit(0, 0);
+				render->wireframe = true;
 
 				glm::mat4 texRot{ 1 };
 				texRot = glm::rotate(texRot, angle, glm::vec3(0, 0, 1.f));
@@ -150,13 +154,33 @@ void RenderSystem::update(GameObjectManager& manager, float deltaTime) {
 				GLint rotmat = glGetUniformLocation(renderer::shdr_pgm, "uRotMtx");
 				GLint rotcenter = glGetUniformLocation(renderer::shdr_pgm, "uMcn");
 				GLint hastex = glGetUniformLocation(renderer::shdr_pgm, "uHasTex");
+				GLint wireframe = glGetUniformLocation(renderer::shdr_pgm, "uIsWireframe");
 				glUniform1i(texid, 0);
 				glUniformMatrix2fv(rotmat, 1, GL_FALSE, glm::value_ptr(texRot));
 				glUniform2fv(rotcenter, 1, glm::value_ptr(rotationCenter));
 				glUniform1i(hastex, static_cast<int>(render->hasTex));
+				glUniform1i(wireframe, 0);
 
 				if (render->modelRef.shape == shape::square)
+				{
+					// --- Pass 1: textured fill ---
+					glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+					glBindVertexArray(render->modelRef.vaoid);
+					glUniform1i(wireframe, 0);
 					glDrawElements(GL_TRIANGLES, render->modelRef.elem_cnt, GL_UNSIGNED_SHORT, nullptr);
+					// --- Pass 2: wireframe overlay ---
+					glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+					glUniform1i(wireframe, 1);
+					glLineWidth(2.0f);
+					glDepthMask(GL_FALSE);
+					glDrawElements(GL_TRIANGLES, render->modelRef.elem_cnt, GL_UNSIGNED_SHORT, nullptr);
+
+					// Restore state
+					glDepthMask(GL_TRUE);
+					glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+					glUniform1i(wireframe, 0);
+				}
+					//glDrawElements(GL_TRIANGLES, render->modelRef.elem_cnt, GL_UNSIGNED_SHORT, nullptr);
 				else if (render->modelRef.shape == shape::circle)
 					glDrawArrays(render->modelRef.primitive_type, 0, render->modelRef.draw_cnt);
 				glBindVertexArray(0);
@@ -183,7 +207,7 @@ GLuint RenderSystem::uploadtex(std::string const& filename, bool& isTransparent)
 
 	GLuint texobj_hdl;
 	glCreateTextures(GL_TEXTURE_2D, 1, &texobj_hdl);
-	glTextureStorage2D(texobj_hdl, 1, isTransparent ? GL_RGBA8 : GL_RGB8, static_cast<GLuint>(width), static_cast<GLuint>(height));
+	glTextureStorage2D(texobj_hdl, 1, GL_RGBA8, static_cast<GLuint>(width), static_cast<GLuint>(height));
 	glTextureSubImage2D(texobj_hdl, 0, 0, 0, static_cast<GLuint>(width), static_cast<GLuint>(height), GL_RGBA, GL_UNSIGNED_BYTE, data);
 
 	glTextureParameteri(texobj_hdl, GL_TEXTURE_MIN_FILTER, GL_LINEAR);

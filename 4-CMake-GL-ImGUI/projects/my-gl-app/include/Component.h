@@ -42,6 +42,7 @@ public:
     bool visible = true;
     bool hasTex = false;
     bool isTransparent = false;
+    bool wireframe = false;
     GLuint texHDL;
     std::string texFile;
     
