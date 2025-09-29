@@ -75,7 +75,7 @@ void GameObjectManager::init()
 			is >> renderptr->hasTex;
 			if (renderptr->hasTex == true)
 			{
-				is >> renderptr->resolution.first >> renderptr->resolution.second >> renderptr->texFile;
+				is >> renderptr->texFile;
 			}
 			std::cout << shape << "\n";
 		}

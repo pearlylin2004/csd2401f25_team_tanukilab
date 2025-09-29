@@ -41,7 +41,6 @@ public:
 public:
     bool visible = true;
     bool hasTex = false;
-    std::pair<int, int> resolution;
     GLuint texHDL;
     std::string texFile;
     

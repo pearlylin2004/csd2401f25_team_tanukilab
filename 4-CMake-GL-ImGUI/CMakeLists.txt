@@ -22,6 +22,7 @@ set(ALL_LIBS
   PRIVATE glfw
   PRIVATE libglew_static
   PRIVATE imgui
+  PRIVATE stb
 )
 
 # Include path for GLM (optional if not using FetchContent)

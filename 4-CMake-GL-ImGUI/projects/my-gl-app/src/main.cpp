@@ -1,4 +1,5 @@
 // Hungarian notation: https://en.wikipedia.org/wiki/Hungarian_notation
+#define STB_IMAGE_IMPLEMENTATION
 #include <shader.hpp>
 #include <memory>
 #include <stdexcept>

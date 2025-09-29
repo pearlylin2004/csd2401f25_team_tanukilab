@@ -70,8 +70,13 @@ void RenderSystem::update(GameObjectManager& manager, float deltaTime) {
 			transform->mdlWorld = glm::scale(transform->mdlWorld, glm::vec3(transform->scaleX, transform->scaleY, transform->scaleZ));
 
 			//texture bs
-			render->texHDL = uploadtex(render->texFile, render->resolution);
-			glBindTextureUnit(0, render->texHDL);
+			if (render->hasTex)
+			{
+				render->texHDL = uploadtex(render->texFile);
+				glBindTextureUnit(0, render->texHDL);
+			}
+			else glBindTextureUnit(0, 0);
+			
 			glm::mat4 texRot{ 1 };
 			texRot = glm::rotate(texRot, angle, glm::vec3(0, 0, 1.f));
 			glm::vec2 rotationCenter{ 0,0 }; //if needed in the future it can be a member variable, now just for sanity
@@ -101,31 +106,24 @@ void RenderSystem::update(GameObjectManager& manager, float deltaTime) {
 	}
 }
 
-GLuint RenderSystem::uploadtex(std::string const& filename, std::pair<int const, int const> resolution)
+GLuint RenderSystem::uploadtex(std::string const& filename)
 {
-	GLuint width{ static_cast<GLuint>(resolution.first) }, height{ static_cast<GLuint>(resolution.second) };
-	std::ifstream ifs{ filename, std::ios::binary | std::ios::ate };
-	if (!ifs)
-	{
-		std::cerr << "Failed to open texture file: " << filename << std::endl;
+	int width, height, channels;
+	unsigned char* data = stbi_load(filename.c_str(), &width, &height, &channels, STBI_rgb_alpha);
+	if (!data) {
+		std::cerr << "Failed to load image: " << filename << "]" << std::endl;
 		return 0;
 	}
-	size_t texel_file_size = static_cast<size_t>(ifs.tellg()); //get file size
-	ifs.seekg(0, std::ios::beg); //back to start
-	unsigned char* ptr_texels = new unsigned char[texel_file_size];
-	if (ifs.read(reinterpret_cast<char*>(ptr_texels), texel_file_size)) {
-		std::cout << "Loaded " << texel_file_size << " bytes from " << filename << std::endl;
-	}
-	else {
-		std::cerr << "Error reading file contents." << std::endl;
-	}
+
+	std::cout << "Loaded " << filename
+		<< " (" << width << "x" << height << "), "
+		<< channels << " channels" << std::endl;
 
 	GLuint texobj_hdl;
 	glCreateTextures(GL_TEXTURE_2D, 1, &texobj_hdl);
-	glTextureStorage2D(texobj_hdl, 1, GL_RGBA8, width, height);
-	glTextureSubImage2D(texobj_hdl, 0, 0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, ptr_texels);
-	delete[] ptr_texels;
-	ifs.close();
+	glTextureStorage2D(texobj_hdl, 1, GL_RGBA8, static_cast<GLuint>(width), static_cast<GLuint>(height));
+	glTextureSubImage2D(texobj_hdl, 0, 0, 0, static_cast<GLuint>(width), static_cast<GLuint>(height), GL_RGBA, GL_UNSIGNED_BYTE, data);
+	stbi_image_free(data);
 	return texobj_hdl;
 }
 
