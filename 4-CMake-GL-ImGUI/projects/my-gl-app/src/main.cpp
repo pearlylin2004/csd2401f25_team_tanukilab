@@ -42,6 +42,10 @@ public:
             glfwTerminate();
             throw std::runtime_error("GLEW initialization failed");
         }
+
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
         glEnable(GL_DEPTH_TEST);
         glfwSetInputMode(m_window, GLFW_STICKY_KEYS, GL_TRUE);
         //m_cube->initialize();

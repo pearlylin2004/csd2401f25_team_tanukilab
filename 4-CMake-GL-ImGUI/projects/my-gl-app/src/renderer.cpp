@@ -13,19 +13,6 @@ void renderer::init(int w, int h)
 	cam.init(w, h);
 	models.push_back(setup_square(glm::vec3(1.f, 1.f, 1.f)));
 	models.push_back(setup_circle(glm::vec3(0.5f, 0.5f, 0.5f), 20));
-	/*object obj1;
-	objects.emplace("player", obj1);
-	objects.emplace("platform",obj1);
-	objects["player"].model_ref = models[0];
-	objects["platform"].model_ref = models[1];
-	for (std::map<std::string, object>::iterator i = objects.begin(); i != objects.end(); ++i)
-	{
-		std::cout << (*i).first << "\n";
-		(*i).second.init();
-		if ((*i).first == "player")
-			i->second.translate.z = 0.01;
-		(*i).second.update();
-	}*/
 	setup_shdrpgm();
 }
 
@@ -76,7 +63,7 @@ renderer::model renderer::setup_square(glm::vec3 clr)
 	glVertexArrayAttribBinding(mdl.vaoid, 1, 1);
 
 	glEnableVertexArrayAttrib(mdl.vaoid, 2);
-	glVertexArrayVertexBuffer(mdl.vaoid, 2, mdl.vbo, texture_data_offset, texture_data_size);
+	glVertexArrayVertexBuffer(mdl.vaoid, 2, mdl.vbo, texture_data_offset, texture_attibute_size);
 	glVertexArrayAttribFormat(mdl.vaoid, 2, 2, GL_FLOAT, GL_FALSE, 0);
 	glVertexArrayAttribBinding(mdl.vaoid, 2, 2);
 
@@ -247,7 +234,7 @@ void renderer::camera::init(int w, int h)
 	ar = static_cast<float>(w) / h;
 	width = w;
 	rot = 0;
-	zoom = 20;
+	zoom = 10;
 	campos = glm::vec3(0, 0, 0);
 	up = glm::vec3(0, 1, 0);
 

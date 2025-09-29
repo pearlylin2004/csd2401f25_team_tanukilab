@@ -20,5 +20,6 @@ void main()
     //gl_Position = vec4(aPosition, 0, 1.0);
     vColor = aColor;
 
-    vTex = uRotMtx * (aTexPos - uMcn);
+    //vTex = uRotMtx * (aTexPos - uMcn) + uMcn;
+    vTex = aTexPos;
 }

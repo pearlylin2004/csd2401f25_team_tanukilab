@@ -41,6 +41,7 @@ public:
 public:
     bool visible = true;
     bool hasTex = false;
+    bool isTransparent = false;
     GLuint texHDL;
     std::string texFile;
     
