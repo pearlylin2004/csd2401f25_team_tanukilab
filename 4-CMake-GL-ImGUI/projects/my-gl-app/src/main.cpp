@@ -19,7 +19,6 @@
 #include "Component.h"
 #include "Systems.h"
 
-
 //collision testing
 //helper function to get an AABB from a renderer object
 Collision::AABB getObjectAABB(const renderer::object& obj) {
@@ -51,7 +50,6 @@ public:
     GLApp(int p_width, int p_height, const char* p_title) : m_angleOfRotation(0.0f),
         m_rotationSpeed(0.01f),
         m_window(nullptr)//, 
-        //m_cube(std::make_shared<Cube>())
     {
         if (!glfwInit()) throw std::runtime_error("GLFW initialization failed");
         glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
@@ -76,8 +74,6 @@ public:
         InputHandler::init(m_window);
         renderer::init(p_width, p_height);
         m_manager.init();
-
-
 
         // Setup ImGui
         IMGUI_CHECKVERSION();

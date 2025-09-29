@@ -25,16 +25,16 @@ void InputSystem::update(GameObjectManager& manager, float deltaTime) {
 				velocity->dx = 0.0f;
 				velocity->dy = 0.0f;
 
-				if (InputHandler::isKeyDown(GLFW_KEY_W)) {
+				if (InputHandler::isKeyHeld(GLFW_KEY_W)) {
 					velocity->dy = input->moveSpeed;
 				}
-				if (InputHandler::isKeyDown(GLFW_KEY_S)) {
+				if (InputHandler::isKeyHeld(GLFW_KEY_S)) {
 					velocity->dy = -input->moveSpeed;
 				}
-				if (InputHandler::isKeyDown(GLFW_KEY_A)) {
+				if (InputHandler::isKeyHeld(GLFW_KEY_A)) {
 					velocity->dx = -input->moveSpeed;
 				}
-				if (InputHandler::isKeyDown(GLFW_KEY_D)) {
+				if (InputHandler::isKeyHeld(GLFW_KEY_D)) {
 					velocity->dx = input->moveSpeed;
 				}
 				//so far so good i think?
