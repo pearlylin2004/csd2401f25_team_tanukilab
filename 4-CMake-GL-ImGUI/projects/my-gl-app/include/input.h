@@ -2,6 +2,7 @@
 
 #include <GLFW/glfw3.h>
 #include <Math_Lib.h>
+#include <mathlib.h>
 
 /*
 Keyboard key tokens
