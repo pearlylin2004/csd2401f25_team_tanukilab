@@ -1,7 +1,14 @@
 object player
 renderer square 
 transform 5 -5 0.01 1 1 1 0 
+physics 0 0
 
 object platform
 renderer circle
 transform 0 0 0.0 1 5 5 0 
+physics 0 0
+
+object player1
+renderer square 
+transform 8 -8 0.01 1 1 1 0 
+physics 0 0

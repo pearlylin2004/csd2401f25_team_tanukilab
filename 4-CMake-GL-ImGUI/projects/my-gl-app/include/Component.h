@@ -47,7 +47,22 @@ public:
 struct Physics : public Component {
     //idk add physics stuff here
 public:
+    float posX;
+    float posY;
+    float velY;
+    float velX;
 
+    bool inWaterTriggered; // true only when W is pressed
+
+    // Physics(float x = 0.0f, float y = 0.0f);
+
+    bool inWater = false;
+    bool buoancy = false;
+
+    const float gravity = -2.0f;      // gravity pulling down
+    const float waterBounce = 2.0f;   // upward velocity when entering water
+    const float damping = 0.98f;       // slows motion gradually
+    const float floorY = -8.0f;       // bottom limit
 };
 
 struct Input : public Component {
@@ -58,4 +73,16 @@ public:
 public:
     float moveSpeed = 0.0f;
 
+};
+
+enum class CollisionResponseMode {
+    Stop,
+    Bounce,
+    Slide
+};
+struct CollisionInfo : public Component {
+public:
+    bool collided = false;
+    float timeOfImpact = 0.0f;
+    Vector2D normal{ 0,0 };
 };

@@ -1,11 +1,11 @@
 /* Start Header ************************************************************************/
 /*!
 \file		collision.hpp
-\author		
-\par		
+\author
+\par
 \date		September, 17, 2025
 \brief		This file declares the static and dynamic collision functions, as well as
-			the main AABB-AABB collision function implementation.
+            the main AABB-AABB collision function implementation.
 */
 /* End Header **************************************************************************/
 #ifndef COLLISION_H
@@ -13,20 +13,11 @@
 
 #include <cstdint>
 #include <cstddef>
-#include "Math_Lib.h"
+#include <Math_Lib.h>
+//#include <mathlib.h>
+#include "component.h"
 
 namespace Collision {
-    enum class CollisionResponseMode {
-        Stop, 
-        Bounce,
-        Slide 
-    };
-    struct CollisionInfo {
-        bool collided = false;
-        float timeOfImpact = 0.0f;   
-        Vector2D normal{ 0,0 };      
-    };
-
     using f64 = double;
     extern f64 g_fixedDT;
     extern f64 g_dt;
@@ -77,6 +68,9 @@ namespace Collision {
         Vector2D& getCenterRef() { return center; }
         float& getRadiusRef() { return radius; }
     };
+
+    AABB getObjectAABB(const Transform* transform);
+    Circle getObjectCircle(const Transform* transform);
 
     //collision function for AABB
     bool CollisionIntersection_RectRect_Static(const AABB& aabb1, const AABB& aabb2);

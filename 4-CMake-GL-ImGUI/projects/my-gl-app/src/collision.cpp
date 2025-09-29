@@ -1,15 +1,16 @@
 /* Start Header ************************************************************************/
 /*!
 \file		collision.cpp
-\author		
-\par		
+\author
+\par
 \date		September, 17, 2025
 \brief		This file declares the static and dynamic collision functions, as well as
-			the main AABB-AABB collision function implementation.
+            the main AABB-AABB collision function implementation.
 */
 /* End Header **************************************************************************/
 
 #include "collision.h"
+
 #include <iostream>
 
 namespace Collision {
@@ -18,6 +19,23 @@ namespace Collision {
     f64 g_dt = 0.016;
     f64 g_appTime = 0.0;
     const float EPSILON = 1e-5f;
+
+    //helper function to get an AABB from a renderer object
+    AABB getObjectAABB(const Transform* transform) {
+        float halfWidth = transform->scaleX * 0.5f;
+        float halfHeight = transform->scaleY * 0.5f;
+
+        Vector2D center(transform->x, transform->y);
+        Vector2D min(center.x - halfWidth, center.y - halfHeight);
+        Vector2D max(center.x + halfWidth, center.y + halfHeight);
+        return Collision::AABB(min, max);
+    }
+
+    Circle getObjectCircle(const Transform* transform) {
+        Vector2D center(transform->x, transform->y);
+        float radius = std::max(transform->scaleX, transform->scaleY) * 0.5f;
+        return Collision::Circle(center, radius);
+    }
 
     //can add to math
     static inline float Dot(const Vector2D& a, const Vector2D& b) { return a.x * b.x + a.y * b.y; }
@@ -178,11 +196,11 @@ namespace Collision {
         const Vector2D& center = c.getCenter();
         float radius = c.getRadius();
 
-		//find closest point on AABB to circle center
+        //find closest point on AABB to circle center
         float closestX = Math_Max(aabb.getMin().x, Math_Min(center.x, aabb.getMax().x));
         float closestY = Math_Max(aabb.getMin().y, Math_Min(center.y, aabb.getMax().y));
 
-		//distance between center to closest point
+        //distance between center to closest point
         float dx = center.x - closestX;
         float dy = center.y - closestY;
 
@@ -312,7 +330,7 @@ namespace Collision {
             if (velAlongNormal > 0.0f) return;
 
             // compute impulse scalar for perfectly elastic-ish collision:
-            // j = -(1 + e) * (v_rel·n) / (1/m1 + 1/m2)
+            // j = -(1 + e) * (v_rel n) / (1/m1 + 1/m2)
             float invMassA = (massA > 0.0f) ? (1.0f / massA) : 0.0f;
             float invMassB = (massB > 0.0f) ? (1.0f / massB) : 0.0f;
             float j = -(1.0f + restitution) * velAlongNormal / (invMassA + invMassB + EPSILON);
