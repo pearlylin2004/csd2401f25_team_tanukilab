@@ -149,8 +149,7 @@ public:
         {
             update();
             render();
-            audio.update();
-            //glfwPollEvents();           
+            audio.update();     
         }
     }
 
