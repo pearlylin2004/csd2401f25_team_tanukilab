@@ -95,6 +95,7 @@ public:
     bool collided = false;
     float timeOfImpact = 0.0f;
     Vector2D normal{ 0,0 };
+    Vector2D contactPoint = { 0,0 };
 };
 
 //for imgui(testing)
