@@ -1,4 +1,13 @@
-﻿#pragma once
+/* Start Header ************************************************************************/
+/*!
+\file		mathlib.h
+\author
+\par
+\date		Month, Day, 2025
+\brief
+*/
+/* End Header **************************************************************************/
+#pragma once
 #ifndef MATHLIB_H
 #define MATHLIB_H
 

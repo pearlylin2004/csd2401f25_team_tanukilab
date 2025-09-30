@@ -1,3 +1,12 @@
+/* Start Header ************************************************************************/
+/*!
+\file		renderer.cpp
+\author
+\par
+\date		Month, Day, 2025
+\brief
+*/
+/* End Header **************************************************************************/
 #include "renderer.h"
 
 std::vector<renderer::model> renderer::models;
@@ -232,7 +241,7 @@ void renderer::camera::init(int w, int h)
 	ar = static_cast<float>(w) / h;
 	width = w;
 	rot = 0;
-	zoom = 10;
+	zoom = 20;
 	campos = glm::vec3(0, 0, 0);
 	up = glm::vec3(0, 1, 0);
 

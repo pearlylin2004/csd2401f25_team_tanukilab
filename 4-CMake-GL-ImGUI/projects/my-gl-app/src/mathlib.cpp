@@ -1,3 +1,12 @@
+/* Start Header ************************************************************************/
+/*!
+\file		mathlib.cpp
+\author
+\par
+\date		Month, Day, 2025
+\brief
+*/
+/* End Header **************************************************************************/
 #include "mathlib.h"
 
 float Math_Sqrt(float v) {

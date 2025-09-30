@@ -1,3 +1,13 @@
+/* Start Header ************************************************************************/
+/*!
+\file		GameObjectManager.h
+\author
+\par
+\date		Month, Day, 2025
+\brief
+*/
+/* End Header **************************************************************************/
+
 #pragma once
 #include <fstream>
 #include <string>

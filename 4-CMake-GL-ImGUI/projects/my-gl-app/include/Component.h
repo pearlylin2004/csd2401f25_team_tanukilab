@@ -1,3 +1,13 @@
+/* Start Header ************************************************************************/
+/*!
+\file		Component.h
+\author
+\par
+\date		Month, Day, 2025
+\brief
+*/
+/* End Header **************************************************************************/
+
 #pragma once
 #include <string>
 #include <memory> //for unique_ptr
@@ -82,4 +92,22 @@ public:
 public:
     float moveSpeed = 0.0f;
 
+};
+
+//for collision system
+enum class CollisionResponseMode {
+    Stop
+};
+struct CollisionInfo : public Component {
+public:
+    bool collided = false;
+    float timeOfImpact = 0.0f;
+    Vector2D normal{ 0,0 };
+    Vector2D contactPoint = { 0,0 };
+};
+
+//for imgui(testing)
+struct UIComponent : public Component {
+    //idk empty as of now
+    //idk how i can use it
 };
