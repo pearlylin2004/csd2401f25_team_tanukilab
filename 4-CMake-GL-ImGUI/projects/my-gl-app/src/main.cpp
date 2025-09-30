@@ -24,7 +24,7 @@ public:
         m_rotationSpeed(0.01f),
         m_window(nullptr)//, 
         //m_cube(std::make_shared<Cube>())
-    {
+    {  
         if (!glfwInit()) throw std::runtime_error("GLFW initialization failed");
         glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
         glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 5);
@@ -64,7 +64,7 @@ public:
 
         // initialize audio
         audio.init();
-        audio.playSound(soundID::water, 0.8f);
+        audio.playSound(soundID::bg, 0.1f);
     }
 
     ~GLApp() {
@@ -81,6 +81,20 @@ public:
         InputHandler::update();
 
         const float deltaTime = 1.0f / 60.0f; // simulate 60fps
+
+        if (InputHandler::isKeyTriggered(GLFW_KEY_P)) {
+            audio.toggleSoundPause(soundID::bg);
+        }
+        if (InputHandler::isMouseLeftClicked()) {
+            audio.playSound(soundID::effect);
+        }
+
+        if (InputHandler::isMouseLeftDoubleClicked()) {
+            audio.decreaseSoundVolume(soundID::bg); 
+        }
+        if (InputHandler::isKeyTriggered(GLFW_KEY_O)) {
+			//std::cout << InputHandler::getMouseWorldX();
+        }
 
         // input test code
         /*if (InputHandler::isKeyPressed(GLFW_KEY_SPACE))
@@ -135,9 +149,8 @@ public:
         {
             update();
             render();
-            glfwPollEvents();
-            
             audio.update();
+            //glfwPollEvents();           
         }
     }
 
@@ -152,12 +165,16 @@ private:
 	RenderSystem m_renderSystem;
 
     GLFWwindow* m_window;
-    AudioSystem& audio = AudioSystem::getInstance();
+    AudioHandler& audio = AudioHandler::getInstance();
     //std::shared_ptr<Cube> m_cube;
     //renderer::model model;
 };
 
 int main() {
+    #if defined(DEBUG) | defined(_DEBUG)
+        // Enable run-time memory check for debug builds
+        _CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
+    #endif
     try {
         GLApp app(1600, 800, "Render Cube");
         app.run();

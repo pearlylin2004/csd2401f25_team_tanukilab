@@ -24,9 +24,13 @@ void AudioHandler::init() {
 		soundID id = static_cast<soundID>(i);
 		std::string path = soundIDToFilePath(id);
 
-		if (!path.empty() && !loadSound(id, path)) {
+		if (id == soundID::bg && !path.empty() && !loadSound(id, path, true)) {
 			std::cerr << "Failed to load sound: " << path << std::endl;
 		}
+		else if (!path.empty() && !loadSound(id, path)) {
+			std::cerr << "Failed to load sound: " << path << std::endl;
+		}
+
 	}
 }
 
@@ -34,6 +38,17 @@ void AudioHandler::update() {
 	if (system) {
 		system->update();
 	}
+
+	for (size_t i = 0; i < channels.size(); ++i) {
+		if (channels[i]) {
+			bool isPlaying = false;
+			channels[i]->isPlaying(&isPlaying);  // NEED to call fmoderrorcheck() here once exit(-1) change to logging
+			if (!isPlaying) {
+				channels[i] = nullptr;
+			}
+		}
+	}
+
 }
 
 void AudioHandler::shutdown() {
@@ -137,13 +152,6 @@ void AudioHandler::stopSound(soundID id) {
 	}
 }
 
-void AudioSystem::setSoundVolume(soundID id, float volume) {
-	size_t pos = static_cast<size_t>(id);
-
-	if (channels[pos])
-		FMODErrorCheck(channels[pos]->setVolume(volume));
-}
-
 bool AudioHandler::isSoundPlaying(soundID id) {
 	size_t pos = static_cast<size_t>(id);
 
@@ -153,6 +161,71 @@ bool AudioHandler::isSoundPlaying(soundID id) {
 		return isPlaying;
 	}
 	return false;
+}
+
+void AudioHandler::muteSound(soundID id) {
+	size_t pos = static_cast<size_t>(id);
+	if (channels[pos]) {
+		FMODErrorCheck(channels[pos]->setMute(true));
+	}
+}
+
+void AudioHandler::muteAllSound() {
+	for (size_t i = 0; i < channels.size(); ++i) {
+		if (channels[i]) {
+			FMODErrorCheck(channels[i]->setMute(true));
+		}
+	}
+}
+
+void AudioHandler::unmuteSound(soundID id) {
+	size_t pos = static_cast<size_t>(id);
+	if (channels[pos]) {
+		FMODErrorCheck(channels[pos]->setMute(false));
+	}
+}
+
+void AudioHandler::unmuteAllSound() {
+	for (size_t i = 0; i < channels.size(); ++i) {
+		if (channels[i]) {
+			FMODErrorCheck(channels[i]->setMute(false));
+		}
+	}
+}
+
+void AudioHandler::increaseSoundVolume(soundID id) {
+	size_t pos = static_cast<size_t>(id);
+	if (channels[pos]) {
+		float volume = 0.0f;
+		FMODErrorCheck(channels[pos]->getVolume(&volume));
+		volume += 0.1f;
+		if (volume > 1.0f) volume = 1.0f; // cap at 1.0f
+		FMODErrorCheck(channels[pos]->setVolume(volume));
+	}
+}
+
+void AudioHandler::decreaseSoundVolume(soundID id) {
+	size_t pos = static_cast<size_t>(id);
+	if (channels[pos]) {
+		float volume = 0.0f;
+		FMODErrorCheck(channels[pos]->getVolume(&volume));
+		volume -= 0.1f;
+		if (volume < 0.0f) volume = 0.0f; // cap at 0.0f
+		FMODErrorCheck(channels[pos]->setVolume(volume));
+	}
+}
+
+void AudioHandler::setSoundVolume(soundID id, float volume) {
+	size_t pos = static_cast<size_t>(id);
+
+	if (channels[pos])
+		FMODErrorCheck(channels[pos]->setVolume(volume));
+}
+
+void AudioHandler::setSoundpitch(soundID id, float pitch) {
+	size_t pos = static_cast<size_t>(id);
+	if (channels[pos])
+		FMODErrorCheck(channels[pos]->setPitch(pitch));
 }
 
 /* HELPER FUNCTION */
