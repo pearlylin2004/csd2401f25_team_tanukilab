@@ -143,7 +143,6 @@ public:
             render();
             Perf::UpdateWindowTitle(m_window, m_title, m_fps, m_showFpsInTitle);
 
-            glfwPollEvents();
         }
     }
 

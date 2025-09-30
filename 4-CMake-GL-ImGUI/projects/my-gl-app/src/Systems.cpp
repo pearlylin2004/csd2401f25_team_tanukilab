@@ -104,11 +104,13 @@ void PhysicsSystem::update(GameObjectManager& manager, float deltaTime) {
 		Physics* physics = object->getComponent<Physics>();
 
 		if (object->hasComponent<Input>()) {
+			//std::cout << object << " has input component\n";
 			//bullet
-			if (InputHandler::isKeyDown(GLFW_KEY_SPACE)) {
+			if (InputHandler::isKeyTriggered(GLFW_KEY_SPACE)) {
+				std::cout << "bullet is spawned\n";
 				static int bulletCount = 0;
 
-				Transform* t = bullet->addComponent<Transform>();
+				Transform* t = bullet->getComponent<Transform>();
 				t->x = transform->x;  
 				t->y = transform->y;
 				t->z = 0.02f;
@@ -117,32 +119,31 @@ void PhysicsSystem::update(GameObjectManager& manager, float deltaTime) {
 				t->scaleZ = 0.5f;
 				t->rotation = 0.0f;
 
-				Physics* p = bullet->addComponent<Physics>();
+				Physics* p = bullet->getComponent<Physics>();
 				p->velX = 2.0f;
 				p->velY = 0.0f;
 				p->onGround = false;
 			}
 
 			// Jump
-			if (InputHandler::isKeyDown(GLFW_KEY_B) && physics->onGround) {
+			if (InputHandler::isKeyTriggered(GLFW_KEY_B)){// && physics->onGround) {
+				std::cout << "player is jumping\n";
 				physics->velY = physics->jumpForce;
 				physics->velX = physics->Speed;
 				physics->onGround = false;
 			}
+		}
+		physics->velY += physics->gravity * deltaTime;
+		physics->velX *= physics->damping;
 
+		transform->y += physics->velY * deltaTime;
+		transform->x += physics->velX * deltaTime;
 
-			physics->velY += physics->gravity * deltaTime;
-			physics->velX *= physics->damping;
-
-			transform->y += physics->velY * deltaTime;
-			transform->x += physics->velX * deltaTime;
-
-			if (transform->y < physics->floorY) {
-				transform->y = physics->floorY;
-				physics->velY = 0.0f;
-				physics->onGround = true;
-				physics->velX = 0.0f;
-			}
+		if (transform->y < physics->floorY) {
+			transform->y = physics->floorY;
+			physics->velY = 0.0f;
+			physics->onGround = true;
+			physics->velX = 0.0f;
 		}
 		transform->x += physics->velX * deltaTime;
 	}

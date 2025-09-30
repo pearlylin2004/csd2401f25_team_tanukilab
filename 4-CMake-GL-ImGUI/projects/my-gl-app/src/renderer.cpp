@@ -241,7 +241,7 @@ void renderer::camera::init(int w, int h)
 	ar = static_cast<float>(w) / h;
 	width = w;
 	rot = 0;
-	zoom = 20;
+	zoom = 10;
 	campos = glm::vec3(0, 0, 0);
 	up = glm::vec3(0, 1, 0);
 
