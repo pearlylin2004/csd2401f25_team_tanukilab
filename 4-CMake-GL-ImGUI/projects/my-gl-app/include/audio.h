@@ -8,7 +8,8 @@
 
 
 enum class soundID : int {
-	water = 0, // for water sound (placeholder only)
+	effect = 0, // for water sound (placeholder only)
+	bg,
 	// keep this as the last, for getting the number of sound ids
 	count
 };

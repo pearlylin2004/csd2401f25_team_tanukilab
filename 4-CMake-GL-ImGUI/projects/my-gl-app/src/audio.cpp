@@ -159,8 +159,10 @@ bool AudioHandler::isSoundPlaying(soundID id) {
 std::string AudioHandler::soundIDToFilePath(soundID id) {
 	// for now file paths are hardcoded, to change once deserialization is implemented
 	switch (id) {
-	case soundID::water:
-		return "shaders/water.mp3";
+	case soundID::effect:
+		return "shaders/effect.wav";
+	case soundID::bg:
+		return "shaders/bg.wav";
 	default:
 		return "";
 	}
