@@ -65,7 +65,7 @@ public:
 
     //Jump 
     float damping = 0.99f;
-    float jumpForce = 300.0f;  
+    float jumpForce = 10.0f;  
     float floorY = 0.0f;
     bool onGround = true;  
     float Speed = 150.0f;

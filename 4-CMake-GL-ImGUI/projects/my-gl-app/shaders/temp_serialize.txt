@@ -2,6 +2,7 @@ object player
 renderer square 
 transform 10 10 0.01 1 1 1 0
 physics 0 0
+collision
 
 object platform
 renderer circle
@@ -11,9 +12,10 @@ physics 1 1
 object bullet
 renderer square
 transform 0 0 0.02 0.5 0.5 0.5 0
-physics 0 0
+physics 0 0 
 
 object player1
 renderer square 
 transform 8 -8 0.01 1 1 1 0 
 physics 0 0
+collision

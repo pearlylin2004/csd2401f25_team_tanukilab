@@ -32,7 +32,6 @@ void InputSystem::update(GameObjectManager& manager, float deltaTime) {
 
 				//reset to 0 every frame
 				velocity->velX = 0.0f;
-				velocity->velY = 0.0f;
 
 				if (InputHandler::isKeyHeld(GLFW_KEY_W)) {
 					velocity->velY = input->moveSpeed;
@@ -103,6 +102,8 @@ void PhysicsSystem::update(GameObjectManager& manager, float deltaTime) {
 		Transform* transform = object->getComponent<Transform>();
 		Physics* physics = object->getComponent<Physics>();
 
+		physics->velY += physics->gravity * deltaTime;
+
 		if (object->hasComponent<Input>()) {
 			//std::cout << object << " has input component\n";
 			//bullet
@@ -128,12 +129,11 @@ void PhysicsSystem::update(GameObjectManager& manager, float deltaTime) {
 			// Jump
 			if (InputHandler::isKeyTriggered(GLFW_KEY_B)){// && physics->onGround) {
 				std::cout << "player is jumping\n";
-				physics->velY = physics->jumpForce;
-				physics->velX = physics->Speed;
+				physics->velY += physics->jumpForce;
+				//physics->velX = physics->Speed;
 				physics->onGround = false;
 			}
 		}
-		physics->velY += physics->gravity * deltaTime;
 		physics->velX *= physics->damping;
 
 		transform->y += physics->velY * deltaTime;
@@ -159,7 +159,7 @@ void CollisionSystem::update(GameObjectManager& manager, float deltaTime) {
 		if (iterator->hasComponent<CollisionInfo>() && iterator->hasComponent<Physics>()) {
 
 			for (GameObject* obj : gameObjects) {
-				if (obj != iterator) {
+				if (obj != iterator && obj->getComponent<CollisionInfo>()) {
 					/*if (!obj->hasComponent<Transform>() || !iterator->hasComponent<Transform>()) {
 						
 					}*/

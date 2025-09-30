@@ -100,10 +100,15 @@ void GameObjectManager::init()
 			is >> phyptr->inWater >> phyptr->buoancy;
 			std::cout << "inwater : " << phyptr->inWater << ", " << phyptr->buoancy << "\n";
 		}
+		if(checker == "collision")
+		{
+			m_gameObjects[objectName]->addComponent<CollisionInfo>();
+			std::cout << "collision component added\n";
+		}
 
 		m_gameObjects["player"]->addComponent<Input>(1.f);
 		/*m_gameObjects[objectName]->addComponent<Velocity>();*/
-		m_gameObjects[objectName]->addComponent<CollisionInfo>();
+		
 	}
 }
 
