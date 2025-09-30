@@ -1,18 +1,18 @@
 #include "audio.h"
 
-AudioSystem& AudioSystem::getInstance() {
-	static AudioSystem instance;
+AudioHandler& AudioHandler::getInstance() {
+	static AudioHandler instance;
 	return instance;
 }
 
-void AudioSystem::FMODErrorCheck(FMOD_RESULT result) {
+void AudioHandler::FMODErrorCheck(FMOD_RESULT result) {
     if (result != FMOD_OK) {
         std::cerr << "FMOD error: " << FMOD_ErrorString(result) << std::endl;
 		exit(-1); // instead of terminate, can change to logging the errors
     }
 }
 
-void AudioSystem::init() {
+void AudioHandler::init() {
 	FMODErrorCheck(FMOD::System_Create(&system));
 
 	FMODErrorCheck(system->init(36, FMOD_INIT_NORMAL, nullptr));
@@ -30,13 +30,13 @@ void AudioSystem::init() {
 	}
 }
 
-void AudioSystem::update() {
+void AudioHandler::update() {
 	if (system) {
 		system->update();
 	}
 }
 
-void AudioSystem::shutdown() {
+void AudioHandler::shutdown() {
 	for (FMOD::Sound* sound : sounds) {
 		if (sound) {
 			sound->release();
@@ -55,7 +55,7 @@ void AudioSystem::shutdown() {
 
 
 /* Sound Management */
-bool AudioSystem::loadSound(soundID id, const std::string& filePath, bool loop) {
+bool AudioHandler::loadSound(soundID id, const std::string& filePath, bool loop) {
 	if (!system) {
 		std::cerr << "Error! Audio system not initialized..." << std::endl;
 		return false;
@@ -73,7 +73,7 @@ bool AudioSystem::loadSound(soundID id, const std::string& filePath, bool loop) 
 	return true;
 }
 
-FMOD::Channel* AudioSystem::playSound(soundID id, float volume) {
+FMOD::Channel* AudioHandler::playSound(soundID id, float volume) {
 	if (!system) {
 		std::cerr << "Error! Audio system not initialized..." << std::endl;
 		return nullptr;
@@ -95,7 +95,7 @@ FMOD::Channel* AudioSystem::playSound(soundID id, float volume) {
 	return channel;
 }
 
-void AudioSystem::toggleSoundPause(soundID id) {
+void AudioHandler::toggleSoundPause(soundID id) {
 	size_t pos = static_cast<size_t>(id);
 	bool isPaused = false;
 
@@ -106,7 +106,7 @@ void AudioSystem::toggleSoundPause(soundID id) {
 	}
 }
 
-void AudioSystem::toggleAllSoundPause() {
+void AudioHandler::toggleAllSoundPause() {
 	for (size_t i = 0; i < channels.size(); ++i) {
 		if (channels[i]) {
 			bool isPaused = false;
@@ -116,7 +116,7 @@ void AudioSystem::toggleAllSoundPause() {
 	}
 }
 
-bool AudioSystem::isSoundPaused(soundID id) {
+bool AudioHandler::isSoundPaused(soundID id) {
 	size_t pos = static_cast<size_t>(id);
 	bool isPaused = false;
 
@@ -128,7 +128,7 @@ bool AudioSystem::isSoundPaused(soundID id) {
 	return false;
 }
 
-void AudioSystem::stopSound(soundID id) {
+void AudioHandler::stopSound(soundID id) {
 	size_t pos = static_cast<size_t>(id);
 
 	if (channels[pos]) {
@@ -144,7 +144,7 @@ void AudioSystem::setSoundVolume(soundID id, float volume) {
 		FMODErrorCheck(channels[pos]->setVolume(volume));
 }
 
-bool AudioSystem::isSoundPlaying(soundID id) {
+bool AudioHandler::isSoundPlaying(soundID id) {
 	size_t pos = static_cast<size_t>(id);
 
 	if (channels[pos]) {
@@ -156,7 +156,7 @@ bool AudioSystem::isSoundPlaying(soundID id) {
 }
 
 /* HELPER FUNCTION */
-std::string AudioSystem::soundIDToFilePath(soundID id) {
+std::string AudioHandler::soundIDToFilePath(soundID id) {
 	// for now file paths are hardcoded, to change once deserialization is implemented
 	switch (id) {
 	case soundID::water:

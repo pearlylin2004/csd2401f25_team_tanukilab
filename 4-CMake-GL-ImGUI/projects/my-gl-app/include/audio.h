@@ -13,9 +13,9 @@ enum class soundID : int {
 	count
 };
 
-class AudioSystem {
+class AudioHandler {
 public:
-	static AudioSystem& getInstance(); // make sure only 1 instance is created
+	static AudioHandler& getInstance(); // make sure only 1 instance is created
 
 	void init();
 	void update();
@@ -36,8 +36,8 @@ public:
 	static void FMODErrorCheck(FMOD_RESULT result);
 
 private: 
-	AudioSystem() : system(nullptr) {}
-	~AudioSystem() { shutdown(); } // auto shutdown once instance is destroyed
+	AudioHandler() : system(nullptr) {}
+	~AudioHandler() { shutdown(); } // auto shutdown once instance is destroyed
 
 	// helper function to convert soundID to file path
 	// currently hardcoded the path, to change once deserialization is implemented
