@@ -5,6 +5,11 @@
 #include <algorithm>
 #include <cctype>
 
+
+bool  gShowFpsInTitle = true;                 
+bool  gShowInputDebug = false;
+float gClearColor[4] = { 0.2f,0.2f,0.25f,1.0f };
+
 namespace {
     inline std::string trim(const std::string& s) {
         size_t start = s.find_first_not_of(" \t\r\n");
@@ -45,8 +50,6 @@ bool LoadConfig(const std::string& path, AppConfig& out, std::string* err) {
     if (cfg.count("vsync"))  out.vsync = (cfg["vsync"] != "0");
     
 
-    if (cfg.count("msaa_samples")) out.msaa_samples = std::stoi(cfg["msaa_samples"]);
-
     if (cfg.count("clear_color")) {
         std::istringstream iss(cfg["clear_color"]);
         std::string token;
@@ -55,7 +58,7 @@ bool LoadConfig(const std::string& path, AppConfig& out, std::string* err) {
             out.clear_color[i++] = std::stof(token);
         }
     }
-
+    if (cfg.count("show_fps_in_title")) out.show_fps_in_title = (cfg["show_fps_in_title"] != "0");
     if (cfg.count("show_input_debug")) out.show_input_debug = (cfg["show_input_debug"] != "0");
 
     return true;

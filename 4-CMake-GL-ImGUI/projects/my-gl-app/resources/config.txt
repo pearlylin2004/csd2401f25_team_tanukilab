@@ -6,8 +6,8 @@ vsync=1
 
 
 # Graphics
-msaa_samples=4
 clear_color=0.2,0.2,0.25,1.0
 
 # Debugging
+show_fps_in_title=1
 show_input_debug=1

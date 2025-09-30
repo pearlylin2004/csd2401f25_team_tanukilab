@@ -4,7 +4,7 @@
 \author
 \par
 \date		Month, Day, 2025
-\brief		
+\brief
 */
 /* End Header **************************************************************************/
 
@@ -24,57 +24,11 @@
 #include "input.h"
 #include "collision.h"
 #include "debug.h"
-#include "config.h"
-
-//class Cube {
-//public:
-//    Cube() : m_programId(0), m_vertexBuffer(0), m_vertexArrayId(0) {}
-//    ~Cube() {
-//        glDeleteBuffers(1, &m_vertexBuffer);
-//        glDeleteVertexArrays(1, &m_vertexArrayId);
-//        glDeleteProgram(m_programId);
-//    }
-//
-//    void initialize() {
-//
-//        m_programId = LoadShaders("shaders/funny.vert", "shaders/funny.frag", true);
-//        m_geometryBuffer = {
-//            //  x      y     z      r     g     b
-//            -0.5f, -0.5f, 0.0f,   0.0f, 1.0f, 1.0f,   // Bottom-left, cyan
-//             0.5f, -0.5f, 0.0f,   1.0f, 0.0f, 1.0f,   // Bottom-right, magenta
-//             0.5f,  0.5f, 0.0f,   1.0f, 1.0f, 0.0f,   // Top-right, yellow
-//
-//             0.5f,  0.5f, 0.0f,   1.0f, 0.0f, 0.0f,   // Top-right (repeat), red
-//            -0.5f,  0.5f, 0.0f,   0.0f, 1.0f, 0.0f,   // Top-left, green
-//            -0.5f, -0.5f, 0.0f,   0.0f, 0.0f, 1.0f    // Bottom-left (repeat), blue
-//        };
-//        glGenVertexArrays(1, &m_vertexArrayId);
-//        glBindVertexArray(m_vertexArrayId);
-//        glGenBuffers(1, &m_vertexBuffer);
-//        glBindBuffer(GL_ARRAY_BUFFER, m_vertexBuffer);
-//        glBufferData(GL_ARRAY_BUFFER, m_geometryBuffer.size() * sizeof(GLfloat), m_geometryBuffer.data(), GL_STATIC_DRAW);
-//        glEnableVertexAttribArray(0);
-//        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (void*)0);
-//        glEnableVertexAttribArray(1);
-//        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (void*)(3 * sizeof(GLfloat)));
-//    }
-//
-//    void render(const glm::mat4& p_modelMat) {
-//        glUseProgram(m_programId);
-//        glBindVertexArray(m_vertexArrayId);
-//        GLint vTransformLoc = glGetUniformLocation(m_programId, "vertexTransform");
-//        glUniformMatrix4fv(vTransformLoc, 1, GL_FALSE, &p_modelMat[0][0]);
-//        glDrawArrays(GL_TRIANGLES, 0, 6);
-//    }
-//
-//private:
-//    GLuint m_programId, m_vertexBuffer, m_vertexArrayId;
-//    std::vector<GLfloat> m_geometryBuffer;
-//};
 #include "ui.h"
 #include "GameObjectManager.h"
 #include "Component.h"
 #include "Systems.h"
+#include "config.h"
 
 
 //std::string outputC = "No collision";
@@ -87,7 +41,8 @@ class GLApp {
 public:
     GLApp(int p_width, int p_height, const char* p_title) : m_angleOfRotation(0.0f),
         m_rotationSpeed(0.01f),
-        m_window(nullptr)//, 
+        m_window(nullptr),
+        m_title(p_title)//, 
         //m_cube(std::make_shared<Cube>())
     {
         if (!glfwInit()) throw std::runtime_error("GLFW initialization failed");
@@ -95,6 +50,7 @@ public:
         glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 5);
         glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
         glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+        
         m_window = glfwCreateWindow(p_width, p_height, p_title, nullptr, nullptr);
         if (!m_window) {
             glfwTerminate();
@@ -140,7 +96,8 @@ public:
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         InputHandler::update();
 
-        const float deltaTime = 1.0f / 60.0f; // simulate 60fps
+        //const float deltaTime = 1.0f / 60.0f; // simulate 60fps
+        const float deltaTime = static_cast<float>(m_delta);
 
         // input test code
         /*if (InputHandler::isKeyPressed(GLFW_KEY_SPACE))
@@ -198,10 +155,11 @@ public:
     }
 
     void run() {
-        while (glfwGetKey(m_window, GLFW_KEY_ESCAPE) != GLFW_PRESS && !glfwWindowShouldClose(m_window)){
-        
+        while (glfwGetKey(m_window, GLFW_KEY_ESCAPE) != GLFW_PRESS && !glfwWindowShouldClose(m_window)) {
+            Perf::UpdateTime(m_delta, m_fps, 0.5);
             update();
             render();
+            Perf::UpdateWindowTitle(m_window, m_title, m_fps, gShowFpsInTitle);
             glfwPollEvents();
         }
     }
@@ -215,56 +173,46 @@ private:
     InputSystem m_inputSystem;
     PhysicsSystem m_physicsSystem;
     RenderSystem m_renderSystem;
-	CollisionSystem m_collisionSystem;
+    CollisionSystem m_collisionSystem;
 
     GLFWwindow* m_window;
     //std::shared_ptr<Cube> m_cube;
     //renderer::model model;
+    double        m_fps = 0.0;
+    double        m_delta = 0.0;
+    std::string   m_title;
 };
 
-//int main() {
-//    try {
-//        GLApp app(1600, 800, "Render Cube");
-//        app.run();
-//        //Engine engine;
-//
-//        //if (!engine.init(1600, 800, "Tanuki Lab")) {
-//        //    return -1; // failed to initialize
-//        //}
-//
-//        //engine.run();       // main loop (handles input, rendering, FPS, etc.)
-//        //engine.shutdown();  // cleanup resources
-//
-//        return 0;
-//    }
-//    catch (const std::exception& e) {
-//        std::cerr << "Unhandled exception: " << e.what() << std::endl;
-//        return -1;
-//    }
-//}
-
 int main() {
-    #if defined(DEBUG) | defined(_DEBUG)
-        // Enable run-time memory check for debug builds
-        _CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
-    #endif
+#if defined(DEBUG) | defined(_DEBUG)
+    // Enable run-time memory check for debug builds
+    _CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
+#endif
     try {
-        // Load config.txt (key=value)
+        
         AppConfig cfg;
         std::string err;
-		LoadConfig("../projects/my-gl-app/resources/config.txt", cfg, &err); // adjust path as needed
-        if (!err.empty()) std::cout << err << "\n";  // okay if missing; defaults apply
+        LoadConfig("../projects/my-gl-app/resources/config.txt", cfg, &err);
+        if (!err.empty()) std::cout << err << "\n";
 
-        // Create app with config-driven window settings
-        GLApp app(cfg.width, cfg.height, cfg.title.c_str()); 
-
-       
-        glfwSwapInterval(cfg.vsync ? 1 : 0);
-        if (cfg.msaa_samples > 0) glEnable(GL_MULTISAMPLE);
-        glClearColor(cfg.clear_color[0], cfg.clear_color[1], cfg.clear_color[2], cfg.clear_color[3]);
-
-        
+        GLApp app(cfg.width, cfg.height, cfg.title.c_str());
+        glfwSwapInterval(cfg.vsync ? 1 : 0);  // vsync on/off
+        glClearColor(cfg.clear_color[0],
+            cfg.clear_color[1],
+            cfg.clear_color[2],
+            cfg.clear_color[3]);
         app.run();
+        /*GLApp app(1600, 800, "Render Cube");
+        app.run();*/
+        //Engine engine;
+
+        //if (!engine.init(1600, 800, "Tanuki Lab")) {
+        //    return -1; // failed to initialize
+        //}
+
+        //engine.run();       // main loop (handles input, rendering, FPS, etc.)
+        //engine.shutdown();  // cleanup resources
+
         return 0;
     }
     catch (const std::exception& e) {
@@ -272,3 +220,4 @@ int main() {
         return -1;
     }
 }
+
