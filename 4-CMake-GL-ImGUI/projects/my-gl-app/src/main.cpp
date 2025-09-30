@@ -89,13 +89,6 @@ public:
             audio.playSound(soundID::effect);
         }
 
-        if (InputHandler::isMouseLeftDoubleClicked()) {
-            audio.decreaseSoundVolume(soundID::bg); 
-        }
-        if (InputHandler::isKeyTriggered(GLFW_KEY_O)) {
-			//std::cout << InputHandler::getMouseWorldX();
-        }
-
         // input test code
         /*if (InputHandler::isKeyPressed(GLFW_KEY_SPACE))
             std::cout << InputHandler::getMouseY() << std::endl;*/
