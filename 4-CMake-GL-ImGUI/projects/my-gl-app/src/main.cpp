@@ -95,7 +95,7 @@ public:
         InputHandler::update();
         
         // Press F9 to simulate a failure (for crash logger)
-        if (glfwGetKey(m_window, GLFW_KEY_F9) == GLFW_PRESS) {
+        if (InputHandler::isKeyTriggered(GLFW_KEY_F9)) {
             throw std::runtime_error("F9 test: simulated failure in update()");
         }
         //const float deltaTime = 1.0f / 60.0f; // simulate 60fps
