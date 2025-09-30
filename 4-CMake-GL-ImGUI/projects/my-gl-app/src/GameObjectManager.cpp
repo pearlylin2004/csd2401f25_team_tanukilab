@@ -1,3 +1,12 @@
+/* Start Header ************************************************************************/
+/*!
+\file		GameObjectManager.cpp
+\author
+\par
+\date		Month, Day, 2025
+\brief
+*/
+/* End Header **************************************************************************/
 #include "GameObjectManager.h"
 
 //create objects
@@ -38,7 +47,7 @@ void GameObjectManager::getAllGameObjects(std::vector<GameObject*>& gameObjects)
 void GameObjectManager::init()
 {
 	std::ifstream is{ "shaders/temp_serialize.txt" };
-	if (!is) 
+	if (!is)
 	{
 		std::cerr << "file not found: shaders/temp_serialize.txt\n";
 		return;
@@ -95,6 +104,11 @@ void GameObjectManager::init()
 			Physics* phyptr = m_gameObjects[objectName]->addComponent<Physics>();
 			is >> phyptr->inWater >> phyptr->buoancy;
 			std::cout << "inwater : " << phyptr->inWater << ", " << phyptr->buoancy << "\n";
+		}
+		if(checker == "collision")
+		{
+			m_gameObjects[objectName]->addComponent<CollisionInfo>();
+			std::cout << "collision component added\n";
 		}
 
 		m_gameObjects["player"]->addComponent<Input>(1.f);

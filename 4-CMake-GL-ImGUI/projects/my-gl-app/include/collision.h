@@ -1,0 +1,103 @@
+/* Start Header ************************************************************************/
+/*!
+\file		collision.hpp
+\author
+\par
+\date		September, 17, 2025
+\brief		This file declares the static and dynamic collision functions, as well as
+            the main AABB-AABB collision function implementation.
+*/
+/* End Header **************************************************************************/
+#ifndef COLLISION_H
+#define COLLISION_H
+
+#include <cstdint>
+#include <cstddef>
+//#include <Math_Lib.h>
+#include <mathlib.h>
+#include "component.h"
+
+namespace Collision {
+    using f64 = double;
+    extern f64 g_fixedDT;
+    extern f64 g_dt;
+    extern f64 g_appTime;
+
+
+    Vector2D Mul(const Vector2D& v, float s);
+
+    //AABB
+    class AABB
+    {
+    private:
+        Vector2D min;
+        Vector2D max;
+    public:
+        //constructor ... can add more in future 
+        AABB(const Vector2D& _min, const Vector2D& _max) : min(_min), max(_max) {}
+
+        //getters
+        const Vector2D& getMin() const { return min; }
+        const Vector2D& getMax() const { return max; }
+
+        //setters
+        void setMin(const Vector2D& _min) { min = _min; }
+        void setMax(const Vector2D& _max) { max = _max; }
+
+        //for imgui
+        Vector2D& getMinRef() { return min; }
+        Vector2D& getMaxRef() { return max; }
+    };
+
+    //circles
+    class Circle {
+    private:
+        Vector2D center;
+        float radius;
+    public:
+        //constructor .. can add more in future 
+        Circle() : center(0, 0), radius(1) {}
+        Circle(const Vector2D& _center, float _radius) : center(_center), radius(_radius) {}
+
+        //getters
+        const Vector2D& getCenter() const { return center; }
+        float getRadius() const { return radius; }
+
+        //setters
+        void setCenter(const Vector2D& _center) { center = _center; }
+        void setRadius(float _radius) { radius = _radius; }
+
+        //for imgui
+        Vector2D& getCenterRef() { return center; }
+        float& getRadiusRef() { return radius; }
+    };
+
+    AABB getObjectAABB(const Transform* transform);
+    Circle getObjectCircle(const Transform* transform);
+
+    //collision function for AABB
+    bool CollisionIntersection_RectRect_Static(const AABB& aabb1, const AABB& aabb2);
+    CollisionInfo CollisionIntersection_RectRect_Dynamic_Info(const AABB& aabb1, const Vector2D& vel1, const AABB& aabb2, const Vector2D& vel2);
+
+    //collision function for circles
+    bool CollisionIntersection_CircleCircle_Static(const Circle& c1, const Circle& c2);
+    CollisionInfo CollisionIntersection_CircleCircle_Dynamic_Info(const Circle& c1, const Vector2D& vel1, const Circle& c2, const Vector2D& vel2);
+
+    //circle and AABB
+    bool CollisionIntersection_CircleAABB_Static(const Circle& c, const AABB& aabb);
+    CollisionInfo CollisionIntersection_CircleAABB_Dynamic_Info(const Circle& c, const Vector2D& velC, const AABB& aabb, const Vector2D& velAABB);
+
+    //response functions apply on velocities and optionally translate objects to time of impact
+    void Resolve_AABB_AABB(Collision::AABB& aabbA, Vector2D& velA, float massA,
+        Collision::AABB& aabbB, Vector2D& velB, float massB,
+        const CollisionInfo& info, CollisionResponseMode mode, float restitution = 0.0f);
+
+    void Resolve_Circle_Circle(Collision::Circle& cA, Vector2D& velA, float massA,
+        Collision::Circle& cB, Vector2D& velB, float massB,
+        const CollisionInfo& info, CollisionResponseMode mode, float restitution = 0.0f);
+
+    void Resolve_Circle_AABB(Collision::Circle& c, Vector2D& velC, float massC,
+        Collision::AABB& aabb, Vector2D& velAABB, float massAABB,
+        const CollisionInfo& info, CollisionResponseMode mode, float restitution = 0.0f);
+}
+#endif

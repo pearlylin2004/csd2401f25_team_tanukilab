@@ -1,3 +1,12 @@
+/* Start Header ************************************************************************/
+/*!
+\file		renderer.h
+\author
+\par
+\date		Month, Day, 2025
+\brief
+*/
+/* End Header **************************************************************************/
 #pragma once
 #include <shader.hpp>
 #include <GL/glew.h>
