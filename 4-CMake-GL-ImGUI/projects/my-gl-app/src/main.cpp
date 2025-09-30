@@ -126,28 +126,8 @@ public:
         //m_angleOfRotation += m_rotationSpeed;
     }
 
-    void render() {
-        //glm::mat4 modelMat = glm::mat4(1.0f);
-        //modelMat = glm::rotate(modelMat, m_angleOfRotation, glm::vec3(0.0f, 0.0f, 1.0f));
-        //m_cube->render(modelMat);
-        //renderer::update();
-
-        //draw circles from imgui
-        /*for (const auto& c : circles) {
-            renderer::object temp;
-            temp.model_ref = renderer::models[1];
-            temp.translate = glm::vec3(c.getCenter().x, c.getCenter().y, 0.02);
-            temp.scaling = glm::vec3(c.getRadius()+1, c.getRadius()+1, 2.0f + 1);
-            temp.draw();
-        }*/
-
-        /*ImGui::Begin("OpenGL funny");
-        ImGui::Text("fml");
-        ImGui::End();*/
-
-        // Render ImGui
-        //ImGui::Render();
-        //ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+    void render() 
+    {
         const float deltaTime = 1.0f / 60.0f;
 
 
