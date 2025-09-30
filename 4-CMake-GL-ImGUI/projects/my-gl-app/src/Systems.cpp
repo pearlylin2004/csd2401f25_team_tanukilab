@@ -30,8 +30,6 @@ void InputSystem::update(GameObjectManager& manager, float deltaTime) {
 			if (iterator->hasComponent<Physics>()) {//player got that velocity in him
 				Physics* velocity = iterator->getComponent<Physics>();
 
-				//reset to 0 every frame
-				velocity->velX = 0.0f;
 
 				if (InputHandler::isKeyHeld(GLFW_KEY_W)) {
 					velocity->velY = input->moveSpeed;
