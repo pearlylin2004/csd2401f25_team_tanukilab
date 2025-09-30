@@ -12,7 +12,6 @@
 
 namespace UI {
     std::vector<std::string> debugMessages; //not sure if this needs to be change
-	std::string lastCollisionMessage; //for collision message
 
     void drawDemo(float& rotationSpeed, float& angleOfRotation) {
         ImGui::Begin("OpenGL 3.3 Demo");
@@ -61,27 +60,10 @@ namespace UI {
         ImGui::Begin("Debug Info");
         ImGui::Text("This is a debug window.");
         //ImGui::Text("%s", messages.c_str());
-        //multiple messages with vector used
-        /*
-		//show all messages
+
         for (const auto& msg : debugMessages) {
             ImGui::Text("%s", msg.c_str());
         }
-        // auto-scroll
-        if (ImGui::GetScrollY() >= ImGui::GetScrollMaxY())
-            ImGui::SetScrollHereY(1.0f);
-        ImGui::End();*/
-
-        //button to display the last collision
-        if (ImGui::Button("Show Last Collision")) {
-            if (!debugMessages.empty()) {
-                ImGui::Text("%s", debugMessages.back().c_str());
-            }
-            else {
-                ImGui::Text("No collisions yet.");
-            }
-        }
-        ImGui::Separator(); //visually nice, idk can change, i find from online
 
         //auto-scroll if at the bottom
         if (ImGui::GetScrollY() >= ImGui::GetScrollMaxY())

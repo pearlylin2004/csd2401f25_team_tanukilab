@@ -170,10 +170,10 @@ void CollisionSystem::update(GameObjectManager& manager, float deltaTime) {
 							obj2V->velY = obj2Vel.y;
 
 							//show message in imgui
-							UI::lastCollisionMessage = "Collision detected between Object " +
+							UI::debugMessages.push_back("Collision detected between Object " +
 								std::to_string(reinterpret_cast<uintptr_t>(obj)) +
 								" and Object " +
-								std::to_string(reinterpret_cast<uintptr_t>(iterator));
+								std::to_string(reinterpret_cast<uintptr_t>(iterator)));
 						}
 				}
 			}
@@ -190,6 +190,14 @@ void UISystem::update(GameObjectManager& manager, float deltaTime) {
 	ImGui_ImplOpenGL3_NewFrame();
 	ImGui_ImplGlfw_NewFrame();
 	ImGui::NewFrame();
+
+	static float rotationSpeed = 0.01f;
+	static float angleOfRotation = 0.0f;
+	//demo
+	UI::drawDemo(rotationSpeed, angleOfRotation);
+
+	//input circles
+	UI::drawControls(circles);
 
 	//debug window
 	UI::drawDebug(UI::debugMessages);

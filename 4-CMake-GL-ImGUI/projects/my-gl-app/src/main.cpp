@@ -102,7 +102,6 @@ public:
         m_inputSystem.update(m_manager, deltaTime);
         m_collisionSystem.update(m_manager, deltaTime);
         m_physicsSystem.update(m_manager, deltaTime);
-        //m_collisionSystem.update(m_manager, deltaTime);
         m_renderSystem.update(m_manager, deltaTime);
 		m_uiSystem.update(m_manager, deltaTime);
 
@@ -123,20 +122,6 @@ public:
             temp.scaling = glm::vec3(c.getRadius()+1, c.getRadius()+1, 2.0f + 1);
             temp.draw();
         }*/
-
-        //how many circles
-        //std::cout << circles.size() << std::endl;
-
-        //start ImGui frame -- just need to call once
-        //ImGui_ImplOpenGL3_NewFrame();
-        //ImGui_ImplGlfw_NewFrame();
-        //ImGui::NewFrame();
-
-        //imgui frames
-        //UI::drawDemo(m_rotationSpeed, m_angleOfRotation);
-        //UI::drawControls(circles);
-        //UI::drawDebug(outputC);
-        //UI::drawDebug(UI::debugMessages);
 
         /*ImGui::Begin("OpenGL funny");
         ImGui::Text("fml");

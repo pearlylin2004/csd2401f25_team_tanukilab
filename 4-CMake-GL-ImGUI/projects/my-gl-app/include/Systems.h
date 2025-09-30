@@ -54,4 +54,5 @@ public:
 	void update(GameObjectManager& manager, float deltaTime);
 private:
 	std::vector<std::string> debugMessages; //for messages
+	std::vector<Collision::Circle> circles; 
 };

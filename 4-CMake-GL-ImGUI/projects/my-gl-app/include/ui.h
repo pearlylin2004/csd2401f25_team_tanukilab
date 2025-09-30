@@ -18,7 +18,6 @@
 
 namespace UI{
     extern std::vector<std::string> debugMessages; //not sure if this needs to be change
-    extern std::string lastCollisionMessage; //for collision message
 
     void drawDemo(float& rotationSpeed, float& angleOfRotation);
     void drawControls(std::vector<Collision::Circle>& circles);
