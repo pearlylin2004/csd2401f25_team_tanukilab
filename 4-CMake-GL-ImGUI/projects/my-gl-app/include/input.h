@@ -25,8 +25,8 @@ public:
 	static bool isKeyTriggered(int key); // check if key was just pressed (triggered once)
 	static bool isKeyReleased(int key);
 	static bool isKeyHeld(int key); // check if key is currently being held down
-	static bool isComboTriggered(int key1, int key2 = GLFW_KEY_LEFT_SHIFT); // check if both keys are triggered (default is left shift)
-	static bool isComboHeld(int key1, int key2 = GLFW_KEY_LEFT_SHIFT); // check if both keys are being held down (default is left shift)
+	static bool isComboKeyTriggered(int key1, int key2 = GLFW_KEY_LEFT_SHIFT); // check if both keys are triggered (default is left shift)
+	static bool isComboKeyHeld(int key1, int key2 = GLFW_KEY_LEFT_SHIFT); // check if both keys are being held down (default is left shift)
 
 	// check for mouse button
 	static bool isMouseLeftClicked(); // check if left mouse button was clicked
