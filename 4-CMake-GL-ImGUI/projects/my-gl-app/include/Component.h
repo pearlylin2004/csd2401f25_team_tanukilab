@@ -2,6 +2,7 @@
 #include <string>
 #include <memory> //for unique_ptr
 #include <renderer.h>
+#include <mathlib.h>
 
 
 // basic component class
@@ -47,22 +48,30 @@ public:
 struct Physics : public Component {
     //idk add physics stuff here
 public:
-    float posX;
-    float posY;
-    float velY;
-    float velX;
+   
+    float velX = 0.0f;
+    float velY = 0.0f;
+    float gravity = -9.8f;
 
-    bool inWaterTriggered; // true only when W is pressed
+    //Jump 
+    float damping = 0.99f;
+    float jumpForce = 300.0f;  
+    float floorY = 0.0f;
+    bool onGround = true;  
+    float Speed = 150.0f;
 
-   // Physics(float x = 0.0f, float y = 0.0f);
+    //water bullet
+    Vector2D posBullet;
+    Vector2D velBullet;
+    bool aliveBullet;
+
+    //bool inWaterTriggered; // true only when W is pressed
 
     bool inWater = false;
     bool buoancy = false;
 
-    const float gravity = -2.0f;      // gravity pulling down
-    const float waterBounce = 60.0f;   // upward velocity when entering water
-    const float damping = 0.98f;       // slows motion gradually
-    const float floorY = -8.0f;       // bottom limit
+    //const float waterBounce = 60.0f;   // upward velocity when entering water
+
 };
 
 struct Input : public Component {

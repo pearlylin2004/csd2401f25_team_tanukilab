@@ -7,12 +7,9 @@ physics 0 0
 object platform
 renderer circle
 transform 0 0 0.0 1 5 5 0 
+physics 1 1
+
+object bullet
+renderer square
+transform 0 0 0.02 0.5 0.5 0.5 0
 physics 0 0
-
-
-
-
-
-
-
- 

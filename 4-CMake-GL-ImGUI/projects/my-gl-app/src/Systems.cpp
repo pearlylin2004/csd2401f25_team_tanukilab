@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include "Systems.h"
 
@@ -84,41 +84,57 @@ void PhysicsSystem::update(GameObjectManager& manager, float deltaTime) {
 	std::vector<GameObject*> gameObjects;
 	manager.getAllGameObjects(gameObjects);
 
-	for(auto object : gameObjects) {
-		if (object->hasComponent<Transform>() && object->hasComponent<Physics>()) {
-			Transform* transform = object->getComponent<Transform>();
-			Physics* physics = object->getComponent<Physics>();
-			transform->x += physics->velX * deltaTime;
-			transform->y += physics->velY * deltaTime;
-		
+	GameObject* bullet = manager.getGameObject("bullet");
 
-		/*if (object->hasComponent<Physics>() && !object->hasComponent<Input>()) {
-			*/
-			/*Physics* physics = object->getComponent<Physics>();*/
+	for (auto object : gameObjects) {
+		if (!object->hasComponent<Transform>() || !object->hasComponent<Physics>())
+			continue;
 
-		if (InputHandler::isKeyDown(GLFW_KEY_B)) { ///Needa update
-			if (!physics->inWaterTriggered) {
-				physics->velY = physics->waterBounce;     // instant upward push
-				physics->inWaterTriggered = true;
+		Transform* transform = object->getComponent<Transform>();
+		Physics* physics = object->getComponent<Physics>();
+
+		if (object->hasComponent<Input>()) {
+			//bullet
+			if (InputHandler::isKeyDown(GLFW_KEY_SPACE)) {
+				static int bulletCount = 0;
+
+				Transform* t = bullet->addComponent<Transform>();
+				t->x = transform->x;  
+				t->y = transform->y;
+				t->z = 0.02f;
+				t->scaleX = 0.5f;
+				t->scaleY = 0.5f;
+				t->scaleZ = 0.5f;
+				t->rotation = 0.0f;
+
+				Physics* p = bullet->addComponent<Physics>();
+				p->velX = 2.0f;
+				p->velY = 0.0f;
+				p->onGround = false;
 			}
-		}
 
-		if (physics->inWaterTriggered) {
-			// Apply gravity and damping only after entering water
-			physics->velY += (physics->gravity * 0.3f) * deltaTime;
-			physics->velY *= physics->damping;
+			// Jump
+			if (InputHandler::isKeyDown(GLFW_KEY_B) && physics->onGround) {
+				physics->velY = physics->jumpForce;
+				physics->velX = physics->Speed;
+				physics->onGround = false;
+			}
 
+
+			physics->velY += physics->gravity * deltaTime;
+			physics->velX *= physics->damping;
 
 			transform->y += physics->velY * deltaTime;
+			transform->x += physics->velX * deltaTime;
 
-			// Floor collision
-			if (transform->y< physics->floorY) {
+			if (transform->y < physics->floorY) {
 				transform->y = physics->floorY;
 				physics->velY = 0.0f;
-
-				physics->inWaterTriggered = false;
+				physics->onGround = true;
+				physics->velX = 0.0f;
 			}
 		}
-		}
+		transform->x += physics->velX * deltaTime;
 	}
 }
+
