@@ -1,7 +1,7 @@
 #pragma once
 
 #include <GLFW/glfw3.h>
-#include <mathlib.h>
+#include "mathlib.h"
 
 /*
 Keyboard key tokens
@@ -56,9 +56,11 @@ private:
 
 	static bool m_mouseButtons[8];
 	static bool m_mouseButtonsPrevious[8];
+	static double m_lastClickTime[8];
 	static Vector2D m_mousePosition;
 	static Vector2D m_mousePositionPrevious;
 	static bool m_isCursorInside;
 
 	static float m_scrollOffset;
+	static double m_doubleClickThreshold;
 };

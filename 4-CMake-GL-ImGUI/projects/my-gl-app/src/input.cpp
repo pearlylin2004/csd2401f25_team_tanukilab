@@ -8,11 +8,13 @@ bool InputHandler::m_keysPrevious[1024] = { false };
 
 bool InputHandler::m_mouseButtons[8] = { false };
 bool InputHandler::m_mouseButtonsPrevious[8] = { false };
+double InputHandler::m_lastClickTime[8] = { 0.0 };
 Vector2D InputHandler::m_mousePosition = Vector2D(0.0f);
 Vector2D InputHandler::m_mousePositionPrevious = Vector2D(0.0f);
 bool InputHandler::m_isCursorInside = false;
 
 float InputHandler::m_scrollOffset = 0.0f;
+double InputHandler::m_doubleClickThreshold = 0.25;
 
 void InputHandler::init(GLFWwindow* window) {
 	m_window = window;
@@ -111,16 +113,24 @@ void InputHandler::keyCallback(GLFWwindow* window, int key, int scancode, int ac
 	if (key < 0 || key >= 1024) return;
 
 	// is key is pressed, change bool in m_key to TRUE, if released then FALSE
-	if (action == GLFW_PRESS) m_keys[key] = true;
-	else if (action == GLFW_RELEASE) m_keys[key] = false;
+	if (action == GLFW_PRESS) {
+		m_keys[key] = true;
+	}
+	else if (action == GLFW_RELEASE) {
+		m_keys[key] = false;
+	}
 }
 
 void InputHandler::mouseButtonCallback(GLFWwindow* window, int button, int action, int mods) {
 	if (button < 0 || button >= 8) return;
 
 	// is button is pressed, change bool in m_mouseButtons to TRUE, if released then FALSE
-	if (action == GLFW_PRESS) m_mouseButtons[button] = true;
-	else if (action == GLFW_RELEASE) m_mouseButtons[button] = false;
+	if (action == GLFW_PRESS) {
+		m_mouseButtons[button] = true;
+	}
+	else if (action == GLFW_RELEASE) {
+		m_mouseButtons[button] = false;
+	}
 }
 
 void InputHandler::cursorPositionCallback(GLFWwindow* window, double xpos, double ypos) {
@@ -129,12 +139,13 @@ void InputHandler::cursorPositionCallback(GLFWwindow* window, double xpos, doubl
 
 void InputHandler::CursorEnterCallback(GLFWwindow* window, int entered) {
 	if (entered) {
-		// Cursor just entered the window
+		// Cursor entered the window
 		m_isCursorInside = true;
 	}
 	else {
-		// Cursor just left the window
+		// Cursor left the window
 		m_isCursorInside = false;
+
 	}
 }
 
