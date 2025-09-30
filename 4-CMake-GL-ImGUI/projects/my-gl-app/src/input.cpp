@@ -62,7 +62,7 @@ bool InputHandler::isKeyHeld(int key) {
 	return m_keys[key];
 }
 
-bool InputHandler::isComboTriggered(int key1, int key2) {
+bool InputHandler::isComboKeyTriggered(int key1, int key2) {
 	if (key1 < 0 || key1 >= 1024) return false;
 	if (key2 < 0 || key2 >= 1024) return false;
 
@@ -78,7 +78,7 @@ bool InputHandler::isComboTriggered(int key1, int key2) {
 	return false;
 }
 
-bool InputHandler::isComboHeld(int key1, int key2) {
+bool InputHandler::isComboKeyHeld(int key1, int key2) {
 	if (key1 < 0 || key1 >= 1024) return false;
 	if (key2 < 0 || key2 >= 1024) return false;
 
