@@ -40,9 +40,6 @@ namespace Collision {
     static inline float Dot(const Vector2D& a, const Vector2D& b) { return a.x * b.x + a.y * b.y; }
     static inline float LenSqr(const Vector2D& v) { return v.x * v.x + v.y * v.y; }
     static inline float Length(const Vector2D& v) { return std::sqrt(LenSqr(v)); }
-    Vector2D Collision::Mul(const Vector2D& v, float s) { return Vector2D{ v.x * s, v.y * s }; }
-    static inline Vector2D SubV(const Vector2D& a, const Vector2D& b) { return Vector2D{ a.x - b.x, a.y - b.y }; }
-    static inline Vector2D AddV(const Vector2D& a, const Vector2D& b) { return Vector2D{ a.x + b.x, a.y + b.y }; }
     static inline Vector2D NormalizeSafe(const Vector2D& v) {
         float L = Length(v);
         if (L <= EPSILON) return Vector2D{ 0,0 };
@@ -218,7 +215,7 @@ namespace Collision {
         }
 
         //normal at contact
-        Vector2D contactPosRel = AddV(relPos, Mul(relVel, toi));
+        Vector2D contactPosRel = Vec_Add(&relPos, &Vec_Scale(&relVel, toi));
         Vector2D normal = NormalizeSafe(contactPosRel);
         if (Length(normal) <= EPSILON) normal = Vector2D{ 1, 0 };
 
@@ -330,13 +327,15 @@ namespace Collision {
     //relecting
     static inline Vector2D Reflect(const Vector2D& v, const Vector2D& n) {
         float d = Dot(v, n);
-        return SubV(v, Mul(n, 2.0f * d));
+        Vector2D scaledN = Vec_Scale(&n, 2.0f * d);
+        return Vec_Sub(&v, &scaledN);
     }
 
     //remove normal 
     static inline Vector2D RemoveNormalComponent(const Vector2D& v, const Vector2D& n) {
         float d = Dot(v, n);
-        return SubV(v, Mul(n, d));
+        Vector2D scaledN = Vec_Scale(&n, d);
+        return Vec_Sub(&v, &scaledN);
     }
     void Resolve_AABB_AABB(Collision::AABB& aabbA, Vector2D& velA, float massA,
         Collision::AABB& aabbB, Vector2D& velB, float massB,
@@ -344,10 +343,13 @@ namespace Collision {
     {
         if (!info.collided) return;
 
-        Vector2D moveA = Mul(velA, info.timeOfImpact);
-        Vector2D moveB = Mul(velB, info.timeOfImpact);
-        aabbA.setMin(AddV(aabbA.getMin(), moveA)); aabbA.setMax(AddV(aabbA.getMax(), moveA));
-        aabbB.setMin(AddV(aabbB.getMin(), moveB)); aabbB.setMax(AddV(aabbB.getMax(), moveB));
+        Vector2D moveA = Vec_Scale(&velA, info.timeOfImpact);
+        Vector2D moveB = Vec_Scale(&velB, info.timeOfImpact);
+
+        aabbA.setMin(Vec_Add(&aabbA.getMin(), &moveA));
+        aabbA.setMax(Vec_Add(&aabbA.getMax(), &moveA));
+        aabbB.setMin(Vec_Add(&aabbB.getMin(), &moveB));
+        aabbB.setMax(Vec_Add(&aabbB.getMax(), &moveB));
 
         if (mode == CollisionResponseMode::Stop) {
             velA = Vector2D{ 0,0 };
@@ -356,17 +358,17 @@ namespace Collision {
         }
         else {
             //testing for broken collision 
-            Vector2D relVel = SubV(velB, velA);
+            Vector2D relVel = Vec_Sub(&velB, &velA);
             float velAlongNormal = Dot(relVel, info.normal);
             if (velAlongNormal > 0) return; // moving apart
             float j = -(1.0f + restitution) * velAlongNormal / (1.0f / massA + 1.0f / massB);
-            Vector2D impulse = Mul(info.normal, j);
-            if (massA > 0) velA = SubV(velA, Mul(impulse, 1.0f / massA));
-            if (massB > 0) velB = AddV(velB, Mul(impulse, 1.0f / massB));
+            Vector2D impulse = Vec_Scale(&info.normal, j);
+            if (massA > 0) velA = Vec_Sub(&velA, &Vec_Scale(&impulse, 1.0f / massA));
+            if (massB > 0) velB = Vec_Add(&velB, &Vec_Scale(&impulse, 1.0f / massB));
         }
 
         Vector2D n = info.normal;
-        Vector2D relVel = SubV(velB, velA);
+        Vector2D relVel = Vec_Sub(&velB, &velA);
         float velAlongNormal = Dot(relVel, n);
     }
 
@@ -377,13 +379,13 @@ namespace Collision {
         if (!info.collided) return;
 
         //move to contact
-        Vector2D deltaA = Mul(velA, info.timeOfImpact);
-        Vector2D deltaB = Mul(velB, info.timeOfImpact);
-        cA.setCenter(AddV(cA.getCenter(), deltaA));
-        cB.setCenter(AddV(cB.getCenter(), deltaB));
+        Vector2D deltaA = Vec_Scale(&velA, info.timeOfImpact);
+        Vector2D deltaB = Vec_Scale(&velB, info.timeOfImpact);
+        cA.setCenter(Vec_Add(&cA.getCenter(), &deltaA));
+        cB.setCenter(Vec_Add(&cB.getCenter(), &deltaB));
 
         Vector2D n = info.normal;
-        Vector2D relVel = SubV(velB, velA);
+        Vector2D relVel = Vec_Sub(&velB, &velA);
         float velAlongNormal = Dot(relVel, n);
 
         if (mode == CollisionResponseMode::Stop) {
@@ -400,19 +402,18 @@ namespace Collision {
         if (!info.collided) return;
 
         //move to contact
-        Vector2D deltaC = Mul(velC, info.timeOfImpact);
-        Vector2D deltaA = Mul(velAABB, info.timeOfImpact);
-        c.setCenter(AddV(c.getCenter(), deltaC));
-        aabb.setMin(AddV(aabb.getMin(), deltaA));
-        aabb.setMax(AddV(aabb.getMax(), deltaA));
+        Vector2D deltaC = Vec_Scale(&velC, info.timeOfImpact);
+        Vector2D deltaA = Vec_Scale(&velAABB, info.timeOfImpact);
+        c.setCenter(Vec_Add(&c.getCenter(), &deltaC));
+        aabb.setMin(Vec_Add(&aabb.getMin(), &deltaA));
+        aabb.setMax(Vec_Add(&aabb.getMax(), &deltaA));
 
         Vector2D n = info.normal;
         //relative velocity: aabb treated as B
-        Vector2D relVel = SubV(velAABB, velC);
+        Vector2D relVel = Vec_Sub(&velAABB, &velC);
         float velAlongNormal = Dot(relVel, n);
 
         if (mode == CollisionResponseMode::Stop) {
-            //if static AABB (massAABB==0) stop circle
             if (massAABB <= 0.0f) velC = Vector2D{ 0,0 };
             else {
                 velC = Vector2D{ 0,0 };

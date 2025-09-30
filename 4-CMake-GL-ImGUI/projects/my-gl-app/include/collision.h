@@ -23,9 +23,6 @@ namespace Collision {
     extern f64 g_dt;
     extern f64 g_appTime;
 
-
-    Vector2D Mul(const Vector2D& v, float s);
-
     //AABB
     class AABB
     {
