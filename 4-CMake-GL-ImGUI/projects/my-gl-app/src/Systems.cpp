@@ -114,7 +114,7 @@ void RenderSystem::update(GameObjectManager& manager, float deltaTime) {
 
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	glDepthMask(GL_FALSE);
+	//glDepthMask(GL_FALSE);
 
 	for (auto object : gameObjects) {
 		if (object->hasComponent<Render>() && object->hasComponent<Transform>())
@@ -171,12 +171,12 @@ void RenderSystem::update(GameObjectManager& manager, float deltaTime) {
 					// --- Pass 2: wireframe overlay ---
 					glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 					glUniform1i(wireframe, 1);
-					glLineWidth(2.0f);
-					glDepthMask(GL_FALSE);
+					glLineWidth(500.0f);
+					//glDepthMask(GL_FALSE);
 					glDrawElements(GL_TRIANGLES, render->modelRef.elem_cnt, GL_UNSIGNED_SHORT, nullptr);
 
 					// Restore state
-					glDepthMask(GL_TRUE);
+					//glDepthMask(GL_TRUE);
 					glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 					glUniform1i(wireframe, 0);
 				}
@@ -187,7 +187,7 @@ void RenderSystem::update(GameObjectManager& manager, float deltaTime) {
 			}
 		}
 	}
-	glDepthMask(GL_TRUE);
+	//glDepthMask(GL_TRUE);
 }
 
 GLuint RenderSystem::uploadtex(std::string const& filename, bool& isTransparent)
