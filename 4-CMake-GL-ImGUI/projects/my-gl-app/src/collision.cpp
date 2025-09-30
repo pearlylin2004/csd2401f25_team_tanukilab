@@ -40,11 +40,6 @@ namespace Collision {
     static inline float Dot(const Vector2D& a, const Vector2D& b) { return a.x * b.x + a.y * b.y; }
     static inline float LenSqr(const Vector2D& v) { return v.x * v.x + v.y * v.y; }
     static inline float Length(const Vector2D& v) { return std::sqrt(LenSqr(v)); }
-    static inline Vector2D NormalizeSafe(const Vector2D& v) {
-        float L = Length(v);
-        if (L <= EPSILON) return Vector2D{ 0,0 };
-        return Vector2D{ v.x / L, v.y / L };
-    }
 
     //AABB
     bool CollisionIntersection_RectRect_Static(const AABB& aabb1, const AABB& aabb2)
@@ -65,7 +60,7 @@ namespace Collision {
     {
         CollisionInfo info;
         info.collided = false;
-        info.timeOfImpact = g_dt;
+        info.timeOfImpact = static_cast<float>(g_dt);
         info.normal = { 0, 0 };
         info.contactPoint = { 0, 0 };
 
@@ -189,7 +184,7 @@ namespace Collision {
             if (c <= 0.0f) {
                 info.collided = true;
                 info.timeOfImpact = 0.0f;
-                Vector2D n = NormalizeSafe(relPos);
+                Vector2D n = Vec_Normalize(&relPos);
                 info.normal = (Length(relPos) > EPSILON) ? n : Vector2D{ 1,0 };
             }
             return info;
@@ -215,8 +210,9 @@ namespace Collision {
         }
 
         //normal at contact
-        Vector2D contactPosRel = Vec_Add(&relPos, &Vec_Scale(&relVel, toi));
-        Vector2D normal = NormalizeSafe(contactPosRel);
+        Vector2D scaledVel = Vec_Scale(&relVel, toi);
+        Vector2D contactPosRel = Vec_Add(&relPos, &scaledVel);
+        Vector2D normal = Vec_Normalize(&contactPosRel);
         if (Length(normal) <= EPSILON) normal = Vector2D{ 1, 0 };
 
         info.collided = true;
@@ -254,7 +250,8 @@ namespace Collision {
         if (distSq <= c.getRadius() * c.getRadius() + EPSILON) {
             info.collided = true;
             info.timeOfImpact = 0.0f;
-            Vector2D n = NormalizeSafe(Vector2D{ dx, dy });
+            Vector2D temp = { dx, dy };
+            Vector2D n = Vec_Normalize(&temp);
             if (Length(n) <= EPSILON) {
                 //if center inside pick nearest axis normal by distance to edges
                 float left = std::abs(c.getCenter().x - aabb.getMin().x);
@@ -363,8 +360,16 @@ namespace Collision {
             if (velAlongNormal > 0) return; // moving apart
             float j = -(1.0f + restitution) * velAlongNormal / (1.0f / massA + 1.0f / massB);
             Vector2D impulse = Vec_Scale(&info.normal, j);
-            if (massA > 0) velA = Vec_Sub(&velA, &Vec_Scale(&impulse, 1.0f / massA));
-            if (massB > 0) velB = Vec_Add(&velB, &Vec_Scale(&impulse, 1.0f / massB));
+            Vector2D scaledImpulseA = Vec_Scale(&impulse, 1.0f / massA);
+            Vector2D scaledImpulseB = Vec_Scale(&impulse, 1.0f / massB);
+            if (massA > 0) {
+                Vector2D tempA = Vec_Sub(&velA, &scaledImpulseA);
+                velA = tempA;
+            }
+            if (massB > 0) {
+                Vector2D tempB = Vec_Add(&velB, &scaledImpulseB);
+                velB = tempB;
+            }
         }
 
         Vector2D n = info.normal;

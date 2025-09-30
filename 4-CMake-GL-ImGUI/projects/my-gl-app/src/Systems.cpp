@@ -141,9 +141,6 @@ void CollisionSystem::update(GameObjectManager& manager, float deltaTime) {
 
 			for (GameObject* obj : gameObjects) {
 				if (obj != iterator) {
-					/*if (!obj->hasComponent<Transform>() || !iterator->hasComponent<Transform>()) {
-						
-					}*/
 					Transform* obj1T = obj->getComponent<Transform>();
 						Transform* obj2T = iterator->getComponent<Transform>();
 						Collision::AABB obj1 = Collision::getObjectAABB(obj1T);
@@ -152,8 +149,6 @@ void CollisionSystem::update(GameObjectManager& manager, float deltaTime) {
 						Physics* obj2V = iterator->getComponent<Physics>();
 						Vector2D obj1Vel{ obj1V->velX, obj1V->velY };
 						Vector2D obj2Vel{ obj2V->velX, obj2V->velY };
-						//Vector2D obj1VelDt = Collision::Mul(obj1Vel, deltaTime);
-						//Vector2D obj2VelDt = Collision::Mul(obj2Vel, deltaTime);
 						CollisionInfo info = Collision::CollisionIntersection_RectRect_Dynamic_Info(obj1, obj1Vel, obj2, obj2Vel);
 
 						if (info.collided) {
