@@ -23,7 +23,7 @@
 #include "renderer.h"
 #include "input.h"
 #include "collision.h"
-#include "engine.h"
+#include "debug.h"
 #include "config.h"
 
 //class Cube {
