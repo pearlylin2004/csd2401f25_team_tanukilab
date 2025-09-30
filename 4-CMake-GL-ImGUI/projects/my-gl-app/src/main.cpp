@@ -29,13 +29,6 @@
 #include "Component.h"
 #include "Systems.h"
 
-
-//std::string outputC = "No collision";
-//to test adding of circles for imgui
-//std::vector<Collision::Circle> circles;
-//static std::vector<std::string> debugMessages;
-
-
 class GLApp {
 public:
     GLApp(int p_width, int p_height, const char* p_title) : m_angleOfRotation(0.0f),
@@ -101,14 +94,14 @@ public:
         m_inputSystem.update(m_manager, deltaTime);
         m_collisionSystem.update(m_manager, deltaTime);
         m_physicsSystem.update(m_manager, deltaTime);
+        //m_collisionSystem.update(m_manager, deltaTime);
         m_renderSystem.update(m_manager, deltaTime);
+		m_uiSystem.update(m_manager, deltaTime);
 
         //m_angleOfRotation += m_rotationSpeed;
     }
 
     void render() {
-
-
         //glm::mat4 modelMat = glm::mat4(1.0f);
         //modelMat = glm::rotate(modelMat, m_angleOfRotation, glm::vec3(0.0f, 0.0f, 1.0f));
         //m_cube->render(modelMat);
@@ -127,9 +120,9 @@ public:
         //std::cout << circles.size() << std::endl;
 
         //start ImGui frame -- just need to call once
-        ImGui_ImplOpenGL3_NewFrame();
-        ImGui_ImplGlfw_NewFrame();
-        ImGui::NewFrame();
+        //ImGui_ImplOpenGL3_NewFrame();
+        //ImGui_ImplGlfw_NewFrame();
+        //ImGui::NewFrame();
 
         //imgui frames
         //UI::drawDemo(m_rotationSpeed, m_angleOfRotation);
@@ -142,8 +135,8 @@ public:
         ImGui::End();*/
 
         // Render ImGui
-        ImGui::Render();
-        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+        //ImGui::Render();
+        //ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
         const float deltaTime = 1.0f / 60.0f;
 
 
@@ -152,7 +145,6 @@ public:
 
     void run() {
         while (glfwGetKey(m_window, GLFW_KEY_ESCAPE) != GLFW_PRESS && !glfwWindowShouldClose(m_window)){
-        
             update();
             render();
             glfwPollEvents();
@@ -169,9 +161,9 @@ private:
     PhysicsSystem m_physicsSystem;
     RenderSystem m_renderSystem;
 	CollisionSystem m_collisionSystem;
+	UISystem m_uiSystem;
 
     GLFWwindow* m_window;
-    //std::shared_ptr<Cube> m_cube;
     //renderer::model model;
 };
 

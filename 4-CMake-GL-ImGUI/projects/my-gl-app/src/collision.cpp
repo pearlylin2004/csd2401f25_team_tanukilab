@@ -40,7 +40,7 @@ namespace Collision {
     static inline float Dot(const Vector2D& a, const Vector2D& b) { return a.x * b.x + a.y * b.y; }
     static inline float LenSqr(const Vector2D& v) { return v.x * v.x + v.y * v.y; }
     static inline float Length(const Vector2D& v) { return std::sqrt(LenSqr(v)); }
-    static inline Vector2D Mul(const Vector2D& v, float s) { return Vector2D{ v.x * s, v.y * s }; }
+    Vector2D Collision::Mul(const Vector2D& v, float s) { return Vector2D{ v.x * s, v.y * s }; }
     static inline Vector2D SubV(const Vector2D& a, const Vector2D& b) { return Vector2D{ a.x - b.x, a.y - b.y }; }
     static inline Vector2D AddV(const Vector2D& a, const Vector2D& b) { return Vector2D{ a.x + b.x, a.y + b.y }; }
     static inline Vector2D NormalizeSafe(const Vector2D& v) {
@@ -314,6 +314,16 @@ namespace Collision {
             velA = Vector2D{ 0,0 };
             velB = Vector2D{ 0,0 };
             return;
+        }
+        else {
+            //testing for broken collision 
+            Vector2D relVel = SubV(velB, velA);
+            float velAlongNormal = Dot(relVel, info.normal);
+            if (velAlongNormal > 0) return; // moving apart
+            float j = -(1.0f + restitution) * velAlongNormal / (1.0f / massA + 1.0f / massB);
+            Vector2D impulse = Mul(info.normal, j);
+            if (massA > 0) velA = SubV(velA, Mul(impulse, 1.0f / massA));
+            if (massB > 0) velB = AddV(velB, Mul(impulse, 1.0f / massB));
         }
 
         Vector2D n = info.normal;

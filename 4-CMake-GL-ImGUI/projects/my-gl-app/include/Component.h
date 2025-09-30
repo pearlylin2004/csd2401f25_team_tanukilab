@@ -86,6 +86,7 @@ public:
 
 };
 
+//for collision system
 enum class CollisionResponseMode {
     Stop
 };
@@ -94,4 +95,10 @@ public:
     bool collided = false;
     float timeOfImpact = 0.0f;
     Vector2D normal{ 0,0 };
+};
+
+//for imgui(testing)
+struct UIComponent : public Component {
+    //idk empty as of now
+    //idk how i can use it
 };

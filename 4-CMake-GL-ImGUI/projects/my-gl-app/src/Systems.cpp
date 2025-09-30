@@ -131,6 +131,7 @@ void PhysicsSystem::update(GameObjectManager& manager, float deltaTime) {
 	}
 }
 
+//collision system
 void CollisionSystem::update(GameObjectManager& manager, float deltaTime) {
 	std::vector<GameObject*> gameObjects;
 	manager.getAllGameObjects(gameObjects);
@@ -140,31 +141,60 @@ void CollisionSystem::update(GameObjectManager& manager, float deltaTime) {
 
 			for (GameObject* obj : gameObjects) {
 				if (obj != iterator) {
+					/*if (!obj->hasComponent<Transform>() || !iterator->hasComponent<Transform>()) {
+						
+					}*/
 					Transform* obj1T = obj->getComponent<Transform>();
-					Transform* obj2T = iterator->getComponent<Transform>();
-					Collision::AABB obj1 = Collision::getObjectAABB(obj1T);
-					Collision::AABB obj2 = Collision::getObjectAABB(obj2T);
-					Physics* obj1V = obj->getComponent<Physics>();
-					Physics* obj2V = iterator->getComponent<Physics>();
-					Vector2D obj1Vel{ obj1V->velX, obj1V->velY };
-					Vector2D obj2Vel{ obj2V->velX, obj2V->velY };
-					CollisionInfo info = Collision::CollisionIntersection_RectRect_Dynamic_Info(obj1, obj1Vel, obj2, obj2Vel);
+						Transform* obj2T = iterator->getComponent<Transform>();
+						Collision::AABB obj1 = Collision::getObjectAABB(obj1T);
+						Collision::AABB obj2 = Collision::getObjectAABB(obj2T);
+						Physics* obj1V = obj->getComponent<Physics>();
+						Physics* obj2V = iterator->getComponent<Physics>();
+						Vector2D obj1Vel{ obj1V->velX, obj1V->velY };
+						Vector2D obj2Vel{ obj2V->velX, obj2V->velY };
+						//Vector2D obj1VelDt = Collision::Mul(obj1Vel, deltaTime);
+						//Vector2D obj2VelDt = Collision::Mul(obj2Vel, deltaTime);
+						CollisionInfo info = Collision::CollisionIntersection_RectRect_Dynamic_Info(obj1, obj1Vel, obj2, obj2Vel);
 
-					if (info.collided) {
-						Collision::Resolve_AABB_AABB(
-							obj1, obj1Vel, 0.0f,
-							obj2, obj2Vel, 1.0f,
-							info, CollisionResponseMode::Stop
-						);
+						if (info.collided) {
+							Collision::Resolve_AABB_AABB(
+								obj1, obj1Vel, 0.0f,
+								obj2, obj2Vel, 1.0f,
+								info, CollisionResponseMode::Stop
+							);
 
-						//change velocity
-						obj1V->velX = obj1Vel.x;
-						obj1V->velY = obj1Vel.y;
-						obj2V->velX = obj2Vel.x;
-						obj2V->velY = obj2Vel.y;
-					}
+							//change velocity
+							obj1V->velX = obj1Vel.x;
+							obj1V->velY = obj1Vel.y;
+							obj2V->velX = obj2Vel.x;
+							obj2V->velY = obj2Vel.y;
+
+							//show message in imgui
+							UI::lastCollisionMessage = "Collision detected between Object " +
+								std::to_string(reinterpret_cast<uintptr_t>(obj)) +
+								" and Object " +
+								std::to_string(reinterpret_cast<uintptr_t>(iterator));
+						}
 				}
 			}
 		}
 	}
+}
+
+//for imgu(testing)
+void UISystem::update(GameObjectManager& manager, float deltaTime) {
+	//td::vector<GameObject*> gameObjects;
+	//manager.getAllGameObjects(gameObjects);
+
+	//start a new ImGui frame
+	ImGui_ImplOpenGL3_NewFrame();
+	ImGui_ImplGlfw_NewFrame();
+	ImGui::NewFrame();
+
+	//debug window
+	UI::drawDebug(UI::debugMessages);
+
+	//render ImGui
+	ImGui::Render();
+	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 }
