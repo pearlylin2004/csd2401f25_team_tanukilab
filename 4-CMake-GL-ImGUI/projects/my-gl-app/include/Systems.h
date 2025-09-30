@@ -1,10 +1,15 @@
 /* Start Header ************************************************************************/
 /*!
-\file		Systems.h
-\author
-\par
-\date		Month, Day, 2025
-\brief
+\file        Systems.cpp
+\author      Seow Sin Le, s.sinle, 2401084, 20%
+\par         s.sinle@digipen.edu
+\date        October, 1st, 2025
+\brief       System functions to run the logic for the components
+
+Copyright (C) 2025 DigiPen Institute of Technology.
+Reproduction or disclosure of this file or its contents
+without the prior written consent of DigiPen Institute of
+Technology is prohibited.
 */
 /* End Header **************************************************************************/
 #pragma once

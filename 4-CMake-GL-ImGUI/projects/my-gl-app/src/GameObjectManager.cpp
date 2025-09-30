@@ -1,10 +1,15 @@
 /* Start Header ************************************************************************/
 /*!
-\file		GameObjectManager.cpp
-\author
-\par
-\date		Month, Day, 2025
-\brief
+\file        GameObjectManager.cpp
+\author      Seow Sin Le, s.sinle, 2401084, 40%
+\par         s.sinle@digipen.edu
+\date        October, 1st, 2025
+\brief       manages all game objects and initializes them with their corresponding components
+
+Copyright (C) 2025 DigiPen Institute of Technology.
+Reproduction or disclosure of this file or its contents
+without the prior written consent of DigiPen Institute of
+Technology is prohibited.
 */
 /* End Header **************************************************************************/
 #include "GameObjectManager.h"

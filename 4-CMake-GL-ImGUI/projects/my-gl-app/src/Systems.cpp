@@ -1,11 +1,10 @@
 /* Start Header ************************************************************************/
 /*!
-\file        GameState_Asteroids_Extension.cpp
-\author      Seow Sin Le, s.sinle, 2401084
+\file        Systems.cpp
+\author      Seow Sin Le, s.sinle, 2401084, 20%
 \par         s.sinle@digipen.edu
-\date        Febuary, 6th, 2025
-\brief       This file implements a whole host of helper functions to deal with the game
-			 logic.
+\date        October, 1st, 2025
+\brief       System functions to run the logic for the components
 
 Copyright (C) 2025 DigiPen Institute of Technology.
 Reproduction or disclosure of this file or its contents
