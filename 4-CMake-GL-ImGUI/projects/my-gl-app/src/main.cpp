@@ -95,7 +95,11 @@ public:
         glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         InputHandler::update();
-
+        
+        // Press F9 to simulate a failure (for crash logger)
+        if (glfwGetKey(m_window, GLFW_KEY_F9) == GLFW_PRESS) {
+            throw std::runtime_error("F9 test: simulated failure in update()");
+        }
         //const float deltaTime = 1.0f / 60.0f; // simulate 60fps
         const float deltaTime = static_cast<float>(m_delta);
 
@@ -188,8 +192,14 @@ int main() {
     // Enable run-time memory check for debug builds
     _CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 #endif
+   
+    CrashLog::Init("crash_log.txt");
+
+
     try {
-        
+
+        //throw std::runtime_error("testing");
+
         AppConfig cfg;
         std::string err;
         LoadConfig("../projects/my-gl-app/resources/config.txt", cfg, &err);
@@ -202,21 +212,20 @@ int main() {
             cfg.clear_color[2],
             cfg.clear_color[3]);
         app.run();
-        /*GLApp app(1600, 800, "Render Cube");
-        app.run();*/
-        //Engine engine;
-
-        //if (!engine.init(1600, 800, "Tanuki Lab")) {
-        //    return -1; // failed to initialize
-        //}
-
-        //engine.run();       // main loop (handles input, rendering, FPS, etc.)
-        //engine.shutdown();  // cleanup resources
-
+        CrashLog::Shutdown();
         return 0;
     }
     catch (const std::exception& e) {
+        // 2) Log the exception message
+        CrashLog::WriteException(e.what());
+        CrashLog::Shutdown();
         std::cerr << "Unhandled exception: " << e.what() << std::endl;
+        return -1;
+    }
+    catch (...) {
+        CrashLog::WriteException("Unknown exception");
+        CrashLog::Shutdown();
+        std::cerr << "Unhandled unknown exception\n";
         return -1;
     }
 }

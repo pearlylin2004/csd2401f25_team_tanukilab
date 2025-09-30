@@ -19,3 +19,19 @@ namespace Perf {
         bool showFps);
 
 } // namespace Perf
+
+// --- Crash logging -----------------------------------------------------------
+namespace CrashLog {
+    // Call once at program start. 'logPath' can be relative (next to the exe)
+    // e.g. "crash_log.txt" or "logs/crash_log.txt".
+    void Init(const char* logPath = "crash_log.txt");
+
+    // Optional: write a custom line to the log (e.g., before shutdown).
+    void WriteLine(const char* msg);
+
+    // If you already have a try/catch in main, call this in the catch block.
+    void WriteException(const char* what);
+
+    // Optional: flush/close. (Safe to omit; file is closed automatically.)
+    void Shutdown();
+}
