@@ -163,7 +163,8 @@ public:
             Perf::UpdateTime(m_delta, m_fps, 0.5);
             update();
             render();
-            Perf::UpdateWindowTitle(m_window, m_title, m_fps, gShowFpsInTitle);
+            Perf::UpdateWindowTitle(m_window, m_title, m_fps, m_showFpsInTitle);
+
             glfwPollEvents();
         }
     }
@@ -171,6 +172,7 @@ public:
 public:
     float m_angleOfRotation;
     float m_rotationSpeed;
+    void SetShowFpsInTitle(bool v) { m_showFpsInTitle = v; };
 
 private:
     GameObjectManager m_manager;
@@ -185,6 +187,8 @@ private:
     double        m_fps = 0.0;
     double        m_delta = 0.0;
     std::string   m_title;
+    bool m_showFpsInTitle = true; // default; main() will override from config
+
 };
 
 int main() {
@@ -206,6 +210,7 @@ int main() {
         if (!err.empty()) std::cout << err << "\n";
 
         GLApp app(cfg.width, cfg.height, cfg.title.c_str());
+        app.SetShowFpsInTitle(cfg.show_fps_in_title);
         glfwSwapInterval(cfg.vsync ? 1 : 0);  // vsync on/off
         glClearColor(cfg.clear_color[0],
             cfg.clear_color[1],
