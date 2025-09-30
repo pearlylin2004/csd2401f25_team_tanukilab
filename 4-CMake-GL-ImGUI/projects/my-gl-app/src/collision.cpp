@@ -78,7 +78,7 @@ namespace Collision {
         float tFirst = 0.0f;
         float tLast = g_dt;
 
-        // --- X axis ---
+        //x
         float x1 = aabb1.getMin().x;
         float x2 = aabb2.getMin().x;
         float dx1 = aabb1.getMax().x - aabb1.getMin().x;
@@ -106,7 +106,7 @@ namespace Collision {
         tFirst = std::max(tFirst, tXFirst);
         tLast = std::min(tLast, tXLast);
 
-        // --- Y axis ---
+        //y
         float y1 = aabb1.getMin().y;
         float y2 = aabb2.getMin().y;
         float dy1 = aabb1.getMax().y - aabb1.getMin().y;
@@ -122,7 +122,7 @@ namespace Collision {
             tYLast = (y2 + dy2 - y1) / Vb.y;
         }
         else {
-            // no relative motion in Y → must already overlap
+            //no relative motion in Y must already overlap
             if (y1 + dy1 <= y2 || y2 + dy2 <= y1) return info;
             tYFirst = 0.0f;
             tYLast = g_dt;
@@ -134,12 +134,12 @@ namespace Collision {
         tFirst = std::max(tFirst, tYFirst);
         tLast = std::min(tLast, tYLast);
 
-        // --- Final collision check ---
+        //final check
         if (tFirst < tLast && tFirst >= 0.0f && tFirst <= g_dt) {
             info.collided = true;
             info.timeOfImpact = tFirst;
 
-            // Determine collision normal based on which axis constrained first
+            //determine collision normal based on which axis constrained first
             if (tXFirst > tYFirst) {
                 info.normal = (Vb.x > 0) ? Vector2D{ -1, 0 } : Vector2D{ 1, 0 };
             }
@@ -147,7 +147,7 @@ namespace Collision {
                 info.normal = (Vb.y > 0) ? Vector2D{ 0, -1 } : Vector2D{ 0, 1 };
             }
 
-            // Compute contact point
+            //compute contact point
             Vector2D cp = aabb1.getMin();
             cp.x += vel1.x * tFirst;
             cp.y += vel1.y * tFirst;
