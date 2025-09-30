@@ -68,6 +68,7 @@ public:
         InputHandler::init(m_window);
         renderer::init(p_width, p_height);
         m_manager.init();
+        m_renderSystem.init(m_manager);
 
 
         // Setup ImGui

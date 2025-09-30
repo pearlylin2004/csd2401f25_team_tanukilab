@@ -1,10 +1,16 @@
 /* Start Header ************************************************************************/
 /*!
-\file		Systems.cpp
-\author
-\par
-\date		Month, Day, 2025
-\brief
+\file        GameState_Asteroids_Extension.cpp
+\author      Seow Sin Le, s.sinle, 2401084
+\par         s.sinle@digipen.edu
+\date        Febuary, 6th, 2025
+\brief       This file implements a whole host of helper functions to deal with the game
+			 logic.
+
+Copyright (C) 2025 DigiPen Institute of Technology.
+Reproduction or disclosure of this file or its contents
+without the prior written consent of DigiPen Institute of
+Technology is prohibited.
 */
 /* End Header **************************************************************************/
 #pragma once
@@ -62,7 +68,7 @@ void RenderSystem::update(GameObjectManager& manager, float deltaTime) {
 	//renderer::cam.proj = glm::mat4{ 1 };
 	glUniformMatrix4fv(vTransformProj, 1, GL_FALSE, glm::value_ptr(renderer::cam.proj));
 
-	stbi_set_flip_vertically_on_load(true);
+	
 
 	for (auto object : gameObjects) {
 		if (object->hasComponent<Render>() && object->hasComponent<Transform>())
@@ -82,7 +88,6 @@ void RenderSystem::update(GameObjectManager& manager, float deltaTime) {
 				//texture bs
 				if (render->hasTex)
 				{
-					render->texHDL = uploadtex(render->texFile, render->isTransparent);
 					glBindTextureUnit(0, render->texHDL);
 				}
 				else glBindTextureUnit(0, 0);
@@ -140,7 +145,6 @@ void RenderSystem::update(GameObjectManager& manager, float deltaTime) {
 				//texture bs
 				if (render->hasTex)
 				{
-					render->texHDL = uploadtex(render->texFile, render->isTransparent);
 					glBindTextureUnit(0, render->texHDL);
 				}
 				else glBindTextureUnit(0, 0);
@@ -194,6 +198,21 @@ void RenderSystem::update(GameObjectManager& manager, float deltaTime) {
 		}
 	}
 	//glDepthMask(GL_TRUE);
+}
+
+void RenderSystem::init(GameObjectManager& manager)
+{
+	stbi_set_flip_vertically_on_load(true);
+	std::vector<GameObject*> gameObjects;
+	manager.getAllGameObjects(gameObjects);
+	for (GameObject* object : gameObjects)
+	{
+		if (object->hasComponent<Render>())
+		{
+			Render* render = object->getComponent<Render>();
+			render->texHDL = uploadtex(render->texFile, render->isTransparent);
+		}
+	}
 }
 
 GLuint RenderSystem::uploadtex(std::string const& filename, bool& isTransparent)

@@ -36,6 +36,7 @@ public:
 
 class RenderSystem {
 public:
+	void init(GameObjectManager& manager);
 	void update(GameObjectManager& manager, float deltaTime);
 	GLuint uploadtex(std::string const& filename, bool& isTransparent);
 };
