@@ -1,4 +1,4 @@
-/* Start Header ************************************************************************/
+﻿/* Start Header ************************************************************************/
 /*!
 \file		collision.cpp
 \author
@@ -40,7 +40,7 @@ namespace Collision {
     static inline float Dot(const Vector2D& a, const Vector2D& b) { return a.x * b.x + a.y * b.y; }
     static inline float LenSqr(const Vector2D& v) { return v.x * v.x + v.y * v.y; }
     static inline float Length(const Vector2D& v) { return std::sqrt(LenSqr(v)); }
-    static inline Vector2D Mul(const Vector2D& v, float s) { return Vector2D{ v.x * s, v.y * s }; }
+    Vector2D Collision::Mul(const Vector2D& v, float s) { return Vector2D{ v.x * s, v.y * s }; }
     static inline Vector2D SubV(const Vector2D& a, const Vector2D& b) { return Vector2D{ a.x - b.x, a.y - b.y }; }
     static inline Vector2D AddV(const Vector2D& a, const Vector2D& b) { return Vector2D{ a.x + b.x, a.y + b.y }; }
     static inline Vector2D NormalizeSafe(const Vector2D& v) {
@@ -67,64 +67,103 @@ namespace Collision {
     CollisionInfo CollisionIntersection_RectRect_Dynamic_Info(const AABB& aabb1, const Vector2D& vel1, const AABB& aabb2, const Vector2D& vel2)
     {
         CollisionInfo info;
-        Vector2D relVel = { vel2.x - vel1.x, vel2.y - vel1.y };
+        info.collided = false;
+        info.timeOfImpact = g_dt;
+        info.normal = { 0, 0 };
+        info.contactPoint = { 0, 0 };
 
-        const Vector2D& min1 = aabb1.getMin();
-        const Vector2D& max1 = aabb1.getMax();
-        const Vector2D& min2 = aabb2.getMin();
-        const Vector2D& max2 = aabb2.getMax();
+        // relative velocity
+        Vector2D Vb{ vel1.x - vel2.x, vel1.y - vel2.y };
 
-        float txEntry, txExit, tyEntry, tyExit;
+        float tFirst = 0.0f;
+        float tLast = g_dt;
 
-        if (relVel.x > 0.0f) {
-            txEntry = (min1.x - max2.x) / relVel.x;
-            txExit = (max1.x - min2.x) / relVel.x;
-        }
-        else if (relVel.x < 0.0f) {
-            txEntry = (max1.x - min2.x) / relVel.x;
-            txExit = (min1.x - max2.x) / relVel.x;
-        }
-        else {
-            txEntry = -INFINITY;
-            txExit = INFINITY;
-        }
+        // --- X axis ---
+        float x1 = aabb1.getMin().x;
+        float x2 = aabb2.getMin().x;
+        float dx1 = aabb1.getMax().x - aabb1.getMin().x;
+        float dx2 = aabb2.getMax().x - aabb2.getMin().x;
+        float tXFirst, tXLast;
 
-        if (relVel.y > 0.0f) {
-            tyEntry = (min1.y - max2.y) / relVel.y;
-            tyExit = (max1.y - min2.y) / relVel.y;
+        if (Vb.x < 0) {
+            tXFirst = (x2 + dx2 - x1) / Vb.x;
+            tXLast = (x2 - (x1 + dx1)) / Vb.x;
         }
-        else if (relVel.y < 0.0f) {
-            tyEntry = (max1.y - min2.y) / relVel.y;
-            tyExit = (min1.y - max2.y) / relVel.y;
+        else if (Vb.x > 0) {
+            tXFirst = (x2 - (x1 + dx1)) / Vb.x;
+            tXLast = (x2 + dx2 - x1) / Vb.x;
         }
         else {
-            tyEntry = -INFINITY;
-            tyExit = INFINITY;
+            // no relative motion in X → must already overlap
+            if (x1 + dx1 <= x2 || x2 + dx2 <= x1) return info;
+            tXFirst = 0.0f;
+            tXLast = g_dt;
         }
 
-        float entryTime = std::max(txEntry, tyEntry);
-        float exitTime = std::min(txExit, tyExit);
-
-        if (entryTime > exitTime || entryTime < 0.0f || entryTime > 1.0f) {
-            info.collided = false;
+        if (tXFirst > tXLast || tXLast < 0.0f || tXFirst > g_dt)
             return info;
-        }
 
-        Vector2D normal{ 0,0 };
-        if (txEntry > tyEntry) {
-            //collision on x axis
-            if (relVel.x > 0.0f) normal = Vector2D{ -1, 0 };
-            else normal = Vector2D{ 1, 0 };
+        tFirst = std::max(tFirst, tXFirst);
+        tLast = std::min(tLast, tXLast);
+
+        // --- Y axis ---
+        float y1 = aabb1.getMin().y;
+        float y2 = aabb2.getMin().y;
+        float dy1 = aabb1.getMax().y - aabb1.getMin().y;
+        float dy2 = aabb2.getMax().y - aabb2.getMin().y;
+        float tYFirst, tYLast;
+
+        if (Vb.y < 0) {
+            tYFirst = (y2 + dy2 - y1) / Vb.y;
+            tYLast = (y2 - (y1 + dy1)) / Vb.y;
+        }
+        else if (Vb.y > 0) {
+            tYFirst = (y2 - (y1 + dy1)) / Vb.y;
+            tYLast = (y2 + dy2 - y1) / Vb.y;
         }
         else {
-            //collision on y axis
-            if (relVel.y > 0.0f) normal = Vector2D{ 0, -1 };
-            else normal = Vector2D{ 0, 1 };
+            // no relative motion in Y → must already overlap
+            if (y1 + dy1 <= y2 || y2 + dy2 <= y1) return info;
+            tYFirst = 0.0f;
+            tYLast = g_dt;
         }
 
-        info.collided = true;
-        info.timeOfImpact = entryTime;
-        info.normal = normal;
+        if (tYFirst > tYLast || tYLast < 0.0f || tYFirst > g_dt)
+            return info;
+
+        tFirst = std::max(tFirst, tYFirst);
+        tLast = std::min(tLast, tYLast);
+
+        // --- Final collision check ---
+        if (tFirst < tLast && tFirst >= 0.0f && tFirst <= g_dt) {
+            info.collided = true;
+            info.timeOfImpact = tFirst;
+
+            // Determine collision normal based on which axis constrained first
+            if (tXFirst > tYFirst) {
+                info.normal = (Vb.x > 0) ? Vector2D{ -1, 0 } : Vector2D{ 1, 0 };
+            }
+            else {
+                info.normal = (Vb.y > 0) ? Vector2D{ 0, -1 } : Vector2D{ 0, 1 };
+            }
+
+            // Compute contact point
+            Vector2D cp = aabb1.getMin();
+            cp.x += vel1.x * tFirst;
+            cp.y += vel1.y * tFirst;
+
+            if (info.normal.x != 0) {
+                cp.x = (info.normal.x > 0) ? aabb2.getMax().x : aabb2.getMin().x;
+                cp.y += (vel1.y - vel2.y) * tFirst;
+            }
+            else if (info.normal.y != 0) {
+                cp.y = (info.normal.y > 0) ? aabb2.getMax().y : aabb2.getMin().y;
+                cp.x += (vel1.x - vel2.x) * tFirst;
+            }
+
+            info.contactPoint = cp;
+        }
+
         return info;
     }
 
@@ -314,6 +353,16 @@ namespace Collision {
             velA = Vector2D{ 0,0 };
             velB = Vector2D{ 0,0 };
             return;
+        }
+        else {
+            //testing for broken collision 
+            Vector2D relVel = SubV(velB, velA);
+            float velAlongNormal = Dot(relVel, info.normal);
+            if (velAlongNormal > 0) return; // moving apart
+            float j = -(1.0f + restitution) * velAlongNormal / (1.0f / massA + 1.0f / massB);
+            Vector2D impulse = Mul(info.normal, j);
+            if (massA > 0) velA = SubV(velA, Mul(impulse, 1.0f / massA));
+            if (massB > 0) velB = AddV(velB, Mul(impulse, 1.0f / massB));
         }
 
         Vector2D n = info.normal;
