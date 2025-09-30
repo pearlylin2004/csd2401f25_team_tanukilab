@@ -1,3 +1,13 @@
+/* Start Header ************************************************************************/
+/*!
+\file		main.hpp
+\author
+\par
+\date		Month, Day, 2025
+\brief		
+*/
+/* End Header **************************************************************************/
+
 // Hungarian notation: https://en.wikipedia.org/wiki/Hungarian_notation
 #include <shader.hpp>
 #include <memory>
@@ -12,6 +22,7 @@
 #include <imgui_impl_opengl3.h>
 #include "renderer.h"
 #include "input.h"
+#include "collision.h"
 #include "engine.h"
 #include "config.h"
 
@@ -60,6 +71,17 @@
 //    GLuint m_programId, m_vertexBuffer, m_vertexArrayId;
 //    std::vector<GLfloat> m_geometryBuffer;
 //};
+#include "ui.h"
+#include "GameObjectManager.h"
+#include "Component.h"
+#include "Systems.h"
+
+
+//std::string outputC = "No collision";
+//to test adding of circles for imgui
+//std::vector<Collision::Circle> circles;
+//static std::vector<std::string> debugMessages;
+
 
 class GLApp {
 public:
@@ -90,6 +112,8 @@ public:
         //m_cube->initialize();
         InputHandler::init(m_window);
         renderer::init(p_width, p_height);
+        m_manager.init();
+
 
         // Setup ImGui
         IMGUI_CHECKVERSION();
@@ -112,34 +136,53 @@ public:
 
     void update() {
         /* Poll for User Input */
+        glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        InputHandler::update();
 
-        m_angleOfRotation += m_rotationSpeed;
+        const float deltaTime = 1.0f / 60.0f; // simulate 60fps
+
+        // input test code
+        /*if (InputHandler::isKeyPressed(GLFW_KEY_SPACE))
+            std::cout << InputHandler::getMouseY() << std::endl;*/
+        m_inputSystem.update(m_manager, deltaTime);
+        m_collisionSystem.update(m_manager, deltaTime);
+        m_physicsSystem.update(m_manager, deltaTime);
+        m_renderSystem.update(m_manager, deltaTime);
+
+        //m_angleOfRotation += m_rotationSpeed;
     }
 
     void render() {
-        glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
 
         //glm::mat4 modelMat = glm::mat4(1.0f);
         //modelMat = glm::rotate(modelMat, m_angleOfRotation, glm::vec3(0.0f, 0.0f, 1.0f));
         //m_cube->render(modelMat);
-        renderer::update();
+        //renderer::update();
 
-        // Start ImGui frame
+        //draw circles from imgui
+        /*for (const auto& c : circles) {
+            renderer::object temp;
+            temp.model_ref = renderer::models[1];
+            temp.translate = glm::vec3(c.getCenter().x, c.getCenter().y, 0.02);
+            temp.scaling = glm::vec3(c.getRadius()+1, c.getRadius()+1, 2.0f + 1);
+            temp.draw();
+        }*/
+
+        //how many circles
+        //std::cout << circles.size() << std::endl;
+
+        //start ImGui frame -- just need to call once
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
 
-        // Create ImGui window
-        ImGui::Begin("OpenGL 3.3 Demo");
-        ImGui::Text("Hello, ImGui!");
-        ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
-        ImGui::SliderFloat("Rotation Speed", &m_rotationSpeed, 0.0f, 0.1f);
-        //ImGui::SliderFloat("Rotation fk u", &m_rotationSpeed, 0.0f, 0.1f);
-        if (ImGui::Button("Reset Rotation")) {
-            m_angleOfRotation = 0.0f;
-        }
-        ImGui::End();
+        //imgui frames
+        //UI::drawDemo(m_rotationSpeed, m_angleOfRotation);
+        //UI::drawControls(circles);
+        //UI::drawDebug(outputC);
+        //UI::drawDebug(UI::debugMessages);
 
         /*ImGui::Begin("OpenGL funny");
         ImGui::Text("fml");
@@ -148,28 +191,18 @@ public:
         // Render ImGui
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+        const float deltaTime = 1.0f / 60.0f;
+
 
         glfwSwapBuffers(m_window);
     }
 
     void run() {
-        while (glfwGetKey(m_window, GLFW_KEY_ESCAPE) != GLFW_PRESS && !glfwWindowShouldClose(m_window)) {
-            //renderer::update(m_window);
-            if (InputHandler::isKeyHeld(GLFW_KEY_A))
-                renderer::objects.find("player")->second.movex(-0.01f);
-            if (InputHandler::isKeyHeld(GLFW_KEY_D))
-                renderer::objects.find("player")->second.movex(0.01f);
-            if (InputHandler::isKeyHeld(GLFW_KEY_W))
-                renderer::objects.find("player")->second.movey(0.01f);
-            if (InputHandler::isKeyHeld(GLFW_KEY_S))
-                renderer::objects.find("player")->second.movey(-0.01f);
-            
-                
+        while (glfwGetKey(m_window, GLFW_KEY_ESCAPE) != GLFW_PRESS && !glfwWindowShouldClose(m_window)){
+        
+            update();
             render();
-            //update();
-            //renderer::draw();
-            //glfwPollEvents();
-            InputHandler::update();
+            glfwPollEvents();
         }
     }
 
@@ -178,6 +211,12 @@ public:
     float m_rotationSpeed;
 
 private:
+    GameObjectManager m_manager;
+    InputSystem m_inputSystem;
+    PhysicsSystem m_physicsSystem;
+    RenderSystem m_renderSystem;
+	CollisionSystem m_collisionSystem;
+
     GLFWwindow* m_window;
     //std::shared_ptr<Cube> m_cube;
     //renderer::model model;
@@ -205,6 +244,10 @@ private:
 //}
 
 int main() {
+    #if defined(DEBUG) | defined(_DEBUG)
+        // Enable run-time memory check for debug builds
+        _CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
+    #endif
     try {
         // Load config.txt (key=value)
         AppConfig cfg;
