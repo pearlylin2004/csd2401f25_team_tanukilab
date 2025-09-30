@@ -1,3 +1,12 @@
+/* Start Header ************************************************************************/
+/*!
+\file		mathlib.cpp
+\author
+\par
+\date		Month, Day, 2025
+\brief
+*/
+/* End Header **************************************************************************/
 #include "mathlib.h"
 
 float Math_Sqrt(float v) {
@@ -15,6 +24,33 @@ float Math_Min(float a, float b) {
 float Math_Max(float a, float b) { 
     return (a > b) ? a : b; 
 }
+
+// --- Angle conversion ---
+float DegToRad(float deg) {
+    return deg * (3.14159265358979323846f / 180.0f);
+}
+
+float RadToDeg(float rad) {
+    return rad * (180.0f / 3.14159265358979323846f);
+}
+
+// --- Radian trigonometry ---
+float SinRad(float rad) { return std::sin(rad); }
+float CosRad(float rad) { return std::cos(rad); }
+float TanRad(float rad) { return std::tan(rad); }
+float ASinRad(float val) { return std::asin(val); } 
+float ACosRad(float val) { return std::acos(val); } 
+float ATanRad(float val) { return std::atan(val); } 
+
+// --- Degre trigonometry ---
+float SinDeg(float deg) { return std::sin(DegToRad(deg)); }
+float CosDeg(float deg) { return std::cos(DegToRad(deg)); }
+float TanDeg(float deg) { return std::tan(DegToRad(deg)); }
+float ASinDeg(float val) { return RadToDeg(std::asin(val)); }
+float ACosDeg(float val) { return RadToDeg(std::acos(val)); }
+float ATanDeg(float val) { return RadToDeg(std::atan(val)); }
+
+
 
 //----------------------------------------
 // Vector Operations for 2
@@ -53,6 +89,52 @@ Vector2D Vec_Normalize(const Vector2D* v) {
         Norm.y = v->y / dis;
     }
     return Norm;
+}
+
+// Length (magnitude) of a vector
+float Vec_Length(const Vector2D* v) {
+    return sqrtf(v->x * v->x + v->y * v->y);
+}
+
+// Distance between two vectors
+float Vec_Distance(const Vector2D* a, const Vector2D* b) {
+    float dx = a->x - b->x;
+    float dy = a->y - b->y;
+    return sqrtf(dx * dx + dy * dy);
+}
+
+// Dot product: a · b
+float Vec_Dot(const Vector2D* a, const Vector2D* b) {
+    return a->x * b->x + a->y * b->y;
+}
+
+// Cross product (2D scalar version): a × b
+float Vec_Cross(const Vector2D* a, const Vector2D* b) {
+    return a->x * b->y - a->y * b->x;
+}
+
+// Negate a vector: -v
+Vector2D Vec_Negate(const Vector2D* v) {
+    Vector2D neg = { -v->x, -v->y };
+    return neg;
+}
+
+// Create a vector from an angle in radians-->unit vector
+Vector2D Vec_FromAngle(float rad) {
+    Vector2D v = { cosf(rad), sinf(rad) };
+    return v;
+}
+
+// Set vector values
+Vector2D Vec_Set(float x, float y) {
+    Vector2D v = { x, y };
+    return v;
+}
+
+// Zero vector
+Vector2D Vec_Zero() {
+    Vector2D v = { 0.0f, 0.0f };
+    return v;
 }
 
 // Scale a vector: scaled = v * scale
@@ -95,6 +177,27 @@ Vector2D Vec_Transform(const Vector2D* v, const Mat33* mat) {
 //----------------------------------------
 // Matrix Operations (3x3)
 //----------------------------------------
+
+// Set identity matrix
+void Mat33_Identity(Mat33* mat) {
+    for (int i = 0; i < 3; i++)
+        for (int j = 0; j < 3; j++)
+            mat->m[i][j] = (i == j) ? 1.0f : 0.0f;
+}
+
+// Transpose: mat^T
+void Mat33_Transpose(Mat33* out, const Mat33* mat) {
+    for (int i = 0; i < 3; i++)
+        for (int j = 0; j < 3; j++)
+            out->m[i][j] = mat->m[j][i];
+}
+
+// Determinant
+float Mat33_Det(const Mat33* mat) {
+    return mat->m[0][0] * (mat->m[1][1] * mat->m[2][2] - mat->m[1][2] * mat->m[2][1])
+        - mat->m[0][1] * (mat->m[1][0] * mat->m[2][2] - mat->m[1][2] * mat->m[2][0])
+        + mat->m[0][2] * (mat->m[1][0] * mat->m[2][1] - mat->m[1][1] * mat->m[2][0]);
+}
 
 // Create a scaling matrix
 // Formula:
@@ -165,6 +268,51 @@ Vector3D Vec3_Sub(const Vector3D* a, const Vector3D* b) {
     return sub;
 }
 
+// Negate a vector: -v
+Vector3D Vec3_Negate(const Vector3D* v) {
+    Vector3D neg = { -v->x, -v->y, -v->z };
+    return neg;
+}
+
+// Set vector values
+Vector3D Vec3_Set(float x, float y, float z) {
+    Vector3D v = { x, y, z };
+    return v;
+}
+
+// Zero vector
+Vector3D Vec3_Zero() {
+    Vector3D v = { 0.0f, 0.0f, 0.0f };
+    return v;
+}
+
+// Length magnitude of a vector
+float Vec3_Length(const Vector3D* v) {
+    return sqrtf(v->x * v->x + v->y * v->y + v->z * v->z);
+}
+
+// Distance between two vectors
+float Vec3_Distance(const Vector3D* a, const Vector3D* b) {
+    float dx = a->x - b->x;
+    float dy = a->y - b->y;
+    float dz = a->z - b->z;
+    return sqrtf(dx * dx + dy * dy + dz * dz);
+}
+
+// Dot product: a · b
+float Vec3_Dot(const Vector3D* a, const Vector3D* b) {
+    return a->x * b->x + a->y * b->y + a->z * b->z;
+}
+
+// Cross product: a × b
+Vector3D Vec3_Cross(const Vector3D* a, const Vector3D* b) {
+    Vector3D cross;
+    cross.x = a->y * b->z - a->z * b->y;
+    cross.y = a->z * b->x - a->x * b->z;
+    cross.z = a->x * b->y - a->y * b->x;
+    return cross;
+}
+
 
 Vector3D Vec3_Normalize(const Vector3D* v) {
     Vector3D Norm = { 0.0f, 0.0f, 0.0f };
@@ -193,6 +341,19 @@ Vector3D Vec3_Transform(const Vector3D* v, const Mat44* mat) {
 //----------------------------------------
 // Matrix Operations (4x4)
 //----------------------------------------
+// Set identity matrix
+void Mat44_Identity(Mat44* mat) {
+    for (int i = 0; i < 4; i++)
+        for (int j = 0; j < 4; j++)
+            mat->m[i][j] = (i == j) ? 1.0f : 0.0f;
+}
+
+// Transpose
+void Mat44_Transpose(Mat44* out, const Mat44* mat) {
+    for (int i = 0; i < 4; i++)
+        for (int j = 0; j < 4; j++)
+            out->m[i][j] = mat->m[j][i];
+}
 
 void Mat44_Scale(Mat44* mat, float x, float y, float z) {
     mat->m[0][0] = x; mat->m[0][1] = 0; mat->m[0][2] = 0; mat->m[0][3] = 0;
