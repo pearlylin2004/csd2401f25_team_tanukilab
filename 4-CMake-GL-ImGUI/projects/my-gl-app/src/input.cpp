@@ -62,6 +62,28 @@ bool InputHandler::isKeyHeld(int key) {
 	return m_keys[key];
 }
 
+bool InputHandler::isComboTriggered(int key1, int key2) {
+	if (key1 < 0 || key1 >= 1024) return false;
+	if (key2 < 0 || key2 >= 1024) return false;
+
+	// key1 is held, key2 just pressed this frame
+	if (m_keys[key1] && (m_keys[key2] && !m_keysPrevious[key2])) {
+		return true;
+	}
+	// key2 is held, key1 just pressed this frame
+	if (m_keys[key2] && (m_keys[key1] && !m_keysPrevious[key1])) {
+		return true;
+	}
+
+	return false;
+}
+
+bool InputHandler::isComboHeld(int key1, int key2) {
+	if (key1 < 0 || key1 >= 1024) return false;
+	if (key2 < 0 || key2 >= 1024) return false;
+
+	return (m_keys[key1] && m_keys[key2]);
+}
 
 /* ----- MOUSE ----- */
 bool InputHandler::isMouseButtonClicked(int button) {
@@ -81,6 +103,24 @@ bool InputHandler::isMouseLeftHeld() {
 
 bool InputHandler::isMouseLeftReleased() {
 	return (!m_mouseButtons[GLFW_MOUSE_BUTTON_LEFT] && m_mouseButtonsPrevious[GLFW_MOUSE_BUTTON_LEFT]);
+}
+
+bool InputHandler::isMouseLeftDoubleClicked() {
+	return isMouseButtonDoubleClicked(GLFW_MOUSE_BUTTON_LEFT);
+}
+
+bool InputHandler::isMouseButtonDoubleClicked(int button) {
+	if (button < 0 || button >= 8) return false;
+
+	if (m_mouseButtons[button] && !m_mouseButtonsPrevious[button]) {
+		double currentTime = glfwGetTime();
+		if ((currentTime - m_lastClickTime[button]) < m_doubleClickThreshold) { // double click if within the threshold
+			m_lastClickTime[button] = 0.0; // reset last click time
+			return true;
+		}
+		m_lastClickTime[button] = currentTime; // update last click time
+	}
+	return false;
 }
 
 Vector2D InputHandler::getCursorPosition() {

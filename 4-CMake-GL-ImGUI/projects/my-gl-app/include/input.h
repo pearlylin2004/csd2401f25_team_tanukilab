@@ -25,12 +25,16 @@ public:
 	static bool isKeyTriggered(int key); // check if key was just pressed (triggered once)
 	static bool isKeyReleased(int key);
 	static bool isKeyHeld(int key); // check if key is currently being held down
+	static bool isComboTriggered(int key1, int key2 = GLFW_KEY_LEFT_SHIFT); // check if both keys are triggered (default is left shift)
+	static bool isComboHeld(int key1, int key2 = GLFW_KEY_LEFT_SHIFT); // check if both keys are being held down (default is left shift)
 
 	// check for mouse button
-	static bool isMouseLeftClicked(); // check if left mouse button was just clicked
+	static bool isMouseLeftClicked(); // check if left mouse button was clicked
 	static bool isMouseLeftHeld(); // check if left mouse button is currently being held down
 	static bool isMouseLeftReleased(); // check if left mouse button was just released
+	static bool isMouseLeftDoubleClicked(); // check if right mouse button was just clicked
 	static bool isMouseButtonClicked(int button); // ONLY use if you need other buttons
+	static bool isMouseButtonDoubleClicked(int button); // check if mouse button was double clicked (within 0.25s)
 
 	// get mouse position AND whether cursor is inside window
 	static Vector2D getCursorPosition(); // get current cursor position
