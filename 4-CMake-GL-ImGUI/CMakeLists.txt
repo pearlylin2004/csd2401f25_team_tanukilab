@@ -64,7 +64,7 @@ foreach(child ${children})
         if (CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
             target_compile_options(${child} PRIVATE -Wall ${DisableWarnings})
         elseif (MSVC)
-            target_compile_options(${child} PRIVATE /W3 /WX-)
+            target_compile_options(${child} PRIVATE /W4 /WX-)
         endif()
 
         # Include path for each project
