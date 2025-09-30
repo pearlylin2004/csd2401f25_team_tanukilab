@@ -4,7 +4,7 @@
 \author
 \par
 \date		September, 24, 2025
-\brief		
+\brief		Display FPS and rotation control, Add, remove, and modify circles, and debug window
 */
 /* End Header **************************************************************************/
 
@@ -72,5 +72,4 @@ namespace UI {
         ImGui::End();
 	}
     //one imgui window to control all "shapes"
-
 }
