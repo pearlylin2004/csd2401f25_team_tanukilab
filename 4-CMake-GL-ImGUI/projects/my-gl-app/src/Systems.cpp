@@ -181,7 +181,7 @@ void RenderSystem::update(GameObjectManager& manager, float deltaTime) {
 					// --- Pass 2: wireframe overlay ---
 					glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 					glUniform1i(wireframe, 1);
-					glLineWidth(500.0f);
+					glLineWidth(2.0f);
 					//glDepthMask(GL_FALSE);
 					glDrawElements(GL_TRIANGLES, render->modelRef.elem_cnt, GL_UNSIGNED_SHORT, nullptr);
 
