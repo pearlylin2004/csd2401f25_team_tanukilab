@@ -1,3 +1,23 @@
+/* Start Header ************************************************************************/
+/*!
+\file       audio.h
+\author     Tan Chee Qing, cheeqing.tan, 2401486
+			- 100% of the file
+\par        cheeqing.tan@digipen.edu
+\date       September, 20th, 2025
+\brief      This header file declares the AudioHandler class, a singleton wrapper around
+			the FMOD library for managing sound in the project. It provides function
+			prototypes for initializing and shutting down the audio system, loading sounds,
+			playing them and controlling playback features such as pause, stop, mute,
+			volume and pitch. The soundID enum is defined to categorize different sounds.
+
+Copyright (C) 2025 DigiPen Institute of Technology.
+Reproduction or disclosure of this file or its contents
+without the prior written consent of DigiPen Institute of
+Technology is prohibited.
+*/
+/* End Header **************************************************************************/
+
 #pragma once
 
 #include <../lib/FMOD/fmod.hpp>

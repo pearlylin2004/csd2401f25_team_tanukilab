@@ -1,12 +1,22 @@
 /* Start Header ************************************************************************/
 /*!
-\file		Input.cpp
-\author
-\par
-\date		Month, Day, 2025
-\brief
+\file       input.cpp
+\author     Tan Chee Qing, cheeqing.tan, 2401486 
+			- 100% of the file
+\par        cheeqing.tan@digipen.edu
+\date       September, 15th, 2025
+\brief      This source file implements the InputHandler class, which centralizes input
+			handling for GLFW. It maintains arrays of current and previous states for
+			keyboard keys and mouse buttons, enabling detection of triggered, released, 
+			held, and combo inputs.
+
+Copyright (C) 2025 DigiPen Institute of Technology.
+Reproduction or disclosure of this file or its contents
+without the prior written consent of DigiPen Institute of
+Technology is prohibited.
 */
 /* End Header **************************************************************************/
+
 #include "input.h"
 //#include <iostream>
 

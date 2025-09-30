@@ -1,12 +1,19 @@
 /* Start Header ************************************************************************/
 /*!
-\file		Input.h
-\author
-\par
-\date		Month, Day, 2025
-\brief
+\file       input.h
+\author     Tan Chee Qing, cheeqing.tan, 2401486
+			- 100% of the file
+\par        cheeqing.tan@digipen.edu
+\date       September, 15th, 2025
+\brief      A static utility class that manages all input handling for a GLFW window.
+
+Copyright (C) 2025 DigiPen Institute of Technology.
+Reproduction or disclosure of this file or its contents
+without the prior written consent of DigiPen Institute of
+Technology is prohibited.
 */
 /* End Header **************************************************************************/
+
 #pragma once
 
 #include <GLFW/glfw3.h>
