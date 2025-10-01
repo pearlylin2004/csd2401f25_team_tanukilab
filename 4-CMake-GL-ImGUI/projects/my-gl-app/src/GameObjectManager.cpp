@@ -1,8 +1,8 @@
 /* Start Header ************************************************************************/
 /*!
 \file        GameObjectManager.cpp
-\author      Seow Sin Le, s.sinle, 2401084, 40%
-\author 	 Hugo Low Ren Hao, low.h, 2402272, 60%
+\author      Seow Sin Le, s.sinle, 2401084, 50%
+\author 	 Hugo Low Ren Hao, low.h, 2402272, 50%
 \par         s.sinle@digipen.edu
 \par		 low.h@digipen.edu
 \date        October, 1st, 2025

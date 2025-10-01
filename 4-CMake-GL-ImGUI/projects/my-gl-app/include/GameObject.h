@@ -68,9 +68,7 @@ public:
     }
 
 	// Returns the name of the game object
-    const std::string& getName() const {
-        return m_name;
-    }
+    const std::string& getName() const;
 
 private:
     std::string m_name;//name of object
