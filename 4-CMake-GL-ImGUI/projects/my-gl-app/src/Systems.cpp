@@ -315,9 +315,6 @@ void CollisionSystem::update(GameObjectManager& manager, float deltaTime) {
 			for (GameObject* obj : gameObjects) {
 				if (obj != iterator) {
 					if (obj != iterator && obj->getComponent<CollisionInfo>()) {
-						/*if (!obj->hasComponent<Transform>() || !iterator->hasComponent<Transform>()) {
-
-						}*/
 						Transform* obj1T = obj->getComponent<Transform>();
 						Transform* obj2T = iterator->getComponent<Transform>();
 						Collision::AABB obj1 = Collision::getObjectAABB(obj1T);
@@ -376,9 +373,10 @@ void UISystem::update(GameObjectManager& manager, float deltaTime) {
 		UI::shapeControl(*obj1T);
 	}*/
 
-	Transform* obj1T = gameObjects[0]->getComponent<Transform>();
-	UI::shapeControl(*obj1T);
+	Transform* leavesT = gameObjects[0]->getComponent<Transform>();
+	Transform* bulletT = gameObjects[2]->getComponent<Transform>();
+	UI::shapeControl(*leavesT, *bulletT);
 
-	//ImGui::ShowMetricsWindow();
+	//ImGui::ShowMetricsWindow(); //for debug
 }
 

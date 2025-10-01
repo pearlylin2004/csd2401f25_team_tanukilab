@@ -78,13 +78,17 @@ namespace Collision {
     AABB getObjectAABB(const Transform* transform);
     Circle getObjectCircle(const Transform* transform);
 
-    //collision function for AABB
+    //AABB and AABB
     bool CollisionIntersection_RectRect_Static(const AABB& aabb1, const AABB& aabb2);
     CollisionInfo CollisionIntersection_RectRect_Dynamic_Info(const AABB& aabb1, const Vector2D& vel1, const AABB& aabb2, const Vector2D& vel2);
 
     //circle and AABB
     bool CollisionIntersection_CircleAABB_Static(const Circle& c, const AABB& aabb);
     CollisionInfo CollisionIntersection_CircleAABB_Dynamic_Info(const Circle& c, const Vector2D& velC, const AABB& aabb, const Vector2D& velAABB);
+
+    //circle and circle 
+    //bool CollisionIntersection_CircleCircle_Static(const Circle& c1, const Circle& c2);
+    //CollisionInfo CollisionIntersection_CircleCircle_Dynamic_Info(const Circle& c1, const Vector2D& velC1, const Circle& c2, const Vector2D& velC2);
 
     //response functions apply on velocities and optionally translate objects to time of impact
     void Resolve_AABB_AABB(Collision::AABB& aabbA, Vector2D& velA, float massA,
