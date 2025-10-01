@@ -12,7 +12,7 @@
 #include "CoreEngine.h"
 
 CoreEngine::CoreEngine()
-    : m_window(nullptr), m_fps(0.0), m_delta(0.0), m_isRunning(false), audio(AudioHandler::getInstance()) {
+    : m_window(nullptr), m_fps(0.0), m_delta(0.0), m_isRunning(false), audio(AudioHandler::getInstance()), m_stepMode(false), m_stepReq(false) {
 }
 
 CoreEngine::~CoreEngine() {
@@ -112,10 +112,7 @@ void CoreEngine::GameLoop() {
 void CoreEngine::Update(float deltaTime) {
     InputHandler::update();
 
-    // Press F9 to simulate a failure (for crash logger)
-    if (InputHandler::isKeyTriggered(GLFW_KEY_F9)) {
-        throw std::runtime_error("F9 test: simulated failure in update()");
-    }
+    
 
     if (InputHandler::isKeyTriggered(GLFW_KEY_P)) {
         audio.toggleSoundPause(soundID::bg);
@@ -123,6 +120,15 @@ void CoreEngine::Update(float deltaTime) {
     if (InputHandler::isMouseLeftClicked()) {
         audio.playSound(soundID::effect);
     }
+
+	if (InputHandler::isComboKeyTriggered(GLFW_KEY_Z)) {
+		m_stepMode = !m_stepMode;
+		std::cout << "Step mode: " << (m_stepMode ? "ON" : "OFF") << std::endl;
+	}
+	if (m_stepMode && InputHandler::isKeyTriggered(GLFW_KEY_Z)) {
+		m_stepReq = true;
+		std::cout << "Step requested" << std::endl;
+	}
 
     //imgui
     ImGui_ImplOpenGL3_NewFrame();
@@ -132,7 +138,14 @@ void CoreEngine::Update(float deltaTime) {
     // Update all systems in order
     m_inputSystem->update(*m_manager, deltaTime);
     m_collisionSystem->update(*m_manager, deltaTime);
-    m_physicsSystem->update(*m_manager, deltaTime);
+
+    if(!m_stepMode) m_physicsSystem->update(*m_manager, deltaTime);
+	else if (m_stepReq) {
+		m_physicsSystem->update(*m_manager, deltaTime);
+		m_stepReq = false;
+		std::cout << "Step executed" << std::endl;
+	}
+
     m_renderSystem->update(*m_manager, deltaTime);
     m_uiSystem->update(*m_manager, deltaTime);
 

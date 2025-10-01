@@ -48,6 +48,9 @@ private:
     std::string m_title;
     bool m_isRunning;
 	AudioHandler& audio;
+
+    bool m_stepMode;
+    bool m_stepReq;
     // Core Engine Systems
     std::unique_ptr<GameObjectManager> m_manager;
     std::unique_ptr<InputSystem> m_inputSystem;
