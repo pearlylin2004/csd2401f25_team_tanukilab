@@ -311,7 +311,6 @@ void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime) {
 	}
 }
 
-
 // Collision system - detects and resolves collisions between game objects
 void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime) {
 	std::vector<GameObject*> gameObjects;
