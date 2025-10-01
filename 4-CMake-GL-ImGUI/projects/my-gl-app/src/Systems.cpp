@@ -322,9 +322,6 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 			for (GameObject* obj : gameObjects) {
 				if (obj != iterator) {
 					if (obj != iterator && obj->getComponent<CollisionInfo>()) {
-						/*if (!obj->hasComponent<Transform>() || !iterator->hasComponent<Transform>()) {
-
-						}*/
 						Transform* obj1T = obj->getComponent<Transform>();
 						Transform* obj2T = iterator->getComponent<Transform>();
 						Collision::AABB obj1 = Collision::getObjectAABB(obj1T);
@@ -366,10 +363,8 @@ void UISystem::update(GameObjectManager& manager, const float& deltaTime) {
 	std::vector<GameObject*> gameObjects;
 	manager.getAllGameObjects(gameObjects);
 
-	static float rotationSpeed = 0.01f;
-	static float angleOfRotation = 0.0f;
 	//demo
-	UI::drawDemo(rotationSpeed, angleOfRotation);
+	UI::drawDemo();
 
 	//input circles
 	UI::drawControls(circles);
@@ -377,15 +372,10 @@ void UISystem::update(GameObjectManager& manager, const float& deltaTime) {
 	//debug window
 	UI::drawDebug(UI::debugMessages);
 
-	//shape control
-	/*for (GameObject* obj : gameObjects) {
-		Transform* obj1T = obj->getComponent<Transform>();
-		UI::shapeControl(*obj1T);
-	}*/
+	Transform* leavesT = gameObjects[0]->getComponent<Transform>();
+	Transform* bulletT = gameObjects[2]->getComponent<Transform>();
+	UI::shapeControl(*leavesT, *bulletT);
 
-	Transform* obj1T = gameObjects[0]->getComponent<Transform>();
-	UI::shapeControl(*obj1T);
-
-	//ImGui::ShowMetricsWindow();
+	//ImGui::ShowMetricsWindow(); //for debug
 }
 
