@@ -165,69 +165,6 @@ namespace Collision {
 
         return info;
     }
-
-    //circles
-    bool CollisionIntersection_CircleCircle_Static(const Circle& c1, const Circle& c2)
-    {
-        float dx = c2.getCenter().x - c1.getCenter().x;
-        float dy = c2.getCenter().y - c1.getCenter().y;
-        float distanceSq = dx * dx + dy * dy;
-        float radiusSum = c1.getRadius() + c2.getRadius();
-        return distanceSq <= (radiusSum * radiusSum + EPSILON);
-    }
-    CollisionInfo CollisionIntersection_CircleCircle_Dynamic_Info(const Circle& c1, const Vector2D& vel1, const Circle& c2, const Vector2D& vel2)
-    {
-        CollisionInfo info;
-        Vector2D relVel = { vel2.x - vel1.x, vel2.y - vel1.y };
-        Vector2D relPos = { c2.getCenter().x - c1.getCenter().x, c2.getCenter().y - c1.getCenter().y };
-        float r = c1.getRadius() + c2.getRadius();
-
-        float a = Dot(relVel, relVel);
-        float b = 2.0f * Dot(relPos, relVel);
-        float c = Dot(relPos, relPos) - r * r;
-
-        if (a <= EPSILON) {
-            //relative velocity almost zero
-            if (c <= 0.0f) {
-                info.collided = true;
-                info.timeOfImpact = 0.0f;
-                Vector2D n = Vec_Normalize(&relPos);
-                info.normal = (Length(relPos) > EPSILON) ? n : Vector2D{ 1,0 };
-            }
-            return info;
-        }
-
-        float disc = b * b - 4.0f * a * c;
-        if (disc < 0.0f) {
-            info.collided = false;
-            return info;
-        }
-
-        float sqrtD = std::sqrt(disc);
-        float t1 = (-b - sqrtD) / (2.0f * a);
-        float t2 = (-b + sqrtD) / (2.0f * a);
-
-        float toi = INFINITY;
-        if (t1 >= 0.0f && t1 <= 1.0f) toi = t1;
-        else if (t2 >= 0.0f && t2 <= 1.0f) toi = t2;
-
-        if (toi == INFINITY) {
-            info.collided = false;
-            return info;
-        }
-
-        //normal at contact
-        Vector2D scaledVel = Vec_Scale(&relVel, toi);
-        Vector2D contactPosRel = Vec_Add(&relPos, &scaledVel);
-        Vector2D normal = Vec_Normalize(&contactPosRel);
-        if (Length(normal) <= EPSILON) normal = Vector2D{ 1, 0 };
-
-        info.collided = true;
-        info.timeOfImpact = toi;
-        info.normal = normal;
-        return info;
-    }
-
     //AABB with circles 
     bool CollisionIntersection_CircleAABB_Static(const Circle& c, const AABB& aabb)
     {
@@ -381,35 +318,11 @@ namespace Collision {
 
         Vector2D n = info.normal;
         Vector2D relVel = Vec_Sub(&velB, &velA);
-        float velAlongNormal = Dot(relVel, n);
     }
 
-    void Resolve_Circle_Circle(Collision::Circle& cA, Vector2D& velA, float massA,
-        Collision::Circle& cB, Vector2D& velB, float massB,
-        const CollisionInfo& info, CollisionResponseMode mode, float restitution)
-    {
-        if (!info.collided) return;
-
-        //move to contact
-        Vector2D deltaA = Vec_Scale(&velA, info.timeOfImpact);
-        Vector2D deltaB = Vec_Scale(&velB, info.timeOfImpact);
-        cA.setCenter(Vec_Add(&cA.getCenter(), &deltaA));
-        cB.setCenter(Vec_Add(&cB.getCenter(), &deltaB));
-
-        Vector2D n = info.normal;
-        Vector2D relVel = Vec_Sub(&velB, &velA);
-        float velAlongNormal = Dot(relVel, n);
-
-        if (mode == CollisionResponseMode::Stop) {
-            velA = Vector2D{ 0,0 };
-            velB = Vector2D{ 0,0 };
-            return;
-        }
-    }
-
-    void Resolve_Circle_AABB(Collision::Circle& c, Vector2D& velC, float massC,
+    void Resolve_Circle_AABB(Collision::Circle& c, Vector2D& velC,
         Collision::AABB& aabb, Vector2D& velAABB, float massAABB,
-        const CollisionInfo& info, CollisionResponseMode mode, float restitution)
+        const CollisionInfo& info, CollisionResponseMode mode)
     {
         if (!info.collided) return;
 
@@ -421,9 +334,8 @@ namespace Collision {
         aabb.setMax(Vec_Add(&aabb.getMax(), &deltaA));
 
         Vector2D n = info.normal;
-        //relative velocity: aabb treated as B
+        //relative velocity aabb treated as B
         Vector2D relVel = Vec_Sub(&velAABB, &velC);
-        float velAlongNormal = Dot(relVel, n);
 
         if (mode == CollisionResponseMode::Stop) {
             if (massAABB <= 0.0f) velC = Vector2D{ 0,0 };

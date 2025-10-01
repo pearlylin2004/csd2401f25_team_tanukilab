@@ -314,11 +314,11 @@ void CollisionSystem::update(GameObjectManager& manager, float deltaTime) {
 
 			for (GameObject* obj : gameObjects) {
 				if (obj != iterator) {
-				if (obj != iterator && obj->getComponent<CollisionInfo>()) {
-					/*if (!obj->hasComponent<Transform>() || !iterator->hasComponent<Transform>()) {
-						
-					}*/
-					Transform* obj1T = obj->getComponent<Transform>();
+					if (obj != iterator && obj->getComponent<CollisionInfo>()) {
+						/*if (!obj->hasComponent<Transform>() || !iterator->hasComponent<Transform>()) {
+
+						}*/
+						Transform* obj1T = obj->getComponent<Transform>();
 						Transform* obj2T = iterator->getComponent<Transform>();
 						Collision::AABB obj1 = Collision::getObjectAABB(obj1T);
 						Collision::AABB obj2 = Collision::getObjectAABB(obj2T);
@@ -347,6 +347,7 @@ void CollisionSystem::update(GameObjectManager& manager, float deltaTime) {
 								" and Object " +
 								std::to_string(reinterpret_cast<uintptr_t>(iterator)));
 						}
+					}
 				}
 			}
 		}
@@ -355,8 +356,8 @@ void CollisionSystem::update(GameObjectManager& manager, float deltaTime) {
 
 //for imgu(testing)
 void UISystem::update(GameObjectManager& manager, float deltaTime) {
-	//td::vector<GameObject*> gameObjects;
-	//manager.getAllGameObjects(gameObjects);
+	std::vector<GameObject*> gameObjects;
+	manager.getAllGameObjects(gameObjects);
 
 	//start a new ImGui frame
 	ImGui_ImplOpenGL3_NewFrame();
@@ -374,7 +375,14 @@ void UISystem::update(GameObjectManager& manager, float deltaTime) {
 	//debug window
 	UI::drawDebug(UI::debugMessages);
 
+	//shape control
+	/*for (GameObject* obj : gameObjects) {
+		Transform* obj1T = obj->getComponent<Transform>();
+		UI::shapeControl(*obj1T);
+	}*/
+
 	//render ImGui
 	ImGui::Render();
 	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 }
+
