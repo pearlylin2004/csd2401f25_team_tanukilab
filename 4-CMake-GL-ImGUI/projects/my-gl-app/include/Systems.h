@@ -1,8 +1,10 @@
 /* Start Header ************************************************************************/
 /*!
-\file        Systems.cpp
+\file        Systems.h
 \author      Seow Sin Le, s.sinle, 2401084, 20%
+\author 	 Hugo Low Ren Hao, low.h, 2402272, 20%
 \par         s.sinle@digipen.edu
+\par		 low.h@digipen.edu
 \date        October, 1st, 2025
 \brief       System functions to run the logic for the components
 
