@@ -114,6 +114,11 @@ public:
             audio.playSound(soundID::effect);
         }
 
+        //imgui
+        ImGui_ImplOpenGL3_NewFrame();
+        ImGui_ImplGlfw_NewFrame();
+        ImGui::NewFrame();
+
         // input test code
         /*if (InputHandler::isKeyPressed(GLFW_KEY_SPACE))
             std::cout << InputHandler::getMouseY() << std::endl;*/
@@ -124,6 +129,10 @@ public:
 		m_uiSystem.update(m_manager, deltaTime);
 
         //m_angleOfRotation += m_rotationSpeed;
+
+        //render ImGui
+        ImGui::Render();
+        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
     }
 
     void render() 

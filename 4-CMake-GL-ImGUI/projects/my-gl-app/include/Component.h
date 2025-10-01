@@ -32,12 +32,15 @@ struct Transform : public Component {
 public:
 	Transform() = default;
     Transform(float x, float y, float rot, float sx, float sy) 
-        : x(x), y(y), rotation(rot), scaleX(sx), scaleY(sy) {}
+       : x(x), y(y), rotation(rot), scaleX(sx), scaleY(sy) {}
 
     float x{ 0.f }, y{ 0.f }, z{ 0.f };
     float rotation = 0.0f;
     float scaleX = 1.0f, scaleY = 1.0f, scaleZ{ 0.f };
     glm::mat4 mdlWorld;
+
+    //for imgui reset
+    //float origX, origY, origRotation, origScaleX, origScaleY, origScaleZ;
 };
 
 struct Velocity : public Component {

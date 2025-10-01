@@ -359,11 +359,6 @@ void UISystem::update(GameObjectManager& manager, float deltaTime) {
 	std::vector<GameObject*> gameObjects;
 	manager.getAllGameObjects(gameObjects);
 
-	//start a new ImGui frame
-	ImGui_ImplOpenGL3_NewFrame();
-	ImGui_ImplGlfw_NewFrame();
-	ImGui::NewFrame();
-
 	static float rotationSpeed = 0.01f;
 	static float angleOfRotation = 0.0f;
 	//demo
@@ -381,8 +376,9 @@ void UISystem::update(GameObjectManager& manager, float deltaTime) {
 		UI::shapeControl(*obj1T);
 	}*/
 
-	//render ImGui
-	ImGui::Render();
-	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+	Transform* obj1T = gameObjects[0]->getComponent<Transform>();
+	UI::shapeControl(*obj1T);
+
+	//ImGui::ShowMetricsWindow();
 }
 

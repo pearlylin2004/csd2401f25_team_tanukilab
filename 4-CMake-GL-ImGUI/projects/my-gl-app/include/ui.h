@@ -28,5 +28,6 @@ namespace UI{
     void drawDemo(float& rotationSpeed, float& angleOfRotation);
     void drawControls(std::vector<Collision::Circle>& circles);
 	void drawDebug(std::vector<std::string> debugMessages);
+	void shapeControl(Transform& t);
 }
 #endif
