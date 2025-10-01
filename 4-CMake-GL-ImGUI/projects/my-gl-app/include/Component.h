@@ -3,8 +3,10 @@
 \file        Component.h
 \author      Seow Sin Le, s.sinle, 2401084, 20%
 \author 	 Hugo Low Ren Hao, low.h, 2402272, 20%
+\author 	 Pearly Lin Lee Ying, p.lin, 2401591, 10%
 \par         s.sinle@digipen.edu
 \par         low.h@digipen.edu
+\par		 p.lin@digipen.edu
 \date        October, 1st, 2025
 \brief       This file contains all the component definitions for the Component-based architecture.
 
