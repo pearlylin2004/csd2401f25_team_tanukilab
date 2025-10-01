@@ -30,6 +30,8 @@ bool InputHandler::m_mouseButtonsPrevious[8] = { false };
 double InputHandler::m_lastClickTime[8] = { 0.0 };
 Vector2D InputHandler::m_mousePosition = Vector2D(0.0f);
 Vector2D InputHandler::m_mousePositionPrevious = Vector2D(0.0f);
+Vector2D InputHandler::m_mouseDragStartPos = Vector2D(0.0f);
+bool InputHandler::m_isDragging = false;
 bool InputHandler::m_isCursorInside = false;
 
 float InputHandler::m_scrollOffset = 0.0f;
@@ -142,6 +144,20 @@ bool InputHandler::isMouseButtonDoubleClicked(int button) {
 	return false;
 }
 
+bool InputHandler::isMouseDragging() {
+	return m_isDragging;
+}
+
+Vector2D InputHandler::getMouseDragDelta() {
+	if (!m_isDragging) return Vector2D(0.0f);
+	
+	return Vec_Sub(&m_mousePosition, &m_mouseDragStartPos);
+}
+
+Vector2D InputHandler::getMouseDragStartPos() {
+	return m_mouseDragStartPos;
+}
+
 Vector2D InputHandler::getCursorPosition() {
 	return m_mousePosition;
 }
@@ -186,9 +202,18 @@ void InputHandler::mouseButtonCallback(GLFWwindow* window, int button, int actio
 	// is button is pressed, change bool in m_mouseButtons to TRUE, if released then FALSE
 	if (action == GLFW_PRESS) {
 		m_mouseButtons[button] = true;
+
+		if (button == GLFW_MOUSE_BUTTON_LEFT) {
+			m_isDragging = true;
+			m_mouseDragStartPos = m_mousePosition; // record drag start position
+		}
 	}
 	else if (action == GLFW_RELEASE) {
 		m_mouseButtons[button] = false;
+
+		if (button == GLFW_MOUSE_BUTTON_LEFT) {
+			m_isDragging = false;
+		}
 	}
 }
 
