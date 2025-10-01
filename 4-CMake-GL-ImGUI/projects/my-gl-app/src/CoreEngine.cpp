@@ -138,7 +138,9 @@ void CoreEngine::Update(float deltaTime) {
     m_collisionSystem->update(*m_manager, deltaTime);
 
 	// Physics system update depends on step mode
-    if(!m_stepMode) m_physicsSystem->update(*m_manager, deltaTime);
+    if (!m_stepMode) {
+        m_physicsSystem->update(*m_manager, deltaTime);
+    }
 	else if (m_stepReq) {
 		m_physicsSystem->update(*m_manager, deltaTime);
 		m_stepReq = false;
