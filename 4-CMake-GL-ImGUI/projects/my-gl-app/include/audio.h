@@ -26,7 +26,6 @@ Technology is prohibited.
 #include <string>
 #include <iostream>
 
-
 enum class soundID : int {
 	effect = 0, // for water sound (placeholder only)
 	bg,
