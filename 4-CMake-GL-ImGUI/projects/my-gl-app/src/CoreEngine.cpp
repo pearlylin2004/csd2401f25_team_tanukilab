@@ -12,7 +12,7 @@
 #include "CoreEngine.h"
 
 CoreEngine::CoreEngine()
-    : m_window(nullptr), m_fps(0.0), m_delta(0.0), m_isRunning(false) {
+    : m_window(nullptr), m_fps(0.0), m_delta(0.0), m_isRunning(false), audio(AudioHandler::getInstance()) {
 }
 
 CoreEngine::~CoreEngine() {
@@ -75,6 +75,9 @@ void CoreEngine::Init() {
     ImGui_ImplGlfw_InitForOpenGL(m_window, true);
     ImGui_ImplOpenGL3_Init("#version 450");
 
+    audio.init();
+    audio.playSound(soundID::bg, 0.1f);
+
     m_isRunning = true;
 }
 
@@ -94,6 +97,8 @@ void CoreEngine::GameLoop() {
     Perf::UpdateTime(m_delta, m_fps, 0.5);
     Perf::UpdateWindowTitle(m_window, m_title, m_fps, true);
 
+    audio.update();
+
     // --- Main Update ---
     glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -110,6 +115,13 @@ void CoreEngine::Update(float deltaTime) {
     // Press F9 to simulate a failure (for crash logger)
     if (glfwGetKey(m_window, GLFW_KEY_F9) == GLFW_PRESS) {
         throw std::runtime_error("F9 test: simulated failure in update()");
+    }
+
+    if (InputHandler::isKeyTriggered(GLFW_KEY_P)) {
+        audio.toggleSoundPause(soundID::bg);
+    }
+    if (InputHandler::isMouseLeftClicked()) {
+        audio.playSound(soundID::effect);
     }
 
     //imgui
