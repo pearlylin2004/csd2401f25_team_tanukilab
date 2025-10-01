@@ -265,14 +265,23 @@ namespace Collision {
         return info;
     }
 
-    //relecting
+    //circle to circle
+    /*bool CollisionIntersection_CircleCircle_Static(const Circle& c1, const Circle& c2) {
+
+    }
+
+    CollisionInfo CollisionIntersection_CircleCircle_Dynamic_Info(const Circle& c1, const Vector2D& velC1, const Circle& c2, const Vector2D& velC2) {
+
+    }*/
+
+    //reflecting
     static inline Vector2D Reflect(const Vector2D& v, const Vector2D& n) {
         float d = Dot(v, n);
         Vector2D scaledN = Vec_Scale(&n, 2.0f * d);
         return Vec_Sub(&v, &scaledN);
     }
 
-    //remove normal 
+    //remove normal ... when object hit the wall
     static inline Vector2D RemoveNormalComponent(const Vector2D& v, const Vector2D& n) {
         float d = Dot(v, n);
         Vector2D scaledN = Vec_Scale(&n, d);

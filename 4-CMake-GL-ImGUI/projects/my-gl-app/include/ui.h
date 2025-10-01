@@ -5,7 +5,8 @@
             - 100% of the file
 \par        p.lin@digipen.edu
 \date       September, 24th, 2025
-\brief      
+\brief      Declaration of functions, drawDemo, drawControls, drawDebug, shapeControl
+			for the imgui windows
 
 Copyright (C) 2025 DigiPen Institute of Technology.
 Reproduction or disclosure of this file or its contents
@@ -24,10 +25,11 @@ Technology is prohibited.
 
 namespace UI{
     extern std::vector<std::string> debugMessages; //not sure if this needs to be change
+    enum class ShapeType { Leaves, Bullet };
 
-    void drawDemo(float& rotationSpeed, float& angleOfRotation);
+    void drawDemo();
     void drawControls(std::vector<Collision::Circle>& circles);
 	void drawDebug(std::vector<std::string> debugMessages);
-	void shapeControl(Transform& t);
+    void shapeControl(Transform& t1, Transform& t2);
 }
 #endif

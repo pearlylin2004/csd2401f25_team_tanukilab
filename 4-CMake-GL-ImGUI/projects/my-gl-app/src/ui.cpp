@@ -5,7 +5,8 @@
             - 100% of the file
 \par        p.lin@digipen.edu
 \date       September, 17th, 2025
-\brief      
+\brief      definition of functions, drawDemo, drawControls, drawDebug, shapeControl
+			for the imgui windows
 
 Copyright (C) 2025 DigiPen Institute of Technology.
 Reproduction or disclosure of this file or its contents
@@ -19,16 +20,12 @@ Technology is prohibited.
 namespace UI {
     std::vector<std::string> debugMessages; //not sure if this needs to be change
 
-    void drawDemo(float& rotationSpeed, float& angleOfRotation) {
+    void drawDemo() {
         ImGui::Begin("OpenGL 3.3 Demo");
         ImGui::Text("Hello, ImGui!");
         ImGui::Text("Application average %.3f ms/frame (%.1f FPS)",
             1000.0f / ImGui::GetIO().Framerate,
             ImGui::GetIO().Framerate);
-        /*ImGui::SliderFloat("Rotation Speed", &rotationSpeed, 0.0f, 0.1f);
-        if (ImGui::Button("Reset Rotation")) {
-            angleOfRotation = 0.0f;
-        }*/
         ImGui::End();
     }
 
@@ -79,33 +76,54 @@ namespace UI {
 	}
 
     //shape control
-    void shapeControl(Transform& t) {
+    void shapeControl(Transform& t1, Transform& t2) {
         if (ImGui::Begin("Shape Control")) {
             ImGui::Text("Transform Component");
+            static ShapeType currentShape = ShapeType::Leaves;
 
+            if (ImGui::Button("Leaves")) {
+				currentShape = ShapeType::Leaves;
+            }
+			ImGui::SameLine();
+            if (ImGui::Button("Bullet")) {
+				currentShape = ShapeType::Bullet;
+            }
+
+            Transform* t = (currentShape == ShapeType::Leaves) ? &t1 : &t2;
+            
             //position 
-            ImGui::SliderFloat("Position X", &t.x, -500.f, 500.f);
-            ImGui::SliderFloat("Position Y", &t.y, -500.f, 500.f);
+            ImGui::SliderFloat("Position X", &t->x, -500.f, 500.f);
+            ImGui::SliderFloat("Position Y", &t->y, -500.f, 500.f);
 
             //rotation
-            ImGui::SliderFloat("Rotation", &t.rotation, 0.f, 360.f);
+            ImGui::SliderFloat("Rotation", &t->rotation, 0.f, 360.f);
 
             //scale
-            ImGui::SliderFloat("Scale X", &t.scaleX, 0.1f, 10.f);
-            ImGui::SliderFloat("Scale Y", &t.scaleY, 0.1f, 10.f);
-            ImGui::SliderFloat("Scale Z", &t.scaleZ, 0.1f, 10.f);
+            ImGui::SliderFloat("Scale X", &t->scaleX, 0.1f, 10.f);
+            ImGui::SliderFloat("Scale Y", &t->scaleY, 0.1f, 10.f);
+            ImGui::SliderFloat("Scale Z", &t->scaleZ, 0.1f, 10.f);
 
+            //this need change cuz its hardcoded for now
             //reset
             if (ImGui::Button("Reset All")) {
-                t.x = 0.0f;
-                t.y = 0.0f;
-                t.rotation = 0.0f;
-                t.scaleX = 10.0f;
-                t.scaleY = 10.0f;
-                t.scaleZ = 10.0f;
+                if (currentShape == ShapeType::Leaves) {
+                    t->x = 0.0f;
+                    t->y = 0.0f;
+                    t->rotation = 0.0f;
+                    t->scaleX = 5.0f;
+                    t->scaleY = 5.0f;
+                    t->scaleZ = 5.0f;
+                }
+                else {
+                    t->x = 0.0f;
+                    t->y = 0.0f;
+                    t->rotation = 0.5f;
+                    t->scaleX = 0.5f;
+                    t->scaleY = 0.5f;
+                    t->scaleZ = 0.0f;
+                }
             }
         }
-
         ImGui::End();
     }
 }
