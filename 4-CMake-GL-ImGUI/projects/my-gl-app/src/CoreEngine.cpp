@@ -123,11 +123,9 @@ void CoreEngine::Update(float deltaTime) {
 	// step-by-step physics debug mode toggle and step request
 	if (InputHandler::isComboKeyTriggered(GLFW_KEY_Z)) {
 		m_stepMode = !m_stepMode;
-		std::cout << "Step mode: " << (m_stepMode ? "ON" : "OFF") << std::endl;
 	}
 	if (m_stepMode && InputHandler::isKeyTriggered(GLFW_KEY_Z)) {
 		m_stepReq = true;
-		std::cout << "Step requested" << std::endl;
 	}
 
     //imgui
@@ -139,11 +137,11 @@ void CoreEngine::Update(float deltaTime) {
     m_inputSystem->update(*m_manager, deltaTime);
     m_collisionSystem->update(*m_manager, deltaTime);
 
+	// Physics system update depends on step mode
     if(!m_stepMode) m_physicsSystem->update(*m_manager, deltaTime);
 	else if (m_stepReq) {
 		m_physicsSystem->update(*m_manager, deltaTime);
 		m_stepReq = false;
-		std::cout << "Step executed" << std::endl;
 	}
 
     m_renderSystem->update(*m_manager, deltaTime);
