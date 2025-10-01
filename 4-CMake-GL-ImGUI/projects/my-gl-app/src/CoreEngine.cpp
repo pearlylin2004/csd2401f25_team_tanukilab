@@ -113,14 +113,14 @@ void CoreEngine::Update(float deltaTime) {
     InputHandler::update();
 
     
-
+	// audio controls (temp for M1)
     if (InputHandler::isKeyTriggered(GLFW_KEY_P)) {
         audio.toggleSoundPause(soundID::bg);
     }
     if (InputHandler::isMouseLeftClicked()) {
         audio.playSound(soundID::effect);
     }
-
+	// step-by-step physics debug mode toggle and step request
 	if (InputHandler::isComboKeyTriggered(GLFW_KEY_Z)) {
 		m_stepMode = !m_stepMode;
 		std::cout << "Step mode: " << (m_stepMode ? "ON" : "OFF") << std::endl;
