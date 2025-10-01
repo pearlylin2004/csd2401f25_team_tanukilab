@@ -1,10 +1,17 @@
 ﻿/* Start Header ************************************************************************/
 /*!
-\file		collision.cpp
-\author
-\par
-\date		September, 17, 2025
-\brief		Using namespace of Collision
+\file       collision.h
+\author     Pearly Lin Lee Ying, p.lin, 2401591
+            - 100% of the file
+\par        p.lin@digipen.edu
+\date       September, 17th, 2025
+\brief      This file defines the static and dynamic collision functions, as well as
+            the main AABB-AABB collision function implementation.
+
+Copyright (C) 2025 DigiPen Institute of Technology.
+Reproduction or disclosure of this file or its contents
+without the prior written consent of DigiPen Institute of
+Technology is prohibited.
 */
 /* End Header **************************************************************************/
 
