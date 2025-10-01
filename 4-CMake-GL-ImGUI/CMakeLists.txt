@@ -22,6 +22,7 @@ set(ALL_LIBS
   PRIVATE glfw
   PRIVATE libglew_static
   PRIVATE imgui
+  PRIVATE stb
 )
 
 # Include path for GLM (optional if not using FetchContent)
@@ -63,7 +64,7 @@ foreach(child ${children})
         if (CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
             target_compile_options(${child} PRIVATE -Wall ${DisableWarnings})
         elseif (MSVC)
-            target_compile_options(${child} PRIVATE /W3 /WX-)
+            target_compile_options(${child} PRIVATE /W4 /WX-)
         endif()
 
         # Include path for each project

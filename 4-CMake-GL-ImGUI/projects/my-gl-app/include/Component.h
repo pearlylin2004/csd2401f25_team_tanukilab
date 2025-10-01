@@ -1,10 +1,15 @@
 /* Start Header ************************************************************************/
 /*!
-\file		Component.h
-\author
-\par
-\date		Month, Day, 2025
-\brief
+\file        Component.h
+\author      Seow Sin Le, s.sinle, 2401084, 20%
+\par         s.sinle@digipen.edu
+\date        October, 1st, 2025
+\brief       
+
+Copyright (C) 2025 DigiPen Institute of Technology.
+Reproduction or disclosure of this file or its contents
+without the prior written consent of DigiPen Institute of
+Technology is prohibited.
 */
 /* End Header **************************************************************************/
 
@@ -51,7 +56,12 @@ public:
 
 public:
     bool visible = true;
-    std::string texID;
+    bool hasTex = false;
+    bool isTransparent = false;
+    bool wireframe = false;
+    GLuint texHDL;
+    std::string texFile;
+    
     renderer::model modelRef;
 };
 

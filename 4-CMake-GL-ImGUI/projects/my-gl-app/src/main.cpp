@@ -9,6 +9,7 @@
 /* End Header **************************************************************************/
 
 // Hungarian notation: https://en.wikipedia.org/wiki/Hungarian_notation
+#define STB_IMAGE_IMPLEMENTATION
 #include <shader.hpp>
 #include <memory>
 #include <stdexcept>
@@ -57,12 +58,17 @@ public:
             glfwTerminate();
             throw std::runtime_error("GLEW initialization failed");
         }
+
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
         glEnable(GL_DEPTH_TEST);
         glfwSetInputMode(m_window, GLFW_STICKY_KEYS, GL_TRUE);
         //m_cube->initialize();
         InputHandler::init(m_window);
         renderer::init(p_width, p_height);
         m_manager.init();
+        m_renderSystem.init(m_manager);
 
 
         // Setup ImGui
@@ -120,28 +126,8 @@ public:
         //m_angleOfRotation += m_rotationSpeed;
     }
 
-    void render() {
-        //glm::mat4 modelMat = glm::mat4(1.0f);
-        //modelMat = glm::rotate(modelMat, m_angleOfRotation, glm::vec3(0.0f, 0.0f, 1.0f));
-        //m_cube->render(modelMat);
-        //renderer::update();
-
-        //draw circles from imgui
-        /*for (const auto& c : circles) {
-            renderer::object temp;
-            temp.model_ref = renderer::models[1];
-            temp.translate = glm::vec3(c.getCenter().x, c.getCenter().y, 0.02);
-            temp.scaling = glm::vec3(c.getRadius()+1, c.getRadius()+1, 2.0f + 1);
-            temp.draw();
-        }*/
-
-        /*ImGui::Begin("OpenGL funny");
-        ImGui::Text("fml");
-        ImGui::End();*/
-
-        // Render ImGui
-        //ImGui::Render();
-        //ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+    void render() 
+    {
         const float deltaTime = 1.0f / 60.0f;
 
 

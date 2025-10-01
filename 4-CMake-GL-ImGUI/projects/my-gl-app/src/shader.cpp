@@ -1,16 +1,17 @@
 /* Start Header ************************************************************************/
 /*!
-\file		shader.cpp
-\author
-\par
-\date		Month, Day, 2025
-\brief
+\file        shader.cpp
+\author      Seow Sin Le, s.sinle, 2401084
+\par         s.sinle@digipen.edu
+\date        October, 1st, 2025
+\brief       Enable shader files for graphics
+
+Copyright (C) 2025 DigiPen Institute of Technology.
+Reproduction or disclosure of this file or its contents
+without the prior written consent of DigiPen Institute of
+Technology is prohibited.
 */
 /* End Header **************************************************************************/
-/**
- * @file shader.cpp
- * @brief Helper functions to load, compile, and link GLSL shaders (vertex, fragment, geometry).
- */
 
 #include <cstdio>
 #include <string>

@@ -1,21 +1,21 @@
 object player
-renderer square 
-transform 10 10 0.01 1 1 1 0
+renderer square 1 shaders/Leaf_Gun_Empty.png
+transform 0 0 0.01 1 5 3 0
 physics 0 0
 collision
 
 object platform
-renderer circle
+renderer circle 0
 transform 0 0 0.0 1 5 5 0 
 physics 1 1
 
 object bullet
-renderer square
+renderer square 0
 transform 0 0 0.02 0.5 0.5 0.5 0
 physics 0 0 
 
 object player1
-renderer square 
+renderer square 0
 transform 8 -8 0.01 1 1 1 0 
 physics 0 0
 collision
