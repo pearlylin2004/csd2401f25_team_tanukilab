@@ -362,7 +362,7 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 }
 
 //for imgu(testing)
-void UISystem::update(GameObjectManager& manager, float deltaTime) {
+void UISystem::update(GameObjectManager& manager, const float& deltaTime) {
 	std::vector<GameObject*> gameObjects;
 	manager.getAllGameObjects(gameObjects);
 

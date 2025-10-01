@@ -112,12 +112,21 @@ void CoreEngine::Update(float deltaTime) {
         throw std::runtime_error("F9 test: simulated failure in update()");
     }
 
+    //imgui
+    ImGui_ImplOpenGL3_NewFrame();
+    ImGui_ImplGlfw_NewFrame();
+    ImGui::NewFrame();
+
     // Update all systems in order
     m_inputSystem->update(*m_manager, deltaTime);
     m_collisionSystem->update(*m_manager, deltaTime);
     m_physicsSystem->update(*m_manager, deltaTime);
     m_renderSystem->update(*m_manager, deltaTime);
     m_uiSystem->update(*m_manager, deltaTime);
+
+    //render ImGui
+    ImGui::Render();
+    ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 }
 
 void CoreEngine::Shutdown() {
