@@ -13,6 +13,6 @@
 //constructor
 GameObject::GameObject(const std::string& name) : m_name(name) {}
 
-const std::string& GameObject::getName() const {
+const std::string& GameObject::getObjectName() const {
     return m_name;
 }

@@ -351,9 +351,9 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 
 							//show message in imgui
 							UI::debugMessages.push_back("Collision detected between Object " +
-								std::to_string(reinterpret_cast<uintptr_t>(obj)) +
+								obj->getObjectName() +
 								" and Object " +
-								std::to_string(reinterpret_cast<uintptr_t>(iterator)));
+								obj->getObjectName());
 						}
 				}
 			}
