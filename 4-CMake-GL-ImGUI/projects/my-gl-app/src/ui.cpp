@@ -19,16 +19,12 @@ Technology is prohibited.
 namespace UI {
     std::vector<std::string> debugMessages; //not sure if this needs to be change
 
-    void drawDemo(float& rotationSpeed, float& angleOfRotation) {
+    void drawDemo() {
         ImGui::Begin("OpenGL 3.3 Demo");
         ImGui::Text("Hello, ImGui!");
         ImGui::Text("Application average %.3f ms/frame (%.1f FPS)",
             1000.0f / ImGui::GetIO().Framerate,
             ImGui::GetIO().Framerate);
-        /*ImGui::SliderFloat("Rotation Speed", &rotationSpeed, 0.0f, 0.1f);
-        if (ImGui::Button("Reset Rotation")) {
-            angleOfRotation = 0.0f;
-        }*/
         ImGui::End();
     }
 

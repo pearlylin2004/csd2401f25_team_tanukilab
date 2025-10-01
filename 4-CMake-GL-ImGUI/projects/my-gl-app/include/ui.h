@@ -26,7 +26,7 @@ namespace UI{
     extern std::vector<std::string> debugMessages; //not sure if this needs to be change
     enum class ShapeType { Leaves, Bullet };
 
-    void drawDemo(float& rotationSpeed, float& angleOfRotation);
+    void drawDemo();
     void drawControls(std::vector<Collision::Circle>& circles);
 	void drawDebug(std::vector<std::string> debugMessages);
     void shapeControl(Transform& t1, Transform& t2);

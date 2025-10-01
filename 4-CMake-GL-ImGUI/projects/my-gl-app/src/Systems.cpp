@@ -356,22 +356,14 @@ void UISystem::update(GameObjectManager& manager, float deltaTime) {
 	std::vector<GameObject*> gameObjects;
 	manager.getAllGameObjects(gameObjects);
 
-	static float rotationSpeed = 0.01f;
-	static float angleOfRotation = 0.0f;
 	//demo
-	UI::drawDemo(rotationSpeed, angleOfRotation);
+	UI::drawDemo();
 
 	//input circles
 	UI::drawControls(circles);
 
 	//debug window
 	UI::drawDebug(UI::debugMessages);
-
-	//shape control
-	/*for (GameObject* obj : gameObjects) {
-		Transform* obj1T = obj->getComponent<Transform>();
-		UI::shapeControl(*obj1T);
-	}*/
 
 	Transform* leavesT = gameObjects[0]->getComponent<Transform>();
 	Transform* bulletT = gameObjects[2]->getComponent<Transform>();
