@@ -1,10 +1,15 @@
 /* Start Header ************************************************************************/
 /*!
-\file		GameObjectManager.cpp
-\author
-\par
-\date		Month, Day, 2025
-\brief
+\file        GameObjectManager.cpp
+\author      Seow Sin Le, s.sinle, 2401084, 40%
+\par         s.sinle@digipen.edu
+\date        October, 1st, 2025
+\brief       manages all game objects and initializes them with their corresponding components
+
+Copyright (C) 2025 DigiPen Institute of Technology.
+Reproduction or disclosure of this file or its contents
+without the prior written consent of DigiPen Institute of
+Technology is prohibited.
 */
 /* End Header **************************************************************************/
 #include "GameObjectManager.h"
@@ -81,6 +86,11 @@ void GameObjectManager::init()
 			{
 				renderptr->modelRef = renderer::models[static_cast<int>(shape::circle)];
 			}
+			is >> renderptr->hasTex;
+			if (renderptr->hasTex == true)
+			{
+				is >> renderptr->texFile;
+			}
 			std::cout << shape << "\n";
 		}
 		/*for (; is >> checker, checker == "transform";)
@@ -100,10 +110,15 @@ void GameObjectManager::init()
 			is >> phyptr->inWater >> phyptr->buoancy;
 			std::cout << "inwater : " << phyptr->inWater << ", " << phyptr->buoancy << "\n";
 		}
+		if(checker == "collision")
+		{
+			m_gameObjects[objectName]->addComponent<CollisionInfo>();
+			std::cout << "collision component added\n";
+		}
 
 		m_gameObjects["player"]->addComponent<Input>(1.f);
 		/*m_gameObjects[objectName]->addComponent<Velocity>();*/
-		m_gameObjects[objectName]->addComponent<CollisionInfo>();
+		
 	}
 }
 

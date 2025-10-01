@@ -1,17 +1,23 @@
 /* Start Header ************************************************************************/
 /*!
-\file		Input.h
-\author
-\par
-\date		Month, Day, 2025
-\brief
+\file       input.h
+\author     Tan Chee Qing, cheeqing.tan, 2401486
+			- 100% of the file
+\par        cheeqing.tan@digipen.edu
+\date       September, 15th, 2025
+\brief      A static utility class that manages all input handling for a GLFW window.
+
+Copyright (C) 2025 DigiPen Institute of Technology.
+Reproduction or disclosure of this file or its contents
+without the prior written consent of DigiPen Institute of
+Technology is prohibited.
 */
 /* End Header **************************************************************************/
+
 #pragma once
 
 #include <GLFW/glfw3.h>
-//#include <Math_Lib.h>
-#include <mathlib.h>
+#include "mathlib.h"
 
 /*
 Keyboard key tokens
@@ -35,12 +41,20 @@ public:
 	static bool isKeyTriggered(int key); // check if key was just pressed (triggered once)
 	static bool isKeyReleased(int key);
 	static bool isKeyHeld(int key); // check if key is currently being held down
+	static bool isComboKeyTriggered(int key1, int key2 = GLFW_KEY_LEFT_SHIFT); // check if both keys are triggered (default is left shift)
+	static bool isComboKeyHeld(int key1, int key2 = GLFW_KEY_LEFT_SHIFT); // check if both keys are being held down (default is left shift)
 
 	// check for mouse button
-	static bool isMouseLeftClicked(); // check if left mouse button was just clicked
+	static bool isMouseLeftClicked(); // check if left mouse button was clicked
 	static bool isMouseLeftHeld(); // check if left mouse button is currently being held down
 	static bool isMouseLeftReleased(); // check if left mouse button was just released
+	static bool isMouseLeftDoubleClicked(); // check if right mouse button was just clicked
 	static bool isMouseButtonClicked(int button); // ONLY use if you need other buttons
+	static bool isMouseButtonDoubleClicked(int button); // check if mouse button was double clicked (within 0.25s)
+
+	static bool isMouseDragging(); // check if mouse is being dragged (left button held and moving)
+	static Vector2D getMouseDragDelta(); // get change in mouse position since drag started
+	static Vector2D getMouseDragStartPos(); // get mouse position when drag started
 
 	// get mouse position AND whether cursor is inside window
 	static Vector2D getCursorPosition(); // get current cursor position
@@ -66,9 +80,13 @@ private:
 
 	static bool m_mouseButtons[8];
 	static bool m_mouseButtonsPrevious[8];
+	static double m_lastClickTime[8];
 	static Vector2D m_mousePosition;
 	static Vector2D m_mousePositionPrevious;
+	static Vector2D m_mouseDragStartPos;
+	static bool m_isDragging;
 	static bool m_isCursorInside;
 
 	static float m_scrollOffset;
+	static double m_doubleClickThreshold;
 };

@@ -9,6 +9,7 @@
 /* End Header **************************************************************************/
 
 // Hungarian notation: https://en.wikipedia.org/wiki/Hungarian_notation
+#define STB_IMAGE_IMPLEMENTATION
 #include <shader.hpp>
 #include <memory>
 #include <stdexcept>
@@ -22,6 +23,7 @@
 #include <imgui_impl_opengl3.h>
 #include "renderer.h"
 #include "input.h"
+#include "audio.h"
 #include "collision.h"
 #include "debug.h"
 #include "ui.h"
@@ -37,7 +39,7 @@ public:
         m_window(nullptr),
         m_title(p_title)//, 
         //m_cube(std::make_shared<Cube>())
-    {
+    {  
         if (!glfwInit()) throw std::runtime_error("GLFW initialization failed");
         glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
         glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 5);
@@ -56,12 +58,17 @@ public:
             glfwTerminate();
             throw std::runtime_error("GLEW initialization failed");
         }
+
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
         glEnable(GL_DEPTH_TEST);
         glfwSetInputMode(m_window, GLFW_STICKY_KEYS, GL_TRUE);
         //m_cube->initialize();
         InputHandler::init(m_window);
         renderer::init(p_width, p_height);
         m_manager.init();
+        m_renderSystem.init(m_manager);
 
 
         // Setup ImGui
@@ -74,6 +81,10 @@ public:
 
         ImGui_ImplGlfw_InitForOpenGL(m_window, true);
         ImGui_ImplOpenGL3_Init("#version 450");
+
+        // initialize audio
+        audio.init();
+        audio.playSound(soundID::bg, 0.1f);
     }
 
     ~GLApp() {
@@ -90,11 +101,18 @@ public:
         InputHandler::update();
         
         // Press F9 to simulate a failure (for crash logger)
-        if (glfwGetKey(m_window, GLFW_KEY_F9) == GLFW_PRESS) {
+        if (InputHandler::isKeyTriggered(GLFW_KEY_F9)) {
             throw std::runtime_error("F9 test: simulated failure in update()");
         }
         //const float deltaTime = 1.0f / 60.0f; // simulate 60fps
         const float deltaTime = static_cast<float>(m_delta);
+
+        if (InputHandler::isKeyTriggered(GLFW_KEY_P)) {
+            audio.toggleSoundPause(soundID::bg);
+        }
+        if (InputHandler::isMouseLeftClicked()) {
+            audio.playSound(soundID::effect);
+        }
 
         // input test code
         /*if (InputHandler::isKeyPressed(GLFW_KEY_SPACE))
@@ -108,28 +126,8 @@ public:
         //m_angleOfRotation += m_rotationSpeed;
     }
 
-    void render() {
-        //glm::mat4 modelMat = glm::mat4(1.0f);
-        //modelMat = glm::rotate(modelMat, m_angleOfRotation, glm::vec3(0.0f, 0.0f, 1.0f));
-        //m_cube->render(modelMat);
-        //renderer::update();
-
-        //draw circles from imgui
-        /*for (const auto& c : circles) {
-            renderer::object temp;
-            temp.model_ref = renderer::models[1];
-            temp.translate = glm::vec3(c.getCenter().x, c.getCenter().y, 0.02);
-            temp.scaling = glm::vec3(c.getRadius()+1, c.getRadius()+1, 2.0f + 1);
-            temp.draw();
-        }*/
-
-        /*ImGui::Begin("OpenGL funny");
-        ImGui::Text("fml");
-        ImGui::End();*/
-
-        // Render ImGui
-        //ImGui::Render();
-        //ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+    void render() 
+    {
         const float deltaTime = 1.0f / 60.0f;
 
 
@@ -142,8 +140,8 @@ public:
             update();
             render();
             Perf::UpdateWindowTitle(m_window, m_title, m_fps, m_showFpsInTitle);
+            audio.update();
 
-            glfwPollEvents();
         }
     }
 
@@ -161,6 +159,8 @@ private:
 	UISystem m_uiSystem;
 
     GLFWwindow* m_window;
+    AudioHandler& audio = AudioHandler::getInstance();
+    //std::shared_ptr<Cube> m_cube;
     //renderer::model model;
     double        m_fps = 0.0;
     double        m_delta = 0.0;

@@ -1,10 +1,15 @@
 /* Start Header ************************************************************************/
 /*!
-\file		renderer.h
-\author
-\par
-\date		Month, Day, 2025
-\brief
+\file        renderer.h
+\author      Seow Sin Le, s.sinle, 2401084
+\par         s.sinle@digipen.edu
+\date        October, 1st, 2025
+\brief       initializes the meshes and camera
+
+Copyright (C) 2025 DigiPen Institute of Technology.
+Reproduction or disclosure of this file or its contents
+without the prior written consent of DigiPen Institute of
+Technology is prohibited.
 */
 /* End Header **************************************************************************/
 #pragma once
@@ -30,10 +35,6 @@ enum class shape
 struct renderer
 {
 	static void init(int, int);
-	//static void update();
-	//static void cleanup();
-
-	
 
 	struct model
 	{
@@ -54,22 +55,6 @@ struct renderer
 	static void setup_shdrpgm();//const glm::mat4& p_modelMat);
 	//static void draw();
 	static std::vector<model>models;
-
-	/*struct object
-	{
-		glm::vec3 scaling;
-		float rot;
-		glm::vec3 translate;
-		model model_ref;
-		std::string texture_ref;
-		glm::mat4 mdl_world;
-		void init();
-		void update();
-		void draw();
-		void movex(float x);
-		void movey(float y);
-		void rotate(float thetha);
-	};*/
 
 	struct camera
 	{
