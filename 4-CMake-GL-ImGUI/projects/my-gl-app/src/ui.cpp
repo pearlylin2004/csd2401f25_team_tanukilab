@@ -1,10 +1,16 @@
 /* Start Header ************************************************************************/
 /*!
-\file		ui.cpp
-\author
-\par
-\date		September, 24, 2025
-\brief		
+\file       ui.cpp
+\author     Pearly Lin Lee Ying, p.lin, 2401591
+            - 100% of the file
+\par        p.lin@digipen.edu
+\date       September, 17th, 2025
+\brief      
+
+Copyright (C) 2025 DigiPen Institute of Technology.
+Reproduction or disclosure of this file or its contents
+without the prior written consent of DigiPen Institute of
+Technology is prohibited.
 */
 /* End Header **************************************************************************/
 
@@ -19,10 +25,10 @@ namespace UI {
         ImGui::Text("Application average %.3f ms/frame (%.1f FPS)",
             1000.0f / ImGui::GetIO().Framerate,
             ImGui::GetIO().Framerate);
-        ImGui::SliderFloat("Rotation Speed", &rotationSpeed, 0.0f, 0.1f);
+        /*ImGui::SliderFloat("Rotation Speed", &rotationSpeed, 0.0f, 0.1f);
         if (ImGui::Button("Reset Rotation")) {
             angleOfRotation = 0.0f;
-        }
+        }*/
         ImGui::End();
     }
 
@@ -71,6 +77,35 @@ namespace UI {
 
         ImGui::End();
 	}
-    //one imgui window to control all "shapes"
 
+    //shape control
+    void shapeControl(Transform& t) {
+        if (ImGui::Begin("Shape Control")) {
+            ImGui::Text("Transform Component");
+
+            //position 
+            ImGui::SliderFloat("Position X", &t.x, -500.f, 500.f);
+            ImGui::SliderFloat("Position Y", &t.y, -500.f, 500.f);
+
+            //rotation
+            ImGui::SliderFloat("Rotation", &t.rotation, 0.f, 360.f);
+
+            //scale
+            ImGui::SliderFloat("Scale X", &t.scaleX, 0.1f, 10.f);
+            ImGui::SliderFloat("Scale Y", &t.scaleY, 0.1f, 10.f);
+            ImGui::SliderFloat("Scale Z", &t.scaleZ, 0.1f, 10.f);
+
+            //reset
+            if (ImGui::Button("Reset All")) {
+                t.x = 0.0f;
+                t.y = 0.0f;
+                t.rotation = 0.0f;
+                t.scaleX = 10.0f;
+                t.scaleY = 10.0f;
+                t.scaleZ = 10.0f;
+            }
+        }
+
+        ImGui::End();
+    }
 }

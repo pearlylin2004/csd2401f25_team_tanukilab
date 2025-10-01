@@ -320,11 +320,12 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 		if (iterator->hasComponent<CollisionInfo>() && iterator->hasComponent<Physics>()) {
 
 			for (GameObject* obj : gameObjects) {
-				if (obj != iterator && obj->getComponent<CollisionInfo>()) {
-					/*if (!obj->hasComponent<Transform>() || !iterator->hasComponent<Transform>()) {
-						
-					}*/
-					Transform* obj1T = obj->getComponent<Transform>();
+				if (obj != iterator) {
+					if (obj != iterator && obj->getComponent<CollisionInfo>()) {
+						/*if (!obj->hasComponent<Transform>() || !iterator->hasComponent<Transform>()) {
+
+						}*/
+						Transform* obj1T = obj->getComponent<Transform>();
 						Transform* obj2T = iterator->getComponent<Transform>();
 						Collision::AABB obj1 = Collision::getObjectAABB(obj1T);
 						Collision::AABB obj2 = Collision::getObjectAABB(obj2T);
@@ -332,8 +333,6 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 						Physics* obj2V = iterator->getComponent<Physics>();
 						Vector2D obj1Vel{ obj1V->velX, obj1V->velY };
 						Vector2D obj2Vel{ obj2V->velX, obj2V->velY };
-						//Vector2D obj1VelDt = Collision::Mul(obj1Vel, deltaTime);
-						//Vector2D obj2VelDt = Collision::Mul(obj2Vel, deltaTime);
 						CollisionInfo info = Collision::CollisionIntersection_RectRect_Dynamic_Info(obj1, obj1Vel, obj2, obj2Vel);
 
 						if (info.collided) {
@@ -355,6 +354,7 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 								" and Object " +
 								obj->getObjectName());
 						}
+					}
 				}
 			}
 		}
@@ -362,14 +362,9 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 }
 
 //for imgu(testing)
-void UISystem::update(GameObjectManager& manager, const float& deltaTime) {
-	//td::vector<GameObject*> gameObjects;
-	//manager.getAllGameObjects(gameObjects);
-
-	//start a new ImGui frame
-	ImGui_ImplOpenGL3_NewFrame();
-	ImGui_ImplGlfw_NewFrame();
-	ImGui::NewFrame();
+void UISystem::update(GameObjectManager& manager, float deltaTime) {
+	std::vector<GameObject*> gameObjects;
+	manager.getAllGameObjects(gameObjects);
 
 	static float rotationSpeed = 0.01f;
 	static float angleOfRotation = 0.0f;
@@ -382,7 +377,15 @@ void UISystem::update(GameObjectManager& manager, const float& deltaTime) {
 	//debug window
 	UI::drawDebug(UI::debugMessages);
 
-	//render ImGui
-	ImGui::Render();
-	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+	//shape control
+	/*for (GameObject* obj : gameObjects) {
+		Transform* obj1T = obj->getComponent<Transform>();
+		UI::shapeControl(*obj1T);
+	}*/
+
+	Transform* obj1T = gameObjects[0]->getComponent<Transform>();
+	UI::shapeControl(*obj1T);
+
+	//ImGui::ShowMetricsWindow();
 }
+

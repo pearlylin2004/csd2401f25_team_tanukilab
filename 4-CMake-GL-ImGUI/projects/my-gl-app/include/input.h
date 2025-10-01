@@ -1,12 +1,19 @@
 /* Start Header ************************************************************************/
 /*!
-\file		Input.h
-\author
-\par
-\date		Month, Day, 2025
-\brief
+\file       input.h
+\author     Tan Chee Qing, cheeqing.tan, 2401486
+			- 100% of the file
+\par        cheeqing.tan@digipen.edu
+\date       September, 15th, 2025
+\brief      A static utility class that manages all input handling for a GLFW window.
+
+Copyright (C) 2025 DigiPen Institute of Technology.
+Reproduction or disclosure of this file or its contents
+without the prior written consent of DigiPen Institute of
+Technology is prohibited.
 */
 /* End Header **************************************************************************/
+
 #pragma once
 
 #include <GLFW/glfw3.h>
@@ -45,6 +52,10 @@ public:
 	static bool isMouseButtonClicked(int button); // ONLY use if you need other buttons
 	static bool isMouseButtonDoubleClicked(int button); // check if mouse button was double clicked (within 0.25s)
 
+	static bool isMouseDragging(); // check if mouse is being dragged (left button held and moving)
+	static Vector2D getMouseDragDelta(); // get change in mouse position since drag started
+	static Vector2D getMouseDragStartPos(); // get mouse position when drag started
+
 	// get mouse position AND whether cursor is inside window
 	static Vector2D getCursorPosition(); // get current cursor position
 	static float getMouseX(); // get current cursor x position
@@ -72,6 +83,8 @@ private:
 	static double m_lastClickTime[8];
 	static Vector2D m_mousePosition;
 	static Vector2D m_mousePositionPrevious;
+	static Vector2D m_mouseDragStartPos;
+	static bool m_isDragging;
 	static bool m_isCursorInside;
 
 	static float m_scrollOffset;

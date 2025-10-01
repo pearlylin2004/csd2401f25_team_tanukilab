@@ -1,11 +1,17 @@
 /* Start Header ************************************************************************/
 /*!
-\file		collision.hpp
-\author
-\par
-\date		September, 17, 2025
-\brief		This file declares the static and dynamic collision functions, as well as
+\file       collision.h
+\author     Pearly Lin Lee Ying, p.lin, 2401591
+            - 100% of the file
+\par        p.lin@digipen.edu
+\date       September, 17th, 2025
+\brief      This file declares the static and dynamic collision functions, as well as
             the main AABB-AABB collision function implementation.
+
+Copyright (C) 2025 DigiPen Institute of Technology.
+Reproduction or disclosure of this file or its contents
+without the prior written consent of DigiPen Institute of
+Technology is prohibited.
 */
 /* End Header **************************************************************************/
 #ifndef COLLISION_H
@@ -22,9 +28,6 @@ namespace Collision {
     extern f64 g_fixedDT;
     extern f64 g_dt;
     extern f64 g_appTime;
-
-
-    Vector2D Mul(const Vector2D& v, float s);
 
     //AABB
     class AABB
@@ -79,10 +82,6 @@ namespace Collision {
     bool CollisionIntersection_RectRect_Static(const AABB& aabb1, const AABB& aabb2);
     CollisionInfo CollisionIntersection_RectRect_Dynamic_Info(const AABB& aabb1, const Vector2D& vel1, const AABB& aabb2, const Vector2D& vel2);
 
-    //collision function for circles
-    bool CollisionIntersection_CircleCircle_Static(const Circle& c1, const Circle& c2);
-    CollisionInfo CollisionIntersection_CircleCircle_Dynamic_Info(const Circle& c1, const Vector2D& vel1, const Circle& c2, const Vector2D& vel2);
-
     //circle and AABB
     bool CollisionIntersection_CircleAABB_Static(const Circle& c, const AABB& aabb);
     CollisionInfo CollisionIntersection_CircleAABB_Dynamic_Info(const Circle& c, const Vector2D& velC, const AABB& aabb, const Vector2D& velAABB);
@@ -92,12 +91,8 @@ namespace Collision {
         Collision::AABB& aabbB, Vector2D& velB, float massB,
         const CollisionInfo& info, CollisionResponseMode mode, float restitution = 0.0f);
 
-    void Resolve_Circle_Circle(Collision::Circle& cA, Vector2D& velA, float massA,
-        Collision::Circle& cB, Vector2D& velB, float massB,
-        const CollisionInfo& info, CollisionResponseMode mode, float restitution = 0.0f);
-
-    void Resolve_Circle_AABB(Collision::Circle& c, Vector2D& velC, float massC,
+    void Resolve_Circle_AABB(Collision::Circle& c, Vector2D& velC,
         Collision::AABB& aabb, Vector2D& velAABB, float massAABB,
-        const CollisionInfo& info, CollisionResponseMode mode, float restitution = 0.0f);
+        const CollisionInfo& info, CollisionResponseMode mode);
 }
 #endif

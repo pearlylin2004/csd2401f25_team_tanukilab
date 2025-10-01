@@ -1,10 +1,16 @@
-/* Start Header ************************************************************************/
+﻿/* Start Header ************************************************************************/
 /*!
-\file		ui.h
-\author
-\par
-\date		September, 24, 2025
-\brief
+\file       input.h
+\author     Pearly Lin Lee Ying, p.lin, 2401591
+            - 100% of the file
+\par        p.lin@digipen.edu
+\date       September, 24th, 2025
+\brief      
+
+Copyright (C) 2025 DigiPen Institute of Technology.
+Reproduction or disclosure of this file or its contents
+without the prior written consent of DigiPen Institute of
+Technology is prohibited.
 */
 /* End Header **************************************************************************/
 
@@ -22,5 +28,6 @@ namespace UI{
     void drawDemo(float& rotationSpeed, float& angleOfRotation);
     void drawControls(std::vector<Collision::Circle>& circles);
 	void drawDebug(std::vector<std::string> debugMessages);
+	void shapeControl(Transform& t);
 }
 #endif

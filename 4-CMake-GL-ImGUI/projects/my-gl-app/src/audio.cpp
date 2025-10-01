@@ -1,3 +1,23 @@
+/* Start Header ************************************************************************/
+/*!
+\file       audio.h
+\author     Tan Chee Qing, cheeqing.tan, 2401486
+			- 100% of the file
+\par        cheeqing.tan@digipen.edu
+\date       September, 20th, 2025
+\brief      This source file implements the AudioHandler singleton class, which wraps
+			FMOD functionality for managing audio in the project. It provides methods
+			to initialize, update and shut down the audio system, as well as to load,
+			play, pause, stop, mute and adjust volume or pitch of sounds identified by
+			the soundID enum.
+
+Copyright (C) 2025 DigiPen Institute of Technology.
+Reproduction or disclosure of this file or its contents
+without the prior written consent of DigiPen Institute of
+Technology is prohibited.
+*/
+/* End Header **************************************************************************/
+
 #include "audio.h"
 
 AudioHandler& AudioHandler::getInstance() {
