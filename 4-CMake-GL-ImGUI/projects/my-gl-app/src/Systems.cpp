@@ -28,7 +28,7 @@ Technology is prohibited.
 //so all systems need to use the getAllGameObjects() function
 
 // Input system - reads user input and updates velocity accordingly
-void InputSystem::update(GameObjectManager& manager, float deltaTime) {
+void InputSystem::update(GameObjectManager& manager, const float& deltaTime) {
 	std::vector<GameObject*> gameObjects;
 	manager.getAllGameObjects(gameObjects);
 
@@ -60,7 +60,7 @@ void InputSystem::update(GameObjectManager& manager, float deltaTime) {
 
 
 // Render system - draws all game objects with a Render component
-void RenderSystem::update(GameObjectManager& manager, float deltaTime) {
+void RenderSystem::update(GameObjectManager& manager, const float& deltaTime) {
 	std::vector<GameObject*> gameObjects;
 	manager.getAllGameObjects(gameObjects);
 
@@ -251,7 +251,7 @@ GLuint RenderSystem::uploadtex(std::string const& filename, bool& isTransparent)
 }
 
 // Physics system - updates position based on velocity and applies gravity
-void PhysicsSystem::update(GameObjectManager& manager, float deltaTime) {
+void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime) {
 	std::vector<GameObject*> gameObjects;
 	manager.getAllGameObjects(gameObjects);
 
@@ -313,7 +313,7 @@ void PhysicsSystem::update(GameObjectManager& manager, float deltaTime) {
 
 
 // Collision system - detects and resolves collisions between game objects
-void CollisionSystem::update(GameObjectManager& manager, float deltaTime) {
+void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime) {
 	std::vector<GameObject*> gameObjects;
 	manager.getAllGameObjects(gameObjects);
 
@@ -363,7 +363,7 @@ void CollisionSystem::update(GameObjectManager& manager, float deltaTime) {
 }
 
 //for imgu(testing)
-void UISystem::update(GameObjectManager& manager, float deltaTime) {
+void UISystem::update(GameObjectManager& manager, const float& deltaTime) {
 	//td::vector<GameObject*> gameObjects;
 	//manager.getAllGameObjects(gameObjects);
 

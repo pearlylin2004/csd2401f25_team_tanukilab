@@ -14,15 +14,19 @@ without the prior written consent of DigiPen Institute of
 Technology is prohibited.
 */
 /* End Header **************************************************************************/
+
 #include "GameObjectManager.h"
 
-//create objects
+// Create objects
 GameObject* GameObjectManager::createGameObject(const std::string& name) {
-	//create object
+
+	// Create a new GameObject and wrap it in a unique_ptr
 	auto newObject = std::make_unique<GameObject>(name);
-	//get raw pointer to return
+
+	// Get raw pointer before transferring ownership
 	GameObject* ptr = newObject.get();
-	//move object into the map
+
+	// Store the unique_ptr in the map
 	m_gameObjects[name] = std::move(newObject);
 
 	return ptr;

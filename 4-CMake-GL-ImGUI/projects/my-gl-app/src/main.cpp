@@ -1,10 +1,10 @@
 /* Start Header ************************************************************************/
 /*!
 \file		main.hpp
-\author
-\par
-\date		Month, Day, 2025
-\brief
+\author     Hugo Low Ren Hao, low.h, 2402272, 5%
+\par        low.h@digipen.edu
+\date		October, 1st, 2025
+\brief      Main entry point for the OpenGL application.
 */
 /* End Header **************************************************************************/
 
@@ -148,7 +148,6 @@ public:
         // Render ImGui
         //ImGui::Render();
         //ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-        const float deltaTime = 1.0f / 60.0f;
 
 
         glfwSwapBuffers(m_window);

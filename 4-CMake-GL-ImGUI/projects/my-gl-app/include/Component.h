@@ -43,8 +43,8 @@ public:
     glm::mat4 mdlWorld = 1.f;
 };
 
+// Render component to store rendering-related properties
 struct Render : public Component {
-    // idk add render stuff here
 public:
     Render() = default;
 
@@ -61,7 +61,6 @@ public:
 
 // Physics component to store velocity and other physics-related properties
 struct Physics : public Component {
-    //idk add physics stuff here
 public:
    
     float velX = 0.0f;
@@ -91,7 +90,6 @@ public:
 
 // Input component to store input-related properties
 struct Input : public Component {
-    //idk add input stuff here
 public:
 	Input(float speed = 0.0f) : moveSpeed(speed) {}
 

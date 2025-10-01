@@ -27,6 +27,8 @@ Technology is prohibited.
 //so when this manager is destroyed, 
 //all other GameObjects are destroyed with it
 //no more news and deletes! yippee
+
+// This class is responsible for creating, storing, and providing access to game objects.
 class GameObjectManager {
 public:
 	//create objects
@@ -38,9 +40,10 @@ public:
 	//used for all the component systems
 	void getAllGameObjects(std::vector<GameObject*>& gameObjects);
 
+	//initialize game objects from a file
 	void init();
 
 private:
-	//using unordered map quite a lot huh
+	//map of all game objects
 	std::unordered_map<std::string, std::unique_ptr<GameObject>> m_gameObjects;
 };

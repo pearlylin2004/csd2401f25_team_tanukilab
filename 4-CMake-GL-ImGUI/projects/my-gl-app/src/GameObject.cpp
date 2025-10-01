@@ -10,4 +10,5 @@
 /* End Header **************************************************************************/
 #include "GameObject.h"
 
+//constructor
 GameObject::GameObject(const std::string& name) : m_name(name) {}

@@ -31,36 +31,44 @@ Technology is prohibited.
 //forward declaration
 struct renderer;
 
+//all systems need to have an update function
+
+// Input system - reads user input and updates velocity accordingly
 class InputSystem {
 public:
-	void update(GameObjectManager& manager, float deltaTime);
+	void update(GameObjectManager& manager, const float& deltaTime);
 };
 
+// Physics system - updates position based on velocity and applies gravity
 class PhysicsSystem {
 public:
-	void update(GameObjectManager& manager, float deltaTime);
+	void update(GameObjectManager& manager, const float& deltaTime);
 };
 
+// Render system - draws all game objects with a Render component
 class RenderSystem {
 public:
 	void init(GameObjectManager& manager);
-	void update(GameObjectManager& manager, float deltaTime);
+	void update(GameObjectManager& manager, const float& deltaTime);
 	GLuint uploadtex(std::string const& filename, bool& isTransparent);
 };
 
+// Transform system - updates the model matrix based on position, rotation, and scale
 class TransformSystem {
 public:
-	void update(GameObjectManager& manager, float deltaTime);
+	void update(GameObjectManager& manager, const float& deltaTime);
 };
 
+// Collision system - detects and resolves collisions between game objects
 class CollisionSystem {
 public:
-	void update(GameObjectManager& manager, float deltaTime);
+	void update(GameObjectManager& manager, const float& deltaTime);
 };
 
+// UI system - handles UI rendering and interactions using ImGui
 class UISystem {
 public:
-	void update(GameObjectManager& manager, float deltaTime);
+	void update(GameObjectManager& manager, const float& deltaTime);
 private:
 	std::vector<std::string> debugMessages; //for messages
 	std::vector<Collision::Circle> circles; 
