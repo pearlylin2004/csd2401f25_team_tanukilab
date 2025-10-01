@@ -5,7 +5,8 @@
             - 100% of the file
 \par        p.lin@digipen.edu
 \date       September, 17th, 2025
-\brief      
+\brief      definition of functions, drawDemo, drawControls, drawDebug, shapeControl
+			for the imgui windows
 
 Copyright (C) 2025 DigiPen Institute of Technology.
 Reproduction or disclosure of this file or its contents
