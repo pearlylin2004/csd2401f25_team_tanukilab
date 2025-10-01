@@ -2,9 +2,11 @@
 /*!
 \file        GameObjectManager.h
 \author      Seow Sin Le, s.sinle, 2401084, 40%
+\author 	 Hugo Low Ren Hao, low.h, 2402272, 60%
 \par         s.sinle@digipen.edu
+\par		 low.h@digipen.edu
 \date        October, 1st, 2025
-\brief       manages all game objects and initializes them with their corresponding components
+\brief       Manages all game objects and initializes them with their corresponding components
 
 Copyright (C) 2025 DigiPen Institute of Technology.
 Reproduction or disclosure of this file or its contents
@@ -25,6 +27,8 @@ Technology is prohibited.
 //so when this manager is destroyed, 
 //all other GameObjects are destroyed with it
 //no more news and deletes! yippee
+
+// This class is responsible for creating, storing, and providing access to game objects.
 class GameObjectManager {
 public:
 	//create objects
@@ -36,9 +40,10 @@ public:
 	//used for all the component systems
 	void getAllGameObjects(std::vector<GameObject*>& gameObjects);
 
+	//initialize game objects from a file
 	void init();
 
 private:
-	//using unordered map quite a lot huh
+	//map of all game objects
 	std::unordered_map<std::string, std::unique_ptr<GameObject>> m_gameObjects;
 };

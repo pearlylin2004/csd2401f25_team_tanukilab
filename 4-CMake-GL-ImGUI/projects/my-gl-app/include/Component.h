@@ -2,9 +2,11 @@
 /*!
 \file        Component.h
 \author      Seow Sin Le, s.sinle, 2401084, 20%
+\author 	 Hugo Low Ren Hao, low.h, 2402272, 20%
 \par         s.sinle@digipen.edu
+\par         low.h@digipen.edu
 \date        October, 1st, 2025
-\brief       
+\brief       This file contains all the component definitions for the Component-based architecture.
 
 Copyright (C) 2025 DigiPen Institute of Technology.
 Reproduction or disclosure of this file or its contents
@@ -28,32 +30,21 @@ public:
     virtual ~Component() = default;
 };
 
+// Transform component to store position, rotation, and scale
 struct Transform : public Component {
 public:
 	Transform() = default;
-    Transform(float x, float y, float rot, float sx, float sy) 
-       : x(x), y(y), rotation(rot), scaleX(sx), scaleY(sy) {}
+    Transform(float px, float py, float pz, float rot, float sx, float sy, float sz) 
+        : x(px), y(py), z(pz), rotation(rot), scaleX(sx), scaleY(sy), scaleZ(sz), mdlWorld(1) {}
 
     float x{ 0.f }, y{ 0.f }, z{ 0.f };
     float rotation = 0.0f;
     float scaleX = 1.0f, scaleY = 1.0f, scaleZ{ 0.f };
-    glm::mat4 mdlWorld;
-
-    //for imgui reset
-    //float origX, origY, origRotation, origScaleX, origScaleY, origScaleZ;
+    glm::mat4 mdlWorld = 1.f;
 };
 
-struct Velocity : public Component {
-public:
-	Velocity() = default;
-    Velocity(float a, float b) : dx(a), dy(b) {}
-
-public:
-    float dx = 0.0f, dy = 0.0f;
-};
-
+// Render component to store rendering-related properties
 struct Render : public Component {
-    // idk add render stuff here
 public:
     Render() = default;
 
@@ -68,8 +59,8 @@ public:
     renderer::model modelRef;
 };
 
+// Physics component to store velocity and other physics-related properties
 struct Physics : public Component {
-    //idk add physics stuff here
 public:
    
     float velX = 0.0f;
@@ -97,8 +88,8 @@ public:
 
 };
 
+// Input component to store input-related properties
 struct Input : public Component {
-    //idk add input stuff here
 public:
 	Input(float speed = 0.0f) : moveSpeed(speed) {}
 
@@ -107,10 +98,12 @@ public:
 
 };
 
-//for collision system
+// enum class used for CollisionSystem
 enum class CollisionResponseMode {
     Stop
 };
+
+// CollisionInfo component to store collision-related information
 struct CollisionInfo : public Component {
 public:
     bool collided = false;
@@ -119,7 +112,7 @@ public:
     Vector2D contactPoint = { 0,0 };
 };
 
-//for imgui(testing)
+// For imgui(testing)
 struct UIComponent : public Component {
     //idk empty as of now
     //idk how i can use it

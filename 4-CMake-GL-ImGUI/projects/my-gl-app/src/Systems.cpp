@@ -2,7 +2,9 @@
 /*!
 \file        Systems.cpp
 \author      Seow Sin Le, s.sinle, 2401084, 20%
+\author 	 Hugo Low Ren Hao, low.h, 2402272, 20%
 \par         s.sinle@digipen.edu
+\par		 low.h@digipen.edu
 \date        October, 1st, 2025
 \brief       System functions to run the logic for the components
 
@@ -24,7 +26,9 @@ Technology is prohibited.
 //game objects to check if the valid component
 //is present or not
 //so all systems need to use the getAllGameObjects() function
-void InputSystem::update(GameObjectManager& manager, float deltaTime) {
+
+// Input system - reads user input and updates velocity accordingly
+void InputSystem::update(GameObjectManager& manager, const float& deltaTime) {
 	std::vector<GameObject*> gameObjects;
 	manager.getAllGameObjects(gameObjects);
 
@@ -54,7 +58,9 @@ void InputSystem::update(GameObjectManager& manager, float deltaTime) {
 	}
 }
 
-void RenderSystem::update(GameObjectManager& manager, float deltaTime) {
+
+// Render system - draws all game objects with a Render component
+void RenderSystem::update(GameObjectManager& manager, const float& deltaTime) {
 	std::vector<GameObject*> gameObjects;
 	manager.getAllGameObjects(gameObjects);
 
@@ -199,6 +205,7 @@ void RenderSystem::update(GameObjectManager& manager, float deltaTime) {
 	//glDepthMask(GL_TRUE);
 }
 
+// Load all textures for game objects with a Render component
 void RenderSystem::init(GameObjectManager& manager)
 {
 	stbi_set_flip_vertically_on_load(true);
@@ -214,6 +221,7 @@ void RenderSystem::init(GameObjectManager& manager)
 	}
 }
 
+// Upload a texture from file and return its OpenGL handle
 GLuint RenderSystem::uploadtex(std::string const& filename, bool& isTransparent)
 {
 	int width, height, channels;
@@ -242,8 +250,8 @@ GLuint RenderSystem::uploadtex(std::string const& filename, bool& isTransparent)
 	return texobj_hdl;
 }
 
-
-void PhysicsSystem::update(GameObjectManager& manager, float deltaTime) {
+// Physics system - updates position based on velocity and applies gravity
+void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime) {
 	std::vector<GameObject*> gameObjects;
 	manager.getAllGameObjects(gameObjects);
 
@@ -303,9 +311,8 @@ void PhysicsSystem::update(GameObjectManager& manager, float deltaTime) {
 	}
 }
 
-
-//collision system
-void CollisionSystem::update(GameObjectManager& manager, float deltaTime) {
+// Collision system - detects and resolves collisions between game objects
+void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime) {
 	std::vector<GameObject*> gameObjects;
 	manager.getAllGameObjects(gameObjects);
 
@@ -340,9 +347,9 @@ void CollisionSystem::update(GameObjectManager& manager, float deltaTime) {
 
 							//show message in imgui
 							UI::debugMessages.push_back("Collision detected between Object " +
-								std::to_string(reinterpret_cast<uintptr_t>(obj)) +
+								obj->getObjectName() +
 								" and Object " +
-								std::to_string(reinterpret_cast<uintptr_t>(iterator)));
+								obj->getObjectName());
 						}
 					}
 				}
@@ -352,7 +359,7 @@ void CollisionSystem::update(GameObjectManager& manager, float deltaTime) {
 }
 
 //for imgu(testing)
-void UISystem::update(GameObjectManager& manager, float deltaTime) {
+void UISystem::update(GameObjectManager& manager, const float& deltaTime) {
 	std::vector<GameObject*> gameObjects;
 	manager.getAllGameObjects(gameObjects);
 

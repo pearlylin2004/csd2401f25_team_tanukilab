@@ -1,10 +1,12 @@
 /* Start Header ************************************************************************/
 /*!
 \file        GameObjectManager.cpp
-\author      Seow Sin Le, s.sinle, 2401084, 40%
+\author      Seow Sin Le, s.sinle, 2401084, 50%
+\author 	 Hugo Low Ren Hao, low.h, 2402272, 50%
 \par         s.sinle@digipen.edu
+\par		 low.h@digipen.edu
 \date        October, 1st, 2025
-\brief       manages all game objects and initializes them with their corresponding components
+\brief       Manages all game objects and initializes them with their corresponding components
 
 Copyright (C) 2025 DigiPen Institute of Technology.
 Reproduction or disclosure of this file or its contents
@@ -12,15 +14,19 @@ without the prior written consent of DigiPen Institute of
 Technology is prohibited.
 */
 /* End Header **************************************************************************/
+
 #include "GameObjectManager.h"
 
-//create objects
+// Create objects
 GameObject* GameObjectManager::createGameObject(const std::string& name) {
-	//create object
+
+	// Create a new GameObject and wrap it in a unique_ptr
 	auto newObject = std::make_unique<GameObject>(name);
-	//get raw pointer to return
+
+	// Get raw pointer before transferring ownership
 	GameObject* ptr = newObject.get();
-	//move object into the map
+
+	// Store the unique_ptr in the map
 	m_gameObjects[name] = std::move(newObject);
 
 	return ptr;
@@ -117,7 +123,6 @@ void GameObjectManager::init()
 		}
 
 		m_gameObjects["player"]->addComponent<Input>(1.f);
-		/*m_gameObjects[objectName]->addComponent<Velocity>();*/
 		
 	}
 }

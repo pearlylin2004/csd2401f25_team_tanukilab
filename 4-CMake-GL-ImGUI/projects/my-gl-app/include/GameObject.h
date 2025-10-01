@@ -1,10 +1,11 @@
 /* Start Header ************************************************************************/
 /*!
 \file		GameObject.h
-\author
-\par
-\date		Month, Day, 2025
-\brief
+\author     Hugo Low Ren Hao, low.h, 2402272
+\par        low.h@digipen.edu
+\date		October, 1st, 2025
+\brief      This file contains the GameObject class. A GameObject is an entity in the 
+            game world that can have multiple components attached to it.
 */
 /* End Header **************************************************************************/
 
@@ -19,12 +20,10 @@
 
 class GameObject {
 public:
+	//constructor
     GameObject(const std::string& name);
 
-    // Add components
-    // Figure out templates NOW
-
-    //this took awhile to figure out
+	// Adds a component of type T to the game object
     template <typename T, typename... TArgs>//typename... is a variadic template
     T* addComponent(TArgs&&... args) {//forwarding reference
 
@@ -48,7 +47,7 @@ public:
         return componentPtr;
     }
 
-    //used to check if a object has a certain component
+	// Gets the component of type T if it exists, otherwise returns nullptr
     template <typename T>
     T* getComponent() {
         auto iterator = m_components.find(std::type_index(typeid(T)));//look through map
@@ -59,7 +58,7 @@ public:
 
         return nullptr;
     }
-
+	// Checks if the game object has a component of type T
     template <typename T>
     bool hasComponent() const {
         //count returns number of keys found in the map
@@ -68,13 +67,13 @@ public:
         return m_components.count(std::type_index(typeid(T)));
     }
 
-    const std::string& getName() const {
-        return m_name;
-    }
+	// Returns the name of the game object
+    const std::string& getObjectName() const;
 
 private:
     std::string m_name;//name of object
 
+	// Map of components attached to the game object
     std::unordered_map<std::type_index, std::unique_ptr<Component>> m_components;
     
 };
