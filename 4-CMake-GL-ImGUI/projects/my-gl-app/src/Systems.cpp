@@ -62,7 +62,7 @@ void InputSystem::update(GameObjectManager& manager, const float& deltaTime) {
 
 
 // Render system - draws all game objects with a Render component
-void RenderSystem::update(GameObjectManager& manager, const float& deltaTime, std::vector<Collision::Circle>& circles) {
+void RenderSystem::update(GameObjectManager& manager, const float& deltaTime) {
 	std::vector<GameObject*> gameObjects;
 	manager.getAllGameObjects(gameObjects);
 
@@ -204,33 +204,6 @@ void RenderSystem::update(GameObjectManager& manager, const float& deltaTime, st
 			}
 		}
 	}
-	//imgui rendering
-	for (const auto& circle : circles) { // <-- your std::vector<Collision::Circle>
-		const Vector2D& c = circle.getCenter();
-		float r = circle.getRadius();
-
-		glm::mat4 mdlWorld = glm::mat4(1.0f);
-		mdlWorld = glm::translate(mdlWorld, glm::vec3(c.x, c.y, 0.0f));
-		mdlWorld = glm::scale(mdlWorld, glm::vec3(r, r, 1.0f));
-
-		const auto& model = renderer::models[1]; // circle mesh
-		glBindVertexArray(model.vaoid);
-
-		GLint vTransformLoc = glGetUniformLocation(renderer::shdr_pgm, "M");
-		glUniformMatrix4fv(vTransformLoc, 1, GL_FALSE, glm::value_ptr(mdlWorld));
-
-		GLint hasTex = glGetUniformLocation(renderer::shdr_pgm, "uHasTex");
-		glUniform1i(hasTex, 0);
-
-		// optional: wireframe for debug
-		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-		glLineWidth(2.0f);
-
-		glDrawArrays(model.primitive_type, 0, model.draw_cnt);
-
-		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-		glBindVertexArray(0);
-	}
 	//glDepthMask(GL_TRUE);
 }
 
@@ -299,8 +272,8 @@ void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime) {
 			//std::cout << object << " has input component\n";
 			//bullet
 			if (InputHandler::isKeyTriggered(GLFW_KEY_SPACE)) {
-				//std::cout << "bullet is spawned\n";
-				UI::debugMessages.push_back("bullet is spawned");
+				std::cout << "bullet is spawned\n";
+				//UI::debugMessages.push_back("bullet is spawned");
 				static int bulletCount = 0;
 
 				Transform* t = bullet->getComponent<Transform>();
@@ -320,8 +293,8 @@ void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime) {
 
 			// Jump
 			if (InputHandler::isKeyTriggered(GLFW_KEY_B)){// && physics->onGround) {
-				//std::cout << "player is jumping\n";
-				UI::debugMessages.push_back("player is jumping");
+				std::cout << "player is jumping\n";
+				//UI::debugMessages.push_back("player is jumping");
 				physics->velY += physics->jumpForce;
 				//physics->velX = physics->Speed;
 				physics->onGround = false;
@@ -377,7 +350,8 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 							obj2V->velY = obj2Vel.y;
 
 							//show message in imgui
-							UI::debugMessages.push_back("Collision detected between Object.");
+							//UI::debugMessages.push_back("Collision detected between Object.");
+							std::cout << "Collision detected between Object.\n";
 						}
 					}
 				}
@@ -407,6 +381,33 @@ void UISystem::update(GameObjectManager& manager, const float& deltaTime, std::v
 	Transform* bulletT = gameObjects[2]->getComponent<Transform>();
 	UI::shapeControl(*leavesT, *bulletT);
 
+	//imgui rendering
+	for (const auto& circle : circles) { // <-- your std::vector<Collision::Circle>
+		const Vector2D& c = circle.getCenter();
+		float r = circle.getRadius();
+
+		glm::mat4 mdlWorld = glm::mat4(1.0f);
+		mdlWorld = glm::translate(mdlWorld, glm::vec3(c.x, c.y, 0.0f));
+		mdlWorld = glm::scale(mdlWorld, glm::vec3(r, r, 1.0f));
+
+		const auto& model = renderer::models[1]; // circle mesh
+		glBindVertexArray(model.vaoid);
+
+		GLint vTransformLoc = glGetUniformLocation(renderer::shdr_pgm, "M");
+		glUniformMatrix4fv(vTransformLoc, 1, GL_FALSE, glm::value_ptr(mdlWorld));
+
+		GLint hasTex = glGetUniformLocation(renderer::shdr_pgm, "uHasTex");
+		glUniform1i(hasTex, 0);
+
+		// optional: wireframe for debug
+		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+		glLineWidth(2.0f);
+
+		glDrawArrays(model.primitive_type, 0, model.draw_cnt);
+
+		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+		glBindVertexArray(0);
+	}
+
 	//ImGui::ShowMetricsWindow(); //for debug
 }
-
