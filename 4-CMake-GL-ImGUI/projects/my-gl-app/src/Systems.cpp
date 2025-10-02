@@ -58,7 +58,6 @@ void InputSystem::update(GameObjectManager& manager, const float& deltaTime) {
 				if (InputHandler::isKeyHeld(GLFW_KEY_D)) {
 					velocity->velX = input->moveSpeed;
 				}
-				
 
 
 				// Press F9 to simulate a failure (for crash logger)

@@ -2,9 +2,9 @@
 /*!
 \file        Component.h
 \author      Seow Sin Le, s.sinle, 2401084, 20%
-\author 	 Hugo Low Ren Hao, low.h, 2402272, 30%
-\author 	 Pearly Lin Lee Ying, p.lin, 2401591, 20%
-\author      Asha Mathyalakan, asha.m, 2402886, 30%
+\author 	 Hugo Low Ren Hao, low.h, 2402272, 40%
+\author 	 Pearly Lin Lee Ying, p.lin, 2401591, 15%
+\author      Asha Mathyalakan, asha.m, 2402886, 25%
              Total - 100%
 \par         s.sinle@digipen.edu
 \par         low.h@digipen.edu
