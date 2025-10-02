@@ -1,16 +1,17 @@
 /* Start Header ************************************************************************/
 /*!
 \file		CoreEngine.cpp
-\author 	Seow Sin Le, s.sinle, 2401084, 70%
-\author     Hugo Low Ren Hao, low.h, 2402272, 10%
+\author 	Seow Sin Le, s.sinle, 2401084, 60%
+\author     Hugo Low Ren Hao, low.h, 2402272, 20%
 \author     Tan Chee Qing, cheeqing.tan, 2401486, 10%
-\author     Varick, 10%
+\author     Varick Teo, v.teo, 2403417, 10%
 \par        s.sinle@digipen.edu
 \par        low.h@digipen.edu
 \par        cheeqing.tan@digipen.edu
-\par
+\par        v.teo@digipen.edu
 \date		October, 1, 2025
-\brief		Implementation for the CoreEngine class.
+\brief		Implementation for the CoreEngine class. The CoreEngine is responsible for 
+            Initialisation and Shutdown, Game Loop Execution and System Updates
     
 Copyright (C) 2025 DigiPen Institute of Technology.
 Reproduction or disclosure of this file or its contents
