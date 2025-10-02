@@ -22,8 +22,7 @@ namespace UI {
     float xAdd = 0.0f, yAdd = 0.0f;
 
     void drawDemo() {
-        ImGui::Begin("OpenGL 3.3 Demo");
-        ImGui::Text("Hello, ImGui!");
+        ImGui::Begin("FPS display");
         ImGui::Text("Application average %.3f ms/frame (%.1f FPS)",
             1000.0f / ImGui::GetIO().Framerate,
             ImGui::GetIO().Framerate);
