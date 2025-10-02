@@ -1,10 +1,21 @@
 /* Start Header ************************************************************************/
 /*!
 \file		CoreEngine.cpp
-\author
+\author 	Seow Sin Le, s.sinle, 2401084, 70%
+\author     Hugo Low Ren Hao, low.h, 2402272, 10%
+\author     Tan Chee Qing, cheeqing.tan, 2401486, 10%
+\author     Varick, 10%
+\par        s.sinle@digipen.edu
+\par        low.h@digipen.edu
+\par        cheeqing.tan@digipen.edu
 \par
-\date		October 1, 2025
-\brief		Implementation for the main engine class.
+\date		October, 1, 2025
+\brief		Implementation for the CoreEngine class.
+    
+Copyright (C) 2025 DigiPen Institute of Technology.
+Reproduction or disclosure of this file or its contents
+without the prior written consent of DigiPen Institute of
+Technology is prohibited.
 */
 /* End Header **************************************************************************/
 
@@ -12,7 +23,7 @@
 #include "CoreEngine.h"
 
 CoreEngine::CoreEngine()
-    : m_window(nullptr), m_fps(0.0), m_delta(0.0), m_isRunning(false), audio(AudioHandler::getInstance()) {
+    : m_window(nullptr), m_fps(0.0), m_delta(0.0), m_isRunning(false), audio(AudioHandler::getInstance()), m_stepMode(false), m_stepReq(false) {
 }
 
 CoreEngine::~CoreEngine() {
@@ -113,17 +124,21 @@ void CoreEngine::GameLoop() {
 void CoreEngine::Update(float deltaTime) {
     InputHandler::update();
 
-    // Press F9 to simulate a failure (for crash logger)
-    if (InputHandler::isKeyTriggered(GLFW_KEY_F9)) {
-        throw std::runtime_error("F9 test: simulated failure in update()");
-    }
-
+    
+	// audio controls (temp for M1)
     if (InputHandler::isKeyTriggered(GLFW_KEY_P)) {
         audio.toggleSoundPause(soundID::bg);
     }
     if (InputHandler::isMouseLeftClicked()) {
         audio.playSound(soundID::effect);
     }
+	// step-by-step physics debug mode toggle and step request
+	if (InputHandler::isComboKeyTriggered(GLFW_KEY_Z)) {
+		m_stepMode = !m_stepMode;
+	}
+	if (m_stepMode && InputHandler::isKeyTriggered(GLFW_KEY_Z)) {
+		m_stepReq = true;
+	}
 
     //imgui
     ImGui_ImplOpenGL3_NewFrame();
@@ -136,6 +151,18 @@ void CoreEngine::Update(float deltaTime) {
     m_physicsSystem->update(*m_manager, deltaTime);
     m_renderSystem->update(*m_manager, deltaTime);
     m_uiSystem->update(*m_manager, deltaTime, circles);
+
+	// Physics system update depends on step mode
+    if (!m_stepMode) {
+        m_physicsSystem->update(*m_manager, deltaTime);
+    }
+	else if (m_stepReq) {
+		m_physicsSystem->update(*m_manager, deltaTime);
+		m_stepReq = false;
+	}
+
+    m_renderSystem->update(*m_manager);
+    m_uiSystem->update(*m_manager, deltaTime);
 
     //render ImGui
     ImGui::Render();

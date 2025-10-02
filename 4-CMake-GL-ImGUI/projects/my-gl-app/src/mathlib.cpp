@@ -1,28 +1,35 @@
 /* Start Header ************************************************************************/
 /*!
-\file		mathlib.cpp
-\author
-\par
-\date		Month, Day, 2025
-\brief
+\file       mathlib.cpp
+\author     Asha Mathyalakan, asha.m, 2402886
+            - 100% of the file
+\par        asha.m@digipen.edu
+\date       September, 11th, 2025
+\brief      This file implements basic scalar math functions, utilities for 2D and 3D
+            operations, functions for creating and manipulating 3x3 and 4x4 matrices
+
+Copyright (C) 2025 DigiPen Institute of Technology.
+Reproduction or disclosure of this file or its contents
+without the prior written consent of DigiPen Institute of
+Technology is prohibited.
 */
 /* End Header **************************************************************************/
 #include "mathlib.h"
 
 float Math_Sqrt(float v) {
-    return std::sqrt(v); 
+    return std::sqrt(v);
 }
-float Math_Fabs(float v) { 
-    return std::fabs(v); 
+float Math_Fabs(float v) {
+    return std::fabs(v);
 }
 float Math_Fmax(float a, float b) {
-    return std::fmax(a, b); 
+    return std::fmax(a, b);
 }
-float Math_Min(float a, float b) { 
-    return (a < b) ? a : b ;
+float Math_Min(float a, float b) {
+    return (a < b) ? a : b;
 }
-float Math_Max(float a, float b) { 
-    return (a > b) ? a : b; 
+float Math_Max(float a, float b) {
+    return (a > b) ? a : b;
 }
 
 // --- Angle conversion ---
@@ -38,9 +45,9 @@ float RadToDeg(float rad) {
 float SinRad(float rad) { return std::sin(rad); }
 float CosRad(float rad) { return std::cos(rad); }
 float TanRad(float rad) { return std::tan(rad); }
-float ASinRad(float val) { return std::asin(val); } 
-float ACosRad(float val) { return std::acos(val); } 
-float ATanRad(float val) { return std::atan(val); } 
+float ASinRad(float val) { return std::asin(val); }
+float ACosRad(float val) { return std::acos(val); }
+float ATanRad(float val) { return std::atan(val); }
 
 // --- Degre trigonometry ---
 float SinDeg(float deg) { return std::sin(DegToRad(deg)); }
@@ -62,7 +69,7 @@ float ATanDeg(float val) { return RadToDeg(std::atan(val)); }
 //    sum.y = a.y + b.y
 Vector2D Vec_Add(const Vector2D* a, const Vector2D* b) {
     Vector2D sum = { a->x + b->x,
-                     a->y + b->y};
+                     a->y + b->y };
     return sum;
 }
 
@@ -254,6 +261,11 @@ void Mat33_Con_cat(Mat33* con_cat, const Mat33* a, const Mat33* b) {
     *con_cat = temp;
 }
 
+//----------------------------------------
+// Vector3D Operations
+//----------------------------------------
+
+// Add, subtract
 Vector3D Vec3_Add(const Vector3D* a, const Vector3D* b) {
     Vector3D sum = { a->x + b->x,
                      a->y + b->y,
@@ -313,7 +325,7 @@ Vector3D Vec3_Cross(const Vector3D* a, const Vector3D* b) {
     return cross;
 }
 
-
+//Normalise
 Vector3D Vec3_Normalize(const Vector3D* v) {
     Vector3D Norm = { 0.0f, 0.0f, 0.0f };
     float dis = sqrtf(v->x * v->x + v->y * v->y + v->z * v->z);
@@ -325,11 +337,12 @@ Vector3D Vec3_Normalize(const Vector3D* v) {
     return Norm;
 }
 
+//scale
 Vector3D Vec3_Scale(const Vector3D* v, float scale) {
     Vector3D scaled = { v->x * scale, v->y * scale , v->z * scale };
     return scaled;
 }
-
+//transform
 Vector3D Vec3_Transform(const Vector3D* v, const Mat44* mat) {
     Vector3D transformed;
     transformed.x = v->x * mat->m[0][0] + v->y * mat->m[0][1] + v->z * mat->m[0][2] + mat->m[0][3];
@@ -354,14 +367,14 @@ void Mat44_Transpose(Mat44* out, const Mat44* mat) {
         for (int j = 0; j < 4; j++)
             out->m[i][j] = mat->m[j][i];
 }
-
+// Scale matrix
 void Mat44_Scale(Mat44* mat, float x, float y, float z) {
     mat->m[0][0] = x; mat->m[0][1] = 0; mat->m[0][2] = 0; mat->m[0][3] = 0;
     mat->m[1][0] = 0; mat->m[1][1] = y; mat->m[1][2] = 0; mat->m[1][3] = 0;
     mat->m[2][0] = 0; mat->m[2][1] = 0; mat->m[2][2] = z; mat->m[2][3] = 0;
     mat->m[3][0] = 0; mat->m[3][1] = 0; mat->m[3][2] = 0; mat->m[3][3] = 1;
 }
-
+// Rotation matrices --> X
 void Mat44_RotX(Mat44* mat, float rad) {
     float cos_value = cosf(rad);
     float sin_value = sinf(rad);
@@ -371,17 +384,17 @@ void Mat44_RotX(Mat44* mat, float rad) {
     mat->m[2][0] = 0; mat->m[2][1] = sin_value; mat->m[2][2] = cos_value; mat->m[2][3] = 0;
     mat->m[3][0] = 0; mat->m[3][1] = 0; mat->m[3][2] = 0; mat->m[3][3] = 1;
 }
-
+// Rotation matrices --> Y
 void Mat44_RotY(Mat44* mat, float rad) {
     float cos_value = cosf(rad);
     float sin_value = sinf(rad);
 
-    mat->m[0][0] = cos_value;mat->m[0][1] = 0; mat->m[0][2] = sin_value;mat->m[0][3] = 0;
-    mat->m[1][0] = 0;mat->m[1][1] = 1; mat->m[1][2] = 0;mat->m[1][3] = 0;
+    mat->m[0][0] = cos_value; mat->m[0][1] = 0; mat->m[0][2] = sin_value; mat->m[0][3] = 0;
+    mat->m[1][0] = 0; mat->m[1][1] = 1; mat->m[1][2] = 0; mat->m[1][3] = 0;
     mat->m[2][0] = -sin_value; mat->m[2][1] = 0; mat->m[2][2] = cos_value; mat->m[2][3] = 0;
     mat->m[3][0] = 0; mat->m[3][1] = 0; mat->m[3][2] = 0; mat->m[3][3] = 1;
 }
-
+// Rotation matrices --> Z
 void Mat44_RotZ(Mat44* mat, float rad) {
     float cos_value = cosf(rad);
     float sin_value = sinf(rad);
@@ -404,7 +417,7 @@ void Mat44_Trans(Mat44* mat, float x, float y, float z) {
     mat->m[2][0] = 0; mat->m[2][1] = 0; mat->m[2][2] = 1;  mat->m[2][3] = z;
     mat->m[3][0] = 0; mat->m[3][1] = 0; mat->m[3][2] = 0;  mat->m[3][3] = 1;
 }
-
+// Concatenate (multiply) two 4x4 matrices
 void Mat44_Con_cat(Mat44* con_cat, const Mat44* a, const Mat44* b) {
     Mat44 temp;
     for (int i = 0; i < 4; i++)
