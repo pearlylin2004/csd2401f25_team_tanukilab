@@ -292,15 +292,15 @@ void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime) {
 				t->rotation = 0.0f;
 
 				Physics* p = bullet->getComponent<Physics>();
-				p->velX = 2.0f;
-				p->velY = 0.0f;
+				p->velX = 5.0f;
+				p->velY = 5.0f;
 				p->onGround = false;
 			}
 
 			// Jump
-			if (InputHandler::isKeyTriggered(GLFW_KEY_B)){// && physics->onGround) {
+			if (InputHandler::isKeyTriggered(GLFW_KEY_B) && physics->onGround){// && physics->onGround) {
 				std::cout << "player is jumping\n";
-				physics->velY += physics->jumpForce;
+				physics->velY = physics->jumpForce;
 				//physics->velX = physics->Speed;
 				physics->onGround = false;
 			}
