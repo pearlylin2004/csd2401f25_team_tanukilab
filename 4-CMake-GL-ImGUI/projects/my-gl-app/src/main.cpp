@@ -2,9 +2,9 @@
 /*!
 \file		main.cpp
 \author     Hugo Low Ren Hao, low.h, 2402272, 50%
-\author     Varick, 50%
+\author     Varick, v.teo, 2403417, 50%
 \par        low.h@digipen.edu
-\par        
+\par        v.teo@digipen.edu
 \date		October, 1st, 2025
 \brief      Main entry point for the OpenGL application.
 
