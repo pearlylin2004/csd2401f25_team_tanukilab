@@ -1,10 +1,21 @@
 /* Start Header ************************************************************************/
 /*!
 \file		CoreEngine.cpp
-\author
+\author 	Seow Sin Le, s.sinle, 2401084, 70%
+\author     Hugo Low Ren Hao, low.h, 2402272, 10%
+\author     Tan Chee Qing, cheeqing.tan, 2401486, 10%
+\author     Varick, 10%
+\par        s.sinle@digipen.edu
+\par        low.h@digipen.edu
+\par        cheeqing.tan@digipen.edu
 \par
-\date		October 1, 2025
-\brief		Implementation for the main engine class.
+\date		October, 1, 2025
+\brief		Implementation for the CoreEngine class.
+    
+Copyright (C) 2025 DigiPen Institute of Technology.
+Reproduction or disclosure of this file or its contents
+without the prior written consent of DigiPen Institute of
+Technology is prohibited.
 */
 /* End Header **************************************************************************/
 
@@ -146,7 +157,7 @@ void CoreEngine::Update(float deltaTime) {
 		m_stepReq = false;
 	}
 
-    m_renderSystem->update(*m_manager, deltaTime);
+    m_renderSystem->update(*m_manager);
     m_uiSystem->update(*m_manager, deltaTime);
 
     //render ImGui

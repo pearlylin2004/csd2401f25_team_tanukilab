@@ -16,10 +16,8 @@ without the prior written consent of DigiPen Institute of
 Technology is prohibited.
 */
 /* End Header **************************************************************************/
+
 #pragma once
-#include <vector>
-#include <fstream>
-#include "Component.h"
 #include "renderer.h" //RenderSystem needs the full definition of the renderer
 #include "input.h" //InputSystem needs access to the InputHandler
 #include "GameObjectManager.h"
@@ -51,7 +49,7 @@ public:
 class RenderSystem {
 public:
 	void init(GameObjectManager& manager);
-	void update(GameObjectManager& manager, const float& deltaTime);
+	void update(GameObjectManager& manager);
 	GLuint uploadtex(std::string const& filename, bool& isTransparent);
 };
 

@@ -61,7 +61,7 @@ void InputSystem::update(GameObjectManager& manager, const float& deltaTime) {
 				if (InputHandler::isKeyTriggered(GLFW_KEY_F9)) {
 					throw std::runtime_error("F9 test: simulated failure in update()");
 				}
-				//so far so good i think?
+				
 			}
 		}
 	}
@@ -69,7 +69,7 @@ void InputSystem::update(GameObjectManager& manager, const float& deltaTime) {
 
 
 // Render system - draws all game objects with a Render component
-void RenderSystem::update(GameObjectManager& manager, const float& deltaTime) {
+void RenderSystem::update(GameObjectManager& manager) {
 	std::vector<GameObject*> gameObjects;
 	manager.getAllGameObjects(gameObjects);
 

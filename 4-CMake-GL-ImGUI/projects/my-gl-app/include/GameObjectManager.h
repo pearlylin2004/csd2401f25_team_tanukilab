@@ -17,10 +17,6 @@ Technology is prohibited.
 
 #pragma once
 #include <fstream>
-#include <string>
-#include <unordered_map>
-#include <memory>
-#include <vector>
 #include "GameObject.h"
 
 //GameObjectManager should hold every existing GameObject in a smart pointer

@@ -20,8 +20,8 @@ Technology is prohibited.
 #pragma once
 #include <string>
 #include <memory> //for unique_ptr
-#include <renderer.h>
-#include <mathlib.h>
+#include "renderer.h"
+#include "mathlib.h"
 
 
 // basic component class
