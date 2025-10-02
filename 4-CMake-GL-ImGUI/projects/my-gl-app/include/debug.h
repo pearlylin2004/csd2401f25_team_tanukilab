@@ -17,7 +17,8 @@ Technology is prohibited.
 #include <string>
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
-
+#include <deque>
+#include <iostream>
 // ======================================================================================
 // Perf namespace: frame timing & FPS display
 // ======================================================================================
@@ -89,3 +90,95 @@ namespace CrashLog {
      */
     void Shutdown();
 }
+
+
+// ======================================================================================
+// DebugInput: lightweight input event logger (call from your GLFW callbacks)
+// ======================================================================================
+
+
+namespace DebugInput {
+
+    /**
+     * @brief Enable or disable input event logging.
+     *
+     * When enabled, events passed through the DebugInput callbacks will be
+     * formatted and written to the crash log, console (debug builds),
+     * and stored in an internal ring buffer for later retrieval.
+     *
+     * @param on True to enable logging, false to disable.
+     */
+    void SetEnabled(bool on);
+
+    /**
+     * @brief Check whether input event logging is currently enabled.
+     *
+     * @return True if logging is enabled, false otherwise.
+     */
+    bool Enabled();
+
+    /**
+     * @brief Handle a keyboard event from GLFW.
+     *
+     * Call this inside your GLFW key callback. Logs the key name,
+     * scancode, action (press/release/repeat), and modifiers.
+     *
+     * @param window   The GLFW window associated with the event.
+     * @param key      The keyboard key (GLFW key code).
+     * @param scancode Platform-specific scancode.
+     * @param action   The key action (GLFW_PRESS, GLFW_RELEASE, GLFW_REPEAT).
+     * @param mods     Modifier flags (bitfield for shift, ctrl, alt, etc.).
+     */
+    void OnKey(GLFWwindow* window, int key, int scancode, int action, int mods);
+
+    /**
+     * @brief Handle a mouse button event from GLFW.
+     *
+     * Call this inside your GLFW mouse button callback. Logs button
+     * identity (left/right), action (press/release), modifiers, and
+     * the cursor position at the time of the click.
+     *
+     * @param window The GLFW window associated with the event.
+     * @param button The mouse button code (e.g. GLFW_MOUSE_BUTTON_LEFT).
+     * @param action The mouse action (GLFW_PRESS or GLFW_RELEASE).
+     * @param mods   Modifier flags (bitfield for shift, ctrl, alt, etc.).
+     */
+    void OnMouseButton(GLFWwindow* window, int button, int action, int mods);
+
+    /**
+     * @brief Handle a mouse cursor movement event from GLFW.
+     *
+     * Call this inside your GLFW cursor position callback. Logs
+     * the updated cursor coordinates in window client space.
+     *
+     * @param window The GLFW window associated with the event.
+     * @param xpos   The new x-coordinate of the cursor.
+     * @param ypos   The new y-coordinate of the cursor.
+     */
+    void OnCursorPos(GLFWwindow* window, double xpos, double ypos);
+
+    /**
+     * @brief Handle a scroll wheel (or gesture) event from GLFW.
+     *
+     * Call this inside your GLFW scroll callback. Logs horizontal
+     * and vertical scroll offsets.
+     *
+     * @param window  The GLFW window associated with the event.
+     * @param xoffset Scroll offset along the x-axis.
+     * @param yoffset Scroll offset along the y-axis.
+     */
+    void OnScroll(GLFWwindow* window, double xoffset, double yoffset);
+
+    /**
+     * @brief Retrieve the most recent logged input events.
+     *
+     * Returns up to @p max of the latest event strings stored in
+     * the internal ring buffer. Useful for displaying in an on-screen
+     * HUD or ImGui debug window.
+     *
+     * @param max Maximum number of recent messages to retrieve.
+     * @return A deque of recent log lines (newest last).
+     */
+    std::deque<std::string> Recent(size_t max = 32);
+}
+
