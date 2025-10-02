@@ -58,16 +58,7 @@ void InputSystem::update(GameObjectManager& manager, const float& deltaTime) {
 				if (InputHandler::isKeyHeld(GLFW_KEY_D)) {
 					velocity->velX = input->moveSpeed;
 				}
-				if (InputHandler::isKeyTriggered(GLFW_KEY_C)) {
-					static int cloneCount = 1; // Use a static counter for unique names
-					std::string newName = "player2_clone_" + std::to_string(cloneCount++);
-					GameObject* newObject = manager.CloneGameObject("player2", newName);
-
-					std::cout << newName << " created.\n";
-
-					Transform* newTransform = newObject->getComponent<Transform>();
-					newTransform->y += 1.5f * (static_cast<float>(cloneCount) - 1); // Offset the new clone's position
-				}
+				
 
 
 				// Press F9 to simulate a failure (for crash logger)
