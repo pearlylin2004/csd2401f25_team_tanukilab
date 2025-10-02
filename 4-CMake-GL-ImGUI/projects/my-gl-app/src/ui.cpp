@@ -18,7 +18,7 @@ Technology is prohibited.
 #include "ui.h"
 
 namespace UI {
-    std::vector<std::string> debugMessages; //not sure if this needs to be change
+    //std::vector<std::string> debugMessages; //not sure if this needs to be change
     float xAdd = 0.0f, yAdd = 0.0f;
 
     void drawDemo() {
@@ -39,13 +39,15 @@ namespace UI {
             circles.emplace_back(Collision::Circle({ UI::xAdd, UI::yAdd }, 5.0f));
             UI::xAdd++;
             UI::yAdd++;
-			debugMessages.push_back("Added a circle. Total circles: " + std::to_string(circles.size()));
+			//debugMessages.push_back("Added a circle. Total circles: " + std::to_string(circles.size()));
+			std::cout << "Added a circle. Total circles: " << circles.size() << std::endl;
         }
         if (!circles.empty() && ImGui::Button("Remove Last Circle")) {
             circles.pop_back();
             UI::xAdd--;
             UI::yAdd--;
-            debugMessages.push_back("Removed a circle. Total circles: " + std::to_string(circles.size()));
+            //debugMessages.push_back("Removed a circle. Total circles: " + std::to_string(circles.size()));
+			std::cout << "Removed a circle. Total circles: " << circles.size() << std::endl;
         }
         ImGui::Separator();
         for (size_t i = 0; i < circles.size(); i++) {
@@ -65,7 +67,7 @@ namespace UI {
     }
 
     //debugging window
-    void drawDebug(std::vector<std::string> debugMessages) {
+    /*void drawDebug(std::vector<std::string> debugMessages) {
         ImGui::Begin("Debug Info");
         ImGui::Text("This is a debug window.");
         //ImGui::Text("%s", messages.c_str());
@@ -79,7 +81,7 @@ namespace UI {
             ImGui::SetScrollHereY(1.0f);
 
         ImGui::End();
-	}
+	}*/
 
     //shape control
     void shapeControl(Transform& t1, Transform& t2) {
@@ -95,6 +97,7 @@ namespace UI {
 				currentShape = ShapeType::Bullet;
             }
 
+			//check which shape is selected
             Transform* t = (currentShape == ShapeType::Leaves) ? &t1 : &t2;
             
             //position 
@@ -134,7 +137,7 @@ namespace UI {
     }
 
 	//docking setup
-    void dockingSetUp() {
+    /*void dockingSetUp() {
         static ImGuiDockNodeFlags dockspace_flags = ImGuiDockNodeFlags_None;
 
         ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoDocking
@@ -161,5 +164,5 @@ namespace UI {
         ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), dockspace_flags);
 
         ImGui::End();
-    }
+    }*/
 }

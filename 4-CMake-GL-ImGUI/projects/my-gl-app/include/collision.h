@@ -25,9 +25,7 @@ Technology is prohibited.
 
 namespace Collision {
     using f64 = double;
-    extern f64 g_fixedDT;
     extern f64 g_dt;
-    extern f64 g_appTime;
 
     //AABB
     class AABB

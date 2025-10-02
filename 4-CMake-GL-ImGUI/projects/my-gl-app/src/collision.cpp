@@ -21,9 +21,7 @@ Technology is prohibited.
 
 namespace Collision {
     //all can change to fit our game later
-    f64 g_fixedDT = 0.016;
     f64 g_dt = 0.016;
-    f64 g_appTime = 0.0;
     const float EPSILON = 1e-5f;
 
     //helper function to get an AABB from a renderer object
@@ -37,6 +35,7 @@ namespace Collision {
         return Collision::AABB(min, max);
     }
 
+	//helper function to get a Circle from a renderer object
     Circle getObjectCircle(const Transform* transform) {
         Vector2D center(transform->x, transform->y);
         float radius = std::max(transform->scaleX, transform->scaleY) * 0.5f;
@@ -71,7 +70,7 @@ namespace Collision {
         info.normal = { 0, 0 };
         info.contactPoint = { 0, 0 };
 
-        // relative velocity
+        //relative velocity
         Vector2D Vb{ vel1.x - vel2.x, vel1.y - vel2.y };
 
         float tFirst = 0.0f;
@@ -93,7 +92,7 @@ namespace Collision {
             tXLast = (x2 + dx2 - x1) / Vb.x;
         }
         else {
-            // no relative motion in X → must already overlap
+            //no relative motion in X must already overlap
             if (x1 + dx1 <= x2 || x2 + dx2 <= x1) return info;
             tXFirst = 0.0f;
             tXLast = g_dt;
@@ -162,9 +161,9 @@ namespace Collision {
 
             info.contactPoint = cp;
         }
-
         return info;
     }
+
     //AABB with circles 
     bool CollisionIntersection_CircleAABB_Static(const Circle& c, const AABB& aabb)
     {

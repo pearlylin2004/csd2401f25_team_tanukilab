@@ -273,7 +273,6 @@ void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime) {
 			//bullet
 			if (InputHandler::isKeyTriggered(GLFW_KEY_SPACE)) {
 				std::cout << "bullet is spawned\n";
-				//UI::debugMessages.push_back("bullet is spawned");
 				static int bulletCount = 0;
 
 				Transform* t = bullet->getComponent<Transform>();
@@ -294,7 +293,6 @@ void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime) {
 			// Jump
 			if (InputHandler::isKeyTriggered(GLFW_KEY_B)){// && physics->onGround) {
 				std::cout << "player is jumping\n";
-				//UI::debugMessages.push_back("player is jumping");
 				physics->velY += physics->jumpForce;
 				//physics->velX = physics->Speed;
 				physics->onGround = false;
@@ -334,8 +332,10 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 						Physics* obj2V = iterator->getComponent<Physics>();
 						Vector2D obj1Vel{ obj1V->velX, obj1V->velY };
 						Vector2D obj2Vel{ obj2V->velX, obj2V->velY };
+						//check collision using the dynamic rect-rect collision detection
 						CollisionInfo info = Collision::CollisionIntersection_RectRect_Dynamic_Info(obj1, obj1Vel, obj2, obj2Vel);
 
+						//check collision responses
 						if (info.collided) {
 							Collision::Resolve_AABB_AABB(
 								obj1, obj1Vel, 0.0f,
@@ -349,8 +349,6 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 							obj2V->velX = obj2Vel.x;
 							obj2V->velY = obj2Vel.y;
 
-							//show message in imgui
-							//UI::debugMessages.push_back("Collision detected between Object.");
 							std::cout << "Collision detected between Object.\n";
 						}
 					}
@@ -375,13 +373,13 @@ void UISystem::update(GameObjectManager& manager, const float& deltaTime, std::v
 	UI::drawControls(circles);
 
 	//debug window
-	UI::drawDebug(UI::debugMessages);
+	//UI::drawDebug(UI::debugMessages);
 
 	Transform* leavesT = gameObjects[0]->getComponent<Transform>();
 	Transform* bulletT = gameObjects[2]->getComponent<Transform>();
 	UI::shapeControl(*leavesT, *bulletT);
 
-	//imgui rendering
+	//imgui rendering..copied from render::update
 	for (const auto& circle : circles) { // <-- your std::vector<Collision::Circle>
 		const Vector2D& c = circle.getCenter();
 		float r = circle.getRadius();
@@ -390,7 +388,7 @@ void UISystem::update(GameObjectManager& manager, const float& deltaTime, std::v
 		mdlWorld = glm::translate(mdlWorld, glm::vec3(c.x, c.y, 0.0f));
 		mdlWorld = glm::scale(mdlWorld, glm::vec3(r, r, 1.0f));
 
-		const auto& model = renderer::models[1]; // circle mesh
+		const auto& model = renderer::models[1]; //circle mesh
 		glBindVertexArray(model.vaoid);
 
 		GLint vTransformLoc = glGetUniformLocation(renderer::shdr_pgm, "M");
