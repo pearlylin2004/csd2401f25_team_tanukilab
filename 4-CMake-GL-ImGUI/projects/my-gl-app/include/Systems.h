@@ -45,17 +45,52 @@ public:
 	void update(GameObjectManager& manager, const float& deltaTime);
 };
 
-// Render system - draws all game objects with a Render component
+/*!***********************************************************************
+\brief
+	render component
+
+*************************************************************************/
 class RenderSystem {
 public:
+	/*!***********************************************************************
+	\brief
+		initializes textures for all objects with render component
+
+	\param[in] manager
+		array of all objects
+
+	*************************************************************************/
 	void init(GameObjectManager& manager);
+	/*!***********************************************************************
+	\brief
+		resend matrix data to the shaders to recalculated object position and orientation to draw for the new frame
+
+	\param[in] manager
+		array of all objects
+
+	*************************************************************************/
 	void update(GameObjectManager& manager);
 	GLuint uploadtex(std::string const& filename, bool& isTransparent);
 };
 
-// Transform system - updates the model matrix based on position, rotation, and scale
+/*!***********************************************************************
+\brief
+	transform component
+
+*************************************************************************/
 class TransformSystem {
 public:
+	/*!***********************************************************************
+	\brief
+		updating the new position, scale and orientation of the object
+
+	\param[in] GameObjectManager manager
+		array of all objects
+		
+	\param[in] deltaTime
+		tracking of the world time
+
+	*************************************************************************/
 	void update(GameObjectManager& manager, const float& deltaTime);
 };
 

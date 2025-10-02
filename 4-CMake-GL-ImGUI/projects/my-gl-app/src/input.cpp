@@ -206,8 +206,12 @@ float InputHandler::getMouseScroll() {
 
 
 /* ----- CALLBACKS ----- */
+//did not use mods, did not use scancode, did not use window
 // key callback function (GLFW will call this automatically)
 void InputHandler::keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods) {
+	(void)mods;
+	(void)scancode;
+	(void)window;
 	if (key < 0 || key >= 1024) return;
 
 	// is key is pressed, change bool in m_key to TRUE, if released then FALSE
@@ -219,8 +223,11 @@ void InputHandler::keyCallback(GLFWwindow* window, int key, int scancode, int ac
 	}
 }
 
+//did not use mods, did not use window
 // mouse button callback function (GLFW will call this automatically)
 void InputHandler::mouseButtonCallback(GLFWwindow* window, int button, int action, int mods) {
+	(void)mods;
+	(void)window;
 	if (button < 0 || button >= 8) return;
 
 	// is button is pressed, change bool in m_mouseButtons to TRUE, if released then FALSE
@@ -240,14 +247,18 @@ void InputHandler::mouseButtonCallback(GLFWwindow* window, int button, int actio
 		}
 	}
 }
+//did not use window
 
 // cursor position callback function (GLFW will call this automatically)
 void InputHandler::cursorPositionCallback(GLFWwindow* window, double xpos, double ypos) {
+	(void)window;
 	m_mousePosition = Vector2D(static_cast<float>(xpos), static_cast<float>(ypos));
 }
+//did not use window
 
 // cursor enter/leave callback function (GLFW will call this automatically)
 void InputHandler::CursorEnterCallback(GLFWwindow* window, int entered) {
+	(void)window;
 	if (entered) {
 		// Cursor entered the window
 		m_isCursorInside = true;
@@ -258,8 +269,11 @@ void InputHandler::CursorEnterCallback(GLFWwindow* window, int entered) {
 
 	}
 }
+//did not use window, did not use xoffset
 
 // scroll callback function (GLFW will call this automatically)
 void InputHandler::scrollCallback(GLFWwindow* window, double xoffset, double yoffset) {
+	(void)window;
+	(void)xoffset;
 	m_scrollOffset = static_cast<float>(yoffset);
 }
