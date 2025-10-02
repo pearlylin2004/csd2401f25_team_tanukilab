@@ -7,7 +7,8 @@
 //
 //    // Part 1
 //    if (!glfwInit()) {
-//        std::cout << "GLFW init has failed - abort program!!!" << std::endl;
+//        
+// << "GLFW init has failed - abort program!!!" << std::endl;
 //        return false;
 //    }
 //

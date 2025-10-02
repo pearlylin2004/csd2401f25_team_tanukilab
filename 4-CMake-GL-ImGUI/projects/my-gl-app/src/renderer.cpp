@@ -162,8 +162,6 @@ void renderer::camera::init(int w, int h)
 	zoom = 10;
 	campos = glm::vec3(0, 0, 0);
 	up = glm::vec3(0, 1, 0);
-
-
 }
 
 void renderer::camera::update()
@@ -171,6 +169,3 @@ void renderer::camera::update()
 	view = glm::lookAt(campos, glm::vec3(0, 0, -1), up);
 	proj = glm::ortho(-zoom * ar, zoom * ar, -zoom, zoom, -1.f, 1.f);
 }
-
-
-
