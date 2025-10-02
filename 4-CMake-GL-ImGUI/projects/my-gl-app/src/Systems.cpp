@@ -4,9 +4,11 @@
 \author      Seow Sin Le, s.sinle, 2401084, 20%
 \author 	 Hugo Low Ren Hao, low.h, 2402272, 20%
 \author 	 Pearly Lin Lee Ying, p.lin, 2401591, 10%
+\author		 Asha Mathyalakan, asha.m, 2402886, 5%
 \par         s.sinle@digipen.edu
 \par		 low.h@digipen.edu
 \par		 p.lin@digipen.edu
+\par		 asha.m@digipen.edu
 \date        October, 1st, 2025
 \brief       System functions to run the logic for the components
 
@@ -59,7 +61,7 @@ void InputSystem::update(GameObjectManager& manager, const float& deltaTime) {
 				if (InputHandler::isKeyTriggered(GLFW_KEY_F9)) {
 					throw std::runtime_error("F9 test: simulated failure in update()");
 				}
-				//so far so good i think?
+				
 			}
 		}
 	}
@@ -67,7 +69,7 @@ void InputSystem::update(GameObjectManager& manager, const float& deltaTime) {
 
 
 // Render system - draws all game objects with a Render component
-void RenderSystem::update(GameObjectManager& manager, const float& deltaTime) {
+void RenderSystem::update(GameObjectManager& manager) {
 	std::vector<GameObject*> gameObjects;
 	manager.getAllGameObjects(gameObjects);
 
@@ -290,15 +292,15 @@ void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime) {
 				t->rotation = 0.0f;
 
 				Physics* p = bullet->getComponent<Physics>();
-				p->velX = 2.0f;
-				p->velY = 0.0f;
+				p->velX = 5.0f;
+				p->velY = 5.0f;
 				p->onGround = false;
 			}
 
 			// Jump
-			if (InputHandler::isKeyTriggered(GLFW_KEY_B)){// && physics->onGround) {
+			if (InputHandler::isKeyTriggered(GLFW_KEY_B) && physics->onGround){// && physics->onGround) {
 				std::cout << "player is jumping\n";
-				physics->velY += physics->jumpForce;
+				physics->velY = physics->jumpForce;
 				//physics->velX = physics->Speed;
 				physics->onGround = false;
 			}

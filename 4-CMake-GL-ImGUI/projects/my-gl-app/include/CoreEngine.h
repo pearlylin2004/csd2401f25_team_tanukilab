@@ -3,8 +3,13 @@
 \file		CoreEngine.h
 \author     Hugo Low Ren Hao, low.h, 2402272
 \par        low.h@digipen.edu
-\date		October 1, 2025
-\brief		Declaration for the main engine class.
+\date		October, 1, 2025
+\brief		Declaration for the CoreEngine class.
+
+Copyright (C) 2025 DigiPen Institute of Technology.
+Reproduction or disclosure of this file or its contents
+without the prior written consent of DigiPen Institute of
+Technology is prohibited.
 */
 /* End Header **************************************************************************/
 
@@ -13,14 +18,12 @@
 #include <memory>
 #include <string>
 #include <GL/glew.h>
-#include <GLFW/glfw3.h>
 #include <stdexcept>
 #include <iostream>
 #include "config.h"
 #include "debug.h"
 #include "input.h"
 #include "audio.h"
-#include "GameObjectManager.h"
 #include "Systems.h"
 
 class CoreEngine {

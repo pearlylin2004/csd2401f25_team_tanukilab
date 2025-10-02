@@ -1,23 +1,21 @@
 /* Start Header ************************************************************************/
 /*!
 \file		main.cpp
-\author     Hugo Low Ren Hao, low.h, 2402272, 5%
+\author     Hugo Low Ren Hao, low.h, 2402272, 50%
+\author     Varick, 50%
 \par        low.h@digipen.edu
+\par        
 \date		October, 1st, 2025
 \brief      Main entry point for the OpenGL application.
-\file		main.cpp
-\author
-\par
-\date		October 1, 2025
-\brief		Main entry point for the application.
+
+Copyright (C) 2025 DigiPen Institute of Technology.
+Reproduction or disclosure of this file or its contents
+without the prior written consent of DigiPen Institute of
+Technology is prohibited.
 */
 /* End Header **************************************************************************/
 
-#include <iostream>
-#include <stdexcept>
-#include <memory>
 #include "CoreEngine.h"
-#include "debug.h"
 
 // This allows for memory leak detection in debug builds
 #if defined(DEBUG) | defined(_DEBUG)
