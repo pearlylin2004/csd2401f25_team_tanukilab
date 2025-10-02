@@ -58,6 +58,17 @@ void InputSystem::update(GameObjectManager& manager, const float& deltaTime) {
 				if (InputHandler::isKeyHeld(GLFW_KEY_D)) {
 					velocity->velX = input->moveSpeed;
 				}
+				if (InputHandler::isKeyTriggered(GLFW_KEY_C)) {
+					static int cloneCount = 1; // Use a static counter for unique names
+					std::string newName = "player2_clone_" + std::to_string(cloneCount++);
+					GameObject* newObject = manager.CloneGameObject("player2", newName);
+
+					std::cout << newName << " created.\n";
+
+					Transform* newTransform = newObject->getComponent<Transform>();
+					newTransform->y += 1.5f * (static_cast<float>(cloneCount) - 1); // Offset the new clone's position
+				}
+
 
 				// Press F9 to simulate a failure (for crash logger)
 				if (InputHandler::isKeyTriggered(GLFW_KEY_F9)) {
@@ -301,7 +312,7 @@ void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime) {
 			}
 
 			// Jump
-			if (InputHandler::isKeyTriggered(GLFW_KEY_B) && physics->onGround){// && physics->onGround) {
+			if (InputHandler::isKeyTriggered(GLFW_KEY_B)){// && physics->onGround) {
 				//std::cout << "player is jumping\n";
 				UI::debugMessages.push_back("player is jumping");
 				physics->velY = physics->jumpForce;

@@ -33,6 +33,8 @@ public:
     // virtual just means that the child class can overwrite 
     // these functions
     virtual ~Component() = default;
+
+	virtual std::unique_ptr<Component> clone() const = 0;
 };
 
 // Transform component to store position, rotation, and scale
@@ -41,6 +43,10 @@ public:
 	Transform() = default;
     Transform(float px, float py, float pz, float rot, float sx, float sy, float sz) 
         : x(px), y(py), z(pz), rotation(rot), scaleX(sx), scaleY(sy), scaleZ(sz), mdlWorld(1) {}
+
+    std::unique_ptr<Component> clone() const override {
+        return std::make_unique<Transform>(*this);
+	}
 
     float x{ 0.f }, y{ 0.f }, z{ 0.f };
     float rotation = 0.0f;
@@ -53,6 +59,9 @@ struct Render : public Component {
 public:
     Render() = default;
 
+    std::unique_ptr<Component> clone() const override {
+        return std::make_unique<Render>(*this);
+    }
 public:
     bool visible = true;
     bool hasTex = false;
@@ -68,6 +77,10 @@ public:
 struct Physics : public Component {
 public:
    
+    std::unique_ptr<Component> clone() const override {
+        return std::make_unique<Physics>(*this);
+	}
+
     float velX = 0.0f;
     float velY = 0.0f;
     float gravity = -9.8f;
@@ -98,6 +111,10 @@ struct Input : public Component {
 public:
 	Input(float speed = 0.0f) : moveSpeed(speed) {}
 
+    std::unique_ptr<Component> clone() const override {
+        return std::make_unique<Input>(*this);
+    }
+
 public:
     float moveSpeed = 0.0f;
 
@@ -111,6 +128,11 @@ enum class CollisionResponseMode {
 // CollisionInfo component to store collision-related information
 struct CollisionInfo : public Component {
 public:
+
+    std::unique_ptr<Component> clone() const override {
+        return std::make_unique<CollisionInfo>(*this);
+    }
+
     bool collided = false;
     float timeOfImpact = 0.0f;
     Vector2D normal{ 0,0 };

@@ -70,6 +70,8 @@ public:
         return m_components.count(std::type_index(typeid(T)));
     }
 
+    std::unique_ptr<GameObject> clone(const std::string& name) const;
+
 	// Returns the name of the game object
     const std::string& getObjectName() const;
 

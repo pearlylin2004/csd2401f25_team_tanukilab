@@ -43,6 +43,31 @@ GameObject* GameObjectManager::getGameObject(const std::string& name) {
 	return nullptr;
 }
 
+//clone an existing object
+GameObject* GameObjectManager::CloneGameObject(const std::string& sourceName, const std::string& newName) {
+	//find object in map
+	auto iterator = m_gameObjects.find(sourceName);
+
+	if (iterator == m_gameObjects.end()) {
+		std::cout << "GameObject with name '" << sourceName << "' not found.\n";
+		return nullptr;
+	}
+
+	if (m_gameObjects.count(newName)) {
+		std::cout << "GameObject with name '" << newName << "' already exists.\n";
+		return nullptr;
+	}
+	
+	//cloning GameObject
+	std::unique_ptr<GameObject> clonedObject = iterator->second->clone(newName);
+
+	GameObject* ptr = clonedObject.get();//raw pointer
+
+	m_gameObjects[newName] = std::move(clonedObject);//move into map
+
+	return ptr;//return the raw pointer
+}
+
 //used for the all the component systems
 void GameObjectManager::getAllGameObjects(std::vector<GameObject*>& gameObjects) {
 	//clear vector just in case

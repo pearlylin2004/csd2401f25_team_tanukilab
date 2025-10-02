@@ -21,3 +21,24 @@ GameObject::GameObject(const std::string& name) : m_name(name) {}
 const std::string& GameObject::getObjectName() const {
     return m_name;
 }
+
+std::unique_ptr<GameObject> GameObject::clone(const std::string& name) const {
+
+	std::unique_ptr<GameObject> newObject = std::make_unique<GameObject>(name);
+
+    // Iterate through all components of the source object.
+	for (const auto& pair : m_components) { // Pair is [type_index, unique_ptr<Component>]
+        const std::unique_ptr<Component>& sourceComponent = pair.second;
+
+        if (sourceComponent) {
+            // Ask each component to clone itself.
+            std::unique_ptr<Component> newComponent = sourceComponent->clone();
+
+            // Add the newly created component copy to the new GameObject.
+            // We use the same type_index key from the original.
+            newObject->m_components[pair.first] = std::move(newComponent);
+        }
+    }
+
+    return newObject;
+}
