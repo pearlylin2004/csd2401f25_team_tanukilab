@@ -366,7 +366,7 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 }
 
 //for imgu
-void UISystem::update(GameObjectManager& manager, const float& deltaTime, std::vector<Collision::Circle>& circles) {
+void UISystem::update(GameObjectManager& manager, std::vector<Collision::Circle>& circles) {
 	//docking
 	//UI::dockingSetUp();
 
