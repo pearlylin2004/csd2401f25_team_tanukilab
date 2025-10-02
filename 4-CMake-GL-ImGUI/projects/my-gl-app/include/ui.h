@@ -31,5 +31,6 @@ namespace UI{
     void drawControls(std::vector<Collision::Circle>& circles);
 	void drawDebug(std::vector<std::string> debugMessages);
     void shapeControl(Transform& t1, Transform& t2);
+    void dockingSetUp();
 }
 #endif

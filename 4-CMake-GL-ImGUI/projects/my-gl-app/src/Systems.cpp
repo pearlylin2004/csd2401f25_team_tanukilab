@@ -359,6 +359,9 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 
 //for imgu(testing)
 void UISystem::update(GameObjectManager& manager, const float& deltaTime) {
+	//docking
+	//UI::dockingSetUp();
+
 	std::vector<GameObject*> gameObjects;
 	manager.getAllGameObjects(gameObjects);
 
