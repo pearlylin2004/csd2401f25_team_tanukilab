@@ -62,7 +62,7 @@ void InputSystem::update(GameObjectManager& manager, const float& deltaTime) {
 
 
 // Render system - draws all game objects with a Render component
-void RenderSystem::update(GameObjectManager& manager, const float& deltaTime) {
+void RenderSystem::update(GameObjectManager& manager, const float& deltaTime, std::vector<Collision::Circle>& circles) {
 	std::vector<GameObject*> gameObjects;
 	manager.getAllGameObjects(gameObjects);
 
@@ -203,6 +203,33 @@ void RenderSystem::update(GameObjectManager& manager, const float& deltaTime) {
 				glBindVertexArray(0);
 			}
 		}
+	}
+	//imgui rendering
+	for (const auto& circle : circles) { // <-- your std::vector<Collision::Circle>
+		const Vector2D& c = circle.getCenter();
+		float r = circle.getRadius();
+
+		glm::mat4 mdlWorld = glm::mat4(1.0f);
+		mdlWorld = glm::translate(mdlWorld, glm::vec3(c.x, c.y, 0.0f));
+		mdlWorld = glm::scale(mdlWorld, glm::vec3(r, r, 1.0f));
+
+		const auto& model = renderer::models[1]; // circle mesh
+		glBindVertexArray(model.vaoid);
+
+		GLint vTransformLoc = glGetUniformLocation(renderer::shdr_pgm, "M");
+		glUniformMatrix4fv(vTransformLoc, 1, GL_FALSE, glm::value_ptr(mdlWorld));
+
+		GLint hasTex = glGetUniformLocation(renderer::shdr_pgm, "uHasTex");
+		glUniform1i(hasTex, 0);
+
+		// optional: wireframe for debug
+		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+		glLineWidth(2.0f);
+
+		glDrawArrays(model.primitive_type, 0, model.draw_cnt);
+
+		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+		glBindVertexArray(0);
 	}
 	//glDepthMask(GL_TRUE);
 }
@@ -360,7 +387,7 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 }
 
 //for imgu
-void UISystem::update(GameObjectManager& manager, const float& deltaTime) {
+void UISystem::update(GameObjectManager& manager, const float& deltaTime, std::vector<Collision::Circle>& circles) {
 	//docking
 	//UI::dockingSetUp();
 

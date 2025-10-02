@@ -134,8 +134,8 @@ void CoreEngine::Update(float deltaTime) {
     m_inputSystem->update(*m_manager, deltaTime);
     m_collisionSystem->update(*m_manager, deltaTime);
     m_physicsSystem->update(*m_manager, deltaTime);
-    m_renderSystem->update(*m_manager, deltaTime);
-    m_uiSystem->update(*m_manager, deltaTime);
+    m_renderSystem->update(*m_manager, deltaTime, circles);
+    m_uiSystem->update(*m_manager, deltaTime, circles);
 
     //render ImGui
     ImGui::Render();

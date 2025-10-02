@@ -19,6 +19,7 @@ Technology is prohibited.
 
 namespace UI {
     std::vector<std::string> debugMessages; //not sure if this needs to be change
+    float xAdd = 0.0f, yAdd = 0.0f;
 
     void drawDemo() {
         ImGui::Begin("OpenGL 3.3 Demo");
@@ -33,12 +34,17 @@ namespace UI {
     void drawControls(std::vector<Collision::Circle>& circles) {
         ImGui::Begin("Controls");
         ImGui::Text("Player Controls");
+		
         if (ImGui::Button("Add Circle")) {
-            circles.emplace_back(Collision::Circle({ 0.0f, 0.0f }, 50.0f));
+            circles.emplace_back(Collision::Circle({ UI::xAdd, UI::yAdd }, 5.0f));
+            UI::xAdd++;
+            UI::yAdd++;
 			debugMessages.push_back("Added a circle. Total circles: " + std::to_string(circles.size()));
         }
         if (!circles.empty() && ImGui::Button("Remove Last Circle")) {
             circles.pop_back();
+            UI::xAdd--;
+            UI::yAdd--;
             debugMessages.push_back("Removed a circle. Total circles: " + std::to_string(circles.size()));
         }
         ImGui::Separator();

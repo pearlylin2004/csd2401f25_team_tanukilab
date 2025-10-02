@@ -26,6 +26,7 @@ Technology is prohibited.
 namespace UI{
     extern std::vector<std::string> debugMessages; //not sure if this needs to be change
     enum class ShapeType { Leaves, Bullet };
+    extern float xAdd, yAdd; //temp
 
     void drawDemo();
     void drawControls(std::vector<Collision::Circle>& circles);

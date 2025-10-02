@@ -51,7 +51,7 @@ public:
 class RenderSystem {
 public:
 	void init(GameObjectManager& manager);
-	void update(GameObjectManager& manager, const float& deltaTime);
+	void update(GameObjectManager& manager, const float& deltaTime, std::vector<Collision::Circle>& circles);
 	GLuint uploadtex(std::string const& filename, bool& isTransparent);
 };
 
@@ -70,7 +70,7 @@ public:
 // UI system - handles UI rendering and interactions using ImGui
 class UISystem {
 public:
-	void update(GameObjectManager& manager, const float& deltaTime);
+	void update(GameObjectManager& manager, const float& deltaTime, std::vector<Collision::Circle>& circles);
 private:
 	std::vector<std::string> debugMessages; //for messages
 	std::vector<Collision::Circle> circles; 
