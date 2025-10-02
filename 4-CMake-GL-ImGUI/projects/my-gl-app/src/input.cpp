@@ -37,6 +37,7 @@ bool InputHandler::m_isCursorInside = false;
 float InputHandler::m_scrollOffset = 0.0f;
 double InputHandler::m_doubleClickThreshold = 0.25;
 
+// initialize input handler with window and set up callbacks
 void InputHandler::init(GLFWwindow* window) {
 	m_window = window;
 
@@ -48,6 +49,7 @@ void InputHandler::init(GLFWwindow* window) {
 	glfwSetScrollCallback(window, scrollCallback);
 }
 
+// update input states (call once per frame)
 void InputHandler::update() {
 	// store previous states
 	memcpy(m_keysPrevious, m_keys, sizeof(m_keys));
@@ -62,6 +64,7 @@ void InputHandler::update() {
 
 
 /* ----- KEYBOARD ----- */
+// check if key is triggered (pressed this frame)
 bool InputHandler::isKeyTriggered(int key) {
 	if (key < 0 || key >= 1024) return false;
 
@@ -69,6 +72,7 @@ bool InputHandler::isKeyTriggered(int key) {
 	return (m_keys[key] && !m_keysPrevious[key]);
 }
 
+// check if key is released (released this frame)
 bool InputHandler::isKeyReleased(int key) {
 	if (key < 0 || key >= 1024) return false;
 
@@ -76,6 +80,7 @@ bool InputHandler::isKeyReleased(int key) {
 	return (!m_keys[key] && m_keysPrevious[key]);
 }
 
+// check if key is held (currently down)
 bool InputHandler::isKeyHeld(int key) {
 	if (key < 0 || key >= 1024) return false;
 
@@ -83,6 +88,7 @@ bool InputHandler::isKeyHeld(int key) {
 	return m_keys[key];
 }
 
+// check if both keys are triggered (default is left shift + another given key)
 bool InputHandler::isComboKeyTriggered(int key1, int key2) {
 	if (key1 < 0 || key1 >= 1024) return false;
 	if (key2 < 0 || key2 >= 1024) return false;
@@ -99,6 +105,7 @@ bool InputHandler::isComboKeyTriggered(int key1, int key2) {
 	return false;
 }
 
+// check if both keys are being held down (default is left shift + another given key)
 bool InputHandler::isComboKeyHeld(int key1, int key2) {
 	if (key1 < 0 || key1 >= 1024) return false;
 	if (key2 < 0 || key2 >= 1024) return false;
@@ -107,6 +114,7 @@ bool InputHandler::isComboKeyHeld(int key1, int key2) {
 }
 
 /* ----- MOUSE ----- */
+// check if mouse button is clicked (pressed this frame)
 bool InputHandler::isMouseButtonClicked(int button) {
 	if (button < 0 || button >= 8) return false;
 
@@ -114,22 +122,27 @@ bool InputHandler::isMouseButtonClicked(int button) {
 	return (m_mouseButtons[button] && !m_mouseButtonsPrevious[button]);
 }
 
+// check if left mouse button is clicked (pressed this frame)
 bool InputHandler::isMouseLeftClicked() {
 	return (m_mouseButtons[GLFW_MOUSE_BUTTON_LEFT] && !m_mouseButtonsPrevious[GLFW_MOUSE_BUTTON_LEFT]);
 }
 
+// check if left mouse button is being held down (currently down)
 bool InputHandler::isMouseLeftHeld() {
 	return m_mouseButtons[GLFW_MOUSE_BUTTON_LEFT];
 }
 
+// check if left mouse button is released (released this frame)
 bool InputHandler::isMouseLeftReleased() {
 	return (!m_mouseButtons[GLFW_MOUSE_BUTTON_LEFT] && m_mouseButtonsPrevious[GLFW_MOUSE_BUTTON_LEFT]);
 }
 
+// check if left mouse button is double clicked (within threshold time)
 bool InputHandler::isMouseLeftDoubleClicked() {
 	return isMouseButtonDoubleClicked(GLFW_MOUSE_BUTTON_LEFT);
 }
 
+// check if the given mouse button is double clicked (within threshold time)
 bool InputHandler::isMouseButtonDoubleClicked(int button) {
 	if (button < 0 || button >= 8) return false;
 
@@ -144,46 +157,56 @@ bool InputHandler::isMouseButtonDoubleClicked(int button) {
 	return false;
 }
 
+// check if mouse is being dragged (left button held and moving)
 bool InputHandler::isMouseDragging() {
 	return m_isDragging;
 }
 
+// get change in mouse position since drag started
 Vector2D InputHandler::getMouseDragDelta() {
 	if (!m_isDragging) return Vector2D(0.0f);
 	
 	return Vec_Sub(&m_mousePosition, &m_mouseDragStartPos);
 }
 
+// get mouse position when drag started
 Vector2D InputHandler::getMouseDragStartPos() {
 	return m_mouseDragStartPos;
 }
 
+// get current cursor position
 Vector2D InputHandler::getCursorPosition() {
 	return m_mousePosition;
 }
 
+// get current cursor x position
 float InputHandler::getMouseX() {
 	return m_mousePosition.x;
 }
 
+// get current cursor y position
 float InputHandler::getMouseY() {
 	return m_mousePosition.y;
 }
 
+// get change in mouse position since last frame
 Vector2D InputHandler::getMouseDelta() {
 	return Vec_Sub(&m_mousePosition, &m_mousePositionPrevious);
 }
 
+// check if cursor is inside window
 bool InputHandler::isCursorInsideWindow() {
 	return m_isCursorInside;
 }
 
+// get scroll offset since last frame
 float InputHandler::getMouseScroll() {
 	return m_scrollOffset;
 }
 
 
 /* ----- CALLBACKS ----- */
+// key callback function (GLFW will call this automatically)
 void InputHandler::keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods) {
 	if (key < 0 || key >= 1024) return;
 
@@ -196,6 +219,7 @@ void InputHandler::keyCallback(GLFWwindow* window, int key, int scancode, int ac
 	}
 }
 
+// mouse button callback function (GLFW will call this automatically)
 void InputHandler::mouseButtonCallback(GLFWwindow* window, int button, int action, int mods) {
 	if (button < 0 || button >= 8) return;
 
@@ -217,10 +241,12 @@ void InputHandler::mouseButtonCallback(GLFWwindow* window, int button, int actio
 	}
 }
 
+// cursor position callback function (GLFW will call this automatically)
 void InputHandler::cursorPositionCallback(GLFWwindow* window, double xpos, double ypos) {
 	m_mousePosition = Vector2D(static_cast<float>(xpos), static_cast<float>(ypos));
 }
 
+// cursor enter/leave callback function (GLFW will call this automatically)
 void InputHandler::CursorEnterCallback(GLFWwindow* window, int entered) {
 	if (entered) {
 		// Cursor entered the window
@@ -233,6 +259,7 @@ void InputHandler::CursorEnterCallback(GLFWwindow* window, int entered) {
 	}
 }
 
+// scroll callback function (GLFW will call this automatically)
 void InputHandler::scrollCallback(GLFWwindow* window, double xoffset, double yoffset) {
 	m_scrollOffset = static_cast<float>(yoffset);
 }

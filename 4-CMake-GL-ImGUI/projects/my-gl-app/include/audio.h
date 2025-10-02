@@ -35,32 +35,52 @@ enum class soundID : int {
 
 class AudioHandler {
 public:
+	// get the singleton instance
 	static AudioHandler& getInstance(); // make sure only 1 instance is created
 
+	// check for FMOD errors (future: can change to logging instead of exit(-1))
 	void init();
+	// initialize the audio system and load sounds
 	void update();
-	void shutdown();
+	// release all sounds and shut down the audio system (will shutdown automatically when dtor called)
+	void shutdown(); // no need to manually call, dtor will call this automatically
 
+	// load the sound from file path, if loop is true, sound will loop until stopped (default false)
 	bool loadSound(soundID id, const std::string& filePath, bool loop = false);
+	// play the sound, return the channel pointer if successful, nullptr if failed
 	FMOD::Channel* playSound(soundID id, float volume = 1.0f);
 
-	void toggleSoundPause(soundID id); // use this to PAUSE / RESUME sound
-	void toggleAllSoundPause(); // use this to PAUSE / RESUME ALL sounds
-	bool isSoundPaused(soundID id); // use this to check whether sound is paused
+	// call this to PAUSE / RESUME sound
+	void toggleSoundPause(soundID id);
+	// use this to PAUSE / RESUME ALL sounds
+	void toggleAllSoundPause(); 
+	// use this to check whether sound is paused
+	bool isSoundPaused(soundID id); 
 
+	// to stop a particular sound
 	void stopSound(soundID id); 
-	bool isSoundPlaying(soundID id); // to check whether channel still alive (ie. sound finished playing)
+	// to check whether channel still alive (ie. sound finished playing)
+	bool isSoundPlaying(soundID id); 
 
-	void muteSound(soundID id); // mute specific sound
-	void muteAllSound(); // mute all sounds
-	void unmuteSound(soundID id); // unmute specific sound
-	void unmuteAllSound(); // unmute all sounds
-	void increaseSoundVolume(soundID id); // increase by 0.1f
-	void decreaseSoundVolume(soundID id); // decrease by 0.1f
+	// mute specific sound
+	void muteSound(soundID id); 
+	// mute all sounds
+	void muteAllSound(); 
+	// unmute specific sound
+	void unmuteSound(soundID id); 
+	// unmute all sounds
+	void unmuteAllSound(); 
+	// increase by 0.1f
+	void increaseSoundVolume(soundID id); 
+	// decrease by 0.1f
+	void decreaseSoundVolume(soundID id); 
+	// set a specific volume
 	void setSoundVolume(soundID id, float volume); // 0.0f (muted) to 1.0f (full)
 
+	// set a specific pitch
 	void setSoundpitch(soundID id, float pitch); // 0.5f (half speed) to 2.0f (double speed)
 
+	// perform error check for FMOD functions
 	static void FMODErrorCheck(FMOD_RESULT result);
 
 private: 
