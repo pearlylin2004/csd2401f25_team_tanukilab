@@ -33,6 +33,7 @@ Technology is prohibited.
 
 // Input system - reads user input and updates velocity accordingly
 void InputSystem::update(GameObjectManager& manager, const float& deltaTime) {
+	(void)deltaTime;
 	std::vector<GameObject*> gameObjects;
 	manager.getAllGameObjects(gameObjects);
 
@@ -322,6 +323,7 @@ void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime) {
 
 // Collision system - detects and resolves collisions between game objects
 void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime) {
+	(void)deltaTime;
 	std::vector<GameObject*> gameObjects;
 	manager.getAllGameObjects(gameObjects);
 
@@ -366,6 +368,7 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 
 //for imgu(testing)
 void UISystem::update(GameObjectManager& manager, const float& deltaTime) {
+	(void)deltaTime;
 	std::vector<GameObject*> gameObjects;
 	manager.getAllGameObjects(gameObjects);
 
@@ -376,7 +379,7 @@ void UISystem::update(GameObjectManager& manager, const float& deltaTime) {
 	UI::drawControls(circles);
 
 	//debug window
-	UI::drawDebug(UI::debugMessages);
+	UI::drawDebug();//UI::debugMessages);
 
 	Transform* leavesT = gameObjects[0]->getComponent<Transform>();
 	Transform* bulletT = gameObjects[2]->getComponent<Transform>();

@@ -75,7 +75,7 @@ namespace Collision {
         Vector2D Vb{ vel1.x - vel2.x, vel1.y - vel2.y };
 
         float tFirst = 0.0f;
-        float tLast = g_dt;
+        float tLast = static_cast<float>(g_dt);
 
         //x
         float x1 = aabb1.getMin().x;
@@ -96,7 +96,7 @@ namespace Collision {
             // no relative motion in X → must already overlap
             if (x1 + dx1 <= x2 || x2 + dx2 <= x1) return info;
             tXFirst = 0.0f;
-            tXLast = g_dt;
+            tXLast = static_cast<float>(g_dt);
         }
 
         if (tXFirst > tXLast || tXLast < 0.0f || tXFirst > g_dt)
@@ -124,7 +124,7 @@ namespace Collision {
             //no relative motion in Y must already overlap
             if (y1 + dy1 <= y2 || y2 + dy2 <= y1) return info;
             tYFirst = 0.0f;
-            tYLast = g_dt;
+            tYLast = static_cast<float>(g_dt);
         }
 
         if (tYFirst > tYLast || tYLast < 0.0f || tYFirst > g_dt)

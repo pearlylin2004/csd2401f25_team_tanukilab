@@ -25,6 +25,11 @@ Technology is prohibited.
 #include <map>
 #include <input.h>
 
+/*!***********************************************************************
+\brief
+	enum class for shapes
+
+*************************************************************************/
 enum class shape
 {
 	square = 0,
@@ -32,10 +37,31 @@ enum class shape
 	triangle
 };
 
+/*!***********************************************************************
+\brief
+	struct for everything to do with rendering
+
+*************************************************************************/
 struct renderer
 {
-	static void init(int, int);
+	/*!***********************************************************************
+	\brief
+		initializes the setups for the meshes and shader programs
 
+	\param[in] w
+		width of screen
+
+	\param[in] h
+		height of screen
+
+	*************************************************************************/
+	static void init(int w, int h);
+
+	/*!***********************************************************************
+	\brief
+		struct for everything to do with meshes
+
+	*************************************************************************/
 	struct model
 	{
 		shape shape;
@@ -48,14 +74,53 @@ struct renderer
 		GLuint primitive_cnt;
 
 	};
-
+	/*!***********************************************************************
+	\brief
+		storing of shader program
+	*************************************************************************/
 	static GLuint shdr_pgm;
-	static model setup_square(glm::vec3);
-	static model setup_circle(glm::vec3, int);
+	/*!***********************************************************************
+	\brief
+		setting up square mesh
+
+	\param[in] clr
+		taking in RGB colors
+
+	\return model
+		returns a mesh
+
+	*************************************************************************/
+	static model setup_square(glm::vec3 clr);
+	/*!***********************************************************************
+	\brief
+		setting up circle mesh
+
+	\param[in] clr
+		taking in RGB colors
+
+	\param[in] slices
+		the amount of slices/amount of triangles in the circle
+
+	*************************************************************************/
+	static model setup_circle(glm::vec3 clr, int slices);
+	/*!***********************************************************************
+	\brief
+		loading of shader programs into the system
+
+	*************************************************************************/
 	static void setup_shdrpgm();//const glm::mat4& p_modelMat);
-	//static void draw();
+	/*!***********************************************************************
+	\brief
+		array of all the available meshes
+
+	*************************************************************************/
 	static std::vector<model>models;
 
+	/*!***********************************************************************
+	\brief
+		struct that contains all the data for a camera
+
+	*************************************************************************/
 	struct camera
 	{
 		GLfloat ar;
@@ -66,10 +131,30 @@ struct renderer
 		glm::vec3 up;
 		glm::mat4 view;
 		glm::mat4 proj;
+		/*!***********************************************************************
+		\brief
+			initializes all the data for the camera
+
+		\param[in] w
+			width of the screen
+
+		\param[in] h
+			height of the screen
+
+		*************************************************************************/
 		void init(int w, int h);
+		/*!***********************************************************************
+		\brief
+			updating view and orthographic projection matrix
+
+		*************************************************************************/
 		void update();
 	};
 
-	//static std::map<std::string, object> objects;
+	/*!***********************************************************************
+	\brief
+		global camera
+
+	*************************************************************************/
 	static camera cam;
 };

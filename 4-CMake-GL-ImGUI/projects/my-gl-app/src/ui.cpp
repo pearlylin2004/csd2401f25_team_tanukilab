@@ -59,7 +59,7 @@ namespace UI {
     }
 
     //debugging window
-    void drawDebug(std::vector<std::string> debugMessages) {
+    void drawDebug() {//std::vector<std::string> debugMessages) {
         ImGui::Begin("Debug Info");
         ImGui::Text("This is a debug window.");
         //ImGui::Text("%s", messages.c_str());
