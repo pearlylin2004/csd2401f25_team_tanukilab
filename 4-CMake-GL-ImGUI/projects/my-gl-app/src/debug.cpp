@@ -20,6 +20,8 @@ Technology is prohibited.
 #include <mutex>
 #include <ctime>
 #include <string>
+#include <deque>
+#include <iostream>
 
 #ifdef _WIN32
 #define NOMINMAX
@@ -232,3 +234,180 @@ namespace Perf {
     }
 
 } // namespace Perf
+
+
+// ======================================================================================
+// DebugInput implementation
+// ======================================================================================
+
+namespace {
+    /**
+     * @brief Tracks whether input debugging is currently enabled.
+     *
+     * @return Reference to a static boolean flag that persists across calls.
+     */
+    bool& dbgInputOn() { static bool v = false; return v; }
+
+    /**
+     * @brief Holds a queue of recent input/debug event messages.
+     *
+     * @return Reference to a static deque containing recent event strings.
+     */
+    std::deque<std::string>& dbgQ() { static std::deque<std::string> q; return q; }
+
+    /**
+     * @brief Pushes a debug message into the queue and writes it out.
+     *
+     * Adds the message to the recent-events deque (keeping only the last 128 entries),
+     * echoes to console when `_DEBUG` is defined, and appends the line to the crash log.
+     *
+     * @param s The message string to log.
+     */
+    void dbg_push_line(const std::string& s) {
+        auto& q = dbgQ();
+        q.push_back(s);
+        while (q.size() > 128) q.pop_front(); // limit buffer size
+
+#ifdef _DEBUG
+        std::cerr << s << std::endl; // print to console in debug builds
+#endif
+        CrashLog::WriteLine(s.c_str()); // write to crash log
+    }
+
+    /**
+     * @brief Returns a human-readable string for a GLFW key/mouse action.
+     *
+     * @param a The GLFW action constant (GLFW_PRESS, GLFW_RELEASE, GLFW_REPEAT).
+     * @return Corresponding action name as a string literal.
+     */
+    const char* action_name(int a) {
+        switch (a) {
+        case GLFW_PRESS:   return "PRESS";
+        case GLFW_RELEASE: return "RELEASE";
+        case GLFW_REPEAT:  return "REPEAT";
+        default:           return "UNKNOWN";
+        }
+    }
+} // anonymous namespace
+
+
+namespace DebugInput {
+
+    /**
+     * @brief Enable or disable input debugging.
+     *
+     * @param on True to enable, false to disable.
+     */
+    void SetEnabled(bool on) { dbgInputOn() = on; }
+
+    /**
+     * @brief Query if input debugging is enabled.
+     *
+     * @return True if enabled, false if disabled.
+     */
+    bool Enabled() { return dbgInputOn(); }
+
+    /**
+     * @brief Get a copy of the most recent input events.
+     *
+     * @param max Maximum number of recent messages to return.
+     * @return A deque of recent input/debug messages (up to @p max entries).
+     */
+    std::deque<std::string> Recent(size_t max) {
+        auto& q = dbgQ();
+        std::deque<std::string> out;
+        const size_t n = std::min(max, q.size());
+        std::copy(q.end() - static_cast<long>(n), q.end(), std::back_inserter(out));
+        return out;
+    }
+
+    /**
+     * @brief Log a keyboard event.
+     *
+     * Generates a formatted string including the key, scancode, action (press/release/repeat),
+     * and active modifier keys. This is called from a GLFW key callback.
+     *
+     * @param window The GLFW window receiving the event.
+     * @param key The key that was pressed, repeated, or released.
+     * @param scancode Platform-specific scancode.
+     * @param action The key action (GLFW_PRESS, GLFW_RELEASE, GLFW_REPEAT).
+     * @param mods Modifier flags (e.g., shift, ctrl, alt).
+     */
+    void OnKey(GLFWwindow* window, int key, int scancode, int action, int mods) {
+        if (!dbgInputOn()) return;
+        (void)window;
+
+        const char* print = glfwGetKeyName(key, scancode); // may be null
+        std::ostringstream oss;
+        oss << "Key "
+            << (print ? print : "<non-printable>")
+            << " (" << key << ") "
+            << action_name(action)
+            << " mods=" << mods;
+        dbg_push_line(oss.str());
+    }
+
+    /**
+     * @brief Log a mouse button event.
+     *
+     * Generates a formatted string with button (left/right), action (press/release),
+     * modifier keys, and cursor position at the time of the click.
+     *
+     * @param window The GLFW window receiving the event.
+     * @param button The mouse button (e.g., GLFW_MOUSE_BUTTON_LEFT).
+     * @param action The action (GLFW_PRESS or GLFW_RELEASE).
+     * @param mods Modifier flags (shift, ctrl, alt).
+     */
+    void OnMouseButton(GLFWwindow* window, int button, int action, int mods) {
+        if (!dbgInputOn()) return;
+        (void)window;
+
+        const char* bname = (button == GLFW_MOUSE_BUTTON_LEFT) ? "LMB" :
+            (button == GLFW_MOUSE_BUTTON_RIGHT) ? "RMB" : "MB";
+        std::ostringstream oss;
+        oss << "Mouse " << bname << " " << action_name(action) << " mods=" << mods;
+
+        // Attach cursor coordinates at the time of the click
+        double x = 0.0, y = 0.0;
+        if (window) glfwGetCursorPos(window, &x, &y);
+        oss << " @(" << std::fixed << std::setprecision(1) << x << "," << y << ")";
+        dbg_push_line(oss.str());
+    }
+
+    /**
+     * @brief Log mouse cursor movement.
+     *
+     * Reports the cursor’s current x and y coordinates within the window client area.
+     *
+     * @param window The GLFW window receiving the event.
+     * @param xpos Cursor x-coordinate.
+     * @param ypos Cursor y-coordinate.
+     */
+    void OnCursorPos(GLFWwindow* window, double xpos, double ypos) {
+        if (!dbgInputOn()) return;
+        (void)window;
+
+        std::ostringstream oss;
+        oss << "Cursor (" << std::fixed << std::setprecision(1)
+            << xpos << ", " << ypos << ")";
+        dbg_push_line(oss.str());
+    }
+
+    /**
+     * @brief Log a mouse scroll (wheel/gesture) event.
+     *
+     * Reports scroll offsets along the x and y axes.
+     *
+     * @param window The GLFW window receiving the event.
+     * @param xoffset Scroll offset in x-direction.
+     * @param yoffset Scroll offset in y-direction.
+     */
+    void OnScroll(GLFWwindow* window, double xoffset, double yoffset) {
+        if (!dbgInputOn()) return;
+        (void)window;
+
+        std::ostringstream oss;
+        oss << "Scroll dx=" << xoffset << " dy=" << yoffset;
+        dbg_push_line(oss.str());
+    }
+}

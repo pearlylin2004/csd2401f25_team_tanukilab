@@ -20,11 +20,13 @@ Technology is prohibited.
 
 #include "audio.h"
 
+// get the singleton instance
 AudioHandler& AudioHandler::getInstance() {
 	static AudioHandler instance;
 	return instance;
 }
 
+// check for FMOD errors (future: can change to logging instead of exit(-1))
 void AudioHandler::FMODErrorCheck(FMOD_RESULT result) {
     if (result != FMOD_OK) {
         std::cerr << "FMOD error: " << FMOD_ErrorString(result) << std::endl;
@@ -32,6 +34,7 @@ void AudioHandler::FMODErrorCheck(FMOD_RESULT result) {
     }
 }
 
+// initialize the audio system and load sounds
 void AudioHandler::init() {
 	FMODErrorCheck(FMOD::System_Create(&system));
 
@@ -54,6 +57,7 @@ void AudioHandler::init() {
 	}
 }
 
+// update the audio system each frame and set inactive channel to nullptr
 void AudioHandler::update() {
 	if (system) {
 		system->update();
@@ -71,6 +75,7 @@ void AudioHandler::update() {
 
 }
 
+// release all sounds and shut down the audio system (will shutdown automatically when dtor called)
 void AudioHandler::shutdown() {
 	for (FMOD::Sound* sound : sounds) {
 		if (sound) {
@@ -90,6 +95,7 @@ void AudioHandler::shutdown() {
 
 
 /* Sound Management */
+// load the sound from file path, if loop is true, sound will loop until stopped (default false)
 bool AudioHandler::loadSound(soundID id, const std::string& filePath, bool loop) {
 	if (!system) {
 		std::cerr << "Error! Audio system not initialized..." << std::endl;
@@ -108,6 +114,7 @@ bool AudioHandler::loadSound(soundID id, const std::string& filePath, bool loop)
 	return true;
 }
 
+// play the sound, return the channel pointer if successful, nullptr if failed
 FMOD::Channel* AudioHandler::playSound(soundID id, float volume) {
 	if (!system) {
 		std::cerr << "Error! Audio system not initialized..." << std::endl;
@@ -130,6 +137,7 @@ FMOD::Channel* AudioHandler::playSound(soundID id, float volume) {
 	return channel;
 }
 
+// PAUSE / RESUME a particular sound
 void AudioHandler::toggleSoundPause(soundID id) {
 	size_t pos = static_cast<size_t>(id);
 	bool isPaused = false;
@@ -141,6 +149,7 @@ void AudioHandler::toggleSoundPause(soundID id) {
 	}
 }
 
+// pause / resume all sounds
 void AudioHandler::toggleAllSoundPause() {
 	for (size_t i = 0; i < channels.size(); ++i) {
 		if (channels[i]) {
@@ -151,6 +160,7 @@ void AudioHandler::toggleAllSoundPause() {
 	}
 }
 
+// check whether sound is paused
 bool AudioHandler::isSoundPaused(soundID id) {
 	size_t pos = static_cast<size_t>(id);
 	bool isPaused = false;
@@ -163,6 +173,7 @@ bool AudioHandler::isSoundPaused(soundID id) {
 	return false;
 }
 
+// stop a particular sound
 void AudioHandler::stopSound(soundID id) {
 	size_t pos = static_cast<size_t>(id);
 
@@ -172,6 +183,7 @@ void AudioHandler::stopSound(soundID id) {
 	}
 }
 
+// check whether channel still alive (ie. sound finished playing)
 bool AudioHandler::isSoundPlaying(soundID id) {
 	size_t pos = static_cast<size_t>(id);
 
@@ -183,6 +195,7 @@ bool AudioHandler::isSoundPlaying(soundID id) {
 	return false;
 }
 
+// mute specific sound
 void AudioHandler::muteSound(soundID id) {
 	size_t pos = static_cast<size_t>(id);
 	if (channels[pos]) {
@@ -190,6 +203,7 @@ void AudioHandler::muteSound(soundID id) {
 	}
 }
 
+// mute all sounds
 void AudioHandler::muteAllSound() {
 	for (size_t i = 0; i < channels.size(); ++i) {
 		if (channels[i]) {
@@ -198,6 +212,7 @@ void AudioHandler::muteAllSound() {
 	}
 }
 
+// unmute specific sound
 void AudioHandler::unmuteSound(soundID id) {
 	size_t pos = static_cast<size_t>(id);
 	if (channels[pos]) {
@@ -205,6 +220,7 @@ void AudioHandler::unmuteSound(soundID id) {
 	}
 }
 
+// unmute all sounds
 void AudioHandler::unmuteAllSound() {
 	for (size_t i = 0; i < channels.size(); ++i) {
 		if (channels[i]) {
@@ -213,6 +229,7 @@ void AudioHandler::unmuteAllSound() {
 	}
 }
 
+// increase by 0.1f
 void AudioHandler::increaseSoundVolume(soundID id) {
 	size_t pos = static_cast<size_t>(id);
 	if (channels[pos]) {
@@ -224,6 +241,7 @@ void AudioHandler::increaseSoundVolume(soundID id) {
 	}
 }
 
+// decrease by 0.1f
 void AudioHandler::decreaseSoundVolume(soundID id) {
 	size_t pos = static_cast<size_t>(id);
 	if (channels[pos]) {
@@ -235,6 +253,7 @@ void AudioHandler::decreaseSoundVolume(soundID id) {
 	}
 }
 
+// set volume of a sound to a specific value between 0.0f (muted) to 1.0f (full)
 void AudioHandler::setSoundVolume(soundID id, float volume) {
 	size_t pos = static_cast<size_t>(id);
 
@@ -242,6 +261,7 @@ void AudioHandler::setSoundVolume(soundID id, float volume) {
 		FMODErrorCheck(channels[pos]->setVolume(volume));
 }
 
+// set a specific pitch between 0.5f (half speed) to 2.0f (double speed)
 void AudioHandler::setSoundpitch(soundID id, float pitch) {
 	size_t pos = static_cast<size_t>(id);
 	if (channels[pos])
@@ -249,6 +269,7 @@ void AudioHandler::setSoundpitch(soundID id, float pitch) {
 }
 
 /* HELPER FUNCTION */
+// helper function to convert soundID to file path
 std::string AudioHandler::soundIDToFilePath(soundID id) {
 	// for now file paths are hardcoded, to change once deserialization is implemented
 	switch (id) {
