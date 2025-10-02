@@ -24,14 +24,13 @@ Technology is prohibited.
 #include <string>
 
 namespace UI{
-    extern std::vector<std::string> debugMessages; //not sure if this needs to be change
+	extern std::vector<std::string> debugMessages;
     enum class ShapeType { Leaves, Bullet };
     extern float xAdd, yAdd; //temp
 
     void drawDemo();
     void drawControls(std::vector<Collision::Circle>& circles);
-	//void drawDebug(std::vector<std::string> debugMessages);
-    //void drawDebug();// std::vector<std::string> debugMessages);
+	void drawDebug();
     void shapeControl(Transform& t1, Transform& t2);
     //void dockingSetUp();
 }

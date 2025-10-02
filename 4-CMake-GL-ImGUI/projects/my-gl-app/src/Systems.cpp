@@ -280,7 +280,8 @@ void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime) {
 			//std::cout << object << " has input component\n";
 			//bullet
 			if (InputHandler::isKeyTriggered(GLFW_KEY_SPACE)) {
-				std::cout << "bullet is spawned\n";
+				//std::cout << "bullet is spawned\n";
+				UI::debugMessages.push_back("bullet is spawned");
 				static int bulletCount = 0;
 
 				Transform* t = bullet->getComponent<Transform>();
@@ -300,7 +301,8 @@ void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime) {
 
 			// Jump
 			if (InputHandler::isKeyTriggered(GLFW_KEY_B) && physics->onGround){// && physics->onGround) {
-				std::cout << "player is jumping\n";
+				//std::cout << "player is jumping\n";
+				UI::debugMessages.push_back("player is jumping");
 				physics->velY = physics->jumpForce;
 				//physics->velX = physics->Speed;
 				physics->onGround = false;
@@ -358,7 +360,8 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 							obj2V->velX = obj2Vel.x;
 							obj2V->velY = obj2Vel.y;
 
-							std::cout << "Collision detected between Object.\n";
+							//std::cout << "Collision detected between Object.\n";
+							UI::debugMessages.push_back("Collision detected between Object.\n");
 						}
 					}
 				}
@@ -382,7 +385,7 @@ void UISystem::update(GameObjectManager& manager, std::vector<Collision::Circle>
 	UI::drawControls(circles);
 
 	//debug message
-	//UI::drawDebug(UI::debugMessages);
+	UI::drawDebug();
 
 	Transform* leavesT = gameObjects[0]->getComponent<Transform>();
 	Transform* bulletT = gameObjects[2]->getComponent<Transform>();

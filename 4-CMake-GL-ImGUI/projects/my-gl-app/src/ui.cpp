@@ -18,7 +18,7 @@ Technology is prohibited.
 #include "ui.h"
 
 namespace UI {
-    //std::vector<std::string> debugMessages; //not sure if this needs to be change
+    std::vector<std::string> debugMessages;
     float xAdd = 0.0f, yAdd = 0.0f;
 
     void drawDemo() {
@@ -39,21 +39,19 @@ namespace UI {
             circles.emplace_back(Collision::Circle({ UI::xAdd, UI::yAdd }, 5.0f));
             UI::xAdd++;
             UI::yAdd++;
-			//debugMessages.push_back("Added a circle. Total circles: " + std::to_string(circles.size()));
-			std::cout << "Added a circle. Total circles: " << circles.size() << std::endl;
+			debugMessages.push_back("Added a circle. Total circles: " + std::to_string(circles.size()));
         }
         if (!circles.empty() && ImGui::Button("Remove Last Circle")) {
             circles.pop_back();
             UI::xAdd--;
             UI::yAdd--;
-            //debugMessages.push_back("Removed a circle. Total circles: " + std::to_string(circles.size()));
-			std::cout << "Removed a circle. Total circles: " << circles.size() << std::endl;
+            debugMessages.push_back("Removed a circle. Total circles: " + std::to_string(circles.size()));
         }
         ImGui::Separator();
         for (size_t i = 0; i < circles.size(); i++) {
             ImGui::Text("Circle %d", static_cast<int>(i));
 
-            // Unique IDs for sliders without std::to_string
+            //unique IDs for sliders without std::to_string
             ImGui::PushID(static_cast<int>(i));
 
             ImGui::SliderFloat2("Center",
@@ -67,10 +65,9 @@ namespace UI {
     }
 
     //debugging window
-    /*void drawDebug(std::vector<std::string> debugMessages) {
+    void drawDebug() {
         ImGui::Begin("Debug Info");
         ImGui::Text("This is a debug window.");
-        //ImGui::Text("%s", messages.c_str());
 
         for (const auto& msg : debugMessages) {
             ImGui::Text("%s", msg.c_str());
@@ -81,7 +78,7 @@ namespace UI {
             ImGui::SetScrollHereY(1.0f);
 
         ImGui::End();
-	}*/
+	}
 
     //shape control
     void shapeControl(Transform& t1, Transform& t2) {
