@@ -301,7 +301,7 @@ void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime) {
 			}
 
 			// Jump
-			if (InputHandler::isKeyTriggered(GLFW_KEY_B) && physics->onGround){// && physics->onGround) {
+			if (InputHandler::isKeyTriggered(GLFW_KEY_B)){// && physics->onGround) {
 				//std::cout << "player is jumping\n";
 				UI::debugMessages.push_back("player is jumping");
 				physics->velY = physics->jumpForce;
