@@ -393,10 +393,11 @@ void UISystem::update(GameObjectManager& manager, std::vector<Collision::Circle>
 	Transform* bulletT = gameObjects[2]->getComponent<Transform>();
 	UI::shapeControl(*leavesT, *bulletT);
 
+	glDisable(GL_DEPTH_TEST); //disable depth testing so that when i render the circle its infront of the platform
 	//imgui rendering..copied from render::update
-	for (const auto& circle : circles) { // <-- your std::vector<Collision::Circle>
-		const Vector2D& c = circle.getCenter();
-		float r = circle.getRadius();
+	for (const auto& circle : circles) { 
+		const Vector2D& c = circle.getCenter(); //get center
+		float r = circle.getRadius(); //get radius
 
 		glm::mat4 mdlWorld = glm::mat4(1.0f);
 		mdlWorld = glm::translate(mdlWorld, glm::vec3(c.x, c.y, 0.0f));
@@ -411,15 +412,12 @@ void UISystem::update(GameObjectManager& manager, std::vector<Collision::Circle>
 		GLint hasTex = glGetUniformLocation(renderer::shdr_pgm, "uHasTex");
 		glUniform1i(hasTex, 0);
 
-		// optional: wireframe for debug
-		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-		glLineWidth(2.0f);
-
 		glDrawArrays(model.primitive_type, 0, model.draw_cnt);
 
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 		glBindVertexArray(0);
 	}
+	glEnable(GL_DEPTH_TEST); //re-enable depth testing for other systems
 
 	//ImGui::ShowMetricsWindow(); //for debug
 }
