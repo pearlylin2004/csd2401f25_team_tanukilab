@@ -12,6 +12,10 @@ without the prior written consent of DigiPen Institute of
 Technology is prohibited.
 */
 /* End Header **************************************************************************/
+#ifdef _WIN32
+#define NOMINMAX
+#include <windows.h>
+#endif
 #include "debug.h"
 #include <sstream>
 #include <iomanip>
@@ -23,10 +27,7 @@ Technology is prohibited.
 #include <deque>
 #include <iostream>
 
-#ifdef _WIN32
-#define NOMINMAX
-#include <windows.h>
-#endif
+
 
 // ======================================================================================
 // Internal helpers (anonymous namespace): thread-safe file append + time formatting
