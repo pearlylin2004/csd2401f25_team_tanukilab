@@ -6,7 +6,7 @@ collision
 
 object platform
 renderer circle 0
-transform 0 0 0.0 1 50 50 0 
+transform 0 0 -0.001 1 50 50 0 
 physics 1 1
 
 object bullet
