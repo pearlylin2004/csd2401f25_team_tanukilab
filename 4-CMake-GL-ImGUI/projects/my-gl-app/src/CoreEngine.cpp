@@ -1,16 +1,17 @@
 /* Start Header ************************************************************************/
 /*!
 \file		CoreEngine.cpp
-\author 	Seow Sin Le, s.sinle, 2401084, 70%
-\author     Hugo Low Ren Hao, low.h, 2402272, 10%
+\author 	Seow Sin Le, s.sinle, 2401084, 60%
+\author     Hugo Low Ren Hao, low.h, 2402272, 20%
 \author     Tan Chee Qing, cheeqing.tan, 2401486, 10%
-\author     Varick, 10%
+\author     Varick Teo, v.teo, 2403417, 10%
 \par        s.sinle@digipen.edu
 \par        low.h@digipen.edu
 \par        cheeqing.tan@digipen.edu
-\par
+\par        v.teo@digipen.edu
 \date		October, 1, 2025
-\brief		Implementation for the CoreEngine class.
+\brief		Implementation for the CoreEngine class. The CoreEngine is responsible for 
+            Initialisation and Shutdown, Game Loop Execution and System Updates
     
 Copyright (C) 2025 DigiPen Institute of Technology.
 Reproduction or disclosure of this file or its contents
@@ -82,6 +83,7 @@ void CoreEngine::Init() {
     ImGui::CreateContext();
     ImGuiIO& io = ImGui::GetIO(); (void)io;
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+    //io.ConfigFlags |= ImGuiConfigFlags_DockingEnable; //docking
     ImGui::StyleColorsDark();
     ImGui_ImplGlfw_InitForOpenGL(m_window, true);
     ImGui_ImplOpenGL3_Init("#version 450");
@@ -139,6 +141,19 @@ void CoreEngine::Update(float deltaTime) {
 		m_stepReq = true;
 	}
 
+	//for clonigng player2
+    if (InputHandler::isKeyTriggered(GLFW_KEY_C)) {
+        static int cloneCount = 1; // Use a static counter for unique names
+        std::string newName = "player2_clone_" + std::to_string(cloneCount++);
+        GameObject* newObject = m_manager->CloneGameObject("player2", newName);
+
+        std::cout << newName << " created.\n";
+
+        Transform* newTransform = newObject->getComponent<Transform>();
+        newTransform->y += 1.5f * (static_cast<float>(cloneCount) - 1); // Offset the new clone's position
+
+    }
+
     //imgui
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplGlfw_NewFrame();
@@ -147,6 +162,8 @@ void CoreEngine::Update(float deltaTime) {
     // Update all systems in order
     m_inputSystem->update(*m_manager, deltaTime);
     m_collisionSystem->update(*m_manager, deltaTime);
+    m_renderSystem->update(*m_manager);
+    m_uiSystem->update(*m_manager, circles);
 
 	// Physics system update depends on step mode
     if (!m_stepMode) {
@@ -158,7 +175,6 @@ void CoreEngine::Update(float deltaTime) {
 	}
 
     m_renderSystem->update(*m_manager);
-    m_uiSystem->update(*m_manager, deltaTime);
 
     //render ImGui
     ImGui::Render();

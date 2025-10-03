@@ -13,11 +13,7 @@ Technology is prohibited.
 */
 /* End Header **************************************************************************/
 #include "config.h"
-#include <fstream>
-#include <sstream>
-#include <unordered_map>
-#include <algorithm>
-#include <cctype>
+
 
 // -----------------------------------------------------------------------------
 // Global configuration variables (default values)

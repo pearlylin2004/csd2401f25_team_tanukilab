@@ -1,8 +1,8 @@
 /* Start Header ************************************************************************/
 /*!
 \file        GameObjectManager.h
-\author      Seow Sin Le, s.sinle, 2401084, 40%
-\author 	 Hugo Low Ren Hao, low.h, 2402272, 60%
+\author      Seow Sin Le, s.sinle, 2401084, 20%
+\author 	 Hugo Low Ren Hao, low.h, 2402272, 80%
 \par         s.sinle@digipen.edu
 \par		 low.h@digipen.edu
 \date        October, 1st, 2025
@@ -32,6 +32,9 @@ public:
 
 	//use this when objects need to interact with each other
 	GameObject* getGameObject(const std::string& name);
+
+	//clone an existing object
+	GameObject* CloneGameObject(const std::string& sourceName, const std::string& newName);
 
 	//used for all the component systems
 	void getAllGameObjects(std::vector<GameObject*>& gameObjects);

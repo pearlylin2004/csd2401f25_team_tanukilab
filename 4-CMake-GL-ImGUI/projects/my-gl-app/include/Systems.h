@@ -1,9 +1,9 @@
 /* Start Header ************************************************************************/
 /*!
 \file        Systems.h
-\author      Seow Sin Le, s.sinle, 2401084, 20%
-\author 	 Hugo Low Ren Hao, low.h, 2402272, 20%
-\author 	 Pearly Lin Lee Ying, p.lin, 2401591, 10%
+\author      Seow Sin Le, s.sinle, 2401084, 40%
+\author 	 Hugo Low Ren Hao, low.h, 2402272, 40%
+\author 	 Pearly Lin Lee Ying, p.lin, 2401591, 20%
 \par         s.sinle@digipen.edu
 \par		 low.h@digipen.edu
 \par		 p.lin@digipen.edu
@@ -103,8 +103,8 @@ public:
 // UI system - handles UI rendering and interactions using ImGui
 class UISystem {
 public:
-	void update(GameObjectManager& manager, const float& deltaTime);
+	void update(GameObjectManager& manager, std::vector<Collision::Circle>& circles);
 private:
-	std::vector<std::string> debugMessages; //for messages
-	std::vector<Collision::Circle> circles; 
+	//std::vector<std::string> debugMessages; //for messages
+	//std::vector<Collision::Circle> circles; 
 };

@@ -119,12 +119,13 @@ target_link_libraries(my-gl-app PRIVATE
 	fmodL_vc.lib)
 
 add_custom_command(TARGET my-gl-app POST_BUILD
-	COMMAND ${CMAKE_COMMAND} -E copy
-		"${CMAKE_CURRENT_LIST_DIR}/projects/my-gl-app/lib/fmod.dll"
-		"${CMAKE_CURRENT_LIST_DIR}/build/Debug/fmod.dll"
+    COMMAND ${CMAKE_COMMAND} -E copy
+        "${CMAKE_CURRENT_LIST_DIR}/projects/my-gl-app/lib/fmod.dll"
+        "$<TARGET_FILE_DIR:my-gl-app>/fmod.dll"
 
-	COMMAND ${CMAKE_COMMAND} -E copy
-		"${CMAKE_CURRENT_LIST_DIR}/projects/my-gl-app/lib/fmodL.dll"
-		"${CMAKE_CURRENT_LIST_DIR}/build/Debug/fmodL.dll"
-		)
+    COMMAND ${CMAKE_COMMAND} -E copy
+        "${CMAKE_CURRENT_LIST_DIR}/projects/my-gl-app/lib/fmodL.dll"
+        "$<TARGET_FILE_DIR:my-gl-app>/fmodL.dll"
+)
+
 # ======================= END AUTO CONFIGURATION =========================

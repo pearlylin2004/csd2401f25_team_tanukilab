@@ -26,7 +26,8 @@ void renderer::init(int w, int h)
 {
 	cam.init(w, h);
 	models.push_back(setup_square(glm::vec3(1.f, 1.f, 1.f)));
-	models.push_back(setup_circle(glm::vec3(0.5f, 0.5f, 0.5f), 20));
+	models.push_back(setup_circle(glm::vec3(1.f, 0.5f, 0.5f), 20));
+	models.push_back(setup_circle(glm::vec3(0.f, 0.f, 0.f), 20));
 	setup_shdrpgm();
 }
 
@@ -162,8 +163,6 @@ void renderer::camera::init(int w, int h)
 	zoom = 10;
 	campos = glm::vec3(0, 0, 0);
 	up = glm::vec3(0, 1, 0);
-
-
 }
 
 void renderer::camera::update()
@@ -171,6 +170,3 @@ void renderer::camera::update()
 	view = glm::lookAt(campos, glm::vec3(0, 0, -1), up);
 	proj = glm::ortho(-zoom * ar, zoom * ar, -zoom, zoom, -1.f, 1.f);
 }
-
-
-

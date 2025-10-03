@@ -19,6 +19,7 @@ Technology is prohibited.
 /* End Header **************************************************************************/
 
 #include "audio.h"
+#include <../lib/FMOD/fmod_errors.h>
 
 // get the singleton instance
 AudioHandler& AudioHandler::getInstance() {

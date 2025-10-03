@@ -18,11 +18,11 @@ Technology is prohibited.
 #include "ui.h"
 
 namespace UI {
-    std::vector<std::string> debugMessages; //not sure if this needs to be change
+    std::vector<std::string> debugMessages;
+    float xAdd = 0.0f, yAdd = 0.0f;
 
     void drawDemo() {
-        ImGui::Begin("OpenGL 3.3 Demo");
-        ImGui::Text("Hello, ImGui!");
+        ImGui::Begin("FPS display");
         ImGui::Text("Application average %.3f ms/frame (%.1f FPS)",
             1000.0f / ImGui::GetIO().Framerate,
             ImGui::GetIO().Framerate);
@@ -33,19 +33,24 @@ namespace UI {
     void drawControls(std::vector<Collision::Circle>& circles) {
         ImGui::Begin("Controls");
         ImGui::Text("Player Controls");
+		
         if (ImGui::Button("Add Circle")) {
-            circles.emplace_back(Collision::Circle({ 0.0f, 0.0f }, 50.0f));
+            circles.emplace_back(Collision::Circle({ UI::xAdd, UI::yAdd }, 5.0f));
+            UI::xAdd++;
+            UI::yAdd++;
 			debugMessages.push_back("Added a circle. Total circles: " + std::to_string(circles.size()));
         }
         if (!circles.empty() && ImGui::Button("Remove Last Circle")) {
             circles.pop_back();
+            UI::xAdd--;
+            UI::yAdd--;
             debugMessages.push_back("Removed a circle. Total circles: " + std::to_string(circles.size()));
         }
         ImGui::Separator();
         for (size_t i = 0; i < circles.size(); i++) {
             ImGui::Text("Circle %d", static_cast<int>(i));
 
-            // Unique IDs for sliders without std::to_string
+            //unique IDs for sliders without std::to_string
             ImGui::PushID(static_cast<int>(i));
 
             ImGui::SliderFloat2("Center",
@@ -59,10 +64,9 @@ namespace UI {
     }
 
     //debugging window
-    void drawDebug() {//std::vector<std::string> debugMessages) {
+    void drawDebug() {
         ImGui::Begin("Debug Info");
         ImGui::Text("This is a debug window.");
-        //ImGui::Text("%s", messages.c_str());
 
         for (const auto& msg : debugMessages) {
             ImGui::Text("%s", msg.c_str());
@@ -89,6 +93,7 @@ namespace UI {
 				currentShape = ShapeType::Bullet;
             }
 
+			//check which shape is selected
             Transform* t = (currentShape == ShapeType::Leaves) ? &t1 : &t2;
             
             //position 
@@ -126,4 +131,34 @@ namespace UI {
         }
         ImGui::End();
     }
+
+	//docking setup
+    /*void dockingSetUp() {
+        static ImGuiDockNodeFlags dockspace_flags = ImGuiDockNodeFlags_None;
+
+        ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoDocking
+            | ImGuiWindowFlags_NoTitleBar
+            | ImGuiWindowFlags_NoCollapse
+            | ImGuiWindowFlags_NoResize
+            | ImGuiWindowFlags_NoMove
+            | ImGuiWindowFlags_NoBringToFrontOnFocus
+            | ImGuiWindowFlags_NoNavFocus
+            | ImGuiWindowFlags_NoBackground;
+
+        ImGuiViewport* viewport = ImGui::GetMainViewport();
+        ImGui::SetNextWindowPos(viewport->Pos);
+        ImGui::SetNextWindowSize(viewport->Size);
+        ImGui::SetNextWindowViewport(viewport->ID);
+
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
+
+        ImGui::Begin("DockSpace Demo", nullptr, window_flags);
+        ImGui::PopStyleVar(2);
+
+        ImGuiID dockspace_id = ImGui::GetID("MyDockSpace");
+        ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), dockspace_flags);
+
+        ImGui::End();
+    }*/
 }
