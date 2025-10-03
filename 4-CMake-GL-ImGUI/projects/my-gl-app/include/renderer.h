@@ -21,7 +21,6 @@ Technology is prohibited.
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <array>
-#include "openGLwindow.h"
 #include <map>
 #include <input.h>
 
