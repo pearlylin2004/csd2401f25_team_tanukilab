@@ -12,22 +12,8 @@ without the prior written consent of DigiPen Institute of
 Technology is prohibited.
 */
 /* End Header **************************************************************************/
-#ifdef _WIN32
-#define NOMINMAX
-#include <windows.h>
-#endif
+
 #include "debug.h"
-#include <sstream>
-#include <iomanip>
-#include <fstream>
-#include <csignal>
-#include <mutex>
-#include <ctime>
-#include <string>
-#include <deque>
-#include <iostream>
-
-
 
 // ======================================================================================
 // Internal helpers (anonymous namespace): thread-safe file append + time formatting
