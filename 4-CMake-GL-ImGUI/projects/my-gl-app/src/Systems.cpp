@@ -59,6 +59,7 @@ void InputSystem::update(GameObjectManager& manager, const float& deltaTime) {
 					velocity->velX = input->moveSpeed;
 				}
 
+
 				// Press F9 to simulate a failure (for crash logger)
 				if (InputHandler::isKeyTriggered(GLFW_KEY_F9)) {
 					throw std::runtime_error("F9 test: simulated failure in update()");
