@@ -123,11 +123,13 @@ void RenderSystem::update(GameObjectManager& manager) {
 				GLint rotcenter = glGetUniformLocation(renderer::shdr_pgm, "uMcn");
 				GLint hastex = glGetUniformLocation(renderer::shdr_pgm, "uHasTex");
 				GLint wireframe = glGetUniformLocation(renderer::shdr_pgm, "uIsWireframe");
+				GLint background = glGetUniformLocation(renderer::shdr_pgm, "uIsBackground");
 				glUniform1i(texid, 0);
 				glUniformMatrix2fv(rotmat, 1, GL_FALSE, glm::value_ptr(texRot));
 				glUniform2fv(rotcenter, 1, glm::value_ptr(rotationCenter));
 				glUniform1i(hastex, static_cast<int>(render->hasTex));
 				glUniform1i(wireframe, static_cast<int>(render->wireframe));
+				glUniform1i(background, render->isBackground);
 
 				if (render->modelRef.shape == shape::square)
 					glDrawElements(GL_TRIANGLES, render->modelRef.elem_cnt, GL_UNSIGNED_SHORT, nullptr);
@@ -180,11 +182,13 @@ void RenderSystem::update(GameObjectManager& manager) {
 				GLint rotcenter = glGetUniformLocation(renderer::shdr_pgm, "uMcn");
 				GLint hastex = glGetUniformLocation(renderer::shdr_pgm, "uHasTex");
 				GLint wireframe = glGetUniformLocation(renderer::shdr_pgm, "uIsWireframe");
+				GLint background = glGetUniformLocation(renderer::shdr_pgm, "uIsBackground");
 				glUniform1i(texid, 0);
 				glUniformMatrix2fv(rotmat, 1, GL_FALSE, glm::value_ptr(texRot));
 				glUniform2fv(rotcenter, 1, glm::value_ptr(rotationCenter));
 				glUniform1i(hastex, static_cast<int>(render->hasTex));
 				glUniform1i(wireframe, 0);
+				glUniform1i(background, render->isBackground);
 
 				if (render->modelRef.shape == shape::square)
 				{

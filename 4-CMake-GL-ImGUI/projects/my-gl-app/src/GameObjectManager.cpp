@@ -92,6 +92,7 @@ void GameObjectManager::init()
 			{
 				renderptr->modelRef = renderer::models[static_cast<int>(shape::circle)];
 			}
+			is >> renderptr->isBackground;
 			is >> renderptr->hasTex;
 			if (renderptr->hasTex == true)
 			{
