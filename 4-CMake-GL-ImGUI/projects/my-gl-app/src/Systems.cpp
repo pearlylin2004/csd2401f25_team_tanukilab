@@ -372,7 +372,7 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 	}
 }
 
-//for imgu
+//for imgui
 void UISystem::update(GameObjectManager& manager, std::vector<Collision::Circle>& circles) {
 	//docking
 	//UI::dockingSetUp();
@@ -403,7 +403,7 @@ void UISystem::update(GameObjectManager& manager, std::vector<Collision::Circle>
 		mdlWorld = glm::translate(mdlWorld, glm::vec3(c.x, c.y, 0.0f));
 		mdlWorld = glm::scale(mdlWorld, glm::vec3(r, r, 1.0f));
 
-		const auto& model = renderer::models[1]; //circle mesh
+		const auto& model = renderer::models[2]; //circle mesh
 		glBindVertexArray(model.vaoid);
 
 		GLint vTransformLoc = glGetUniformLocation(renderer::shdr_pgm, "M");
