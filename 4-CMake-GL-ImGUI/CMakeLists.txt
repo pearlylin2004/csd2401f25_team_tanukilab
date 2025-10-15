@@ -4,7 +4,7 @@ cmake_minimum_required(VERSION 2.8...3.13)
 # Set the CMake policy version (this enables all policies up to CMake 3.5)
 cmake_policy(VERSION 3.5)
 
-project(GlWithCMake)
+project(WaterBound)
 
 # Set the directory where custom CMake modules are stored
 set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
