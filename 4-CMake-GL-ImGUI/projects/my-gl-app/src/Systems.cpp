@@ -381,7 +381,7 @@ void UISystem::update(GameObjectManager& manager, std::vector<Collision::Circle>
 	manager.getAllGameObjects(gameObjects);
 
 	//demo
-	UI::drawDemo();
+	UI::drawPerformance();
 
 	//input circles
 	UI::drawControls(circles);

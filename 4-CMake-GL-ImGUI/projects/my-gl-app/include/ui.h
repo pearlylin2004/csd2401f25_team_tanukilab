@@ -28,7 +28,7 @@ namespace UI{
     enum class ShapeType { Leaves, Bullet };
     extern float xAdd, yAdd; //temp
 
-    void drawDemo();
+    void drawPerformance();
     void drawControls(std::vector<Collision::Circle>& circles);
 	void drawDebug();
     void shapeControl(Transform& t1, Transform& t2);

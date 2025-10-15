@@ -104,7 +104,4 @@ public:
 class UISystem {
 public:
 	void update(GameObjectManager& manager, std::vector<Collision::Circle>& circles);
-private:
-	//std::vector<std::string> debugMessages; //for messages
-	//std::vector<Collision::Circle> circles; 
 };
