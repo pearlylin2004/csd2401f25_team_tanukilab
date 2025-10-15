@@ -105,27 +105,27 @@ foreach(child ${children})
     endif()
 endforeach()
 
-target_include_directories(my-gl-app PRIVATE
-	${CMAKE_CURRENT_LIST_DIR}/projects/my-gl-app/assets)
+target_include_directories(WaterBound PRIVATE
+	${CMAKE_CURRENT_LIST_DIR}/projects/WaterBound/assets)
 
-target_include_directories(my-gl-app PRIVATE
-	${CMAKE_CURRENT_LIST_DIR}/projects/my-gl-app/lib/FMOD)
+target_include_directories(WaterBound PRIVATE
+	${CMAKE_CURRENT_LIST_DIR}/projects/WaterBound/lib/FMOD)
 
-target_link_directories(my-gl-app PRIVATE
-	${CMAKE_CURRENT_LIST_DIR}/projects/my-gl-app/lib)
+target_link_directories(WaterBound PRIVATE
+	${CMAKE_CURRENT_LIST_DIR}/projects/WaterBound/lib)
 
-target_link_libraries(my-gl-app PRIVATE
+target_link_libraries(WaterBound PRIVATE
 	fmod_vc.lib
 	fmodL_vc.lib)
 
-add_custom_command(TARGET my-gl-app POST_BUILD
+add_custom_command(TARGET WaterBound POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy
-        "${CMAKE_CURRENT_LIST_DIR}/projects/my-gl-app/lib/fmod.dll"
-        "$<TARGET_FILE_DIR:my-gl-app>/fmod.dll"
+        "${CMAKE_CURRENT_LIST_DIR}/projects/WaterBound/lib/fmod.dll"
+        "$<TARGET_FILE_DIR:WaterBound>/fmod.dll"
 
     COMMAND ${CMAKE_COMMAND} -E copy
-        "${CMAKE_CURRENT_LIST_DIR}/projects/my-gl-app/lib/fmodL.dll"
-        "$<TARGET_FILE_DIR:my-gl-app>/fmodL.dll"
+        "${CMAKE_CURRENT_LIST_DIR}/projects/WaterBound/lib/fmodL.dll"
+        "$<TARGET_FILE_DIR:WaterBound>/fmodL.dll"
 )
 
 # ======================= END AUTO CONFIGURATION =========================
