@@ -372,6 +372,25 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 	}
 }
 
+void UISystem::init(GLFWwindow* window) {
+	// --- ImGui Setup ---
+	IMGUI_CHECKVERSION();
+	ImGui::CreateContext();
+	ImGuiIO& io = ImGui::GetIO(); (void)io;
+	io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+	//io.ConfigFlags |= ImGuiConfigFlags_DockingEnable; //docking
+	ImGui::StyleColorsDark();
+	ImGui_ImplGlfw_InitForOpenGL(window, true);
+	ImGui_ImplOpenGL3_Init("#version 450");
+}
+
+UISystem::~UISystem() {
+	// cleanup all imgui stuff here
+	ImGui_ImplOpenGL3_Shutdown();
+	ImGui_ImplGlfw_Shutdown();
+	ImGui::DestroyContext();
+}
+
 //for imgui
 void UISystem::update(GameObjectManager& manager, std::vector<Collision::Circle>& circles) {
 	//docking
@@ -379,6 +398,10 @@ void UISystem::update(GameObjectManager& manager, std::vector<Collision::Circle>
 
 	std::vector<GameObject*> gameObjects;
 	manager.getAllGameObjects(gameObjects);
+
+	ImGui_ImplOpenGL3_NewFrame();
+	ImGui_ImplGlfw_NewFrame();
+	ImGui::NewFrame();
 
 	//demo
 	UI::drawPerformance();
@@ -420,4 +443,6 @@ void UISystem::update(GameObjectManager& manager, std::vector<Collision::Circle>
 	glEnable(GL_DEPTH_TEST); //re-enable depth testing for other systems
 
 	//ImGui::ShowMetricsWindow(); //for debug
+	ImGui::Render();
+	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 }

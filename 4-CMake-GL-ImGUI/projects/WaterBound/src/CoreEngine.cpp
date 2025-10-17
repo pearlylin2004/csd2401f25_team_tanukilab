@@ -77,16 +77,17 @@ void CoreEngine::Init() {
 
     m_manager->init();
 	m_renderSystem->init(*m_manager);
+	m_uiSystem->init(m_window);
 
-    // --- ImGui Setup ---
-    IMGUI_CHECKVERSION();
-    ImGui::CreateContext();
-    ImGuiIO& io = ImGui::GetIO(); (void)io;
-    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
-    //io.ConfigFlags |= ImGuiConfigFlags_DockingEnable; //docking
-    ImGui::StyleColorsDark();
-    ImGui_ImplGlfw_InitForOpenGL(m_window, true);
-    ImGui_ImplOpenGL3_Init("#version 450");
+    //// --- ImGui Setup ---
+    //IMGUI_CHECKVERSION();
+    //ImGui::CreateContext();
+    //ImGuiIO& io = ImGui::GetIO(); (void)io;
+    //io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+    ////io.ConfigFlags |= ImGuiConfigFlags_DockingEnable; //docking
+    //ImGui::StyleColorsDark();
+    //ImGui_ImplGlfw_InitForOpenGL(m_window, true);
+    //ImGui_ImplOpenGL3_Init("#version 450");
 
     audio.init();
 
@@ -146,9 +147,9 @@ void CoreEngine::Update(float deltaTime) {
     }
 
     //imgui
-    ImGui_ImplOpenGL3_NewFrame();
+    /*ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplGlfw_NewFrame();
-    ImGui::NewFrame();
+    ImGui::NewFrame();*/
 
     // Update all systems in order
     m_inputSystem->update(*m_manager, deltaTime);
@@ -168,14 +169,14 @@ void CoreEngine::Update(float deltaTime) {
     m_renderSystem->update(*m_manager);
 
     //render ImGui
-    ImGui::Render();
-    ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+    /*ImGui::Render();
+    ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());*/
 }
 
 void CoreEngine::Shutdown() {
-    ImGui_ImplOpenGL3_Shutdown();
+    /*ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplGlfw_Shutdown();
-    ImGui::DestroyContext();
+    ImGui::DestroyContext();*/
     glfwDestroyWindow(m_window);
     glfwTerminate();
 }

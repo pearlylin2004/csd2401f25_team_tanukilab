@@ -103,5 +103,7 @@ public:
 // UI system - handles UI rendering and interactions using ImGui
 class UISystem {
 public:
+	void init(GLFWwindow* window);
+	~UISystem();
 	void update(GameObjectManager& manager, std::vector<Collision::Circle>& circles);
 };
