@@ -106,4 +106,8 @@ public:
 	void init(GLFWwindow* window);
 	~UISystem();
 	void update(GameObjectManager& manager, std::vector<Collision::Circle>& circles);
+
+private:
+	void dockingSetUp();
+	void renderMultipleViewPorts();
 };
