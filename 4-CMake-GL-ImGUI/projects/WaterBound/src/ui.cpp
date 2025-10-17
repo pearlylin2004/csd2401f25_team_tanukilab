@@ -106,18 +106,27 @@ namespace UI {
 
 			//check which shape is selected
             Transform* t = (currentShape == ShapeType::Leaves) ? &t1 : &t2;
+			ShapeDefaults& defaults = shapePresets[currentShape];
             
-            //position 
-            ImGui::SliderFloat("Position X", &t->x, -500.f, 500.f);
-            ImGui::SliderFloat("Position Y", &t->y, -500.f, 500.f);
+            if (ImGui::CollapsingHeader("Transform")) {
+                if (ImGui::TreeNode("Position")) {
+                    ImGui::SliderFloat("X", &t->x, defaults.posXRange.min, defaults.posXRange.max);
+                    ImGui::SliderFloat("Y", &t->y, defaults.posYRange.min, defaults.posYRange.max);
+                    ImGui::TreePop();
+                }
 
-            //rotation
-            ImGui::SliderFloat("Rotation", &t->rotation, 0.f, 360.f);
+                if (ImGui::TreeNode("Rotation")) {
+                    ImGui::SliderFloat("Angle", &t->rotation, defaults.rotRange.min, defaults.rotRange.max);
+                    ImGui::TreePop();
+                }
 
-            //scale
-            ImGui::SliderFloat("Scale X", &t->scaleX, 0.1f, 10.f);
-            ImGui::SliderFloat("Scale Y", &t->scaleY, 0.1f, 10.f);
-            ImGui::SliderFloat("Scale Z", &t->scaleZ, 0.1f, 10.f);
+                if (ImGui::TreeNode("Scale")) {
+                    ImGui::SliderFloat("X", &t->scaleX, defaults.scaleXRange.min, defaults.scaleXRange.max);
+                    ImGui::SliderFloat("Y", &t->scaleY, defaults.scaleYRange.min, defaults.scaleYRange.max);
+                    //ImGui::SliderFloat("Z", &t->scaleZ, 0.1f, 10.f);
+                    ImGui::TreePop();
+                }
+            }
 
             //reset
             if (ImGui::Button("Reset All")) {
