@@ -22,15 +22,48 @@ Technology is prohibited.
 #include <iostream>
 #include <vector>
 #include <string>
+#include <unordered_map>
 
 namespace UI{
 	extern std::vector<std::string> debugMessages;
-    enum class ShapeType { Leaves, Bullet };
     extern float xAdd, yAdd; //temp
 
+    enum class ShapeType { 
+        Leaves, 
+        Bullet 
+    };
+
+	struct Range {
+		float min;
+		float max;
+	};
+
+    struct ShapeDefaults {
+		float posX;
+		float posY;
+		float rotation;
+		float scaleX;
+		float scaleY;
+		float scaleZ;
+
+		// once json done, auto use this if not overriden by json
+		// consider having like some reusable RANGE for certain game obj?
+		// OPTIONAL slider ranges (min, max)
+		Range posXRange = { -15.f, 15.f };
+		Range posYRange = { -10.f, 10.f };
+		Range rotRange = { 0.f, 360.f };
+		Range scaleXRange = { 0.1f, 1.f };
+		Range scaleYRange = { 0.1f, 1.f };
+	};
+
+	extern std::unordered_map<ShapeType, ShapeDefaults> shapePresets;
+
+	// draw UI windows
     void drawPerformance();
     void drawControls(std::vector<Collision::Circle>& circles);
 	void drawDebug();
+
+	// edit shape windows
     void shapeControl(Transform& t1, Transform& t2);
     //void dockingSetUp();
 }

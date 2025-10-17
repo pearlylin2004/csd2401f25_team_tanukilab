@@ -21,6 +21,13 @@ namespace UI {
     std::vector<std::string> debugMessages;
     float xAdd = 0.0f, yAdd = 0.0f;
 
+    // temp, get ready to load from json in the future
+	std::unordered_map<ShapeType, ShapeDefaults> shapePresets = {
+		{ ShapeType::Leaves, { 0.0f, 0.0f, 0.0f, 5.0f, 5.0f, 5.0f,
+		{-20.f, 20.f}, {-20.f, 20.f}, {0.f, 100.f}, { 0.1f, 5.f }, { 0.1f, 5.f } } },
+		{ ShapeType::Bullet, { 0.0f, 0.0f, 0.5f, 0.5f, 0.5f, 0.0f } }
+	};
+
     void drawPerformance() {
         ImGui::Begin("Performance Display");
         //time frame:
@@ -112,10 +119,21 @@ namespace UI {
             ImGui::SliderFloat("Scale Y", &t->scaleY, 0.1f, 10.f);
             ImGui::SliderFloat("Scale Z", &t->scaleZ, 0.1f, 10.f);
 
-            //this need change cuz its hardcoded for now
             //reset
             if (ImGui::Button("Reset All")) {
-                if (currentShape == ShapeType::Leaves) {
+				if (shapePresets.find(currentShape) != shapePresets.end()) {
+					const ShapeDefaults& defaults = shapePresets[currentShape];
+					t->x = defaults.posX;
+					t->y = defaults.posY;
+					t->rotation = defaults.rotation;
+					t->scaleX = defaults.scaleX;
+					t->scaleY = defaults.scaleY;
+					t->scaleZ = defaults.scaleZ;
+				}
+                else {
+					debugMessages.push_back("No presets found for the selected shape.");
+                }
+                /*if (currentShape == ShapeType::Leaves) {
                     t->x = 0.0f;
                     t->y = 0.0f;
                     t->rotation = 0.0f;
@@ -130,7 +148,7 @@ namespace UI {
                     t->scaleX = 0.5f;
                     t->scaleY = 0.5f;
                     t->scaleZ = 0.0f;
-                }
+                }*/
             }
         }
         ImGui::End();
