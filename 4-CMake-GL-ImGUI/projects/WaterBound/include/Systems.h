@@ -43,6 +43,10 @@ public:
 class PhysicsSystem {
 public:
 	void update(GameObjectManager& manager, const float& deltaTime);
+
+private:
+	bool m_stepMode = false;
+	bool m_stepReq = false;
 };
 
 /*!***********************************************************************

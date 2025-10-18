@@ -264,6 +264,19 @@ GLuint RenderSystem::uploadtex(std::string const& filename, bool& isTransparent)
 
 // Physics system - updates position based on velocity and applies gravity
 void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime) {
+	// idk how physic programmer want to handle input for physics in the future
+	// so here is a simple implementation for toggling step-by-step mode
+	if (InputHandler::isComboKeyTriggered(GLFW_KEY_Z)) {
+		m_stepMode = !m_stepMode;
+	}
+	if (m_stepMode && InputHandler::isKeyTriggered(GLFW_KEY_Z)) {
+		m_stepReq = true;
+	}
+
+	// only update if NOT step-by-step physics debug mode or step requested
+	if (m_stepMode && !m_stepReq) return;
+	if (m_stepReq) m_stepReq = false; // reset step request after one update
+
 	std::vector<GameObject*> gameObjects;
 	manager.getAllGameObjects(gameObjects);
 
