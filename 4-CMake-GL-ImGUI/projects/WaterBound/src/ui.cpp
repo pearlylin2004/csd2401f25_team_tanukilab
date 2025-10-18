@@ -142,22 +142,6 @@ namespace UI {
                 else {
 					debugMessages.push_back("No presets found for the selected shape.");
                 }
-                /*if (currentShape == ShapeType::Leaves) {
-                    t->x = 0.0f;
-                    t->y = 0.0f;
-                    t->rotation = 0.0f;
-                    t->scaleX = 5.0f;
-                    t->scaleY = 5.0f;
-                    t->scaleZ = 5.0f;
-                }
-                else {
-                    t->x = 0.0f;
-                    t->y = 0.0f;
-                    t->rotation = 0.5f;
-                    t->scaleX = 0.5f;
-                    t->scaleY = 0.5f;
-                    t->scaleZ = 0.0f;
-                }*/
             }
         }
         ImGui::End();
