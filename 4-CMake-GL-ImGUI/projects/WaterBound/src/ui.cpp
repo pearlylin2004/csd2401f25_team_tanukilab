@@ -131,7 +131,6 @@ namespace UI {
             //reset
             if (ImGui::Button("Reset All")) {
 				if (shapePresets.find(currentShape) != shapePresets.end()) {
-					const ShapeDefaults& defaults = shapePresets[currentShape];
 					t->x = defaults.posX;
 					t->y = defaults.posY;
 					t->rotation = defaults.rotation;

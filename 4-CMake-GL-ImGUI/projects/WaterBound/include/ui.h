@@ -39,12 +39,12 @@ namespace UI{
 	};
 
     struct ShapeDefaults {
-		float posX;
-		float posY;
-		float rotation;
-		float scaleX;
-		float scaleY;
-		float scaleZ;
+		float posX = 0.f;
+		float posY = 0.f;
+		float rotation = 0.f;
+		float scaleX = 0.f;
+		float scaleY = 0.f;
+		float scaleZ = 0.f;
 
 		// once json done, auto use this if not overriden by json
 		// consider having like some reusable RANGE for certain game obj?
