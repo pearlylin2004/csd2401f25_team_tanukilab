@@ -427,8 +427,10 @@ void UISystem::update(GameObjectManager& manager, std::vector<Collision::Circle>
 	//demo
 	UI::drawPerformance();
 
+	// draw shapes
+	UI::drawShapes(manager);
 	//input circles
-	UI::drawControls(circles);
+	/*UI::drawControls(circles);*/
 
 	//debug message
 	UI::drawDebug();
@@ -437,31 +439,31 @@ void UISystem::update(GameObjectManager& manager, std::vector<Collision::Circle>
 	Transform* bulletT = gameObjects[2]->getComponent<Transform>();
 	UI::shapeControl(*leavesT, *bulletT);
 
-	glDisable(GL_DEPTH_TEST); //disable depth testing so that when i render the circle its infront of the platform
-	//imgui rendering..copied from render::update
-	for (const auto& circle : circles) { 
-		const Vector2D& c = circle.getCenter(); //get center
-		float r = circle.getRadius(); //get radius
+	//glDisable(GL_DEPTH_TEST); //disable depth testing so that when i render the circle its infront of the platform
+	////imgui rendering..copied from render::update
+	//for (const auto& circle : circles) { 
+	//	const Vector2D& c = circle.getCenter(); //get center
+	//	float r = circle.getRadius(); //get radius
 
-		glm::mat4 mdlWorld = glm::mat4(1.0f);
-		mdlWorld = glm::translate(mdlWorld, glm::vec3(c.x, c.y, 0.0f));
-		mdlWorld = glm::scale(mdlWorld, glm::vec3(r, r, 1.0f));
+	//	glm::mat4 mdlWorld = glm::mat4(1.0f);
+	//	mdlWorld = glm::translate(mdlWorld, glm::vec3(c.x, c.y, 0.0f));
+	//	mdlWorld = glm::scale(mdlWorld, glm::vec3(r, r, 1.0f));
 
-		const auto& model = renderer::models[2]; //circle mesh
-		glBindVertexArray(model.vaoid);
+	//	const auto& model = renderer::models[2]; //circle mesh
+	//	glBindVertexArray(model.vaoid);
 
-		GLint vTransformLoc = glGetUniformLocation(renderer::shdr_pgm, "M");
-		glUniformMatrix4fv(vTransformLoc, 1, GL_FALSE, glm::value_ptr(mdlWorld));
+	//	GLint vTransformLoc = glGetUniformLocation(renderer::shdr_pgm, "M");
+	//	glUniformMatrix4fv(vTransformLoc, 1, GL_FALSE, glm::value_ptr(mdlWorld));
 
-		GLint hasTex = glGetUniformLocation(renderer::shdr_pgm, "uHasTex");
-		glUniform1i(hasTex, 0);
+	//	GLint hasTex = glGetUniformLocation(renderer::shdr_pgm, "uHasTex");
+	//	glUniform1i(hasTex, 0);
 
-		glDrawArrays(model.primitive_type, 0, model.draw_cnt);
+	//	glDrawArrays(model.primitive_type, 0, model.draw_cnt);
 
-		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-		glBindVertexArray(0);
-	}
-	glEnable(GL_DEPTH_TEST); //re-enable depth testing for other systems
+	//	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	//	glBindVertexArray(0);
+	//}
+	//glEnable(GL_DEPTH_TEST); //re-enable depth testing for other systems
 
 	//ImGui::ShowMetricsWindow(); //for debug
 	ImGui::Render();

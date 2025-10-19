@@ -19,6 +19,7 @@ Technology is prohibited.
 #define UI_H
 #include <imgui.h>
 #include "collision.h" //for using circles
+#include "GameObjectManager.h"
 #include <iostream>
 #include <vector>
 #include <string>
@@ -60,6 +61,7 @@ namespace UI{
 
 	// draw UI windows
     void drawPerformance();
+	void drawShapes(GameObjectManager& manager);
     void drawControls(std::vector<Collision::Circle>& circles);
 	void drawDebug();
 

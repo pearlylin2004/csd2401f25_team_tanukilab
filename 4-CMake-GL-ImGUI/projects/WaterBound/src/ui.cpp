@@ -40,39 +40,83 @@ namespace UI {
         ImGui::End();
     }
 
-    //to add or remove circles
-    void drawControls(std::vector<Collision::Circle>& circles) {
-        ImGui::Begin("Controls");
-        ImGui::Text("Player Controls");
-		
+    void drawShapes(GameObjectManager& manager) {
+		ImGui::Begin("Draw Shapes");
+
         if (ImGui::Button("Add Circle")) {
-            circles.emplace_back(Collision::Circle({ UI::xAdd, UI::yAdd }, 5.0f));
-            UI::xAdd++;
-            UI::yAdd++;
-			debugMessages.push_back("Added a circle. Total circles: " + std::to_string(circles.size()));
-        }
-        if (!circles.empty() && ImGui::Button("Remove Last Circle")) {
-            circles.pop_back();
-            UI::xAdd--;
-            UI::yAdd--;
-            debugMessages.push_back("Removed a circle. Total circles: " + std::to_string(circles.size()));
-        }
-        ImGui::Separator();
-        for (size_t i = 0; i < circles.size(); i++) {
-            ImGui::Text("Circle %d", static_cast<int>(i));
+            std::vector<GameObject*> gameObjects;
+            manager.getAllGameObjects(gameObjects);
 
-            //unique IDs for sliders without std::to_string
-            ImGui::PushID(static_cast<int>(i));
+			GameObject* circleObj = manager.createGameObject("Circle_" + std::to_string(gameObjects.size()));
 
-            ImGui::SliderFloat2("Center",
-                (float*)&circles[i].getCenterRef(), -500.0f, 500.0f);
-            ImGui::SliderFloat("Radius",
-                &circles[i].getRadiusRef(), 1.0f, 200.0f);
+            Transform* transform = circleObj->addComponent<Transform>();
+			Render* render = circleObj->addComponent<Render>();
+			render->modelRef = renderer::setup_circle({1.0f, 0.f, 0.f}, 100);
 
-            ImGui::PopID();
+			transform->x = xAdd;
+			transform->y = yAdd;
+
+			//auto* coll = circleObj->addComponent<CollisionInfo>();
+            
+            ++xAdd;
+			++yAdd;
         }
+
+        if (ImGui::Button("Add Rectangle")) {
+            std::vector<GameObject*> gameObjects;
+            manager.getAllGameObjects(gameObjects);
+
+            GameObject* recobj = manager.createGameObject("Circle_" + std::to_string(gameObjects.size()));
+
+            Transform* transform = recobj->addComponent<Transform>();
+            Render* render = recobj->addComponent<Render>();
+            render->modelRef = renderer::setup_square({ 1.0f, 0.f, 0.f });
+
+            transform->x = xAdd;
+            transform->y = yAdd;
+
+            //auto* coll = recobj->addComponent<CollisionInfo>();
+
+            ++xAdd;
+            ++yAdd;
+        }
+
         ImGui::End();
     }
+
+   // //to add or remove circles
+   // void drawControls(std::vector<Collision::Circle>& circles) {
+   //     ImGui::Begin("Controls");
+   //     ImGui::Text("Player Controls");
+		
+   //     if (ImGui::Button("Add Circle")) {
+   //         circles.emplace_back(Collision::Circle({ UI::xAdd, UI::yAdd }, 5.0f));
+   //         UI::xAdd++;
+   //         UI::yAdd++;
+			//debugMessages.push_back("Added a circle. Total circles: " + std::to_string(circles.size()));
+   //     }
+   //     if (!circles.empty() && ImGui::Button("Remove Last Circle")) {
+   //         circles.pop_back();
+   //         UI::xAdd--;
+   //         UI::yAdd--;
+   //         debugMessages.push_back("Removed a circle. Total circles: " + std::to_string(circles.size()));
+   //     }
+   //     ImGui::Separator();
+   //     for (size_t i = 0; i < circles.size(); i++) {
+   //         ImGui::Text("Circle %d", static_cast<int>(i));
+
+   //         //unique IDs for sliders without std::to_string
+   //         ImGui::PushID(static_cast<int>(i));
+
+   //         ImGui::SliderFloat2("Center",
+   //             (float*)&circles[i].getCenterRef(), -500.0f, 500.0f);
+   //         ImGui::SliderFloat("Radius",
+   //             &circles[i].getRadiusRef(), 1.0f, 200.0f);
+
+   //         ImGui::PopID();
+   //     }
+   //     ImGui::End();
+   // }
 
     //debugging window
     void drawDebug() {
