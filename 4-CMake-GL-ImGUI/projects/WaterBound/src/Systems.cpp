@@ -264,6 +264,7 @@ GLuint RenderSystem::uploadtex(std::string const& filename, bool& isTransparent)
 
 // Physics system - updates position based on velocity and applies gravity
 void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime) {
+
 	// idk how physic programmer want to handle input for physics in the future
 	// so here is a simple implementation for toggling step-by-step mode
 	if (InputHandler::isComboKeyTriggered(GLFW_KEY_Z)) {
@@ -390,9 +391,10 @@ void UISystem::init(GLFWwindow* window) {
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
 	ImGuiIO& io = ImGui::GetIO(); (void)io;
-	io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
-	io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
-	io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
+	io.FontGlobalScale = 1.2f;
+	io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard
+			| ImGuiConfigFlags_DockingEnable
+			| ImGuiConfigFlags_ViewportsEnable;
 	ImGui::StyleColorsDark();
 	ImGui_ImplGlfw_InitForOpenGL(window, true);
 	ImGui_ImplOpenGL3_Init("#version 450");
