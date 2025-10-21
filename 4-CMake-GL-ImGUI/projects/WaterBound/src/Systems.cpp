@@ -59,6 +59,10 @@ void InputSystem::update(GameObjectManager& manager, const float& deltaTime) {
 					velocity->velX = input->moveSpeed;
 				}
 
+				if (InputHandler::isKeyTriggered(GLFW_KEY_0)) {
+					UISystem::toggleUI();
+				}
+
 
 				// Press F9 to simulate a failure (for crash logger)
 				if (InputHandler::isKeyTriggered(GLFW_KEY_F9)) {
@@ -386,6 +390,8 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 	}
 }
 
+bool UISystem::showUI = false;
+
 void UISystem::init(GLFWwindow* window) {
 	// --- ImGui Setup ---
 	IMGUI_CHECKVERSION();
@@ -412,6 +418,7 @@ UISystem::~UISystem() {
 
 //for imgui
 void UISystem::update(GameObjectManager& manager) {
+	if (!showUI) return; // skip UI rendering if disabled
 
 	std::vector<GameObject*> gameObjects;
 	manager.getAllGameObjects(gameObjects);

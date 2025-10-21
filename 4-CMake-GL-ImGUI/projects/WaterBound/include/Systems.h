@@ -110,9 +110,12 @@ public:
 	void init(GLFWwindow* window);
 	~UISystem();
 	void update(GameObjectManager& manager);
+	
+	static void toggleUI() { showUI = !showUI; } // temp toggle function
 
 private:
 	void dockingSetUp();
 	void renderMultipleViewPorts();
 	UI m_UI;
+	static bool showUI;
 };
