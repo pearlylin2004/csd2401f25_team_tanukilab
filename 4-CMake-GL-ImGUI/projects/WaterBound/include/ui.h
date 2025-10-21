@@ -1,6 +1,6 @@
 ﻿/* Start Header ************************************************************************/
 /*!
-\file       input.h
+\file       ui.h
 \author     Pearly Lin Lee Ying, p.lin, 2401591
             - 100% of the file
 \par        p.lin@digipen.edu
@@ -49,7 +49,7 @@ private:
 	void objInspectWindow(GameObjectManager& manager);
 
 
-	struct ObjUiState {
+	struct PanelState {
 		float objListWidth = 250.0f; // Width of the object list panel
 		float objListHeight = -1.0f; // Height of the object list panel, -1 means full height
 		float objListMaxWidth = 400.0f;
@@ -57,10 +57,17 @@ private:
 
 		float splitterSize = 5.0f;  // Size of the splitter between panels
 		int maxObjects = 10; // max objects to show in list without scrolling
+	} m_PanelState;
 
+	struct SelectionState {
 		GameObject* selectedObject = nullptr; // currently selected object
 		int selectedIndex = -1; // index of selected object in the list
-	} m_ObjUIState;
+
+		bool aspectRatioLock = true; // lock aspect ratio for resizing
+		bool ratioSet = false;
+		float ratioY = 1.0f;
+		float ratioZ = 1.0f;
+	} m_SelectionState;
 
 	struct shapeControlState {
 		float inputX = 0.0f;

@@ -210,20 +210,20 @@ void UI::objListPanel(GameObjectManager& manager) {
     }
 
     if (!names.empty()) {
-        if (ImGui::ListBox("Objects", &m_ObjUIState.selectedIndex, names.data(), static_cast<int>(names.size()), m_ObjUIState.maxObjects)) {
-            m_ObjUIState.selectedObject = gameObjects[m_ObjUIState.selectedIndex];
+        if (ImGui::ListBox("Objects", &m_SelectionState.selectedIndex, names.data(), static_cast<int>(names.size()), m_PanelState.maxObjects)) {
+            m_SelectionState.selectedObject = gameObjects[m_SelectionState.selectedIndex];
         }
     }
     else {
-        m_ObjUIState.selectedObject = nullptr;
+        m_SelectionState.selectedObject = nullptr;
         ImGui::Text("No GameObjects available");
     }
 }
 
 void UI::objPropertyPanel(GameObjectManager& manager) {
-    if (m_ObjUIState.selectedObject) {
+    if (m_SelectionState.selectedObject) {
 		// object name edit
-        std::string& objName = m_ObjUIState.selectedObject->getObjectName();
+        std::string& objName = m_SelectionState.selectedObject->getObjectName();
         char buffer[256];
         strncpy(buffer, objName.c_str(), sizeof(buffer));
         buffer[sizeof(buffer) - 1] = '\0';
@@ -241,8 +241,9 @@ void UI::objPropertyPanel(GameObjectManager& manager) {
 
 
 		// object transform properties
-        Transform* transform = m_ObjUIState.selectedObject->getComponent<Transform>();
+        Transform* transform = m_SelectionState.selectedObject->getComponent<Transform>();
         if (ImGui::CollapsingHeader("Transform")) {
+
             ImGui::DragFloat("X", &transform->x);
             ImGui::DragFloat("Y", &transform->y);
             ImGui::DragFloat("Z", &transform->z);
@@ -253,17 +254,34 @@ void UI::objPropertyPanel(GameObjectManager& manager) {
 				std::to_string(transform->z) + ")\n");*/
         }
 
+        // object rotation
         if (ImGui::CollapsingHeader("Rotation")) {
             ImGui::DragFloat("Angle", &transform->rotation);
 
 			/*addDebugMessage("Transform updated: Rotation(" +
 				std::to_string(transform->rotation) + ")\n");*/
         }
-            
+        
+		// obj scale
         if (ImGui::CollapsingHeader("Scale")) {
+            ImGui::Checkbox("Aspect Ratio (X only)", &m_SelectionState.aspectRatioLock);
+
+            if (m_SelectionState.aspectRatioLock && !m_SelectionState.ratioSet) {
+                m_SelectionState.ratioY = transform->scaleY / transform->scaleX;
+                m_SelectionState.ratioZ = transform->scaleZ / transform->scaleX;
+                m_SelectionState.ratioSet = true;
+            }
+
+            if (!m_SelectionState.aspectRatioLock) m_SelectionState.ratioSet = false;
+
             ImGui::DragFloat("X1", &transform->scaleX);
-            ImGui::DragFloat("Y2", &transform->scaleY);
-            ImGui::DragFloat("Z3", &transform->scaleZ);
+            ImGui::DragFloat("Y1", &transform->scaleY);
+            ImGui::DragFloat("Z1", &transform->scaleZ);
+
+            if (m_SelectionState.aspectRatioLock && transform->scaleX != 0.0f) {
+                transform->scaleY = transform->scaleX * m_SelectionState.ratioY;
+                transform->scaleZ = transform->scaleX * m_SelectionState.ratioZ;
+            }
 
             /*addDebugMessage("Transform updated: Position(" +
                 std::to_string(transform->scaleX) + ", " +
@@ -279,8 +297,8 @@ void UI::objPropertyPanel(GameObjectManager& manager) {
         if (ImGui::Button("Delete Object (not available)")) {
 			// DELETE OBJECT FROM MANAGER, add in the actual delete func once available
 
-            m_ObjUIState.selectedObject = nullptr;
-            m_ObjUIState.selectedIndex = -1;
+            m_SelectionState.selectedObject = nullptr;
+            m_SelectionState.selectedIndex = -1;
 
 			addDebugMessage("Object deleted (not really)\n");
         }
@@ -295,25 +313,25 @@ void UI::objInspectWindow(GameObjectManager& manager) {
     ImGui::Begin("Object Properties Editor");
 
 	// Left panel - object list
-    ImGui::BeginChild("Object List", ImVec2(m_ObjUIState.objListWidth, 0));
+    ImGui::BeginChild("Object List", ImVec2(m_PanelState.objListWidth, 0));
     objListPanel(manager);
     ImGui::EndChild();
 
     ImGui::SameLine();
 
 	// splitter that allow resizing
-    ImGui::InvisibleButton("splitter", ImVec2(m_ObjUIState.splitterSize, m_ObjUIState.objListHeight));
+    ImGui::InvisibleButton("splitter", ImVec2(m_PanelState.splitterSize, m_PanelState.objListHeight));
     if (ImGui::IsItemActive()) {
-        m_ObjUIState.objListWidth += InputHandler::getMouseDelta().x;
-        m_ObjUIState.objListWidth = std::clamp(m_ObjUIState.objListWidth, m_ObjUIState.objListMinWidth, m_ObjUIState.objListMaxWidth);
+        m_PanelState.objListWidth += InputHandler::getMouseDelta().x;
+        m_PanelState.objListWidth = std::clamp(m_PanelState.objListWidth, m_PanelState.objListMinWidth, m_PanelState.objListMaxWidth);
     }
 	// draw the vertical line to indicate the splitter
     ImDrawList* draw_list = ImGui::GetWindowDrawList();
     ImVec2 splitterMin = ImGui::GetItemRectMin();
     ImVec2 splitterMax = ImGui::GetItemRectMax();
     draw_list->AddLine(
-        ImVec2(splitterMin.x + m_ObjUIState.splitterSize * 0.5f, splitterMin.y),
-        ImVec2(splitterMin.x + m_ObjUIState.splitterSize * 0.5f, splitterMax.y),
+        ImVec2(splitterMin.x + m_PanelState.splitterSize * 0.5f, splitterMin.y),
+        ImVec2(splitterMin.x + m_PanelState.splitterSize * 0.5f, splitterMax.y),
         IM_COL32(100, 100, 100, 255), 1.0f
     );
 
