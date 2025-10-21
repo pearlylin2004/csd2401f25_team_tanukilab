@@ -202,16 +202,20 @@ void UI::objPropertyPanel(GameObjectManager& manager) {
 void UI::objInspectWindow(GameObjectManager& manager) {
     ImGui::Begin("Object Inspector");
 
+	// Left panel - object list
     ImGui::BeginChild("Object List", ImVec2(m_ObjUIState.objListWidth, 0));
     objListPanel(manager);
     ImGui::EndChild();
 
     ImGui::SameLine();
-    ImGui::InvisibleButton("splitter", ImVec2(m_ObjUIState.splitterSize, -1));
+
+	// splitter that allow resizing
+    ImGui::InvisibleButton("splitter", ImVec2(m_ObjUIState.splitterSize, m_ObjUIState.objListHeight));
     if (ImGui::IsItemActive()) {
-        m_ObjUIState.objListWidth += ImGui::GetIO().MouseDelta.x;
+        m_ObjUIState.objListWidth += InputHandler::getMouseDelta().x;
         m_ObjUIState.objListWidth = std::clamp(m_ObjUIState.objListWidth, m_ObjUIState.objListMinWidth, m_ObjUIState.objListMaxWidth);
     }
+	// draw the vertical line to indicate the splitter
     ImDrawList* draw_list = ImGui::GetWindowDrawList();
     ImVec2 splitterMin = ImGui::GetItemRectMin();
     ImVec2 splitterMax = ImGui::GetItemRectMax();
@@ -223,12 +227,11 @@ void UI::objInspectWindow(GameObjectManager& manager) {
 
     ImGui::SameLine();
 
-    // Right column — inspector
+    // Right panel — inspector
     ImGui::BeginChild("Inspector", ImVec2(0, 0), true);
     objPropertyPanel(manager);
     ImGui::EndChild();
 
-    //ImGui::Columns(1);
     ImGui::End();
 }
 

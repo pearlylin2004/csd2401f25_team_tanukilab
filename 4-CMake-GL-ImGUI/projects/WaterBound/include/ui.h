@@ -18,13 +18,14 @@ Technology is prohibited.
 #ifndef UI_H
 #define UI_H
 #include <imgui.h>
-#include "collision.h" //for using circles
-#include "GameObjectManager.h"
 #include <iostream>
 #include <vector>
 #include <string>
 #include <unordered_map>
 #include <algorithm>
+#include "collision.h" //for using circles
+#include "GameObjectManager.h"
+#include "input.h"
 
 class UI {
 public:
@@ -50,6 +51,7 @@ private:
 
 	struct ObjUiState {
 		float objListWidth = 250.0f; // Width of the object list panel
+		float objListHeight = -1.0f; // Height of the object list panel, -1 means full height
 		float objListMaxWidth = 600.0f;
 		float objListMinWidth = 150.0f;
 		float splitterSize = 5.0f;  // Size of the splitter between panels
