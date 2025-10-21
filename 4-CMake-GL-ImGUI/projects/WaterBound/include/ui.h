@@ -52,8 +52,9 @@ private:
 	struct ObjUiState {
 		float objListWidth = 250.0f; // Width of the object list panel
 		float objListHeight = -1.0f; // Height of the object list panel, -1 means full height
-		float objListMaxWidth = 600.0f;
+		float objListMaxWidth = 400.0f;
 		float objListMinWidth = 150.0f;
+
 		float splitterSize = 5.0f;  // Size of the splitter between panels
 		int maxObjects = 10; // max objects to show in list without scrolling
 

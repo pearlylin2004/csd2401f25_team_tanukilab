@@ -191,7 +191,20 @@ void UI::objListPanel(GameObjectManager& manager) {
 void UI::objPropertyPanel(GameObjectManager& manager) {
     if (m_ObjUIState.selectedObject) {
         Transform* transform = m_ObjUIState.selectedObject->getComponent<Transform>();
-        ImGui::DragFloat3("Position X", &transform->x, 0.1f);
+        if (ImGui::CollapsingHeader("Transform")) {
+            ImGui::DragFloat("Position X", &transform->x, 0.1f);
+            ImGui::DragFloat("Position Y", &transform->y, 0.1f);
+            ImGui::DragFloat("Position Z", &transform->z, 0.1f);
+        }
+        if (ImGui::CollapsingHeader("Rotation")) {
+            ImGui::DragFloat("Angle", &transform->rotation);
+        }
+            
+        if (ImGui::CollapsingHeader("Scale")) {
+            ImGui::DragFloat("X", &transform->scaleX);
+            ImGui::DragFloat("Y", &transform->scaleY);
+            ImGui::DragFloat("Z", &transform->scaleZ);
+        }
 
     }
     else {
