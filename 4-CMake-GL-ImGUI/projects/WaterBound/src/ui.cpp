@@ -190,12 +190,22 @@ void UI::objListPanel(GameObjectManager& manager) {
 
 void UI::objPropertyPanel(GameObjectManager& manager) {
     if (m_ObjUIState.selectedObject) {
+        std::string& objName = m_ObjUIState.selectedObject->getObjectName();
+        char buffer[256];
+        strncpy(buffer, objName.c_str(), sizeof(buffer));
+        buffer[sizeof(buffer) - 1] = '\n';
+
+        if (ImGui::InputText("Edit Object Name", buffer, sizeof(buffer))) {
+            objName = buffer;
+        }
+
         Transform* transform = m_ObjUIState.selectedObject->getComponent<Transform>();
         if (ImGui::CollapsingHeader("Transform")) {
-            ImGui::DragFloat("Position X", &transform->x, 0.1f);
-            ImGui::DragFloat("Position Y", &transform->y, 0.1f);
-            ImGui::DragFloat("Position Z", &transform->z, 0.1f);
+            ImGui::DragFloat("Position X", &transform->x);
+            ImGui::DragFloat("Position Y", &transform->y);
+            ImGui::DragFloat("Position Z", &transform->z);
         }
+
         if (ImGui::CollapsingHeader("Rotation")) {
             ImGui::DragFloat("Angle", &transform->rotation);
         }
