@@ -22,6 +22,10 @@ const std::string& GameObject::getObjectName() const {
     return m_name;
 }
 
+std::string& GameObject::getObjectName() {
+    return m_name;
+}
+
 std::unique_ptr<GameObject> GameObject::clone(const std::string& name) const {
 
 	std::unique_ptr<GameObject> newObject = std::make_unique<GameObject>(name);
