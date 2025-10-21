@@ -43,7 +43,6 @@ namespace Collision {
     }
 
     //can add to math
-    static inline float Dot(const Vector2D& a, const Vector2D& b) { return a.x * b.x + a.y * b.y; }
     static inline float LenSqr(const Vector2D& v) { return v.x * v.x + v.y * v.y; }
     static inline float Length(const Vector2D& v) { return std::sqrt(LenSqr(v)); }
 
@@ -273,19 +272,13 @@ namespace Collision {
 
     }*/
 
-    //reflecting
-    static inline Vector2D Reflect(const Vector2D& v, const Vector2D& n) {
-        float d = Dot(v, n);
-        Vector2D scaledN = Vec_Scale(&n, 2.0f * d);
-        return Vec_Sub(&v, &scaledN);
-    }
-
     //remove normal ... when object hit the wall
     static inline Vector2D RemoveNormalComponent(const Vector2D& v, const Vector2D& n) {
-        float d = Dot(v, n);
+        float d = Vec_Dot(&v, &n);
         Vector2D scaledN = Vec_Scale(&n, d);
         return Vec_Sub(&v, &scaledN);
     }
+
     void Resolve_AABB_AABB(Collision::AABB& aabbA, Vector2D& velA, float massA,
         Collision::AABB& aabbB, Vector2D& velB, float massB,
         const CollisionInfo& info, CollisionResponseMode mode, float restitution)
@@ -308,7 +301,7 @@ namespace Collision {
         else {
             //testing for broken collision 
             Vector2D relVel = Vec_Sub(&velB, &velA);
-            float velAlongNormal = Dot(relVel, info.normal);
+            float velAlongNormal = Vec_Dot(&relVel, &info.normal);
             if (velAlongNormal > 0) return; // moving apart
             float j = -(1.0f + restitution) * velAlongNormal / (1.0f / massA + 1.0f / massB);
             Vector2D impulse = Vec_Scale(&info.normal, j);
