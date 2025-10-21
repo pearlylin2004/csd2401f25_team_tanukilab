@@ -190,15 +190,21 @@ void UI::objListPanel(GameObjectManager& manager) {
 
 void UI::objPropertyPanel(GameObjectManager& manager) {
     if (m_ObjUIState.selectedObject) {
+		// object name edit
         std::string& objName = m_ObjUIState.selectedObject->getObjectName();
         char buffer[256];
         strncpy(buffer, objName.c_str(), sizeof(buffer));
-        buffer[sizeof(buffer) - 1] = '\n';
+        buffer[sizeof(buffer) - 1] = '\0';
 
-        if (ImGui::InputText("Edit Object Name", buffer, sizeof(buffer))) {
+        if (ImGui::InputText("Name", buffer, sizeof(buffer))) {
             objName = buffer;
         }
 
+        ImGui::Spacing();
+        ImGui::Separator();
+        ImGui::Spacing();
+
+		// object transform properties
         Transform* transform = m_ObjUIState.selectedObject->getComponent<Transform>();
         if (ImGui::CollapsingHeader("Transform")) {
             ImGui::DragFloat("Position X", &transform->x);
@@ -216,6 +222,18 @@ void UI::objPropertyPanel(GameObjectManager& manager) {
             ImGui::DragFloat("Z", &transform->scaleZ);
         }
 
+        ImGui::Spacing();
+        ImGui::Separator();
+        ImGui::Spacing();
+        
+		// delete object button (NOT WORKING YET)
+        if (ImGui::Button("Delete Object (not available)")) {
+			// DELETE OBJECT FROM MANAGER, add in the actual delete func once available
+
+            m_ObjUIState.selectedObject = nullptr;
+            m_ObjUIState.selectedIndex = -1;
+        }
+
     }
     else {
         ImGui::Text("No object selected");
@@ -223,7 +241,7 @@ void UI::objPropertyPanel(GameObjectManager& manager) {
 }
 
 void UI::objInspectWindow(GameObjectManager& manager) {
-    ImGui::Begin("Object Inspector");
+    ImGui::Begin("Object Properties Editor");
 
 	// Left panel - object list
     ImGui::BeginChild("Object List", ImVec2(m_ObjUIState.objListWidth, 0));
