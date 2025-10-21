@@ -54,26 +54,6 @@ void UI::shapeControl(Transform& t1, Transform& t2) {
         Transform* t = (currentShape == ShapeType::Leaves) ? &t1 : &t2;
         ShapeDefaults& defaults = m_shapePresets[currentShape];
 
-        /*if (ImGui::CollapsingHeader("Transform")) {
-            if (ImGui::TreeNode("Position")) {
-                ImGui::SliderFloat("X", &t->x, defaults.posXRange.min, defaults.posXRange.max);
-                ImGui::SliderFloat("Y", &t->y, defaults.posYRange.min, defaults.posYRange.max);
-                ImGui::TreePop();
-            }
-
-            if (ImGui::TreeNode("Rotation")) {
-                ImGui::SliderFloat("Angle", &t->rotation, defaults.rotRange.min, defaults.rotRange.max);
-                ImGui::TreePop();
-            }
-
-            if (ImGui::TreeNode("Scale")) {
-                ImGui::SliderFloat("X", &t->scaleX, defaults.scaleXRange.min, defaults.scaleXRange.max);
-                ImGui::SliderFloat("Y", &t->scaleY, defaults.scaleYRange.min, defaults.scaleYRange.max);
-                ImGui::SliderFloat("Z", &t->scaleZ, 0.1f, 10.f);
-                ImGui::TreePop();
-            }
-        }*/
-
         //reset
         if (ImGui::Button("Reset All")) {
             if (m_shapePresets.find(currentShape) != m_shapePresets.end()) {
