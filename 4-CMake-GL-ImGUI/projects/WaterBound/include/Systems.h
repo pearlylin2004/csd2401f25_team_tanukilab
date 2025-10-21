@@ -109,7 +109,7 @@ class UISystem {
 public:
 	void init(GLFWwindow* window);
 	~UISystem();
-	void update(GameObjectManager& manager, std::vector<Collision::Circle>& circles);
+	void update(GameObjectManager& manager);
 
 private:
 	void dockingSetUp();

@@ -59,5 +59,4 @@ private:
     std::unique_ptr<PhysicsSystem> m_physicsSystem;
     std::unique_ptr<RenderSystem> m_renderSystem;
     std::unique_ptr<UISystem> m_uiSystem;
-	std::vector<Collision::Circle> circles; //for imgui
 };
