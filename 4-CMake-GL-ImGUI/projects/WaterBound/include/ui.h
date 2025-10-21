@@ -24,22 +24,49 @@ Technology is prohibited.
 #include <vector>
 #include <string>
 #include <unordered_map>
+#include <algorithm>
 
-namespace UI{
-	extern std::vector<std::string> debugMessages;
-    extern float xAdd, yAdd; //temp
+class UI {
+public:
+	UI(); // only used to initialize shape presets, can be =DEFAULT later when loading from json
+	~UI() = default;
 
-    enum class ShapeType { 
-        Leaves, 
-        Bullet 
-    };
+	void update(GameObjectManager& manager);
+
+	static void addDebugMessage(const std::string& msg);
+
+	// edit shape windows
+	void shapeControl(Transform& t1, Transform& t2);
+
+private:
+	void drawPerformance();
+	void drawShapes(GameObjectManager& manager);
+	//void drawControls(std::vector<Collision::Circle>& circles);
+	void drawDebug();
+
+	struct ObjUiState {
+		float objListWidth = 250.0f; // Width of the object list panel
+		float objListMaxWidth = 600.0f;
+		float objListMinWidth = 150.0f;
+		float splitterSize = 5.0f;  // Size of the splitter between panels
+		int maxObjects = 10; // max objects to show in list without scrolling
+
+		GameObject* selectedObject = nullptr; // currently selected object
+		int selectedIndex = -1; // index of selected object in the list
+	};
+
+	enum class ShapeType {
+		Leaves,
+		Bullet
+	};
 
 	struct Range {
 		float min;
 		float max;
 	};
 
-    struct ShapeDefaults {
+	// might be override by the actual preset in the future
+	struct ShapeDefaults {
 		float posX = 0.f;
 		float posY = 0.f;
 		float rotation = 0.f;
@@ -57,16 +84,66 @@ namespace UI{
 		Range scaleYRange = { 0.1f, 1.f };
 	};
 
-	extern std::unordered_map<ShapeType, ShapeDefaults> shapePresets;
+	static inline std::vector<std::string> m_debugMessages;
 
-	// draw UI windows
-    void drawPerformance();
-	void drawShapes(GameObjectManager& manager);
-    void drawControls(std::vector<Collision::Circle>& circles);
-	void drawDebug();
 
-	// edit shape windows
-    void shapeControl(Transform& t1, Transform& t2);
-    //void dockingSetUp();
-}
+	float xAdd = 0.0f, yAdd = 0.0f; //temp
+	std::unordered_map<ShapeType, ShapeDefaults> m_shapePresets;
+	ObjUiState m_ObjUIState;
+};
+
+//namespace UI{
+//	extern std::vector<std::string> debugMessages;
+//    extern float xAdd, yAdd; //temp
+//
+//	struct ObjUiState {
+//		float objListWidth = 250.0f; // Width of the object list panel
+//		float splitterSize = 5.0f;  // Size of the splitter between panels
+//		GameObject* selectedObject = nullptr; // currently selected object
+//		int selectedIndex = -1; // index of selected object in the list
+//	};
+//
+//    enum class ShapeType { 
+//        Leaves, 
+//        Bullet 
+//    };
+//
+//	struct Range {
+//		float min;
+//		float max;
+//	};
+//
+//    struct ShapeDefaults {
+//		float posX = 0.f;
+//		float posY = 0.f;
+//		float rotation = 0.f;
+//		float scaleX = 0.f;
+//		float scaleY = 0.f;
+//		float scaleZ = 0.f;
+//
+//		// once json done, auto use this if not overriden by json
+//		// consider having like some reusable RANGE for certain game obj?
+//		// OPTIONAL slider ranges (min, max)
+//		Range posXRange = { -15.f, 15.f };
+//		Range posYRange = { -10.f, 10.f };
+//		Range rotRange = { 0.f, 360.f };
+//		Range scaleXRange = { 0.1f, 1.f };
+//		Range scaleYRange = { 0.1f, 1.f };
+//	};
+//
+//	extern std::unordered_map<ShapeType, ShapeDefaults> shapePresets;
+//
+//	// draw UI windows
+//    void drawPerformance();
+//	void drawShapes(GameObjectManager& manager);
+//    //void drawControls(std::vector<Collision::Circle>& circles);
+//	void drawDebug();
+//	void objListWindow(GameObjectManager& manager);
+//	void objPropertyWindow(GameObjectManager& manager);
+//	void objInspectWindow(GameObjectManager& manager);
+//
+//	// edit shape windows
+//    void shapeControl(Transform& t1, Transform& t2);
+//    //void dockingSetUp();
+//}
 #endif

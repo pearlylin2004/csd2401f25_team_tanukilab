@@ -114,4 +114,5 @@ public:
 private:
 	void dockingSetUp();
 	void renderMultipleViewPorts();
+	UI m_UI;
 };
