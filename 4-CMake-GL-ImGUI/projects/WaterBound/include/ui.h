@@ -43,6 +43,10 @@ private:
 	void drawShapes(GameObjectManager& manager);
 	//void drawControls(std::vector<Collision::Circle>& circles);
 	void drawDebug();
+	void objListPanel(GameObjectManager& manager);
+	void objPropertyPanel(GameObjectManager& manager);
+	void objInspectWindow(GameObjectManager& manager);
+
 
 	struct ObjUiState {
 		float objListWidth = 250.0f; // Width of the object list panel

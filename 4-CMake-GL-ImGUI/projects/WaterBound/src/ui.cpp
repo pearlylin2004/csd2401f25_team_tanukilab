@@ -166,7 +166,71 @@ void UI::drawDebug() {
     ImGui::End();
 }
 
-s
+void UI::objListPanel(GameObjectManager& manager) {
+    std::vector<const char*> names; // adjust max size
+
+    std::vector<GameObject*> gameObjects;
+    manager.getAllGameObjects(gameObjects);
+
+    names.reserve(gameObjects.size());
+    for (int i = 0; i < gameObjects.size(); ++i) {
+        names.push_back(gameObjects[i]->getObjectName().c_str());
+    }
+
+    if (!names.empty()) {
+        if (ImGui::ListBox("Objects", &m_ObjUIState.selectedIndex, names.data(), static_cast<int>(names.size()), m_ObjUIState.maxObjects)) {
+            m_ObjUIState.selectedObject = gameObjects[m_ObjUIState.selectedIndex];
+        }
+    }
+    else {
+        m_ObjUIState.selectedObject = nullptr;
+        ImGui::Text("No GameObjects available");
+    }
+}
+
+void UI::objPropertyPanel(GameObjectManager& manager) {
+    if (m_ObjUIState.selectedObject) {
+        Transform* transform = m_ObjUIState.selectedObject->getComponent<Transform>();
+        ImGui::DragFloat3("Position X", &transform->x, 0.1f);
+
+    }
+    else {
+        ImGui::Text("No object selected");
+    }
+}
+
+void UI::objInspectWindow(GameObjectManager& manager) {
+    ImGui::Begin("Object Inspector");
+
+    ImGui::BeginChild("Object List", ImVec2(m_ObjUIState.objListWidth, 0));
+    objListPanel(manager);
+    ImGui::EndChild();
+
+    ImGui::SameLine();
+    ImGui::InvisibleButton("splitter", ImVec2(m_ObjUIState.splitterSize, -1));
+    if (ImGui::IsItemActive()) {
+        m_ObjUIState.objListWidth += ImGui::GetIO().MouseDelta.x;
+        m_ObjUIState.objListWidth = std::clamp(m_ObjUIState.objListWidth, m_ObjUIState.objListMinWidth, m_ObjUIState.objListMaxWidth);
+    }
+    ImDrawList* draw_list = ImGui::GetWindowDrawList();
+    ImVec2 splitterMin = ImGui::GetItemRectMin();
+    ImVec2 splitterMax = ImGui::GetItemRectMax();
+    draw_list->AddLine(
+        ImVec2(splitterMin.x + m_ObjUIState.splitterSize * 0.5f, splitterMin.y),
+        ImVec2(splitterMin.x + m_ObjUIState.splitterSize * 0.5f, splitterMax.y),
+        IM_COL32(100, 100, 100, 255), 1.0f
+    );
+
+    ImGui::SameLine();
+
+    // Right column — inspector
+    ImGui::BeginChild("Inspector", ImVec2(0, 0), true);
+    objPropertyPanel(manager);
+    ImGui::EndChild();
+
+    //ImGui::Columns(1);
+    ImGui::End();
+}
 
 
 //namespace I {
