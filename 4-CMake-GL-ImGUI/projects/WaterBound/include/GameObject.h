@@ -76,8 +76,6 @@ public:
     const std::string& getObjectName() const;
     std::string& getObjectName();
 
-    std::string& getObjectName();
-
 private:
     std::string m_name;//name of object
 

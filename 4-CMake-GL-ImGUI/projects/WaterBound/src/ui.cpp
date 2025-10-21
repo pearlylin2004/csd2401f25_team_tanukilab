@@ -261,9 +261,9 @@ void UI::objPropertyPanel(GameObjectManager& manager) {
         }
             
         if (ImGui::CollapsingHeader("Scale")) {
-            ImGui::DragFloat("X", &transform->scaleX);
-            ImGui::DragFloat("Y", &transform->scaleY);
-            ImGui::DragFloat("Z", &transform->scaleZ);
+            ImGui::DragFloat("X1", &transform->scaleX);
+            ImGui::DragFloat("Y2", &transform->scaleY);
+            ImGui::DragFloat("Z3", &transform->scaleZ);
 
             /*addDebugMessage("Transform updated: Position(" +
                 std::to_string(transform->scaleX) + ", " +
