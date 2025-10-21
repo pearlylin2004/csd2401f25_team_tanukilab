@@ -60,7 +60,13 @@ private:
 
 		GameObject* selectedObject = nullptr; // currently selected object
 		int selectedIndex = -1; // index of selected object in the list
-	};
+	} m_ObjUIState;
+
+	struct shapeControlState {
+		float inputX = 0.0f;
+		float inputY = 0.0f;
+		float inputZ = 0.0f;
+	} circleInput, RectangleInput;
 
 	enum class ShapeType {
 		Leaves,
@@ -93,10 +99,7 @@ private:
 
 	static inline std::vector<std::string> m_debugMessages;
 
-
-	float xAdd = 0.0f, yAdd = 0.0f; //temp
 	std::unordered_map<ShapeType, ShapeDefaults> m_shapePresets;
-	ObjUiState m_ObjUIState;
 };
 
 #endif

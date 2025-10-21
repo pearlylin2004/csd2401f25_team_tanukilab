@@ -412,8 +412,6 @@ UISystem::~UISystem() {
 
 //for imgui
 void UISystem::update(GameObjectManager& manager, std::vector<Collision::Circle>& circles) {
-	//docking
-	//UI::dockingSetUp();
 
 	std::vector<GameObject*> gameObjects;
 	manager.getAllGameObjects(gameObjects);

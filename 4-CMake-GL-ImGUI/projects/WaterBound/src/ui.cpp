@@ -109,6 +109,24 @@ void UI::drawShapes(GameObjectManager& manager) {
     {
         ImGui::Begin("Draw Shapes");
 
+        ImGui::PushItemWidth(150.0f);
+
+        // For drawing circle
+        ImGui::Text("X");
+        ImGui::SameLine();
+        ImGui::InputFloat("##X", &circleInput.inputX, 0.1f);
+        ImGui::SameLine();
+
+        ImGui::Text("Y");
+        ImGui::SameLine();
+        ImGui::InputFloat("##Y", &circleInput.inputY, 0.1f);
+        ImGui::SameLine();
+
+        ImGui::Text("Z");
+        ImGui::SameLine();
+        ImGui::InputFloat("##Z", &circleInput.inputZ, 0.1f);
+        ImGui::SameLine();
+
         if (ImGui::Button("Add Circle")) {
             std::vector<GameObject*> gameObjects;
             manager.getAllGameObjects(gameObjects);
@@ -119,14 +137,30 @@ void UI::drawShapes(GameObjectManager& manager) {
             Render* render = circleObj->addComponent<Render>();
             render->modelRef = renderer::setup_circle({ 1.0f, 0.f, 0.f }, 100);
 
-            transform->x = xAdd;
-            transform->y = yAdd;
+            transform->x = circleInput.inputX;
+            transform->y = circleInput.inputY;
+            transform->z = circleInput.inputZ;
 
             //auto* coll = circleObj->addComponent<CollisionInfo>();
-
-            ++xAdd;
-            ++yAdd;
         }
+
+		ImGui::Separator();
+
+		// For drawing rectangle        
+        ImGui::Text("X");
+        ImGui::SameLine();
+        ImGui::InputFloat("##X1", &RectangleInput.inputX, 0.1f);
+        ImGui::SameLine();
+
+        ImGui::Text("Y");
+        ImGui::SameLine();
+        ImGui::InputFloat("##Y1", &RectangleInput.inputY, 0.1f);
+        ImGui::SameLine();
+
+        ImGui::Text("Z");
+        ImGui::SameLine();
+        ImGui::InputFloat("##Z1", &RectangleInput.inputZ, 0.1f);
+        ImGui::SameLine();
 
         if (ImGui::Button("Add Rectangle")) {
             std::vector<GameObject*> gameObjects;
@@ -138,13 +172,11 @@ void UI::drawShapes(GameObjectManager& manager) {
             Render* render = recobj->addComponent<Render>();
             render->modelRef = renderer::setup_square({ 1.0f, 0.f, 0.f });
 
-            transform->x = xAdd;
-            transform->y = yAdd;
+            transform->x = RectangleInput.inputX;
+            transform->y = RectangleInput.inputY;
+            transform->z = RectangleInput.inputZ;
 
             //auto* col = recobj->addComponent<CollisionInfo>();
-
-            ++xAdd;
-            ++yAdd;
         }
 
         ImGui::End();
@@ -153,7 +185,6 @@ void UI::drawShapes(GameObjectManager& manager) {
 
 void UI::drawDebug() {
     ImGui::Begin("Debug Info");
-    ImGui::Text("This is a debug window.");
 
     for (const auto& msg : m_debugMessages) {
         ImGui::Text("%s", msg.c_str());
@@ -196,7 +227,9 @@ void UI::objPropertyPanel(GameObjectManager& manager) {
         strncpy(buffer, objName.c_str(), sizeof(buffer));
         buffer[sizeof(buffer) - 1] = '\0';
 
-        if (ImGui::InputText("Name", buffer, sizeof(buffer))) {
+        ImGui::Text("Name");
+		ImGui::SameLine();
+        if (ImGui::InputText("##Name", buffer, sizeof(buffer))) {
             objName = buffer;
         }
 
@@ -204,12 +237,13 @@ void UI::objPropertyPanel(GameObjectManager& manager) {
         ImGui::Separator();
         ImGui::Spacing();
 
+
 		// object transform properties
         Transform* transform = m_ObjUIState.selectedObject->getComponent<Transform>();
         if (ImGui::CollapsingHeader("Transform")) {
-            ImGui::DragFloat("Position X", &transform->x);
-            ImGui::DragFloat("Position Y", &transform->y);
-            ImGui::DragFloat("Position Z", &transform->z);
+            ImGui::DragFloat("X", &transform->x);
+            ImGui::DragFloat("Y", &transform->y);
+            ImGui::DragFloat("Z", &transform->z);
         }
 
         if (ImGui::CollapsingHeader("Rotation")) {
@@ -226,6 +260,7 @@ void UI::objPropertyPanel(GameObjectManager& manager) {
         ImGui::Separator();
         ImGui::Spacing();
         
+
 		// delete object button (NOT WORKING YET)
         if (ImGui::Button("Delete Object (not available)")) {
 			// DELETE OBJECT FROM MANAGER, add in the actual delete func once available
