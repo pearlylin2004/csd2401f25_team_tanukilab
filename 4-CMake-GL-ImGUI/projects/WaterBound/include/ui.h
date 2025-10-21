@@ -82,19 +82,11 @@ private:
 	struct ShapeDefaults {
 		float posX = 0.f;
 		float posY = 0.f;
+		float posZ = 0.f;
 		float rotation = 0.f;
 		float scaleX = 0.f;
 		float scaleY = 0.f;
 		float scaleZ = 0.f;
-
-		// once json done, auto use this if not overriden by json
-		// consider having like some reusable RANGE for certain game obj?
-		// OPTIONAL slider ranges (min, max)
-		Range posXRange = { -15.f, 15.f };
-		Range posYRange = { -10.f, 10.f };
-		Range rotRange = { 0.f, 360.f };
-		Range scaleXRange = { 0.1f, 1.f };
-		Range scaleYRange = { 0.1f, 1.f };
 	};
 
 	static inline std::vector<std::string> m_debugMessages;

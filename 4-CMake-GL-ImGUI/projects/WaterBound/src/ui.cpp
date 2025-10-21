@@ -20,9 +20,8 @@ Technology is prohibited.
 UI::UI() {
 	// temp, get ready to load from json in the future
     m_shapePresets = {
-		{ ShapeType::Leaves, { 0.0f, 0.0f, 0.0f, 5.0f, 5.0f, 5.0f,
-		{-20.f, 20.f}, {-20.f, 20.f}, {0.f, 100.f}, { 0.1f, 5.f }, { 0.1f, 5.f } } },
-		{ ShapeType::Bullet, { 0.0f, 0.0f, 0.5f, 0.5f, 0.5f, 0.0f } }
+        { ShapeType::Leaves, { 0.0f, 0.0f, 0.0f, 0.0f, 5.0f, 5.0f, 5.0f }},
+        { ShapeType::Bullet, { 0.0f, 0.0f, 0.0f, 0.5f, 0.5f, 0.5f, 0.0f }}
 	};
 }
 
@@ -55,7 +54,7 @@ void UI::shapeControl(Transform& t1, Transform& t2) {
         Transform* t = (currentShape == ShapeType::Leaves) ? &t1 : &t2;
         ShapeDefaults& defaults = m_shapePresets[currentShape];
 
-        if (ImGui::CollapsingHeader("Transform")) {
+        /*if (ImGui::CollapsingHeader("Transform")) {
             if (ImGui::TreeNode("Position")) {
                 ImGui::SliderFloat("X", &t->x, defaults.posXRange.min, defaults.posXRange.max);
                 ImGui::SliderFloat("Y", &t->y, defaults.posYRange.min, defaults.posYRange.max);
@@ -73,7 +72,7 @@ void UI::shapeControl(Transform& t1, Transform& t2) {
                 ImGui::SliderFloat("Z", &t->scaleZ, 0.1f, 10.f);
                 ImGui::TreePop();
             }
-        }
+        }*/
 
         //reset
         if (ImGui::Button("Reset All")) {
@@ -142,6 +141,7 @@ void UI::drawShapes(GameObjectManager& manager) {
             transform->z = circleInput.inputZ;
 
             //auto* coll = circleObj->addComponent<CollisionInfo>();
+			addDebugMessage("Circle created at (" + std::to_string(transform->x) + ", " + std::to_string(transform->y) + ", " + std::to_string(transform->z) + ")\n");
         }
 
 		ImGui::Separator();
@@ -177,6 +177,7 @@ void UI::drawShapes(GameObjectManager& manager) {
             transform->z = RectangleInput.inputZ;
 
             //auto* col = recobj->addComponent<CollisionInfo>();
+			addDebugMessage("Rectangle created at (" + std::to_string(transform->x) + ", " + std::to_string(transform->y) + ", " + std::to_string(transform->z) + ")\n");
         }
 
         ImGui::End();
@@ -231,6 +232,7 @@ void UI::objPropertyPanel(GameObjectManager& manager) {
 		ImGui::SameLine();
         if (ImGui::InputText("##Name", buffer, sizeof(buffer))) {
             objName = buffer;
+			addDebugMessage("Object renamed to " + objName + "\n");
         }
 
         ImGui::Spacing();
@@ -244,29 +246,43 @@ void UI::objPropertyPanel(GameObjectManager& manager) {
             ImGui::DragFloat("X", &transform->x);
             ImGui::DragFloat("Y", &transform->y);
             ImGui::DragFloat("Z", &transform->z);
+
+			/*addDebugMessage("Transform updated: Position(" +
+				std::to_string(transform->x) + ", " +
+				std::to_string(transform->y) + ", " +
+				std::to_string(transform->z) + ")\n");*/
         }
 
         if (ImGui::CollapsingHeader("Rotation")) {
             ImGui::DragFloat("Angle", &transform->rotation);
+
+			/*addDebugMessage("Transform updated: Rotation(" +
+				std::to_string(transform->rotation) + ")\n");*/
         }
             
         if (ImGui::CollapsingHeader("Scale")) {
             ImGui::DragFloat("X", &transform->scaleX);
             ImGui::DragFloat("Y", &transform->scaleY);
             ImGui::DragFloat("Z", &transform->scaleZ);
+
+            /*addDebugMessage("Transform updated: Position(" +
+                std::to_string(transform->scaleX) + ", " +
+                std::to_string(transform->scaleY) + ", " +
+                std::to_string(transform->scaleZ) + ")\n");*/
         }
 
         ImGui::Spacing();
         ImGui::Separator();
         ImGui::Spacing();
         
-
 		// delete object button (NOT WORKING YET)
         if (ImGui::Button("Delete Object (not available)")) {
 			// DELETE OBJECT FROM MANAGER, add in the actual delete func once available
 
             m_ObjUIState.selectedObject = nullptr;
             m_ObjUIState.selectedIndex = -1;
+
+			addDebugMessage("Object deleted (not really)\n");
         }
 
     }
