@@ -42,10 +42,6 @@ namespace Collision {
         return Collision::Circle(center, radius);
     }
 
-    //can add to math
-    static inline float LenSqr(const Vector2D& v) { return v.x * v.x + v.y * v.y; }
-    static inline float Length(const Vector2D& v) { return std::sqrt(LenSqr(v)); }
-
     //AABB
     bool CollisionIntersection_RectRect_Static(const AABB& aabb1, const AABB& aabb2)
     {
@@ -194,7 +190,7 @@ namespace Collision {
             info.timeOfImpact = 0.0f;
             Vector2D temp = { dx, dy };
             Vector2D n = Vec_Normalize(&temp);
-            if (Length(n) <= EPSILON) {
+            if (Vec_Length(&n) <= EPSILON) {
                 //if center inside pick nearest axis normal by distance to edges
                 float left = std::abs(c.getCenter().x - aabb.getMin().x);
                 float right = std::abs(aabb.getMax().x - c.getCenter().x);
