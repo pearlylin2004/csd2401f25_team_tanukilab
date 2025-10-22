@@ -52,8 +52,6 @@ private:
     bool m_isRunning;
 	AudioHandler& audio;
 
-    bool m_stepMode;
-    bool m_stepReq;
     // Core Engine Systems
     std::unique_ptr<GameObjectManager> m_manager;
     std::unique_ptr<InputSystem> m_inputSystem;
@@ -61,5 +59,4 @@ private:
     std::unique_ptr<PhysicsSystem> m_physicsSystem;
     std::unique_ptr<RenderSystem> m_renderSystem;
     std::unique_ptr<UISystem> m_uiSystem;
-	std::vector<Collision::Circle> circles; //for imgui
 };

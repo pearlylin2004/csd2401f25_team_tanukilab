@@ -43,6 +43,10 @@ public:
 class PhysicsSystem {
 public:
 	void update(GameObjectManager& manager, const float& deltaTime);
+
+private:
+	bool m_stepMode = false;
+	bool m_stepReq = false;
 };
 
 /*!***********************************************************************
@@ -103,5 +107,15 @@ public:
 // UI system - handles UI rendering and interactions using ImGui
 class UISystem {
 public:
-	void update(GameObjectManager& manager, std::vector<Collision::Circle>& circles);
+	void init(GLFWwindow* window);
+	~UISystem();
+	void update(GameObjectManager& manager);
+	
+	static void toggleUI() { showUI = !showUI; } // temp toggle function
+
+private:
+	void dockingSetUp();
+	void renderMultipleViewPorts();
+	UI m_UI;
+	static bool showUI;
 };

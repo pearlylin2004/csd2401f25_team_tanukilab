@@ -24,7 +24,7 @@ Technology is prohibited.
 #include "CoreEngine.h"
 
 CoreEngine::CoreEngine()
-    : m_window(nullptr), m_fps(0.0), m_delta(0.0), m_isRunning(false), audio(AudioHandler::getInstance()), m_stepMode(false), m_stepReq(false) {
+    : m_window(nullptr), m_fps(0.0), m_delta(0.0), m_isRunning(false), audio(AudioHandler::getInstance()) {
 }
 
 CoreEngine::~CoreEngine() {
@@ -77,16 +77,7 @@ void CoreEngine::Init() {
 
     m_manager->init();
 	m_renderSystem->init(*m_manager);
-
-    // --- ImGui Setup ---
-    IMGUI_CHECKVERSION();
-    ImGui::CreateContext();
-    ImGuiIO& io = ImGui::GetIO(); (void)io;
-    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
-    //io.ConfigFlags |= ImGuiConfigFlags_DockingEnable; //docking
-    ImGui::StyleColorsDark();
-    ImGui_ImplGlfw_InitForOpenGL(m_window, true);
-    ImGui_ImplOpenGL3_Init("#version 450");
+	m_uiSystem->init(m_window);
 
     audio.init();
 
@@ -124,14 +115,6 @@ void CoreEngine::GameLoop() {
 void CoreEngine::Update(float deltaTime) {
     InputHandler::update();
 
-	// step-by-step physics debug mode toggle and step request
-	if (InputHandler::isComboKeyTriggered(GLFW_KEY_Z)) {
-		m_stepMode = !m_stepMode;
-	}
-	if (m_stepMode && InputHandler::isKeyTriggered(GLFW_KEY_Z)) {
-		m_stepReq = true;
-	}
-
 	//for clonigng player2
     if (InputHandler::isKeyTriggered(GLFW_KEY_C)) {
         static int cloneCount = 1; // Use a static counter for unique names
@@ -145,37 +128,16 @@ void CoreEngine::Update(float deltaTime) {
 
     }
 
-    //imgui
-    ImGui_ImplOpenGL3_NewFrame();
-    ImGui_ImplGlfw_NewFrame();
-    ImGui::NewFrame();
-
     // Update all systems in order
     m_inputSystem->update(*m_manager, deltaTime);
+    m_physicsSystem->update(*m_manager, deltaTime);
     m_collisionSystem->update(*m_manager, deltaTime);
     m_renderSystem->update(*m_manager);
-    m_uiSystem->update(*m_manager, circles);
+    m_uiSystem->update(*m_manager);
 
-	// Physics system update depends on step mode
-    if (!m_stepMode) {
-        m_physicsSystem->update(*m_manager, deltaTime);
-    }
-	else if (m_stepReq) {
-		m_physicsSystem->update(*m_manager, deltaTime);
-		m_stepReq = false;
-	}
-
-    m_renderSystem->update(*m_manager);
-
-    //render ImGui
-    ImGui::Render();
-    ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 }
 
 void CoreEngine::Shutdown() {
-    ImGui_ImplOpenGL3_Shutdown();
-    ImGui_ImplGlfw_Shutdown();
-    ImGui::DestroyContext();
     glfwDestroyWindow(m_window);
     glfwTerminate();
 }

@@ -59,6 +59,10 @@ void InputSystem::update(GameObjectManager& manager, const float& deltaTime) {
 					velocity->velX = input->moveSpeed;
 				}
 
+				if (InputHandler::isKeyTriggered(GLFW_KEY_0)) {
+					UISystem::toggleUI();
+				}
+
 
 				// Press F9 to simulate a failure (for crash logger)
 				if (InputHandler::isKeyTriggered(GLFW_KEY_F9)) {
@@ -264,6 +268,20 @@ GLuint RenderSystem::uploadtex(std::string const& filename, bool& isTransparent)
 
 // Physics system - updates position based on velocity and applies gravity
 void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime) {
+
+	// idk how physic programmer want to handle input for physics in the future
+	// so here is a simple implementation for toggling step-by-step mode
+	if (InputHandler::isComboKeyTriggered(GLFW_KEY_Z)) {
+		m_stepMode = !m_stepMode;
+	}
+	if (m_stepMode && InputHandler::isKeyTriggered(GLFW_KEY_Z)) {
+		m_stepReq = true;
+	}
+
+	// only update if NOT step-by-step physics debug mode or step requested
+	if (m_stepMode && !m_stepReq) return;
+	if (m_stepReq) m_stepReq = false; // reset step request after one update
+
 	std::vector<GameObject*> gameObjects;
 	manager.getAllGameObjects(gameObjects);
 
@@ -283,7 +301,7 @@ void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime) {
 			//bullet
 			if (InputHandler::isKeyTriggered(GLFW_KEY_SPACE)) {
 				//std::cout << "bullet is spawned\n";
-				UI::debugMessages.push_back("bullet is spawned");
+				UI::addDebugMessage("bullet is spawned");
 				static int bulletCount = 0;
 
 				Transform* t = bullet->getComponent<Transform>();
@@ -304,7 +322,7 @@ void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime) {
 			// Jump
 			if (InputHandler::isKeyTriggered(GLFW_KEY_B)){// && physics->onGround) {
 				//std::cout << "player is jumping\n";
-				UI::debugMessages.push_back("player is jumping");
+				UI::addDebugMessage("player is jumping");
 				physics->velY = physics->jumpForce;
 				//physics->velX = physics->Speed;
 				physics->onGround = false;
@@ -363,7 +381,7 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 							obj2V->velY = obj2Vel.y;
 
 							//std::cout << "Collision detected between Object.\n";
-							UI::debugMessages.push_back("Collision detected between Object.\n");
+							UI::addDebugMessage("Collision detected between Object.\n");
 						}
 					}
 				}
@@ -372,52 +390,93 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 	}
 }
 
+bool UISystem::showUI = false;
+
+void UISystem::init(GLFWwindow* window) {
+	// --- ImGui Setup ---
+	IMGUI_CHECKVERSION();
+	ImGui::CreateContext();
+	ImGuiIO& io = ImGui::GetIO(); (void)io;
+	io.FontGlobalScale = 1.2f;
+	io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard
+			| ImGuiConfigFlags_DockingEnable
+			| ImGuiConfigFlags_ViewportsEnable;
+	ImGui::StyleColorsDark();
+	ImGui_ImplGlfw_InitForOpenGL(window, true);
+	ImGui_ImplOpenGL3_Init("#version 450");
+
+	// no show task bar icon for additional viewports
+	io.ConfigViewportsNoTaskBarIcon = true;
+}
+
+UISystem::~UISystem() {
+	// cleanup all imgui stuff here
+	ImGui_ImplOpenGL3_Shutdown();
+	ImGui_ImplGlfw_Shutdown();
+	ImGui::DestroyContext();
+}
+
 //for imgui
-void UISystem::update(GameObjectManager& manager, std::vector<Collision::Circle>& circles) {
-	//docking
-	//UI::dockingSetUp();
+void UISystem::update(GameObjectManager& manager) {
+	if (!showUI) return; // skip UI rendering if disabled
 
 	std::vector<GameObject*> gameObjects;
 	manager.getAllGameObjects(gameObjects);
 
-	//demo
-	UI::drawPerformance();
+	ImGui_ImplOpenGL3_NewFrame();
+	ImGui_ImplGlfw_NewFrame();
+	ImGui::NewFrame();
 
-	//input circles
-	UI::drawControls(circles);
+	dockingSetUp();
 
-	//debug message
-	UI::drawDebug();
+	// all ImGui windows
+	m_UI.update(manager);
 
 	Transform* leavesT = gameObjects[0]->getComponent<Transform>();
 	Transform* bulletT = gameObjects[2]->getComponent<Transform>();
-	UI::shapeControl(*leavesT, *bulletT);
+	m_UI.shapeControl(*leavesT, *bulletT);
 
-	glDisable(GL_DEPTH_TEST); //disable depth testing so that when i render the circle its infront of the platform
-	//imgui rendering..copied from render::update
-	for (const auto& circle : circles) { 
-		const Vector2D& c = circle.getCenter(); //get center
-		float r = circle.getRadius(); //get radius
+	ImGui::Render();
+	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
-		glm::mat4 mdlWorld = glm::mat4(1.0f);
-		mdlWorld = glm::translate(mdlWorld, glm::vec3(c.x, c.y, 0.0f));
-		mdlWorld = glm::scale(mdlWorld, glm::vec3(r, r, 1.0f));
+	renderMultipleViewPorts();
+}
 
-		const auto& model = renderer::models[2]; //circle mesh
-		glBindVertexArray(model.vaoid);
+void UISystem::dockingSetUp() {
+	static ImGuiDockNodeFlags dockspace_flags = ImGuiDockNodeFlags_None
+		| ImGuiDockNodeFlags_PassthruCentralNode;
 
-		GLint vTransformLoc = glGetUniformLocation(renderer::shdr_pgm, "M");
-		glUniformMatrix4fv(vTransformLoc, 1, GL_FALSE, glm::value_ptr(mdlWorld));
+	ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoDocking
+		| ImGuiWindowFlags_NoTitleBar
+		| ImGuiWindowFlags_NoCollapse
+		| ImGuiWindowFlags_NoResize
+		| ImGuiWindowFlags_NoMove
+		| ImGuiWindowFlags_NoBringToFrontOnFocus
+		| ImGuiWindowFlags_NoNavFocus
+		| ImGuiWindowFlags_NoBackground;
 
-		GLint hasTex = glGetUniformLocation(renderer::shdr_pgm, "uHasTex");
-		glUniform1i(hasTex, 0);
+	ImGuiViewport* viewport = ImGui::GetMainViewport();
+	ImGui::SetNextWindowPos(viewport->Pos);
+	ImGui::SetNextWindowSize(viewport->Size);
+	ImGui::SetNextWindowViewport(viewport->ID);
 
-		glDrawArrays(model.primitive_type, 0, model.draw_cnt);
+	ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
+	ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
 
-		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-		glBindVertexArray(0);
+	ImGui::Begin("DockSpace Demo", nullptr, window_flags);
+	ImGui::PopStyleVar(2);
+
+	ImGuiID dockspace_id = ImGui::GetID("MyDockSpace");
+	ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), dockspace_flags);
+
+	ImGui::End();
+}
+
+void UISystem::renderMultipleViewPorts() {
+	if (ImGui::GetIO().ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
+		GLFWwindow* backup_current_context = glfwGetCurrentContext();
+		ImGui::UpdatePlatformWindows();
+		ImGui::RenderPlatformWindowsDefault();
+		glfwMakeContextCurrent(backup_current_context);
 	}
-	glEnable(GL_DEPTH_TEST); //re-enable depth testing for other systems
-
-	//ImGui::ShowMetricsWindow(); //for debug
 }
