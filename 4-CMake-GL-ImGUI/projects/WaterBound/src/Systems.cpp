@@ -432,7 +432,7 @@ void UISystem::update(GameObjectManager& manager) {
 	dockingSetUp();
 
 	// all ImGui windows
-	//m_UI.update(manager);
+	m_UI.update(manager);
 
 	Transform* leavesT = gameObjects[0]->getComponent<Transform>();
 	Transform* bulletT = gameObjects[2]->getComponent<Transform>();
