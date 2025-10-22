@@ -14,7 +14,11 @@ Technology is prohibited.
 /* End Header **************************************************************************/
 #pragma once
 #include <string>
-
+#include <fstream>
+#include <sstream>
+#include <unordered_map>
+#include <algorithm>
+#include <cctype>
 /**
  * @brief Holds application configuration values.
  *

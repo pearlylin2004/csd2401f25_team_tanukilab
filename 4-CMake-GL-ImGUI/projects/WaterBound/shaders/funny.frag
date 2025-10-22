@@ -7,16 +7,10 @@ out vec4 FragColor;
 uniform sampler2D uTex2d;
 uniform bool uHasTex;
 uniform bool uIsWireframe;
-uniform bool uIsBackground;
 
 void main()
 {
-    
-    if (uIsBackground)
-    {
-        FragColor = vec4(1, 0, 0, 1);
-        return;
-    }
+
     if (uIsWireframe)
     {
         FragColor = vec4(0, 1, 0, 1);

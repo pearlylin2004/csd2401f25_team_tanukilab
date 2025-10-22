@@ -1,16 +1,17 @@
 /* Start Header ************************************************************************/
 /*!
 \file        Systems.cpp
-\author      Seow Sin Le, s.sinle, 2401084, 20%
-\author 	 Hugo Low Ren Hao, low.h, 2402272, 20%
-\author 	 Pearly Lin Lee Ying, p.lin, 2401591, 10%
-\author		 Asha Mathyalakan, asha.m, 2402886, 5%
+\author      Seow Sin Le, s.sinle, 2401084, 45%
+\author 	 Hugo Low Ren Hao, low.h, 2402272, 15%
+\author 	 Pearly Lin Lee Ying, p.lin, 2401591, 25%
+\author		 Asha Mathyalakan, asha.m, 2402886, 15%
 \par         s.sinle@digipen.edu
 \par		 low.h@digipen.edu
 \par		 p.lin@digipen.edu
 \par		 asha.m@digipen.edu
 \date        October, 1st, 2025
-\brief       System functions to run the logic for the components
+\brief       This file consists of System functions to run the logic for the Game Objects
+			 and their components. 
 
 Copyright (C) 2025 DigiPen Institute of Technology.
 Reproduction or disclosure of this file or its contents
@@ -57,6 +58,7 @@ void InputSystem::update(GameObjectManager& manager, const float& deltaTime) {
 				if (InputHandler::isKeyHeld(GLFW_KEY_D)) {
 					velocity->velX = input->moveSpeed;
 				}
+
 
 				// Press F9 to simulate a failure (for crash logger)
 				if (InputHandler::isKeyTriggered(GLFW_KEY_F9)) {
@@ -123,13 +125,11 @@ void RenderSystem::update(GameObjectManager& manager) {
 				GLint rotcenter = glGetUniformLocation(renderer::shdr_pgm, "uMcn");
 				GLint hastex = glGetUniformLocation(renderer::shdr_pgm, "uHasTex");
 				GLint wireframe = glGetUniformLocation(renderer::shdr_pgm, "uIsWireframe");
-				GLint background = glGetUniformLocation(renderer::shdr_pgm, "uIsBackground");
 				glUniform1i(texid, 0);
 				glUniformMatrix2fv(rotmat, 1, GL_FALSE, glm::value_ptr(texRot));
 				glUniform2fv(rotcenter, 1, glm::value_ptr(rotationCenter));
 				glUniform1i(hastex, static_cast<int>(render->hasTex));
 				glUniform1i(wireframe, static_cast<int>(render->wireframe));
-				glUniform1i(background, render->isBackground);
 
 				if (render->modelRef.shape == shape::square)
 					glDrawElements(GL_TRIANGLES, render->modelRef.elem_cnt, GL_UNSIGNED_SHORT, nullptr);
@@ -182,13 +182,11 @@ void RenderSystem::update(GameObjectManager& manager) {
 				GLint rotcenter = glGetUniformLocation(renderer::shdr_pgm, "uMcn");
 				GLint hastex = glGetUniformLocation(renderer::shdr_pgm, "uHasTex");
 				GLint wireframe = glGetUniformLocation(renderer::shdr_pgm, "uIsWireframe");
-				GLint background = glGetUniformLocation(renderer::shdr_pgm, "uIsBackground");
 				glUniform1i(texid, 0);
 				glUniformMatrix2fv(rotmat, 1, GL_FALSE, glm::value_ptr(texRot));
 				glUniform2fv(rotcenter, 1, glm::value_ptr(rotationCenter));
 				glUniform1i(hastex, static_cast<int>(render->hasTex));
 				glUniform1i(wireframe, 0);
-				glUniform1i(background, render->isBackground);
 
 				if (render->modelRef.shape == shape::square)
 				{
@@ -284,7 +282,8 @@ void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime) {
 			//std::cout << object << " has input component\n";
 			//bullet
 			if (InputHandler::isKeyTriggered(GLFW_KEY_SPACE)) {
-				std::cout << "bullet is spawned\n";
+				//std::cout << "bullet is spawned\n";
+				UI::debugMessages.push_back("bullet is spawned");
 				static int bulletCount = 0;
 
 				Transform* t = bullet->getComponent<Transform>();
@@ -303,8 +302,9 @@ void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime) {
 			}
 
 			// Jump
-			if (InputHandler::isKeyTriggered(GLFW_KEY_B) && physics->onGround){// && physics->onGround) {
-				std::cout << "player is jumping\n";
+			if (InputHandler::isKeyTriggered(GLFW_KEY_B)){// && physics->onGround) {
+				//std::cout << "player is jumping\n";
+				UI::debugMessages.push_back("player is jumping");
 				physics->velY = physics->jumpForce;
 				//physics->velX = physics->Speed;
 				physics->onGround = false;
@@ -345,8 +345,10 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 						Physics* obj2V = iterator->getComponent<Physics>();
 						Vector2D obj1Vel{ obj1V->velX, obj1V->velY };
 						Vector2D obj2Vel{ obj2V->velX, obj2V->velY };
+						//check collision using the dynamic rect-rect collision detection
 						CollisionInfo info = Collision::CollisionIntersection_RectRect_Dynamic_Info(obj1, obj1Vel, obj2, obj2Vel);
 
+						//check collision responses
 						if (info.collided) {
 							Collision::Resolve_AABB_AABB(
 								obj1, obj1Vel, 0.0f,
@@ -360,8 +362,8 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 							obj2V->velX = obj2Vel.x;
 							obj2V->velY = obj2Vel.y;
 
-							//show message in imgui
-							UI::debugMessages.push_back("Collision detected between Object.");
+							//std::cout << "Collision detected between Object.\n";
+							UI::debugMessages.push_back("Collision detected between Object.\n");
 						}
 					}
 				}
@@ -370,9 +372,11 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 	}
 }
 
-//for imgu(testing)
-void UISystem::update(GameObjectManager& manager, const float& deltaTime) {
-	(void)deltaTime;
+//for imgui
+void UISystem::update(GameObjectManager& manager, std::vector<Collision::Circle>& circles) {
+	//docking
+	//UI::dockingSetUp();
+
 	std::vector<GameObject*> gameObjects;
 	manager.getAllGameObjects(gameObjects);
 
@@ -382,13 +386,38 @@ void UISystem::update(GameObjectManager& manager, const float& deltaTime) {
 	//input circles
 	UI::drawControls(circles);
 
-	//debug window
-	UI::drawDebug();//UI::debugMessages);
+	//debug message
+	UI::drawDebug();
 
 	Transform* leavesT = gameObjects[0]->getComponent<Transform>();
 	Transform* bulletT = gameObjects[2]->getComponent<Transform>();
 	UI::shapeControl(*leavesT, *bulletT);
 
+	glDisable(GL_DEPTH_TEST); //disable depth testing so that when i render the circle its infront of the platform
+	//imgui rendering..copied from render::update
+	for (const auto& circle : circles) { 
+		const Vector2D& c = circle.getCenter(); //get center
+		float r = circle.getRadius(); //get radius
+
+		glm::mat4 mdlWorld = glm::mat4(1.0f);
+		mdlWorld = glm::translate(mdlWorld, glm::vec3(c.x, c.y, 0.0f));
+		mdlWorld = glm::scale(mdlWorld, glm::vec3(r, r, 1.0f));
+
+		const auto& model = renderer::models[2]; //circle mesh
+		glBindVertexArray(model.vaoid);
+
+		GLint vTransformLoc = glGetUniformLocation(renderer::shdr_pgm, "M");
+		glUniformMatrix4fv(vTransformLoc, 1, GL_FALSE, glm::value_ptr(mdlWorld));
+
+		GLint hasTex = glGetUniformLocation(renderer::shdr_pgm, "uHasTex");
+		glUniform1i(hasTex, 0);
+
+		glDrawArrays(model.primitive_type, 0, model.draw_cnt);
+
+		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+		glBindVertexArray(0);
+	}
+	glEnable(GL_DEPTH_TEST); //re-enable depth testing for other systems
+
 	//ImGui::ShowMetricsWindow(); //for debug
 }
-

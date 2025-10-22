@@ -14,11 +14,22 @@ Technology is prohibited.
 /* End Header **************************************************************************/
 
 #pragma once
+#ifdef _WIN32
+#define NOMINMAX
+#include <windows.h>
+#endif
 #include <string>
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 #include <deque>
 #include <iostream>
+#include <sstream>
+#include <iomanip>
+#include <fstream>
+#include <csignal>
+#include <mutex>
+#include <ctime>
+
 // ======================================================================================
 // Perf namespace: frame timing & FPS display
 // ======================================================================================

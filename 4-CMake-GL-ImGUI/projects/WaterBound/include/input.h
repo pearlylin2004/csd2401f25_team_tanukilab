@@ -18,7 +18,7 @@ Technology is prohibited.
 
 #include <GLFW/glfw3.h>
 #include "mathlib.h"
-
+#include <cstring>
 /*
 Keyboard key tokens
 https://www.glfw.org/docs/3.3/group__keys.html

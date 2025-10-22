@@ -34,20 +34,19 @@ public:
     // these functions
     virtual ~Component() = default;
 
-    virtual std::unique_ptr<Component> clone() const = 0;
+	virtual std::unique_ptr<Component> clone() const = 0;
 };
 
 // Transform component to store position, rotation, and scale
 struct Transform : public Component {
 public:
-    Transform() = default;
-    Transform(float px, float py, float pz, float rot, float sx, float sy, float sz)
-        : x(px), y(py), z(pz), rotation(rot), scaleX(sx), scaleY(sy), scaleZ(sz), mdlWorld(1) {
-    }
+	Transform() = default;
+    Transform(float px, float py, float pz, float rot, float sx, float sy, float sz) 
+        : x(px), y(py), z(pz), rotation(rot), scaleX(sx), scaleY(sy), scaleZ(sz), mdlWorld(1) {}
 
     std::unique_ptr<Component> clone() const override {
         return std::make_unique<Transform>(*this);
-    }
+	}
 
     float x{ 0.f }, y{ 0.f }, z{ 0.f };
     float rotation = 0.0f;
@@ -70,17 +69,17 @@ public:
     bool wireframe = false;
     GLuint texHDL;
     std::string texFile;
-
+    
     renderer::model modelRef;
 };
 
 // Physics component to store velocity and other physics-related properties
 struct Physics : public Component {
 public:
-
+   
     std::unique_ptr<Component> clone() const override {
         return std::make_unique<Physics>(*this);
-    }
+	}
 
     float velX = 0.0f;
     float velY = 0.0f;
@@ -88,9 +87,9 @@ public:
 
     //Jump 
     float damping = 0.99f;
-    float jumpForce = 10.0f;
+    float jumpForce = 10.0f;  
     float floorY = 0.0f;
-    bool onGround = true;
+    bool onGround = true;  
     float Speed = 150.0f;
 
     //water bullet
@@ -110,7 +109,7 @@ public:
 // Input component to store input-related properties
 struct Input : public Component {
 public:
-    Input(float speed = 0.0f) : moveSpeed(speed) {}
+	Input(float speed = 0.0f) : moveSpeed(speed) {}
 
     std::unique_ptr<Component> clone() const override {
         return std::make_unique<Input>(*this);
