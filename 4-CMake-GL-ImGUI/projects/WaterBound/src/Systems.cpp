@@ -346,43 +346,79 @@ void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime) {
 // Collision system - detects and resolves collisions between game objects
 void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime) {
 	(void)deltaTime;
+	//getting all objects
 	std::vector<GameObject*> gameObjects;
 	manager.getAllGameObjects(gameObjects);
 
-	for (GameObject* iterator : gameObjects) {
-		if (iterator->hasComponent<CollisionInfo>() && iterator->hasComponent<Physics>()) {
+	//create grid
+	const float CELL_SIZE = 2.0f;
+	const int GRID_WIDTH = 20;
+	const int GRID_HEIGHT = 20;
+	std::vector<std::vector<Collision::Cell>> grid(GRID_WIDTH, std::vector<Collision::Cell>(GRID_HEIGHT));
 
-			for (GameObject* obj : gameObjects) {
-				if (obj != iterator) {
-					if (obj != iterator && obj->getComponent<CollisionInfo>()) {
-						Transform* obj1T = obj->getComponent<Transform>();
-						Transform* obj2T = iterator->getComponent<Transform>();
-						Collision::AABB obj1 = Collision::getObjectAABB(obj1T);
-						Collision::AABB obj2 = Collision::getObjectAABB(obj2T);
-						Physics* obj1V = obj->getComponent<Physics>();
-						Physics* obj2V = iterator->getComponent<Physics>();
-						Vector2D obj1Vel{ obj1V->velX, obj1V->velY };
-						Vector2D obj2Vel{ obj2V->velX, obj2V->velY };
-						//check collision using the dynamic rect-rect collision detection
-						CollisionInfo info = Collision::CollisionIntersection_RectRect_Dynamic_Info(obj1, obj1Vel, obj2, obj2Vel);
 
-						//check collision responses
-						if (info.collided) {
-							Collision::Resolve_AABB_AABB(
-								obj1, obj1Vel, 0.0f,
-								obj2, obj2Vel, 1.0f,
-								info, CollisionResponseMode::Stop
-							);
+	for (GameObject* obj : gameObjects) {
+		if (!obj->getComponent<CollisionInfo>() || !obj->hasComponent<Transform>()) continue;
+		Transform* objT = obj->getComponent<Transform>();
+		Collision::AABB box = Collision::getObjectAABB(objT);
 
-							//change velocity
-							obj1V->velX = obj1Vel.x;
-							obj1V->velY = obj1Vel.y;
-							obj2V->velX = obj2Vel.x;
-							obj2V->velY = obj2Vel.y;
+		int minCellX = static_cast<int>(box.getMin().x / CELL_SIZE);
+		int maxCellX = static_cast<int>(box.getMax().x / CELL_SIZE);
+		int minCellY = static_cast<int>(box.getMin().y / CELL_SIZE);
+		int maxCellY = static_cast<int>(box.getMax().y / CELL_SIZE);
 
-							//std::cout << "Collision detected between Object.\n";
-							UI::addDebugMessage("Collision detected between Object.\n");
-						}
+		//clamp to grid boundaries so it dont go out the valid range of grid
+		minCellX = std::max(0, std::min(minCellX, GRID_WIDTH - 1));
+		maxCellX = std::max(0, std::min(maxCellX, GRID_WIDTH - 1));
+		minCellY = std::max(0, std::min(minCellY, GRID_HEIGHT - 1));
+		maxCellY = std::max(0, std::min(maxCellY, GRID_HEIGHT - 1));
+
+		//putting the object into the grid cells it occupies
+		for (int x = minCellX; x <= maxCellX; ++x) {
+			for (int y = minCellY; y <= maxCellY; ++y) {
+				grid[x][y].objects.push_back(obj);
+			}
+		}
+	}
+
+	//checking collision 
+	for (int i = 0; i < GRID_WIDTH; i++) {
+		for (int j = 0; j < GRID_HEIGHT; j++) {
+			auto& cellObject = grid[i][j].objects; //get objects in the cell
+			//loop through objects in the cell to check for collision
+			for (size_t n = 0; n < cellObject.size(); n++) {
+				GameObject* obj1 = cellObject[n];
+				if (!obj1->hasComponent<Physics>()) continue;
+				Transform* t1 = obj1->getComponent<Transform>();
+				Collision::AABB aabb1 = Collision::getObjectAABB(t1);
+				Physics* p1 = obj1->getComponent<Physics>();
+				Vector2D vel1{ p1->velX, p1->velY };
+				//object 2 looping
+				for (size_t m = n + 1; m < cellObject.size(); m++) {
+					GameObject* obj2 = cellObject[m];
+					if (!obj2->hasComponent<Physics>()) continue;
+					Transform* t2 = obj2->getComponent<Transform>();
+					Collision::AABB aabb2 = Collision::getObjectAABB(t2);
+					Physics* p2 = obj2->getComponent<Physics>();
+					Vector2D vel2{ p2->velX, p2->velY };
+
+					CollisionInfo info = Collision::CollisionIntersection_RectRect_Dynamic_Info(aabb1, vel1, aabb2, vel2); //check collision
+					
+					//checking if collided
+					if (info.collided) {
+						Collision::Resolve_AABB_AABB(
+							aabb1, vel1, 0.0f,
+							aabb2, vel2, 1.0f,
+							info, CollisionResponseMode::Stop
+						);
+
+						//update velocities
+						p1->velX = vel1.x;
+						p1->velY = vel1.y;
+						p2->velX = vel2.x;
+						p2->velY = vel2.y;
+
+						UI::addDebugMessage("Collision detected between Object.\n"); //message for debugger
 					}
 				}
 			}
