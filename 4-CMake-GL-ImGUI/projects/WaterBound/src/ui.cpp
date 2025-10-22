@@ -30,6 +30,7 @@ void UI::update(GameObjectManager& manager) {
     drawShapes(manager);
     drawDebug();
     objInspectWindow(manager);
+	assetWindow();
 }
 
 void UI::addDebugMessage(const std::string& msg) {
@@ -323,4 +324,62 @@ void UI::objInspectWindow(GameObjectManager& manager) {
     ImGui::EndChild();
 
     ImGui::End();
+}
+
+void UI::loadAssetsFromDirectory() {
+	m_assets.clear(); // clear existing assets before loading new ones
+
+	for (const auto& entry : std::filesystem::recursive_directory_iterator(m_AssetBrowserState.currentFolder)) {
+		if (entry.is_regular_file()) {
+            Asset asset;
+			asset.name = entry.path().filename().string();
+			asset.path = entry.path().string();
+            asset.folder = entry.path().parent_path().string();
+
+			m_assets.push_back(asset);
+		}
+	}
+}
+
+void UI::assetWindow() {
+	ImGui::Begin("Assets");
+
+	// refresh to update assets from the actual asset folder (now is shaders :))
+    if (ImGui::Button("Refresh")) loadAssetsFromDirectory();
+
+    ImGui::Separator();
+
+    float windowVisibleX2 = ImGui::GetWindowPos().x + ImGui::GetWindowContentRegionMax().x;
+
+    int index = 0;
+    for (const Asset& asset : m_assets) {
+		ImGui::PushID(index++);
+
+        ImGui::BeginGroup();
+
+		ImGui::Button(asset.name.c_str(), ImVec2(m_AssetBrowserState.iconSize, m_AssetBrowserState.iconSize));
+
+        ImGui::PushTextWrapPos(ImGui::GetCursorPosX() + m_AssetBrowserState.iconSize);
+        ImGui::Text("%s", asset.name.c_str());
+        ImGui::PopTextWrapPos();
+
+		ImGui::EndGroup();
+
+        float lastButtonX2 = ImGui::GetItemRectMax().x;
+        float nextButtonX2 = lastButtonX2 + m_AssetBrowserState.buttonPadding + m_AssetBrowserState.iconSize;
+        if (nextButtonX2 < windowVisibleX2)
+            ImGui::SameLine();
+
+		// drag and drop, but now actually does nothing
+        if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID)) {
+            ImGui::SetDragDropPayload("ASSET", asset.path.c_str(), asset.path.size() + 1);
+            ImGui::Text("%s", asset.name.c_str());
+            ImGui::EndDragDropSource();
+        }
+
+
+		ImGui::PopID();
+    }
+
+	ImGui::End();
 }
