@@ -103,8 +103,5 @@ public:
 // UI system - handles UI rendering and interactions using ImGui
 class UISystem {
 public:
-	void update(GameObjectManager& manager, const float& deltaTime);
-private:
-	std::vector<std::string> debugMessages; //for messages
-	std::vector<Collision::Circle> circles; 
+	void update(GameObjectManager& manager, std::vector<Collision::Circle>& circles);
 };

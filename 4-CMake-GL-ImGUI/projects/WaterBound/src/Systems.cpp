@@ -377,7 +377,7 @@ void UISystem::update(GameObjectManager& manager, const float& deltaTime) {
 	manager.getAllGameObjects(gameObjects);
 
 	//demo
-	UI::drawDemo();
+	UI::drawPerformance();
 
 	//input circles
 	UI::drawControls(circles);

@@ -5,7 +5,7 @@
             - 100% of the file
 \par        p.lin@digipen.edu
 \date       September, 17th, 2025
-\brief      definition of functions, drawDemo, drawControls, drawDebug, shapeControl
+\brief      definition of functions, drawPerformance, drawControls, drawDebug, shapeControl
 			for the imgui windows
 
 Copyright (C) 2025 DigiPen Institute of Technology.
@@ -20,12 +20,15 @@ Technology is prohibited.
 namespace UI {
     std::vector<std::string> debugMessages; //not sure if this needs to be change
 
-    void drawDemo() {
-        ImGui::Begin("OpenGL 3.3 Demo");
-        ImGui::Text("Hello, ImGui!");
+    void drawPerformance() {
+        ImGui::Begin("Performance Display");
+        //time frame:
         ImGui::Text("Application average %.3f ms/frame (%.1f FPS)",
             1000.0f / ImGui::GetIO().Framerate,
             ImGui::GetIO().Framerate);
+        ImGui::Separator(); 
+        //average time
+
         ImGui::End();
     }
 
