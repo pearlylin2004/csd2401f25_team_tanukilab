@@ -329,12 +329,13 @@ void UI::objInspectWindow(GameObjectManager& manager) {
 void UI::loadAssetsFromDirectory() {
 	m_assets.clear(); // clear existing assets before loading new ones
 
-	for (const auto& entry : std::filesystem::recursive_directory_iterator(m_AssetBrowserState.currentFolder)) {
+	// iterate over all files and folders in this directory and push all files to m_assets (flat list)
+	for (const std::filesystem::directory_entry& entry : std::filesystem::recursive_directory_iterator(m_AssetBrowserState.currentFolder)) {
 		if (entry.is_regular_file()) {
             Asset asset;
 			asset.name = entry.path().filename().string();
 			asset.path = entry.path().string();
-            asset.folder = entry.path().parent_path().string();
+            asset.folder = entry.path().parent_path().string(); // folder in assets that contains this file
 
 			m_assets.push_back(asset);
 		}
@@ -351,24 +352,27 @@ void UI::assetWindow() {
 
     float windowVisibleX2 = ImGui::GetWindowPos().x + ImGui::GetWindowContentRegionMax().x;
 
-    int index = 0;
+    int index{};
     for (const Asset& asset : m_assets) {
 		ImGui::PushID(index++);
 
+        // display button and the name of the file
         ImGui::BeginGroup();
 
+        // can consider changing to image in the future
 		ImGui::Button(asset.name.c_str(), ImVec2(m_AssetBrowserState.iconSize, m_AssetBrowserState.iconSize));
 
+		// make sure this text wraps if it's too long
         ImGui::PushTextWrapPos(ImGui::GetCursorPosX() + m_AssetBrowserState.iconSize);
         ImGui::Text("%s", asset.name.c_str());
         ImGui::PopTextWrapPos();
 
 		ImGui::EndGroup();
 
+        // calculate whether the next button should be displayed in the same line or next line based on this window size
         float lastButtonX2 = ImGui::GetItemRectMax().x;
         float nextButtonX2 = lastButtonX2 + m_AssetBrowserState.buttonPadding + m_AssetBrowserState.iconSize;
-        if (nextButtonX2 < windowVisibleX2)
-            ImGui::SameLine();
+        if (nextButtonX2 < windowVisibleX2) ImGui::SameLine();
 
 		// drag and drop, but now actually does nothing
         if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID)) {
