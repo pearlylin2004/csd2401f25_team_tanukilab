@@ -111,7 +111,7 @@ private:
 		std::string currentFolder = "shaders/"; // we dont have a asset folder yet :(
 
 		float iconSize = 80.0f;
-		float buttonPadding = 40.0f;
+		//float buttonPadding = 20.0f; // adding padding made my code ugly
 	} m_AssetBrowserState;;
 
 	static inline std::vector<std::string> m_debugMessages;

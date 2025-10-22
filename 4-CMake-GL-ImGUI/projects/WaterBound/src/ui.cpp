@@ -335,7 +335,7 @@ void UI::loadAssetsFromDirectory() {
             Asset asset;
 			asset.name = entry.path().filename().string();
 			asset.path = entry.path().string();
-            asset.folder = entry.path().parent_path().string(); // folder in assets that contains this file
+            asset.folder = entry.path().parent_path().string(); // folder in assets that contains this file, for future filtering
 
 			m_assets.push_back(asset);
 		}
@@ -371,7 +371,7 @@ void UI::assetWindow() {
 
         // calculate whether the next button should be displayed in the same line or next line based on this window size
         float lastButtonX2 = ImGui::GetItemRectMax().x;
-        float nextButtonX2 = lastButtonX2 + m_AssetBrowserState.buttonPadding + m_AssetBrowserState.iconSize;
+        float nextButtonX2 = lastButtonX2 + m_AssetBrowserState.iconSize;
         if (nextButtonX2 < windowVisibleX2) ImGui::SameLine();
 
 		// drag and drop, but now actually does nothing
