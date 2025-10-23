@@ -17,8 +17,10 @@ Technology is prohibited.
 #pragma once
 
 #include <GLFW/glfw3.h>
-#include "mathlib.h"
 #include <cstring>
+#include <filesystem>
+#include "mathlib.h"
+
 /*
 Keyboard key tokens
 https://www.glfw.org/docs/3.3/group__keys.html
@@ -98,6 +100,8 @@ public:
 	static void CursorEnterCallback(GLFWwindow* window, int entered);
 	// scroll callback function
 	static void scrollCallback(GLFWwindow* window, double xoffset, double yoffset);
+	
+	static void dropCallback(GLFWwindow* window, int count, const char** paths);
 
 private:
 	static GLFWwindow* m_window;
@@ -116,4 +120,5 @@ private:
 
 	static float m_scrollOffset;
 	static double m_doubleClickThreshold;
+
 };

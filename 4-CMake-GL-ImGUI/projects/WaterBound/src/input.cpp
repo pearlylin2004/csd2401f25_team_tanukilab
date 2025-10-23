@@ -16,9 +16,8 @@ without the prior written consent of DigiPen Institute of
 Technology is prohibited.
 */
 /* End Header **************************************************************************/
-
+#include "ui.h"
 #include "input.h"
-//#include <iostream>
 
 GLFWwindow* InputHandler::m_window = nullptr;
 
@@ -47,6 +46,7 @@ void InputHandler::init(GLFWwindow* window) {
 	glfwSetCursorPosCallback(window, cursorPositionCallback);
 	glfwSetCursorEnterCallback(window, CursorEnterCallback);
 	glfwSetScrollCallback(window, scrollCallback);
+	glfwSetDropCallback(window, dropCallback);
 }
 
 // update input states (call once per frame)
@@ -276,4 +276,26 @@ void InputHandler::scrollCallback(GLFWwindow* window, double xoffset, double yof
 	(void)window;
 	(void)xoffset;
 	m_scrollOffset = static_cast<float>(yoffset);
+}
+
+void InputHandler::dropCallback(GLFWwindow* window, int count, const char** paths) {
+	for (int i = 0; i < count; ++i) {
+		std::filesystem::path src(paths[i]);
+		std::filesystem::path dst = "shaders";
+
+		try {
+			if (std::filesystem::is_directory(src)) {
+				std::filesystem::copy(src, dst, std::filesystem::copy_options::recursive | std::filesystem::copy_options::overwrite_existing);
+			}
+			else {
+				std::filesystem::copy(src, dst, std::filesystem::copy_options::overwrite_existing);
+			}
+
+			UI::assetChanged(); // set asst changed flag to reload assets in UI
+			UI::addDebugMessage("Added asset " + src.string() + " to " + dst.string() + "\n");
+		}
+		catch (const std::filesystem::filesystem_error& e) {
+			UI::addDebugMessage("Failed to add asset " + src.string() + ": " + e.what() + "\n");
+		}
+	}
 }

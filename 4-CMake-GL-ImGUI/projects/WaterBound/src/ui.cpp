@@ -17,6 +17,8 @@ Technology is prohibited.
 
 #include "ui.h"
 
+bool UI::assetsChangedFlag = true;
+
 UI::UI() {
 	// temp, get ready to load from json in the future
     m_shapePresets = {
@@ -180,6 +182,7 @@ void UI::drawDebug() {
 }
 
 void UI::objListPanel(GameObjectManager& manager) {
+
     std::vector<const char*> names; // adjust max size
 
     std::vector<GameObject*> gameObjects;
@@ -280,8 +283,8 @@ void UI::objPropertyPanel(GameObjectManager& manager) {
             ImGui::Text("Texture");
             ImGui::SameLine();
 
-            std::string texLabel = render->texFile.empty() ? "(Drop new texture here)" : render->texFile;
-            ImGui::Button(texLabel.c_str());
+            std::string texName = render->texFile.empty() ? "(Drop new texture here)" : render->texFile;
+            ImGui::Button(texName.c_str());
 
             if (ImGui::BeginDragDropTarget()) {
                 if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("ASSET")) {
@@ -364,6 +367,7 @@ void UI::objInspectWindow(GameObjectManager& manager) {
 }
 
 void UI::loadAssetsFromDirectory() {
+	if (assetsChangedFlag == false) return; // only reload if flagged
 	m_assets.clear(); // clear existing assets before loading new ones
 
 	// iterate over all files and folders in this directory and push all files to m_assets (flat list)
@@ -377,13 +381,19 @@ void UI::loadAssetsFromDirectory() {
 			m_assets.push_back(asset);
 		}
 	}
+
+	assetsChangedFlag = false;
+	addDebugMessage("Assets loaded from " + m_AssetBrowserState.currentFolder + "\n");
 }
 
 void UI::assetWindow() {
 	ImGui::Begin("Assets");
 
 	// refresh to update assets from the actual asset folder (now is shaders :))
-    if (ImGui::Button("Refresh")) loadAssetsFromDirectory();
+    if (ImGui::Button("Refresh")) {
+        assetsChangedFlag = true;
+        loadAssetsFromDirectory();
+    }
 
     ImGui::Separator();
 
@@ -416,6 +426,7 @@ void UI::assetWindow() {
             ImGui::SetDragDropPayload("ASSET", asset.path.c_str(), asset.path.size() + 1);
             ImGui::Text("%s", asset.name.c_str());
             ImGui::EndDragDropSource();
+
         }
 
 

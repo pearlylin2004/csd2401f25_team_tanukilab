@@ -24,7 +24,6 @@ Technology is prohibited.
 #include <unordered_map>
 #include <algorithm>
 #include <filesystem>
-#include "collision.h" //for using circles
 #include "GameObjectManager.h"
 #include "input.h"
 
@@ -38,6 +37,10 @@ public:
 
 	// debug message logging
 	static void addDebugMessage(const std::string& msg);
+	static void assetChanged() { 
+		std::cout << "Asset changed flagged\n";
+		assetsChangedFlag = true;
+	} // set to true to reload assets in UI
 
 	// edit shape windows
 	void shapeControl(Transform& t1, Transform& t2);
@@ -119,7 +122,7 @@ private:
 
 	std::unordered_map<ShapeType, ShapeDefaults> m_shapePresets;
 	std::vector<Asset> m_assets;
-
+	static bool assetsChangedFlag;
 };
 
 #endif
