@@ -120,6 +120,8 @@ target_link_libraries(WaterBound PRIVATE
 	fmod_vc.lib
 	fmodL_vc.lib)
 
+target_link_libraries(WaterBound PRIVATE lua)
+
 add_custom_command(TARGET WaterBound POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy
         "${CMAKE_CURRENT_LIST_DIR}/projects/WaterBound/lib/fmod.dll"

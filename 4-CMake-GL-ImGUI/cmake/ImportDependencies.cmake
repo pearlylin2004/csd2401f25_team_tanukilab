@@ -16,7 +16,7 @@ macro(import_glfw)
         endif()
 
         add_subdirectory(${glfw_SOURCE_DIR})
-        include_directories(${glfw_SOURCE_DIR}/include)
+        include_directories(${GLFW_SOURCE_DIR}/include)
     endif()
 endmacro()
 
@@ -102,13 +102,12 @@ macro(import_lua)
             GIT_REPOSITORY https://github.com/lua/lua.git
             GIT_TAG v5.4.7
         )
-        FetchContent_MakeAvailable(lua)
+        FetchContent_Populate(lua)
 
         set(LUA_SOURCES
             ${lua_SOURCE_DIR}/lapi.c
-            ${lua_SOURCE_DIR}/lauxlib.c
-            ${lua_SOURCE_DIR}/lbaselib.c
             ${lua_SOURCE_DIR}/lcode.c
+            ${lua_SOURCE_DIR}/lctype.c
             ${lua_SOURCE_DIR}/ldebug.c
             ${lua_SOURCE_DIR}/ldo.c
             ${lua_SOURCE_DIR}/ldump.c
@@ -123,8 +122,21 @@ macro(import_lua)
             ${lua_SOURCE_DIR}/lstring.c
             ${lua_SOURCE_DIR}/ltable.c
             ${lua_SOURCE_DIR}/ltm.c
+            ${lua_SOURCE_DIR}/lundump.c
             ${lua_SOURCE_DIR}/lvm.c
             ${lua_SOURCE_DIR}/lzio.c
+            ${lua_SOURCE_DIR}/lauxlib.c
+            ${lua_SOURCE_DIR}/lbaselib.c
+            ${lua_SOURCE_DIR}/lcorolib.c
+            ${lua_SOURCE_DIR}/ldblib.c
+            ${lua_SOURCE_DIR}/liolib.c
+            ${lua_SOURCE_DIR}/lmathlib.c
+            ${lua_SOURCE_DIR}/loslib.c
+            ${lua_SOURCE_DIR}/lstrlib.c
+            ${lua_SOURCE_DIR}/ltablib.c
+            ${lua_SOURCE_DIR}/lutf8lib.c
+            ${lua_SOURCE_DIR}/loadlib.c
+            ${lua_SOURCE_DIR}/linit.c
         )
 
         add_library(lua STATIC ${LUA_SOURCES})
