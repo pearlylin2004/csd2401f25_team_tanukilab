@@ -273,6 +273,43 @@ void UI::objPropertyPanel(GameObjectManager& manager) {
         ImGui::Spacing();
         ImGui::Separator();
         ImGui::Spacing();
+
+		// change texture of current object (drag and drop received from asset window)
+        Render* render = m_SelectionState.selectedObject->getComponent<Render>();
+        if (render && ImGui::CollapsingHeader("Render")) {
+            ImGui::Text("Texture");
+            ImGui::SameLine();
+
+            std::string texLabel = render->texFile.empty() ? "(Drop new texture here)" : render->texFile;
+            ImGui::Button(texLabel.c_str());
+
+            if (ImGui::BeginDragDropTarget()) {
+                if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("ASSET")) {
+                    const char* droppedPath = (const char*)payload->Data;
+                    render->texFile = droppedPath;
+                    render->hasTex = true;
+                    render->texChanged = true;
+                    addDebugMessage("Changed texture of " + m_SelectionState.selectedObject->getObjectName() + " to " + render->texFile + "\n");
+                }
+                ImGui::EndDragDropTarget();
+            }
+
+            ImGui::SameLine();
+            if (render->hasTex) {
+                ImGui::Spacing();
+                if (ImGui::Button("Clear Texture")) {
+                    glDeleteTextures(1, &render->texHDL);
+                    render->texHDL = 0;
+                    render->hasTex = false;
+                    render->texFile.clear();
+                    render->texChanged = false;
+                }
+            }
+        }
+
+        ImGui::Spacing();
+        ImGui::Separator();
+        ImGui::Spacing();
         
 		// delete object button (NOT WORKING YET)
         if (ImGui::Button("Delete Object (not available)")) {

@@ -79,6 +79,24 @@ void RenderSystem::update(GameObjectManager& manager) {
 	std::vector<GameObject*> gameObjects;
 	manager.getAllGameObjects(gameObjects);
 
+	// Update textures if they have changed (in level editor)
+	for (GameObject* object : gameObjects)
+	{
+		if (object->hasComponent<Render>())
+		{
+			Render* render = object->getComponent<Render>();
+
+			if (render->texChanged) {
+				if (render->hasTex) {
+					glDeleteTextures(1, &render->texHDL); // to avoid leak
+					render->texHDL = 0;
+				}
+				render->texHDL = uploadtex(render->texFile, render->isTransparent);
+				render->texChanged = false;
+			}
+		}
+	}
+
 	renderer::cam.update();
 	glUseProgram(renderer::shdr_pgm);
 	GLint vTransformView = glGetUniformLocation(renderer::shdr_pgm, "V");
