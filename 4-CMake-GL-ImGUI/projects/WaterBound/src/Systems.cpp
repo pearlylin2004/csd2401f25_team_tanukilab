@@ -443,6 +443,8 @@ void UISystem::init(GLFWwindow* window) {
 
 	// no show task bar icon for additional viewports
 	io.ConfigViewportsNoTaskBarIcon = true;
+
+	m_UI.loadAssetsFromDirectory();
 }
 
 UISystem::~UISystem() {
