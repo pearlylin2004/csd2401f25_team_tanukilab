@@ -380,6 +380,8 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 			}
 		}
 	}
+	//temporary container to track checked objects for this frame
+	std::unordered_map<GameObject*, std::vector<GameObject*>> checked;
 
 	//checking collision 
 	for (int i = 0; i < GRID_WIDTH; i++) {
@@ -387,6 +389,7 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 			auto& cellObject = grid[i][j].objects; //get objects in the cell
 			//loop through objects in the cell to check for collision
 			for (size_t n = 0; n < cellObject.size(); n++) {
+				//object 1
 				GameObject* obj1 = cellObject[n];
 				if (!obj1->hasComponent<Physics>()) continue;
 				Transform* t1 = obj1->getComponent<Transform>();
@@ -395,8 +398,17 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 				Vector2D vel1{ p1->velX, p1->velY };
 				//object 2 looping
 				for (size_t m = n + 1; m < cellObject.size(); m++) {
+					//object 2
 					GameObject* obj2 = cellObject[m];
 					if (!obj2->hasComponent<Physics>()) continue;
+
+					//skip if already checked
+					auto it = std::find(checked[obj1].begin(), checked[obj1].end(), obj2);
+					if (it != checked[obj1].end()) continue;
+					//mark as checked both ways
+					checked[obj1].push_back(obj2);
+					checked[obj2].push_back(obj1);
+
 					Transform* t2 = obj2->getComponent<Transform>();
 					Collision::AABB aabb2 = Collision::getObjectAABB(t2);
 					Physics* p2 = obj2->getComponent<Physics>();
@@ -406,18 +418,18 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 					
 					//checking if collided
 					if (info.collided) {
-						Collision::Resolve_AABB_AABB(
-							aabb1, vel1, 0.0f,
-							aabb2, vel2, 1.0f,
-							info, CollisionResponseMode::Stop
-						);
+						//update the velocity and penetrations
+						if (info.normal.x != 0) {
+							t1->x += info.normal.x * info.penetration;
+							p1->velX = 0; //stop horizontal movement
+						}
 
-						//update velocities
-						p1->velX = vel1.x;
-						p1->velY = vel1.y;
-						p2->velX = vel2.x;
-						p2->velY = vel2.y;
-
+						// resolve Y
+						if (info.normal.y != 0) {
+							t1->y += info.normal.y * info.penetration;
+							p1->velY = 0; //stop vertical movement
+						}
+												
 						UI::addDebugMessage("Collision detected between Object.\n"); //message for debugger
 					}
 				}

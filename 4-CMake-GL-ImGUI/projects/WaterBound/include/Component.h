@@ -89,7 +89,7 @@ public:
     float damping = 0.99f;
     float jumpForce = 10.0f;  
     float floorY = 0.0f;
-    bool onGround = true;  
+    bool onGround = false;  
     float Speed = 150.0f;
 
     //water bullet
@@ -137,6 +137,7 @@ public:
     float timeOfImpact = 0.0f;
     Vector2D normal{ 0,0 };
     Vector2D contactPoint = { 0,0 };
+    float penetration = 0.0f; //for it to not overlap 
 };
 
 // For imgui(testing)

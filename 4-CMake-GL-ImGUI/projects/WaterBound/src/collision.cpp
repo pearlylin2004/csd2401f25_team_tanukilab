@@ -64,6 +64,7 @@ namespace Collision {
         info.timeOfImpact = static_cast<float>(g_dt);
         info.normal = { 0, 0 };
         info.contactPoint = { 0, 0 };
+        info.penetration = 0.0f;
 
         //relative velocity
         Vector2D Vb{ vel1.x - vel2.x, vel1.y - vel2.y };
@@ -144,19 +145,34 @@ namespace Collision {
             Vector2D cp = aabb1.getMin();
             cp.x += vel1.x * tFirst;
             cp.y += vel1.y * tFirst;
-
-            if (info.normal.x != 0) {
-                cp.x = (info.normal.x > 0) ? aabb2.getMax().x : aabb2.getMin().x;
-                cp.y += (vel1.y - vel2.y) * tFirst;
-            }
-            else if (info.normal.y != 0) {
-                cp.y = (info.normal.y > 0) ? aabb2.getMax().y : aabb2.getMin().y;
-                cp.x += (vel1.x - vel2.x) * tFirst;
-            }
-
             info.contactPoint = cp;
+            return info;
         }
-        return info;
+
+        //testing
+        if (aabb1.getMax().x > aabb2.getMin().x && aabb1.getMin().x < aabb2.getMax().x &&
+            aabb1.getMax().y > aabb2.getMin().y && aabb1.getMin().y < aabb2.getMax().y)
+        {
+            info.collided = true;
+
+            float overlapX = std::min(aabb1.getMax().x - aabb2.getMin().x,
+                aabb2.getMax().x - aabb1.getMin().x);
+            float overlapY = std::min(aabb1.getMax().y - aabb2.getMin().y,
+                aabb2.getMax().y - aabb1.getMin().y);
+
+            if (overlapX < overlapY) {
+                info.penetration = overlapX;
+                info.normal = (aabb1.getMax().x > aabb2.getMax().x)
+                    ? Vector2D(1, 0)
+                    : Vector2D(-1, 0);
+            }
+            else {
+                info.penetration = overlapY;
+                info.normal = (aabb1.getMax().y > aabb2.getMax().y)
+                    ? Vector2D(0, 1)
+                    : Vector2D(0, -1);
+            }
+        }
     }
 
     //AABB with circles 
