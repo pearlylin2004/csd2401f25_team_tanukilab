@@ -389,10 +389,18 @@ void UI::loadAssetsFromDirectory() {
 void UI::assetWindow() {
 	ImGui::Begin("Assets");
 
-	// refresh to update assets from the actual asset folder (now is shaders :))
+	// refresh to update assets from the actual asset folder
+	// not really needed since we have auto refresh, but still good to have
     if (ImGui::Button("Refresh")) {
         assetsChangedFlag = true;
         loadAssetsFromDirectory();
+    }
+
+	// auto refresh when new files are added to the asset folder
+    std::filesystem::file_time_type current = std::filesystem::last_write_time(m_AssetBrowserState.currentFolder);
+    if (current != m_AssetBrowserState.lastRefresh) {
+        m_AssetBrowserState.lastRefresh = current;
+        assetsChangedFlag = true; // to update assets
     }
 
     ImGui::Separator();

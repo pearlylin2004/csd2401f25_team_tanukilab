@@ -113,6 +113,7 @@ private:
 
 	struct AssetBrowserState {
 		std::string currentFolder = "shaders/"; // we dont have a asset folder yet :(
+		std::filesystem::file_time_type lastRefresh;
 
 		float iconSize = 80.0f;
 		//float buttonPadding = 20.0f; // adding padding made my code ugly
