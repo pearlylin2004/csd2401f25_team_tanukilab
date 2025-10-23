@@ -438,6 +438,7 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 	}
 }
 
+//UI system - handles ImGui rendering and interaction
 bool UISystem::showUI = false;
 
 void UISystem::init(GLFWwindow* window) {
