@@ -23,6 +23,7 @@ set(ALL_LIBS
   PRIVATE libglew_static
   PRIVATE imgui
   PRIVATE stb
+  PRIVATE lua 
 )
 
 # Include path for GLM (optional if not using FetchContent)
@@ -70,6 +71,7 @@ foreach(child ${children})
         # Include path for each project
         target_include_directories(${child} PRIVATE
             ${CMAKE_CURRENT_LIST_DIR}/projects/${child}/include
+	    ${lua_SOURCE_DIR}
         )
 
         # ==== Shaders (copy to build dir so the exe can load them) ====

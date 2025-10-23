@@ -23,7 +23,6 @@ Technology is prohibited.
 
 #include "Systems.h"
 
-
 //here we go buddies
 
 //all the systems need to get all game objects

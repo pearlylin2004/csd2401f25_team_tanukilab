@@ -27,6 +27,7 @@ Technology is prohibited.
 #include <imgui_impl_glfw.h> //for use of imgui in UISystem
 #include <imgui_impl_opengl3.h> //for use of imgui in UISystem
 #include <ui.h>
+#include "luaSystem.h"
 
 //forward declaration
 struct renderer;
