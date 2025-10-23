@@ -36,6 +36,7 @@ public:
 
 	void update(GameObjectManager& manager);
 
+	// debug message logging
 	static void addDebugMessage(const std::string& msg);
 
 	// edit shape windows
@@ -104,7 +105,7 @@ private:
 	struct Asset {
 		std::string name;
 		std::string path;
-		std::string folder;
+		std::string folder; // in case there is a parent folder (e.g. textures/) for filtering in the future
 	};
 
 	struct AssetBrowserState {
@@ -118,6 +119,7 @@ private:
 
 	std::unordered_map<ShapeType, ShapeDefaults> m_shapePresets;
 	std::vector<Asset> m_assets;
+
 };
 
 #endif

@@ -62,11 +62,15 @@ public:
     std::unique_ptr<Component> clone() const override {
         return std::make_unique<Render>(*this);
     }
+
 public:
     bool visible = true;
     bool hasTex = false;
     bool isTransparent = false;
     bool wireframe = false;
+    // sorry but i need this for real time texture update
+    // wait for boss sin le to help me settle this - kelly :)
+    bool texChanged = false;
     GLuint texHDL;
     std::string texFile;
     
