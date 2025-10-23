@@ -91,6 +91,7 @@ public:
     float floorY = 0.0f;
     bool onGround = true;  
     float Speed = 150.0f;
+    bool alive = false;
 
     //water bullet
     Vector2D posBullet;
