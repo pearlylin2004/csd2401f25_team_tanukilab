@@ -31,6 +31,13 @@ include_directories(${CMAKE_CURRENT_LIST_DIR}/lib/glm)
 
 # ======================= AUTO PROJECT DISCOVERY =========================
 
+target_compile_definitions( WaterBound PRIVATE
+  MAIN_DIR = "${CMAKE_CURRENT_LIST_DIR}/projects/WaterBound"
+  CURRENT_DIR = "${CMAKE_BINARY_DIR}/$<CONFIG>"
+  ASSET_PATH = "${CMAKE_BINARY_DIR}/$<CONFIG>/assets"
+  SHADER_PATH = "${CMAKE_BINARY_DIR}/$<CONFIG>/shaders"
+)
+
 # Get all subdirectories in the projects folder
 file(GLOB children RELATIVE "${CMAKE_CURRENT_LIST_DIR}/projects" "${CMAKE_CURRENT_LIST_DIR}/projects/*")
 
@@ -103,6 +110,20 @@ foreach(child ${children})
                     "${CMAKE_CURRENT_LIST_DIR}/build/shaders"
             COMMENT "Copying shaders for ${child} to runtime directory"
           )
+
+	add_custom_command(TARGET ${child} POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy_directory
+                    "${${child}_SHADER_DIR}"
+                    "$<TARGET_FILE_DIR:${child}>/assets"
+            COMMENT "Copying shaders for ${child} to runtime directory"
+          )
+
+	  add_custom_command(TARGET ${child} POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy_directory
+                    "${${child}_SHADER_DIR}"
+                    "${CMAKE_CURRENT_LIST_DIR}/build/assets"
+            COMMENT "Copying shaders for ${child} to runtime directory"
+          )
           endif()
     endif()
 endforeach()
@@ -131,5 +152,4 @@ add_custom_command(TARGET WaterBound POST_BUILD
         "${CMAKE_CURRENT_LIST_DIR}/projects/WaterBound/lib/fmodL.dll"
         "$<TARGET_FILE_DIR:WaterBound>/fmodL.dll"
 )
-
 # ======================= END AUTO CONFIGURATION =========================
