@@ -52,6 +52,8 @@ private:
 	void drawShapes(GameObjectManager& manager);
 	//void drawControls(std::vector<Collision::Circle>& circles);
 	void drawDebug();
+
+	void editorMenuBar(GameObjectManager& manager);
 	void objListPanel(GameObjectManager& manager);
 	void objPropertyPanel(GameObjectManager& manager);
 	void objInspectWindow(GameObjectManager& manager);
@@ -124,6 +126,7 @@ private:
 	std::unordered_map<ShapeType, ShapeDefaults> m_shapePresets;
 	std::vector<Asset> m_assets;
 	static bool assetsChangedFlag;
+	std::string m_currentSceneName;
 };
 
 #endif

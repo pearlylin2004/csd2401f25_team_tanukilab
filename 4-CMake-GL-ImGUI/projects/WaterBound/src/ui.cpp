@@ -25,12 +25,21 @@ UI::UI() {
         { ShapeType::Leaves, { 0.0f, 0.0f, 0.0f, 0.0f, 5.0f, 5.0f, 5.0f }},
         { ShapeType::Bullet, { 0.0f, 0.0f, 0.0f, 0.5f, 0.5f, 0.5f, 0.0f }}
 	};
+
+	m_currentSceneName = "shaders/Scene/temp_serialize.txt";
 }
 
 void UI::update(GameObjectManager& manager) {
+	if(InputHandler::isComboKeyTriggered(GLFW_KEY_S, GLFW_KEY_LEFT_CONTROL) ||
+        InputHandler::isComboKeyTriggered(GLFW_KEY_S, GLFW_KEY_RIGHT_CONTROL))
+        manager.saveToFile(m_currentSceneName);
+
+	editorMenuBar(manager);
+
     drawPerformance();
     drawShapes(manager);
     drawDebug();
+
     objInspectWindow(manager);
 	assetWindow(manager);
 }
@@ -179,6 +188,76 @@ void UI::drawDebug() {
         ImGui::SetScrollHereY(1.0f);
 
     ImGui::End();
+}
+
+void UI::editorMenuBar(GameObjectManager& manager) {
+    ImGui::BeginMainMenuBar();
+
+	// for scene saving and loading
+    if (ImGui::BeginMenu("File")) {
+
+        // create new scene
+        if (ImGui::MenuItem("New Scene (coming soon)")) {
+            // implement new scene logic here 
+        }
+
+        // duplicate scene
+        if (ImGui::MenuItem("Duplicate Scene")) {
+			if (!m_currentSceneName.empty()) {
+                std::string newSceneName = m_currentSceneName;
+                
+				if (newSceneName.find_last_of('.') != std::string::npos) {
+					newSceneName.insert(newSceneName.find_last_of('.'), "_copy");
+				}
+				else {
+					newSceneName += "_copy";
+				}
+
+				manager.saveToFile(newSceneName);
+				m_currentSceneName = newSceneName;
+				assetsChangedFlag = true;
+
+				m_SelectionState.selectedObject = nullptr;
+				m_SelectionState.selectedIndex = -1;
+				addDebugMessage("Scene duplicated to: " + newSceneName + "\n");
+			}
+			else {
+				addDebugMessage("No current scene to duplicate.\n");
+			}
+        }
+         
+		// save current scene to file
+        if (ImGui::MenuItem("Save Scene")) {
+            manager.saveToFile(m_currentSceneName);
+        }
+
+        // load an existing scene
+        if (ImGui::BeginMenu("Load Scene")) {
+
+            // load through the assets to find scene files
+			for (const Asset& asset : m_assets) {
+                if (asset.folder == m_AssetBrowserState.currentFolder + "Scene") {
+					if (ImGui::MenuItem(asset.name.c_str())) {
+                        std::string fullPath = asset.folder + "/" + asset.name;
+						manager.loadFromFile(fullPath);
+
+						m_currentSceneName = fullPath;
+
+                        m_SelectionState.selectedObject = nullptr;
+                        m_SelectionState.selectedIndex = -1;
+
+                        addDebugMessage("Loaded scene: " + asset.name + "\n");
+					}
+                }
+			}
+            ImGui::EndMenu();
+
+        }
+
+        ImGui::EndMenu();
+    }
+
+    ImGui::EndMainMenuBar();
 }
 
 void UI::objListPanel(GameObjectManager& manager) {
@@ -424,6 +503,9 @@ void UI::assetWindow(GameObjectManager& manager) {
             if (asset.folder == m_AssetBrowserState.currentFolder + "Scene") {
                 // load the new scene
 				manager.loadFromFile(asset.folder + "/" + asset.name);
+
+				// set current scene name
+				m_currentSceneName = asset.folder + "/" + asset.name;
 
                 // clear the current selection
                 m_SelectionState.selectedObject = nullptr;

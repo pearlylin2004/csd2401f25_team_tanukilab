@@ -167,3 +167,68 @@ void GameObjectManager::getAllGameObjects(std::vector<GameObject*>& gameObjects)
 		}
 
 	}
+
+	void GameObjectManager::saveToFile(const std::string& filename) {
+		std::ofstream os{ filename };
+		if (!os)
+		{
+			std::cerr << "file not found: " << filename << std::endl;
+			return;
+		}
+
+		for (auto& [name, obj] : m_gameObjects)
+		{
+			os << "object " << name << "\n";
+
+			if (auto render = obj->getComponent<Render>())
+			{
+				os << "renderer ";
+				
+				switch (render->modelRef.shape) {
+					case shape::square:
+						os << "square ";
+						break;
+					case shape::circle:
+						os << "circle ";
+						break;
+					default:
+						os << "circle ";
+						break;
+				}
+
+				os << render->hasTex << " ";
+				if (render->hasTex)
+					os << render->texFile;
+
+				os << "\n";
+			}
+
+			if (auto transform = obj->getComponent<Transform>())
+			{
+				os << "transform "
+					<< transform->x << " "
+					<< transform->y << " "
+					<< transform->z << " "
+					<< transform->rotation << " "
+					<< transform->scaleX << " "
+					<< transform->scaleY << " "
+					<< transform->scaleZ << "\n";
+			}
+
+			if (auto physics = obj->getComponent<Physics>())
+			{
+				os << "physics "
+					<< physics->inWater << " "
+					<< physics->buoancy << "\n";
+			}
+
+			if (obj->hasComponent<CollisionInfo>())
+			{
+				os << "collision\n";
+			}
+
+			os << "\n";
+		}
+
+		std::cout << "Scene saved to " << filename << "\n";
+	}

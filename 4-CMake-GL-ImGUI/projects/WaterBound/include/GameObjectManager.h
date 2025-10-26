@@ -42,7 +42,11 @@ public:
 	//initialize game objects from a file
 	void init();
 
+	// load from file (read)
 	void loadFromFile(const std::string& filename);
+
+	// save to file (write)
+	void saveToFile(const std::string& filename);
 
 private:
 	//map of all game objects
