@@ -127,6 +127,8 @@ private:
 	std::vector<Asset> m_assets;
 	static bool assetsChangedFlag;
 	std::string m_currentSceneName;
+	std::string m_tempSceneName;
+	bool m_isPlaying; // to track Play/Stop mode
 };
 
 #endif

@@ -27,6 +27,8 @@ UI::UI() {
 	};
 
 	m_currentSceneName = "shaders/Scene/temp_serialize.txt";
+    m_tempSceneName = "shaders/Scene/temp_scene";
+	m_isPlaying = false;
 }
 
 void UI::update(GameObjectManager& manager) {
@@ -193,7 +195,7 @@ void UI::drawDebug() {
 void UI::editorMenuBar(GameObjectManager& manager) {
     ImGui::BeginMainMenuBar();
 
-	// for scene saving and loading
+	/* ------------------- File Menu ------------------- */
     if (ImGui::BeginMenu("File")) {
 
         // create new scene
@@ -255,6 +257,43 @@ void UI::editorMenuBar(GameObjectManager& manager) {
         }
 
         ImGui::EndMenu();
+    }
+
+    /* ------------------- Simulation ------------------- */
+       ImGui::SameLine(); // put button next to File menu
+
+    // Circle icon: green for playing, red for stopped
+    ImVec4 color = m_isPlaying ? ImVec4(0.f, 1.f, 0.f, 1.f) : ImVec4(1.f, 0.f, 0.f, 1.f);
+    ImGui::TextColored(color, "?");
+    ImGui::SameLine();
+		if (!m_isPlaying) {
+			if (ImGui::MenuItem("Play")) {
+				m_isPlaying = true;
+
+                // save current state to a temp scene file
+                manager.saveToFile(m_tempSceneName);
+
+				addDebugMessage("Simulation started.\n");
+			}
+		}
+		else {
+			if (ImGui::MenuItem("Stop")) {
+				m_isPlaying = false;
+
+				// load back the temp scene file to restore state
+                manager.loadFromFile(m_tempSceneName);
+
+                m_SelectionState.selectedObject = nullptr;
+                m_SelectionState.selectedIndex = -1;
+
+				// remove temp scene file
+				if (std::filesystem::exists(m_tempSceneName))
+					std::filesystem::remove(m_tempSceneName);
+
+				addDebugMessage("Simulation stopped.\n");
+			}
+		}
+		ImGui::EndMenu();
     }
 
     ImGui::EndMainMenuBar();
@@ -488,6 +527,10 @@ void UI::assetWindow(GameObjectManager& manager) {
 
     int index{};
     for (const Asset& asset : m_assets) {
+        // skip temp scene file (for play/stop)
+        std::string fullPath = asset.folder + "/" + asset.name;
+        if (fullPath == m_tempSceneName) continue; 
+
 		ImGui::PushID(index++);
 
         // display button and the name of the file
@@ -502,10 +545,10 @@ void UI::assetWindow(GameObjectManager& manager) {
 			// if it's a scene file, load the scene
             if (asset.folder == m_AssetBrowserState.currentFolder + "Scene") {
                 // load the new scene
-				manager.loadFromFile(asset.folder + "/" + asset.name);
+				manager.loadFromFile(fullPath);
 
 				// set current scene name
-				m_currentSceneName = asset.folder + "/" + asset.name;
+				m_currentSceneName = fullPath;
 
                 // clear the current selection
                 m_SelectionState.selectedObject = nullptr;
