@@ -260,12 +260,7 @@ void UI::editorMenuBar(GameObjectManager& manager) {
     }
 
     /* ------------------- Simulation ------------------- */
-       ImGui::SameLine(); // put button next to File menu
-
-    // Circle icon: green for playing, red for stopped
-    ImVec4 color = m_isPlaying ? ImVec4(0.f, 1.f, 0.f, 1.f) : ImVec4(1.f, 0.f, 0.f, 1.f);
-    ImGui::TextColored(color, "?");
-    ImGui::SameLine();
+    if (ImGui::BeginMenu("Simulation")) {
 		if (!m_isPlaying) {
 			if (ImGui::MenuItem("Play")) {
 				m_isPlaying = true;
