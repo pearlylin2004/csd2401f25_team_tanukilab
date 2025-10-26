@@ -55,7 +55,7 @@ private:
 	void objListPanel(GameObjectManager& manager);
 	void objPropertyPanel(GameObjectManager& manager);
 	void objInspectWindow(GameObjectManager& manager);
-	void assetWindow();
+	void assetWindow(GameObjectManager& manager);
 
 
 	struct PanelState {

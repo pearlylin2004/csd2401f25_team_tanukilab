@@ -32,7 +32,7 @@ void UI::update(GameObjectManager& manager) {
     drawShapes(manager);
     drawDebug();
     objInspectWindow(manager);
-	assetWindow();
+	assetWindow(manager);
 }
 
 void UI::addDebugMessage(const std::string& msg) {
@@ -386,7 +386,7 @@ void UI::loadAssetsFromDirectory() {
 	addDebugMessage("Assets loaded from " + m_AssetBrowserState.currentFolder + "\n");
 }
 
-void UI::assetWindow() {
+void UI::assetWindow(GameObjectManager& manager) {
 	ImGui::Begin("Assets");
 
 	// refresh to update assets from the actual asset folder
@@ -396,7 +396,7 @@ void UI::assetWindow() {
         loadAssetsFromDirectory();
     }
 
-	// auto refresh when new files are added to the asset folder
+	// auto refresh when new files added to the asset folder (in project dir)
     std::filesystem::file_time_type current = std::filesystem::last_write_time(m_AssetBrowserState.currentFolder);
     if (current != m_AssetBrowserState.lastRefresh) {
         m_AssetBrowserState.lastRefresh = current;
@@ -415,7 +415,24 @@ void UI::assetWindow() {
         ImGui::BeginGroup();
 
         // can consider changing to image in the future
-		ImGui::Button(asset.name.c_str(), ImVec2(m_AssetBrowserState.iconSize, m_AssetBrowserState.iconSize));
+        ImGui::Button(asset.name.c_str(), ImVec2(m_AssetBrowserState.iconSize, m_AssetBrowserState.iconSize));
+
+
+        // double click logic
+        if (ImGui::IsItemHovered() && InputHandler::isMouseLeftDoubleClicked()) {
+			// if it's a scene file, load the scene
+            if (asset.folder == m_AssetBrowserState.currentFolder + "Scene") {
+                // load the new scene
+				manager.loadFromFile(asset.folder + "/" + asset.name);
+
+                // clear the current selection
+                m_SelectionState.selectedObject = nullptr;
+				m_SelectionState.selectedIndex = -1;
+
+				// for debugging
+                addDebugMessage("Loaded scene: " + asset.name + "\n");
+            }
+        }
 
 		// make sure this text wraps if it's too long
         ImGui::PushTextWrapPos(ImGui::GetCursorPosX() + m_AssetBrowserState.iconSize);
@@ -429,12 +446,11 @@ void UI::assetWindow() {
         float nextButtonX2 = lastButtonX2 + m_AssetBrowserState.iconSize;
         if (nextButtonX2 < windowVisibleX2) ImGui::SameLine();
 
-		// drag and drop, but now actually does nothing
+		// drag a texture to inspector window to change texture of selected object
         if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID)) {
             ImGui::SetDragDropPayload("ASSET", asset.path.c_str(), asset.path.size() + 1);
             ImGui::Text("%s", asset.name.c_str());
             ImGui::EndDragDropSource();
-
         }
 
 
@@ -442,4 +458,5 @@ void UI::assetWindow() {
     }
 
 	ImGui::End();
+
 }
