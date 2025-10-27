@@ -59,8 +59,6 @@ private:
 	void objInspectWindow(GameObjectManager& manager);
 	void assetWindow(GameObjectManager& manager);
 
-	void objPicking(GameObjectManager& manager);
-
 	struct PanelState {
 		float objListWidth = 250.0f; // Width of the object list panel
 		float objListHeight = -1.0f; // Height of the object list panel, -1 means full height

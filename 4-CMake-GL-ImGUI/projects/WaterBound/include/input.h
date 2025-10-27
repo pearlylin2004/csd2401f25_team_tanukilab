@@ -20,6 +20,7 @@ Technology is prohibited.
 #include <cstring>
 #include <filesystem>
 #include "mathlib.h"
+#include "config.h"
 
 /*
 Keyboard key tokens
@@ -37,57 +38,64 @@ GLFW_KEY_SPACE
 class InputHandler {
 public:
 	// initialize input handler with window and set up callbacks
-	static void init(GLFWwindow* window);
+	static void init(GLFWwindow* window, const AppConfig& cfg);
 	// update input states (call once per frame)  (DO NOT call glfwPollEvents again in game loop)
 	static void update();
 
 	/* check for keyboard input */
 	// check if key was just pressed (triggered once)
-	static bool isKeyTriggered(int key); 
+	static bool isKeyTriggered(int key);
 	// check if key was just released
-	static bool isKeyReleased(int key); 
+	static bool isKeyReleased(int key);
 	// check if key is currently being held down
-	static bool isKeyHeld(int key); 
+	static bool isKeyHeld(int key);
 	// check if both keys are triggered (default is left shift)
-	static bool isComboKeyTriggered(int key1, int key2 = GLFW_KEY_LEFT_SHIFT); 
+	static bool isComboKeyTriggered(int key1, int key2 = GLFW_KEY_LEFT_SHIFT);
 	// check if both keys are being held down (default is left shift)
-	static bool isComboKeyHeld(int key1, int key2 = GLFW_KEY_LEFT_SHIFT); 
+	static bool isComboKeyHeld(int key1, int key2 = GLFW_KEY_LEFT_SHIFT);
 
 	/* check for mouse button */
 	// check if left mouse button was clicked
-	static bool isMouseLeftClicked(); 
+	static bool isMouseLeftClicked();
 	// check if left mouse button is currently being held down
-	static bool isMouseLeftHeld(); 
+	static bool isMouseLeftHeld();
 	// check if left mouse button was just released
-	static bool isMouseLeftReleased(); 
+	static bool isMouseLeftReleased();
 	// check if right mouse button was just clicked
-	static bool isMouseLeftDoubleClicked(); 
+	static bool isMouseLeftDoubleClicked();
 	// ONLY use if you need other buttons
-	static bool isMouseButtonClicked(int button); 
+	static bool isMouseButtonClicked(int button);
 	// check if mouse button was double clicked (within 0.25s)
-	static bool isMouseButtonDoubleClicked(int button); 
+	static bool isMouseButtonDoubleClicked(int button);
 
 	// check if mouse is being dragged (left button held and moving)
-	static bool isMouseDragging(); 
+	static bool isMouseDragging();
 	// get change in mouse position since drag started
-	static Vector2D getMouseDragDelta(); 
+	static Vector2D getMouseDragDelta();
 	// get mouse position when drag started
-	static Vector2D getMouseDragStartPos(); 
+	static Vector2D getMouseDragStartPos();
 
 	/* Cursor Position */
 	// get current cursor position
-	static Vector2D getCursorPosition(); 
+	static Vector2D getMousePosition();
 	// get current cursor x position
-	static float getMouseX(); 
+	static float getMouseX();
 	// get current cursor y position
-	static float getMouseY(); 
+	static float getMouseY();
 	// get change in mouse position since last frame
-	static Vector2D getMouseDelta(); 
+	static Vector2D getMouseDelta();
 	// check if cursor is inside window
-	static bool isCursorInsideWindow(); 
+	static bool isCursorInsideWindow();
+
+	// get cursor world postion
+	static Vector2D getWorldMousePosition();
+	// get world cursor x position
+	static float getWorldMouseX();
+	// get world cursor y position
+	static float getWorldMouseY();
 
 	// get scroll offset since last frame
-	static float getMouseScroll(); 
+	static float getMouseScroll();
 
 	/* callbacks(ignore these and DON'T touch them, GLFW will call them automatically) */
 	// key callback function
@@ -100,11 +108,12 @@ public:
 	static void CursorEnterCallback(GLFWwindow* window, int entered);
 	// scroll callback function
 	static void scrollCallback(GLFWwindow* window, double xoffset, double yoffset);
-	
+
 	static void dropCallback(GLFWwindow* window, int count, const char** paths);
 
 private:
 	static GLFWwindow* m_window;
+	static AppConfig m_cfg;
 
 	static bool m_keys[1024];
 	static bool m_keysPrevious[1024];
