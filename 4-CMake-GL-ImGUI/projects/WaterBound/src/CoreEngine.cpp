@@ -152,7 +152,6 @@ void CoreEngine::Update(float deltaTime) {
         }
     }
 
-
     // Update all systems in order
     m_inputSystem->update(*m_manager, deltaTime);
     m_collisionSystem->update(*m_manager, deltaTime);
