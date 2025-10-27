@@ -49,3 +49,43 @@ float LuaSystem::getGlobalNumber(const std::string& name) {
     lua_pop(L, 1);
     return val;
 }
+
+bool LuaSystem::runScriptForObject(const std::string& filename, GameObject* obj, float deltaTime) {
+    if (!L || !obj) return false;
+
+    // Load the script only once (you can store loaded scripts in a map if needed)
+    static std::unordered_map<std::string, bool> loadedScripts;
+    if (loadedScripts.find(filename) == loadedScripts.end()) {
+        if (luaL_dofile(L, filename.c_str()) != LUA_OK) {
+            std::cerr << "Lua error: " << lua_tostring(L, -1) << std::endl;
+            lua_pop(L, 1);
+            return false;
+        }
+        loadedScripts[filename] = true;
+    }
+
+    // Expose deltaTime
+    lua_pushnumber(L, deltaTime);
+    lua_setglobal(L, "deltaTime");
+
+    // Expose object (for simplicity, pass object pointer as lightuserdata)
+    lua_pushlightuserdata(L, obj);
+    lua_setglobal(L, "object");
+
+    // Call Lua function Update(object, deltaTime)
+    lua_getglobal(L, "Update");
+    if (lua_isfunction(L, -1)) {
+        lua_pushlightuserdata(L, obj);
+        lua_pushnumber(L, deltaTime);
+        if (lua_pcall(L, 2, 0, 0) != LUA_OK) {
+            std::cerr << "Lua Update error: " << lua_tostring(L, -1) << std::endl;
+            lua_pop(L, 1);
+        }
+    }
+    else {
+        lua_pop(L, 1); // pop non-function
+    }
+
+    return true;
+}
+

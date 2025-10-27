@@ -17,6 +17,7 @@ Technology is prohibited.
 #pragma once
 #include <string>
 #include <iostream>
+#include "GameObject.h"
 
 extern "C" {
 #include "lua.h"
@@ -34,6 +35,7 @@ public:
     bool runString(const std::string& code);
     bool runScript(const std::string& filename);
     float getGlobalNumber(const std::string& name);
+    bool runScriptForObject(const std::string& filename, GameObject* obj, float deltaTime);
 
 private:
     lua_State* L = nullptr;

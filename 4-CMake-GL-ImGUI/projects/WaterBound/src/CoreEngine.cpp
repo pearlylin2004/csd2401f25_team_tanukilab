@@ -82,13 +82,16 @@ void CoreEngine::Init() {
 	m_uiSystem->init(m_window);
 
 	// --- Lua Script Test ---
-    if (m_luaSystem->runScript("../projects/WaterBound/scripting/test.lua")) {
-        float val = m_luaSystem->getGlobalNumber("testValue");
-        std::cout << "Lua testValue = " << val << std::endl;
-    }
-    else {
-        std::cout << "Failed to run Lua script!" << std::endl;
-    }
+    //get existing game objects
+    GameObject* object1 = m_manager->getGameObject("player");
+    GameObject* object2 = m_manager->getGameObject("bullet");
+
+    // Add LuaScript components to the existing objects
+    if (object1)
+        object1->addComponent<LuaScript>("../projects/WaterBound/scripting/object1.lua");
+
+    if (object2)
+        object2->addComponent<LuaScript>("../projects/WaterBound/scripting/object2.lua");
 
     audio.init();
 
@@ -136,8 +139,19 @@ void CoreEngine::Update(float deltaTime) {
 
         Transform* newTransform = newObject->getComponent<Transform>();
         newTransform->y += 1.5f * (static_cast<float>(cloneCount) - 1); // Offset the new clone's position
-
     }
+
+	//lua scripting update for all objects with LuaScript component
+    std::vector<GameObject*> gameObjects;
+    m_manager->getAllGameObjects(gameObjects);
+
+    for (GameObject* obj : gameObjects) {
+        if (obj->hasComponent<LuaScript>()) {
+            LuaScript* scriptComp = obj->getComponent<LuaScript>();
+            m_luaSystem->runScriptForObject(scriptComp->filename, obj, deltaTime);
+        }
+    }
+
 
     // Update all systems in order
     m_inputSystem->update(*m_manager, deltaTime);
