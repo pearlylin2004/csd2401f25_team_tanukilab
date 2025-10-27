@@ -17,20 +17,33 @@ Technology is prohibited.
 
 #include "ui.h"
 
+bool UI::assetsChangedFlag = true;
+
 UI::UI() {
 	// temp, get ready to load from json in the future
     m_shapePresets = {
         { ShapeType::Leaves, { 0.0f, 0.0f, 0.0f, 0.0f, 5.0f, 5.0f, 5.0f }},
         { ShapeType::Bullet, { 0.0f, 0.0f, 0.0f, 0.5f, 0.5f, 0.5f, 0.0f }}
 	};
+
+	m_currentSceneName = "shaders/Scene/temp_serialize.txt";
+    m_tempSceneName = "shaders/Scene/temp_scene";
+	m_isPlaying = false;
 }
 
 void UI::update(GameObjectManager& manager) {
+	if(InputHandler::isComboKeyTriggered(GLFW_KEY_S, GLFW_KEY_LEFT_CONTROL) ||
+        InputHandler::isComboKeyTriggered(GLFW_KEY_S, GLFW_KEY_RIGHT_CONTROL))
+        manager.saveToFile(m_currentSceneName);
+
+	editorMenuBar(manager);
+
     drawPerformance();
     drawShapes(manager);
     drawDebug();
+
     objInspectWindow(manager);
-	assetWindow();
+	assetWindow(manager);
 }
 
 void UI::addDebugMessage(const std::string& msg) {
@@ -179,7 +192,110 @@ void UI::drawDebug() {
     ImGui::End();
 }
 
+void UI::editorMenuBar(GameObjectManager& manager) {
+    ImGui::BeginMainMenuBar();
+
+	/* ------------------- File Menu ------------------- */
+    if (ImGui::BeginMenu("File")) {
+
+        // create new scene
+        if (ImGui::MenuItem("New Scene (coming soon)")) {
+            // implement new scene logic here 
+        }
+
+        // duplicate scene
+        if (ImGui::MenuItem("Duplicate Scene")) {
+			if (!m_currentSceneName.empty()) {
+                std::string newSceneName = m_currentSceneName;
+                
+				if (newSceneName.find_last_of('.') != std::string::npos) {
+					newSceneName.insert(newSceneName.find_last_of('.'), "_copy");
+				}
+				else {
+					newSceneName += "_copy";
+				}
+
+				manager.saveToFile(newSceneName);
+				m_currentSceneName = newSceneName;
+				assetsChangedFlag = true;
+
+				m_SelectionState.selectedObject = nullptr;
+				m_SelectionState.selectedIndex = -1;
+				addDebugMessage("Scene duplicated to: " + newSceneName + "\n");
+			}
+			else {
+				addDebugMessage("No current scene to duplicate.\n");
+			}
+        }
+         
+		// save current scene to file
+        if (ImGui::MenuItem("Save Scene")) {
+            manager.saveToFile(m_currentSceneName);
+        }
+
+        // load an existing scene
+        if (ImGui::BeginMenu("Load Scene")) {
+
+            // load through the assets to find scene files
+			for (const Asset& asset : m_assets) {
+                if (asset.folder == m_AssetBrowserState.currentFolder + "Scene") {
+					if (ImGui::MenuItem(asset.name.c_str())) {
+                        std::string fullPath = asset.folder + "/" + asset.name;
+						manager.loadFromFile(fullPath);
+
+						m_currentSceneName = fullPath;
+
+                        m_SelectionState.selectedObject = nullptr;
+                        m_SelectionState.selectedIndex = -1;
+
+                        addDebugMessage("Loaded scene: " + asset.name + "\n");
+					}
+                }
+			}
+            ImGui::EndMenu();
+
+        }
+
+        ImGui::EndMenu();
+    }
+
+    /* ------------------- Simulation ------------------- */
+    if (ImGui::BeginMenu("Simulation")) {
+		if (!m_isPlaying) {
+			if (ImGui::MenuItem("Play")) {
+				m_isPlaying = true;
+
+                // save current state to a temp scene file
+                manager.saveToFile(m_tempSceneName);
+
+				addDebugMessage("Simulation started.\n");
+			}
+		}
+		else {
+			if (ImGui::MenuItem("Stop")) {
+				m_isPlaying = false;
+
+				// load back the temp scene file to restore state
+                manager.loadFromFile(m_tempSceneName);
+
+                m_SelectionState.selectedObject = nullptr;
+                m_SelectionState.selectedIndex = -1;
+
+				// remove temp scene file
+				if (std::filesystem::exists(m_tempSceneName))
+					std::filesystem::remove(m_tempSceneName);
+
+				addDebugMessage("Simulation stopped.\n");
+			}
+		}
+		ImGui::EndMenu();
+    }
+
+    ImGui::EndMainMenuBar();
+}
+
 void UI::objListPanel(GameObjectManager& manager) {
+
     std::vector<const char*> names; // adjust max size
 
     std::vector<GameObject*> gameObjects;
@@ -203,7 +319,8 @@ void UI::objListPanel(GameObjectManager& manager) {
 
 void UI::objPropertyPanel(GameObjectManager& manager) {
     if (m_SelectionState.selectedObject) {
-		// object name edit
+		
+        /* ------------------- Edit Object Name ------------------- */
         std::string& objName = m_SelectionState.selectedObject->getObjectName();
         char buffer[256];
         strncpy(buffer, objName.c_str(), sizeof(buffer));
@@ -221,7 +338,7 @@ void UI::objPropertyPanel(GameObjectManager& manager) {
         ImGui::Spacing();
 
 
-		// object transform properties
+        /* ------------------- Object Transformation ------------------- */
         Transform* transform = m_SelectionState.selectedObject->getComponent<Transform>();
         if (ImGui::CollapsingHeader("Transform")) {
 
@@ -235,7 +352,7 @@ void UI::objPropertyPanel(GameObjectManager& manager) {
 				std::to_string(transform->z) + ")\n");*/
         }
 
-        // object rotation
+        /* ------------------- Object Rotation ------------------- */
         if (ImGui::CollapsingHeader("Rotation")) {
             ImGui::DragFloat("Angle", &transform->rotation);
 
@@ -243,7 +360,7 @@ void UI::objPropertyPanel(GameObjectManager& manager) {
 				std::to_string(transform->rotation) + ")\n");*/
         }
         
-		// obj scale
+        /* ------------------- Ovject Scale ------------------- */
         if (ImGui::CollapsingHeader("Scale")) {
             ImGui::Checkbox("Aspect Ratio (X only)", &m_SelectionState.aspectRatioLock);
 
@@ -274,14 +391,15 @@ void UI::objPropertyPanel(GameObjectManager& manager) {
         ImGui::Separator();
         ImGui::Spacing();
 
-		// change texture of current object (drag and drop received from asset window)
+        /* ------------------- Change Texture ------------------- */
+		// drag and drop received from asset window
         Render* render = m_SelectionState.selectedObject->getComponent<Render>();
         if (render && ImGui::CollapsingHeader("Render")) {
             ImGui::Text("Texture");
             ImGui::SameLine();
 
-            std::string texLabel = render->texFile.empty() ? "(Drop new texture here)" : render->texFile;
-            ImGui::Button(texLabel.c_str());
+            std::string texName = render->texFile.empty() ? "(Drop new texture here)" : render->texFile;
+            ImGui::Button(texName.c_str());
 
             if (ImGui::BeginDragDropTarget()) {
                 if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("ASSET")) {
@@ -311,14 +429,38 @@ void UI::objPropertyPanel(GameObjectManager& manager) {
         ImGui::Separator();
         ImGui::Spacing();
         
-		// delete object button (NOT WORKING YET)
-        if (ImGui::Button("Delete Object (not available)")) {
-			// DELETE OBJECT FROM MANAGER, add in the actual delete func once available
+        /* ------------------- Delete Object ------------------- */
+        std::string name = m_SelectionState.selectedObject->getObjectName();
+        // do not show "DELETE" button for "PLAYER" IT WILL CRASH
+        if (name != "player") {
+            if (ImGui::Button("Delete Object")) {
+                ImGui::OpenPopup("Confirm Delete");
+            }
+        }
 
-            m_SelectionState.selectedObject = nullptr;
-            m_SelectionState.selectedIndex = -1;
+        // delete confirm popup
+        if (ImGui::BeginPopupModal("Confirm Delete", NULL, ImGuiWindowFlags_AlwaysAutoResize)) {
+            ImGui::Text("Are you sure you want to delete this object?");
+            
+            if (ImGui::Button("Yes")) {
+                
+                manager.deleteGameObject(m_SelectionState.selectedObject);
 
-			addDebugMessage("Object deleted (not really)\n");
+                m_SelectionState.selectedObject = nullptr;
+                m_SelectionState.selectedIndex = -1;
+
+                addDebugMessage("Object " + name + " deleted\n");
+
+                ImGui::CloseCurrentPopup();
+            }
+
+            ImGui::SameLine();
+
+            if (ImGui::Button("No")) {
+                ImGui::CloseCurrentPopup();
+            }
+
+            ImGui::EndPopup();
         }
 
     }
@@ -364,6 +506,7 @@ void UI::objInspectWindow(GameObjectManager& manager) {
 }
 
 void UI::loadAssetsFromDirectory() {
+	if (assetsChangedFlag == false) return; // only reload if flagged
 	m_assets.clear(); // clear existing assets before loading new ones
 
 	// iterate over all files and folders in this directory and push all files to m_assets (flat list)
@@ -377,13 +520,27 @@ void UI::loadAssetsFromDirectory() {
 			m_assets.push_back(asset);
 		}
 	}
+
+	assetsChangedFlag = false;
+	addDebugMessage("Assets loaded from " + m_AssetBrowserState.currentFolder + "\n");
 }
 
-void UI::assetWindow() {
+void UI::assetWindow(GameObjectManager& manager) {
 	ImGui::Begin("Assets");
 
-	// refresh to update assets from the actual asset folder (now is shaders :))
-    if (ImGui::Button("Refresh")) loadAssetsFromDirectory();
+	// refresh to update assets from the actual asset folder
+	// not really needed since we have auto refresh, but still good to have
+    if (ImGui::Button("Refresh")) {
+        assetsChangedFlag = true;
+        loadAssetsFromDirectory();
+    }
+
+	// auto refresh when new files added to the asset folder (in project dir)
+    std::filesystem::file_time_type current = std::filesystem::last_write_time(m_AssetBrowserState.currentFolder);
+    if (current != m_AssetBrowserState.lastRefresh) {
+        m_AssetBrowserState.lastRefresh = current;
+        assetsChangedFlag = true; // to update assets
+    }
 
     ImGui::Separator();
 
@@ -391,13 +548,37 @@ void UI::assetWindow() {
 
     int index{};
     for (const Asset& asset : m_assets) {
+        // skip temp scene file (for play/stop)
+        std::string fullPath = asset.folder + "/" + asset.name;
+        if (fullPath == m_tempSceneName) continue; 
+
 		ImGui::PushID(index++);
 
         // display button and the name of the file
         ImGui::BeginGroup();
 
         // can consider changing to image in the future
-		ImGui::Button(asset.name.c_str(), ImVec2(m_AssetBrowserState.iconSize, m_AssetBrowserState.iconSize));
+        ImGui::Button(asset.name.c_str(), ImVec2(m_AssetBrowserState.iconSize, m_AssetBrowserState.iconSize));
+
+
+        // double click logic
+        if (ImGui::IsItemHovered() && InputHandler::isMouseLeftDoubleClicked()) {
+			// if it's a scene file, load the scene
+            if (asset.folder == m_AssetBrowserState.currentFolder + "Scene") {
+                // load the new scene
+				manager.loadFromFile(fullPath);
+
+				// set current scene name
+				m_currentSceneName = fullPath;
+
+                // clear the current selection
+                m_SelectionState.selectedObject = nullptr;
+				m_SelectionState.selectedIndex = -1;
+
+				// for debugging
+                addDebugMessage("Loaded scene: " + asset.name + "\n");
+            }
+        }
 
 		// make sure this text wraps if it's too long
         ImGui::PushTextWrapPos(ImGui::GetCursorPosX() + m_AssetBrowserState.iconSize);
@@ -411,7 +592,7 @@ void UI::assetWindow() {
         float nextButtonX2 = lastButtonX2 + m_AssetBrowserState.iconSize;
         if (nextButtonX2 < windowVisibleX2) ImGui::SameLine();
 
-		// drag and drop, but now actually does nothing
+		// drag a texture to inspector window to change texture of selected object
         if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID)) {
             ImGui::SetDragDropPayload("ASSET", asset.path.c_str(), asset.path.size() + 1);
             ImGui::Text("%s", asset.name.c_str());
@@ -423,4 +604,5 @@ void UI::assetWindow() {
     }
 
 	ImGui::End();
+
 }

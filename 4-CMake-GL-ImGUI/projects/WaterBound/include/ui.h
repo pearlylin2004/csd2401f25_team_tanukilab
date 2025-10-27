@@ -24,7 +24,6 @@ Technology is prohibited.
 #include <unordered_map>
 #include <algorithm>
 #include <filesystem>
-#include "collision.h" //for using circles
 #include "GameObjectManager.h"
 #include "input.h"
 
@@ -38,6 +37,10 @@ public:
 
 	// debug message logging
 	static void addDebugMessage(const std::string& msg);
+	static void assetChanged() { 
+		std::cout << "Asset changed flagged\n";
+		assetsChangedFlag = true;
+	} // set to true to reload assets in UI
 
 	// edit shape windows
 	void shapeControl(Transform& t1, Transform& t2);
@@ -49,11 +52,12 @@ private:
 	void drawShapes(GameObjectManager& manager);
 	//void drawControls(std::vector<Collision::Circle>& circles);
 	void drawDebug();
+
+	void editorMenuBar(GameObjectManager& manager);
 	void objListPanel(GameObjectManager& manager);
 	void objPropertyPanel(GameObjectManager& manager);
 	void objInspectWindow(GameObjectManager& manager);
-	void assetWindow();
-
+	void assetWindow(GameObjectManager& manager);
 
 	struct PanelState {
 		float objListWidth = 250.0f; // Width of the object list panel
@@ -110,6 +114,7 @@ private:
 
 	struct AssetBrowserState {
 		std::string currentFolder = "shaders/"; // we dont have a asset folder yet :(
+		std::filesystem::file_time_type lastRefresh;
 
 		float iconSize = 80.0f;
 		//float buttonPadding = 20.0f; // adding padding made my code ugly
@@ -119,7 +124,10 @@ private:
 
 	std::unordered_map<ShapeType, ShapeDefaults> m_shapePresets;
 	std::vector<Asset> m_assets;
-
+	static bool assetsChangedFlag;
+	std::string m_currentSceneName;
+	std::string m_tempSceneName;
+	bool m_isPlaying; // to track Play/Stop mode
 };
 
 #endif

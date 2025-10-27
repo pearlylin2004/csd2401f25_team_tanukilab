@@ -498,10 +498,12 @@ void UISystem::update(GameObjectManager& manager) {
 
 	// all ImGui windows
 	m_UI.update(manager);
+	m_UI.loadAssetsFromDirectory(); // only reload if assets flag is set (e.g. new asset added)
 
-	Transform* leavesT = gameObjects[0]->getComponent<Transform>();
-	Transform* bulletT = gameObjects[2]->getComponent<Transform>();
-	m_UI.shapeControl(*leavesT, *bulletT);
+	// this will CRASH if change scene in editor
+	//Transform* leavesT = gameObjects[0]->getComponent<Transform>();
+	//Transform* bulletT = gameObjects[2]->getComponent<Transform>();
+	//m_UI.shapeControl(*leavesT, *bulletT); 
 
 	ImGui::Render();
 	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());

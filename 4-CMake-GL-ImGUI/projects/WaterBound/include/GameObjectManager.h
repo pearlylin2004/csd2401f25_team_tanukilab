@@ -33,6 +33,9 @@ public:
 	//use this when objects need to interact with each other
 	GameObject* getGameObject(const std::string& name);
 
+	// delete objects
+	void deleteGameObject(GameObject* object);
+
 	//clone an existing object
 	GameObject* CloneGameObject(const std::string& sourceName, const std::string& newName);
 
@@ -41,6 +44,12 @@ public:
 
 	//initialize game objects from a file
 	void init();
+
+	// load from file (read)
+	void loadFromFile(const std::string& filename);
+
+	// save to file (write)
+	void saveToFile(const std::string& filename);
 
 private:
 	//map of all game objects

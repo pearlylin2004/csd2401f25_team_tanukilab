@@ -16,11 +16,11 @@ without the prior written consent of DigiPen Institute of
 Technology is prohibited.
 */
 /* End Header **************************************************************************/
-
+#include "ui.h"
 #include "input.h"
-//#include <iostream>
 
 GLFWwindow* InputHandler::m_window = nullptr;
+AppConfig InputHandler::m_cfg;
 
 bool InputHandler::m_keys[1024] = { false };
 bool InputHandler::m_keysPrevious[1024] = { false };
@@ -38,8 +38,9 @@ float InputHandler::m_scrollOffset = 0.0f;
 double InputHandler::m_doubleClickThreshold = 0.25;
 
 // initialize input handler with window and set up callbacks
-void InputHandler::init(GLFWwindow* window) {
+void InputHandler::init(GLFWwindow* window, const AppConfig& cfg) {
 	m_window = window;
+	m_cfg = cfg;
 
 	// set up the callbacks
 	glfwSetKeyCallback(window, keyCallback);
@@ -47,6 +48,7 @@ void InputHandler::init(GLFWwindow* window) {
 	glfwSetCursorPosCallback(window, cursorPositionCallback);
 	glfwSetCursorEnterCallback(window, CursorEnterCallback);
 	glfwSetScrollCallback(window, scrollCallback);
+	glfwSetDropCallback(window, dropCallback);
 }
 
 // update input states (call once per frame)
@@ -175,7 +177,7 @@ Vector2D InputHandler::getMouseDragStartPos() {
 }
 
 // get current cursor position
-Vector2D InputHandler::getCursorPosition() {
+Vector2D InputHandler::getMousePosition() {
 	return m_mousePosition;
 }
 
@@ -197,6 +199,21 @@ Vector2D InputHandler::getMouseDelta() {
 // check if cursor is inside window
 bool InputHandler::isCursorInsideWindow() {
 	return m_isCursorInside;
+}
+
+// get cursor world postion
+Vector2D InputHandler::getWorldMousePosition() {
+	return Vector2D(getMouseX() - (m_cfg.width / 2.f), (m_cfg.height / 2.f) - getMouseY());
+}
+
+// get world cursor x position
+float InputHandler::getWorldMouseX() {
+	return getWorldMousePosition().x;
+}
+
+// get world cursor y position
+float InputHandler::getWorldMouseY() {
+	return getWorldMousePosition().y;
 }
 
 // get scroll offset since last frame
@@ -276,4 +293,27 @@ void InputHandler::scrollCallback(GLFWwindow* window, double xoffset, double yof
 	(void)window;
 	(void)xoffset;
 	m_scrollOffset = static_cast<float>(yoffset);
+}
+
+void InputHandler::dropCallback(GLFWwindow* window, int count, const char** paths) {
+	(void)window;
+	for (int i = 0; i < count; ++i) {
+		std::filesystem::path src(paths[i]);
+		std::filesystem::path dst = "shaders";
+
+		try {
+			if (std::filesystem::is_directory(src)) {
+				std::filesystem::copy(src, dst, std::filesystem::copy_options::recursive | std::filesystem::copy_options::overwrite_existing);
+			}
+			else {
+				std::filesystem::copy(src, dst, std::filesystem::copy_options::overwrite_existing);
+			}
+
+			UI::assetChanged(); // set asst changed flag to reload assets in UI
+			UI::addDebugMessage("Added asset " + src.string() + " to " + dst.string() + "\n");
+		}
+		catch (const std::filesystem::filesystem_error& e) {
+			UI::addDebugMessage("Failed to add asset " + src.string() + ": " + e.what() + "\n");
+		}
+	}
 }

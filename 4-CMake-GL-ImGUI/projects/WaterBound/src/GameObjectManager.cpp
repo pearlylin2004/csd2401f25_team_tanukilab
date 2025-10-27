@@ -43,6 +43,17 @@ GameObject* GameObjectManager::getGameObject(const std::string& name) {
 	return nullptr;
 }
 
+void GameObjectManager::deleteGameObject(GameObject* object) {
+	if (!object) return;
+
+	for (auto iterator = m_gameObjects.begin(); iterator != m_gameObjects.end(); ++iterator) {
+		if (iterator->second.get() == object) {
+			m_gameObjects.erase(iterator);
+			return;
+		}
+	}
+}
+
 //clone an existing object
 GameObject* GameObjectManager::CloneGameObject(const std::string& sourceName, const std::string& newName) {
 	//find object in map
@@ -80,75 +91,155 @@ void GameObjectManager::getAllGameObjects(std::vector<GameObject*>& gameObjects)
 	}
 }
 
-void GameObjectManager::init()
-{
-	std::ifstream is{ "shaders/temp_serialize.txt" };
-	if (!is)
+	void GameObjectManager::init()
 	{
-		std::cerr << "file not found: shaders/temp_serialize.txt\n";
-		return;
+		loadFromFile("shaders/Scene/temp_serialize.txt");
 	}
-	std::cout << "file opened\n";
-	std::string checker{};
-	std::string objectName;
-	std::string shape;
-	while (is >> checker)
-	{
-		/*for (; is >> checker, checker == "object";)
-			if (checker == "object") break;*/
-		if (checker == "object")
-		{
-			is >> objectName;
-			std::unique_ptr<GameObject> newObject = std::make_unique<GameObject>(objectName);
-			m_gameObjects.emplace(objectName, std::move(newObject));
-			std::cout << objectName << "\n";
-		}
-		/*for (; is >> checker, checker == "renderer";)
-			if (checker == "renderer") break;*/
-		if (checker == "renderer")
-		{
-			Render* renderptr = m_gameObjects[objectName]->addComponent<Render>();
-			is >> shape;
-			if (shape == "square")
-			{
-				renderptr->modelRef = renderer::models[static_cast<int>(shape::square)];
-			}
-			if (shape == "circle")
-			{
-				renderptr->modelRef = renderer::models[static_cast<int>(shape::circle)];
-			}
-			is >> renderptr->hasTex;
-			if (renderptr->hasTex == true)
-			{
-				is >> renderptr->texFile;
-			}
-			std::cout << shape << "\n";
-		}
-		/*for (; is >> checker, checker == "transform";)
-			if (checker == "transform") break;*/
-		if (checker == "transform")
-		{
-			Transform* transformptr = m_gameObjects[objectName]->addComponent<Transform>();
-			is >> transformptr->x >> transformptr->y >> transformptr->z;
-			is >> transformptr->rotation;
-			is >> transformptr->scaleX >> transformptr->scaleY >> transformptr->scaleZ;
-			std::cout << "transform :" << transformptr->x << " ," << transformptr->y << " ," << transformptr->z << "\n";
-			std::cout << "rotation :" << transformptr->rotation << "\n";
-			std::cout << "scale :" << transformptr->scaleX << " ," << transformptr->scaleY << " ," << transformptr->scaleZ << "\n";
-		}
-		if (checker == "physics") {
-			Physics* phyptr = m_gameObjects[objectName]->addComponent<Physics>();
-			is >> phyptr->inWater >> phyptr->buoancy;
-			std::cout << "inwater : " << phyptr->inWater << ", " << phyptr->buoancy << "\n";
-		}
-		if(checker == "collision")
-		{
-			m_gameObjects[objectName]->addComponent<CollisionInfo>();
-			std::cout << "collision component added\n";
-		}
 
-		m_gameObjects["player"]->addComponent<Input>(1.f);
+	void GameObjectManager::loadFromFile(const std::string& filename)
+	{
+		std::ifstream is{ filename };
+		if (!is)
+		{
+			std::cerr << "file not found: " << filename << std::endl;
+			return;
+		}
+		std::cout << "file opened\n";
+
+		m_gameObjects.clear(); // clear existing objects before loading new ones
+
+		std::string checker{};
+		std::string objectName;
+		std::string shape;
+		while (is >> checker)
+		{
+			/*for (; is >> checker, checker == "object";)
+				if (checker == "object") break;*/
+			if (checker == "object")
+			{
+				is >> objectName;
+				std::unique_ptr<GameObject> newObject = std::make_unique<GameObject>(objectName);
+				m_gameObjects.emplace(objectName, std::move(newObject));
+				std::cout << objectName << "\n";
+			}
+			/*for (; is >> checker, checker == "renderer";)
+				if (checker == "renderer") break;*/
+			if (checker == "renderer")
+			{
+				Render* renderptr = m_gameObjects[objectName]->addComponent<Render>();
+				is >> shape;
+				if (shape == "square")
+				{
+					renderptr->modelRef = renderer::models[static_cast<int>(shape::square)];
+				}
+				if (shape == "circle")
+				{
+					renderptr->modelRef = renderer::models[static_cast<int>(shape::circle)];
+				}
+				is >> renderptr->hasTex;
+				if (renderptr->hasTex == true)
+				{
+					is >> renderptr->texFile;
+					renderptr->texHDL = 0;
+					renderptr->texChanged = true; // flag to load texture later
+				}
+				else {
+					renderptr->texFile.clear();
+					renderptr->texHDL = 0;
+					renderptr->texChanged = false;
+				}
+				std::cout << shape << "\n";
+			}
+			/*for (; is >> checker, checker == "transform";)
+				if (checker == "transform") break;*/
+			if (checker == "transform")
+			{
+				Transform* transformptr = m_gameObjects[objectName]->addComponent<Transform>();
+				is >> transformptr->x >> transformptr->y >> transformptr->z;
+				is >> transformptr->rotation;
+				is >> transformptr->scaleX >> transformptr->scaleY >> transformptr->scaleZ;
+				std::cout << "transform :" << transformptr->x << " ," << transformptr->y << " ," << transformptr->z << "\n";
+				std::cout << "rotation :" << transformptr->rotation << "\n";
+				std::cout << "scale :" << transformptr->scaleX << " ," << transformptr->scaleY << " ," << transformptr->scaleZ << "\n";
+			}
+			if (checker == "physics") {
+				Physics* phyptr = m_gameObjects[objectName]->addComponent<Physics>();
+				is >> phyptr->inWater >> phyptr->buoancy;
+				std::cout << "inwater : " << phyptr->inWater << ", " << phyptr->buoancy << "\n";
+			}
+			if (checker == "collision")
+			{
+				m_gameObjects[objectName]->addComponent<CollisionInfo>();
+				std::cout << "collision component added\n";
+			}
+
+			m_gameObjects["player"]->addComponent<Input>(1.f);
 		
-	}
-}
+		}
 
+	}
+
+	void GameObjectManager::saveToFile(const std::string& filename) {
+		std::ofstream os{ filename };
+		if (!os)
+		{
+			std::cerr << "file not found: " << filename << std::endl;
+			return;
+		}
+
+		for (auto& [name, obj] : m_gameObjects)
+		{
+			os << "object " << name << "\n";
+
+			if (auto render = obj->getComponent<Render>())
+			{
+				os << "renderer ";
+				
+				switch (render->modelRef.shape) {
+					case shape::square:
+						os << "square ";
+						break;
+					case shape::circle:
+						os << "circle ";
+						break;
+					default:
+						os << "circle ";
+						break;
+				}
+
+				os << render->hasTex << " ";
+				if (render->hasTex)
+					os << render->texFile;
+
+				os << "\n";
+			}
+
+			if (auto transform = obj->getComponent<Transform>())
+			{
+				os << "transform "
+					<< transform->x << " "
+					<< transform->y << " "
+					<< transform->z << " "
+					<< transform->rotation << " "
+					<< transform->scaleX << " "
+					<< transform->scaleY << " "
+					<< transform->scaleZ << "\n";
+			}
+
+			if (auto physics = obj->getComponent<Physics>())
+			{
+				os << "physics "
+					<< physics->inWater << " "
+					<< physics->buoancy << "\n";
+			}
+
+			if (obj->hasComponent<CollisionInfo>())
+			{
+				os << "collision\n";
+			}
+
+			os << "\n";
+		}
+
+		std::cout << "Scene saved to " << filename << "\n";
+	}
