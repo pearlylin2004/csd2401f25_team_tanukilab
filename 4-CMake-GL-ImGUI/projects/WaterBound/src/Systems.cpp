@@ -445,8 +445,7 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 						if (info.normal.y != 0) {
 							t1->y += info.normal.y * info.penetration;
 							p1->velY = 0; //stop vertical movement
-						}
-												
+						}				
 						UI::addDebugMessage("Collision detected between Object.\n"); //message for debugger
 					}
 				}

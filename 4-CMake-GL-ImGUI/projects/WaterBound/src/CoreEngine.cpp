@@ -34,7 +34,7 @@ CoreEngine::~CoreEngine() {
 void CoreEngine::Init() {
     AppConfig cfg;
     std::string err;
-    if (!LoadConfig("../projects/my-gl-app/resources/config.txt", cfg, &err)) {
+    if (!LoadConfig("../projects/WaterBound/resources/config.txt", cfg, &err)) {
         std::cout << err << "\n";
     }
     m_title = cfg.title;
@@ -74,10 +74,21 @@ void CoreEngine::Init() {
     m_physicsSystem = std::make_unique<PhysicsSystem>();
     m_renderSystem = std::make_unique<RenderSystem>();
     m_uiSystem = std::make_unique<UISystem>();
+    m_luaSystem = std::make_unique<LuaSystem>();
 
+    m_luaSystem->init();
     m_manager->init();
 	m_renderSystem->init(*m_manager);
 	m_uiSystem->init(m_window);
+
+	// --- Lua Script Test ---
+    if (m_luaSystem->runScript("../projects/WaterBound/scripting/test.lua")) {
+        float val = m_luaSystem->getGlobalNumber("testValue");
+        std::cout << "Lua testValue = " << val << std::endl;
+    }
+    else {
+        std::cout << "Failed to run Lua script!" << std::endl;
+    }
 
     audio.init();
 
@@ -138,6 +149,7 @@ void CoreEngine::Update(float deltaTime) {
 }
 
 void CoreEngine::Shutdown() {
+    if (m_luaSystem) m_luaSystem->cleanup();
     glfwDestroyWindow(m_window);
     glfwTerminate();
 }
