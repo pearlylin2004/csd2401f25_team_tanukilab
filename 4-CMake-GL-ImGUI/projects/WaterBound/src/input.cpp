@@ -20,6 +20,7 @@ Technology is prohibited.
 #include "input.h"
 
 GLFWwindow* InputHandler::m_window = nullptr;
+AppConfig InputHandler::m_cfg;
 
 bool InputHandler::m_keys[1024] = { false };
 bool InputHandler::m_keysPrevious[1024] = { false };
@@ -37,8 +38,9 @@ float InputHandler::m_scrollOffset = 0.0f;
 double InputHandler::m_doubleClickThreshold = 0.25;
 
 // initialize input handler with window and set up callbacks
-void InputHandler::init(GLFWwindow* window) {
+void InputHandler::init(GLFWwindow* window, const AppConfig& cfg) {
 	m_window = window;
+	m_cfg = cfg;
 
 	// set up the callbacks
 	glfwSetKeyCallback(window, keyCallback);
@@ -175,7 +177,7 @@ Vector2D InputHandler::getMouseDragStartPos() {
 }
 
 // get current cursor position
-Vector2D InputHandler::getCursorPosition() {
+Vector2D InputHandler::getMousePosition() {
 	return m_mousePosition;
 }
 
@@ -197,6 +199,21 @@ Vector2D InputHandler::getMouseDelta() {
 // check if cursor is inside window
 bool InputHandler::isCursorInsideWindow() {
 	return m_isCursorInside;
+}
+
+// get cursor world postion
+Vector2D InputHandler::getWorldMousePosition() {
+	return Vector2D(getMouseX() - (m_cfg.width / 2.f), (m_cfg.height / 2.f) - getMouseY());
+}
+
+// get world cursor x position
+float InputHandler::getWorldMouseX() {
+	return getWorldMousePosition().x;
+}
+
+// get world cursor y position
+float InputHandler::getWorldMouseY() {
+	return getWorldMousePosition().y;
 }
 
 // get scroll offset since last frame
