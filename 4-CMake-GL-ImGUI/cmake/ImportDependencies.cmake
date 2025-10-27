@@ -38,8 +38,8 @@ macro(import_glew)
     if(NOT TARGET glew_s)
         FetchContent_Declare(
             glew
-            GIT_REPOSITORY https://github.com/omniavinco/glew-cmake.git
-            GIT_TAG master
+            GIT_REPOSITORY https://github.com/Perlmint/glew-cmake.git
+            GIT_TAG d06782b910213d675925e6e51a69ad0fd1fe1f23
         )
         set(BUILD_SHARED_LIBS OFF CACHE BOOL "Build shared libs" FORCE)
         FetchContent_MakeAvailable(glew)
