@@ -20,6 +20,7 @@ Technology is prohibited.
 #include <cstring>
 #include <filesystem>
 #include "mathlib.h"
+#include "config.h"
 
 /*
 Keyboard key tokens
@@ -37,7 +38,7 @@ GLFW_KEY_SPACE
 class InputHandler {
 public:
 	// initialize input handler with window and set up callbacks
-	static void init(GLFWwindow* window);
+	static void init(GLFWwindow* window, const AppConfig& cfg);
 	// update input states (call once per frame)  (DO NOT call glfwPollEvents again in game loop)
 	static void update();
 
@@ -76,7 +77,7 @@ public:
 
 	/* Cursor Position */
 	// get current cursor position
-	static Vector2D getCursorPosition(); 
+	static Vector2D getMousePosition(); 
 	// get current cursor x position
 	static float getMouseX(); 
 	// get current cursor y position
@@ -85,6 +86,13 @@ public:
 	static Vector2D getMouseDelta(); 
 	// check if cursor is inside window
 	static bool isCursorInsideWindow(); 
+
+	// get cursor world postion
+	static Vector2D getWorldMousePosition();
+	// get world cursor x position
+	static float getWorldMouseX();
+	// get world cursor y position
+	static float getWorldMouseY();
 
 	// get scroll offset since last frame
 	static float getMouseScroll(); 
@@ -105,6 +113,7 @@ public:
 
 private:
 	static GLFWwindow* m_window;
+	static AppConfig m_cfg;
 
 	static bool m_keys[1024];
 	static bool m_keysPrevious[1024];
