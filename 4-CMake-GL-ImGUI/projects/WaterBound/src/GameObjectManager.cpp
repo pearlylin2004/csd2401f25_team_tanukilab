@@ -43,6 +43,17 @@ GameObject* GameObjectManager::getGameObject(const std::string& name) {
 	return nullptr;
 }
 
+void GameObjectManager::deleteGameObject(GameObject* object) {
+	if (!object) return;
+
+	for (auto iterator = m_gameObjects.begin(); iterator != m_gameObjects.end(); ++iterator) {
+		if (iterator->second.get() == object) {
+			m_gameObjects.erase(iterator);
+			return;
+		}
+	}
+}
+
 //clone an existing object
 GameObject* GameObjectManager::CloneGameObject(const std::string& sourceName, const std::string& newName) {
 	//find object in map

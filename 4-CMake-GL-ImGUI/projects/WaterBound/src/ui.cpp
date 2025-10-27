@@ -319,7 +319,8 @@ void UI::objListPanel(GameObjectManager& manager) {
 
 void UI::objPropertyPanel(GameObjectManager& manager) {
     if (m_SelectionState.selectedObject) {
-		// object name edit
+		
+        /* ------------------- Edit Object Name ------------------- */
         std::string& objName = m_SelectionState.selectedObject->getObjectName();
         char buffer[256];
         strncpy(buffer, objName.c_str(), sizeof(buffer));
@@ -337,7 +338,7 @@ void UI::objPropertyPanel(GameObjectManager& manager) {
         ImGui::Spacing();
 
 
-		// object transform properties
+        /* ------------------- Object Transformation ------------------- */
         Transform* transform = m_SelectionState.selectedObject->getComponent<Transform>();
         if (ImGui::CollapsingHeader("Transform")) {
 
@@ -351,7 +352,7 @@ void UI::objPropertyPanel(GameObjectManager& manager) {
 				std::to_string(transform->z) + ")\n");*/
         }
 
-        // object rotation
+        /* ------------------- Object Rotation ------------------- */
         if (ImGui::CollapsingHeader("Rotation")) {
             ImGui::DragFloat("Angle", &transform->rotation);
 
@@ -359,7 +360,7 @@ void UI::objPropertyPanel(GameObjectManager& manager) {
 				std::to_string(transform->rotation) + ")\n");*/
         }
         
-		// obj scale
+        /* ------------------- Ovject Scale ------------------- */
         if (ImGui::CollapsingHeader("Scale")) {
             ImGui::Checkbox("Aspect Ratio (X only)", &m_SelectionState.aspectRatioLock);
 
@@ -390,7 +391,8 @@ void UI::objPropertyPanel(GameObjectManager& manager) {
         ImGui::Separator();
         ImGui::Spacing();
 
-		// change texture of current object (drag and drop received from asset window)
+        /* ------------------- Change Texture ------------------- */
+		// drag and drop received from asset window
         Render* render = m_SelectionState.selectedObject->getComponent<Render>();
         if (render && ImGui::CollapsingHeader("Render")) {
             ImGui::Text("Texture");
@@ -427,14 +429,38 @@ void UI::objPropertyPanel(GameObjectManager& manager) {
         ImGui::Separator();
         ImGui::Spacing();
         
-		// delete object button (NOT WORKING YET)
-        if (ImGui::Button("Delete Object (not available)")) {
-			// DELETE OBJECT FROM MANAGER, add in the actual delete func once available
+        /* ------------------- Delete Object ------------------- */
+        std::string name = m_SelectionState.selectedObject->getObjectName();
+        // do not show "DELETE" button for "PLAYER" IT WILL CRASH
+        if (name != "player") {
+            if (ImGui::Button("Delete Object")) {
+                ImGui::OpenPopup("Confirm Delete");
+            }
+        }
 
-            m_SelectionState.selectedObject = nullptr;
-            m_SelectionState.selectedIndex = -1;
+        // delete confirm popup
+        if (ImGui::BeginPopupModal("Confirm Delete", NULL, ImGuiWindowFlags_AlwaysAutoResize)) {
+            ImGui::Text("Are you sure you want to delete this object?");
+            
+            if (ImGui::Button("Yes")) {
+                
+                manager.deleteGameObject(m_SelectionState.selectedObject);
 
-			addDebugMessage("Object deleted (not really)\n");
+                m_SelectionState.selectedObject = nullptr;
+                m_SelectionState.selectedIndex = -1;
+
+                addDebugMessage("Object " + name + " deleted\n");
+
+                ImGui::CloseCurrentPopup();
+            }
+
+            ImGui::SameLine();
+
+            if (ImGui::Button("No")) {
+                ImGui::CloseCurrentPopup();
+            }
+
+            ImGui::EndPopup();
         }
 
     }

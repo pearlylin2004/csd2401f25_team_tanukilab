@@ -33,6 +33,9 @@ public:
 	//use this when objects need to interact with each other
 	GameObject* getGameObject(const std::string& name);
 
+	// delete objects
+	void deleteGameObject(GameObject* object);
+
 	//clone an existing object
 	GameObject* CloneGameObject(const std::string& sourceName, const std::string& newName);
 
