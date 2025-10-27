@@ -279,6 +279,7 @@ void InputHandler::scrollCallback(GLFWwindow* window, double xoffset, double yof
 }
 
 void InputHandler::dropCallback(GLFWwindow* window, int count, const char** paths) {
+	(void)window;
 	for (int i = 0; i < count; ++i) {
 		std::filesystem::path src(paths[i]);
 		std::filesystem::path dst = "shaders";
