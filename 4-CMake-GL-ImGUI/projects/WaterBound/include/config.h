@@ -10,7 +10,9 @@
 #include <cstdio>
 #include <string>
 #include <algorithm>
-
+#include <fstream>                
+#include <rapidjson/istreamwrapper.h>
+#include <rapidjson/ostreamwrapper.h>
 #include <rapidjson/document.h>
 #include <rapidjson/filereadstream.h>
 #include <rapidjson/error/en.h>

@@ -32,28 +32,18 @@ namespace JsonIO {
         rapidjson::Document& doc,
         std::string* err)
     {
-        if (FILE* fp = std::fopen(path.c_str(), "rb")) {
-            char buf[1 << 14] = {};
-            rapidjson::FileReadStream is(fp, buf, sizeof(buf));
-            doc.ParseStream(is);
-            std::fclose(fp);
-
-            if (doc.HasParseError()) {
-                if (err) *err = std::string("JSON parse error @")
-                    + std::to_string(doc.GetErrorOffset()) + ": "
-                    + rapidjson::GetParseError_En(doc.GetParseError());
-                return false;
-            }
-            if (!doc.IsObject()) {
-                if (err) *err = "Root JSON must be an object";
-                return false;
-            }
-            return true;
-        }
-        else {
-            if (err) *err = "Could not open " + path;
+        std::ifstream ifs(path, std::ios::binary);
+        if (!ifs) { if (err) *err = "Could not open " + path; return false; }
+        rapidjson::IStreamWrapper isw(ifs);   // uses stream’s own buffering
+        doc.ParseStream(isw);
+        if (doc.HasParseError()) {
+            if (err) *err = std::string("JSON parse error @")
+                + std::to_string(doc.GetErrorOffset()) + ": "
+                + rapidjson::GetParseError_En(doc.GetParseError());
             return false;
         }
+        if (!doc.IsObject()) { if (err) *err = "Root JSON must be an object"; return false; }
+        return true;
     }
 
     bool WriteDocumentToFile(const std::string& path,
@@ -64,18 +54,16 @@ namespace JsonIO {
         std::filesystem::create_directories(std::filesystem::path(path).parent_path());
         const std::string tmp = path + ".tmp";
 
-        if (FILE* fp = std::fopen(tmp.c_str(), "wb")) {
-            char outBuf[1 << 14] = {};
-            rapidjson::FileWriteStream os(fp, outBuf, sizeof(outBuf));
-            if (pretty) { rapidjson::PrettyWriter<rapidjson::FileWriteStream> w(os); w.SetIndent(' ', 2); doc.Accept(w); }
-            else { rapidjson::Writer<rapidjson::FileWriteStream>       w(os);                 doc.Accept(w); }
-            std::fclose(fp);
-            return AtomicMove(tmp, path, err);
-        }
-        else {
-            if (err) *err = "Cannot open temp file for writing: " + tmp;
-            return false;
-        }
+        std::ofstream ofs(tmp, std::ios::binary | std::ios::trunc);
+        if (!ofs) { if (err) *err = "Cannot open temp file for writing: " + tmp; return false; }
+
+        rapidjson::OStreamWrapper osw(ofs);
+        if (pretty) { rapidjson::PrettyWriter<rapidjson::OStreamWrapper> w(osw); w.SetIndent(' ', 2); doc.Accept(w); }
+        else { rapidjson::Writer<rapidjson::OStreamWrapper>       w(osw);                     doc.Accept(w); }
+
+        ofs.flush();
+        ofs.close();
+        return AtomicMove(tmp, path, err);
     }
 } // namespace JsonIO
 
