@@ -182,8 +182,8 @@ Vector2D InputHandler::getMouseDeltaWorld() {
 	if (delta.x == 0.0f && delta.y == 0.0f) return Vector2D(0.0f);
 
 	// convert screen space to normalized
-	float normX = (delta.x) / (m_cfg.width / 2.f);
-	float normY = (delta.y) / (m_cfg.height / 2.f);
+	float normX = delta.x / (m_cfg.width / 2.f);
+	float normY = -delta.y / (m_cfg.height / 2.f);
 
 	float scale = (renderer::cam.width / 9.1f);
 
