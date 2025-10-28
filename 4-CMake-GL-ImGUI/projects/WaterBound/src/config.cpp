@@ -33,7 +33,7 @@ namespace JsonIO {
         std::string* err)
     {
         if (FILE* fp = std::fopen(path.c_str(), "rb")) {
-            char buf[1 << 14];
+            char buf[1 << 14] = {};
             rapidjson::FileReadStream is(fp, buf, sizeof(buf));
             doc.ParseStream(is);
             std::fclose(fp);
@@ -65,7 +65,7 @@ namespace JsonIO {
         const std::string tmp = path + ".tmp";
 
         if (FILE* fp = std::fopen(tmp.c_str(), "wb")) {
-            char outBuf[1 << 14];
+            char outBuf[1 << 14] = {};
             rapidjson::FileWriteStream os(fp, outBuf, sizeof(outBuf));
             if (pretty) { rapidjson::PrettyWriter<rapidjson::FileWriteStream> w(os); w.SetIndent(' ', 2); doc.Accept(w); }
             else { rapidjson::Writer<rapidjson::FileWriteStream>       w(os);                 doc.Accept(w); }
