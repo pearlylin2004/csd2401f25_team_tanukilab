@@ -240,12 +240,12 @@ Vector2D InputHandler::getWorldMousePosition() {
 	float normX = (mx - m_cfg.width / 2.f) / (m_cfg.width / 2.f);
 	float normY = (my - m_cfg.height / 2.f) / (m_cfg.height / 2.f);
 
-	float scale = (renderer::cam.width / 9.1f);
+	float scaleX = (renderer::cam.width / 9.1f);
+	float scaleY = ((renderer::cam.width / renderer::cam.ar) / 9.1f);
 
 	// apply camera position and zoom
-	float worldX = (normX * scale) / renderer::cam.zoom + renderer::cam.campos.x;
-	float worldY = (normY * scale) / renderer::cam.zoom + renderer::cam.campos.y;
-
+	float worldX = (normX * scaleX) / renderer::cam.zoom + renderer::cam.campos.x;
+	float worldY = (normY * scaleY) / renderer::cam.zoom + renderer::cam.campos.y;
 
 	return Vector2D(worldX, worldY);
 }
