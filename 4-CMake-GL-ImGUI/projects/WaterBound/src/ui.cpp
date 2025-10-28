@@ -613,11 +613,11 @@ void UI::assetWindow(GameObjectManager& manager) {
 
 /*
 Future implementation (jic i forget)
-- Add snapping to grid or axis (e.g. hold Shift for 1-unit steps).
+- Add snapping to grid or axis (e.g. hold Shift for 1-unit steps)
 
-- Highlight selected object while dragging.
+- Highlight selected object while dragging
 
-- Undo/redo.
+- Undo/redo
 */
 void UI::objPicking(GameObjectManager& manager) {
     if (!InputHandler::isMouseLeftClicked()) return;
@@ -657,9 +657,6 @@ void UI::objPicking(GameObjectManager& manager) {
         m_SelectionState.draggedObject = selected;
 		
         Transform* transform = selected->getComponent<Transform>();
-        if (transform) {
-            m_SelectionState.dragOffset = {mousePos.x - transform->x, mousePos.y - transform->y};
-        }
 
         auto iterator = std::find(gameObjects.begin(), gameObjects.end(), selected);
         if (iterator != gameObjects.end()) {
@@ -686,9 +683,7 @@ void UI::objDragging() {
     if (!transform) return;
 
 	// change current object position based on mouse delta
-    Vector2D mousePos = InputHandler::getWorldMousePosition();
-    transform->x = mousePos.x - m_SelectionState.dragOffset.x;
-    transform->y = mousePos.y - m_SelectionState.dragOffset.y;
-
-    //transform->y = transform->y + (mousePos.y / 900) * zoom;
+    Vector2D mousePos = InputHandler::getMouseDeltaWorld();
+    transform->x += mousePos.x;
+    transform->y += mousePos.y;
 }

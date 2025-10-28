@@ -79,8 +79,6 @@ private:
 
 		GameObject* draggedObject = nullptr; // currently dragged object
 
-		Vector2D dragOffset = { 0.f, 0.f }; // offset between mouse pos and object pos when dragging
-
 		bool aspectRatioLock = true; // lock aspect ratio for resizing
 		bool ratioSet = false;
 		float ratioY = 1.0f;

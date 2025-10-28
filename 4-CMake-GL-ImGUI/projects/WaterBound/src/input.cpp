@@ -185,11 +185,12 @@ Vector2D InputHandler::getMouseDeltaWorld() {
 	float normX = delta.x / (m_cfg.width / 2.f);
 	float normY = -delta.y / (m_cfg.height / 2.f);
 
-	float scale = (renderer::cam.width / 9.1f);
+	float scaleX = (renderer::cam.width / 9.1f);
+	float scaleY = ((renderer::cam.width / renderer::cam.ar) / 9.1f);
 
 	// apply camera position and zoom
-	float worldX = (normX * scale) / renderer::cam.zoom;
-	float worldY = (normY * scale) / renderer::cam.zoom;
+	float worldX = (normX * scaleX) / renderer::cam.zoom;
+	float worldY = (normY * scaleY) / renderer::cam.zoom;
 
 	return Vector2D(worldX, worldY);
 }
