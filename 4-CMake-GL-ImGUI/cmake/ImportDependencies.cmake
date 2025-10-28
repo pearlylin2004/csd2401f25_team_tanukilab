@@ -191,6 +191,7 @@ macro(importDependencies)
     import_lua()
     message(STATUS "Lua imported successfully.")
 
+     message(STATUS "Importing RapidJson...")
     import_rapidjson()
     message(STATUS "RapidJson imported successfully.")
 
