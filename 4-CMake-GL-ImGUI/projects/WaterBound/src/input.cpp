@@ -176,6 +176,24 @@ Vector2D InputHandler::getMouseDragStartPos() {
 	return m_mouseDragStartPos;
 }
 
+Vector2D InputHandler::getMouseDeltaWorld() {
+	Vector2D delta = getMouseDelta();
+
+	if (delta.x == 0.0f && delta.y == 0.0f) return Vector2D(0.0f);
+
+	// convert screen space to normalized
+	float normX = (delta.x) / (m_cfg.width / 2.f);
+	float normY = (delta.y) / (m_cfg.height / 2.f);
+
+	float scale = (renderer::cam.width / 9.1f);
+
+	// apply camera position and zoom
+	float worldX = (normX * scale) / renderer::cam.zoom;
+	float worldY = (normY * scale) / renderer::cam.zoom;
+
+	return Vector2D(worldX, worldY);
+}
+
 // get current cursor position
 Vector2D InputHandler::getMousePosition() {
 	return m_mousePosition;
@@ -201,9 +219,34 @@ bool InputHandler::isCursorInsideWindow() {
 	return m_isCursorInside;
 }
 
+bool InputHandler::isCursorInsideImGuiViewport() {
+	ImVec2 mousePos = ImGui::GetMousePos();
+	ImVec2 viewportPos = ImGui::GetWindowPos();
+	ImVec2 viewportSize = ImGui::GetWindowSize();
+
+	return (mousePos.x >= viewportPos.x && mousePos.x <= viewportPos.x + viewportSize.x &&
+			mousePos.y >= viewportPos.y && mousePos.y <= viewportPos.y + viewportSize.y);
+}
+
 // get cursor world postion
 Vector2D InputHandler::getWorldMousePosition() {
-	return Vector2D(getMouseX() - (m_cfg.width / 2.f), (m_cfg.height / 2.f) - getMouseY());
+	float mx = getMouseX();
+	float my = getMouseY();
+
+	my = m_cfg.height - my;
+
+	// convert screen space to normalized
+	float normX = (mx - m_cfg.width / 2.f) / (m_cfg.width / 2.f);
+	float normY = (my - m_cfg.height / 2.f) / (m_cfg.height / 2.f);
+
+	float scale = (renderer::cam.width / 9.1f);
+
+	// apply camera position and zoom
+	float worldX = (normX * scale) / renderer::cam.zoom + renderer::cam.campos.x;
+	float worldY = (normY * scale) / renderer::cam.zoom + renderer::cam.campos.y;
+
+
+	return Vector2D(worldX, worldY);
 }
 
 // get world cursor x position
