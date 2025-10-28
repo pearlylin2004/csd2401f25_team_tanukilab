@@ -308,10 +308,10 @@ void UI::objListPanel(GameObjectManager& manager) {
         names.push_back(gameObjects[i]->getObjectName().c_str());
     }
 
+	// show this if there are objects
     if (!names.empty()) {
         if (ImGui::ListBox("Objects", &m_SelectionState.selectedIndex, names.data(), static_cast<int>(names.size()), m_PanelState.maxObjects)) {
             m_SelectionState.selectedObject = gameObjects[m_SelectionState.selectedIndex];
-            //m_SelectionState.draggedObject = m_SelectionState.selectedObject;
         }
     }
     else {
@@ -628,7 +628,6 @@ void UI::objPicking(GameObjectManager& manager) {
     manager.getAllGameObjects(gameObjects);
 
     GameObject* selected = nullptr;
-    float topZ = -std::numeric_limits<float>::infinity();
 
     for (auto* obj : gameObjects) {
         // dont let user click and select platform
@@ -642,12 +641,7 @@ void UI::objPicking(GameObjectManager& manager) {
 
 		// check if mouse point intersects with the game obj
         if (Collision::CollisionIntersection_CircleAABB_Static(mousePoint, aabb)) {
-			// only select the topmost object
-            if (transform->z > topZ) {
-                selected = obj;
-                topZ = transform->z;
-            }
-
+            selected = obj;
         }
     }
 
