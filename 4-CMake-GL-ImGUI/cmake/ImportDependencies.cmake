@@ -145,6 +145,24 @@ macro(import_lua)
     endif()
 endmacro()
 
+# ===================== Import rapidjson =====================
+macro(import_rapidjson)
+    if(NOT TARGET rapidjson)
+        include(FetchContent)
+        FetchContent_Declare(
+            rapidjson
+            GIT_REPOSITORY https://github.com/Tencent/rapidjson.git
+            GIT_TAG master
+        )
+        FetchContent_MakeAvailable(rapidjson)
+
+        add_library(rapidjson INTERFACE)
+        target_include_directories(rapidjson INTERFACE
+            ${rapidjson_SOURCE_DIR}/include
+        )
+    endif()
+endmacro()
+
 # ===================== Import All Dependencies =====================
 macro(importDependencies)
     message(STATUS "Starting to import dependencies...")
@@ -172,6 +190,9 @@ macro(importDependencies)
     message(STATUS "Importing Lua...")
     import_lua()
     message(STATUS "Lua imported successfully.")
+
+    import_rapidjson()
+    message(STATUS "RapidJson imported successfully.")
 
     message(STATUS "All dependencies have been imported successfully.")
 endmacro()
