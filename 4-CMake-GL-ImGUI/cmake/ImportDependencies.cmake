@@ -1,8 +1,8 @@
 include(FetchContent)
 
-# Macro to import GLFW
+# ===================== Import GLFW =====================
 macro(import_glfw)
-    if(NOT TARGET glfw)  # Guard to prevent multiple inclusion
+    if(NOT TARGET glfw)
         FetchContent_Declare(
             glfw
             GIT_REPOSITORY https://github.com/glfw/glfw.git
@@ -20,43 +20,36 @@ macro(import_glfw)
     endif()
 endmacro()
 
-# Macro to import glm
+# ===================== Import GLM =====================
 macro(import_glm)
-    if(NOT TARGET glm)  # Guard to prevent multiple inclusion
+    if(NOT TARGET glm)
         FetchContent_Declare(
             glm
             GIT_REPOSITORY https://github.com/g-truc/glm.git
             GIT_TAG master
         )
         FetchContent_MakeAvailable(glm)
-
         include_directories(${glm_SOURCE_DIR})
     endif()
 endmacro()
 
-# Macro to import glew
+# ===================== Import GLEW =====================
 macro(import_glew)
-    if(NOT TARGET glew_s)  # Guard to prevent multiple inclusion
-        include(FetchContent)
-
+    if(NOT TARGET glew_s)
         FetchContent_Declare(
             glew
             GIT_REPOSITORY https://github.com/Perlmint/glew-cmake.git
             GIT_TAG d06782b910213d675925e6e51a69ad0fd1fe1f23
         )
-
-        # Disable shared builds if needed
         set(BUILD_SHARED_LIBS OFF CACHE BOOL "Build shared libs" FORCE)
         FetchContent_MakeAvailable(glew)
-
-        # Optional: include directories if needed manually (though target_link_libraries handles it)
         include_directories(${glew_SOURCE_DIR}/include)
     endif()
 endmacro()
 
-# Macro to import ImGui
+# ===================== Import ImGui =====================
 macro(import_imgui)
-    if(NOT TARGET imgui)  # Guard to prevent multiple inclusion
+    if(NOT TARGET imgui)
         FetchContent_Declare(
             imgui
             GIT_REPOSITORY https://github.com/ocornut/imgui.git
@@ -66,7 +59,6 @@ macro(import_imgui)
             FetchContent_Populate(imgui)
         endif()
 
-        # Create ImGui library manually since it doesn't have CMakeLists.txt
         set(IMGUI_SOURCES
             ${imgui_SOURCE_DIR}/imgui.cpp
             ${imgui_SOURCE_DIR}/imgui_demo.cpp
@@ -83,30 +75,77 @@ macro(import_imgui)
             ${imgui_SOURCE_DIR}/backends
         )
         target_link_libraries(imgui PUBLIC glfw libglew_static)
-        
-        # Set C++ standard for ImGui (required for constexpr support)
         set_property(TARGET imgui PROPERTY CXX_STANDARD 11)
         set_property(TARGET imgui PROPERTY CXX_STANDARD_REQUIRED ON)
     endif()
 endmacro()
 
-# Macro to import stb (header-only)
+# ===================== Import stb (header-only) =====================
 macro(import_stb)
-    if(NOT TARGET stb) # create a dummy target as a guard
+    if(NOT TARGET stb)
         FetchContent_Declare(
             stb
             GIT_REPOSITORY https://github.com/nothings/stb.git
             GIT_TAG master
         )
         FetchContent_MakeAvailable(stb)
-
-        # Create an INTERFACE library since stb is header-only
         add_library(stb INTERFACE)
         target_include_directories(stb INTERFACE ${stb_SOURCE_DIR})
     endif()
 endmacro()
 
-# Macro to import all dependencies
+# ===================== Import Lua =====================
+macro(import_lua)
+    if(NOT TARGET lua)
+        FetchContent_Declare(
+            lua
+            GIT_REPOSITORY https://github.com/lua/lua.git
+            GIT_TAG v5.4.7
+        )
+        FetchContent_Populate(lua)
+
+        set(LUA_SOURCES
+            ${lua_SOURCE_DIR}/lapi.c
+            ${lua_SOURCE_DIR}/lcode.c
+            ${lua_SOURCE_DIR}/lctype.c
+            ${lua_SOURCE_DIR}/ldebug.c
+            ${lua_SOURCE_DIR}/ldo.c
+            ${lua_SOURCE_DIR}/ldump.c
+            ${lua_SOURCE_DIR}/lfunc.c
+            ${lua_SOURCE_DIR}/lgc.c
+            ${lua_SOURCE_DIR}/llex.c
+            ${lua_SOURCE_DIR}/lmem.c
+            ${lua_SOURCE_DIR}/lobject.c
+            ${lua_SOURCE_DIR}/lopcodes.c
+            ${lua_SOURCE_DIR}/lparser.c
+            ${lua_SOURCE_DIR}/lstate.c
+            ${lua_SOURCE_DIR}/lstring.c
+            ${lua_SOURCE_DIR}/ltable.c
+            ${lua_SOURCE_DIR}/ltm.c
+            ${lua_SOURCE_DIR}/lundump.c
+            ${lua_SOURCE_DIR}/lvm.c
+            ${lua_SOURCE_DIR}/lzio.c
+            ${lua_SOURCE_DIR}/lauxlib.c
+            ${lua_SOURCE_DIR}/lbaselib.c
+            ${lua_SOURCE_DIR}/lcorolib.c
+            ${lua_SOURCE_DIR}/ldblib.c
+            ${lua_SOURCE_DIR}/liolib.c
+            ${lua_SOURCE_DIR}/lmathlib.c
+            ${lua_SOURCE_DIR}/loslib.c
+            ${lua_SOURCE_DIR}/lstrlib.c
+            ${lua_SOURCE_DIR}/ltablib.c
+            ${lua_SOURCE_DIR}/lutf8lib.c
+            ${lua_SOURCE_DIR}/loadlib.c
+            ${lua_SOURCE_DIR}/linit.c
+        )
+
+        add_library(lua STATIC ${LUA_SOURCES})
+        target_include_directories(lua PUBLIC ${lua_SOURCE_DIR})
+        set_property(TARGET lua PROPERTY C_STANDARD 99)
+    endif()
+endmacro()
+
+# ===================== Import All Dependencies =====================
 macro(importDependencies)
     message(STATUS "Starting to import dependencies...")
 
@@ -129,6 +168,10 @@ macro(importDependencies)
     message(STATUS "Importing stb...")
     import_stb()
     message(STATUS "stb imported successfully.")
+
+    message(STATUS "Importing Lua...")
+    import_lua()
+    message(STATUS "Lua imported successfully.")
 
     message(STATUS "All dependencies have been imported successfully.")
 endmacro()

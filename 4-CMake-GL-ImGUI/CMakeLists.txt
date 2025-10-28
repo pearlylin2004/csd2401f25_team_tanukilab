@@ -23,19 +23,13 @@ set(ALL_LIBS
   PRIVATE libglew_static
   PRIVATE imgui
   PRIVATE stb
+  PRIVATE lua 
 )
 
 # Include path for GLM (optional if not using FetchContent)
 include_directories(${CMAKE_CURRENT_LIST_DIR}/lib/glm)
 
 # ======================= AUTO PROJECT DISCOVERY =========================
-
-target_compile_definitions( WaterBound PRIVATE
-  MAIN_DIR = "${CMAKE_CURRENT_LIST_DIR}/projects/WaterBound"
-  CURRENT_DIR = "${CMAKE_BINARY_DIR}/$<CONFIG>"
-  ASSET_PATH = "${CMAKE_BINARY_DIR}/$<CONFIG>/assets"
-  SHADER_PATH = "${CMAKE_BINARY_DIR}/$<CONFIG>/shaders"
-)
 
 # Get all subdirectories in the projects folder
 file(GLOB children RELATIVE "${CMAKE_CURRENT_LIST_DIR}/projects" "${CMAKE_CURRENT_LIST_DIR}/projects/*")
@@ -77,6 +71,7 @@ foreach(child ${children})
         # Include path for each project
         target_include_directories(${child} PRIVATE
             ${CMAKE_CURRENT_LIST_DIR}/projects/${child}/include
+	    ${lua_SOURCE_DIR}
         )
 
         # ==== Shaders (copy to build dir so the exe can load them) ====
@@ -108,20 +103,6 @@ foreach(child ${children})
                     "${CMAKE_CURRENT_LIST_DIR}/build/shaders"
             COMMENT "Copying shaders for ${child} to runtime directory"
           )
-
-	add_custom_command(TARGET ${child} POST_BUILD
-            COMMAND ${CMAKE_COMMAND} -E copy_directory
-                    "${${child}_SHADER_DIR}"
-                    "$<TARGET_FILE_DIR:${child}>/assets"
-            COMMENT "Copying shaders for ${child} to runtime directory"
-          )
-
-	  add_custom_command(TARGET ${child} POST_BUILD
-            COMMAND ${CMAKE_COMMAND} -E copy_directory
-                    "${${child}_SHADER_DIR}"
-                    "${CMAKE_CURRENT_LIST_DIR}/build/assets"
-            COMMENT "Copying shaders for ${child} to runtime directory"
-          )
           endif()
     endif()
 endforeach()
@@ -139,6 +120,8 @@ target_link_libraries(WaterBound PRIVATE
 	fmod_vc.lib
 	fmodL_vc.lib)
 
+target_link_libraries(WaterBound PRIVATE lua)
+
 add_custom_command(TARGET WaterBound POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy
         "${CMAKE_CURRENT_LIST_DIR}/projects/WaterBound/lib/fmod.dll"
@@ -148,4 +131,5 @@ add_custom_command(TARGET WaterBound POST_BUILD
         "${CMAKE_CURRENT_LIST_DIR}/projects/WaterBound/lib/fmodL.dll"
         "$<TARGET_FILE_DIR:WaterBound>/fmodL.dll"
 )
+
 # ======================= END AUTO CONFIGURATION =========================
