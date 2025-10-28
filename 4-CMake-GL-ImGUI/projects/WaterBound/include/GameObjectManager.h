@@ -45,6 +45,8 @@ public:
 	//initialize game objects from a file
 	void init();
 
+	bool renameGameObject(GameObject* obj, const std::string& newName);
+
 	// load from file (read)
 	void loadFromFile(const std::string& filename);
 

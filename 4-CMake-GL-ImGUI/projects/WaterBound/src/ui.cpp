@@ -325,15 +325,20 @@ void UI::objPropertyPanel(GameObjectManager& manager) {
 		
         /* ------------------- Edit Object Name ------------------- */
         std::string& objName = m_SelectionState.selectedObject->getObjectName();
-        char buffer[256];
+        char buffer[128];
         strncpy(buffer, objName.c_str(), sizeof(buffer));
         buffer[sizeof(buffer) - 1] = '\0';
 
         ImGui::Text("Name");
 		ImGui::SameLine();
         if (ImGui::InputText("##Name", buffer, sizeof(buffer))) {
-            objName = buffer;
-			addDebugMessage("Object renamed to " + objName + "\n");
+            std::string newObjName = buffer;
+            if (manager.renameGameObject(m_SelectionState.selectedObject, newObjName)) {
+                addDebugMessage("Object renamed to " + newObjName + "\n");
+            }
+            else {
+                addDebugMessage("Failed to rename: name already exists\n");
+            }
         }
 
         ImGui::Spacing();
