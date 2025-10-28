@@ -37,6 +37,8 @@ void UI::update(GameObjectManager& manager) {
         manager.saveToFile(m_currentSceneName);
 
 	editorMenuBar(manager);
+    objPicking(manager);
+    objDragging();
 
     drawPerformance();
     drawShapes(manager);
@@ -309,6 +311,7 @@ void UI::objListPanel(GameObjectManager& manager) {
     if (!names.empty()) {
         if (ImGui::ListBox("Objects", &m_SelectionState.selectedIndex, names.data(), static_cast<int>(names.size()), m_PanelState.maxObjects)) {
             m_SelectionState.selectedObject = gameObjects[m_SelectionState.selectedIndex];
+            //m_SelectionState.draggedObject = m_SelectionState.selectedObject;
         }
     }
     else {
@@ -526,16 +529,16 @@ void UI::loadAssetsFromDirectory() {
 }
 
 void UI::assetWindow(GameObjectManager& manager) {
-	ImGui::Begin("Assets");
+    ImGui::Begin("Assets");
 
-	// refresh to update assets from the actual asset folder
-	// not really needed since we have auto refresh, but still good to have
+    // refresh to update assets from the actual asset folder
+    // not really needed since we have auto refresh, but still good to have
     if (ImGui::Button("Refresh")) {
         assetsChangedFlag = true;
         loadAssetsFromDirectory();
     }
 
-	// auto refresh when new files added to the asset folder (in project dir)
+    // auto refresh when new files added to the asset folder (in project dir)
     std::filesystem::file_time_type current = std::filesystem::last_write_time(m_AssetBrowserState.currentFolder);
     if (current != m_AssetBrowserState.lastRefresh) {
         m_AssetBrowserState.lastRefresh = current;
@@ -550,9 +553,9 @@ void UI::assetWindow(GameObjectManager& manager) {
     for (const Asset& asset : m_assets) {
         // skip temp scene file (for play/stop)
         std::string fullPath = asset.folder + "/" + asset.name;
-        if (fullPath == m_tempSceneName) continue; 
+        if (fullPath == m_tempSceneName) continue;
 
-		ImGui::PushID(index++);
+        ImGui::PushID(index++);
 
         // display button and the name of the file
         ImGui::BeginGroup();
@@ -563,36 +566,37 @@ void UI::assetWindow(GameObjectManager& manager) {
 
         // double click logic
         if (ImGui::IsItemHovered() && InputHandler::isMouseLeftDoubleClicked()) {
-			// if it's a scene file, load the scene
+            // if it's a scene file, load the scene
             if (asset.folder == m_AssetBrowserState.currentFolder + "Scene") {
                 // load the new scene
-				manager.loadFromFile(fullPath);
+                manager.loadFromFile(fullPath);
 
-				// set current scene name
-				m_currentSceneName = fullPath;
+                // set current scene name
+                m_currentSceneName = fullPath;
 
                 // clear the current selection
                 m_SelectionState.selectedObject = nullptr;
-				m_SelectionState.selectedIndex = -1;
+				m_SelectionState.draggedObject = nullptr;
+                m_SelectionState.selectedIndex = -1;
 
-				// for debugging
+                // for debugging
                 addDebugMessage("Loaded scene: " + asset.name + "\n");
             }
         }
 
-		// make sure this text wraps if it's too long
+        // make sure this text wraps if it's too long
         ImGui::PushTextWrapPos(ImGui::GetCursorPosX() + m_AssetBrowserState.iconSize);
         ImGui::Text("%s", asset.name.c_str());
         ImGui::PopTextWrapPos();
 
-		ImGui::EndGroup();
+        ImGui::EndGroup();
 
         // calculate whether the next button should be displayed in the same line or next line based on this window size
         float lastButtonX2 = ImGui::GetItemRectMax().x;
         float nextButtonX2 = lastButtonX2 + m_AssetBrowserState.iconSize;
         if (nextButtonX2 < windowVisibleX2) ImGui::SameLine();
 
-		// drag a texture to inspector window to change texture of selected object
+        // drag a texture to inspector window to change texture of selected object
         if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID)) {
             ImGui::SetDragDropPayload("ASSET", asset.path.c_str(), asset.path.size() + 1);
             ImGui::Text("%s", asset.name.c_str());
@@ -600,9 +604,91 @@ void UI::assetWindow(GameObjectManager& manager) {
         }
 
 
-		ImGui::PopID();
+        ImGui::PopID();
     }
 
-	ImGui::End();
+    ImGui::End();
 
+}
+
+/*
+Future implementation (jic i forget)
+- Add snapping to grid or axis (e.g. hold Shift for 1-unit steps).
+
+- Highlight selected object while dragging.
+
+- Undo/redo.
+*/
+void UI::objPicking(GameObjectManager& manager) {
+    if (!InputHandler::isMouseLeftClicked()) return;
+
+    Vector2D mousePos = InputHandler::getWorldMousePosition();
+        
+    std::vector<GameObject*> gameObjects;
+    manager.getAllGameObjects(gameObjects);
+
+    GameObject* selected = nullptr;
+    float topZ = -std::numeric_limits<float>::infinity();
+
+    for (auto* obj : gameObjects) {
+        // dont let user click and select platform
+        if (obj->getObjectName() == "platform") continue;
+
+        Transform* transform = obj->getComponent<Transform>();
+        if (!transform) continue;
+
+        Collision::AABB aabb = Collision::getObjectAABB(transform);
+        Collision::Circle mousePoint(mousePos, 0.2f);
+
+		// check if mouse point intersects with the game obj
+        if (Collision::CollisionIntersection_CircleAABB_Static(mousePoint, aabb)) {
+			// only select the topmost object
+            if (transform->z > topZ) {
+                selected = obj;
+                topZ = transform->z;
+            }
+
+        }
+    }
+
+	// if something is selected, update selection state
+    if (selected) {
+        m_SelectionState.selectedObject = selected;
+        m_SelectionState.draggedObject = selected;
+		
+        Transform* transform = selected->getComponent<Transform>();
+        if (transform) {
+            m_SelectionState.dragOffset = {mousePos.x - transform->x, mousePos.y - transform->y};
+        }
+
+        auto iterator = std::find(gameObjects.begin(), gameObjects.end(), selected);
+        if (iterator != gameObjects.end()) {
+            m_SelectionState.selectedIndex = static_cast<int>(std::distance(gameObjects.begin(), iterator));
+        }
+
+        addDebugMessage(selected->getObjectName() + " selected");
+    }
+    else {
+		// if mouse click somewhere else, deselect current dragged object
+		m_SelectionState.draggedObject = nullptr;
+    }
+}
+
+void UI::objDragging() {
+    // early return if no obj is selected
+    GameObject* obj = m_SelectionState.draggedObject;
+    if (!obj) return;
+
+    // early return if mouse is not dragging
+    if (!InputHandler::isMouseDragging()) return;
+    
+    Transform* transform = obj->getComponent<Transform>();
+    if (!transform) return;
+
+	// change current object position based on mouse delta
+    Vector2D mousePos = InputHandler::getWorldMousePosition();
+    transform->x = mousePos.x - m_SelectionState.dragOffset.x;
+    transform->y = mousePos.y - m_SelectionState.dragOffset.y;
+
+    //transform->y = transform->y + (mousePos.y / 900) * zoom;
 }

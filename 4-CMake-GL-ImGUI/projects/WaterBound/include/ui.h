@@ -25,6 +25,7 @@ Technology is prohibited.
 #include <algorithm>
 #include <filesystem>
 #include "GameObjectManager.h"
+#include "collision.h"
 #include "input.h"
 
 // imma replicate a very scuffed version of Unity :) call me tian cai
@@ -59,6 +60,9 @@ private:
 	void objInspectWindow(GameObjectManager& manager);
 	void assetWindow(GameObjectManager& manager);
 
+	void objPicking(GameObjectManager& manager);
+	void objDragging();
+
 	struct PanelState {
 		float objListWidth = 250.0f; // Width of the object list panel
 		float objListHeight = -1.0f; // Height of the object list panel, -1 means full height
@@ -72,6 +76,10 @@ private:
 	struct SelectionState {
 		GameObject* selectedObject = nullptr; // currently selected object
 		int selectedIndex = -1; // index of selected object in the list
+
+		GameObject* draggedObject = nullptr; // currently dragged object
+
+		Vector2D dragOffset = { 0.f, 0.f }; // offset between mouse pos and object pos when dragging
 
 		bool aspectRatioLock = true; // lock aspect ratio for resizing
 		bool ratioSet = false;
