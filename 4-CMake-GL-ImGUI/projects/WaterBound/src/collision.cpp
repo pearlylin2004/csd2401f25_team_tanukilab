@@ -42,11 +42,6 @@ namespace Collision {
         return Collision::Circle(center, radius);
     }
 
-    //can add to math
-    static inline float Dot(const Vector2D& a, const Vector2D& b) { return a.x * b.x + a.y * b.y; }
-    static inline float LenSqr(const Vector2D& v) { return v.x * v.x + v.y * v.y; }
-    static inline float Length(const Vector2D& v) { return std::sqrt(LenSqr(v)); }
-
     //AABB
     bool CollisionIntersection_RectRect_Static(const AABB& aabb1, const AABB& aabb2)
     {
@@ -69,6 +64,7 @@ namespace Collision {
         info.timeOfImpact = static_cast<float>(g_dt);
         info.normal = { 0, 0 };
         info.contactPoint = { 0, 0 };
+        info.penetration = 0.0f;
 
         //relative velocity
         Vector2D Vb{ vel1.x - vel2.x, vel1.y - vel2.y };
@@ -149,19 +145,34 @@ namespace Collision {
             Vector2D cp = aabb1.getMin();
             cp.x += vel1.x * tFirst;
             cp.y += vel1.y * tFirst;
-
-            if (info.normal.x != 0) {
-                cp.x = (info.normal.x > 0) ? aabb2.getMax().x : aabb2.getMin().x;
-                cp.y += (vel1.y - vel2.y) * tFirst;
-            }
-            else if (info.normal.y != 0) {
-                cp.y = (info.normal.y > 0) ? aabb2.getMax().y : aabb2.getMin().y;
-                cp.x += (vel1.x - vel2.x) * tFirst;
-            }
-
             info.contactPoint = cp;
+            return info;
         }
-        return info;
+
+        //testing
+        if (aabb1.getMax().x > aabb2.getMin().x && aabb1.getMin().x < aabb2.getMax().x &&
+            aabb1.getMax().y > aabb2.getMin().y && aabb1.getMin().y < aabb2.getMax().y)
+        {
+            info.collided = true;
+
+            float overlapX = std::min(aabb1.getMax().x - aabb2.getMin().x,
+                aabb2.getMax().x - aabb1.getMin().x);
+            float overlapY = std::min(aabb1.getMax().y - aabb2.getMin().y,
+                aabb2.getMax().y - aabb1.getMin().y);
+
+            if (overlapX < overlapY) {
+                info.penetration = overlapX;
+                info.normal = (aabb1.getMax().x > aabb2.getMax().x)
+                    ? Vector2D(1, 0)
+                    : Vector2D(-1, 0);
+            }
+            else {
+                info.penetration = overlapY;
+                info.normal = (aabb1.getMax().y > aabb2.getMax().y)
+                    ? Vector2D(0, 1)
+                    : Vector2D(0, -1);
+            }
+        }
     }
 
     //AABB with circles 
@@ -195,7 +206,7 @@ namespace Collision {
             info.timeOfImpact = 0.0f;
             Vector2D temp = { dx, dy };
             Vector2D n = Vec_Normalize(&temp);
-            if (Length(n) <= EPSILON) {
+            if (Vec_Length(&n) <= EPSILON) {
                 //if center inside pick nearest axis normal by distance to edges
                 float left = std::abs(c.getCenter().x - aabb.getMin().x);
                 float right = std::abs(aabb.getMax().x - c.getCenter().x);
@@ -273,19 +284,13 @@ namespace Collision {
 
     }*/
 
-    //reflecting
-    static inline Vector2D Reflect(const Vector2D& v, const Vector2D& n) {
-        float d = Dot(v, n);
-        Vector2D scaledN = Vec_Scale(&n, 2.0f * d);
-        return Vec_Sub(&v, &scaledN);
-    }
-
     //remove normal ... when object hit the wall
     static inline Vector2D RemoveNormalComponent(const Vector2D& v, const Vector2D& n) {
-        float d = Dot(v, n);
+        float d = Vec_Dot(&v, &n);
         Vector2D scaledN = Vec_Scale(&n, d);
         return Vec_Sub(&v, &scaledN);
     }
+
     void Resolve_AABB_AABB(Collision::AABB& aabbA, Vector2D& velA, float massA,
         Collision::AABB& aabbB, Vector2D& velB, float massB,
         const CollisionInfo& info, CollisionResponseMode mode, float restitution)
@@ -308,7 +313,7 @@ namespace Collision {
         else {
             //testing for broken collision 
             Vector2D relVel = Vec_Sub(&velB, &velA);
-            float velAlongNormal = Dot(relVel, info.normal);
+            float velAlongNormal = Vec_Dot(&relVel, &info.normal);
             if (velAlongNormal > 0) return; // moving apart
             float j = -(1.0f + restitution) * velAlongNormal / (1.0f / massA + 1.0f / massB);
             Vector2D impulse = Vec_Scale(&info.normal, j);
