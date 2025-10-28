@@ -8,11 +8,78 @@
 
 #include "config.h"
 
-/* Optional global mirrors */
 bool  gShowFpsInTitle = true;
 bool  gShowInputDebug = false;
 float gClearColor[4] = { 0.2f, 0.2f, 0.25f, 1.0f };
 
+/* ========================== JsonIO helpers ========================== */
+namespace JsonIO {
+
+    static bool AtomicMove(const std::string& tmp, const std::string& dst, std::string* err) {
+        std::error_code ec;
+        std::filesystem::remove(dst, ec);
+        std::filesystem::rename(tmp, dst, ec);
+        if (ec) {
+            std::filesystem::copy_file(tmp, dst,
+                std::filesystem::copy_options::overwrite_existing, ec);
+            std::filesystem::remove(tmp, ec);
+            if (ec) { if (err) *err = "Move failed: " + ec.message(); return false; }
+        }
+        return true;
+    }
+
+    bool ReadFileToDocument(const std::string& path,
+        rapidjson::Document& doc,
+        std::string* err)
+    {
+        if (FILE* fp = std::fopen(path.c_str(), "rb")) {
+            char buf[1 << 14];
+            rapidjson::FileReadStream is(fp, buf, sizeof(buf));
+            doc.ParseStream(is);
+            std::fclose(fp);
+
+            if (doc.HasParseError()) {
+                if (err) *err = std::string("JSON parse error @")
+                    + std::to_string(doc.GetErrorOffset()) + ": "
+                    + rapidjson::GetParseError_En(doc.GetParseError());
+                return false;
+            }
+            if (!doc.IsObject()) {
+                if (err) *err = "Root JSON must be an object";
+                return false;
+            }
+            return true;
+        }
+        else {
+            if (err) *err = "Could not open " + path;
+            return false;
+        }
+    }
+
+    bool WriteDocumentToFile(const std::string& path,
+        rapidjson::Document& doc,
+        bool pretty,
+        std::string* err)
+    {
+        std::filesystem::create_directories(std::filesystem::path(path).parent_path());
+        const std::string tmp = path + ".tmp";
+
+        if (FILE* fp = std::fopen(tmp.c_str(), "wb")) {
+            char outBuf[1 << 14];
+            rapidjson::FileWriteStream os(fp, outBuf, sizeof(outBuf));
+            if (pretty) { rapidjson::PrettyWriter<rapidjson::FileWriteStream> w(os); w.SetIndent(' ', 2); doc.Accept(w); }
+            else { rapidjson::Writer<rapidjson::FileWriteStream>       w(os);                 doc.Accept(w); }
+            std::fclose(fp);
+            return AtomicMove(tmp, path, err);
+        }
+        else {
+            if (err) *err = "Cannot open temp file for writing: " + tmp;
+            return false;
+        }
+    }
+} // namespace JsonIO
+
+/* ===================== AppConfig field mappers ====================== */
 namespace {
     inline void applyInt(const rapidjson::Value& o, const char* k, int& v) { if (o.HasMember(k) && o[k].IsInt())    v = o[k].GetInt(); }
     inline void applyBool(const rapidjson::Value& o, const char* k, bool& v) { if (o.HasMember(k) && o[k].IsBool())   v = o[k].GetBool(); }
@@ -22,23 +89,41 @@ namespace {
         const auto& a = o[k]; for (rapidjson::SizeType i = 0; i < 4; ++i) if (!a[i].IsNumber()) return;
         for (rapidjson::SizeType i = 0; i < 4; ++i) dst[i] = static_cast<float>(a[i].GetDouble());
     }
+
+    inline void toDocument(const AppConfig& src, rapidjson::Document& doc) {
+        doc.SetObject();
+        auto& a = doc.GetAllocator();
+
+        rapidjson::Value window(rapidjson::kObjectType);
+        window.AddMember("width", src.width, a);
+        window.AddMember("height", src.height, a);
+        window.AddMember("title", rapidjson::Value(src.title.c_str(), a), a);
+        window.AddMember("vsync", src.vsync, a);
+        window.AddMember("fullscreen", src.fullscreen, a);
+
+        rapidjson::Value render(rapidjson::kObjectType);
+        rapidjson::Value cc(rapidjson::kArrayType);
+        cc.PushBack(src.clear_color[0], a)
+            .PushBack(src.clear_color[1], a)
+            .PushBack(src.clear_color[2], a)
+            .PushBack(src.clear_color[3], a);
+        render.AddMember("clear_color", cc, a);
+
+        rapidjson::Value debug(rapidjson::kObjectType);
+        debug.AddMember("show_fps_in_title", src.show_fps_in_title, a);
+        debug.AddMember("show_input_debug", src.show_input_debug, a);
+
+        doc.AddMember("window", window, a);
+        doc.AddMember("render", render, a);
+        doc.AddMember("debug", debug, a);
+    }
 }
 
+/* ============================ Public API ============================ */
 bool LoadConfig(const std::string& path, AppConfig& out, std::string* err)
 {
-    FILE* fp = std::fopen(path.c_str(), "rb");
-    if (!fp) { if (err)*err = "Could not open " + path + " (using defaults)"; return false; }
-
-    char buf[1 << 12];
-    rapidjson::FileReadStream is(fp, buf, sizeof(buf));
-    rapidjson::Document doc; doc.ParseStream(is);
-    std::fclose(fp);
-
-    if (doc.HasParseError()) {
-        if (err)*err = std::string("JSON parse error @")
-            + std::to_string(doc.GetErrorOffset()) + ": " + rapidjson::GetParseError_En(doc.GetParseError()); return false;
-    }
-    if (!doc.IsObject()) { if (err)*err = "Root JSON must be an object"; return false; }
+    rapidjson::Document doc;
+    if (!JsonIO::ReadFileToDocument(path, doc, err)) return false;   // <—— change here
 
     if (doc.HasMember("window") && doc["window"].IsObject()) {
         const auto& w = doc["window"];
@@ -58,108 +143,15 @@ bool LoadConfig(const std::string& path, AppConfig& out, std::string* err)
         applyBool(d, "show_input_debug", out.show_input_debug);
     }
 
-    // sync globals if used elsewhere
     gShowFpsInTitle = out.show_fps_in_title;
     gShowInputDebug = out.show_input_debug;
     for (int i = 0; i < 4; ++i) gClearColor[i] = out.clear_color[i];
     return true;
 }
 
-namespace {
-    inline void toDocument(const AppConfig& src, rapidjson::Document& doc) {
-        doc.SetObject();
-        auto& a = doc.GetAllocator();
-
-        // window
-        rapidjson::Value window(rapidjson::kObjectType);
-        window.AddMember("width", src.width, a);
-        window.AddMember("height", src.height, a);
-        window.AddMember("title", rapidjson::Value(src.title.c_str(), a), a);
-        window.AddMember("vsync", src.vsync, a);
-        window.AddMember("fullscreen", src.fullscreen, a);
-
-        // render
-        rapidjson::Value render(rapidjson::kObjectType);
-        rapidjson::Value cc(rapidjson::kArrayType);
-        cc.PushBack(src.clear_color[0], a)
-            .PushBack(src.clear_color[1], a)
-            .PushBack(src.clear_color[2], a)
-            .PushBack(src.clear_color[3], a);
-        render.AddMember("clear_color", cc, a);
-
-        // debug
-        rapidjson::Value debug(rapidjson::kObjectType);
-        debug.AddMember("show_fps_in_title", src.show_fps_in_title, a);
-        debug.AddMember("show_input_debug", src.show_input_debug, a);
-
-        doc.AddMember("window", window, a);
-        doc.AddMember("render", render, a);
-        doc.AddMember("debug", debug, a);
-    }
-
-    // Robust atomic write: write to *.tmp then replace destination
-    inline bool atomic_write_json(const std::string& path,
-        rapidjson::Document& doc,
-        bool pretty,
-        std::string* err)
-    {
-        std::filesystem::path p{ path };
-        std::error_code ec;
-        std::filesystem::create_directories(p.parent_path(), ec);
-
-        const std::string tmp = path + ".tmp";
-
-        if (FILE* fp = std::fopen(tmp.c_str(), "wb")) {
-            char buffer[1 << 12];
-            rapidjson::FileWriteStream os(fp, buffer, sizeof(buffer));
-
-            if (pretty) {
-                rapidjson::PrettyWriter<rapidjson::FileWriteStream> writer(os);
-                writer.SetIndent(' ', 2);
-                if (!doc.Accept(writer)) {
-                    std::fclose(fp);
-                    if (err) *err = "Failed to pretty-write JSON.";
-                    std::filesystem::remove(tmp, ec);
-                    return false;
-                }
-            }
-            else {
-                rapidjson::Writer<rapidjson::FileWriteStream> writer(os);
-                if (!doc.Accept(writer)) {
-                    std::fclose(fp);
-                    if (err) *err = "Failed to write JSON.";
-                    std::filesystem::remove(tmp, ec);
-                    return false;
-                }
-            }
-
-            std::fflush(fp);
-            std::fclose(fp);
-
-            std::filesystem::remove(p, ec);
-            std::filesystem::rename(tmp, p, ec);
-            if (ec) {
-                std::filesystem::copy_file(tmp, p,
-                    std::filesystem::copy_options::overwrite_existing, ec);
-                std::filesystem::remove(tmp, ec);
-                if (ec) {
-                    if (err) *err = "Failed to move JSON to destination: " + ec.message();
-                    return false;
-                }
-            }
-            return true;
-        }
-        else {
-            if (err) *err = "Could not open temp file for writing: " + tmp;
-            return false;
-        }
-    }
-}
-
-
 bool SaveConfig(const std::string& path, const AppConfig& cfg, std::string* err, bool pretty)
 {
     rapidjson::Document doc;
     toDocument(cfg, doc);
-    return atomic_write_json(path, doc, pretty, err);
+    return JsonIO::WriteDocumentToFile(path, doc, pretty, err);      // uses JsonIO
 }
