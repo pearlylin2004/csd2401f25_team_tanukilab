@@ -213,7 +213,7 @@ void RenderSystem::renderTex(GameObject* object, float const& deltaTime)
 				if (animation->frameTimer >= animation->frameTime)
 				{
 					animation->frameTimer -= animation->frameTime;
-					if (animation->runItBack && animation->currentFrameColumn == 0)
+					/*if (animation->runItBack && animation->currentFrameColumn == 0)
 					{
 						animation->runItBack = false;
 					}
@@ -222,7 +222,10 @@ void RenderSystem::renderTex(GameObject* object, float const& deltaTime)
 						animation->currentFrameColumn = (animation->currentFrameColumn + 1) % animation->totalColumn;
 						animation->currentFrameRow = (animation->currentFrameRow + 1) % animation->totalRow;
 						animation->runItBack = true;
-					}
+					}*/
+					animation->currentFrameColumn = (animation->currentFrameColumn + 1) % animation->totalColumn;
+					animation->currentFrameRow = (animation->currentFrameRow + 1) % animation->totalRow;
+					animation->runItBack = true;
 					
 				}
 			}
