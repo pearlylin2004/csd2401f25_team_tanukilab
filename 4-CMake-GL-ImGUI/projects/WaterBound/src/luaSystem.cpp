@@ -16,9 +16,31 @@ Technology is prohibited.
 
 #include "luaSystem.h"
 
+//function exposed to Lua
+int LuaSystem::Lua_IsKeyHeld(lua_State* L) {
+    const char* keyStr = lua_tostring(L, 1); //get string from Lua
+
+    //convert string to GLFW key code
+    int key = -1;
+    if (strcmp(keyStr, "W") == 0) key = GLFW_KEY_W;
+    else if (strcmp(keyStr, "A") == 0) key = GLFW_KEY_A;
+    else if (strcmp(keyStr, "S") == 0) key = GLFW_KEY_S;
+    else if (strcmp(keyStr, "D") == 0) key = GLFW_KEY_D;
+    //add more keys if needed in the future
+
+    bool held = false;
+    if (key != -1) {
+        held = InputHandler::isKeyHeld(key);
+    }
+
+    lua_pushboolean(L, held); //push result to Lua
+    return 1; //number of return values
+}
+
 void LuaSystem::init() {
     L = luaL_newstate();
     luaL_openlibs(L);
+    lua_register(L, "Input_isKeyHeld", Lua_IsKeyHeld);
 }
 
 void LuaSystem::cleanup() {
@@ -53,7 +75,8 @@ float LuaSystem::getGlobalNumber(const std::string& name) {
 bool LuaSystem::runScriptForObject(const std::string& filename, GameObject* obj, float deltaTime) {
     if (!L || !obj) return false;
 
-    // Load the script only once (you can store loaded scripts in a map if needed)
+    /*
+    //load the script only once (you can store loaded scripts in a map if needed)
     static std::unordered_map<std::string, bool> loadedScripts;
     if (loadedScripts.find(filename) == loadedScripts.end()) {
         if (luaL_dofile(L, filename.c_str()) != LUA_OK) {
@@ -62,17 +85,28 @@ bool LuaSystem::runScriptForObject(const std::string& filename, GameObject* obj,
             return false;
         }
         loadedScripts[filename] = true;
+    }*/
+
+    //load the Lua script from file every time
+    if (luaL_dofile(L, filename.c_str()) != LUA_OK) {
+        std::cerr << "Lua error: " << lua_tostring(L, -1) << std::endl;
+        lua_pop(L, 1);
+        return false;
     }
 
-    // Expose deltaTime
+    //expose deltaTime
     lua_pushnumber(L, deltaTime);
     lua_setglobal(L, "deltaTime");
 
-    // Expose object (for simplicity, pass object pointer as lightuserdata)
+    //expose object
     lua_pushlightuserdata(L, obj);
     lua_setglobal(L, "object");
 
-    // Call Lua function Update(object, deltaTime)
+    //expose input
+    lua_pushcclosure(L, Lua_IsKeyHeld, 0);
+    lua_setglobal(L, "Input_isKeyHeld");
+
+    //call Lua function Update(object, deltaTime)
     lua_getglobal(L, "Update");
     if (lua_isfunction(L, -1)) {
         lua_pushlightuserdata(L, obj);
@@ -83,9 +117,9 @@ bool LuaSystem::runScriptForObject(const std::string& filename, GameObject* obj,
         }
     }
     else {
-        lua_pop(L, 1); // pop non-function
+        lua_pop(L, 1); //pop non-function
     }
-
     return true;
 }
+
 

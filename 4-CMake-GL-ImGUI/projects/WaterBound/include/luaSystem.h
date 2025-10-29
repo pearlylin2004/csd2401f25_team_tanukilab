@@ -18,6 +18,7 @@ Technology is prohibited.
 #include <string>
 #include <iostream>
 #include "GameObject.h"
+#include "input.h"
 
 extern "C" {
 #include "lua.h"
@@ -32,6 +33,7 @@ public:
 
     void init();
     void cleanup();
+    static int Lua_IsKeyHeld(lua_State* L);
     bool runString(const std::string& code);
     bool runScript(const std::string& filename);
     float getGlobalNumber(const std::string& name);
