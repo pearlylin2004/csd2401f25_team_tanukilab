@@ -209,12 +209,21 @@ void RenderSystem::renderTex(GameObject* object, float const& deltaTime)
 			if (animation->loop)
 			{
 				animation->frameTimer += deltaTime;
-				std::cout << "\n-------Frame Timer---------\n" << animation->frameTimer << "\n\n";
+				//std::cout << "\n-------Frame Timer---------\n" << animation->frameTimer << "\n\n";
 				if (animation->frameTimer >= animation->frameTime)
 				{
 					animation->frameTimer -= animation->frameTime;
-					animation->currentFrameColumn = (animation->currentFrameColumn + 1) % animation->totalColumn;
-					animation->currentFrameRow = (animation->currentFrameRow + 1) % animation->totalRow;
+					if (animation->runItBack && animation->currentFrameColumn == 0)
+					{
+						animation->runItBack = false;
+					}
+					else
+					{
+						animation->currentFrameColumn = (animation->currentFrameColumn + 1) % animation->totalColumn;
+						animation->currentFrameRow = (animation->currentFrameRow + 1) % animation->totalRow;
+						animation->runItBack = true;
+					}
+					
 				}
 			}
 		}

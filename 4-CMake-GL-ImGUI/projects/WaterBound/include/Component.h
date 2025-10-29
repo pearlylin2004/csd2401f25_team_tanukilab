@@ -85,6 +85,7 @@ struct Animation : public Component
     }
 
     bool loop = false;
+    bool runItBack = true;
     GLuint texHDL;
     int currentFrameColumn{}, currentFrameRow{}, totalColumn{ 1 }, totalRow{ 1 };
     float frameTime = 0.1f, frameTimer{};
