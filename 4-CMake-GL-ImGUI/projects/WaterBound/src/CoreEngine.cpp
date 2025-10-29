@@ -86,7 +86,7 @@ void CoreEngine::Init() {
     GameObject* object1 = m_manager->getGameObject("player");
     GameObject* object2 = m_manager->getGameObject("bullet");
 
-    // Add LuaScript components to the existing objects
+    //add LuaScript components to the existing objects
     if (object1)
         object1->addComponent<LuaScript>("../projects/WaterBound/scripting/object1.lua");
         std::cout << "runnning script for object 1" << std::endl;
@@ -147,6 +147,7 @@ void CoreEngine::Update(float deltaTime) {
     std::vector<GameObject*> gameObjects;
     m_manager->getAllGameObjects(gameObjects);
 
+	//running Lua scripts for each object that has a LuaScript component
     for (GameObject* obj : gameObjects) {
         if (obj->hasComponent<LuaScript>()) {
             LuaScript* scriptComp = obj->getComponent<LuaScript>();

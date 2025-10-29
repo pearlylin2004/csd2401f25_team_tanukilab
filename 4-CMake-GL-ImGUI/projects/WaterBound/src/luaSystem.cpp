@@ -26,6 +26,7 @@ int LuaSystem::Lua_IsKeyHeld(lua_State* L) {
     else if (strcmp(keyStr, "A") == 0) key = GLFW_KEY_A;
     else if (strcmp(keyStr, "S") == 0) key = GLFW_KEY_S;
     else if (strcmp(keyStr, "D") == 0) key = GLFW_KEY_D;
+    else if (strcmp(keyStr, "SPACE") == 0) key = GLFW_KEY_SPACE;
     //add more keys if needed in the future
 
     bool held = false;
