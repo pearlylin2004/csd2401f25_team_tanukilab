@@ -222,6 +222,7 @@ void UI::editorMenuBar(GameObjectManager& manager) {
 				assetsChangedFlag = true;
 
 				m_SelectionState.selectedObject = nullptr;
+                m_SelectionState.draggedObject = nullptr;
 				m_SelectionState.selectedIndex = -1;
 				addDebugMessage("Scene duplicated to: " + newSceneName + "\n");
 			}
@@ -248,6 +249,7 @@ void UI::editorMenuBar(GameObjectManager& manager) {
 						m_currentSceneName = fullPath;
 
                         m_SelectionState.selectedObject = nullptr;
+						m_SelectionState.draggedObject = nullptr;
                         m_SelectionState.selectedIndex = -1;
 
                         addDebugMessage("Loaded scene: " + asset.name + "\n");
@@ -281,6 +283,7 @@ void UI::editorMenuBar(GameObjectManager& manager) {
                 manager.loadFromFile(m_tempSceneName);
 
                 m_SelectionState.selectedObject = nullptr;
+                m_SelectionState.draggedObject = nullptr;
                 m_SelectionState.selectedIndex = -1;
 
 				// remove temp scene file
@@ -455,6 +458,7 @@ void UI::objPropertyPanel(GameObjectManager& manager) {
                 manager.deleteGameObject(m_SelectionState.selectedObject);
 
                 m_SelectionState.selectedObject = nullptr;
+                m_SelectionState.draggedObject = nullptr;
                 m_SelectionState.selectedIndex = -1;
 
                 addDebugMessage("Object " + name + " deleted\n");
