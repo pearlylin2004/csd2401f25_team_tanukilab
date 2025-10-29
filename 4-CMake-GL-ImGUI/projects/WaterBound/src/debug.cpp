@@ -201,7 +201,7 @@ namespace Perf {
 
     void UpdateTime(double& delta, double& fps, double fps_calc_interval,
         double fixed_dt, int& steps_out, double& alpha_out,
-        int max_steps_per_frame = 8)
+        int max_steps_per_frame)
     {
         // 1) Update variable delta & FPS using the original function
         UpdateTime(delta, fps, fps_calc_interval);
