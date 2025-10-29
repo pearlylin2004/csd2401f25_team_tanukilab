@@ -1,6 +1,6 @@
 object player
 renderer square 1 shaders/Leaf_Gun_Empty.png
-transform 0 0 0.01 1 5 3 0
+transform 0 0 0.03 1 5 3 0
 physics 0 0
 collision
 

@@ -75,6 +75,8 @@ public:
 	*************************************************************************/
 	void update(GameObjectManager& manager);
 	GLuint uploadtex(std::string const& filename, bool& isTransparent);
+	void renderTex(GameObject* object);
+	void renderNoTex(GameObject* object);
 };
 
 /*!***********************************************************************
