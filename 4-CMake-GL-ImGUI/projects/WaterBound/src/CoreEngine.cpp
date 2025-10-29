@@ -34,7 +34,7 @@ CoreEngine::~CoreEngine() {
 void CoreEngine::Init() {
     AppConfig cfg;
     std::string err;
-    if (!LoadConfig("../projects/WaterBound/resources/config.txt", cfg, &err)) {
+    if (!LoadConfig("../projects/WaterBound/resources/config.json", cfg, &err)) {
         std::cout << err << "\n";
     }
     m_title = cfg.title;
