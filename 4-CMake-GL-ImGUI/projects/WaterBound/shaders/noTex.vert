@@ -8,18 +8,11 @@ uniform mat4 M;
 uniform mat4 V;
 uniform mat4 P;
 
-uniform mat2 uRotMtx;
-uniform vec2 uMcn;
 
 out vec3 vColor;
-out vec2 vTex;
 
 void main()
 {
     gl_Position = P * V * M * vec4(aPosition, 0.0, 1.0);
-    //gl_Position = vec4(aPosition, 0, 1.0);
     vColor = aColor;
-
-    //vTex = uRotMtx * (aTexPos - uMcn) + uMcn;
-    vTex = aTexPos;
 }

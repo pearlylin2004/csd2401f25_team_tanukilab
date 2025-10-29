@@ -98,13 +98,7 @@ void RenderSystem::update(GameObjectManager& manager) {
 	}
 
 	renderer::cam.update();
-	glUseProgram(renderer::shdr_pgm);
-	GLint vTransformView = glGetUniformLocation(renderer::shdr_pgm, "V");
-	//renderer::cam.view = glm::mat4{ 1 };
-	glUniformMatrix4fv(vTransformView, 1, GL_FALSE, glm::value_ptr(renderer::cam.view));
-	GLint vTransformProj = glGetUniformLocation(renderer::shdr_pgm, "P");
-	//renderer::cam.proj = glm::mat4{ 1 };
-	glUniformMatrix4fv(vTransformProj, 1, GL_FALSE, glm::value_ptr(renderer::cam.proj));
+	
 
 	std::vector<GameObject*> objectWithTex;
 	std::vector<GameObject*> objectWithoutTex;
@@ -116,10 +110,19 @@ void RenderSystem::update(GameObjectManager& manager) {
 		else
 			objectWithoutTex.push_back(object);
 	}
-
+	glUseProgram(renderer::shdr_pgm[1]);
+	GLint vTransformView = glGetUniformLocation(renderer::shdr_pgm[1], "V");
+	glUniformMatrix4fv(vTransformView, 1, GL_FALSE, glm::value_ptr(renderer::cam.view));
+	GLint vTransformProj = glGetUniformLocation(renderer::shdr_pgm[1], "P");
+	glUniformMatrix4fv(vTransformProj, 1, GL_FALSE, glm::value_ptr(renderer::cam.proj));
 	for (GameObject* object : objectWithoutTex)
 		renderNoTex(object);
 
+	glUseProgram(renderer::shdr_pgm[0]);
+	vTransformView = glGetUniformLocation(renderer::shdr_pgm[0], "V");
+	glUniformMatrix4fv(vTransformView, 1, GL_FALSE, glm::value_ptr(renderer::cam.view));
+	vTransformProj = glGetUniformLocation(renderer::shdr_pgm[0], "P");
+	glUniformMatrix4fv(vTransformProj, 1, GL_FALSE, glm::value_ptr(renderer::cam.proj));
 	for (GameObject* object : objectWithTex)
 		renderTex(object);
 }
@@ -192,18 +195,16 @@ void RenderSystem::renderTex(GameObject* object)
 
 		//binding model to world matrix
 		glBindVertexArray(render->modelRef.vaoid);
-		GLint vTransformLoc = glGetUniformLocation(renderer::shdr_pgm, "M");
+		GLint vTransformLoc = glGetUniformLocation(renderer::shdr_pgm[0], "M");
 		glUniformMatrix4fv(vTransformLoc, 1, GL_FALSE, glm::value_ptr(transform->mdlWorld));
 
 		//binding texture rotation and id
-		GLint texid = glGetUniformLocation(renderer::shdr_pgm, "uTex2d");
-		GLint rotmat = glGetUniformLocation(renderer::shdr_pgm, "uRotMtx");
-		GLint rotcenter = glGetUniformLocation(renderer::shdr_pgm, "uMcn");
-		GLint hastex = glGetUniformLocation(renderer::shdr_pgm, "uHasTex");
+		GLint texid = glGetUniformLocation(renderer::shdr_pgm[0], "uTex2d");
+		GLint rotmat = glGetUniformLocation(renderer::shdr_pgm[0], "uRotMtx");
+		GLint rotcenter = glGetUniformLocation(renderer::shdr_pgm[0], "uMcn");
 		glUniform1i(texid, 0);
 		glUniformMatrix2fv(rotmat, 1, GL_FALSE, glm::value_ptr(texRot));
 		glUniform2fv(rotcenter, 1, glm::value_ptr(rotationCenter));
-		glUniform1i(hastex, static_cast<int>(render->hasTex));
 
 		if (render->modelRef.shape == shape::square)
 		{
@@ -239,18 +240,8 @@ void RenderSystem::renderNoTex(GameObject* object)
 
 		//binding model to world matrix
 		glBindVertexArray(render->modelRef.vaoid);
-		GLint vTransformLoc = glGetUniformLocation(renderer::shdr_pgm, "M");
+		GLint vTransformLoc = glGetUniformLocation(renderer::shdr_pgm[1], "M");
 		glUniformMatrix4fv(vTransformLoc, 1, GL_FALSE, glm::value_ptr(transform->mdlWorld));
-
-		//binding texture rotation and id
-		GLint texid = glGetUniformLocation(renderer::shdr_pgm, "uTex2d");
-		GLint rotmat = glGetUniformLocation(renderer::shdr_pgm, "uRotMtx");
-		GLint rotcenter = glGetUniformLocation(renderer::shdr_pgm, "uMcn");
-		GLint hastex = glGetUniformLocation(renderer::shdr_pgm, "uHasTex");
-		glUniform1i(texid, 0);
-		glUniformMatrix2fv(rotmat, 1, GL_FALSE, glm::value_ptr(texRot));
-		glUniform2fv(rotcenter, 1, glm::value_ptr(rotationCenter));
-		glUniform1i(hastex, static_cast<int>(render->hasTex));
 
 		if (render->modelRef.shape == shape::square)
 			glDrawElements(GL_TRIANGLES, render->modelRef.elem_cnt, GL_UNSIGNED_SHORT, nullptr);
