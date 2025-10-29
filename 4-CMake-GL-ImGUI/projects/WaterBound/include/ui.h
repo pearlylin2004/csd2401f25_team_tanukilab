@@ -48,6 +48,8 @@ public:
 
 	void loadAssetsFromDirectory();
 
+	void sceneWindow(GLuint texture, float aspectRatio);
+
 private:
 	void drawPerformance();
 	void drawShapes(GameObjectManager& manager);
@@ -62,6 +64,7 @@ private:
 
 	void objPicking(GameObjectManager& manager);
 	void objDragging();
+
 
 	struct PanelState {
 		float objListWidth = 250.0f; // Width of the object list panel

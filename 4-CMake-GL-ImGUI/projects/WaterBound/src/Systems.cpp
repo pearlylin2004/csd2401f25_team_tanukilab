@@ -79,6 +79,11 @@ void RenderSystem::update(GameObjectManager& manager) {
 	std::vector<GameObject*> gameObjects;
 	manager.getAllGameObjects(gameObjects);
 
+	// Attach texture to FBO if editor is on
+	if (UISystem::isShowUI()) {
+		createFBO();
+	}
+
 	// Update textures if they have changed (in level editor)
 	for (GameObject* object : gameObjects)
 	{
@@ -236,10 +241,33 @@ void RenderSystem::update(GameObjectManager& manager) {
 		}
 	}
 	//glDepthMask(GL_TRUE);
+
+	// unbind FBO if editor is off
+	if(UISystem::isShowUI()) glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
+void RenderSystem::createFBO() {
+	if (texture) glDeleteTextures(1, &texture);
+	if (fbo) glDeleteFramebuffers(1, &fbo);
+
+	glGenFramebuffers(1, &fbo);
+	glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+
+	glGenTextures(1, &texture);
+	glBindTexture(GL_TEXTURE_2D, texture);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, fboWidth, fboHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture, 0);
+}
+
+RenderSystem::~RenderSystem() {
+	if (texture) glDeleteTextures(1, &texture);
+	if (fbo) glDeleteFramebuffers(1, &fbo);
 }
 
 // Load all textures for game objects with a Render component
-void RenderSystem::init(GameObjectManager& manager)
+void RenderSystem::init(GameObjectManager& manager, int fboW, int fboH)
 {
 	stbi_set_flip_vertically_on_load(true);
 	std::vector<GameObject*> gameObjects;
@@ -252,6 +280,9 @@ void RenderSystem::init(GameObjectManager& manager)
 			render->texHDL = uploadtex(render->texFile, render->isTransparent);
 		}
 	}
+
+	fboWidth = fboW;
+	fboHeight = fboH;
 }
 
 // Upload a texture from file and return its OpenGL handle
@@ -281,6 +312,11 @@ GLuint RenderSystem::uploadtex(std::string const& filename, bool& isTransparent)
 	glTextureParameteri(texobj_hdl, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	stbi_image_free(data);
 	return texobj_hdl;
+}
+
+void RenderSystem::fboAspectRatio(int& width, int& height) const {
+	width = fboWidth;
+	height = fboHeight;
 }
 
 // Physics system - updates position based on velocity and applies gravity
@@ -457,7 +493,7 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 //UI system - handles ImGui rendering and interaction
 bool UISystem::showUI = false;
 
-void UISystem::init(GLFWwindow* window) {
+void UISystem::init(GLFWwindow* window, RenderSystem* renderer) {
 	// --- ImGui Setup ---
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
@@ -474,6 +510,8 @@ void UISystem::init(GLFWwindow* window) {
 	io.ConfigViewportsNoTaskBarIcon = true;
 
 	m_UI.loadAssetsFromDirectory();
+
+	m_renderer = renderer;
 }
 
 UISystem::~UISystem() {
@@ -496,8 +534,14 @@ void UISystem::update(GameObjectManager& manager) {
 
 	dockingSetUp();
 
+	// get the width and height of the SCENE view
+	int fboWidth, fboHeight;
+	m_renderer->fboAspectRatio(fboWidth, fboHeight);
+
 	// all ImGui windows
 	m_UI.update(manager);
+	m_UI.sceneWindow(m_renderer->getTexture(), static_cast<float>(fboWidth) / static_cast<float>(fboHeight));
+
 	m_UI.loadAssetsFromDirectory(); // only reload if assets flag is set (e.g. new asset added)
 
 	// this will CRASH if change scene in editor

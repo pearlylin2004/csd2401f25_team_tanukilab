@@ -1,4 +1,4 @@
-/* Start Header ************************************************************************/
+﻿/* Start Header ************************************************************************/
 /*!
 \file       ui.cpp
 \author     Pearly Lin Lee Ying, p.lin, 2401591
@@ -222,6 +222,7 @@ void UI::editorMenuBar(GameObjectManager& manager) {
 				assetsChangedFlag = true;
 
 				m_SelectionState.selectedObject = nullptr;
+                m_SelectionState.draggedObject = nullptr;
 				m_SelectionState.selectedIndex = -1;
 				addDebugMessage("Scene duplicated to: " + newSceneName + "\n");
 			}
@@ -248,6 +249,7 @@ void UI::editorMenuBar(GameObjectManager& manager) {
 						m_currentSceneName = fullPath;
 
                         m_SelectionState.selectedObject = nullptr;
+						m_SelectionState.draggedObject = nullptr;
                         m_SelectionState.selectedIndex = -1;
 
                         addDebugMessage("Loaded scene: " + asset.name + "\n");
@@ -281,6 +283,7 @@ void UI::editorMenuBar(GameObjectManager& manager) {
                 manager.loadFromFile(m_tempSceneName);
 
                 m_SelectionState.selectedObject = nullptr;
+                m_SelectionState.draggedObject = nullptr;
                 m_SelectionState.selectedIndex = -1;
 
 				// remove temp scene file
@@ -455,6 +458,7 @@ void UI::objPropertyPanel(GameObjectManager& manager) {
                 manager.deleteGameObject(m_SelectionState.selectedObject);
 
                 m_SelectionState.selectedObject = nullptr;
+                m_SelectionState.draggedObject = nullptr;
                 m_SelectionState.selectedIndex = -1;
 
                 addDebugMessage("Object " + name + " deleted\n");
@@ -505,7 +509,7 @@ void UI::objInspectWindow(GameObjectManager& manager) {
 
     ImGui::SameLine();
 
-    // Right panel � inspector
+    // Right panel — inspector
     ImGui::BeginChild("Inspector", ImVec2(0, 0), true);
     objPropertyPanel(manager);
     ImGui::EndChild();
@@ -614,6 +618,36 @@ void UI::assetWindow(GameObjectManager& manager) {
 
     ImGui::End();
 
+}
+
+void UI::sceneWindow(GLuint texture, float aspectRatio) {
+    ImGui::Begin("Scene");
+
+    // if no texture
+    if (texture == 0) {
+        ImGui::Text("No texture available");
+        ImGui::End();
+        return;
+    }
+
+    ImVec2 avail = ImGui::GetContentRegionAvail();
+    ImVec2 size = avail;
+
+	// calculate how much to scale based on aspect ratio
+    float availAspect = avail.x / avail.y;
+    if (availAspect > aspectRatio) size.x = avail.y * aspectRatio; 
+    else size.y = avail.x / aspectRatio;   
+
+	// center in the available space
+    ImVec2 cursor = ImGui::GetCursorPos();
+    ImVec2 offset = { (avail.x - size.x) * 0.5f, (avail.y - size.y) * 0.5f };
+    if (offset.x < 0) offset.x = 0;
+    if (offset.y < 0) offset.y = 0;
+    ImGui::SetCursorPos({ cursor.x + offset.x, cursor.y + offset.y });
+
+    ImGui::Image((void*)(intptr_t)texture, size, ImVec2(0, 1), ImVec2(1, 0));
+
+    ImGui::End();
 }
 
 /*
