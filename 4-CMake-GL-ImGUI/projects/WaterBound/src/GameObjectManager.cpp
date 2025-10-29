@@ -96,6 +96,24 @@ void GameObjectManager::getAllGameObjects(std::vector<GameObject*>& gameObjects)
 		loadFromFile("shaders/Scene/temp_serialize.txt");
 	}
 
+	bool GameObjectManager::renameGameObject(GameObject* obj, const std::string& newName) {
+		if (!obj) return false;
+		if (newName.empty()) return false;
+
+		for (auto& odject : m_gameObjects) {
+			// return false another object has the same name
+			GameObject* other = odject.second.get();
+			if (other != obj && other->getObjectName() == newName) {
+				return false;
+			}
+		}
+
+		// rename if no duplicated name
+		obj->getObjectName() = newName;
+		return true;
+
+	}
+
 	void GameObjectManager::loadFromFile(const std::string& filename)
 	{
 		std::ifstream is{ filename };
@@ -189,7 +207,7 @@ void GameObjectManager::getAllGameObjects(std::vector<GameObject*>& gameObjects)
 
 		for (auto& [name, obj] : m_gameObjects)
 		{
-			os << "object " << name << "\n";
+			os << "object " << obj->getObjectName() << "\n";
 
 			if (auto render = obj->getComponent<Render>())
 			{

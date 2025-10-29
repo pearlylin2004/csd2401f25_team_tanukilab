@@ -75,6 +75,8 @@ public:
 	// get mouse position when drag started
 	static Vector2D getMouseDragStartPos();
 
+	static Vector2D getMouseDeltaWorld();
+
 	/* Cursor Position */
 	// get current cursor position
 	static Vector2D getMousePosition();
@@ -86,6 +88,8 @@ public:
 	static Vector2D getMouseDelta();
 	// check if cursor is inside window
 	static bool isCursorInsideWindow();
+	// check if cursor is inside ImGui viewport
+	static bool isCursorInsideImGuiViewport();
 
 	// get cursor world postion
 	static Vector2D getWorldMousePosition();
