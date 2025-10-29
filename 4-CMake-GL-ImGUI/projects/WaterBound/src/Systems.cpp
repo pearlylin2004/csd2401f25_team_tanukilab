@@ -75,7 +75,8 @@ void InputSystem::update(GameObjectManager& manager, const float& deltaTime) {
 
 
 // Render system - draws all game objects with a Render component
-void RenderSystem::update(GameObjectManager& manager) {
+void RenderSystem::update(GameObjectManager& manager, float const& deltaTime) 
+{
 	std::vector<GameObject*> gameObjects;
 	manager.getAllGameObjects(gameObjects);
 
@@ -125,7 +126,7 @@ void RenderSystem::update(GameObjectManager& manager) {
 	vTransformProj = glGetUniformLocation(renderer::shdr_pgm[0], "P");
 	glUniformMatrix4fv(vTransformProj, 1, GL_FALSE, glm::value_ptr(renderer::cam.proj));
 	for (GameObject* object : objectWithTex)
-		renderTex(object);
+		renderTex(object, deltaTime);
 }
 
 // Load all textures for game objects with a Render component
@@ -138,7 +139,7 @@ void RenderSystem::init(GameObjectManager& manager)
 	manager.getAllGameObjects(gameObjects);
 	for (GameObject* object : gameObjects)
 	{
-		if (object->hasComponent<Render>())
+		if (object->getComponent<Render>()->hasTex)
 		{
 			Render* render = object->getComponent<Render>();
 			render->texHDL = uploadtex(render->texFile, render->isTransparent);
@@ -152,7 +153,7 @@ GLuint RenderSystem::uploadtex(std::string const& filename, bool& isTransparent)
 	int width, height, channels;
 	unsigned char* data = stbi_load(filename.c_str(), &width, &height, &channels, STBI_rgb_alpha);
 	if (!data) {
-		std::cerr << "Failed to load image: " << filename << "]" << std::endl;
+		std::cerr << "Failed to load image: " << filename << std::endl;
 		return 0;
 	}
 
@@ -175,7 +176,7 @@ GLuint RenderSystem::uploadtex(std::string const& filename, bool& isTransparent)
 	return texobj_hdl;
 }
 
-void RenderSystem::renderTex(GameObject* object)
+void RenderSystem::renderTex(GameObject* object, float const& deltaTime)
 {
 	if (object->hasComponent<Render>() && object->hasComponent<Transform>())
 	{
@@ -199,13 +200,40 @@ void RenderSystem::renderTex(GameObject* object)
 		GLint vTransformLoc = glGetUniformLocation(renderer::shdr_pgm[0], "M");
 		glUniformMatrix4fv(vTransformLoc, 1, GL_FALSE, glm::value_ptr(transform->mdlWorld));
 
+		glm::vec2 texpos, texscale;
+		if (render->hasAnimation)
+		{
+			Animation* animation = object->getComponent<Animation>();
+			texpos = glm::vec2{ animation->currentFrameColumn / static_cast<float>(animation->totalColumn), animation->currentFrameRow / static_cast<float>(animation->totalRow) };
+			texscale = glm::vec2{ 1.f / animation->totalColumn, 1.f / animation->totalRow };
+			if (animation->loop)
+			{
+				animation->frameTimer += deltaTime;
+				std::cout << "\n-------Frame Timer---------\n" << animation->frameTimer << "\n\n";
+				if (animation->frameTimer >= animation->frameTime)
+				{
+					animation->frameTimer -= animation->frameTime;
+					animation->currentFrameColumn = (animation->currentFrameColumn + 1) % animation->totalColumn;
+					animation->currentFrameRow = (animation->currentFrameRow + 1) % animation->totalRow;
+				}
+			}
+		}
+		else
+		{
+			texpos = glm::vec2{ 0,0 };
+			texscale = glm::vec2{ 1,1 };
+		}
 		//binding texture rotation and id
 		GLint texid = glGetUniformLocation(renderer::shdr_pgm[0], "uTex2d");
 		GLint rotmat = glGetUniformLocation(renderer::shdr_pgm[0], "uRotMtx");
 		GLint rotcenter = glGetUniformLocation(renderer::shdr_pgm[0], "uMcn");
+		GLint offset = glGetUniformLocation(renderer::shdr_pgm[0], "uTexOffSet");
+		GLint tscale = glGetUniformLocation(renderer::shdr_pgm[0], "uTexScale");
 		glUniform1i(texid, 0);
 		glUniformMatrix2fv(rotmat, 1, GL_FALSE, glm::value_ptr(texRot));
 		glUniform2fv(rotcenter, 1, glm::value_ptr(rotationCenter));
+		glUniform2fv(offset, 1, glm::value_ptr(texpos));
+		glUniform2fv(tscale, 1, glm::value_ptr(texscale));
 
 		if (render->modelRef.shape == shape::square)
 		{

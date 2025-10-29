@@ -10,6 +10,8 @@ uniform mat4 P;
 
 uniform mat2 uRotMtx;
 uniform vec2 uMcn;
+uniform vec2 uTexOffSet;
+uniform vec2 uTexScale;
 
 out vec3 vColor;
 out vec2 vTex;
@@ -21,5 +23,5 @@ void main()
     vColor = aColor;
 
     //vTex = uRotMtx * (aTexPos - uMcn) + uMcn;
-    vTex = aTexPos;
+    vTex = aTexPos * uTexScale + uTexOffSet;
 }

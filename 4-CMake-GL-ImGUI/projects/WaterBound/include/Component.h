@@ -67,6 +67,7 @@ public:
     bool visible = true;
     bool hasTex = false;
     bool isTransparent = false;
+    bool hasAnimation = false;
     //bool wireframe = false;
     // sorry but i need this for real time texture update
     // wait for boss sin le to help me settle this - kelly :)
@@ -75,6 +76,18 @@ public:
     std::string texFile;
     
     renderer::model modelRef;
+};
+
+struct Animation : public Component
+{
+    std::unique_ptr<Component> clone() const override {
+        return std::make_unique<Animation>(*this);
+    }
+
+    bool loop = false;
+    GLuint texHDL;
+    int currentFrameColumn{}, currentFrameRow{}, totalColumn{ 1 }, totalRow{ 1 };
+    float frameTime = 0.1f, frameTimer{};
 };
 
 // Physics component to store velocity and other physics-related properties
