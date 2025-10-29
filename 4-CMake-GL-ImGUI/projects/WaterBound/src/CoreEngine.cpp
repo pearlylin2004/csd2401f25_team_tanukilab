@@ -76,8 +76,8 @@ void CoreEngine::Init() {
     m_uiSystem = std::make_unique<UISystem>();
 
     m_manager->init();
-	m_renderSystem->init(*m_manager);
-	m_uiSystem->init(m_window);
+	m_renderSystem->init(*m_manager, cfg.width, cfg.height);
+	m_uiSystem->init(m_window, m_renderSystem.get());
 
     audio.init();
 
