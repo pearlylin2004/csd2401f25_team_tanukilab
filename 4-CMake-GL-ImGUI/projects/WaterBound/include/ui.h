@@ -23,10 +23,12 @@ Technology is prohibited.
 #include <string>
 #include <unordered_map>
 #include <algorithm>
+#include <filesystem>
 #include "collision.h" //for using circles
 #include "GameObjectManager.h"
 #include "input.h"
 
+// imma replicate a very scuffed version of Unity :) call me tian cai
 class UI {
 public:
 	UI(); // only used to initialize shape presets, can be =DEFAULT later when loading from json
@@ -34,10 +36,13 @@ public:
 
 	void update(GameObjectManager& manager);
 
+	// debug message logging
 	static void addDebugMessage(const std::string& msg);
 
 	// edit shape windows
 	void shapeControl(Transform& t1, Transform& t2);
+
+	void loadAssetsFromDirectory();
 
 private:
 	void drawPerformance();
@@ -47,6 +52,7 @@ private:
 	void objListPanel(GameObjectManager& manager);
 	void objPropertyPanel(GameObjectManager& manager);
 	void objInspectWindow(GameObjectManager& manager);
+	void assetWindow();
 
 
 	struct PanelState {
@@ -96,9 +102,24 @@ private:
 		float scaleZ = 0.f;
 	};
 
+	struct Asset {
+		std::string name;
+		std::string path;
+		std::string folder; // in case there is a parent folder (e.g. textures/) for filtering in the future
+	};
+
+	struct AssetBrowserState {
+		std::string currentFolder = "shaders/"; // we dont have a asset folder yet :(
+
+		float iconSize = 80.0f;
+		//float buttonPadding = 20.0f; // adding padding made my code ugly
+	} m_AssetBrowserState;;
+
 	static inline std::vector<std::string> m_debugMessages;
 
 	std::unordered_map<ShapeType, ShapeDefaults> m_shapePresets;
+	std::vector<Asset> m_assets;
+
 };
 
 #endif
