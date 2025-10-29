@@ -98,7 +98,6 @@ void RenderSystem::update(GameObjectManager& manager) {
 	}
 
 	renderer::cam.update();
-	
 
 	std::vector<GameObject*> objectWithTex;
 	std::vector<GameObject*> objectWithoutTex;
@@ -110,6 +109,7 @@ void RenderSystem::update(GameObjectManager& manager) {
 		else
 			objectWithoutTex.push_back(object);
 	}
+	//rendering objects without texture, just color
 	glUseProgram(renderer::shdr_pgm[1]);
 	GLint vTransformView = glGetUniformLocation(renderer::shdr_pgm[1], "V");
 	glUniformMatrix4fv(vTransformView, 1, GL_FALSE, glm::value_ptr(renderer::cam.view));
@@ -118,6 +118,7 @@ void RenderSystem::update(GameObjectManager& manager) {
 	for (GameObject* object : objectWithoutTex)
 		renderNoTex(object);
 
+	//rendering objects with textures
 	glUseProgram(renderer::shdr_pgm[0]);
 	vTransformView = glGetUniformLocation(renderer::shdr_pgm[0], "V");
 	glUniformMatrix4fv(vTransformView, 1, GL_FALSE, glm::value_ptr(renderer::cam.view));
