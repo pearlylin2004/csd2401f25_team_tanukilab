@@ -89,9 +89,11 @@ void CoreEngine::Init() {
     // Add LuaScript components to the existing objects
     if (object1)
         object1->addComponent<LuaScript>("../projects/WaterBound/scripting/object1.lua");
+        std::cout << "runnning script for object 1" << std::endl;
 
     if (object2)
         object2->addComponent<LuaScript>("../projects/WaterBound/scripting/object2.lua");
+        std::cout << "runnning script for object 2" << std::endl;
 
     audio.init();
 
