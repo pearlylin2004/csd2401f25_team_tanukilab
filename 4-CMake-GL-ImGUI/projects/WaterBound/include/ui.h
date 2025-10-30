@@ -24,9 +24,10 @@ Technology is prohibited.
 #include <unordered_map>
 #include <algorithm>
 #include <filesystem>
+#include "collision.h" //for using circles
 #include "GameObjectManager.h"
-#include "collision.h"
 #include "input.h"
+#include "performance.h" //for performance tracking
 
 // imma replicate a very scuffed version of Unity :) call me tian cai
 class UI {
@@ -48,22 +49,15 @@ public:
 
 	void loadAssetsFromDirectory();
 
-	void sceneWindow(GLuint texture, float aspectRatio);
-
 private:
 	void drawPerformance();
 	void drawShapes(GameObjectManager& manager);
 	//void drawControls(std::vector<Collision::Circle>& circles);
 	void drawDebug();
-
-	void editorMenuBar(GameObjectManager& manager);
 	void objListPanel(GameObjectManager& manager);
 	void objPropertyPanel(GameObjectManager& manager);
 	void objInspectWindow(GameObjectManager& manager);
-	void assetWindow(GameObjectManager& manager);
-
-	void objPicking(GameObjectManager& manager);
-	void objDragging() const;
+	void assetWindow();
 
 
 	struct PanelState {
@@ -79,8 +73,6 @@ private:
 	struct SelectionState {
 		GameObject* selectedObject = nullptr; // currently selected object
 		int selectedIndex = -1; // index of selected object in the list
-
-		GameObject* draggedObject = nullptr; // currently dragged object
 
 		bool aspectRatioLock = true; // lock aspect ratio for resizing
 		bool ratioSet = false;
@@ -115,11 +107,6 @@ private:
 		float scaleZ = 0.f;
 	};
 
-	struct SceneWindowState {
-		ImVec2 scenePos;  // top left corner of viewport
-		ImVec2 sceneSize; // size of viewport
-	} m_SceneWindowState;
-
 	struct Asset {
 		std::string name;
 		std::string path;
@@ -128,7 +115,6 @@ private:
 
 	struct AssetBrowserState {
 		std::string currentFolder = "shaders/"; // we dont have a asset folder yet :(
-		std::filesystem::file_time_type lastRefresh;
 
 		float iconSize = 80.0f;
 		//float buttonPadding = 20.0f; // adding padding made my code ugly
@@ -138,10 +124,7 @@ private:
 
 	std::unordered_map<ShapeType, ShapeDefaults> m_shapePresets;
 	std::vector<Asset> m_assets;
-	static bool assetsChangedFlag;
-	std::string m_currentSceneName;
-	std::string m_tempSceneName;
-	bool m_isPlaying; // to track Play/Stop mode
+
 };
 
 #endif

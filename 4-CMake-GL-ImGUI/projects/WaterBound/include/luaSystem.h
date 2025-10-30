@@ -17,6 +17,9 @@ Technology is prohibited.
 #pragma once
 #include <string>
 #include <iostream>
+#include "GameObject.h"
+#include "input.h"
+#include "Component.h"
 
 extern "C" {
 #include "lua.h"
@@ -34,6 +37,10 @@ public:
     bool runString(const std::string& code);
     bool runScript(const std::string& filename);
     float getGlobalNumber(const std::string& name);
+    bool runScriptForObject(const std::string& filename, GameObject* obj, float deltaTime);
+    static int Lua_getPosition(lua_State* L);
+	static int Lua_setPosition(lua_State* L);
+    static int Lua_IsKeyHeld(lua_State* L);
 
 private:
     lua_State* L = nullptr;

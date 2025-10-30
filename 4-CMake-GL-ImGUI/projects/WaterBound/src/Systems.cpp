@@ -34,6 +34,9 @@ Technology is prohibited.
 // Input system - reads user input and updates velocity accordingly
 void InputSystem::update(GameObjectManager& manager, const float& deltaTime) {
 	(void)deltaTime;
+	//record current time for performance tracking
+	auto start = std::chrono::high_resolution_clock::now();
+
 	std::vector<GameObject*> gameObjects;
 	manager.getAllGameObjects(gameObjects);
 
@@ -62,7 +65,6 @@ void InputSystem::update(GameObjectManager& manager, const float& deltaTime) {
 					UISystem::toggleUI();
 				}
 
-
 				// Press F9 to simulate a failure (for crash logger)
 				if (InputHandler::isKeyTriggered(GLFW_KEY_F9)) {
 					throw std::runtime_error("F9 test: simulated failure in update()");
@@ -77,6 +79,9 @@ void InputSystem::update(GameObjectManager& manager, const float& deltaTime) {
 // Render system - draws all game objects with a Render component
 void RenderSystem::update(GameObjectManager& manager, float const& deltaTime) 
 {
+	//record current time for performance tracking
+	auto start = std::chrono::high_resolution_clock::now();
+
 	std::vector<GameObject*> gameObjects;
 	manager.getAllGameObjects(gameObjects);
 
@@ -101,6 +106,9 @@ void RenderSystem::update(GameObjectManager& manager, float const& deltaTime)
 				render->texChanged = false;
 			}
 		}
+		auto end = std::chrono::high_resolution_clock::now();
+		double ms = std::chrono::duration<double, std::milli>(end - start).count(); //get elapse time in ms
+		g_SystemTimers.push_back({ "Input", ms }); //saving timing for UI output
 	}
 
 	renderer::cam.update();
@@ -134,6 +142,12 @@ void RenderSystem::update(GameObjectManager& manager, float const& deltaTime)
 		renderTex(object, deltaTime);
 
 	if (UISystem::isShowUI()) glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+	//record end time for performance tracking
+	auto end = std::chrono::high_resolution_clock::now();
+	double ms = std::chrono::duration<double, std::milli>(end - start).count(); //get elapse time in ms
+	g_SystemTimers.push_back({ "Render", ms }); //saving timing for UI output
+
 }
 
 void RenderSystem::createFBO() {
@@ -330,6 +344,8 @@ void RenderSystem::fboAspectRatio(int& width, int& height) const {
 
 // Physics system - updates position based on velocity and applies gravity
 void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime) {
+	//record current time for performance tracking
+	auto start = std::chrono::high_resolution_clock::now();
 
 	// idk how physic programmer want to handle input for physics in the future
 	// so here is a simple implementation for toggling step-by-step mode
@@ -403,11 +419,17 @@ void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime) {
 		}
 		transform->x += physics->velX * deltaTime;
 	}
+	auto end = std::chrono::high_resolution_clock::now();
+	double ms = std::chrono::duration<double, std::milli>(end - start).count(); //get elapse time in ms
+	g_SystemTimers.push_back({ "Physics", ms }); //saving timing for UI output
 }
 
 // Collision system - detects and resolves collisions between game objects
 void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime) {
 	(void)deltaTime;
+	//record current time for performance tracking
+	auto start = std::chrono::high_resolution_clock::now();
+
 	//getting all objects
 	std::vector<GameObject*> gameObjects;
 	manager.getAllGameObjects(gameObjects);
@@ -497,6 +519,9 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 			}
 		}
 	}
+	auto end = std::chrono::high_resolution_clock::now();
+	double ms = std::chrono::duration<double, std::milli>(end - start).count(); //get elapse time in ms
+	g_SystemTimers.push_back({ "Collisions", ms }); //saving timing for UI output
 }
 
 //UI system - handles ImGui rendering and interaction
@@ -509,8 +534,8 @@ void UISystem::init(GLFWwindow* window, RenderSystem* renderer) {
 	ImGuiIO& io = ImGui::GetIO(); (void)io;
 	io.FontGlobalScale = 1.2f;
 	io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard
-		| ImGuiConfigFlags_DockingEnable
-		| ImGuiConfigFlags_ViewportsEnable;
+			| ImGuiConfigFlags_DockingEnable
+			| ImGuiConfigFlags_ViewportsEnable;
 	ImGui::StyleColorsDark();
 	ImGui_ImplGlfw_InitForOpenGL(window, true);
 	ImGui_ImplOpenGL3_Init("#version 450");
@@ -575,7 +600,6 @@ void UISystem::dockingSetUp() {
 		| ImGuiWindowFlags_NoMove
 		| ImGuiWindowFlags_NoBringToFrontOnFocus
 		| ImGuiWindowFlags_NoNavFocus
-		| ImGuiWindowFlags_MenuBar
 		| ImGuiWindowFlags_NoBackground;
 
 	ImGuiViewport* viewport = ImGui::GetMainViewport();

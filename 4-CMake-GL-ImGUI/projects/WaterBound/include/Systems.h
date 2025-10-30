@@ -55,13 +55,6 @@ private:
 
 *************************************************************************/
 class RenderSystem {
-	GLuint fbo;
-	GLuint texture;
-
-	int fboWidth = 0;
-	int fboHeight = 0;
-
-	void createFBO();
 public:
 	/*!***********************************************************************
 	\brief
@@ -71,7 +64,7 @@ public:
 		array of all objects
 
 	*************************************************************************/
-	void init(GameObjectManager& manager, int fboW, int fboH);
+	void init(GameObjectManager& manager);
 	/*!***********************************************************************
 	\brief
 		resend matrix data to the shaders to recalculated object position and orientation to draw for the new frame
@@ -121,17 +114,15 @@ public:
 // UI system - handles UI rendering and interactions using ImGui
 class UISystem {
 public:
-	void init(GLFWwindow* window, RenderSystem* renderer);
+	void init(GLFWwindow* window);
 	~UISystem();
 	void update(GameObjectManager& manager);
 	
 	static void toggleUI() { showUI = !showUI; } // temp toggle function
-	static bool isShowUI() { return showUI; }
 
 private:
 	void dockingSetUp();
 	void renderMultipleViewPorts();
 	UI m_UI;
 	static bool showUI;
-	RenderSystem* m_renderer = nullptr;
 };

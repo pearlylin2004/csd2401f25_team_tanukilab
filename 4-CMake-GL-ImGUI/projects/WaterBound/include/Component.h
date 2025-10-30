@@ -163,3 +163,16 @@ struct UIComponent : public Component {
     //idk empty as of now
     //idk how i can use it
 };
+
+//for lua scripting
+//to know which object to run
+struct LuaScript : public Component {
+public:
+    LuaScript(const std::string& file) : filename(file) {}
+
+    std::unique_ptr<Component> clone() const override {
+        return std::make_unique<LuaScript>(*this);
+    }
+
+    std::string filename;
+};
