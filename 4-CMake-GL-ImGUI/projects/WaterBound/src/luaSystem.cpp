@@ -103,7 +103,7 @@ int LuaSystem::Lua_setPosition(lua_State* L) {
 
     float x = static_cast<float>(lua_tonumber(L, 2));
     float y = static_cast<float>(lua_tonumber(L, 3));
-    float z = static_cast<float>(lua_tonumber(L, 4));
+    //float z = static_cast<float>(lua_tonumber(L, 4));
 
     transform->x = x;
     transform->y = y;
