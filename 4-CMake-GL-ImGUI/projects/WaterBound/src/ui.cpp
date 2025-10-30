@@ -80,8 +80,14 @@ void UI::drawPerformance() {
         1000.0f / ImGui::GetIO().Framerate,
         ImGui::GetIO().Framerate);
     ImGui::Separator();
-    //average time
-
+    //average time --can add for other functions also just need to add 4 lines of codes into the function start and end(see InputSystem::Update in system.cpp)
+    double totalMs = 0.0;
+    for (auto& timer : g_SystemTimers) totalMs += timer.ms;
+    //loop through all timers and display
+    for (auto& timer : g_SystemTimers) {
+        float percent = totalMs > 0.0 ? (float)((timer.ms / totalMs) * 100.0) : 0.0f;
+        ImGui::Text("%s: %.3f ms (%.1f%%)", timer.name.c_str(), timer.ms, percent);
+    }
     ImGui::End();
 }
 

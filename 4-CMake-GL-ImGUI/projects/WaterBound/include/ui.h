@@ -27,6 +27,7 @@ Technology is prohibited.
 #include "collision.h" //for using circles
 #include "GameObjectManager.h"
 #include "input.h"
+#include "performance.h" //for performance tracking
 
 // imma replicate a very scuffed version of Unity :) call me tian cai
 class UI {
