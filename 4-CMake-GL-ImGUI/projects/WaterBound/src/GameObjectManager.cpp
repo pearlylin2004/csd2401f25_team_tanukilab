@@ -43,6 +43,17 @@ GameObject* GameObjectManager::getGameObject(const std::string& name) {
 	return nullptr;
 }
 
+void GameObjectManager::deleteGameObject(GameObject* object) {
+	if (!object) return;
+
+	for (auto iterator = m_gameObjects.begin(); iterator != m_gameObjects.end(); ++iterator) {
+		if (iterator->second.get() == object) {
+			m_gameObjects.erase(iterator);
+			return;
+		}
+	}
+}
+
 //clone an existing object
 GameObject* GameObjectManager::CloneGameObject(const std::string& sourceName, const std::string& newName) {
 	//find object in map
@@ -83,6 +94,24 @@ void GameObjectManager::getAllGameObjects(std::vector<GameObject*>& gameObjects)
 void GameObjectManager::init()
 {
 	loadFromFile("shaders/temp_serialize.txt");
+
+}
+
+bool GameObjectManager::renameGameObject(GameObject* obj, const std::string& newName) {
+	if (!obj) return false;
+	if (newName.empty()) return false;
+
+	for (auto& odject : m_gameObjects) {
+		// return false another object has the same name
+		GameObject* other = odject.second.get();
+		if (other != obj && other->getObjectName() == newName) {
+			return false;
+		}
+	}
+
+	// rename if no duplicated name
+	obj->getObjectName() = newName;
+	return true;
 
 }
 

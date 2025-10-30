@@ -80,6 +80,11 @@ void RenderSystem::update(GameObjectManager& manager, float const& deltaTime)
 	std::vector<GameObject*> gameObjects;
 	manager.getAllGameObjects(gameObjects);
 
+	// Attach texture to FBO if editor is on
+	if (UISystem::isShowUI()) {
+		createFBO();
+	}
+
 	// Update textures if they have changed (in level editor)
 	for (GameObject* object : gameObjects)
 	{
@@ -127,10 +132,33 @@ void RenderSystem::update(GameObjectManager& manager, float const& deltaTime)
 	glUniformMatrix4fv(vTransformProj, 1, GL_FALSE, glm::value_ptr(renderer::cam.proj));
 	for (GameObject* object : objectWithTex)
 		renderTex(object, deltaTime);
+
+	if (UISystem::isShowUI()) glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
+void RenderSystem::createFBO() {
+	if (texture) glDeleteTextures(1, &texture);
+	if (fbo) glDeleteFramebuffers(1, &fbo);
+
+	glGenFramebuffers(1, &fbo);
+	glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+
+	glGenTextures(1, &texture);
+	glBindTexture(GL_TEXTURE_2D, texture);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, fboWidth, fboHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture, 0);
+}
+
+RenderSystem::~RenderSystem() {
+	if (texture) glDeleteTextures(1, &texture);
+	if (fbo) glDeleteFramebuffers(1, &fbo);
+}
+
+
 // Load all textures for game objects with a Render component
-void RenderSystem::init(GameObjectManager& manager)
+void RenderSystem::init(GameObjectManager& manager, int fboW, int fboH)
 {
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -145,6 +173,9 @@ void RenderSystem::init(GameObjectManager& manager)
 			render->texHDL = uploadtex(render->texFile, render->isTransparent);
 		}
 	}
+
+	fboWidth = fboW;
+	fboHeight = fboH;
 }
 
 // Upload a texture from file and return its OpenGL handle
@@ -290,6 +321,11 @@ void RenderSystem::renderNoTex(GameObject* object)
 			glDrawArrays(render->modelRef.primitive_type, 0, render->modelRef.draw_cnt);
 		glBindVertexArray(0);
 	}
+}
+
+void RenderSystem::fboAspectRatio(int& width, int& height) const {
+	width = fboWidth;
+	height = fboHeight;
 }
 
 // Physics system - updates position based on velocity and applies gravity
@@ -466,15 +502,15 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 //UI system - handles ImGui rendering and interaction
 bool UISystem::showUI = false;
 
-void UISystem::init(GLFWwindow* window) {
+void UISystem::init(GLFWwindow* window, RenderSystem* renderer) {
 	// --- ImGui Setup ---
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
 	ImGuiIO& io = ImGui::GetIO(); (void)io;
 	io.FontGlobalScale = 1.2f;
 	io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard
-			| ImGuiConfigFlags_DockingEnable
-			| ImGuiConfigFlags_ViewportsEnable;
+		| ImGuiConfigFlags_DockingEnable
+		| ImGuiConfigFlags_ViewportsEnable;
 	ImGui::StyleColorsDark();
 	ImGui_ImplGlfw_InitForOpenGL(window, true);
 	ImGui_ImplOpenGL3_Init("#version 450");
@@ -483,6 +519,8 @@ void UISystem::init(GLFWwindow* window) {
 	io.ConfigViewportsNoTaskBarIcon = true;
 
 	m_UI.loadAssetsFromDirectory();
+
+	m_renderer = renderer;
 }
 
 UISystem::~UISystem() {
@@ -505,12 +543,20 @@ void UISystem::update(GameObjectManager& manager) {
 
 	dockingSetUp();
 
+	// get the width and height of the SCENE view
+	int fboWidth, fboHeight;
+	m_renderer->fboAspectRatio(fboWidth, fboHeight);
+
 	// all ImGui windows
 	m_UI.update(manager);
+	m_UI.sceneWindow(m_renderer->getTexture(), static_cast<float>(fboWidth) / static_cast<float>(fboHeight));
 
-	Transform* leavesT = gameObjects[0]->getComponent<Transform>();
-	Transform* bulletT = gameObjects[2]->getComponent<Transform>();
-	m_UI.shapeControl(*leavesT, *bulletT);
+	m_UI.loadAssetsFromDirectory(); // only reload if assets flag is set (e.g. new asset added)
+
+	// this will CRASH if change scene in editor
+	//Transform* leavesT = gameObjects[0]->getComponent<Transform>();
+	//Transform* bulletT = gameObjects[2]->getComponent<Transform>();
+	//m_UI.shapeControl(*leavesT, *bulletT); 
 
 	ImGui::Render();
 	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());

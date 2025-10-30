@@ -65,7 +65,7 @@ void CoreEngine::Init() {
     glClearColor(cfg.clear_color[0], cfg.clear_color[1], cfg.clear_color[2], cfg.clear_color[3]);
 
     // --- System Initialization ---
-    InputHandler::init(m_window);
+    InputHandler::init(m_window, cfg);
     renderer::init(cfg.width, cfg.height);
 
     m_manager = std::make_unique<GameObjectManager>();
@@ -78,8 +78,8 @@ void CoreEngine::Init() {
 
     m_luaSystem->init();
     m_manager->init();
-	m_renderSystem->init(*m_manager);
-	m_uiSystem->init(m_window);
+    m_renderSystem->init(*m_manager, cfg.width, cfg.height);
+    m_uiSystem->init(m_window, m_renderSystem.get());
 
 	// --- Lua Script Test ---
     if (m_luaSystem->runScript("../projects/WaterBound/scripting/test.lua")) {
