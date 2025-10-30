@@ -77,6 +77,7 @@ public:
 	GLuint uploadtex(std::string const& filename, bool& isTransparent);
 	void renderTex(GameObject* object, float const& deltaTime);
 	void renderNoTex(GameObject* object);
+	void renderCollision(GameObject* object);
 };
 
 /*!***********************************************************************
