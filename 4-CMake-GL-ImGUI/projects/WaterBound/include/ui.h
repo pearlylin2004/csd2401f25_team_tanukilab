@@ -17,7 +17,9 @@ Technology is prohibited.
 
 #ifndef UI_H
 #define UI_H
-#include <imgui.h>
+#include <imgui.h> //for use of imgui in UISystem
+#include <imgui_impl_glfw.h> //for use of imgui in UISystem
+#include <imgui_impl_opengl3.h> //for use of imgui in UISystem
 #include <iostream>
 #include <vector>
 #include <string>
@@ -66,15 +68,15 @@ private:
 	void objDragging() const;
 
 
-	struct PanelState {
-		float objListWidth = 250.0f; // Width of the object list panel
-		float objListHeight = -1.0f; // Height of the object list panel, -1 means full height
-		float objListMaxWidth = 400.0f;
-		float objListMinWidth = 150.0f;
+	//struct PanelState {
+	//	float objListWidth = 250.0f; // Width of the object list panel
+	//	float objListHeight = -1.0f; // Height of the object list panel, -1 means full height
+	//	float objListMaxWidth = 400.0f;
+	//	float objListMinWidth = 150.0f;
 
-		float splitterSize = 5.0f;  // Size of the splitter between panels
-		int maxObjects = 10; // max objects to show in list without scrolling
-	} m_PanelState;
+	//	float splitterSize = 5.0f;  // Size of the splitter between panels
+	//	int maxObjects = 10; // max objects to show in list without scrolling
+	//} m_PanelState;
 
 	struct SelectionState {
 		GameObject* selectedObject = nullptr; // currently selected object
@@ -130,8 +132,8 @@ private:
 		std::string currentFolder = "shaders/"; // we dont have a asset folder yet :(
 		std::filesystem::file_time_type lastRefresh;
 
-		float iconSize = 80.0f;
-		//float buttonPadding = 20.0f; // adding padding made my code ugly
+		float iconSize = 100.0f;
+		float buttonPadding = 20.0f; // adding padding made my code ugly
 	} m_AssetBrowserState;;
 
 	static inline std::vector<std::string> m_debugMessages;

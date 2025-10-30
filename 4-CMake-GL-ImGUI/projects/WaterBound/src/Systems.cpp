@@ -58,7 +58,7 @@ void InputSystem::update(GameObjectManager& manager, const float& deltaTime) {
 					velocity->velX = input->moveSpeed;
 				}
 
-				if (InputHandler::isKeyTriggered(GLFW_KEY_0)) {
+				if (InputHandler::isComboKeyTriggered(GLFW_KEY_0)) {
 					UISystem::toggleUI();
 				}
 
@@ -506,12 +506,13 @@ void UISystem::init(GLFWwindow* window, RenderSystem* renderer) {
 	// --- ImGui Setup ---
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
-	ImGuiIO& io = ImGui::GetIO(); (void)io;
-	io.FontGlobalScale = 1.2f;
+	ImGuiIO& io = ImGui::GetIO(); //(void)io;
+	io.FontGlobalScale = 1.5f;
 	io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard
 		| ImGuiConfigFlags_DockingEnable
 		| ImGuiConfigFlags_ViewportsEnable;
 	ImGui::StyleColorsDark();
+	// io.IniFilename = "imgui_layout.ini";
 	ImGui_ImplGlfw_InitForOpenGL(window, true);
 	ImGui_ImplOpenGL3_Init("#version 450");
 
@@ -589,8 +590,44 @@ void UISystem::dockingSetUp() {
 	ImGui::Begin("DockSpace Demo", nullptr, window_flags);
 	ImGui::PopStyleVar(2);
 
-	ImGuiID dockspace_id = ImGui::GetID("MyDockSpace");
-	ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), dockspace_flags);
+	ImGuiID dockspaceID = ImGui::GetID("DockSpace");
+	ImGui::DockSpace(dockspaceID, { 0.0f, 0.0f }, dockspace_flags);
+
+	if (m_firstTime) {
+		m_firstTime = false;
+		ImGui::DockBuilderRemoveNode(dockspaceID); // Clear any existing layout
+		ImGui::DockBuilderAddNode(dockspaceID, ImGuiDockNodeFlags_DockSpace);
+		ImGui::DockBuilderSetNodeSize(dockspaceID, viewport->Size);
+
+		// Split the dockspace into major areas
+		ImGuiID dockParent = dockspaceID;
+		ImGuiID dockDown, dockRight, dockLeft;
+		ImGuiID dockRightSecond;
+
+		ImGui::DockBuilderSplitNode(dockParent, ImGuiDir_Left, 0.4f, &dockLeft, &dockParent);
+		ImGui::DockBuilderSplitNode(dockParent, ImGuiDir_Right, 0.4f, &dockRight, &dockParent);
+		ImGui::DockBuilderSplitNode(dockRight, ImGuiDir_Down, 0.4f, &dockRightSecond, &dockRight);
+		ImGui::DockBuilderSplitNode(dockParent, ImGuiDir_Down, 0.4f, &dockDown, &dockParent);
+
+		// Dock windows
+
+		// Left
+		ImGui::DockBuilderDockWindow("Hierarchy", dockLeft);
+		ImGui::DockBuilderDockWindow("Inspector", dockRight);
+
+		// Right
+		ImGui::DockBuilderDockWindow("Draw Shapes", dockRightSecond);
+
+		// Middle
+		ImGui::DockBuilderDockWindow("Scene", dockParent);
+		
+		// Bottom
+		ImGui::DockBuilderDockWindow("Performance", dockDown);
+		ImGui::DockBuilderDockWindow("Debug Info", dockDown);
+		ImGui::DockBuilderDockWindow("Assets", dockDown);
+
+		ImGui::DockBuilderFinish(dockspaceID);
+	}
 
 	ImGui::End();
 }

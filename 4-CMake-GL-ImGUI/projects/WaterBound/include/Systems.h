@@ -23,9 +23,7 @@ Technology is prohibited.
 #include "GameObjectManager.h"
 #include <stb_image.h>
 #include "collision.h"
-#include <imgui.h> //for use of imgui in UISystem
-#include <imgui_impl_glfw.h> //for use of imgui in UISystem
-#include <imgui_impl_opengl3.h> //for use of imgui in UISystem
+#include "imgui_internal.h" // for docking in UISystem
 #include <ui.h>
 
 //forward declaration
@@ -133,5 +131,6 @@ private:
 	void renderMultipleViewPorts();
 	UI m_UI;
 	static bool showUI;
+	bool m_firstTime = true;
 	RenderSystem* m_renderer = nullptr;
 };

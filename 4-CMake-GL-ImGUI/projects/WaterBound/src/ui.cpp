@@ -106,17 +106,15 @@ void UI::drawShapes(GameObjectManager& manager) {
         ImGui::Text("X");
         ImGui::SameLine();
         ImGui::InputFloat("##X", &circleInput.inputX, 0.1f);
-        ImGui::SameLine();
 
         ImGui::Text("Y");
         ImGui::SameLine();
         ImGui::InputFloat("##Y", &circleInput.inputY, 0.1f);
-        ImGui::SameLine();
 
         ImGui::Text("Z");
         ImGui::SameLine();
         ImGui::InputFloat("##Z", &circleInput.inputZ, 0.1f);
-        ImGui::SameLine();
+        ImGui::Spacing();
 
         if (ImGui::Button("Add Circle")) {
             std::vector<GameObject*> gameObjects;
@@ -136,23 +134,23 @@ void UI::drawShapes(GameObjectManager& manager) {
             addDebugMessage("Circle created at (" + std::to_string(transform->x) + ", " + std::to_string(transform->y) + ", " + std::to_string(transform->z) + ")\n");
         }
 
+        ImGui::Spacing();
         ImGui::Separator();
+        ImGui::Spacing();
 
         // For drawing rectangle        
         ImGui::Text("X");
         ImGui::SameLine();
         ImGui::InputFloat("##X1", &RectangleInput.inputX, 0.1f);
-        ImGui::SameLine();
 
         ImGui::Text("Y");
         ImGui::SameLine();
         ImGui::InputFloat("##Y1", &RectangleInput.inputY, 0.1f);
-        ImGui::SameLine();
 
         ImGui::Text("Z");
         ImGui::SameLine();
         ImGui::InputFloat("##Z1", &RectangleInput.inputZ, 0.1f);
-        ImGui::SameLine();
+        ImGui::Spacing();
 
         if (ImGui::Button("Add Rectangle")) {
             std::vector<GameObject*> gameObjects;
@@ -554,9 +552,12 @@ void UI::assetWindow(GameObjectManager& manager) {
         // display button and the name of the file
         ImGui::BeginGroup();
 
+        ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(100, 40));
+
         // can consider changing to image in the future
         ImGui::Button(asset.name.c_str(), ImVec2(m_AssetBrowserState.iconSize, m_AssetBrowserState.iconSize));
 
+        ImGui::PopStyleVar();
 
         // double click logic
         if (ImGui::IsItemHovered() && InputHandler::isMouseLeftDoubleClicked()) {
