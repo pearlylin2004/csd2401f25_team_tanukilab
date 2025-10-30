@@ -304,22 +304,6 @@ void UI::objHierarchyWindow(GameObjectManager& manager) {
     std::vector<GameObject*> gameObjects;
     manager.getAllGameObjects(gameObjects);
 
-    /*names.reserve(gameObjects.size());
-    for (int i = 0; i < gameObjects.size(); ++i) {
-        names.push_back(gameObjects[i]->getObjectName().c_str());
-    }*/
-
-    // show this if there are objects
-    /*if (!names.empty()) {
-        if (ImGui::ListBox("Objects", &m_SelectionState.selectedIndex, names.data(), static_cast<int>(names.size()), m_PanelState.maxObjects)) {
-            m_SelectionState.selectedObject = gameObjects[m_SelectionState.selectedIndex];
-        }
-    }
-    else {
-        m_SelectionState.selectedObject = nullptr;
-        ImGui::Text("No GameObjects available");
-    }*/
-
     // by default just set to no children
     ImGuiTreeNodeFlags baseFlags = ImGuiTreeNodeFlags_Leaf;
 
@@ -517,42 +501,6 @@ void UI::objInspectorWindow(GameObjectManager& manager) {
 
 	ImGui::End();
 }
-
-//void UI::objInspectWindow(GameObjectManager& manager) {
-//    ImGui::Begin("Object Properties Editor");
-//
-//    // Left panel - object list
-//    ImGui::BeginChild("Hierarchy", ImVec2(m_PanelState.objListWidth, 0));
-//    objListPanel(manager);
-//    ImGui::EndChild();
-//
-//    ImGui::SameLine();
-//
-//    // splitter that allow resizing
-//    ImGui::InvisibleButton("splitter", ImVec2(m_PanelState.splitterSize, m_PanelState.objListHeight));
-//    if (ImGui::IsItemActive()) {
-//        m_PanelState.objListWidth += InputHandler::getMouseDelta().x;
-//        m_PanelState.objListWidth = std::clamp(m_PanelState.objListWidth, m_PanelState.objListMinWidth, m_PanelState.objListMaxWidth);
-//    }
-//    // draw the vertical line to indicate the splitter
-//    ImDrawList* draw_list = ImGui::GetWindowDrawList();
-//    ImVec2 splitterMin = ImGui::GetItemRectMin();
-//    ImVec2 splitterMax = ImGui::GetItemRectMax();
-//    draw_list->AddLine(
-//        ImVec2(splitterMin.x + m_PanelState.splitterSize * 0.5f, splitterMin.y),
-//        ImVec2(splitterMin.x + m_PanelState.splitterSize * 0.5f, splitterMax.y),
-//        IM_COL32(100, 100, 100, 255), 1.0f
-//    );
-//
-//    ImGui::SameLine();
-//
-//    // Right panel — inspector
-//    ImGui::BeginChild("Inspector", ImVec2(0, 0), true);
-//    objPropertyPanel(manager);
-//    ImGui::EndChild();
-//
-//    ImGui::End();
-//}
 
 void UI::loadAssetsFromDirectory() {
     if (assetsChangedFlag == false) return; // only reload if flagged
