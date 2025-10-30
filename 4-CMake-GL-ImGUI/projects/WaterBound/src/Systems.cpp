@@ -75,7 +75,8 @@ void InputSystem::update(GameObjectManager& manager, const float& deltaTime) {
 
 
 // Render system - draws all game objects with a Render component
-void RenderSystem::update(GameObjectManager& manager) {
+void RenderSystem::update(GameObjectManager& manager, float const& deltaTime) 
+{
 	std::vector<GameObject*> gameObjects;
 	manager.getAllGameObjects(gameObjects);
 
@@ -98,155 +99,47 @@ void RenderSystem::update(GameObjectManager& manager) {
 	}
 
 	renderer::cam.update();
-	glUseProgram(renderer::shdr_pgm);
-	GLint vTransformView = glGetUniformLocation(renderer::shdr_pgm, "V");
-	//renderer::cam.view = glm::mat4{ 1 };
+
+	std::vector<GameObject*> objectWithTex;
+	std::vector<GameObject*> objectWithoutTex;
+
+	for (auto object : gameObjects)
+	{
+		if (object->getComponent<Render>()->hasTex)
+			objectWithTex.push_back(object);
+		else
+			objectWithoutTex.push_back(object);
+	}
+	//rendering objects without texture, just color
+	glUseProgram(renderer::shdr_pgm[1]);
+	GLint vTransformView = glGetUniformLocation(renderer::shdr_pgm[1], "V");
 	glUniformMatrix4fv(vTransformView, 1, GL_FALSE, glm::value_ptr(renderer::cam.view));
-	GLint vTransformProj = glGetUniformLocation(renderer::shdr_pgm, "P");
-	//renderer::cam.proj = glm::mat4{ 1 };
+	GLint vTransformProj = glGetUniformLocation(renderer::shdr_pgm[1], "P");
 	glUniformMatrix4fv(vTransformProj, 1, GL_FALSE, glm::value_ptr(renderer::cam.proj));
+	for (GameObject* object : objectWithoutTex)
+		renderNoTex(object);
 
-	
-
-	for (auto object : gameObjects) {
-		if (object->hasComponent<Render>() && object->hasComponent<Transform>())
-		{
-			Transform* transform = object->getComponent<Transform>();
-			Render* render = object->getComponent<Render>();
-
-			if (!render->isTransparent)
-			{
-				//position and orientation of mesh
-				float angle = glm::radians(transform->rotation);
-				transform->mdlWorld = glm::mat4{ 1 };
-				transform->mdlWorld = glm::translate(transform->mdlWorld, glm::vec3(transform->x, transform->y, transform->z));
-				transform->mdlWorld = glm::rotate(transform->mdlWorld, angle, glm::vec3(0, 0, 1.f));
-				transform->mdlWorld = glm::scale(transform->mdlWorld, glm::vec3(transform->scaleX, transform->scaleY, transform->scaleZ));
-
-				//texture bs
-				if (render->hasTex)
-				{
-					glBindTextureUnit(0, render->texHDL);
-				}
-				else glBindTextureUnit(0, 0);
-				render->wireframe = false;
-
-				glm::mat4 texRot{ 1 };
-				texRot = glm::rotate(texRot, angle, glm::vec3(0, 0, 1.f));
-				glm::vec2 rotationCenter{ 0,0 }; //if needed in the future it can be a member variable, now just for sanity
-
-				//binding model to world matrix
-				glBindVertexArray(render->modelRef.vaoid);
-				GLint vTransformLoc = glGetUniformLocation(renderer::shdr_pgm, "M");
-				glUniformMatrix4fv(vTransformLoc, 1, GL_FALSE, glm::value_ptr(transform->mdlWorld));
-
-				//binding texture rotation and id
-				GLint texid = glGetUniformLocation(renderer::shdr_pgm, "uTex2d");
-				GLint rotmat = glGetUniformLocation(renderer::shdr_pgm, "uRotMtx");
-				GLint rotcenter = glGetUniformLocation(renderer::shdr_pgm, "uMcn");
-				GLint hastex = glGetUniformLocation(renderer::shdr_pgm, "uHasTex");
-				GLint wireframe = glGetUniformLocation(renderer::shdr_pgm, "uIsWireframe");
-				glUniform1i(texid, 0);
-				glUniformMatrix2fv(rotmat, 1, GL_FALSE, glm::value_ptr(texRot));
-				glUniform2fv(rotcenter, 1, glm::value_ptr(rotationCenter));
-				glUniform1i(hastex, static_cast<int>(render->hasTex));
-				glUniform1i(wireframe, static_cast<int>(render->wireframe));
-
-				if (render->modelRef.shape == shape::square)
-					glDrawElements(GL_TRIANGLES, render->modelRef.elem_cnt, GL_UNSIGNED_SHORT, nullptr);
-				else if (render->modelRef.shape == shape::circle)
-					glDrawArrays(render->modelRef.primitive_type, 0, render->modelRef.draw_cnt);
-				glBindVertexArray(0);
-			}
-		}
-	}
-
-	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	//glDepthMask(GL_FALSE);
-
-	for (auto object : gameObjects) {
-		if (object->hasComponent<Render>() && object->hasComponent<Transform>())
-		{
-			Transform* transform = object->getComponent<Transform>();
-			Render* render = object->getComponent<Render>();
-
-			if (render->isTransparent)
-			{
-				//position and orientation of mesh
-				float angle = glm::radians(transform->rotation);
-				transform->mdlWorld = glm::mat4{ 1 };
-				transform->mdlWorld = glm::translate(transform->mdlWorld, glm::vec3(transform->x, transform->y, transform->z));
-				transform->mdlWorld = glm::rotate(transform->mdlWorld, angle, glm::vec3(0, 0, 1.f));
-				transform->mdlWorld = glm::scale(transform->mdlWorld, glm::vec3(transform->scaleX, transform->scaleY, transform->scaleZ));
-
-				//texture bs
-				if (render->hasTex)
-				{
-					glBindTextureUnit(0, render->texHDL);
-				}
-				else glBindTextureUnit(0, 0);
-				render->wireframe = true;
-
-				glm::mat4 texRot{ 1 };
-				texRot = glm::rotate(texRot, angle, glm::vec3(0, 0, 1.f));
-				glm::vec2 rotationCenter{ 0,0 }; //if needed in the future it can be a member variable, now just for sanity
-
-				//binding model to world matrix
-				glBindVertexArray(render->modelRef.vaoid);
-				GLint vTransformLoc = glGetUniformLocation(renderer::shdr_pgm, "M");
-				glUniformMatrix4fv(vTransformLoc, 1, GL_FALSE, glm::value_ptr(transform->mdlWorld));
-
-				//binding texture rotation and id
-				GLint texid = glGetUniformLocation(renderer::shdr_pgm, "uTex2d");
-				GLint rotmat = glGetUniformLocation(renderer::shdr_pgm, "uRotMtx");
-				GLint rotcenter = glGetUniformLocation(renderer::shdr_pgm, "uMcn");
-				GLint hastex = glGetUniformLocation(renderer::shdr_pgm, "uHasTex");
-				GLint wireframe = glGetUniformLocation(renderer::shdr_pgm, "uIsWireframe");
-				glUniform1i(texid, 0);
-				glUniformMatrix2fv(rotmat, 1, GL_FALSE, glm::value_ptr(texRot));
-				glUniform2fv(rotcenter, 1, glm::value_ptr(rotationCenter));
-				glUniform1i(hastex, static_cast<int>(render->hasTex));
-				glUniform1i(wireframe, 0);
-
-				if (render->modelRef.shape == shape::square)
-				{
-					// --- Pass 1: textured fill ---
-					glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-					glBindVertexArray(render->modelRef.vaoid);
-					glUniform1i(wireframe, 0);
-					glDrawElements(GL_TRIANGLES, render->modelRef.elem_cnt, GL_UNSIGNED_SHORT, nullptr);
-					// --- Pass 2: wireframe overlay ---
-					glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-					glUniform1i(wireframe, 1);
-					glLineWidth(2.0f);
-					//glDepthMask(GL_FALSE);
-					glDrawElements(GL_TRIANGLES, render->modelRef.elem_cnt, GL_UNSIGNED_SHORT, nullptr);
-
-					// Restore state
-					//glDepthMask(GL_TRUE);
-					glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-					glUniform1i(wireframe, 0);
-				}
-					//glDrawElements(GL_TRIANGLES, render->modelRef.elem_cnt, GL_UNSIGNED_SHORT, nullptr);
-				else if (render->modelRef.shape == shape::circle)
-					glDrawArrays(render->modelRef.primitive_type, 0, render->modelRef.draw_cnt);
-				glBindVertexArray(0);
-			}
-		}
-	}
-	//glDepthMask(GL_TRUE);
+	//rendering objects with textures
+	glUseProgram(renderer::shdr_pgm[0]);
+	vTransformView = glGetUniformLocation(renderer::shdr_pgm[0], "V");
+	glUniformMatrix4fv(vTransformView, 1, GL_FALSE, glm::value_ptr(renderer::cam.view));
+	vTransformProj = glGetUniformLocation(renderer::shdr_pgm[0], "P");
+	glUniformMatrix4fv(vTransformProj, 1, GL_FALSE, glm::value_ptr(renderer::cam.proj));
+	for (GameObject* object : objectWithTex)
+		renderTex(object, deltaTime);
 }
 
 // Load all textures for game objects with a Render component
 void RenderSystem::init(GameObjectManager& manager)
 {
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	stbi_set_flip_vertically_on_load(true);
 	std::vector<GameObject*> gameObjects;
 	manager.getAllGameObjects(gameObjects);
 	for (GameObject* object : gameObjects)
 	{
-		if (object->hasComponent<Render>())
+		if (object->getComponent<Render>()->hasTex)
 		{
 			Render* render = object->getComponent<Render>();
 			render->texHDL = uploadtex(render->texFile, render->isTransparent);
@@ -260,7 +153,7 @@ GLuint RenderSystem::uploadtex(std::string const& filename, bool& isTransparent)
 	int width, height, channels;
 	unsigned char* data = stbi_load(filename.c_str(), &width, &height, &channels, STBI_rgb_alpha);
 	if (!data) {
-		std::cerr << "Failed to load image: " << filename << "]" << std::endl;
+		std::cerr << "Failed to load image: " << filename << std::endl;
 		return 0;
 	}
 
@@ -281,6 +174,122 @@ GLuint RenderSystem::uploadtex(std::string const& filename, bool& isTransparent)
 	glTextureParameteri(texobj_hdl, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	stbi_image_free(data);
 	return texobj_hdl;
+}
+
+void RenderSystem::renderTex(GameObject* object, float const& deltaTime)
+{
+	if (object->hasComponent<Render>() && object->hasComponent<Transform>())
+	{
+		Transform* transform = object->getComponent<Transform>();
+		Render* render = object->getComponent<Render>();
+
+		//position and orientation of mesh
+		float angle = glm::radians(transform->rotation);
+		transform->mdlWorld = glm::mat4{ 1 };
+		transform->mdlWorld = glm::translate(transform->mdlWorld, glm::vec3(transform->x, transform->y, transform->z));
+		transform->mdlWorld = glm::rotate(transform->mdlWorld, angle, glm::vec3(0, 0, 1.f));
+		transform->mdlWorld = glm::scale(transform->mdlWorld, glm::vec3(transform->scaleX, transform->scaleY, transform->scaleZ));
+		glBindTextureUnit(0, render->texHDL);
+
+		glm::mat4 texRot{ 1 };
+		texRot = glm::rotate(texRot, angle, glm::vec3(0, 0, 1.f));
+		glm::vec2 rotationCenter{ 0,0 }; //if needed in the future it can be a member variable, now just for sanity
+
+		//binding model to world matrix
+		glBindVertexArray(render->modelRef.vaoid);
+		GLint vTransformLoc = glGetUniformLocation(renderer::shdr_pgm[0], "M");
+		glUniformMatrix4fv(vTransformLoc, 1, GL_FALSE, glm::value_ptr(transform->mdlWorld));
+
+		glm::vec2 texpos, texscale;
+		if (render->hasAnimation)
+		{
+			Animation* animation = object->getComponent<Animation>();
+			texpos = glm::vec2{ animation->currentFrameColumn / static_cast<float>(animation->totalColumn), animation->currentFrameRow / static_cast<float>(animation->totalRow) };
+			texscale = glm::vec2{ 1.f / animation->totalColumn, 1.f / animation->totalRow };
+			if (animation->loop)
+			{
+				animation->frameTimer += deltaTime;
+				//std::cout << "\n-------Frame Timer---------\n" << animation->frameTimer << "\n\n";
+				if (animation->frameTimer >= animation->frameTime)
+				{
+					animation->frameTimer -= animation->frameTime;
+					/*if (animation->runItBack && animation->currentFrameColumn == 0)
+					{
+						animation->runItBack = false;
+					}
+					else
+					{
+						animation->currentFrameColumn = (animation->currentFrameColumn + 1) % animation->totalColumn;
+						animation->currentFrameRow = (animation->currentFrameRow + 1) % animation->totalRow;
+						animation->runItBack = true;
+					}*/
+					animation->currentFrameColumn = (animation->currentFrameColumn + 1) % animation->totalColumn;
+					animation->currentFrameRow = (animation->currentFrameRow + 1) % animation->totalRow;
+					animation->runItBack = true;
+					
+				}
+			}
+		}
+		else
+		{
+			texpos = glm::vec2{ 0,0 };
+			texscale = glm::vec2{ 1,1 };
+		}
+		//binding texture rotation and id
+		GLint texid = glGetUniformLocation(renderer::shdr_pgm[0], "uTex2d");
+		GLint rotmat = glGetUniformLocation(renderer::shdr_pgm[0], "uRotMtx");
+		GLint rotcenter = glGetUniformLocation(renderer::shdr_pgm[0], "uMcn");
+		GLint offset = glGetUniformLocation(renderer::shdr_pgm[0], "uTexOffSet");
+		GLint tscale = glGetUniformLocation(renderer::shdr_pgm[0], "uTexScale");
+		glUniform1i(texid, 0);
+		glUniformMatrix2fv(rotmat, 1, GL_FALSE, glm::value_ptr(texRot));
+		glUniform2fv(rotcenter, 1, glm::value_ptr(rotationCenter));
+		glUniform2fv(offset, 1, glm::value_ptr(texpos));
+		glUniform2fv(tscale, 1, glm::value_ptr(texscale));
+
+		if (render->modelRef.shape == shape::square)
+		{
+			// --- Pass 1: textured fill ---
+			glBindVertexArray(render->modelRef.vaoid);
+			glDrawElements(GL_TRIANGLES, render->modelRef.elem_cnt, GL_UNSIGNED_SHORT, nullptr);
+		}
+		//glDrawElements(GL_TRIANGLES, render->modelRef.elem_cnt, GL_UNSIGNED_SHORT, nullptr);
+		else if (render->modelRef.shape == shape::circle)
+			glDrawArrays(render->modelRef.primitive_type, 0, render->modelRef.draw_cnt);
+		glBindVertexArray(0);
+	}
+}
+
+void RenderSystem::renderNoTex(GameObject* object)
+{
+	if (object->hasComponent<Render>() && object->hasComponent<Transform>())
+	{
+		Transform* transform = object->getComponent<Transform>();
+		Render* render = object->getComponent<Render>();
+
+		//position and orientation of mesh
+		float angle = glm::radians(transform->rotation);
+		transform->mdlWorld = glm::mat4{ 1 };
+		transform->mdlWorld = glm::translate(transform->mdlWorld, glm::vec3(transform->x, transform->y, transform->z));
+		transform->mdlWorld = glm::rotate(transform->mdlWorld, angle, glm::vec3(0, 0, 1.f));
+		transform->mdlWorld = glm::scale(transform->mdlWorld, glm::vec3(transform->scaleX, transform->scaleY, transform->scaleZ));
+		glBindTextureUnit(0, 0);
+
+		glm::mat4 texRot{ 1 };
+		texRot = glm::rotate(texRot, angle, glm::vec3(0, 0, 1.f));
+		glm::vec2 rotationCenter{ 0,0 }; //if needed in the future it can be a member variable, now just for sanity
+
+		//binding model to world matrix
+		glBindVertexArray(render->modelRef.vaoid);
+		GLint vTransformLoc = glGetUniformLocation(renderer::shdr_pgm[1], "M");
+		glUniformMatrix4fv(vTransformLoc, 1, GL_FALSE, glm::value_ptr(transform->mdlWorld));
+
+		if (render->modelRef.shape == shape::square)
+			glDrawElements(GL_TRIANGLES, render->modelRef.elem_cnt, GL_UNSIGNED_SHORT, nullptr);
+		else if (render->modelRef.shape == shape::circle)
+			glDrawArrays(render->modelRef.primitive_type, 0, render->modelRef.draw_cnt);
+		glBindVertexArray(0);
+	}
 }
 
 // Physics system - updates position based on velocity and applies gravity

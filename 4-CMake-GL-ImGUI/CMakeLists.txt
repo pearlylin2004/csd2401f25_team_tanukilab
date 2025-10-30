@@ -24,6 +24,7 @@ set(ALL_LIBS
   PRIVATE imgui
   PRIVATE stb
   PRIVATE lua 
+  PRIVATE rapidjson
 )
 
 # Include path for GLM (optional if not using FetchContent)

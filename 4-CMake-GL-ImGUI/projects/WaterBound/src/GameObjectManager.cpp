@@ -102,7 +102,8 @@ void GameObjectManager::init()
 		{
 			is >> objectName;
 			std::unique_ptr<GameObject> newObject = std::make_unique<GameObject>(objectName);
-			m_gameObjects.emplace(objectName, std::move(newObject));//must use move with unique ptr
+			m_gameObjects.emplace(objectName, std::move(newObject));
+			std::cout << "\nnew object:\n";
 			std::cout << objectName << "\n";
 		}
 		/*for (; is >> checker, checker == "renderer";)
@@ -123,6 +124,7 @@ void GameObjectManager::init()
 			if (renderptr->hasTex == true)
 			{
 				is >> renderptr->texFile;
+				is >> renderptr->hasAnimation;
 			}
 			std::cout << shape << "\n";
 		}
@@ -147,6 +149,13 @@ void GameObjectManager::init()
 		{
 			m_gameObjects[objectName]->addComponent<CollisionInfo>();
 			std::cout << "collision component added\n";
+		}
+
+		if (checker == "animation")
+		{
+			Animation* animationptr = m_gameObjects[objectName]->addComponent<Animation>();
+			is >> animationptr->loop >> animationptr->currentFrameColumn >> animationptr->currentFrameRow >> animationptr->totalColumn >> animationptr->totalRow >> animationptr->frameTime;
+			std::cout << "animation component added\n";
 		}
 
 		m_gameObjects["player"]->addComponent<Input>(1.f);

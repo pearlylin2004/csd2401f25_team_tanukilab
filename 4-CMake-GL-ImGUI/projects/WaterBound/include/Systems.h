@@ -73,8 +73,10 @@ public:
 		array of all objects
 
 	*************************************************************************/
-	void update(GameObjectManager& manager);
+	void update(GameObjectManager& manager, float const& deltaTime);
 	GLuint uploadtex(std::string const& filename, bool& isTransparent);
+	void renderTex(GameObject* object, float const& deltaTime);
+	void renderNoTex(GameObject* object);
 };
 
 /*!***********************************************************************

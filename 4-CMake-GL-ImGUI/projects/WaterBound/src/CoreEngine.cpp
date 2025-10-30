@@ -34,7 +34,7 @@ CoreEngine::~CoreEngine() {
 void CoreEngine::Init() {
     AppConfig cfg;
     std::string err;
-    if (!LoadConfig("../projects/WaterBound/resources/config.txt", cfg, &err)) {
+    if (!LoadConfig("../projects/WaterBound/resources/config.json", cfg, &err)) {
         std::cout << err << "\n";
     }
     m_title = cfg.title;
@@ -143,7 +143,7 @@ void CoreEngine::Update(float deltaTime) {
     m_inputSystem->update(*m_manager, deltaTime);
     m_collisionSystem->update(*m_manager, deltaTime);
     m_physicsSystem->update(*m_manager, deltaTime);
-    m_renderSystem->update(*m_manager);
+    m_renderSystem->update(*m_manager, deltaTime);
     m_uiSystem->update(*m_manager);
 
 }
