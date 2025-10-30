@@ -65,7 +65,7 @@ void CoreEngine::Init() {
     glClearColor(cfg.clear_color[0], cfg.clear_color[1], cfg.clear_color[2], cfg.clear_color[3]);
 
     // --- System Initialization ---
-    InputHandler::init(m_window, cfg);
+    InputHandler::init(m_window);
     renderer::init(cfg.width, cfg.height);
 
     m_manager = std::make_unique<GameObjectManager>();
@@ -78,22 +78,17 @@ void CoreEngine::Init() {
 
     m_luaSystem->init();
     m_manager->init();
-	m_renderSystem->init(*m_manager, cfg.width, cfg.height);
-	m_uiSystem->init(m_window, m_renderSystem.get());
+	m_renderSystem->init(*m_manager);
+	m_uiSystem->init(m_window);
 
 	// --- Lua Script Test ---
-    //get existing game objects
-    GameObject* object1 = m_manager->getGameObject("player");
-    GameObject* object2 = m_manager->getGameObject("bullet");
-
-    //add LuaScript components to the existing objects
-    if (object1)
-        object1->addComponent<LuaScript>("../projects/WaterBound/scripting/object1.lua");
-        std::cout << "runnning script for object 1" << std::endl;
-
-    if (object2)
-        object2->addComponent<LuaScript>("../projects/WaterBound/scripting/object2.lua");
-        std::cout << "runnning script for object 2" << std::endl;
+    if (m_luaSystem->runScript("../projects/WaterBound/scripting/test.lua")) {
+        float val = m_luaSystem->getGlobalNumber("testValue");
+        std::cout << "Lua testValue = " << val << std::endl;
+    }
+    else {
+        std::cout << "Failed to run Lua script!" << std::endl;
+    }
 
     audio.init();
 
@@ -141,18 +136,7 @@ void CoreEngine::Update(float deltaTime) {
 
         Transform* newTransform = newObject->getComponent<Transform>();
         newTransform->y += 1.5f * (static_cast<float>(cloneCount) - 1); // Offset the new clone's position
-    }
 
-	//lua scripting update for all objects with LuaScript component
-    std::vector<GameObject*> gameObjects;
-    m_manager->getAllGameObjects(gameObjects);
-
-	//running Lua scripts for each object that has a LuaScript component
-    for (GameObject* obj : gameObjects) {
-        if (obj->hasComponent<LuaScript>()) {
-            LuaScript* scriptComp = obj->getComponent<LuaScript>();
-            m_luaSystem->runScriptForObject(scriptComp->filename, obj, deltaTime);
-        }
     }
 
     // Update all systems in order
