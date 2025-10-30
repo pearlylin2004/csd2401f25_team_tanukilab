@@ -557,6 +557,7 @@ void UISystem::dockingSetUp() {
 		| ImGuiWindowFlags_NoMove
 		| ImGuiWindowFlags_NoBringToFrontOnFocus
 		| ImGuiWindowFlags_NoNavFocus
+		| ImGuiWindowFlags_MenuBar
 		| ImGuiWindowFlags_NoBackground;
 
 	ImGuiViewport* viewport = ImGui::GetMainViewport();

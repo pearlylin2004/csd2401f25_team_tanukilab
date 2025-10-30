@@ -199,11 +199,92 @@ bool InputHandler::isCursorInsideWindow() {
 	return m_isCursorInside;
 }
 
+Vector2D InputHandler::getMousePositionInImGuiViewport(const ImVec2& scenePos, const ImVec2& sceneSize) {
+	ImVec2 mousePos = ImGui::GetMousePos();
+
+	// get mouse on the viewport
+	Vector2D localMouse = { 0.f, 0.f };
+	localMouse.x = (mousePos.x - scenePos.x) / (sceneSize.x / sceneSize.x);
+	localMouse.y = sceneSize.y - (mousePos.y - scenePos.y) / (sceneSize.y / sceneSize.y);
+
+	localMouse.x -= sceneSize.x / 2.f;
+	localMouse.y -= sceneSize.y / 2.f;
+
+	// convert to use the same coordinate system as game obj
+	float normX = localMouse.x / (sceneSize.x / 2.f);
+	float normY = localMouse.y / (sceneSize.y / 2.f);
+
+	float scaleX = (renderer::cam.width / 9.1f);
+	float scaleY = ((renderer::cam.width / renderer::cam.ar) / 9.1f);
+
+	float worldX = (normX * scaleX) / renderer::cam.zoom + renderer::cam.campos.x;
+	float worldY = (normY * scaleY) / renderer::cam.zoom + renderer::cam.campos.y;
+
+	return Vector2D(worldX, worldY);
+}
+
+Vector2D InputHandler::getMouseDeltaWorldInViewport(const ImVec2& sceneSize)
+{
+	Vector2D delta = getMouseDelta();
+
+	if (delta.x == 0.0f && delta.y == 0.0f)
+		return Vector2D(0.0f);
+
+	float normX = delta.x / (sceneSize.x / 2.f);
+	float normY = -delta.y / (sceneSize.y / 2.f);
+
+	float scaleX = (renderer::cam.width / 9.1f);
+	float scaleY = ((renderer::cam.width / renderer::cam.ar) / 9.1f);
+
+	float worldX = (normX * scaleX) / renderer::cam.zoom;
+	float worldY = (normY * scaleY) / renderer::cam.zoom;
+
+	return Vector2D(worldX, worldY);
+}
+
+
+bool InputHandler::isCursorInsideImGuiViewport(const ImVec2& scenePos, const ImVec2& sceneSize) {
+	ImVec2 mousePos = ImGui::GetMousePos();
+
+	return (mousePos.x >= scenePos.x && mousePos.x <= scenePos.x + sceneSize.x &&
+		mousePos.y >= scenePos.y && mousePos.y <= scenePos.y + sceneSize.y);
+}
+
+// get cursor world postion
+Vector2D InputHandler::getWorldMousePosition() {
+	float mx = getMouseX();
+	float my = getMouseY();
+
+	my = m_cfg.height - my;
+
+	// convert screen space to normalized
+	float normX = (mx - m_cfg.width / 2.f) / (m_cfg.width / 2.f);
+	float normY = (my - m_cfg.height / 2.f) / (m_cfg.height / 2.f);
+
+	float scaleX = (renderer::cam.width / 9.1f);
+	float scaleY = ((renderer::cam.width / renderer::cam.ar) / 9.1f);
+
+	// apply camera position and zoom
+	float worldX = (normX * scaleX) / renderer::cam.zoom + renderer::cam.campos.x;
+	float worldY = (normY * scaleY) / renderer::cam.zoom + renderer::cam.campos.y;
+
+	return Vector2D(worldX, worldY);
+}
+
+// get world cursor x position
+float InputHandler::getWorldMouseX() {
+	return getWorldMousePosition().x;
+}
+
+// get world cursor y position
+float InputHandler::getWorldMouseY() {
+	return getWorldMousePosition().y;
+}
+
 // get scroll offset since last frame
 float InputHandler::getMouseScroll() {
 	return m_scrollOffset;
 }
-
 
 /* ----- CALLBACKS ----- */
 //did not use mods, did not use scancode, did not use window

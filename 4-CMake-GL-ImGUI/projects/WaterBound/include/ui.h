@@ -53,7 +53,10 @@ private:
 	void objListPanel(GameObjectManager& manager);
 	void objPropertyPanel(GameObjectManager& manager);
 	void objInspectWindow(GameObjectManager& manager);
-	void assetWindow();
+	void assetWindow(GameObjectManager& manager);
+
+	void objPicking(GameObjectManager& manager);
+	void objDragging() const;
 
 
 	struct PanelState {
@@ -102,6 +105,11 @@ private:
 		float scaleY = 0.f;
 		float scaleZ = 0.f;
 	};
+
+	struct SceneWindowState {
+		ImVec2 scenePos;  // top left corner of viewport
+		ImVec2 sceneSize; // size of viewport
+	} m_SceneWindowState;
 
 	struct Asset {
 		std::string name;
