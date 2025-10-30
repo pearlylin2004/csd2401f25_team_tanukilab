@@ -87,6 +87,7 @@ void UI::drawPerformance() {
     for (auto& timer : g_SystemTimers) {
         float percent = totalMs > 0.0 ? (float)((timer.ms / totalMs) * 100.0) : 0.0f;
         ImGui::Text("%s: %.3f ms (%.1f%%)", timer.name.c_str(), timer.ms, percent);
+        ImGui::ProgressBar(percent / 100.0f, ImVec2(0.0f, 0.0f));
     }
     ImGui::End();
 }
