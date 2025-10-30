@@ -1,15 +1,14 @@
 -- object1.lua
-print("object1.lua is loaded!")
+--print("object1.lua is loaded!")
 --print("object1.lua is loaded!") --for testing
 
 function Update(obj, deltaTime)
-    print("lua is running!!!")
     --print("lua is running!!!") --for testing
     --for going up
     if Input_isKeyHeld("W") then
-        local x, y = getPosition(obj)
-        y = y + speed * deltaTime
-        setPosition(obj, x, y)
+        --local x, y = getPosition(obj)
+        --y = y + speed * deltaTime
+        --setPosition(obj, x, y)
         print("input W")
     end
     --for going down
@@ -24,3 +23,4 @@ function Update(obj, deltaTime)
     if Input_isKeyHeld("D") then
         print("input D")
     end
+end
