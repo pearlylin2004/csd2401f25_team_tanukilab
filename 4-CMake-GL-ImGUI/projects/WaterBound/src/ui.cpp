@@ -48,42 +48,6 @@ void UI::addDebugMessage(const std::string& msg) {
     m_debugMessages.push_back(msg);
 }
 
-// edit shape windows
-//void UI::shapeControl(Transform& t1, Transform& t2) {
-//    if (ImGui::Begin("Shape Control")) {
-//        ImGui::Text("Transform Component");
-//        static ShapeType currentShape = ShapeType::Leaves;
-//
-//        if (ImGui::Button("Leaves")) {
-//            currentShape = ShapeType::Leaves;
-//        }
-//        ImGui::SameLine();
-//        if (ImGui::Button("Bullet")) {
-//            currentShape = ShapeType::Bullet;
-//        }
-//
-//        //check which shape is selected
-//        Transform* t = (currentShape == ShapeType::Leaves) ? &t1 : &t2;
-//        ShapeDefaults& defaults = m_shapePresets[currentShape];
-//
-//        //reset
-//        if (ImGui::Button("Reset All")) {
-//            if (m_shapePresets.find(currentShape) != m_shapePresets.end()) {
-//                t->x = defaults.posX;
-//                t->y = defaults.posY;
-//                t->rotation = defaults.rotation;
-//                t->scaleX = defaults.scaleX;
-//                t->scaleY = defaults.scaleY;
-//                t->scaleZ = defaults.scaleZ;
-//            }
-//            else {
-//                m_debugMessages.push_back("No presets found for the selected shape.");
-//            }
-//        }
-//    }
-//    ImGui::End();
-//}
-
 void UI::drawPerformance() {
     ImGui::Begin("Performance");
     //time frame:
@@ -507,42 +471,6 @@ void UI::objInspectorWindow(GameObjectManager& manager) {
 
 	ImGui::End();
 }
-
-// void UI::objInspectWindow(GameObjectManager& manager) {
-//     ImGui::Begin("Object Properties Editor");
-
-//     // Left panel - object list
-//     ImGui::BeginChild("Object List", ImVec2(m_PanelState.objListWidth, 0));
-//     objListPanel(manager);
-//     ImGui::EndChild();
-
-//     ImGui::SameLine();
-
-//     // splitter that allow resizing
-//     ImGui::InvisibleButton("splitter", ImVec2(m_PanelState.splitterSize, m_PanelState.objListHeight));
-//     if (ImGui::IsItemActive()) {
-//         m_PanelState.objListWidth += InputHandler::getMouseDelta().x;
-//         m_PanelState.objListWidth = std::clamp(m_PanelState.objListWidth, m_PanelState.objListMinWidth, m_PanelState.objListMaxWidth);
-//     }
-//     // draw the vertical line to indicate the splitter
-//     ImDrawList* draw_list = ImGui::GetWindowDrawList();
-//     ImVec2 splitterMin = ImGui::GetItemRectMin();
-//     ImVec2 splitterMax = ImGui::GetItemRectMax();
-//     draw_list->AddLine(
-//         ImVec2(splitterMin.x + m_PanelState.splitterSize * 0.5f, splitterMin.y),
-//         ImVec2(splitterMin.x + m_PanelState.splitterSize * 0.5f, splitterMax.y),
-//         IM_COL32(100, 100, 100, 255), 1.0f
-//     );
-
-//     ImGui::SameLine();
-
-//     // Right panel � inspector
-//     ImGui::BeginChild("Inspector", ImVec2(0, 0), true);
-//     objPropertyPanel(manager);
-//     ImGui::EndChild();
-
-//     ImGui::End();
-// }
 
 void UI::loadAssetsFromDirectory() {
     if (assetsChangedFlag == false) return; // only reload if flagged

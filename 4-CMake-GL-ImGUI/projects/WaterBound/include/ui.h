@@ -46,9 +46,6 @@ public:
 		assetsChangedFlag = true;
 	} // set to true to reload assets in UI
 
-	// edit shape windows
-	//void shapeControl(Transform& t1, Transform& t2);
-
 	void loadAssetsFromDirectory();
 
 	void sceneWindow(GLuint texture, float aspectRatio);
@@ -56,28 +53,15 @@ public:
 private:
 	void drawPerformance();
 	void drawShapes(GameObjectManager& manager);
-	//void drawControls(std::vector<Collision::Circle>& circles);
 	void drawDebug();
 
 	void editorMenuBar(GameObjectManager& manager);
 	void objHierarchyWindow(GameObjectManager& manager);
 	void objInspectorWindow(GameObjectManager& manager);
-	//void objInspectWindow(GameObjectManager& manager);
 	void assetWindow(GameObjectManager& manager);
 
 	void objPicking(GameObjectManager& manager);
 	void objDragging() const;
-
-
-	//struct PanelState {
-	//	float objListWidth = 250.0f; // Width of the object list panel
-	//	float objListHeight = -1.0f; // Height of the object list panel, -1 means full height
-	//	float objListMaxWidth = 400.0f;
-	//	float objListMinWidth = 150.0f;
-
-	//	float splitterSize = 5.0f;  // Size of the splitter between panels
-	//	int maxObjects = 10; // max objects to show in list without scrolling
-	//} m_PanelState;
 
 	struct SelectionState {
 		GameObject* selectedObject = nullptr; // currently selected object
@@ -96,27 +80,6 @@ private:
 		float inputY = 0.0f;
 		float inputZ = 0.0f;
 	} circleInput, RectangleInput;
-
-	//enum class ShapeType {
-	//	Leaves,
-	//	Bullet
-	//};
-
-	//struct Range {
-	//	float min;
-	//	float max;
-	//};
-
-	//// might be override by the actual preset in the future
-	//struct ShapeDefaults {
-	//	float posX = 0.f;
-	//	float posY = 0.f;
-	//	float posZ = 0.f;
-	//	float rotation = 0.f;
-	//	float scaleX = 0.f;
-	//	float scaleY = 0.f;
-	//	float scaleZ = 0.f;
-	//};
 
 	struct SceneWindowState {
 		ImVec2 scenePos;  // top left corner of viewport
@@ -139,7 +102,6 @@ private:
 
 	static inline std::vector<std::string> m_debugMessages;
 
-	//std::unordered_map<ShapeType, ShapeDefaults> m_shapePresets;
 	std::vector<Asset> m_assets;
 	static bool assetsChangedFlag;
 	std::string m_currentSceneName;
