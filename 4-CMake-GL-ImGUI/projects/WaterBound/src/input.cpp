@@ -225,14 +225,14 @@ Vector2D InputHandler::getMousePositionInImGuiViewport(const ImVec2& scenePos, c
 	//std::cout << "scenePos: " << scenePos.x << " | " << scenePos.y << std::endl;
 
 	Vector2D localMouse = { 0.f, 0.f };
-	localMouse.x = mousePos.x - scenePos.x - 0.5 * sceneSize.x;// Range:[-sceneSize/2, sceneSize/2] right is +ve
-	localMouse.y = 0.5 * sceneSize.y + scenePos.y - mousePos.y;// Range:[-sceneSize/2, sceneSize/2] up is +ve
+	localMouse.x = mousePos.x - scenePos.x - 0.5f * sceneSize.x;// Range:[-sceneSize/2, sceneSize/2] right is +ve
+	localMouse.y = 0.5f * sceneSize.y + scenePos.y - mousePos.y;// Range:[-sceneSize/2, sceneSize/2] up is +ve
 
 	//std::cout << "local Mouse is at: " << localMouse.x << " | " << localMouse.y << std::endl;
 
 	Vector2D scale;
-	scale.x = (2 * renderer::cam.ar * renderer::cam.zoom) / sceneSize.x;
-	scale.y = (2 * renderer::cam.zoom) / sceneSize.y;
+	scale.x = (2.f * renderer::cam.ar * renderer::cam.zoom) / sceneSize.x;
+	scale.y = (2.f * renderer::cam.zoom) / sceneSize.y;
 
 	//std::cout << "world scale is: " << scale.x << " | " << scale.y << std::endl;
 
@@ -251,8 +251,8 @@ Vector2D InputHandler::getMouseDeltaWorldInViewport(const ImVec2& sceneSize)
 	Vector2D delta = getMouseDelta();
 
 	Vector2D scale;
-	scale.x = (2 * renderer::cam.ar * renderer::cam.zoom) / sceneSize.x;
-	scale.y = (2 * renderer::cam.zoom) / sceneSize.y;
+	scale.x = (2.f * renderer::cam.ar * renderer::cam.zoom) / sceneSize.x;
+	scale.y = (2.f * renderer::cam.zoom) / sceneSize.y;
 
 	//std::cout << "world scale is: " << scale.x << " | " << scale.y << std::endl;
 
