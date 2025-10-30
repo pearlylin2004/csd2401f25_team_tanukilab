@@ -42,6 +42,9 @@ public:
 	//initialize game objects from a file
 	void init();
 
+	void loadFromFile(const std::string& filename);
+	void saveToFile(const std::string& filename);
+
 private:
 	//map of all game objects
 	std::unordered_map<std::string, std::unique_ptr<GameObject>> m_gameObjects;

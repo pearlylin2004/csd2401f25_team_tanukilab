@@ -82,10 +82,16 @@ void GameObjectManager::getAllGameObjects(std::vector<GameObject*>& gameObjects)
 
 void GameObjectManager::init()
 {
-	std::ifstream is{ "shaders/temp_serialize.txt" };
+	loadFromFile("shaders/temp_serialize.txt");
+
+}
+
+void GameObjectManager::loadFromFile(const std::string& filename)
+{
+	std::ifstream is{ filename };
 	if (!is)
 	{
-		std::cerr << "file not found: shaders/temp_serialize.txt\n";
+		std::cerr << "file not found: " + filename + "\n";
 		return;
 	}
 	std::cout << "file opened\n";
@@ -143,7 +149,7 @@ void GameObjectManager::init()
 			is >> phyptr->inWater >> phyptr->buoancy;
 			std::cout << "inwater : " << phyptr->inWater << ", " << phyptr->buoancy << "\n";
 		}
-		if(checker == "collision")
+		if (checker == "collision")
 		{
 			m_gameObjects[objectName]->addComponent<CollisionInfo>();
 			std::cout << "collision component added\n";
@@ -157,7 +163,71 @@ void GameObjectManager::init()
 		}
 
 		m_gameObjects["player"]->addComponent<Input>(1.f);
-		
+
 	}
 }
 
+void GameObjectManager::saveToFile(const std::string& filename) {
+	std::ofstream os{ filename };
+	if (!os)
+	{
+		std::cerr << "file not found: " << filename << std::endl;
+		return;
+	}
+
+	for (auto& [name, obj] : m_gameObjects)
+	{
+		os << "object " << obj->getObjectName() << "\n";
+
+		if (auto render = obj->getComponent<Render>())
+		{
+			os << "renderer ";
+
+			switch (render->modelRef.shape) {
+			case shape::square:
+				os << "square ";
+				break;
+			case shape::circle:
+				os << "circle ";
+				break;
+			default:
+				os << "circle ";
+				break;
+			}
+
+			os << render->hasTex << " ";
+			if (render->hasTex)
+				os << render->texFile;
+
+			os << "\n";
+		}
+
+		if (auto transform = obj->getComponent<Transform>())
+		{
+			os << "transform "
+				<< transform->x << " "
+				<< transform->y << " "
+				<< transform->z << " "
+				<< transform->rotation << " "
+				<< transform->scaleX << " "
+				<< transform->scaleY << " "
+				<< transform->scaleZ << "\n";
+		}
+
+		if (auto physics = obj->getComponent<Physics>())
+		{
+			os << "physics "
+				<< physics->inWater << " "
+				<< physics->buoancy << "\n";
+		}
+
+		if (obj->hasComponent<CollisionInfo>())
+		{
+			os << "collision\n";
+		}
+
+		os << "\n";
+	}
+
+	std::cout << "Scene saved to " << filename << "\n";
+}
