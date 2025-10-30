@@ -91,8 +91,16 @@ void UI::drawPerformance() {
         1000.0f / ImGui::GetIO().Framerate,
         ImGui::GetIO().Framerate);
     ImGui::Separator();
-    //average time
-
+    //average time --can add for other functions also just need to add 4 lines of codes into the function start and end(see InputSystem::Update in system.cpp)
+    double totalMs = 0.0;
+    for (auto& timer : g_SystemTimers) totalMs += timer.ms;
+    //loop through all timers and display
+    for (auto& timer : g_SystemTimers) {
+        float percent = totalMs > 0.0 ? (float)((timer.ms / totalMs) * 100.0) : 0.0f;
+        ImGui::Text("%s: %.3f ms (%.1f%%)", timer.name.c_str(), timer.ms, percent);
+        ImGui::ProgressBar(percent / 100.0f, ImVec2(0.0f, 0.0f));
+    }
+    g_SystemTimers.clear(); // clear timers for next frame
     ImGui::End();
 }
 
@@ -499,6 +507,42 @@ void UI::objInspectorWindow(GameObjectManager& manager) {
 
 	ImGui::End();
 }
+
+// void UI::objInspectWindow(GameObjectManager& manager) {
+//     ImGui::Begin("Object Properties Editor");
+
+//     // Left panel - object list
+//     ImGui::BeginChild("Object List", ImVec2(m_PanelState.objListWidth, 0));
+//     objListPanel(manager);
+//     ImGui::EndChild();
+
+//     ImGui::SameLine();
+
+//     // splitter that allow resizing
+//     ImGui::InvisibleButton("splitter", ImVec2(m_PanelState.splitterSize, m_PanelState.objListHeight));
+//     if (ImGui::IsItemActive()) {
+//         m_PanelState.objListWidth += InputHandler::getMouseDelta().x;
+//         m_PanelState.objListWidth = std::clamp(m_PanelState.objListWidth, m_PanelState.objListMinWidth, m_PanelState.objListMaxWidth);
+//     }
+//     // draw the vertical line to indicate the splitter
+//     ImDrawList* draw_list = ImGui::GetWindowDrawList();
+//     ImVec2 splitterMin = ImGui::GetItemRectMin();
+//     ImVec2 splitterMax = ImGui::GetItemRectMax();
+//     draw_list->AddLine(
+//         ImVec2(splitterMin.x + m_PanelState.splitterSize * 0.5f, splitterMin.y),
+//         ImVec2(splitterMin.x + m_PanelState.splitterSize * 0.5f, splitterMax.y),
+//         IM_COL32(100, 100, 100, 255), 1.0f
+//     );
+
+//     ImGui::SameLine();
+
+//     // Right panel � inspector
+//     ImGui::BeginChild("Inspector", ImVec2(0, 0), true);
+//     objPropertyPanel(manager);
+//     ImGui::EndChild();
+
+//     ImGui::End();
+// }
 
 void UI::loadAssetsFromDirectory() {
     if (assetsChangedFlag == false) return; // only reload if flagged

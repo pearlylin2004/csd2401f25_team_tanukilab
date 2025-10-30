@@ -102,7 +102,7 @@ public:
 
 	\param[in] GameObjectManager manager
 		array of all objects
-		
+
 	\param[in] deltaTime
 		tracking of the world time
 
@@ -122,7 +122,7 @@ public:
 	void init(GLFWwindow* window, RenderSystem* renderer);
 	~UISystem();
 	void update(GameObjectManager& manager);
-	
+
 	static void toggleUI() { showUI = !showUI; } // temp toggle function
 	static bool isShowUI() { return showUI; }
 
