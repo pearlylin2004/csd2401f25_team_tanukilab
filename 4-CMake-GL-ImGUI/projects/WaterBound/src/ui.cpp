@@ -650,7 +650,6 @@ void UI::sceneWindow(GLuint texture, float aspectRatio) {
 
     m_SceneWindowState.scenePos = ImGui::GetItemRectMin();
     m_SceneWindowState.sceneSize = ImGui::GetItemRectSize();
-    m_SceneWindowState.imgSize = size;
 
     ImGui::End();
 }
@@ -666,16 +665,7 @@ Future implementation (jic i forget)
 void UI::objPicking(GameObjectManager& manager) {
     if (!InputHandler::isMouseLeftClicked()) return;
 
-    std::cout << "my mouse clicked at " << InputHandler::getWorldMousePosition().x << ", " << InputHandler::getWorldMousePosition().y << "\n";
-
-    std::cout << "mouse calculated in imgui viewport at " << InputHandler::getMousePositionInImGuiViewport(m_SceneWindowState.scenePos, m_SceneWindowState.sceneSize, m_SceneWindowState.imgSize).x
-        << ", " << InputHandler::getMousePositionInImGuiViewport(m_SceneWindowState.scenePos, m_SceneWindowState.sceneSize, m_SceneWindowState.imgSize).y << "\n";
-
-    std::cout << "imgui mouse is at " << ImGui::GetMousePos().x << ", " << ImGui::GetMousePos().y << "\n";
-
-
-    //Vector2D mousePos = InputHandler::getWorldMousePosition();
-    Vector2D mousePos = InputHandler::getMousePositionInImGuiViewport(m_SceneWindowState.scenePos, m_SceneWindowState.sceneSize, m_SceneWindowState.imgSize);
+    Vector2D mousePos = InputHandler::getMousePositionInImGuiViewport(m_SceneWindowState.scenePos, m_SceneWindowState.sceneSize);
         
     std::vector<GameObject*> gameObjects;
     manager.getAllGameObjects(gameObjects);
@@ -692,9 +682,6 @@ void UI::objPicking(GameObjectManager& manager) {
         Collision::AABB aabb = Collision::getObjectAABB(transform);
         Collision::Circle mousePoint(mousePos, 0.2f);
 
-		std::cout << "checking object " << obj->getObjectName() << " at AABB("
-			<< aabb.getMin().x << ", " << aabb.getMin().y << ", " << aabb.getMax().x << ", " << aabb.getMax().y << ")\n";
-
 		// check if mouse point intersects with the game obj
         if (Collision::CollisionIntersection_CircleAABB_Static(mousePoint, aabb)) {
             selected = obj;
@@ -705,8 +692,6 @@ void UI::objPicking(GameObjectManager& manager) {
     if (selected) {
         m_SelectionState.selectedObject = selected;
         m_SelectionState.draggedObject = selected;
-		
-        Transform* transform = selected->getComponent<Transform>();
 
         auto iterator = std::find(gameObjects.begin(), gameObjects.end(), selected);
         if (iterator != gameObjects.end()) {
@@ -721,7 +706,7 @@ void UI::objPicking(GameObjectManager& manager) {
     }
 }
 
-void UI::objDragging() {
+void UI::objDragging() const{
     // early return if no obj is selected
     GameObject* obj = m_SelectionState.draggedObject;
     if (!obj) return;
@@ -733,7 +718,7 @@ void UI::objDragging() {
     if (!transform) return;
 
 	// change current object position based on mouse delta
-    Vector2D mousePos = InputHandler::getMouseDeltaWorldInViewport(m_SceneWindowState.sceneSize, m_SceneWindowState.imgSize);
+    Vector2D mousePos = InputHandler::getMouseDeltaWorldInViewport(m_SceneWindowState.sceneSize);
     transform->x += mousePos.x;
     transform->y += mousePos.y;
 }

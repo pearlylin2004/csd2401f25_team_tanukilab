@@ -220,20 +220,20 @@ bool InputHandler::isCursorInsideWindow() {
 	return m_isCursorInside;
 }
 
-Vector2D InputHandler::getMousePositionInImGuiViewport(const ImVec2& scenePos, const ImVec2& sceneSize, const ImVec2& imageSize) {
+Vector2D InputHandler::getMousePositionInImGuiViewport(const ImVec2& scenePos, const ImVec2& sceneSize) {
 	ImVec2 mousePos = ImGui::GetMousePos();
 
 	// get mouse on the viewport
-	Vector2D localMouse;
-	localMouse.x = (mousePos.x - scenePos.x) / (sceneSize.x / imageSize.x);
-	localMouse.y = imageSize.y - (mousePos.y - scenePos.y) / (sceneSize.y / imageSize.y);
+	Vector2D localMouse = { 0.f, 0.f };
+	localMouse.x = (mousePos.x - scenePos.x) / (sceneSize.x / sceneSize.x);
+	localMouse.y = sceneSize.y - (mousePos.y - scenePos.y) / (sceneSize.y / sceneSize.y);
 
-	localMouse.x -= imageSize.x / 2.f;
-	localMouse.y -= imageSize.y / 2.f;
+	localMouse.x -= sceneSize.x / 2.f;
+	localMouse.y -= sceneSize.y / 2.f;
 
 	// convert to use the same coordinate system as game obj
-	float normX = localMouse.x / (imageSize.x / 2.f);
-	float normY = localMouse.y / (imageSize.y / 2.f);
+	float normX = localMouse.x / (sceneSize.x / 2.f);
+	float normY = localMouse.y / (sceneSize.y / 2.f);
 
 	float scaleX = (renderer::cam.width / 9.1f);
 	float scaleY = ((renderer::cam.width / renderer::cam.ar) / 9.1f);
@@ -244,9 +244,7 @@ Vector2D InputHandler::getMousePositionInImGuiViewport(const ImVec2& scenePos, c
 	return Vector2D(worldX, worldY);
 }
 
-Vector2D InputHandler::getMouseDeltaWorldInViewport(
-	const ImVec2& sceneSize,
-	const ImVec2& imageSize)
+Vector2D InputHandler::getMouseDeltaWorldInViewport(const ImVec2& sceneSize)
 {
 	Vector2D delta = getMouseDelta();
 

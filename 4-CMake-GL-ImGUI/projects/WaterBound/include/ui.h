@@ -63,7 +63,7 @@ private:
 	void assetWindow(GameObjectManager& manager);
 
 	void objPicking(GameObjectManager& manager);
-	void objDragging();
+	void objDragging() const;
 
 
 	struct PanelState {
@@ -118,9 +118,6 @@ private:
 	struct SceneWindowState {
 		ImVec2 scenePos;  // top left corner of viewport
 		ImVec2 sceneSize; // size of viewport
-		ImVec2 imgSize;
-		Vector2D worldMin;
-		Vector2D worldMax;
 	} m_SceneWindowState;
 
 	struct Asset {
