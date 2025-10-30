@@ -55,6 +55,13 @@ private:
 
 *************************************************************************/
 class RenderSystem {
+	GLuint fbo;
+	GLuint texture;
+
+	int fboWidth = 0;
+	int fboHeight = 0;
+
+	void createFBO();
 public:
 	/*!***********************************************************************
 	\brief
@@ -64,7 +71,7 @@ public:
 		array of all objects
 
 	*************************************************************************/
-	void init(GameObjectManager& manager);
+	void init(GameObjectManager& manager, int fboW, int fboH);
 	/*!***********************************************************************
 	\brief
 		resend matrix data to the shaders to recalculated object position and orientation to draw for the new frame
@@ -97,7 +104,7 @@ public:
 
 	\param[in] GameObjectManager manager
 		array of all objects
-		
+
 	\param[in] deltaTime
 		tracking of the world time
 
@@ -114,15 +121,17 @@ public:
 // UI system - handles UI rendering and interactions using ImGui
 class UISystem {
 public:
-	void init(GLFWwindow* window);
+	void init(GLFWwindow* window, RenderSystem* renderer);
 	~UISystem();
 	void update(GameObjectManager& manager);
-	
+
 	static void toggleUI() { showUI = !showUI; } // temp toggle function
+	static bool isShowUI() { return showUI; }
 
 private:
 	void dockingSetUp();
 	void renderMultipleViewPorts();
 	UI m_UI;
 	static bool showUI;
+	RenderSystem* m_renderer = nullptr;
 };
