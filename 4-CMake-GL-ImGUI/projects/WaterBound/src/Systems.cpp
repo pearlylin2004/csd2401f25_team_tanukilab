@@ -73,6 +73,9 @@ void InputSystem::update(GameObjectManager& manager, const float& deltaTime) {
 			}
 		}
 	}
+	auto end = std::chrono::high_resolution_clock::now();
+	double ms = std::chrono::duration<double, std::milli>(end - start).count(); //get elapse time in ms
+	g_SystemTimers.push_back({ "Input", ms }); //saving timing for UI output
 }
 
 
@@ -106,9 +109,6 @@ void RenderSystem::update(GameObjectManager& manager, float const& deltaTime)
 				render->texChanged = false;
 			}
 		}
-		auto end = std::chrono::high_resolution_clock::now();
-		double ms = std::chrono::duration<double, std::milli>(end - start).count(); //get elapse time in ms
-		g_SystemTimers.push_back({ "Input", ms }); //saving timing for UI output
 	}
 
 	renderer::cam.update();
@@ -559,6 +559,9 @@ UISystem::~UISystem() {
 void UISystem::update(GameObjectManager& manager) {
 	if (!showUI) return; // skip UI rendering if disabled
 
+	//record current time for performance tracking
+	auto start = std::chrono::high_resolution_clock::now();
+
 	std::vector<GameObject*> gameObjects;
 	manager.getAllGameObjects(gameObjects);
 
@@ -587,6 +590,10 @@ void UISystem::update(GameObjectManager& manager) {
 	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
 	renderMultipleViewPorts();
+
+	auto end = std::chrono::high_resolution_clock::now();
+	double ms = std::chrono::duration<double, std::milli>(end - start).count(); //get elapse time in ms
+	g_SystemTimers.push_back({ "IMGUI", ms }); //saving timing for UI output
 }
 
 void UISystem::dockingSetUp() {

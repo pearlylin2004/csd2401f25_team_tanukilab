@@ -5,10 +5,12 @@
 \author     Hugo Low Ren Hao, low.h, 2402272, 20%
 \author     Tan Chee Qing, cheeqing.tan, 2401486, 10%
 \author     Varick Teo, v.teo, 2403417, 10%
+\author     Pearly Lin Lee Ying, p.lin, 2401591, 5%
 \par        s.sinle@digipen.edu
 \par        low.h@digipen.edu
 \par        cheeqing.tan@digipen.edu
 \par        v.teo@digipen.edu
+\par        p.lin@digipen.edu
 \date		October, 1, 2025
 \brief		Implementation for the CoreEngine class. The CoreEngine is responsible for
             Initialisation and Shutdown, Game Loop Execution and System Updates
