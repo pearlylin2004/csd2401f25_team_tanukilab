@@ -1,13 +1,13 @@
 /* Start Header ************************************************************************/
 /*!
 \file       input.cpp
-\author     Tan Chee Qing, cheeqing.tan, 2401486 
+\author     Tan Chee Qing, cheeqing.tan, 2401486
 			- 100% of the file
 \par        cheeqing.tan@digipen.edu
 \date       September, 15th, 2025
 \brief      This source file implements the InputHandler class, which centralizes input
 			handling for GLFW. It maintains arrays of current and previous states for
-			keyboard keys and mouse buttons, enabling detection of triggered, released, 
+			keyboard keys and mouse buttons, enabling detection of triggered, released,
 			held, and combo inputs.
 
 Copyright (C) 2025 DigiPen Institute of Technology.
@@ -165,7 +165,7 @@ bool InputHandler::isMouseDragging() {
 // get change in mouse position since drag started
 Vector2D InputHandler::getMouseDragDelta() {
 	if (!m_isDragging) return Vector2D(0.0f);
-	
+
 	return Vec_Sub(&m_mousePosition, &m_mouseDragStartPos);
 }
 
