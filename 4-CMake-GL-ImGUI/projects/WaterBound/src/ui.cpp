@@ -20,11 +20,6 @@ Technology is prohibited.
 bool UI::assetsChangedFlag = true;
 
 UI::UI() {
-    // temp, get ready to load from json in the future
-    m_shapePresets = {
-        { ShapeType::Leaves, { 0.0f, 0.0f, 0.0f, 0.0f, 5.0f, 5.0f, 5.0f }},
-        { ShapeType::Bullet, { 0.0f, 0.0f, 0.0f, 0.5f, 0.5f, 0.5f, 0.0f }}
-    };
 
     m_currentSceneName = "shaders/Scene/temp_serialize.txt";
     m_tempSceneName = "shaders/Scene/temp_scene";
@@ -53,40 +48,40 @@ void UI::addDebugMessage(const std::string& msg) {
 }
 
 // edit shape windows
-void UI::shapeControl(Transform& t1, Transform& t2) {
-    if (ImGui::Begin("Shape Control")) {
-        ImGui::Text("Transform Component");
-        static ShapeType currentShape = ShapeType::Leaves;
-
-        if (ImGui::Button("Leaves")) {
-            currentShape = ShapeType::Leaves;
-        }
-        ImGui::SameLine();
-        if (ImGui::Button("Bullet")) {
-            currentShape = ShapeType::Bullet;
-        }
-
-        //check which shape is selected
-        Transform* t = (currentShape == ShapeType::Leaves) ? &t1 : &t2;
-        ShapeDefaults& defaults = m_shapePresets[currentShape];
-
-        //reset
-        if (ImGui::Button("Reset All")) {
-            if (m_shapePresets.find(currentShape) != m_shapePresets.end()) {
-                t->x = defaults.posX;
-                t->y = defaults.posY;
-                t->rotation = defaults.rotation;
-                t->scaleX = defaults.scaleX;
-                t->scaleY = defaults.scaleY;
-                t->scaleZ = defaults.scaleZ;
-            }
-            else {
-                m_debugMessages.push_back("No presets found for the selected shape.");
-            }
-        }
-    }
-    ImGui::End();
-}
+//void UI::shapeControl(Transform& t1, Transform& t2) {
+//    if (ImGui::Begin("Shape Control")) {
+//        ImGui::Text("Transform Component");
+//        static ShapeType currentShape = ShapeType::Leaves;
+//
+//        if (ImGui::Button("Leaves")) {
+//            currentShape = ShapeType::Leaves;
+//        }
+//        ImGui::SameLine();
+//        if (ImGui::Button("Bullet")) {
+//            currentShape = ShapeType::Bullet;
+//        }
+//
+//        //check which shape is selected
+//        Transform* t = (currentShape == ShapeType::Leaves) ? &t1 : &t2;
+//        ShapeDefaults& defaults = m_shapePresets[currentShape];
+//
+//        //reset
+//        if (ImGui::Button("Reset All")) {
+//            if (m_shapePresets.find(currentShape) != m_shapePresets.end()) {
+//                t->x = defaults.posX;
+//                t->y = defaults.posY;
+//                t->rotation = defaults.rotation;
+//                t->scaleX = defaults.scaleX;
+//                t->scaleY = defaults.scaleY;
+//                t->scaleZ = defaults.scaleZ;
+//            }
+//            else {
+//                m_debugMessages.push_back("No presets found for the selected shape.");
+//            }
+//        }
+//    }
+//    ImGui::End();
+//}
 
 void UI::drawPerformance() {
     ImGui::Begin("Performance");

@@ -44,7 +44,7 @@ public:
 	} // set to true to reload assets in UI
 
 	// edit shape windows
-	void shapeControl(Transform& t1, Transform& t2);
+	//void shapeControl(Transform& t1, Transform& t2);
 
 	void loadAssetsFromDirectory();
 
@@ -94,26 +94,26 @@ private:
 		float inputZ = 0.0f;
 	} circleInput, RectangleInput;
 
-	enum class ShapeType {
-		Leaves,
-		Bullet
-	};
+	//enum class ShapeType {
+	//	Leaves,
+	//	Bullet
+	//};
 
-	struct Range {
-		float min;
-		float max;
-	};
+	//struct Range {
+	//	float min;
+	//	float max;
+	//};
 
-	// might be override by the actual preset in the future
-	struct ShapeDefaults {
-		float posX = 0.f;
-		float posY = 0.f;
-		float posZ = 0.f;
-		float rotation = 0.f;
-		float scaleX = 0.f;
-		float scaleY = 0.f;
-		float scaleZ = 0.f;
-	};
+	//// might be override by the actual preset in the future
+	//struct ShapeDefaults {
+	//	float posX = 0.f;
+	//	float posY = 0.f;
+	//	float posZ = 0.f;
+	//	float rotation = 0.f;
+	//	float scaleX = 0.f;
+	//	float scaleY = 0.f;
+	//	float scaleZ = 0.f;
+	//};
 
 	struct SceneWindowState {
 		ImVec2 scenePos;  // top left corner of viewport
@@ -136,7 +136,7 @@ private:
 
 	static inline std::vector<std::string> m_debugMessages;
 
-	std::unordered_map<ShapeType, ShapeDefaults> m_shapePresets;
+	//std::unordered_map<ShapeType, ShapeDefaults> m_shapePresets;
 	std::vector<Asset> m_assets;
 	static bool assetsChangedFlag;
 	std::string m_currentSceneName;
