@@ -115,6 +115,14 @@ private:
 		float scaleZ = 0.f;
 	};
 
+	struct SceneWindowState {
+		ImVec2 scenePos;  // top left corner of viewport
+		ImVec2 sceneSize; // size of viewport
+		ImVec2 imgSize;
+		Vector2D worldMin;
+		Vector2D worldMax;
+	} m_SceneWindowState;
+
 	struct Asset {
 		std::string name;
 		std::string path;

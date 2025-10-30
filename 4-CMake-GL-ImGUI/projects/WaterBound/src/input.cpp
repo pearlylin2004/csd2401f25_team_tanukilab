@@ -220,13 +220,57 @@ bool InputHandler::isCursorInsideWindow() {
 	return m_isCursorInside;
 }
 
-bool InputHandler::isCursorInsideImGuiViewport() {
+Vector2D InputHandler::getMousePositionInImGuiViewport(const ImVec2& scenePos, const ImVec2& sceneSize, const ImVec2& imageSize) {
 	ImVec2 mousePos = ImGui::GetMousePos();
-	ImVec2 viewportPos = ImGui::GetWindowPos();
-	ImVec2 viewportSize = ImGui::GetWindowSize();
 
-	return (mousePos.x >= viewportPos.x && mousePos.x <= viewportPos.x + viewportSize.x &&
-			mousePos.y >= viewportPos.y && mousePos.y <= viewportPos.y + viewportSize.y);
+	// get mouse on the viewport
+	Vector2D localMouse;
+	localMouse.x = (mousePos.x - scenePos.x) / (sceneSize.x / imageSize.x);
+	localMouse.y = imageSize.y - (mousePos.y - scenePos.y) / (sceneSize.y / imageSize.y);
+
+	localMouse.x -= imageSize.x / 2.f;
+	localMouse.y -= imageSize.y / 2.f;
+
+	// convert to use the same coordinate system as game obj
+	float normX = localMouse.x / (imageSize.x / 2.f);
+	float normY = localMouse.y / (imageSize.y / 2.f);
+
+	float scaleX = (renderer::cam.width / 9.1f);
+	float scaleY = ((renderer::cam.width / renderer::cam.ar) / 9.1f);
+
+	float worldX = (normX * scaleX) / renderer::cam.zoom + renderer::cam.campos.x;
+	float worldY = (normY * scaleY) / renderer::cam.zoom + renderer::cam.campos.y;
+
+	return Vector2D(worldX, worldY);
+}
+
+Vector2D InputHandler::getMouseDeltaWorldInViewport(
+	const ImVec2& sceneSize,
+	const ImVec2& imageSize)
+{
+	Vector2D delta = getMouseDelta();
+
+	if (delta.x == 0.0f && delta.y == 0.0f)
+		return Vector2D(0.0f);
+
+	float normX = delta.x / (sceneSize.x / 2.f);
+	float normY = -delta.y / (sceneSize.y / 2.f);
+
+	float scaleX = (renderer::cam.width / 9.1f);
+	float scaleY = ((renderer::cam.width / renderer::cam.ar) / 9.1f);
+
+	float worldX = (normX * scaleX) / renderer::cam.zoom;
+	float worldY = (normY * scaleY) / renderer::cam.zoom;
+
+	return Vector2D(worldX, worldY);
+}
+
+
+bool InputHandler::isCursorInsideImGuiViewport(const ImVec2& scenePos, const ImVec2& sceneSize) {
+	ImVec2 mousePos = ImGui::GetMousePos();
+
+	return (mousePos.x >= scenePos.x && mousePos.x <= scenePos.x + sceneSize.x &&
+		mousePos.y >= scenePos.y && mousePos.y <= scenePos.y + sceneSize.y);
 }
 
 // get cursor world postion

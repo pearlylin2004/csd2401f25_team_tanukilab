@@ -19,6 +19,7 @@ Technology is prohibited.
 #include <GLFW/glfw3.h>
 #include <cstring>
 #include <filesystem>
+#include "imgui.h"
 #include "mathlib.h"
 #include "config.h"
 
@@ -88,8 +89,13 @@ public:
 	static Vector2D getMouseDelta();
 	// check if cursor is inside window
 	static bool isCursorInsideWindow();
+
+	// get current cursor position in imgui viewport
+	static Vector2D getMousePositionInImGuiViewport(const ImVec2& scenePos, const ImVec2& sceneSize, const ImVec2& imageSize);
 	// check if cursor is inside ImGui viewport
-	static bool isCursorInsideImGuiViewport();
+	static bool isCursorInsideImGuiViewport(const ImVec2& scenePos, const ImVec2& sceneSize);
+	// get mouse delta in world space of the viewport
+	static Vector2D getMouseDeltaWorldInViewport(const ImVec2& sceneSize, const ImVec2& imageSize);
 
 	// get cursor world postion
 	static Vector2D getWorldMousePosition();
