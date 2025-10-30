@@ -222,7 +222,7 @@ bool InputHandler::isCursorInsideWindow() {
 
 Vector2D InputHandler::getMousePositionInImGuiViewport(const ImVec2& scenePos, const ImVec2& sceneSize) {
 	ImVec2 mousePos = ImGui::GetMousePos();//screen position, not viewport
-	std::cout << "scenePos: " << scenePos.x << " | " << scenePos.y << std::endl;
+	//std::cout << "scenePos: " << scenePos.x << " | " << scenePos.y << std::endl;
 
 	Vector2D localMouse = { 0.f, 0.f };
 	localMouse.x = mousePos.x - scenePos.x - 0.5 * sceneSize.x;// Range:[-sceneSize/2, sceneSize/2] right is +ve
@@ -241,7 +241,7 @@ Vector2D InputHandler::getMousePositionInImGuiViewport(const ImVec2& scenePos, c
 	world.y = (localMouse.y * scale.y) + renderer::cam.campos.y;
 
 	//std::cout << "campos is: " << renderer::cam.campos.x << " | " << renderer::cam.campos.y << std::endl;
-	std::cout << "worldpos is: " << world.x << " | " << world.y << std::endl;
+	//std::cout << "worldpos is: " << world.x << " | " << world.y << std::endl;
 
 	return world;
 }

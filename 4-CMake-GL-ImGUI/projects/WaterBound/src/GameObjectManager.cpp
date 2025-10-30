@@ -34,6 +34,7 @@ GameObject* GameObjectManager::createGameObject(const std::string& name) {
 
 //use this when objects need to interact with each other
 GameObject* GameObjectManager::getGameObject(const std::string& name) {
+
 	//find object in map
 	auto iterator = m_gameObjects.find(name);
 	if (iterator != m_gameObjects.end()) {//if found
@@ -93,7 +94,7 @@ void GameObjectManager::getAllGameObjects(std::vector<GameObject*>& gameObjects)
 
 void GameObjectManager::init()
 {
-	loadFromFile("shaders/temp_serialize.txt");
+	loadFromFile("shaders/Scene/temp_serialize.txt");
 
 }
 
@@ -124,6 +125,9 @@ void GameObjectManager::loadFromFile(const std::string& filename)
 		return;
 	}
 	std::cout << "file opened\n";
+
+	m_gameObjects.clear(); // clear existing objects before loading new ones
+
 	std::string checker{};
 	std::string objectName;
 	std::string shape;
@@ -152,12 +156,20 @@ void GameObjectManager::loadFromFile(const std::string& filename)
 			if (shape == "circle")
 			{
 				renderptr->modelRef = renderer::models[static_cast<int>(shape::circle)];
+				std::cout << "circle is called" << std::endl;
 			}
 			is >> renderptr->hasTex;
 			if (renderptr->hasTex == true)
 			{
 				is >> renderptr->texFile;
+				renderptr->texHDL = 0;
+				renderptr->texChanged = true;
 				is >> renderptr->hasAnimation;
+			}
+			else {
+				renderptr->texFile.clear();
+				renderptr->texHDL = 0;
+				renderptr->texChanged = false;
 			}
 			std::cout << shape << "\n";
 		}
@@ -172,6 +184,11 @@ void GameObjectManager::loadFromFile(const std::string& filename)
 			std::cout << "transform :" << transformptr->x << " ," << transformptr->y << " ," << transformptr->z << "\n";
 			std::cout << "rotation :" << transformptr->rotation << "\n";
 			std::cout << "scale :" << transformptr->scaleX << " ," << transformptr->scaleY << " ," << transformptr->scaleZ << "\n";
+		}
+		if (checker == "input")
+		{
+			m_gameObjects[objectName]->addComponent<Input>(1.f);
+			std::cout << "input component added\n";
 		}
 		if (checker == "physics") {
 			Physics* phyptr = m_gameObjects[objectName]->addComponent<Physics>();
@@ -191,7 +208,7 @@ void GameObjectManager::loadFromFile(const std::string& filename)
 			std::cout << "animation component added\n";
 		}
 
-		m_gameObjects["player"]->addComponent<Input>(1.f);
+		//m_gameObjects["player"]->addComponent<Input>(1.f);
 
 	}
 }
@@ -228,6 +245,11 @@ void GameObjectManager::saveToFile(const std::string& filename) {
 			if (render->hasTex)
 				os << render->texFile;
 
+			if(render->hasAnimation)
+				os << " " << render->hasAnimation;
+			else
+				os << " " << 0;
+
 			os << "\n";
 		}
 
@@ -243,6 +265,11 @@ void GameObjectManager::saveToFile(const std::string& filename) {
 				<< transform->scaleZ << "\n";
 		}
 
+		if (obj->hasComponent<Input>())
+		{
+			os << "input\n";
+		}
+
 		if (auto physics = obj->getComponent<Physics>())
 		{
 			os << "physics "
@@ -253,6 +280,16 @@ void GameObjectManager::saveToFile(const std::string& filename) {
 		if (obj->hasComponent<CollisionInfo>())
 		{
 			os << "collision\n";
+		}
+
+		if (Animation* animationptr = obj->getComponent<Animation>()) {
+			os << "animation "
+				<< animationptr->loop << " "
+				<< animationptr->currentFrameColumn << " "
+				<< animationptr->currentFrameRow << " "
+				<< animationptr->totalColumn << " "
+				<< animationptr->totalRow << " "
+				<< animationptr->frameTime << "\n";
 		}
 
 		os << "\n";

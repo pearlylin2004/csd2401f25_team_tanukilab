@@ -667,11 +667,6 @@ void UI::objPicking(GameObjectManager& manager) {
 
     Vector2D mousePos = InputHandler::getMousePositionInImGuiViewport(m_SceneWindowState.scenePos, m_SceneWindowState.sceneSize);
 
-    /*std::cout << "my mouse clicked at " << InputHandler::getMousePosition().x << ", " << InputHandler::getMousePosition().y << "\n";
-    std::cout << "mouse calculated in imgui viewport at " << InputHandler::getMousePositionInImGuiViewport(m_SceneWindowState.scenePos, m_SceneWindowState.sceneSize).x
-        << ", " << InputHandler::getMousePositionInImGuiViewport(m_SceneWindowState.scenePos, m_SceneWindowState.sceneSize).y << "\n";
-    std::cout << "imgui mouse is at " << ImGui::GetMousePos().x << ", " << ImGui::GetMousePos().y << "\n";*/
-
     std::vector<GameObject*> gameObjects;
     manager.getAllGameObjects(gameObjects);
 
