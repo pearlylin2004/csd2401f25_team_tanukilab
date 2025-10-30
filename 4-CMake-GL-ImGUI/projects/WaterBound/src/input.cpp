@@ -1,4 +1,4 @@
-﻿/* Start Header ************************************************************************/
+/* Start Header ************************************************************************/
 /*!
 \file       input.cpp
 \author     Tan Chee Qing, cheeqing.tan, 2401486
@@ -224,18 +224,43 @@ Vector2D InputHandler::getMousePositionInImGuiViewport(const ImVec2& scenePos, c
 	ImVec2 mousePos = ImGui::GetMousePos();//screen position, not viewport
 	std::cout << "scenePos: " << scenePos.x << " | " << scenePos.y << std::endl;
 
+	// get mouse on the viewport
+	//Vector2D localMouse = { 0.f, 0.f };
+	//localMouse.x = (mousePos.x - scenePos.x) / (sceneSize.x / sceneSize.x);
+	//localMouse.y = sceneSize.y - (mousePos.y - scenePos.y) / (sceneSize.y / sceneSize.y);
+
+	//localMouse.x -= sceneSize.x / 2.f;
+	//localMouse.y -= sceneSize.y / 2.f;
+
+	//// convert to use the same coordinate system as game obj
+	//float normX = localMouse.x / (sceneSize.x / 2.f);
+	//float normY = localMouse.y / (sceneSize.y / 2.f);
+
+	//float scaleX = (renderer::cam.width / 9.1f);
+	//float scaleY = ((renderer::cam.width / renderer::cam.ar) / 9.1f);
+
+	//float worldX = (normX * scaleX) / renderer::cam.zoom + renderer::cam.campos.x;
+	//float worldY = (normY * scaleY) / renderer::cam.zoom + renderer::cam.campos.y;
+
+	//return Vector2D(worldX, worldY);
+
 	Vector2D localMouse = { 0.f, 0.f };
-	localMouse.x = mousePos.x - scenePos.x - 0.5 * sceneSize.x; // Range:[-sceneSize/2, sceneSize/2] right is +ve
-	localMouse.y = 0.5 * sceneSize.y + scenePos.y - mousePos.y; // Range:[-sceneSize/2, sceneSize/2] up is +ve
-	 
+	localMouse.x = mousePos.x - scenePos.x - 0.5 * sceneSize.x;// Range:[-sceneSize/2, sceneSize/2] right is +ve
+	localMouse.y = 0.5 * sceneSize.y + scenePos.y - mousePos.y;// Range:[-sceneSize/2, sceneSize/2] up is +ve
+
+	//std::cout << "local Mouse is at: " << localMouse.x << " | " << localMouse.y << std::endl;
+
 	Vector2D scale;
-	scale.x = (2 * renderer::cam.ar * renderer::cam.zoom) / sceneSize.x; 
+	scale.x = (2 * renderer::cam.ar * renderer::cam.zoom) / sceneSize.x;
 	scale.y = (2 * renderer::cam.zoom) / sceneSize.y;
+
+	//std::cout << "world scale is: " << scale.x << " | " << scale.y << std::endl;
 
 	Vector2D world;
 	world.x = (localMouse.x * scale.x) + renderer::cam.campos.x;
 	world.y = (localMouse.y * scale.y) + renderer::cam.campos.y;
 
+	//std::cout << "campos is: " << renderer::cam.campos.x << " | " << renderer::cam.campos.y << std::endl;
 	std::cout << "worldpos is: " << world.x << " | " << world.y << std::endl;
 
 	return world;
@@ -245,13 +270,32 @@ Vector2D InputHandler::getMouseDeltaWorldInViewport(const ImVec2& sceneSize)
 {
 	Vector2D delta = getMouseDelta();
 
+	/*if (delta.x == 0.0f && delta.y == 0.0f)
+		return Vector2D(0.0f);
+
+	float normX = delta.x / (sceneSize.x / 2.f);
+	float normY = -delta.y / (sceneSize.y / 2.f);
+
+	float scaleX = (renderer::cam.width / 9.1f);
+	float scaleY = ((renderer::cam.width / renderer::cam.ar) / 9.1f);
+
+	float worldX = (normX * scaleX) / renderer::cam.zoom;
+	float worldY = (normY * scaleY) / renderer::cam.zoom;
+
+	return Vector2D(worldX, worldY);*/
+
 	Vector2D scale;
 	scale.x = (2 * renderer::cam.ar * renderer::cam.zoom) / sceneSize.x;
 	scale.y = (2 * renderer::cam.zoom) / sceneSize.y;
 
+	//std::cout << "world scale is: " << scale.x << " | " << scale.y << std::endl;
+
 	Vector2D world;
 	world.x = delta.x * scale.x;
 	world.y = -delta.y * scale.y;
+
+	//std::cout << "campos is: " << renderer::cam.campos.x << " | " << renderer::cam.campos.y << std::endl;
+	//std::cout << "worldpos is: " << world.x << " | " << world.y << std::endl;
 
 	return world;
 }

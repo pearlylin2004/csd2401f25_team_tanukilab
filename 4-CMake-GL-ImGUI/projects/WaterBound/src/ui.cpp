@@ -644,13 +644,12 @@ void UI::sceneWindow(GLuint texture, float aspectRatio) {
     ImGui::BeginChild("SceneViewport", size, false, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize);
 
     ImGui::Image((void*)(intptr_t)texture, size, ImVec2(0, 1), ImVec2(1, 0));
-    m_SceneWindowState.scenePos = ImGui::GetItemRectMin();
-    m_SceneWindowState.sceneSize = ImGui::GetItemRectSize();
 
     ImGui::EndChild();
 
 
-    
+    m_SceneWindowState.scenePos = ImGui::GetItemRectMin();
+    m_SceneWindowState.sceneSize = ImGui::GetItemRectSize();
 
     ImGui::End();
 }
@@ -665,14 +664,13 @@ Future implementation (jic i forget)
 */
 void UI::objPicking(GameObjectManager& manager) {
     if (!InputHandler::isMouseLeftClicked()) return;
-	if (!InputHandler::isCursorInsideImGuiViewport(m_SceneWindowState.scenePos, m_SceneWindowState.sceneSize)) return;
-
-    std::cout << "my mouse clicked at " << InputHandler::getMousePosition().x << ", " << InputHandler::getMousePosition().y << "\n";
-    std::cout << "mouse calculated in imgui viewport at " << InputHandler::getMousePositionInImGuiViewport(m_SceneWindowState.scenePos, m_SceneWindowState.sceneSize).x
-        << ", " << InputHandler::getMousePositionInImGuiViewport(m_SceneWindowState.scenePos, m_SceneWindowState.sceneSize).y << "\n";
-    std::cout << "imgui mouse is at " << ImGui::GetMousePos().x << ", " << ImGui::GetMousePos().y << "\n";
 
     Vector2D mousePos = InputHandler::getMousePositionInImGuiViewport(m_SceneWindowState.scenePos, m_SceneWindowState.sceneSize);
+
+    /*std::cout << "my mouse clicked at " << InputHandler::getMousePosition().x << ", " << InputHandler::getMousePosition().y << "\n";
+    std::cout << "mouse calculated in imgui viewport at " << InputHandler::getMousePositionInImGuiViewport(m_SceneWindowState.scenePos, m_SceneWindowState.sceneSize).x
+        << ", " << InputHandler::getMousePositionInImGuiViewport(m_SceneWindowState.scenePos, m_SceneWindowState.sceneSize).y << "\n";
+    std::cout << "imgui mouse is at " << ImGui::GetMousePos().x << ", " << ImGui::GetMousePos().y << "\n";*/
 
     std::vector<GameObject*> gameObjects;
     manager.getAllGameObjects(gameObjects);
@@ -720,8 +718,6 @@ void UI::objDragging() const {
 
     // early return if mouse is not dragging
     if (!InputHandler::isMouseDragging()) return;
-
-    if (!InputHandler::isCursorInsideImGuiViewport(m_SceneWindowState.scenePos, m_SceneWindowState.sceneSize)) return;
 
     Transform* transform = obj->getComponent<Transform>();
     if (!transform) return;
