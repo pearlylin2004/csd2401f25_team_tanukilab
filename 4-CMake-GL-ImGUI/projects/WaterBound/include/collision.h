@@ -19,9 +19,10 @@ Technology is prohibited.
 
 #include <cstdint>
 #include <cstddef>
-//#include <Math_Lib.h>
 #include <mathlib.h>
 #include "component.h"
+#include <vector>
+#include "GameObject.h"
 
 namespace Collision {
     using f64 = double;
@@ -71,6 +72,14 @@ namespace Collision {
         //for imgui
         Vector2D& getCenterRef() { return center; }
         float& getRadiusRef() { return radius; }
+    };
+
+    //Broad phase collision spatial partitioning
+    struct Cell {
+        std::vector<GameObject*> objects;
+        float minX, minY;
+        float maxX, maxY;
+        Cell() : minX(0), minY(0), maxX(0), maxY(0) {}
     };
 
     AABB getObjectAABB(const Transform* transform);

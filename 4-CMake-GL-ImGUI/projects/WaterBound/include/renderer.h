@@ -77,7 +77,7 @@ struct renderer
 	\brief
 		storing of shader program
 	*************************************************************************/
-	static GLuint shdr_pgm;
+	static std::vector<GLuint> shdr_pgm;
 	/*!***********************************************************************
 	\brief
 		setting up square mesh

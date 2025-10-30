@@ -67,7 +67,8 @@ public:
     bool visible = true;
     bool hasTex = false;
     bool isTransparent = false;
-    bool wireframe = false;
+    bool hasAnimation = false;
+    //bool wireframe = false;
     // sorry but i need this for real time texture update
     // wait for boss sin le to help me settle this - kelly :)
     bool texChanged = false;
@@ -75,6 +76,19 @@ public:
     std::string texFile;
     
     renderer::model modelRef;
+};
+
+struct Animation : public Component
+{
+    std::unique_ptr<Component> clone() const override {
+        return std::make_unique<Animation>(*this);
+    }
+
+    bool loop = false;
+    bool runItBack = true;
+    GLuint texHDL;
+    int currentFrameColumn{}, currentFrameRow{}, totalColumn{ 1 }, totalRow{ 1 };
+    float frameTime = 0.1f, frameTimer{};
 };
 
 // Physics component to store velocity and other physics-related properties
@@ -93,7 +107,7 @@ public:
     float damping = 0.99f;
     float jumpForce = 10.0f;  
     float floorY = 0.0f;
-    bool onGround = true;  
+    bool onGround = false;  
     float Speed = 150.0f;
 
     //water bullet
@@ -141,6 +155,7 @@ public:
     float timeOfImpact = 0.0f;
     Vector2D normal{ 0,0 };
     Vector2D contactPoint = { 0,0 };
+    float penetration = 0.0f; //for it to not overlap 
 };
 
 // For imgui(testing)

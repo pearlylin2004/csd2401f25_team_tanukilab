@@ -23,7 +23,6 @@ Technology is prohibited.
 
 #include "Systems.h"
 
-
 //here we go buddies
 
 //all the systems need to get all game objects
@@ -76,14 +75,10 @@ void InputSystem::update(GameObjectManager& manager, const float& deltaTime) {
 
 
 // Render system - draws all game objects with a Render component
-void RenderSystem::update(GameObjectManager& manager) {
+void RenderSystem::update(GameObjectManager& manager, float const& deltaTime) 
+{
 	std::vector<GameObject*> gameObjects;
 	manager.getAllGameObjects(gameObjects);
-
-	// Attach texture to FBO if editor is on
-	if (UISystem::isShowUI()) {
-		createFBO();
-	}
 
 	// Update textures if they have changed (in level editor)
 	for (GameObject* object : gameObjects)
@@ -104,186 +99,52 @@ void RenderSystem::update(GameObjectManager& manager) {
 	}
 
 	renderer::cam.update();
-	glUseProgram(renderer::shdr_pgm);
-	GLint vTransformView = glGetUniformLocation(renderer::shdr_pgm, "V");
-	//renderer::cam.view = glm::mat4{ 1 };
+
+	std::vector<GameObject*> objectWithTex;
+	std::vector<GameObject*> objectWithoutTex;
+
+	for (auto object : gameObjects)
+	{
+		if (object->getComponent<Render>()->hasTex)
+			objectWithTex.push_back(object);
+		else
+			objectWithoutTex.push_back(object);
+	}
+	//rendering objects without texture, just color
+	glUseProgram(renderer::shdr_pgm[1]);
+	GLint vTransformView = glGetUniformLocation(renderer::shdr_pgm[1], "V");
 	glUniformMatrix4fv(vTransformView, 1, GL_FALSE, glm::value_ptr(renderer::cam.view));
-	GLint vTransformProj = glGetUniformLocation(renderer::shdr_pgm, "P");
-	//renderer::cam.proj = glm::mat4{ 1 };
+	GLint vTransformProj = glGetUniformLocation(renderer::shdr_pgm[1], "P");
 	glUniformMatrix4fv(vTransformProj, 1, GL_FALSE, glm::value_ptr(renderer::cam.proj));
+	for (GameObject* object : objectWithoutTex)
+		renderNoTex(object);
 
-	
-
-	for (auto object : gameObjects) {
-		if (object->hasComponent<Render>() && object->hasComponent<Transform>())
-		{
-			Transform* transform = object->getComponent<Transform>();
-			Render* render = object->getComponent<Render>();
-
-			if (!render->isTransparent)
-			{
-				//position and orientation of mesh
-				float angle = glm::radians(transform->rotation);
-				transform->mdlWorld = glm::mat4{ 1 };
-				transform->mdlWorld = glm::translate(transform->mdlWorld, glm::vec3(transform->x, transform->y, transform->z));
-				transform->mdlWorld = glm::rotate(transform->mdlWorld, angle, glm::vec3(0, 0, 1.f));
-				transform->mdlWorld = glm::scale(transform->mdlWorld, glm::vec3(transform->scaleX, transform->scaleY, transform->scaleZ));
-
-				//texture bs
-				if (render->hasTex)
-				{
-					glBindTextureUnit(0, render->texHDL);
-				}
-				else glBindTextureUnit(0, 0);
-				render->wireframe = false;
-
-				glm::mat4 texRot{ 1 };
-				texRot = glm::rotate(texRot, angle, glm::vec3(0, 0, 1.f));
-				glm::vec2 rotationCenter{ 0,0 }; //if needed in the future it can be a member variable, now just for sanity
-
-				//binding model to world matrix
-				glBindVertexArray(render->modelRef.vaoid);
-				GLint vTransformLoc = glGetUniformLocation(renderer::shdr_pgm, "M");
-				glUniformMatrix4fv(vTransformLoc, 1, GL_FALSE, glm::value_ptr(transform->mdlWorld));
-
-				//binding texture rotation and id
-				GLint texid = glGetUniformLocation(renderer::shdr_pgm, "uTex2d");
-				GLint rotmat = glGetUniformLocation(renderer::shdr_pgm, "uRotMtx");
-				GLint rotcenter = glGetUniformLocation(renderer::shdr_pgm, "uMcn");
-				GLint hastex = glGetUniformLocation(renderer::shdr_pgm, "uHasTex");
-				GLint wireframe = glGetUniformLocation(renderer::shdr_pgm, "uIsWireframe");
-				glUniform1i(texid, 0);
-				glUniformMatrix2fv(rotmat, 1, GL_FALSE, glm::value_ptr(texRot));
-				glUniform2fv(rotcenter, 1, glm::value_ptr(rotationCenter));
-				glUniform1i(hastex, static_cast<int>(render->hasTex));
-				glUniform1i(wireframe, static_cast<int>(render->wireframe));
-
-				if (render->modelRef.shape == shape::square)
-					glDrawElements(GL_TRIANGLES, render->modelRef.elem_cnt, GL_UNSIGNED_SHORT, nullptr);
-				else if (render->modelRef.shape == shape::circle)
-					glDrawArrays(render->modelRef.primitive_type, 0, render->modelRef.draw_cnt);
-				glBindVertexArray(0);
-			}
-		}
-	}
-
-	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	//glDepthMask(GL_FALSE);
-
-	for (auto object : gameObjects) {
-		if (object->hasComponent<Render>() && object->hasComponent<Transform>())
-		{
-			Transform* transform = object->getComponent<Transform>();
-			Render* render = object->getComponent<Render>();
-
-			if (render->isTransparent)
-			{
-				//position and orientation of mesh
-				float angle = glm::radians(transform->rotation);
-				transform->mdlWorld = glm::mat4{ 1 };
-				transform->mdlWorld = glm::translate(transform->mdlWorld, glm::vec3(transform->x, transform->y, transform->z));
-				transform->mdlWorld = glm::rotate(transform->mdlWorld, angle, glm::vec3(0, 0, 1.f));
-				transform->mdlWorld = glm::scale(transform->mdlWorld, glm::vec3(transform->scaleX, transform->scaleY, transform->scaleZ));
-
-				//texture bs
-				if (render->hasTex)
-				{
-					glBindTextureUnit(0, render->texHDL);
-				}
-				else glBindTextureUnit(0, 0);
-				render->wireframe = true;
-
-				glm::mat4 texRot{ 1 };
-				texRot = glm::rotate(texRot, angle, glm::vec3(0, 0, 1.f));
-				glm::vec2 rotationCenter{ 0,0 }; //if needed in the future it can be a member variable, now just for sanity
-
-				//binding model to world matrix
-				glBindVertexArray(render->modelRef.vaoid);
-				GLint vTransformLoc = glGetUniformLocation(renderer::shdr_pgm, "M");
-				glUniformMatrix4fv(vTransformLoc, 1, GL_FALSE, glm::value_ptr(transform->mdlWorld));
-
-				//binding texture rotation and id
-				GLint texid = glGetUniformLocation(renderer::shdr_pgm, "uTex2d");
-				GLint rotmat = glGetUniformLocation(renderer::shdr_pgm, "uRotMtx");
-				GLint rotcenter = glGetUniformLocation(renderer::shdr_pgm, "uMcn");
-				GLint hastex = glGetUniformLocation(renderer::shdr_pgm, "uHasTex");
-				GLint wireframe = glGetUniformLocation(renderer::shdr_pgm, "uIsWireframe");
-				glUniform1i(texid, 0);
-				glUniformMatrix2fv(rotmat, 1, GL_FALSE, glm::value_ptr(texRot));
-				glUniform2fv(rotcenter, 1, glm::value_ptr(rotationCenter));
-				glUniform1i(hastex, static_cast<int>(render->hasTex));
-				glUniform1i(wireframe, 0);
-
-				if (render->modelRef.shape == shape::square)
-				{
-					// --- Pass 1: textured fill ---
-					glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-					glBindVertexArray(render->modelRef.vaoid);
-					glUniform1i(wireframe, 0);
-					glDrawElements(GL_TRIANGLES, render->modelRef.elem_cnt, GL_UNSIGNED_SHORT, nullptr);
-					// --- Pass 2: wireframe overlay ---
-					glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-					glUniform1i(wireframe, 1);
-					glLineWidth(2.0f);
-					//glDepthMask(GL_FALSE);
-					glDrawElements(GL_TRIANGLES, render->modelRef.elem_cnt, GL_UNSIGNED_SHORT, nullptr);
-
-					// Restore state
-					//glDepthMask(GL_TRUE);
-					glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-					glUniform1i(wireframe, 0);
-				}
-					//glDrawElements(GL_TRIANGLES, render->modelRef.elem_cnt, GL_UNSIGNED_SHORT, nullptr);
-				else if (render->modelRef.shape == shape::circle)
-					glDrawArrays(render->modelRef.primitive_type, 0, render->modelRef.draw_cnt);
-				glBindVertexArray(0);
-			}
-		}
-	}
-	//glDepthMask(GL_TRUE);
-
-	// unbind FBO if editor is off
-	if(UISystem::isShowUI()) glBindFramebuffer(GL_FRAMEBUFFER, 0);
-}
-
-void RenderSystem::createFBO() {
-	if (texture) glDeleteTextures(1, &texture);
-	if (fbo) glDeleteFramebuffers(1, &fbo);
-
-	glGenFramebuffers(1, &fbo);
-	glBindFramebuffer(GL_FRAMEBUFFER, fbo);
-
-	glGenTextures(1, &texture);
-	glBindTexture(GL_TEXTURE_2D, texture);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, fboWidth, fboHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture, 0);
-}
-
-RenderSystem::~RenderSystem() {
-	if (texture) glDeleteTextures(1, &texture);
-	if (fbo) glDeleteFramebuffers(1, &fbo);
+	//rendering objects with textures
+	glUseProgram(renderer::shdr_pgm[0]);
+	vTransformView = glGetUniformLocation(renderer::shdr_pgm[0], "V");
+	glUniformMatrix4fv(vTransformView, 1, GL_FALSE, glm::value_ptr(renderer::cam.view));
+	vTransformProj = glGetUniformLocation(renderer::shdr_pgm[0], "P");
+	glUniformMatrix4fv(vTransformProj, 1, GL_FALSE, glm::value_ptr(renderer::cam.proj));
+	for (GameObject* object : objectWithTex)
+		renderTex(object, deltaTime);
 }
 
 // Load all textures for game objects with a Render component
-void RenderSystem::init(GameObjectManager& manager, int fboW, int fboH)
+void RenderSystem::init(GameObjectManager& manager)
 {
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	stbi_set_flip_vertically_on_load(true);
 	std::vector<GameObject*> gameObjects;
 	manager.getAllGameObjects(gameObjects);
 	for (GameObject* object : gameObjects)
 	{
-		if (object->hasComponent<Render>())
+		if (object->getComponent<Render>()->hasTex)
 		{
 			Render* render = object->getComponent<Render>();
 			render->texHDL = uploadtex(render->texFile, render->isTransparent);
 		}
 	}
-
-	fboWidth = fboW;
-	fboHeight = fboH;
 }
 
 // Upload a texture from file and return its OpenGL handle
@@ -292,7 +153,7 @@ GLuint RenderSystem::uploadtex(std::string const& filename, bool& isTransparent)
 	int width, height, channels;
 	unsigned char* data = stbi_load(filename.c_str(), &width, &height, &channels, STBI_rgb_alpha);
 	if (!data) {
-		std::cerr << "Failed to load image: " << filename << "]" << std::endl;
+		std::cerr << "Failed to load image: " << filename << std::endl;
 		return 0;
 	}
 
@@ -315,9 +176,120 @@ GLuint RenderSystem::uploadtex(std::string const& filename, bool& isTransparent)
 	return texobj_hdl;
 }
 
-void RenderSystem::fboAspectRatio(int& width, int& height) const {
-	width = fboWidth;
-	height = fboHeight;
+void RenderSystem::renderTex(GameObject* object, float const& deltaTime)
+{
+	if (object->hasComponent<Render>() && object->hasComponent<Transform>())
+	{
+		Transform* transform = object->getComponent<Transform>();
+		Render* render = object->getComponent<Render>();
+
+		//position and orientation of mesh
+		float angle = glm::radians(transform->rotation);
+		transform->mdlWorld = glm::mat4{ 1 };
+		transform->mdlWorld = glm::translate(transform->mdlWorld, glm::vec3(transform->x, transform->y, transform->z));
+		transform->mdlWorld = glm::rotate(transform->mdlWorld, angle, glm::vec3(0, 0, 1.f));
+		transform->mdlWorld = glm::scale(transform->mdlWorld, glm::vec3(transform->scaleX, transform->scaleY, transform->scaleZ));
+		glBindTextureUnit(0, render->texHDL);
+
+		glm::mat4 texRot{ 1 };
+		texRot = glm::rotate(texRot, angle, glm::vec3(0, 0, 1.f));
+		glm::vec2 rotationCenter{ 0,0 }; //if needed in the future it can be a member variable, now just for sanity
+
+		//binding model to world matrix
+		glBindVertexArray(render->modelRef.vaoid);
+		GLint vTransformLoc = glGetUniformLocation(renderer::shdr_pgm[0], "M");
+		glUniformMatrix4fv(vTransformLoc, 1, GL_FALSE, glm::value_ptr(transform->mdlWorld));
+
+		glm::vec2 texpos, texscale;
+		if (render->hasAnimation)
+		{
+			Animation* animation = object->getComponent<Animation>();
+			texpos = glm::vec2{ animation->currentFrameColumn / static_cast<float>(animation->totalColumn), animation->currentFrameRow / static_cast<float>(animation->totalRow) };
+			texscale = glm::vec2{ 1.f / animation->totalColumn, 1.f / animation->totalRow };
+			if (animation->loop)
+			{
+				animation->frameTimer += deltaTime;
+				//std::cout << "\n-------Frame Timer---------\n" << animation->frameTimer << "\n\n";
+				if (animation->frameTimer >= animation->frameTime)
+				{
+					animation->frameTimer -= animation->frameTime;
+					/*if (animation->runItBack && animation->currentFrameColumn == 0)
+					{
+						animation->runItBack = false;
+					}
+					else
+					{
+						animation->currentFrameColumn = (animation->currentFrameColumn + 1) % animation->totalColumn;
+						animation->currentFrameRow = (animation->currentFrameRow + 1) % animation->totalRow;
+						animation->runItBack = true;
+					}*/
+					animation->currentFrameColumn = (animation->currentFrameColumn + 1) % animation->totalColumn;
+					animation->currentFrameRow = (animation->currentFrameRow + 1) % animation->totalRow;
+					animation->runItBack = true;
+					
+				}
+			}
+		}
+		else
+		{
+			texpos = glm::vec2{ 0,0 };
+			texscale = glm::vec2{ 1,1 };
+		}
+		//binding texture rotation and id
+		GLint texid = glGetUniformLocation(renderer::shdr_pgm[0], "uTex2d");
+		GLint rotmat = glGetUniformLocation(renderer::shdr_pgm[0], "uRotMtx");
+		GLint rotcenter = glGetUniformLocation(renderer::shdr_pgm[0], "uMcn");
+		GLint offset = glGetUniformLocation(renderer::shdr_pgm[0], "uTexOffSet");
+		GLint tscale = glGetUniformLocation(renderer::shdr_pgm[0], "uTexScale");
+		glUniform1i(texid, 0);
+		glUniformMatrix2fv(rotmat, 1, GL_FALSE, glm::value_ptr(texRot));
+		glUniform2fv(rotcenter, 1, glm::value_ptr(rotationCenter));
+		glUniform2fv(offset, 1, glm::value_ptr(texpos));
+		glUniform2fv(tscale, 1, glm::value_ptr(texscale));
+
+		if (render->modelRef.shape == shape::square)
+		{
+			// --- Pass 1: textured fill ---
+			glBindVertexArray(render->modelRef.vaoid);
+			glDrawElements(GL_TRIANGLES, render->modelRef.elem_cnt, GL_UNSIGNED_SHORT, nullptr);
+		}
+		//glDrawElements(GL_TRIANGLES, render->modelRef.elem_cnt, GL_UNSIGNED_SHORT, nullptr);
+		else if (render->modelRef.shape == shape::circle)
+			glDrawArrays(render->modelRef.primitive_type, 0, render->modelRef.draw_cnt);
+		glBindVertexArray(0);
+	}
+}
+
+void RenderSystem::renderNoTex(GameObject* object)
+{
+	if (object->hasComponent<Render>() && object->hasComponent<Transform>())
+	{
+		Transform* transform = object->getComponent<Transform>();
+		Render* render = object->getComponent<Render>();
+
+		//position and orientation of mesh
+		float angle = glm::radians(transform->rotation);
+		transform->mdlWorld = glm::mat4{ 1 };
+		transform->mdlWorld = glm::translate(transform->mdlWorld, glm::vec3(transform->x, transform->y, transform->z));
+		transform->mdlWorld = glm::rotate(transform->mdlWorld, angle, glm::vec3(0, 0, 1.f));
+		transform->mdlWorld = glm::scale(transform->mdlWorld, glm::vec3(transform->scaleX, transform->scaleY, transform->scaleZ));
+		glBindTextureUnit(0, 0);
+
+		glm::mat4 texRot{ 1 };
+		texRot = glm::rotate(texRot, angle, glm::vec3(0, 0, 1.f));
+		glm::vec2 rotationCenter{ 0,0 }; //if needed in the future it can be a member variable, now just for sanity
+
+		//binding model to world matrix
+		glBindVertexArray(render->modelRef.vaoid);
+		GLint vTransformLoc = glGetUniformLocation(renderer::shdr_pgm[1], "M");
+		glUniformMatrix4fv(vTransformLoc, 1, GL_FALSE, glm::value_ptr(transform->mdlWorld));
+
+		if (render->modelRef.shape == shape::square)
+			glDrawElements(GL_TRIANGLES, render->modelRef.elem_cnt, GL_UNSIGNED_SHORT, nullptr);
+		else if (render->modelRef.shape == shape::circle)
+			glDrawArrays(render->modelRef.primitive_type, 0, render->modelRef.draw_cnt);
+		glBindVertexArray(0);
+	}
 }
 
 // Physics system - updates position based on velocity and applies gravity
@@ -400,43 +372,90 @@ void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime) {
 // Collision system - detects and resolves collisions between game objects
 void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime) {
 	(void)deltaTime;
+	//getting all objects
 	std::vector<GameObject*> gameObjects;
 	manager.getAllGameObjects(gameObjects);
 
-	for (GameObject* iterator : gameObjects) {
-		if (iterator->hasComponent<CollisionInfo>() && iterator->hasComponent<Physics>()) {
+	//create grid
+	const float CELL_SIZE = 2.0f;
+	const int GRID_WIDTH = 20;
+	const int GRID_HEIGHT = 20;
+	std::vector<std::vector<Collision::Cell>> grid(GRID_WIDTH, std::vector<Collision::Cell>(GRID_HEIGHT));
 
-			for (GameObject* obj : gameObjects) {
-				if (obj != iterator) {
-					if (obj != iterator && obj->getComponent<CollisionInfo>()) {
-						Transform* obj1T = obj->getComponent<Transform>();
-						Transform* obj2T = iterator->getComponent<Transform>();
-						Collision::AABB obj1 = Collision::getObjectAABB(obj1T);
-						Collision::AABB obj2 = Collision::getObjectAABB(obj2T);
-						Physics* obj1V = obj->getComponent<Physics>();
-						Physics* obj2V = iterator->getComponent<Physics>();
-						Vector2D obj1Vel{ obj1V->velX, obj1V->velY };
-						Vector2D obj2Vel{ obj2V->velX, obj2V->velY };
-						//check collision using the dynamic rect-rect collision detection
-						CollisionInfo info = Collision::CollisionIntersection_RectRect_Dynamic_Info(obj1, obj1Vel, obj2, obj2Vel);
 
-						//check collision responses
-						if (info.collided) {
-							Collision::Resolve_AABB_AABB(
-								obj1, obj1Vel, 0.0f,
-								obj2, obj2Vel, 1.0f,
-								info, CollisionResponseMode::Stop
-							);
+	for (GameObject* obj : gameObjects) {
+		if (!obj->getComponent<CollisionInfo>() || !obj->hasComponent<Transform>()) continue;
+		Transform* objT = obj->getComponent<Transform>();
+		Collision::AABB box = Collision::getObjectAABB(objT);
 
-							//change velocity
-							obj1V->velX = obj1Vel.x;
-							obj1V->velY = obj1Vel.y;
-							obj2V->velX = obj2Vel.x;
-							obj2V->velY = obj2Vel.y;
+		int minCellX = static_cast<int>(box.getMin().x / CELL_SIZE);
+		int maxCellX = static_cast<int>(box.getMax().x / CELL_SIZE);
+		int minCellY = static_cast<int>(box.getMin().y / CELL_SIZE);
+		int maxCellY = static_cast<int>(box.getMax().y / CELL_SIZE);
 
-							//std::cout << "Collision detected between Object.\n";
-							UI::addDebugMessage("Collision detected between Object.\n");
+		//clamp to grid boundaries so it dont go out the valid range of grid
+		minCellX = std::max(0, std::min(minCellX, GRID_WIDTH - 1));
+		maxCellX = std::max(0, std::min(maxCellX, GRID_WIDTH - 1));
+		minCellY = std::max(0, std::min(minCellY, GRID_HEIGHT - 1));
+		maxCellY = std::max(0, std::min(maxCellY, GRID_HEIGHT - 1));
+
+		//putting the object into the grid cells it occupies
+		for (int x = minCellX; x <= maxCellX; ++x) {
+			for (int y = minCellY; y <= maxCellY; ++y) {
+				grid[x][y].objects.push_back(obj);
+			}
+		}
+	}
+	//temporary container to track checked objects for this frame
+	std::unordered_map<GameObject*, std::vector<GameObject*>> checked;
+
+	//checking collision 
+	for (int i = 0; i < GRID_WIDTH; i++) {
+		for (int j = 0; j < GRID_HEIGHT; j++) {
+			auto& cellObject = grid[i][j].objects; //get objects in the cell
+			//loop through objects in the cell to check for collision
+			for (size_t n = 0; n < cellObject.size(); n++) {
+				//object 1
+				GameObject* obj1 = cellObject[n];
+				if (!obj1->hasComponent<Physics>()) continue;
+				Transform* t1 = obj1->getComponent<Transform>();
+				Collision::AABB aabb1 = Collision::getObjectAABB(t1);
+				Physics* p1 = obj1->getComponent<Physics>();
+				Vector2D vel1{ p1->velX, p1->velY };
+				//object 2 looping
+				for (size_t m = n + 1; m < cellObject.size(); m++) {
+					//object 2
+					GameObject* obj2 = cellObject[m];
+					if (!obj2->hasComponent<Physics>()) continue;
+
+					//skip if already checked
+					auto it = std::find(checked[obj1].begin(), checked[obj1].end(), obj2);
+					if (it != checked[obj1].end()) continue;
+					//mark as checked both ways
+					checked[obj1].push_back(obj2);
+					checked[obj2].push_back(obj1);
+
+					Transform* t2 = obj2->getComponent<Transform>();
+					Collision::AABB aabb2 = Collision::getObjectAABB(t2);
+					Physics* p2 = obj2->getComponent<Physics>();
+					Vector2D vel2{ p2->velX, p2->velY };
+
+					CollisionInfo info = Collision::CollisionIntersection_RectRect_Dynamic_Info(aabb1, vel1, aabb2, vel2); //check collision
+					
+					//checking if collided
+					if (info.collided) {
+						//update the velocity and penetrations
+						if (info.normal.x != 0) {
+							t1->x += info.normal.x * info.penetration;
+							p1->velX = 0; //stop horizontal movement
 						}
+
+						// resolve Y
+						if (info.normal.y != 0) {
+							t1->y += info.normal.y * info.penetration;
+							p1->velY = 0; //stop vertical movement
+						}				
+						UI::addDebugMessage("Collision detected between Object.\n"); //message for debugger
 					}
 				}
 			}
@@ -444,9 +463,10 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 	}
 }
 
+//UI system - handles ImGui rendering and interaction
 bool UISystem::showUI = false;
 
-void UISystem::init(GLFWwindow* window, RenderSystem* renderer) {
+void UISystem::init(GLFWwindow* window) {
 	// --- ImGui Setup ---
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
@@ -463,8 +483,6 @@ void UISystem::init(GLFWwindow* window, RenderSystem* renderer) {
 	io.ConfigViewportsNoTaskBarIcon = true;
 
 	m_UI.loadAssetsFromDirectory();
-
-	m_renderer = renderer;
 }
 
 UISystem::~UISystem() {
@@ -487,20 +505,12 @@ void UISystem::update(GameObjectManager& manager) {
 
 	dockingSetUp();
 
-	// get the width and height of the SCENE view
-	int fboWidth, fboHeight;
-	m_renderer->fboAspectRatio(fboWidth, fboHeight);
-
 	// all ImGui windows
 	m_UI.update(manager);
-	m_UI.sceneWindow(m_renderer->getTexture(), static_cast<float>(fboWidth) / static_cast<float>(fboHeight));
 
-	m_UI.loadAssetsFromDirectory(); // only reload if assets flag is set (e.g. new asset added)
-
-	// this will CRASH if change scene in editor
-	//Transform* leavesT = gameObjects[0]->getComponent<Transform>();
-	//Transform* bulletT = gameObjects[2]->getComponent<Transform>();
-	//m_UI.shapeControl(*leavesT, *bulletT); 
+	Transform* leavesT = gameObjects[0]->getComponent<Transform>();
+	Transform* bulletT = gameObjects[2]->getComponent<Transform>();
+	m_UI.shapeControl(*leavesT, *bulletT);
 
 	ImGui::Render();
 	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());

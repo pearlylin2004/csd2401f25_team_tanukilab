@@ -23,6 +23,8 @@ set(ALL_LIBS
   PRIVATE libglew_static
   PRIVATE imgui
   PRIVATE stb
+  PRIVATE lua 
+  PRIVATE rapidjson
 )
 
 # Include path for GLM (optional if not using FetchContent)
@@ -70,6 +72,7 @@ foreach(child ${children})
         # Include path for each project
         target_include_directories(${child} PRIVATE
             ${CMAKE_CURRENT_LIST_DIR}/projects/${child}/include
+	    ${lua_SOURCE_DIR}
         )
 
         # ==== Shaders (copy to build dir so the exe can load them) ====
@@ -117,6 +120,8 @@ target_link_directories(WaterBound PRIVATE
 target_link_libraries(WaterBound PRIVATE
 	fmod_vc.lib
 	fmodL_vc.lib)
+
+target_link_libraries(WaterBound PRIVATE lua)
 
 add_custom_command(TARGET WaterBound POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy

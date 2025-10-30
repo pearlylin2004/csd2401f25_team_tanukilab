@@ -25,6 +25,7 @@ Technology is prohibited.
 #include "input.h"
 #include "audio.h"
 #include "Systems.h"
+#include "luaSystem.h"
 
 class CoreEngine {
 public:
@@ -59,4 +60,5 @@ private:
     std::unique_ptr<PhysicsSystem> m_physicsSystem;
     std::unique_ptr<RenderSystem> m_renderSystem;
     std::unique_ptr<UISystem> m_uiSystem;
+    std::unique_ptr<LuaSystem> m_luaSystem;
 };

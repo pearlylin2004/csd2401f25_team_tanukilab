@@ -33,9 +33,6 @@ public:
 	//use this when objects need to interact with each other
 	GameObject* getGameObject(const std::string& name);
 
-	// delete objects
-	void deleteGameObject(GameObject* object);
-
 	//clone an existing object
 	GameObject* CloneGameObject(const std::string& sourceName, const std::string& newName);
 
@@ -45,12 +42,7 @@ public:
 	//initialize game objects from a file
 	void init();
 
-	bool renameGameObject(GameObject* obj, const std::string& newName);
-
-	// load from file (read)
 	void loadFromFile(const std::string& filename);
-
-	// save to file (write)
 	void saveToFile(const std::string& filename);
 
 private:
