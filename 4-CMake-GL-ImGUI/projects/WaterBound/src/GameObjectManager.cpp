@@ -57,7 +57,7 @@ GameObject* GameObjectManager::CloneGameObject(const std::string& sourceName, co
 		std::cout << "GameObject with name '" << newName << "' already exists.\n";
 		return nullptr;
 	}
-
+	
 	//cloning GameObject
 	std::unique_ptr<GameObject> clonedObject = iterator->second->clone(newName);
 
