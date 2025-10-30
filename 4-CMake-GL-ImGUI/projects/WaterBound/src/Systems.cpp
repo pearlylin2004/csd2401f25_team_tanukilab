@@ -34,6 +34,9 @@ Technology is prohibited.
 // Input system - reads user input and updates velocity accordingly
 void InputSystem::update(GameObjectManager& manager, const float& deltaTime) {
 	(void)deltaTime;
+	//record current time for performance tracking
+	auto start = std::chrono::high_resolution_clock::now();
+
 	std::vector<GameObject*> gameObjects;
 	manager.getAllGameObjects(gameObjects);
 
@@ -71,12 +74,19 @@ void InputSystem::update(GameObjectManager& manager, const float& deltaTime) {
 			}
 		}
 	}
+	//record end time for performance tracking
+	auto end = std::chrono::high_resolution_clock::now();
+	double ms = std::chrono::duration<double, std::milli>(end - start).count(); //get elapse time in ms
+	g_SystemTimers.push_back({ "Input", ms }); //saving timing for UI output
 }
 
 
 // Render system - draws all game objects with a Render component
 void RenderSystem::update(GameObjectManager& manager, float const& deltaTime) 
 {
+	//record current time for performance tracking
+	auto start = std::chrono::high_resolution_clock::now();
+
 	std::vector<GameObject*> gameObjects;
 	manager.getAllGameObjects(gameObjects);
 
@@ -127,6 +137,11 @@ void RenderSystem::update(GameObjectManager& manager, float const& deltaTime)
 	glUniformMatrix4fv(vTransformProj, 1, GL_FALSE, glm::value_ptr(renderer::cam.proj));
 	for (GameObject* object : objectWithTex)
 		renderTex(object, deltaTime);
+
+	//record end time for performance tracking
+	auto end = std::chrono::high_resolution_clock::now();
+	double ms = std::chrono::duration<double, std::milli>(end - start).count(); //get elapse time in ms
+	g_SystemTimers.push_back({ "Redner", ms }); //saving timing for UI output
 }
 
 // Load all textures for game objects with a Render component
@@ -294,6 +309,8 @@ void RenderSystem::renderNoTex(GameObject* object)
 
 // Physics system - updates position based on velocity and applies gravity
 void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime) {
+	//record current time for performance tracking
+	auto start = std::chrono::high_resolution_clock::now();
 
 	// idk how physic programmer want to handle input for physics in the future
 	// so here is a simple implementation for toggling step-by-step mode
@@ -367,11 +384,18 @@ void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime) {
 		}
 		transform->x += physics->velX * deltaTime;
 	}
+	//record end time for performance tracking
+	auto end = std::chrono::high_resolution_clock::now();
+	double ms = std::chrono::duration<double, std::milli>(end - start).count(); //get elapse time in ms
+	g_SystemTimers.push_back({ "Physics", ms }); //saving timing for UI output
 }
 
 // Collision system - detects and resolves collisions between game objects
 void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime) {
 	(void)deltaTime;
+	//record current time for performance tracking
+	auto start = std::chrono::high_resolution_clock::now();
+
 	//getting all objects
 	std::vector<GameObject*> gameObjects;
 	manager.getAllGameObjects(gameObjects);
@@ -461,6 +485,10 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 			}
 		}
 	}
+	//record end time for performance tracking
+	auto end = std::chrono::high_resolution_clock::now();
+	double ms = std::chrono::duration<double, std::milli>(end - start).count(); //get elapse time in ms
+	g_SystemTimers.push_back({ "Collision", ms }); //saving timing for UI output
 }
 
 //UI system - handles ImGui rendering and interaction
