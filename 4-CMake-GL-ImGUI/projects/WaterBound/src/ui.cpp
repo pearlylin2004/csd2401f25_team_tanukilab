@@ -39,7 +39,8 @@ void UI::update(GameObjectManager& manager) {
     drawShapes(manager);
     drawDebug();
 
-    objInspectWindow(manager);
+    objHierarchyWindow(manager);
+    objInspectorWindow(manager);
     assetWindow(manager);
 }
 
@@ -294,20 +295,22 @@ void UI::editorMenuBar(GameObjectManager& manager) {
     ImGui::EndMainMenuBar();
 }
 
-void UI::objListPanel(GameObjectManager& manager) {
+void UI::objHierarchyWindow(GameObjectManager& manager) {
+
+    ImGui::Begin("Hierarchy");
 
     std::vector<const char*> names; // adjust max size
 
     std::vector<GameObject*> gameObjects;
     manager.getAllGameObjects(gameObjects);
 
-    names.reserve(gameObjects.size());
+    /*names.reserve(gameObjects.size());
     for (int i = 0; i < gameObjects.size(); ++i) {
         names.push_back(gameObjects[i]->getObjectName().c_str());
-    }
+    }*/
 
     // show this if there are objects
-    if (!names.empty()) {
+    /*if (!names.empty()) {
         if (ImGui::ListBox("Objects", &m_SelectionState.selectedIndex, names.data(), static_cast<int>(names.size()), m_PanelState.maxObjects)) {
             m_SelectionState.selectedObject = gameObjects[m_SelectionState.selectedIndex];
         }
@@ -315,10 +318,47 @@ void UI::objListPanel(GameObjectManager& manager) {
     else {
         m_SelectionState.selectedObject = nullptr;
         ImGui::Text("No GameObjects available");
+    }*/
+
+    // by default just set to no children
+    ImGuiTreeNodeFlags baseFlags = ImGuiTreeNodeFlags_Leaf;
+
+    for (size_t i = 0; i < gameObjects.size(); i++) {
+        // if no children -> in the future
+    //    baseFlags |= ImGuiTreeNodeFlags_Leaf;
+
+		// highlight selected
+        if (i == m_SelectionState.selectedIndex) {
+            baseFlags |= ImGuiTreeNodeFlags_Selected;
+        }
+        else {
+			baseFlags &= ~ImGuiTreeNodeFlags_Selected;
+        }
+
+		// draw tree node for each object
+        if (ImGui::TreeNodeEx(gameObjects[i]->getObjectName().c_str(), baseFlags)) {
+            if (ImGui::IsItemClicked() && !ImGui::IsItemToggledOpen()) {
+                m_SelectionState.selectedIndex = static_cast<int>(i);
+                m_SelectionState.selectedObject = gameObjects[i];
+            }
+            ImGui::TreePop();
+
+        }
     }
+
+    if (gameObjects.empty()) {
+        m_SelectionState.selectedObject = nullptr;
+        m_SelectionState.draggedObject = nullptr;
+        m_SelectionState.selectedIndex = -1;
+        ImGui::Text("No GameObjects available");
+    }
+
+	ImGui::End();
 }
 
-void UI::objPropertyPanel(GameObjectManager& manager) {
+void UI::objInspectorWindow(GameObjectManager& manager) {
+    ImGui::Begin("Inspector");
+
     if (m_SelectionState.selectedObject) {
 
         /* ------------------- Edit Object Name ------------------- */
@@ -474,43 +514,45 @@ void UI::objPropertyPanel(GameObjectManager& manager) {
     else {
         ImGui::Text("No object selected");
     }
+
+	ImGui::End();
 }
 
-void UI::objInspectWindow(GameObjectManager& manager) {
-    ImGui::Begin("Object Properties Editor");
-
-    // Left panel - object list
-    ImGui::BeginChild("Object List", ImVec2(m_PanelState.objListWidth, 0));
-    objListPanel(manager);
-    ImGui::EndChild();
-
-    ImGui::SameLine();
-
-    // splitter that allow resizing
-    ImGui::InvisibleButton("splitter", ImVec2(m_PanelState.splitterSize, m_PanelState.objListHeight));
-    if (ImGui::IsItemActive()) {
-        m_PanelState.objListWidth += InputHandler::getMouseDelta().x;
-        m_PanelState.objListWidth = std::clamp(m_PanelState.objListWidth, m_PanelState.objListMinWidth, m_PanelState.objListMaxWidth);
-    }
-    // draw the vertical line to indicate the splitter
-    ImDrawList* draw_list = ImGui::GetWindowDrawList();
-    ImVec2 splitterMin = ImGui::GetItemRectMin();
-    ImVec2 splitterMax = ImGui::GetItemRectMax();
-    draw_list->AddLine(
-        ImVec2(splitterMin.x + m_PanelState.splitterSize * 0.5f, splitterMin.y),
-        ImVec2(splitterMin.x + m_PanelState.splitterSize * 0.5f, splitterMax.y),
-        IM_COL32(100, 100, 100, 255), 1.0f
-    );
-
-    ImGui::SameLine();
-
-    // Right panel — inspector
-    ImGui::BeginChild("Inspector", ImVec2(0, 0), true);
-    objPropertyPanel(manager);
-    ImGui::EndChild();
-
-    ImGui::End();
-}
+//void UI::objInspectWindow(GameObjectManager& manager) {
+//    ImGui::Begin("Object Properties Editor");
+//
+//    // Left panel - object list
+//    ImGui::BeginChild("Hierarchy", ImVec2(m_PanelState.objListWidth, 0));
+//    objListPanel(manager);
+//    ImGui::EndChild();
+//
+//    ImGui::SameLine();
+//
+//    // splitter that allow resizing
+//    ImGui::InvisibleButton("splitter", ImVec2(m_PanelState.splitterSize, m_PanelState.objListHeight));
+//    if (ImGui::IsItemActive()) {
+//        m_PanelState.objListWidth += InputHandler::getMouseDelta().x;
+//        m_PanelState.objListWidth = std::clamp(m_PanelState.objListWidth, m_PanelState.objListMinWidth, m_PanelState.objListMaxWidth);
+//    }
+//    // draw the vertical line to indicate the splitter
+//    ImDrawList* draw_list = ImGui::GetWindowDrawList();
+//    ImVec2 splitterMin = ImGui::GetItemRectMin();
+//    ImVec2 splitterMax = ImGui::GetItemRectMax();
+//    draw_list->AddLine(
+//        ImVec2(splitterMin.x + m_PanelState.splitterSize * 0.5f, splitterMin.y),
+//        ImVec2(splitterMin.x + m_PanelState.splitterSize * 0.5f, splitterMax.y),
+//        IM_COL32(100, 100, 100, 255), 1.0f
+//    );
+//
+//    ImGui::SameLine();
+//
+//    // Right panel — inspector
+//    ImGui::BeginChild("Inspector", ImVec2(0, 0), true);
+//    objPropertyPanel(manager);
+//    ImGui::EndChild();
+//
+//    ImGui::End();
+//}
 
 void UI::loadAssetsFromDirectory() {
     if (assetsChangedFlag == false) return; // only reload if flagged

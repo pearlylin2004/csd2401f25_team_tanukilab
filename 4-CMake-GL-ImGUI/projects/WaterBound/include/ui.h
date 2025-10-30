@@ -57,9 +57,9 @@ private:
 	void drawDebug();
 
 	void editorMenuBar(GameObjectManager& manager);
-	void objListPanel(GameObjectManager& manager);
-	void objPropertyPanel(GameObjectManager& manager);
-	void objInspectWindow(GameObjectManager& manager);
+	void objHierarchyWindow(GameObjectManager& manager);
+	void objInspectorWindow(GameObjectManager& manager);
+	//void objInspectWindow(GameObjectManager& manager);
 	void assetWindow(GameObjectManager& manager);
 
 	void objPicking(GameObjectManager& manager);
