@@ -75,9 +75,8 @@ float LuaSystem::getGlobalNumber(const std::string& name) {
 
 bool LuaSystem::runScriptForObject(const std::string& filename, GameObject* obj, float deltaTime) {
     if (!L || !obj) return false;
-
     /*
-    //load the script only once (you can store loaded scripts in a map if needed)
+    //load the script only once
     static std::unordered_map<std::string, bool> loadedScripts;
     if (loadedScripts.find(filename) == loadedScripts.end()) {
         if (luaL_dofile(L, filename.c_str()) != LUA_OK) {
@@ -122,5 +121,3 @@ bool LuaSystem::runScriptForObject(const std::string& filename, GameObject* obj,
     }
     return true;
 }
-
-

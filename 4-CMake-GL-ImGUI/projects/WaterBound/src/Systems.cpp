@@ -3,7 +3,7 @@
 \file        Systems.cpp
 \author      Seow Sin Le, s.sinle, 2401084, 45%
 \author 	 Hugo Low Ren Hao, low.h, 2402272, 15%
-\author 	 Pearly Lin Lee Ying, p.lin, 2401591, 25%
+\author 	 Pearly Lin Lee Ying, p.lin, 2401591, 15%
 \author		 Asha Mathyalakan, asha.m, 2402886, 15%
 \par         s.sinle@digipen.edu
 \par		 low.h@digipen.edu
@@ -34,6 +34,10 @@ Technology is prohibited.
 // Input system - reads user input and updates velocity accordingly
 void InputSystem::update(GameObjectManager& manager, const float& deltaTime) {
 	(void)deltaTime;
+
+	//record current time for performance tracking
+	auto start = std::chrono::high_resolution_clock::now();
+
 	std::vector<GameObject*> gameObjects;
 	manager.getAllGameObjects(gameObjects);
 
@@ -66,16 +70,23 @@ void InputSystem::update(GameObjectManager& manager, const float& deltaTime) {
 				// Press F9 to simulate a failure (for crash logger)
 				if (InputHandler::isKeyTriggered(GLFW_KEY_F9)) {
 					throw std::runtime_error("F9 test: simulated failure in update()");
-				}
-				
+				}	
 			}
 		}
 	}
+	//record end time for performance tracking
+	auto end = std::chrono::high_resolution_clock::now();
+	double ms = std::chrono::duration<double, std::milli>(end - start).count(); //get elapse time in ms
+	g_SystemTimers.push_back({ "Input", ms }); //saving timing for UI output
 }
 
 
 // Render system - draws all game objects with a Render component
 void RenderSystem::update(GameObjectManager& manager) {
+
+	//record current time for performance tracking
+	auto start = std::chrono::high_resolution_clock::now();
+
 	std::vector<GameObject*> gameObjects;
 	manager.getAllGameObjects(gameObjects);
 
@@ -244,6 +255,11 @@ void RenderSystem::update(GameObjectManager& manager) {
 
 	// unbind FBO if editor is off
 	if(UISystem::isShowUI()) glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+	//record end time for performance tracking
+	auto end = std::chrono::high_resolution_clock::now();
+	double ms = std::chrono::duration<double, std::milli>(end - start).count(); //get elapse time in ms
+	g_SystemTimers.push_back({ "Render", ms }); //saving timing for UI output
 }
 
 void RenderSystem::createFBO() {
@@ -321,6 +337,8 @@ void RenderSystem::fboAspectRatio(int& width, int& height) const {
 
 // Physics system - updates position based on velocity and applies gravity
 void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime) {
+	//record current time for performance tracking
+	auto start = std::chrono::high_resolution_clock::now();
 
 	// idk how physic programmer want to handle input for physics in the future
 	// so here is a simple implementation for toggling step-by-step mode
@@ -394,10 +412,17 @@ void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime) {
 		}
 		transform->x += physics->velX * deltaTime;
 	}
+	//record end time for performance tracking
+	auto end = std::chrono::high_resolution_clock::now();
+	double ms = std::chrono::duration<double, std::milli>(end - start).count(); //get elapse time in ms
+	g_SystemTimers.push_back({ "Physics", ms }); //saving timing for UI output
 }
 
 // Collision system - detects and resolves collisions between game objects
 void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime) {
+	//record current time for performance tracking
+	auto start = std::chrono::high_resolution_clock::now();
+
 	(void)deltaTime;
 	//getting all objects
 	std::vector<GameObject*> gameObjects;
@@ -488,6 +513,10 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 			}
 		}
 	}
+	//record end time for performance tracking
+	auto end = std::chrono::high_resolution_clock::now();
+	double ms = std::chrono::duration<double, std::milli>(end - start).count(); //get elapse time in ms
+	g_SystemTimers.push_back({ "Input", ms }); //saving timing for UI output
 }
 
 //UI system - handles ImGui rendering and interaction
@@ -523,7 +552,7 @@ UISystem::~UISystem() {
 
 //for imgui
 void UISystem::update(GameObjectManager& manager) {
-	if (!showUI) return; // skip UI rendering if disabled
+	//if (!showUI) return; // skip UI rendering if disabled
 
 	std::vector<GameObject*> gameObjects;
 	manager.getAllGameObjects(gameObjects);

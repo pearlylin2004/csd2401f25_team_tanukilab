@@ -27,6 +27,7 @@ Technology is prohibited.
 #include "GameObjectManager.h"
 #include "collision.h"
 #include "input.h"
+#include "performance.h"
 
 // imma replicate a very scuffed version of Unity :) call me tian cai
 class UI {
