@@ -17,9 +17,6 @@ Technology is prohibited.
 #pragma once
 
 #include <GLFW/glfw3.h>
-#include <cstring>
-#include <filesystem>
-#include "imgui.h"
 #include "mathlib.h"
 #include <cstring>
 /*
@@ -85,21 +82,7 @@ public:
 	// get change in mouse position since last frame
 	static Vector2D getMouseDelta(); 
 	// check if cursor is inside window
-	static bool isCursorInsideWindow();
-
-	// get current cursor position in imgui viewport
-	static Vector2D getMousePositionInImGuiViewport(const ImVec2& scenePos, const ImVec2& sceneSize);
-	// check if cursor is inside ImGui viewport
-	static bool isCursorInsideImGuiViewport(const ImVec2& scenePos, const ImVec2& sceneSize);
-	// get mouse delta in world space of the viewport
-	static Vector2D getMouseDeltaWorldInViewport(const ImVec2& sceneSize);
-
-	// get cursor world postion
-	static Vector2D getWorldMousePosition();
-	// get world cursor x position
-	static float getWorldMouseX();
-	// get world cursor y position
-	static float getWorldMouseY();
+	static bool isCursorInsideWindow(); 
 
 	// get scroll offset since last frame
 	static float getMouseScroll(); 
