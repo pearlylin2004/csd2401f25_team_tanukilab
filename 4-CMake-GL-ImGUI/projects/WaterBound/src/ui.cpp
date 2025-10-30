@@ -17,6 +17,8 @@ Technology is prohibited.
 
 #include "ui.h"
 
+bool UI::assetsChangedFlag = true;
+
 UI::UI() {
     // temp, get ready to load from json in the future
     m_shapePresets = {
@@ -38,13 +40,10 @@ void UI::update(GameObjectManager& manager) {
     objPicking(manager);
     objDragging();
 
-	};
-}
-
-void UI::update(GameObjectManager& manager) {
     drawPerformance();
     drawShapes(manager);
     drawDebug();
+
     objInspectWindow(manager);
     assetWindow(manager);
 }
@@ -96,7 +95,6 @@ void UI::drawPerformance() {
         1000.0f / ImGui::GetIO().Framerate,
         ImGui::GetIO().Framerate);
     ImGui::Separator();
-
     //average time --can add for other functions also just need to add 4 lines of codes into the function start and end(see InputSystem::Update in system.cpp)
     double totalMs = 0.0;
     for (auto& timer : g_SystemTimers) totalMs += timer.ms;
@@ -106,7 +104,7 @@ void UI::drawPerformance() {
         ImGui::Text("%s: %.3f ms (%.1f%%)", timer.name.c_str(), timer.ms, percent);
         ImGui::ProgressBar(percent / 100.0f, ImVec2(0.0f, 0.0f));
     }
-	g_SystemTimers.clear(); // clear timers for next frame
+    g_SystemTimers.clear(); // clear timers for next frame
     ImGui::End();
 }
 
@@ -310,6 +308,7 @@ void UI::editorMenuBar(GameObjectManager& manager) {
 }
 
 void UI::objListPanel(GameObjectManager& manager) {
+
     std::vector<const char*> names; // adjust max size
 
     std::vector<GameObject*> gameObjects;
@@ -337,15 +336,20 @@ void UI::objPropertyPanel(GameObjectManager& manager) {
 
         /* ------------------- Edit Object Name ------------------- */
         std::string& objName = m_SelectionState.selectedObject->getObjectName();
-        char buffer[256];
+        char buffer[128];
         strncpy(buffer, objName.c_str(), sizeof(buffer));
         buffer[sizeof(buffer) - 1] = '\0';
 
         ImGui::Text("Name");
         ImGui::SameLine();
         if (ImGui::InputText("##Name", buffer, sizeof(buffer))) {
-            objName = buffer;
-			addDebugMessage("Object renamed to " + objName + "\n");
+            std::string newObjName = buffer;
+            if (manager.renameGameObject(m_SelectionState.selectedObject, newObjName)) {
+                addDebugMessage("Object renamed to " + newObjName + "\n");
+            }
+            else {
+                addDebugMessage("Failed to rename: name already exists\n");
+            }
         }
 
         ImGui::Spacing();
@@ -353,7 +357,7 @@ void UI::objPropertyPanel(GameObjectManager& manager) {
         ImGui::Spacing();
 
 
-		// object transform properties
+        /* ------------------- Object Transformation ------------------- */
         Transform* transform = m_SelectionState.selectedObject->getComponent<Transform>();
         if (ImGui::CollapsingHeader("Transform")) {
 
@@ -367,13 +371,14 @@ void UI::objPropertyPanel(GameObjectManager& manager) {
                 std::to_string(transform->z) + ")\n");*/
         }
 
-        // object rotation
+        /* ------------------- Object Rotation ------------------- */
         if (ImGui::CollapsingHeader("Rotation")) {
             ImGui::DragFloat("Angle", &transform->rotation);
 
             /*addDebugMessage("Transform updated: Rotation(" +
                 std::to_string(transform->rotation) + ")\n");*/
         }
+
         /* ------------------- Ovject Scale ------------------- */
         if (ImGui::CollapsingHeader("Scale")) {
             ImGui::Checkbox("Aspect Ratio (X only)", &m_SelectionState.aspectRatioLock);
@@ -404,6 +409,7 @@ void UI::objPropertyPanel(GameObjectManager& manager) {
         ImGui::Spacing();
         ImGui::Separator();
         ImGui::Spacing();
+
         /* ------------------- Change Texture ------------------- */
         // drag and drop received from asset window
         Render* render = m_SelectionState.selectedObject->getComponent<Render>();
@@ -411,8 +417,8 @@ void UI::objPropertyPanel(GameObjectManager& manager) {
             ImGui::Text("Texture");
             ImGui::SameLine();
 
-            std::string texLabel = render->texFile.empty() ? "(Drop new texture here)" : render->texFile;
-            ImGui::Button(texLabel.c_str());
+            std::string texName = render->texFile.empty() ? "(Drop new texture here)" : render->texFile;
+            ImGui::Button(texName.c_str());
 
             if (ImGui::BeginDragDropTarget()) {
                 if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("ASSET")) {
@@ -459,7 +465,22 @@ void UI::objPropertyPanel(GameObjectManager& manager) {
 
                 manager.deleteGameObject(m_SelectionState.selectedObject);
 
-			addDebugMessage("Object deleted (not really)\n");
+                m_SelectionState.selectedObject = nullptr;
+                m_SelectionState.draggedObject = nullptr;
+                m_SelectionState.selectedIndex = -1;
+
+                addDebugMessage("Object " + name + " deleted\n");
+
+                ImGui::CloseCurrentPopup();
+            }
+
+            ImGui::SameLine();
+
+            if (ImGui::Button("No")) {
+                ImGui::CloseCurrentPopup();
+            }
+
+            ImGui::EndPopup();
         }
 
     }
@@ -524,11 +545,22 @@ void UI::loadAssetsFromDirectory() {
     addDebugMessage("Assets loaded from " + m_AssetBrowserState.currentFolder + "\n");
 }
 
-void UI::assetWindow() {
-	ImGui::Begin("Assets");
+void UI::assetWindow(GameObjectManager& manager) {
+    ImGui::Begin("Assets");
 
-	// refresh to update assets from the actual asset folder (now is shaders :))
-    if (ImGui::Button("Refresh")) loadAssetsFromDirectory();
+    // refresh to update assets from the actual asset folder
+    // not really needed since we have auto refresh, but still good to have
+    if (ImGui::Button("Refresh")) {
+        assetsChangedFlag = true;
+        loadAssetsFromDirectory();
+    }
+
+    // auto refresh when new files added to the asset folder (in project dir)
+    std::filesystem::file_time_type current = std::filesystem::last_write_time(m_AssetBrowserState.currentFolder);
+    if (current != m_AssetBrowserState.lastRefresh) {
+        m_AssetBrowserState.lastRefresh = current;
+        assetsChangedFlag = true; // to update assets
+    }
 
     ImGui::Separator();
 
@@ -536,13 +568,18 @@ void UI::assetWindow() {
 
     int index{};
     for (const Asset& asset : m_assets) {
-		ImGui::PushID(index++);
+        // skip temp scene file (for play/stop)
+        std::string fullPath = asset.folder + "/" + asset.name;
+        if (fullPath == m_tempSceneName) continue;
+
+        ImGui::PushID(index++);
 
         // display button and the name of the file
         ImGui::BeginGroup();
 
         // can consider changing to image in the future
-		ImGui::Button(asset.name.c_str(), ImVec2(m_AssetBrowserState.iconSize, m_AssetBrowserState.iconSize));
+        ImGui::Button(asset.name.c_str(), ImVec2(m_AssetBrowserState.iconSize, m_AssetBrowserState.iconSize));
+
 
         // double click logic
         if (ImGui::IsItemHovered() && InputHandler::isMouseLeftDoubleClicked()) {
@@ -569,14 +606,14 @@ void UI::assetWindow() {
         ImGui::Text("%s", asset.name.c_str());
         ImGui::PopTextWrapPos();
 
-		ImGui::EndGroup();
+        ImGui::EndGroup();
 
         // calculate whether the next button should be displayed in the same line or next line based on this window size
         float lastButtonX2 = ImGui::GetItemRectMax().x;
         float nextButtonX2 = lastButtonX2 + m_AssetBrowserState.iconSize;
         if (nextButtonX2 < windowVisibleX2) ImGui::SameLine();
 
-		// drag and drop, but now actually does nothing
+        // drag a texture to inspector window to change texture of selected object
         if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID)) {
             ImGui::SetDragDropPayload("ASSET", asset.path.c_str(), asset.path.size() + 1);
             ImGui::Text("%s", asset.name.c_str());
@@ -584,10 +621,11 @@ void UI::assetWindow() {
         }
 
 
-		ImGui::PopID();
+        ImGui::PopID();
     }
 
-	ImGui::End();
+    ImGui::End();
+
 }
 
 void UI::sceneWindow(GLuint texture, float aspectRatio) {
