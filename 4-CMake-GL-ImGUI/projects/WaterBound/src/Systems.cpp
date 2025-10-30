@@ -11,7 +11,7 @@
 \par		 asha.m@digipen.edu
 \date        October, 1st, 2025
 \brief       This file consists of System functions to run the logic for the Game Objects
-			 and their components. 
+			 and their components.
 
 Copyright (C) 2025 DigiPen Institute of Technology.
 Reproduction or disclosure of this file or its contents
@@ -34,6 +34,10 @@ Technology is prohibited.
 // Input system - reads user input and updates velocity accordingly
 void InputSystem::update(GameObjectManager& manager, const float& deltaTime) {
 	(void)deltaTime;
+
+	//record current time for performance tracking
+	auto start = std::chrono::high_resolution_clock::now();
+
 	std::vector<GameObject*> gameObjects;
 	manager.getAllGameObjects(gameObjects);
 
@@ -67,16 +71,23 @@ void InputSystem::update(GameObjectManager& manager, const float& deltaTime) {
 				if (InputHandler::isKeyTriggered(GLFW_KEY_F9)) {
 					throw std::runtime_error("F9 test: simulated failure in update()");
 				}
-				
+
 			}
 		}
 	}
+	//record end time for performance tracking
+	auto end = std::chrono::high_resolution_clock::now();
+	double ms = std::chrono::duration<double, std::milli>(end - start).count(); //get elapse time in ms
+	g_SystemTimers.push_back({ "Input", ms }); //saving timing for UI output
 }
 
 
 // Render system - draws all game objects with a Render component
-void RenderSystem::update(GameObjectManager& manager, float const& deltaTime) 
+void RenderSystem::update(GameObjectManager& manager, float const& deltaTime)
 {
+	//record current time for performance tracking
+	auto start = std::chrono::high_resolution_clock::now();
+
 	std::vector<GameObject*> gameObjects;
 	manager.getAllGameObjects(gameObjects);
 
@@ -127,6 +138,11 @@ void RenderSystem::update(GameObjectManager& manager, float const& deltaTime)
 	glUniformMatrix4fv(vTransformProj, 1, GL_FALSE, glm::value_ptr(renderer::cam.proj));
 	for (GameObject* object : objectWithTex)
 		renderTex(object, deltaTime);
+
+	//record end time for performance tracking
+	auto end = std::chrono::high_resolution_clock::now();
+	double ms = std::chrono::duration<double, std::milli>(end - start).count(); //get elapse time in ms
+	g_SystemTimers.push_back({ "Render", ms }); //saving timing for UI output
 }
 
 // Load all textures for game objects with a Render component
@@ -226,7 +242,7 @@ void RenderSystem::renderTex(GameObject* object, float const& deltaTime)
 					animation->currentFrameColumn = (animation->currentFrameColumn + 1) % animation->totalColumn;
 					animation->currentFrameRow = (animation->currentFrameRow + 1) % animation->totalRow;
 					animation->runItBack = true;
-					
+
 				}
 			}
 		}
@@ -295,6 +311,9 @@ void RenderSystem::renderNoTex(GameObject* object)
 // Physics system - updates position based on velocity and applies gravity
 void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime) {
 
+	//record current time for performance tracking
+	auto start = std::chrono::high_resolution_clock::now();
+
 	// idk how physic programmer want to handle input for physics in the future
 	// so here is a simple implementation for toggling step-by-step mode
 	if (InputHandler::isComboKeyTriggered(GLFW_KEY_Z)) {
@@ -331,7 +350,7 @@ void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime) {
 				static int bulletCount = 0;
 
 				Transform* t = bullet->getComponent<Transform>();
-				t->x = transform->x;  
+				t->x = transform->x;
 				t->y = transform->y;
 				t->z = 0.02f;
 				t->scaleX = 0.5f;
@@ -346,7 +365,7 @@ void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime) {
 			}
 
 			// Jump
-			if (InputHandler::isKeyTriggered(GLFW_KEY_B)){// && physics->onGround) {
+			if (InputHandler::isKeyTriggered(GLFW_KEY_B)) {// && physics->onGround) {
 				//std::cout << "player is jumping\n";
 				UI::addDebugMessage("player is jumping");
 				physics->velY = physics->jumpForce;
@@ -367,11 +386,17 @@ void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime) {
 		}
 		transform->x += physics->velX * deltaTime;
 	}
+	//record end time for performance tracking
+	auto end = std::chrono::high_resolution_clock::now();
+	double ms = std::chrono::duration<double, std::milli>(end - start).count(); //get elapse time in ms
+	g_SystemTimers.push_back({ "Physics", ms }); //saving timing for UI output
 }
 
 // Collision system - detects and resolves collisions between game objects
 void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime) {
 	(void)deltaTime;
+	//record current time for performance tracking
+	auto start = std::chrono::high_resolution_clock::now();
 	//getting all objects
 	std::vector<GameObject*> gameObjects;
 	manager.getAllGameObjects(gameObjects);
@@ -441,7 +466,7 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 					Vector2D vel2{ p2->velX, p2->velY };
 
 					CollisionInfo info = Collision::CollisionIntersection_RectRect_Dynamic_Info(aabb1, vel1, aabb2, vel2); //check collision
-					
+
 					//checking if collided
 					if (info.collided) {
 						//update the velocity and penetrations
@@ -454,13 +479,17 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 						if (info.normal.y != 0) {
 							t1->y += info.normal.y * info.penetration;
 							p1->velY = 0; //stop vertical movement
-						}				
+						}
 						UI::addDebugMessage("Collision detected between Object.\n"); //message for debugger
 					}
 				}
 			}
 		}
 	}
+	//record end time for performance tracking
+	auto end = std::chrono::high_resolution_clock::now();
+	double ms = std::chrono::duration<double, std::milli>(end - start).count(); //get elapse time in ms
+	g_SystemTimers.push_back({ "Collision", ms }); //saving timing for UI output
 }
 
 //UI system - handles ImGui rendering and interaction
@@ -473,8 +502,8 @@ void UISystem::init(GLFWwindow* window) {
 	ImGuiIO& io = ImGui::GetIO(); (void)io;
 	io.FontGlobalScale = 1.2f;
 	io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard
-			| ImGuiConfigFlags_DockingEnable
-			| ImGuiConfigFlags_ViewportsEnable;
+		| ImGuiConfigFlags_DockingEnable
+		| ImGuiConfigFlags_ViewportsEnable;
 	ImGui::StyleColorsDark();
 	ImGui_ImplGlfw_InitForOpenGL(window, true);
 	ImGui_ImplOpenGL3_Init("#version 450");
