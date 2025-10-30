@@ -82,6 +82,8 @@ void GameObjectManager::getAllGameObjects(std::vector<GameObject*>& gameObjects)
 
 void GameObjectManager::init()
 {
+	m_gameObjects.reserve(1000);//preallocate space for 1000 objects
+
 	std::ifstream is{ "shaders/temp_serialize.txt" };
 	if (!is)
 	{
@@ -100,7 +102,7 @@ void GameObjectManager::init()
 		{
 			is >> objectName;
 			std::unique_ptr<GameObject> newObject = std::make_unique<GameObject>(objectName);
-			m_gameObjects.emplace(objectName, std::move(newObject));
+			m_gameObjects.emplace(objectName, std::move(newObject));//must use move with unique ptr
 			std::cout << objectName << "\n";
 		}
 		/*for (; is >> checker, checker == "renderer";)
