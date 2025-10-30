@@ -40,6 +40,7 @@ public:
     bool runScriptForObject(const std::string& filename, GameObject* obj, float deltaTime);
     static int Lua_getPosition(lua_State* L);
 	static int Lua_setPosition(lua_State* L);
+    static int Lua_IsKeyHeld(lua_State* L);
 
 private:
     lua_State* L = nullptr;

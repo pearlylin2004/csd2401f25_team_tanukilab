@@ -31,6 +31,28 @@ void LuaSystem::cleanup() {
     }
 }
 
+//function exposed to Lua
+int LuaSystem::Lua_IsKeyHeld(lua_State* L) {
+    const char* keyStr = lua_tostring(L, 1); //get string from Lua
+
+    //convert string to GLFW key code
+    int key = -1;
+    if (strcmp(keyStr, "W") == 0) key = GLFW_KEY_W;
+    else if (strcmp(keyStr, "A") == 0) key = GLFW_KEY_A;
+    else if (strcmp(keyStr, "S") == 0) key = GLFW_KEY_S;
+    else if (strcmp(keyStr, "D") == 0) key = GLFW_KEY_D;
+    else if (strcmp(keyStr, "SPACE") == 0) key = GLFW_KEY_SPACE;
+    //add more keys if needed in the future
+
+    bool held = false;
+    if (key != -1) {
+        held = InputHandler::isKeyHeld(key);
+    }
+
+    lua_pushboolean(L, held); //push result to Lua
+    return 1; //number of return values
+}
+
 bool LuaSystem::runString(const std::string& code) {
     if (!L) return false;
     return luaL_dostring(L, code.c_str()) == LUA_OK;
