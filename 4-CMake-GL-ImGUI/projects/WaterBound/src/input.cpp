@@ -374,14 +374,27 @@ void InputHandler::dropCallback(GLFWwindow* window, int count, const char** path
 	(void)window;
 	for (int i = 0; i < count; ++i) {
 		std::filesystem::path src(paths[i]);
-		std::filesystem::path dst = "shaders";
+		std::filesystem::path dst = "shaders" / src.filename();
 
 		try {
-			if (std::filesystem::is_directory(src)) {
-				std::filesystem::copy(src, dst, std::filesystem::copy_options::recursive | std::filesystem::copy_options::overwrite_existing);
+			if (std::filesystem::exists(dst)) {
+				// If it exists, overwrite
+				if (std::filesystem::is_directory(src)) {
+					std::filesystem::remove_all(dst); // remove old folder first
+					std::filesystem::copy(src, dst, std::filesystem::copy_options::recursive);
+				}
+				else {
+					std::filesystem::copy_file(src, dst, std::filesystem::copy_options::overwrite_existing);
+				}
+				UI::addDebugMessage("Replaced existing asset " + dst.string() + "\n");
 			}
 			else {
-				std::filesystem::copy(src, dst, std::filesystem::copy_options::overwrite_existing);
+				if (std::filesystem::is_directory(src)) {
+					std::filesystem::copy(src, dst, std::filesystem::copy_options::recursive | std::filesystem::copy_options::overwrite_existing);
+				}
+				else {
+					std::filesystem::copy(src, dst, std::filesystem::copy_options::overwrite_existing);
+				}
 			}
 
 			UI::assetChanged(); // set asst changed flag to reload assets in UI

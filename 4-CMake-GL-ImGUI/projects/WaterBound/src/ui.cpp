@@ -43,6 +43,11 @@ void UI::update(GameObjectManager& manager) {
     objInspectorWindow(manager);
     editorCameraControls();
     drawShapes(manager);
+
+    // conditional popup
+	assetDeletePopup(); // popup for confirming asset deletion
+	assetRenamePopup(); // popup for renaming asset
+	assetReplacePopup(); // popup for replacing asset
 }
 
 void UI::addDebugMessage(const std::string& msg) {
@@ -433,15 +438,15 @@ void UI::objInspectorWindow(GameObjectManager& manager) {
         // do not show "DELETE" button for "PLAYER" IT WILL CRASH
         if (name != "player") {
             if (ImGui::Button("Delete Object")) {
-                ImGui::OpenPopup("Confirm Delete");
+                ImGui::OpenPopup("Confirm Delete Object");
             }
         }
 
         // delete confirm popup
-        if (ImGui::BeginPopupModal("Confirm Delete", NULL, ImGuiWindowFlags_AlwaysAutoResize)) {
+        if (ImGui::BeginPopupModal("Confirm Delete Object", NULL, ImGuiWindowFlags_AlwaysAutoResize)) {
             ImGui::Text("Are you sure you want to delete this object?");
 
-            if (ImGui::Button("Yes")) {
+            if (ImGui::Button("Delete")) {
 
                 manager.deleteGameObject(m_SelectionState.selectedObject);
 
@@ -530,6 +535,45 @@ void UI::assetWindow(GameObjectManager& manager) {
 
         ImGui::PopStyleVar();
 
+		// right click asset and show context menu
+		if (ImGui::BeginPopupContextItem("AssetContextMenu")) {
+            // show this asset in window explorer
+			if (ImGui::MenuItem("Show in Explorer")) {
+                // convert filepath to absolute to open in Window Explorer
+                std::filesystem::path absPath = std::filesystem::absolute(fullPath);
+                std::string absPathStr = absPath.string();
+
+                std::replace(absPathStr.begin(), absPathStr.end(), '/', '\\');
+
+                std::string command = "explorer /select,\"" + absPathStr + "\"";
+                std::cout << "Running: " << command << std::endl;
+				system(command.c_str());
+			}
+
+            // open popup window and ask whether to delete this current asset
+			if (ImGui::MenuItem("Delete Asset")) {
+				m_AssetBrowserState.fullPathToDelete = fullPath;
+				m_AssetBrowserState.showDeletePopup = true;
+			}
+
+			// open popup window and rename this current asset
+			if (ImGui::MenuItem("Rename Asset")) {
+				m_AssetBrowserState.fullPathToRename = fullPath;
+				m_AssetBrowserState.showRenamePopup = true;
+				
+				// pre-fill the current name
+                std::strncpy(m_AssetBrowserState.newNameBuffer, asset.name.c_str(), sizeof(m_AssetBrowserState.newNameBuffer));
+			}
+
+			// open popup window and replace this current asset
+			/*if (ImGui::MenuItem("Replace Asset")) {
+                m_AssetBrowserState.fullPathToReplace = fullPath;
+                m_AssetBrowserState.showReplacePopup = true;
+                m_AssetBrowserState.replacePathBuffer[0] = '\0';
+			}*/
+			ImGui::EndPopup();
+		}
+
         // double click logic
         if (ImGui::IsItemHovered() && InputHandler::isMouseLeftDoubleClicked()) {
             // if it's a scene file, load the scene
@@ -569,12 +613,130 @@ void UI::assetWindow(GameObjectManager& manager) {
             ImGui::EndDragDropSource();
         }
 
-
         ImGui::PopID();
     }
 
-    ImGui::End();
+	ImGui::End();
+}
 
+void UI::assetDeletePopup() {
+	// open popup if flagged
+    if (m_AssetBrowserState.showDeletePopup) {
+        ImGui::OpenPopup("Confirm Delete Asset");
+        m_AssetBrowserState.showDeletePopup = false;
+    }
+
+    if (ImGui::BeginPopupModal("Confirm Delete Asset", NULL, ImGuiWindowFlags_AlwaysAutoResize)) {
+        ImGui::Text("Are you sure you want to delete this asset?");
+
+        if (ImGui::Button("Delete")) {
+            if (!m_AssetBrowserState.fullPathToDelete.empty() &&
+                std::filesystem::exists(m_AssetBrowserState.fullPathToDelete)) {
+                std::filesystem::remove(m_AssetBrowserState.fullPathToDelete);
+                assetsChangedFlag = true; // to reload assets
+
+                addDebugMessage("Deleted asset: " + m_AssetBrowserState.fullPathToDelete + "\n");
+            }
+
+            m_AssetBrowserState.fullPathToDelete.clear();
+            ImGui::CloseCurrentPopup();
+        }
+
+        ImGui::SameLine();
+
+        if (ImGui::Button("No")) {
+            m_AssetBrowserState.fullPathToDelete.clear();
+            ImGui::CloseCurrentPopup();
+        }
+
+        ImGui::EndPopup();
+    }
+
+}
+
+void UI::assetRenamePopup() {
+    // open popup if flagged
+    if (m_AssetBrowserState.showRenamePopup) {
+        ImGui::OpenPopup("Rename Asset");
+        m_AssetBrowserState.showRenamePopup = false;
+    }
+
+    if (ImGui::BeginPopupModal("Rename Asset", NULL, ImGuiWindowFlags_AlwaysAutoResize)) {
+        ImGui::Text("Enter new name for the asset");
+
+        ImGui::InputText("##newName", m_AssetBrowserState.newNameBuffer, sizeof(m_AssetBrowserState.newNameBuffer));
+
+        if (ImGui::Button("Rename")) {
+            if (!m_AssetBrowserState.fullPathToRename.empty()) {
+                std::filesystem::path old = m_AssetBrowserState.fullPathToRename;
+                std::filesystem::path newPath = old.parent_path() / m_AssetBrowserState.newNameBuffer;
+
+				// keep the extension if not provided
+                if (newPath.extension().empty())
+                    newPath.replace_extension(old.extension());
+
+                if (!std::filesystem::exists(newPath)) {
+                    std::filesystem::rename(old, newPath);
+                    assetsChangedFlag = true; // reload assets
+
+                    addDebugMessage("Renamed asset: " + old.string() + " -> " + newPath.string() + "\n");
+                }
+                else {
+                    addDebugMessage("Failed to rename: file already exists.\n");
+                }
+            }
+
+            m_AssetBrowserState.fullPathToRename.clear();
+            ImGui::CloseCurrentPopup();
+        }
+
+        ImGui::SameLine();
+
+        if (ImGui::Button("Cancel")) {
+            m_AssetBrowserState.fullPathToRename.clear();
+            ImGui::CloseCurrentPopup();
+        }
+
+        ImGui::EndPopup();
+    }
+}
+
+void UI::assetReplacePopup() {
+    if (m_AssetBrowserState.showReplacePopup) {
+        ImGui::OpenPopup("Replace Asset");
+        m_AssetBrowserState.showReplacePopup = false;
+    }
+
+    if (ImGui::BeginPopupModal("Replace Asset", NULL, ImGuiWindowFlags_AlwaysAutoResize)) {
+        ImGui::Text("Select a new file to replace the asset:");
+
+        ImGui::InputText("File Path", m_AssetBrowserState.replacePathBuffer, sizeof(m_AssetBrowserState.replacePathBuffer));
+
+        if (ImGui::Button("Replace")) {
+            std::filesystem::path old = m_AssetBrowserState.fullPathToReplace;
+            std::filesystem::path newPath = m_AssetBrowserState.replacePathBuffer;
+
+            if (std::filesystem::exists(newPath)) {
+                std::filesystem::copy_file(newPath, old, std::filesystem::copy_options::overwrite_existing);
+                assetsChangedFlag = true;
+                addDebugMessage("Replaced asset: " + old.string() + " with " + newPath.string() + "\n");
+            }
+            else {
+                addDebugMessage("Replacement file does not exist.\n");
+            }
+
+            m_AssetBrowserState.fullPathToReplace.clear();
+            ImGui::CloseCurrentPopup();
+        }
+
+        ImGui::SameLine();
+        if (ImGui::Button("Cancel")) {
+            m_AssetBrowserState.fullPathToReplace.clear();
+            ImGui::CloseCurrentPopup();
+        }
+
+        ImGui::EndPopup();
+    }
 }
 
 void UI::editorCameraControls() {
