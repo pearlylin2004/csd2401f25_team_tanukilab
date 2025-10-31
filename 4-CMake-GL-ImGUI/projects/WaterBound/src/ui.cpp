@@ -269,8 +269,6 @@ void UI::objHierarchyWindow(GameObjectManager& manager) {
 
     ImGui::Begin("Hierarchy");
 
-    std::vector<const char*> names; // adjust max size
-
     std::vector<GameObject*> gameObjects;
     manager.getAllGameObjects(gameObjects);
 
@@ -281,7 +279,7 @@ void UI::objHierarchyWindow(GameObjectManager& manager) {
         // if no children -> in the future
     //    baseFlags |= ImGuiTreeNodeFlags_Leaf;
 
-		// highlight selected
+		// highlight selected row
         if (i == m_SelectionState.selectedIndex) {
             baseFlags |= ImGuiTreeNodeFlags_Selected;
         }
@@ -602,6 +600,27 @@ void UI::sceneWindow(GLuint texture, float aspectRatio) {
     ImGui::BeginChild("SceneViewport", size, false, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize);
 
     ImGui::Image((void*)(intptr_t)texture, size, ImVec2(0, 1), ImVec2(1, 0));
+
+    if (ImGui::IsWindowHovered())
+    {
+        // Pan with middle mouse button
+        if (InputHandler::isMouseDragging(GLFW_MOUSE_BUTTON_MIDDLE))
+        {
+			Vector2D delta = InputHandler::getMouseDeltaWorldInViewport(m_SceneWindowState.sceneSize);
+
+            renderer::editorCam.campos -= glm::vec3(delta.x, delta.y, 0.f);
+        }
+
+        if (InputHandler::getMouseScroll() != 0.f)
+        {
+            renderer::editorCam.zoom *= 1.0f - InputHandler::getMouseScroll() * renderer::editorCam.zoomFactor;
+
+			// set zoom limits
+            renderer::editorCam.zoom = std::max(renderer::editorCam.minZoom, renderer::editorCam.zoom);
+            renderer::editorCam.zoom = std::min(renderer::editorCam.maxZoom, renderer::editorCam.zoom);
+        }
+
+    }
 
     ImGui::EndChild();
 
