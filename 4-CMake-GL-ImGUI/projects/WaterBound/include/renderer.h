@@ -24,6 +24,8 @@ Technology is prohibited.
 #include <map>
 #include <input.h>
 
+#include "ResourceManager.h"
+
 /*!***********************************************************************
 \brief
 	enum class for shapes

@@ -154,6 +154,10 @@ void renderer::setup_shdrpgm()
 {
 	shdr_pgm.push_back(LoadShaders("shaders/hasTex.vert", "shaders/hasTex.frag", true));
 	shdr_pgm.push_back(LoadShaders("shaders/noTex.vert", "shaders/noTex.frag", true));
+
+	//shdr_pgm.push_back(ResourceManager::getInstance().getShaderProgram("shaders/hasTex.vert", "shaders/hasTex.frag"));
+	//shdr_pgm.push_back(ResourceManager::getInstance().getShaderProgram("shaders/noTex.vert", "shaders/noTex.frag"));
+
 }
 
 void renderer::camera::init(int w, int h)
