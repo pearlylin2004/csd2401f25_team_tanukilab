@@ -35,13 +35,13 @@ void UI::update(GameObjectManager& manager) {
     objPicking(manager);
     objDragging();
 
+    assetWindow(manager);
     drawPerformance();
-    drawShapes(manager);
     drawDebug();
 
     objHierarchyWindow(manager);
     objInspectorWindow(manager);
-    assetWindow(manager);
+    drawShapes(manager);
 }
 
 void UI::addDebugMessage(const std::string& msg) {
