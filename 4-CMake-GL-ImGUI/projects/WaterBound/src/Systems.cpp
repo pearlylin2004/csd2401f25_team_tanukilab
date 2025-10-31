@@ -22,6 +22,7 @@ Technology is prohibited.
 #pragma once
 
 #include "Systems.h"
+#include "Physics.h"
 
 //here we go buddies
 
@@ -30,7 +31,8 @@ Technology is prohibited.
 //game objects to check if the valid component
 //is present or not
 //so all systems need to use the getAllGameObjects() function
-
+//JumpForce jumpForce;
+//BulletForce bulletForce;
 // Input system - reads user input and updates velocity accordingly
 void InputSystem::update(GameObjectManager& manager, const float& deltaTime) {
 	(void)deltaTime;
@@ -343,22 +345,18 @@ void RenderSystem::fboAspectRatio(int& width, int& height) const {
 }
 
 // Physics system - updates position based on velocity and applies gravity
-void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime) {
-	//record current time for performance tracking
+void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime)
+{
 	auto start = std::chrono::high_resolution_clock::now();
 
-	// idk how physic programmer want to handle input for physics in the future
-	// so here is a simple implementation for toggling step-by-step mode
-	if (InputHandler::isComboKeyTriggered(GLFW_KEY_Z)) {
+	if (InputHandler::isComboKeyTriggered(GLFW_KEY_Z))
 		m_stepMode = !m_stepMode;
-	}
-	if (m_stepMode && InputHandler::isKeyTriggered(GLFW_KEY_Z)) {
-		m_stepReq = true;
-	}
 
-	// only update if NOT step-by-step physics debug mode or step requested
+	if (m_stepMode && InputHandler::isKeyTriggered(GLFW_KEY_Z))
+		m_stepReq = true;
+
 	if (m_stepMode && !m_stepReq) return;
-	if (m_stepReq) m_stepReq = false; // reset step request after one update
+	if (m_stepReq) m_stepReq = false;
 
 	std::vector<GameObject*> gameObjects;
 	manager.getAllGameObjects(gameObjects);
@@ -372,57 +370,30 @@ void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime) {
 		Transform* transform = object->getComponent<Transform>();
 		Physics* physics = object->getComponent<Physics>();
 
-		physics->velY += physics->gravity * deltaTime;
+		// Apply gravity and damping
+		PhysicsForces::applyGravity(physics, deltaTime);
+		PhysicsForces::applyDamping(physics);
 
+		// Handle input
 		if (object->hasComponent<Input>()) {
-			//std::cout << object << " has input component\n";
-			//bullet
-			if (InputHandler::isKeyTriggered(GLFW_KEY_SPACE)) {
-				//std::cout << "bullet is spawned\n";
-				UI::addDebugMessage("bullet is spawned");
-				static int bulletCount = 0;
-
-				Transform* t = bullet->getComponent<Transform>();
-				t->x = transform->x;  
-				t->y = transform->y;
-				t->z = 0.02f;
-				t->scaleX = 0.5f;
-				t->scaleY = 0.5f;
-				t->scaleZ = 0.5f;
-				t->rotation = 0.0f;
-
-				Physics* p = bullet->getComponent<Physics>();
-				p->velX = 5.0f;
-				p->velY = 5.0f;
-				p->onGround = false;
+			if (InputHandler::isKeyTriggered(GLFW_KEY_B)) {
+				PhysicsForces::jump(object);
 			}
 
-			// Jump
-			if (InputHandler::isKeyTriggered(GLFW_KEY_B)){// && physics->onGround) {
-				//std::cout << "player is jumping\n";
-				UI::addDebugMessage("player is jumping");
-				physics->velY = physics->jumpForce;
-				//physics->velX = physics->Speed;
-				physics->onGround = false;
+			if (InputHandler::isKeyTriggered(GLFW_KEY_SPACE) && bullet != nullptr) {
+				PhysicsForces::shoot(bullet, transform);
 			}
 		}
-		physics->velX *= physics->damping;
 
-		transform->y += physics->velY * deltaTime;
-		transform->x += physics->velX * deltaTime;
-
-		if (transform->y < physics->floorY) {
-			transform->y = physics->floorY;
-			physics->velY = 0.0f;
-			physics->onGround = true;
-			physics->velX = 0.0f;
-		}
-		transform->x += physics->velX * deltaTime;
+		// Update position
+		PhysicsForces::updatePosition(transform, physics, deltaTime);
 	}
+
 	auto end = std::chrono::high_resolution_clock::now();
-	double ms = std::chrono::duration<double, std::milli>(end - start).count(); //get elapse time in ms
-	g_SystemTimers.push_back({ "Physics", ms }); //saving timing for UI output
+	double ms = std::chrono::duration<double, std::milli>(end - start).count();
+	g_SystemTimers.push_back({ "Physics", ms });
 }
+
 
 // Collision system - detects and resolves collisions between game objects
 void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime) {

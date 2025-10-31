@@ -25,6 +25,10 @@ Technology is prohibited.
 #include "collision.h"
 #include "imgui_internal.h" // for docking in UISystem
 #include <ui.h>
+#include "dynamics.h"      // <- This defines the Dynamics component
+#include "Physics.h" // <- If you use PhysicsForces::integrate or shoot
+#include "Component.h"     // <- For Transform, In
+
 
 //forward declaration
 struct renderer;
