@@ -41,6 +41,7 @@ void UI::update(GameObjectManager& manager) {
 
     objHierarchyWindow(manager);
     objInspectorWindow(manager);
+    editorCameraControls();
     drawShapes(manager);
 }
 
@@ -572,6 +573,34 @@ void UI::assetWindow(GameObjectManager& manager) {
         ImGui::PopID();
     }
 
+    ImGui::End();
+
+}
+
+void UI::editorCameraControls() {
+	// edit camera position and zoom for editor camera
+    if (ImGui::Begin("Editor Camera")) {
+        // change the centre pos of the camera
+        ImGui::DragFloat3("Position", glm::value_ptr(renderer::editorCam.campos), 0.1f);
+
+		// change zoom level of the camera
+        ImGui::DragFloat("Zoom", &renderer::editorCam.zoom, 0.1f, renderer::editorCam.minZoom, renderer::editorCam.maxZoom + renderer::editorCam.zoom);
+
+		// change zoom factor (how fast zoom in/out)
+        ImGui::DragFloat("Zoom Factor", &renderer::editorCam.zoomFactor, 0.01f, renderer::editorCam.minZoom, renderer::editorCam.maxZoom + renderer::editorCam.zoom);
+
+        // set min zoom range (able to zoom in closer than using mouse)
+        ImGui::DragFloat("Min Zoom", &renderer::editorCam.minZoom, 0.1f, renderer::editorCam.minZoom, renderer::editorCam.maxZoom + renderer::editorCam.zoom);
+
+		// set max zoom range (able to zoom out further than using mouse)
+        ImGui::DragFloat("Max Zoom", &renderer::editorCam.maxZoom, 0.1f, renderer::editorCam.minZoom, renderer::editorCam.maxZoom + renderer::editorCam.zoom);
+
+        ImGui::Separator();
+        if (ImGui::Button("Reset Camera")) {
+            renderer::editorCam.campos = glm::vec3(0.f);
+            renderer::editorCam.zoom = 10.f;
+        }
+    }
     ImGui::End();
 
 }

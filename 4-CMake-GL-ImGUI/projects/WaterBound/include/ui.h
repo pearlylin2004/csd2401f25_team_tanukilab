@@ -59,6 +59,7 @@ private:
 	void objHierarchyWindow(GameObjectManager& manager);
 	void objInspectorWindow(GameObjectManager& manager);
 	void assetWindow(GameObjectManager& manager);
+	void editorCameraControls();
 
 	void objPicking(GameObjectManager& manager);
 	void objDragging() const;

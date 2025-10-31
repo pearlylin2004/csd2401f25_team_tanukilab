@@ -658,6 +658,7 @@ void UISystem::dockingSetUp() {
 		// Left
 		ImGui::DockBuilderDockWindow("Hierarchy", dockLeft);
 		ImGui::DockBuilderDockWindow("Inspector", dockRight);
+		ImGui::DockBuilderDockWindow("Editor Camera", dockRight);
 
 		// Right
 		ImGui::DockBuilderDockWindow("Draw Shapes", dockRightSecond);
