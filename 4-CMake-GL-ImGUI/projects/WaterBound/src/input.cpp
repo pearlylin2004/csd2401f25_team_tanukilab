@@ -30,8 +30,8 @@ bool InputHandler::m_mouseButtonsPrevious[8] = { false };
 double InputHandler::m_lastClickTime[8] = { 0.0 };
 Vector2D InputHandler::m_mousePosition = Vector2D(0.0f);
 Vector2D InputHandler::m_mousePositionPrevious = Vector2D(0.0f);
-Vector2D InputHandler::m_mouseDragStartPos = Vector2D(0.0f);
-bool InputHandler::m_isDragging = false;
+Vector2D InputHandler::m_mouseDragStartPos[8] = { false };
+bool InputHandler::m_isDragging[8] = { false };
 bool InputHandler::m_isCursorInside = false;
 
 float InputHandler::m_scrollOffset = 0.0f;
@@ -160,20 +160,21 @@ bool InputHandler::isMouseButtonDoubleClicked(int button) {
 }
 
 // check if mouse is being dragged (left button held and moving)
-bool InputHandler::isMouseDragging() {
-	return m_isDragging;
+bool InputHandler::isMouseDragging(int button) {
+	if (button < 0 || button >= 8) return false;
+	return m_isDragging[button];
 }
 
 // get change in mouse position since drag started
-Vector2D InputHandler::getMouseDragDelta() {
+Vector2D InputHandler::getMouseDragDelta(int button) {
 	if (!m_isDragging) return Vector2D(0.0f);
 
-	return Vec_Sub(&m_mousePosition, &m_mouseDragStartPos);
+	return Vec_Sub(&m_mousePosition, &m_mouseDragStartPos[button]);
 }
 
 // get mouse position when drag started
-Vector2D InputHandler::getMouseDragStartPos() {
-	return m_mouseDragStartPos;
+Vector2D InputHandler::getMouseDragStartPos(int button) {
+	return m_mouseDragStartPos[button];
 }
 
 Vector2D InputHandler::getMouseDeltaWorld() {
@@ -231,14 +232,14 @@ Vector2D InputHandler::getMousePositionInImGuiViewport(const ImVec2& scenePos, c
 	//std::cout << "local Mouse is at: " << localMouse.x << " | " << localMouse.y << std::endl;
 
 	Vector2D scale;
-	scale.x = (2.f * renderer::cam.ar * renderer::cam.zoom) / sceneSize.x;
-	scale.y = (2.f * renderer::cam.zoom) / sceneSize.y;
+	scale.x = (2.f * renderer::editorCam.ar * renderer::editorCam.zoom) / sceneSize.x;
+	scale.y = (2.f * renderer::editorCam.zoom) / sceneSize.y;
 
 	//std::cout << "world scale is: " << scale.x << " | " << scale.y << std::endl;
 
 	Vector2D world;
-	world.x = (localMouse.x * scale.x) + renderer::cam.campos.x;
-	world.y = (localMouse.y * scale.y) + renderer::cam.campos.y;
+	world.x = (localMouse.x * scale.x) + renderer::editorCam.campos.x;
+	world.y = (localMouse.y * scale.y) + renderer::editorCam.campos.y;
 
 	//std::cout << "campos is: " << renderer::cam.campos.x << " | " << renderer::cam.campos.y << std::endl;
 	//std::cout << "worldpos is: " << world.x << " | " << world.y << std::endl;
@@ -251,8 +252,8 @@ Vector2D InputHandler::getMouseDeltaWorldInViewport(const ImVec2& sceneSize)
 	Vector2D delta = getMouseDelta();
 
 	Vector2D scale;
-	scale.x = (2.f * renderer::cam.ar * renderer::cam.zoom) / sceneSize.x;
-	scale.y = (2.f * renderer::cam.zoom) / sceneSize.y;
+	scale.x = (2.f * renderer::editorCam.ar * renderer::editorCam.zoom) / sceneSize.x;
+	scale.y = (2.f * renderer::editorCam.zoom) / sceneSize.y;
 
 	//std::cout << "world scale is: " << scale.x << " | " << scale.y << std::endl;
 
@@ -336,21 +337,14 @@ void InputHandler::mouseButtonCallback(GLFWwindow* window, int button, int actio
 	(void)window;
 	if (button < 0 || button >= 8) return;
 
-	// is button is pressed, change bool in m_mouseButtons to TRUE, if released then FALSE
 	if (action == GLFW_PRESS) {
 		m_mouseButtons[button] = true;
-
-		if (button == GLFW_MOUSE_BUTTON_LEFT) {
-			m_isDragging = true;
-			m_mouseDragStartPos = m_mousePosition; // record drag start position
-		}
+		m_isDragging[button] = true;
+		m_mouseDragStartPos[button] = m_mousePosition;
 	}
 	else if (action == GLFW_RELEASE) {
 		m_mouseButtons[button] = false;
-
-		if (button == GLFW_MOUSE_BUTTON_LEFT) {
-			m_isDragging = false;
-		}
+		m_isDragging[button] = false;
 	}
 }
 //did not use window
