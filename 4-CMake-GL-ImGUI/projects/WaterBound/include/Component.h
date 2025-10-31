@@ -67,7 +67,8 @@ public:
     bool visible = true;
     bool hasTex = false;
     bool isTransparent = false;
-    bool wireframe = false;
+    bool hasAnimation = false;
+    //bool wireframe = false;
     // sorry but i need this for real time texture update
     // wait for boss sin le to help me settle this - kelly :)
     bool texChanged = false;
@@ -75,6 +76,19 @@ public:
     std::string texFile;
     
     renderer::model modelRef;
+};
+
+struct Animation : public Component
+{
+    std::unique_ptr<Component> clone() const override {
+        return std::make_unique<Animation>(*this);
+    }
+
+    bool loop = false;
+    bool runItBack = true;
+    GLuint texHDL;
+    int currentFrameColumn{}, currentFrameRow{}, totalColumn{ 1 }, totalRow{ 1 };
+    float frameTime = 0.1f, frameTimer{};
 };
 
 // Physics component to store velocity and other physics-related properties
@@ -149,4 +163,17 @@ public:
 struct UIComponent : public Component {
     //idk empty as of now
     //idk how i can use it
+};
+
+//for lua scripting
+//to know which object to run
+struct LuaScript : public Component {
+public:
+    LuaScript(const std::string& file) : filename(file) {}
+
+    std::unique_ptr<Component> clone() const override {
+        return std::make_unique<LuaScript>(*this);
+    }
+
+    std::string filename;
 };
