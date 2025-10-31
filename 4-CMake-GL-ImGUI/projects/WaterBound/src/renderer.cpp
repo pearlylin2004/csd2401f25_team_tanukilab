@@ -193,3 +193,15 @@ void renderer::camera::update()
 	proj = glm::ortho(-zoom * ar, zoom * ar, -zoom, zoom, -1.f, 1.f);
 	
 }
+
+void renderer::camera::pan(const Vector2D& delta) {
+	campos -= glm::vec3(delta.x, delta.y, 0.f);
+}
+
+void renderer::camera::zoomInOut(float scrollDelta) {
+	zoom *= 1.0f - scrollDelta * zoomFactor;
+
+	// clamp zoom
+	zoom = std::max(minZoom, zoom);
+	zoom = std::min(maxZoom, zoom);
+}

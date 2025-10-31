@@ -102,7 +102,7 @@ void UI::drawShapes(GameObjectManager& manager) {
 
             Transform* transform = circleObj->addComponent<Transform>();
             Render* render = circleObj->addComponent<Render>();
-            render->modelRef = renderer::setup_circle({ 1.0f, 0.f, 0.f }, 100);
+            render->modelRef = renderer::models[static_cast<int>(shape::circle) + static_cast<int>(shape::circle)];
 
             transform->x = circleInput.inputX;
             transform->y = circleInput.inputY;
@@ -138,7 +138,8 @@ void UI::drawShapes(GameObjectManager& manager) {
 
             Transform* transform = recobj->addComponent<Transform>();
             Render* render = recobj->addComponent<Render>();
-            render->modelRef = renderer::setup_square({ 1.0f, 0.f, 0.f });
+            render->modelRef = renderer::models[static_cast<int>(shape::square)];
+            //render->modelRef = renderer::setup_square({ 1.0f, 0.f, 0.f });
 
             transform->x = RectangleInput.inputX;
             transform->y = RectangleInput.inputY;
@@ -797,18 +798,21 @@ void UI::sceneWindow(GLuint texture, float aspectRatio) {
         // Pan with middle mouse button
         if (InputHandler::isMouseDragging(GLFW_MOUSE_BUTTON_MIDDLE))
         {
-			Vector2D delta = InputHandler::getMouseDeltaWorldInViewport(m_SceneWindowState.sceneSize);
+			/*Vector2D delta = InputHandler::getMouseDeltaWorldInViewport(m_SceneWindowState.sceneSize);
 
-            renderer::editorCam.campos -= glm::vec3(delta.x, delta.y, 0.f);
+            renderer::editorCam.campos -= glm::vec3(delta.x, delta.y, 0.f);*/
+
+            renderer::editorCam.pan(InputHandler::getMouseDeltaWorldInViewport(m_SceneWindowState.sceneSize));
         }
 
         if (InputHandler::getMouseScroll() != 0.f)
         {
-            renderer::editorCam.zoom *= 1.0f - InputHandler::getMouseScroll() * renderer::editorCam.zoomFactor;
+   //         renderer::editorCam.zoom *= 1.0f - InputHandler::getMouseScroll() * renderer::editorCam.zoomFactor;
 
-			// set zoom limits
-            renderer::editorCam.zoom = std::max(renderer::editorCam.minZoom, renderer::editorCam.zoom);
-            renderer::editorCam.zoom = std::min(renderer::editorCam.maxZoom, renderer::editorCam.zoom);
+			//// set zoom limits
+   //         renderer::editorCam.zoom = std::max(renderer::editorCam.minZoom, renderer::editorCam.zoom);
+   //         renderer::editorCam.zoom = std::min(renderer::editorCam.maxZoom, renderer::editorCam.zoom);
+            renderer::editorCam.zoomInOut(InputHandler::getMouseScroll());
         }
 
     }
