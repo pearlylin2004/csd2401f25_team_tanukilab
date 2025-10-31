@@ -26,6 +26,7 @@ Technology is prohibited.
 #include "audio.h"
 #include "Systems.h"
 #include "luaSystem.h"
+#include "ResourceManager.h"
 
 class CoreEngine {
 public:
@@ -52,6 +53,7 @@ private:
     std::string m_title;
     bool m_isRunning;
 	AudioHandler& audio;
+    ResourceManager& resourceManager;
 
     // Core Engine Systems
     std::unique_ptr<GameObjectManager> m_manager;

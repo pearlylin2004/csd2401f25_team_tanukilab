@@ -1,5 +1,5 @@
 #include "ResourceManager.h"
-/*
+
 ResourceManager& ResourceManager::getInstance() {
 	static ResourceManager instance;
 	return instance;
@@ -106,12 +106,12 @@ FMOD::Sound* ResourceManager::getSound(const std::string& path, bool loop) {
 }
 
 FMOD::Sound* ResourceManager::loadSoundFromFile(const std::string& path, bool loop) {
-    // This logic is moved from AudioHandler::loadSound
+    //Taken from AudioHandler::loadSound
     FMOD::Sound* sound = nullptr;
     FMOD_MODE mode = loop ? FMOD_LOOP_NORMAL : FMOD_DEFAULT;
 
     FMOD_RESULT result = m_fmodSystem->createSound(path.c_str(), mode, nullptr, &sound);
-    AudioHandler::FMODErrorCheck(result); // Use the static error checker
+    AudioHandler::FMODErrorCheck(result); 
 
     if (result != FMOD_OK) {
         std::cerr << "ResourceManager Error: Failed to create sound: " << path << std::endl;
@@ -121,24 +121,24 @@ FMOD::Sound* ResourceManager::loadSoundFromFile(const std::string& path, bool lo
     return sound;
 }
 
-GLuint ResourceManager::getShaderProgram(const std::string& vertPath, const std::string& fragPath) {
+GLuint ResourceManager::getShader(const std::string& vertPath, const std::string& fragPath) {
     if (vertPath.empty() || fragPath.empty()) {
         return 0;
     }
 
-    // Create a unique key for the cache
-    std::string key = vertPath + fragPath;
+    // Create key for the cache
+    std::string key = vertPath + "|" + fragPath;
 
-    // Check if shader is already in cache
+    //Check if shader is already in cache
     auto it = m_shaderCache.find(key);
     if (it != m_shaderCache.end()) {
         return it->second;
     }
 
-    // Not in cache, load it by calling the existing LoadShaders function
+    //If not in cache, load it by calling the existing LoadShaders function
     std::cout << "ResourceManager: Loading shader program: " << vertPath << " + " << fragPath << std::endl;
 
-    // We call the existing global LoadShaders function from shader.cpp
+    //Call the existing global LoadShaders function from shader.cpp
     GLuint newProgramID = LoadShaders(vertPath, fragPath, true);
 
     if (newProgramID != 0) {
@@ -148,4 +148,3 @@ GLuint ResourceManager::getShaderProgram(const std::string& vertPath, const std:
     return newProgramID;
 }
 
-*/

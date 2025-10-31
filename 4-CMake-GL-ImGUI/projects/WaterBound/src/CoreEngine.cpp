@@ -26,7 +26,7 @@ Technology is prohibited.
 #include "CoreEngine.h"
 
 CoreEngine::CoreEngine()
-    : m_window(nullptr), m_fps(0.0), m_delta(0.0), m_isRunning(false), audio(AudioHandler::getInstance()) {
+    : m_window(nullptr), m_fps(0.0), m_delta(0.0), m_isRunning(false), audio(AudioHandler::getInstance()), resourceManager(ResourceManager::getInstance()) {
 }
 
 CoreEngine::~CoreEngine() {
@@ -97,6 +97,7 @@ void CoreEngine::Init() {
     std::cout << "runnning script for object 2" << std::endl;
 
     audio.init();
+	resourceManager.init(audio.getInstance()));
 
     m_isRunning = true;
 }
