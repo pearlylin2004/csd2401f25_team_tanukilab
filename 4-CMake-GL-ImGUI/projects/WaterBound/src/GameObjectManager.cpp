@@ -34,6 +34,7 @@ GameObject* GameObjectManager::createGameObject(const std::string& name) {
 
 //use this when objects need to interact with each other
 GameObject* GameObjectManager::getGameObject(const std::string& name) {
+
 	//find object in map
 	auto iterator = m_gameObjects.find(name);
 	if (iterator != m_gameObjects.end()) {//if found
@@ -41,6 +42,17 @@ GameObject* GameObjectManager::getGameObject(const std::string& name) {
 	}
 
 	return nullptr;
+}
+
+void GameObjectManager::deleteGameObject(GameObject* object) {
+	if (!object) return;
+
+	for (auto iterator = m_gameObjects.begin(); iterator != m_gameObjects.end(); ++iterator) {
+		if (iterator->second.get() == object) {
+			m_gameObjects.erase(iterator);
+			return;
+		}
+	}
 }
 
 //clone an existing object
@@ -82,15 +94,40 @@ void GameObjectManager::getAllGameObjects(std::vector<GameObject*>& gameObjects)
 
 void GameObjectManager::init()
 {
-	m_gameObjects.reserve(1000);//preallocate space for 1000 objects
+	loadFromFile("shaders/Scene/temp_serialize.txt");
 
-	std::ifstream is{ "shaders/temp_serialize.txt" };
+}
+
+bool GameObjectManager::renameGameObject(GameObject* obj, const std::string& newName) {
+	if (!obj) return false;
+	if (newName.empty()) return false;
+
+	for (auto& odject : m_gameObjects) {
+		// return false another object has the same name
+		GameObject* other = odject.second.get();
+		if (other != obj && other->getObjectName() == newName) {
+			return false;
+		}
+	}
+
+	// rename if no duplicated name
+	obj->getObjectName() = newName;
+	return true;
+
+}
+
+void GameObjectManager::loadFromFile(const std::string& filename)
+{
+	std::ifstream is{ filename };
 	if (!is)
 	{
-		std::cerr << "file not found: shaders/temp_serialize.txt\n";
+		std::cerr << "file not found: " + filename + "\n";
 		return;
 	}
 	std::cout << "file opened\n";
+
+	m_gameObjects.clear(); // clear existing objects before loading new ones
+
 	std::string checker{};
 	std::string objectName;
 	std::string shape;
@@ -119,12 +156,20 @@ void GameObjectManager::init()
 			if (shape == "circle")
 			{
 				renderptr->modelRef = renderer::models[static_cast<int>(shape::circle)];
+				std::cout << "circle is called" << std::endl;
 			}
 			is >> renderptr->hasTex;
 			if (renderptr->hasTex == true)
 			{
 				is >> renderptr->texFile;
+				renderptr->texHDL = 0;
+				renderptr->texChanged = true;
 				is >> renderptr->hasAnimation;
+			}
+			else {
+				renderptr->texFile.clear();
+				renderptr->texHDL = 0;
+				renderptr->texChanged = false;
 			}
 			std::cout << shape << "\n";
 		}
@@ -140,12 +185,17 @@ void GameObjectManager::init()
 			std::cout << "rotation :" << transformptr->rotation << "\n";
 			std::cout << "scale :" << transformptr->scaleX << " ," << transformptr->scaleY << " ," << transformptr->scaleZ << "\n";
 		}
+		if (checker == "input")
+		{
+			m_gameObjects[objectName]->addComponent<Input>(1.f);
+			std::cout << "input component added\n";
+		}
 		if (checker == "physics") {
 			Physics* phyptr = m_gameObjects[objectName]->addComponent<Physics>();
 			is >> phyptr->inWater >> phyptr->buoancy;
 			std::cout << "inwater : " << phyptr->inWater << ", " << phyptr->buoancy << "\n";
 		}
-		if(checker == "collision")
+		if (checker == "collision")
 		{
 			m_gameObjects[objectName]->addComponent<CollisionInfo>();
 			std::cout << "collision component added\n";
@@ -158,8 +208,92 @@ void GameObjectManager::init()
 			std::cout << "animation component added\n";
 		}
 
-		m_gameObjects["player"]->addComponent<Input>(1.f);
-		
+		//m_gameObjects["player"]->addComponent<Input>(1.f);
+
 	}
 }
 
+void GameObjectManager::saveToFile(const std::string& filename) {
+	std::ofstream os{ filename };
+	if (!os)
+	{
+		std::cerr << "file not found: " << filename << std::endl;
+		return;
+	}
+
+	for (auto& [name, obj] : m_gameObjects)
+	{
+		os << "object " << obj->getObjectName() << "\n";
+
+		if (auto render = obj->getComponent<Render>())
+		{
+			os << "renderer ";
+
+			switch (render->modelRef.shape) {
+			case shape::square:
+				os << "square ";
+				break;
+			case shape::circle:
+				os << "circle ";
+				break;
+			default:
+				os << "circle ";
+				break;
+			}
+
+			os << render->hasTex << " ";
+			if (render->hasTex)
+				os << render->texFile;
+
+			if(render->hasAnimation)
+				os << " " << render->hasAnimation;
+			else
+				os << " " << 0;
+
+			os << "\n";
+		}
+
+		if (auto transform = obj->getComponent<Transform>())
+		{
+			os << "transform "
+				<< transform->x << " "
+				<< transform->y << " "
+				<< transform->z << " "
+				<< transform->rotation << " "
+				<< transform->scaleX << " "
+				<< transform->scaleY << " "
+				<< transform->scaleZ << "\n";
+		}
+
+		if (obj->hasComponent<Input>())
+		{
+			os << "input\n";
+		}
+
+		if (auto physics = obj->getComponent<Physics>())
+		{
+			os << "physics "
+				<< physics->inWater << " "
+				<< physics->buoancy << "\n";
+		}
+
+		if (obj->hasComponent<CollisionInfo>())
+		{
+			os << "collision\n";
+		}
+
+		if (Animation* animationptr = obj->getComponent<Animation>()) {
+			os << "animation "
+				<< animationptr->loop << " "
+				<< animationptr->currentFrameColumn << " "
+				<< animationptr->currentFrameRow << " "
+				<< animationptr->totalColumn << " "
+				<< animationptr->totalRow << " "
+				<< animationptr->frameTime << "\n";
+		}
+
+		os << "\n";
+	}
+
+	std::cout << "Scene saved to " << filename << "\n";
+}

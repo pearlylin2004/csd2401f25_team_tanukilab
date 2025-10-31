@@ -23,9 +23,7 @@ Technology is prohibited.
 #include "GameObjectManager.h"
 #include <stb_image.h>
 #include "collision.h"
-#include <imgui.h> //for use of imgui in UISystem
-#include <imgui_impl_glfw.h> //for use of imgui in UISystem
-#include <imgui_impl_opengl3.h> //for use of imgui in UISystem
+#include "imgui_internal.h" // for docking in UISystem
 #include <ui.h>
 
 //forward declaration
@@ -55,6 +53,13 @@ private:
 
 *************************************************************************/
 class RenderSystem {
+	GLuint fbo;
+	GLuint texture;
+
+	int fboWidth = 0;
+	int fboHeight = 0;
+
+	void createFBO();
 public:
 	/*!***********************************************************************
 	\brief
@@ -64,7 +69,7 @@ public:
 		array of all objects
 
 	*************************************************************************/
-	void init(GameObjectManager& manager);
+	void init(GameObjectManager& manager, int fboW, int fboH);
 	/*!***********************************************************************
 	\brief
 		resend matrix data to the shaders to recalculated object position and orientation to draw for the new frame
@@ -77,6 +82,11 @@ public:
 	GLuint uploadtex(std::string const& filename, bool& isTransparent);
 	void renderTex(GameObject* object, float const& deltaTime);
 	void renderNoTex(GameObject* object);
+
+	GLuint getTexture() const { return texture; }
+
+	void fboAspectRatio(int& width, int& height) const;
+	~RenderSystem();
 };
 
 /*!***********************************************************************
@@ -92,7 +102,7 @@ public:
 
 	\param[in] GameObjectManager manager
 		array of all objects
-		
+
 	\param[in] deltaTime
 		tracking of the world time
 
@@ -109,16 +119,18 @@ public:
 // UI system - handles UI rendering and interactions using ImGui
 class UISystem {
 public:
-	void init(GLFWwindow* window);
+	void init(GLFWwindow* window, RenderSystem* renderer);
 	~UISystem();
 	void update(GameObjectManager& manager);
-	
+
 	static void toggleUI() { showUI = !showUI; } // temp toggle function
+	static bool isShowUI() { return showUI; }
 
 private:
 	void dockingSetUp();
 	void renderMultipleViewPorts();
 	UI m_UI;
 	static bool showUI;
+	bool m_firstTime = true;
+	RenderSystem* m_renderer = nullptr;
 };
-
