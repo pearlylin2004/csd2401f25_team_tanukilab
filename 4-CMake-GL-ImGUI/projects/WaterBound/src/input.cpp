@@ -267,14 +267,6 @@ Vector2D InputHandler::getMouseDeltaWorldInViewport(const ImVec2& sceneSize)
 	return world;
 }
 
-
-bool InputHandler::isCursorInsideImGuiViewport(const ImVec2& scenePos, const ImVec2& sceneSize) {
-	ImVec2 mousePos = ImGui::GetMousePos();
-
-	return (mousePos.x >= scenePos.x && mousePos.x <= scenePos.x + sceneSize.x &&
-		mousePos.y >= scenePos.y && mousePos.y <= scenePos.y + sceneSize.y);
-}
-
 // get cursor world postion
 Vector2D InputHandler::getWorldMousePosition() {
 	float mx = getMouseX();

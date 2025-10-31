@@ -92,8 +92,6 @@ public:
 
 	// get current cursor position in imgui viewport
 	static Vector2D getMousePositionInImGuiViewport(const ImVec2& scenePos, const ImVec2& sceneSize);
-	// check if cursor is inside ImGui viewport
-	static bool isCursorInsideImGuiViewport(const ImVec2& scenePos, const ImVec2& sceneSize);
 	// get mouse delta in world space of the viewport
 	static Vector2D getMouseDeltaWorldInViewport(const ImVec2& sceneSize);
 
