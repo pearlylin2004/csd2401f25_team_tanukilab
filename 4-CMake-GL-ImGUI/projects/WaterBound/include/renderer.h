@@ -38,6 +38,16 @@ enum class shape
 
 /*!***********************************************************************
 \brief
+	enum class for camera modes (one for gameplay, one for editor)
+
+*************************************************************************/
+enum class cameraMode {
+	GAME = 0,
+	EDITOR
+};
+
+/*!***********************************************************************
+\brief
 	struct for everything to do with rendering
 
 *************************************************************************/
@@ -130,6 +140,10 @@ struct renderer
 		glm::vec3 up;
 		glm::mat4 view;
 		glm::mat4 proj;
+		cameraMode mode; // camera mode: game or editor
+		float zoomFactor;
+		float minZoom;
+		float maxZoom;
 		/*!***********************************************************************
 		\brief
 			initializes all the data for the camera
@@ -156,4 +170,5 @@ struct renderer
 
 	*************************************************************************/
 	static camera cam;
+	static camera editorCam;
 };
