@@ -34,9 +34,6 @@ Technology is prohibited.
 // Input system - reads user input and updates velocity accordingly
 void InputSystem::update(GameObjectManager& manager, const float& deltaTime) {
 	(void)deltaTime;
-	//record current time for performance tracking
-	auto start = std::chrono::high_resolution_clock::now();
-
 	std::vector<GameObject*> gameObjects;
 	manager.getAllGameObjects(gameObjects);
 
@@ -61,9 +58,10 @@ void InputSystem::update(GameObjectManager& manager, const float& deltaTime) {
 					velocity->velX = input->moveSpeed;
 				}
 
-				if (InputHandler::isComboKeyTriggered(GLFW_KEY_0)) {
+				if (InputHandler::isKeyTriggered(GLFW_KEY_0)) {
 					UISystem::toggleUI();
 				}
+
 
 				// Press F9 to simulate a failure (for crash logger)
 				if (InputHandler::isKeyTriggered(GLFW_KEY_F9)) {
@@ -73,25 +71,13 @@ void InputSystem::update(GameObjectManager& manager, const float& deltaTime) {
 			}
 		}
 	}
-	auto end = std::chrono::high_resolution_clock::now();
-	double ms = std::chrono::duration<double, std::milli>(end - start).count(); //get elapse time in ms
-	g_SystemTimers.push_back({ "Input", ms }); //saving timing for UI output
 }
 
 
 // Render system - draws all game objects with a Render component
-void RenderSystem::update(GameObjectManager& manager, float const& deltaTime) 
-{
-	//record current time for performance tracking
-	auto start = std::chrono::high_resolution_clock::now();
-
+void RenderSystem::update(GameObjectManager& manager) {
 	std::vector<GameObject*> gameObjects;
 	manager.getAllGameObjects(gameObjects);
-
-	// Attach texture to FBO if editor is on
-	if (UISystem::isShowUI()) {
-		createFBO();
-	}
 
 	// Update textures if they have changed (in level editor)
 	for (GameObject* object : gameObjects)
@@ -112,84 +98,160 @@ void RenderSystem::update(GameObjectManager& manager, float const& deltaTime)
 	}
 
 	renderer::cam.update();
+	glUseProgram(renderer::shdr_pgm);
+	GLint vTransformView = glGetUniformLocation(renderer::shdr_pgm, "V");
+	//renderer::cam.view = glm::mat4{ 1 };
+	glUniformMatrix4fv(vTransformView, 1, GL_FALSE, glm::value_ptr(renderer::cam.view));
+	GLint vTransformProj = glGetUniformLocation(renderer::shdr_pgm, "P");
+	//renderer::cam.proj = glm::mat4{ 1 };
+	glUniformMatrix4fv(vTransformProj, 1, GL_FALSE, glm::value_ptr(renderer::cam.proj));
 
-	std::vector<GameObject*> objectWithTex;
-	std::vector<GameObject*> objectWithoutTex;
+	
 
-	for (auto object : gameObjects)
-	{
-		if (object->getComponent<Render>()->hasTex)
-			objectWithTex.push_back(object);
-		else
-			objectWithoutTex.push_back(object);
+	for (auto object : gameObjects) {
+		if (object->hasComponent<Render>() && object->hasComponent<Transform>())
+		{
+			Transform* transform = object->getComponent<Transform>();
+			Render* render = object->getComponent<Render>();
+
+			if (!render->isTransparent)
+			{
+				//position and orientation of mesh
+				float angle = glm::radians(transform->rotation);
+				transform->mdlWorld = glm::mat4{ 1 };
+				transform->mdlWorld = glm::translate(transform->mdlWorld, glm::vec3(transform->x, transform->y, transform->z));
+				transform->mdlWorld = glm::rotate(transform->mdlWorld, angle, glm::vec3(0, 0, 1.f));
+				transform->mdlWorld = glm::scale(transform->mdlWorld, glm::vec3(transform->scaleX, transform->scaleY, transform->scaleZ));
+
+				//texture bs
+				if (render->hasTex)
+				{
+					glBindTextureUnit(0, render->texHDL);
+				}
+				else glBindTextureUnit(0, 0);
+				render->wireframe = false;
+
+				glm::mat4 texRot{ 1 };
+				texRot = glm::rotate(texRot, angle, glm::vec3(0, 0, 1.f));
+				glm::vec2 rotationCenter{ 0,0 }; //if needed in the future it can be a member variable, now just for sanity
+
+				//binding model to world matrix
+				glBindVertexArray(render->modelRef.vaoid);
+				GLint vTransformLoc = glGetUniformLocation(renderer::shdr_pgm, "M");
+				glUniformMatrix4fv(vTransformLoc, 1, GL_FALSE, glm::value_ptr(transform->mdlWorld));
+
+				//binding texture rotation and id
+				GLint texid = glGetUniformLocation(renderer::shdr_pgm, "uTex2d");
+				GLint rotmat = glGetUniformLocation(renderer::shdr_pgm, "uRotMtx");
+				GLint rotcenter = glGetUniformLocation(renderer::shdr_pgm, "uMcn");
+				GLint hastex = glGetUniformLocation(renderer::shdr_pgm, "uHasTex");
+				GLint wireframe = glGetUniformLocation(renderer::shdr_pgm, "uIsWireframe");
+				glUniform1i(texid, 0);
+				glUniformMatrix2fv(rotmat, 1, GL_FALSE, glm::value_ptr(texRot));
+				glUniform2fv(rotcenter, 1, glm::value_ptr(rotationCenter));
+				glUniform1i(hastex, static_cast<int>(render->hasTex));
+				glUniform1i(wireframe, static_cast<int>(render->wireframe));
+
+				if (render->modelRef.shape == shape::square)
+					glDrawElements(GL_TRIANGLES, render->modelRef.elem_cnt, GL_UNSIGNED_SHORT, nullptr);
+				else if (render->modelRef.shape == shape::circle)
+					glDrawArrays(render->modelRef.primitive_type, 0, render->modelRef.draw_cnt);
+				glBindVertexArray(0);
+			}
+		}
 	}
-	//rendering objects without texture, just color
-	glUseProgram(renderer::shdr_pgm[1]);
-	GLint vTransformView = glGetUniformLocation(renderer::shdr_pgm[1], "V");
-	glUniformMatrix4fv(vTransformView, 1, GL_FALSE, glm::value_ptr(renderer::cam.view));
-	GLint vTransformProj = glGetUniformLocation(renderer::shdr_pgm[1], "P");
-	glUniformMatrix4fv(vTransformProj, 1, GL_FALSE, glm::value_ptr(renderer::cam.proj));
-	for (GameObject* object : objectWithoutTex)
-		renderNoTex(object);
 
-	//rendering objects with textures
-	glUseProgram(renderer::shdr_pgm[0]);
-	vTransformView = glGetUniformLocation(renderer::shdr_pgm[0], "V");
-	glUniformMatrix4fv(vTransformView, 1, GL_FALSE, glm::value_ptr(renderer::cam.view));
-	vTransformProj = glGetUniformLocation(renderer::shdr_pgm[0], "P");
-	glUniformMatrix4fv(vTransformProj, 1, GL_FALSE, glm::value_ptr(renderer::cam.proj));
-	for (GameObject* object : objectWithTex)
-		renderTex(object, deltaTime);
-
-	if (UISystem::isShowUI()) glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-	//record end time for performance tracking
-	auto end = std::chrono::high_resolution_clock::now();
-	double ms = std::chrono::duration<double, std::milli>(end - start).count(); //get elapse time in ms
-	g_SystemTimers.push_back({ "Render", ms }); //saving timing for UI output
-
-}
-
-void RenderSystem::createFBO() {
-	if (texture) glDeleteTextures(1, &texture);
-	if (fbo) glDeleteFramebuffers(1, &fbo);
-
-	glGenFramebuffers(1, &fbo);
-	glBindFramebuffer(GL_FRAMEBUFFER, fbo);
-
-	glGenTextures(1, &texture);
-	glBindTexture(GL_TEXTURE_2D, texture);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, fboWidth, fboHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture, 0);
-}
-
-RenderSystem::~RenderSystem() {
-	if (texture) glDeleteTextures(1, &texture);
-	if (fbo) glDeleteFramebuffers(1, &fbo);
-}
-
-
-// Load all textures for game objects with a Render component
-void RenderSystem::init(GameObjectManager& manager, int fboW, int fboH)
-{
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	//glDepthMask(GL_FALSE);
+
+	for (auto object : gameObjects) {
+		if (object->hasComponent<Render>() && object->hasComponent<Transform>())
+		{
+			Transform* transform = object->getComponent<Transform>();
+			Render* render = object->getComponent<Render>();
+
+			if (render->isTransparent)
+			{
+				//position and orientation of mesh
+				float angle = glm::radians(transform->rotation);
+				transform->mdlWorld = glm::mat4{ 1 };
+				transform->mdlWorld = glm::translate(transform->mdlWorld, glm::vec3(transform->x, transform->y, transform->z));
+				transform->mdlWorld = glm::rotate(transform->mdlWorld, angle, glm::vec3(0, 0, 1.f));
+				transform->mdlWorld = glm::scale(transform->mdlWorld, glm::vec3(transform->scaleX, transform->scaleY, transform->scaleZ));
+
+				//texture bs
+				if (render->hasTex)
+				{
+					glBindTextureUnit(0, render->texHDL);
+				}
+				else glBindTextureUnit(0, 0);
+				render->wireframe = true;
+
+				glm::mat4 texRot{ 1 };
+				texRot = glm::rotate(texRot, angle, glm::vec3(0, 0, 1.f));
+				glm::vec2 rotationCenter{ 0,0 }; //if needed in the future it can be a member variable, now just for sanity
+
+				//binding model to world matrix
+				glBindVertexArray(render->modelRef.vaoid);
+				GLint vTransformLoc = glGetUniformLocation(renderer::shdr_pgm, "M");
+				glUniformMatrix4fv(vTransformLoc, 1, GL_FALSE, glm::value_ptr(transform->mdlWorld));
+
+				//binding texture rotation and id
+				GLint texid = glGetUniformLocation(renderer::shdr_pgm, "uTex2d");
+				GLint rotmat = glGetUniformLocation(renderer::shdr_pgm, "uRotMtx");
+				GLint rotcenter = glGetUniformLocation(renderer::shdr_pgm, "uMcn");
+				GLint hastex = glGetUniformLocation(renderer::shdr_pgm, "uHasTex");
+				GLint wireframe = glGetUniformLocation(renderer::shdr_pgm, "uIsWireframe");
+				glUniform1i(texid, 0);
+				glUniformMatrix2fv(rotmat, 1, GL_FALSE, glm::value_ptr(texRot));
+				glUniform2fv(rotcenter, 1, glm::value_ptr(rotationCenter));
+				glUniform1i(hastex, static_cast<int>(render->hasTex));
+				glUniform1i(wireframe, 0);
+
+				if (render->modelRef.shape == shape::square)
+				{
+					// --- Pass 1: textured fill ---
+					glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+					glBindVertexArray(render->modelRef.vaoid);
+					glUniform1i(wireframe, 0);
+					glDrawElements(GL_TRIANGLES, render->modelRef.elem_cnt, GL_UNSIGNED_SHORT, nullptr);
+					// --- Pass 2: wireframe overlay ---
+					glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+					glUniform1i(wireframe, 1);
+					glLineWidth(2.0f);
+					//glDepthMask(GL_FALSE);
+					glDrawElements(GL_TRIANGLES, render->modelRef.elem_cnt, GL_UNSIGNED_SHORT, nullptr);
+
+					// Restore state
+					//glDepthMask(GL_TRUE);
+					glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+					glUniform1i(wireframe, 0);
+				}
+					//glDrawElements(GL_TRIANGLES, render->modelRef.elem_cnt, GL_UNSIGNED_SHORT, nullptr);
+				else if (render->modelRef.shape == shape::circle)
+					glDrawArrays(render->modelRef.primitive_type, 0, render->modelRef.draw_cnt);
+				glBindVertexArray(0);
+			}
+		}
+	}
+	//glDepthMask(GL_TRUE);
+}
+
+// Load all textures for game objects with a Render component
+void RenderSystem::init(GameObjectManager& manager)
+{
 	stbi_set_flip_vertically_on_load(true);
 	std::vector<GameObject*> gameObjects;
 	manager.getAllGameObjects(gameObjects);
 	for (GameObject* object : gameObjects)
 	{
-		if (object->getComponent<Render>()->hasTex)
+		if (object->hasComponent<Render>())
 		{
 			Render* render = object->getComponent<Render>();
 			render->texHDL = uploadtex(render->texFile, render->isTransparent);
 		}
 	}
-
-	fboWidth = fboW;
-	fboHeight = fboH;
 }
 
 // Upload a texture from file and return its OpenGL handle
@@ -198,7 +260,7 @@ GLuint RenderSystem::uploadtex(std::string const& filename, bool& isTransparent)
 	int width, height, channels;
 	unsigned char* data = stbi_load(filename.c_str(), &width, &height, &channels, STBI_rgb_alpha);
 	if (!data) {
-		std::cerr << "Failed to load image: " << filename << std::endl;
+		std::cerr << "Failed to load image: " << filename << "]" << std::endl;
 		return 0;
 	}
 
@@ -221,131 +283,8 @@ GLuint RenderSystem::uploadtex(std::string const& filename, bool& isTransparent)
 	return texobj_hdl;
 }
 
-void RenderSystem::renderTex(GameObject* object, float const& deltaTime)
-{
-	if (object->hasComponent<Render>() && object->hasComponent<Transform>())
-	{
-		Transform* transform = object->getComponent<Transform>();
-		Render* render = object->getComponent<Render>();
-
-		//position and orientation of mesh
-		float angle = glm::radians(transform->rotation);
-		transform->mdlWorld = glm::mat4{ 1 };
-		transform->mdlWorld = glm::translate(transform->mdlWorld, glm::vec3(transform->x, transform->y, transform->z));
-		transform->mdlWorld = glm::rotate(transform->mdlWorld, angle, glm::vec3(0, 0, 1.f));
-		transform->mdlWorld = glm::scale(transform->mdlWorld, glm::vec3(transform->scaleX, transform->scaleY, transform->scaleZ));
-		glBindTextureUnit(0, render->texHDL);
-
-		glm::mat4 texRot{ 1 };
-		texRot = glm::rotate(texRot, angle, glm::vec3(0, 0, 1.f));
-		glm::vec2 rotationCenter{ 0,0 }; //if needed in the future it can be a member variable, now just for sanity
-
-		//binding model to world matrix
-		glBindVertexArray(render->modelRef.vaoid);
-		GLint vTransformLoc = glGetUniformLocation(renderer::shdr_pgm[0], "M");
-		glUniformMatrix4fv(vTransformLoc, 1, GL_FALSE, glm::value_ptr(transform->mdlWorld));
-
-		glm::vec2 texpos, texscale;
-		if (render->hasAnimation)
-		{
-			Animation* animation = object->getComponent<Animation>();
-			texpos = glm::vec2{ animation->currentFrameColumn / static_cast<float>(animation->totalColumn), animation->currentFrameRow / static_cast<float>(animation->totalRow) };
-			texscale = glm::vec2{ 1.f / animation->totalColumn, 1.f / animation->totalRow };
-			if (animation->loop)
-			{
-				animation->frameTimer += deltaTime;
-				//std::cout << "\n-------Frame Timer---------\n" << animation->frameTimer << "\n\n";
-				if (animation->frameTimer >= animation->frameTime)
-				{
-					animation->frameTimer -= animation->frameTime;
-					/*if (animation->runItBack && animation->currentFrameColumn == 0)
-					{
-						animation->runItBack = false;
-					}
-					else
-					{
-						animation->currentFrameColumn = (animation->currentFrameColumn + 1) % animation->totalColumn;
-						animation->currentFrameRow = (animation->currentFrameRow + 1) % animation->totalRow;
-						animation->runItBack = true;
-					}*/
-					animation->currentFrameColumn = (animation->currentFrameColumn + 1) % animation->totalColumn;
-					animation->currentFrameRow = (animation->currentFrameRow + 1) % animation->totalRow;
-					animation->runItBack = true;
-					
-				}
-			}
-		}
-		else
-		{
-			texpos = glm::vec2{ 0,0 };
-			texscale = glm::vec2{ 1,1 };
-		}
-		//binding texture rotation and id
-		GLint texid = glGetUniformLocation(renderer::shdr_pgm[0], "uTex2d");
-		GLint rotmat = glGetUniformLocation(renderer::shdr_pgm[0], "uRotMtx");
-		GLint rotcenter = glGetUniformLocation(renderer::shdr_pgm[0], "uMcn");
-		GLint offset = glGetUniformLocation(renderer::shdr_pgm[0], "uTexOffSet");
-		GLint tscale = glGetUniformLocation(renderer::shdr_pgm[0], "uTexScale");
-		glUniform1i(texid, 0);
-		glUniformMatrix2fv(rotmat, 1, GL_FALSE, glm::value_ptr(texRot));
-		glUniform2fv(rotcenter, 1, glm::value_ptr(rotationCenter));
-		glUniform2fv(offset, 1, glm::value_ptr(texpos));
-		glUniform2fv(tscale, 1, glm::value_ptr(texscale));
-
-		if (render->modelRef.shape == shape::square)
-		{
-			// --- Pass 1: textured fill ---
-			glBindVertexArray(render->modelRef.vaoid);
-			glDrawElements(GL_TRIANGLES, render->modelRef.elem_cnt, GL_UNSIGNED_SHORT, nullptr);
-		}
-		//glDrawElements(GL_TRIANGLES, render->modelRef.elem_cnt, GL_UNSIGNED_SHORT, nullptr);
-		else if (render->modelRef.shape == shape::circle)
-			glDrawArrays(render->modelRef.primitive_type, 0, render->modelRef.draw_cnt);
-		glBindVertexArray(0);
-	}
-}
-
-void RenderSystem::renderNoTex(GameObject* object)
-{
-	if (object->hasComponent<Render>() && object->hasComponent<Transform>())
-	{
-		Transform* transform = object->getComponent<Transform>();
-		Render* render = object->getComponent<Render>();
-
-		//position and orientation of mesh
-		float angle = glm::radians(transform->rotation);
-		transform->mdlWorld = glm::mat4{ 1 };
-		transform->mdlWorld = glm::translate(transform->mdlWorld, glm::vec3(transform->x, transform->y, transform->z));
-		transform->mdlWorld = glm::rotate(transform->mdlWorld, angle, glm::vec3(0, 0, 1.f));
-		transform->mdlWorld = glm::scale(transform->mdlWorld, glm::vec3(transform->scaleX, transform->scaleY, transform->scaleZ));
-		glBindTextureUnit(0, 0);
-
-		glm::mat4 texRot{ 1 };
-		texRot = glm::rotate(texRot, angle, glm::vec3(0, 0, 1.f));
-		glm::vec2 rotationCenter{ 0,0 }; //if needed in the future it can be a member variable, now just for sanity
-
-		//binding model to world matrix
-		glBindVertexArray(render->modelRef.vaoid);
-		GLint vTransformLoc = glGetUniformLocation(renderer::shdr_pgm[1], "M");
-		glUniformMatrix4fv(vTransformLoc, 1, GL_FALSE, glm::value_ptr(transform->mdlWorld));
-
-		if (render->modelRef.shape == shape::square)
-			glDrawElements(GL_TRIANGLES, render->modelRef.elem_cnt, GL_UNSIGNED_SHORT, nullptr);
-		else if (render->modelRef.shape == shape::circle)
-			glDrawArrays(render->modelRef.primitive_type, 0, render->modelRef.draw_cnt);
-		glBindVertexArray(0);
-	}
-}
-
-void RenderSystem::fboAspectRatio(int& width, int& height) const {
-	width = fboWidth;
-	height = fboHeight;
-}
-
 // Physics system - updates position based on velocity and applies gravity
 void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime) {
-	//record current time for performance tracking
-	auto start = std::chrono::high_resolution_clock::now();
 
 	// idk how physic programmer want to handle input for physics in the future
 	// so here is a simple implementation for toggling step-by-step mode
@@ -419,17 +358,11 @@ void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime) {
 		}
 		transform->x += physics->velX * deltaTime;
 	}
-	auto end = std::chrono::high_resolution_clock::now();
-	double ms = std::chrono::duration<double, std::milli>(end - start).count(); //get elapse time in ms
-	g_SystemTimers.push_back({ "Physics", ms }); //saving timing for UI output
 }
 
 // Collision system - detects and resolves collisions between game objects
 void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime) {
 	(void)deltaTime;
-	//record current time for performance tracking
-	auto start = std::chrono::high_resolution_clock::now();
-
 	//getting all objects
 	std::vector<GameObject*> gameObjects;
 	manager.getAllGameObjects(gameObjects);
@@ -519,25 +452,21 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 			}
 		}
 	}
-	auto end = std::chrono::high_resolution_clock::now();
-	double ms = std::chrono::duration<double, std::milli>(end - start).count(); //get elapse time in ms
-	g_SystemTimers.push_back({ "Collisions", ms }); //saving timing for UI output
 }
 
 //UI system - handles ImGui rendering and interaction
 bool UISystem::showUI = false;
 
-void UISystem::init(GLFWwindow* window, RenderSystem* renderer) {
+void UISystem::init(GLFWwindow* window) {
 	// --- ImGui Setup ---
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
-	ImGuiIO& io = ImGui::GetIO(); //(void)io;
-	io.FontGlobalScale = 1.5f;
+	ImGuiIO& io = ImGui::GetIO(); (void)io;
+	io.FontGlobalScale = 1.2f;
 	io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard
 			| ImGuiConfigFlags_DockingEnable
 			| ImGuiConfigFlags_ViewportsEnable;
 	ImGui::StyleColorsDark();
-	// io.IniFilename = "imgui_layout.ini";
 	ImGui_ImplGlfw_InitForOpenGL(window, true);
 	ImGui_ImplOpenGL3_Init("#version 450");
 
@@ -545,8 +474,6 @@ void UISystem::init(GLFWwindow* window, RenderSystem* renderer) {
 	io.ConfigViewportsNoTaskBarIcon = true;
 
 	m_UI.loadAssetsFromDirectory();
-
-	m_renderer = renderer;
 }
 
 UISystem::~UISystem() {
@@ -560,9 +487,6 @@ UISystem::~UISystem() {
 void UISystem::update(GameObjectManager& manager) {
 	if (!showUI) return; // skip UI rendering if disabled
 
-	//record current time for performance tracking
-	auto start = std::chrono::high_resolution_clock::now();
-
 	std::vector<GameObject*> gameObjects;
 	manager.getAllGameObjects(gameObjects);
 
@@ -572,29 +496,17 @@ void UISystem::update(GameObjectManager& manager) {
 
 	dockingSetUp();
 
-	// get the width and height of the SCENE view
-	int fboWidth, fboHeight;
-	m_renderer->fboAspectRatio(fboWidth, fboHeight);
-
 	// all ImGui windows
 	m_UI.update(manager);
-	m_UI.sceneWindow(m_renderer->getTexture(), static_cast<float>(fboWidth) / static_cast<float>(fboHeight));
 
-	m_UI.loadAssetsFromDirectory(); // only reload if assets flag is set (e.g. new asset added)
-
-	// this will CRASH if change scene in editor
-	//Transform* leavesT = gameObjects[0]->getComponent<Transform>();
-	//Transform* bulletT = gameObjects[2]->getComponent<Transform>();
-	//m_UI.shapeControl(*leavesT, *bulletT); 
+	Transform* leavesT = gameObjects[0]->getComponent<Transform>();
+	Transform* bulletT = gameObjects[2]->getComponent<Transform>();
+	m_UI.shapeControl(*leavesT, *bulletT);
 
 	ImGui::Render();
 	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
 	renderMultipleViewPorts();
-
-	auto end = std::chrono::high_resolution_clock::now();
-	double ms = std::chrono::duration<double, std::milli>(end - start).count(); //get elapse time in ms
-	g_SystemTimers.push_back({ "IMGUI", ms }); //saving timing for UI output
 }
 
 void UISystem::dockingSetUp() {
@@ -608,7 +520,6 @@ void UISystem::dockingSetUp() {
 		| ImGuiWindowFlags_NoMove
 		| ImGuiWindowFlags_NoBringToFrontOnFocus
 		| ImGuiWindowFlags_NoNavFocus
-		| ImGuiWindowFlags_MenuBar
 		| ImGuiWindowFlags_NoBackground;
 
 	ImGuiViewport* viewport = ImGui::GetMainViewport();
@@ -622,44 +533,8 @@ void UISystem::dockingSetUp() {
 	ImGui::Begin("DockSpace Demo", nullptr, window_flags);
 	ImGui::PopStyleVar(2);
 
-	ImGuiID dockspaceID = ImGui::GetID("DockSpace");
-	ImGui::DockSpace(dockspaceID, { 0.0f, 0.0f }, dockspace_flags);
-
-	if (m_firstTime) {
-		m_firstTime = false;
-		ImGui::DockBuilderRemoveNode(dockspaceID); // Clear any existing layout
-		ImGui::DockBuilderAddNode(dockspaceID, ImGuiDockNodeFlags_DockSpace);
-		ImGui::DockBuilderSetNodeSize(dockspaceID, viewport->Size);
-
-		// Split the dockspace into major areas
-		ImGuiID dockParent = dockspaceID;
-		ImGuiID dockDown, dockRight, dockLeft;
-		ImGuiID dockRightSecond;
-
-		ImGui::DockBuilderSplitNode(dockParent, ImGuiDir_Left, 0.4f, &dockLeft, &dockParent);
-		ImGui::DockBuilderSplitNode(dockParent, ImGuiDir_Right, 0.4f, &dockRight, &dockParent);
-		ImGui::DockBuilderSplitNode(dockRight, ImGuiDir_Down, 0.4f, &dockRightSecond, &dockRight);
-		ImGui::DockBuilderSplitNode(dockParent, ImGuiDir_Down, 0.4f, &dockDown, &dockParent);
-
-		// Dock windows
-
-		// Left
-		ImGui::DockBuilderDockWindow("Hierarchy", dockLeft);
-		ImGui::DockBuilderDockWindow("Inspector", dockRight);
-
-		// Right
-		ImGui::DockBuilderDockWindow("Draw Shapes", dockRightSecond);
-
-		// Middle
-		ImGui::DockBuilderDockWindow("Scene", dockParent);
-		
-		// Bottom
-		ImGui::DockBuilderDockWindow("Performance", dockDown);
-		ImGui::DockBuilderDockWindow("Debug Info", dockDown);
-		ImGui::DockBuilderDockWindow("Assets", dockDown);
-
-		ImGui::DockBuilderFinish(dockspaceID);
-	}
+	ImGuiID dockspace_id = ImGui::GetID("MyDockSpace");
+	ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), dockspace_flags);
 
 	ImGui::End();
 }

@@ -1,13 +1,13 @@
 /* Start Header ************************************************************************/
 /*!
 \file       input.cpp
-\author     Tan Chee Qing, cheeqing.tan, 2401486
+\author     Tan Chee Qing, cheeqing.tan, 2401486 
 			- 100% of the file
 \par        cheeqing.tan@digipen.edu
 \date       September, 15th, 2025
 \brief      This source file implements the InputHandler class, which centralizes input
 			handling for GLFW. It maintains arrays of current and previous states for
-			keyboard keys and mouse buttons, enabling detection of triggered, released,
+			keyboard keys and mouse buttons, enabling detection of triggered, released, 
 			held, and combo inputs.
 
 Copyright (C) 2025 DigiPen Institute of Technology.
@@ -16,11 +16,11 @@ without the prior written consent of DigiPen Institute of
 Technology is prohibited.
 */
 /* End Header **************************************************************************/
-#include "ui.h"
+
 #include "input.h"
+//#include <iostream>
 
 GLFWwindow* InputHandler::m_window = nullptr;
-AppConfig InputHandler::m_cfg;
 
 bool InputHandler::m_keys[1024] = { false };
 bool InputHandler::m_keysPrevious[1024] = { false };
@@ -38,9 +38,8 @@ float InputHandler::m_scrollOffset = 0.0f;
 double InputHandler::m_doubleClickThreshold = 0.25;
 
 // initialize input handler with window and set up callbacks
-void InputHandler::init(GLFWwindow* window, const AppConfig& cfg) {
+void InputHandler::init(GLFWwindow* window) {
 	m_window = window;
-	m_cfg = cfg;
 
 	// set up the callbacks
 	glfwSetKeyCallback(window, keyCallback);
@@ -48,7 +47,6 @@ void InputHandler::init(GLFWwindow* window, const AppConfig& cfg) {
 	glfwSetCursorPosCallback(window, cursorPositionCallback);
 	glfwSetCursorEnterCallback(window, CursorEnterCallback);
 	glfwSetScrollCallback(window, scrollCallback);
-	glfwSetDropCallback(window, dropCallback);
 }
 
 // update input states (call once per frame)
@@ -167,7 +165,7 @@ bool InputHandler::isMouseDragging() {
 // get change in mouse position since drag started
 Vector2D InputHandler::getMouseDragDelta() {
 	if (!m_isDragging) return Vector2D(0.0f);
-
+	
 	return Vec_Sub(&m_mousePosition, &m_mouseDragStartPos);
 }
 
@@ -176,27 +174,8 @@ Vector2D InputHandler::getMouseDragStartPos() {
 	return m_mouseDragStartPos;
 }
 
-Vector2D InputHandler::getMouseDeltaWorld() {
-	Vector2D delta = getMouseDelta();
-
-	if (delta.x == 0.0f && delta.y == 0.0f) return Vector2D(0.0f);
-
-	// convert screen space to normalized
-	float normX = delta.x / (m_cfg.width / 2.f);
-	float normY = -delta.y / (m_cfg.height / 2.f);
-
-	float scaleX = (renderer::cam.width / 9.1f);
-	float scaleY = ((renderer::cam.width / renderer::cam.ar) / 9.1f);
-
-	// apply camera position and zoom
-	float worldX = (normX * scaleX) / renderer::cam.zoom;
-	float worldY = (normY * scaleY) / renderer::cam.zoom;
-
-	return Vector2D(worldX, worldY);
-}
-
 // get current cursor position
-Vector2D InputHandler::getMousePosition() {
+Vector2D InputHandler::getCursorPosition() {
 	return m_mousePosition;
 }
 
@@ -218,91 +197,6 @@ Vector2D InputHandler::getMouseDelta() {
 // check if cursor is inside window
 bool InputHandler::isCursorInsideWindow() {
 	return m_isCursorInside;
-}
-
-Vector2D InputHandler::getMousePositionInImGuiViewport(const ImVec2& scenePos, const ImVec2& sceneSize) {
-	ImVec2 mousePos = ImGui::GetMousePos();//screen position, not viewport
-	//std::cout << "scenePos: " << scenePos.x << " | " << scenePos.y << std::endl;
-
-	Vector2D localMouse = { 0.f, 0.f };
-	localMouse.x = mousePos.x - scenePos.x - 0.5f * sceneSize.x;// Range:[-sceneSize/2, sceneSize/2] right is +ve
-	localMouse.y = 0.5f * sceneSize.y + scenePos.y - mousePos.y;// Range:[-sceneSize/2, sceneSize/2] up is +ve
-
-	//std::cout << "local Mouse is at: " << localMouse.x << " | " << localMouse.y << std::endl;
-
-	Vector2D scale;
-	scale.x = (2.f * renderer::cam.ar * renderer::cam.zoom) / sceneSize.x;
-	scale.y = (2.f * renderer::cam.zoom) / sceneSize.y;
-
-	//std::cout << "world scale is: " << scale.x << " | " << scale.y << std::endl;
-
-	Vector2D world;
-	world.x = (localMouse.x * scale.x) + renderer::cam.campos.x;
-	world.y = (localMouse.y * scale.y) + renderer::cam.campos.y;
-
-	//std::cout << "campos is: " << renderer::cam.campos.x << " | " << renderer::cam.campos.y << std::endl;
-	//std::cout << "worldpos is: " << world.x << " | " << world.y << std::endl;
-
-	return world;
-}
-
-Vector2D InputHandler::getMouseDeltaWorldInViewport(const ImVec2& sceneSize)
-{
-	Vector2D delta = getMouseDelta();
-
-	Vector2D scale;
-	scale.x = (2.f * renderer::cam.ar * renderer::cam.zoom) / sceneSize.x;
-	scale.y = (2.f * renderer::cam.zoom) / sceneSize.y;
-
-	//std::cout << "world scale is: " << scale.x << " | " << scale.y << std::endl;
-
-	Vector2D world;
-	world.x = delta.x * scale.x;
-	world.y = -delta.y * scale.y;
-
-	//std::cout << "campos is: " << renderer::cam.campos.x << " | " << renderer::cam.campos.y << std::endl;
-	//std::cout << "worldpos is: " << world.x << " | " << world.y << std::endl;
-
-	return world;
-}
-
-
-bool InputHandler::isCursorInsideImGuiViewport(const ImVec2& scenePos, const ImVec2& sceneSize) {
-	ImVec2 mousePos = ImGui::GetMousePos();
-
-	return (mousePos.x >= scenePos.x && mousePos.x <= scenePos.x + sceneSize.x &&
-		mousePos.y >= scenePos.y && mousePos.y <= scenePos.y + sceneSize.y);
-}
-
-// get cursor world postion
-Vector2D InputHandler::getWorldMousePosition() {
-	float mx = getMouseX();
-	float my = getMouseY();
-
-	my = m_cfg.height - my;
-
-	// convert screen space to normalized
-	float normX = (mx - m_cfg.width / 2.f) / (m_cfg.width / 2.f);
-	float normY = (my - m_cfg.height / 2.f) / (m_cfg.height / 2.f);
-
-	float scaleX = (renderer::cam.width / 9.1f);
-	float scaleY = ((renderer::cam.width / renderer::cam.ar) / 9.1f);
-
-	// apply camera position and zoom
-	float worldX = (normX * scaleX) / renderer::cam.zoom + renderer::cam.campos.x;
-	float worldY = (normY * scaleY) / renderer::cam.zoom + renderer::cam.campos.y;
-
-	return Vector2D(worldX, worldY);
-}
-
-// get world cursor x position
-float InputHandler::getWorldMouseX() {
-	return getWorldMousePosition().x;
-}
-
-// get world cursor y position
-float InputHandler::getWorldMouseY() {
-	return getWorldMousePosition().y;
 }
 
 // get scroll offset since last frame
@@ -382,27 +276,4 @@ void InputHandler::scrollCallback(GLFWwindow* window, double xoffset, double yof
 	(void)window;
 	(void)xoffset;
 	m_scrollOffset = static_cast<float>(yoffset);
-}
-
-void InputHandler::dropCallback(GLFWwindow* window, int count, const char** paths) {
-	(void)window;
-	for (int i = 0; i < count; ++i) {
-		std::filesystem::path src(paths[i]);
-		std::filesystem::path dst = "shaders";
-
-		try {
-			if (std::filesystem::is_directory(src)) {
-				std::filesystem::copy(src, dst, std::filesystem::copy_options::recursive | std::filesystem::copy_options::overwrite_existing);
-			}
-			else {
-				std::filesystem::copy(src, dst, std::filesystem::copy_options::overwrite_existing);
-			}
-
-			UI::assetChanged(); // set asst changed flag to reload assets in UI
-			UI::addDebugMessage("Added asset " + src.string() + " to " + dst.string() + "\n");
-		}
-		catch (const std::filesystem::filesystem_error& e) {
-			UI::addDebugMessage("Failed to add asset " + src.string() + ": " + e.what() + "\n");
-		}
-	}
 }

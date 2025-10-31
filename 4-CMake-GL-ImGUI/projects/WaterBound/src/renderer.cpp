@@ -16,7 +16,7 @@ Technology is prohibited.
 
 std::vector<renderer::model> renderer::models;
 //std::map<std::string, renderer::object> renderer::objects;
-std::vector<GLuint> renderer::shdr_pgm;
+GLuint renderer::shdr_pgm;
 renderer::camera renderer::cam;
 
 #define GLM_ENABLE_EXPERIMENTAL
@@ -152,8 +152,7 @@ renderer::model renderer::setup_circle(glm::vec3 clr, int slices)
 
 void renderer::setup_shdrpgm()
 {
-	shdr_pgm.push_back(LoadShaders("shaders/hasTex.vert", "shaders/hasTex.frag", true));
-	shdr_pgm.push_back(LoadShaders("shaders/noTex.vert", "shaders/noTex.frag", true));
+	shdr_pgm = LoadShaders("shaders/funny.vert", "shaders/funny.frag", true);
 }
 
 void renderer::camera::init(int w, int h)
