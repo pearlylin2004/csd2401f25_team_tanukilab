@@ -94,6 +94,7 @@ void CoreEngine::Init() {
         GameObject* obj = m_manager->getGameObject(objectName);
         if (obj) {
             obj->addComponent<LuaScript>(file.path().string());
+            m_luaSystem->loadScriptForObject(file.path().string(), objectName); //load into LuaSystem
             std::cout << "[Lua] Loaded script " << filename << " for object " << objectName << std::endl;
         }
     }
@@ -153,8 +154,7 @@ void CoreEngine::Update(float deltaTime) {
     //running Lua scripts for each object that has a LuaScript component
     for (GameObject* obj : gameObjects) {
         if (obj->hasComponent<LuaScript>()) {
-            LuaScript* scriptComp = obj->getComponent<LuaScript>();
-            m_luaSystem->runScriptForObject(scriptComp->filename, obj, deltaTime);
+            m_luaSystem->updateObjectScript(obj->getObjectName(), obj, deltaTime);
         }
     }
 
