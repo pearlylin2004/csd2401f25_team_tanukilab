@@ -52,6 +52,7 @@ TextureData ResourceManager::getTexture(const std::string& path) {
 
     if (newTexture.id != 0) {
         m_textureCache[path] = newTexture;
+        std::cout << "ResourceManager: Successfully cached texture with ID: " << newTexture.id << std::endl;
     }
     else {
 		std::cout << "ResourceManager Error: Failed to load texture: " << path << std::endl;
@@ -61,6 +62,7 @@ TextureData ResourceManager::getTexture(const std::string& path) {
 }
 
 TextureData ResourceManager::loadTextureFromFile(const std::string& filename) {
+	stbi_set_flip_vertically_on_load(true);
 	//From RenderSystem::uploadtex
     int width, height, channels;
     unsigned char* data = stbi_load(filename.c_str(), &width, &height, &channels, STBI_rgb_alpha);
@@ -85,7 +87,11 @@ TextureData ResourceManager::loadTextureFromFile(const std::string& filename) {
     glTextureParameteri(texobj_hdl, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTextureParameteri(texobj_hdl, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTextureParameteri(texobj_hdl, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    
     stbi_image_free(data);
+    
+    textureData.id = texobj_hdl;
+    
     return textureData;
 }
 

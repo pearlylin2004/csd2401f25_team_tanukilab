@@ -162,7 +162,7 @@ void GameObjectManager::loadFromFile(const std::string& filename)
 			{
 				is >> renderptr->texFile;
 				renderptr->texHDL = 0;
-				renderptr->texChanged = true;
+				renderptr->texChanged = false;
 				is >> renderptr->hasAnimation;
 			}
 			else {

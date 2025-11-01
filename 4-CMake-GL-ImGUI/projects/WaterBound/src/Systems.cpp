@@ -23,8 +23,6 @@ Technology is prohibited.
 
 #include "systems.h"
 
-//here we go buddies
-
 //all the systems need to get all game objects
 //then it needs to check through the list of 
 //game objects to check if the valid component
@@ -122,6 +120,7 @@ void RenderSystem::update(GameObjectManager& manager, float const& deltaTime)
 				TextureData texData = ResourceManager::getInstance().getTexture(render->texFile);
 				render->texHDL = texData.id;
 				render->isTransparent = texData.isTransparent;
+
 				render->texChanged = false;
 			}
 		}
@@ -191,7 +190,7 @@ void RenderSystem::init(GameObjectManager& manager, int fboW, int fboH)
 {
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	stbi_set_flip_vertically_on_load(true);
+	//stbi_set_flip_vertically_on_load(true);
 	std::vector<GameObject*> gameObjects;
 	manager.getAllGameObjects(gameObjects);
 	for (GameObject* object : gameObjects)
@@ -203,6 +202,8 @@ void RenderSystem::init(GameObjectManager& manager, int fboW, int fboH)
 			TextureData textureData = ResourceManager::getInstance().getTexture(render->texFile);
 			render->texHDL = textureData.id;
 			render->isTransparent = textureData.isTransparent;
+			//std::cerr << "Texture ID for " << render->texFile << ": " << render->texHDL << std::endl;
+			//std::cerr << "Is Transparent: " << (render->isTransparent ? "Yes" : "No") << std::endl;
 		}
 	}
 
@@ -254,6 +255,7 @@ void RenderSystem::renderTex(GameObject* object, float const& deltaTime)
 		transform->mdlWorld = glm::rotate(transform->mdlWorld, angle, glm::vec3(0, 0, 1.f));
 		transform->mdlWorld = glm::scale(transform->mdlWorld, glm::vec3(transform->scaleX, transform->scaleY, transform->scaleZ));
 		glBindTextureUnit(0, render->texHDL);
+		//std::cerr << "Binding Texture ID: " << render->texHDL << " for object: " << object->getObjectName() << std::endl;
 
 		glm::mat4 texRot{ 1 };
 		texRot = glm::rotate(texRot, angle, glm::vec3(0, 0, 1.f));
@@ -310,6 +312,8 @@ void RenderSystem::renderTex(GameObject* object, float const& deltaTime)
 		glUniform2fv(rotcenter, 1, glm::value_ptr(rotationCenter));
 		glUniform2fv(offset, 1, glm::value_ptr(texpos));
 		glUniform2fv(tscale, 1, glm::value_ptr(texscale));
+		std::cout << "Uniform locations - texid: " << texid << ", offset: " << offset
+			<< ", tscale: " << tscale << std::endl;
 
 		if (render->modelRef.shape == shape::square)
 		{
