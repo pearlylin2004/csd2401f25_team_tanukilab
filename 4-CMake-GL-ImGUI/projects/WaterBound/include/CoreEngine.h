@@ -44,6 +44,7 @@ public:
 private:
     void GameLoop();
     void Update(float deltaTime);
+    double m_fixedDt = 1.0 / 60.0; // 60 Hz simulation
 
     // Window and timing variables
     GLFWwindow* m_window;

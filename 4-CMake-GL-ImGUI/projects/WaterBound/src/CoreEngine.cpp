@@ -105,7 +105,7 @@ void CoreEngine::Init() {
     }
 
     audio.init();
-
+    glfwPollEvents();
     m_isRunning = true;
 }
 
@@ -115,32 +115,64 @@ void CoreEngine::Run() {
     }
 }
 
+//void CoreEngine::GameLoop() {
+//    glfwPollEvents();
+//    if (glfwWindowShouldClose(m_window) || InputHandler::isKeyHeld(GLFW_KEY_ESCAPE)) {
+//        m_isRunning = false;
+//        return;
+//    }
+//    // --- Update Timing ---
+//
+//    int    steps = 0;        // how many fixed updates to run this frame
+//    double alpha = 0.0;      // interpolation factor [0,1)
+//    //Perf::UpdateTime(m_delta, m_fps, 0.5);
+//    Perf::UpdateTime(m_delta, m_fps, 0.5,
+//        m_fixedDt, steps, alpha,8);
+//
+//    Perf::UpdateWindowTitle(m_window, m_title, m_fps, true);
+//
+//    audio.update();
+//
+//    InputHandler::update();
+//
+//
+//    for (int i = 0; i < steps; ++i) {
+//
+//        m_collisionSystem->update(*m_manager, static_cast<float>(m_fixedDt));
+//        m_physicsSystem->update(*m_manager, static_cast<float>(m_fixedDt));
+//   
+//        // (put any other time-based deterministic systems here)
+//    }
+//    // --- Main Update ---
+//    glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
+//    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+//
+//    m_inputSystem->update(*m_manager, (float)m_delta);
+//    m_renderSystem->update(*m_manager, (float)m_delta);
+//    m_uiSystem->update(*m_manager);
+//
+//
+//    // --- Swapping Buffers ---
+//    glfwSwapBuffers(m_window);
+//
+//}
+
 void CoreEngine::GameLoop() {
-    if (glfwWindowShouldClose(m_window) || InputHandler::isKeyHeld(GLFW_KEY_ESCAPE)) {
-        m_isRunning = false;
-        return;
-    }
-
-    // --- Update Timing ---
-    Perf::UpdateTime(m_delta, m_fps, 0.5);
-    Perf::UpdateWindowTitle(m_window, m_title, m_fps, true);
-
-    audio.update();
-
-    // --- Main Update ---
-    glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-    Update(static_cast<float>(m_delta));
-
-    // --- Swapping Buffers ---
-    glfwSwapBuffers(m_window);
-}
+    if (glfwWindowShouldClose(m_window) || InputHandler::isKeyHeld(GLFW_KEY_ESCAPE)) { m_isRunning = false; return; } 
+     //--- Update Timing --- 
+     Perf::UpdateTime(m_delta, m_fps, 0.5);
+     Perf::UpdateWindowTitle(m_window, m_title, m_fps, true);
+     audio.update();
+     // --- Main Update --- glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
+     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+     Update(static_cast<float>(m_delta));
+     // --- Swapping Buffers --- 
+     glfwSwapBuffers(m_window); }
 
 void CoreEngine::Update(float deltaTime) {
     InputHandler::update();
 
-    //for clonigng player2
+	//for clonigng player2
     if (InputHandler::isKeyTriggered(GLFW_KEY_C)) {
         static int cloneCount = 1; // Use a static counter for unique names
         std::string newName = "player2_clone_" + std::to_string(cloneCount++);
@@ -150,7 +182,6 @@ void CoreEngine::Update(float deltaTime) {
 
         Transform* newTransform = newObject->getComponent<Transform>();
         newTransform->y += 1.5f * (static_cast<float>(cloneCount) - 1); // Offset the new clone's position
-    }
 
     //lua scripting update for all objects with LuaScript component
     std::vector<GameObject*> gameObjects;
@@ -172,6 +203,8 @@ void CoreEngine::Update(float deltaTime) {
     m_uiSystem->update(*m_manager);
 
 }
+
+
 
 void CoreEngine::Shutdown() {
     if (m_luaSystem) m_luaSystem->cleanup();

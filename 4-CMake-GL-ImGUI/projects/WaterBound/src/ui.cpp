@@ -21,15 +21,17 @@ bool UI::assetsChangedFlag = true;
 
 UI::UI() {
 
-    m_currentSceneName = "shaders/Scene/temp_serialize.txt";
-    m_tempSceneName = "shaders/Scene/temp_scene";
+    m_currentSceneName = "shaders/Scene/level01.json";
+    //m_currentSceneName = "shaders/Scene/temp_serialize.txt";
+    //m_tempSceneName = "shaders/Scene/temp_scene";
+    m_tempSceneName = "shaders/Scene/temp_scene.json";
     m_isPlaying = false;
 }
 
 void UI::update(GameObjectManager& manager) {
     if (InputHandler::isComboKeyTriggered(GLFW_KEY_S, GLFW_KEY_LEFT_CONTROL) ||
         InputHandler::isComboKeyTriggered(GLFW_KEY_S, GLFW_KEY_RIGHT_CONTROL))
-        manager.saveToFile(m_currentSceneName);
+        manager.saveScene(m_currentSceneName);
 
     editorMenuBar(manager);
     objPicking(manager);
@@ -190,7 +192,7 @@ void UI::editorMenuBar(GameObjectManager& manager) {
                     newSceneName += "_copy";
                 }
 
-                manager.saveToFile(newSceneName);
+                manager.saveScene(newSceneName);
                 m_currentSceneName = newSceneName;
                 assetsChangedFlag = true;
 
@@ -206,7 +208,7 @@ void UI::editorMenuBar(GameObjectManager& manager) {
 
         // save current scene to file
         if (ImGui::MenuItem("Save Scene")) {
-            manager.saveToFile(m_currentSceneName);
+            manager.saveScene(m_currentSceneName);
         }
 
         // load an existing scene
@@ -217,7 +219,7 @@ void UI::editorMenuBar(GameObjectManager& manager) {
                 if (asset.folder == m_AssetBrowserState.currentFolder + "Scene") {
                     if (ImGui::MenuItem(asset.name.c_str())) {
                         std::string fullPath = asset.folder + "/" + asset.name;
-                        manager.loadFromFile(fullPath);
+                        manager.loadScene(fullPath);
 
                         m_currentSceneName = fullPath;
 
@@ -243,7 +245,7 @@ void UI::editorMenuBar(GameObjectManager& manager) {
                 m_isPlaying = true;
 
                 // save current state to a temp scene file
-                manager.saveToFile(m_tempSceneName);
+                manager.saveScene(m_tempSceneName);
 
                 addDebugMessage("Simulation started.\n");
             }
@@ -253,7 +255,7 @@ void UI::editorMenuBar(GameObjectManager& manager) {
                 m_isPlaying = false;
 
                 // load back the temp scene file to restore state
-                manager.loadFromFile(m_tempSceneName);
+                manager.loadScene(m_tempSceneName);
 
                 m_SelectionState.selectedObject = nullptr;
                 m_SelectionState.draggedObject = nullptr;
@@ -580,7 +582,7 @@ void UI::assetWindow(GameObjectManager& manager) {
             // if it's a scene file, load the scene
             if (asset.folder == m_AssetBrowserState.currentFolder + "Scene") {
                 // load the new scene
-                manager.loadFromFile(fullPath);
+                manager.loadScene(fullPath);
 
                 // set current scene name
                 m_currentSceneName = fullPath;
