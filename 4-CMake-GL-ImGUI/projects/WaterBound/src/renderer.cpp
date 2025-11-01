@@ -16,15 +16,23 @@ Technology is prohibited.
 
 std::vector<renderer::model> renderer::models;
 //std::map<std::string, renderer::object> renderer::objects;
-GLuint renderer::shdr_pgm;
+std::vector<GLuint> renderer::shdr_pgm;
 renderer::camera renderer::cam;
+renderer::camera renderer::editorCam;
 
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/string_cast.hpp>
 
 void renderer::init(int w, int h)
 {
+	// set up gameplay camera
 	cam.init(w, h);
+	cam.mode = cameraMode::GAME;
+
+	// set up editor camera
+	editorCam.init(w, h);
+	editorCam.mode = cameraMode::EDITOR;
+
 	models.push_back(setup_square(glm::vec3(1.f, 1.f, 1.f)));
 	models.push_back(setup_circle(glm::vec3(1.f, 0.5f, 0.5f), 20));
 	models.push_back(setup_circle(glm::vec3(0.f, 0.f, 0.f), 20));
@@ -152,7 +160,8 @@ renderer::model renderer::setup_circle(glm::vec3 clr, int slices)
 
 void renderer::setup_shdrpgm()
 {
-	shdr_pgm = LoadShaders("shaders/funny.vert", "shaders/funny.frag", true);
+	shdr_pgm.push_back(LoadShaders("shaders/hasTex.vert", "shaders/hasTex.frag", true));
+	shdr_pgm.push_back(LoadShaders("shaders/noTex.vert", "shaders/noTex.frag", true));
 }
 
 void renderer::camera::init(int w, int h)
@@ -163,10 +172,36 @@ void renderer::camera::init(int w, int h)
 	zoom = 10;
 	campos = glm::vec3(0, 0, 0);
 	up = glm::vec3(0, 1, 0);
+	zoomFactor = 0.1f;
+	minZoom = 0.1f;
+	maxZoom = 50.f;
 }
 
 void renderer::camera::update()
 {
-	view = glm::lookAt(campos, glm::vec3(0, 0, -1), up);
+	if (mode == cameraMode::GAME)
+	{
+		// for gameplay camera, always focus at the center of the view
+		view = glm::lookAt(campos, glm::vec3(0, 0, -1), up);
+	}
+	else
+	{
+		// for editor camera, center move with camera
+		view = glm::lookAt(campos, glm::vec3(campos.x, campos.y, -1.f), up);
+	}
+
 	proj = glm::ortho(-zoom * ar, zoom * ar, -zoom, zoom, -1.f, 1.f);
+	
+}
+
+void renderer::camera::pan(const Vector2D& delta) {
+	campos -= glm::vec3(delta.x, delta.y, 0.f);
+}
+
+void renderer::camera::zoomInOut(float scrollDelta) {
+	zoom *= 1.0f - scrollDelta * zoomFactor;
+
+	// clamp zoom
+	zoom = std::max(minZoom, zoom);
+	zoom = std::min(maxZoom, zoom);
 }

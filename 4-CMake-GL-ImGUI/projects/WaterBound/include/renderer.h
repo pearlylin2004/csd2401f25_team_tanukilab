@@ -38,6 +38,16 @@ enum class shape
 
 /*!***********************************************************************
 \brief
+	enum class for camera modes (one for gameplay, one for editor)
+
+*************************************************************************/
+enum class cameraMode {
+	GAME = 0,
+	EDITOR
+};
+
+/*!***********************************************************************
+\brief
 	struct for everything to do with rendering
 
 *************************************************************************/
@@ -77,7 +87,7 @@ struct renderer
 	\brief
 		storing of shader program
 	*************************************************************************/
-	static GLuint shdr_pgm;
+	static std::vector<GLuint> shdr_pgm;
 	/*!***********************************************************************
 	\brief
 		setting up square mesh
@@ -130,6 +140,10 @@ struct renderer
 		glm::vec3 up;
 		glm::mat4 view;
 		glm::mat4 proj;
+		cameraMode mode; // camera mode: game or editor
+		float zoomFactor;
+		float minZoom;
+		float maxZoom;
 		/*!***********************************************************************
 		\brief
 			initializes all the data for the camera
@@ -148,6 +162,23 @@ struct renderer
 
 		*************************************************************************/
 		void update();
+		/*!***********************************************************************
+		\brief
+			move camera based on given delta
+
+		\param[in] delta
+			how much to move
+
+		*************************************************************************/
+		void pan(const Vector2D& delta);
+		/*!***********************************************************************
+		\brief
+			zoom in/out based on scroll delta
+
+		\param[in] scrollDelta
+			how much to zoom in/out (scroll)
+		*************************************************************************/
+		void zoomInOut(float scrollDelta);
 	};
 
 	/*!***********************************************************************
@@ -156,4 +187,5 @@ struct renderer
 
 	*************************************************************************/
 	static camera cam;
+	static camera editorCam;
 };

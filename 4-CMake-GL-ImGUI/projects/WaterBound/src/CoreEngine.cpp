@@ -5,14 +5,16 @@
 \author     Hugo Low Ren Hao, low.h, 2402272, 20%
 \author     Tan Chee Qing, cheeqing.tan, 2401486, 10%
 \author     Varick Teo, v.teo, 2403417, 10%
+\author     Pearly Lin Lee Ying, p.lin, 2401591, 5%
 \par        s.sinle@digipen.edu
 \par        low.h@digipen.edu
 \par        cheeqing.tan@digipen.edu
 \par        v.teo@digipen.edu
+\par        p.lin@digipen.edu
 \date		October, 1, 2025
-\brief		Implementation for the CoreEngine class. The CoreEngine is responsible for 
+\brief		Implementation for the CoreEngine class. The CoreEngine is responsible for
             Initialisation and Shutdown, Game Loop Execution and System Updates
-    
+
 Copyright (C) 2025 DigiPen Institute of Technology.
 Reproduction or disclosure of this file or its contents
 without the prior written consent of DigiPen Institute of
@@ -65,7 +67,7 @@ void CoreEngine::Init() {
     glClearColor(cfg.clear_color[0], cfg.clear_color[1], cfg.clear_color[2], cfg.clear_color[3]);
 
     // --- System Initialization ---
-    InputHandler::init(m_window);
+    InputHandler::init(m_window, cfg);
     renderer::init(cfg.width, cfg.height);
 
     m_manager = std::make_unique<GameObjectManager>();
@@ -78,17 +80,21 @@ void CoreEngine::Init() {
 
     m_luaSystem->init();
     m_manager->init();
-	m_renderSystem->init(*m_manager);
-	m_uiSystem->init(m_window);
+    m_renderSystem->init(*m_manager, cfg.width, cfg.height);
+    m_uiSystem->init(m_window, m_renderSystem.get());
 
-	// --- Lua Script Test ---
-    if (m_luaSystem->runScript("../projects/WaterBound/scripting/test.lua")) {
-        float val = m_luaSystem->getGlobalNumber("testValue");
-        std::cout << "Lua testValue = " << val << std::endl;
-    }
-    else {
-        std::cout << "Failed to run Lua script!" << std::endl;
-    }
+    //get existing game objects for lua
+    GameObject* object1 = m_manager->getGameObject("player");
+    GameObject* object2 = m_manager->getGameObject("bullet");
+
+    //add LuaScript components to the existing objects
+    if (object1)
+        object1->addComponent<LuaScript>("../projects/WaterBound/scripting/object1.lua");
+    std::cout << "runnning script for object 1" << std::endl;
+
+    if (object2)
+        object2->addComponent<LuaScript>("../projects/WaterBound/scripting/object2.lua");
+    std::cout << "runnning script for object 2" << std::endl;
 
     audio.init();
 
