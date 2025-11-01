@@ -3,7 +3,7 @@
 \file        Systems.cpp
 \author      Seow Sin Le, s.sinle, 2401084, 45%
 \author 	 Hugo Low Ren Hao, low.h, 2402272, 15%
-\author 	 Pearly Lin Lee Ying, p.lin, 2401591, 25%
+\author 	 Pearly Lin Lee Ying, p.lin, 2401591, 15%
 \author		 Asha Mathyalakan, asha.m, 2402886, 15%
 \par         s.sinle@digipen.edu
 \par		 low.h@digipen.edu
