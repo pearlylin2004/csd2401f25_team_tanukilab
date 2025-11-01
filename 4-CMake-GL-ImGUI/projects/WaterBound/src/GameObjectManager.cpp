@@ -18,6 +18,20 @@ Technology is prohibited.
 #include "GameObjectManager.h"
 #include "config.h"
 
+#ifndef RUNTIME_SCENE_DIR_R
+#define RUNTIME_SCENE_DIR_R "./shaders/Scene"
+#endif
+#ifndef SOURCE_SCENE_DIR_R
+#define SOURCE_SCENE_DIR_R "./projects/WaterBound/shaders/Scene"
+#endif
+
+static std::string runtimeScenePath(std::string const& name) {
+	return std::string(RUNTIME_SCENE_DIR_R) + "/" + name;
+}
+static std::string sourceScenePath(std::string const& name) {
+	return std::string(SOURCE_SCENE_DIR_R) + "/" + name;
+}
+
 // -- helpers --
 namespace {
 	const char* ShapeToStr(shape s) {
@@ -118,7 +132,7 @@ void GameObjectManager::getAllGameObjects(std::vector<GameObject*>& gameObjects)
 void GameObjectManager::init()
 {
 	//loadFromFile("shaders/Scene/temp_serialize.txt");
-	loadScene("shaders/Scene/level01.json");
+	loadScene(runtimeScenePath("level01.json"));
 }
 
 bool GameObjectManager::renameGameObject(GameObject* obj, const std::string& newName) {
