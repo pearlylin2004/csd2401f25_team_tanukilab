@@ -109,12 +109,12 @@ void UpdateJump(int direction, float dt)
     }
 }
 
-Vector2D GetMouseWorldPosition() {
-    Vector2D mouse;
-    mouse = InputHandler::getCursorPosition();
-
-    float worldX = (float)mouse.x - 800.0f;
-    float worldY = (float)(900 - mouse.y) - 450.0f;
-
-    return Vec_Set(worldX, worldY);
-}
+//Vector2D GetMouseWorldPosition() {
+//    Vector2D mouse;
+//    mouse = InputHandler::getCursorPosition();
+//
+//    float worldX = (float)mouse.x - 800.0f;
+//    float worldY = (float)(900 - mouse.y) - 450.0f;
+//
+//    return Vec_Set(worldX, worldY);
+//}

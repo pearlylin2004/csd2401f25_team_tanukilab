@@ -21,7 +21,7 @@ Technology is prohibited.
 #include "renderer.h" //RenderSystem needs the full definition of the renderer
 #include "input.h" //InputSystem needs access to the InputHandler
 #include "GameObjectManager.h"
-#include <stb_image.h>
+//#include <stb_image.h>
 #include "collision.h"
 #include "imgui_internal.h" // for docking in UISystem
 #include <ui.h>
@@ -79,7 +79,8 @@ public:
 
 	*************************************************************************/
 	void update(GameObjectManager& manager, float const& deltaTime);
-	GLuint uploadtex(std::string const& filename, bool& isTransparent);
+	//moved to ResourceManager
+	//GLuint uploadtex(std::string const& filename, bool& isTransparent);
 	void renderTex(GameObject* object, float const& deltaTime);
 	void renderNoTex(GameObject* object);
 

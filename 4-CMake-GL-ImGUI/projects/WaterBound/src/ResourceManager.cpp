@@ -1,5 +1,7 @@
 #include "ResourceManager.h"
 
+class AudioHandler; // Forward declaration
+
 ResourceManager& ResourceManager::getInstance() {
 	static ResourceManager instance;
 	return instance;
@@ -111,13 +113,13 @@ FMOD::Sound* ResourceManager::loadSoundFromFile(const std::string& path, bool lo
     FMOD_MODE mode = loop ? FMOD_LOOP_NORMAL : FMOD_DEFAULT;
 
     FMOD_RESULT result = m_fmodSystem->createSound(path.c_str(), mode, nullptr, &sound);
-    AudioHandler::FMODErrorCheck(result); 
+    FMODErrorCheck(result); 
 
     if (result != FMOD_OK) {
         std::cerr << "ResourceManager Error: Failed to create sound: " << path << std::endl;
         return nullptr;
     }
-
+        
     return sound;
 }
 

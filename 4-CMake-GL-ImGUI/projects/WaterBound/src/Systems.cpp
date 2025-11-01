@@ -118,7 +118,10 @@ void RenderSystem::update(GameObjectManager& manager, float const& deltaTime)
 					glDeleteTextures(1, &render->texHDL); // to avoid leak
 					render->texHDL = 0;
 				}
-				render->texHDL = uploadtex(render->texFile, render->isTransparent);
+				//render->texHDL = uploadtex(render->texFile, render->isTransparent);
+				TextureData texData = ResourceManager::getInstance().getTexture(render->texFile);
+				render->texHDL = texData.id;
+				render->isTransparent = texData.isTransparent;
 				render->texChanged = false;
 			}
 		}
@@ -196,7 +199,10 @@ void RenderSystem::init(GameObjectManager& manager, int fboW, int fboH)
 		if (object->getComponent<Render>()->hasTex)
 		{
 			Render* render = object->getComponent<Render>();
-			render->texHDL = uploadtex(render->texFile, render->isTransparent);
+			//render->texHDL = uploadtex(render->texFile, render->isTransparent);
+			TextureData textureData = ResourceManager::getInstance().getTexture(render->texFile);
+			render->texHDL = textureData.id;
+			render->isTransparent = textureData.isTransparent;
 		}
 	}
 
@@ -204,34 +210,35 @@ void RenderSystem::init(GameObjectManager& manager, int fboW, int fboH)
 	fboHeight = fboH;
 }
 
+//this moved to ResourceManager.cpp
 // Upload a texture from file and return its OpenGL handle
-GLuint RenderSystem::uploadtex(std::string const& filename, bool& isTransparent)
-{
-	int width, height, channels;
-	unsigned char* data = stbi_load(filename.c_str(), &width, &height, &channels, STBI_rgb_alpha);
-	if (!data) {
-		std::cerr << "Failed to load image: " << filename << std::endl;
-		return 0;
-	}
-
-	std::cout << "Loaded " << filename
-		<< " (" << width << "x" << height << "), "
-		<< channels << " channels" << std::endl;
-
-	isTransparent = (channels == 4);
-
-	GLuint texobj_hdl;
-	glCreateTextures(GL_TEXTURE_2D, 1, &texobj_hdl);
-	glTextureStorage2D(texobj_hdl, 1, GL_RGBA8, static_cast<GLuint>(width), static_cast<GLuint>(height));
-	glTextureSubImage2D(texobj_hdl, 0, 0, 0, static_cast<GLuint>(width), static_cast<GLuint>(height), GL_RGBA, GL_UNSIGNED_BYTE, data);
-
-	glTextureParameteri(texobj_hdl, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTextureParameteri(texobj_hdl, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTextureParameteri(texobj_hdl, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glTextureParameteri(texobj_hdl, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	stbi_image_free(data);
-	return texobj_hdl;
-}
+//GLuint RenderSystem::uploadtex(std::string const& filename, bool& isTransparent)
+//{
+//	int width, height, channels;
+//	unsigned char* data = stbi_load(filename.c_str(), &width, &height, &channels, STBI_rgb_alpha);
+//	if (!data) {
+//		std::cerr << "Failed to load image: " << filename << std::endl;
+//		return 0;
+//	}
+//
+//	std::cout << "Loaded " << filename
+//		<< " (" << width << "x" << height << "), "
+//		<< channels << " channels" << std::endl;
+//
+//	isTransparent = (channels == 4);
+//
+//	GLuint texobj_hdl;
+//	glCreateTextures(GL_TEXTURE_2D, 1, &texobj_hdl);
+//	glTextureStorage2D(texobj_hdl, 1, GL_RGBA8, static_cast<GLuint>(width), static_cast<GLuint>(height));
+//	glTextureSubImage2D(texobj_hdl, 0, 0, 0, static_cast<GLuint>(width), static_cast<GLuint>(height), GL_RGBA, GL_UNSIGNED_BYTE, data);
+//
+//	glTextureParameteri(texobj_hdl, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+//	glTextureParameteri(texobj_hdl, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+//	glTextureParameteri(texobj_hdl, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+//	glTextureParameteri(texobj_hdl, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+//	stbi_image_free(data);
+//	return texobj_hdl;
+//}
 
 void RenderSystem::renderTex(GameObject* object, float const& deltaTime)
 {

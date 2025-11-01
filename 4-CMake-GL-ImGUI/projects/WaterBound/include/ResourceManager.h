@@ -3,12 +3,13 @@
 #include <string>
 #include <unordered_map>
 #include <filesystem>
+#include <iostream>
 
 #include "GL/glew.h"
-#include "fmod.hpp"
+#include <../lib/FMOD/fmod.hpp>
 #include "stb_image.h"
 #include "shader.hpp"
-#include "audio.h"
+#include "AudioUtility.h"
 
 struct TextureData {
     GLuint id = 0;
@@ -26,7 +27,7 @@ public:
      * @brief Initializes the manager. Call this once at startup.
      * @param fmodSystem A pointer to the FMOD system from AudioHandler.
      */
-    void init(AudioHandler& audio);
+    void init(FMOD::System* fmodSystem);
 
     /**
      * @brief Cleans up and releases all loaded resources. Call this at shutdown.

@@ -26,7 +26,7 @@ Technology is prohibited.
 #include "CoreEngine.h"
 
 CoreEngine::CoreEngine()
-    : m_window(nullptr), m_fps(0.0), m_delta(0.0), m_isRunning(false), audio(AudioHandler::getInstance()), resourceManager(ResourceManager::getInstance()) {
+    : m_window(nullptr), m_fps(0.0), m_delta(0.0), m_isRunning(false), audio(AudioHandler::getInstance()) {
 }
 
 CoreEngine::~CoreEngine() {
@@ -67,8 +67,11 @@ void CoreEngine::Init() {
     glClearColor(cfg.clear_color[0], cfg.clear_color[1], cfg.clear_color[2], cfg.clear_color[3]);
 
     // --- System Initialization ---
+    audio.init();
+
     InputHandler::init(m_window, cfg);
     renderer::init(cfg.width, cfg.height);
+
 
     m_manager = std::make_unique<GameObjectManager>();
     m_inputSystem = std::make_unique<InputSystem>();
@@ -96,8 +99,6 @@ void CoreEngine::Init() {
         object2->addComponent<LuaScript>("../projects/WaterBound/scripting/object2.lua");
     std::cout << "runnning script for object 2" << std::endl;
 
-    audio.init();
-	resourceManager.init(audio.getInstance()));
 
     m_isRunning = true;
 }
