@@ -182,6 +182,7 @@ void CoreEngine::Update(float deltaTime) {
 
         Transform* newTransform = newObject->getComponent<Transform>();
         newTransform->y += 1.5f * (static_cast<float>(cloneCount) - 1); // Offset the new clone's position
+    }
 
     //lua scripting update for all objects with LuaScript component
     std::vector<GameObject*> gameObjects;
@@ -190,7 +191,7 @@ void CoreEngine::Update(float deltaTime) {
     //running Lua scripts for each object that has a LuaScript component
     for (GameObject* obj : gameObjects) {
         if (obj->hasComponent<LuaScript>()) {
-            LuaScript* scriptComp = obj->getComponent<LuaScript>();
+            //LuaScript* scriptComp = obj->getComponent<LuaScript>();
             m_luaSystem->updateObjectScript(obj->getObjectName(), obj, deltaTime);
         }
     }
@@ -203,8 +204,6 @@ void CoreEngine::Update(float deltaTime) {
     m_uiSystem->update(*m_manager);
 
 }
-
-
 
 void CoreEngine::Shutdown() {
     if (m_luaSystem) m_luaSystem->cleanup();
