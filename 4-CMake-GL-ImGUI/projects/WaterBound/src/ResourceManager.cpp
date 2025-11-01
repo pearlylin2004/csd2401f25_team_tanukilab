@@ -53,6 +53,9 @@ TextureData ResourceManager::getTexture(const std::string& path) {
     if (newTexture.id != 0) {
         m_textureCache[path] = newTexture;
     }
+    else {
+		std::cout << "ResourceManager Error: Failed to load texture: " << path << std::endl;
+    }
 
     return newTexture;
 }
@@ -102,6 +105,8 @@ FMOD::Sound* ResourceManager::getSound(const std::string& path, bool loop) {
 
     if (newSound) {
         m_audioCache[path] = newSound;
+    }else{
+		std::cout << "ResourceManager Error: Failed to load sound: " << path << std::endl;
     }
 
     return newSound;
@@ -145,6 +150,8 @@ GLuint ResourceManager::getShader(const std::string& vertPath, const std::string
 
     if (newProgramID != 0) {
         m_shaderCache[key] = newProgramID;
+    }else{
+		std::cout << "ResourceManager Error: Failed to load shader program: " << vertPath << " + " << fragPath << std::endl;
     }
 
     return newProgramID;
