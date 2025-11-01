@@ -156,7 +156,6 @@ void GameObjectManager::loadFromFile(const std::string& filename)
 			if (shape == "circle")
 			{
 				renderptr->modelRef = renderer::models[static_cast<int>(shape::circle)];
-				std::cout << "circle is called" << std::endl;
 			}
 			is >> renderptr->hasTex;
 			if (renderptr->hasTex == true)

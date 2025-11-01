@@ -88,9 +88,22 @@ void RenderSystem::update(GameObjectManager& manager, float const& deltaTime)
 	std::vector<GameObject*> gameObjects;
 	manager.getAllGameObjects(gameObjects);
 
-	// Attach texture to FBO if editor is on
+	glm::mat4 camView, camProj;
+
+	// Attach texture to FBO and update editor camera if editor is on
 	if (UISystem::isShowUI()) {
 		createFBO();
+		renderer::editorCam.update();
+
+		camView = renderer::editorCam.view;
+		camProj = renderer::editorCam.proj;
+	}
+	// else update game camera
+	else {
+		renderer::cam.update();
+
+		camView = renderer::cam.view;
+		camProj = renderer::cam.proj;
 	}
 
 	// Update textures if they have changed (in level editor)
@@ -111,7 +124,6 @@ void RenderSystem::update(GameObjectManager& manager, float const& deltaTime)
 		}
 	}
 
-	renderer::cam.update();
 
 	std::vector<GameObject*> objectWithTex;
 	std::vector<GameObject*> objectWithoutTex;
@@ -126,18 +138,18 @@ void RenderSystem::update(GameObjectManager& manager, float const& deltaTime)
 	//rendering objects without texture, just color
 	glUseProgram(renderer::shdr_pgm[1]);
 	GLint vTransformView = glGetUniformLocation(renderer::shdr_pgm[1], "V");
-	glUniformMatrix4fv(vTransformView, 1, GL_FALSE, glm::value_ptr(renderer::cam.view));
+	glUniformMatrix4fv(vTransformView, 1, GL_FALSE, glm::value_ptr(camView));
 	GLint vTransformProj = glGetUniformLocation(renderer::shdr_pgm[1], "P");
-	glUniformMatrix4fv(vTransformProj, 1, GL_FALSE, glm::value_ptr(renderer::cam.proj));
+	glUniformMatrix4fv(vTransformProj, 1, GL_FALSE, glm::value_ptr(camProj));
 	for (GameObject* object : objectWithoutTex)
 		renderNoTex(object);
 
 	//rendering objects with textures
 	glUseProgram(renderer::shdr_pgm[0]);
 	vTransformView = glGetUniformLocation(renderer::shdr_pgm[0], "V");
-	glUniformMatrix4fv(vTransformView, 1, GL_FALSE, glm::value_ptr(renderer::cam.view));
+	glUniformMatrix4fv(vTransformView, 1, GL_FALSE, glm::value_ptr(camView));
 	vTransformProj = glGetUniformLocation(renderer::shdr_pgm[0], "P");
-	glUniformMatrix4fv(vTransformProj, 1, GL_FALSE, glm::value_ptr(renderer::cam.proj));
+	glUniformMatrix4fv(vTransformProj, 1, GL_FALSE, glm::value_ptr(camProj));
 	for (GameObject* object : objectWithTex)
 		renderTex(object, deltaTime);
 
@@ -646,6 +658,7 @@ void UISystem::dockingSetUp() {
 		// Left
 		ImGui::DockBuilderDockWindow("Hierarchy", dockLeft);
 		ImGui::DockBuilderDockWindow("Inspector", dockRight);
+		ImGui::DockBuilderDockWindow("Editor Camera", dockRight);
 
 		// Right
 		ImGui::DockBuilderDockWindow("Draw Shapes", dockRightSecond);

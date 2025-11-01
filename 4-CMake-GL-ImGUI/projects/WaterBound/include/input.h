@@ -70,11 +70,11 @@ public:
 	static bool isMouseButtonDoubleClicked(int button);
 
 	// check if mouse is being dragged (left button held and moving)
-	static bool isMouseDragging();
+	static bool isMouseDragging(int button = GLFW_MOUSE_BUTTON_LEFT);
 	// get change in mouse position since drag started
-	static Vector2D getMouseDragDelta();
+	static Vector2D getMouseDragDelta(int button = GLFW_MOUSE_BUTTON_LEFT);
 	// get mouse position when drag started
-	static Vector2D getMouseDragStartPos();
+	static Vector2D getMouseDragStartPos(int button = GLFW_MOUSE_BUTTON_LEFT);
 
 	static Vector2D getMouseDeltaWorld();
 
@@ -92,8 +92,6 @@ public:
 
 	// get current cursor position in imgui viewport
 	static Vector2D getMousePositionInImGuiViewport(const ImVec2& scenePos, const ImVec2& sceneSize);
-	// check if cursor is inside ImGui viewport
-	static bool isCursorInsideImGuiViewport(const ImVec2& scenePos, const ImVec2& sceneSize);
 	// get mouse delta in world space of the viewport
 	static Vector2D getMouseDeltaWorldInViewport(const ImVec2& sceneSize);
 
@@ -131,10 +129,12 @@ private:
 	static bool m_mouseButtons[8];
 	static bool m_mouseButtonsPrevious[8];
 	static double m_lastClickTime[8];
+	static bool m_isDragging[8];
+	static Vector2D m_mouseDragStartPos[8];
 	static Vector2D m_mousePosition;
 	static Vector2D m_mousePositionPrevious;
-	static Vector2D m_mouseDragStartPos;
-	static bool m_isDragging;
+	//static Vector2D m_mouseDragStartPos;
+	//static bool m_isDragging;
 	static bool m_isCursorInside;
 
 	static float m_scrollOffset;

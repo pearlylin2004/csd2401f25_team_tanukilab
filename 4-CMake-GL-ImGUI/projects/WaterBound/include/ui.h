@@ -59,6 +59,11 @@ private:
 	void objHierarchyWindow(GameObjectManager& manager);
 	void objInspectorWindow(GameObjectManager& manager);
 	void assetWindow(GameObjectManager& manager);
+	void editorCameraControls();
+
+	void assetDeletePopup();
+	void assetRenamePopup();
+	void assetReplacePopup();
 
 	void objPicking(GameObjectManager& manager);
 	void objDragging() const;
@@ -95,6 +100,19 @@ private:
 	struct AssetBrowserState {
 		std::string currentFolder = "shaders/"; // we dont have a asset folder yet :(
 		std::filesystem::file_time_type lastRefresh;
+		
+		// for deleting asset via browser
+		std::string fullPathToDelete;
+		bool showDeletePopup = false;
+
+		// for renaming asset via browser
+		std::string fullPathToRename;
+		bool showRenamePopup = false;
+		char newNameBuffer[128] = "\0";
+
+		std::string fullPathToReplace;
+		bool showReplacePopup = false;
+		char replacePathBuffer[128] = "\0";
 
 		float iconSize = 100.0f;
 		float buttonPadding = 20.0f; // adding padding made my code ugly
