@@ -1,8 +1,8 @@
 -- object1.lua
 --print("object1.lua is loaded!") --for testing
 
-Object1 = {}
-function Object1.Update(obj, deltaTime)
+player = {}
+function player.Update(obj, deltaTime)
     --print("lua is running!!!") --for testing
     local speed = 5
     local x, y = getPosition(obj)

@@ -170,7 +170,7 @@ bool LuaSystem::updateObjectScript(const std::string& tableName, GameObject* obj
     if (lua_pcall(L, 2, 0, 0) != LUA_OK)
         std::cerr << "Lua Update error: " << lua_tostring(L, -1) << std::endl;
 
-    lua_pop(L, 1); // pop table
+    lua_pop(L, 1); //pop table
 
     return true;
 }

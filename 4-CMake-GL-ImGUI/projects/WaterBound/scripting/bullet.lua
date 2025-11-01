@@ -1,8 +1,8 @@
 -- object2.lua
 --print("object2.lua is loaded!") --for testing
 
-Object2 = {}
-function Object2.Update(obj, deltaTime)
+bullet = {}
+function bullet.Update(obj, deltaTime)
     local jumpSpeed = 10
     --when jumped
     if Input_isKeyHeld("SPACE") then
