@@ -320,8 +320,6 @@ void RenderSystem::renderTex(GameObject* object, float const& deltaTime)
 		glUniform2fv(rotcenter, 1, glm::value_ptr(rotationCenter));
 		glUniform2fv(offset, 1, glm::value_ptr(texpos));
 		glUniform2fv(tscale, 1, glm::value_ptr(texscale));
-		std::cout << "Uniform locations - texid: " << texid << ", offset: " << offset
-			<< ", tscale: " << tscale << std::endl;
 
 		if (render->modelRef.shape == shape::square)
 		{
