@@ -105,10 +105,11 @@ void RenderSystem::update(GameObjectManager& manager, float const& deltaTime)
 
 	for (auto object : gameObjects)
 	{
-		if (object->getComponent<Render>()->hasTex)
-			objectWithTex.push_back(object);
-		else
-			objectWithoutTex.push_back(object);
+		if (object->hasComponent<Render>())
+			if (object->getComponent<Render>()->hasTex)
+				objectWithTex.push_back(object);
+			else
+				objectWithoutTex.push_back(object);
 	}
 	//rendering objects without texture, just color
 	glUseProgram(renderer::shdr_pgm[1]);
@@ -139,12 +140,14 @@ void RenderSystem::init(GameObjectManager& manager)
 	manager.getAllGameObjects(gameObjects);
 	for (GameObject* object : gameObjects)
 	{
-		if (object->getComponent<Render>()->hasTex)
-		{
-			Render* render = object->getComponent<Render>();
-			render->texHDL = uploadtex(render->texFile, render->isTransparent);
-		}
+		if(object->hasComponent<Render>())
+			if (object->getComponent<Render>()->hasTex)
+			{
+				Render* render = object->getComponent<Render>();
+				render->texHDL = uploadtex(render->texFile, render->isTransparent);
+			}
 	}
+	Font::init();
 }
 
 // Upload a texture from file and return its OpenGL handle
@@ -290,6 +293,134 @@ void RenderSystem::renderNoTex(GameObject* object)
 			glDrawArrays(render->modelRef.primitive_type, 0, render->modelRef.draw_cnt);
 		glBindVertexArray(0);
 	}
+}
+
+//void RenderSystem::renderCollision(Collision::AABB const& box, glm::vec3 const& clr)
+//{
+//	{
+//		// Get corners from min and max
+//		glm::vec2 min = box.getMin();
+//		glm::vec2 max = box.getMax();
+//
+//		float vertices[] = {
+//			min.x, min.y, 0.0f, // bottom left
+//			max.x, min.y, 0.0f, // bottom right
+//			max.x, max.y, 0.0f, // top right
+//			min.x, max.y, 0.0f  // top left
+//		};
+//
+//		GLuint VAO, VBO;
+//		glGenVertexArrays(1, &VAO);
+//		glGenBuffers(1, &VBO);
+//
+//		glBindVertexArray(VAO);
+//		glBindBuffer(GL_ARRAY_BUFFER, VBO);
+//		glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+//
+//		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+//		glEnableVertexAttribArray(0);
+//
+//		// Use simple color shader (no texture)
+//		glUseProgram(renderer::shdr_pgm[1]);
+//
+//		GLint vColorLoc = glGetUniformLocation(renderer::shdr_pgm[1], "uColor");
+//		if (vColorLoc != -1)
+//			glUniform3fv(vColorLoc, 1, glm::value_ptr(clr));
+//
+//		GLint vTransformView = glGetUniformLocation(renderer::shdr_pgm[1], "V");
+//		GLint vTransformProj = glGetUniformLocation(renderer::shdr_pgm[1], "P");
+//		glUniformMatrix4fv(vTransformView, 1, GL_FALSE, glm::value_ptr(renderer::cam.view));
+//		glUniformMatrix4fv(vTransformProj, 1, GL_FALSE, glm::value_ptr(renderer::cam.proj));
+//
+//		// Draw as line loop
+//		glLineWidth(2.0f);
+//		glDrawArrays(GL_LINE_LOOP, 0, 4);
+//
+//		glBindVertexArray(0);
+//		glDeleteBuffers(1, &VBO);
+//		glDeleteVertexArrays(1, &VAO);
+//	}
+//}
+
+void FontSystem::init(GameObjectManager& manager)
+{
+	Font::init();
+	std::vector<GameObject*> gameObjects;
+	manager.getAllGameObjects(gameObjects);
+	for (GameObject* object : gameObjects)
+	{
+		if (object->hasComponent<FontComponent>())
+		{
+			FontComponent* fc = object->getComponent<FontComponent>();
+			fc->mdl = Font::fontMdls[0];
+		}
+	}
+}
+
+void FontSystem::update(GameObjectManager& manager)
+{
+	std::vector<GameObject*> gameObjects;
+	manager.getAllGameObjects(gameObjects);
+	glUseProgram(Font::fontShaders);
+	GLuint vTransformView = glGetUniformLocation(Font::fontShaders, "V");
+	glUniformMatrix4fv(vTransformView, 1, GL_FALSE, glm::value_ptr(renderer::cam.view));
+	GLuint vTransformProj = glGetUniformLocation(Font::fontShaders, "P");
+	glUniformMatrix4fv(vTransformProj, 1, GL_FALSE, glm::value_ptr(renderer::cam.proj));
+	for (GameObject* object : gameObjects)
+	{
+		if (object->hasComponent<FontComponent>())
+		{
+			FontComponent* fc = object->getComponent<FontComponent>();
+			Transform* transform = object->getComponent<Transform>();
+			RenderText(Font::fontShaders, fc->word, transform->x, transform->y, fc->scale, fc->clr, object);
+		}
+	}
+}
+
+void FontSystem::RenderText(GLuint& s, std::string text, float x, float y, float scale, glm::vec3 color, GameObject* object)
+{
+	// activate corresponding render state	
+	Font::FontMdl& mdl = object->getComponent<FontComponent>()->mdl;
+	glUseProgram(s);
+	glUniform3f(glGetUniformLocation(s, "textColor"), color.x, color.y, color.z);
+	glActiveTexture(GL_TEXTURE0);
+	glBindVertexArray(mdl.vao);
+
+	// iterate through all characters
+	std::string::const_iterator c;
+	for (c = text.begin(); c != text.end(); c++)
+	{
+		Font::Character ch = Font::Characters[*c];
+
+		float pxToWorld = (2.0f * renderer::cam.zoom) / (renderer::cam.width / renderer::cam.ar);
+		float xpos = x + ch.Bearing.x * scale;
+		float ypos = y - ((ch.Size.y - ch.Bearing.y) * pxToWorld) * scale;
+
+		float w = (ch.Size.x * pxToWorld) * scale;
+		float h = (ch.Size.y * pxToWorld) * scale;
+		// update VBO for each character
+		float vertices[6][4] = {
+			{ xpos,     ypos + h,   0.0f, 0.0f },
+			{ xpos,     ypos,       0.0f, 1.0f },
+			{ xpos + w, ypos,       1.0f, 1.0f },
+
+			{ xpos,     ypos + h,   0.0f, 0.0f },
+			{ xpos + w, ypos,       1.0f, 1.0f },
+			{ xpos + w, ypos + h,   1.0f, 0.0f }
+		};
+		// render glyph texture over quad
+		glBindTexture(GL_TEXTURE_2D, ch.TextureID);
+		// update content of VBO memory
+		glBindBuffer(GL_ARRAY_BUFFER, mdl.vbo);
+		glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertices), vertices);
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
+		// render quad
+		glDrawArrays(GL_TRIANGLES, 0, 6);
+		// now advance cursors for next glyph (note that advance is number of 1/64 pixels)
+		x += ((ch.Advance >> 6) * pxToWorld) * scale; // bitshift by 6 to get value in pixels (2^6 = 64)
+	}
+	glBindVertexArray(0);
+	glBindTexture(GL_TEXTURE_2D, 0);
 }
 
 // Physics system - updates position based on velocity and applies gravity

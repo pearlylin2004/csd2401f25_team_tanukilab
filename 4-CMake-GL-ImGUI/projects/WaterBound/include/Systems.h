@@ -27,6 +27,7 @@ Technology is prohibited.
 #include <imgui_impl_glfw.h> //for use of imgui in UISystem
 #include <imgui_impl_opengl3.h> //for use of imgui in UISystem
 #include <ui.h>
+#include "font.h"
 
 //forward declaration
 struct renderer;
@@ -77,7 +78,14 @@ public:
 	GLuint uploadtex(std::string const& filename, bool& isTransparent);
 	void renderTex(GameObject* object, float const& deltaTime);
 	void renderNoTex(GameObject* object);
-	void renderCollision(GameObject* object);
+	void renderCollision(Collision::AABB const& box, glm::vec3 const& clr);
+};
+
+class FontSystem {
+public:
+	void init(GameObjectManager& manager);
+	void update(GameObjectManager& manager);
+	void RenderText(GLuint& s, std::string text, float x, float y, float scale, glm::vec3 color, GameObject* object);
 };
 
 /*!***********************************************************************
