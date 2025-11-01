@@ -83,18 +83,26 @@ void CoreEngine::Init() {
     m_renderSystem->init(*m_manager, cfg.width, cfg.height);
     m_uiSystem->init(m_window, m_renderSystem.get());
 
-    //get existing game objects for lua
-    GameObject* object1 = m_manager->getGameObject("player");
-    GameObject* object2 = m_manager->getGameObject("bullet");
+    //iterate over all Lua scripts in the folder
+    for (const auto& file : std::filesystem::directory_iterator("../projects/WaterBound/scripting")) {
+        if (file.path().extension() != ".lua") continue; //have to be .lua files if not it will skip
+        std::string filename = file.path().filename().string();
 
-    //add LuaScript components to the existing objects
-    if (object1)
-        object1->addComponent<LuaScript>("../projects/WaterBound/scripting/object1.lua");
-    std::cout << "runnning script for object 1" << std::endl;
+        //strip ".lua" to get object name
+        std::string objectName = filename.substr(0, filename.size() - 4);
 
-    if (object2)
-        object2->addComponent<LuaScript>("../projects/WaterBound/scripting/object2.lua");
-    std::cout << "runnning script for object 2" << std::endl;
+        GameObject* obj = m_manager->getGameObject(objectName);
+        if (obj) {
+			obj->addComponent<LuaScript>(file.path().string()); //add LuaScript component to object
+            //load Lua script into Lua state
+            if (!m_luaSystem->loadScriptForObject(file.path().string(), objectName)) {
+                std::cerr << "[Lua] Failed to load script for " << objectName << std::endl;
+            }
+            else {
+                std::cout << "[Lua] Loaded script " << filename << " for object " << objectName << std::endl;
+            }
+        }
+    }
 
     audio.init();
     glfwPollEvents();
@@ -174,7 +182,18 @@ void CoreEngine::Update(float deltaTime) {
 
         Transform* newTransform = newObject->getComponent<Transform>();
         newTransform->y += 1.5f * (static_cast<float>(cloneCount) - 1); // Offset the new clone's position
+    }
 
+    //lua scripting update for all objects with LuaScript component
+    std::vector<GameObject*> gameObjects;
+    m_manager->getAllGameObjects(gameObjects);
+
+    //running Lua scripts for each object that has a LuaScript component
+    for (GameObject* obj : gameObjects) {
+        if (obj->hasComponent<LuaScript>()) {
+            //LuaScript* scriptComp = obj->getComponent<LuaScript>();
+            m_luaSystem->updateObjectScript(obj->getObjectName(), obj, deltaTime);
+        }
     }
 
     // Update all systems in order
@@ -185,8 +204,6 @@ void CoreEngine::Update(float deltaTime) {
     m_uiSystem->update(*m_manager);
 
 }
-
-
 
 void CoreEngine::Shutdown() {
     if (m_luaSystem) m_luaSystem->cleanup();

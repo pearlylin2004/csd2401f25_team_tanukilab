@@ -37,9 +37,10 @@ public:
     bool runString(const std::string& code);
     bool runScript(const std::string& filename);
     float getGlobalNumber(const std::string& name);
-    bool runScriptForObject(const std::string& filename, GameObject* obj, float deltaTime);
+    bool updateObjectScript(const std::string& tableName, GameObject* obj, float deltaTime);
+    bool loadScriptForObject(const std::string& filename, const std::string& tableName);
     static int Lua_getPosition(lua_State* L);
-	static int Lua_setPosition(lua_State* L);
+    static int Lua_setPosition(lua_State* L);
     static int Lua_IsKeyHeld(lua_State* L);
 
 private:
