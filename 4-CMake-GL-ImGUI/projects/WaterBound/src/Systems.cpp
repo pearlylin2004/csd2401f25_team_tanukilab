@@ -113,8 +113,16 @@ void RenderSystem::update(GameObjectManager& manager, float const& deltaTime)
 
 			if (render->texChanged) {
 				if (render->hasTex) {
-					glDeleteTextures(1, &render->texHDL); // to avoid leak
-					render->texHDL = 0;
+
+					//glDeleteTextures(1, &render->texHDL); // to avoid leak
+					//render->texHDL = 0;
+					//no more deleting textures here, handled in ResourceManager cus we have a cache now
+
+					//the below code is for future use
+					TextureData texData = ResourceManager::getInstance().getTexture(render->texFile);
+					render->texHDL = texData.id;
+					render->isTransparent = texData.isTransparent;
+					render->texChanged = false;
 				}
 				//render->texHDL = uploadtex(render->texFile, render->isTransparent);
 				TextureData texData = ResourceManager::getInstance().getTexture(render->texFile);
