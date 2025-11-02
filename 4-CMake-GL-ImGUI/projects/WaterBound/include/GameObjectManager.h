@@ -55,11 +55,11 @@ public:
 
 	void loadFromJson(const std::string& filename);
 
-	void saveToJson(const std::string& filename) const;
+	void saveToJson(const std::string& filename, bool isNew) const;
 
 	void loadScene(const std::string& path);
 
-	void saveScene(const std::string& path) const;
+	void saveScene(const std::string& path, bool isNew = false) const;
 
 private:
 	//map of all game objects

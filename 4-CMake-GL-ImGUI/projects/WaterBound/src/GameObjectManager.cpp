@@ -334,7 +334,7 @@ void GameObjectManager::saveToFile(const std::string& filename) const {
 	std::cout << "Scene saved to " << filename << "\n";
 }
 
-void GameObjectManager::saveToJson(const std::string& filename) const {
+void GameObjectManager::saveToJson(const std::string& filename, bool isNew) const {
 	rapidjson::Document doc;
 	doc.SetObject();
 	auto& a = doc.GetAllocator();
@@ -342,111 +342,114 @@ void GameObjectManager::saveToJson(const std::string& filename) const {
 	// version header
 	doc.AddMember("version", rapidjson::Value(1), a);
 
-	// objects array
-	rapidjson::Value objects(rapidjson::kArrayType);
+	if (!isNew) {
 
-	for (auto const& kv : m_gameObjects) {
-		const GameObject* obj = kv.second.get();
+		// objects array
+		rapidjson::Value objects(rapidjson::kArrayType);
 
-		rapidjson::Value jObj(rapidjson::kObjectType);
+		for (auto const& kv : m_gameObjects) {
+			const GameObject* obj = kv.second.get();
 
-		// name
-		jObj.AddMember("name",
-			rapidjson::Value(obj->getObjectName().c_str(), a),
-			a);
+			rapidjson::Value jObj(rapidjson::kObjectType);
 
-		// components container
-		rapidjson::Value comps(rapidjson::kObjectType);
-
-		// ---- Transform ----
-		if (auto t = obj->getComponent<Transform>()) {
-			rapidjson::Value jt(rapidjson::kObjectType);
-
-			// pos[3]
-			rapidjson::Value pos(rapidjson::kArrayType);
-			pos.PushBack(rapidjson::Value().SetFloat(t->x), a)
-				.PushBack(rapidjson::Value().SetFloat(t->y), a)
-				.PushBack(rapidjson::Value().SetFloat(t->z), a);
-			jt.AddMember("pos", pos, a);
-
-			// rotation
-			jt.AddMember("rotation", rapidjson::Value().SetFloat(t->rotation), a);
-
-			// scale[3]
-			rapidjson::Value sc(rapidjson::kArrayType);
-			sc.PushBack(rapidjson::Value().SetFloat(t->scaleX), a)
-				.PushBack(rapidjson::Value().SetFloat(t->scaleY), a)
-				.PushBack(rapidjson::Value().SetFloat(t->scaleZ), a);
-			jt.AddMember("scale", sc, a);
-
-			comps.AddMember("Transform", jt, a);
-		}
-
-		// ---- Render ----
-		if (auto r = obj->getComponent<Render>()) {
-			rapidjson::Value jr(rapidjson::kObjectType);
-
-			// shape
-			jr.AddMember("shape",
-				rapidjson::Value(ShapeToStr(r->modelRef.shape), a),
+			// name
+			jObj.AddMember("name",
+				rapidjson::Value(obj->getObjectName().c_str(), a),
 				a);
 
-			// hasTex / texture
-			jr.AddMember("hasTex", rapidjson::Value().SetBool(r->hasTex), a);
-			if (r->hasTex && !r->texFile.empty()) {
-				jr.AddMember("texture",
-					rapidjson::Value(r->texFile.c_str(), a),
-					a);
+			// components container
+			rapidjson::Value comps(rapidjson::kObjectType);
+
+			// ---- Transform ----
+			if (auto t = obj->getComponent<Transform>()) {
+				rapidjson::Value jt(rapidjson::kObjectType);
+
+				// pos[3]
+				rapidjson::Value pos(rapidjson::kArrayType);
+				pos.PushBack(rapidjson::Value().SetFloat(t->x), a)
+					.PushBack(rapidjson::Value().SetFloat(t->y), a)
+					.PushBack(rapidjson::Value().SetFloat(t->z), a);
+				jt.AddMember("pos", pos, a);
+
+				// rotation
+				jt.AddMember("rotation", rapidjson::Value().SetFloat(t->rotation), a);
+
+				// scale[3]
+				rapidjson::Value sc(rapidjson::kArrayType);
+				sc.PushBack(rapidjson::Value().SetFloat(t->scaleX), a)
+					.PushBack(rapidjson::Value().SetFloat(t->scaleY), a)
+					.PushBack(rapidjson::Value().SetFloat(t->scaleZ), a);
+				jt.AddMember("scale", sc, a);
+
+				comps.AddMember("Transform", jt, a);
 			}
 
-			// keep your text semantics (0/1)
-			jr.AddMember("hasAnimation", rapidjson::Value(r->hasAnimation ? 1 : 0), a);
+			// ---- Render ----
+			if (auto r = obj->getComponent<Render>()) {
+				rapidjson::Value jr(rapidjson::kObjectType);
 
-			// If your Render does NOT have these members, keep them commented out.
-//          jr.AddMember("visible",     rapidjson::Value().SetBool(r->visible), a);
-//          jr.AddMember("transparent", rapidjson::Value().SetBool(r->isTransparent), a);
-//          jr.AddMember("wireframe",   rapidjson::Value().SetBool(r->wireframe), a);
+				// shape
+				jr.AddMember("shape",
+					rapidjson::Value(ShapeToStr(r->modelRef.shape), a),
+					a);
 
-			comps.AddMember("Render", jr, a);
+				// hasTex / texture
+				jr.AddMember("hasTex", rapidjson::Value().SetBool(r->hasTex), a);
+				if (r->hasTex && !r->texFile.empty()) {
+					jr.AddMember("texture",
+						rapidjson::Value(r->texFile.c_str(), a),
+						a);
+				}
+
+				// keep your text semantics (0/1)
+				jr.AddMember("hasAnimation", rapidjson::Value(r->hasAnimation ? 1 : 0), a);
+
+				// If your Render does NOT have these members, keep them commented out.
+	//          jr.AddMember("visible",     rapidjson::Value().SetBool(r->visible), a);
+	//          jr.AddMember("transparent", rapidjson::Value().SetBool(r->isTransparent), a);
+	//          jr.AddMember("wireframe",   rapidjson::Value().SetBool(r->wireframe), a);
+
+				comps.AddMember("Render", jr, a);
+			}
+
+			// ---- Input (presence only) ----
+			if (obj->hasComponent<Input>()) {
+				comps.AddMember("Input", rapidjson::Value(rapidjson::kObjectType), a);
+			}
+
+			// ---- Physics ----
+			if (auto p = obj->getComponent<Physics>()) {
+				rapidjson::Value jp(rapidjson::kObjectType);
+				// store as 0/1 to mirror .txt
+				jp.AddMember("inWater", rapidjson::Value(p->inWater ? 1 : 0), a);
+				jp.AddMember("buoyancy", rapidjson::Value(p->buoancy ? 1 : 0), a); // note: member is 'buoancy' in your struct
+				comps.AddMember("Physics", jp, a);
+			}
+
+			// ---- CollisionInfo (presence only) ----
+			if (obj->hasComponent<CollisionInfo>()) {
+				comps.AddMember("CollisionInfo", rapidjson::Value(rapidjson::kObjectType), a);
+			}
+
+			// ---- Animation ----
+			if (auto an = obj->getComponent<Animation>()) {
+				rapidjson::Value ja(rapidjson::kObjectType);
+				ja.AddMember("loop", rapidjson::Value(an->loop ? 1 : 0), a);
+				ja.AddMember("currentFrameColumn", rapidjson::Value(an->currentFrameColumn), a);
+				ja.AddMember("currentFrameRow", rapidjson::Value(an->currentFrameRow), a);
+				ja.AddMember("totalColumn", rapidjson::Value(an->totalColumn), a);
+				ja.AddMember("totalRow", rapidjson::Value(an->totalRow), a);
+				ja.AddMember("frameTime", rapidjson::Value().SetFloat(an->frameTime), a);
+				comps.AddMember("Animation", ja, a);
+			}
+
+			jObj.AddMember("components", comps, a);
+			objects.PushBack(jObj, a);
 		}
 
-		// ---- Input (presence only) ----
-		if (obj->hasComponent<Input>()) {
-			comps.AddMember("Input", rapidjson::Value(rapidjson::kObjectType), a);
-		}
-
-		// ---- Physics ----
-		if (auto p = obj->getComponent<Physics>()) {
-			rapidjson::Value jp(rapidjson::kObjectType);
-			// store as 0/1 to mirror .txt
-			jp.AddMember("inWater", rapidjson::Value(p->inWater ? 1 : 0), a);
-			jp.AddMember("buoyancy", rapidjson::Value(p->buoancy ? 1 : 0), a); // note: member is 'buoancy' in your struct
-			comps.AddMember("Physics", jp, a);
-		}
-
-		// ---- CollisionInfo (presence only) ----
-		if (obj->hasComponent<CollisionInfo>()) {
-			comps.AddMember("CollisionInfo", rapidjson::Value(rapidjson::kObjectType), a);
-		}
-
-		// ---- Animation ----
-		if (auto an = obj->getComponent<Animation>()) {
-			rapidjson::Value ja(rapidjson::kObjectType);
-			ja.AddMember("loop", rapidjson::Value(an->loop ? 1 : 0), a);
-			ja.AddMember("currentFrameColumn", rapidjson::Value(an->currentFrameColumn), a);
-			ja.AddMember("currentFrameRow", rapidjson::Value(an->currentFrameRow), a);
-			ja.AddMember("totalColumn", rapidjson::Value(an->totalColumn), a);
-			ja.AddMember("totalRow", rapidjson::Value(an->totalRow), a);
-			ja.AddMember("frameTime", rapidjson::Value().SetFloat(an->frameTime), a);
-			comps.AddMember("Animation", ja, a);
-		}
-
-		jObj.AddMember("components", comps, a);
-		objects.PushBack(jObj, a);
+		// attach array
+		doc.AddMember("objects", objects, a);
 	}
-
-	// attach array
-	doc.AddMember("objects", objects, a);
 
 	std::string err;
 	if (!JsonIO::WriteDocumentToFile(filename, doc, /*pretty=*/true, &err)) {
@@ -619,7 +622,7 @@ void GameObjectManager::loadScene(const std::string& path) {
 	else                          loadFromFile(path);   // keep legacy .txt scenes
 }
 
-void GameObjectManager::saveScene(const std::string& path) const {
-	if (ends_with(path, ".json")) saveToJson(path);
+void GameObjectManager::saveScene(const std::string& path, bool isNew) const {
+	if (ends_with(path, ".json")) saveToJson(path, isNew);
 	else                          saveToFile(path);
 }

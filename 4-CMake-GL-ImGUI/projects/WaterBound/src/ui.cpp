@@ -310,6 +310,8 @@ void UI::newScenePopup(GameObjectManager& manager) {
             syncSceneToRuntime(m_currentSceneName);
 
             newScene(manager);
+            m_MenuBarState.sceneToLoad = m_currentSceneName;
+			loadScene(manager);
             ImGui::CloseCurrentPopup();
         }
 
@@ -317,7 +319,11 @@ void UI::newScenePopup(GameObjectManager& manager) {
         ImGui::SameLine();
         if (ImGui::Button("Discard Changes")) {
 
+            m_MenuBarState.sceneToLoad = m_currentSceneName;
+
             newScene(manager);
+            m_MenuBarState.sceneToLoad = m_currentSceneName;
+            loadScene(manager);
             ImGui::CloseCurrentPopup();
         }
 
@@ -430,7 +436,7 @@ void UI::newScene(GameObjectManager& manager) {
     } while (nameExists);
 
     m_currentSceneName = newSceneName;
-    manager.saveScene(sourceScenePath(m_currentSceneName));
+    manager.saveScene(sourceScenePath(m_currentSceneName), true);
     syncSceneToRuntime(m_currentSceneName);
     assetsChangedFlag = true;
 
