@@ -275,13 +275,13 @@ void UI::editorMenuBar(GameObjectManager& manager) {
                         // always load the copy the exe uses (runtime)
                         //manager.loadScene(runtimeScenePath(asset.name));
                         // keep only the filename in state (saves will go to source)
-                        m_currentSceneName = asset.name;
+                        /*m_currentSceneName = asset.name;
 
                         m_SelectionState.selectedObject = nullptr;
                         m_SelectionState.draggedObject = nullptr;
                         m_SelectionState.selectedIndex = -1;
 
-                        addDebugMessage("Loaded scene: " + asset.name + "\n");
+                        addDebugMessage("Loaded scene: " + asset.name + "\n");*/
                     }
                 }
             }
@@ -449,10 +449,10 @@ void UI::duplicateScene(GameObjectManager& manager) {
 		std::string filename = originalName.stem().string();
 		std::string extension = originalName.extension().string();
 
+		// check for existing names and find a new unique name
         std::string newSceneName;
         int copy = 1;
         bool nameExists;
-
         do {
 			nameExists = false;
 			newSceneName = folder + "/" + filename + "_copy(" + std::to_string(copy) + ")" + extension;
@@ -466,7 +466,7 @@ void UI::duplicateScene(GameObjectManager& manager) {
 
 			copy++;
         } while (nameExists);
-
+	
         //manager.saveToFile(newSceneName);
         m_currentSceneName = newSceneName;
         manager.saveScene(sourceScenePath(m_currentSceneName));
@@ -829,23 +829,12 @@ void UI::assetWindow(GameObjectManager& manager) {
 			ImGui::EndPopup();
 		}
 
-        // double click logic
+		// double click logic to open scene files
         if (ImGui::IsItemHovered() && InputHandler::isMouseLeftDoubleClicked()) {
             // if it's a scene file, load the scene
             if (asset.folder == m_AssetBrowserState.currentFolder + "Scene") {
-                // load the new scene
-                manager.loadScene(runtimeScenePath(asset.name));
-
-                // set current scene name
-                m_currentSceneName = asset.name;
-
-                // clear the current selection
-                m_SelectionState.selectedObject = nullptr;
-                m_SelectionState.draggedObject = nullptr;
-                m_SelectionState.selectedIndex = -1;
-
-                // for debugging
-                addDebugMessage("Loaded scene: " + asset.name + "\n");
+                m_MenuBarState.sceneToLoad = asset.name;
+                m_MenuBarState.showLoadScenePopup = true;
             }
         }
 
