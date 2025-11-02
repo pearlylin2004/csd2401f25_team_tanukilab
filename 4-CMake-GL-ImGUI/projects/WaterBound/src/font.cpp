@@ -3,7 +3,7 @@
 std::vector<FT_Face> Font::face;
 std::vector<Font::FontMdl> Font::fontMdls;
 FT_Library Font::ft;
-int Font::fontTypes = 2;
+int Font::fontTypes = 3;
 GLuint Font::fontShaders;
 std::map<char, Font::Character> Font::Characters;
 std::vector<std::string> Font::fonts;
@@ -13,6 +13,8 @@ int Font::init()
 {
     fonts.push_back("shaders/Orange Knight.ttf");
     fonts.push_back("shaders/ARIAL.TTF");
+    fonts.push_back("shaders/times.ttf");
+    fontTypes = fonts.size();
     face.resize(fontTypes);
     characters.resize(fontTypes);
     if (FT_Init_FreeType(&ft))
