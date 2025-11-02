@@ -458,7 +458,7 @@ void UI::duplicateScene(GameObjectManager& manager) {
 			newSceneName = folder + "/" + filename + "_copy(" + std::to_string(copy) + ")" + extension;
 
             for (const Asset& asset : m_assets) {
-                if (asset.folder == folder && asset.name == std::filesystem::path(newSceneName).filename().string()) {
+                if (asset.name == std::filesystem::path(newSceneName).filename().string()) {
 					nameExists = true;
 					break;
                 }
