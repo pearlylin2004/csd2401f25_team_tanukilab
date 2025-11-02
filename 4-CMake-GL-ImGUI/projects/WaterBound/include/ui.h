@@ -63,6 +63,7 @@ private:
 	void duplicateScenePopup(GameObjectManager& manager);
 	void loadScenePopup(GameObjectManager& manager);
 
+	void newScene(GameObjectManager& manager);
 	void duplicateScene(GameObjectManager& manager);
 	void loadScene(GameObjectManager& manager);
 

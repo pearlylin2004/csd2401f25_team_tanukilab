@@ -218,8 +218,8 @@ void UI::editorMenuBar(GameObjectManager& manager) {
     if (ImGui::BeginMenu("File")) {
 
         // create new scene
-        if (ImGui::MenuItem("New Scene (WIP)")) {
-            // m_MenuBarState.showNewScenePopup = true;
+        if (ImGui::MenuItem("New Scene")) {
+            m_MenuBarState.showNewScenePopup = true;
         }
 
         // duplicate scene
@@ -303,23 +303,26 @@ void UI::newScenePopup(GameObjectManager& manager) {
     if (ImGui::BeginPopupModal("Confirm New Scene", NULL, ImGuiWindowFlags_AlwaysAutoResize)) {
         ImGui::Text("Create a new scene? Unsaved changes will be lost.");
 
-        if (ImGui::Button("Create")) {
+        // Save and open new scene
+        if (ImGui::Button("Save and Create New")) {
+            //manager.saveToFile(m_currentSceneName);
+            manager.saveScene(sourceScenePath(m_currentSceneName));
+            syncSceneToRuntime(m_currentSceneName);
 
-            m_currentSceneName = "shaders/Scene/untitled_scene.txt";
-
-            manager.saveToFile(m_currentSceneName);
-            assetsChangedFlag = true;
-
-            m_SelectionState.selectedObject = nullptr;
-            m_SelectionState.draggedObject = nullptr;
-            m_SelectionState.selectedIndex = -1;
-
-            addDebugMessage("New scene created.\n");
+            newScene(manager);
             ImGui::CloseCurrentPopup();
         }
 
+        // Discard changes and open new scene
         ImGui::SameLine();
+        if (ImGui::Button("Discard Changes")) {
 
+            newScene(manager);
+            ImGui::CloseCurrentPopup();
+        }
+
+        // Cancel duplicate and stay in current scene
+        ImGui::SameLine();
         if (ImGui::Button("Cancel")) {
             ImGui::CloseCurrentPopup();
         }
@@ -402,6 +405,40 @@ void UI::loadScenePopup(GameObjectManager& manager) {
 
         ImGui::EndPopup();
     }
+}
+
+void UI::newScene(GameObjectManager& manager) {
+    //std::string folder = std::string(SOURCE_SCENE_DIR_R);
+	std::string base = "untitled_scene";
+	std::string extension = ".json";
+    std::string newSceneName;
+
+    int copy = 1;
+	bool nameExists;
+    do {
+        nameExists = false;
+        newSceneName = base + "(" + std::to_string(copy) + ")" + extension;
+
+        for (const Asset& asset : m_assets) {
+            if (asset.name == std::filesystem::path(newSceneName).filename().string()) {
+                nameExists = true;
+                break;
+            }
+        }
+
+        copy++;
+    } while (nameExists);
+
+    m_currentSceneName = newSceneName;
+    manager.saveScene(sourceScenePath(m_currentSceneName));
+    syncSceneToRuntime(m_currentSceneName);
+    assetsChangedFlag = true;
+
+    m_SelectionState.selectedObject = nullptr;
+    m_SelectionState.draggedObject = nullptr;
+    m_SelectionState.selectedIndex = -1;
+
+    addDebugMessage("New scene " + m_currentSceneName + " created.\n");
 }
 
 void UI::duplicateScene(GameObjectManager& manager) {
