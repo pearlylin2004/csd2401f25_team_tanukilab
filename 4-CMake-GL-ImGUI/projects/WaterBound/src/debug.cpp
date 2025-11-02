@@ -182,7 +182,7 @@ namespace Perf {
 
         // Rolling FPS accumulators
         static double count = 0.0;
-        static double start_time = glfwGetTime();
+        static double start_time = curr_time;
         const  double elapsed_time = curr_time - start_time;
 
         ++count;
@@ -197,6 +197,35 @@ namespace Perf {
             start_time = curr_time;
             count = 0.0;
         }
+    }
+
+    void UpdateTime(double& delta, double& fps, double fps_calc_interval,
+        double fixed_dt, int& steps_out, double& alpha_out,
+        int max_steps_per_frame)
+    {
+        // 1) Update variable delta & FPS using the original function
+        UpdateTime(delta, fps, fps_calc_interval);
+
+        // 2) Accumulate time and emit a bounded number of fixed steps
+        static double accumulator = 0.0;
+
+        // Optional: clamp extremely large deltas (e.g., when the window was dragged/paused)
+        const double max_frame_delta = 0.25; // avoid accumulating >250ms in one go
+        const double clamped_delta = (delta > max_frame_delta) ? max_frame_delta : delta;
+
+        accumulator += clamped_delta;
+
+        // Safety: fixed_dt must be positive
+        if (fixed_dt <= 0.0) fixed_dt = 1.0 / 60.0;
+
+        int steps = 0;
+        while (accumulator >= fixed_dt && steps < max_steps_per_frame) {
+            accumulator -= fixed_dt;
+            ++steps;
+        }
+
+        steps_out = steps;
+        alpha_out = accumulator / fixed_dt; // for render interpolation (0..1)
     }
 
     /**

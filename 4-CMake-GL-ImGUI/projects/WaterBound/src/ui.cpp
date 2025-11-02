@@ -17,19 +17,57 @@ Technology is prohibited.
 
 #include "ui.h"
 
+#ifndef RUNTIME_SCENE_DIR_R
+#define RUNTIME_SCENE_DIR_R "./shaders/Scene"
+#endif
+#ifndef SOURCE_SCENE_DIR_R
+#define SOURCE_SCENE_DIR_R "./projects/WaterBound/shaders/Scene"
+#endif
+static std::string runtimeScenePath(std::string const& name) {
+    return std::string(RUNTIME_SCENE_DIR_R) + "/" + name;
+}
+static std::string sourceScenePath(std::string const& name) {
+    return std::string(SOURCE_SCENE_DIR_R) + "/" + name;
+}
+static bool syncSceneToRuntime(const std::string& name) {
+    const std::string src = sourceScenePath(name);
+    const std::string dst = runtimeScenePath(name);
+
+    std::error_code ec;
+    std::filesystem::create_directories(std::filesystem::path(dst).parent_path(), ec);
+    std::filesystem::copy_file(
+        src, dst,
+        std::filesystem::copy_options::overwrite_existing,
+        ec
+    );
+
+    if (ec) {
+        std::cerr << "Scene sync failed: " << src << " -> " << dst
+            << " (" << ec.message() << ")\n";
+        return false;
+    }
+    std::cout << "Scene synced: " << dst << "\n";
+    return true;
+}
 bool UI::assetsChangedFlag = true;
 
 UI::UI() {
 
-    m_currentSceneName = "shaders/Scene/temp_serialize.txt";
-    m_tempSceneName = "shaders/Scene/temp_scene";
+    //m_currentSceneName = "shaders/Scene/level01.json";
+    ////m_currentSceneName = "shaders/Scene/temp_serialize.txt";
+    ////m_tempSceneName = "shaders/Scene/temp_scene";
+    //m_tempSceneName = "shaders/Scene/temp_scene.json";
+    m_currentSceneName = "level01.json";
+    m_tempSceneName = "temp_scene.json";
     m_isPlaying = false;
 }
 
 void UI::update(GameObjectManager& manager) {
     if (InputHandler::isComboKeyTriggered(GLFW_KEY_S, GLFW_KEY_LEFT_CONTROL) ||
-        InputHandler::isComboKeyTriggered(GLFW_KEY_S, GLFW_KEY_RIGHT_CONTROL))
-        manager.saveToFile(m_currentSceneName);
+        InputHandler::isComboKeyTriggered(GLFW_KEY_S, GLFW_KEY_RIGHT_CONTROL)) {
+        manager.saveScene(sourceScenePath(m_currentSceneName));
+        syncSceneToRuntime(m_currentSceneName);
+    }
 
     editorMenuBar(manager);
     objPicking(manager);
@@ -106,7 +144,7 @@ void UI::drawShapes(GameObjectManager& manager) {
             Transform* transform = circleObj->addComponent<Transform>();
             Render* render = circleObj->addComponent<Render>();
             render->modelRef = renderer::models[static_cast<int>(shape::circle) + static_cast<int>(shape::circle)];
-
+            //render->modelRef = renderer::models[static_cast<int>(shape::circle)];
             transform->x = circleInput.inputX;
             transform->y = circleInput.inputY;
             transform->z = circleInput.inputZ;
@@ -184,11 +222,37 @@ void UI::editorMenuBar(GameObjectManager& manager) {
         // duplicate scene
         if (ImGui::MenuItem("Duplicate Scene")) {
             m_MenuBarState.showDuplicatePopup = true;
+            if (!m_currentSceneName.empty()) {
+                std::string newSceneName = m_currentSceneName;
+
+                if (newSceneName.find_last_of('.') != std::string::npos) {
+                    newSceneName.insert(newSceneName.find_last_of('.'), "_copy");
+                }
+                else {
+                    newSceneName += "_copy";
+                }
+
+                //manager.saveScene(newSceneName);
+                manager.saveScene(sourceScenePath(newSceneName));
+                m_currentSceneName = newSceneName;
+                assetsChangedFlag = true;
+                syncSceneToRuntime(m_currentSceneName);
+
+                m_SelectionState.selectedObject = nullptr;
+                m_SelectionState.draggedObject = nullptr;
+                m_SelectionState.selectedIndex = -1;
+                addDebugMessage("Scene duplicated to: " + newSceneName + "\n");
+            }
+            else {
+                addDebugMessage("No current scene to duplicate.\n");
+            }
         }
 
         // save current scene to file
         if (ImGui::MenuItem("Save Scene")) {
-            manager.saveToFile(m_currentSceneName);
+            //manager.saveScene(m_currentSceneName);
+            manager.saveScene(sourceScenePath(m_currentSceneName));
+            syncSceneToRuntime(m_currentSceneName);
         }
 
         // load an existing scene
@@ -201,6 +265,20 @@ void UI::editorMenuBar(GameObjectManager& manager) {
                     if (ImGui::MenuItem(asset.name.c_str())) {
                         m_MenuBarState.sceneToLoad = asset.folder + "/" + asset.name;
 						m_MenuBarState.showLoadScenePopup = true;
+                        //std::string fullPath = asset.folder + "/" + asset.name;
+                        //manager.loadScene(fullPath);
+
+                        //m_currentSceneName = fullPath;
+                        // always load the copy the exe uses (runtime)
+                        manager.loadScene(runtimeScenePath(asset.name));
+                        // keep only the filename in state (saves will go to source)
+                        m_currentSceneName = asset.name;
+
+                        m_SelectionState.selectedObject = nullptr;
+                        m_SelectionState.draggedObject = nullptr;
+                        m_SelectionState.selectedIndex = -1;
+
+                        addDebugMessage("Loaded scene: " + asset.name + "\n");
                     }
                 }
             }
@@ -218,7 +296,8 @@ void UI::editorMenuBar(GameObjectManager& manager) {
                 m_isPlaying = true;
 
                 // save current state to a temp scene file
-                manager.saveToFile(m_tempSceneName);
+                //manager.saveScene(m_tempSceneName);
+                manager.saveScene(runtimeScenePath(m_tempSceneName));
 
                 addDebugMessage("Simulation started.\n");
             }
@@ -228,16 +307,18 @@ void UI::editorMenuBar(GameObjectManager& manager) {
                 m_isPlaying = false;
 
                 // load back the temp scene file to restore state
-                manager.loadFromFile(m_tempSceneName);
+                manager.loadScene(m_tempSceneName);
 
                 m_SelectionState.selectedObject = nullptr;
                 m_SelectionState.draggedObject = nullptr;
                 m_SelectionState.selectedIndex = -1;
 
                 // remove temp scene file
-                if (std::filesystem::exists(m_tempSceneName))
-                    std::filesystem::remove(m_tempSceneName);
-
+                //if (std::filesystem::exists(m_tempSceneName))
+                //    std::filesystem::remove(m_tempSceneName);
+                const auto tempFull = runtimeScenePath(m_tempSceneName);
+                if (std::filesystem::exists(tempFull))
+                    std::filesystem::remove(tempFull);
                 addDebugMessage("Simulation stopped.\n");
             }
         }
@@ -680,7 +761,9 @@ void UI::assetWindow(GameObjectManager& manager) {
     for (const Asset& asset : m_assets) {
         // skip temp scene file (for play/stop)
         std::string fullPath = asset.folder + "/" + asset.name;
-        if (fullPath == m_tempSceneName) continue;
+        //if (fullPath == m_tempSceneName) continue;
+
+        if (asset.name == m_tempSceneName) continue;
 
         ImGui::PushID(index++);
 
@@ -738,10 +821,10 @@ void UI::assetWindow(GameObjectManager& manager) {
             // if it's a scene file, load the scene
             if (asset.folder == m_AssetBrowserState.currentFolder + "Scene") {
                 // load the new scene
-                manager.loadFromFile(fullPath);
+                manager.loadScene(runtimeScenePath(asset.name));
 
                 // set current scene name
-                m_currentSceneName = fullPath;
+                m_currentSceneName = asset.name;
 
                 // clear the current selection
                 m_SelectionState.selectedObject = nullptr;
