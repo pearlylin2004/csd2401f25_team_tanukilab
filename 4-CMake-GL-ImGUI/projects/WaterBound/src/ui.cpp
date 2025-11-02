@@ -45,6 +45,9 @@ void UI::update(GameObjectManager& manager) {
     drawShapes(manager);
 
     // conditional popup
+	newScenePopup(manager); // popup for creating new scene
+	duplicateScenePopup(manager); // popup for duplicating scene
+	loadScenePopup(manager); // popup for loading scene
 	assetDeletePopup(); // popup for confirming asset deletion
 	assetRenamePopup(); // popup for renaming asset
 	assetReplacePopup(); // popup for replacing asset
@@ -174,34 +177,13 @@ void UI::editorMenuBar(GameObjectManager& manager) {
     if (ImGui::BeginMenu("File")) {
 
         // create new scene
-        if (ImGui::MenuItem("New Scene (coming soon)")) {
-            // implement new scene logic here 
+        if (ImGui::MenuItem("New Scene (WIP)")) {
+            // m_MenuBarState.showNewScenePopup = true;
         }
 
         // duplicate scene
         if (ImGui::MenuItem("Duplicate Scene")) {
-            if (!m_currentSceneName.empty()) {
-                std::string newSceneName = m_currentSceneName;
-
-                if (newSceneName.find_last_of('.') != std::string::npos) {
-                    newSceneName.insert(newSceneName.find_last_of('.'), "_copy");
-                }
-                else {
-                    newSceneName += "_copy";
-                }
-
-                manager.saveToFile(newSceneName);
-                m_currentSceneName = newSceneName;
-                assetsChangedFlag = true;
-
-                m_SelectionState.selectedObject = nullptr;
-                m_SelectionState.draggedObject = nullptr;
-                m_SelectionState.selectedIndex = -1;
-                addDebugMessage("Scene duplicated to: " + newSceneName + "\n");
-            }
-            else {
-                addDebugMessage("No current scene to duplicate.\n");
-            }
+            m_MenuBarState.showDuplicatePopup = true;
         }
 
         // save current scene to file
@@ -212,20 +194,13 @@ void UI::editorMenuBar(GameObjectManager& manager) {
         // load an existing scene
         if (ImGui::BeginMenu("Load Scene")) {
 
-            // load through the assets to find scene files
+            // load through the assets to find scene files (all files saved in "Scene" folder)
             for (const Asset& asset : m_assets) {
                 if (asset.folder == m_AssetBrowserState.currentFolder + "Scene") {
+					// create a submenu for the scenes
                     if (ImGui::MenuItem(asset.name.c_str())) {
-                        std::string fullPath = asset.folder + "/" + asset.name;
-                        manager.loadFromFile(fullPath);
-
-                        m_currentSceneName = fullPath;
-
-                        m_SelectionState.selectedObject = nullptr;
-                        m_SelectionState.draggedObject = nullptr;
-                        m_SelectionState.selectedIndex = -1;
-
-                        addDebugMessage("Loaded scene: " + asset.name + "\n");
+                        m_MenuBarState.sceneToLoad = asset.folder + "/" + asset.name;
+						m_MenuBarState.showLoadScenePopup = true;
                     }
                 }
             }
@@ -270,6 +245,164 @@ void UI::editorMenuBar(GameObjectManager& manager) {
     }
 
     ImGui::EndMainMenuBar();
+}
+
+void UI::newScenePopup(GameObjectManager& manager) {
+    // open popup if flagged
+    if (m_MenuBarState.showNewScenePopup) {
+        ImGui::OpenPopup("Confirm New Scene");
+        m_MenuBarState.showNewScenePopup = false;
+    }
+
+    if (ImGui::BeginPopupModal("Confirm New Scene", NULL, ImGuiWindowFlags_AlwaysAutoResize)) {
+        ImGui::Text("Create a new scene? Unsaved changes will be lost.");
+
+        if (ImGui::Button("Create")) {
+
+            m_currentSceneName = "shaders/Scene/untitled_scene.txt";
+
+            manager.saveToFile(m_currentSceneName);
+            assetsChangedFlag = true;
+
+            m_SelectionState.selectedObject = nullptr;
+            m_SelectionState.draggedObject = nullptr;
+            m_SelectionState.selectedIndex = -1;
+
+            addDebugMessage("New scene created.\n");
+            ImGui::CloseCurrentPopup();
+        }
+
+        ImGui::SameLine();
+
+        if (ImGui::Button("Cancel")) {
+            ImGui::CloseCurrentPopup();
+        }
+
+        ImGui::EndPopup();
+    }
+}
+
+void UI::duplicateScenePopup(GameObjectManager& manager) {
+    if (m_MenuBarState.showDuplicatePopup) {
+        m_MenuBarState.showDuplicatePopup = false;
+        ImGui::OpenPopup("Confirm Duplicate Scene");
+    }
+
+	if (ImGui::BeginPopupModal("Confirm Duplicate Scene", NULL, ImGuiWindowFlags_AlwaysAutoResize)) {
+		ImGui::Text("Duplicate and open new a scene? Unsaved changes will be lost.");
+
+        // Save and open newly duplicated scene
+        if (ImGui::Button("Save and Duplicate")) {
+            manager.saveToFile(m_currentSceneName);
+           
+            duplicateScene(manager);
+            ImGui::CloseCurrentPopup();
+        }
+
+		// Discard changes and open newly duplicated scene
+        ImGui::SameLine();
+        if (ImGui::Button("Discard Changes")) {
+
+            duplicateScene(manager);
+            ImGui::CloseCurrentPopup();
+        }
+
+		// Cancel duplicate and stay in current scene
+        ImGui::SameLine();
+        if (ImGui::Button("Cancel")) {
+            ImGui::CloseCurrentPopup();
+        }
+
+		ImGui::EndPopup();
+	}
+}
+
+void UI::loadScenePopup(GameObjectManager& manager) {
+    if (m_MenuBarState.showLoadScenePopup) {
+        ImGui::OpenPopup("Confirm Load Scene");
+        m_MenuBarState.showLoadScenePopup = false;
+    }
+
+    if (ImGui::BeginPopupModal("Confirm Load Scene", NULL, ImGuiWindowFlags_AlwaysAutoResize)) {
+		// show different title if reloading current scene
+        std::string title = (m_MenuBarState.sceneToLoad == m_currentSceneName) ? "Reload current scene? Unsaved changes will be lost." : "Load another scene? Unsaved changes will be lost";
+        
+        ImGui::Text(title.c_str());
+
+        // Save and load another scene
+        if (ImGui::Button("Save and Load")) {
+            manager.saveToFile(m_currentSceneName);
+
+            loadScene(manager);
+            ImGui::CloseCurrentPopup();
+        }
+
+        // Discard changes and load selected scene
+        ImGui::SameLine();
+        if (ImGui::Button("Discard Changes")) {
+            loadScene(manager);
+            ImGui::CloseCurrentPopup();
+        }
+
+        // Cancel loading and stay in current scene
+        ImGui::SameLine();
+        if (ImGui::Button("Cancel")) {
+            ImGui::CloseCurrentPopup();
+        }
+
+        ImGui::EndPopup();
+    }
+}
+
+void UI::duplicateScene(GameObjectManager& manager) {
+    if (!m_currentSceneName.empty()) {
+		std::filesystem::path originalName(m_currentSceneName);
+		std::string folder = originalName.parent_path().string();
+		std::string filename = originalName.stem().string();
+		std::string extension = originalName.extension().string();
+
+        std::string newSceneName;
+        int copy = 1;
+        bool nameExists;
+
+        do {
+			nameExists = false;
+			newSceneName = folder + "/" + filename + "_copy(" + std::to_string(copy) + ")" + extension;
+
+            for (const Asset& asset : m_assets) {
+                if (asset.folder == folder && asset.name == std::filesystem::path(newSceneName).filename().string()) {
+					nameExists = true;
+					break;
+                }
+            }
+
+			copy++;
+        } while (nameExists);
+
+        manager.saveToFile(newSceneName);
+        m_currentSceneName = newSceneName;
+        assetsChangedFlag = true;
+
+        m_SelectionState.selectedObject = nullptr;
+        m_SelectionState.draggedObject = nullptr;
+        m_SelectionState.selectedIndex = -1;
+        addDebugMessage("Scene duplicated to: " + newSceneName + "\n");
+    }
+    else {
+        addDebugMessage("No current scene to duplicate.\n");
+    }
+}
+
+void UI::loadScene(GameObjectManager & manager) {
+    manager.loadFromFile(m_MenuBarState.sceneToLoad);
+
+    m_currentSceneName = std::move(m_MenuBarState.sceneToLoad);
+
+    m_SelectionState.selectedObject = nullptr;
+    m_SelectionState.draggedObject = nullptr;
+    m_SelectionState.selectedIndex = -1;
+
+    addDebugMessage("Loaded scene: " + m_currentSceneName + "\n");
 }
 
 void UI::objHierarchyWindow(GameObjectManager& manager) {
