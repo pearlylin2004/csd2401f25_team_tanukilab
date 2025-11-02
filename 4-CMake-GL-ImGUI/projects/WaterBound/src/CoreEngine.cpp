@@ -80,11 +80,13 @@ void CoreEngine::Init() {
     m_renderSystem = std::make_unique<RenderSystem>();
     m_uiSystem = std::make_unique<UISystem>();
     m_luaSystem = std::make_unique<LuaSystem>();
+    m_fontSystem = std::make_unique<FontSystem>();
 
     m_luaSystem->init();
     m_manager->init();
-    m_renderSystem->init(*m_manager, cfg.width, cfg.height);
-    m_uiSystem->init(m_window, m_renderSystem.get());
+	m_renderSystem->init(*m_manager);
+	m_uiSystem->init(m_window);
+    m_fontSystem->init(*m_manager);
 
     //iterate over all Lua scripts in the folder
     for (const auto& file : std::filesystem::directory_iterator("../projects/WaterBound/scripting")) {
@@ -203,6 +205,7 @@ void CoreEngine::Update(float deltaTime) {
     m_physicsSystem->update(*m_manager, deltaTime);
     m_renderSystem->update(*m_manager, deltaTime);
     m_uiSystem->update(*m_manager);
+    m_fontSystem->update(*m_manager);
 
 }
 

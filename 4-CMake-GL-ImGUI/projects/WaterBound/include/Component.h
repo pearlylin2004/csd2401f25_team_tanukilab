@@ -25,6 +25,7 @@ Technology is prohibited.
 #include <memory> //for unique_ptr
 #include "renderer.h"
 #include "mathlib.h"
+#include "font.h"
 
 
 // basic component class
@@ -76,6 +77,20 @@ public:
     std::string texFile;
     
     renderer::model modelRef;
+};
+
+struct FontComponent : public Component {
+    FontComponent() = default;
+
+    std::unique_ptr<Component> clone() const override {
+        return std::make_unique<FontComponent>(*this);
+    }
+    //GLuint texHdl;
+    Font::FontMdl mdl;
+    std::string word = "";
+    float scale = 1;
+    glm::vec3 clr{ 0.f,0.f,0.f };
+    int fontType = 1;
 };
 
 struct Animation : public Component

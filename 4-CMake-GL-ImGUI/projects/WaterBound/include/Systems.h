@@ -25,6 +25,7 @@ Technology is prohibited.
 #include "collision.h"
 #include "imgui_internal.h" // for docking in UISystem
 #include <ui.h>
+#include "font.h"
 
 //forward declaration
 struct renderer;
@@ -88,6 +89,14 @@ public:
 
 	void fboAspectRatio(int& width, int& height) const;
 	~RenderSystem();
+	void renderCollision(Collision::AABB const& box, glm::vec3 const& clr);
+};
+
+class FontSystem {
+public:
+	void init(GameObjectManager& manager);
+	void update(GameObjectManager& manager);
+	void RenderText(GLuint& s, std::string text, float x, float y, float scale, glm::vec3 color, GameObject* object);
 };
 
 /*!***********************************************************************

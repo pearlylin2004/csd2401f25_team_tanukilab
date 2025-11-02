@@ -244,8 +244,17 @@ void GameObjectManager::loadFromFile(const std::string& filename)
 			std::cout << "animation component added\n";
 		}
 
-		//m_gameObjects["player"]->addComponent<Input>(1.f);
+		if (checker == "font")
+		{
+			FontComponent* fc = m_gameObjects[objectName]->addComponent<FontComponent>();
+			std::string line;
+			std::getline(is >> std::ws, line);
+			std::istringstream iss(line);
+			iss >> std::quoted(fc->word) >> fc->clr.r >> fc->clr.g >> fc->clr.b >> fc->scale;
+		}
 
+		m_gameObjects["player"]->addComponent<Input>(1.f);
+		
 	}
 }
 
