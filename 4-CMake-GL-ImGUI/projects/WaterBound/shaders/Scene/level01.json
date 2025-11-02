@@ -5,29 +5,18 @@
       "name": "player",
       "components": {
         "Transform": {
-          "pos": [
-            0.0,
-            0.0,
-            0.029999999329447746
-          ],
+          "pos": [0.0, 0.0, 0.03],
           "rotation": 1.0,
-          "scale": [
-            5.0,
-            3.0,
-            0.0
-          ]
+          "scale": [5.0, 3.0, 0.0]
         },
         "Render": {
           "shape": "square",
-          "hasTex": true,
+          "hasTex": 1,
           "texture": "shaders/Leaf_Gun_Empty.png",
           "hasAnimation": 0
         },
         "Input": {},
-        "Physics": {
-          "inWater": 0,
-          "buoyancy": 0
-        },
+        "Physics": { "inWater": 0, "buoyancy": 0 },
         "CollisionInfo": {}
       }
     },
@@ -35,136 +24,87 @@
       "name": "platform",
       "components": {
         "Transform": {
-          "pos": [
-            0.0,
-            0.0,
-            -0.0010000000474974513
-          ],
+          "pos": [0.0, 0.0, -0.001],
           "rotation": 1.0,
-          "scale": [
-            50.0,
-            50.0,
-            0.0
-          ]
+          "scale": [50.0, 50.0, 0.0]
         },
         "Render": {
           "shape": "circle",
-          "hasTex": false,
+          "hasTex": 0,
           "hasAnimation": 0
         },
-        "Physics": {
-          "inWater": 1,
-          "buoyancy": 1
-        }
+        "Physics": { "inWater": 1, "buoyancy": 1 }
       }
     },
     {
       "name": "bullet",
       "components": {
         "Transform": {
-          "pos": [
-            0.0,
-            0.0,
-            0.019999999552965164
-          ],
+          "pos": [0.0, 0.0, 0.02],
           "rotation": 0.5,
-          "scale": [
-            0.5,
-            0.5,
-            0.0
-          ]
+          "scale": [0.5, 0.5, 0.0]
         },
         "Render": {
           "shape": "square",
-          "hasTex": false,
+          "hasTex": 0,
           "hasAnimation": 0
         },
-        "Physics": {
-          "inWater": 0,
-          "buoyancy": 0
-        }
+        "Physics": { "inWater": 0, "buoyancy": 0 }
       }
     },
     {
       "name": "player1",
       "components": {
         "Transform": {
-          "pos": [
-            8.0,
-            0.0,
-            0.009999999776482582
-          ],
+          "pos": [8.0, 0.0, 0.01],
           "rotation": 1.0,
-          "scale": [
-            1.0,
-            1.0,
-            0.0
-          ]
+          "scale": [1.0, 1.0, 0.0]
         },
         "Render": {
           "shape": "square",
-          "hasTex": false,
+          "hasTex": 0,
           "hasAnimation": 0
         },
-        "Physics": {
-          "inWater": 0,
-          "buoyancy": 0
-        },
+        "Physics": { "inWater": 0, "buoyancy": 0 },
         "CollisionInfo": {}
-      }
-    },
-    {
-      "name": "player2",
-      "components": {
-        "Transform": {
-          "pos": [
-            -8.0,
-            0.0,
-            0.009999999776482582
-          ],
-          "rotation": 1.0,
-          "scale": [
-            1.0,
-            1.0,
-            0.0
-          ]
-        },
-        "Render": {
-          "shape": "square",
-          "hasTex": false,
-          "hasAnimation": 0
-        }
       }
     },
     {
       "name": "smoke",
       "components": {
         "Transform": {
-          "pos": [
-            -12.0,
-            0.0,
-            0.019999999552965164
-          ],
+          "pos": [-12.0, 0.0, 0.02],
           "rotation": 1.0,
-          "scale": [
-            3.0,
-            5.0,
-            0.0
-          ]
+          "scale": [3.0, 5.0, 0.0]
         },
         "Render": {
           "shape": "square",
-          "hasTex": true,
+          "hasTex": 1,
           "texture": "shaders/Smoke-Sprite-Sheet.png",
           "hasAnimation": 1
         },
         "Animation": {
           "loop": 1,
-          "currentFrameColumn": 1,
+          "currentFrameColumn": 0,
           "currentFrameRow": 0,
           "totalColumn": 8,
           "totalRow": 1,
-          "frameTime": 0.1469999998807907
+          "frameTime": 0.147
+        }
+      }
+    },
+    {
+      "name": "player2",
+      "components": {
+        "Transform": {
+          "pos": [-8.0, 0.0, 0.01],
+          "rotation": 1.0,
+          "scale": [1.0, 1.0, 0.0]
+        },
+        "Render": {
+          "shape": "square",
+          "hasTex": 0,
+          "hasAnimation": 0
         }
       }
     }
