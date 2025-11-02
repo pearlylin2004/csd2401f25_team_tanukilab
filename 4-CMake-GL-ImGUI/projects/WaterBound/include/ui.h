@@ -124,7 +124,7 @@ private:
 	};
 
 	struct AssetBrowserState {
-		std::string currentFolder = "shaders/"; // we dont have a asset folder yet :(
+		std::string currentFolder = "Debug/shaders/"; // we dont have a asset folder yet :(
 		std::filesystem::file_time_type lastTopLevelRefresh; // top level folder timestamp
 		std::filesystem::file_time_type lastRefresh;
 		

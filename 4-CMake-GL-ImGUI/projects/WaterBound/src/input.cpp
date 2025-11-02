@@ -19,6 +19,10 @@ Technology is prohibited.
 #include "ui.h"
 #include "input.h"
 
+#ifndef SOURCE_DIR_R
+#define SOURCE_DIR_R "./projects/WaterBound/shaders"
+#endif
+
 GLFWwindow* InputHandler::m_window = nullptr;
 AppConfig InputHandler::m_cfg;
 
@@ -372,33 +376,40 @@ void InputHandler::scrollCallback(GLFWwindow* window, double xoffset, double yof
 
 void InputHandler::dropCallback(GLFWwindow* window, int count, const char** paths) {
 	(void)window;
+
+	std::filesystem::path buildDir("Debug/shaders"); // build/debug folder (run time)
+	std::filesystem::path projectDir(SOURCE_DIR_R); // project folder
+
 	for (int i = 0; i < count; ++i) {
 		std::filesystem::path src(paths[i]);
-		std::filesystem::path dst = "shaders" / src.filename();
+		std::filesystem::path dstBuild = buildDir / src.filename();
+		std::filesystem::path dstProject = projectDir / src.filename();
 
 		try {
-			if (std::filesystem::exists(dst)) {
-				// If it exists, overwrite
-				if (std::filesystem::is_directory(src)) {
-					std::filesystem::remove_all(dst); // remove old folder first
-					std::filesystem::copy(src, dst, std::filesystem::copy_options::recursive);
-				}
-				else {
-					std::filesystem::copy_file(src, dst, std::filesystem::copy_options::overwrite_existing);
-				}
-				UI::addDebugMessage("Replaced existing asset " + dst.string() + "\n");
+			// Copy to build/debug folder
+			if (std::filesystem::exists(dstBuild)) {
+				std::filesystem::remove_all(dstBuild);
+			}
+			if (std::filesystem::is_directory(src)) {
+				std::filesystem::copy(src, dstBuild, std::filesystem::copy_options::recursive);
 			}
 			else {
-				if (std::filesystem::is_directory(src)) {
-					std::filesystem::copy(src, dst, std::filesystem::copy_options::recursive | std::filesystem::copy_options::overwrite_existing);
-				}
-				else {
-					std::filesystem::copy(src, dst, std::filesystem::copy_options::overwrite_existing);
-				}
+				std::filesystem::copy_file(src, dstBuild, std::filesystem::copy_options::overwrite_existing);
 			}
 
-			UI::assetChanged(); // set asst changed flag to reload assets in UI
-			UI::addDebugMessage("Added asset " + src.string() + " to " + dst.string() + "\n");
+			// Copy to project folder
+			if (std::filesystem::exists(dstProject)) {
+				std::filesystem::remove_all(dstProject);
+			}
+			if (std::filesystem::is_directory(src)) {
+				std::filesystem::copy(src, dstProject, std::filesystem::copy_options::recursive);
+			}
+			else {
+				std::filesystem::copy_file(src, dstProject, std::filesystem::copy_options::overwrite_existing);
+			}
+
+			UI::assetChanged(); // flag to reload assets
+			UI::addDebugMessage("Added asset " + src.string() + " to " + dstBuild.string() + " and " + dstProject.string() + "\n");
 		}
 		catch (const std::filesystem::filesystem_error& e) {
 			UI::addDebugMessage("Failed to add asset " + src.string() + ": " + e.what() + "\n");

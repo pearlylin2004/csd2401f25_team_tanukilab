@@ -23,6 +23,9 @@ Technology is prohibited.
 #ifndef SOURCE_SCENE_DIR_R
 #define SOURCE_SCENE_DIR_R "./projects/WaterBound/shaders/Scene"
 #endif
+#ifndef SOURCE_DIR_R
+#define SOURCE_DIR_R "./projects/WaterBound/shaders"
+#endif
 static std::string runtimeScenePath(std::string const& name) {
     return std::string(RUNTIME_SCENE_DIR_R) + "/" + name;
 }
@@ -222,30 +225,30 @@ void UI::editorMenuBar(GameObjectManager& manager) {
         // duplicate scene
         if (ImGui::MenuItem("Duplicate Scene")) {
             m_MenuBarState.showDuplicatePopup = true;
-            if (!m_currentSceneName.empty()) {
-                std::string newSceneName = m_currentSceneName;
+            //if (!m_currentSceneName.empty()) {
+            //    std::string newSceneName = m_currentSceneName;
 
-                if (newSceneName.find_last_of('.') != std::string::npos) {
-                    newSceneName.insert(newSceneName.find_last_of('.'), "_copy");
-                }
-                else {
-                    newSceneName += "_copy";
-                }
+            //    if (newSceneName.find_last_of('.') != std::string::npos) {
+            //        newSceneName.insert(newSceneName.find_last_of('.'), "_copy");
+            //    }
+            //    else {
+            //        newSceneName += "_copy";
+            //    }
 
-                //manager.saveScene(newSceneName);
-                manager.saveScene(sourceScenePath(newSceneName));
-                m_currentSceneName = newSceneName;
-                assetsChangedFlag = true;
-                syncSceneToRuntime(m_currentSceneName);
+            //    //manager.saveScene(newSceneName);
+            //    manager.saveScene(sourceScenePath(newSceneName));
+            //    m_currentSceneName = newSceneName;
+            //    assetsChangedFlag = true;
+            //    syncSceneToRuntime(m_currentSceneName);
 
-                m_SelectionState.selectedObject = nullptr;
-                m_SelectionState.draggedObject = nullptr;
-                m_SelectionState.selectedIndex = -1;
-                addDebugMessage("Scene duplicated to: " + newSceneName + "\n");
-            }
-            else {
-                addDebugMessage("No current scene to duplicate.\n");
-            }
+            //    m_SelectionState.selectedObject = nullptr;
+            //    m_SelectionState.draggedObject = nullptr;
+            //    m_SelectionState.selectedIndex = -1;
+            //    addDebugMessage("Scene duplicated to: " + newSceneName + "\n");
+            //}
+            //else {
+            //    addDebugMessage("No current scene to duplicate.\n");
+            //}
         }
 
         // save current scene to file
@@ -263,14 +266,14 @@ void UI::editorMenuBar(GameObjectManager& manager) {
                 if (asset.folder == m_AssetBrowserState.currentFolder + "Scene") {
 					// create a submenu for the scenes
                     if (ImGui::MenuItem(asset.name.c_str())) {
-                        m_MenuBarState.sceneToLoad = asset.folder + "/" + asset.name;
+                        m_MenuBarState.sceneToLoad = asset.name;
 						m_MenuBarState.showLoadScenePopup = true;
                         //std::string fullPath = asset.folder + "/" + asset.name;
                         //manager.loadScene(fullPath);
 
                         //m_currentSceneName = fullPath;
                         // always load the copy the exe uses (runtime)
-                        manager.loadScene(runtimeScenePath(asset.name));
+                        //manager.loadScene(runtimeScenePath(asset.name));
                         // keep only the filename in state (saves will go to source)
                         m_currentSceneName = asset.name;
 
@@ -374,7 +377,9 @@ void UI::duplicateScenePopup(GameObjectManager& manager) {
 
         // Save and open newly duplicated scene
         if (ImGui::Button("Save and Duplicate")) {
-            manager.saveToFile(m_currentSceneName);
+            //manager.saveToFile(m_currentSceneName);
+            manager.saveScene(sourceScenePath(m_currentSceneName));
+            syncSceneToRuntime(m_currentSceneName);
            
             duplicateScene(manager);
             ImGui::CloseCurrentPopup();
@@ -412,7 +417,9 @@ void UI::loadScenePopup(GameObjectManager& manager) {
 
         // Save and load another scene
         if (ImGui::Button("Save and Load")) {
-            manager.saveToFile(m_currentSceneName);
+            //manager.saveToFile(m_currentSceneName);
+            manager.saveScene(sourceScenePath(m_currentSceneName));
+            syncSceneToRuntime(m_currentSceneName);
 
             loadScene(manager);
             ImGui::CloseCurrentPopup();
@@ -460,8 +467,10 @@ void UI::duplicateScene(GameObjectManager& manager) {
 			copy++;
         } while (nameExists);
 
-        manager.saveToFile(newSceneName);
+        //manager.saveToFile(newSceneName);
         m_currentSceneName = newSceneName;
+        manager.saveScene(sourceScenePath(m_currentSceneName));
+        syncSceneToRuntime(m_currentSceneName);
         assetsChangedFlag = true;
 
         m_SelectionState.selectedObject = nullptr;
@@ -475,7 +484,8 @@ void UI::duplicateScene(GameObjectManager& manager) {
 }
 
 void UI::loadScene(GameObjectManager & manager) {
-    manager.loadFromFile(m_MenuBarState.sceneToLoad);
+    //manager.loadFromFile(m_MenuBarState.sceneToLoad);
+    manager.loadScene(runtimeScenePath(m_MenuBarState.sceneToLoad));
 
     m_currentSceneName = std::move(m_MenuBarState.sceneToLoad);
 
@@ -703,6 +713,9 @@ void UI::loadAssetsFromDirectory() {
             asset.path = entry.path().string();
             asset.folder = entry.path().parent_path().string(); // folder in assets that contains this file, for future filtering
 
+            /*std::cout << "Asset Name: " << asset.name <<
+				"\n Asset Path: " << asset.path <<
+				"\n Asset Folder: " << asset.folder << std::endl;*/
             m_assets.push_back(asset);
         }
     }
@@ -877,6 +890,24 @@ void UI::assetDeletePopup() {
                 std::filesystem::remove(m_AssetBrowserState.fullPathToDelete);
                 assetsChangedFlag = true; // to reload assets
 
+				// delete from the project folder as well
+                std::filesystem::path fullPath(m_AssetBrowserState.fullPathToDelete);
+                std::string filename = fullPath.filename().string();
+
+                // split the "shaders/" part to get relative path
+                std::string relativePath;
+                auto pos = m_AssetBrowserState.fullPathToDelete.find("shaders/");
+                if (pos != std::string::npos) {
+                    relativePath = m_AssetBrowserState.fullPathToDelete.substr(pos + strlen("shaders/"));
+                }
+
+                // combine relative path to delete
+                std::filesystem::path projectPath = std::string(SOURCE_DIR_R) + "/" + relativePath;
+                if (std::filesystem::exists(projectPath)) {
+                    std::filesystem::remove(projectPath);
+                    std::cout << "Deleted asset (Project): " << projectPath.string() << std::endl;
+                }
+
                 addDebugMessage("Deleted asset: " + m_AssetBrowserState.fullPathToDelete + "\n");
             }
 
@@ -920,6 +951,26 @@ void UI::assetRenamePopup() {
                 if (!std::filesystem::exists(newPath)) {
                     std::filesystem::rename(old, newPath);
                     assetsChangedFlag = true; // reload assets
+
+					// change in the project folder as well
+                    std::filesystem::path sourceDir(SOURCE_DIR_R);
+                    
+					// split the "shaders/" part to get relative path
+                    std::string relative;
+                    auto pos = old.string().find("shaders/");
+                    if (pos != std::string::npos) {
+                        relative = old.string().substr(pos + strlen("shaders/"));
+                    }
+                    else {
+                        relative = old.filename().string();
+                    }
+
+					// combine relative path to rename
+                    std::filesystem::path projectOld = sourceDir / relative;
+                    std::filesystem::path projectNew = projectOld.parent_path() / newPath.filename();
+                    if (std::filesystem::exists(projectOld)) {
+                        std::filesystem::rename(projectOld, projectNew);
+                    }
 
                     addDebugMessage("Renamed asset: " + old.string() + " -> " + newPath.string() + "\n");
                 }
