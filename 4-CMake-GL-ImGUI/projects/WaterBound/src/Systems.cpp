@@ -381,6 +381,7 @@ void FontSystem::RenderText(GLuint& s, std::string text, float x, float y, float
 {
 	// activate corresponding render state	
 	Font::FontMdl& mdl = object->getComponent<FontComponent>()->mdl;
+	FontComponent* fc = object->getComponent<FontComponent>();
 	glUseProgram(s);
 	glUniform3f(glGetUniformLocation(s, "textColor"), color.x, color.y, color.z);
 	glActiveTexture(GL_TEXTURE0);
@@ -390,10 +391,10 @@ void FontSystem::RenderText(GLuint& s, std::string text, float x, float y, float
 	std::string::const_iterator c;
 	for (c = text.begin(); c != text.end(); c++)
 	{
-		Font::Character ch = Font::Characters[*c];
+		Font::Character ch = Font::characters[fc->fontType][*c];
 
 		float pxToWorld = (2.0f * renderer::cam.zoom) / (renderer::cam.width / renderer::cam.ar);
-		float xpos = x + ch.Bearing.x * scale;
+		float xpos = x + (ch.Bearing.x * pxToWorld) * scale;
 		float ypos = y - ((ch.Size.y - ch.Bearing.y) * pxToWorld) * scale;
 
 		float w = (ch.Size.x * pxToWorld) * scale;

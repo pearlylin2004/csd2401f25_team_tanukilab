@@ -3,13 +3,18 @@
 std::vector<FT_Face> Font::face;
 std::vector<Font::FontMdl> Font::fontMdls;
 FT_Library Font::ft;
-int Font::fontTypes = 1;
+int Font::fontTypes = 2;
 GLuint Font::fontShaders;
 std::map<char, Font::Character> Font::Characters;
+std::vector<std::string> Font::fonts;
+std::vector<std::map<char, Font::Character>> Font::characters;
 
 int Font::init()
 {
+    fonts.push_back("shaders/Orange Knight.ttf");
+    fonts.push_back("shaders/ARIAL.TTF");
     face.resize(fontTypes);
+    characters.resize(fontTypes);
     if (FT_Init_FreeType(&ft))
     {
         std::cout << "ERROR::FREETYPE: Could not init FreeType Library" << std::endl;
@@ -18,7 +23,7 @@ int Font::init()
 
     for (int i = 0; i < fontTypes; ++i)
     {
-        if (FT_New_Face(ft, "shaders/Orange Knight.ttf", 0, &face[i]))
+        if (FT_New_Face(ft, fonts[i].c_str(), 0, &face[i]))
         {
             std::cout << "ERROR::FREETYPE: Failed to load font" << std::endl;
             return -1;
@@ -93,7 +98,7 @@ void Font::uploadFontTex(size_t fontElement)
             glm::ivec2(face[fontElement]->glyph->bitmap_left, face[fontElement]->glyph->bitmap_top),
             face[fontElement]->glyph->advance.x
         };
-        Characters.insert(std::pair<char, Character>(c, character));
+        characters[fontElement].insert(std::pair<char, Character>(c, character));
     }
 }
 
