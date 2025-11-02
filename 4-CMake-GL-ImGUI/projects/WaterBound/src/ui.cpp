@@ -309,9 +309,13 @@ void UI::newScenePopup(GameObjectManager& manager) {
             manager.saveScene(sourceScenePath(m_currentSceneName));
             syncSceneToRuntime(m_currentSceneName);
 
+            // create new scene
             newScene(manager);
+
+            // load new scene
             m_MenuBarState.sceneToLoad = m_currentSceneName;
 			loadScene(manager);
+
             ImGui::CloseCurrentPopup();
         }
 
@@ -319,9 +323,10 @@ void UI::newScenePopup(GameObjectManager& manager) {
         ImGui::SameLine();
         if (ImGui::Button("Discard Changes")) {
 
-            m_MenuBarState.sceneToLoad = m_currentSceneName;
-
+            // create new scene
             newScene(manager);
+
+            // load new scene
             m_MenuBarState.sceneToLoad = m_currentSceneName;
             loadScene(manager);
             ImGui::CloseCurrentPopup();
@@ -875,10 +880,32 @@ void UI::assetDeletePopup() {
         m_AssetBrowserState.showDeletePopup = false;
     }
 
+    /*---------------- Cannot delete current loaded scene ----------------*/
+    if (!m_AssetBrowserState.fullPathToDelete.empty() &&
+        m_currentSceneName == std::filesystem::path(m_AssetBrowserState.fullPathToDelete).filename().string())
+    {
+        ImGui::OpenPopup("Cannot Delete Current Scene");
+        m_AssetBrowserState.fullPathToDelete.clear(); // clear so the check doesn't repeat
+    }
+
+    if (ImGui::BeginPopupModal("Cannot Delete Current Scene", NULL, ImGuiWindowFlags_AlwaysAutoResize)) {
+        ImGui::Text("Cannot delete the currently loaded scene!");
+
+        if (ImGui::Button("OK")) {
+            ImGui::CloseCurrentPopup();
+        }
+
+        ImGui::EndPopup();
+    }
+    /*-------------------- END -------------------*/
+
+
+    /*---------------- Delete Confirmation ----------------*/
     if (ImGui::BeginPopupModal("Confirm Delete Asset", NULL, ImGuiWindowFlags_AlwaysAutoResize)) {
         ImGui::Text("Are you sure you want to delete this asset?");
 
         if (ImGui::Button("Delete")) {
+
             if (!m_AssetBrowserState.fullPathToDelete.empty() &&
                 std::filesystem::exists(m_AssetBrowserState.fullPathToDelete)) {
                 std::filesystem::remove(m_AssetBrowserState.fullPathToDelete);
@@ -918,7 +945,7 @@ void UI::assetDeletePopup() {
 
         ImGui::EndPopup();
     }
-
+    /*-------------------- END -------------------*/
 }
 
 void UI::assetRenamePopup() {
