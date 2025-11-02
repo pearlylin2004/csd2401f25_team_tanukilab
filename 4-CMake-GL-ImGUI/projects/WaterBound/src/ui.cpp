@@ -611,9 +611,9 @@ void UI::objInspectorWindow(GameObjectManager& manager) {
 
             if (!m_SelectionState.aspectRatioLock) m_SelectionState.ratioSet = false;
 
-            ImGui::DragFloat("X1", &transform->scaleX);
-            ImGui::DragFloat("Y1", &transform->scaleY);
-            ImGui::DragFloat("Z1", &transform->scaleZ);
+            ImGui::DragFloat("X1", &transform->scaleX, 0.1f, 0.0f);
+            ImGui::DragFloat("Y1", &transform->scaleY, 0.1f, 0.0f);
+            ImGui::DragFloat("Z1", &transform->scaleZ, 0.1f, 0.0f);
 
             if (m_SelectionState.aspectRatioLock && transform->scaleX != 0.0f) {
                 transform->scaleY = transform->scaleX * m_SelectionState.ratioY;
