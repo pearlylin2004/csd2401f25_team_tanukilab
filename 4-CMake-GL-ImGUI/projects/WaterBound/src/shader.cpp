@@ -161,7 +161,7 @@ GLuint LoadPipeline(const char* vertex_file_path, const char* fragment_file_path
     }
     else {
         printf("Unable to open %s\n", vertex_file_path);
-        getchar();
+        //getchar();
         return 0;
     }
 

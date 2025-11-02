@@ -216,8 +216,8 @@ void RenderSystem::init(GameObjectManager& manager, int fboW, int fboH)
 		}
 	}
 
-	// fboWidth = fboW;
-	// fboHeight = fboH;
+	fboWidth = fboW;
+	fboHeight = fboH;
 	Font::init();
 }
 
@@ -422,6 +422,11 @@ void RenderSystem::fboAspectRatio(int& width, int& height) const {
 void FontSystem::init(GameObjectManager& manager)
 {
 	Font::init();
+
+	ResourceManager::getInstance().getFont("shaders/Orange Knight.ttf");
+	ResourceManager::getInstance().getFont("shaders/ARIAL.TTF");
+	ResourceManager::getInstance().getFont("shaders/times.ttf");
+
 	std::vector<GameObject*> gameObjects;
 	manager.getAllGameObjects(gameObjects);
 	for (GameObject* object : gameObjects)
@@ -436,8 +441,29 @@ void FontSystem::init(GameObjectManager& manager)
 
 void FontSystem::update(GameObjectManager& manager)
 {
+
+	std::cout << "=== FontSystem::update() called ===" << std::endl;
+
 	std::vector<GameObject*> gameObjects;
 	manager.getAllGameObjects(gameObjects);
+
+	// Count font objects
+	int fontCount = 0;
+	for (GameObject* object : gameObjects) {
+		if (object->hasComponent<FontComponent>()) {
+			fontCount++;
+			FontComponent* fc = object->getComponent<FontComponent>();
+			std::cout << "Font object: " << object->getObjectName()
+				<< " | Text: '" << fc->word << "'" << std::endl;
+		}
+	}
+	std::cout << "Total font objects: " << fontCount << std::endl;
+
+	if (fontCount == 0) {
+		std::cout << "WARNING: No font objects to render!" << std::endl;
+		return;
+	}
+
 	glUseProgram(Font::fontShaders);
 	GLuint vTransformView = glGetUniformLocation(Font::fontShaders, "V");
 	glUniformMatrix4fv(vTransformView, 1, GL_FALSE, glm::value_ptr(renderer::cam.view));
@@ -457,18 +483,40 @@ void FontSystem::update(GameObjectManager& manager)
 void FontSystem::RenderText(GLuint& s, std::string text, float x, float y, float scale, glm::vec3 color, GameObject* object)
 {
 	// activate corresponding render state	
-	Font::FontMdl& mdl = object->getComponent<FontComponent>()->mdl;
 	FontComponent* fc = object->getComponent<FontComponent>();
+	Font::FontMdl& mdl = fc->mdl;
+
+	//Font::FontMdl& mdl = object->getComponent<FontComponent>()->mdl;
+	//^mans trolling here
+	
+	std::string fontPath;
+	switch (fc->fontType) {
+	case 0: fontPath = "shaders/Orange Knight.ttf"; break;
+	case 1: fontPath = "shaders/ARIAL.TTF"; break;
+	case 2: fontPath = "shaders/times.ttf"; break;
+	default: fontPath = "shaders/ARIAL.TTF"; break;
+	}
+
+	const FontData& fontData = ResourceManager::getInstance().getFont(fc->fontPath);
+
 	glUseProgram(s);
 	glUniform3f(glGetUniformLocation(s, "textColor"), color.x, color.y, color.z);
 	glActiveTexture(GL_TEXTURE0);
 	glBindVertexArray(mdl.vao);
 
+
 	// iterate through all characters
 	std::string::const_iterator c;
 	for (c = text.begin(); c != text.end(); c++)
 	{
-		Font::Character ch = Font::characters[fc->fontType][*c];
+		auto it = fontData.characters.find(*c);
+		if (it == fontData.characters.end()) {
+			std::cerr << "Character '" << *c << "' not found in font '" << fontPath << "'\n";
+			continue; // skip character if not found
+		}
+
+		const Font::Character& ch = it->second;
+		//Font::Character ch = Font::characters[fc->fontType][*c];
 
 		float pxToWorld = (2.0f * renderer::cam.zoom) / (renderer::cam.width / renderer::cam.ar);
 		float xpos = x + (ch.Bearing.x * pxToWorld) * scale;

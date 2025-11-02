@@ -253,7 +253,7 @@ void GameObjectManager::loadFromFile(const std::string& filename)
 			iss >> std::quoted(fc->word) >> fc->clr.r >> fc->clr.g >> fc->clr.b >> fc->scale;
 		}
 
-		m_gameObjects["player"]->addComponent<Input>(1.f);
+		//m_gameObjects["player"]->addComponent<Input>(1.f);
 		
 	}
 }

@@ -1,17 +1,18 @@
 #include "font.h"
 
-std::vector<FT_Face> Font::face;
+//std::vector<FT_Face> Font::face;
+//FT_Library Font::ft;
+//int Font::fontTypes = 3;
+//std::map<char, Font::Character> Font::Characters;
+//std::vector<std::string> Font::fonts;
+//std::vector<std::map<char, Font::Character>> Font::characters;
+
 std::vector<Font::FontMdl> Font::fontMdls;
-FT_Library Font::ft;
-int Font::fontTypes = 3;
 GLuint Font::fontShaders;
-std::map<char, Font::Character> Font::Characters;
-std::vector<std::string> Font::fonts;
-std::vector<std::map<char, Font::Character>> Font::characters;
 
 int Font::init()
 {
-    fonts.push_back("shaders/Orange Knight.ttf");
+    /*fonts.push_back("shaders/Orange Knight.ttf");
     fonts.push_back("shaders/ARIAL.TTF");
     fonts.push_back("shaders/times.ttf");
     fontTypes = fonts.size();
@@ -33,17 +34,14 @@ int Font::init()
         FT_Set_Pixel_Sizes(face[i], 0, 48);
         uploadFontTex(i);
     }
-    fontShaders = LoadShaders("shaders/font.vert", "shaders/font.frag", true);
-    fontMdls.push_back(fontMeshInit());
-}
+    */
 
-int Font::update(size_t fontElement)
-{
-    if (FT_Load_Char(face[fontElement], 'X', FT_LOAD_RENDER))
-    {
-        std::cout << "ERROR::FREETYTPE: Failed to load Glyph" << std::endl;
-        return -1;
-    }
+    //fontShaders = LoadShaders("shaders/font.vert", "shaders/font.frag", true);
+	fontShaders = ResourceManager::getInstance().getShader("shaders/font.vert", "shaders/font.frag");
+    fontMdls.push_back(fontMeshInit());
+
+    std::cout << "Font system initialized (shader and mesh)" << std::endl;
+    return 0;
 }
 
 Font::FontMdl Font::fontMeshInit()
@@ -61,52 +59,64 @@ Font::FontMdl Font::fontMeshInit()
     return mdl;
 }
 
-void Font::uploadFontTex(size_t fontElement)
-{
-    glPixelStorei(GL_UNPACK_ALIGNMENT, 1); // disable byte-alignment restriction
+//int Font::update(size_t fontElement)
+//{
+//    if (FT_Load_Char(face[fontElement], 'X', FT_LOAD_RENDER))
+//    {
+//        std::cout << "ERROR::FREETYTPE: Failed to load Glyph" << std::endl;
+//        return -1;
+//    }
+//}
 
-    for (unsigned char c = 0; c < 255; c++)
-    {
-        // load character glyph 
-        if (FT_Load_Char(face[fontElement], c, FT_LOAD_RENDER))
-        {
-            std::cout << "ERROR::FREETYTPE: Failed to load Glyph" << std::endl;
-            continue;
-        }
-        // generate texture
-        GLuint texture;
-        glGenTextures(1, &texture);
-        glBindTexture(GL_TEXTURE_2D, texture);
-        glTexImage2D(
-            GL_TEXTURE_2D,
-            0,
-            GL_RED,
-            face[fontElement]->glyph->bitmap.width,
-            face[fontElement]->glyph->bitmap.rows,
-            0,
-            GL_RED,
-            GL_UNSIGNED_BYTE,
-            face[fontElement]->glyph->bitmap.buffer
-        );
-        // set texture options
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        // now store character for later use
-        Character character = {
-            texture,
-            glm::ivec2(face[fontElement]->glyph->bitmap.width, face[fontElement]->glyph->bitmap.rows),
-            glm::ivec2(face[fontElement]->glyph->bitmap_left, face[fontElement]->glyph->bitmap_top),
-            face[fontElement]->glyph->advance.x
-        };
-        characters[fontElement].insert(std::pair<char, Character>(c, character));
-    }
-}
 
-void Font::freeFonts()
-{
-    for(int i = 0; i < fontTypes; ++i)
-        FT_Done_Face(face[i]);
-    FT_Done_FreeType(ft);
-}
+//moved to resourcemanager.cpp
+// 
+//void Font::uploadFontTex(size_t fontElement)
+//{
+//    glPixelStorei(GL_UNPACK_ALIGNMENT, 1); // disable byte-alignment restriction
+//
+//    for (unsigned char c = 0; c < 255; c++)
+//    {
+//        // load character glyph 
+//        if (FT_Load_Char(face[fontElement], c, FT_LOAD_RENDER))
+//        {
+//            std::cout << "ERROR::FREETYTPE: Failed to load Glyph" << std::endl;
+//            continue;
+//        }
+//        // generate texture
+//        GLuint texture;
+//        glGenTextures(1, &texture);
+//        glBindTexture(GL_TEXTURE_2D, texture);
+//        glTexImage2D(
+//            GL_TEXTURE_2D,
+//            0,
+//            GL_RED,
+//            face[fontElement]->glyph->bitmap.width,
+//            face[fontElement]->glyph->bitmap.rows,
+//            0,
+//            GL_RED,
+//            GL_UNSIGNED_BYTE,
+//            face[fontElement]->glyph->bitmap.buffer
+//        );
+//        // set texture options
+//        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+//        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+//        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+//        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+//        // now store character for later use
+//        Character character = {
+//            texture,
+//            glm::ivec2(face[fontElement]->glyph->bitmap.width, face[fontElement]->glyph->bitmap.rows),
+//            glm::ivec2(face[fontElement]->glyph->bitmap_left, face[fontElement]->glyph->bitmap_top),
+//            face[fontElement]->glyph->advance.x
+//        };
+//        characters[fontElement].insert(std::pair<char, Character>(c, character));
+//    }
+//}
+
+//void Font::freeFonts()
+//{
+//    for(int i = 0; i < fontTypes; ++i)
+//        FT_Done_Face(face[i]);
+//    FT_Done_FreeType(ft);
+//}

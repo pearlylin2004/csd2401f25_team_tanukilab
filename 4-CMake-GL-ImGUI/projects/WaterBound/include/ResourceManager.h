@@ -2,18 +2,28 @@
 
 #include <string>
 #include <unordered_map>
+#include <map>
 #include <filesystem>
 #include <iostream>
+#include <ft2build.h>
+#include FT_FREETYPE_H
 
 #include "GL/glew.h"
 #include <../lib/FMOD/fmod.hpp>
 #include "stb_image.h"
 #include "shader.hpp"
 #include "AudioUtility.h"
+#include "fontTypes.h"
 
 struct TextureData {
     GLuint id = 0;
     bool isTransparent = false;
+};
+
+struct FontData {
+    FT_Face face = nullptr;
+	std::map<char, FontCharacter> characters;
+	bool isLoaded = false;
 };
 
 class ResourceManager {
@@ -57,11 +67,16 @@ public:
      */
     GLuint getShader(const std::string& vertPath, const std::string& fragPath);
 
+    const FontData& getFont(const std::string& relativePath);
+
+    std::vector<std::string> getLoadedFontPaths() const;
+
     // Delete copy/move constructors and assignment operators
     ResourceManager(const ResourceManager&) = delete;
     ResourceManager(ResourceManager&&) = delete;
     ResourceManager& operator=(const ResourceManager&) = delete;
     ResourceManager& operator=(ResourceManager&&) = delete;
+
 
 private:
     ResourceManager() = default;  // Private constructor
@@ -69,14 +84,18 @@ private:
 
     // Private helper functions to load from disk
     TextureData loadTextureFromFile(const std::string& path);
+    FontData loadFontFromFile(const std::string& path);
     FMOD::Sound* loadSoundFromFile(const std::string& path, bool loop);
 
     // FMOD system instance (required for sound creation)
     FMOD::System* m_fmodSystem = nullptr;
+    FT_Library m_ftLibrary = nullptr;
 
     // Caches for loaded resources
     std::unordered_map<std::string, TextureData> m_textureCache;
     std::unordered_map<std::string, FMOD::Sound*> m_audioCache;
     std::unordered_map<std::string, GLuint> m_shaderCache;
+    std::unordered_map<std::string, FontData> m_fontCache;
+
 
 };

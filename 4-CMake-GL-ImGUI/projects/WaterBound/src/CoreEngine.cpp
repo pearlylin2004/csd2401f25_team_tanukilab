@@ -84,8 +84,8 @@ void CoreEngine::Init() {
 
     m_luaSystem->init();
     m_manager->init();
-	m_renderSystem->init(*m_manager);
-	m_uiSystem->init(m_window);
+	m_renderSystem->init(*m_manager, cfg.width, cfg.height);
+	m_uiSystem->init(m_window, m_renderSystem.get());
     m_fontSystem->init(*m_manager);
 
     //iterate over all Lua scripts in the folder

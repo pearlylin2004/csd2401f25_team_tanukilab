@@ -85,12 +85,15 @@ struct FontComponent : public Component {
     std::unique_ptr<Component> clone() const override {
         return std::make_unique<FontComponent>(*this);
     }
+
     //GLuint texHdl;
     Font::FontMdl mdl;
     std::string word = "";
     float scale = 1;
     glm::vec3 clr{ 0.f,0.f,0.f };
     int fontType = 1;
+
+    std::string fontPath = "shader/ARIAL.TTF"; 
 };
 
 struct Animation : public Component

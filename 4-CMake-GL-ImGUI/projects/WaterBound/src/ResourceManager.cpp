@@ -9,6 +9,13 @@ ResourceManager& ResourceManager::getInstance() {
 
 void ResourceManager::init(FMOD::System* fmodSystem) {
     m_fmodSystem = fmodSystem;
+
+    if(FT_Init_FreeType(&m_ftLibrary)) {
+        std::cerr << "ResourceManager Error: Could not init FreeType Library" << std::endl;
+        return;
+    }
+
+    std::cout << "ResourceManager: Initialized with FMOD and FreeType." << std::endl;
 }
 
 void ResourceManager::shutdown() {
@@ -32,7 +39,20 @@ void ResourceManager::shutdown() {
         glDeleteProgram(pair.second);
     }
     m_shaderCache.clear();
-    std::cout << "ResourceManager: Cleared all shader programs." << std::endl;
+    std::cout << "ResourceManager: Cleared all shaders." << std::endl;
+
+    for(auto& pair : m_fontCache) {
+        FT_Done_Face(pair.second.face);
+	}
+    std::cout << "ResourceManager: Cleared all fonts." << std::endl;
+
+    if(m_ftLibrary) {
+        FT_Done_FreeType(m_ftLibrary);
+        m_ftLibrary = nullptr;
+        std::cout << "ResourceManager: FreeType library closed." << std::endl;
+	}
+
+	std::cout << "ResourceManager: Shutdown complete." << std::endl;
 }
 
 TextureData ResourceManager::getTexture(const std::string& path) {
@@ -163,3 +183,96 @@ GLuint ResourceManager::getShader(const std::string& vertPath, const std::string
     return newProgramID;
 }
 
+const FontData& ResourceManager::getFont(const std::string& relativePath) {
+    if(relativePath.empty()) {
+		throw std::runtime_error("ResourceManager Error: Font path is empty.");
+	}
+
+    //check cache
+    auto it = m_fontCache.find(relativePath);
+    if (it != m_fontCache.end()) {
+        return it->second;
+    }
+
+    //not in cache, load it
+    std::cout << "ResourceManager: Loading font: " << relativePath << std::endl;
+    FontData newFont = loadFontFromFile(relativePath);
+    if (newFont.face) {
+        m_fontCache[relativePath] = newFont;
+        std::cout << "ResourceManager: Successfully cached font: " << relativePath << std::endl;
+    }
+    else {
+        std::cout << "ResourceManager Error: Failed to load font: " << relativePath << std::endl;
+    }
+    return m_fontCache[relativePath];
+}
+
+FontData ResourceManager::loadFontFromFile(const std::string& path) {
+    FontData fontData;
+
+    if (!m_ftLibrary) {
+        std::cerr << "ResourceManager Error: FreeType library not initialized." << std::endl;
+        return fontData;
+    }
+
+    if (FT_New_Face(m_ftLibrary, path.c_str(), 0, &fontData.face)) {
+        std::cerr << "ResourceManager Error: Failed to load font face: " << path << std::endl;
+        return fontData;
+    }
+
+    FT_Set_Pixel_Sizes(fontData.face, 0, 48); //set default size
+
+    glPixelStorei(GL_UNPACK_ALIGNMENT, 1); // disable byte-alignment restriction
+
+    for (unsigned char c = 0; c < 255; c++) {
+        // load character glyph 
+        if (FT_Load_Char(fontData.face, c, FT_LOAD_RENDER))
+        {
+            std::cout << "ERROR::FREETYTPE: Failed to load Glyph" << std::endl;
+            continue;
+        }
+
+        // generate texture
+        GLuint texture;
+        glGenTextures(1, &texture);
+        glBindTexture(GL_TEXTURE_2D, texture);
+        glTexImage2D(
+            GL_TEXTURE_2D,
+            0,
+            GL_RED,
+            fontData.face->glyph->bitmap.width,
+            fontData.face->glyph->bitmap.rows,
+            0,
+            GL_RED,
+            GL_UNSIGNED_BYTE,
+            fontData.face->glyph->bitmap.buffer
+        );
+        // set texture options
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        // now store character for later use
+        FontCharacter character = {
+            texture,
+            glm::ivec2(fontData.face->glyph->bitmap.width, fontData.face->glyph->bitmap.rows),
+            glm::ivec2(fontData.face->glyph->bitmap_left, fontData.face->glyph->bitmap_top),
+            fontData.face->glyph->advance.x
+        };
+
+        fontData.characters.insert(std::pair<char, FontCharacter>(c, character));
+    }
+
+	fontData.isLoaded = true;
+    std::cout << "Loaded font: " << path << " (" << fontData.characters.size() << " characters)" << std::endl;
+
+    return fontData;
+}
+
+std::vector<std::string> ResourceManager::getLoadedFontPaths() const {
+	std::vector<std::string> paths;
+    for (const auto& pair : m_fontCache) {
+        paths.push_back(pair.first);
+	}
+	return paths;
+}
