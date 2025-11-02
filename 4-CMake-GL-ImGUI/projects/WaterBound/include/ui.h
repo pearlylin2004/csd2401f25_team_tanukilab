@@ -43,6 +43,7 @@ public:
 	static void addDebugMessage(const std::string& msg);
 	static void assetChanged() { assetsChangedFlag = true; } // set to true to reload assets in UI
 
+	// load assets from asset directory (when flagged)
 	void loadAssetsFromDirectory();
 
 	void sceneWindow(GLuint texture, float aspectRatio);

@@ -641,11 +641,53 @@ void UI::assetWindow(GameObjectManager& manager) {
     }
 
     // auto refresh when new files added to the asset folder (in project dir)
-    std::filesystem::file_time_type current = std::filesystem::last_write_time(m_AssetBrowserState.currentFolder);
-    if (current != m_AssetBrowserState.lastRefresh) {
-        m_AssetBrowserState.lastRefresh = current;
-        assetsChangedFlag = true; // to update assets
+    //std::filesystem::file_time_type current = std::filesystem::last_write_time(m_AssetBrowserState.currentFolder);
+    //if (current != m_AssetBrowserState.lastRefresh) {
+    //    m_AssetBrowserState.lastRefresh = current;
+    //    assetsChangedFlag = true; // to update assets
+    //}
+
+    /*std::filesystem::file_time_type current = std::filesystem::last_write_time(m_AssetBrowserState.currentFolder);
+    for (const auto& entry : std::filesystem::recursive_directory_iterator(m_AssetBrowserState.currentFolder)) {
+        if (std::filesystem::exists(entry)) {
+            auto t = std::filesystem::last_write_time(entry);
+            if (t > current) {
+                current = t;
+            }
+        }
+    }*/
+
+    
+    /* ------------------ Auto update if changes in project directory ---------------------*/
+    // TEMPORARY
+    // Check top-level folder got any updates (the asset folder)
+    std::filesystem::file_time_type currentTopLevel = std::filesystem::last_write_time(m_AssetBrowserState.currentFolder);
+    bool needsRefresh = false;
+
+    if (currentTopLevel != m_AssetBrowserState.lastTopLevelRefresh) {
+        m_AssetBrowserState.lastTopLevelRefresh = currentTopLevel;
+        needsRefresh = true;
     }
+
+    // Now check subfolders recursively (cheap guard: only if assetsChangedFlag is false)
+    std::filesystem::file_time_type newestTime = m_AssetBrowserState.lastRefresh;
+
+    for (const auto& entry : std::filesystem::recursive_directory_iterator(m_AssetBrowserState.currentFolder)) {
+        auto t = std::filesystem::last_write_time(entry);
+        if (t > newestTime) {
+            newestTime = t;
+            needsRefresh = true;
+        }
+    }
+
+    // update and reload if necessary
+    if (needsRefresh) {
+        m_AssetBrowserState.lastRefresh = newestTime;
+        assetsChangedFlag = true;
+        loadAssetsFromDirectory();
+    }
+    /* ------------------ End ---------------------*/
+
 
     ImGui::Separator();
 
