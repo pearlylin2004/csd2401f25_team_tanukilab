@@ -225,30 +225,6 @@ void UI::editorMenuBar(GameObjectManager& manager) {
         // duplicate scene
         if (ImGui::MenuItem("Duplicate Scene")) {
             m_MenuBarState.showDuplicatePopup = true;
-            //if (!m_currentSceneName.empty()) {
-            //    std::string newSceneName = m_currentSceneName;
-
-            //    if (newSceneName.find_last_of('.') != std::string::npos) {
-            //        newSceneName.insert(newSceneName.find_last_of('.'), "_copy");
-            //    }
-            //    else {
-            //        newSceneName += "_copy";
-            //    }
-
-            //    //manager.saveScene(newSceneName);
-            //    manager.saveScene(sourceScenePath(newSceneName));
-            //    m_currentSceneName = newSceneName;
-            //    assetsChangedFlag = true;
-            //    syncSceneToRuntime(m_currentSceneName);
-
-            //    m_SelectionState.selectedObject = nullptr;
-            //    m_SelectionState.draggedObject = nullptr;
-            //    m_SelectionState.selectedIndex = -1;
-            //    addDebugMessage("Scene duplicated to: " + newSceneName + "\n");
-            //}
-            //else {
-            //    addDebugMessage("No current scene to duplicate.\n");
-            //}
         }
 
         // save current scene to file
@@ -268,20 +244,6 @@ void UI::editorMenuBar(GameObjectManager& manager) {
                     if (ImGui::MenuItem(asset.name.c_str())) {
                         m_MenuBarState.sceneToLoad = asset.name;
 						m_MenuBarState.showLoadScenePopup = true;
-                        //std::string fullPath = asset.folder + "/" + asset.name;
-                        //manager.loadScene(fullPath);
-
-                        //m_currentSceneName = fullPath;
-                        // always load the copy the exe uses (runtime)
-                        //manager.loadScene(runtimeScenePath(asset.name));
-                        // keep only the filename in state (saves will go to source)
-                        /*m_currentSceneName = asset.name;
-
-                        m_SelectionState.selectedObject = nullptr;
-                        m_SelectionState.draggedObject = nullptr;
-                        m_SelectionState.selectedIndex = -1;
-
-                        addDebugMessage("Loaded scene: " + asset.name + "\n");*/
                     }
                 }
             }
@@ -1079,20 +1041,11 @@ void UI::sceneWindow(GLuint texture, float aspectRatio) {
         // Pan with middle mouse button
         if (InputHandler::isMouseDragging(GLFW_MOUSE_BUTTON_MIDDLE))
         {
-			/*Vector2D delta = InputHandler::getMouseDeltaWorldInViewport(m_SceneWindowState.sceneSize);
-
-            renderer::editorCam.campos -= glm::vec3(delta.x, delta.y, 0.f);*/
-
             renderer::editorCam.pan(InputHandler::getMouseDeltaWorldInViewport(m_SceneWindowState.sceneSize));
         }
 
         if (InputHandler::getMouseScroll() != 0.f)
         {
-   //         renderer::editorCam.zoom *= 1.0f - InputHandler::getMouseScroll() * renderer::editorCam.zoomFactor;
-
-			//// set zoom limits
-   //         renderer::editorCam.zoom = std::max(renderer::editorCam.minZoom, renderer::editorCam.zoom);
-   //         renderer::editorCam.zoom = std::min(renderer::editorCam.maxZoom, renderer::editorCam.zoom);
             renderer::editorCam.zoomInOut(InputHandler::getMouseScroll());
         }
 
