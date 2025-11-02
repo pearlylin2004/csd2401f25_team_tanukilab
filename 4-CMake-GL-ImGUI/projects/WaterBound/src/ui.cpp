@@ -640,23 +640,6 @@ void UI::assetWindow(GameObjectManager& manager) {
         loadAssetsFromDirectory();
     }
 
-    // auto refresh when new files added to the asset folder (in project dir)
-    //std::filesystem::file_time_type current = std::filesystem::last_write_time(m_AssetBrowserState.currentFolder);
-    //if (current != m_AssetBrowserState.lastRefresh) {
-    //    m_AssetBrowserState.lastRefresh = current;
-    //    assetsChangedFlag = true; // to update assets
-    //}
-
-    /*std::filesystem::file_time_type current = std::filesystem::last_write_time(m_AssetBrowserState.currentFolder);
-    for (const auto& entry : std::filesystem::recursive_directory_iterator(m_AssetBrowserState.currentFolder)) {
-        if (std::filesystem::exists(entry)) {
-            auto t = std::filesystem::last_write_time(entry);
-            if (t > current) {
-                current = t;
-            }
-        }
-    }*/
-
     
     /* ------------------ Auto update if changes in project directory ---------------------*/
     // TEMPORARY
