@@ -90,7 +90,7 @@ struct FontComponent : public Component {
     std::string word = "";
     float scale = 1;
     glm::vec3 clr{ 0.f,0.f,0.f };
-    int fontType = 2;
+    int fontType = 1;
 };
 
 struct Animation : public Component

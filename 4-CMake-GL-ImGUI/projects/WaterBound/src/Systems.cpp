@@ -396,6 +396,7 @@ void FontSystem::RenderText(GLuint& s, std::string text, float x, float y, float
 		float pxToWorld = (2.0f * renderer::cam.zoom) / (renderer::cam.width / renderer::cam.ar);
 		float xpos = x + (ch.Bearing.x * pxToWorld) * scale;
 		float ypos = y - ((ch.Size.y - ch.Bearing.y) * pxToWorld) * scale;
+		//float ypos = y - (ch.Bearing.y * pxToWorld) * scale;
 
 		float w = (ch.Size.x * pxToWorld) * scale;
 		float h = (ch.Size.y * pxToWorld) * scale;
