@@ -169,11 +169,14 @@ struct UIComponent : public Component {
 //to know which object to run
 struct LuaScript : public Component {
 public:
-    LuaScript(const std::string& file) : filename(file) {}
+    LuaScript(const std::string& file)
+        : filename(file), scriptName(file) {
+    }
 
     std::unique_ptr<Component> clone() const override {
         return std::make_unique<LuaScript>(*this);
     }
 
-    std::string filename;
+    std::string filename; //path to the Lua file
+    std::string scriptName; //unique identifier inside LuaSystem
 };
