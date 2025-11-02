@@ -599,7 +599,7 @@ void UI::objInspectorWindow(GameObjectManager& manager) {
                 std::to_string(transform->rotation) + ")\n");*/
         }
 
-        /* ------------------- Ovject Scale ------------------- */
+        /* ------------------- Object Scale ------------------- */
         if (ImGui::CollapsingHeader("Scale")) {
             ImGui::Checkbox("Aspect Ratio (X only)", &m_SelectionState.aspectRatioLock);
 
