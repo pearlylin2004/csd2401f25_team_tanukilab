@@ -272,7 +272,7 @@ void UI::editorMenuBar(GameObjectManager& manager) {
                 m_isPlaying = false;
 
                 // load back the temp scene file to restore state
-                manager.loadScene(m_tempSceneName);
+                manager.loadScene(runtimeScenePath(m_tempSceneName));
 
                 m_SelectionState.selectedObject = nullptr;
                 m_SelectionState.draggedObject = nullptr;
