@@ -685,3 +685,11 @@ void UISystem::renderMultipleViewPorts() {
 		glfwMakeContextCurrent(backup_current_context);
 	}
 }
+
+//for event system testing
+class KeyPressedEvent : public Event {
+public:
+	int keyCode;
+	KeyPressedEvent(int k) : keyCode(k) {}
+	std::string GetName() const override { return "KeyPressedEvent"; }
+};
