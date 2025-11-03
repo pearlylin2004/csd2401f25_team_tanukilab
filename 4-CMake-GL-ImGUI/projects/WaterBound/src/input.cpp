@@ -406,3 +406,4 @@ void InputHandler::dropCallback(GLFWwindow* window, int count, const char** path
 		}
 	}
 }
+

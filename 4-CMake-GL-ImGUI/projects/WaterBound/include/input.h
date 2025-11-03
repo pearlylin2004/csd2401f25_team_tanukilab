@@ -121,6 +121,10 @@ public:
 
 	static void dropCallback(GLFWwindow* window, int count, const char** paths);
 
+	// Add these to the public section
+	//static bool isMouseButtonClicked(int button);
+	//static Vector2D getMousePosition();
+
 private:
 	static GLFWwindow* m_window;
 	static AppConfig m_cfg;
