@@ -60,11 +60,17 @@ GameObject* GameObjectManager::createGameObject(const std::string& name) {
 	// Create a new GameObject and wrap it in a unique_ptr
 	auto newObject = std::make_unique<GameObject>(name);
 
+
 	// Get raw pointer before transferring ownership
 	GameObject* ptr = newObject.get();
 
+
+	//assign to default layer (game layer)
+	m_layerManager.assignObjectToLayer(ptr, 1);
+
 	// Store the unique_ptr in the map
 	m_gameObjects[name] = std::move(newObject);
+
 
 	return ptr;
 }
@@ -635,3 +641,32 @@ void GameObjectManager::saveScene(const std::string& path, bool isNew) const {
 	if (ends_with(path, ".json")) saveToJson(path, isNew);
 	else                          saveToFile(path);
 }
+
+//layer stuff
+LayerManager& GameObjectManager::getLayerManager() {
+	return m_layerManager;
+}
+
+bool GameObjectManager::assignObjectToLayer(GameObject* obj, int layerID) {
+	if (!obj) {
+		std::cerr << "GameObjectManager Error: Attempted to assign a null GameObject to layer " << layerID << ".\n";
+		return false;
+	}
+
+	//just change the id in the object itself
+	obj->setLayer(layerID);
+
+	return m_layerManager.assignObjectToLayer(obj, layerID);
+}
+
+std::vector<GameObject*> GameObjectManager::getObjectsInLayer(int layerID) {
+	Layer* layer = m_layerManager.getLayer(layerID);
+	if (layer) {
+		return std::vector<GameObject*>(layer->getObjects().begin(), layer->getObjects().end());
+	}
+
+	//if layer does not exist, return empty vector
+	std::cerr << "GameObjectManager Warning: Layer ID " << layerID << " not found.\n";
+	return std::vector<GameObject*>{};
+}
+

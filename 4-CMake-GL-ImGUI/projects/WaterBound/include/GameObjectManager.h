@@ -68,7 +68,13 @@ public:
 	//layering manager stuff
 	LayerManager& getLayerManager();
 
+	bool assignObjectToLayer(GameObject* obj, int layerID);
+
+	std::vector<GameObject*> getObjectsInLayer(int layerID);
+
 private:
 	//map of all game objects
 	std::unordered_map<std::string, std::unique_ptr<GameObject>> m_gameObjects;
+
+	LayerManager m_layerManager;
 };

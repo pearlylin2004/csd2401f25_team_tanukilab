@@ -35,9 +35,7 @@ public:
         //a variadic template can hold as many types as it wants 
         //basically allows me to make a template for a component
         //with any number of arguments
-        //pretty cool tbh
 
-        //prasanna my GOAT
         //std::forward reverts the argument to its state before
         //it was passed through the function
         auto newComponent = std::make_unique<T>(std::forward<TArgs>(args)...);
@@ -90,9 +88,9 @@ public:
     std::string& getObjectName();
 
     //layering stuff
-    void setLayer(int layer);
+    void setLayer(int layerID);
 	const int& getLayer() const;
-	bool isOnLayer(int layer) const;
+	bool isOnLayer(int layerID) const;
 
 
 private:

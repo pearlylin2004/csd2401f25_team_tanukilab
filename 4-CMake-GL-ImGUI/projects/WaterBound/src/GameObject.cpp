@@ -48,14 +48,14 @@ std::unique_ptr<GameObject> GameObject::clone(const std::string& name) const {
 }
 
 // Layering functions
-void GameObject::setLayer(int layer) {
-    m_layerID = layer;
+void GameObject::setLayer(int layerID) {
+    m_layerID = layerID;
 }
 
 const int& GameObject::getLayer() const {
     return m_layerID;
 }
 
-bool GameObject::isOnLayer(int layer) const {
-    return m_layerID == layer;
+bool GameObject::isOnLayer(int layerID) const {
+    return m_layerID == layerID;
 }
