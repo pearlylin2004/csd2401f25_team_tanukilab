@@ -63,5 +63,4 @@ private:
     std::unique_ptr<UISystem> m_uiSystem;
     std::unique_ptr<LuaSystem> m_luaSystem;
 	std::unique_ptr<EventManager> m_eventManager;
-
 };

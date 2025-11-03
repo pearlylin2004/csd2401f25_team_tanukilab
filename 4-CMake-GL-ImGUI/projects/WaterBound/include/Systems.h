@@ -155,7 +155,6 @@ public:
 			}
 		}
 	}
-
 private:
 	std::vector<Listener*> listeners;
 };

@@ -473,6 +473,9 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 		for (int x = minCellX; x <= maxCellX; ++x) {
 			for (int y = minCellY; y <= maxCellY; ++y) {
 				grid[x][y].objects.push_back(obj);
+				//for output into console for debugging and prove
+				UI::addDebugMessage("Object " + obj->getObjectName()
+					+ " inserted into cell (" + std::to_string(x) + "," + std::to_string(y) + ")\n");
 			}
 		}
 	}
@@ -496,6 +499,9 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 				for (size_t m = n + 1; m < cellObject.size(); m++) {
 					//object 2
 					GameObject* obj2 = cellObject[m];
+					//message to check for collision between objects
+					UI::addDebugMessage("Checking collision: " + obj1->getObjectName()
+						+ " vs " + obj2->getObjectName() + "\n");
 					if (!obj2->hasComponent<Physics>()) continue;
 
 					//skip if already checked
