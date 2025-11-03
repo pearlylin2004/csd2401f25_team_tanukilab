@@ -19,7 +19,9 @@ Technology is prohibited.
 #include <fstream>
 #include <sstream>
 #include <iomanip>
+
 #include "GameObject.h"
+#include "layerManager.h"
 
 //GameObjectManager should hold every existing GameObject in a smart pointer
 //so when this manager is destroyed, 
@@ -62,6 +64,9 @@ public:
 	void loadScene(const std::string& path);
 
 	void saveScene(const std::string& path, bool isNew = false) const;
+
+	//layering manager stuff
+	LayerManager& getLayerManager();
 
 private:
 	//map of all game objects

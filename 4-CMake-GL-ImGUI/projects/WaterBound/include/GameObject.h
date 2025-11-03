@@ -89,10 +89,18 @@ public:
     const std::string& getObjectName() const;
     std::string& getObjectName();
 
+    //layering stuff
+    void setLayer(int layer);
+	const int& getLayer() const;
+	bool isOnLayer(int layer) const;
+
+
 private:
     std::string m_name;//name of object
 
 	// Map of components attached to the game object
     std::unordered_map<std::type_index, std::unique_ptr<Component>> m_components;
     
+    //default layer is 1
+	int m_layerID = 1;
 };
