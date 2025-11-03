@@ -155,10 +155,6 @@ void RenderSystem::update(GameObjectManager& manager, float const& deltaTime)
 }
 
 void RenderSystem::createFBO() {
-	//if (texture) glDeleteTextures(1, &texture);
-	//if (fbo) glDeleteFramebuffers(1, &fbo);
-	//if (depthBuffer) glDeleteRenderbuffers(1, &depthBuffer);
-
 	if (!fbo) {
 
 		/* --- Create and set up a framebuffer object (FBO) --- */
