@@ -106,6 +106,13 @@ void RenderSystem::update(GameObjectManager& manager, float const& deltaTime)
 		camProj = renderer::cam.proj;
 	}
 
+	/*
+	* 
+	------------------------------------------- i added this line to enable depth test -------------
+	*
+	*/
+	glEnable(GL_DEPTH_TEST);
+
 	// Update textures if they have changed (in level editor)
 	for (GameObject* object : gameObjects)
 	{
@@ -165,21 +172,41 @@ void RenderSystem::update(GameObjectManager& manager, float const& deltaTime)
 void RenderSystem::createFBO() {
 	if (texture) glDeleteTextures(1, &texture);
 	if (fbo) glDeleteFramebuffers(1, &fbo);
+	if (depthBuffer) glDeleteRenderbuffers(1, &depthBuffer);
 
+
+	/* --- Create and set up a framebuffer object (FBO) --- */
 	glGenFramebuffers(1, &fbo);
 	glBindFramebuffer(GL_FRAMEBUFFER, fbo);
 
+	/* --- Create and colour texture attachment for fbo --- */
 	glGenTextures(1, &texture);
 	glBindTexture(GL_TEXTURE_2D, texture);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, fboWidth, fboHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture, 0);
+
+
+	/*
+	*
+	------------------------------------------- AND ALL THESE -------------
+	*
+	*/
+	/* --- Create a depth and stencil renderbuffer --- */
+	glGenRenderbuffers(1, &depthBuffer);
+	glBindRenderbuffer(GL_RENDERBUFFER, depthBuffer);
+	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, fboWidth, fboHeight);
+	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, depthBuffer);
+
+	/* --- Clear the FBO's color and depth buffers before rendering  --- */
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
 RenderSystem::~RenderSystem() {
 	if (texture) glDeleteTextures(1, &texture);
 	if (fbo) glDeleteFramebuffers(1, &fbo);
+	if (depthBuffer) glDeleteRenderbuffers(1, &depthBuffer);
 }
 
 
