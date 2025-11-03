@@ -661,7 +661,7 @@ void UISystem::dockingSetUp() {
 		ImGui::DockBuilderDockWindow("Editor Camera", dockRight);
 
 		// Right
-		ImGui::DockBuilderDockWindow("Draw Shapes", dockRightSecond);
+		ImGui::DockBuilderDockWindow("Create Object", dockRightSecond);
 
 		// Middle
 		ImGui::DockBuilderDockWindow("Scene", dockParent);

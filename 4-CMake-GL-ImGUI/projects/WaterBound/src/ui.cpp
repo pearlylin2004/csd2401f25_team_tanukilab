@@ -16,6 +16,7 @@ Technology is prohibited.
 /* End Header **************************************************************************/
 
 #include "ui.h"
+#include <cstdlib>
 
 #ifndef RUNTIME_SCENE_DIR_R
 #define RUNTIME_SCENE_DIR_R "./shaders/Scene"
@@ -120,9 +121,49 @@ void UI::drawPerformance() {
 
 void UI::drawShapes(GameObjectManager& manager) {
     {
-        ImGui::Begin("Draw Shapes");
+        ImGui::Begin("Create Object");
 
-        ImGui::PushItemWidth(150.0f);
+		//// spawning objects (double up every click)
+        static int count = 0;
+		static int twentyCount = 0;
+        if (ImGui::Button("Spawn Object")) {
+			int spawnCount = (count == 0) ? 1 : count * 2;
+			if (spawnCount == 2048)
+				spawnCount = 2500; //cap at 400 objects
+
+			for (int i = count; i < spawnCount; ++i) {
+				std::string cloneName = "Player_Clone(" + std::to_string(i + 1) + ")";
+			    GameObject* newObj = manager.CloneGameObject("player2", cloneName);
+				
+                Transform* transform = newObj->getComponent<Transform>();
+
+                int randomX = rand() % 20;
+                int randomY = rand() % 10;
+				int rotation = rand() % 360;
+				int scaleX = (rand() % 3) + 1;
+				int scaleY = (rand() % 3) + 1;
+
+				if (rand() % 2 == 0)
+					randomX = -randomX;
+				if (rand() % 2 == 1)
+					randomY = -randomY;
+
+                transform->x = randomX;
+                transform->y = randomY;
+				transform->rotation = rotation;
+				transform->scaleX = scaleX;
+				transform->scaleY = scaleY;
+			}
+
+			count = spawnCount;
+        }
+
+
+        ImGui::Spacing();
+        ImGui::Separator();
+        ImGui::Spacing();
+
+        //ImGui::PushItemWidth(150.0f);
 
         // For drawing circle
         ImGui::Text("X");
@@ -137,6 +178,8 @@ void UI::drawShapes(GameObjectManager& manager) {
         ImGui::SameLine();
         ImGui::InputFloat("##Z", &circleInput.inputZ, 0.1f);
         ImGui::Spacing();
+
+        //ImGui::PopItemWidth();
 
         if (ImGui::Button("Add Circle")) {
             std::vector<GameObject*> gameObjects;
@@ -671,11 +714,8 @@ void UI::objInspectorWindow(GameObjectManager& manager) {
 
         /* ------------------- Delete Object ------------------- */
         std::string name = m_SelectionState.selectedObject->getObjectName();
-        // do not show "DELETE" button for "PLAYER" IT WILL CRASH
-        if (name != "player") {
-            if (ImGui::Button("Delete Object")) {
-                ImGui::OpenPopup("Confirm Delete Object");
-            }
+        if (ImGui::Button("Delete Object")) {
+            ImGui::OpenPopup("Confirm Delete Object");
         }
 
         // delete confirm popup
@@ -685,6 +725,8 @@ void UI::objInspectorWindow(GameObjectManager& manager) {
             if (ImGui::Button("Delete")) {
 
                 manager.deleteGameObject(m_SelectionState.selectedObject);
+
+				addDebugMessage("Object " + name + " deleted from manager\n");
 
                 m_SelectionState.selectedObject = nullptr;
                 m_SelectionState.draggedObject = nullptr;
