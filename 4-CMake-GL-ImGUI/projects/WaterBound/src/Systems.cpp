@@ -155,8 +155,8 @@ void RenderSystem::update(GameObjectManager& manager, float const& deltaTime)
 }
 
 void RenderSystem::createFBO() {
+	// only create FBO once if its not created
 	if (!fbo) {
-
 		/* --- Create and set up a framebuffer object (FBO) --- */
 		glGenFramebuffers(1, &fbo);
 		glBindFramebuffer(GL_FRAMEBUFFER, fbo);
