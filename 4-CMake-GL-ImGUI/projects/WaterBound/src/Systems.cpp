@@ -740,7 +740,7 @@ void UISystem::init(GLFWwindow* window, RenderSystem* renderer) {
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
 	ImGuiIO& io = ImGui::GetIO(); //(void)io;
-	io.FontGlobalScale = 1.5f;
+	io.FontGlobalScale = 2.0f;
 	io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard
 			| ImGuiConfigFlags_DockingEnable
 			| ImGuiConfigFlags_ViewportsEnable;
@@ -844,7 +844,7 @@ void UISystem::dockingSetUp() {
 		ImGuiID dockDown, dockRight, dockLeft;
 		ImGuiID dockRightSecond;
 
-		ImGui::DockBuilderSplitNode(dockParent, ImGuiDir_Left, 0.4f, &dockLeft, &dockParent);
+		ImGui::DockBuilderSplitNode(dockParent, ImGuiDir_Left, 0.3f, &dockLeft, &dockParent);
 		ImGui::DockBuilderSplitNode(dockParent, ImGuiDir_Right, 0.4f, &dockRight, &dockParent);
 		ImGui::DockBuilderSplitNode(dockRight, ImGuiDir_Down, 0.4f, &dockRightSecond, &dockRight);
 		ImGui::DockBuilderSplitNode(dockParent, ImGuiDir_Down, 0.4f, &dockDown, &dockParent);

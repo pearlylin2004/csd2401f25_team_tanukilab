@@ -41,11 +41,9 @@ public:
 
 	// debug message logging
 	static void addDebugMessage(const std::string& msg);
-	static void assetChanged() {
-		std::cout << "Asset changed flagged\n";
-		assetsChangedFlag = true;
-	} // set to true to reload assets in UI
+	static void assetChanged() { assetsChangedFlag = true; } // set to true to reload assets in UI
 
+	// load assets from asset directory (when flagged)
 	void loadAssetsFromDirectory();
 
 	void sceneWindow(GLuint texture, float aspectRatio);
@@ -61,6 +59,14 @@ private:
 	void assetWindow(GameObjectManager& manager);
 	void editorCameraControls();
 
+	void newScenePopup(GameObjectManager& manager);
+	void duplicateScenePopup(GameObjectManager& manager);
+	void loadScenePopup(GameObjectManager& manager);
+
+	void newScene(GameObjectManager& manager);
+	void duplicateScene(GameObjectManager& manager);
+	void loadScene(GameObjectManager& manager);
+
 	void assetDeletePopup();
 	void assetRenamePopup();
 	void assetReplacePopup();
@@ -68,6 +74,18 @@ private:
 	void objPicking(GameObjectManager& manager);
 	void objDragging() const;
 
+	/* ----------------- Menu Bar -----------------*/
+	struct menuBarState {
+		bool showNewScenePopup = false;
+		bool showLoadScenePopup = false;
+		bool showDuplicatePopup = false;
+
+		std::string sceneToLoad;
+	} m_MenuBarState;
+	/* ----------------- Menu Bar End -----------------*/
+
+
+	/* ----------------- Game Object Selection -----------------*/
 	struct SelectionState {
 		GameObject* selectedObject = nullptr; // currently selected object
 		int selectedIndex = -1; // index of selected object in the list
@@ -79,18 +97,27 @@ private:
 		float ratioY = 1.0f;
 		float ratioZ = 1.0f;
 	} m_SelectionState;
+	/* ----------------- Game Object Selection End -----------------*/
 
+
+	/* ----------------- Creating Game Object in Shapes -----------------*/
 	struct shapeControlState {
 		float inputX = 0.0f;
 		float inputY = 0.0f;
 		float inputZ = 0.0f;
 	} circleInput, RectangleInput;
+	/* ----------------- Creating Game Object in Shapes End -----------------*/
 
+
+	/* ----------------- Scene Viewport -----------------*/
 	struct SceneWindowState {
 		ImVec2 scenePos;  // top left corner of viewport
 		ImVec2 sceneSize; // size of viewport
 	} m_SceneWindowState;
+	/* ----------------- Scene Viewport End -----------------*/
 
+	/* ----------------- Assets -----------------*/
+	// migrate to asset manager in the futre
 	struct Asset {
 		std::string name;
 		std::string path;
@@ -98,7 +125,8 @@ private:
 	};
 
 	struct AssetBrowserState {
-		std::string currentFolder = "shaders/"; // we dont have a asset folder yet :(
+		std::string currentFolder = "Debug/shaders/"; // we dont have a asset folder yet :(
+		std::filesystem::file_time_type lastTopLevelRefresh; // top level folder timestamp
 		std::filesystem::file_time_type lastRefresh;
 		
 		// for deleting asset via browser
@@ -116,12 +144,15 @@ private:
 
 		float iconSize = 100.0f;
 		float buttonPadding = 20.0f; // adding padding made my code ugly
-	} m_AssetBrowserState;;
+	} m_AssetBrowserState;
+	/* ----------------- Assets End -----------------*/
+
 
 	static inline std::vector<std::string> m_debugMessages;
 
 	std::vector<Asset> m_assets;
 	static bool assetsChangedFlag;
+
 	std::string m_currentSceneName;
 	std::string m_tempSceneName;
 	bool m_isPlaying; // to track Play/Stop mode
