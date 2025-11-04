@@ -85,6 +85,10 @@ public:
 	void renderTex(GameObject* object, float const& deltaTime);
 	void renderNoTex(GameObject* object);
 	void renderCollision(Collision::AABB const& box, glm::vec3 const& clr);
+	GLuint getTexture() const { return texture; }
+
+	void fboAspectRatio(int& width, int& height) const;
+	~RenderSystem();
 };
 
 class FontSystem {
@@ -92,11 +96,6 @@ public:
 	void init(GameObjectManager& manager);
 	void update(GameObjectManager& manager);
 	void RenderText(GLuint& s, std::string text, float x, float y, float scale, glm::vec3 color, GameObject* object);
-
-	GLuint getTexture() const { return texture; }
-
-	void fboAspectRatio(int& width, int& height) const;
-	~RenderSystem();
 };
 
 /*!***********************************************************************
