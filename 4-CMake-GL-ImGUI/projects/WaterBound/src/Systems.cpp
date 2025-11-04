@@ -64,11 +64,6 @@ void InputSystem::update(GameObjectManager& manager, const float& deltaTime) {
 					UISystem::toggleUI();
 				}
 
-				if (InputHandler::isKeyTriggered(GLFW_KEY_SPACE) && m_eventManager) {
-					KeyPressedEvent e(GLFW_KEY_SPACE);
-					m_eventManager->Broadcast(e);
-				}
-
 				// Press F9 to simulate a failure (for crash logger)
 				if (InputHandler::isKeyTriggered(GLFW_KEY_F9)) {
 					throw std::runtime_error("F9 test: simulated failure in update()");
