@@ -26,6 +26,7 @@ Technology is prohibited.
 #include "audio.h"
 #include "Systems.h"
 #include "luaSystem.h"
+#include "GUISystem.h"
 
 class CoreEngine {
 public:
@@ -44,6 +45,7 @@ public:
 private:
     void GameLoop();
     void Update(float deltaTime);
+    double m_fixedDt = 1.0 / 60.0; // 60 Hz simulation
 
     // Window and timing variables
     GLFWwindow* m_window;
@@ -62,4 +64,5 @@ private:
     std::unique_ptr<UISystem> m_uiSystem;
     std::unique_ptr<LuaSystem> m_luaSystem;
     std::unique_ptr<FontSystem> m_fontSystem;
+    std::unique_ptr<GUISystem> m_guiSystem;
 };

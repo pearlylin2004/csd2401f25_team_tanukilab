@@ -3,7 +3,7 @@
 \file        Systems.cpp
 \author      Seow Sin Le, s.sinle, 2401084, 45%
 \author 	 Hugo Low Ren Hao, low.h, 2402272, 15%
-\author 	 Pearly Lin Lee Ying, p.lin, 2401591, 25%
+\author 	 Pearly Lin Lee Ying, p.lin, 2401591, 15%
 \author		 Asha Mathyalakan, asha.m, 2402886, 15%
 \par         s.sinle@digipen.edu
 \par		 low.h@digipen.edu
@@ -34,6 +34,9 @@ Technology is prohibited.
 // Input system - reads user input and updates velocity accordingly
 void InputSystem::update(GameObjectManager& manager, const float& deltaTime) {
 	(void)deltaTime;
+	//record current time for performance tracking
+	auto start = std::chrono::high_resolution_clock::now();
+
 	std::vector<GameObject*> gameObjects;
 	manager.getAllGameObjects(gameObjects);
 
@@ -58,10 +61,9 @@ void InputSystem::update(GameObjectManager& manager, const float& deltaTime) {
 					velocity->velX = input->moveSpeed;
 				}
 
-				if (InputHandler::isKeyTriggered(GLFW_KEY_0)) {
+				if (InputHandler::isComboKeyTriggered(GLFW_KEY_0)) {
 					UISystem::toggleUI();
 				}
-
 
 				// Press F9 to simulate a failure (for crash logger)
 				if (InputHandler::isKeyTriggered(GLFW_KEY_F9)) {
@@ -71,67 +73,125 @@ void InputSystem::update(GameObjectManager& manager, const float& deltaTime) {
 			}
 		}
 	}
+	auto end = std::chrono::high_resolution_clock::now();
+	double ms = std::chrono::duration<double, std::milli>(end - start).count(); //get elapse time in ms
+	g_SystemTimers.push_back({ "Input", ms }); //saving timing for UI output
 }
 
 
 // Render system - draws all game objects with a Render component
 void RenderSystem::update(GameObjectManager& manager, float const& deltaTime) 
 {
+	//record current time for performance tracking
+	auto start = std::chrono::high_resolution_clock::now();
+
 	std::vector<GameObject*> gameObjects;
 	manager.getAllGameObjects(gameObjects);
 
-	// Update textures if they have changed (in level editor)
-	for (GameObject* object : gameObjects)
-	{
-		if (object->hasComponent<Render>())
-		{
-			Render* render = object->getComponent<Render>();
+	glm::mat4 camView, camProj;
 
-			if (render->texChanged) {
-				if (render->hasTex) {
-					glDeleteTextures(1, &render->texHDL); // to avoid leak
-					render->texHDL = 0;
-				}
-				render->texHDL = uploadtex(render->texFile, render->isTransparent);
-				render->texChanged = false;
-			}
-		}
+	// Attach texture to FBO and update editor camera if editor is on
+	if (UISystem::isShowUI()) {
+		createFBO();
+		renderer::editorCam.update();
+
+		camView = renderer::editorCam.view;
+		camProj = renderer::editorCam.proj;
 	}
+	// else update game camera
+	else {
+		renderer::cam.update();
 
-	renderer::cam.update();
+		camView = renderer::cam.view;
+		camProj = renderer::cam.proj;
+	}
 
 	std::vector<GameObject*> objectWithTex;
 	std::vector<GameObject*> objectWithoutTex;
 
 	for (auto object : gameObjects)
 	{
-		if (object->hasComponent<Render>())
-			if (object->getComponent<Render>()->hasTex)
-				objectWithTex.push_back(object);
-			else
-				objectWithoutTex.push_back(object);
+		Render* render = object->getComponent<Render>();
+
+		if (render->texChanged) {
+			if (render->hasTex) {
+				glDeleteTextures(1, &render->texHDL); // to avoid leak
+				render->texHDL = 0;
+			}
+			render->texHDL = uploadtex(render->texFile, render->isTransparent);
+			render->texChanged = false;
+		}
+
+		if (render->hasTex)
+			objectWithTex.push_back(object);
+		else
+			objectWithoutTex.push_back(object);
 	}
 	//rendering objects without texture, just color
 	glUseProgram(renderer::shdr_pgm[1]);
 	GLint vTransformView = glGetUniformLocation(renderer::shdr_pgm[1], "V");
-	glUniformMatrix4fv(vTransformView, 1, GL_FALSE, glm::value_ptr(renderer::cam.view));
+	glUniformMatrix4fv(vTransformView, 1, GL_FALSE, glm::value_ptr(camView));
 	GLint vTransformProj = glGetUniformLocation(renderer::shdr_pgm[1], "P");
-	glUniformMatrix4fv(vTransformProj, 1, GL_FALSE, glm::value_ptr(renderer::cam.proj));
+	glUniformMatrix4fv(vTransformProj, 1, GL_FALSE, glm::value_ptr(camProj));
 	for (GameObject* object : objectWithoutTex)
 		renderNoTex(object);
 
 	//rendering objects with textures
 	glUseProgram(renderer::shdr_pgm[0]);
 	vTransformView = glGetUniformLocation(renderer::shdr_pgm[0], "V");
-	glUniformMatrix4fv(vTransformView, 1, GL_FALSE, glm::value_ptr(renderer::cam.view));
+	glUniformMatrix4fv(vTransformView, 1, GL_FALSE, glm::value_ptr(camView));
 	vTransformProj = glGetUniformLocation(renderer::shdr_pgm[0], "P");
-	glUniformMatrix4fv(vTransformProj, 1, GL_FALSE, glm::value_ptr(renderer::cam.proj));
+	glUniformMatrix4fv(vTransformProj, 1, GL_FALSE, glm::value_ptr(camProj));
 	for (GameObject* object : objectWithTex)
 		renderTex(object, deltaTime);
+
+	if (UISystem::isShowUI()) glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+	//record end time for performance tracking
+	auto end = std::chrono::high_resolution_clock::now();
+	double ms = std::chrono::duration<double, std::milli>(end - start).count(); //get elapse time in ms
+	g_SystemTimers.push_back({ "Render", ms }); //saving timing for UI output
+
 }
 
+void RenderSystem::createFBO() {
+	// only create FBO once if its not created
+	if (!fbo) {
+		/* --- Create and set up a framebuffer object (FBO) --- */
+		glGenFramebuffers(1, &fbo);
+		glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+
+		/* --- Create and colour texture attachment for fbo --- */
+		glGenTextures(1, &texture);
+		glBindTexture(GL_TEXTURE_2D, texture);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, fboWidth, fboHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture, 0);
+
+		/* --- Create a depth and stencil renderbuffer --- */
+		glGenRenderbuffers(1, &depthBuffer);
+		glBindRenderbuffer(GL_RENDERBUFFER, depthBuffer);
+		glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, fboWidth, fboHeight);
+		glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, depthBuffer);
+	}
+	else {
+		glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+	}
+
+	/* --- Clear the FBO's color and depth buffers before rendering  --- */
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+}
+
+RenderSystem::~RenderSystem() {
+	if (texture) glDeleteTextures(1, &texture);
+	if (fbo) glDeleteFramebuffers(1, &fbo);
+	if (depthBuffer) glDeleteRenderbuffers(1, &depthBuffer);
+}
+
+
 // Load all textures for game objects with a Render component
-void RenderSystem::init(GameObjectManager& manager)
+void RenderSystem::init(GameObjectManager& manager, int fboW, int fboH)
 {
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -148,6 +208,9 @@ void RenderSystem::init(GameObjectManager& manager)
 			}
 	}
 	Font::init();
+
+	fboWidth = fboW;
+	fboHeight = fboH;
 }
 
 // Upload a texture from file and return its OpenGL handle
@@ -424,9 +487,15 @@ void FontSystem::RenderText(GLuint& s, std::string text, float x, float y, float
 	glBindVertexArray(0);
 	glBindTexture(GL_TEXTURE_2D, 0);
 }
+void RenderSystem::fboAspectRatio(int& width, int& height) const {
+	width = fboWidth;
+	height = fboHeight;
+}
 
 // Physics system - updates position based on velocity and applies gravity
 void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime) {
+	//record current time for performance tracking
+	auto start = std::chrono::high_resolution_clock::now();
 
 	// idk how physic programmer want to handle input for physics in the future
 	// so here is a simple implementation for toggling step-by-step mode
@@ -500,11 +569,17 @@ void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime) {
 		}
 		transform->x += physics->velX * deltaTime;
 	}
+	auto end = std::chrono::high_resolution_clock::now();
+	double ms = std::chrono::duration<double, std::milli>(end - start).count(); //get elapse time in ms
+	g_SystemTimers.push_back({ "Physics", ms }); //saving timing for UI output
 }
 
 // Collision system - detects and resolves collisions between game objects
 void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime) {
 	(void)deltaTime;
+	//record current time for performance tracking
+	auto start = std::chrono::high_resolution_clock::now();
+
 	//getting all objects
 	std::vector<GameObject*> gameObjects;
 	manager.getAllGameObjects(gameObjects);
@@ -594,21 +669,25 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 			}
 		}
 	}
+	auto end = std::chrono::high_resolution_clock::now();
+	double ms = std::chrono::duration<double, std::milli>(end - start).count(); //get elapse time in ms
+	g_SystemTimers.push_back({ "Collisions", ms }); //saving timing for UI output
 }
 
 //UI system - handles ImGui rendering and interaction
 bool UISystem::showUI = false;
 
-void UISystem::init(GLFWwindow* window) {
+void UISystem::init(GLFWwindow* window, RenderSystem* renderer) {
 	// --- ImGui Setup ---
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
-	ImGuiIO& io = ImGui::GetIO(); (void)io;
-	io.FontGlobalScale = 1.2f;
+	ImGuiIO& io = ImGui::GetIO(); //(void)io;
+	io.FontGlobalScale = 2.0f;
 	io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard
 			| ImGuiConfigFlags_DockingEnable
 			| ImGuiConfigFlags_ViewportsEnable;
 	ImGui::StyleColorsDark();
+	// io.IniFilename = "imgui_layout.ini";
 	ImGui_ImplGlfw_InitForOpenGL(window, true);
 	ImGui_ImplOpenGL3_Init("#version 450");
 
@@ -616,6 +695,8 @@ void UISystem::init(GLFWwindow* window) {
 	io.ConfigViewportsNoTaskBarIcon = true;
 
 	m_UI.loadAssetsFromDirectory();
+
+	m_renderer = renderer;
 }
 
 UISystem::~UISystem() {
@@ -629,6 +710,9 @@ UISystem::~UISystem() {
 void UISystem::update(GameObjectManager& manager) {
 	if (!showUI) return; // skip UI rendering if disabled
 
+	//record current time for performance tracking
+	auto start = std::chrono::high_resolution_clock::now();
+
 	std::vector<GameObject*> gameObjects;
 	manager.getAllGameObjects(gameObjects);
 
@@ -638,17 +722,29 @@ void UISystem::update(GameObjectManager& manager) {
 
 	dockingSetUp();
 
+	// get the width and height of the SCENE view
+	int fboWidth, fboHeight;
+	m_renderer->fboAspectRatio(fboWidth, fboHeight);
+
 	// all ImGui windows
 	m_UI.update(manager);
+	m_UI.sceneWindow(m_renderer->getTexture(), static_cast<float>(fboWidth) / static_cast<float>(fboHeight));
 
-	Transform* leavesT = gameObjects[0]->getComponent<Transform>();
-	Transform* bulletT = gameObjects[2]->getComponent<Transform>();
-	m_UI.shapeControl(*leavesT, *bulletT);
+	m_UI.loadAssetsFromDirectory(); // only reload if assets flag is set (e.g. new asset added)
+
+	// this will CRASH if change scene in editor
+	//Transform* leavesT = gameObjects[0]->getComponent<Transform>();
+	//Transform* bulletT = gameObjects[2]->getComponent<Transform>();
+	//m_UI.shapeControl(*leavesT, *bulletT); 
 
 	ImGui::Render();
 	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
 	renderMultipleViewPorts();
+
+	auto end = std::chrono::high_resolution_clock::now();
+	double ms = std::chrono::duration<double, std::milli>(end - start).count(); //get elapse time in ms
+	g_SystemTimers.push_back({ "IMGUI", ms }); //saving timing for UI output
 }
 
 void UISystem::dockingSetUp() {
@@ -662,6 +758,7 @@ void UISystem::dockingSetUp() {
 		| ImGuiWindowFlags_NoMove
 		| ImGuiWindowFlags_NoBringToFrontOnFocus
 		| ImGuiWindowFlags_NoNavFocus
+		| ImGuiWindowFlags_MenuBar
 		| ImGuiWindowFlags_NoBackground;
 
 	ImGuiViewport* viewport = ImGui::GetMainViewport();
@@ -675,8 +772,45 @@ void UISystem::dockingSetUp() {
 	ImGui::Begin("DockSpace Demo", nullptr, window_flags);
 	ImGui::PopStyleVar(2);
 
-	ImGuiID dockspace_id = ImGui::GetID("MyDockSpace");
-	ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), dockspace_flags);
+	ImGuiID dockspaceID = ImGui::GetID("DockSpace");
+	ImGui::DockSpace(dockspaceID, { 0.0f, 0.0f }, dockspace_flags);
+
+	if (m_firstTime) {
+		m_firstTime = false;
+		ImGui::DockBuilderRemoveNode(dockspaceID); // Clear any existing layout
+		ImGui::DockBuilderAddNode(dockspaceID, ImGuiDockNodeFlags_DockSpace);
+		ImGui::DockBuilderSetNodeSize(dockspaceID, viewport->Size);
+
+		// Split the dockspace into major areas
+		ImGuiID dockParent = dockspaceID;
+		ImGuiID dockDown, dockRight, dockLeft;
+		ImGuiID dockRightSecond;
+
+		ImGui::DockBuilderSplitNode(dockParent, ImGuiDir_Left, 0.3f, &dockLeft, &dockParent);
+		ImGui::DockBuilderSplitNode(dockParent, ImGuiDir_Right, 0.4f, &dockRight, &dockParent);
+		ImGui::DockBuilderSplitNode(dockRight, ImGuiDir_Down, 0.4f, &dockRightSecond, &dockRight);
+		ImGui::DockBuilderSplitNode(dockParent, ImGuiDir_Down, 0.4f, &dockDown, &dockParent);
+
+		// Dock windows
+
+		// Left
+		ImGui::DockBuilderDockWindow("Hierarchy", dockLeft);
+		ImGui::DockBuilderDockWindow("Inspector", dockRight);
+		ImGui::DockBuilderDockWindow("Editor Camera", dockRight);
+
+		// Right
+		ImGui::DockBuilderDockWindow("Create Object", dockRightSecond);
+
+		// Middle
+		ImGui::DockBuilderDockWindow("Scene", dockParent);
+		
+		// Bottom
+		ImGui::DockBuilderDockWindow("Performance", dockDown);
+		ImGui::DockBuilderDockWindow("Debug Info", dockDown);
+		ImGui::DockBuilderDockWindow("Assets", dockDown);
+
+		ImGui::DockBuilderFinish(dockspaceID);
+	}
 
 	ImGui::End();
 }

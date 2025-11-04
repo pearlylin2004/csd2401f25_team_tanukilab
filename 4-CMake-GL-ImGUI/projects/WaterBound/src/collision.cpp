@@ -173,6 +173,7 @@ namespace Collision {
                     : Vector2D(0, -1);
             }
         }
+        return info;
     }
 
     //AABB with circles 
