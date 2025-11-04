@@ -812,12 +812,201 @@ void GameObjectManager::loadSceneFromJson(const std::string& filename) {
 	std::cout << "Scene loaded (JSON): " << filename << "\n";
 }
 
+void GameObjectManager::saveSceneToJson(const std::string& filename, bool isNew) const {
+	rapidjson::Document doc;
+	doc.SetObject();
+	auto& a = doc.GetAllocator();
+
+	PrefabManager& PM = PrefabManager::Instance();
+
+	// version header
+	doc.AddMember("version", rapidjson::Value(1), a);
+
+	if (!isNew) {
+
+		// objects array
+		rapidjson::Value objects(rapidjson::kArrayType);
+
+		for (auto const& kv : m_gameObjects) {
+			const GameObject* obj = kv.second.get();
+
+			rapidjson::Value jObj(rapidjson::kObjectType);
+
+			// prefab ID
+			const std::string& prefabID = obj->getObjectPrefabID();
+			if (!prefabID.empty()) {
+				jObj.AddMember("prefabid", rapidjson::Value(prefabID.c_str(), a), a);
+			}
+
+			// name
+			jObj.AddMember("name", rapidjson::Value(obj->getObjectName().c_str(), a), a);
+
+			// get prefab JSON if obj referencing a prefab
+			const rapidjson::Document* prefabDoc{ nullptr };
+			if (!prefabID.empty()) {
+				prefabDoc = PrefabManager::Instance().getPrefabJson(prefabID);
+			}
+
+			/* ------------ Useful lambda for comparing later ------------ */
+			// obj referencing prefab -> if new data added for scene, will override prefab data
+			// compare 2 float
+			auto differsFloat = [](float a, float b) { return std::fabs(a - b) > 1e-6f; };
+			// compare 2 int
+			auto differsInt = [](int a, int b) { return a != b; };
+			// compare 2 boolean
+			auto differsBool = [](bool a, bool b) { return a != b; };
+
+			// components container
+			rapidjson::Value comps(rapidjson::kObjectType);
+
+			// ---- Transform ----
+			if (auto t = obj->getComponent<Transform>()) {
+				rapidjson::Value jt(rapidjson::kObjectType);
+
+				// 
+				const rapidjson::Value* prefabT = PM.getPrefabJsonComp(prefabDoc, "Transform");
+
+				if (!prefabT || differsFloat((*prefabT)["pos"][0].GetFloat(), t->x) ||
+					differsFloat((*prefabT)["pos"][1].GetFloat(), t->y) ||
+					differsFloat((*prefabT)["pos"][2].GetFloat(), t->z)) {
+					rapidjson::Value pos(rapidjson::kArrayType);
+					pos.PushBack(t->x, a).PushBack(t->y, a).PushBack(t->z, a);
+					jt.AddMember("pos", pos, a);
+				}
+
+				if (!prefabT || !prefabT->HasMember("rotation") || differsFloat((*prefabT)["rotation"].GetFloat(), t->rotation))
+					jt.AddMember("rotation", t->rotation, a);
+
+				if (!prefabT || !prefabT->HasMember("scale") ||
+					differsFloat((*prefabT)["scale"][0].GetFloat(), t->scaleX) ||
+					differsFloat((*prefabT)["scale"][1].GetFloat(), t->scaleY) ||
+					differsFloat((*prefabT)["scale"][2].GetFloat(), t->scaleZ)) {
+					rapidjson::Value sc(rapidjson::kArrayType);
+					sc.PushBack(t->scaleX, a).PushBack(t->scaleY, a).PushBack(t->scaleZ, a);
+					jt.AddMember("scale", sc, a);
+				}
+
+				if (!jt.ObjectEmpty()) comps.AddMember("Transform", jt, a);
+			}
+
+			// ---- Render ----
+			if (auto r = obj->getComponent<Render>()) {
+				rapidjson::Value jr(rapidjson::kObjectType);
+				const rapidjson::Value* prefabR = PM.getPrefabJsonComp(prefabDoc, "Render");
+
+				std::string shapeStr = ShapeToStr(r->modelRef.shape);
+				if (!prefabR || !prefabR->HasMember("shape") || shapeStr != (*prefabR)["shape"].GetString())
+					jr.AddMember("shape", rapidjson::Value(shapeStr.c_str(), a), a);
+
+				auto pushIfDiffBool = [&](const char* key, bool val) {
+					if (!prefabR || !prefabR->HasMember(key) ||
+						((*prefabR)[key].IsBool() && differsBool((*prefabR)[key].GetBool(), val)) ||
+						((*prefabR)[key].IsInt() && differsBool((*prefabR)[key].GetInt() != 0, val))) {
+						jr.AddMember(rapidjson::Value(key, a), rapidjson::Value(val ? 1 : 0), a);
+					}
+					};
+
+				// save hasTex based on whether have texture
+				pushIfDiffBool("hasTex", r->hasTex);
+				if (r->hasTex && !r->texFile.empty()) {
+					if (!prefabR || !prefabR->HasMember("texture") || r->texFile != (*prefabR)["texture"].GetString()) {
+						jr.AddMember("texture", rapidjson::Value(r->texFile.c_str(), a), a);
+						jr.AddMember("hasTex", rapidjson::Value(r->hasTex ? 1 : 0), a);
+					}
+
+				}
+
+				pushIfDiffBool("hasAnimation", r->hasAnimation);
+
+				if (!jr.ObjectEmpty()) comps.AddMember("Render", jr, a);
+			}
+
+			// ---- Physics ----
+			if (auto p = obj->getComponent<Physics>()) {
+				rapidjson::Value jp(rapidjson::kObjectType);
+				const rapidjson::Value* prefabP = PM.getPrefabJsonComp(prefabDoc, "Physics");
+
+				auto pushIfDiffBool = [&](const char* key, bool val) {
+					if (!prefabP || !prefabP->HasMember(key) ||
+						((*prefabP)[key].IsBool() && differsBool((*prefabP)[key].GetBool(), val)) ||
+						((*prefabP)[key].IsInt() && differsBool((*prefabP)[key].GetInt() != 0, val))) {
+						jp.AddMember(rapidjson::Value(key, a), rapidjson::Value(val ? 1 : 0), a);
+					}
+					};
+
+				// if different then change scene data
+				pushIfDiffBool("inWater", p->inWater);
+				pushIfDiffBool("buoyancy", p->buoancy);
+
+				if (!jp.ObjectEmpty()) comps.AddMember("Physics", jp, a);
+			}
+
+			// ---- Input (presence only) ----
+			if (obj->hasComponent<Input>()) {
+				const rapidjson::Value* prefabI = PM.getPrefabJsonComp(prefabDoc, "Input");
+				if (!prefabI) comps.AddMember("Input", rapidjson::Value(rapidjson::kObjectType), a);
+			}
+
+			// ---- CollisionInfo (presence only) ----
+			if (obj->hasComponent<CollisionInfo>()) {
+				const rapidjson::Value* prefabC = PM.getPrefabJsonComp(prefabDoc, "CollisionInfo");
+				if (!prefabC) comps.AddMember("CollisionInfo", rapidjson::Value(rapidjson::kObjectType), a);
+			}
+
+			// ---- Animation ----
+			if (auto an = obj->getComponent<Animation>()) {
+				rapidjson::Value ja(rapidjson::kObjectType);
+				const rapidjson::Value* prefabA = PM.getPrefabJsonComp(prefabDoc, "Animation");
+
+				auto pushIfDiffInt = [&](const char* key, int val) {
+					if (!prefabA || !prefabA->HasMember(key) || differsInt((*prefabA)[key].GetInt(), val))
+						ja.AddMember(rapidjson::Value(key, a), rapidjson::Value(val), a);
+					};
+				auto pushIfDiffFloat = [&](const char* key, float val) {
+					if (!prefabA || !prefabA->HasMember(key) || differsFloat((*prefabA)[key].GetFloat(), val))
+						ja.AddMember(rapidjson::Value(key, a), rapidjson::Value(val), a);
+					};
+				auto pushIfDiffBool = [&](const char* key, bool val) {
+					if (!prefabA || !prefabA->HasMember(key) ||
+						((*prefabA)[key].IsBool() && differsBool((*prefabA)[key].GetBool(), val)) ||
+						((*prefabA)[key].IsInt() && differsBool((*prefabA)[key].GetInt() != 0, val))) {
+						ja.AddMember(rapidjson::Value(key, a), rapidjson::Value(val ? 1 : 0), a);
+					}
+					};
+
+				pushIfDiffBool("loop", an->loop);
+				pushIfDiffInt("currentFrameColumn", an->currentFrameColumn);
+				pushIfDiffInt("currentFrameRow", an->currentFrameRow);
+				pushIfDiffInt("totalColumn", an->totalColumn);
+				pushIfDiffInt("totalRow", an->totalRow);
+				pushIfDiffFloat("frameTime", an->frameTime);
+
+				if (!ja.ObjectEmpty()) comps.AddMember("Animation", ja, a);
+			}
+
+			if (!comps.ObjectEmpty()) jObj.AddMember("components", comps, a);
+			objects.PushBack(jObj, a);
+		}
+
+		// attach array
+		doc.AddMember("objects", objects, a);
+	}
+
+	std::string err;
+	if (!JsonIO::WriteDocumentToFile(filename, doc, /*pretty=*/true, &err)) {
+		std::cerr << "Scene save failed: " << err << "\n";
+	}
+	else {
+		std::cout << "Scene saved (JSON): " << filename << "\n";
+	}
+}
+
 void GameObjectManager::loadScene(const std::string& path) {
 	if (ends_with(path, ".json")) loadSceneFromJson(path);
 	else                          loadFromFile(path);   // keep legacy .txt scenes
 }
 
 void GameObjectManager::saveScene(const std::string& path, bool isNew) const {
-	if (ends_with(path, ".json")) saveToJson(path, isNew);
+	if (ends_with(path, ".json")) saveSceneToJson(path, isNew);
 	else                          saveToFile(path);
 }

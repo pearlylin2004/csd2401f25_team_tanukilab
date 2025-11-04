@@ -59,6 +59,8 @@ public:
 
 	void loadSceneFromJson(const std::string& filename);
 
+	void saveSceneToJson(const std::string& filename, bool isNew) const;
+
 	void loadScene(const std::string& path);
 
 	void saveScene(const std::string& path, bool isNew = false) const;

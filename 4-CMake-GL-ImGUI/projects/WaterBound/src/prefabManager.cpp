@@ -107,10 +107,29 @@ const std::string& PrefabManager::getPrefabName(const std::string& prefabID) con
 	return m_prefabRegistry.at(prefabID).name;
 }
 
+const rapidjson::Document* PrefabManager::getPrefabJson(const std::string& prefabID) const {
+	auto iterator = m_prefabCache.find(prefabID);
+	if (iterator != m_prefabCache.end()) {
+		return &iterator->second;
+	}
+	return nullptr;
+}
+
+const rapidjson::Value* PrefabManager::getPrefabJsonComp(const rapidjson::Document* prefabDoc, const std::string& compName) const {
+	// if prefab dont have components then return
+	if (!prefabDoc || !prefabDoc->HasMember("components")) return nullptr;
+
+	// if prefab dont have the given components
+	const auto& comps = (*prefabDoc)["components"];
+	if (!comps.HasMember(compName.c_str())) return nullptr;
+
+	return &comps[compName.c_str()];
+}
+
 GameObject* PrefabManager::instantiate(GameObject* go, GameObjectManager& manager) {
 	const std::string& id = go->getObjectPrefabID();
 	auto iterator = m_prefabRegistry.find(id);
-	if (iterator == m_prefabRegistry.end() || id == "") {
+	if (iterator == m_prefabRegistry.end() || id.empty()) {
 		std::cerr << "PrefabManager::instantiate() failed — prefab ID not found: " << id << "\n";
 		return nullptr;
 	}
@@ -134,7 +153,7 @@ GameObject* PrefabManager::instantiate(GameObject* go, GameObjectManager& manage
 
 		m_prefabCache[id].CopyFrom(doc, m_prefabCache[id].GetAllocator());
 	}
-	
+
 	if (!doc.HasMember("components") || !doc["components"].IsObject()) {
 		std::cerr << "Prefab file '" << path << "' missing COMPONENT object.\n";
 		return nullptr;

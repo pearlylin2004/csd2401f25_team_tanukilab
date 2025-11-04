@@ -43,6 +43,10 @@ public:
 	std::string& getPrefabName(const std::string& prefabID);
 	const std::string& getPrefabName(const std::string& prefabID) const;
 
+	const rapidjson::Document* getPrefabJson(const std::string& prefabID) const;
+
+	const rapidjson::Value* getPrefabJsonComp(const rapidjson::Document* prefabDoc, const std::string& compName) const;
+
 	//GameObject* instantiate(const std::string& id, GameObjectManager& manager);
 	GameObject* instantiate(GameObject* go, GameObjectManager& manager);
 
