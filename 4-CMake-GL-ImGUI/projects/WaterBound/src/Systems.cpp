@@ -104,6 +104,9 @@ void RenderSystem::update(GameObjectManager& manager, float const& deltaTime)
 		camProj = renderer::cam.proj;
 	}
 
+	std::vector<GameObject*> objectWithTex;
+	std::vector<GameObject*> objectWithoutTex;
+
 	// Update textures if they have changed (in level editor)
 	for (GameObject* object : gameObjects)
 	{
@@ -131,21 +134,14 @@ void RenderSystem::update(GameObjectManager& manager, float const& deltaTime)
 
 				render->texChanged = false;
 			}
-		}
-	}
 
-
-	std::vector<GameObject*> objectWithTex;
-	std::vector<GameObject*> objectWithoutTex;
-
-	for (auto object : gameObjects)
-	{
-		if (object->hasComponent<Render>())
 			if (object->getComponent<Render>()->hasTex)
 				objectWithTex.push_back(object);
 			else
 				objectWithoutTex.push_back(object);
+		}
 	}
+
 	//rendering objects without texture, just color
 	glUseProgram(renderer::shdr_pgm[1]);
 	GLint vTransformView = glGetUniformLocation(renderer::shdr_pgm[1], "V");
