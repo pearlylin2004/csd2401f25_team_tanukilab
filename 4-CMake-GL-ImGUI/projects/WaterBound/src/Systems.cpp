@@ -32,8 +32,9 @@ Technology is prohibited.
 //so all systems need to use the getAllGameObjects() function
 
 // Input system - reads user input and updates velocity accordingly
-void InputSystem::update(GameObjectManager& manager, const float& deltaTime) {
+void InputSystem::update(GameObjectManager& manager, const float& deltaTime, MessageBus& messageBus) {
 	(void)deltaTime;
+	(void)messageBus;
 	//record current time for performance tracking
 	auto start = std::chrono::high_resolution_clock::now();
 
@@ -354,7 +355,7 @@ void RenderSystem::fboAspectRatio(int& width, int& height) const {
 }
 
 // Physics system - updates position based on velocity and applies gravity
-void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime) {
+void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime, MessageBus& messageBus) {
 	//record current time for performance tracking
 	auto start = std::chrono::high_resolution_clock::now();
 
@@ -389,6 +390,7 @@ void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime) {
 			//std::cout << object << " has input component\n";
 			//bullet
 			if (InputHandler::isKeyTriggered(GLFW_KEY_SPACE)) {
+				messageBus.publish(Message("KeyPressed", nullptr, KeyEvent{ "SPACE", true }));
 				//std::cout << "bullet is spawned\n";
 				UI::addDebugMessage("bullet is spawned");
 				static int bulletCount = 0;

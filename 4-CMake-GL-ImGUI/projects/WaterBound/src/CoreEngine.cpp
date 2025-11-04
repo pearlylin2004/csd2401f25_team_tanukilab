@@ -77,6 +77,8 @@ void CoreEngine::Init() {
     m_renderSystem = std::make_unique<RenderSystem>();
     m_uiSystem = std::make_unique<UISystem>();
     m_luaSystem = std::make_unique<LuaSystem>();
+    m_messageBus = std::make_unique<MessageBus>();
+    m_playerController = std::make_unique<PlayerControllerSystem>();
 
     m_luaSystem->init();
     m_manager->init();
@@ -103,6 +105,10 @@ void CoreEngine::Init() {
             }
         }
     }
+
+    //advance messaging 
+    m_messageBus->subscribe("KeyPressed", m_playerController.get());
+    m_messageBus->subscribe("KeyReleased", m_playerController.get());
 
     audio.init();
     glfwPollEvents();
@@ -196,9 +202,9 @@ void CoreEngine::Update(float deltaTime) {
     }
 
     // Update all systems in order
-    m_inputSystem->update(*m_manager, deltaTime);
+    m_inputSystem->update(*m_manager, deltaTime, *m_messageBus);
     m_collisionSystem->update(*m_manager, deltaTime);
-    m_physicsSystem->update(*m_manager, deltaTime);
+    m_physicsSystem->update(*m_manager, deltaTime, *m_messageBus);
     m_renderSystem->update(*m_manager, deltaTime);
     m_uiSystem->update(*m_manager);
 
