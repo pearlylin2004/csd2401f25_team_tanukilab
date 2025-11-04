@@ -63,6 +63,8 @@ public:
 
 	void saveScene(const std::string& path, bool isNew = false) const;
 
+	void initializeSceneResources();
+
 private:
 	//map of all game objects
 	std::unordered_map<std::string, std::unique_ptr<GameObject>> m_gameObjects;

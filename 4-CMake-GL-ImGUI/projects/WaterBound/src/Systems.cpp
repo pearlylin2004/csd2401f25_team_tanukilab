@@ -454,14 +454,15 @@ void FontSystem::init(GameObjectManager& manager)
 
 void FontSystem::update(GameObjectManager& manager)
 {
+	//for debugging only
 
-	std::cout << "=== FontSystem::update() called ===" << std::endl;
+	//std::cout << "=== FontSystem::update() called ===" << std::endl;
 
 	std::vector<GameObject*> gameObjects;
 	manager.getAllGameObjects(gameObjects);
 
 	// Count font objects
-	int fontCount = 0;
+	/*int fontCount = 0;
 	for (GameObject* object : gameObjects) {
 		if (object->hasComponent<FontComponent>()) {
 			fontCount++;
@@ -469,13 +470,14 @@ void FontSystem::update(GameObjectManager& manager)
 			std::cout << "Font object: " << object->getObjectName()
 				<< " | Text: '" << fc->word << "'" << std::endl;
 		}
-	}
-	std::cout << "Total font objects: " << fontCount << std::endl;
+	}*/
+	//for debugging only
+	//std::cout << "Total font objects: " << fontCount << std::endl;
 
-	if (fontCount == 0) {
+	/*if (fontCount == 0) {
 		std::cout << "WARNING: No font objects to render!" << std::endl;
 		return;
-	}
+	}*/
 
 	glUseProgram(Font::fontShaders);
 
@@ -523,11 +525,11 @@ void FontSystem::RenderText(GLuint& s, std::string text, float x, float y, float
 
 	const FontData& fontData = ResourceManager::getInstance().getFont(fc->fontPath);
 
-	std::cout << "FontData has " << fontData.characters.size() << " characters loaded" << std::endl;
+	/*std::cout << "FontData has " << fontData.characters.size() << " characters loaded" << std::endl;
 	if (fontData.characters.empty()) {
 		std::cerr << "ERROR: Font data has NO characters!" << std::endl;
 		return;
-	}
+	}*/
 
 	glUseProgram(s);
 	glUniform3f(glGetUniformLocation(s, "textColor"), color.x, color.y, color.z);
@@ -541,10 +543,10 @@ void FontSystem::RenderText(GLuint& s, std::string text, float x, float y, float
 	{
 		unsigned char uc = static_cast<unsigned char>(*c);
 		auto it = fontData.characters.find(uc);
-		if (it == fontData.characters.end()) {
-			std::cerr << "Character '" << uc << "' not found in font '" << fontPath << "'\n";
-			continue; // skip character if not found
-		}
+		//if (it == fontData.characters.end()) {
+		//	std::cerr << "Character '" << uc << "' not found in font '" << fontPath << "'\n";
+		//	continue; // skip character if not found
+		//}
 
 		const Font::Character& ch = it->second;
 		//Font::Character ch = Font::characters[fc->fontType][*c];

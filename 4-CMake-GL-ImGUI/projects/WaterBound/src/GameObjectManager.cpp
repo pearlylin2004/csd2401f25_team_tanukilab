@@ -691,3 +691,25 @@ void GameObjectManager::saveScene(const std::string& path, bool isNew) const {
 	if (ends_with(path, ".json")) saveToJson(path, isNew);
 	else                          saveToFile(path);
 }
+
+void GameObjectManager::initializeSceneResources() {
+	// Load textures for render components
+	for (auto& pair : m_gameObjects) {
+		GameObject* obj = pair.second.get();
+		if (obj->hasComponent<Render>()) {
+			Render* render = obj->getComponent<Render>();
+			if (render->hasTex) {
+				TextureData texData = ResourceManager::getInstance().getTexture(render->texFile);
+				render->texHDL = texData.id;
+				render->isTransparent = texData.isTransparent;
+			}
+		}
+		// Initialize font models
+		if (obj->hasComponent<FontComponent>()) {
+			FontComponent* fc = obj->getComponent<FontComponent>();
+			if (!Font::fontMdls.empty()) {
+				fc->mdl = Font::fontMdls[0];
+			}
+		}
+	}
+}
