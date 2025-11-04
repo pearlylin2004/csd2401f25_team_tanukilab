@@ -115,6 +115,7 @@ void UI::drawPerformance() {
         ImGui::Text("%s: %.3f ms (%.1f%%)", timer.name.c_str(), timer.ms, percent);
         ImGui::ProgressBar(percent / 100.0f, ImVec2(0.0f, 0.0f));
     }
+    LogSystemTimersEveryInterval(ImGui::GetIO().DeltaTime); //for console 
     g_SystemTimers.clear(); // clear timers for next frame
     ImGui::End();
 }
