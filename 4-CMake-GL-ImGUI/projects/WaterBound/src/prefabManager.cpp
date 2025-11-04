@@ -43,6 +43,15 @@ namespace {
 	}
 }
 
+static PlayerState parsePlayerState(const std::string& s) {
+	if (s == "Idle")     return PlayerState::Idle;
+	if (s == "Walking")  return PlayerState::Walking;
+	if (s == "Jumping")  return PlayerState::Jumping;
+	if (s == "Falling")  return PlayerState::Falling;
+	if (s == "Shooting") return PlayerState::Shooting;
+	return PlayerState::Idle; // default/fallback
+}
+
 PrefabManager& PrefabManager::Instance() {
 	static PrefabManager instance;
 	return instance;
@@ -276,6 +285,27 @@ GameObject* PrefabManager::instantiate(GameObject* go, GameObjectManager& manage
 			a->totalRow = ja["totalRow"].GetInt();
 		if (ja.HasMember("frameTime") && ja["frameTime"].IsNumber())
 			a->frameTime = ja["frameTime"].GetFloat();
+	}
+	
+	// ---- State Machine ----
+	if (comps.HasMember("StateMachine") && comps["StateMachine"].IsObject()) {
+		const auto& smj = comps["StateMachine"];
+		auto* sm = go->addComponent<StateMachine>();
+
+		if (smj.HasMember("state") && smj["state"].IsString())
+			sm->state = parsePlayerState(smj["state"].GetString());
+
+		if (smj.HasMember("facingRight")) {
+			if (smj["facingRight"].IsBool())       sm->facingRight = smj["facingRight"].GetBool();
+			else if (smj["facingRight"].IsInt())   sm->facingRight = (smj["facingRight"].GetInt() != 0);
+		}
+
+		if (smj.HasMember("stateTime") && smj["stateTime"].IsNumber())
+			sm->stateTime = static_cast<float>(smj["stateTime"].GetDouble());
+
+		/*std::cout << "\n\nReading from prefab now...\n";
+		std::cout << "State: " << sm->facingRight << std::endl;
+		std::cout << "State Time: " << sm->stateTime << std::endl;*/
 	}
 
 	std::cout << "Instantiated prefab '" << "' (" << id << ")\n";

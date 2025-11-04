@@ -473,6 +473,18 @@ static PlayerState parsePlayerState(const std::string& s) {
 	return PlayerState::Idle; // default/fallback
 }
 
+static const char* playerStateToStr(PlayerState state) {
+	switch (state) {
+	case PlayerState::Idle:     return "Idle";
+	case PlayerState::Walking:  return "Walking";
+	case PlayerState::Jumping:  return "Jumping";
+	case PlayerState::Falling:  return "Falling";
+	case PlayerState::Shooting: return "Shooting";
+	default:                    return "Idle";
+	}
+}
+
+
 void GameObjectManager::loadFromJson(const std::string& filename) {
 	rapidjson::Document doc;
 	std::string err;
@@ -642,6 +654,7 @@ void GameObjectManager::loadFromJson(const std::string& filename) {
 }
 
 void GameObjectManager::loadSceneFromJson(const std::string& filename) {
+
 	rapidjson::Document doc;
 	std::string err;
 	if (!JsonIO::ReadFileToDocument(filename, doc, &err)) {
@@ -671,18 +684,12 @@ void GameObjectManager::loadSceneFromJson(const std::string& filename) {
 
 		GameObject* go = createGameObject(name);
 
-
-
 		// check if this object references a prefab
 		if (jObj.HasMember("prefabid") && jObj["prefabid"].IsString()) {
 			std::string prefabID = jObj["prefabid"].GetString();
 			go->getObjectPrefabID() = prefabID;
 			PrefabManager::Instance().instantiate(go, *this);
 
-			/*if (!go) {
-				std::cerr << "Failed to instantiate prefab " << prefabID << "\n";
-				continue;
-			}*/
 		}
 		else {
 			// if no prefab, just create a fresh game object
@@ -831,6 +838,30 @@ void GameObjectManager::loadSceneFromJson(const std::string& filename) {
 				a->totalRow = ja["totalRow"].GetInt();
 			if (ja.HasMember("frameTime") && ja["frameTime"].IsNumber())
 				a->frameTime = ja["frameTime"].GetFloat();
+		}
+
+		// ---- State Machine ----
+		if (comps.HasMember("StateMachine") && comps["StateMachine"].IsObject()) {
+			const auto& smj = comps["StateMachine"];
+
+			auto* sm = go->getComponent<StateMachine>();
+			if (!sm)
+				sm = go->addComponent<StateMachine>();
+
+			if (smj.HasMember("state") && smj["state"].IsString())
+				sm->state = parsePlayerState(smj["state"].GetString());
+
+			if (smj.HasMember("facingRight")) {
+				if (smj["facingRight"].IsBool())       sm->facingRight = smj["facingRight"].GetBool();
+				else if (smj["facingRight"].IsInt())   sm->facingRight = (smj["facingRight"].GetInt() != 0);
+			}
+
+			if (smj.HasMember("stateTime") && smj["stateTime"].IsNumber())
+				sm->stateTime = static_cast<float>(smj["stateTime"].GetDouble());
+
+			/*std::cout << "\n\nReading scene...\n";
+			std::cout << "State: " << sm->facingRight << std::endl;
+			std::cout << "State Time: " << sm->stateTime << std::endl;*/
 		}
 	}
 
@@ -1007,6 +1038,27 @@ void GameObjectManager::saveSceneToJson(const std::string& filename, bool isNew)
 				pushIfDiffFloat("frameTime", an->frameTime);
 
 				if (!ja.ObjectEmpty()) comps.AddMember("Animation", ja, a);
+			}
+
+			// ---- StateMachine ----
+			if (auto sm = obj->getComponent<StateMachine>()) {
+				rapidjson::Value js(rapidjson::kObjectType);
+				const rapidjson::Value* prefabSM = PrefabManager::Instance().getPrefabJsonComp(prefabDoc, "StateMachine");
+
+				if (!prefabSM || !prefabSM->HasMember("state") || sm->state != parsePlayerState((*prefabSM)["state"].GetString()))
+					js.AddMember("state", rapidjson::Value(playerStateToStr(sm->state), a), a);
+
+				if (!prefabSM || !prefabSM->HasMember("facingRight") ||
+					((*prefabSM)["facingRight"].IsBool() && differsBool((*prefabSM)["facingRight"].GetBool(), sm->facingRight)) ||
+					((*prefabSM)["facingRight"].IsInt() && differsBool((*prefabSM)["facingRight"].GetInt() != 0, sm->facingRight)))
+					js.AddMember("facingRight", rapidjson::Value(sm->facingRight ? 1 : 0), a);
+
+				if (!prefabSM || !prefabSM->HasMember("stateTime") ||
+					differsFloat((*prefabSM)["stateTime"].GetFloat(), sm->stateTime))
+					js.AddMember("stateTime", rapidjson::Value(sm->stateTime), a);
+
+				if (!js.ObjectEmpty())
+					comps.AddMember("StateMachine", js, a);
 			}
 
 			if (!comps.ObjectEmpty()) jObj.AddMember("components", comps, a);
