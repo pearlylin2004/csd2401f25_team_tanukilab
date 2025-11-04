@@ -81,9 +81,11 @@ void CoreEngine::Init() {
     m_uiSystem = std::make_unique<UISystem>();
     m_luaSystem = std::make_unique<LuaSystem>();
     m_fontSystem = std::make_unique<FontSystem>();
+    m_guiSystem = std::make_unique<GUISystem>();
 
     m_luaSystem->init();
-    m_manager->init();
+    //m_manager->init();
+    m_guiSystem->init(*m_manager);
 	m_renderSystem->init(*m_manager, cfg.width, cfg.height);
 	m_uiSystem->init(m_window, m_renderSystem.get());
     m_fontSystem->init(*m_manager);
