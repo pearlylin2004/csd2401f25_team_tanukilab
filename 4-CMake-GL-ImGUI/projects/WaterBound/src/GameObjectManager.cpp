@@ -662,10 +662,10 @@ void GameObjectManager::loadSceneFromJson(const std::string& filename) {
 		}
 
 		/*
-		For obj referencing prefab -> this will override any scene-specific components
+		For obj referencing prefab -> this will override any scene-specific components, if nothing in scene data to override then will continue
 		For obj without referencing prefab -> this simply set up its components
 		*/
-		if (!jObj.HasMember("components") || !jObj["components"].IsObject())
+		if (!jObj.HasMember("components") || !jObj["components"].IsObject() || jObj["components"].ObjectEmpty())
 			continue;
 
 		const auto& comps = jObj["components"];
