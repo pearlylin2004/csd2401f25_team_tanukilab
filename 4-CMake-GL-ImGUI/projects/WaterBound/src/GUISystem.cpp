@@ -117,12 +117,12 @@ void GUISystem::startGame(GameObjectManager& manager) {
     removeMenuButtons(manager);
 
     // Load the game scene
-    manager.loadFromFile("shaders/Scene/temp_serialize.txt");
+    manager.init();
 
     // Change game state
     m_currentState = GameState::PLAYING;
 
-    std::cout << "Game started - loaded temp_sterilize.txt" << std::endl;
+    std::cout << "Game started - loaded json" << std::endl;
 }
 
 void GUISystem::stopGame(GameObjectManager& manager) {
