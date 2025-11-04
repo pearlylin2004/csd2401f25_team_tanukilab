@@ -108,6 +108,9 @@ void RenderSystem::update(GameObjectManager& manager, float const& deltaTime)
 		camProj = renderer::cam.proj;
 	}
 
+	std::vector<GameObject*> objectWithTex;
+	std::vector<GameObject*> objectWithoutTex;
+
 	// Update textures if they have changed (in level editor)
 	//for (GameObject* object : gameObjects)
 	//{
@@ -141,6 +144,9 @@ void RenderSystem::update(GameObjectManager& manager, float const& deltaTime)
 	for (Layer* layer : layers) {
 		if (!layer) continue;
 
+		std::vector<GameObject*> objectWithTex;
+		std::vector<GameObject*> objectWithoutTex;
+		
 		//gettem objects bro
 		const std::vector<GameObject*>& gameObjects = layer->getObjects();
 		for (GameObject* object : gameObjects) {
@@ -167,8 +173,7 @@ void RenderSystem::update(GameObjectManager& manager, float const& deltaTime)
 	}
 
 
-	std::vector<GameObject*> objectWithTex;
-	std::vector<GameObject*> objectWithoutTex;
+
 
 	//all rendering must be done per layer noww
 	//cooked
@@ -211,7 +216,7 @@ void RenderSystem::update(GameObjectManager& manager, float const& deltaTime)
 
 	}
 
-	if (UISystem::isShowUI()) glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	/*if (UISystem::isShowUI()) glBindFramebuffer(GL_FRAMEBUFFER, 0);*/
 
 	//record end time for performance tracking
 	auto end = std::chrono::high_resolution_clock::now();
@@ -221,23 +226,38 @@ void RenderSystem::update(GameObjectManager& manager, float const& deltaTime)
 }
 
 void RenderSystem::createFBO() {
-	if (texture) glDeleteTextures(1, &texture);
-	if (fbo) glDeleteFramebuffers(1, &fbo);
+	// only create FBO once if its not created
+	if (!fbo) {
+		/* --- Create and set up a framebuffer object (FBO) --- */
+		glGenFramebuffers(1, &fbo);
+		glBindFramebuffer(GL_FRAMEBUFFER, fbo);
 
-	glGenFramebuffers(1, &fbo);
-	glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+		/* --- Create and colour texture attachment for fbo --- */
+		glGenTextures(1, &texture);
+		glBindTexture(GL_TEXTURE_2D, texture);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, fboWidth, fboHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture, 0);
 
-	glGenTextures(1, &texture);
-	glBindTexture(GL_TEXTURE_2D, texture);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, fboWidth, fboHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture, 0);
+		/* --- Create a depth and stencil renderbuffer --- */
+		glGenRenderbuffers(1, &depthBuffer);
+		glBindRenderbuffer(GL_RENDERBUFFER, depthBuffer);
+		glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, fboWidth, fboHeight);
+		glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, depthBuffer);
+	}
+	else {
+		glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+	}
+
+	/* --- Clear the FBO's color and depth buffers before rendering  --- */
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
 RenderSystem::~RenderSystem() {
 	if (texture) glDeleteTextures(1, &texture);
 	if (fbo) glDeleteFramebuffers(1, &fbo);
+	if (depthBuffer) glDeleteRenderbuffers(1, &depthBuffer);
 }
 
 
@@ -251,15 +271,17 @@ void RenderSystem::init(GameObjectManager& manager, int fboW, int fboH)
 	manager.getAllGameObjects(gameObjects);
 	for (GameObject* object : gameObjects)
 	{
-		if (object->getComponent<Render>()->hasTex)
-		{
+		if (object->hasComponent<Render>()) {
 			Render* render = object->getComponent<Render>();
-			//render->texHDL = uploadtex(render->texFile, render->isTransparent);
-			TextureData textureData = ResourceManager::getInstance().getTexture(render->texFile);
-			render->texHDL = textureData.id;
-			render->isTransparent = textureData.isTransparent;
-			//std::cerr << "Texture ID for " << render->texFile << ": " << render->texHDL << std::endl;
-			//std::cerr << "Is Transparent: " << (render->isTransparent ? "Yes" : "No") << std::endl;
+			if (object->getComponent<Render>()->hasTex)
+			{
+				//render->texHDL = uploadtex(render->texFile, render->isTransparent);
+				TextureData textureData = ResourceManager::getInstance().getTexture(render->texFile);
+				render->texHDL = textureData.id;
+				render->isTransparent = textureData.isTransparent;
+				//std::cerr << "Texture ID for " << render->texFile << ": " << render->texHDL << std::endl;
+				//std::cerr << "Is Transparent: " << (render->isTransparent ? "Yes" : "No") << std::endl;
+			}
 		}
 	}
 
@@ -488,14 +510,15 @@ void FontSystem::init(GameObjectManager& manager)
 
 void FontSystem::update(GameObjectManager& manager)
 {
+	//for debugging only
 
-	std::cout << "=== FontSystem::update() called ===" << std::endl;
+	//std::cout << "=== FontSystem::update() called ===" << std::endl;
 
 	std::vector<GameObject*> gameObjects;
 	manager.getAllGameObjects(gameObjects);
 
 	// Count font objects
-	int fontCount = 0;
+	/*int fontCount = 0;
 	for (GameObject* object : gameObjects) {
 		if (object->hasComponent<FontComponent>()) {
 			fontCount++;
@@ -503,19 +526,31 @@ void FontSystem::update(GameObjectManager& manager)
 			std::cout << "Font object: " << object->getObjectName()
 				<< " | Text: '" << fc->word << "'" << std::endl;
 		}
-	}
-	std::cout << "Total font objects: " << fontCount << std::endl;
+	}*/
+	//for debugging only
+	//std::cout << "Total font objects: " << fontCount << std::endl;
 
-	if (fontCount == 0) {
+	/*if (fontCount == 0) {
 		std::cout << "WARNING: No font objects to render!" << std::endl;
 		return;
-	}
+	}*/
 
 	glUseProgram(Font::fontShaders);
+
+	glm::mat4 camView, camProj;
+	if (UISystem::isShowUI()) {
+		camView = renderer::editorCam.view;
+		camProj = renderer::editorCam.proj;
+	}
+	else {
+		camView = renderer::cam.view;
+		camProj = renderer::cam.proj;
+	}
+
 	GLuint vTransformView = glGetUniformLocation(Font::fontShaders, "V");
-	glUniformMatrix4fv(vTransformView, 1, GL_FALSE, glm::value_ptr(renderer::cam.view));
+	glUniformMatrix4fv(vTransformView, 1, GL_FALSE, glm::value_ptr(camView));
 	GLuint vTransformProj = glGetUniformLocation(Font::fontShaders, "P");
-	glUniformMatrix4fv(vTransformProj, 1, GL_FALSE, glm::value_ptr(renderer::cam.proj));
+	glUniformMatrix4fv(vTransformProj, 1, GL_FALSE, glm::value_ptr(camProj));
 	for (GameObject* object : gameObjects)
 	{
 		if (object->hasComponent<FontComponent>())
@@ -546,6 +581,12 @@ void FontSystem::RenderText(GLuint& s, std::string text, float x, float y, float
 
 	const FontData& fontData = ResourceManager::getInstance().getFont(fc->fontPath);
 
+	/*std::cout << "FontData has " << fontData.characters.size() << " characters loaded" << std::endl;
+	if (fontData.characters.empty()) {
+		std::cerr << "ERROR: Font data has NO characters!" << std::endl;
+		return;
+	}*/
+
 	glUseProgram(s);
 	glUniform3f(glGetUniformLocation(s, "textColor"), color.x, color.y, color.z);
 	glActiveTexture(GL_TEXTURE0);
@@ -556,11 +597,12 @@ void FontSystem::RenderText(GLuint& s, std::string text, float x, float y, float
 	std::string::const_iterator c;
 	for (c = text.begin(); c != text.end(); c++)
 	{
-		auto it = fontData.characters.find(*c);
-		if (it == fontData.characters.end()) {
-			std::cerr << "Character '" << *c << "' not found in font '" << fontPath << "'\n";
-			continue; // skip character if not found
-		}
+		unsigned char uc = static_cast<unsigned char>(*c);
+		auto it = fontData.characters.find(uc);
+		//if (it == fontData.characters.end()) {
+		//	std::cerr << "Character '" << uc << "' not found in font '" << fontPath << "'\n";
+		//	continue; // skip character if not found
+		//}
 
 		const Font::Character& ch = it->second;
 		//Font::Character ch = Font::characters[fc->fontType][*c];
@@ -924,7 +966,7 @@ void UISystem::dockingSetUp() {
 		ImGui::DockBuilderDockWindow("Editor Camera", dockRight);
 
 		// Right
-		ImGui::DockBuilderDockWindow("Draw Shapes", dockRightSecond);
+		ImGui::DockBuilderDockWindow("Create Object", dockRightSecond);
 
 		// Middle
 		ImGui::DockBuilderDockWindow("Scene", dockParent);

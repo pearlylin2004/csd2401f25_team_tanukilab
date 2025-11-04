@@ -71,6 +71,7 @@ public:
 	bool assignObjectToLayer(GameObject* obj, int layerID);
 
 	std::vector<GameObject*> getObjectsInLayer(int layerID);
+	void initializeSceneResources();
 
 private:
 	//map of all game objects

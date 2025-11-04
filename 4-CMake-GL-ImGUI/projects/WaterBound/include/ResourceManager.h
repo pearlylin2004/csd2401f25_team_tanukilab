@@ -22,7 +22,7 @@ struct TextureData {
 
 struct FontData {
     FT_Face face = nullptr;
-	std::map<char, FontCharacter> characters;
+	std::map<unsigned char, FontCharacter> characters;
 	bool isLoaded = false;
 };
 
