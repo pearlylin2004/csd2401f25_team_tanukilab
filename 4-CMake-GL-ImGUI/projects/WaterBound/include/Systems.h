@@ -57,6 +57,7 @@ private:
 class RenderSystem {
 	GLuint fbo;
 	GLuint texture;
+	GLuint depthBuffer;
 
 	int fboWidth = 0;
 	int fboHeight = 0;
