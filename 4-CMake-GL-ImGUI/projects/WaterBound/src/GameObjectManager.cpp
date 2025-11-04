@@ -17,6 +17,7 @@ Technology is prohibited.
 
 #include "GameObjectManager.h"
 #include "config.h"
+#include "prefabManager.h"
 
 #ifndef RUNTIME_SCENE_DIR_R
 #define RUNTIME_SCENE_DIR_R "./shaders/Scene"
@@ -132,7 +133,8 @@ void GameObjectManager::getAllGameObjects(std::vector<GameObject*>& gameObjects)
 void GameObjectManager::init()
 {
 	//loadFromFile("shaders/Scene/temp_serialize.txt");
-	loadScene(runtimeScenePath("level01.json"));
+	// loadScene(runtimeScenePath("level01.json"));
+	loadScene(runtimeScenePath("leveltest.json"));
 }
 
 bool GameObjectManager::renameGameObject(GameObject* obj, const std::string& newName) {
@@ -615,10 +617,199 @@ void GameObjectManager::loadFromJson(const std::string& filename) {
 	std::cout << "Scene loaded (JSON): " << filename << "\n";
 }
 
+void GameObjectManager::loadSceneFromJson(const std::string& filename) {
+	rapidjson::Document doc;
+	std::string err;
+	if (!JsonIO::ReadFileToDocument(filename, doc, &err)) {
+		std::cerr << "Scene load failed: " << err << "\n";
+		return;
+	}
 
+	int version = 1;
+	if (doc.HasMember("version") && doc["version"].IsInt())
+		version = doc["version"].GetInt();
+	if (version != 1)
+		std::cerr << "Warning: unsupported scene version " << version << "\n";
+
+	m_gameObjects.clear();
+
+	if (!doc.HasMember("objects") || !doc["objects"].IsArray()) {
+		std::cerr << "Scene JSON missing 'objects' array.\n";
+		return;
+	}
+
+	for (auto& jObj : doc["objects"].GetArray()) {
+		GameObject* go {nullptr};
+
+		if (!jObj.IsObject()) continue;
+
+		// check if this object references a prefab
+		if (jObj.HasMember("prefabid") && jObj["prefabid"].IsString()) {
+			std::string prefabID = jObj["prefabid"].GetString();
+			go = PrefabManager::Instance().instantiate(prefabID, *this);
+
+			if (!go) {
+				std::cerr << "Failed to instantiate prefab " << prefabID << "\n";
+				continue;
+			}
+		}
+		else {
+			// if no prefab, just create a fresh game object
+			std::string name = (jObj.HasMember("name") && jObj["name"].IsString())
+				? jObj["name"].GetString()
+				: ("Object_" + std::to_string(m_gameObjects.size()));
+
+			go = createGameObject(name);
+		}
+
+		/*
+		For obj referencing prefab -> this will override any scene-specific components
+		For obj without referencing prefab -> this simply set up its components
+		*/
+		if (!jObj.HasMember("components") || !jObj["components"].IsObject())
+			continue;
+
+		const auto& comps = jObj["components"];
+
+		// ---- Transform ----
+		if (comps.HasMember("Transform") && comps["Transform"].IsObject()) {
+			const auto& jt = comps["Transform"];
+
+			auto* t = go->getComponent<Transform>();
+			if (!t) t = go->addComponent<Transform>();
+
+			if (jt.HasMember("pos") && jt["pos"].IsArray() && jt["pos"].Size() == 3) {
+				t->x = jt["pos"][0].GetFloat();
+				t->y = jt["pos"][1].GetFloat();
+				t->z = jt["pos"][2].GetFloat();
+			}
+			if (jt.HasMember("rotation") && jt["rotation"].IsNumber()) {
+				t->rotation = jt["rotation"].GetFloat();
+			}
+			if (jt.HasMember("scale") && jt["scale"].IsArray() && jt["scale"].Size() == 3) {
+				t->scaleX = jt["scale"][0].GetFloat();
+				t->scaleY = jt["scale"][1].GetFloat();
+				t->scaleZ = jt["scale"][2].GetFloat();
+			}
+
+			/*std::cout << "\n\nReading from scene...\n";
+			std::cout << "Transform: x: " << t->x << ", y: " << t->y << ", z: " << t->z << std::endl;
+			std::cout << "Rotation: " << t->rotation << std::endl;
+			std::cout << "Scale: x: " << t->scaleX << ", y: " << t->scaleY << ", z: " << t->scaleZ << std::endl;*/
+		}
+
+		// ---- Render ----
+		if (comps.HasMember("Render") && comps["Render"].IsObject()) {
+			const auto& jr = comps["Render"];
+			
+			auto* r = go->getComponent<Render>();
+			if (!r) r = go->addComponent<Render>();
+
+			// shape
+			std::string shp = (jr.HasMember("shape") && jr["shape"].IsString())
+				? jr["shape"].GetString()
+				: "square";
+			r->modelRef = renderer::models[static_cast<int>(StrToShape(shp))];
+
+			// hasTex / texture (accept bool or 0/1)
+			if (jr.HasMember("hasTex")) {
+				r->hasTex = jr["hasTex"].IsBool()
+					? jr["hasTex"].GetBool()
+					: (jr["hasTex"].GetInt() != 0);
+			}
+			else {
+				r->hasTex = false;
+			}
+
+			if (r->hasTex && jr.HasMember("texture") && jr["texture"].IsString()) {
+				r->texFile = jr["texture"].GetString();
+				r->texHDL = 0;
+				r->texChanged = true;   // lazy GPU load later
+			}
+			else {
+				r->texFile.clear();
+				r->texHDL = 0;
+				r->texChanged = false;
+			}
+
+			if (jr.HasMember("hasAnimation")) {
+				r->hasAnimation = jr["hasAnimation"].IsBool()
+					? jr["hasAnimation"].GetBool()
+					: (jr["hasAnimation"].GetInt() != 0);
+			}
+			else {
+				r->hasAnimation = false;
+			}
+
+			// If your Render lacks these, keep them out.
+//          if (jr.HasMember("visible")     && jr["visible"].IsBool())     r->visible       = jr["visible"].GetBool();
+//          if (jr.HasMember("transparent") && jr["transparent"].IsBool()) r->isTransparent = jr["transparent"].GetBool();
+//          if (jr.HasMember("wireframe")   && jr["wireframe"].IsBool())   r->wireframe     = jr["wireframe"].GetBool();
+		}
+
+		// ---- Input (presence only) ----
+		if (comps.HasMember("Input") && comps["Input"].IsObject()) {
+			auto* i = go->getComponent<Input>();
+			if (!i) i = go->addComponent<Input>(1.f);
+		}
+
+		// ---- Physics ----
+		if (comps.HasMember("Physics") && comps["Physics"].IsObject()) {
+			const auto& jp = comps["Physics"];
+			
+			auto* p = go->getComponent<Physics>();
+			if (!p) p = go->addComponent<Physics>();
+
+			if (jp.HasMember("inWater")) {
+				p->inWater = jp["inWater"].IsBool()
+					? jp["inWater"].GetBool()
+					: (jp["inWater"].GetInt() != 0);
+			}
+			if (jp.HasMember("buoyancy")) {
+				p->buoancy = jp["buoyancy"].IsBool()
+					? jp["buoyancy"].GetBool()
+					: (jp["buoyancy"].GetInt() != 0);
+			}
+		}
+
+		// ---- CollisionInfo (presence only) ----
+		if (comps.HasMember("CollisionInfo") && comps["CollisionInfo"].IsObject()) {
+			auto* c = go->getComponent<CollisionInfo>();
+			if (!c)
+				c = go->addComponent<CollisionInfo>();
+		}
+
+		// ---- Animation ----
+		if (comps.HasMember("Animation") && comps["Animation"].IsObject()) {
+			const auto& ja = comps["Animation"];
+
+			auto* a = go->getComponent<Animation>();
+			if (!a)
+				a = go->addComponent<Animation>();
+
+			if (ja.HasMember("loop")) {
+				a->loop = ja["loop"].IsBool()
+					? ja["loop"].GetBool()
+					: (ja["loop"].GetInt() != 0);
+			}
+			if (ja.HasMember("currentFrameColumn") && ja["currentFrameColumn"].IsInt())
+				a->currentFrameColumn = ja["currentFrameColumn"].GetInt();
+			if (ja.HasMember("currentFrameRow") && ja["currentFrameRow"].IsInt())
+				a->currentFrameRow = ja["currentFrameRow"].GetInt();
+			if (ja.HasMember("totalColumn") && ja["totalColumn"].IsInt())
+				a->totalColumn = ja["totalColumn"].GetInt();
+			if (ja.HasMember("totalRow") && ja["totalRow"].IsInt())
+				a->totalRow = ja["totalRow"].GetInt();
+			if (ja.HasMember("frameTime") && ja["frameTime"].IsNumber())
+				a->frameTime = ja["frameTime"].GetFloat();
+		}
+	}
+
+	std::cout << "Scene loaded (JSON): " << filename << "\n";
+}
 
 void GameObjectManager::loadScene(const std::string& path) {
-	if (ends_with(path, ".json")) loadFromJson(path);
+	if (ends_with(path, ".json")) loadSceneFromJson(path);
 	else                          loadFromFile(path);   // keep legacy .txt scenes
 }
 

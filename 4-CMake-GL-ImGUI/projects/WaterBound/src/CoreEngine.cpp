@@ -23,6 +23,9 @@ Technology is prohibited.
 /* End Header **************************************************************************/
 
 #define STB_IMAGE_IMPLEMENTATION
+#ifndef RUNTIME_DIR_R
+#define RUNTIME_DIR_R "./shaders"
+#endif
 #include "CoreEngine.h"
 
 CoreEngine::CoreEngine()
@@ -78,6 +81,7 @@ void CoreEngine::Init() {
     m_uiSystem = std::make_unique<UISystem>();
     m_luaSystem = std::make_unique<LuaSystem>();
 
+    PrefabManager::Instance().loadPrefabRegistry(std::string(RUNTIME_DIR_R) + "/Prefab/prefab_registry.json");
     m_luaSystem->init();
     m_manager->init();
     m_renderSystem->init(*m_manager, cfg.width, cfg.height);
