@@ -71,6 +71,7 @@ void CoreEngine::Init() {
     renderer::init(cfg.width, cfg.height);
 
     m_manager = std::make_unique<GameObjectManager>();
+	m_logicSystem = std::make_unique<LogicSystem>();
     m_inputSystem = std::make_unique<InputSystem>();
     m_collisionSystem = std::make_unique<CollisionSystem>();
     m_physicsSystem = std::make_unique<PhysicsSystem>();
@@ -198,6 +199,7 @@ void CoreEngine::Update(float deltaTime) {
 
     // Update all systems in order
     m_inputSystem->update(*m_manager, deltaTime);
+    m_logicSystem->update(*m_manager, deltaTime);
     m_collisionSystem->update(*m_manager, deltaTime);
     m_physicsSystem->update(*m_manager, deltaTime);
     m_renderSystem->update(*m_manager, deltaTime);

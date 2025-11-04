@@ -17,6 +17,7 @@ Technology is prohibited.
 
 #include "GameObjectManager.h"
 #include "config.h"
+#include "Component.h"
 
 #ifndef RUNTIME_SCENE_DIR_R
 #define RUNTIME_SCENE_DIR_R "./shaders/Scene"
@@ -462,6 +463,15 @@ void GameObjectManager::saveToJson(const std::string& filename, bool isNew) cons
 
 
 
+static PlayerState parsePlayerState(const std::string& s) {
+	if (s == "Idle")     return PlayerState::Idle;
+	if (s == "Walking")  return PlayerState::Walking;
+	if (s == "Jumping")  return PlayerState::Jumping;
+	if (s == "Falling")  return PlayerState::Falling;
+	if (s == "Shooting") return PlayerState::Shooting;
+	return PlayerState::Idle; // default/fallback
+}
+
 void GameObjectManager::loadFromJson(const std::string& filename) {
 	rapidjson::Document doc;
 	std::string err;
@@ -558,7 +568,22 @@ void GameObjectManager::loadFromJson(const std::string& filename) {
 				r->hasAnimation = false;
 			}
 
-			// If your Render lacks these, keep them out.
+			if (comps.HasMember("StateMachine") && comps["StateMachine"].IsObject()) {
+				const auto& smj = comps["StateMachine"];
+				auto* sm = go->addComponent<StateMachine>();
+
+				if (smj.HasMember("state") && smj["state"].IsString())
+					sm->state = parsePlayerState(smj["state"].GetString());
+
+				if (smj.HasMember("facingRight")) {
+					if (smj["facingRight"].IsBool())       sm->facingRight = smj["facingRight"].GetBool();
+					else if (smj["facingRight"].IsInt())   sm->facingRight = (smj["facingRight"].GetInt() != 0);
+				}
+
+				if (smj.HasMember("stateTime") && smj["stateTime"].IsNumber())
+					sm->stateTime = static_cast<float>(smj["stateTime"].GetDouble());
+			}
+
 //          if (jr.HasMember("visible")     && jr["visible"].IsBool())     r->visible       = jr["visible"].GetBool();
 //          if (jr.HasMember("transparent") && jr["transparent"].IsBool()) r->isTransparent = jr["transparent"].GetBool();
 //          if (jr.HasMember("wireframe")   && jr["wireframe"].IsBool())   r->wireframe     = jr["wireframe"].GetBool();
@@ -620,6 +645,13 @@ void GameObjectManager::loadFromJson(const std::string& filename) {
 void GameObjectManager::loadScene(const std::string& path) {
 	if (ends_with(path, ".json")) loadFromJson(path);
 	else                          loadFromFile(path);   // keep legacy .txt scenes
+	//if (GameObject* p = getGameObject("player")) {
+	//	if (!p->hasComponent<StateMachine>()) {
+	//		p->addComponent<StateMachine>();
+	//		std::cout << "[Setup] Added StateMachine to player\n";
+	//	}
+	//}
+
 }
 
 void GameObjectManager::saveScene(const std::string& path, bool isNew) const {

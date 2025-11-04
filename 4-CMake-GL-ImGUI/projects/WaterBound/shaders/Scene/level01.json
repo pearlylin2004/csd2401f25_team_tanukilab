@@ -17,7 +17,9 @@
         },
         "Input": {},
         "Physics": { "inWater": 0, "buoyancy": 0 },
-        "CollisionInfo": {}
+        "CollisionInfo": {},
+        "StateMachine": {
+      "state": "Idle", "facingRight": true,"stateTime": 0.0}
       }
     },
     {
