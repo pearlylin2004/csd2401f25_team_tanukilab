@@ -166,6 +166,12 @@ void RenderSystem::update(GameObjectManager& manager, float const& deltaTime)
 					render->isTransparent = texData.isTransparent;
 					render->texChanged = false;
 				}
+
+				if (render->hasTex)
+					objectWithTex.push_back(object);
+				else
+					objectWithoutTex.push_back(object);
+					
 			}
 		}
 
@@ -186,11 +192,7 @@ void RenderSystem::update(GameObjectManager& manager, float const& deltaTime)
 
 		for (auto& object : gameObjects) {
 
-			if (object->hasComponent<Render>())
-				if (object->getComponent<Render>()->hasTex)
-					objectWithTex.push_back(object);
-				else
-					objectWithoutTex.push_back(object);
+			
 		}
 
 		//if(objectWithTex.empty() && objectWithoutTex.empty())
