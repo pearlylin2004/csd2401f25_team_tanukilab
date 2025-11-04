@@ -26,6 +26,7 @@ Technology is prohibited.
 #include "audio.h"
 #include "Systems.h"
 #include "luaSystem.h"
+#include "GUISystem.h"
 
 
 class CoreEngine {

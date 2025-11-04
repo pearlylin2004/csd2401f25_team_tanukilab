@@ -78,9 +78,11 @@ void CoreEngine::Init() {
     m_renderSystem = std::make_unique<RenderSystem>();
     m_uiSystem = std::make_unique<UISystem>();
     m_luaSystem = std::make_unique<LuaSystem>();
+    m_guiSystem = std::make_unique<GUISystem>();
 
     m_luaSystem->init();
-    m_manager->init();
+    //m_manager->init();
+    m_guiSystem->init(*m_manager);
     m_renderSystem->init(*m_manager, cfg.width, cfg.height);
     m_uiSystem->init(m_window, m_renderSystem.get());
 
@@ -172,29 +174,35 @@ void CoreEngine::GameLoop() {
 
 void CoreEngine::Update(float deltaTime) {
     InputHandler::update();
-
+    m_guiSystem->update(*m_manager);
 	//for clonigng player2
-    if (InputHandler::isKeyTriggered(GLFW_KEY_C)) {
-        static int cloneCount = 1; // Use a static counter for unique names
-        std::string newName = "player2_clone_" + std::to_string(cloneCount++);
-        GameObject* newObject = m_manager->CloneGameObject("player2", newName);
+    if (m_guiSystem->isPlaying()) {
+        if (InputHandler::isKeyTriggered(GLFW_KEY_C)) {
+            static int cloneCount = 1; // Use a static counter for unique names
+            std::string newName = "player2_clone_" + std::to_string(cloneCount++);
+            GameObject* newObject = m_manager->CloneGameObject("player2", newName);
 
-        std::cout << newName << " created.\n";
+            std::cout << newName << " created.\n";
 
-        Transform* newTransform = newObject->getComponent<Transform>();
-        newTransform->y += 1.5f * (static_cast<float>(cloneCount) - 1); // Offset the new clone's position
-    }
-
-    //lua scripting update for all objects with LuaScript component
-    std::vector<GameObject*> gameObjects;
-    m_manager->getAllGameObjects(gameObjects);
-
-    //running Lua scripts for each object that has a LuaScript component
-    for (GameObject* obj : gameObjects) {
-        if (obj->hasComponent<LuaScript>()) {
-            //LuaScript* scriptComp = obj->getComponent<LuaScript>();
-            m_luaSystem->updateObjectScript(obj->getObjectName(), obj, deltaTime);
+            Transform* newTransform = newObject->getComponent<Transform>();
+            newTransform->y += 1.5f * (static_cast<float>(cloneCount) - 1); // Offset the new clone's position
         }
+
+        //lua scripting update for all objects with LuaScript component
+        std::vector<GameObject*> gameObjects;
+        m_manager->getAllGameObjects(gameObjects);
+
+        //running Lua scripts for each object that has a LuaScript component
+        for (GameObject* obj : gameObjects) {
+            if (obj->hasComponent<LuaScript>()) {
+                //LuaScript* scriptComp = obj->getComponent<LuaScript>();
+                m_luaSystem->updateObjectScript(obj->getObjectName(), obj, deltaTime);
+            }
+        }
+        // Update all systems in order
+        m_inputSystem->update(*m_manager, deltaTime);
+        m_collisionSystem->update(*m_manager, deltaTime);
+        m_physicsSystem->update(*m_manager, deltaTime);
     }
 
     // Update all systems in order
