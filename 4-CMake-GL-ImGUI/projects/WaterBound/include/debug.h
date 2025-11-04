@@ -47,6 +47,11 @@ namespace Perf {
      */
     void UpdateTime(double& delta, double& fps, double fps_calc_interval = 0.5);
 
+
+    void UpdateTime(double& delta, double& fps, double fps_calc_interval,
+        double fixed_dt, int& steps_out, double& alpha_out,
+        int max_steps_per_frame = 8);
+
     /**
      * @brief Update the GLFW window title with a base title and optional FPS.
      *

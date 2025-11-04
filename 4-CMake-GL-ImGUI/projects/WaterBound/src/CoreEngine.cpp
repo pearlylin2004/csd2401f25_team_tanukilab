@@ -77,29 +77,37 @@ void CoreEngine::Init() {
     m_renderSystem = std::make_unique<RenderSystem>();
     m_uiSystem = std::make_unique<UISystem>();
     m_luaSystem = std::make_unique<LuaSystem>();
-    m_guiSystem = std::make_unique<GUISystem>();  // Add this line
+    m_guiSystem = std::make_unique<GUISystem>();
 
     m_luaSystem->init();
     //m_manager->init();
-    m_guiSystem->init(*m_manager); // Initialize GUI system instead
+    m_guiSystem->init(*m_manager);
     m_renderSystem->init(*m_manager, cfg.width, cfg.height);
     m_uiSystem->init(m_window, m_renderSystem.get());
 
-    //get existing game objects for lua
-    GameObject* object1 = m_manager->getGameObject("player");
-    GameObject* object2 = m_manager->getGameObject("bullet");
+    //iterate over all Lua scripts in the folder
+    for (const auto& file : std::filesystem::directory_iterator("../projects/WaterBound/scripting")) {
+        if (file.path().extension() != ".lua") continue; //have to be .lua files if not it will skip
+        std::string filename = file.path().filename().string();
 
-    //add LuaScript components to the existing objects
-    if (object1)
-        object1->addComponent<LuaScript>("../projects/WaterBound/scripting/object1.lua");
-    std::cout << "runnning script for object 1" << std::endl;
+        //strip ".lua" to get object name
+        std::string objectName = filename.substr(0, filename.size() - 4);
 
-    if (object2)
-        object2->addComponent<LuaScript>("../projects/WaterBound/scripting/object2.lua");
-    std::cout << "runnning script for object 2" << std::endl;
+        GameObject* obj = m_manager->getGameObject(objectName);
+        if (obj) {
+			obj->addComponent<LuaScript>(file.path().string()); //add LuaScript component to object
+            //load Lua script into Lua state
+            if (!m_luaSystem->loadScriptForObject(file.path().string(), objectName)) {
+                std::cerr << "[Lua] Failed to load script for " << objectName << std::endl;
+            }
+            else {
+                std::cout << "[Lua] Loaded script " << filename << " for object " << objectName << std::endl;
+            }
+        }
+    }
 
     audio.init();
-
+    glfwPollEvents();
     m_isRunning = true;
 }
 
@@ -109,33 +117,64 @@ void CoreEngine::Run() {
     }
 }
 
+//void CoreEngine::GameLoop() {
+//    glfwPollEvents();
+//    if (glfwWindowShouldClose(m_window) || InputHandler::isKeyHeld(GLFW_KEY_ESCAPE)) {
+//        m_isRunning = false;
+//        return;
+//    }
+//    // --- Update Timing ---
+//
+//    int    steps = 0;        // how many fixed updates to run this frame
+//    double alpha = 0.0;      // interpolation factor [0,1)
+//    //Perf::UpdateTime(m_delta, m_fps, 0.5);
+//    Perf::UpdateTime(m_delta, m_fps, 0.5,
+//        m_fixedDt, steps, alpha,8);
+//
+//    Perf::UpdateWindowTitle(m_window, m_title, m_fps, true);
+//
+//    audio.update();
+//
+//    InputHandler::update();
+//
+//
+//    for (int i = 0; i < steps; ++i) {
+//
+//        m_collisionSystem->update(*m_manager, static_cast<float>(m_fixedDt));
+//        m_physicsSystem->update(*m_manager, static_cast<float>(m_fixedDt));
+//   
+//        // (put any other time-based deterministic systems here)
+//    }
+//    // --- Main Update ---
+//    glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
+//    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+//
+//    m_inputSystem->update(*m_manager, (float)m_delta);
+//    m_renderSystem->update(*m_manager, (float)m_delta);
+//    m_uiSystem->update(*m_manager);
+//
+//
+//    // --- Swapping Buffers ---
+//    glfwSwapBuffers(m_window);
+//
+//}
+
 void CoreEngine::GameLoop() {
-    if (glfwWindowShouldClose(m_window) || InputHandler::isKeyHeld(GLFW_KEY_ESCAPE)) {
-        m_isRunning = false;
-        return;
-    }
-
-    // --- Update Timing ---
-    Perf::UpdateTime(m_delta, m_fps, 0.5);
-    Perf::UpdateWindowTitle(m_window, m_title, m_fps, true);
-
-    audio.update();
-
-    // --- Main Update ---
-    glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-    Update(static_cast<float>(m_delta));
-
-    // --- Swapping Buffers ---
-    glfwSwapBuffers(m_window);
-}
+    if (glfwWindowShouldClose(m_window) || InputHandler::isKeyHeld(GLFW_KEY_ESCAPE)) { m_isRunning = false; return; } 
+     //--- Update Timing --- 
+     Perf::UpdateTime(m_delta, m_fps, 0.5);
+     Perf::UpdateWindowTitle(m_window, m_title, m_fps, true);
+     audio.update();
+     // --- Main Update --- glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
+     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+     Update(static_cast<float>(m_delta));
+     // --- Swapping Buffers --- 
+     glfwSwapBuffers(m_window); }
 
 void CoreEngine::Update(float deltaTime) {
     InputHandler::update();
-    // Update GUI system first (handles button clicks)
     m_guiSystem->update(*m_manager);
-    //for clonigng player2
+	//for clonigng player2
     if (m_guiSystem->isPlaying()) {
         if (InputHandler::isKeyTriggered(GLFW_KEY_C)) {
             static int cloneCount = 1; // Use a static counter for unique names
@@ -155,17 +194,17 @@ void CoreEngine::Update(float deltaTime) {
         //running Lua scripts for each object that has a LuaScript component
         for (GameObject* obj : gameObjects) {
             if (obj->hasComponent<LuaScript>()) {
-                LuaScript* scriptComp = obj->getComponent<LuaScript>();
-                m_luaSystem->runScriptForObject(scriptComp->filename, obj, deltaTime);
+                //LuaScript* scriptComp = obj->getComponent<LuaScript>();
+                m_luaSystem->updateObjectScript(obj->getObjectName(), obj, deltaTime);
             }
         }
-
         // Update all systems in order
         m_inputSystem->update(*m_manager, deltaTime);
         m_collisionSystem->update(*m_manager, deltaTime);
         m_physicsSystem->update(*m_manager, deltaTime);
-        
     }
+
+   
     m_renderSystem->update(*m_manager, deltaTime);
     m_uiSystem->update(*m_manager);
 }

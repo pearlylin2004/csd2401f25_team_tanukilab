@@ -51,7 +51,16 @@ public:
 	void loadFromFile(const std::string& filename);
 
 	// save to file (write)
-	void saveToFile(const std::string& filename);
+	void saveToFile(const std::string& filename) const;
+
+	void loadFromJson(const std::string& filename);
+
+	void saveToJson(const std::string& filename, bool isNew) const;
+
+	void loadScene(const std::string& path);
+
+	void saveScene(const std::string& path, bool isNew = false) const;
+
 private:
 	//map of all game objects
 	std::unordered_map<std::string, std::unique_ptr<GameObject>> m_gameObjects;

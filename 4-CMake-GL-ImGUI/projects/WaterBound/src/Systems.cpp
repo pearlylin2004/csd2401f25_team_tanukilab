@@ -3,7 +3,7 @@
 \file        Systems.cpp
 \author      Seow Sin Le, s.sinle, 2401084, 45%
 \author 	 Hugo Low Ren Hao, low.h, 2402272, 15%
-\author 	 Pearly Lin Lee Ying, p.lin, 2401591, 25%
+\author 	 Pearly Lin Lee Ying, p.lin, 2401591, 15%
 \author		 Asha Mathyalakan, asha.m, 2402886, 15%
 \par         s.sinle@digipen.edu
 \par		 low.h@digipen.edu
@@ -90,37 +90,41 @@ void RenderSystem::update(GameObjectManager& manager, float const& deltaTime)
 	std::vector<GameObject*> gameObjects;
 	manager.getAllGameObjects(gameObjects);
 
-	// Attach texture to FBO if editor is on
+	glm::mat4 camView, camProj;
+
+	// Attach texture to FBO and update editor camera if editor is on
 	if (UISystem::isShowUI()) {
 		createFBO();
+		renderer::editorCam.update();
+
+		camView = renderer::editorCam.view;
+		camProj = renderer::editorCam.proj;
 	}
+	// else update game camera
+	else {
+		renderer::cam.update();
 
-	// Update textures if they have changed (in level editor)
-	for (GameObject* object : gameObjects)
-	{
-		if (object->hasComponent<Render>())
-		{
-			Render* render = object->getComponent<Render>();
-
-			if (render->texChanged) {
-				if (render->hasTex) {
-					glDeleteTextures(1, &render->texHDL); // to avoid leak
-					render->texHDL = 0;
-				}
-				render->texHDL = uploadtex(render->texFile, render->isTransparent);
-				render->texChanged = false;
-			}
-		}
+		camView = renderer::cam.view;
+		camProj = renderer::cam.proj;
 	}
-
-	renderer::cam.update();
 
 	std::vector<GameObject*> objectWithTex;
 	std::vector<GameObject*> objectWithoutTex;
 
 	for (auto object : gameObjects)
 	{
-		if (object->getComponent<Render>()->hasTex)
+		Render* render = object->getComponent<Render>();
+
+		if (render->texChanged) {
+			if (render->hasTex) {
+				glDeleteTextures(1, &render->texHDL); // to avoid leak
+				render->texHDL = 0;
+			}
+			render->texHDL = uploadtex(render->texFile, render->isTransparent);
+			render->texChanged = false;
+		}
+
+		if (render->hasTex)
 			objectWithTex.push_back(object);
 		else
 			objectWithoutTex.push_back(object);
@@ -128,18 +132,18 @@ void RenderSystem::update(GameObjectManager& manager, float const& deltaTime)
 	//rendering objects without texture, just color
 	glUseProgram(renderer::shdr_pgm[1]);
 	GLint vTransformView = glGetUniformLocation(renderer::shdr_pgm[1], "V");
-	glUniformMatrix4fv(vTransformView, 1, GL_FALSE, glm::value_ptr(renderer::cam.view));
+	glUniformMatrix4fv(vTransformView, 1, GL_FALSE, glm::value_ptr(camView));
 	GLint vTransformProj = glGetUniformLocation(renderer::shdr_pgm[1], "P");
-	glUniformMatrix4fv(vTransformProj, 1, GL_FALSE, glm::value_ptr(renderer::cam.proj));
+	glUniformMatrix4fv(vTransformProj, 1, GL_FALSE, glm::value_ptr(camProj));
 	for (GameObject* object : objectWithoutTex)
 		renderNoTex(object);
 
 	//rendering objects with textures
 	glUseProgram(renderer::shdr_pgm[0]);
 	vTransformView = glGetUniformLocation(renderer::shdr_pgm[0], "V");
-	glUniformMatrix4fv(vTransformView, 1, GL_FALSE, glm::value_ptr(renderer::cam.view));
+	glUniformMatrix4fv(vTransformView, 1, GL_FALSE, glm::value_ptr(camView));
 	vTransformProj = glGetUniformLocation(renderer::shdr_pgm[0], "P");
-	glUniformMatrix4fv(vTransformProj, 1, GL_FALSE, glm::value_ptr(renderer::cam.proj));
+	glUniformMatrix4fv(vTransformProj, 1, GL_FALSE, glm::value_ptr(camProj));
 	for (GameObject* object : objectWithTex)
 		renderTex(object, deltaTime);
 
@@ -153,23 +157,38 @@ void RenderSystem::update(GameObjectManager& manager, float const& deltaTime)
 }
 
 void RenderSystem::createFBO() {
-	if (texture) glDeleteTextures(1, &texture);
-	if (fbo) glDeleteFramebuffers(1, &fbo);
+	// only create FBO once if its not created
+	if (!fbo) {
+		/* --- Create and set up a framebuffer object (FBO) --- */
+		glGenFramebuffers(1, &fbo);
+		glBindFramebuffer(GL_FRAMEBUFFER, fbo);
 
-	glGenFramebuffers(1, &fbo);
-	glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+		/* --- Create and colour texture attachment for fbo --- */
+		glGenTextures(1, &texture);
+		glBindTexture(GL_TEXTURE_2D, texture);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, fboWidth, fboHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture, 0);
 
-	glGenTextures(1, &texture);
-	glBindTexture(GL_TEXTURE_2D, texture);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, fboWidth, fboHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture, 0);
+		/* --- Create a depth and stencil renderbuffer --- */
+		glGenRenderbuffers(1, &depthBuffer);
+		glBindRenderbuffer(GL_RENDERBUFFER, depthBuffer);
+		glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, fboWidth, fboHeight);
+		glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, depthBuffer);
+	}
+	else {
+		glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+	}
+
+	/* --- Clear the FBO's color and depth buffers before rendering  --- */
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
 RenderSystem::~RenderSystem() {
 	if (texture) glDeleteTextures(1, &texture);
 	if (fbo) glDeleteFramebuffers(1, &fbo);
+	if (depthBuffer) glDeleteRenderbuffers(1, &depthBuffer);
 }
 
 
@@ -503,7 +522,7 @@ void UISystem::init(GLFWwindow* window, RenderSystem* renderer) {
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
 	ImGuiIO& io = ImGui::GetIO(); //(void)io;
-	io.FontGlobalScale = 1.5f;
+	io.FontGlobalScale = 2.0f;
 	io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard
 			| ImGuiConfigFlags_DockingEnable
 			| ImGuiConfigFlags_ViewportsEnable;
@@ -607,7 +626,7 @@ void UISystem::dockingSetUp() {
 		ImGuiID dockDown, dockRight, dockLeft;
 		ImGuiID dockRightSecond;
 
-		ImGui::DockBuilderSplitNode(dockParent, ImGuiDir_Left, 0.4f, &dockLeft, &dockParent);
+		ImGui::DockBuilderSplitNode(dockParent, ImGuiDir_Left, 0.3f, &dockLeft, &dockParent);
 		ImGui::DockBuilderSplitNode(dockParent, ImGuiDir_Right, 0.4f, &dockRight, &dockParent);
 		ImGui::DockBuilderSplitNode(dockRight, ImGuiDir_Down, 0.4f, &dockRightSecond, &dockRight);
 		ImGui::DockBuilderSplitNode(dockParent, ImGuiDir_Down, 0.4f, &dockDown, &dockParent);
@@ -617,9 +636,10 @@ void UISystem::dockingSetUp() {
 		// Left
 		ImGui::DockBuilderDockWindow("Hierarchy", dockLeft);
 		ImGui::DockBuilderDockWindow("Inspector", dockRight);
+		ImGui::DockBuilderDockWindow("Editor Camera", dockRight);
 
 		// Right
-		ImGui::DockBuilderDockWindow("Draw Shapes", dockRightSecond);
+		ImGui::DockBuilderDockWindow("Create Object", dockRightSecond);
 
 		// Middle
 		ImGui::DockBuilderDockWindow("Scene", dockParent);

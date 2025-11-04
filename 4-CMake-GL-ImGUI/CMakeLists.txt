@@ -133,4 +133,31 @@ add_custom_command(TARGET WaterBound POST_BUILD
         "$<TARGET_FILE_DIR:WaterBound>/fmodL.dll"
 )
 
+# ==== Sync Scene folder for runtime ====
+set(SCENE_SOURCE_DIR "${CMAKE_CURRENT_LIST_DIR}/projects/WaterBound/shaders/Scene")
+
+# Copy scenes to both build/shaders/Scene and build/Debug/shaders/Scene
+add_custom_command(TARGET WaterBound POST_BUILD
+  COMMAND ${CMAKE_COMMAND} -E make_directory "$<TARGET_FILE_DIR:WaterBound>/shaders/Scene"
+  COMMAND ${CMAKE_COMMAND} -E copy_directory
+          "${SCENE_SOURCE_DIR}"
+          "$<TARGET_FILE_DIR:WaterBound>/shaders/Scene"
+  COMMAND ${CMAKE_COMMAND} -E copy_directory
+          "${SCENE_SOURCE_DIR}"
+          "${CMAKE_CURRENT_LIST_DIR}/build/Debug/shaders/Scene"
+  COMMENT "Syncing Scene folder to both runtime and Debug directories"
+)
+
+# Absolute paths we want the game to know at compile time
+set(WATERBOUND_RUNTIME_SCENE_DIR "$<TARGET_FILE_DIR:WaterBound>/shaders/Scene")
+set(WATERBOUND_SOURCE_SCENE_DIR  "${CMAKE_CURRENT_LIST_DIR}/projects/WaterBound/shaders/Scene")
+set(WATERBOUND_SCENE_DIR  "${CMAKE_CURRENT_LIST_DIR}/projects/WaterBound/shaders")
+
+# Expose as preprocessor string literals usable in C++
+target_compile_definitions(WaterBound PRIVATE
+  RUNTIME_SCENE_DIR_R="$<JOIN:${WATERBOUND_RUNTIME_SCENE_DIR},>"
+  SOURCE_SCENE_DIR_R="${WATERBOUND_SOURCE_SCENE_DIR}"
+  SOURCE_DIR_R="${WATERBOUND_SCENE_DIR}"
+)
+
 # ======================= END AUTO CONFIGURATION =========================

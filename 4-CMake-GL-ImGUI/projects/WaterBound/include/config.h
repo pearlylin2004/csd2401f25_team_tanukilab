@@ -9,6 +9,7 @@
 
 #include <cstdio>
 #include <string>
+#include <cstring>
 #include <algorithm>
 #include <fstream>                
 #include <rapidjson/istreamwrapper.h>
@@ -59,3 +60,4 @@ namespace JsonIO {
         bool pretty = true,
         std::string* err = nullptr);
 }
+

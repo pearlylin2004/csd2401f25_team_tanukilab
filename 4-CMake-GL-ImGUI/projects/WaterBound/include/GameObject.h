@@ -19,6 +19,8 @@ Technology is prohibited.
 #include "Component.h"
 #include <vector>
 #include <unordered_map>
+#include <string>
+#include <memory>
 #include <typeindex>//use this for typeid to make it map-friendly
 
 class GameObject {
@@ -61,6 +63,17 @@ public:
 
         return nullptr;
     }
+
+    // Gets the component of type T (const overload)
+    template <typename T>
+    const T* getComponent() const {
+        auto it = m_components.find(std::type_index(typeid(T)));
+        if (it != m_components.end()) {
+            return static_cast<const T*>(it->second.get());
+        }
+        return nullptr;
+    }
+
 	// Checks if the game object has a component of type T
     template <typename T>
     bool hasComponent() const {
