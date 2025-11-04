@@ -47,7 +47,6 @@ void InputSystem::update(GameObjectManager& manager, const float& deltaTime) {
 			if (iterator->hasComponent<Physics>()) {//player got that velocity in him
 				Physics* velocity = iterator->getComponent<Physics>();
 
-
 				if (InputHandler::isKeyHeld(GLFW_KEY_W)) {
 					velocity->velY = input->moveSpeed;
 				}
@@ -63,6 +62,11 @@ void InputSystem::update(GameObjectManager& manager, const float& deltaTime) {
 
 				if (InputHandler::isComboKeyTriggered(GLFW_KEY_0)) {
 					UISystem::toggleUI();
+				}
+
+				if (InputHandler::isKeyTriggered(GLFW_KEY_SPACE) && m_eventManager) {
+					KeyPressedEvent e(GLFW_KEY_SPACE);
+					m_eventManager->Broadcast(e);
 				}
 
 				// Press F9 to simulate a failure (for crash logger)
@@ -106,23 +110,31 @@ void RenderSystem::update(GameObjectManager& manager, float const& deltaTime)
 		camProj = renderer::cam.proj;
 	}
 
+	// Update textures if they have changed (in level editor)
+	for (GameObject* object : gameObjects)
+	{
+		if (object->hasComponent<Render>())
+		{
+			Render* render = object->getComponent<Render>();
+
+			if (render->texChanged) {
+				if (render->hasTex) {
+					glDeleteTextures(1, &render->texHDL); // to avoid leak
+					render->texHDL = 0;
+				}
+				render->texHDL = uploadtex(render->texFile, render->isTransparent);
+				render->texChanged = false;
+			}
+		}
+	}
+
+
 	std::vector<GameObject*> objectWithTex;
 	std::vector<GameObject*> objectWithoutTex;
 
 	for (auto object : gameObjects)
 	{
-		Render* render = object->getComponent<Render>();
-
-		if (render->texChanged) {
-			if (render->hasTex) {
-				glDeleteTextures(1, &render->texHDL); // to avoid leak
-				render->texHDL = 0;
-			}
-			render->texHDL = uploadtex(render->texFile, render->isTransparent);
-			render->texChanged = false;
-		}
-
-		if (render->hasTex)
+		if (object->getComponent<Render>()->hasTex)
 			objectWithTex.push_back(object);
 		else
 			objectWithoutTex.push_back(object);
@@ -155,38 +167,23 @@ void RenderSystem::update(GameObjectManager& manager, float const& deltaTime)
 }
 
 void RenderSystem::createFBO() {
-	// only create FBO once if its not created
-	if (!fbo) {
-		/* --- Create and set up a framebuffer object (FBO) --- */
-		glGenFramebuffers(1, &fbo);
-		glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+	if (texture) glDeleteTextures(1, &texture);
+	if (fbo) glDeleteFramebuffers(1, &fbo);
 
-		/* --- Create and colour texture attachment for fbo --- */
-		glGenTextures(1, &texture);
-		glBindTexture(GL_TEXTURE_2D, texture);
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, fboWidth, fboHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture, 0);
+	glGenFramebuffers(1, &fbo);
+	glBindFramebuffer(GL_FRAMEBUFFER, fbo);
 
-		/* --- Create a depth and stencil renderbuffer --- */
-		glGenRenderbuffers(1, &depthBuffer);
-		glBindRenderbuffer(GL_RENDERBUFFER, depthBuffer);
-		glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, fboWidth, fboHeight);
-		glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, depthBuffer);
-	}
-	else {
-		glBindFramebuffer(GL_FRAMEBUFFER, fbo);
-	}
-
-	/* --- Clear the FBO's color and depth buffers before rendering  --- */
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glGenTextures(1, &texture);
+	glBindTexture(GL_TEXTURE_2D, texture);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, fboWidth, fboHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture, 0);
 }
 
 RenderSystem::~RenderSystem() {
 	if (texture) glDeleteTextures(1, &texture);
 	if (fbo) glDeleteFramebuffers(1, &fbo);
-	if (depthBuffer) glDeleteRenderbuffers(1, &depthBuffer);
 }
 
 
@@ -698,11 +695,3 @@ void UISystem::renderMultipleViewPorts() {
 		glfwMakeContextCurrent(backup_current_context);
 	}
 }
-
-//for event system testing
-class KeyPressedEvent : public Event {
-public:
-	int keyCode;
-	KeyPressedEvent(int k) : keyCode(k) {}
-	std::string GetName() const override { return "KeyPressedEvent"; }
-};

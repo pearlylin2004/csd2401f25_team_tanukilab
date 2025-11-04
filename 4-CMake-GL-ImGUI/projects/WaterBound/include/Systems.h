@@ -25,8 +25,6 @@ Technology is prohibited.
 #include "collision.h"
 #include "imgui_internal.h" // for docking in UISystem
 #include <ui.h>
-#include "event.h"
-#include "listener.h"
 
 //forward declaration
 struct renderer;
@@ -136,26 +134,4 @@ private:
 	static bool showUI;
 	bool m_firstTime = true;
 	RenderSystem* m_renderer = nullptr;
-};
-
-//event manager
-class EventManager {
-public:
-	void AddListener(Listener* listener) {
-		listeners.push_back(listener);
-	}
-
-	void RemoveListener(Listener* listener) {
-		listeners.erase(std::remove(listeners.begin(), listeners.end(), listener), listeners.end());
-	}
-
-	void Broadcast(const Event& e) {
-		for (auto* listener : listeners) {
-			if (listener) {
-				listener->OnEvent(e); //forward declaration is enough
-			}
-		}
-	}
-private:
-	std::vector<Listener*> listeners;
 };
