@@ -93,7 +93,7 @@ struct FontComponent : public Component {
     glm::vec3 clr{ 0.f,0.f,0.f };
     int fontType = 1;
 
-    std::string fontPath = "shader/ARIAL.TTF"; 
+    std::string fontPath = "shaders/ARIAL.TTF"; 
 };
 
 struct Animation : public Component

@@ -452,6 +452,31 @@ void GameObjectManager::saveToJson(const std::string& filename, bool isNew) cons
 				comps.AddMember("Animation", ja, a);
 			}
 
+			//font component
+			if (auto fc = obj->getComponent<FontComponent>()) {
+				rapidjson::Value jf(rapidjson::kObjectType);
+
+				// word
+				jf.AddMember("word",
+					rapidjson::Value(fc->word.c_str(), a),
+					a);
+
+				// color array
+				rapidjson::Value color(rapidjson::kArrayType);
+				color.PushBack(rapidjson::Value().SetFloat(fc->clr.r), a)
+					.PushBack(rapidjson::Value().SetFloat(fc->clr.g), a)
+					.PushBack(rapidjson::Value().SetFloat(fc->clr.b), a);
+				jf.AddMember("color", color, a);
+
+				// scale
+				jf.AddMember("scale", rapidjson::Value().SetFloat(fc->scale), a);
+
+				// fontType
+				jf.AddMember("fontType", rapidjson::Value(fc->fontType), a);
+
+				comps.AddMember("FontComponent", jf, a);
+			}
+
 			jObj.AddMember("components", comps, a);
 			objects.PushBack(jObj, a);
 		}
@@ -618,6 +643,37 @@ void GameObjectManager::loadFromJson(const std::string& filename) {
 				a->totalRow = ja["totalRow"].GetInt();
 			if (ja.HasMember("frameTime") && ja["frameTime"].IsNumber())
 				a->frameTime = ja["frameTime"].GetFloat();
+		}
+
+		//font component
+		if (comps.HasMember("FontComponent") && comps["FontComponent"].IsObject()) {
+			const auto& jf = comps["FontComponent"];
+			auto* fc = go->addComponent<FontComponent>();
+
+			// word/text
+			if (jf.HasMember("word") && jf["word"].IsString()) {
+				fc->word = jf["word"].GetString();
+			}
+
+			// color (RGB array)
+			if (jf.HasMember("color") && jf["color"].IsArray() && jf["color"].Size() == 3) {
+				fc->clr.r = jf["color"][0].GetFloat();
+				fc->clr.g = jf["color"][1].GetFloat();
+				fc->clr.b = jf["color"][2].GetFloat();
+			}
+
+			// scale
+			if (jf.HasMember("scale") && jf["scale"].IsNumber()) {
+				fc->scale = jf["scale"].GetFloat();
+			}
+
+			// fontType (optional, default 1)
+			if (jf.HasMember("fontType") && jf["fontType"].IsInt()) {
+				fc->fontType = jf["fontType"].GetInt();
+			}
+			else {
+				fc->fontType = 1;  // Default to ARIAL
+			}
 		}
 	}
 

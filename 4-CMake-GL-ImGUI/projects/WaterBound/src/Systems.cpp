@@ -204,15 +204,17 @@ void RenderSystem::init(GameObjectManager& manager, int fboW, int fboH)
 	manager.getAllGameObjects(gameObjects);
 	for (GameObject* object : gameObjects)
 	{
-		if (object->getComponent<Render>()->hasTex)
-		{
+		if (object->hasComponent<Render>()) {
 			Render* render = object->getComponent<Render>();
-			//render->texHDL = uploadtex(render->texFile, render->isTransparent);
-			TextureData textureData = ResourceManager::getInstance().getTexture(render->texFile);
-			render->texHDL = textureData.id;
-			render->isTransparent = textureData.isTransparent;
-			//std::cerr << "Texture ID for " << render->texFile << ": " << render->texHDL << std::endl;
-			//std::cerr << "Is Transparent: " << (render->isTransparent ? "Yes" : "No") << std::endl;
+			if (object->getComponent<Render>()->hasTex)
+			{
+				//render->texHDL = uploadtex(render->texFile, render->isTransparent);
+				TextureData textureData = ResourceManager::getInstance().getTexture(render->texFile);
+				render->texHDL = textureData.id;
+				render->isTransparent = textureData.isTransparent;
+				//std::cerr << "Texture ID for " << render->texFile << ": " << render->texHDL << std::endl;
+				//std::cerr << "Is Transparent: " << (render->isTransparent ? "Yes" : "No") << std::endl;
+			}
 		}
 	}
 
@@ -499,6 +501,12 @@ void FontSystem::RenderText(GLuint& s, std::string text, float x, float y, float
 
 	const FontData& fontData = ResourceManager::getInstance().getFont(fc->fontPath);
 
+	std::cout << "FontData has " << fontData.characters.size() << " characters loaded" << std::endl;
+	if (fontData.characters.empty()) {
+		std::cerr << "ERROR: Font data has NO characters!" << std::endl;
+		return;
+	}
+
 	glUseProgram(s);
 	glUniform3f(glGetUniformLocation(s, "textColor"), color.x, color.y, color.z);
 	glActiveTexture(GL_TEXTURE0);
@@ -509,9 +517,10 @@ void FontSystem::RenderText(GLuint& s, std::string text, float x, float y, float
 	std::string::const_iterator c;
 	for (c = text.begin(); c != text.end(); c++)
 	{
-		auto it = fontData.characters.find(*c);
+		unsigned char uc = static_cast<unsigned char>(*c);
+		auto it = fontData.characters.find(uc);
 		if (it == fontData.characters.end()) {
-			std::cerr << "Character '" << *c << "' not found in font '" << fontPath << "'\n";
+			std::cerr << "Character '" << uc << "' not found in font '" << fontPath << "'\n";
 			continue; // skip character if not found
 		}
 

@@ -197,6 +197,9 @@ const FontData& ResourceManager::getFont(const std::string& relativePath) {
     //not in cache, load it
     std::cout << "ResourceManager: Loading font: " << relativePath << std::endl;
     FontData newFont = loadFontFromFile(relativePath);
+
+    std::cout << "New font has " << newFont.characters.size() << " characters" << std::endl;
+
     if (newFont.face) {
         m_fontCache[relativePath] = newFont;
         std::cout << "ResourceManager: Successfully cached font: " << relativePath << std::endl;
@@ -260,7 +263,7 @@ FontData ResourceManager::loadFontFromFile(const std::string& path) {
             fontData.face->glyph->advance.x
         };
 
-        fontData.characters.insert(std::pair<char, FontCharacter>(c, character));
+        fontData.characters[c] = character;
     }
 
 	fontData.isLoaded = true;
