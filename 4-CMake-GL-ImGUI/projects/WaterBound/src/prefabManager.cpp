@@ -308,6 +308,6 @@ GameObject* PrefabManager::instantiate(GameObject* go, GameObjectManager& manage
 		std::cout << "State Time: " << sm->stateTime << std::endl;*/
 	}
 
-	std::cout << "Instantiated prefab '" << "' (" << id << ")\n";
+	// std::cout << "Instantiated prefab '" << "' (" << id << ")\n";
 	return go;
 }
