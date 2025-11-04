@@ -204,8 +204,11 @@ void CoreEngine::Update(float deltaTime) {
     m_collisionSystem->update(*m_manager, deltaTime);
     m_physicsSystem->update(*m_manager, deltaTime);
     m_renderSystem->update(*m_manager, deltaTime);
-    m_uiSystem->update(*m_manager);
     m_fontSystem->update(*m_manager);
+
+    if (UISystem::isShowUI()) glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+    m_uiSystem->update(*m_manager);
 
 }
 

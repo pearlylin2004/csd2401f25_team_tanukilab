@@ -160,7 +160,7 @@ void RenderSystem::update(GameObjectManager& manager, float const& deltaTime)
 	for (GameObject* object : objectWithTex)
 		renderTex(object, deltaTime);
 
-	if (UISystem::isShowUI()) glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	/*if (UISystem::isShowUI()) glBindFramebuffer(GL_FRAMEBUFFER, 0);*/
 
 	//record end time for performance tracking
 	auto end = std::chrono::high_resolution_clock::now();
@@ -478,10 +478,21 @@ void FontSystem::update(GameObjectManager& manager)
 	}
 
 	glUseProgram(Font::fontShaders);
+
+	glm::mat4 camView, camProj;
+	if (UISystem::isShowUI()) {
+		camView = renderer::editorCam.view;
+		camProj = renderer::editorCam.proj;
+	}
+	else {
+		camView = renderer::cam.view;
+		camProj = renderer::cam.proj;
+	}
+
 	GLuint vTransformView = glGetUniformLocation(Font::fontShaders, "V");
-	glUniformMatrix4fv(vTransformView, 1, GL_FALSE, glm::value_ptr(renderer::cam.view));
+	glUniformMatrix4fv(vTransformView, 1, GL_FALSE, glm::value_ptr(camView));
 	GLuint vTransformProj = glGetUniformLocation(Font::fontShaders, "P");
-	glUniformMatrix4fv(vTransformProj, 1, GL_FALSE, glm::value_ptr(renderer::cam.proj));
+	glUniformMatrix4fv(vTransformProj, 1, GL_FALSE, glm::value_ptr(camProj));
 	for (GameObject* object : gameObjects)
 	{
 		if (object->hasComponent<FontComponent>())
