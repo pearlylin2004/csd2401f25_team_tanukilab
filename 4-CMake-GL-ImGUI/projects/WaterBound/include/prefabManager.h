@@ -43,7 +43,8 @@ public:
 	std::string& getPrefabName(const std::string& prefabID);
 	const std::string& getPrefabName(const std::string& prefabID) const;
 
-	GameObject* instantiate(const std::string& id, GameObjectManager& manager);
+	//GameObject* instantiate(const std::string& id, GameObjectManager& manager);
+	GameObject* instantiate(GameObject* go, GameObjectManager& manager);
 
 private:
 	struct PrefabInfo {

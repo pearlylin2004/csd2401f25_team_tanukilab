@@ -107,9 +107,10 @@ const std::string& PrefabManager::getPrefabName(const std::string& prefabID) con
 	return m_prefabRegistry.at(prefabID).name;
 }
 
-GameObject* PrefabManager::instantiate(const std::string& id, GameObjectManager& manager) {
+GameObject* PrefabManager::instantiate(GameObject* go, GameObjectManager& manager) {
+	const std::string& id = go->getObjectPrefabID();
 	auto iterator = m_prefabRegistry.find(id);
-	if (iterator == m_prefabRegistry.end()) {
+	if (iterator == m_prefabRegistry.end() || id == "") {
 		std::cerr << "PrefabManager::instantiate() failed — prefab ID not found: " << id << "\n";
 		return nullptr;
 	}
@@ -138,13 +139,6 @@ GameObject* PrefabManager::instantiate(const std::string& id, GameObjectManager&
 		std::cerr << "Prefab file '" << path << "' missing COMPONENT object.\n";
 		return nullptr;
 	}
-
-	std::string name = (doc.HasMember("name") && doc["name"].IsString())
-		? doc["name"].GetString()
-		: ("UnnamedPrefab_" + id);
-
-	GameObject* go = manager.createGameObject(name);
-
 
 	/* --------- Load Component ---------*/
 	const auto& comps = doc["components"];
@@ -265,6 +259,6 @@ GameObject* PrefabManager::instantiate(const std::string& id, GameObjectManager&
 			a->frameTime = ja["frameTime"].GetFloat();
 	}
 
-	std::cout << "Instantiated prefab '" << name << "' (" << id << ")\n";
+	std::cout << "Instantiated prefab '" << "' (" << id << ")\n";
 	return go;
 }

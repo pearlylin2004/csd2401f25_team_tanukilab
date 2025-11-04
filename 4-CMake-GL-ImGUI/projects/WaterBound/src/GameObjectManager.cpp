@@ -638,27 +638,32 @@ void GameObjectManager::loadSceneFromJson(const std::string& filename) {
 	}
 
 	for (auto& jObj : doc["objects"].GetArray()) {
-		GameObject* go {nullptr};
-
 		if (!jObj.IsObject()) continue;
+
+		std::string name = (jObj.HasMember("name") && jObj["name"].IsString())
+			? jObj["name"].GetString()
+			: ("Object_" + std::to_string(m_gameObjects.size()));
+
+		GameObject* go = createGameObject(name);
+
+
 
 		// check if this object references a prefab
 		if (jObj.HasMember("prefabid") && jObj["prefabid"].IsString()) {
 			std::string prefabID = jObj["prefabid"].GetString();
-			go = PrefabManager::Instance().instantiate(prefabID, *this);
+			go->getObjectPrefabID() = prefabID;
+			PrefabManager::Instance().instantiate(go, *this);
 
-			if (!go) {
+			/*if (!go) {
 				std::cerr << "Failed to instantiate prefab " << prefabID << "\n";
 				continue;
-			}
+			}*/
 		}
 		else {
 			// if no prefab, just create a fresh game object
 			std::string name = (jObj.HasMember("name") && jObj["name"].IsString())
 				? jObj["name"].GetString()
 				: ("Object_" + std::to_string(m_gameObjects.size()));
-
-			go = createGameObject(name);
 		}
 
 		/*
