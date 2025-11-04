@@ -65,5 +65,6 @@ private:
     std::unique_ptr<UISystem> m_uiSystem;
     std::unique_ptr<LuaSystem> m_luaSystem;
     std::unique_ptr<LogicSystem> m_logicSystem;
+    std::unique_ptr<GUISystem> m_guiSystem;
 
 };
