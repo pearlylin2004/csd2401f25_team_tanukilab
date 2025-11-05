@@ -84,6 +84,7 @@ void RenderSystem::update(GameObjectManager& manager, float const& deltaTime)
 {
 	//record current time for performance tracking
 	auto start = std::chrono::high_resolution_clock::now();
+	batchingSetUp(manager);
 
 	std::vector<GameObject*> gameObjects;
 	manager.getAllGameObjects(gameObjects);
@@ -145,22 +146,21 @@ void RenderSystem::update(GameObjectManager& manager, float const& deltaTime)
 	//for (GameObject* object : objectWithTex)
 	//	renderTex(object, deltaTime);
 
-	std::vector<renderer::InstanceData> batch;
+	//std::vector<renderer::InstanceData> batch;
 
-	for (GameObject* obj : objectWithTex) {
-		Transform* t = obj->getComponent<Transform>();
-		Render* r = obj->getComponent<Render>();
-		Animation* animation = obj->getComponent<Animation>();
+	//for (GameObject* obj : objectWithTex) {
+	//	Transform* t = obj->getComponent<Transform>();
+	//	Render* r = obj->getComponent<Render>();
+	//	Animation* animation = obj->getComponent<Animation>();
 
-		renderer::InstanceData i;
-		i.model = t->mdlWorld;
-		i.color = glm::vec4(r->clr, 1); // or r->color
-		i.texParams = glm::vec4(animation->currentFrameColumn, animation->currentFrameRow, texScale.x, texScale.y);
-		batch.push_back(i);
-	}
+	//	renderer::InstanceData i;
+	//	i.model = t->mdlWorld;
+	//	i.color = glm::vec4(r->clr, 1); // or r->color
+	//	i.texParams = glm::vec4(animation->currentFrameColumn, animation->currentFrameRow, texScale.x, texScale.y);
+	//	batch.push_back(i);
+	//}
 
-	renderer::drawInstances(renderer::models[(int)shape::square], batch);
-
+	//renderer::drawInstances(renderer::models[(int)shape::square], batch);
 
 	if (UISystem::isShowUI()) glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
@@ -169,6 +169,33 @@ void RenderSystem::update(GameObjectManager& manager, float const& deltaTime)
 	double ms = std::chrono::duration<double, std::milli>(end - start).count(); //get elapse time in ms
 	g_SystemTimers.push_back({ "Render", ms }); //saving timing for UI output
 
+	//drawing models without texture
+	glUseProgram(renderer::shdr_pgm[1]);
+	GLint uView = glGetUniformLocation(renderer::shdr_pgm[1], "V");
+	GLint uProj = glGetUniformLocation(renderer::shdr_pgm[1], "P");
+	glUniformMatrix4fv(uView, 1, GL_FALSE, glm::value_ptr(camView));
+	glUniformMatrix4fv(uProj, 1, GL_FALSE, glm::value_ptr(camProj));
+	for (std::pair<const shape, std::vector<renderer::InstanceData>>& pair : objectWithoutTex)
+	{
+		shape meshType = pair.first;
+		renderer::drawInstances(renderer::models[(int)meshType], pair.second);
+	}
+	//drawing models with texture
+	glUseProgram(renderer::shdr_pgm[0]); // hasTex shader
+	uView = glGetUniformLocation(renderer::shdr_pgm[0], "V");
+	uProj = glGetUniformLocation(renderer::shdr_pgm[0], "P");
+	glUniformMatrix4fv(uView, 1, GL_FALSE, glm::value_ptr(camView));
+	glUniformMatrix4fv(uProj, 1, GL_FALSE, glm::value_ptr(camProj));
+	for (std::pair<const BatchKey, std::vector<renderer::InstanceData>>& pair : objectWithTex)
+	{
+		const BatchKey& key = pair.first;
+		std::vector<renderer::InstanceData>& instances = pair.second;
+		glBindTextureUnit(0, key.texID);
+		GLint uTexLoc = glGetUniformLocation(renderer::shdr_pgm[0], "uTex2d");
+		if (uTexLoc != -1) glUniform1i(uTexLoc, 0);
+		renderer::model& mdl = renderer::models[(int)key.meshType];
+		renderer::drawInstances(mdl, pair.second);
+	}
 }
 
 void RenderSystem::createFBO() {
@@ -215,6 +242,7 @@ void RenderSystem::init(GameObjectManager& manager, int fboW, int fboH)
 	stbi_set_flip_vertically_on_load(true);
 	std::vector<GameObject*> gameObjects;
 	manager.getAllGameObjects(gameObjects);
+	batchingSetUp(manager);
 	for (GameObject* object : gameObjects)
 	{
 		if(object->hasComponent<Render>())
@@ -228,6 +256,49 @@ void RenderSystem::init(GameObjectManager& manager, int fboW, int fboH)
 
 	fboWidth = fboW;
 	fboHeight = fboH;
+}
+
+void RenderSystem::batchingSetUp(GameObjectManager& manager)
+{
+	std::vector<GameObject*> gameObjects;
+	manager.getAllGameObjects(gameObjects);
+	for (std::pair < const BatchKey, std::vector<renderer::InstanceData>>& pair : objectWithTex) pair.second.clear();
+	for (std::pair < const shape, std::vector<renderer::InstanceData>>& pair : objectWithoutTex) pair.second.clear();
+
+	for (GameObject* obj : gameObjects)
+	{
+		if (!obj->hasComponent<Render>() || !obj->hasComponent<Transform>())
+			continue;
+		Render* render = obj->getComponent<Render>();
+		Transform* transform = obj->getComponent<Transform>();
+
+		renderer::InstanceData data;
+		float angle = glm::radians(transform->rotation);
+		transform->mdlWorld = glm::mat4{ 1 };
+		transform->mdlWorld = glm::translate(transform->mdlWorld, glm::vec3(transform->x, transform->y, transform->z));
+		transform->mdlWorld = glm::rotate(transform->mdlWorld, angle, glm::vec3(0, 0, 1.f));
+		transform->mdlWorld = glm::scale(transform->mdlWorld, glm::vec3(transform->scaleX, transform->scaleY, transform->scaleZ));
+		data.model = transform->mdlWorld;
+		data.color = glm::vec4(render->clr, 1);
+		data.texParams = glm::vec4(0, 0, 1, 1); // default, no texture frame
+
+		if (render->hasTex)
+		{
+			if (render->hasAnimation && obj->hasComponent<Animation>())
+			{
+				Animation* animation = obj->getComponent<Animation>();
+				glm::vec2 texOffSet{ animation->currentFrameColumn / static_cast<float>(animation->totalColumn), animation->currentFrameRow / static_cast<float>(animation->totalRow) };
+				glm::vec2 texScale{ 1.f / animation->totalColumn, 1.f / animation->totalRow };
+				data.texParams = { texOffSet,texScale };
+			}
+			BatchKey key{ render->modelRef.shape, render->texHDL };
+			objectWithTex[key].push_back(data);
+		}
+		else
+		{
+			objectWithoutTex[render->modelRef.shape].push_back(data);
+		}
+	}
 }
 
 // Upload a texture from file and return its OpenGL handle

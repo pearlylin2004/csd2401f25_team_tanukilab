@@ -113,6 +113,7 @@ renderer::model renderer::setup_square(glm::vec3 clr)
 	mdl.draw_cnt = static_cast<GLsizei>(pos_vtx.size());
 	mdl.primitive_cnt = mdl.elem_cnt;
 	mdl.shape = shape::square;
+	setup_instance_attributes(mdl);
 	return mdl;
 }
 
@@ -158,6 +159,10 @@ renderer::model renderer::setup_circle(glm::vec3 clr, int slices)
 	glVertexArrayVertexBuffer(mdl.vaoid, 1, vbo_hdl, pos_size, sizeof(glm::vec3));
 	glVertexArrayAttribFormat(mdl.vaoid, 1, 3, GL_FLOAT, GL_FALSE, 0);
 	glVertexArrayAttribBinding(mdl.vaoid, 1, 1);
+
+	glGenBuffers(1, &mdl.instanceVBO);
+	glBindBuffer(GL_ARRAY_BUFFER, mdl.instanceVBO);
+	glBufferData(GL_ARRAY_BUFFER, mdl.maxInstances * sizeof(InstanceData), nullptr, GL_DYNAMIC_DRAW);
 	glBindVertexArray(0);
 	// and then set up the rest of object mdl ...
 	mdl.primitive_type = GL_TRIANGLE_FAN;
@@ -166,6 +171,7 @@ renderer::model renderer::setup_circle(glm::vec3 clr, int slices)
 	mdl.ebo = 0;
 	mdl.primitive_cnt = slices; // number of primitives
 	mdl.shape = shape::circle;
+	setup_instance_attributes(mdl);
 	return mdl;
 }
 
@@ -211,10 +217,28 @@ void renderer::drawInstances(model& mdl, const std::vector<InstanceData>& instan
 		return;
 
 	glBindBuffer(GL_ARRAY_BUFFER, mdl.instanceVBO);
-	glBufferSubData(GL_ARRAY_BUFFER, 0, instances.size() * sizeof(InstanceData), instances.data());
+	glBufferSubData(GL_ARRAY_BUFFER, 0,
+		instances.size() * sizeof(InstanceData),
+		instances.data());
 
 	glBindVertexArray(mdl.vaoid);
-	glDrawElementsInstanced(GL_TRIANGLES, mdl.elem_cnt, GL_UNSIGNED_SHORT, nullptr, static_cast<GLsizei>(instances.size()));
+
+	if (mdl.elem_cnt > 0) {
+		// Indexed path (square)
+		glDrawElementsInstanced(GL_TRIANGLES,
+			mdl.elem_cnt,
+			GL_UNSIGNED_SHORT,
+			nullptr,
+			static_cast<GLsizei>(instances.size()));
+	}
+	else {
+		// Non-indexed path (circle)
+		glDrawArraysInstanced(mdl.primitive_type,
+			0,
+			mdl.draw_cnt,
+			static_cast<GLsizei>(instances.size()));
+	}
+
 	glBindVertexArray(0);
 }
 

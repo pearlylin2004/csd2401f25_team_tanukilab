@@ -82,13 +82,17 @@ public:
 	*************************************************************************/
 	void update(GameObjectManager& manager, float const& deltaTime);
 	GLuint uploadtex(std::string const& filename, bool& isTransparent);
-	void renderTex(std::vector<GameObject*> objects, float const& deltaTime);
-	void renderNoTex(std::vector<GameObject*> objects);
+	void renderTex(GameObject* objects, float const& deltaTime);
+	void renderNoTex(GameObject* objects);
 	void renderCollision(Collision::AABB const& box, glm::vec3 const& clr);
 	GLuint getTexture() const { return texture; }
+	void batchingSetUp(GameObjectManager& manager);
 
 	void fboAspectRatio(int& width, int& height) const;
 	~RenderSystem();
+private:
+	std::unordered_map<BatchKey, std::vector<renderer::InstanceData>, BatchKeyHash> objectWithTex;
+	std::unordered_map<shape, std::vector<renderer::InstanceData>> objectWithoutTex;
 };
 
 class FontSystem {
