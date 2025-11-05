@@ -86,7 +86,7 @@ public:
 	void renderNoTex(GameObject* objects);
 	void renderCollision(Collision::AABB const& box, glm::vec3 const& clr);
 	GLuint getTexture() const { return texture; }
-	void batchingSetUp(GameObjectManager& manager);
+	void batchingSetUp(GameObjectManager& manager, float const& deltaTime);
 
 	void fboAspectRatio(int& width, int& height) const;
 	~RenderSystem();

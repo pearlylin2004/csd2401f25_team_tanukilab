@@ -84,6 +84,7 @@ void RenderSystem::update(GameObjectManager& manager, float const& deltaTime)
 {
 	//record current time for performance tracking
 	auto start = std::chrono::high_resolution_clock::now();
+	batchingSetUp(manager, deltaTime);
 	std::vector<GameObject*> gameObjects;
 	manager.getAllGameObjects(gameObjects);
 
@@ -252,7 +253,6 @@ RenderSystem::~RenderSystem() {
 	if (depthBuffer) glDeleteRenderbuffers(1, &depthBuffer);
 }
 
-
 // Load all textures for game objects with a Render component
 void RenderSystem::init(GameObjectManager& manager, int fboW, int fboH)
 {
@@ -271,14 +271,14 @@ void RenderSystem::init(GameObjectManager& manager, int fboW, int fboH)
 				std::cout << "Got handle: " << render->texHDL << std::endl;
 			}
 	}
-	batchingSetUp(manager);
+	//batchingSetUp(manager);
 	Font::init();
 
 	fboWidth = fboW;
 	fboHeight = fboH;
 }
 
-void RenderSystem::batchingSetUp(GameObjectManager& manager)
+void RenderSystem::batchingSetUp(GameObjectManager& manager, float const& deltaTime)
 {
 	std::vector<GameObject*> gameObjects;
 	manager.getAllGameObjects(gameObjects);
@@ -309,6 +309,18 @@ void RenderSystem::batchingSetUp(GameObjectManager& manager)
 				Animation* animation = obj->getComponent<Animation>();
 				glm::vec2 texOffSet{ animation->currentFrameColumn / static_cast<float>(animation->totalColumn), animation->currentFrameRow / static_cast<float>(animation->totalRow) };
 				glm::vec2 texScale{ 1.f / animation->totalColumn, 1.f / animation->totalRow };
+				if (animation->loop)
+				{
+					animation->frameTimer += deltaTime;
+					if (animation->frameTimer >= animation->frameTime)
+					{
+						animation->frameTimer -= animation->frameTime;
+						animation->currentFrameColumn = (animation->currentFrameColumn + 1) % animation->totalColumn;
+						animation->currentFrameRow = (animation->currentFrameRow + 1) % animation->totalRow;
+						animation->runItBack = true;
+
+					}
+				}
 				data.texParams = { texOffSet,texScale };
 			}
 			BatchKey key{ render->modelRef.shape, render->texHDL };
