@@ -58,3 +58,43 @@ void PhysicsForces::shoot(GameObject* bullet, const Transform* origin) {
 
     UI::addDebugMessage("Bullet spawned!");
 }
+
+
+
+void UpdateJump(int direction, float dt)
+{
+    if (InputHandler::isKeyTriggered(GLFW_KEY_SPACE) && !isJumping)
+    {
+        isJumping = true;
+        playerVel = Vec_Set(direction * jumpSpeed, jumpPower);
+    }
+
+    if (isJumping)
+    {
+        // Apply gravity: vel = vel + g * dt
+        Vector2D gStep = Vec_Scale(&gravity, dt);
+        playerVel = Vec_Add(&playerVel, &gStep);
+
+        // Update position: pos = pos + vel * dt
+        Vector2D moveStep = Vec_Scale(&playerVel, dt);
+        playerPos = Vec_Add(&playerPos, &moveStep);
+
+        // Check for ground collision
+        if (playerPos.y <= groundY)
+        {
+            playerPos.y = groundY;
+            playerVel = Vec_Zero();
+            isJumping = false;
+        }
+    }
+}
+
+//Vector2D GetMouseWorldPosition() {
+//    Vector2D mouse;
+//    mouse = InputHandler::getCursorPosition();
+//
+//    float worldX = (float)mouse.x - 800.0f;
+//    float worldY = (float)(900 - mouse.y) - 450.0f;
+//
+//    return Vec_Set(worldX, worldY);
+//}
