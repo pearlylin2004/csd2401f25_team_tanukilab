@@ -16,7 +16,7 @@ Technology is prohibited.
 #include "GameObject.h"
 
 //constructor
-GameObject::GameObject(const std::string& name, const std::string& prefabID) : m_name(name), m_prefabID(prefabID) {}
+GameObject::GameObject(const std::string& name) : m_name(name) {}
 
 const std::string& GameObject::getObjectName() const {
     return m_name;
@@ -24,14 +24,6 @@ const std::string& GameObject::getObjectName() const {
 
 std::string& GameObject::getObjectName() {
     return m_name;
-}
-
-const std::string& GameObject::getObjectPrefabID() const {
-    return m_prefabID;
-}
-
-std::string& GameObject::getObjectPrefabID() {
-    return m_prefabID;
 }
 
 std::unique_ptr<GameObject> GameObject::clone(const std::string& name) const {

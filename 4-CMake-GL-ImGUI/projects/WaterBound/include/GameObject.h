@@ -26,7 +26,7 @@ Technology is prohibited.
 class GameObject {
 public:
 	//constructor
-    GameObject(const std::string& name, const std::string& prefabID = "");
+    GameObject(const std::string& name);
 
 	// Adds a component of type T to the game object
     template <typename T, typename... TArgs>//typename... is a variadic template
@@ -89,13 +89,8 @@ public:
     const std::string& getObjectName() const;
     std::string& getObjectName();
 
-    // Return prefab ID of the game obj
-    const std::string& getObjectPrefabID() const;
-    std::string& getObjectPrefabID();
-
 private:
     std::string m_name;//name of object
-    std::string m_prefabID; // optional, empty if created without prefab
 
 	// Map of components attached to the game object
     std::unordered_map<std::type_index, std::unique_ptr<Component>> m_components;
