@@ -43,20 +43,12 @@ public:
 	std::string& getPrefabName(const std::string& prefabID);
 	const std::string& getPrefabName(const std::string& prefabID) const;
 
-	std::string findPrefabIDByFilename(const std::string& filename);
-
 	const rapidjson::Document* getPrefabJson(const std::string& prefabID) const;
 
 	const rapidjson::Value* getPrefabJsonComp(const rapidjson::Document* prefabDoc, const std::string& compName) const;
 
 	//GameObject* instantiate(const std::string& id, GameObjectManager& manager);
 	GameObject* instantiate(GameObject* go, GameObjectManager& manager);
-
-	// convert prefab to a temp game obj to allow editting in editor
-	std::unique_ptr<GameObject> createTempPrefabObj(const std::string& prefabID);
-
-	// save current state of prefab to its file
-	bool savePrefab(const GameObject* prefabObj); // prefabObj is a temp obj rep the prefab
 
 private:
 	struct PrefabInfo {
@@ -65,7 +57,7 @@ private:
 	};
 
 	// prefab registry mapping prefab ID to PrefabInfo
-	// format {prefabID: {name, path}}
+	// format {prefabID: {name, pathsure}}
 	std::unordered_map<std::string, PrefabInfo> m_prefabRegistry;
 
 	// prefab jsons cache aft first load

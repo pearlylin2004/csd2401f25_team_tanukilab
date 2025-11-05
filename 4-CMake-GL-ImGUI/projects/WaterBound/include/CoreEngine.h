@@ -27,7 +27,6 @@ Technology is prohibited.
 #include "Systems.h"
 #include "luaSystem.h"
 #include "ResourceManager.h"
-#include "layerManager.h"
 #include "prefabManager.h"
 #include "GUISystem.h"
 #include "messageBus.h"

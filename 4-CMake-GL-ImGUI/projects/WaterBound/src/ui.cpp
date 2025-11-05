@@ -320,7 +320,6 @@ void UI::editorMenuBar(GameObjectManager& manager) {
 
                 m_SelectionState.selectedObject = nullptr;
                 m_SelectionState.draggedObject = nullptr;
-                m_SelectionState.selectedPrefab = nullptr;
                 m_SelectionState.selectedIndex = -1;
 
                 // remove temp scene file
@@ -492,7 +491,6 @@ void UI::newScene(GameObjectManager& manager) {
 
     m_SelectionState.selectedObject = nullptr;
     m_SelectionState.draggedObject = nullptr;
-    m_SelectionState.selectedPrefab = nullptr;
     m_SelectionState.selectedIndex = -1;
 
     addDebugMessage("New scene " + m_currentSceneName + " created.\n");
@@ -531,7 +529,6 @@ void UI::duplicateScene(GameObjectManager& manager) {
 
         m_SelectionState.selectedObject = nullptr;
         m_SelectionState.draggedObject = nullptr;
-        m_SelectionState.selectedPrefab = nullptr;
         m_SelectionState.selectedIndex = -1;
         addDebugMessage("Scene duplicated to: " + newSceneName + "\n");
     }
@@ -548,7 +545,6 @@ void UI::loadScene(GameObjectManager & manager) {
 
     m_SelectionState.selectedObject = nullptr;
     m_SelectionState.draggedObject = nullptr;
-    m_SelectionState.selectedPrefab = nullptr;
     m_SelectionState.selectedIndex = -1;
 
     addDebugMessage("Loaded scene: " + m_currentSceneName + "\n");
@@ -594,102 +590,39 @@ void UI::objHierarchyWindow(GameObjectManager& manager) {
         ImGui::Text("No GameObjects available");
     }
 
-    /* ----------- Receive Dropped Prefab from Asset Browser ----------- */
-    // make entire hierarchy viewport a invisible button that can receive asset
-    ImGuiID targetID = ImGui::GetID("HierarchyWindowDropTarget");
-    ImGui::SetCursorPos(ImVec2(0, 0));
-    ImGui::InvisibleButton("##drop_target", ImGui::GetContentRegionAvail());
-
-    // receive prefab logic
-    if (ImGui::BeginDragDropTarget()) {
-        if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("PREFAB")) {
-            addDebugMessage("in here yey\n");
-            const char* prefabPath = static_cast<const char*>(payload->Data);
-            addDebugMessage("Prefab path: " + std::string(prefabPath) + "\n");
-
-            std::string prefabID = PrefabManager::Instance().findPrefabIDByFilename(prefabPath);
-            addDebugMessage("Prefab ID: " + prefabID + "\n");
-            
-            std::string objName = PrefabManager::Instance().getPrefabName(prefabID);
-            GameObject* prefabObj = manager.createGameObject(objName + "(" + std::to_string(gameObjects.size()) + ")");
-            prefabObj->getObjectPrefabID() = prefabID;
-            if (prefabObj) {
-                PrefabManager::Instance().instantiate(prefabObj, manager);
-                addDebugMessage("Added game obj from prefab\n");
-            }
-            else {
-                addDebugMessage("Failed to receive\n");
-            }
-        }
-        ImGui::EndDragDropTarget();
-    }
-
-    /* ---------- END --------- */
-
-
 	ImGui::End();
 }
 
 void UI::objInspectorWindow(GameObjectManager& manager) {
     ImGui::Begin("Inspector");
 
-    GameObject* selected = nullptr;
-    if (m_SelectionState.selectedObject) selected = m_SelectionState.selectedObject;
-    else if (m_SelectionState.selectedPrefab) {
-        selected = m_SelectionState.selectedPrefab.get();
-
-        if (ImGui::Button("Save")) {
-            if (PrefabManager::Instance().savePrefab(selected)) {
-                manager.loadScene(runtimeScenePath(m_currentSceneName));
-                addDebugMessage("Prefab saved\n");
-            }
-            else {
-                addDebugMessage("Prefab not saved\n");
-            }
-            
-        }
-        
-        // create another temp prefab obj of the same prefab to revert
-        if (ImGui::Button("Revert")) {
-            m_SelectionState.selectedPrefab = PrefabManager::Instance().createTempPrefabObj(selected->getObjectPrefabID());
-            selected = m_SelectionState.selectedPrefab.get();
-            addDebugMessage("Prefab " + selected->getObjectName() + " reverted to original.\n");
-        }
-    }
-
-    if (selected) {
+    if (m_SelectionState.selectedObject) {
 
         /* ------------------- Edit Object Name ------------------- */
-        if (selected == m_SelectionState.selectedObject) {
-            std::string& objName = selected->getObjectName();
-            char buffer[128];
-            strncpy(buffer, objName.c_str(), sizeof(buffer));
-            buffer[sizeof(buffer) - 1] = '\0';
+        std::string& objName = m_SelectionState.selectedObject->getObjectName();
+        char buffer[128];
+        strncpy(buffer, objName.c_str(), sizeof(buffer));
+        buffer[sizeof(buffer) - 1] = '\0';
 
-            ImGui::Text("Name");
-            ImGui::SameLine();
-            if (ImGui::InputText("##Name", buffer, sizeof(buffer))) {
-                std::string newObjName = buffer;
-                if (manager.renameGameObject(m_SelectionState.selectedObject, newObjName)) {
-                    addDebugMessage("Object renamed to " + newObjName + "\n");
-                }
-                else {
-                    addDebugMessage("Failed to rename: name already exists\n");
-                }
+        ImGui::Text("Name");
+        ImGui::SameLine();
+        if (ImGui::InputText("##Name", buffer, sizeof(buffer))) {
+            std::string newObjName = buffer;
+            if (manager.renameGameObject(m_SelectionState.selectedObject, newObjName)) {
+                addDebugMessage("Object renamed to " + newObjName + "\n");
             }
+            else {
+                addDebugMessage("Failed to rename: name already exists\n");
+            }
+        }
 
-            ImGui::Spacing();
-            ImGui::Separator();
-            ImGui::Spacing();
-        }
-        else {
-            ImGui::Text("Prefab Name: "); ImGui::SameLine();
-            ImGui::Text(selected->getObjectName().c_str());
-        }
+        ImGui::Spacing();
+        ImGui::Separator();
+        ImGui::Spacing();
 
 
         /* ------------------- Object Transformation ------------------- */
-        Transform* transform = selected->getComponent<Transform>();
+        Transform* transform = m_SelectionState.selectedObject->getComponent<Transform>();
         if (ImGui::CollapsingHeader("Transform")) {
 
             ImGui::DragFloat("X", &transform->x);
@@ -744,7 +677,7 @@ void UI::objInspectorWindow(GameObjectManager& manager) {
 
         /* ------------------- Change Texture ------------------- */
         // drag and drop received from asset window
-        Render* render = selected->getComponent<Render>();
+        Render* render = m_SelectionState.selectedObject->getComponent<Render>();
         if (render && ImGui::CollapsingHeader("Render")) {
             ImGui::Text("Texture");
             ImGui::SameLine();
@@ -765,7 +698,7 @@ void UI::objInspectorWindow(GameObjectManager& manager) {
                     render->texFile = path;
                     render->hasTex = true;
                     render->texChanged = true;
-                    addDebugMessage("Changed texture of " + selected->getObjectName() + " to " + render->texFile + "\n");
+                    addDebugMessage("Changed texture of " + m_SelectionState.selectedObject->getObjectName() + " to " + render->texFile + "\n");
                 }
                 ImGui::EndDragDropTarget();
             }
@@ -788,39 +721,37 @@ void UI::objInspectorWindow(GameObjectManager& manager) {
         ImGui::Spacing();
 
         /* ------------------- Delete Object ------------------- */
-        if (selected == m_SelectionState.selectedObject) {
-            std::string name = selected->getObjectName();
-            if (ImGui::Button("Delete Object")) {
-                ImGui::OpenPopup("Confirm Delete Object");
+        std::string name = m_SelectionState.selectedObject->getObjectName();
+        if (ImGui::Button("Delete Object")) {
+            ImGui::OpenPopup("Confirm Delete Object");
+        }
+
+        // delete confirm popup
+        if (ImGui::BeginPopupModal("Confirm Delete Object", NULL, ImGuiWindowFlags_AlwaysAutoResize)) {
+            ImGui::Text("Are you sure you want to delete this object?");
+
+            if (ImGui::Button("Delete")) {
+
+                manager.deleteGameObject(m_SelectionState.selectedObject);
+
+				addDebugMessage("Object " + name + " deleted from manager\n");
+
+                m_SelectionState.selectedObject = nullptr;
+                m_SelectionState.draggedObject = nullptr;
+                m_SelectionState.selectedIndex = -1;
+
+                addDebugMessage("Object " + name + " deleted\n");
+
+                ImGui::CloseCurrentPopup();
             }
 
-            // delete confirm popup
-            if (ImGui::BeginPopupModal("Confirm Delete Object", NULL, ImGuiWindowFlags_AlwaysAutoResize)) {
-                ImGui::Text("Are you sure you want to delete this object?");
+            ImGui::SameLine();
 
-                if (ImGui::Button("Delete")) {
-
-                    manager.deleteGameObject(m_SelectionState.selectedObject);
-
-                    addDebugMessage("Object " + name + " deleted from manager\n");
-
-                    m_SelectionState.selectedObject = nullptr;
-                    m_SelectionState.draggedObject = nullptr;
-                    m_SelectionState.selectedIndex = -1;
-
-                    addDebugMessage("Object " + name + " deleted\n");
-
-                    ImGui::CloseCurrentPopup();
-                }
-
-                ImGui::SameLine();
-
-                if (ImGui::Button("No")) {
-                    ImGui::CloseCurrentPopup();
-                }
-
-                ImGui::EndPopup();
+            if (ImGui::Button("No")) {
+                ImGui::CloseCurrentPopup();
             }
+
+            ImGui::EndPopup();
         }
 
     }
@@ -907,7 +838,6 @@ void UI::assetWindow(GameObjectManager& manager) {
         //if (fullPath == m_tempSceneName) continue;
 
         if (asset.name == m_tempSceneName) continue;
-        if (asset.name == "prefab_registry.json") continue;
 
         ImGui::PushID(index++);
 
@@ -942,16 +872,14 @@ void UI::assetWindow(GameObjectManager& manager) {
 				m_AssetBrowserState.showDeletePopup = true;
 			}
 
-			// open popup window and rename this current asset (rename not for prefab YET)
-            if (asset.folder != m_AssetBrowserState.currentFolder + "Prefab") {
-                if (ImGui::MenuItem("Rename Asset")) {
-                    m_AssetBrowserState.fullPathToRename = fullPath;
-                    m_AssetBrowserState.showRenamePopup = true;
-
-                    // pre-fill the current name
-                    std::strncpy(m_AssetBrowserState.newNameBuffer, asset.name.c_str(), sizeof(m_AssetBrowserState.newNameBuffer));
-                }
-            }
+			// open popup window and rename this current asset
+			if (ImGui::MenuItem("Rename Asset")) {
+				m_AssetBrowserState.fullPathToRename = fullPath;
+				m_AssetBrowserState.showRenamePopup = true;
+				
+				// pre-fill the current name
+                std::strncpy(m_AssetBrowserState.newNameBuffer, asset.name.c_str(), sizeof(m_AssetBrowserState.newNameBuffer));
+			}
 
 			// open popup window and replace this current asset
 			/*if (ImGui::MenuItem("Replace Asset")) {
@@ -962,36 +890,12 @@ void UI::assetWindow(GameObjectManager& manager) {
 			ImGui::EndPopup();
 		}
 
-		// DOUBLE click logic
+		// double click logic to open scene files
         if (ImGui::IsItemHovered() && InputHandler::isMouseLeftDoubleClicked()) {
-            // if its a scene file, load the scene
+            // if it's a scene file, load the scene
             if (asset.folder == m_AssetBrowserState.currentFolder + "Scene") {
                 m_MenuBarState.sceneToLoad = asset.name;
                 m_MenuBarState.showLoadScenePopup = true;
-            }
-
-            // if its a prefab, convert to temp game obj for editting in inspector
-            if (asset.folder == m_AssetBrowserState.currentFolder + "Prefab") {
-                // get ID of the double clicked prefab by its filename
-                std::string prefabID = PrefabManager::Instance().findPrefabIDByFilename(asset.name);
-                if (prefabID.empty()) {
-                    addDebugMessage("Cannot find prefab ID for " + asset.name + ".\n");
-                    return;
-                }
-
-                // set the selected prefab to double clicked prefab, later will show in inspector
-                std::unique_ptr<GameObject> tempPrefab = PrefabManager::Instance().createTempPrefabObj(prefabID);
-                if (tempPrefab) {
-                    m_SelectionState.selectedObject = nullptr;
-                    m_SelectionState.selectedIndex = -1;
-                    m_SelectionState.selectedPrefab = std::move(tempPrefab);
-
-                    addDebugMessage("Selected Prefab " + m_SelectionState.selectedPrefab->getObjectName() + ".\n");
-                }
-                else {
-                    addDebugMessage("Failed to select prefab " + prefabID + " object for editing.\n");
-                }
-
             }
         }
 
@@ -1007,23 +911,12 @@ void UI::assetWindow(GameObjectManager& manager) {
         float nextButtonX2 = lastButtonX2 + m_AssetBrowserState.iconSize;
         if (nextButtonX2 < windowVisibleX2) ImGui::SameLine();
 
-
-        /* ----------- Drag and Drop Logic ----------- */
-
         // drag a texture to inspector window to change texture of selected object
         if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID)) {
             ImGui::SetDragDropPayload("ASSET", asset.path.c_str(), asset.path.size() + 1);
             ImGui::Text("%s", asset.name.c_str());
             ImGui::EndDragDropSource();
         }
-
-        if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID)) {
-            ImGui::SetDragDropPayload("PREFAB", asset.name.c_str(), asset.name.size() + 1);
-            ImGui::Text("Prefab: %s", asset.name.c_str());
-            ImGui::EndDragDropSource();
-        }
-
-        /* ---------- END ---------- */
 
         ImGui::PopID();
     }
@@ -1324,7 +1217,6 @@ void UI::objPicking(GameObjectManager& manager) {
 
     // if something is selected, update selection state
     if (selected) {
-        m_SelectionState.selectedPrefab = nullptr;
         m_SelectionState.selectedObject = selected;
         m_SelectionState.draggedObject = selected;
 

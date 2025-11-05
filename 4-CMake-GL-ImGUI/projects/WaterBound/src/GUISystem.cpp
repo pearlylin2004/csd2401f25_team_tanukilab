@@ -74,8 +74,6 @@ void GUISystem::createMenuButtons(GameObjectManager& manager) {
     playTransform->scaleY = 1.0f;
     playTransform->scaleZ = 1.0f;
 
-    manager.assignObjectToLayer(m_playButton, 2);
-    
     // Create Stop Button
     m_stopButton = manager.createGameObject("stop_button");
     if (!m_stopButton) {
@@ -94,9 +92,6 @@ void GUISystem::createMenuButtons(GameObjectManager& manager) {
     stopTransform->scaleX = 6.0f;
     stopTransform->scaleY = 1.0f;
     stopTransform->scaleZ = 1.0f;
-
-
-    manager.assignObjectToLayer(m_stopButton, 2);
 
     m_buttonsCreated = true;
     m_currentState = GameState::MENU;

@@ -68,7 +68,7 @@
       "name": "player2",
       "components": {
         "Transform": {
-          "pos": [-5.0, 0.0, 0.01]
+          "pos": [-8.0, 0.0, 0.01]
         }
       }
     },
