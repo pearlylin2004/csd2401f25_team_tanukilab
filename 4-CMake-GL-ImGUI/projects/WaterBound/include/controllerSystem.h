@@ -55,19 +55,19 @@ public:
     void onNotify(const Message& msg) override {
         if (!L) return;
 
-        // push global Lua function if it exists, e.g. onInputEvent(type, key, x, y)
+        //push global Lua function if it exists
         lua_getglobal(L, "onInputEvent");
 
         if (lua_isfunction(L, -1)) {
             try {
                 auto keyEvent = std::any_cast<KeyEvent>(msg.payload);
 
-                lua_pushstring(L, msg.type.c_str()); // arg1: event type
-                lua_pushstring(L, keyEvent.key.c_str()); // arg2: key
-                lua_pushnumber(L, keyEvent.x); // arg3: x
-                lua_pushnumber(L, keyEvent.y); // arg4: y
+                lua_pushstring(L, msg.type.c_str());
+                lua_pushstring(L, keyEvent.key.c_str());
+                lua_pushnumber(L, keyEvent.x); 
+                lua_pushnumber(L, keyEvent.y);
 
-                // call Lua function (4 args, 0 return)
+                //call Lua function (4 args, 0 return)
                 if (lua_pcall(L, 4, 0, 0) != LUA_OK) {
                     std::cerr << "Lua error: " << lua_tostring(L, -1) << "\n";
                     lua_pop(L, 1);
