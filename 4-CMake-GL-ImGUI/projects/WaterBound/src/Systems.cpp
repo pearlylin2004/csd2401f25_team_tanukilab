@@ -84,8 +84,6 @@ void RenderSystem::update(GameObjectManager& manager, float const& deltaTime)
 {
 	//record current time for performance tracking
 	auto start = std::chrono::high_resolution_clock::now();
-	batchingSetUp(manager);
-
 	std::vector<GameObject*> gameObjects;
 	manager.getAllGameObjects(gameObjects);
 

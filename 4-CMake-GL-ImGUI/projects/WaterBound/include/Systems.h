@@ -90,6 +90,7 @@ public:
 
 	void fboAspectRatio(int& width, int& height) const;
 	~RenderSystem();
+	//bool batchRebuild = true;
 private:
 	std::unordered_map<BatchKey, std::vector<renderer::InstanceData>, BatchKeyHash> objectWithTex;
 	std::unordered_map<shape, std::vector<renderer::InstanceData>> objectWithoutTex;
