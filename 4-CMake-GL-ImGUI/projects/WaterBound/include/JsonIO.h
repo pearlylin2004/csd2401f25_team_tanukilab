@@ -1,5 +1,8 @@
 //JsonIO.h
 #pragma once
+#define NOMINMAX
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
 #include <cstdio>
 #include <string>
 #include <cstring>
@@ -10,6 +13,7 @@
 #include <array>
 #include <glm/vec3.hpp> 
 #include <glm/vec4.hpp>
+
 
 #include <rapidjson/istreamwrapper.h>
 #include <rapidjson/ostreamwrapper.h>
@@ -25,6 +29,14 @@
 #include "renderer.h"
 
 
+namespace Paths {
+	std::filesystem::path exe_dir();
+	std::filesystem::path shaders();
+	std::filesystem::path scenes();
+	std::filesystem::path config();
+	std::filesystem::path scripts();
+	void ensure_dir(const std::filesystem::path& p);
+}
 namespace JsonIO {
 
 	// ---- Path helpers ----

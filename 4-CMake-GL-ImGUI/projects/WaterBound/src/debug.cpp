@@ -427,3 +427,38 @@ namespace DebugInput {
         dbg_push_line(oss.str());
     }
 }
+namespace DebugDiag {
+
+    void AuditRuntimePaths()
+    {
+        using std::cout; using std::cerr; using std::endl;
+        namespace fs = std::filesystem;
+
+        auto exe = Paths::exe_dir();
+        auto cfg = Paths::config();
+        auto sh = Paths::shaders();
+        auto scn = Paths::scenes();
+        auto scr = exe / "scripting";
+        auto res = exe / "resources";
+
+        cout << "[Audit] exe_dir: " << exe.string() << endl;
+        cout << "[Audit] config path: " << cfg.string() << (fs::exists(cfg) ? "  (OK)" : "  (MISSING)") << endl;
+        cout << "[Audit] shaders dir: " << sh.string() << (fs::exists(sh) ? "  (OK)" : "  (MISSING)") << endl;
+        cout << "[Audit] scenes dir: " << scn.string() << (fs::exists(scn) ? "  (OK)" : "  (MISSING)") << endl;
+        cout << "[Audit] scripting dir: " << scr.string() << (fs::exists(scr) ? "  (OK)" : "  (MISSING)") << endl;
+        cout << "[Audit] resources dir: " << res.string() << (fs::exists(res) ? "  (OK)" : "  (MISSING)") << endl;
+
+        // Optional: list a few files from each folder to confirm contents
+        auto listFew = [](const fs::path& dir, const char* label) {
+            if (!fs::exists(dir)) return;
+            int shown = 0;
+            for (auto& e : fs::directory_iterator(dir)) {
+                if (shown++ >= 5) break;
+                std::cout << "  - [" << label << "] " << e.path().filename().string() << "\n";
+            }
+            };
+        listFew(scn, "scene");
+        listFew(scr, "lua");
+        listFew(res, "res");
+    }
+}

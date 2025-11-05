@@ -30,6 +30,10 @@ UI::UI() {
     //m_tempSceneName = "shaders/Scene/temp_scene.json";
     m_currentSceneName = "level01.json";
     m_tempSceneName = "temp_scene.json";
+    m_AssetBrowserState.currentFolder = Paths::shaders().string(); // e.g., <exe>/shaders
+    Paths::ensure_dir(Paths::shaders());       // create if missing
+    UI::assetsChangedFlag = true;              // trigger initial scan
+
     m_isPlaying = false;
 }
 
@@ -725,6 +729,20 @@ void UI::loadAssetsFromDirectory() {
     if (assetsChangedFlag == false) return; // only reload if flagged
     m_assets.clear(); // clear existing assets before loading new ones
 
+
+    //std::filesystem::path root = m_AssetBrowserState.currentFolder;
+    //std::error_code ec;
+    //if (!std::filesystem::exists(root)) {
+    //    Paths::ensure_dir(root);
+    //    assetsChangedFlag = false;
+    //    addDebugMessage("Assets root created: " + root.string());
+    //    return;
+    //}
+    //for (std::filesystem::recursive_directory_iterator it(
+    //    root, std::filesystem::directory_options::skip_permission_denied, ec), end;
+    //    it != end; it.increment(ec)) {
+    //    if (ec) { ec.clear(); continue; }
+    
     // iterate over all files and folders in this directory and push all files to m_assets (flat list)
     for (const std::filesystem::directory_entry& entry : std::filesystem::recursive_directory_iterator(m_AssetBrowserState.currentFolder)) {
         if (entry.is_regular_file()) {

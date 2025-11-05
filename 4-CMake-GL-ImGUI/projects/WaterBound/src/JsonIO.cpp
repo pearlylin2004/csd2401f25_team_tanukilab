@@ -14,6 +14,35 @@
 #define SOURCE_DIR_R "./projects/WaterBound/shaders"
 #endif
 
+namespace Paths {
+	std::filesystem::path exe_dir() {
+#ifdef _WIN32
+		wchar_t buf[MAX_PATH];
+		GetModuleFileNameW(nullptr, buf, MAX_PATH);
+		return std::filesystem::path(buf).parent_path();
+#else
+		return std::filesystem::canonical("/proc/self/exe").parent_path();
+#endif
+	}
+
+	std::filesystem::path shaders() { return exe_dir() / "shaders"; }
+	std::filesystem::path scenes() { return shaders() / "Scene"; }
+	std::filesystem::path config() {
+		auto direct = exe_dir() / "config.json";
+		if (std::filesystem::exists(direct))
+			return direct;
+		return exe_dir() / "resources" / "config.json";
+	}
+
+	std::filesystem::path scripts() { return exe_dir() / "scripting"; }
+
+	void ensure_dir(const std::filesystem::path& p) {
+		std::error_code ec;
+		std::filesystem::create_directories(p, ec);
+	}
+
+}
+
 namespace JsonIO {
 
 	// -------- path helpers --------

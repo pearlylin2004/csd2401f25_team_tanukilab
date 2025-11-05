@@ -14,10 +14,10 @@ Technology is prohibited.
 /* End Header **************************************************************************/
 
 #pragma once
-#ifdef _WIN32
 #define NOMINMAX
+#define WIN32_LEAN_AND_MEAN
 #include <windows.h>
-#endif
+
 #include <string>
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
@@ -29,6 +29,7 @@ Technology is prohibited.
 #include <csignal>
 #include <mutex>
 #include <ctime>
+#include "JsonIO.h"
 
 // ======================================================================================
 // Perf namespace: frame timing & FPS display
@@ -198,3 +199,6 @@ namespace DebugInput {
     std::deque<std::string> Recent(size_t max = 32);
 }
 
+namespace DebugDiag {
+    void AuditRuntimePaths();   
+}

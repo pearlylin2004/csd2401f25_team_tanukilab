@@ -27,6 +27,7 @@ Technology is prohibited.
 #include "Systems.h"
 #include "luaSystem.h"
 #include "messageBus.h"
+#include "JsonIO.h"
 
 class CoreEngine {
 public:

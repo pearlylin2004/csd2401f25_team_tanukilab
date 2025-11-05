@@ -80,6 +80,7 @@ bool LoadConfig(const std::string& path, AppConfig& out, std::string* err)
     gShowFpsInTitle = out.show_fps_in_title;
     gShowInputDebug = out.show_input_debug;
     for (int i = 0; i < 4; ++i) gClearColor[i] = out.clear_color[i];
+    std::cout << "[Config] Loaded JSON: " << path << "\n";
     return true;
 }
 

@@ -103,7 +103,8 @@ void GameObjectManager::getAllGameObjects(std::vector<GameObject*>& gameObjects)
 void GameObjectManager::init()
 {
 	//loadFromFile("shaders/Scene/temp_serialize.txt");
-	loadScene(JsonIO::runtimeScenePath("level01.json"));
+	loadScene((Paths::scenes() / "level01.json").string());
+
 }
 
 bool GameObjectManager::renameGameObject(GameObject* obj, const std::string& newName) {

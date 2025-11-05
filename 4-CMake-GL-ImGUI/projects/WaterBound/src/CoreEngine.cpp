@@ -34,11 +34,12 @@ CoreEngine::~CoreEngine() {
 }
 
 void CoreEngine::Init() {
+    //DebugDiag::AuditRuntimePaths();
     AppConfig cfg;
     std::string err;
-    if (!LoadConfig("../projects/WaterBound/resources/config.json", cfg, &err)) {
-        std::cout << err << "\n";
-    }
+    LoadConfig(Paths::config().string(), cfg, &err);
+    if (!err.empty()) std::cerr << err << "\n";
+
     m_title = cfg.title;
 
     // --- GLFW/GLEW Initialization ---
@@ -85,26 +86,57 @@ void CoreEngine::Init() {
     m_renderSystem->init(*m_manager, cfg.width, cfg.height);
     m_uiSystem->init(m_window, m_renderSystem.get());
 
-    //iterate over all Lua scripts in the folder
-    for (const auto& file : std::filesystem::directory_iterator("../projects/WaterBound/scripting")) {
-        if (file.path().extension() != ".lua") continue; //have to be .lua files if not it will skip
-        std::string filename = file.path().filename().string();
 
-        //strip ".lua" to get object name
-        std::string objectName = filename.substr(0, filename.size() - 4);
+    namespace fs = std::filesystem;
 
-        GameObject* obj = m_manager->getGameObject(objectName);
-        if (obj) {
-			obj->addComponent<LuaScript>(file.path().string()); //add LuaScript component to object
-            //load Lua script into Lua state
-            if (!m_luaSystem->loadScriptForObject(file.path().string(), objectName)) {
-                std::cerr << "[Lua] Failed to load script for " << objectName << std::endl;
-            }
-            else {
-                std::cout << "[Lua] Loaded script " << filename << " for object " << objectName << std::endl;
+    const fs::path root = Paths::scripts();
+    std::error_code ec;
+
+    if (!fs::exists(root)) {
+        std::cerr << "[Lua] Scripts folder not found: " << root.string() << "\n";
+    }
+    else {
+        for (fs::directory_iterator it(root, ec), end; it != end; it.increment(ec)) {
+            if (ec) { ec.clear(); continue; }
+
+            const fs::path& p = it->path();
+            if (!p.has_extension() || p.extension() != ".lua") continue;
+
+            const std::string filename = p.filename().string();
+            const std::string objectName = filename.substr(0, filename.size() - 4); // strip ".lua"
+
+            if (GameObject* obj = m_manager->getGameObject(objectName)) {
+                obj->addComponent<LuaScript>(p.string());
+
+                if (!m_luaSystem->loadScriptForObject(p.string(), objectName)) {
+                    std::cerr << "[Lua] Failed to load script for " << objectName << "\n";
+                }
+                else {
+                    std::cout << "[Lua] Loaded script " << filename << " for object " << objectName << "\n";
+                }
             }
         }
     }
+    //iterate over all Lua scripts in the folder
+   // for (const auto& file : std::filesystem::directory_iterator("../projects/WaterBound/scripting")) {
+   //     if (file.path().extension() != ".lua") continue; //have to be .lua files if not it will skip
+   //     std::string filename = file.path().filename().string();
+
+   //     //strip ".lua" to get object name
+   //     std::string objectName = filename.substr(0, filename.size() - 4);
+
+   //     GameObject* obj = m_manager->getGameObject(objectName);
+   //     if (obj) {
+			//obj->addComponent<LuaScript>(file.path().string()); //add LuaScript component to object
+   //         //load Lua script into Lua state
+   //         if (!m_luaSystem->loadScriptForObject(file.path().string(), objectName)) {
+   //             std::cerr << "[Lua] Failed to load script for " << objectName << std::endl;
+   //         }
+   //         else {
+   //             std::cout << "[Lua] Loaded script " << filename << " for object " << objectName << std::endl;
+   //         }
+   //     }
+   // }
 
     //advance messaging 
     m_messageBus->subscribe("KeyPressed", m_playerController.get());
