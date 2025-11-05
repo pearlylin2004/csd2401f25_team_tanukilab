@@ -564,7 +564,7 @@ void UI::objHierarchyWindow(GameObjectManager& manager) {
     ImGuiTreeNodeFlags baseFlags = ImGuiTreeNodeFlags_Leaf;
 
     for (size_t i = 0; i < gameObjects.size(); i++) {
-        // if no children -> in the future
+        // if no children (in the future)
     //    baseFlags |= ImGuiTreeNodeFlags_Leaf;
 
 		// highlight selected row
@@ -599,7 +599,7 @@ void UI::objHierarchyWindow(GameObjectManager& manager) {
     ImGui::SetCursorPos(ImVec2(0, 0));
     ImGui::InvisibleButton("##drop_target", ImGui::GetContentRegionAvail());
 
-    // receive prefab logic
+    // receive prefab and make it into a game obj referecing the prefab
     if (ImGui::BeginDragDropTarget()) {
         if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("PREFAB")) {
             addDebugMessage("in here yey\n");
@@ -751,6 +751,7 @@ void UI::objInspectorWindow(GameObjectManager& manager) {
             std::string texName = render->texFile.empty() ? "(Drop new texture here)" : render->texFile;
             ImGui::Button(texName.c_str());
 
+            /* -------------- Drag and Drop From Asset Browser to Change Texture ------------- */
             if (ImGui::BeginDragDropTarget()) {
                 if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("ASSET")) {
                     const char* droppedPath = (const char*)payload->Data;
@@ -758,13 +759,28 @@ void UI::objInspectorWindow(GameObjectManager& manager) {
   
                     const std::string debugPrefix = "Debug/";
                     size_t pos = path.find(debugPrefix);
-                    if (pos != std::string::npos)
-                        path = path.substr(pos + debugPrefix.size());
+                    if (pos != std::string::npos) path = path.substr(pos + debugPrefix.size());
 
-                    render->texFile = path;
-                    render->hasTex = true;
-                    render->texChanged = true;
-                    addDebugMessage("Changed texture of " + selected->getObjectName() + " to " + render->texFile + "\n");
+                    /* --- File extension validation --- */
+                    std::string ext;
+                    size_t dotPos = path.find_last_of('.');
+                    if (dotPos != std::string::npos) ext = path.substr(dotPos + 1);
+
+                    // Convert to lowercase for consistency
+                    std::transform(ext.begin(), ext.end(), ext.begin(), ::tolower);
+
+                    // only accept if dropped file is a png/jpg/jpeg
+                    if (ext == "png" || ext == "jpg" || ext == "jpeg") {
+                        render->texFile = path;
+                        render->hasTex = true;
+                        render->texChanged = true;
+                        addDebugMessage("Changed texture of " + selected->getObjectName() + " to " + render->texFile + "\n");
+                    }
+                    else {
+                        // invalid texture format —> don't change anything
+                        addDebugMessage("Invalid texture format : " + path + "\n");
+                    }
+
                 }
                 ImGui::EndDragDropTarget();
             }
