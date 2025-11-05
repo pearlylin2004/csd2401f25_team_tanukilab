@@ -30,9 +30,10 @@ public:
 		if (msg.type == "KeyPressed") {
 			auto keyEvent = std::any_cast<KeyEvent>(msg.payload);
 			if (keyEvent.key == "SPACE") {
-				std::cout << "Player jumps!\n";
+				std::cout << "Bullet shooting!\n";
 			}
 		}
+		//hmm
 		else if (msg.type == "KeyReleased") {
 			auto keyEvent = std::any_cast<KeyEvent>(msg.payload);
 			if (keyEvent.key == "SPACE") {
