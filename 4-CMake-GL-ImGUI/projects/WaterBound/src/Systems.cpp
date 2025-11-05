@@ -788,8 +788,6 @@ void UISystem::init(GLFWwindow* window, RenderSystem* renderer) {
 	// no show task bar icon for additional viewports
 	io.ConfigViewportsNoTaskBarIcon = true;
 
-	m_UI.loadAssetsFromDirectory();
-
 	m_renderer = renderer;
 }
 
@@ -878,9 +876,10 @@ void UISystem::dockingSetUp() {
 		// Split the dockspace into major areas
 		ImGuiID dockParent = dockspaceID;
 		ImGuiID dockDown, dockRight, dockLeft;
-		ImGuiID dockRightSecond;
+		ImGuiID dockLeftSecond, dockRightSecond;
 
 		ImGui::DockBuilderSplitNode(dockParent, ImGuiDir_Left, 0.3f, &dockLeft, &dockParent);
+		ImGui::DockBuilderSplitNode(dockLeft, ImGuiDir_Down, 0.3f, &dockLeftSecond, &dockLeft);
 		ImGui::DockBuilderSplitNode(dockParent, ImGuiDir_Right, 0.4f, &dockRight, &dockParent);
 		ImGui::DockBuilderSplitNode(dockRight, ImGuiDir_Down, 0.4f, &dockRightSecond, &dockRight);
 		ImGui::DockBuilderSplitNode(dockParent, ImGuiDir_Down, 0.4f, &dockDown, &dockParent);
@@ -889,10 +888,11 @@ void UISystem::dockingSetUp() {
 
 		// Left
 		ImGui::DockBuilderDockWindow("Hierarchy", dockLeft);
-		ImGui::DockBuilderDockWindow("Inspector", dockRight);
-		ImGui::DockBuilderDockWindow("Editor Camera", dockRight);
+		ImGui::DockBuilderDockWindow("Debug Info", dockLeftSecond);
 
 		// Right
+		ImGui::DockBuilderDockWindow("Inspector", dockRight);
+		ImGui::DockBuilderDockWindow("Editor Camera", dockRight);
 		ImGui::DockBuilderDockWindow("Create Object", dockRightSecond);
 
 		// Middle
@@ -900,7 +900,6 @@ void UISystem::dockingSetUp() {
 		
 		// Bottom
 		ImGui::DockBuilderDockWindow("Performance", dockDown);
-		ImGui::DockBuilderDockWindow("Debug Info", dockDown);
 		ImGui::DockBuilderDockWindow("Assets", dockDown);
 
 		ImGui::DockBuilderFinish(dockspaceID);
