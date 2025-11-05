@@ -691,9 +691,16 @@ void UI::objInspectorWindow(GameObjectManager& manager) {
         Transform* transform = selected->getComponent<Transform>();
         if (ImGui::CollapsingHeader("Transform")) {
 
-            ImGui::DragFloat("X", &transform->x);
-            ImGui::DragFloat("Y", &transform->y);
-            ImGui::DragFloat("Z", &transform->z);
+            ImGui::DragFloat("X", &transform->x, 0.1f);
+            ImGui::DragFloat("Y", &transform->y, 0.1f);
+
+            // set z to stay within the editor camera (-1.f <= z < 1.f)
+            glm::mat4& proj = renderer::editorCam.proj;
+            float m22 = proj[2][2];
+            float m32 = proj[3][2];
+            float near = (m32 - 1.f) / m22;
+            float far = (m32 + 1.f) / m22;
+            ImGui::DragFloat("Z", &transform->z, 0.1f, far, near);
 
             /*addDebugMessage("Transform updated: Position(" +
                 std::to_string(transform->x) + ", " +
@@ -951,11 +958,13 @@ void UI::assetWindow(GameObjectManager& manager) {
 				system(command.c_str());
 			}
 
-            // open popup window and ask whether to delete this current asset
-			if (ImGui::MenuItem("Delete Asset")) {
-				m_AssetBrowserState.fullPathToDelete = fullPath;
-				m_AssetBrowserState.showDeletePopup = true;
-			}
+            // open popup window and ask whether to delete this current asset (delete not for prefab YET)
+            if (asset.folder != m_AssetBrowserState.currentFolder + "Prefab") {
+                if (ImGui::MenuItem("Delete Asset")) {
+                    m_AssetBrowserState.fullPathToDelete = fullPath;
+                    m_AssetBrowserState.showDeletePopup = true;
+                }
+            }
 
 			// open popup window and rename this current asset (rename not for prefab YET)
             if (asset.folder != m_AssetBrowserState.currentFolder + "Prefab") {
