@@ -106,6 +106,22 @@ void RenderSystem::update(GameObjectManager& manager, float const& deltaTime)
 		camView = renderer::cam.view;
 		camProj = renderer::cam.proj;
 	}
+	for (GameObject* object : gameObjects)
+	{
+		if (object->hasComponent<Render>())
+		{
+			Render* render = object->getComponent<Render>();
+			if (render->texChanged) {
+				if (render->hasTex) {
+					glDeleteTextures(1, &render->texHDL); // to avoid leak
+					render->texHDL = 0;
+				}
+				render->texHDL = uploadtex(render->texFile, render->isTransparent);
+				render->texChanged = false;
+			}
+		}
+	}
+	
 
 	//std::vector<GameObject*> objectWithTex;
 	//std::vector<GameObject*> objectWithoutTex;
