@@ -31,7 +31,8 @@
         "Render": {
           "shape": "circle",
           "hasTex": 0,
-          "hasAnimation": 0
+          "hasAnimation": 0,
+          "clr": [ 1.0, 0.5, 0.5 ]
         },
         "Physics": { "inWater": 1, "buoyancy": 1 }
       }
@@ -47,7 +48,8 @@
         "Render": {
           "shape": "square",
           "hasTex": 0,
-          "hasAnimation": 0
+          "hasAnimation": 0,
+          "clr": [ 0.0, 0.0, 0.0 ]
         },
         "Physics": { "inWater": 0, "buoyancy": 0 }
       }
@@ -63,7 +65,8 @@
         "Render": {
           "shape": "square",
           "hasTex": 0,
-          "hasAnimation": 0
+          "hasAnimation": 0,
+          "clr": [ 0.0, 0.0, 0.0 ]
         },
         "Physics": { "inWater": 0, "buoyancy": 0 },
         "CollisionInfo": {}
@@ -104,7 +107,8 @@
         "Render": {
           "shape": "square",
           "hasTex": 0,
-          "hasAnimation": 0
+          "hasAnimation": 0,
+          "clr": [ 0.0, 0.0, 0.0 ]
         }
       }
     }

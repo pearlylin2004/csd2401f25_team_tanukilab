@@ -106,44 +106,61 @@ void RenderSystem::update(GameObjectManager& manager, float const& deltaTime)
 		camProj = renderer::cam.proj;
 	}
 
-	std::vector<GameObject*> objectWithTex;
-	std::vector<GameObject*> objectWithoutTex;
+	//std::vector<GameObject*> objectWithTex;
+	//std::vector<GameObject*> objectWithoutTex;
 
-	for (auto object : gameObjects)
-	{
-		Render* render = object->getComponent<Render>();
+	//for (auto object : gameObjects)
+	//{
+	//	Render* render = object->getComponent<Render>();
 
-		if (render->texChanged) {
-			if (render->hasTex) {
-				glDeleteTextures(1, &render->texHDL); // to avoid leak
-				render->texHDL = 0;
-			}
-			render->texHDL = uploadtex(render->texFile, render->isTransparent);
-			render->texChanged = false;
-		}
+	//	if (render->texChanged) {
+	//		if (render->hasTex) {
+	//			glDeleteTextures(1, &render->texHDL); // to avoid leak
+	//			render->texHDL = 0;
+	//		}
+	//		render->texHDL = uploadtex(render->texFile, render->isTransparent);
+	//		render->texChanged = false;
+	//	}
 
-		if (render->hasTex)
-			objectWithTex.push_back(object);
-		else
-			objectWithoutTex.push_back(object);
-	}
+	//	if (render->hasTex)
+	//		objectWithTex.push_back(object);
+	//	else
+	//		objectWithoutTex.push_back(object);
+	//}
 	//rendering objects without texture, just color
-	glUseProgram(renderer::shdr_pgm[1]);
-	GLint vTransformView = glGetUniformLocation(renderer::shdr_pgm[1], "V");
-	glUniformMatrix4fv(vTransformView, 1, GL_FALSE, glm::value_ptr(camView));
-	GLint vTransformProj = glGetUniformLocation(renderer::shdr_pgm[1], "P");
-	glUniformMatrix4fv(vTransformProj, 1, GL_FALSE, glm::value_ptr(camProj));
-	for (GameObject* object : objectWithoutTex)
-		renderNoTex(object);
+	//glUseProgram(renderer::shdr_pgm[1]);
+	//GLint vTransformView = glGetUniformLocation(renderer::shdr_pgm[1], "V");
+	//glUniformMatrix4fv(vTransformView, 1, GL_FALSE, glm::value_ptr(camView));
+	//GLint vTransformProj = glGetUniformLocation(renderer::shdr_pgm[1], "P");
+	//glUniformMatrix4fv(vTransformProj, 1, GL_FALSE, glm::value_ptr(camProj));
+	//for (GameObject* object : objectWithoutTex)
+	//	renderNoTex(object);
 
-	//rendering objects with textures
-	glUseProgram(renderer::shdr_pgm[0]);
-	vTransformView = glGetUniformLocation(renderer::shdr_pgm[0], "V");
-	glUniformMatrix4fv(vTransformView, 1, GL_FALSE, glm::value_ptr(camView));
-	vTransformProj = glGetUniformLocation(renderer::shdr_pgm[0], "P");
-	glUniformMatrix4fv(vTransformProj, 1, GL_FALSE, glm::value_ptr(camProj));
-	for (GameObject* object : objectWithTex)
-		renderTex(object, deltaTime);
+	////rendering objects with textures
+	//glUseProgram(renderer::shdr_pgm[0]);
+	//vTransformView = glGetUniformLocation(renderer::shdr_pgm[0], "V");
+	//glUniformMatrix4fv(vTransformView, 1, GL_FALSE, glm::value_ptr(camView));
+	//vTransformProj = glGetUniformLocation(renderer::shdr_pgm[0], "P");
+	//glUniformMatrix4fv(vTransformProj, 1, GL_FALSE, glm::value_ptr(camProj));
+	//for (GameObject* object : objectWithTex)
+	//	renderTex(object, deltaTime);
+
+	std::vector<renderer::InstanceData> batch;
+
+	for (GameObject* obj : objectWithTex) {
+		Transform* t = obj->getComponent<Transform>();
+		Render* r = obj->getComponent<Render>();
+		Animation* animation = obj->getComponent<Animation>();
+
+		renderer::InstanceData i;
+		i.model = t->mdlWorld;
+		i.color = glm::vec4(r->clr, 1); // or r->color
+		i.texParams = glm::vec4(animation->currentFrameColumn, animation->currentFrameRow, texScale.x, texScale.y);
+		batch.push_back(i);
+	}
+
+	renderer::drawInstances(renderer::models[(int)shape::square], batch);
+
 
 	if (UISystem::isShowUI()) glBindFramebuffer(GL_FRAMEBUFFER, 0);
 

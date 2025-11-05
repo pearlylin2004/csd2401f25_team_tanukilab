@@ -75,7 +75,7 @@ public:
     bool texChanged = false;
     GLuint texHDL;
     std::string texFile;
-    
+    glm::vec3 clr{ 0,0,0 };
     renderer::model modelRef;
 };
 

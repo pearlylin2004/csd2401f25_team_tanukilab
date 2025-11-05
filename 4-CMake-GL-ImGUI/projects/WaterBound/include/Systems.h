@@ -82,8 +82,8 @@ public:
 	*************************************************************************/
 	void update(GameObjectManager& manager, float const& deltaTime);
 	GLuint uploadtex(std::string const& filename, bool& isTransparent);
-	void renderTex(GameObject* object, float const& deltaTime);
-	void renderNoTex(GameObject* object);
+	void renderTex(std::vector<GameObject*> objects, float const& deltaTime);
+	void renderNoTex(std::vector<GameObject*> objects);
 	void renderCollision(Collision::AABB const& box, glm::vec3 const& clr);
 	GLuint getTexture() const { return texture; }
 

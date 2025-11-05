@@ -410,6 +410,12 @@ void GameObjectManager::saveToJson(const std::string& filename, bool isNew) cons
 						a);
 				}
 
+				rapidjson::Value clr(rapidjson::kArrayType);
+				clr.PushBack(rapidjson::Value().SetFloat(r->clr.r), a)
+					.PushBack(rapidjson::Value().SetFloat(r->clr.g), a)
+					.PushBack(rapidjson::Value().SetFloat(r->clr.b), a);
+				jr.AddMember("clr", clr, a);
+
 				// keep your text semantics (0/1)
 				jr.AddMember("hasAnimation", rapidjson::Value(r->hasAnimation ? 1 : 0), a);
 
@@ -565,6 +571,13 @@ void GameObjectManager::loadFromJson(const std::string& filename) {
 			}
 			else {
 				r->hasAnimation = false;
+			}
+
+			if (jr.HasMember("clr") && jr["clr"].IsArray() && jr["clr"].Size() == 3)
+			{
+				r->clr.r = jr["clr"][0].GetFloat();
+				r->clr.g = jr["clr"][1].GetFloat();
+				r->clr.b = jr["clr"][2].GetFloat();
 			}
 
 			// If your Render lacks these, keep them out.

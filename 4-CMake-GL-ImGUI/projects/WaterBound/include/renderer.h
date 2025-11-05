@@ -55,6 +55,16 @@ struct renderer
 {
 	/*!***********************************************************************
 	\brief
+		Data layout for one instance (transform, color, texture offset/scale)
+	*************************************************************************/
+	struct InstanceData
+	{
+		glm::mat4 model;      
+		glm::vec4 color;      
+		glm::vec4 texParams;  
+	};
+	/*!***********************************************************************
+	\brief
 		initializes the setups for the meshes and shader programs
 
 	\param[in] w
@@ -82,7 +92,30 @@ struct renderer
 		GLuint draw_cnt;
 		GLuint primitive_cnt;
 
+		GLuint instanceVBO = 0;
+		GLsizei maxInstances = 1000; 
+
 	};
+	/*!***********************************************************************
+	\brief
+		Sets up instancing attributes for a given model
+
+	\param[in] mdl
+		the mesh/model that is being drawn
+	*************************************************************************/
+	static void setup_instance_attributes(model& mdl);
+
+	/*!***********************************************************************
+	\brief
+		Draws multiple instances of a model in one call
+
+	\param[in]
+		the mesh/model that is being drawn
+
+	\param[in] instances
+		relevent data to show how i should draw my mesh
+	*************************************************************************/
+	static void drawInstances(model& mdl, const std::vector<InstanceData>& instances);
 	/*!***********************************************************************
 	\brief
 		storing of shader program

@@ -90,6 +90,17 @@ renderer::model renderer::setup_square(glm::vec3 clr)
 	glVertexArrayAttribFormat(mdl.vaoid, 2, 2, GL_FLOAT, GL_FALSE, 0);
 	glVertexArrayAttribBinding(mdl.vaoid, 2, 2);
 
+	//---------------------------------------------------------------------------------
+	//idk what im looking at, but hopefully gpt dun screw me over, to be refactored
+	//---------------------------------------------------------------------------------
+	// --- Setup instance buffer for per-instance attributes ---
+	glGenBuffers(1, &mdl.instanceVBO);
+	glBindBuffer(GL_ARRAY_BUFFER, mdl.instanceVBO);
+	glBufferData(GL_ARRAY_BUFFER, mdl.maxInstances * sizeof(InstanceData), nullptr, GL_DYNAMIC_DRAW);
+
+	// Setup layout in VAO
+	setup_instance_attributes(mdl);
+
 	mdl.primitive_type = GL_TRIANGLES;
 	std::array<GLushort, 6> idx_vtx{ 0, 1, 2, 2, 3, 0 };
 	mdl.elem_cnt = static_cast<GLuint>(idx_vtx.size());
@@ -156,6 +167,55 @@ renderer::model renderer::setup_circle(glm::vec3 clr, int slices)
 	mdl.primitive_cnt = slices; // number of primitives
 	mdl.shape = shape::circle;
 	return mdl;
+}
+
+//---------------------------------------------------------------------------------
+//idk what im looking at, but hopefully gpt dun screw me over, to be refactored
+//---------------------------------------------------------------------------------
+void renderer::setup_instance_attributes(model& mdl)
+{
+	glBindVertexArray(mdl.vaoid);
+	glBindBuffer(GL_ARRAY_BUFFER, mdl.instanceVBO);
+
+	GLsizei stride = sizeof(InstanceData);
+
+	// 1. Model matrix (mat4 = 4 vec4 attributes)
+	for (int i = 0; i < 4; ++i) {
+		glEnableVertexAttribArray(3 + i);
+		glVertexAttribPointer(3 + i, 4, GL_FLOAT, GL_FALSE, stride, (void*)(sizeof(glm::vec4) * i));
+		glVertexAttribDivisor(3 + i, 1);
+	}
+
+	// 2. Color (vec4)
+	GLuint colorAttrib = 7;
+	glEnableVertexAttribArray(colorAttrib);
+	glVertexAttribPointer(colorAttrib, 4, GL_FLOAT, GL_FALSE, stride, (void*)(sizeof(glm::mat4)));
+	glVertexAttribDivisor(colorAttrib, 1);
+
+	// 3. Tex params (vec4)
+	GLuint texAttrib = 8;
+	glEnableVertexAttribArray(texAttrib);
+	glVertexAttribPointer(texAttrib, 4, GL_FLOAT, GL_FALSE, stride,
+		(void*)(sizeof(glm::mat4) + sizeof(glm::vec4)));
+	glVertexAttribDivisor(texAttrib, 1);
+
+	glBindVertexArray(0);
+}
+
+//---------------------------------------------------------------------------------
+//idk what im looking at, but hopefully gpt dun screw me over, to be refactored
+//---------------------------------------------------------------------------------
+void renderer::drawInstances(model& mdl, const std::vector<InstanceData>& instances)
+{
+	if (instances.empty())
+		return;
+
+	glBindBuffer(GL_ARRAY_BUFFER, mdl.instanceVBO);
+	glBufferSubData(GL_ARRAY_BUFFER, 0, instances.size() * sizeof(InstanceData), instances.data());
+
+	glBindVertexArray(mdl.vaoid);
+	glDrawElementsInstanced(GL_TRIANGLES, mdl.elem_cnt, GL_UNSIGNED_SHORT, nullptr, static_cast<GLsizei>(instances.size()));
+	glBindVertexArray(0);
 }
 
 void renderer::setup_shdrpgm()
