@@ -30,6 +30,7 @@ Technology is prohibited.
 #include "collision.h"
 #include "input.h"
 #include "performance.h"
+#include "prefabManager.h"
 
 // imma replicate a very scuffed version of Unity :) call me tian cai
 class UI {
@@ -89,6 +90,8 @@ private:
 	struct SelectionState {
 		GameObject* selectedObject = nullptr; // currently selected object
 		int selectedIndex = -1; // index of selected object in the list
+
+		std::unique_ptr<GameObject> selectedPrefab;
 
 		GameObject* draggedObject = nullptr; // currently dragged object
 
