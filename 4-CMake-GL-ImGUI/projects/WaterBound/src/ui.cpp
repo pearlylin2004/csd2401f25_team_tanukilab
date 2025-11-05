@@ -593,6 +593,39 @@ void UI::objHierarchyWindow(GameObjectManager& manager) {
         ImGui::Text("No GameObjects available");
     }
 
+    /* ----------- Receive Dropped Prefab from Asset Browser ----------- */
+    // make entire hierarchy viewport a invisible button that can receive asset
+    ImGuiID targetID = ImGui::GetID("HierarchyWindowDropTarget");
+    ImGui::SetCursorPos(ImVec2(0, 0));
+    ImGui::InvisibleButton("##drop_target", ImGui::GetContentRegionAvail());
+
+    // receive prefab logic
+    if (ImGui::BeginDragDropTarget()) {
+        if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("PREFAB")) {
+            addDebugMessage("in here yey\n");
+            const char* prefabPath = static_cast<const char*>(payload->Data);
+            addDebugMessage("Prefab path: " + std::string(prefabPath) + "\n");
+
+            std::string prefabID = PrefabManager::Instance().findPrefabIDByFilename(prefabPath);
+            addDebugMessage("Prefab ID: " + prefabID + "\n");
+            
+            std::string objName = PrefabManager::Instance().getPrefabName(prefabID);
+            GameObject* prefabObj = manager.createGameObject(objName + "(" + std::to_string(gameObjects.size()) + ")");
+            prefabObj->getObjectPrefabID() = prefabID;
+            if (prefabObj) {
+                PrefabManager::Instance().instantiate(prefabObj, manager);
+                addDebugMessage("Added game obj from prefab\n");
+            }
+            else {
+                addDebugMessage("Failed to receive\n");
+            }
+        }
+        ImGui::EndDragDropTarget();
+    }
+
+    /* ---------- END --------- */
+
+
 	ImGui::End();
 }
 
@@ -973,12 +1006,23 @@ void UI::assetWindow(GameObjectManager& manager) {
         float nextButtonX2 = lastButtonX2 + m_AssetBrowserState.iconSize;
         if (nextButtonX2 < windowVisibleX2) ImGui::SameLine();
 
+
+        /* ----------- Drag and Drop Logic ----------- */
+
         // drag a texture to inspector window to change texture of selected object
         if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID)) {
             ImGui::SetDragDropPayload("ASSET", asset.path.c_str(), asset.path.size() + 1);
             ImGui::Text("%s", asset.name.c_str());
             ImGui::EndDragDropSource();
         }
+
+        if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID)) {
+            ImGui::SetDragDropPayload("PREFAB", asset.name.c_str(), asset.name.size() + 1);
+            ImGui::Text("Prefab: %s", asset.name.c_str());
+            ImGui::EndDragDropSource();
+        }
+
+        /* ---------- END ---------- */
 
         ImGui::PopID();
     }
