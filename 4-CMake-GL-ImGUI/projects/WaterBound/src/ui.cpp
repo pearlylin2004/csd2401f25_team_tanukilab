@@ -688,14 +688,7 @@ void UI::objInspectorWindow(GameObjectManager& manager) {
             if (ImGui::BeginDragDropTarget()) {
                 if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("ASSET")) {
                     const char* droppedPath = (const char*)payload->Data;
-                    std::string path = droppedPath;
-  
-                    const std::string debugPrefix = "Debug/";
-                    size_t pos = path.find(debugPrefix);
-                    if (pos != std::string::npos)
-                        path = path.substr(pos + debugPrefix.size());
-
-                    render->texFile = path;
+                    render->texFile = droppedPath;
                     render->hasTex = true;
                     render->texChanged = true;
                     addDebugMessage("Changed texture of " + m_SelectionState.selectedObject->getObjectName() + " to " + render->texFile + "\n");

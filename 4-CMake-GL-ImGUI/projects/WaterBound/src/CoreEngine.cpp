@@ -23,9 +23,6 @@ Technology is prohibited.
 /* End Header **************************************************************************/
 
 #define STB_IMAGE_IMPLEMENTATION
-#ifndef RUNTIME_DIR_R
-#define RUNTIME_DIR_R "./shaders"
-#endif
 #include "CoreEngine.h"
 
 CoreEngine::CoreEngine()
@@ -70,32 +67,23 @@ void CoreEngine::Init() {
     glClearColor(cfg.clear_color[0], cfg.clear_color[1], cfg.clear_color[2], cfg.clear_color[3]);
 
     // --- System Initialization ---
-    audio.init();
-
     InputHandler::init(m_window, cfg);
     renderer::init(cfg.width, cfg.height);
 
-
     m_manager = std::make_unique<GameObjectManager>();
-	m_logicSystem = std::make_unique<LogicSystem>();
     m_inputSystem = std::make_unique<InputSystem>();
     m_collisionSystem = std::make_unique<CollisionSystem>();
     m_physicsSystem = std::make_unique<PhysicsSystem>();
     m_renderSystem = std::make_unique<RenderSystem>();
     m_uiSystem = std::make_unique<UISystem>();
     m_luaSystem = std::make_unique<LuaSystem>();
-    m_fontSystem = std::make_unique<FontSystem>();
-    m_guiSystem = std::make_unique<GUISystem>();
     m_messageBus = std::make_unique<MessageBus>();
     m_playerController = std::make_unique<PlayerControllerSystem>();
 
-    PrefabManager::Instance().loadPrefabRegistry(std::string(RUNTIME_DIR_R) + "/Prefab/prefab_registry.json");
     m_luaSystem->init();
-    //m_manager->init();
-    m_guiSystem->init(*m_manager);
-	m_renderSystem->init(*m_manager, cfg.width, cfg.height);
-	m_uiSystem->init(m_window, m_renderSystem.get());
-    m_fontSystem->init(*m_manager);
+    m_manager->init();
+    m_renderSystem->init(*m_manager, cfg.width, cfg.height);
+    m_uiSystem->init(m_window, m_renderSystem.get());
 
     //iterate over all Lua scripts in the folder
     for (const auto& file : std::filesystem::directory_iterator("../projects/WaterBound/scripting")) {
@@ -189,43 +177,35 @@ void CoreEngine::GameLoop() {
 
 void CoreEngine::Update(float deltaTime) {
     InputHandler::update();
-    m_guiSystem->update(*m_manager);
+
 	//for clonigng player2
-    if (m_guiSystem->isPlaying()) {
-        if (InputHandler::isKeyTriggered(GLFW_KEY_C)) {
-            static int cloneCount = 1; // Use a static counter for unique names
-            std::string newName = "player2_clone_" + std::to_string(cloneCount++);
-            GameObject* newObject = m_manager->CloneGameObject("player2", newName);
+    if (InputHandler::isKeyTriggered(GLFW_KEY_C)) {
+        static int cloneCount = 1; // Use a static counter for unique names
+        std::string newName = "player2_clone_" + std::to_string(cloneCount++);
+        GameObject* newObject = m_manager->CloneGameObject("player2", newName);
 
-            std::cout << newName << " created.\n";
+        std::cout << newName << " created.\n";
 
-            Transform* newTransform = newObject->getComponent<Transform>();
-            newTransform->y += 1.5f * (static_cast<float>(cloneCount) - 1); // Offset the new clone's position
+        Transform* newTransform = newObject->getComponent<Transform>();
+        newTransform->y += 1.5f * (static_cast<float>(cloneCount) - 1); // Offset the new clone's position
+    }
+
+    //lua scripting update for all objects with LuaScript component
+    std::vector<GameObject*> gameObjects;
+    m_manager->getAllGameObjects(gameObjects);
+
+    for (GameObject* obj : gameObjects) {
+        if (obj->hasComponent<LuaScript>()) {
+            LuaScript* scriptComp = obj->getComponent<LuaScript>();
+            m_luaSystem->updateObjectScript(scriptComp->scriptName, obj, deltaTime);
         }
-
-        //lua scripting update for all objects with LuaScript component
-        std::vector<GameObject*> gameObjects;
-        m_manager->getAllGameObjects(gameObjects);
-
-        for (GameObject* obj : gameObjects) {
-            if (obj->hasComponent<LuaScript>()) {
-                LuaScript* scriptComp = obj->getComponent<LuaScript>();
-                m_luaSystem->updateObjectScript(scriptComp->scriptName, obj, deltaTime);
-            }
-        }
-        // Update all systems in order
-        m_inputSystem->update(*m_manager, deltaTime, *m_messageBus);
-        m_collisionSystem->update(*m_manager, deltaTime);
-        m_physicsSystem->update(*m_manager, deltaTime, *m_messageBus);
     }
 
     // Update all systems in order
-    m_logicSystem->update(*m_manager, deltaTime);
+    m_inputSystem->update(*m_manager, deltaTime, *m_messageBus);
+    m_collisionSystem->update(*m_manager, deltaTime);
+    m_physicsSystem->update(*m_manager, deltaTime, *m_messageBus);
     m_renderSystem->update(*m_manager, deltaTime);
-    m_fontSystem->update(*m_manager);
-
-    if (UISystem::isShowUI()) glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
     m_uiSystem->update(*m_manager);
 
 }

@@ -25,7 +25,6 @@ Technology is prohibited.
 #include <memory> //for unique_ptr
 #include "renderer.h"
 #include "mathlib.h"
-#include "font.h"
 
 
 // basic component class
@@ -79,23 +78,6 @@ public:
     renderer::model modelRef;
 };
 
-struct FontComponent : public Component {
-    FontComponent() = default;
-
-    std::unique_ptr<Component> clone() const override {
-        return std::make_unique<FontComponent>(*this);
-    }
-
-    //GLuint texHdl;
-    Font::FontMdl mdl;
-    std::string word = "";
-    float scale = 1;
-    glm::vec3 clr{ 0.f,0.f,0.f };
-    int fontType = 1;
-
-    std::string fontPath = "shaders/ARIAL.TTF"; 
-};
-
 struct Animation : public Component
 {
     std::unique_ptr<Component> clone() const override {
@@ -127,7 +109,6 @@ public:
     float floorY = 0.0f;
     bool onGround = false;  
     float Speed = 150.0f;
-    bool alive = false;
 
     //water bullet
     Vector2D posBullet;
@@ -208,16 +189,3 @@ public:
     std::string filename;   //path to the Lua file
     std::string scriptName; //Lua table name
 };
-
-// Logic Container (FSM) 
-enum class PlayerState { Idle, Walking, Jumping, Falling, Shooting };
-
-struct StateMachine : public Component {
-    PlayerState state = PlayerState::Idle;
-    float       stateTime = 0.f;
-    bool        facingRight = true;
-    std::unique_ptr<Component> clone() const override {
-        return std::make_unique<StateMachine>(*this);
-    }
-};
-

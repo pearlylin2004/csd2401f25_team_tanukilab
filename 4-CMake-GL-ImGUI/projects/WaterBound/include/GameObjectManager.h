@@ -17,8 +17,6 @@ Technology is prohibited.
 
 #pragma once
 #include <fstream>
-#include <sstream>
-#include <iomanip>
 #include "GameObject.h"
 
 //GameObjectManager should hold every existing GameObject in a smart pointer
@@ -59,15 +57,9 @@ public:
 
 	void saveToJson(const std::string& filename, bool isNew) const;
 
-	void loadSceneFromJson(const std::string& filename);
-
-	void saveSceneToJson(const std::string& filename, bool isNew) const;
-
 	void loadScene(const std::string& path);
 
 	void saveScene(const std::string& path, bool isNew = false) const;
-
-	void initializeSceneResources();
 
 private:
 	//map of all game objects
