@@ -10,17 +10,7 @@
 #include <cstdio>
 #include <string>
 #include <cstring>
-#include <algorithm>
-#include <fstream>                
-#include <rapidjson/istreamwrapper.h>
-#include <rapidjson/ostreamwrapper.h>
-#include <rapidjson/document.h>
-#include <rapidjson/filereadstream.h>
-#include <rapidjson/error/en.h>
-#include <rapidjson/writer.h>
-#include <rapidjson/prettywriter.h>
-#include <rapidjson/filewritestream.h>
-#include <filesystem>
+
 
 struct AppConfig {
     // window
@@ -40,7 +30,6 @@ struct AppConfig {
 
 bool LoadConfig(const std::string& path, AppConfig& out, std::string* err = nullptr);
 
-/* (Optional) global mirrors if other code reads them directly */
 extern bool  gShowFpsInTitle;
 extern bool  gShowInputDebug;
 extern float gClearColor[4];
@@ -50,14 +39,4 @@ bool SaveConfig(const std::string& path,
     std::string* err = nullptr,
     bool pretty = true);
 
-namespace JsonIO {
-    bool ReadFileToDocument(const std::string& path,
-        rapidjson::Document& doc,
-        std::string* err = nullptr);
-
-    bool WriteDocumentToFile(const std::string& path,
-        rapidjson::Document& doc,
-        bool pretty = true,
-        std::string* err = nullptr);
-}
 

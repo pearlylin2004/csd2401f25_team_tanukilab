@@ -16,43 +16,10 @@ Technology is prohibited.
 /* End Header **************************************************************************/
 
 #include "ui.h"
+#include "JsonIO.h"
 #include <cstdlib>
+#include "renderer.h"
 
-#ifndef RUNTIME_SCENE_DIR_R
-#define RUNTIME_SCENE_DIR_R "./shaders/Scene"
-#endif
-#ifndef SOURCE_SCENE_DIR_R
-#define SOURCE_SCENE_DIR_R "./projects/WaterBound/shaders/Scene"
-#endif
-#ifndef SOURCE_DIR_R
-#define SOURCE_DIR_R "./projects/WaterBound/shaders"
-#endif
-static std::string runtimeScenePath(std::string const& name) {
-    return std::string(RUNTIME_SCENE_DIR_R) + "/" + name;
-}
-static std::string sourceScenePath(std::string const& name) {
-    return std::string(SOURCE_SCENE_DIR_R) + "/" + name;
-}
-static bool syncSceneToRuntime(const std::string& name) {
-    const std::string src = sourceScenePath(name);
-    const std::string dst = runtimeScenePath(name);
-
-    std::error_code ec;
-    std::filesystem::create_directories(std::filesystem::path(dst).parent_path(), ec);
-    std::filesystem::copy_file(
-        src, dst,
-        std::filesystem::copy_options::overwrite_existing,
-        ec
-    );
-
-    if (ec) {
-        std::cerr << "Scene sync failed: " << src << " -> " << dst
-            << " (" << ec.message() << ")\n";
-        return false;
-    }
-    std::cout << "Scene synced: " << dst << "\n";
-    return true;
-}
 bool UI::assetsChangedFlag = true;
 
 UI::UI() {
@@ -69,8 +36,8 @@ UI::UI() {
 void UI::update(GameObjectManager& manager) {
     if (InputHandler::isComboKeyTriggered(GLFW_KEY_S, GLFW_KEY_LEFT_CONTROL) ||
         InputHandler::isComboKeyTriggered(GLFW_KEY_S, GLFW_KEY_RIGHT_CONTROL)) {
-        manager.saveScene(sourceScenePath(m_currentSceneName));
-        syncSceneToRuntime(m_currentSceneName);
+        manager.saveScene(JsonIO::sourceScenePath(m_currentSceneName));
+        JsonIO::syncSceneToRuntime(m_currentSceneName);
     }
 
     editorMenuBar(manager);
@@ -273,9 +240,9 @@ void UI::editorMenuBar(GameObjectManager& manager) {
 
         // save current scene to file
         if (ImGui::MenuItem("Save Scene")) {
-            //manager.saveScene(m_currentSceneName);
-            manager.saveScene(sourceScenePath(m_currentSceneName));
-            syncSceneToRuntime(m_currentSceneName);
+
+            manager.saveScene(JsonIO::sourceScenePath(m_currentSceneName));
+            JsonIO::syncSceneToRuntime(m_currentSceneName);
         }
 
         // load an existing scene
@@ -306,7 +273,7 @@ void UI::editorMenuBar(GameObjectManager& manager) {
 
                 // save current state to a temp scene file
                 //manager.saveScene(m_tempSceneName);
-                manager.saveScene(runtimeScenePath(m_tempSceneName));
+                manager.saveScene(JsonIO::runtimeScenePath(m_tempSceneName));
 
                 addDebugMessage("Simulation started.\n");
             }
@@ -316,7 +283,7 @@ void UI::editorMenuBar(GameObjectManager& manager) {
                 m_isPlaying = false;
 
                 // load back the temp scene file to restore state
-                manager.loadScene(runtimeScenePath(m_tempSceneName));
+                manager.loadScene(JsonIO::runtimeScenePath(m_tempSceneName));
 
                 m_SelectionState.selectedObject = nullptr;
                 m_SelectionState.draggedObject = nullptr;
@@ -325,7 +292,7 @@ void UI::editorMenuBar(GameObjectManager& manager) {
                 // remove temp scene file
                 //if (std::filesystem::exists(m_tempSceneName))
                 //    std::filesystem::remove(m_tempSceneName);
-                const auto tempFull = runtimeScenePath(m_tempSceneName);
+                const auto tempFull = JsonIO::runtimeScenePath(m_tempSceneName);
                 if (std::filesystem::exists(tempFull))
                     std::filesystem::remove(tempFull);
                 addDebugMessage("Simulation stopped.\n");
@@ -350,8 +317,8 @@ void UI::newScenePopup(GameObjectManager& manager) {
         // Save and open new scene
         if (ImGui::Button("Save and Create New")) {
             //manager.saveToFile(m_currentSceneName);
-            manager.saveScene(sourceScenePath(m_currentSceneName));
-            syncSceneToRuntime(m_currentSceneName);
+            manager.saveScene(JsonIO::sourceScenePath(m_currentSceneName));
+            JsonIO::syncSceneToRuntime(m_currentSceneName);
 
             // create new scene
             newScene(manager);
@@ -397,9 +364,8 @@ void UI::duplicateScenePopup(GameObjectManager& manager) {
 
         // Save and open newly duplicated scene
         if (ImGui::Button("Save and Duplicate")) {
-            //manager.saveToFile(m_currentSceneName);
-            manager.saveScene(sourceScenePath(m_currentSceneName));
-            syncSceneToRuntime(m_currentSceneName);
+            manager.saveScene(JsonIO::sourceScenePath(m_currentSceneName), true);
+            JsonIO::syncSceneToRuntime(m_currentSceneName);
            
             duplicateScene(manager);
             ImGui::CloseCurrentPopup();
@@ -438,8 +404,8 @@ void UI::loadScenePopup(GameObjectManager& manager) {
         // Save and load another scene
         if (ImGui::Button("Save and Load")) {
             //manager.saveToFile(m_currentSceneName);
-            manager.saveScene(sourceScenePath(m_currentSceneName));
-            syncSceneToRuntime(m_currentSceneName);
+            manager.saveScene(JsonIO::sourceScenePath(m_currentSceneName));
+            JsonIO::syncSceneToRuntime(m_currentSceneName);
 
             loadScene(manager);
             ImGui::CloseCurrentPopup();
@@ -485,8 +451,8 @@ void UI::newScene(GameObjectManager& manager) {
     } while (nameExists);
 
     m_currentSceneName = newSceneName;
-    manager.saveScene(sourceScenePath(m_currentSceneName), true);
-    syncSceneToRuntime(m_currentSceneName);
+    manager.saveScene(JsonIO::sourceScenePath(m_currentSceneName));
+    JsonIO::syncSceneToRuntime(m_currentSceneName);
     assetsChangedFlag = true;
 
     m_SelectionState.selectedObject = nullptr;
@@ -523,8 +489,8 @@ void UI::duplicateScene(GameObjectManager& manager) {
 	
         //manager.saveToFile(newSceneName);
         m_currentSceneName = newSceneName;
-        manager.saveScene(sourceScenePath(m_currentSceneName));
-        syncSceneToRuntime(m_currentSceneName);
+        manager.saveScene(JsonIO::sourceScenePath(m_currentSceneName));
+        JsonIO::syncSceneToRuntime(m_currentSceneName);
         assetsChangedFlag = true;
 
         m_SelectionState.selectedObject = nullptr;
@@ -539,7 +505,7 @@ void UI::duplicateScene(GameObjectManager& manager) {
 
 void UI::loadScene(GameObjectManager & manager) {
     //manager.loadFromFile(m_MenuBarState.sceneToLoad);
-    manager.loadScene(runtimeScenePath(m_MenuBarState.sceneToLoad));
+    manager.loadScene(JsonIO::runtimeScenePath(m_MenuBarState.sceneToLoad));
 
     m_currentSceneName = std::move(m_MenuBarState.sceneToLoad);
 
@@ -778,7 +744,7 @@ void UI::loadAssetsFromDirectory() {
     addDebugMessage("Assets loaded from " + m_AssetBrowserState.currentFolder + "\n");
 }
 
-void UI::assetWindow(GameObjectManager& manager) {
+void UI::assetWindow(GameObjectManager& ) {
     ImGui::Begin("Assets");
 
     // refresh to update assets from the actual asset folder
@@ -967,7 +933,7 @@ void UI::assetDeletePopup() {
                 }
 
                 // combine relative path to delete
-                std::filesystem::path projectPath = std::string(SOURCE_DIR_R) + "/" + relativePath;
+                std::filesystem::path projectPath = JsonIO::projectSourceRoot() + "/" + relativePath;
                 if (std::filesystem::exists(projectPath)) {
                     std::filesystem::remove(projectPath);
                     std::cout << "Deleted asset (Project): " << projectPath.string() << std::endl;
@@ -1018,7 +984,7 @@ void UI::assetRenamePopup() {
                     assetsChangedFlag = true; // reload assets
 
 					// change in the project folder as well
-                    std::filesystem::path sourceDir(SOURCE_DIR_R);
+                    std::filesystem::path sourceDir(JsonIO::projectSourceRoot());
                     
 					// split the "shaders/" part to get relative path
                     std::string relative;

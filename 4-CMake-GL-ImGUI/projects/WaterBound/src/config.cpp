@@ -7,65 +7,11 @@
 * End Header **************************************************************************/
 
 #include "config.h"
+#include "JsonIO.h" 
 
 bool  gShowFpsInTitle = true;
 bool  gShowInputDebug = false;
 float gClearColor[4] = { 0.2f, 0.2f, 0.25f, 1.0f };
-
-/* ========================== JsonIO helpers ========================== */
-namespace JsonIO {
-
-    static bool AtomicMove(const std::string& tmp, const std::string& dst, std::string* err) {
-        std::error_code ec;
-        std::filesystem::remove(dst, ec);
-        std::filesystem::rename(tmp, dst, ec);
-        if (ec) {
-            std::filesystem::copy_file(tmp, dst,
-                std::filesystem::copy_options::overwrite_existing, ec);
-            std::filesystem::remove(tmp, ec);
-            if (ec) { if (err) *err = "Move failed: " + ec.message(); return false; }
-        }
-        return true;
-    }
-
-    bool ReadFileToDocument(const std::string& path,
-        rapidjson::Document& doc,
-        std::string* err)
-    {
-        std::ifstream ifs(path, std::ios::binary);
-        if (!ifs) { if (err) *err = "Could not open " + path; return false; }
-        rapidjson::IStreamWrapper isw(ifs);   // uses stream’s own buffering
-        doc.ParseStream(isw);
-        if (doc.HasParseError()) {
-            if (err) *err = std::string("JSON parse error @")
-                + std::to_string(doc.GetErrorOffset()) + ": "
-                + rapidjson::GetParseError_En(doc.GetParseError());
-            return false;
-        }
-        if (!doc.IsObject()) { if (err) *err = "Root JSON must be an object"; return false; }
-        return true;
-    }
-
-    bool WriteDocumentToFile(const std::string& path,
-        rapidjson::Document& doc,
-        bool pretty,
-        std::string* err)
-    {
-        std::filesystem::create_directories(std::filesystem::path(path).parent_path());
-        const std::string tmp = path + ".tmp";
-
-        std::ofstream ofs(tmp, std::ios::binary | std::ios::trunc);
-        if (!ofs) { if (err) *err = "Cannot open temp file for writing: " + tmp; return false; }
-
-        rapidjson::OStreamWrapper osw(ofs);
-        if (pretty) { rapidjson::PrettyWriter<rapidjson::OStreamWrapper> w(osw); w.SetIndent(' ', 2); doc.Accept(w); }
-        else { rapidjson::Writer<rapidjson::OStreamWrapper>       w(osw);                     doc.Accept(w); }
-
-        ofs.flush();
-        ofs.close();
-        return AtomicMove(tmp, path, err);
-    }
-} // namespace JsonIO
 
 /* ===================== AppConfig field mappers ====================== */
 namespace {
@@ -111,7 +57,7 @@ namespace {
 bool LoadConfig(const std::string& path, AppConfig& out, std::string* err)
 {
     rapidjson::Document doc;
-    if (!JsonIO::ReadFileToDocument(path, doc, err)) return false;   // <—— change here
+    if (!JsonIO::ReadFileToDocument(path, doc, err)) return false;  
 
     if (doc.HasMember("window") && doc["window"].IsObject()) {
         const auto& w = doc["window"];
@@ -141,5 +87,5 @@ bool SaveConfig(const std::string& path, const AppConfig& cfg, std::string* err,
 {
     rapidjson::Document doc;
     toDocument(cfg, doc);
-    return JsonIO::WriteDocumentToFile(path, doc, pretty, err);      // uses JsonIO
+    return JsonIO::WriteDocumentToFile(path, doc, pretty, err);      
 }

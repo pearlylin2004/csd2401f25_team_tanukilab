@@ -17,6 +17,7 @@ Technology is prohibited.
 
 #pragma once
 #include <fstream>
+#include <cstring>
 #include "GameObject.h"
 
 //GameObjectManager should hold every existing GameObject in a smart pointer
