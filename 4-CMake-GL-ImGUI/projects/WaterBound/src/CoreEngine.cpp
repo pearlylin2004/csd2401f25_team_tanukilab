@@ -23,6 +23,9 @@ Technology is prohibited.
 /* End Header **************************************************************************/
 
 #define STB_IMAGE_IMPLEMENTATION
+#ifndef RUNTIME_DIR_R
+#define RUNTIME_DIR_R "./shaders"
+#endif
 #include "CoreEngine.h"
 
 CoreEngine::CoreEngine()
@@ -74,6 +77,7 @@ void CoreEngine::Init() {
 
 
     m_manager = std::make_unique<GameObjectManager>();
+	m_logicSystem = std::make_unique<LogicSystem>();
     m_inputSystem = std::make_unique<InputSystem>();
     m_collisionSystem = std::make_unique<CollisionSystem>();
     m_physicsSystem = std::make_unique<PhysicsSystem>();
@@ -83,6 +87,7 @@ void CoreEngine::Init() {
     m_fontSystem = std::make_unique<FontSystem>();
     m_guiSystem = std::make_unique<GUISystem>();
 
+    PrefabManager::Instance().loadPrefabRegistry(std::string(RUNTIME_DIR_R) + "/Prefab/prefab_registry.json");
     m_luaSystem->init();
     //m_manager->init();
     m_guiSystem->init(*m_manager);
@@ -207,7 +212,8 @@ void CoreEngine::Update(float deltaTime) {
         m_physicsSystem->update(*m_manager, deltaTime);
     }
 
-   
+    // Update all systems in order
+    m_logicSystem->update(*m_manager, deltaTime);
     m_renderSystem->update(*m_manager, deltaTime);
     m_fontSystem->update(*m_manager);
 

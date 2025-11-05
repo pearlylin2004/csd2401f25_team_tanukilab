@@ -2,39 +2,18 @@
   "version": 1,
   "objects": [
     {
+      "prefabid": "dd60e1e1-641c-4ed5-b69d-ffadfa02fb7a",
       "name": "player",
       "components": {
         "Transform": {
-          "pos": [0.0, 0.0, 0.03],
-          "rotation": 1.0,
-          "scale": [5.0, 3.0, 0.0]
-        },
-        "Render": {
-          "shape": "square",
-          "hasTex": 1,
-          "texture": "shaders/Leaf_Gun_Empty.png",
-          "hasAnimation": 0
-        },
-        "Input": {},
-        "Physics": { "inWater": 0, "buoyancy": 0 },
-        "CollisionInfo": {}
+          "pos": [0.0, 0.0, 0.03]
+        }
       }
     },
     {
+      "prefabid": "f7665aa3-619e-49a1-892a-31fbc8b377a2",
       "name": "platform",
-      "components": {
-        "Transform": {
-          "pos": [0.0, 0.0, -0.001],
-          "rotation": 1.0,
-          "scale": [50.0, 50.0, 0.0]
-        },
-        "Render": {
-          "shape": "circle",
-          "hasTex": 0,
-          "hasAnimation": 0
-        },
-        "Physics": { "inWater": 1, "buoyancy": 1 }
-      }
+      "components": {}
     },
     {
       "name": "bullet",
@@ -53,18 +32,9 @@
       }
     },
     {
+      "prefabid": "4828c393-9fcf-42f8-8b05-ddc8d75096be",
       "name": "player1",
       "components": {
-        "Transform": {
-          "pos": [8.0, 0.0, 0.01],
-          "rotation": 1.0,
-          "scale": [1.0, 1.0, 0.0]
-        },
-        "Render": {
-          "shape": "square",
-          "hasTex": 0,
-          "hasAnimation": 0
-        },
         "Physics": { "inWater": 0, "buoyancy": 0 },
         "CollisionInfo": {}
       }
@@ -94,17 +64,11 @@
       }
     },
     {
+      "prefabid": "4828c393-9fcf-42f8-8b05-ddc8d75096be",
       "name": "player2",
       "components": {
         "Transform": {
-          "pos": [-8.0, 0.0, 0.01],
-          "rotation": 1.0,
-          "scale": [1.0, 1.0, 0.0]
-        },
-        "Render": {
-          "shape": "square",
-          "hasTex": 0,
-          "hasAnimation": 0
+          "pos": [-8.0, 0.0, 0.01]
         }
       }
     },

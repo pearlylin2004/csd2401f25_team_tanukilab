@@ -17,6 +17,8 @@ Technology is prohibited.
 
 #include "GameObjectManager.h"
 #include "config.h"
+#include "prefabManager.h"
+#include "Component.h"
 
 #ifndef RUNTIME_SCENE_DIR_R
 #define RUNTIME_SCENE_DIR_R "./shaders/Scene"
@@ -73,6 +75,10 @@ GameObject* GameObjectManager::createGameObject(const std::string& name) {
 
 
 	return ptr;
+}
+
+std::unique_ptr<GameObject> GameObjectManager::createTempGameObject(const std::string& name) {
+	return std::make_unique<GameObject>(name);
 }
 
 //use this when objects need to interact with each other
@@ -502,6 +508,27 @@ void GameObjectManager::saveToJson(const std::string& filename, bool isNew) cons
 
 
 
+static PlayerState parsePlayerState(const std::string& s) {
+	if (s == "Idle")     return PlayerState::Idle;
+	if (s == "Walking")  return PlayerState::Walking;
+	if (s == "Jumping")  return PlayerState::Jumping;
+	if (s == "Falling")  return PlayerState::Falling;
+	if (s == "Shooting") return PlayerState::Shooting;
+	return PlayerState::Idle; // default/fallback
+}
+
+static const char* playerStateToStr(PlayerState state) {
+	switch (state) {
+	case PlayerState::Idle:     return "Idle";
+	case PlayerState::Walking:  return "Walking";
+	case PlayerState::Jumping:  return "Jumping";
+	case PlayerState::Falling:  return "Falling";
+	case PlayerState::Shooting: return "Shooting";
+	default:                    return "Idle";
+	}
+}
+
+
 void GameObjectManager::loadFromJson(const std::string& filename) {
 	rapidjson::Document doc;
 	std::string err;
@@ -534,7 +561,7 @@ void GameObjectManager::loadFromJson(const std::string& filename) {
 
 		if (!jObj.HasMember("components") || !jObj["components"].IsObject())
 			continue;
-
+		
 		const auto& comps = jObj["components"];
 
 		// ---- Transform ----
@@ -598,7 +625,22 @@ void GameObjectManager::loadFromJson(const std::string& filename) {
 				r->hasAnimation = false;
 			}
 
-			// If your Render lacks these, keep them out.
+			if (comps.HasMember("StateMachine") && comps["StateMachine"].IsObject()) {
+				const auto& smj = comps["StateMachine"];
+				auto* sm = go->addComponent<StateMachine>();
+
+				if (smj.HasMember("state") && smj["state"].IsString())
+					sm->state = parsePlayerState(smj["state"].GetString());
+
+				if (smj.HasMember("facingRight")) {
+					if (smj["facingRight"].IsBool())       sm->facingRight = smj["facingRight"].GetBool();
+					else if (smj["facingRight"].IsInt())   sm->facingRight = (smj["facingRight"].GetInt() != 0);
+				}
+
+				if (smj.HasMember("stateTime") && smj["stateTime"].IsNumber())
+					sm->stateTime = static_cast<float>(smj["stateTime"].GetDouble());
+			}
+
 //          if (jr.HasMember("visible")     && jr["visible"].IsBool())     r->visible       = jr["visible"].GetBool();
 //          if (jr.HasMember("transparent") && jr["transparent"].IsBool()) r->isTransparent = jr["transparent"].GetBool();
 //          if (jr.HasMember("wireframe")   && jr["wireframe"].IsBool())   r->wireframe     = jr["wireframe"].GetBool();
@@ -686,15 +728,501 @@ void GameObjectManager::loadFromJson(const std::string& filename) {
 	std::cout << "Scene loaded (JSON): " << filename << "\n";
 }
 
+void GameObjectManager::loadSceneFromJson(const std::string& filename) {
 
+	rapidjson::Document doc;
+	std::string err;
+	if (!JsonIO::ReadFileToDocument(filename, doc, &err)) {
+		std::cerr << "Scene load failed: " << err << "\n";
+		return;
+	}
+
+	int version = 1;
+	if (doc.HasMember("version") && doc["version"].IsInt())
+		version = doc["version"].GetInt();
+	if (version != 1)
+		std::cerr << "Warning: unsupported scene version " << version << "\n";
+
+	m_gameObjects.clear();
+
+	if (!doc.HasMember("objects") || !doc["objects"].IsArray()) {
+		std::cerr << "Scene JSON missing 'objects' array.\n";
+		return;
+	}
+
+	for (auto& jObj : doc["objects"].GetArray()) {
+		if (!jObj.IsObject()) continue;
+
+		std::string name = (jObj.HasMember("name") && jObj["name"].IsString())
+			? jObj["name"].GetString()
+			: ("Object_" + std::to_string(m_gameObjects.size()));
+
+		GameObject* go = createGameObject(name);
+
+		// check if this object references a prefab
+		if (jObj.HasMember("prefabid") && jObj["prefabid"].IsString()) {
+			std::string prefabID = jObj["prefabid"].GetString();
+			go->getObjectPrefabID() = prefabID;
+			PrefabManager::Instance().instantiate(go, *this);
+
+		}
+		else {
+			// if no prefab, just create a fresh game object
+			std::string name = (jObj.HasMember("name") && jObj["name"].IsString())
+				? jObj["name"].GetString()
+				: ("Object_" + std::to_string(m_gameObjects.size()));
+		}
+
+		/*
+		For obj referencing prefab -> this will override any scene-specific components, if nothing in scene data to override then will continue
+		For obj without referencing prefab -> this simply set up its components
+		*/
+		if (!jObj.HasMember("components") || !jObj["components"].IsObject() || jObj["components"].ObjectEmpty())
+			continue;
+
+		const auto& comps = jObj["components"];
+
+		// ---- Transform ----
+		if (comps.HasMember("Transform") && comps["Transform"].IsObject()) {
+			const auto& jt = comps["Transform"];
+
+			auto* t = go->getComponent<Transform>();
+			if (!t) t = go->addComponent<Transform>();
+
+			if (jt.HasMember("pos") && jt["pos"].IsArray() && jt["pos"].Size() == 3) {
+				t->x = jt["pos"][0].GetFloat();
+				t->y = jt["pos"][1].GetFloat();
+				t->z = jt["pos"][2].GetFloat();
+			}
+			if (jt.HasMember("rotation") && jt["rotation"].IsNumber()) {
+				t->rotation = jt["rotation"].GetFloat();
+			}
+			if (jt.HasMember("scale") && jt["scale"].IsArray() && jt["scale"].Size() == 3) {
+				t->scaleX = jt["scale"][0].GetFloat();
+				t->scaleY = jt["scale"][1].GetFloat();
+				t->scaleZ = jt["scale"][2].GetFloat();
+			}
+
+			/*std::cout << "\n\nReading from scene...\n";
+			std::cout << "Transform: x: " << t->x << ", y: " << t->y << ", z: " << t->z << std::endl;
+			std::cout << "Rotation: " << t->rotation << std::endl;
+			std::cout << "Scale: x: " << t->scaleX << ", y: " << t->scaleY << ", z: " << t->scaleZ << std::endl;*/
+		}
+
+		// ---- Render ----
+		if (comps.HasMember("Render") && comps["Render"].IsObject()) {
+			const auto& jr = comps["Render"];
+			
+			auto* r = go->getComponent<Render>();
+			if (!r) r = go->addComponent<Render>();
+
+			// shape
+			std::string shp = (jr.HasMember("shape") && jr["shape"].IsString())
+				? jr["shape"].GetString()
+				: "square";
+			r->modelRef = renderer::models[static_cast<int>(StrToShape(shp))];
+
+			// hasTex / texture (accept bool or 0/1)
+			if (jr.HasMember("hasTex")) {
+				r->hasTex = jr["hasTex"].IsBool()
+					? jr["hasTex"].GetBool()
+					: (jr["hasTex"].GetInt() != 0);
+			}
+			else {
+				r->hasTex = false;
+			}
+
+			if (r->hasTex && jr.HasMember("texture") && jr["texture"].IsString()) {
+				r->texFile = jr["texture"].GetString();
+				r->texHDL = 0;
+				r->texChanged = true;   // lazy GPU load later
+			}
+			else {
+				r->texFile.clear();
+				r->texHDL = 0;
+				r->texChanged = false;
+			}
+
+			if (jr.HasMember("hasAnimation")) {
+				r->hasAnimation = jr["hasAnimation"].IsBool()
+					? jr["hasAnimation"].GetBool()
+					: (jr["hasAnimation"].GetInt() != 0);
+			}
+			else {
+				r->hasAnimation = false;
+			}
+
+			// If your Render lacks these, keep them out.
+//          if (jr.HasMember("visible")     && jr["visible"].IsBool())     r->visible       = jr["visible"].GetBool();
+//          if (jr.HasMember("transparent") && jr["transparent"].IsBool()) r->isTransparent = jr["transparent"].GetBool();
+//          if (jr.HasMember("wireframe")   && jr["wireframe"].IsBool())   r->wireframe     = jr["wireframe"].GetBool();
+		}
+
+		// ---- Input (presence only) ----
+		if (comps.HasMember("Input") && comps["Input"].IsObject()) {
+			auto* i = go->getComponent<Input>();
+			if (!i) i = go->addComponent<Input>(1.f);
+		}
+
+		// ---- Physics ----
+		if (comps.HasMember("Physics") && comps["Physics"].IsObject()) {
+			const auto& jp = comps["Physics"];
+			
+			auto* p = go->getComponent<Physics>();
+			if (!p) p = go->addComponent<Physics>();
+
+			if (jp.HasMember("inWater")) {
+				p->inWater = jp["inWater"].IsBool()
+					? jp["inWater"].GetBool()
+					: (jp["inWater"].GetInt() != 0);
+			}
+			if (jp.HasMember("buoyancy")) {
+				p->buoancy = jp["buoyancy"].IsBool()
+					? jp["buoyancy"].GetBool()
+					: (jp["buoyancy"].GetInt() != 0);
+			}
+		}
+
+		// ---- CollisionInfo (presence only) ----
+		if (comps.HasMember("CollisionInfo") && comps["CollisionInfo"].IsObject()) {
+			auto* c = go->getComponent<CollisionInfo>();
+			if (!c)
+				c = go->addComponent<CollisionInfo>();
+		}
+
+		// ---- Animation ----
+		if (comps.HasMember("Animation") && comps["Animation"].IsObject()) {
+			const auto& ja = comps["Animation"];
+
+			auto* a = go->getComponent<Animation>();
+			if (!a)
+				a = go->addComponent<Animation>();
+
+			if (ja.HasMember("loop")) {
+				a->loop = ja["loop"].IsBool()
+					? ja["loop"].GetBool()
+					: (ja["loop"].GetInt() != 0);
+			}
+			if (ja.HasMember("currentFrameColumn") && ja["currentFrameColumn"].IsInt())
+				a->currentFrameColumn = ja["currentFrameColumn"].GetInt();
+			if (ja.HasMember("currentFrameRow") && ja["currentFrameRow"].IsInt())
+				a->currentFrameRow = ja["currentFrameRow"].GetInt();
+			if (ja.HasMember("totalColumn") && ja["totalColumn"].IsInt())
+				a->totalColumn = ja["totalColumn"].GetInt();
+			if (ja.HasMember("totalRow") && ja["totalRow"].IsInt())
+				a->totalRow = ja["totalRow"].GetInt();
+			if (ja.HasMember("frameTime") && ja["frameTime"].IsNumber())
+				a->frameTime = ja["frameTime"].GetFloat();
+		}
+
+		// ---- State Machine ----
+		if (comps.HasMember("StateMachine") && comps["StateMachine"].IsObject()) {
+			const auto& smj = comps["StateMachine"];
+
+			auto* sm = go->getComponent<StateMachine>();
+			if (!sm)
+				sm = go->addComponent<StateMachine>();
+
+			if (smj.HasMember("state") && smj["state"].IsString())
+				sm->state = parsePlayerState(smj["state"].GetString());
+
+			if (smj.HasMember("facingRight")) {
+				if (smj["facingRight"].IsBool())       sm->facingRight = smj["facingRight"].GetBool();
+				else if (smj["facingRight"].IsInt())   sm->facingRight = (smj["facingRight"].GetInt() != 0);
+			}
+
+			if (smj.HasMember("stateTime") && smj["stateTime"].IsNumber())
+				sm->stateTime = static_cast<float>(smj["stateTime"].GetDouble());
+
+			/*std::cout << "\n\nReading scene...\n";
+			std::cout << "State: " << sm->facingRight << std::endl;
+			std::cout << "State Time: " << sm->stateTime << std::endl;*/
+		}
+
+		//font component
+		if (comps.HasMember("FontComponent") && comps["FontComponent"].IsObject()) {
+			const auto& jf = comps["FontComponent"];
+			auto* fc = go->addComponent<FontComponent>();
+
+			// word/text
+			if (jf.HasMember("word") && jf["word"].IsString()) {
+				fc->word = jf["word"].GetString();
+			}
+
+			// color (RGB array)
+			if (jf.HasMember("color") && jf["color"].IsArray() && jf["color"].Size() == 3) {
+				fc->clr.r = jf["color"][0].GetFloat();
+				fc->clr.g = jf["color"][1].GetFloat();
+				fc->clr.b = jf["color"][2].GetFloat();
+			}
+
+			// scale
+			if (jf.HasMember("scale") && jf["scale"].IsNumber()) {
+				fc->scale = jf["scale"].GetFloat();
+			}
+
+			// fontType (optional, default 1)
+			if (jf.HasMember("fontType") && jf["fontType"].IsInt()) {
+				fc->fontType = jf["fontType"].GetInt();
+			}
+			else {
+				fc->fontType = 1;  // Default to ARIAL
+			}
+		}
+	}
+
+	std::cout << "Scene loaded (JSON): " << filename << "\n";
+}
+
+void GameObjectManager::saveSceneToJson(const std::string& filename, bool isNew) const {
+	rapidjson::Document doc;
+	doc.SetObject();
+	auto& a = doc.GetAllocator();
+
+	PrefabManager& PM = PrefabManager::Instance();
+
+	// version header
+	doc.AddMember("version", rapidjson::Value(1), a);
+
+	if (!isNew) {
+
+		// objects array
+		rapidjson::Value objects(rapidjson::kArrayType);
+
+		for (auto const& kv : m_gameObjects) {
+			const GameObject* obj = kv.second.get();
+
+			rapidjson::Value jObj(rapidjson::kObjectType);
+
+			// prefab ID
+			const std::string& prefabID = obj->getObjectPrefabID();
+			if (!prefabID.empty()) {
+				jObj.AddMember("prefabid", rapidjson::Value(prefabID.c_str(), a), a);
+			}
+
+			// name
+			jObj.AddMember("name", rapidjson::Value(obj->getObjectName().c_str(), a), a);
+
+			// get prefab JSON if obj referencing a prefab
+			const rapidjson::Document* prefabDoc{ nullptr };
+			if (!prefabID.empty()) {
+				prefabDoc = PrefabManager::Instance().getPrefabJson(prefabID);
+			}
+
+			/* ------------ Useful lambda for comparing later ------------ */
+			// obj referencing prefab -> if new data added for scene, will override prefab data
+			// compare 2 float
+			auto differsFloat = [](float a, float b) { return std::fabs(a - b) > 1e-6f; };
+			// compare 2 int
+			auto differsInt = [](int a, int b) { return a != b; };
+			// compare 2 boolean
+			auto differsBool = [](bool a, bool b) { return a != b; };
+
+			// components container
+			rapidjson::Value comps(rapidjson::kObjectType);
+
+			// ---- Transform ----
+			if (auto t = obj->getComponent<Transform>()) {
+				rapidjson::Value jt(rapidjson::kObjectType);
+
+				// 
+				const rapidjson::Value* prefabT = PM.getPrefabJsonComp(prefabDoc, "Transform");
+
+				if (!prefabT || differsFloat((*prefabT)["pos"][0].GetFloat(), t->x) ||
+					differsFloat((*prefabT)["pos"][1].GetFloat(), t->y) ||
+					differsFloat((*prefabT)["pos"][2].GetFloat(), t->z)) {
+					rapidjson::Value pos(rapidjson::kArrayType);
+					pos.PushBack(t->x, a).PushBack(t->y, a).PushBack(t->z, a);
+					jt.AddMember("pos", pos, a);
+				}
+
+				if (!prefabT || !prefabT->HasMember("rotation") || differsFloat((*prefabT)["rotation"].GetFloat(), t->rotation))
+					jt.AddMember("rotation", t->rotation, a);
+
+				if (!prefabT || !prefabT->HasMember("scale") ||
+					differsFloat((*prefabT)["scale"][0].GetFloat(), t->scaleX) ||
+					differsFloat((*prefabT)["scale"][1].GetFloat(), t->scaleY) ||
+					differsFloat((*prefabT)["scale"][2].GetFloat(), t->scaleZ)) {
+					rapidjson::Value sc(rapidjson::kArrayType);
+					sc.PushBack(t->scaleX, a).PushBack(t->scaleY, a).PushBack(t->scaleZ, a);
+					jt.AddMember("scale", sc, a);
+				}
+
+				if (!jt.ObjectEmpty()) comps.AddMember("Transform", jt, a);
+			}
+
+			// ---- Render ----
+			if (auto r = obj->getComponent<Render>()) {
+				rapidjson::Value jr(rapidjson::kObjectType);
+				const rapidjson::Value* prefabR = PM.getPrefabJsonComp(prefabDoc, "Render");
+
+				std::string shapeStr = ShapeToStr(r->modelRef.shape);
+				if (!prefabR || !prefabR->HasMember("shape") || shapeStr != (*prefabR)["shape"].GetString())
+					jr.AddMember("shape", rapidjson::Value(shapeStr.c_str(), a), a);
+
+				auto pushIfDiffBool = [&](const char* key, bool val) {
+					if (!prefabR || !prefabR->HasMember(key) ||
+						((*prefabR)[key].IsBool() && differsBool((*prefabR)[key].GetBool(), val)) ||
+						((*prefabR)[key].IsInt() && differsBool((*prefabR)[key].GetInt() != 0, val))) {
+						jr.AddMember(rapidjson::Value(key, a), rapidjson::Value(val ? 1 : 0), a);
+					}
+					};
+
+				// save hasTex based on whether have texture
+				pushIfDiffBool("hasTex", r->hasTex);
+				if (r->hasTex && !r->texFile.empty()) {
+					if (!prefabR || !prefabR->HasMember("texture") || r->texFile != (*prefabR)["texture"].GetString()) {
+						jr.AddMember("texture", rapidjson::Value(r->texFile.c_str(), a), a);
+						jr.AddMember("hasTex", rapidjson::Value(r->hasTex ? 1 : 0), a);
+					}
+
+				}
+
+				pushIfDiffBool("hasAnimation", r->hasAnimation);
+
+				if (!jr.ObjectEmpty()) comps.AddMember("Render", jr, a);
+			}
+
+			// ---- Physics ----
+			if (auto p = obj->getComponent<Physics>()) {
+				rapidjson::Value jp(rapidjson::kObjectType);
+				const rapidjson::Value* prefabP = PM.getPrefabJsonComp(prefabDoc, "Physics");
+
+				auto pushIfDiffBool = [&](const char* key, bool val) {
+					if (!prefabP || !prefabP->HasMember(key) ||
+						((*prefabP)[key].IsBool() && differsBool((*prefabP)[key].GetBool(), val)) ||
+						((*prefabP)[key].IsInt() && differsBool((*prefabP)[key].GetInt() != 0, val))) {
+						jp.AddMember(rapidjson::Value(key, a), rapidjson::Value(val ? 1 : 0), a);
+					}
+					};
+
+				// if different then change scene data
+				pushIfDiffBool("inWater", p->inWater);
+				pushIfDiffBool("buoyancy", p->buoancy);
+
+				if (!jp.ObjectEmpty()) comps.AddMember("Physics", jp, a);
+			}
+
+			// ---- Input (presence only) ----
+			if (obj->hasComponent<Input>()) {
+				const rapidjson::Value* prefabI = PM.getPrefabJsonComp(prefabDoc, "Input");
+				if (!prefabI) comps.AddMember("Input", rapidjson::Value(rapidjson::kObjectType), a);
+			}
+
+			// ---- CollisionInfo (presence only) ----
+			if (obj->hasComponent<CollisionInfo>()) {
+				const rapidjson::Value* prefabC = PM.getPrefabJsonComp(prefabDoc, "CollisionInfo");
+				if (!prefabC) comps.AddMember("CollisionInfo", rapidjson::Value(rapidjson::kObjectType), a);
+			}
+
+			// ---- Animation ----
+			if (auto an = obj->getComponent<Animation>()) {
+				rapidjson::Value ja(rapidjson::kObjectType);
+				const rapidjson::Value* prefabA = PM.getPrefabJsonComp(prefabDoc, "Animation");
+
+				auto pushIfDiffInt = [&](const char* key, int val) {
+					if (!prefabA || !prefabA->HasMember(key) || differsInt((*prefabA)[key].GetInt(), val))
+						ja.AddMember(rapidjson::Value(key, a), rapidjson::Value(val), a);
+					};
+				auto pushIfDiffFloat = [&](const char* key, float val) {
+					if (!prefabA || !prefabA->HasMember(key) || differsFloat((*prefabA)[key].GetFloat(), val))
+						ja.AddMember(rapidjson::Value(key, a), rapidjson::Value(val), a);
+					};
+				auto pushIfDiffBool = [&](const char* key, bool val) {
+					if (!prefabA || !prefabA->HasMember(key) ||
+						((*prefabA)[key].IsBool() && differsBool((*prefabA)[key].GetBool(), val)) ||
+						((*prefabA)[key].IsInt() && differsBool((*prefabA)[key].GetInt() != 0, val))) {
+						ja.AddMember(rapidjson::Value(key, a), rapidjson::Value(val ? 1 : 0), a);
+					}
+					};
+
+				pushIfDiffBool("loop", an->loop);
+				pushIfDiffInt("currentFrameColumn", an->currentFrameColumn);
+				pushIfDiffInt("currentFrameRow", an->currentFrameRow);
+				pushIfDiffInt("totalColumn", an->totalColumn);
+				pushIfDiffInt("totalRow", an->totalRow);
+				pushIfDiffFloat("frameTime", an->frameTime);
+
+				if (!ja.ObjectEmpty()) comps.AddMember("Animation", ja, a);
+			}
+
+			// ---- StateMachine ----
+			if (auto sm = obj->getComponent<StateMachine>()) {
+				rapidjson::Value js(rapidjson::kObjectType);
+				const rapidjson::Value* prefabSM = PrefabManager::Instance().getPrefabJsonComp(prefabDoc, "StateMachine");
+
+				if (!prefabSM || !prefabSM->HasMember("state") || sm->state != parsePlayerState((*prefabSM)["state"].GetString()))
+					js.AddMember("state", rapidjson::Value(playerStateToStr(sm->state), a), a);
+
+				if (!prefabSM || !prefabSM->HasMember("facingRight") ||
+					((*prefabSM)["facingRight"].IsBool() && differsBool((*prefabSM)["facingRight"].GetBool(), sm->facingRight)) ||
+					((*prefabSM)["facingRight"].IsInt() && differsBool((*prefabSM)["facingRight"].GetInt() != 0, sm->facingRight)))
+					js.AddMember("facingRight", rapidjson::Value(sm->facingRight ? 1 : 0), a);
+
+				if (!prefabSM || !prefabSM->HasMember("stateTime") ||
+					differsFloat((*prefabSM)["stateTime"].GetFloat(), sm->stateTime))
+					js.AddMember("stateTime", rapidjson::Value(sm->stateTime), a);
+
+				if (!js.ObjectEmpty())
+					comps.AddMember("StateMachine", js, a);
+			}
+
+			//font component
+			if (auto fc = obj->getComponent<FontComponent>()) {
+				rapidjson::Value jf(rapidjson::kObjectType);
+
+				// word
+				jf.AddMember("word",
+					rapidjson::Value(fc->word.c_str(), a),
+					a);
+
+				// color array
+				rapidjson::Value color(rapidjson::kArrayType);
+				color.PushBack(rapidjson::Value().SetFloat(fc->clr.r), a)
+					.PushBack(rapidjson::Value().SetFloat(fc->clr.g), a)
+					.PushBack(rapidjson::Value().SetFloat(fc->clr.b), a);
+				jf.AddMember("color", color, a);
+
+				// scale
+				jf.AddMember("scale", rapidjson::Value().SetFloat(fc->scale), a);
+
+				// fontType
+				jf.AddMember("fontType", rapidjson::Value(fc->fontType), a);
+
+				comps.AddMember("FontComponent", jf, a);
+			}
+
+			if (!comps.ObjectEmpty()) jObj.AddMember("components", comps, a);
+			objects.PushBack(jObj, a);
+		}
+
+		// attach array
+		doc.AddMember("objects", objects, a);
+	}
+
+	std::string err;
+	if (!JsonIO::WriteDocumentToFile(filename, doc, /*pretty=*/true, &err)) {
+		std::cerr << "Scene save failed: " << err << "\n";
+	}
+	else {
+		std::cout << "Scene saved (JSON): " << filename << "\n";
+	}
+}
 
 void GameObjectManager::loadScene(const std::string& path) {
-	if (ends_with(path, ".json")) loadFromJson(path);
+	if (ends_with(path, ".json")) loadSceneFromJson(path);
 	else                          loadFromFile(path);   // keep legacy .txt scenes
+	//if (GameObject* p = getGameObject("player")) {
+	//	if (!p->hasComponent<StateMachine>()) {
+	//		p->addComponent<StateMachine>();
+	//		std::cout << "[Setup] Added StateMachine to player\n";
+	//	}
+	//}
+
 }
 
 void GameObjectManager::saveScene(const std::string& path, bool isNew) const {
-	if (ends_with(path, ".json")) saveToJson(path, isNew);
+	if (ends_with(path, ".json")) saveSceneToJson(path, isNew);
 	else                          saveToFile(path);
 }
 

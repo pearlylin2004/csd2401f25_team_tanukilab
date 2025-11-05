@@ -198,3 +198,16 @@ public:
     std::string filename; //path to the Lua file
     std::string scriptName; //unique identifier inside LuaSystem
 };
+
+// Logic Container (FSM) 
+enum class PlayerState { Idle, Walking, Jumping, Falling, Shooting };
+
+struct StateMachine : public Component {
+    PlayerState state = PlayerState::Idle;
+    float       stateTime = 0.f;
+    bool        facingRight = true;
+    std::unique_ptr<Component> clone() const override {
+        return std::make_unique<StateMachine>(*this);
+    }
+};
+

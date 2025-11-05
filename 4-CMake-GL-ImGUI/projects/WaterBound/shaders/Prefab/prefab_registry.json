@@ -1,0 +1,8 @@
+{
+    "version": 1,
+    "prefabIndex": [
+        { "id": "dd60e1e1-641c-4ed5-b69d-ffadfa02fb7a", "name": "player", "path": "/Prefab/player.json"},
+        { "id": "f7665aa3-619e-49a1-892a-31fbc8b377a2", "name": "platform", "path": "/Prefab/platform.json"},
+        { "id": "4828c393-9fcf-42f8-8b05-ddc8d75096be", "name": "player2", "path": "/Prefab/player2.json"}
+    ]
+}
