@@ -17,6 +17,8 @@ Technology is prohibited.
 
 #pragma once
 #include <fstream>
+#include <sstream>
+#include <iomanip>
 #include "GameObject.h"
 
 //GameObjectManager should hold every existing GameObject in a smart pointer
@@ -67,6 +69,8 @@ public:
 	void loadScene(const std::string& path);
 
 	void saveScene(const std::string& path, bool isNew = false) const;
+
+	void initializeSceneResources();
 
 private:
 	//map of all game objects

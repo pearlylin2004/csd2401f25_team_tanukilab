@@ -1,6 +1,6 @@
 /* Start Header ************************************************************************/
 /*!
-\file       audio.h
+\file       audio.cpp
 \author     Tan Chee Qing, cheeqing.tan, 2401486
 			- 100% of the file
 \par        cheeqing.tan@digipen.edu
@@ -28,12 +28,15 @@ AudioHandler& AudioHandler::getInstance() {
 }
 
 // check for FMOD errors (future: can change to logging instead of exit(-1))
-void AudioHandler::FMODErrorCheck(FMOD_RESULT result) {
-    if (result != FMOD_OK) {
-        std::cerr << "FMOD error: " << FMOD_ErrorString(result) << std::endl;
-		exit(-1); // instead of terminate, can change to logging the errors
-    }
-}
+//void AudioHandler::FMODErrorCheck(FMOD_RESULT result) {
+//    if (result != FMOD_OK) {
+//        std::cerr << "FMOD error: " << FMOD_ErrorString(result) << std::endl;
+//		exit(-1); // instead of terminate, can change to logging the errors
+//    }
+//}
+
+//^might have to move this to a utility file if i wanna use in resource manager
+//EDIT: moved to AudioUtility.h
 
 // initialize the audio system and load sounds
 void AudioHandler::init() {
@@ -41,18 +44,29 @@ void AudioHandler::init() {
 
 	FMODErrorCheck(system->init(36, FMOD_INIT_NORMAL, nullptr));
 
-	sounds.resize(static_cast<size_t>(soundID::count), nullptr);
+	ResourceManager::getInstance().init(system); // initialize resource manager with fmod system
+
+	//sounds.resize(static_cast<size_t>(soundID::count), nullptr);
 	channels.resize(static_cast<size_t>(soundID::count), nullptr);
 
 	for (int i = 0; i < static_cast<int>(soundID::count); ++i) {
-		soundID id = static_cast<soundID>(i);
+		soundID id = static_cast<soundID>(i);	
 		std::string path = soundIDToFilePath(id);
 
-		if (id == soundID::bg && !path.empty() && !loadSound(id, path, true)) {
+		/*if (id == soundID::bg && !path.empty() && !loadSound(id, path, true)) {
 			std::cerr << "Failed to load sound: " << path << std::endl;
 		}
 		else if (!path.empty() && !loadSound(id, path)) {
 			std::cerr << "Failed to load sound: " << path << std::endl;
+		}*/
+
+		// loading sounds now handled in ResourceManager
+		if (!path.empty()) {
+			bool loop = (id == soundID::bg);
+			FMOD::Sound* sound = ResourceManager::getInstance().getSound(path, loop);
+			if (!sound) {
+				std::cerr << "Failed to load sound: " << path << std::endl;
+			}
 		}
 
 	}
@@ -78,13 +92,15 @@ void AudioHandler::update() {
 
 // release all sounds and shut down the audio system (will shutdown automatically when dtor called)
 void AudioHandler::shutdown() {
-	for (FMOD::Sound* sound : sounds) {
+	/*for (FMOD::Sound* sound : sounds) {
 		if (sound) {
 			sound->release();
 		}
 	}
 
-	sounds.clear();
+	sounds.clear();*/
+	//ResourceManager will handle releasing sounds now
+
 	channels.clear();
 
 	if (system) {
@@ -96,24 +112,25 @@ void AudioHandler::shutdown() {
 
 
 /* Sound Management */
+// now done in ResourceManager
 // load the sound from file path, if loop is true, sound will loop until stopped (default false)
-bool AudioHandler::loadSound(soundID id, const std::string& filePath, bool loop) {
-	if (!system) {
-		std::cerr << "Error! Audio system not initialized..." << std::endl;
-		return false;
-	}
-
-	size_t pos = static_cast<size_t>(id);
-	if (sounds[pos] != nullptr) return true; // means sounds alr loaded, jic called multiple times
-
-	FMOD::Sound* sound = nullptr;
-	FMOD_MODE mode = loop ? FMOD_LOOP_NORMAL : FMOD_DEFAULT; // by default, sound stops after playing once
-	FMODErrorCheck(system->createSound(filePath.c_str(), mode, nullptr, &sound));
-
-	sounds[pos] = sound;
-
-	return true;
-}
+//bool AudioHandler::loadSound(soundID id, const std::string& filePath, bool loop) {
+//	if (!system) {
+//		std::cerr << "Error! Audio system not initialized..." << std::endl;
+//		return false;
+//	}
+//
+//	size_t pos = static_cast<size_t>(id);
+//	if (sounds[pos] != nullptr) return true; // means sounds alr loaded, jic called multiple times
+//
+//	FMOD::Sound* sound = nullptr;
+//	FMOD_MODE mode = loop ? FMOD_LOOP_NORMAL : FMOD_DEFAULT; // by default, sound stops after playing once
+//	FMODErrorCheck(system->createSound(filePath.c_str(), mode, nullptr, &sound));
+//
+//	sounds[pos] = sound;
+//
+//	return true;
+//}
 
 // play the sound, return the channel pointer if successful, nullptr if failed
 FMOD::Channel* AudioHandler::playSound(soundID id, float volume) {
@@ -122,17 +139,29 @@ FMOD::Channel* AudioHandler::playSound(soundID id, float volume) {
 		return nullptr;
 	}
 
-	size_t pos = static_cast<size_t>(id);
-	if (sounds[pos] == nullptr) {
+	std::string path = soundIDToFilePath(id);
+	if(path.empty()) {
+		std::cerr << "Error! Sound file path is empty..." << std::endl;
+		return nullptr;
+	}
+	/*if (sounds[pos] == nullptr) {
 		std::cerr << "Error! Sound not loaded..." << std::endl;
+		return nullptr;
+	}*/
+	bool loop = (id == soundID::bg);
+	FMOD::Sound* sound = ResourceManager::getInstance().getSound(path);
+	if(!sound) {
+		std::cerr << "Error! Sound could not be loaded: " << path << std::endl;
 		return nullptr;
 	}
 
 	FMOD::Channel* channel = nullptr;
-	FMODErrorCheck(system->playSound(sounds[pos], nullptr, false, &channel));
+	//FMODErrorCheck(system->playSound(sounds[pos], nullptr, false, &channel));
+	FMODErrorCheck(system->playSound(ResourceManager::getInstance().getSound(path), nullptr, false, &channel));
 	if (channel) {
 		channel->setVolume(volume);
-		channels[pos] = channel; // store this for controlling ltr
+		//channels[pos] = channel; // store this for controlling ltr
+		channels[static_cast<size_t>(id)] = channel;
 	}
 
 	return channel;

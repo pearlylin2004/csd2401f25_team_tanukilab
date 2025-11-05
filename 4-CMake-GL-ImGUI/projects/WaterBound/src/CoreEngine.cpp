@@ -70,8 +70,11 @@ void CoreEngine::Init() {
     glClearColor(cfg.clear_color[0], cfg.clear_color[1], cfg.clear_color[2], cfg.clear_color[3]);
 
     // --- System Initialization ---
+    audio.init();
+
     InputHandler::init(m_window, cfg);
     renderer::init(cfg.width, cfg.height);
+
 
     m_manager = std::make_unique<GameObjectManager>();
 	m_logicSystem = std::make_unique<LogicSystem>();
@@ -81,14 +84,16 @@ void CoreEngine::Init() {
     m_renderSystem = std::make_unique<RenderSystem>();
     m_uiSystem = std::make_unique<UISystem>();
     m_luaSystem = std::make_unique<LuaSystem>();
+    m_fontSystem = std::make_unique<FontSystem>();
     m_guiSystem = std::make_unique<GUISystem>();
 
     PrefabManager::Instance().loadPrefabRegistry(std::string(RUNTIME_DIR_R) + "/Prefab/prefab_registry.json");
     m_luaSystem->init();
     //m_manager->init();
     m_guiSystem->init(*m_manager);
-    m_renderSystem->init(*m_manager, cfg.width, cfg.height);
-    m_uiSystem->init(m_window, m_renderSystem.get());
+	m_renderSystem->init(*m_manager, cfg.width, cfg.height);
+	m_uiSystem->init(m_window, m_renderSystem.get());
+    m_fontSystem->init(*m_manager);
 
     //iterate over all Lua scripts in the folder
     for (const auto& file : std::filesystem::directory_iterator("../projects/WaterBound/scripting")) {
@@ -111,8 +116,6 @@ void CoreEngine::Init() {
         }
     }
 
-    audio.init();
-    glfwPollEvents();
     m_isRunning = true;
 }
 
@@ -212,6 +215,10 @@ void CoreEngine::Update(float deltaTime) {
     // Update all systems in order
     m_logicSystem->update(*m_manager, deltaTime);
     m_renderSystem->update(*m_manager, deltaTime);
+    m_fontSystem->update(*m_manager);
+
+    if (UISystem::isShowUI()) glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
     m_uiSystem->update(*m_manager);
 
 }

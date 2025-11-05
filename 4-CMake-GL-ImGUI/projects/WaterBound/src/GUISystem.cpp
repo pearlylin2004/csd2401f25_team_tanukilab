@@ -118,6 +118,7 @@ void GUISystem::startGame(GameObjectManager& manager) {
 
     // Load the game scene
     manager.init();
+    manager.initializeSceneResources();
 
     // Change game state
     m_currentState = GameState::PLAYING;
