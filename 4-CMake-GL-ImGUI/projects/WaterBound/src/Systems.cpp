@@ -210,8 +210,8 @@ void RenderSystem::update(GameObjectManager& manager, float const& deltaTime)
 		renderer::model& mdl = renderer::models[(int)key.meshType];
 		renderer::drawInstances(mdl, pair.second);
 	}
-	if (UISystem::isShowUI()) glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
+	//if (UISystem::isShowUI()) glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	//record end time for performance tracking
 	auto end = std::chrono::high_resolution_clock::now();
 	double ms = std::chrono::duration<double, std::milli>(end - start).count(); //get elapse time in ms
@@ -272,7 +272,7 @@ void RenderSystem::init(GameObjectManager& manager, int fboW, int fboH)
 			}
 	}
 	//batchingSetUp(manager);
-	Font::init();
+	//Font::init();
 
 	fboWidth = fboW;
 	fboHeight = fboH;
