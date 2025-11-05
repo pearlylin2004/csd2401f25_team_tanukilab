@@ -23,6 +23,7 @@ Technology is prohibited.
 
 #include "Systems.h"
 
+
 //here we go buddies
 
 //all the systems need to get all game objects
@@ -106,46 +107,45 @@ void RenderSystem::update(GameObjectManager& manager, float const& deltaTime)
 		camView = renderer::cam.view;
 		camProj = renderer::cam.proj;
 	}
-	// else update game camera
-	
+
+	std::vector<GameObject*> objectWithTex;
+	std::vector<GameObject*> objectWithoutTex;
+
+	// Update textures if they have changed (in level editor)
 	for (GameObject* object : gameObjects)
 	{
 		if (object->hasComponent<Render>())
 		{
 			Render* render = object->getComponent<Render>();
+
 			if (render->texChanged) {
 				if (render->hasTex) {
-					glDeleteTextures(1, &render->texHDL); // to avoid leak
-					render->texHDL = 0;
+
+					//glDeleteTextures(1, &render->texHDL); // to avoid leak
+					//render->texHDL = 0;
+					//no more deleting textures here, handled in ResourceManager cus we have a cache now
+
+					//the below code is for future use
+					TextureData texData = ResourceManager::getInstance().getTexture(render->texFile);
+					render->texHDL = texData.id;
+					render->isTransparent = texData.isTransparent;
+					render->texChanged = false;
 				}
-				render->texHDL = uploadtex(render->texFile, render->isTransparent);
+				//render->texHDL = uploadtex(render->texFile, render->isTransparent);
+				TextureData texData = ResourceManager::getInstance().getTexture(render->texFile);
+				render->texHDL = texData.id;
+				render->isTransparent = texData.isTransparent;
+
 				render->texChanged = false;
 			}
+
+			if (object->getComponent<Render>()->hasTex)
+				objectWithTex.push_back(object);
+			else
+				objectWithoutTex.push_back(object);
 		}
 	}
-	
 
-	//std::vector<GameObject*> objectWithTex;
-	//std::vector<GameObject*> objectWithoutTex;
-
-	//for (auto object : gameObjects)
-	//{
-	//	Render* render = object->getComponent<Render>();
-
-	//	if (render->texChanged) {
-	//		if (render->hasTex) {
-	//			glDeleteTextures(1, &render->texHDL); // to avoid leak
-	//			render->texHDL = 0;
-	//		}
-	//		render->texHDL = uploadtex(render->texFile, render->isTransparent);
-	//		render->texChanged = false;
-	//	}
-
-	//	if (render->hasTex)
-	//		objectWithTex.push_back(object);
-	//	else
-	//		objectWithoutTex.push_back(object);
-	//}
 	//rendering objects without texture, just color
 	//glUseProgram(renderer::shdr_pgm[1]);
 	//GLint vTransformView = glGetUniformLocation(renderer::shdr_pgm[1], "V");
@@ -258,26 +258,24 @@ void RenderSystem::init(GameObjectManager& manager, int fboW, int fboH)
 {
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	stbi_set_flip_vertically_on_load(true);
+	//stbi_set_flip_vertically_on_load(true);
 	std::vector<GameObject*> gameObjects;
 	manager.getAllGameObjects(gameObjects);
 	for (GameObject* object : gameObjects)
 	{
-		if(object->hasComponent<Render>())
+		if (object->hasComponent<Render>()) {
+			Render* render = object->getComponent<Render>();
 			if (object->getComponent<Render>()->hasTex)
 			{
-				Render* render = object->getComponent<Render>();
-				render->texHDL = uploadtex(render->texFile, render->isTransparent);
-				std::cout << "Got handle: " << render->texHDL << std::endl;
+				//render->texHDL = uploadtex(render->texFile, render->isTransparent);
+				TextureData textureData = ResourceManager::getInstance().getTexture(render->texFile);
+				render->texHDL = textureData.id;
+				render->isTransparent = textureData.isTransparent;
+				//std::cerr << "Texture ID for " << render->texFile << ": " << render->texHDL << std::endl;
+				//std::cerr << "Is Transparent: " << (render->isTransparent ? "Yes" : "No") << std::endl;
 			}
+		}
 	}
-	//batchingSetUp(manager);
-	//Font::init();
-
-	fboWidth = fboW;
-	fboHeight = fboH;
-}
-
 void RenderSystem::batchingSetUp(GameObjectManager& manager, float const& deltaTime)
 {
 	std::vector<GameObject*> gameObjects;
@@ -331,36 +329,41 @@ void RenderSystem::batchingSetUp(GameObjectManager& manager, float const& deltaT
 			objectWithoutTex[render->modelRef.shape].push_back(data);
 		}
 	}
+
+	fboWidth = fboW;
+	fboHeight = fboH;
+	Font::init();
 }
 
+//this moved to ResourceManager.cpp
 // Upload a texture from file and return its OpenGL handle
-GLuint RenderSystem::uploadtex(std::string const& filename, bool& isTransparent)
-{
-	int width, height, channels;
-	unsigned char* data = stbi_load(filename.c_str(), &width, &height, &channels, STBI_rgb_alpha);
-	if (!data) {
-		std::cerr << "Failed to load image: " << filename << std::endl;
-		return 0;
-	}
-
-	std::cout << "Loaded " << filename
-		<< " (" << width << "x" << height << "), "
-		<< channels << " channels" << std::endl;
-
-	isTransparent = (channels == 4);
-
-	GLuint texobj_hdl;
-	glCreateTextures(GL_TEXTURE_2D, 1, &texobj_hdl);
-	glTextureStorage2D(texobj_hdl, 1, GL_RGBA8, static_cast<GLuint>(width), static_cast<GLuint>(height));
-	glTextureSubImage2D(texobj_hdl, 0, 0, 0, static_cast<GLuint>(width), static_cast<GLuint>(height), GL_RGBA, GL_UNSIGNED_BYTE, data);
-
-	glTextureParameteri(texobj_hdl, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTextureParameteri(texobj_hdl, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTextureParameteri(texobj_hdl, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glTextureParameteri(texobj_hdl, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	stbi_image_free(data);
-	return texobj_hdl;
-}
+//GLuint RenderSystem::uploadtex(std::string const& filename, bool& isTransparent)
+//{
+//	int width, height, channels;
+//	unsigned char* data = stbi_load(filename.c_str(), &width, &height, &channels, STBI_rgb_alpha);
+//	if (!data) {
+//		std::cerr << "Failed to load image: " << filename << std::endl;
+//		return 0;
+//	}
+//
+//	std::cout << "Loaded " << filename
+//		<< " (" << width << "x" << height << "), "
+//		<< channels << " channels" << std::endl;
+//
+//	isTransparent = (channels == 4);
+//
+//	GLuint texobj_hdl;
+//	glCreateTextures(GL_TEXTURE_2D, 1, &texobj_hdl);
+//	glTextureStorage2D(texobj_hdl, 1, GL_RGBA8, static_cast<GLuint>(width), static_cast<GLuint>(height));
+//	glTextureSubImage2D(texobj_hdl, 0, 0, 0, static_cast<GLuint>(width), static_cast<GLuint>(height), GL_RGBA, GL_UNSIGNED_BYTE, data);
+//
+//	glTextureParameteri(texobj_hdl, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+//	glTextureParameteri(texobj_hdl, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+//	glTextureParameteri(texobj_hdl, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+//	glTextureParameteri(texobj_hdl, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+//	stbi_image_free(data);
+//	return texobj_hdl;
+//}
 
 void RenderSystem::renderTex(GameObject* object, float const& deltaTime)
 {
@@ -376,6 +379,7 @@ void RenderSystem::renderTex(GameObject* object, float const& deltaTime)
 		transform->mdlWorld = glm::rotate(transform->mdlWorld, angle, glm::vec3(0, 0, 1.f));
 		transform->mdlWorld = glm::scale(transform->mdlWorld, glm::vec3(transform->scaleX, transform->scaleY, transform->scaleZ));
 		glBindTextureUnit(0, render->texHDL);
+		//std::cerr << "Binding Texture ID: " << render->texHDL << " for object: " << object->getObjectName() << std::endl;
 
 		glm::mat4 texRot{ 1 };
 		texRot = glm::rotate(texRot, angle, glm::vec3(0, 0, 1.f));
@@ -478,6 +482,10 @@ void RenderSystem::renderNoTex(GameObject* object)
 	}
 }
 
+void RenderSystem::fboAspectRatio(int& width, int& height) const {
+	width = fboWidth;
+	height = fboHeight;
+}
 //void RenderSystem::renderCollision(Collision::AABB const& box, glm::vec3 const& clr)
 //{
 //	{
@@ -528,6 +536,11 @@ void RenderSystem::renderNoTex(GameObject* object)
 void FontSystem::init(GameObjectManager& manager)
 {
 	Font::init();
+
+	ResourceManager::getInstance().getFont("shaders/Orange Knight.ttf");
+	ResourceManager::getInstance().getFont("shaders/ARIAL.TTF");
+	ResourceManager::getInstance().getFont("shaders/times.ttf");
+
 	std::vector<GameObject*> gameObjects;
 	manager.getAllGameObjects(gameObjects);
 	for (GameObject* object : gameObjects)
@@ -542,13 +555,47 @@ void FontSystem::init(GameObjectManager& manager)
 
 void FontSystem::update(GameObjectManager& manager)
 {
+	//for debugging only
+
+	//std::cout << "=== FontSystem::update() called ===" << std::endl;
+
 	std::vector<GameObject*> gameObjects;
 	manager.getAllGameObjects(gameObjects);
+
+	// Count font objects
+	/*int fontCount = 0;
+	for (GameObject* object : gameObjects) {
+		if (object->hasComponent<FontComponent>()) {
+			fontCount++;
+			FontComponent* fc = object->getComponent<FontComponent>();
+			std::cout << "Font object: " << object->getObjectName()
+				<< " | Text: '" << fc->word << "'" << std::endl;
+		}
+	}*/
+	//for debugging only
+	//std::cout << "Total font objects: " << fontCount << std::endl;
+
+	/*if (fontCount == 0) {
+		std::cout << "WARNING: No font objects to render!" << std::endl;
+		return;
+	}*/
+
 	glUseProgram(Font::fontShaders);
+
+	glm::mat4 camView, camProj;
+	if (UISystem::isShowUI()) {
+		camView = renderer::editorCam.view;
+		camProj = renderer::editorCam.proj;
+	}
+	else {
+		camView = renderer::cam.view;
+		camProj = renderer::cam.proj;
+	}
+
 	GLuint vTransformView = glGetUniformLocation(Font::fontShaders, "V");
-	glUniformMatrix4fv(vTransformView, 1, GL_FALSE, glm::value_ptr(renderer::cam.view));
+	glUniformMatrix4fv(vTransformView, 1, GL_FALSE, glm::value_ptr(camView));
 	GLuint vTransformProj = glGetUniformLocation(Font::fontShaders, "P");
-	glUniformMatrix4fv(vTransformProj, 1, GL_FALSE, glm::value_ptr(renderer::cam.proj));
+	glUniformMatrix4fv(vTransformProj, 1, GL_FALSE, glm::value_ptr(camProj));
 	for (GameObject* object : gameObjects)
 	{
 		if (object->hasComponent<FontComponent>())
@@ -563,18 +610,47 @@ void FontSystem::update(GameObjectManager& manager)
 void FontSystem::RenderText(GLuint& s, std::string text, float x, float y, float scale, glm::vec3 color, GameObject* object)
 {
 	// activate corresponding render state	
-	Font::FontMdl& mdl = object->getComponent<FontComponent>()->mdl;
 	FontComponent* fc = object->getComponent<FontComponent>();
+	Font::FontMdl& mdl = fc->mdl;
+
+	//Font::FontMdl& mdl = object->getComponent<FontComponent>()->mdl;
+	//^mans trolling here
+	
+	std::string fontPath;
+	switch (fc->fontType) {
+	case 0: fontPath = "shaders/Orange Knight.ttf"; break;
+	case 1: fontPath = "shaders/ARIAL.TTF"; break;
+	case 2: fontPath = "shaders/times.ttf"; break;
+	default: fontPath = "shaders/ARIAL.TTF"; break;
+	}
+
+	const FontData& fontData = ResourceManager::getInstance().getFont(fc->fontPath);
+
+	/*std::cout << "FontData has " << fontData.characters.size() << " characters loaded" << std::endl;
+	if (fontData.characters.empty()) {
+		std::cerr << "ERROR: Font data has NO characters!" << std::endl;
+		return;
+	}*/
+
 	glUseProgram(s);
 	glUniform3f(glGetUniformLocation(s, "textColor"), color.x, color.y, color.z);
 	glActiveTexture(GL_TEXTURE0);
 	glBindVertexArray(mdl.vao);
 
+
 	// iterate through all characters
 	std::string::const_iterator c;
 	for (c = text.begin(); c != text.end(); c++)
 	{
-		Font::Character ch = Font::characters[fc->fontType][*c];
+		unsigned char uc = static_cast<unsigned char>(*c);
+		auto it = fontData.characters.find(uc);
+		//if (it == fontData.characters.end()) {
+		//	std::cerr << "Character '" << uc << "' not found in font '" << fontPath << "'\n";
+		//	continue; // skip character if not found
+		//}
+
+		const Font::Character& ch = it->second;
+		//Font::Character ch = Font::characters[fc->fontType][*c];
 
 		float pxToWorld = (2.0f * renderer::cam.zoom) / (renderer::cam.width / renderer::cam.ar);
 		float xpos = x + (ch.Bearing.x * pxToWorld) * scale;
@@ -606,10 +682,6 @@ void FontSystem::RenderText(GLuint& s, std::string text, float x, float y, float
 	}
 	glBindVertexArray(0);
 	glBindTexture(GL_TEXTURE_2D, 0);
-}
-void RenderSystem::fboAspectRatio(int& width, int& height) const {
-	width = fboWidth;
-	height = fboHeight;
 }
 
 // Physics system - updates position based on velocity and applies gravity
@@ -941,5 +1013,21 @@ void UISystem::renderMultipleViewPorts() {
 		ImGui::UpdatePlatformWindows();
 		ImGui::RenderPlatformWindowsDefault();
 		glfwMakeContextCurrent(backup_current_context);
+	}
+}
+
+void LogicSystem::update(GameObjectManager& manager, float const& dt) {
+
+	std::vector<GameObject*> objs;
+	manager.getAllGameObjects(objs);
+
+	static LogicContainer container; // stateless helper
+
+	for (auto* go : objs) {
+		if (!go) continue;
+		if (!go->hasComponent<StateMachine>()) continue;
+		if (!go->hasComponent<Transform>() || !go->hasComponent<Physics>()) continue;
+
+		container.update(*go, dt, manager); 
 	}
 }

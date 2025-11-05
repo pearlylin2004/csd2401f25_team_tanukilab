@@ -260,8 +260,16 @@ void renderer::drawInstances(model& mdl, const std::vector<InstanceData>& instan
 
 void renderer::setup_shdrpgm()
 {
-	shdr_pgm.push_back(LoadShaders("shaders/hasTex.vert", "shaders/hasTex.frag", true));
-	shdr_pgm.push_back(LoadShaders("shaders/noTex.vert", "shaders/noTex.frag", true));
+	//shdr_pgm.push_back(LoadShaders("shaders/hasTex.vert", "shaders/hasTex.frag", true));
+	//shdr_pgm.push_back(LoadShaders("shaders/noTex.vert", "shaders/noTex.frag", true));
+	GLuint shader1 = ResourceManager::getInstance().getShader("shaders/hasTex.vert", "shaders/hasTex.frag");
+	std::cout << "Shader program ID (hasTex): " << shader1 << std::endl;
+	GLuint shader2 = ResourceManager::getInstance().getShader("shaders/noTex.vert", "shaders/noTex.frag");
+	std::cout << "Shader program ID (noTex): " << shader2 << std::endl;
+
+	shdr_pgm.push_back(shader1);
+	shdr_pgm.push_back(shader2);
+
 }
 
 void renderer::camera::init(int w, int h)

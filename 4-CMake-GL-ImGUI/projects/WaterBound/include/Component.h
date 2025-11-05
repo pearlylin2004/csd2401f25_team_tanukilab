@@ -85,6 +85,7 @@ struct FontComponent : public Component {
     std::unique_ptr<Component> clone() const override {
         return std::make_unique<FontComponent>(*this);
     }
+
     //GLuint texHdl;
     Font::FontMdl mdl;
     std::string word = "";
@@ -92,6 +93,7 @@ struct FontComponent : public Component {
     glm::vec3 clr{ 0.f,0.f,0.f };
     int fontType = 1;
 
+    std::string fontPath = "shaders/ARIAL.TTF"; 
 };
 
 struct Animation : public Component
@@ -125,6 +127,7 @@ public:
     float floorY = 0.0f;
     bool onGround = false;  
     float Speed = 150.0f;
+    bool alive = false;
 
     //water bullet
     Vector2D posBullet;
@@ -195,3 +198,16 @@ public:
     std::string filename; //path to the Lua file
     std::string scriptName; //unique identifier inside LuaSystem
 };
+
+// Logic Container (FSM) 
+enum class PlayerState { Idle, Walking, Jumping, Falling, Shooting };
+
+struct StateMachine : public Component {
+    PlayerState state = PlayerState::Idle;
+    float       stateTime = 0.f;
+    bool        facingRight = true;
+    std::unique_ptr<Component> clone() const override {
+        return std::make_unique<StateMachine>(*this);
+    }
+};
+
