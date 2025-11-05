@@ -10,23 +10,27 @@ function player.Update(obj, deltaTime)
         y = y + speed * deltaTime
         setPosition(obj, x, y)
         print(string.format("input W, x: %.2f, y: %.2f", x, y))
+        SendInputEvent("W", x, y)
     end
     --for going down
     if Input_isKeyHeld("S") then
         y = y - speed * deltaTime
         setPosition(obj, x, y)
         print(string.format("input S, x: %.2f, y: %.2f", x, y))
+        SendInputEvent("S", x, y)
     end
     --for going left
     if Input_isKeyHeld("A") then
         x = x - speed * deltaTime
         setPosition(obj, x, y)
         print(string.format("input A, x: %.2f, y: %.2f", x, y))
+        SendInputEvent("A", x, y)
     end
     --for going right
     if Input_isKeyHeld("D") then
         x = x + speed * deltaTime
         setPosition(obj, x, y)
         print(string.format("input D, x: %.2f, y: %.2f", x, y))
+        SendInputEvent("D", x, y)
     end
 end

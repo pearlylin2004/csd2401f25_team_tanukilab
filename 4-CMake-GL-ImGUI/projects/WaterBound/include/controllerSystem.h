@@ -16,14 +16,10 @@ Technology is prohibited.
 
 #pragma once
 #include "subscriber.h"
+#include "luaSystem.h"
 #include <iostream>
 
-//for advance messaging
-struct KeyEvent {
-	std::string key;
-	bool pressed; // true = pressed, false = released
-};
-
+//for input
 class PlayerControllerSystem : public subscriber {
 public:
 	void onNotify(const Message& msg) override {
@@ -49,4 +45,43 @@ public:
 			}
 		}
 	}
+};
+
+//for lua
+class LuaSubscriber : public subscriber {
+public:
+    LuaSubscriber(lua_State* L) : L(L) {}
+
+    void onNotify(const Message& msg) override {
+        if (!L) return;
+
+        // push global Lua function if it exists, e.g. onInputEvent(type, key, x, y)
+        lua_getglobal(L, "onInputEvent");
+
+        if (lua_isfunction(L, -1)) {
+            try {
+                auto keyEvent = std::any_cast<KeyEvent>(msg.payload);
+
+                lua_pushstring(L, msg.type.c_str()); // arg1: event type
+                lua_pushstring(L, keyEvent.key.c_str()); // arg2: key
+                lua_pushnumber(L, keyEvent.x); // arg3: x
+                lua_pushnumber(L, keyEvent.y); // arg4: y
+
+                // call Lua function (4 args, 0 return)
+                if (lua_pcall(L, 4, 0, 0) != LUA_OK) {
+                    std::cerr << "Lua error: " << lua_tostring(L, -1) << "\n";
+                    lua_pop(L, 1);
+                }
+            }
+            catch (const std::bad_any_cast&) {
+                std::cerr << "Invalid KeyEvent payload in LuaSubscriber\n";
+            }
+        }
+        else {
+            lua_pop(L, 1); //remove non-function
+        }
+    }
+
+private:
+    lua_State* L;
 };

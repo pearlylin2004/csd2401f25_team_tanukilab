@@ -19,6 +19,15 @@ Technology is prohibited.
 #include <vector>
 #include <algorithm>
 
+//for advance messaging
+struct KeyEvent {
+    std::string key;
+    bool pressed; // true = pressed, false = released
+    //for lua
+    float x = 0.0f;
+    float y = 0.0f;
+};
+
 class MessageBus {
 public:
     void subscribe(const std::string& messageType, subscriber* subscriber) {
