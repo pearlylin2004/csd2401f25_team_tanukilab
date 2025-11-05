@@ -26,6 +26,7 @@ Technology is prohibited.
 #include "imgui_internal.h" // for docking in UISystem
 #include <ui.h>
 #include "font.h"
+#include <LogicContainer.h>
 
 //forward declaration
 struct renderer;
@@ -144,4 +145,9 @@ private:
 	static bool showUI;
 	bool m_firstTime = true;
 	RenderSystem* m_renderer = nullptr;
+};
+
+class LogicSystem {
+public:
+	void update(GameObjectManager& manager, const float& deltaTime);
 };

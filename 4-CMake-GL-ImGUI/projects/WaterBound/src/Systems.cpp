@@ -21,7 +21,10 @@ Technology is prohibited.
 /* End Header **************************************************************************/
 #pragma once
 
-#include "systems.h"
+#include "Systems.h"
+
+
+//here we go buddies
 
 //all the systems need to get all game objects
 //then it needs to check through the list of 
@@ -912,5 +915,21 @@ void UISystem::renderMultipleViewPorts() {
 		ImGui::UpdatePlatformWindows();
 		ImGui::RenderPlatformWindowsDefault();
 		glfwMakeContextCurrent(backup_current_context);
+	}
+}
+
+void LogicSystem::update(GameObjectManager& manager, float const& dt) {
+
+	std::vector<GameObject*> objs;
+	manager.getAllGameObjects(objs);
+
+	static LogicContainer container; // stateless helper
+
+	for (auto* go : objs) {
+		if (!go) continue;
+		if (!go->hasComponent<StateMachine>()) continue;
+		if (!go->hasComponent<Transform>() || !go->hasComponent<Physics>()) continue;
+
+		container.update(*go, dt, manager); 
 	}
 }
