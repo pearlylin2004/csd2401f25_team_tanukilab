@@ -154,10 +154,10 @@ private:
 	static inline std::vector<std::string> m_debugMessages;
 
 	std::vector<Asset> m_assets;
-	static bool assetsChangedFlag;
+	static bool assetsChangedFlag; // whether need to update asset browser
 
-	std::string m_currentSceneName;
-	std::string m_tempSceneName;
+	std::string m_currentSceneName; // filename of the current scene
+	std::string m_tempSceneName; // a temp file to store the data while playing so it wont affect the actual scene data
 	bool m_isPlaying; // to track Play/Stop mode
 };
 
