@@ -54,6 +54,7 @@ typedef struct {
 //  Vector2D myVec2FromGLM(gVec2);
 // 
 //----------------------------------------
+//#define GLM_CONVERSION
 #ifdef GLM_CONVERSION
 #include <glm/glm.hpp>
 

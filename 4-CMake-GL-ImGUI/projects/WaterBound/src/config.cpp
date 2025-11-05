@@ -34,7 +34,7 @@ namespace JsonIO {
     {
         std::ifstream ifs(path, std::ios::binary);
         if (!ifs) { if (err) *err = "Could not open " + path; return false; }
-        rapidjson::IStreamWrapper isw(ifs);   // uses stream’s own buffering
+        rapidjson::IStreamWrapper isw(ifs);   // uses streamï¿½s own buffering
         doc.ParseStream(isw);
         if (doc.HasParseError()) {
             if (err) *err = std::string("JSON parse error @")
@@ -111,7 +111,7 @@ namespace {
 bool LoadConfig(const std::string& path, AppConfig& out, std::string* err)
 {
     rapidjson::Document doc;
-    if (!JsonIO::ReadFileToDocument(path, doc, err)) return false;   // <—— change here
+    if (!JsonIO::ReadFileToDocument(path, doc, err)) return false;   // <ï¿½ï¿½ change here
 
     if (doc.HasMember("window") && doc["window"].IsObject()) {
         const auto& w = doc["window"];
