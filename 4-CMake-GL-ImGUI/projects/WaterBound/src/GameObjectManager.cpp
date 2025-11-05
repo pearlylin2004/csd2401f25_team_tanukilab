@@ -71,6 +71,10 @@ GameObject* GameObjectManager::createGameObject(const std::string& name) {
 	return ptr;
 }
 
+std::unique_ptr<GameObject> GameObjectManager::createTempGameObject(const std::string& name) {
+	return std::make_unique<GameObject>(name);
+}
+
 //use this when objects need to interact with each other
 GameObject* GameObjectManager::getGameObject(const std::string& name) {
 
@@ -517,7 +521,7 @@ void GameObjectManager::loadFromJson(const std::string& filename) {
 
 		if (!jObj.HasMember("components") || !jObj["components"].IsObject())
 			continue;
-
+		
 		const auto& comps = jObj["components"];
 
 		// ---- Transform ----

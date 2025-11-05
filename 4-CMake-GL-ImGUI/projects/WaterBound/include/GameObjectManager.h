@@ -30,6 +30,9 @@ public:
 	//create objects
 	GameObject* createGameObject(const std::string& name);
 
+	// create temp objects that rep a prefab, for editor
+	static std::unique_ptr<GameObject> createTempGameObject(const std::string& name);
+
 	//use this when objects need to interact with each other
 	GameObject* getGameObject(const std::string& name);
 
