@@ -92,20 +92,23 @@ void RenderSystem::update(GameObjectManager& manager, float const& deltaTime)
 	glm::mat4 camView, camProj;
 
 	// Attach texture to FBO and update editor camera if editor is on
-	if (UISystem::isShowUI()) {
+	if (UISystem::isShowUI())
+	{
 		createFBO();
 		renderer::editorCam.update();
 
 		camView = renderer::editorCam.view;
 		camProj = renderer::editorCam.proj;
 	}
-	// else update game camera
-	else {
+	else
+	{
 		renderer::cam.update();
 
 		camView = renderer::cam.view;
 		camProj = renderer::cam.proj;
 	}
+	// else update game camera
+	
 	for (GameObject* object : gameObjects)
 	{
 		if (object->hasComponent<Render>())
@@ -178,12 +181,7 @@ void RenderSystem::update(GameObjectManager& manager, float const& deltaTime)
 
 	//renderer::drawInstances(renderer::models[(int)shape::square], batch);
 
-	if (UISystem::isShowUI()) glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-	//record end time for performance tracking
-	auto end = std::chrono::high_resolution_clock::now();
-	double ms = std::chrono::duration<double, std::milli>(end - start).count(); //get elapse time in ms
-	g_SystemTimers.push_back({ "Render", ms }); //saving timing for UI output
+	
 
 	//drawing models without texture
 	glUseProgram(renderer::shdr_pgm[1]);
@@ -213,6 +211,12 @@ void RenderSystem::update(GameObjectManager& manager, float const& deltaTime)
 		renderer::model& mdl = renderer::models[(int)key.meshType];
 		renderer::drawInstances(mdl, pair.second);
 	}
+	if (UISystem::isShowUI()) glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+	//record end time for performance tracking
+	auto end = std::chrono::high_resolution_clock::now();
+	double ms = std::chrono::duration<double, std::milli>(end - start).count(); //get elapse time in ms
+	g_SystemTimers.push_back({ "Render", ms }); //saving timing for UI output
 }
 
 void RenderSystem::createFBO() {

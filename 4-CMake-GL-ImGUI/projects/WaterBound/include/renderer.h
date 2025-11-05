@@ -117,7 +117,7 @@ struct renderer
 		GLuint primitive_cnt;
 
 		GLuint instanceVBO = 0;
-		GLsizei maxInstances = 1000; 
+		GLsizei maxInstances = 5000; 
 
 	};
 	/*!***********************************************************************
