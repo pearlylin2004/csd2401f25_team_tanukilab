@@ -118,6 +118,114 @@ namespace JsonIO {
 		return AtomicMove(tmp, path, err);
 	}
 
+
+	const rapidjson::Value* GetObj(const rapidjson::Value& parent, const char* key) {
+		if (!parent.IsObject() || !parent.HasMember(key)) return nullptr;
+		return &parent[key];
+	}
+
+	bool GetString(const rapidjson::Value& obj, const char* key, std::string& out) {
+		if (auto* v = GetObj(obj, key); v && v->IsString()) { out = v->GetString(); return true; }
+		return false;
+	}
+
+	bool GetBool(const rapidjson::Value& obj, const char* key, bool& out) {
+		if (auto* v = GetObj(obj, key)) {
+			if (v->IsBool()) { out = v->GetBool(); return true; }
+			if (v->IsInt()) { out = (v->GetInt() != 0); return true; }
+			if (v->IsNumber()) { out = (v->GetDouble() != 0.0); return true; }
+		}
+		return false;
+	}
+
+	bool GetInt(const rapidjson::Value& obj, const char* key, int& out) {
+		if (auto* v = GetObj(obj, key); v && v->IsInt()) { out = v->GetInt(); return true; }
+		return false;
+	}
+
+	bool GetFloat(const rapidjson::Value& obj, const char* key, float& out) {
+		if (auto* v = GetObj(obj, key)) {
+			if (v->IsFloat()) { out = v->GetFloat(); return true; }
+			if (v->IsNumber()) { out = static_cast<float>(v->GetDouble()); return true; }
+		}
+		return false;
+	}
+
+	bool GetArray3f(const rapidjson::Value& obj, const char* key, std::array<float, 3>& out) {
+		auto* v = GetObj(obj, key);
+		if (!v || !v->IsArray() || v->Size() != 3) return false;
+		for (rapidjson::SizeType i = 0; i < 3; ++i) {
+			if (!(*v)[i].IsNumber()) return false;
+			out[i] = static_cast<float>((*v)[i].GetDouble());
+		}
+		return true;
+	}
+
+	void PutArray3f(rapidjson::Value& obj, const char* key, const std::array<float, 3>& v, rapidjson::Document::AllocatorType& a) {
+		rapidjson::Value arr(rapidjson::kArrayType);
+		arr.PushBack(rapidjson::Value().SetFloat(v[0]), a);
+		arr.PushBack(rapidjson::Value().SetFloat(v[1]), a);
+		arr.PushBack(rapidjson::Value().SetFloat(v[2]), a);
+		obj.AddMember(rapidjson::Value(key, a), arr, a);
+	}
+
+	bool ReadVec3(const rapidjson::Value& obj, const char* key, glm::vec3& out) {
+		std::array<float, 3> tmp{};
+		if (!GetArray3f(obj, key, tmp)) return false;
+		out = glm::vec3(tmp[0], tmp[1], tmp[2]);
+		return true;
+	}
+
+	void WriteVec3(rapidjson::Value& obj, const char* key, const glm::vec3& v, rapidjson::Document::AllocatorType& a) {
+		PutArray3f(obj, key, { v.x, v.y, v.z }, a);
+	}
+
+	bool ReadVec3(const rapidjson::Value& obj, const char* key, float& x, float& y, float& z) {
+		std::array<float, 3> tmp{};
+		if (!GetArray3f(obj, key, tmp)) return false;
+		x = tmp[0]; y = tmp[1]; z = tmp[2];
+		return true;
+	}
+
+	void WriteVec3(rapidjson::Value& obj, const char* key, float x, float y, float z, rapidjson::Document::AllocatorType& a) {
+		PutArray3f(obj, key, { x, y, z }, a);
+	}
+
+	bool ReadColor(const rapidjson::Value& obj, const char* key, float& r, float& g, float& b, float& a) {
+		const auto* v = GetObj(obj, key);
+		if (!v || !v->IsArray() || v->Size() != 4) return false;
+
+		for (rapidjson::SizeType i = 0; i < 4; ++i) {
+			if (!(*v)[i].IsNumber()) return false;
+		}
+
+		r = static_cast<float>((*v)[0].GetDouble());
+		g = static_cast<float>((*v)[1].GetDouble());
+		b = static_cast<float>((*v)[2].GetDouble());
+		a = static_cast<float>((*v)[3].GetDouble());
+		return true;
+	}
+
+	void WriteColor(rapidjson::Value& obj, const char* key, float r, float g, float b, float a, rapidjson::Document::AllocatorType& alloc) {
+		rapidjson::Value arr(rapidjson::kArrayType);
+		arr.PushBack(rapidjson::Value().SetFloat(r), alloc);
+		arr.PushBack(rapidjson::Value().SetFloat(g), alloc);
+		arr.PushBack(rapidjson::Value().SetFloat(b), alloc);
+		arr.PushBack(rapidjson::Value().SetFloat(a), alloc);
+		obj.AddMember(rapidjson::Value(key, alloc), arr, alloc);
+	}
+
+	bool ReadColor(const rapidjson::Value& obj, const char* key, glm::vec4& out) {
+		float r, g, b, a;
+		if (!ReadColor(obj, key, r, g, b, a)) return false;
+		out = glm::vec4(r, g, b, a);
+		return true;
+	}
+
+	void WriteColor(rapidjson::Value& obj, const char* key, const glm::vec4& v, rapidjson::Document::AllocatorType& alloc) {
+		WriteColor(obj, key, v.r, v.g, v.b, v.a, alloc);
+	}
+
 } // namespace JsonIO
 
 void GameObjectManager::saveToJson(const std::string& filename, bool isNew) const {
@@ -150,22 +258,11 @@ void GameObjectManager::saveToJson(const std::string& filename, bool isNew) cons
 			if (auto t = obj->getComponent<Transform>()) {
 				rapidjson::Value jt(rapidjson::kObjectType);
 
-				// pos[3]
-				rapidjson::Value pos(rapidjson::kArrayType);
-				pos.PushBack(rapidjson::Value().SetFloat(t->x), a)
-					.PushBack(rapidjson::Value().SetFloat(t->y), a)
-					.PushBack(rapidjson::Value().SetFloat(t->z), a);
-				jt.AddMember("pos", pos, a);
-
-				// rotation
+				// pos / rotation / scale (compact helpers)
+				JsonIO::WriteVec3(jt, "pos", t->x, t->y, t->z, a);
 				jt.AddMember("rotation", rapidjson::Value().SetFloat(t->rotation), a);
+				JsonIO::WriteVec3(jt, "scale", t->scaleX, t->scaleY, t->scaleZ, a);
 
-				// scale[3]
-				rapidjson::Value sc(rapidjson::kArrayType);
-				sc.PushBack(rapidjson::Value().SetFloat(t->scaleX), a)
-					.PushBack(rapidjson::Value().SetFloat(t->scaleY), a)
-					.PushBack(rapidjson::Value().SetFloat(t->scaleZ), a);
-				jt.AddMember("scale", sc, a);
 
 				comps.AddMember("Transform", jt, a);
 			}
@@ -289,19 +386,10 @@ void GameObjectManager::loadFromJson(const std::string& filename) {
 			const auto& jt = comps["Transform"];
 			auto* t = go->addComponent<Transform>();
 
-			if (jt.HasMember("pos") && jt["pos"].IsArray() && jt["pos"].Size() == 3) {
-				t->x = jt["pos"][0].GetFloat();
-				t->y = jt["pos"][1].GetFloat();
-				t->z = jt["pos"][2].GetFloat();
-			}
-			if (jt.HasMember("rotation") && jt["rotation"].IsNumber()) {
-				t->rotation = jt["rotation"].GetFloat();
-			}
-			if (jt.HasMember("scale") && jt["scale"].IsArray() && jt["scale"].Size() == 3) {
-				t->scaleX = jt["scale"][0].GetFloat();
-				t->scaleY = jt["scale"][1].GetFloat();
-				t->scaleZ = jt["scale"][2].GetFloat();
-			}
+			(void)JsonIO::ReadVec3(jt, "pos", t->x, t->y, t->z);
+			(void)JsonIO::GetFloat(jt, "rotation", t->rotation);
+			(void)JsonIO::ReadVec3(jt, "scale", t->scaleX, t->scaleY, t->scaleZ);
+
 		}
 
 		// ---- Render ----
