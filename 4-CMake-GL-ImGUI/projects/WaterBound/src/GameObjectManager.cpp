@@ -855,6 +855,13 @@ void GameObjectManager::loadSceneFromJson(const std::string& filename) {
 				r->hasAnimation = false;
 			}
 
+			if (jr.HasMember("clr") && jr["clr"].IsArray() && jr["clr"].Size() == 3)
+			{
+				r->clr.r = jr["clr"][0].GetFloat();
+				r->clr.g = jr["clr"][1].GetFloat();
+				r->clr.b = jr["clr"][2].GetFloat();
+			}
+
 			// If your Render lacks these, keep them out.
 //          if (jr.HasMember("visible")     && jr["visible"].IsBool())     r->visible       = jr["visible"].GetBool();
 //          if (jr.HasMember("transparent") && jr["transparent"].IsBool()) r->isTransparent = jr["transparent"].GetBool();

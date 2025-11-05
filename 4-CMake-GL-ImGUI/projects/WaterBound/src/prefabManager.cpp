@@ -139,7 +139,7 @@ GameObject* PrefabManager::instantiate(GameObject* go, GameObjectManager& manage
 	const std::string& id = go->getObjectPrefabID();
 	auto iterator = m_prefabRegistry.find(id);
 	if (iterator == m_prefabRegistry.end() || id.empty()) {
-		std::cerr << "PrefabManager::instantiate() failed — prefab ID not found: " << id << "\n";
+		std::cerr << "PrefabManager::instantiate() failed ï¿½ prefab ID not found: " << id << "\n";
 		return nullptr;
 	}
 
@@ -237,6 +237,12 @@ GameObject* PrefabManager::instantiate(GameObject* go, GameObjectManager& manage
 			r->hasAnimation = false;
 		}
 
+		if (jr.HasMember("clr") && jr["clr"].IsArray() && jr["clr"].Size() == 3)
+		{
+			r->clr.r = jr["clr"][0].GetFloat();
+			r->clr.g = jr["clr"][1].GetFloat();
+			r->clr.b = jr["clr"][2].GetFloat();
+		}
 
 	}
 

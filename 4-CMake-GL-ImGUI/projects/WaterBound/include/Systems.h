@@ -86,11 +86,11 @@ public:
 	//GLuint uploadtex(std::string const& filename, bool& isTransparent);
 	void renderTex(GameObject* object, float const& deltaTime);
 	void renderNoTex(GameObject* object);
-
+	void unbindFBO();
 	GLuint getTexture() const { return texture; }
 
 	void renderCollision(Collision::AABB const& box, glm::vec3 const& clr);
-	GLuint getTexture() const { return texture; }
+	//GLuint getTexture() const { return texture; }
 	void batchingSetUp(GameObjectManager& manager, float const& deltaTime);
 
 	void fboAspectRatio(int& width, int& height) const;

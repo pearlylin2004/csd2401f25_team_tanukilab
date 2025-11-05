@@ -28,19 +28,20 @@ struct Font {
 
     static std::vector<FontMdl> fontMdls;
     static GLuint fontShaders;
-
-    /*static std::vector<FT_Face> face;
-    static FT_Library ft;
     static int fontTypes;
-    static std::map<char, Character> Characters;
+
+    static std::vector<FT_Face> face;
+    static FT_Library ft;
+    static void freeFonts();
+
+    /*static std::map<char, Character> Characters;
     static std::vector<std::map<char, Character>> characters;
     static int init();
     static int update(size_t fontElement);
     static FontMdl fontMeshInit();
     static void uploadFontTex(size_t fontElement);
-    static void freeFonts();
-
     static std::vector<std::string> fonts;*/
+
 
     static int init();
     static FontMdl fontMeshInit();

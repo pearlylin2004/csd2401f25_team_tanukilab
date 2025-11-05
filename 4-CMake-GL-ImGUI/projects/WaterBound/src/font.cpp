@@ -114,9 +114,9 @@ Font::FontMdl Font::fontMeshInit()
 //    }
 //}
 
-//void Font::freeFonts()
-//{
-//    for(int i = 0; i < fontTypes; ++i)
-//        FT_Done_Face(face[i]);
-//    FT_Done_FreeType(ft);
-//}
+void Font::freeFonts()
+{
+    for(int i = 0; i < fontTypes; ++i)
+        FT_Done_Face(face[i]);
+    FT_Done_FreeType(ft);
+}

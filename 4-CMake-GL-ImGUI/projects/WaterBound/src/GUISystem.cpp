@@ -112,7 +112,7 @@ void GUISystem::removeMenuButtons(GameObjectManager& manager) {
 
 void GUISystem::startGame(GameObjectManager& manager) {
     std::cout << "Play button clicked - starting game" << std::endl;
-
+    
     // Remove menu buttons
     removeMenuButtons(manager);
 

@@ -208,17 +208,16 @@ void CoreEngine::Update(float deltaTime) {
         }
         // Update all systems in order
         m_inputSystem->update(*m_manager, deltaTime);
-        m_collisionSystem->update(*m_manager, deltaTime);
         m_physicsSystem->update(*m_manager, deltaTime);
+        m_collisionSystem->update(*m_manager, deltaTime);
     }
 
     // Update all systems in order
     m_logicSystem->update(*m_manager, deltaTime);
     m_renderSystem->update(*m_manager, deltaTime);
     m_fontSystem->update(*m_manager);
-
-    if (UISystem::isShowUI()) glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
+    //m_renderSystem->unbindFBO();
+    //if (UISystem::isShowUI()) glBindFramebuffer(GL_FRAMEBUFFER, 0);
     m_uiSystem->update(*m_manager);
 
 }

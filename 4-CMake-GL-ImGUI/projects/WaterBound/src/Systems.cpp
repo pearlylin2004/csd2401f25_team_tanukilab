@@ -108,8 +108,8 @@ void RenderSystem::update(GameObjectManager& manager, float const& deltaTime)
 		camProj = renderer::cam.proj;
 	}
 
-	std::vector<GameObject*> objectWithTex;
-	std::vector<GameObject*> objectWithoutTex;
+	//std::vector<GameObject*> objectWithTex;
+	//std::vector<GameObject*> objectWithoutTex;
 
 	// Update textures if they have changed (in level editor)
 	for (GameObject* object : gameObjects)
@@ -139,10 +139,10 @@ void RenderSystem::update(GameObjectManager& manager, float const& deltaTime)
 				render->texChanged = false;
 			}
 
-			if (object->getComponent<Render>()->hasTex)
+			/*if (object->getComponent<Render>()->hasTex)
 				objectWithTex.push_back(object);
 			else
-				objectWithoutTex.push_back(object);
+				objectWithoutTex.push_back(object);*/
 		}
 	}
 
@@ -211,11 +211,17 @@ void RenderSystem::update(GameObjectManager& manager, float const& deltaTime)
 		renderer::drawInstances(mdl, pair.second);
 	}
 	//if (UISystem::isShowUI()) glBindFramebuffer(GL_FRAMEBUFFER, 0);
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	//glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	//record end time for performance tracking
 	auto end = std::chrono::high_resolution_clock::now();
 	double ms = std::chrono::duration<double, std::milli>(end - start).count(); //get elapse time in ms
 	g_SystemTimers.push_back({ "Render", ms }); //saving timing for UI output
+}
+
+void RenderSystem::unbindFBO() {
+	if (UISystem::isShowUI()) {
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	}
 }
 
 void RenderSystem::createFBO() {
@@ -276,6 +282,9 @@ void RenderSystem::init(GameObjectManager& manager, int fboW, int fboH)
 			}
 		}
 	}
+	fboWidth = fboW;
+	fboHeight = fboH;
+}
 void RenderSystem::batchingSetUp(GameObjectManager& manager, float const& deltaTime)
 {
 	std::vector<GameObject*> gameObjects;
@@ -330,8 +339,7 @@ void RenderSystem::batchingSetUp(GameObjectManager& manager, float const& deltaT
 		}
 	}
 
-	fboWidth = fboW;
-	fboHeight = fboH;
+	
 	Font::init();
 }
 
@@ -605,6 +613,7 @@ void FontSystem::update(GameObjectManager& manager)
 			RenderText(Font::fontShaders, fc->word, transform->x, transform->y, fc->scale, fc->clr, object);
 		}
 	}
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
 void FontSystem::RenderText(GLuint& s, std::string text, float x, float y, float scale, glm::vec3 color, GameObject* object)
