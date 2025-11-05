@@ -873,6 +873,7 @@ void UI::assetWindow(GameObjectManager& manager) {
         //if (fullPath == m_tempSceneName) continue;
 
         if (asset.name == m_tempSceneName) continue;
+        if (asset.name == "prefab_registry.json") continue;
 
         ImGui::PushID(index++);
 
@@ -907,14 +908,16 @@ void UI::assetWindow(GameObjectManager& manager) {
 				m_AssetBrowserState.showDeletePopup = true;
 			}
 
-			// open popup window and rename this current asset
-			if (ImGui::MenuItem("Rename Asset")) {
-				m_AssetBrowserState.fullPathToRename = fullPath;
-				m_AssetBrowserState.showRenamePopup = true;
-				
-				// pre-fill the current name
-                std::strncpy(m_AssetBrowserState.newNameBuffer, asset.name.c_str(), sizeof(m_AssetBrowserState.newNameBuffer));
-			}
+			// open popup window and rename this current asset (rename not for prefab YET)
+            if (asset.folder != m_AssetBrowserState.currentFolder + "Prefab") {
+                if (ImGui::MenuItem("Rename Asset")) {
+                    m_AssetBrowserState.fullPathToRename = fullPath;
+                    m_AssetBrowserState.showRenamePopup = true;
+
+                    // pre-fill the current name
+                    std::strncpy(m_AssetBrowserState.newNameBuffer, asset.name.c_str(), sizeof(m_AssetBrowserState.newNameBuffer));
+                }
+            }
 
 			// open popup window and replace this current asset
 			/*if (ImGui::MenuItem("Replace Asset")) {
@@ -925,7 +928,7 @@ void UI::assetWindow(GameObjectManager& manager) {
 			ImGui::EndPopup();
 		}
 
-		// double click logic to open scene files
+		// DOUBLE click logic
         if (ImGui::IsItemHovered() && InputHandler::isMouseLeftDoubleClicked()) {
             // if its a scene file, load the scene
             if (asset.folder == m_AssetBrowserState.currentFolder + "Scene") {
