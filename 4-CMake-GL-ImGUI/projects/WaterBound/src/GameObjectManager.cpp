@@ -96,6 +96,8 @@ GameObject* GameObjectManager::getGameObject(const std::string& name) {
 void GameObjectManager::deleteGameObject(GameObject* object) {
 	if (!object) return;
 
+	m_layerManager.removeObjectFromLayer(object);
+
 	for (auto iterator = m_gameObjects.begin(); iterator != m_gameObjects.end(); ++iterator) {
 		if (iterator->second.get() == object) {
 			m_gameObjects.erase(iterator);
@@ -175,6 +177,7 @@ void GameObjectManager::loadFromFile(const std::string& filename)
 	}
 	std::cout << "file opened\n";
 
+	m_layerManager.clearAllLayers();
 	m_gameObjects.clear(); // clear existing objects before loading new ones
 
 	std::string checker{};
@@ -543,6 +546,7 @@ void GameObjectManager::loadFromJson(const std::string& filename) {
 	if (version != 1)
 		std::cerr << "Warning: unsupported scene version " << version << "\n";
 
+	m_layerManager.clearAllLayers();
 	m_gameObjects.clear();
 
 	if (!doc.HasMember("objects") || !doc["objects"].IsArray()) {
@@ -743,6 +747,7 @@ void GameObjectManager::loadSceneFromJson(const std::string& filename) {
 	if (version != 1)
 		std::cerr << "Warning: unsupported scene version " << version << "\n";
 
+	m_layerManager.clearAllLayers();
 	m_gameObjects.clear();
 
 	if (!doc.HasMember("objects") || !doc["objects"].IsArray()) {
@@ -758,6 +763,11 @@ void GameObjectManager::loadSceneFromJson(const std::string& filename) {
 			: ("Object_" + std::to_string(m_gameObjects.size()));
 
 		GameObject* go = createGameObject(name);
+
+		if (jObj.HasMember("layer") && jObj["layer"].IsInt()) {
+			int layerID = jObj["layer"].GetInt();
+			m_layerManager.assignObjectToLayer(go, layerID);
+		}
 
 		// check if this object references a prefab
 		if (jObj.HasMember("prefabid") && jObj["prefabid"].IsString()) {
@@ -1002,6 +1012,12 @@ void GameObjectManager::saveSceneToJson(const std::string& filename, bool isNew)
 
 			// name
 			jObj.AddMember("name", rapidjson::Value(obj->getObjectName().c_str(), a), a);
+
+
+			int layerID = obj->getLayer();
+			if (layerID != -1 && layerID != 1) {  // Only save if not default game layer
+				jObj.AddMember("layer", layerID, a);
+			}
 
 			// get prefab JSON if obj referencing a prefab
 			const rapidjson::Document* prefabDoc{ nullptr };

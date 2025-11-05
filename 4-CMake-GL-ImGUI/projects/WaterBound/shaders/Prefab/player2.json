@@ -1,6 +1,7 @@
 {
     "id": "4828c393-9fcf-42f8-8b05-ddc8d75096be",
     "name": "player2",
+    "layer": 1,
     "components":{
         "Transform": {
           "pos": [8.0, 0.0, 0.01],

@@ -169,7 +169,7 @@ GameObject* PrefabManager::instantiate(GameObject* go, GameObjectManager& manage
 	const std::string& id = go->getObjectPrefabID();
 	auto iterator = m_prefabRegistry.find(id);
 	if (iterator == m_prefabRegistry.end() || id.empty()) {
-		std::cerr << "PrefabManager::instantiate() failed — prefab ID not found: " << id << "\n";
+		std::cerr << "PrefabManager::instantiate() failed ï¿½ prefab ID not found: " << id << "\n";
 		return nullptr;
 	}
 
@@ -191,6 +191,11 @@ GameObject* PrefabManager::instantiate(GameObject* go, GameObjectManager& manage
 		}
 
 		m_prefabCache[id].CopyFrom(doc, m_prefabCache[id].GetAllocator());
+	}
+
+	if (doc.HasMember("layer") && doc["layer"].IsInt()) {
+		int layerID = doc["layer"].GetInt();
+		manager.assignObjectToLayer(go, layerID);
 	}
 
 	if (!doc.HasMember("components") || !doc["components"].IsObject()) {
@@ -345,7 +350,7 @@ GameObject* PrefabManager::instantiate(GameObject* go, GameObjectManager& manage
 std::unique_ptr<GameObject> PrefabManager::createTempPrefabObj(const std::string& prefabID) {
 	auto iterator = m_prefabRegistry.find(prefabID);
 	if (iterator == m_prefabRegistry.end()) {
-		std::cerr << "PrefabManager::createTempPrefabObject: failed — prefab ID not found: " << prefabID << "\n";
+		std::cerr << "PrefabManager::createTempPrefabObject: failed ï¿½ prefab ID not found: " << prefabID << "\n";
 		return nullptr;
 	}
 
@@ -536,6 +541,11 @@ bool PrefabManager::savePrefab(const GameObject* prefabObj) {
 	doc.AddMember("id", rapidjson::Value(prefabID.c_str(), a), a);
 	// name
 	doc.AddMember("name", rapidjson::Value(prefabObj->getObjectName().c_str(), a), a);
+
+	int layerID = prefabObj->getLayer();
+	if (layerID != -1 && layerID != 1) {  // Only save if not default game layer
+		doc.AddMember("layer", layerID, a);
+	}
 
 	// objects array
 	rapidjson::Value objects(rapidjson::kArrayType);

@@ -146,9 +146,6 @@ void RenderSystem::update(GameObjectManager& manager, float const& deltaTime)
 
 	for (Layer* layer : layers) {
 		if (!layer) continue;
-
-		std::vector<GameObject*> objectWithTex;
-		std::vector<GameObject*> objectWithoutTex;
 		
 		//gettem objects bro
 		const std::vector<GameObject*>& gameObjects = layer->getObjects();
