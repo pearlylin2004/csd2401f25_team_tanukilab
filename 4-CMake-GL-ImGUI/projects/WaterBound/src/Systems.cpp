@@ -124,7 +124,10 @@ void RenderSystem::update(GameObjectManager& manager, float const& deltaTime)
 					glDeleteTextures(1, &render->texHDL); // to avoid leak
 					render->texHDL = 0;
 				}
-				render->texHDL = uploadtex(render->texFile, render->isTransparent);
+				TextureData texData = ResourceManager::getInstance().getTexture(render->texFile);
+				render->texHDL = texData.id;
+				render->isTransparent = texData.isTransparent;
+
 				render->texChanged = false;
 			}
 		}

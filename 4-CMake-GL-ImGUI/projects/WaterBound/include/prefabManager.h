@@ -18,6 +18,7 @@ Technology is prohibited.
 #include <unordered_map>
 #include <string>
 #include "GameObjectManager.h"
+#include "JsonIO.h"
 
 //struct PrefabData {
 //	std::string name;

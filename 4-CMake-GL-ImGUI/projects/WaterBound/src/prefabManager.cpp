@@ -135,7 +135,7 @@ const rapidjson::Value* PrefabManager::getPrefabJsonComp(const rapidjson::Docume
 	return &comps[compName.c_str()];
 }
 
-GameObject* PrefabManager::instantiate(GameObject* go, GameObjectManager& manager) {
+GameObject* PrefabManager::instantiate(GameObject* go, GameObjectManager&) {
 	const std::string& id = go->getObjectPrefabID();
 	auto iterator = m_prefabRegistry.find(id);
 	if (iterator == m_prefabRegistry.end() || id.empty()) {

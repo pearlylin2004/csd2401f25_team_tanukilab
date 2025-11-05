@@ -410,7 +410,7 @@ void GameObjectManager::loadSceneFromJson(const std::string& filename) {
 			std::string shp = (jr.HasMember("shape") && jr["shape"].IsString())
 				? jr["shape"].GetString()
 				: "square";
-			r->modelRef = renderer::models[static_cast<int>(StrToShape(shp))];
+			r->modelRef = renderer::models[static_cast<int>(JsonIO::StrToShape(shp))];
 
 			// hasTex / texture (accept bool or 0/1)
 			if (jr.HasMember("hasTex")) {
@@ -514,7 +514,7 @@ void GameObjectManager::loadSceneFromJson(const std::string& filename) {
 				sm = go->addComponent<StateMachine>();
 
 			if (smj.HasMember("state") && smj["state"].IsString())
-				sm->state = parsePlayerState(smj["state"].GetString());
+				sm->state = JsonIO::parsePlayerState(smj["state"].GetString());
 
 			if (smj.HasMember("facingRight")) {
 				if (smj["facingRight"].IsBool())       sm->facingRight = smj["facingRight"].GetBool();
@@ -646,7 +646,7 @@ void GameObjectManager::saveSceneToJson(const std::string& filename, bool isNew)
 				rapidjson::Value jr(rapidjson::kObjectType);
 				const rapidjson::Value* prefabR = PM.getPrefabJsonComp(prefabDoc, "Render");
 
-				std::string shapeStr = ShapeToStr(r->modelRef.shape);
+				std::string shapeStr = JsonIO::ShapeToStr(r->modelRef.shape);
 				if (!prefabR || !prefabR->HasMember("shape") || shapeStr != (*prefabR)["shape"].GetString())
 					jr.AddMember("shape", rapidjson::Value(shapeStr.c_str(), a), a);
 
@@ -741,8 +741,8 @@ void GameObjectManager::saveSceneToJson(const std::string& filename, bool isNew)
 				rapidjson::Value js(rapidjson::kObjectType);
 				const rapidjson::Value* prefabSM = PrefabManager::Instance().getPrefabJsonComp(prefabDoc, "StateMachine");
 
-				if (!prefabSM || !prefabSM->HasMember("state") || sm->state != parsePlayerState((*prefabSM)["state"].GetString()))
-					js.AddMember("state", rapidjson::Value(playerStateToStr(sm->state), a), a);
+				if (!prefabSM || !prefabSM->HasMember("state") || sm->state != JsonIO::parsePlayerState((*prefabSM)["state"].GetString()))
+					js.AddMember("state", rapidjson::Value(JsonIO::playerStateToStr(sm->state), a), a);
 
 				if (!prefabSM || !prefabSM->HasMember("facingRight") ||
 					((*prefabSM)["facingRight"].IsBool() && differsBool((*prefabSM)["facingRight"].GetBool(), sm->facingRight)) ||

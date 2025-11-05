@@ -14,13 +14,17 @@ Technology is prohibited.
 /* End Header **************************************************************************/
 
 #pragma once
+#ifdef _WIN32
+#ifndef NOMINMAX
 #define NOMINMAX
+#endif
+#ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
+#endif
 #include <windows.h>
+#endif
 
 #include <string>
-#include <GL/glew.h>
-#include <GLFW/glfw3.h>
 #include <deque>
 #include <iostream>
 #include <sstream>
