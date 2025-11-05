@@ -1,5 +1,4 @@
--- object2.lua
---print("object2.lua is loaded!") --for testing
+--bullet
 
 bullet = {}
 function bullet.Update(obj, deltaTime)

@@ -50,19 +50,24 @@ void InputSystem::update(GameObjectManager& manager, const float& deltaTime, Mes
 
 				if (InputHandler::isKeyHeld(GLFW_KEY_W)) {
 					velocity->velY = input->moveSpeed;
+					messageBus.publish(Message("KeyPressed", nullptr, KeyEvent{ "W", true }));
 				}
 				if (InputHandler::isKeyHeld(GLFW_KEY_S)) {
 					velocity->velY = -input->moveSpeed;
+					messageBus.publish(Message("KeyPressed", nullptr, KeyEvent{ "S", true }));
 				}
 				if (InputHandler::isKeyHeld(GLFW_KEY_A)) {
 					velocity->velX = -input->moveSpeed;
+					messageBus.publish(Message("KeyPressed", nullptr, KeyEvent{ "A", true }));
 				}
 				if (InputHandler::isKeyHeld(GLFW_KEY_D)) {
 					velocity->velX = input->moveSpeed;
+					messageBus.publish(Message("KeyPressed", nullptr, KeyEvent{ "D", true }));
 				}
 
 				if (InputHandler::isComboKeyTriggered(GLFW_KEY_0)) {
 					UISystem::toggleUI();
+					messageBus.publish(Message("KeyPressed", nullptr, KeyEvent{ "0", true }));
 				}
 
 				// Press F9 to simulate a failure (for crash logger)

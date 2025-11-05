@@ -32,6 +32,21 @@ public:
 			if (keyEvent.key == "SPACE") {
 				std::cout << "Bullet shooting!\n";
 			}
+			else if (keyEvent.key == "W") {
+				std::cout << "Player moving upwards!\n";
+			}
+			else if (keyEvent.key == "S") {
+				std::cout << "Player moving downwards!\n";
+			}
+			else if (keyEvent.key == "A") {
+				std::cout << "Player moving left side!\n";
+			}
+			else if (keyEvent.key == "D") {
+				std::cout << "Player moving right side!\n";
+			}
+			else if (keyEvent.key == "0") {
+				std::cout << "Toggling UI!\n";
+			}
 		}
 	}
 };

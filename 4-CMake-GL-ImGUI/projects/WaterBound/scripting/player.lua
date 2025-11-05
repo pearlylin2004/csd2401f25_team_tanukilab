@@ -1,5 +1,4 @@
--- object1.lua
---print("object1.lua is loaded!") --for testing
+--player(leave)
 
 player = {}
 function player.Update(obj, deltaTime)
