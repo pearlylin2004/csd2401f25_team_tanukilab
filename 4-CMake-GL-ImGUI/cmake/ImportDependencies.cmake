@@ -173,6 +173,20 @@ macro(import_rapidjson)
     endif()
 endmacro()
 
+
+macro(import_freetype)
+    if(NOT TARGET freetype)
+        include(FetchContent)
+
+        FetchContent_Declare(
+            freetype
+            GIT_REPOSITORY https://github.com/freetype/freetype.git
+            GIT_TAG VER-2-13-3
+        )
+        FetchContent_MakeAvailable(freetype)
+    endif()
+endmacro()
+
 # ===================== Import All Dependencies =====================
 macro(importDependencies)
     message(STATUS "Starting to import dependencies...")
@@ -204,6 +218,10 @@ macro(importDependencies)
      message(STATUS "Importing RapidJson...")
     import_rapidjson()
     message(STATUS "RapidJson imported successfully.")
+
+    message(STATUS "Importing FreeType...")
+    import_freetype()
+    message(STATUS "FreeType imported successfully.")
 
     message(STATUS "All dependencies have been imported successfully.")
 endmacro()

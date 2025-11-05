@@ -1,0 +1,16 @@
+{
+    "id": "4828c393-9fcf-42f8-8b05-ddc8d75096be",
+    "name": "player2",
+    "components":{
+        "Transform": {
+          "pos": [8.0, 0.0, 0.01],
+          "rotation": 1.0,
+          "scale": [1.0, 1.0, 0.0]
+        },
+        "Render": {
+          "shape": "square",
+          "hasTex": 0,
+          "hasAnimation": 0
+        }
+    }
+}
