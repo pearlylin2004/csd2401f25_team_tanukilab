@@ -33,12 +33,5 @@ public:
 				std::cout << "Bullet shooting!\n";
 			}
 		}
-		//hmm
-		else if (msg.type == "KeyReleased") {
-			auto keyEvent = std::any_cast<KeyEvent>(msg.payload);
-			if (keyEvent.key == "SPACE") {
-				std::cout << "Player stops jump.\n";
-			}
-		}
 	}
 };
