@@ -1009,16 +1009,17 @@ void UI::assetWindow(GameObjectManager& manager) {
 
         /* ----------- Drag and Drop Logic ----------- */
 
-        // drag a texture to inspector window to change texture of selected object
         if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID)) {
-            ImGui::SetDragDropPayload("ASSET", asset.path.c_str(), asset.path.size() + 1);
-            ImGui::Text("%s", asset.name.c_str());
-            ImGui::EndDragDropSource();
-        }
-
-        if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID)) {
-            ImGui::SetDragDropPayload("PREFAB", asset.name.c_str(), asset.name.size() + 1);
-            ImGui::Text("Prefab: %s", asset.name.c_str());
+            if (asset.folder == m_AssetBrowserState.currentFolder + "Prefab") {
+                // drag a prefab to hierarchy to make a game obj
+                ImGui::SetDragDropPayload("PREFAB", asset.name.c_str(), asset.name.size() + 1);
+                ImGui::Text("Prefab: %s", asset.name.c_str());
+            }
+            else {
+                // drag a texture to inspector window to change texture of selected object
+                ImGui::SetDragDropPayload("ASSET", asset.path.c_str(), asset.path.size() + 1);
+                ImGui::Text("%s", asset.name.c_str());
+            }
             ImGui::EndDragDropSource();
         }
 
