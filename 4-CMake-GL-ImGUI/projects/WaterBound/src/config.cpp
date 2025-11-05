@@ -57,6 +57,7 @@ namespace {
 bool LoadConfig(const std::string& path, AppConfig& out, std::string* err)
 {
     rapidjson::Document doc;
+
     if (!JsonIO::ReadFileToDocument(path, doc, err)) return false;  
 
     if (doc.HasMember("window") && doc["window"].IsObject()) {

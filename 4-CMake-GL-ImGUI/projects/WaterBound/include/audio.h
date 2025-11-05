@@ -26,6 +26,9 @@ Technology is prohibited.
 #include <string>
 #include <iostream>
 
+#include "AudioUtility.h"
+#include "ResourceManager.h"
+
 enum class soundID : int {
 	effect = 0, // for water sound (placeholder only)
 	bg,
@@ -46,7 +49,9 @@ public:
 	void shutdown(); // no need to manually call, dtor will call this automatically
 
 	// load the sound from file path, if loop is true, sound will loop until stopped (default false)
-	bool loadSound(soundID id, const std::string& filePath, bool loop = false);
+	// now done in ResourceManager
+	// bool loadSound(soundID id, const std::string& filePath, bool loop = false);
+	
 	// play the sound, return the channel pointer if successful, nullptr if failed
 	FMOD::Channel* playSound(soundID id, float volume = 1.0f);
 
@@ -81,7 +86,8 @@ public:
 	void setSoundpitch(soundID id, float pitch); // 0.5f (half speed) to 2.0f (double speed)
 
 	// perform error check for FMOD functions
-	static void FMODErrorCheck(FMOD_RESULT result);
+	// moved to AudioUtility.h
+	//static void FMODErrorCheck(FMOD_RESULT result);
 
 private: 
 	AudioHandler() : system(nullptr) {}
@@ -92,6 +98,6 @@ private:
 	std::string soundIDToFilePath(soundID id);
 
 	FMOD::System* system;
-	std::vector<FMOD::Sound*> sounds;
+	//std::vector<FMOD::Sound*> sounds;
 	std::vector<FMOD::Channel*> channels;
 };
