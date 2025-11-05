@@ -75,7 +75,7 @@ public:
     bool texChanged = false;
     GLuint texHDL;
     std::string texFile;
-    glm::vec3 clr{ 0,0,0 };
+    glm::vec3 clr{ 1,1,1 };
     renderer::model modelRef;
 };
 
@@ -91,6 +91,7 @@ struct FontComponent : public Component {
     float scale = 1;
     glm::vec3 clr{ 0.f,0.f,0.f };
     int fontType = 1;
+
 };
 
 struct Animation : public Component

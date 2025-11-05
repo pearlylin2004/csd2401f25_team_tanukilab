@@ -174,6 +174,22 @@ renderer::model renderer::setup_circle(glm::vec3 clr, int slices)
 	setup_instance_attributes(mdl);
 	return mdl;
 }
+/*
+* 
+* create vao + vbo of quad
+* 
+* vector of mat4 - transforms
+* 
+* foreach object
+*	transforms[i] = object.transform
+* 
+* for(inti = 0; i < transforms.size; i +=100
+*	size = std::min(100, transforms.size - i);
+*	gluniform(size, transforms[i])
+* 
+*	gldrawinstance(vao, size)
+*/
+
 
 //---------------------------------------------------------------------------------
 //idk what im looking at, but hopefully gpt dun screw me over, to be refactored
@@ -184,26 +200,26 @@ void renderer::setup_instance_attributes(model& mdl)
 	glBindBuffer(GL_ARRAY_BUFFER, mdl.instanceVBO);
 
 	GLsizei stride = sizeof(InstanceData);
+	std::size_t offset = 0;
 
-	// 1. Model matrix (mat4 = 4 vec4 attributes)
+	// mat4 model: locations 3,4,5,6 (each is a vec4)
 	for (int i = 0; i < 4; ++i) {
 		glEnableVertexAttribArray(3 + i);
-		glVertexAttribPointer(3 + i, 4, GL_FLOAT, GL_FALSE, stride, (void*)(sizeof(glm::vec4) * i));
+		glVertexAttribPointer(3 + i, 4, GL_FLOAT, GL_FALSE, stride, (void*)(offset + i * sizeof(glm::vec4)));
 		glVertexAttribDivisor(3 + i, 1);
 	}
+	offset += sizeof(glm::mat4);
 
-	// 2. Color (vec4)
-	GLuint colorAttrib = 7;
-	glEnableVertexAttribArray(colorAttrib);
-	glVertexAttribPointer(colorAttrib, 4, GL_FLOAT, GL_FALSE, stride, (void*)(sizeof(glm::mat4)));
-	glVertexAttribDivisor(colorAttrib, 1);
+	// color: location 7
+	glEnableVertexAttribArray(7);
+	glVertexAttribPointer(7, 4, GL_FLOAT, GL_FALSE, stride, (void*)offset);
+	glVertexAttribDivisor(7, 1);
+	offset += sizeof(glm::vec4);
 
-	// 3. Tex params (vec4)
-	GLuint texAttrib = 8;
-	glEnableVertexAttribArray(texAttrib);
-	glVertexAttribPointer(texAttrib, 4, GL_FLOAT, GL_FALSE, stride,
-		(void*)(sizeof(glm::mat4) + sizeof(glm::vec4)));
-	glVertexAttribDivisor(texAttrib, 1);
+	// texParams: location 8 (still present for untextured; harmless)
+	glEnableVertexAttribArray(8);
+	glVertexAttribPointer(8, 4, GL_FLOAT, GL_FALSE, stride, (void*)offset);
+	glVertexAttribDivisor(8, 1);
 
 	glBindVertexArray(0);
 }

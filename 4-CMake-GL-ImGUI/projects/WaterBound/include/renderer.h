@@ -66,6 +66,14 @@ struct BatchKeyHash {
 \brief
 	struct for everything to do with rendering
 
+	for(pair(batch, std::vector<instancedata>) pair : objectWithtex)
+		render
+	for(pair(batch, std::vector<instancedata>) pair : objectWithouttex)
+		render
+
+	for each batch key
+		
+
 *************************************************************************/
 struct renderer
 {

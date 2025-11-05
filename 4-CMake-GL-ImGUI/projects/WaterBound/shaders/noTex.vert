@@ -16,6 +16,6 @@ out vec4 vColor;
 void main()
 {
     //gl_Position = P * V * M * vec4(aPosition, 0.0, 1.0);
-    gl_Position = P * V * iModel * vec4(aPos, 0.0, 1.0);
+    gl_Position = P * V * iModel * vec4(aPosition, 0.0, 1.0);
     vColor = iColor;
 }

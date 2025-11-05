@@ -192,7 +192,8 @@ void RenderSystem::update(GameObjectManager& manager, float const& deltaTime)
 		std::vector<renderer::InstanceData>& instances = pair.second;
 		glBindTextureUnit(0, key.texID);
 		GLint uTexLoc = glGetUniformLocation(renderer::shdr_pgm[0], "uTex2d");
-		if (uTexLoc != -1) glUniform1i(uTexLoc, 0);
+		if (uTexLoc != -1) 
+			glUniform1i(uTexLoc, 0);
 		renderer::model& mdl = renderer::models[(int)key.meshType];
 		renderer::drawInstances(mdl, pair.second);
 	}
@@ -242,7 +243,6 @@ void RenderSystem::init(GameObjectManager& manager, int fboW, int fboH)
 	stbi_set_flip_vertically_on_load(true);
 	std::vector<GameObject*> gameObjects;
 	manager.getAllGameObjects(gameObjects);
-	batchingSetUp(manager);
 	for (GameObject* object : gameObjects)
 	{
 		if(object->hasComponent<Render>())
@@ -250,8 +250,10 @@ void RenderSystem::init(GameObjectManager& manager, int fboW, int fboH)
 			{
 				Render* render = object->getComponent<Render>();
 				render->texHDL = uploadtex(render->texFile, render->isTransparent);
+				std::cout << "Got handle: " << render->texHDL << std::endl;
 			}
 	}
+	batchingSetUp(manager);
 	Font::init();
 
 	fboWidth = fboW;
