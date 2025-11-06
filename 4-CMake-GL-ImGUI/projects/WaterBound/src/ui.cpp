@@ -613,6 +613,18 @@ void UI::objHierarchyWindow(GameObjectManager& manager) {
                 m_SelectionState.selectedIndex = static_cast<int>(i);
                 m_SelectionState.selectedObject = gameObjects[i];
             }
+
+            /* ------- right clicj context menu ------- */
+            if (ImGui::BeginPopupContextItem()) {
+                if (ImGui::MenuItem("Save as Prefab")) {
+                    // save this obj into a prefab
+                    PrefabManager::Instance().createPrefabFromGameObj(gameObjects[i]);
+                    addDebugMessage("Prefab created.\n");
+                }
+
+                ImGui::EndPopup();
+            }
+
             ImGui::TreePop();
 
         }
@@ -646,6 +658,7 @@ void UI::objHierarchyWindow(GameObjectManager& manager) {
             prefabObj->getObjectPrefabID() = prefabID;
             if (prefabObj) {
                 PrefabManager::Instance().instantiate(prefabObj, manager);
+
                 addDebugMessage("Added game obj from prefab\n");
             }
             else {

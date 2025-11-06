@@ -17,6 +17,9 @@ Technology is prohibited.
 #pragma once
 #include <unordered_map>
 #include <string>
+#include <random>
+#include <sstream>
+#include <iomanip>
 #include "GameObjectManager.h"
 
 //struct PrefabData {
@@ -66,6 +69,9 @@ public:
 	// save current state of prefab to its file
 	bool savePrefab(const GameObject* prefabObj); // prefabObj is a temp obj rep the prefab
 
+	// create a prefab out of a game obj
+	bool createPrefabFromGameObj(GameObject* go, const std::string& name = "", /* whether to make this game obj ref to the game obj */ bool makeRef = false);
+
 private:
 	struct PrefabInfo {
 		std::string name;
@@ -79,6 +85,8 @@ private:
 	// prefab jsons cache aft first load
 	std::unordered_map<std::string, rapidjson::Document> m_prefabCache;
 
-
+	std::string prefabFolder = "/Prefab";
 	std::string registryFile = "/Prefab/prefab_registry.json";
+
+	std::string generateUUID();
 };
