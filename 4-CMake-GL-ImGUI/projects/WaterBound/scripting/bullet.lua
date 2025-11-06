@@ -3,7 +3,7 @@
 bullet = {}
 function bullet.Update(obj, deltaTime)
     local jumpSpeed = 10
-    --when jumped
+    --when shooting bullet
     if Input_isKeyHeld("SPACE") then
         local x, y = getPosition(obj)
         y = y + jumpSpeed * deltaTime
