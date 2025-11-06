@@ -728,7 +728,6 @@ void FontSystem::RenderText(GLuint& s, std::string text, float x, float y, float
 	glActiveTexture(GL_TEXTURE0);
 	glBindVertexArray(mdl.vao);
 
-
 	// iterate through all characters
 	std::string::const_iterator c;
 	for (c = text.begin(); c != text.end(); c++)

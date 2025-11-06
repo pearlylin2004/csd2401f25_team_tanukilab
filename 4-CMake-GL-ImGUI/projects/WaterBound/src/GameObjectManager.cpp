@@ -376,16 +376,18 @@ void GameObjectManager::loadSceneFromJson(const std::string& filename) {
 	if (version != 1)
 		std::cerr << "Warning: unsupported scene version " << version << "\n";
 
-	for (auto& pair : m_gameObjects) {
+	/*for (auto& pair : m_gameObjects) {
 		GameObject* obj = pair.second.get();
 		if (obj && obj->hasComponent<Render>()) {
 			Render* render = obj->getComponent<Render>();
 			if (render->texHDL && render->hasTex) {
 				glDeleteTextures(1, &render->texHDL);
 				render->texHDL = 0;
+				render->texChanged = false;
 			}
 		}
-	}
+	}*/
+
 	std::cerr << "Cleared textures before loading scene.\n";
 	m_layerManager.clearAllLayers();
 	m_gameObjects.clear();
@@ -486,7 +488,7 @@ void GameObjectManager::loadSceneFromJson(const std::string& filename) {
 			if (r->hasTex && jr.HasMember("texture") && jr["texture"].IsString()) {
 				r->texFile = jr["texture"].GetString();
 				r->texHDL = 0;
-				r->texChanged = true;   // lazy GPU load later
+				r->texChanged = false;   // lazy GPU load later
 			}
 			else {
 				r->texFile.clear();
@@ -939,6 +941,7 @@ void GameObjectManager::initializeSceneResources() {
 				TextureData texData = ResourceManager::getInstance().getTexture(render->texFile);
 				render->texHDL = texData.id;
 				render->isTransparent = texData.isTransparent;
+				render->texChanged = false;
 			}
 		}
 		// Initialize font models

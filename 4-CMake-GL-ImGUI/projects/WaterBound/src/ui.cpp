@@ -316,8 +316,8 @@ void UI::editorMenuBar(GameObjectManager& manager) {
 
                 // save current state to a temp scene file
                 //manager.saveScene(m_tempSceneName);
+                
                 manager.saveScene(JsonIO::runtimeScenePath(m_tempSceneName));
-                manager.initializeSceneResources();
 
 
                 addDebugMessage("Simulation started.\n");
@@ -331,7 +331,7 @@ void UI::editorMenuBar(GameObjectManager& manager) {
 
                 // load back the temp scene file to restore state
                 manager.loadScene(JsonIO::runtimeScenePath(m_tempSceneName));
-                //manager.initializeSceneResources();
+                manager.initializeSceneResources();
 
 
                 m_SelectionState.selectedObject = nullptr;

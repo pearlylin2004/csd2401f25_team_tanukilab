@@ -333,7 +333,7 @@ GameObject* PrefabManager::instantiate(GameObject* go, GameObjectManager& manage
 		if (r->hasTex && jr.HasMember("texture") && jr["texture"].IsString()) {
 			r->texFile = jr["texture"].GetString();
 			r->texHDL = 0;
-			r->texChanged = true;   // lazy GPU load later
+			r->texChanged = false;   // lazy GPU load later
 		}
 		else {
 			r->texFile.clear();
@@ -893,7 +893,7 @@ bool PrefabManager::createPrefabFromGameObj(GameObject* go, const std::string& n
 bool PrefabManager::deletePrefab(const std::string prefabID) {
 	auto iterator = m_prefabRegistry.find(prefabID);
 	if (iterator == m_prefabRegistry.end()) {
-		std::cerr << "PrefabManager::deleteprefab: failed — prefab ID not found: " << prefabID << "\n";
+		std::cerr << "PrefabManager::deleteprefab: failed ï¿½ prefab ID not found: " << prefabID << "\n";
 		return false;
 	}
 
