@@ -7,24 +7,23 @@
 \par		 low.h@digipen.edu
 \date        October, 1st, 2025
 \brief       Manages all game objects and initializes them with their corresponding components
-
 Copyright (C) 2025 DigiPen Institute of Technology.
 Reproduction or disclosure of this file or its contents
 without the prior written consent of DigiPen Institute of
 Technology is prohibited.
 */
 /* End Header **************************************************************************/
-
 #pragma once
 #include <fstream>
 #include <sstream>
 #include <iomanip>
 #include "GameObject.h"
 
-//GameObjectManager should hold every existing GameObject in a smart pointer
-//so when this manager is destroyed, 
-//all other GameObjects are destroyed with it
-//no more news and deletes! yippee
+//idk why it workss here but
+struct ButtonData {
+	glm::vec3 position;
+	glm::vec3 scale;
+};
 
 // This class is responsible for creating, storing, and providing access to game objects.
 class GameObjectManager {
@@ -71,8 +70,14 @@ public:
 	void saveScene(const std::string& path, bool isNew = false) const;
 
 	void initializeSceneResources();
+	
+	// NEW: Get button data from loaded scene
+	const std::unordered_map<std::string, ButtonData>& getButtonData() const { return m_buttonData; }
+	bool hasButtonData() const { return !m_buttonData.empty(); }
 
 private:
 	//map of all game objects
 	std::unordered_map<std::string, std::unique_ptr<GameObject>> m_gameObjects;
+	
+	std::unordered_map<std::string, ButtonData> m_buttonData;
 };

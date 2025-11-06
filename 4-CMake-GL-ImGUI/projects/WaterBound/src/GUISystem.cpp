@@ -21,84 +21,22 @@ GUISystem::~GUISystem() {
 void GUISystem::init(GameObjectManager& manager) {
     std::cout << "GUISystem::init started" << std::endl;
 
-    // Load button data from JSON first - use the same naming convention as level files
-    if (!loadButtonDataFromJSON("menu_scene.json")) {
-        std::cout << "Failed to load button data from JSON" << std::endl;
+    // Load the menu scene - this will populate button data in the manager
+    manager.loadScene(runtimeScenePath("menu_scene.json"));
+
+    // Get button data from the manager
+    if (manager.hasButtonData()) {
+        m_buttonData = manager.getButtonData();
+        m_buttonDataLoaded = true;
+        std::cout << "Successfully loaded " << m_buttonData.size() << " button(s) from GameObjectManager" << std::endl;
+    }
+    else {
+        std::cout << "No button data found in GameObjectManager" << std::endl;
+        m_buttonDataLoaded = false;
     }
 
+    // Create the actual button game objects
     createMenuButtons(manager);
-    //std::cout << "GUISystem::init completed successfully" << std::endl;
-}
-
-bool GUISystem::loadButtonDataFromJSON(const std::string& filename) {
-    std::cout << "Loading button data from: " << filename << std::endl;
-
-    // Use the same path resolution as GameObjectManager
-    std::string fullPath = runtimeScenePath(filename);
-    //std::cout << "Full path: " << fullPath << std::endl;
-
-    rapidjson::Document doc;
-    std::string err;
-
-    // Use the same JsonIO utility that GameObjectManager uses
-    if (!JsonIO::ReadFileToDocument(fullPath, doc, &err)) {
-        std::cout << "ERROR: Could not load JSON from " << fullPath << ": " << err << std::endl;
-
-        // Try without path resolution as fallback
-        if (!JsonIO::ReadFileToDocument(filename, doc, &err)) {
-            std::cout << "ERROR: Could not load JSON from " << filename << " either: " << err << std::endl;
-            return false;
-        }
-    }
-
-    if (!doc.HasMember("buttons") || !doc["buttons"].IsArray()) {
-        std::cout << "ERROR: JSON missing 'buttons' array" << std::endl;
-        return false;
-    }
-
-    const auto& buttons = doc["buttons"].GetArray();
-    m_buttonData.clear();
-
-    for (const auto& button : buttons) {
-        if (!button.IsObject() || !button.HasMember("name") || !button.HasMember("components")) {
-            std::cout << "WARNING: Skipping invalid button object" << std::endl;
-            continue;
-        }
-
-        std::string name = button["name"].GetString();
-        const auto& components = button["components"];
-
-        if (!components.HasMember("Transform") || !components["Transform"].IsObject()) {
-            std::cout << "WARNING: Button '" << name << "' missing Transform component" << std::endl;
-            continue;
-        }
-
-        const auto& transform = components["Transform"];
-        ButtonData data;
-
-        // Load position
-        if (transform.HasMember("pos") && transform["pos"].IsArray() && transform["pos"].Size() == 3) {
-            data.position.x = transform["pos"][0].GetFloat();
-            data.position.y = transform["pos"][1].GetFloat();
-            data.position.z = transform["pos"][2].GetFloat();
-        }
-
-        // Load scale
-        if (transform.HasMember("scale") && transform["scale"].IsArray() && transform["scale"].Size() == 3) {
-            data.scale.x = transform["scale"][0].GetFloat();
-            data.scale.y = transform["scale"][1].GetFloat();
-            data.scale.z = transform["scale"][2].GetFloat();
-        }
-
-        m_buttonData[name] = data;
-        std::cout << "Loaded button: " << name
-            << " pos: (" << data.position.x << ", " << data.position.y << ", " << data.position.z
-            << ") scale: (" << data.scale.x << ", " << data.scale.y << ", " << data.scale.z << ")" << std::endl;
-    }
-
-    m_buttonDataLoaded = true;
-    std::cout << "Successfully loaded " << m_buttonData.size() << " buttons from JSON" << std::endl;
-    return true;
 }
 
 void GUISystem::update(GameObjectManager& manager) {
@@ -129,16 +67,14 @@ void GUISystem::update(GameObjectManager& manager) {
 }
 
 void GUISystem::createMenuButtons(GameObjectManager& manager) {
-    //std::cout << "GUISystem::createMenuButtons started" << std::endl;
-
     if (m_buttonsCreated) {
-        //std::cout << "Buttons already created, returning early" << std::endl;
+        std::cout << "Buttons already created, returning early" << std::endl;
         return;
     }
 
     std::cout << "Creating buttons..." << std::endl;
 
-    // Create Play Button using JSON data
+    // Create Play Button
     m_playButton = manager.createGameObject("play_button");
     if (!m_playButton) {
         std::cout << "ERROR: Failed to create play button!" << std::endl;
@@ -151,7 +87,7 @@ void GUISystem::createMenuButtons(GameObjectManager& manager) {
 
     Transform* playTransform = m_playButton->addComponent<Transform>();
 
-    // Use JSON data if available, otherwise use defaults
+    // Use JSON data if available
     if (m_buttonDataLoaded && m_buttonData.find("play_button") != m_buttonData.end()) {
         const ButtonData& data = m_buttonData["play_button"];
         playTransform->x = data.position.x;
@@ -160,19 +96,22 @@ void GUISystem::createMenuButtons(GameObjectManager& manager) {
         playTransform->scaleX = data.scale.x;
         playTransform->scaleY = data.scale.y;
         playTransform->scaleZ = data.scale.z;
-        std::cout << "Using JSON data for play button" << std::endl;
+        std::cout << "Play button created with JSON data: pos("
+            << data.position.x << ", " << data.position.y << ", " << data.position.z
+            << ") scale(" << data.scale.x << ", " << data.scale.y << ", " << data.scale.z << ")" << std::endl;
     }
-    //else {
-    //    // Fallback to hardcoded values
-    //    playTransform->x = -6.0f;
-    //    playTransform->y = 0.0f;
-    //    playTransform->z = 0.1f;
-    //    playTransform->scaleX = 6.0f;
-    //    playTransform->scaleY = 1.0f;
-    //    playTransform->scaleZ = 1.0f;
-    //    std::cout << "Using default data for play button" << std::endl;
-    //}
+    else {
+        // Fallback to default values
+        playTransform->x = -6.0f;
+        playTransform->y = 0.0f;
+        playTransform->z = 0.1f;
+        playTransform->scaleX = 6.0f;
+        playTransform->scaleY = 1.0f;
+        playTransform->scaleZ = 1.0f;
+        std::cout << "Play button created with default data (no JSON data found)" << std::endl;
+    }
 
+    // Create Stop Button
     m_stopButton = manager.createGameObject("stop_button");
     if (!m_stopButton) {
         std::cout << "ERROR: Failed to create stop button!" << std::endl;
@@ -185,6 +124,7 @@ void GUISystem::createMenuButtons(GameObjectManager& manager) {
 
     Transform* stopTransform = m_stopButton->addComponent<Transform>();
 
+    // Use JSON data if available
     if (m_buttonDataLoaded && m_buttonData.find("stop_button") != m_buttonData.end()) {
         const ButtonData& data = m_buttonData["stop_button"];
         stopTransform->x = data.position.x;
@@ -193,25 +133,26 @@ void GUISystem::createMenuButtons(GameObjectManager& manager) {
         stopTransform->scaleX = data.scale.x;
         stopTransform->scaleY = data.scale.y;
         stopTransform->scaleZ = data.scale.z;
-        std::cout << "Using JSON data for stop button" << std::endl;
+        std::cout << "Stop button created with JSON data: pos("
+            << data.position.x << ", " << data.position.y << ", " << data.position.z
+            << ") scale(" << data.scale.x << ", " << data.scale.y << ", " << data.scale.z << ")" << std::endl;
     }
-    //else {
-    //    // Fallback to hardcoded values
-    //    stopTransform->x = 3.0f;
-    //    stopTransform->y = 0.0f;
-    //    stopTransform->z = 0.1f;
-    //    stopTransform->scaleX = 6.0f;
-    //    stopTransform->scaleY = 1.0f;
-    //    stopTransform->scaleZ = 1.0f;
-    //    std::cout << "Using default data for stop button" << std::endl;
-    //}
+    else {
+        // Fallback to default values
+        stopTransform->x = 3.0f;
+        stopTransform->y = 0.0f;
+        stopTransform->z = 0.1f;
+        stopTransform->scaleX = 6.0f;
+        stopTransform->scaleY = 1.0f;
+        stopTransform->scaleZ = 1.0f;
+        std::cout << "Stop button created with default data (no JSON data found)" << std::endl;
+    }
 
     m_buttonsCreated = true;
     m_currentState = GameState::MENU;
-    //std::cout << "Menu buttons created successfully" << std::endl;
+    std::cout << "Menu buttons created successfully" << std::endl;
 }
 
-// Rest of the methods remain the same...
 void GUISystem::removeMenuButtons(GameObjectManager& manager) {
     if (m_playButton) {
         manager.deleteGameObject(m_playButton);
@@ -236,8 +177,6 @@ void GUISystem::startGame(GameObjectManager& manager) {
 
     // Change game state
     m_currentState = GameState::PLAYING;
-
-    //std::cout << "Game started - loaded json" << std::endl;
 }
 
 void GUISystem::stopGame(GameObjectManager& manager) {
@@ -248,8 +187,6 @@ void GUISystem::stopGame(GameObjectManager& manager) {
     if (window) {
         glfwSetWindowShouldClose(window, true);
     }
-
-    //std::cout << "Application quit requested" << std::endl;
 }
 
 bool GUISystem::isPointInButton(const glm::vec2& point, GameObject* button) {

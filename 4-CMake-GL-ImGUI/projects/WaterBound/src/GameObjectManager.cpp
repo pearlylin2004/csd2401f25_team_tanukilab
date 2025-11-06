@@ -1,4 +1,4 @@
-/* Start Header ************************************************************************/
+﻿/* Start Header ************************************************************************/
 /*!
 \file        GameObjectManager.cpp
 \author      Seow Sin Le, s.sinle, 2401084, 50%
@@ -962,6 +962,133 @@ void GameObjectManager::loadSceneFromJson(const std::string& filename) {
 			else {
 				fc->fontType = 1;  // Default to ARIAL
 			}
+
+			
+		}
+		
+	}
+
+	std::cout << "\n=== BUTTON DATA EXTRACTION START ===" << std::endl;
+	std::cout << "Total game objects loaded: " << m_gameObjects.size() << std::endl;
+
+	m_buttonData.clear(); // Ensure it's empty before populating
+
+	// Method 1: Check for dedicated "buttons" array in JSON
+	if (doc.HasMember("buttons") && doc["buttons"].IsArray()) {
+		std::cout << "Found 'buttons' array in JSON" << std::endl;
+		const auto& buttons = doc["buttons"].GetArray();
+		std::cout << "Buttons array size: " << buttons.Size() << std::endl;
+
+		for (const auto& button : buttons) {
+			if (!button.IsObject()) {
+				std::cout << "  Skipping non-object button entry" << std::endl;
+				continue;
+			}
+
+			if (!button.HasMember("name")) {
+				std::cout << "  Skipping button without 'name' field" << std::endl;
+				continue;
+			}
+
+			std::string name = button["name"].GetString();
+			std::cout << "  Processing button: " << name << std::endl;
+
+			if (!button.HasMember("components")) {
+				std::cout << "    No components found" << std::endl;
+				continue;
+			}
+
+			const auto& components = button["components"];
+
+			if (!components.HasMember("Transform") || !components["Transform"].IsObject()) {
+				std::cout << "    No Transform component found" << std::endl;
+				continue;
+			}
+
+			const auto& transform = components["Transform"];
+			ButtonData data;
+
+			if (transform.HasMember("pos") && transform["pos"].IsArray() && transform["pos"].Size() == 3) {
+				data.position = glm::vec3(
+					transform["pos"][0].GetFloat(),
+					transform["pos"][1].GetFloat(),
+					transform["pos"][2].GetFloat()
+				);
+			}
+			else {
+				std::cout << "    Invalid or missing 'pos' array" << std::endl;
+			}
+
+			if (transform.HasMember("scale") && transform["scale"].IsArray() && transform["scale"].Size() == 3) {
+				data.scale = glm::vec3(
+					transform["scale"][0].GetFloat(),
+					transform["scale"][1].GetFloat(),
+					transform["scale"][2].GetFloat()
+				);
+			}
+			else {
+				std::cout << "    Invalid or missing 'scale' array" << std::endl;
+			}
+
+			m_buttonData[name] = data;
+			std::cout << "    ✓ Loaded from JSON: pos(" << data.position.x << ", "
+				<< data.position.y << ", " << data.position.z << "), scale("
+				<< data.scale.x << ", " << data.scale.y << ", " << data.scale.z << ")" << std::endl;
+		}
+	}
+	else {
+		std::cout << "No 'buttons' array found in JSON - will extract from game objects" << std::endl;
+	}
+
+	// Method 2: Extract from loaded game objects with "button" in the name
+	std::cout << "\nScanning loaded game objects for buttons..." << std::endl;
+	int foundCount = 0;
+
+	for (const auto& [name, obj] : m_gameObjects) {
+		std::cout << "  Checking object: " << name << std::endl;
+
+		// Check if object name contains "button" (case-insensitive check)
+		std::string lowerName = name;
+		std::transform(lowerName.begin(), lowerName.end(), lowerName.begin(), ::tolower);
+
+		if (lowerName.find("button") != std::string::npos) {
+			std::cout << "    → Found button object!" << std::endl;
+			foundCount++;
+
+			if (auto* transform = obj->getComponent<Transform>()) {
+				ButtonData data;
+				data.position = glm::vec3(transform->x, transform->y, transform->z);
+				data.scale = glm::vec3(transform->scaleX, transform->scaleY, transform->scaleZ);
+
+				// Only add if not already added from buttons array
+				if (m_buttonData.find(name) == m_buttonData.end()) {
+					m_buttonData[name] = data;
+					std::cout << "    ✓ Extracted from object: pos(" << data.position.x << ", "
+						<< data.position.y << ", " << data.position.z << "), scale("
+						<< data.scale.x << ", " << data.scale.y << ", " << data.scale.z << ")" << std::endl;
+				}
+				else {
+					std::cout << "    (Already loaded from buttons array)" << std::endl;
+				}
+			}
+			else {
+				std::cout << "    ✗ No Transform component found!" << std::endl;
+			}
+		}
+	}
+
+	std::cout << "\nButton objects found during scan: " << foundCount << std::endl;
+	std::cout << "Total button data entries: " << m_buttonData.size() << std::endl;
+
+	if (m_buttonData.empty()) {
+		std::cout << "WARNING: No button data was extracted!" << std::endl;
+	}
+	else {
+		std::cout << "SUCCESS: Button data loaded:" << std::endl;
+		for (const auto& [name, data] : m_buttonData) {
+			std::cout << "  - " << name << ": pos(" << data.position.x << ", "
+				<< data.position.y << ", " << data.position.z << "), scale("
+				<< data.scale.x << ", " << data.scale.y << ", " << data.scale.z << ")" << std::endl;
 		}
 	}
 

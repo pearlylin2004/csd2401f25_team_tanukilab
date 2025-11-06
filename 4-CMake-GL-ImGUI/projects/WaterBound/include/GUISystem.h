@@ -9,10 +9,7 @@ enum class GameState {
     PLAYING
 };
 
-struct ButtonData {
-    glm::vec3 position;
-    glm::vec3 scale;
-};
+// ButtonData is now defined in GameObjectManager.h - no need to redefine it here
 
 class GUISystem {
 public:
@@ -31,13 +28,10 @@ private:
     void startGame(GameObjectManager& manager);
     void stopGame(GameObjectManager& manager);
 
-    // New method to load button data from JSON
-    bool loadButtonDataFromJSON(const std::string& filename);
-
-    // Store button data
-    std::unordered_map<std::string, ButtonData> m_buttonData;
-
     bool isPointInButton(const glm::vec2& point, GameObject* button);
+
+    // Store button data retrieved from GameObjectManager
+    std::unordered_map<std::string, ButtonData> m_buttonData;
 
     GameState m_currentState = GameState::MENU;
     GameObject* m_playButton = nullptr;
