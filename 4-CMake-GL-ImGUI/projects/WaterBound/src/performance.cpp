@@ -18,23 +18,3 @@ Technology is prohibited.
 #include "performance.h"
 
 std::vector<SystemTimer> g_SystemTimers;
-
-void LogSystemTimersEveryInterval(float deltaTime, double intervalSeconds){
-    static double accumulator = 0.0;
-    accumulator += deltaTime;
-
-    if (accumulator >= intervalSeconds){
-        accumulator = 0.0;
-
-        double totalMs = 0.0;
-        for (auto& timer : g_SystemTimers)
-            totalMs += timer.ms;
-
-        std::cout << "\n=== System Performance Report(every 15 seconds) ===\n";
-        for (auto& timer : g_SystemTimers){
-            float percent = totalMs > 0.0 ? (float)((timer.ms / totalMs) * 100.0) : 0.0f;
-            std::cout << timer.name << ": " << timer.ms << " ms (" << percent << "%)" << std::endl;
-        }
-        std::cout << "=================================\n" << std::endl;
-    }
-}

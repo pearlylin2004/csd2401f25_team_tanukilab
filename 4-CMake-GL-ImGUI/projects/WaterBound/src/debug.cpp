@@ -393,7 +393,7 @@ namespace DebugInput {
     /**
      * @brief Log mouse cursor movement.
      *
-     * Reports the cursorï¿½s current x and y coordinates within the window client area.
+     * Reports the cursor’s current x and y coordinates within the window client area.
      *
      * @param window The GLFW window receiving the event.
      * @param xpos Cursor x-coordinate.
@@ -427,6 +427,7 @@ namespace DebugInput {
         dbg_push_line(oss.str());
     }
 }
+
 namespace DebugDiag {
 
     void AuditRuntimePaths()

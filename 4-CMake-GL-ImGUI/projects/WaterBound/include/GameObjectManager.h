@@ -17,10 +17,11 @@ Technology is prohibited.
 
 #pragma once
 #include <fstream>
-#include <cstring>
 #include <sstream>
 #include <iomanip>
+
 #include "GameObject.h"
+#include "layerManager.h"
 
 //GameObjectManager should hold every existing GameObject in a smart pointer
 //so when this manager is destroyed, 
@@ -32,6 +33,9 @@ class GameObjectManager {
 public:
 	//create objects
 	GameObject* createGameObject(const std::string& name);
+
+	// create temp objects that rep a prefab, for editor
+	static std::unique_ptr<GameObject> createTempGameObject(const std::string& name);
 
 	//use this when objects need to interact with each other
 	GameObject* getGameObject(const std::string& name);
@@ -68,9 +72,17 @@ public:
 
 	void saveScene(const std::string& path, bool isNew = false) const;
 
+	//layering manager stuff
+	LayerManager& getLayerManager();
+
+	bool assignObjectToLayer(GameObject* obj, int layerID);
+
+	std::vector<GameObject*> getObjectsInLayer(int layerID);
 	void initializeSceneResources();
 
 private:
 	//map of all game objects
 	std::unordered_map<std::string, std::unique_ptr<GameObject>> m_gameObjects;
+
+	LayerManager m_layerManager;
 };

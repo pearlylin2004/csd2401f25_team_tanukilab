@@ -22,11 +22,6 @@ void LuaSystem::init() {
     lua_register(L, "Input_isKeyHeld", Lua_IsKeyHeld);
     lua_register(L, "getPosition", Lua_getPosition);
     lua_register(L, "setPosition", Lua_setPosition);
-    //for message
-    lua_pushlightuserdata(L, this);
-    lua_pushcclosure(L, Lua_SendInputEvent, 1);
-    lua_setglobal(L, "SendInputEvent");
-    manager = std::make_unique<GameObjectManager>();
 }
 
 void LuaSystem::cleanup() {
@@ -47,7 +42,6 @@ int LuaSystem::Lua_IsKeyHeld(lua_State* L) {
     else if (strcmp(keyStr, "S") == 0) key = GLFW_KEY_S;
     else if (strcmp(keyStr, "D") == 0) key = GLFW_KEY_D;
     else if (strcmp(keyStr, "SPACE") == 0) key = GLFW_KEY_SPACE;
-    else if (strcmp(keyStr, "B") == 0) key = GLFW_KEY_B;
     //add more keys if needed in the future
 
     bool held = false;
@@ -179,38 +173,4 @@ bool LuaSystem::updateObjectScript(const std::string& tableName, GameObject* obj
     lua_pop(L, 1); //pop table
 
     return true;
-}
-
-//for message
-int LuaSystem::Lua_SendInputEvent(lua_State* L) {
-    LuaSystem* self = static_cast<LuaSystem*>(lua_touserdata(L, lua_upvalueindex(1)));
-    if (!self || !self->messageBus) return 0;
-
-    const char* key = lua_tostring(L, 1);
-    float x = static_cast<float>(lua_tonumber(L, 2));
-    float y = static_cast<float>(lua_tonumber(L, 3));
-
-    //to set the keys 
-    KeyEvent evt;
-    evt.key = key ? key : "";
-    evt.pressed = true;
-    evt.x = x;
-    evt.y = y;
-
-    self->messageBus->publish(Message("KeyPressed", nullptr, evt));
-
-    return 0;
-}
-
-//lua updates for all objects with LuaScript component
-void LuaSystem::update(GameObjectManager& manager, float deltaTime) {
-    std::vector<GameObject*> gameObjects;
-    manager.getAllGameObjects(gameObjects);
-
-    for (GameObject* obj : gameObjects) {
-        if (obj->hasComponent<LuaScript>()) {
-            LuaScript* scriptComp = obj->getComponent<LuaScript>();
-            updateObjectScript(scriptComp->scriptName, obj, deltaTime);
-        }
-    }
 }

@@ -136,9 +136,9 @@ public:
     bool alive = false;
 
     //water bullet
-    Vector2D posBullet{};
-    Vector2D velBullet{};
-    bool aliveBullet{};
+    Vector2D posBullet;
+    Vector2D velBullet;
+    bool aliveBullet;
 
     //bool inWaterTriggered; // true only when W is pressed
 
@@ -194,25 +194,15 @@ struct UIComponent : public Component {
 struct LuaScript : public Component {
 public:
     LuaScript(const std::string& file)
-        : filename(file)
-    {
-        //automatically determine table name from file path
-        std::string name = file;
-        size_t lastSlash = name.find_last_of("/\\");
-        if (lastSlash != std::string::npos)
-            name = name.substr(lastSlash + 1); //remove path
-        size_t dot = name.find_last_of('.');
-        if (dot != std::string::npos)
-            name = name.substr(0, dot); //remove extension
-        scriptName = name;
+        : filename(file), scriptName(file) {
     }
 
     std::unique_ptr<Component> clone() const override {
         return std::make_unique<LuaScript>(*this);
     }
 
-    std::string filename;   //path to the Lua file
-    std::string scriptName; //Lua table name
+    std::string filename; //path to the Lua file
+    std::string scriptName; //unique identifier inside LuaSystem
 };
 
 // Logic Container (FSM) 

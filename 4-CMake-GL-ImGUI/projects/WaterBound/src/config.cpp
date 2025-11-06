@@ -57,8 +57,7 @@ namespace {
 bool LoadConfig(const std::string& path, AppConfig& out, std::string* err)
 {
     rapidjson::Document doc;
-
-    if (!JsonIO::ReadFileToDocument(path, doc, err)) return false;  
+    if (!JsonIO::ReadFileToDocument(path, doc, err)) return false;   // <�� change here
 
     if (doc.HasMember("window") && doc["window"].IsObject()) {
         const auto& w = doc["window"];
@@ -81,7 +80,6 @@ bool LoadConfig(const std::string& path, AppConfig& out, std::string* err)
     gShowFpsInTitle = out.show_fps_in_title;
     gShowInputDebug = out.show_input_debug;
     for (int i = 0; i < 4; ++i) gClearColor[i] = out.clear_color[i];
-    std::cout << "[Config] Loaded JSON: " << path << "\n";
     return true;
 }
 
@@ -89,5 +87,5 @@ bool SaveConfig(const std::string& path, const AppConfig& cfg, std::string* err,
 {
     rapidjson::Document doc;
     toDocument(cfg, doc);
-    return JsonIO::WriteDocumentToFile(path, doc, pretty, err);      
+    return JsonIO::WriteDocumentToFile(path, doc, pretty, err);      // uses JsonIO
 }

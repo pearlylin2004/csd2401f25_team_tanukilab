@@ -37,12 +37,11 @@ CoreEngine::~CoreEngine() {
 }
 
 void CoreEngine::Init() {
-    //DebugDiag::AuditRuntimePaths();
     AppConfig cfg;
     std::string err;
-    LoadConfig(Paths::config().string(), cfg, &err);
-    if (!err.empty()) std::cerr << err << "\n";
-
+    if (!LoadConfig("../projects/WaterBound/resources/config.json", cfg, &err)) {
+        std::cout << err << "\n";
+    }
     m_title = cfg.title;
 
     // --- GLFW/GLEW Initialization ---
@@ -87,23 +86,36 @@ void CoreEngine::Init() {
     m_luaSystem = std::make_unique<LuaSystem>();
     m_fontSystem = std::make_unique<FontSystem>();
     m_guiSystem = std::make_unique<GUISystem>();
-    m_messageBus = std::make_unique<MessageBus>();
-    m_playerController = std::make_unique<PlayerControllerSystem>();
 
     PrefabManager::Instance().loadPrefabRegistry(std::string(RUNTIME_DIR_R) + "/Prefab/prefab_registry.json");
-    //m_manager->init();
-    m_guiSystem->init(*m_manager, *m_luaSystem);
     m_luaSystem->init();
+    //m_manager->init();
+    m_guiSystem->init(*m_manager);
 	m_renderSystem->init(*m_manager, cfg.width, cfg.height);
 	m_uiSystem->init(m_window, m_renderSystem.get());
     m_fontSystem->init(*m_manager);
 
-    //advance messaging 
-    m_messageBus->subscribe("KeyPressed", m_playerController.get());
-    m_messageBus->subscribe("KeyReleased", m_playerController.get());
+    //iterate over all Lua scripts in the folder
+    for (const auto& file : std::filesystem::directory_iterator("../projects/WaterBound/scripting")) {
+        if (file.path().extension() != ".lua") continue; //have to be .lua files if not it will skip
+        std::string filename = file.path().filename().string();
 
-    audio.init();
-    glfwPollEvents();
+        //strip ".lua" to get object name
+        std::string objectName = filename.substr(0, filename.size() - 4);
+
+        GameObject* obj = m_manager->getGameObject(objectName);
+        if (obj) {
+			obj->addComponent<LuaScript>(file.path().string()); //add LuaScript component to object
+            //load Lua script into Lua state
+            if (!m_luaSystem->loadScriptForObject(file.path().string(), objectName)) {
+                std::cerr << "[Lua] Failed to load script for " << objectName << std::endl;
+            }
+            else {
+                std::cout << "[Lua] Loaded script " << filename << " for object " << objectName << std::endl;
+            }
+        }
+    }
+
     m_isRunning = true;
 }
 
@@ -182,15 +194,26 @@ void CoreEngine::Update(float deltaTime) {
             Transform* newTransform = newObject->getComponent<Transform>();
             newTransform->y += 1.5f * (static_cast<float>(cloneCount) - 1); // Offset the new clone's position
         }
+
+        //lua scripting update for all objects with LuaScript component
+        std::vector<GameObject*> gameObjects;
+        m_manager->getAllGameObjects(gameObjects);
+
+        //running Lua scripts for each object that has a LuaScript component
+        for (GameObject* obj : gameObjects) {
+            if (obj->hasComponent<LuaScript>()) {
+                //LuaScript* scriptComp = obj->getComponent<LuaScript>();
+                m_luaSystem->updateObjectScript(obj->getObjectName(), obj, deltaTime);
+            }
+        }
+        // Update all systems in order
+        m_inputSystem->update(*m_manager, deltaTime);
+        m_collisionSystem->update(*m_manager, deltaTime);
+        m_physicsSystem->update(*m_manager, deltaTime);
+        
     }
 
-    //lua scripting update for all objects with LuaScript component
-    m_luaSystem->update(*m_manager, deltaTime);
-
     // Update all systems in order
-    m_inputSystem->update(*m_manager, deltaTime, *m_messageBus);
-    m_collisionSystem->update(*m_manager, deltaTime);
-    m_physicsSystem->update(*m_manager, deltaTime, *m_messageBus);
     m_logicSystem->update(*m_manager, deltaTime);
     m_renderSystem->update(*m_manager, deltaTime);
     m_fontSystem->update(*m_manager);

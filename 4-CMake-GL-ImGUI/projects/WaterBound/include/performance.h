@@ -18,7 +18,6 @@ Technology is prohibited.
 #pragma once
 #include <string>
 #include <vector>
-#include <iostream>
 
 //struct for storing system timer info
 struct SystemTimer {
@@ -27,4 +26,3 @@ struct SystemTimer {
 };
 
 extern std::vector<SystemTimer> g_SystemTimers;
-void LogSystemTimersEveryInterval(float deltaTime, double intervalSeconds = 15.0); //for console

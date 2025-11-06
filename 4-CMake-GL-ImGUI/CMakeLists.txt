@@ -134,22 +134,6 @@ add_custom_command(TARGET WaterBound POST_BUILD
         "$<TARGET_FILE_DIR:WaterBound>/fmodL.dll"
 )
 
-# Copy resources (e.g., config.json) next to the exe for Debug & Release
-add_custom_command(TARGET WaterBound POST_BUILD
-  COMMAND ${CMAKE_COMMAND} -E copy_directory
-          "${CMAKE_CURRENT_LIST_DIR}/projects/WaterBound/resources"
-          "$<TARGET_FILE_DIR:WaterBound>/resources"
-  COMMENT "Copying resources to runtime directory"
-)
-
-# Copy Lua scripts next to the exe for Debug & Release
-add_custom_command(TARGET WaterBound POST_BUILD
-  COMMAND ${CMAKE_COMMAND} -E copy_directory
-          "${CMAKE_CURRENT_LIST_DIR}/projects/WaterBound/scripting"
-          "$<TARGET_FILE_DIR:WaterBound>/scripting"
-  COMMENT "Copying scripting to runtime directory"
-)
-
 # ==== Sync Scene folder for runtime ====
 set(SCENE_SOURCE_DIR "${CMAKE_CURRENT_LIST_DIR}/projects/WaterBound/shaders/Scene")
 

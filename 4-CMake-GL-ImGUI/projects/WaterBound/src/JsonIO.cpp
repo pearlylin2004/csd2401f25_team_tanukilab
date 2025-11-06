@@ -94,27 +94,6 @@ namespace JsonIO {
 		return shape::square;
 	}
 
-	// centralized player state helpers
-	PlayerState parsePlayerState(const std::string& s) {
-		if (s == "Idle")     return PlayerState::Idle;
-		if (s == "Walking")  return PlayerState::Walking;
-		if (s == "Jumping")  return PlayerState::Jumping;
-		if (s == "Falling")  return PlayerState::Falling;
-		if (s == "Shooting") return PlayerState::Shooting;
-		return PlayerState::Idle;
-	}
-
-	const char* playerStateToStr(PlayerState state) {
-		switch (state) {
-		case PlayerState::Idle:     return "Idle";
-		case PlayerState::Walking:  return "Walking";
-		case PlayerState::Jumping:  return "Jumping";
-		case PlayerState::Falling:  return "Falling";
-		case PlayerState::Shooting: return "Shooting";
-		default:                    return "Idle";
-		}
-	}
-
 	// -------- JSON file IO  --------
 	bool AtomicMove(const std::string& tmp, const std::string& dst, std::string* err) {
 		std::error_code ec;
