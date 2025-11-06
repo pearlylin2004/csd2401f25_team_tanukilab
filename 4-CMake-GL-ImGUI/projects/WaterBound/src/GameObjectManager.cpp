@@ -388,7 +388,8 @@ void GameObjectManager::loadSceneFromJson(const std::string& filename) {
 		}
 	}*/
 
-	std::cerr << "Cleared textures before loading scene.\n";
+	//std::cerr << "Cleared textures before loading scene.\n";
+	
 	m_layerManager.clearAllLayers();
 	m_gameObjects.clear();
 

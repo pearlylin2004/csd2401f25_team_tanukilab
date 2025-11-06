@@ -988,7 +988,7 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 						Transform* t2 = obj2->getComponent<Transform>();
 						Collision::AABB aabb2 = Collision::getObjectAABB(t2);
 						Physics* p2 = obj2->getComponent<Physics>();
-						Vector2D vel2{ p2->velX, p2->velY };
+						Vector2D vel2{ p2->dynamics.velocity.x, p2->dynamics.velocity.y };
 
 						CollisionInfo info = Collision::CollisionIntersection_RectRect_Dynamic_Info(aabb1, vel1, aabb2, vel2);
 					
@@ -996,33 +996,35 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 						if (info.collided) {
 							//update the velocity and penetrations for BOTH objects
 							if (info.normal.x != 0) {
+								//can think about momentum in the future
+
 								t1->x += info.normal.x * info.penetration * 0.5f;
-								p1->velX = 0;
-								p1->dynamics.velocity.x = 0;
+								//p1->dynamics.velocity.x = 0;
 
 								t2->x -= info.normal.x * info.penetration * 0.5f;
-								p2->velX = 0;
-								p2->dynamics.velocity.x = 0;
+								//p2->dynamics.velocity.x = 0;
 							}
 
 							// resolve Y
 							if (info.normal.y != 0) {
 								t1->y += info.normal.y * info.penetration * 0.5f;
-								p1->velY = 0;
+								//p1->velY = 0;
 								p1->dynamics.velocity.y = 0;
 
 								t2->y -= info.normal.y * info.penetration * 0.5f;
-								p2->velY = 0;
+								//p2->velY = 0;
 								p2->dynamics.velocity.y = 0;
 
 								if (info.normal.y > 0) {
 									p1->onGround = true;
 								}
+
 							}
 							
 							UI::addDebugMessage("Collision detected between Object.\n"); //message for debugger
 
-						}else { p1->onGround = false; }
+						}
+						else { p1->onGround = false; }
 					}
 					
 				}
