@@ -66,7 +66,7 @@ private:
 	void loadScenePopup(GameObjectManager& manager);
 
 	void objDeletePopup(GameObjectManager& manager);
-	//void createPrefabPopup();
+	void createPrefabPopup(GameObjectManager& manager);
 
 	void newScene(GameObjectManager& manager);
 	void duplicateScene(GameObjectManager& manager);
@@ -105,7 +105,7 @@ private:
 		float ratioZ = 1.0f;
 
 		bool showDeletePopup = false;
-		bool showPrefabPopup = false;
+		bool showCreatePrefabPopup = false;
 	} m_SelectionState;
 	/* ----------------- Game Object Selection End -----------------*/
 

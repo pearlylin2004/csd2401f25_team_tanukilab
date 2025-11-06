@@ -725,6 +725,18 @@ bool PrefabManager::createPrefabFromGameObj(GameObject* go, const std::string& n
 	std::string filename = prefabFolder + "/" + prefabName + ".json";
 	std::filesystem::path prefabPath = preFabDir / prefabName;
 
+	if (std::filesystem::exists(filename)) {
+		// Option 1: Automatically rename (add a number suffix)
+		int counter = 1;
+		std::string newFilename;
+		do {
+			newFilename = prefabFolder + "/" + prefabName + "_" + std::to_string(counter) + ".json";
+			counter++;
+		} while (std::filesystem::exists(newFilename));
+
+		filename = newFilename;
+	}
+
 	PrefabInfo info;
 	info.name = prefabName;
 	info.path = filename;

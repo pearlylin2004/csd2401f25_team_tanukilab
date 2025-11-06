@@ -92,6 +92,7 @@ void UI::update(GameObjectManager& manager) {
 	newScenePopup(manager); // popup for creating new scene
 	duplicateScenePopup(manager); // popup for duplicating scene
 	loadScenePopup(manager); // popup for loading scene
+    createPrefabPopup(manager); // create prefab pop up
     objDeletePopup(manager); // delete obj pop up
 	assetDeletePopup(); // popup for confirming asset deletion
 	assetRenamePopup(); // popup for renaming asset
@@ -623,12 +624,17 @@ void UI::objHierarchyWindow(GameObjectManager& manager) {
             if (ImGui::BeginPopupContextItem()) {
                 if (ImGui::MenuItem("Save as Prefab")) {
                     // save this obj into a prefab
-                    PrefabManager::Instance().createPrefabFromGameObj(gameObjects[i]);
-                    addDebugMessage("Prefab created.\n");
+                    /*PrefabManager::Instance().createPrefabFromGameObj(gameObjects[i]);
+                    addDebugMessage("Prefab created.\n");*/
+                    m_SelectionState.selectedIndex = static_cast<int>(i);
+                    m_SelectionState.selectedObject = gameObjects[i];
+                    m_SelectionState.showCreatePrefabPopup = true;
                 }
 
                 if (ImGui::MenuItem("Delete Object")) {
-                    m_AssetBrowserState.showDeletePopup = true;
+                    m_SelectionState.selectedIndex = static_cast<int>(i);
+                    m_SelectionState.selectedObject = gameObjects[i];
+                    m_SelectionState.showDeletePopup = true;
                 }
 
                 ImGui::EndPopup();
@@ -867,7 +873,7 @@ void UI::objInspectorWindow(GameObjectManager& manager) {
         if (selected == m_SelectionState.selectedObject) {
             std::string name = selected->getObjectName();
             if (ImGui::Button("Delete Object")) {
-                m_AssetBrowserState.showDeletePopup = true;
+                m_SelectionState.showDeletePopup = true;
                 //ImGui::OpenPopup("Confirm Delete Object");
             }
 
@@ -883,9 +889,9 @@ void UI::objInspectorWindow(GameObjectManager& manager) {
 
 void UI::objDeletePopup(GameObjectManager& manager) {
     // open popup if flagged
-    if (m_AssetBrowserState.showDeletePopup) {
+    if (m_SelectionState.showDeletePopup) {
         ImGui::OpenPopup("Confirm Delete Object");
-        m_AssetBrowserState.showDeletePopup = false;
+        m_SelectionState.showDeletePopup = false;
     }
 
     /*---------------- Cannot delete current loaded scene ----------------*/
@@ -894,6 +900,7 @@ void UI::objDeletePopup(GameObjectManager& manager) {
         ImGui::Text("Are you sure you want to delete this object?");
 
         if (ImGui::Button("Delete")) {
+            if (!m_SelectionState.selectedObject) std::cout << "fuck\n\n";
             std::string name = m_SelectionState.selectedObject->getObjectName();
 
             manager.deleteGameObject(m_SelectionState.selectedObject);
@@ -910,6 +917,50 @@ void UI::objDeletePopup(GameObjectManager& manager) {
         ImGui::SameLine();
 
         if (ImGui::Button("No")) {
+            ImGui::CloseCurrentPopup();
+        }
+
+        ImGui::EndPopup();
+    }
+}
+
+void UI::createPrefabPopup(GameObjectManager& manager) {
+    // open popup if flagged
+    if (m_SelectionState.showCreatePrefabPopup) {
+        ImGui::OpenPopup("Confirm Create Prefab");
+        m_SelectionState.showCreatePrefabPopup = false;
+    }
+
+    /*---------------- Cannot delete current loaded scene ----------------*/
+    // delete confirm popup
+    if (ImGui::BeginPopupModal("Confirm Create Prefab", NULL, ImGuiWindowFlags_AlwaysAutoResize)) {
+        ImGui::Text("Do you want to pack this object into the new prefab?");
+
+        if (ImGui::Button("Create and Pack")) {
+            
+            if (PrefabManager::Instance().createPrefabFromGameObj(m_SelectionState.selectedObject, "", true))
+                addDebugMessage("Prefab created.\n");
+            else addDebugMessage("Prefab not created.\n");
+
+            manager.saveScene(sourceScenePath(m_currentSceneName));
+            syncSceneToRuntime(m_currentSceneName);
+
+            ImGui::CloseCurrentPopup();
+        }
+        //ImGui::SetItemDefaultFocus();
+
+        if (ImGui::Button("Create but Do Not Pack")) {            
+            
+            if (PrefabManager::Instance().createPrefabFromGameObj(m_SelectionState.selectedObject))
+                addDebugMessage("Prefab created.\n");
+            else addDebugMessage("Prefab not created.\n");
+
+            ImGui::CloseCurrentPopup();
+        }
+
+        ImGui::SameLine();
+
+        if (ImGui::Button("Cancel")) {
             ImGui::CloseCurrentPopup();
         }
 
