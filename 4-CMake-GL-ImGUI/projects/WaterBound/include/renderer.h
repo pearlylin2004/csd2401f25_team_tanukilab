@@ -177,6 +177,9 @@ struct renderer
 
 	*************************************************************************/
 	static void setup_shdrpgm();//const glm::mat4& p_modelMat);
+
+	static void cleanup();
+
 	/*!***********************************************************************
 	\brief
 		array of all the available meshes
@@ -238,6 +241,7 @@ struct renderer
 			how much to zoom in/out (scroll)
 		*************************************************************************/
 		void zoomInOut(float scrollDelta);
+
 	};
 
 	/*!***********************************************************************

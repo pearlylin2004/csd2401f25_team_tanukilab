@@ -41,10 +41,19 @@ void ResourceManager::shutdown() {
     m_shaderCache.clear();
     std::cout << "ResourceManager: Cleared all shaders." << std::endl;
 
-    for(auto& pair : m_fontCache) {
+    //Release all fonts and their character textures
+    for (auto& pair : m_fontCache) {
+        //Delete all character textures for this font
+        for (auto& charPair : pair.second.characters) {
+            if (charPair.second.TextureID) {
+                glDeleteTextures(1, &charPair.second.TextureID);
+            }
+        }
+        // Free the FreeType face
         FT_Done_Face(pair.second.face);
-	}
-    std::cout << "ResourceManager: Cleared all fonts." << std::endl;
+    }
+    m_fontCache.clear();
+    std::cout << "ResourceManager: Cleared all fonts and character textures." << std::endl;
 
     if(m_ftLibrary) {
         FT_Done_FreeType(m_ftLibrary);

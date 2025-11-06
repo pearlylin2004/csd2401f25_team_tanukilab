@@ -746,6 +746,17 @@ void GameObjectManager::loadSceneFromJson(const std::string& filename) {
 	if (version != 1)
 		std::cerr << "Warning: unsupported scene version " << version << "\n";
 
+	for (auto& pair : m_gameObjects) {
+		GameObject* obj = pair.second.get();
+		if (obj && obj->hasComponent<Render>()) {
+			Render* render = obj->getComponent<Render>();
+			if (render->texHDL && render->hasTex) {
+				glDeleteTextures(1, &render->texHDL);
+				render->texHDL = 0;
+			}
+		}
+	}
+	std::cerr << "Cleared textures before loading scene.\n";
 	m_gameObjects.clear();
 
 	if (!doc.HasMember("objects") || !doc["objects"].IsArray()) {

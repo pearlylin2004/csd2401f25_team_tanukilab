@@ -223,6 +223,9 @@ void CoreEngine::Update(float deltaTime) {
 }
 
 void CoreEngine::Shutdown() {
+	ResourceManager::getInstance().shutdown();
+    renderer::cleanup();
+    Font::freeFonts();
     if (m_luaSystem) m_luaSystem->cleanup();
     glfwDestroyWindow(m_window);
     glfwTerminate();

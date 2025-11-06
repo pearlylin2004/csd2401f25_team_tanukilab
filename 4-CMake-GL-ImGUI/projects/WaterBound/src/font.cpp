@@ -116,7 +116,20 @@ Font::FontMdl Font::fontMeshInit()
 
 void Font::freeFonts()
 {
-    for(int i = 0; i < fontTypes; ++i)
+    /*for(int i = 0; i < fontTypes; ++i)
         FT_Done_Face(face[i]);
-    FT_Done_FreeType(ft);
+    FT_Done_FreeType(ft);*/
+
+    //Clean up font VAOs/VBOs
+    for (auto& mdl : fontMdls) {
+        if (mdl.vao) glDeleteVertexArrays(1, &mdl.vao);
+        if (mdl.vbo) glDeleteBuffers(1, &mdl.vbo);
+    }
+    fontMdls.clear();
+
+    //Delete shader program
+    if (fontShaders) {
+        glDeleteProgram(fontShaders);
+        fontShaders = 0;
+    }
 }

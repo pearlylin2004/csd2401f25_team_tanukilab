@@ -340,7 +340,7 @@ void RenderSystem::batchingSetUp(GameObjectManager& manager, float const& deltaT
 	}
 
 	
-	Font::init();
+	//Font::init();
 }
 
 //this moved to ResourceManager.cpp

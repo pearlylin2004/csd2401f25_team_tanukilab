@@ -313,3 +313,21 @@ void renderer::camera::zoomInOut(float scrollDelta) {
 	zoom = std::max(minZoom, zoom);
 	zoom = std::min(maxZoom, zoom);
 }
+
+void renderer::cleanup() {
+	// Clean up all models
+	for (auto& model : models) {
+		if (model.vaoid) glDeleteVertexArrays(1, &model.vaoid);
+		if (model.vbo) glDeleteBuffers(1, &model.vbo);
+		if (model.ebo) glDeleteBuffers(1, &model.ebo);
+		if (model.instanceVBO) glDeleteBuffers(1, &model.instanceVBO);
+	}
+	models.clear();
+
+	// Clean up shader programs
+	for (GLuint program : shdr_pgm) {
+		if (program) glDeleteProgram(program);
+	}
+	shdr_pgm.clear();
+	std::cout << "Renderer cleanup complete\n";
+}
