@@ -1472,6 +1472,8 @@ void UI::objPicking(GameObjectManager& manager) {
     manager.getAllGameObjects(gameObjects);
 
     GameObject* selected = nullptr;
+    GameObject* topmost = nullptr;
+    float highestZ = -INFINITY;
 
     for (auto* obj : gameObjects) {
         // dont let user click and select platform
@@ -1485,10 +1487,14 @@ void UI::objPicking(GameObjectManager& manager) {
 
         // check if mouse point intersects with the game obj
         if (Collision::CollisionIntersection_CircleAABB_Static(mousePoint, aabb)) {
-            selected = obj;
+            if (transform->z > highestZ) {
+                highestZ = transform->z;
+                topmost = obj;
+            }
         }
     }
 
+    selected = topmost;
     // if something is selected, update selection state
     if (selected) {
         m_SelectionState.selectedPrefab = nullptr;
