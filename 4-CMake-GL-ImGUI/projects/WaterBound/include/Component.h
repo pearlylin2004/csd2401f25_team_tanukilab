@@ -194,15 +194,21 @@ struct UIComponent : public Component {
 struct LuaScript : public Component {
 public:
     LuaScript(const std::string& file)
-        : filename(file), scriptName(file) {
+        : filename(file) {
+        // Extract just the filename without extension to use as scriptName
+        size_t lastSlash = file.find_last_of("/\\");
+        std::string fname = (lastSlash != std::string::npos) ? file.substr(lastSlash + 1) : file;
+
+        size_t lastDot = fname.find_last_of('.');
+        scriptName = (lastDot != std::string::npos) ? fname.substr(0, lastDot) : fname;
     }
 
     std::unique_ptr<Component> clone() const override {
         return std::make_unique<LuaScript>(*this);
     }
 
-    std::string filename; //path to the Lua file
-    std::string scriptName; //unique identifier inside LuaSystem
+    std::string filename;   // Full path to the Lua file
+    std::string scriptName; // Just the object name (e.g., "bullet", "player")
 };
 
 // Logic Container (FSM) 
