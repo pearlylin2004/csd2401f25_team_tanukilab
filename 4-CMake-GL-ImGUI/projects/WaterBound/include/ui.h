@@ -79,6 +79,10 @@ private:
 	void objPicking(GameObjectManager& manager);
 	void objDragging() const;
 
+	void themeSinLeDark();
+	void themeSinLeLight();
+	void themeForest();
+
 	/* ----------------- Menu Bar -----------------*/
 	struct menuBarState {
 		bool showNewScenePopup = false;
