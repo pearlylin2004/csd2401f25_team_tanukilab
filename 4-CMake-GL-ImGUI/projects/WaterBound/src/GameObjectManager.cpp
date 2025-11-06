@@ -788,10 +788,6 @@ void GameObjectManager::loadSceneFromJson(const std::string& filename) {
 
 		GameObject* go = createGameObject(name);
 
-		if (jObj.HasMember("layer") && jObj["layer"].IsInt()) {
-			int layerID = jObj["layer"].GetInt();
-			m_layerManager.assignObjectToLayer(go, layerID);
-		}
 
 		// check if this object references a prefab
 		if (jObj.HasMember("prefabid") && jObj["prefabid"].IsString()) {
@@ -805,6 +801,11 @@ void GameObjectManager::loadSceneFromJson(const std::string& filename) {
 			std::string name = (jObj.HasMember("name") && jObj["name"].IsString())
 				? jObj["name"].GetString()
 				: ("Object_" + std::to_string(m_gameObjects.size()));
+		}
+
+		if (jObj.HasMember("layer") && jObj["layer"].IsInt()) {
+			int layerID = jObj["layer"].GetInt();
+			m_layerManager.assignObjectToLayer(go, layerID);
 		}
 
 		/*

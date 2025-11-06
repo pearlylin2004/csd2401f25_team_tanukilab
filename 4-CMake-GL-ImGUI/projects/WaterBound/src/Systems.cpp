@@ -169,10 +169,10 @@ void RenderSystem::update(GameObjectManager& manager, float const& deltaTime)
 					render->texChanged = false;
 				}
 
-				if (render->hasTex)
+				/*if (render->hasTex)
 					objectWithTex.push_back(object);
 				else
-					objectWithoutTex.push_back(object);
+					objectWithoutTex.push_back(object);*/
 					
 			}
 
@@ -871,107 +871,111 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 	//get layer manager
 	LayerManager& layerManager = manager.getLayerManager();
 
+	std::vector<Layer*> layers = layerManager.getAllLayers();
+
 	//process each layer separately
 	//rn only layer 1 should have any sort of collision
-	Layer* gameLayer = layerManager.getLayer(1);
+	for(Layer* layer : layers){
+	
 
 
-	if (!gameLayer) {
-		auto end = std::chrono::high_resolution_clock::now();
-		double ms = std::chrono::duration<double, std::milli>(end - start).count();
-		g_SystemTimers.push_back({ "Collisions", ms });
-		std::cerr << "CollisionSystem::update() - Layer " << gameLayer->getLayerID() << " not found!\n";
-		return;
-	}
+		if (!layer) {
+			auto end = std::chrono::high_resolution_clock::now();
+			double ms = std::chrono::duration<double, std::milli>(end - start).count();
+			g_SystemTimers.push_back({ "Collisions", ms });
+			std::cerr << "CollisionSystem::update() - Layer " << layer->getLayerID() << " not found!\n";
+			return;
+		}
 
 
-	const std::vector<GameObject*>& layerObjects = gameLayer->getObjects();
+		const std::vector<GameObject*>& layerObjects = layer->getObjects();
 
-	//we dont do this anymore cus we got them layersss
-	//getting all objects
-	/*std::vector<GameObject*> gameObjects;
-	manager.getAllGameObjects(gameObjects);*/
+		//we dont do this anymore cus we got them layersss
+		//getting all objects
+		/*std::vector<GameObject*> gameObjects;
+		manager.getAllGameObjects(gameObjects);*/
 
-	//create grid
-	const float CELL_SIZE = 2.0f;
-	const int GRID_WIDTH = 20;
-	const int GRID_HEIGHT = 20;
-	std::vector<std::vector<Collision::Cell>> grid(GRID_WIDTH, std::vector<Collision::Cell>(GRID_HEIGHT));
+		//create grid
+		const float CELL_SIZE = 2.0f;
+		const int GRID_WIDTH = 20;
+		const int GRID_HEIGHT = 20;
+		std::vector<std::vector<Collision::Cell>> grid(GRID_WIDTH, std::vector<Collision::Cell>(GRID_HEIGHT));
 		
 
-	for (GameObject* obj : layerObjects) {
-		if (!obj->getComponent<CollisionInfo>() || !obj->hasComponent<Transform>()) continue;
-		Transform* objT = obj->getComponent<Transform>();
-		Collision::AABB box = Collision::getObjectAABB(objT);
+		for (GameObject* obj : layerObjects) {
+			if (!obj->getComponent<CollisionInfo>() || !obj->hasComponent<Transform>()) continue;
+			Transform* objT = obj->getComponent<Transform>();
+			Collision::AABB box = Collision::getObjectAABB(objT);
 
-		int minCellX = static_cast<int>(box.getMin().x / CELL_SIZE);
-		int maxCellX = static_cast<int>(box.getMax().x / CELL_SIZE);
-		int minCellY = static_cast<int>(box.getMin().y / CELL_SIZE);
-		int maxCellY = static_cast<int>(box.getMax().y / CELL_SIZE);
+			int minCellX = static_cast<int>(box.getMin().x / CELL_SIZE);
+			int maxCellX = static_cast<int>(box.getMax().x / CELL_SIZE);
+			int minCellY = static_cast<int>(box.getMin().y / CELL_SIZE);
+			int maxCellY = static_cast<int>(box.getMax().y / CELL_SIZE);
 
-		//clamp to grid boundaries so it dont go out the valid range of grid
-		minCellX = std::max(0, std::min(minCellX, GRID_WIDTH - 1));
-		maxCellX = std::max(0, std::min(maxCellX, GRID_WIDTH - 1));
-		minCellY = std::max(0, std::min(minCellY, GRID_HEIGHT - 1));
-		maxCellY = std::max(0, std::min(maxCellY, GRID_HEIGHT - 1));
+			//clamp to grid boundaries so it dont go out the valid range of grid
+			minCellX = std::max(0, std::min(minCellX, GRID_WIDTH - 1));
+			maxCellX = std::max(0, std::min(maxCellX, GRID_WIDTH - 1));
+			minCellY = std::max(0, std::min(minCellY, GRID_HEIGHT - 1));
+			maxCellY = std::max(0, std::min(maxCellY, GRID_HEIGHT - 1));
 
-		//putting the object into the grid cells it occupies
-		for (int x = minCellX; x <= maxCellX; ++x) {
-			for (int y = minCellY; y <= maxCellY; ++y) {
-				grid[x][y].objects.push_back(obj);
+			//putting the object into the grid cells it occupies
+			for (int x = minCellX; x <= maxCellX; ++x) {
+				for (int y = minCellY; y <= maxCellY; ++y) {
+					grid[x][y].objects.push_back(obj);
+				}
 			}
 		}
-	}
-	//temporary container to track checked objects for this frame
-	std::unordered_map<GameObject*, std::vector<GameObject*>> checked;
+		//temporary container to track checked objects for this frame
+		std::unordered_map<GameObject*, std::vector<GameObject*>> checked;
 
-	//checking collision 
-	for (int i = 0; i < GRID_WIDTH; i++) {
-		for (int j = 0; j < GRID_HEIGHT; j++) {
-			auto& cellObject = grid[i][j].objects; //get objects in the cell
-			//loop through objects in the cell to check for collision
-			for (size_t n = 0; n < cellObject.size(); n++) {
-				//object 1
-				GameObject* obj1 = cellObject[n];
-				if (!obj1->hasComponent<Physics>()) continue;
-				Transform* t1 = obj1->getComponent<Transform>();
-				Collision::AABB aabb1 = Collision::getObjectAABB(t1);
-				Physics* p1 = obj1->getComponent<Physics>();
-				Vector2D vel1{ p1->velX, p1->velY };
-				//object 2 looping
-				for (size_t m = n + 1; m < cellObject.size(); m++) {
-					//object 2
-					GameObject* obj2 = cellObject[m];
-					if (!obj2->hasComponent<Physics>()) continue;
+		//checking collision 
+		for (int i = 0; i < GRID_WIDTH; i++) {
+			for (int j = 0; j < GRID_HEIGHT; j++) {
+				auto& cellObject = grid[i][j].objects; //get objects in the cell
+				//loop through objects in the cell to check for collision
+				for (size_t n = 0; n < cellObject.size(); n++) {
+					//object 1
+					GameObject* obj1 = cellObject[n];
+					if (!obj1->hasComponent<Physics>()) continue;
+					Transform* t1 = obj1->getComponent<Transform>();
+					Collision::AABB aabb1 = Collision::getObjectAABB(t1);
+					Physics* p1 = obj1->getComponent<Physics>();
+					Vector2D vel1{ p1->velX, p1->velY };
+					//object 2 looping
+					for (size_t m = n + 1; m < cellObject.size(); m++) {
+						//object 2
+						GameObject* obj2 = cellObject[m];
+						if (!obj2->hasComponent<Physics>()) continue;
 
-					//skip if already checked
-					auto it = std::find(checked[obj1].begin(), checked[obj1].end(), obj2);
-					if (it != checked[obj1].end()) continue;
-					//mark as checked both ways
-					checked[obj1].push_back(obj2);
-					checked[obj2].push_back(obj1);
+						//skip if already checked
+						auto it = std::find(checked[obj1].begin(), checked[obj1].end(), obj2);
+						if (it != checked[obj1].end()) continue;
+						//mark as checked both ways
+						checked[obj1].push_back(obj2);
+						checked[obj2].push_back(obj1);
 
-					Transform* t2 = obj2->getComponent<Transform>();
-					Collision::AABB aabb2 = Collision::getObjectAABB(t2);
-					Physics* p2 = obj2->getComponent<Physics>();
-					Vector2D vel2{ p2->velX, p2->velY };
+						Transform* t2 = obj2->getComponent<Transform>();
+						Collision::AABB aabb2 = Collision::getObjectAABB(t2);
+						Physics* p2 = obj2->getComponent<Physics>();
+						Vector2D vel2{ p2->velX, p2->velY };
 
-					CollisionInfo info = Collision::CollisionIntersection_RectRect_Dynamic_Info(aabb1, vel1, aabb2, vel2); //check collision
+						CollisionInfo info = Collision::CollisionIntersection_RectRect_Dynamic_Info(aabb1, vel1, aabb2, vel2); //check collision
 					
-					//checking if collided
-					if (info.collided) {
-						//update the velocity and penetrations
-						if (info.normal.x != 0) {
-							t1->x += info.normal.x * info.penetration;
-							p1->velX = 0; //stop horizontal movement
-						}
+						//checking if collided
+						if (info.collided) {
+							//update the velocity and penetrations
+							if (info.normal.x != 0) {
+								t1->x += info.normal.x * info.penetration;
+								p1->velX = 0; //stop horizontal movement
+							}
 
-						// resolve Y
-						if (info.normal.y != 0) {
-							t1->y += info.normal.y * info.penetration;
-							p1->velY = 0; //stop vertical movement
-						}				
-						UI::addDebugMessage("Collision detected between Object.\n"); //message for debugger
+							// resolve Y
+							if (info.normal.y != 0) {
+								t1->y += info.normal.y * info.penetration;
+								p1->velY = 0; //stop vertical movement
+							}				
+							UI::addDebugMessage("Collision detected between Object.\n"); //message for debugger
+						}
 					}
 				}
 			}

@@ -35,6 +35,7 @@
     {
       "prefabid": "4828c393-9fcf-42f8-8b05-ddc8d75096be",
       "name": "player1",
+      "layer" : 1,
       "components": {
         "Physics": { "inWater": 0, "buoyancy": 0 },
         "CollisionInfo": {}
