@@ -44,7 +44,7 @@ public:
 				std::cout << "Toggling UI!\n";
 			}
             else if (keyEvent.key == "B") {
-                std::cout << "Player is jumping\n!";
+                std::cout << "Player is jumping!\n";
             }
 		}
 	}
