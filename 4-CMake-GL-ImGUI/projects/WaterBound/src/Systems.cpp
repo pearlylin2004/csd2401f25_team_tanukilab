@@ -795,7 +795,8 @@ void UISystem::init(GLFWwindow* window, RenderSystem* renderer) {
 	io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard
 			| ImGuiConfigFlags_DockingEnable
 			| ImGuiConfigFlags_ViewportsEnable;
-	ImGui::StyleColorsDark();
+	ImGui::StyleColorsClassic();
+	//ImGui::StyleColorsDark();
 	// io.IniFilename = "imgui_layout.ini";
 	ImGui_ImplGlfw_InitForOpenGL(window, true);
 	ImGui_ImplOpenGL3_Init("#version 450");

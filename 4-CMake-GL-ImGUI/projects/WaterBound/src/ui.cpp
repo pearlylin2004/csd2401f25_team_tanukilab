@@ -285,6 +285,7 @@ void UI::drawDebug() {
     ImGui::PopStyleVar();
 
     // print the message
+    ImGui::Text("Current Scene: %s", m_currentSceneName.c_str());
     for (const auto& msg : m_debugMessages) {
         ImGui::Text("%s", msg.c_str());
     }
@@ -572,6 +573,11 @@ void UI::duplicateScene(GameObjectManager& manager) {
         m_currentSceneName = newSceneName;
         manager.saveScene(sourceScenePath(m_currentSceneName));
         syncSceneToRuntime(m_currentSceneName);
+
+        // if current scene got /, remove it (to compare and highlight this asset in browser)
+        if (m_currentSceneName[0] == '/') {
+            m_currentSceneName.erase(0, 1);
+        }
         assetsChangedFlag = true;
 
         m_SelectionState.selectedObject = nullptr;
@@ -1064,6 +1070,13 @@ void UI::assetWindow(GameObjectManager& manager) {
 
         ImGui::PushID(index++);
 
+        // if the asset is the current scene
+        if (asset.name == m_currentSceneName) {
+            ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(1.f, 0.4f, 0.7f, 1.0f));
+            /*ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.3f, 0.6f, 0.9f, 1.0f));
+            ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.1f, 0.4f, 0.7f, 1.0f));*/
+        }
+
         // display button and the name of the file
         ImGui::BeginGroup();
 
@@ -1073,6 +1086,11 @@ void UI::assetWindow(GameObjectManager& manager) {
         ImGui::Button(asset.name.c_str(), ImVec2(m_AssetBrowserState.iconSize, m_AssetBrowserState.iconSize));
 
         ImGui::PopStyleVar();
+
+        // pop style for the highlight current scene
+        if (asset.name == m_currentSceneName) {
+            ImGui::PopStyleColor();
+        }
 
 		// right click asset and show context menu
 		if (ImGui::BeginPopupContextItem("AssetContextMenu")) {
