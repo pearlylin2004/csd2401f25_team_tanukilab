@@ -131,18 +131,45 @@ void UI::drawShapes(GameObjectManager& manager) {
 			if (spawnCount == 2048)
 				spawnCount = 2500; //cap at 400 objects
 
+            // if player2 not exist then create player2
+            if (!manager.getGameObject("player2")) {
+                GameObject* player2 = manager.createGameObject("player2");
+
+                Transform* transform = player2->addComponent<Transform>();
+                Physics* physics = player2->addComponent<Physics>();
+                Render* render = player2->addComponent<Render>();
+
+                render->modelRef = renderer::models[static_cast<int>(shape::square)];
+                render->hasTex = true;
+                render->texFile = "shaders/Sample_tilemap.png";
+                render->texChanged = true;
+            }
+
 			for (int i = count; i < spawnCount; ++i) {
 				std::string cloneName = "Player_Clone(" + std::to_string(i + 1) + ")";
 			    GameObject* newObj = manager.CloneGameObject("player2", cloneName);
+                newObj->changeAutoMove(true); // set to true so it auto move
 				
                 Transform* transform = newObj->getComponent<Transform>();
+                Physics* physics = newObj->getComponent<Physics>();
+                if (!physics) {
+                    physics = newObj->addComponent<Physics>();
+                }
 
                 int randomX = rand() % 20;
                 int randomY = rand() % 10;
 				int rotation = rand() % 360;
 				int scaleX = (rand() % 3) + 1;
 				int scaleY = (rand() % 3) + 1;
+                float velX = (rand() % 3) - 1;
+                float velY = (rand() % 3) - 1;
+                int speed = (rand() % 2) + 1;
 
+                // avoid zero velocity
+                if (velX == 0.0f) velX = 0.5f;
+                if (velY == 0.0f) velY = 0.5f;
+
+                // make sure 
 				if (rand() % 2 == 0)
 					randomX = -randomX;
 				if (rand() % 2 == 1)
@@ -153,6 +180,11 @@ void UI::drawShapes(GameObjectManager& manager) {
 				transform->rotation = rotation;
 				transform->scaleX = scaleX;
 				transform->scaleY = scaleY;
+
+                physics->gravity = 0.0;
+                physics->Speed = speed;
+                physics->velX = velX;
+                physics->velY = velY;
 			}
 
 			count = spawnCount;

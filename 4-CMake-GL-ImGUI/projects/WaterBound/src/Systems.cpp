@@ -655,13 +655,21 @@ void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime) {
 		transform->y += physics->velY * deltaTime;
 		transform->x += physics->velX * deltaTime;
 
-		if (transform->y < physics->floorY) {
+		if (transform->y < physics->floorY /* temp for obj auto move*/ && !object->checkAutoMove()) {
 			transform->y = physics->floorY;
 			physics->velY = 0.0f;
 			physics->onGround = true;
 			physics->velX = 0.0f;
 		}
 		transform->x += physics->velX * deltaTime;
+
+		/* ----- TEMPORARY FOR MOVING THE SPAWNED OBJ AUTO ----- */ 
+		if (object->checkAutoMove()) { 
+
+			transform->y += physics->velY * deltaTime * physics->Speed;
+			transform->x += physics->velX * deltaTime * physics->Speed;
+		} 
+		/* ----- TEMP END ----- */
 	}
 	auto end = std::chrono::high_resolution_clock::now();
 	double ms = std::chrono::duration<double, std::milli>(end - start).count(); //get elapse time in ms
