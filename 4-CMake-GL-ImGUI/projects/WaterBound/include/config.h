@@ -50,14 +50,4 @@ bool SaveConfig(const std::string& path,
     std::string* err = nullptr,
     bool pretty = true);
 
-namespace JsonIO {
-    bool ReadFileToDocument(const std::string& path,
-        rapidjson::Document& doc,
-        std::string* err = nullptr);
-
-    bool WriteDocumentToFile(const std::string& path,
-        rapidjson::Document& doc,
-        bool pretty = true,
-        std::string* err = nullptr);
-}
 
