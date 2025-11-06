@@ -28,6 +28,12 @@ Technology is prohibited.
 #define SOURCE_SCENE_DIR_R "./projects/WaterBound/shaders/Scene"
 #endif
 
+namespace {
+	inline bool ends_with(const std::string& s, const char* suf) {
+		const size_t n = std::strlen(suf);
+		return s.size() >= n && s.compare(s.size() - n, n, suf) == 0;
+	}
+}
 
 // Create objects
 GameObject* GameObjectManager::createGameObject(const std::string& name) {
@@ -883,6 +889,17 @@ void GameObjectManager::saveScene(const std::string& path, bool isNew) const {
 	if (ends_with(path, ".json")) saveSceneToJson(path, isNew);
 	else                          saveToFile(path);
 }
+
+
+//void GameObjectManager::loadScene(const std::string& path) {
+//	if (ends_with(path, ".json")) loadFromJson(path);
+//	else                          loadFromFile(path);   // keep legacy .txt scenes
+//}
+//
+//void GameObjectManager::saveScene(const std::string& path, bool isNew) const {
+//	if (ends_with(path, ".json")) saveToJson(path, isNew);
+//	else                          saveToFile(path);
+//}
 
 //layer stuff
 LayerManager& GameObjectManager::getLayerManager() {
