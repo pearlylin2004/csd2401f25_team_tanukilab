@@ -27,7 +27,7 @@ Technology is prohibited.
 #define RUNTIME_DIR_R "./shaders"
 #endif
 #include "CoreEngine.h"
-
+#include "GUISystem.h"  // Add this include
 CoreEngine::CoreEngine()
     : m_window(nullptr), m_fps(0.0), m_delta(0.0), m_isRunning(false), audio(AudioHandler::getInstance()) {
 }
@@ -208,8 +208,9 @@ void CoreEngine::Update(float deltaTime) {
         }
         // Update all systems in order
         m_inputSystem->update(*m_manager, deltaTime);
-        m_collisionSystem->update(*m_manager, deltaTime);
         m_physicsSystem->update(*m_manager, deltaTime);
+        m_collisionSystem->update(*m_manager, deltaTime);
+        
     }
 
     // Update all systems in order
@@ -219,7 +220,6 @@ void CoreEngine::Update(float deltaTime) {
     //m_renderSystem->unbindFBO();
     //if (UISystem::isShowUI()) glBindFramebuffer(GL_FRAMEBUFFER, 0);
     m_uiSystem->update(*m_manager);
-
 }
 
 void CoreEngine::Shutdown() {

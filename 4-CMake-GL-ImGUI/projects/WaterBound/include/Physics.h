@@ -1,34 +1,17 @@
 #pragma once
-#include "mathlib.h"
-#include <vector>
+#include "Component.h"
+#include "gameObject.h"
+#include "dynamics.h"
 
-// Declare variables as extern
-extern Vector2D playerPos;
-extern Vector2D playerVel;
-extern Vector2D gravity;
-extern bool isJumping;
-extern float jumpPower;
-extern float jumpSpeed;
-extern float groundY;
+// Struct to handle jump and bullet physics
+struct PhysicsForces {
+    static void applyGravity(Physics* physics, float deltaTime);
+    static void applyDamping(Physics* physics);
 
-struct WaterDrop {
-    Vector2D pos;
-    Vector2D vel;
-    bool alive;
-    float lifeTime;
-    float maxLifeTime;
-    float scale;
+    static void updatePosition(Transform* transform, Physics* physics, float deltaTime);
+
+    static void jump(GameObject* object);           // Apply jump force
+    static void shoot(GameObject* bullet, const Transform* origin);  // Shoot bullet from origin
+
+    /*static void applyDynamics(Physics* physics, float deltaTime);*/
 };
-
-namespace PhysicsSystem {
-    void Init();
-    void Update(float dt);
-    void SpawnWater(const Vector2D& startPos, const Vector2D& direction, float speed);
-
-    // Memory pool variables
-    extern std::vector<WaterDrop> waterPool;
-    const size_t MAX_WATER_DROPS = 1000;
-}
-
-void UpdateJump(int direction, float dt);
-Vector2D GetMouseWorldPosition();

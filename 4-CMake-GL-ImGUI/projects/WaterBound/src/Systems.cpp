@@ -22,6 +22,7 @@ Technology is prohibited.
 #pragma once
 
 #include "Systems.h"
+#include "Physics.h"
 
 
 //here we go buddies
@@ -31,7 +32,8 @@ Technology is prohibited.
 //game objects to check if the valid component
 //is present or not
 //so all systems need to use the getAllGameObjects() function
-
+//JumpForce jumpForce;
+//BulletForce bulletForce;
 // Input system - reads user input and updates velocity accordingly
 void InputSystem::update(GameObjectManager& manager, const float& deltaTime) {
 	(void)deltaTime;
@@ -41,39 +43,39 @@ void InputSystem::update(GameObjectManager& manager, const float& deltaTime) {
 	std::vector<GameObject*> gameObjects;
 	manager.getAllGameObjects(gameObjects);
 
-	for (GameObject* iterator : gameObjects) {
-		//check for objects that have input 
-		if (iterator->hasComponent<Input>()) {
-			Input* input = iterator->getComponent<Input>();
-			if (iterator->hasComponent<Physics>()) {//player got that velocity in him
-				Physics* velocity = iterator->getComponent<Physics>();
+	//for (GameObject* iterator : gameObjects) {
+	//	//check for objects that have input 
+	//	if (iterator->hasComponent<Input>()) {
+	//		Input* input = iterator->getComponent<Input>();
+	//		if (iterator->hasComponent<Physics>()) {//player got that velocity in him
+	//			Physics* velocity = iterator->getComponent<Physics>();
 
 
-				if (InputHandler::isKeyHeld(GLFW_KEY_W)) {
-					velocity->velY = input->moveSpeed;
-				}
-				if (InputHandler::isKeyHeld(GLFW_KEY_S)) {
-					velocity->velY = -input->moveSpeed;
-				}
-				if (InputHandler::isKeyHeld(GLFW_KEY_A)) {
-					velocity->velX = -input->moveSpeed;
-				}
-				if (InputHandler::isKeyHeld(GLFW_KEY_D)) {
-					velocity->velX = input->moveSpeed;
-				}
+	//			if (InputHandler::isKeyHeld(GLFW_KEY_W)) {
+	//				velocity->velY = input->moveSpeed;
+	//			}
+	//			if (InputHandler::isKeyHeld(GLFW_KEY_S)) {
+	//				velocity->velY = -input->moveSpeed;
+	//			}
+	//			if (InputHandler::isKeyHeld(GLFW_KEY_A)) {
+	//				velocity->velX = -input->moveSpeed;
+	//			}
+	//			if (InputHandler::isKeyHeld(GLFW_KEY_D)) {
+	//				velocity->velX = input->moveSpeed;
+	//			}
 
-				if (InputHandler::isComboKeyTriggered(GLFW_KEY_0)) {
-					UISystem::toggleUI();
-				}
+	//			if (InputHandler::isComboKeyTriggered(GLFW_KEY_0)) {
+	//				UISystem::toggleUI();
+	//			}
 
-				// Press F9 to simulate a failure (for crash logger)
-				if (InputHandler::isKeyTriggered(GLFW_KEY_F9)) {
-					throw std::runtime_error("F9 test: simulated failure in update()");
-				}
-				
-			}
-		}
-	}
+	//			// Press F9 to simulate a failure (for crash logger)
+	//			if (InputHandler::isKeyTriggered(GLFW_KEY_F9)) {
+	//				throw std::runtime_error("F9 test: simulated failure in update()");
+	//			}
+	//			
+	//		}
+	//	}
+	//}
 	auto end = std::chrono::high_resolution_clock::now();
 	double ms = std::chrono::duration<double, std::milli>(end - start).count(); //get elapse time in ms
 	g_SystemTimers.push_back({ "Input", ms }); //saving timing for UI output
@@ -781,26 +783,27 @@ void FontSystem::RenderText(GLuint& s, std::string text, float x, float y, float
 }
 
 // Physics system - updates position based on velocity and applies gravity
+
 void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime) {
-	//record current time for performance tracking
 	auto start = std::chrono::high_resolution_clock::now();
 
-	// idk how physic programmer want to handle input for physics in the future
-	// so here is a simple implementation for toggling step-by-step mode
-	if (InputHandler::isComboKeyTriggered(GLFW_KEY_Z)) {
+	// Step mode toggling
+	if (InputHandler::isComboKeyTriggered(GLFW_KEY_Z))
 		m_stepMode = !m_stepMode;
-	}
-	if (m_stepMode && InputHandler::isKeyTriggered(GLFW_KEY_Z)) {
-		m_stepReq = true;
-	}
 
-	// only update if NOT step-by-step physics debug mode or step requested
-	if (m_stepMode && !m_stepReq) return;
-	if (m_stepReq) m_stepReq = false; // reset step request after one update
+	if (m_stepMode && InputHandler::isKeyTriggered(GLFW_KEY_Z))
+		m_stepReq = true;
+
+	if (m_stepMode && !m_stepReq)
+		return;
+
+	if (m_stepReq)
+		m_stepReq = false;
 
 	std::vector<GameObject*> gameObjects;
 	manager.getAllGameObjects(gameObjects);
 
+	// Get the bullet object once
 	GameObject* bullet = manager.getGameObject("bullet");
 
 	for (auto object : gameObjects) {
@@ -814,54 +817,56 @@ void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime) {
 			physics->velY += physics->gravity * deltaTime;
 
 		if (object->hasComponent<Input>()) {
-			//std::cout << object << " has input component\n";
-			//bullet
-			if (InputHandler::isKeyTriggered(GLFW_KEY_SPACE)) {
-				//std::cout << "bullet is spawned\n";
-				UI::addDebugMessage("bullet is spawned");
-				static int bulletCount = 0;
+			Input* input = object->getComponent<Input>();
 
-				Transform* t = bullet->getComponent<Transform>();
-				t->x = transform->x;  
-				t->y = transform->y;
-				t->z = 0.02f;
-				t->scaleX = 0.5f;
-				t->scaleY = 0.5f;
-				t->scaleZ = 0.5f;
-				t->rotation = 0.0f;
+			float targetVelX = 0.0f;
 
-				Physics* p = bullet->getComponent<Physics>();
-				p->velX = 5.0f;
-				p->velY = 5.0f;
-				p->onGround = false;
+			if (InputHandler::isKeyHeld(GLFW_KEY_A)) {
+				physics->canMove = true;
+				targetVelX = -input->moveSpeed;
 			}
+			else if (InputHandler::isKeyHeld(GLFW_KEY_D) && physics->canMove) {
+				targetVelX = input->moveSpeed;
+			}
+
+			physics->dynamics.velocity.x = targetVelX;
 
 			// Jump
-			if (InputHandler::isKeyTriggered(GLFW_KEY_B)){// && physics->onGround) {
-				//std::cout << "player is jumping\n";
-				UI::addDebugMessage("player is jumping");
-				physics->velY = physics->jumpForce;
-				//physics->velX = physics->Speed;
-				physics->onGround = false;
+			if (InputHandler::isKeyTriggered(GLFW_KEY_B)) {
+				PhysicsForces::jump(object);
 			}
-		}
-		physics->velX *= physics->damping;
 
-		transform->y += physics->velY * deltaTime;
-		transform->x += physics->velX * deltaTime;
+			// Shoot bullet
+			if (bullet != nullptr && InputHandler::isKeyTriggered(GLFW_KEY_SPACE)) {
+				PhysicsForces::shoot(bullet, transform);
+			}
 
-		if (transform->y < physics->floorY) {
-			transform->y = physics->floorY;
-			physics->velY = 0.0f;
-			physics->onGround = true;
-			physics->velX = 0.0f;
+			// Apply damping and update player position
+			PhysicsForces::applyDamping(physics);
+			PhysicsForces::updatePosition(transform, physics, deltaTime);
 		}
-		transform->x += physics->velX * deltaTime;
 	}
+
+	// Update bullet separately if it exists
+	if (bullet != nullptr && bullet->hasComponent<Physics>() && bullet->hasComponent<Transform>()) {
+		Transform* bulletTransform = bullet->getComponent<Transform>();
+		Physics* bulletPhysics = bullet->getComponent<Physics>();
+
+		// Only move horizontally along x-axis
+		bulletPhysics->dynamics.velocity.y = 0.0f;
+		bulletPhysics->dynamics.velocity.z = 0.0f;
+
+		DynamicsSystem::Integrate(bulletPhysics->dynamics, deltaTime, 0.0f, false);
+
+		bulletTransform->x = bulletPhysics->dynamics.position.x;
+		bulletTransform->y = bulletPhysics->dynamics.position.y;
+	}
+
 	auto end = std::chrono::high_resolution_clock::now();
-	double ms = std::chrono::duration<double, std::milli>(end - start).count(); //get elapse time in ms
-	g_SystemTimers.push_back({ "Physics", ms }); //saving timing for UI output
+	double ms = std::chrono::duration<double, std::milli>(end - start).count();
+	g_SystemTimers.push_back({ "Physics", ms });
 }
+
 
 // Collision system - detects and resolves collisions between game objects
 void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime) {
@@ -983,6 +988,7 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 
 						}else { p1->onGround = false; }
 					}
+					
 				}
 			}
 		}

@@ -26,6 +26,7 @@ Technology is prohibited.
 #include "renderer.h"
 #include "mathlib.h"
 #include "font.h"
+#include "dynamics.h"
 
 
 // basic component class
@@ -117,16 +118,21 @@ public:
         return std::make_unique<Physics>(*this);
 	}
 
+    Dynamics dynamics;
+
+    bool canMove = true;  // Add this flag
+    
+  
     float velX = 0.0f;
     float velY = 0.0f;
     float gravity = -9.8f;
 
     //Jump 
-    float damping = 0.99f;
-    float jumpForce = 10.0f;  
+    float damping = 0.98f;
+    float jumpForce =100.0f;  
     float floorY = 0.0f;
     bool onGround = false;  
-    float Speed = 150.0f;
+
     bool alive = false;
 
     //water bullet
