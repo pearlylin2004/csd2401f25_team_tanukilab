@@ -30,6 +30,8 @@ Technology is prohibited.
 #include "layerManager.h"
 #include "prefabManager.h"
 #include "GUISystem.h"
+#include "messageBus.h"
+#include "JsonIO.h"
 
 
 class CoreEngine {
@@ -70,5 +72,7 @@ private:
     std::unique_ptr<FontSystem> m_fontSystem;
     std::unique_ptr<LogicSystem> m_logicSystem;
     std::unique_ptr<GUISystem> m_guiSystem;
+    std::unique_ptr<MessageBus> m_messageBus;
+    std::unique_ptr<PlayerControllerSystem> m_playerController;
 
 };

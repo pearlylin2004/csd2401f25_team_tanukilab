@@ -22,6 +22,11 @@ void LuaSystem::init() {
     lua_register(L, "Input_isKeyHeld", Lua_IsKeyHeld);
     lua_register(L, "getPosition", Lua_getPosition);
     lua_register(L, "setPosition", Lua_setPosition);
+    //for message
+    lua_pushlightuserdata(L, this);
+    lua_pushcclosure(L, Lua_SendInputEvent, 1);
+    lua_setglobal(L, "SendInputEvent");
+    manager = std::make_unique<GameObjectManager>();
 }
 
 void LuaSystem::cleanup() {
@@ -42,6 +47,7 @@ int LuaSystem::Lua_IsKeyHeld(lua_State* L) {
     else if (strcmp(keyStr, "S") == 0) key = GLFW_KEY_S;
     else if (strcmp(keyStr, "D") == 0) key = GLFW_KEY_D;
     else if (strcmp(keyStr, "SPACE") == 0) key = GLFW_KEY_SPACE;
+    else if (strcmp(keyStr, "B") == 0) key = GLFW_KEY_B;
     //add more keys if needed in the future
 
     bool held = false;
@@ -112,6 +118,46 @@ int LuaSystem::Lua_setPosition(lua_State* L) {
     return 0;
 }
 
+//bool LuaSystem::loadScriptForObject(const std::string& filename, const std::string& tableName) {
+//    if (!L) return false;
+//
+//    //reload only if file modified
+//    static std::unordered_map<std::string, std::filesystem::file_time_type> fileTimes;
+//    auto currentTime = std::filesystem::last_write_time(filename);
+//    bool reload = false;
+//
+//    //check if file have changed to know if need reload
+//    if (fileTimes.find(filename) == fileTimes.end() || fileTimes[filename] != currentTime) {
+//        fileTimes[filename] = currentTime;
+//        reload = true;
+//    }
+//
+//    if (reload) {
+//        //create a table for the script namespace
+//        lua_newtable(L);
+//        lua_setglobal(L, tableName.c_str()); //assign table to global
+//
+//        //load script
+//        if (luaL_dofile(L, filename.c_str()) != LUA_OK) {
+//            std::cerr << "Lua error loading " << filename << ": "
+//                << lua_tostring(L, -1) << std::endl;
+//            lua_pop(L, 1);
+//            return false;
+//        }
+//        std::cout << "[Lua] Reloaded script: " << filename << std::endl;
+//    }
+//
+//    /*
+//    //alternative
+//    //load the Lua script from file every time
+//    if (luaL_dofile(L, filename.c_str()) != LUA_OK) {
+//        std::cerr << "Lua error: " << lua_tostring(L, -1) << std::endl;
+//        lua_pop(L, 1);
+//        return false;
+//    }*/
+//    return true;
+//}
+
 bool LuaSystem::loadScriptForObject(const std::string& filename, const std::string& tableName) {
     if (!L) return false;
 
@@ -127,28 +173,29 @@ bool LuaSystem::loadScriptForObject(const std::string& filename, const std::stri
     }
 
     if (reload) {
-        //create a table for the script namespace
-        lua_newtable(L);
-        lua_setglobal(L, tableName.c_str()); //assign table to global
-
-        //load script
+        //load and execute the script file
         if (luaL_dofile(L, filename.c_str()) != LUA_OK) {
             std::cerr << "Lua error loading " << filename << ": "
                 << lua_tostring(L, -1) << std::endl;
             lua_pop(L, 1);
             return false;
         }
+
+        // The script should return a table, which is now on top of the stack
+        if (!lua_istable(L, -1)) {
+            std::cerr << "[Lua] Error: Script " << filename
+                << " did not return a table. Make sure it has 'return tableName' at the end."
+                << std::endl;
+            lua_pop(L, 1);
+            return false;
+        }
+
+        // Set the returned table as a global with the object name
+        lua_setglobal(L, tableName.c_str());
+
         std::cout << "[Lua] Reloaded script: " << filename << std::endl;
     }
 
-    /*
-    //alternative
-    //load the Lua script from file every time
-    if (luaL_dofile(L, filename.c_str()) != LUA_OK) {
-        std::cerr << "Lua error: " << lua_tostring(L, -1) << std::endl;
-        lua_pop(L, 1);
-        return false;
-    }*/
     return true;
 }
 
@@ -173,4 +220,38 @@ bool LuaSystem::updateObjectScript(const std::string& tableName, GameObject* obj
     lua_pop(L, 1); //pop table
 
     return true;
+}
+
+//for message
+int LuaSystem::Lua_SendInputEvent(lua_State* L) {
+    LuaSystem* self = static_cast<LuaSystem*>(lua_touserdata(L, lua_upvalueindex(1)));
+    if (!self || !self->messageBus) return 0;
+
+    const char* key = lua_tostring(L, 1);
+    float x = static_cast<float>(lua_tonumber(L, 2));
+    float y = static_cast<float>(lua_tonumber(L, 3));
+
+    //to set the keys 
+    KeyEvent evt;
+    evt.key = key ? key : "";
+    evt.pressed = true;
+    evt.x = x;
+    evt.y = y;
+
+    self->messageBus->publish(Message("KeyPressed", nullptr, evt));
+
+    return 0;
+}
+
+//lua updates for all objects with LuaScript component
+void LuaSystem::update(GameObjectManager& manager, float deltaTime) {
+    std::vector<GameObject*> gameObjects;
+    manager.getAllGameObjects(gameObjects);
+
+    for (GameObject* obj : gameObjects) {
+        if (obj->hasComponent<LuaScript>()) {
+            LuaScript* scriptComp = obj->getComponent<LuaScript>();
+            updateObjectScript(scriptComp->scriptName, obj, deltaTime);
+        }
+    }
 }

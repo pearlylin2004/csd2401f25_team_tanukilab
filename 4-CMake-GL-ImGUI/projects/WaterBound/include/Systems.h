@@ -26,6 +26,8 @@ Technology is prohibited.
 #include "imgui_internal.h" // for docking in UISystem
 #include <ui.h>
 #include "font.h"
+#include "messageBus.h"
+#include "controllerSystem.h"
 #include <LogicContainer.h>
 
 //forward declaration
@@ -36,13 +38,13 @@ struct renderer;
 // Input system - reads user input and updates velocity accordingly
 class InputSystem {
 public:
-	void update(GameObjectManager& manager, const float& deltaTime);
+	void update(GameObjectManager& manager, const float& deltaTime, MessageBus& messageBus);
 };
 
 // Physics system - updates position based on velocity and applies gravity
 class PhysicsSystem {
 public:
-	void update(GameObjectManager& manager, const float& deltaTime);
+	void update(GameObjectManager& manager, const float& deltaTime, MessageBus& messageBus);
 
 private:
 	bool m_stepMode = false;

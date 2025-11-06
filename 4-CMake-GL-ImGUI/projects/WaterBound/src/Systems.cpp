@@ -35,8 +35,9 @@ Technology is prohibited.
 //JumpForce jumpForce;
 //BulletForce bulletForce;
 // Input system - reads user input and updates velocity accordingly
-void InputSystem::update(GameObjectManager& manager, const float& deltaTime) {
+void InputSystem::update(GameObjectManager& manager, const float& deltaTime, MessageBus& messageBus) {
 	(void)deltaTime;
+	(void)messageBus;
 	//record current time for performance tracking
 	auto start = std::chrono::high_resolution_clock::now();
 
@@ -65,6 +66,7 @@ void InputSystem::update(GameObjectManager& manager, const float& deltaTime) {
 	//			}
 	if (InputHandler::isComboKeyTriggered(GLFW_KEY_0)) {
 		UISystem::toggleUI();
+		messageBus.publish(Message("KeyPressed", nullptr, KeyEvent{ "0", true }));
 	}
 
 	// Press F9 to simulate a failure (for crash logger)
@@ -772,7 +774,7 @@ void FontSystem::RenderText(GLuint& s, std::string text, float x, float y, float
 
 // Physics system - updates position based on velocity and applies gravity
 
-void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime) {
+void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime, MessageBus& messageBus) {
 	auto start = std::chrono::high_resolution_clock::now();
 
 	// Step mode toggling
@@ -812,9 +814,11 @@ void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime) {
 			if (InputHandler::isKeyHeld(GLFW_KEY_A)) {
 				physics->canMove = true;
 				targetVelX = -input->moveSpeed;
+				messageBus.publish(Message("KeyPressed", nullptr, KeyEvent{ "A", true }));
 			}
 			else if (InputHandler::isKeyHeld(GLFW_KEY_D) && physics->canMove) {
 				targetVelX = input->moveSpeed;
+				messageBus.publish(Message("KeyPressed", nullptr, KeyEvent{ "D", true }));
 			}
 
 			physics->dynamics.velocity.x = targetVelX;
@@ -822,11 +826,13 @@ void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime) {
 			// Jump
 			if (InputHandler::isKeyTriggered(GLFW_KEY_B)) {
 				PhysicsForces::jump(object);
+				messageBus.publish(Message("KeyPressed", nullptr, KeyEvent{ "B", true }));
 			}
 
 			// Shoot bullet
 			if (bullet != nullptr && InputHandler::isKeyTriggered(GLFW_KEY_SPACE)) {
 				PhysicsForces::shoot(bullet, transform);
+				messageBus.publish(Message("KeyPressed", nullptr, KeyEvent{ "SPACE", true }));
 			}
 
 			// Apply damping and update player position
