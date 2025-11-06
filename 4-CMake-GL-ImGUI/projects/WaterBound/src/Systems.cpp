@@ -63,19 +63,15 @@ void InputSystem::update(GameObjectManager& manager, const float& deltaTime) {
 	//			if (InputHandler::isKeyHeld(GLFW_KEY_D)) {
 	//				velocity->velX = input->moveSpeed;
 	//			}
+	if (InputHandler::isComboKeyTriggered(GLFW_KEY_0)) {
+		UISystem::toggleUI();
+	}
 
-	//			if (InputHandler::isComboKeyTriggered(GLFW_KEY_0)) {
-	//				UISystem::toggleUI();
-	//			}
+	// Press F9 to simulate a failure (for crash logger)
+	if (InputHandler::isKeyTriggered(GLFW_KEY_F9)) {
+		throw std::runtime_error("F9 test: simulated failure in update()");
+	}
 
-	//			// Press F9 to simulate a failure (for crash logger)
-	//			if (InputHandler::isKeyTriggered(GLFW_KEY_F9)) {
-	//				throw std::runtime_error("F9 test: simulated failure in update()");
-	//			}
-	//			
-	//		}
-	//	}
-	//}
 	auto end = std::chrono::high_resolution_clock::now();
 	double ms = std::chrono::duration<double, std::milli>(end - start).count(); //get elapse time in ms
 	g_SystemTimers.push_back({ "Input", ms }); //saving timing for UI output
@@ -813,8 +809,8 @@ void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime) {
 		Transform* transform = object->getComponent<Transform>();
 		Physics* physics = object->getComponent<Physics>();
 
-		if (!physics->onGround)
-			physics->velY += physics->gravity * deltaTime;
+		/*if (!physics->onGround)
+			physics->velY += physics->gravity * deltaTime;*/
 
 		if (object->hasComponent<Input>()) {
 			Input* input = object->getComponent<Input>();
