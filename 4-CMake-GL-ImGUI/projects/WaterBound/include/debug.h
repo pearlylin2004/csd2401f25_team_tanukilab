@@ -198,3 +198,9 @@ namespace DebugInput {
     std::deque<std::string> Recent(size_t max = 32);
 }
 
+
+namespace DebugDiag {
+
+	void AuditRuntimePaths();
+
+}
