@@ -810,7 +810,8 @@ void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime) {
 		Transform* transform = object->getComponent<Transform>();
 		Physics* physics = object->getComponent<Physics>();
 
-		physics->velY += physics->gravity * deltaTime;
+		if (!physics->onGround)
+			physics->velY += physics->gravity * deltaTime;
 
 		if (object->hasComponent<Input>()) {
 			//std::cout << object << " has input component\n";
@@ -925,6 +926,7 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 				}
 			}
 		}
+
 		//temporary container to track checked objects for this frame
 		std::unordered_map<GameObject*, std::vector<GameObject*>> checked;
 
@@ -973,9 +975,13 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 							if (info.normal.y != 0) {
 								t1->y += info.normal.y * info.penetration;
 								p1->velY = 0; //stop vertical movement
-							}				
+								p1->onGround = true;
+							}
+							
+
 							UI::addDebugMessage("Collision detected between Object.\n"); //message for debugger
-						}
+
+						}else { p1->onGround = false; }
 					}
 				}
 			}
