@@ -30,7 +30,9 @@ Technology is prohibited.
 #include "ResourceManager.h"
 
 enum class soundID : int {
-	effect = 0, // for water sound (placeholder only)
+	water = 0,
+	shoot,
+	fire,
 	bg,
 	// keep this as the last, for getting the number of sound ids
 	count

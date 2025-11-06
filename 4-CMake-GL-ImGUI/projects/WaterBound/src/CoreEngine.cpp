@@ -104,6 +104,8 @@ void CoreEngine::Init() {
 
     glfwPollEvents();
     m_isRunning = true;
+
+    AudioHandler::getInstance().playSound(soundID::bg, 0.2f);
 }
 
 void CoreEngine::Run() {

@@ -67,10 +67,24 @@ void InputSystem::update(GameObjectManager& manager, const float& deltaTime, Mes
 	if (InputHandler::isComboKeyTriggered(GLFW_KEY_0)) {
 		UISystem::toggleUI();
 		messageBus.publish(Message("KeyPressed", nullptr, KeyEvent{ "0", true }));
-			if (UI::isEditingMode()) UI::toggleEditing(false);
-					else UI::toggleEditing(true);
+
+		AudioHandler::getInstance().toggleSoundPause(soundID::bg);
+
+		if (UI::isEditingMode()) UI::toggleEditing(false);
+				else UI::toggleEditing(true);
 	}
 	
+	if (!UI::isEditingMode()) {
+		if (InputHandler::isKeyTriggered(GLFW_KEY_1)) {
+			AudioHandler::getInstance().playSound(soundID::fire);
+		}
+		if (InputHandler::isKeyTriggered(GLFW_KEY_2)) {
+			AudioHandler::getInstance().playSound(soundID::shoot, 0.1f);
+		}
+		if (InputHandler::isKeyTriggered(GLFW_KEY_3)) {
+			AudioHandler::getInstance().playSound(soundID::water, 0.4f);
+		}
+	}
 
 	// Press F9 to simulate a failure (for crash logger)
 	if (InputHandler::isKeyTriggered(GLFW_KEY_F9)) {

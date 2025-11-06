@@ -303,10 +303,14 @@ void AudioHandler::setSoundpitch(soundID id, float pitch) {
 std::string AudioHandler::soundIDToFilePath(soundID id) {
 	// for now file paths are hardcoded, to change once deserialization is implemented
 	switch (id) {
-	case soundID::effect:
-		return "shaders/effect.wav";
+	case soundID::water:
+		return "shaders/audio/water.wav";
+	case soundID::shoot:
+		return "shaders/audio/underwater.wav";
+	case soundID::fire:
+		return "shaders/audio/fire.wav";
 	case soundID::bg:
-		return "shaders/bg.wav";
+		return "shaders/audio/bg.wav";
 	default:
 		return "";
 	}

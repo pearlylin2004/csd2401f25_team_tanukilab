@@ -29,6 +29,7 @@ Technology is prohibited.
 #include "messageBus.h"
 #include "controllerSystem.h"
 #include <LogicContainer.h>
+#include "audio.h"
 
 //forward declaration
 struct renderer;
