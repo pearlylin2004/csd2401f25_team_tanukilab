@@ -401,7 +401,7 @@ void RenderSystem::batchingSetUp(GameObjectManager& manager, float const& deltaT
 				if (animation->loop)
 				{
 					animation->frameTimer += deltaTime;
-					if (animation->frameTimer >= animation->frameTime)
+					if (animation->frameTimer >= animation->frameTime && !UI::isEditingMode())
 					{
 						animation->frameTimer -= animation->frameTime;
 						animation->currentFrameColumn = (animation->currentFrameColumn + 1) % animation->totalColumn;
@@ -820,11 +820,11 @@ void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime, M
 				static int bulletCount = 0;
 			}
 
-		// should apply for every obj, this is for temp auto move checking
-		if(!object->checkAutoMove()) {
-			PhysicsForces::applyDamping(physics);
-			PhysicsForces::updatePosition(transform, physics, deltaTime);
-		}
+			// should apply for every obj, this is for temp auto move checking
+			if (!object->checkAutoMove()) {
+				PhysicsForces::applyDamping(physics);
+				PhysicsForces::updatePosition(transform, physics, deltaTime);
+			}
 
 			// Shoot bullet
 			if (bullet != nullptr && InputHandler::isKeyTriggered(GLFW_KEY_SPACE)) {
@@ -851,43 +851,44 @@ void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime, M
 				PhysicsForces::jump(object);
 				messageBus.publish(Message("KeyPressed", nullptr, KeyEvent{ "B", true }));
 			}
-		
 
-		if (transform->y < physics->floorY /* temp for obj auto move*/ && !object->checkAutoMove()) {
-			transform->y = physics->floorY;
-			physics->velY = 0.0f;
-			physics->onGround = true;
-			physics->velX = 0.0f;
+
+			if (transform->y < physics->floorY /* temp for obj auto move*/ && !object->checkAutoMove()) {
+				transform->y = physics->floorY;
+				physics->velY = 0.0f;
+				physics->onGround = true;
+				physics->velX = 0.0f;
+			}
+			transform->x += physics->velX * deltaTime;
+
 		}
-		transform->x += physics->velX * deltaTime;
+			/* ----- TEMPORARY FOR MOVING THE SPAWNED OBJ AUTO ----- */
+			if (object->checkAutoMove()) {
 
-		/* ----- TEMPORARY FOR MOVING THE SPAWNED OBJ AUTO ----- */ 
-		if (object->checkAutoMove()) { 
+				transform->y += physics->dynamics.velocity.y * deltaTime;
+				transform->x += physics->dynamics.velocity.x * deltaTime;
+			}
+			/* ----- TEMP END ----- */
 
-			transform->y += physics->velY * deltaTime * physics->Speed;
-			transform->x += physics->velX * deltaTime * physics->Speed;
-		} 
-		/* ----- TEMP END ----- */
+		// Update bullet separately if it exists
+		if (bullet != nullptr && bullet->hasComponent<Physics>() && bullet->hasComponent<Transform>()) {
+			Transform* bulletTransform = bullet->getComponent<Transform>();
+			Physics* bulletPhysics = bullet->getComponent<Physics>();
+
+			// Only move horizontally along x-axis
+			bulletPhysics->dynamics.velocity.y = 0.0f;
+			bulletPhysics->dynamics.velocity.z = 0.0f;
+
+			DynamicsSystem::Integrate(bulletPhysics->dynamics, deltaTime, 0.0f, false);
+
+			bulletTransform->x = bulletPhysics->dynamics.position.x;
+			bulletTransform->y = bulletPhysics->dynamics.position.y;
+		}
+
+		auto end = std::chrono::high_resolution_clock::now();
+		double ms = std::chrono::duration<double, std::milli>(end - start).count();
+		g_SystemTimers.push_back({ "Physics", ms });
 	}
-
-	// Update bullet separately if it exists
-	if (bullet != nullptr && bullet->hasComponent<Physics>() && bullet->hasComponent<Transform>()) {
-		Transform* bulletTransform = bullet->getComponent<Transform>();
-		Physics* bulletPhysics = bullet->getComponent<Physics>();
-
-		// Only move horizontally along x-axis
-		bulletPhysics->dynamics.velocity.y = 0.0f;
-		bulletPhysics->dynamics.velocity.z = 0.0f;
-
-		DynamicsSystem::Integrate(bulletPhysics->dynamics, deltaTime, 0.0f, false);
-
-		bulletTransform->x = bulletPhysics->dynamics.position.x;
-		bulletTransform->y = bulletPhysics->dynamics.position.y;
-	}
-
-	auto end = std::chrono::high_resolution_clock::now();
-	double ms = std::chrono::duration<double, std::milli>(end - start).count();
-	g_SystemTimers.push_back({ "Physics", ms });
 }
 
 

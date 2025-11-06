@@ -20,6 +20,7 @@ Technology is prohibited.
 #include "JsonIO.h"
 
 bool UI::assetsChangedFlag = true;
+bool UI::isEditing = false;
 
 UI::UI() {
 
@@ -150,9 +151,9 @@ void UI::drawShapes(GameObjectManager& manager) {
 				transform->scaleY = scaleY;
 
                 physics->gravity = 0.0;
-                physics->Speed = speed;
-                physics->velX = velX;
-                physics->velY = velY;
+                //physics->Speed = speed;
+                physics->dynamics.velocity.x = velX;
+                physics->dynamics.velocity.y = velY;
 			}
 
 			count = spawnCount;
@@ -316,6 +317,8 @@ void UI::editorMenuBar(GameObjectManager& manager) {
                 // save current state to a temp scene file
                 //manager.saveScene(m_tempSceneName);
                 manager.saveScene(JsonIO::runtimeScenePath(m_tempSceneName));
+                manager.initializeSceneResources();
+
 
                 addDebugMessage("Simulation started.\n");
             }
@@ -325,8 +328,11 @@ void UI::editorMenuBar(GameObjectManager& manager) {
                 m_isPlaying = false;
                 isEditing = true;
 
+
                 // load back the temp scene file to restore state
                 manager.loadScene(JsonIO::runtimeScenePath(m_tempSceneName));
+                //manager.initializeSceneResources();
+
 
                 m_SelectionState.selectedObject = nullptr;
                 m_SelectionState.draggedObject = nullptr;
@@ -760,9 +766,9 @@ void UI::objInspectorWindow(GameObjectManager& manager) {
             glm::mat4& proj = renderer::editorCam.proj;
             float m22 = proj[2][2];
             float m32 = proj[3][2];
-            float near = (m32 - 1.f) / m22;
-            float far = (m32 + 1.f) / m22;
-            ImGui::DragFloat("Z", &transform->z, 0.1f, far, near);
+            float near1 = (m32 - 1.f) / m22;
+            float far1 = (m32 + 1.f) / m22;
+            ImGui::DragFloat("Z", &transform->z, 0.1f, far1, near1);
 
             /*addDebugMessage("Transform updated: Position(" +
                 std::to_string(transform->x) + ", " +
@@ -944,8 +950,8 @@ void UI::createPrefabPopup(GameObjectManager& manager) {
                 addDebugMessage("Prefab created.\n");
             else addDebugMessage("Prefab not created.\n");
 
-            manager.saveScene(sourceScenePath(m_currentSceneName));
-            syncSceneToRuntime(m_currentSceneName);
+            manager.saveScene(JsonIO::sourceScenePath(m_currentSceneName));
+            JsonIO::syncSceneToRuntime(m_currentSceneName);
 
             ImGui::CloseCurrentPopup();
         }
