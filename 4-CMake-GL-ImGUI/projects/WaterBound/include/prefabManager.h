@@ -35,15 +35,23 @@ public:
 	// singleton access
 	static PrefabManager& Instance();
 
-	void loadPrefabRegistry(const std::string& filename);
+	void loadPrefabRegistry();
 
-	std::string& getPrefabPath(const std::string& prefabID);
+	void savePrefabRegistry();
+
+	/*std::string& getPrefabPath(const std::string& prefabID);*/
+	// path name with the parent folder (e.g. Prefab/abc.json)
 	const std::string& getPrefabPath(const std::string& prefabID) const;
+	bool setPrefabPath(const std::string& prefabID, const std::string& newName);
+
+	// name without the parent folder (e.g. abc.json)
+	std::string getPrefabFilename(const std::string& prefabID) const;
 
 	std::string& getPrefabName(const std::string& prefabID);
 	const std::string& getPrefabName(const std::string& prefabID) const;
 
-	std::string findPrefabIDByFilename(const std::string& filename);
+	// find prefabid by filename, this will auto remove the parent folder
+	std::string findPrefabIDByFilename(const std::filesystem::path& filename);
 
 	const rapidjson::Document* getPrefabJson(const std::string& prefabID) const;
 
@@ -70,4 +78,7 @@ private:
 
 	// prefab jsons cache aft first load
 	std::unordered_map<std::string, rapidjson::Document> m_prefabCache;
+
+
+	std::string registryFile = "/Prefab/prefab_registry.json";
 };

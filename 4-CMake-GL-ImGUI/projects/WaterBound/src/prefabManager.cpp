@@ -71,9 +71,11 @@ PrefabManager& PrefabManager::Instance() {
 	return instance;
 }
 
-void PrefabManager::loadPrefabRegistry(const std::string& filename) {
+void PrefabManager::loadPrefabRegistry() {
 	rapidjson::Document doc;
 	std::string err;
+
+	std::string filename = std::string(RUNTIME_DIR_R) + registryFile;
 
 	if (!JsonIO::ReadFileToDocument(filename, doc, &err)) {
 		std::cerr << "Prefab registry load failed: " << err << "\n";
@@ -114,13 +116,88 @@ void PrefabManager::loadPrefabRegistry(const std::string& filename) {
 	std::cout << "Prefab registry loaded: " << filename << " (" << m_prefabRegistry.size() << " prefabs)\n";
 }
 
-std::string& PrefabManager::getPrefabPath(const std::string& prefabID) {
-	return m_prefabRegistry[prefabID].path;
+void PrefabManager::savePrefabRegistry() {
+	rapidjson::Document doc;
+	doc.SetObject();
+	auto& a = doc.GetAllocator();
+
+	//rapidjson::Value prefabs(rapidjson::kArrayType);
+
+	// version number (same as loader)
+	doc.AddMember("version", 1, a);
+
+	// Create the prefabIndex array
+	rapidjson::Value prefabArray(rapidjson::kArrayType);
+
+	for (const auto& [id, prefab] : m_prefabRegistry) {
+		rapidjson::Value prefabObj(rapidjson::kObjectType);
+
+		prefabObj.AddMember("id", rapidjson::Value(id.c_str(), a), a);
+		prefabObj.AddMember("name", rapidjson::Value(prefab.name.c_str(), a), a);
+		prefabObj.AddMember("path", rapidjson::Value(prefab.path.c_str(), a), a);
+
+		prefabArray.PushBack(prefabObj, a);
+	}
+
+	doc.AddMember("prefabIndex", prefabArray, a);
+
+	// write to run time file
+	std::string runtime = std::string(RUNTIME_DIR_R) + registryFile;
+	std::string err;
+	if (!JsonIO::WriteDocumentToFile(runtime, doc, /*pretty=*/true, &err)) {
+		std::cerr << "Registry save failed: " << err << "\n";
+		return;
+	}
+
+	// write to source (project dir)
+	std::string dir = std::string(SOURCE_DIR_R) + registryFile;
+	if (!JsonIO::WriteDocumentToFile(dir, doc, /*pretty=*/true, &err)) {
+		std::cerr << "Prefab save failed (source): " << err << "\n";
+		return;
+	}
+	else {
+		std::cout << "Prefab saved (source JSON): " << dir << "\n";
+	}
+
+	std::cout << "Prefab registry saved at " << registryFile << "\n";
 }
+
+//std::string& PrefabManager::getPrefabPath(const std::string& prefabID) {
+//	return m_prefabRegistry[prefabID].path;
+//}
 
 const std::string& PrefabManager::getPrefabPath(const std::string& prefabID) const {
 	return m_prefabRegistry.at(prefabID).path;
 }
+
+bool PrefabManager::setPrefabPath(const std::string& prefabID, const std::string& newName) {
+	auto iterator = m_prefabRegistry.find(prefabID);
+	if (iterator == m_prefabRegistry.end()) {
+		std::cout << "Prefab ID " << prefabID << "not found.\n";
+		return false;
+	}
+
+	std::filesystem::path path{ newName };
+	std::string newNameWPath = path.filename().string();
+
+	iterator->second.path = "/Prefab/" + newNameWPath;
+	savePrefabRegistry();
+	std::cout << "[Debug] Updated prefab path for ID " << prefabID << " -> " << newNameWPath << "\n";
+	return true;
+}
+
+std::string PrefabManager::getPrefabFilename(const std::string& prefabID) const {
+	auto it = m_prefabRegistry.find(prefabID);
+	if (it == m_prefabRegistry.end()) {
+		std::cerr << "[Error] Prefab ID '" << prefabID << "' not found.\n";
+		return {};
+	}
+
+	// extract filename from path
+	std::filesystem::path fullPath = it->second.path;
+	return fullPath.filename().string();  // e.g. "platform.json"
+}
+
 
 std::string& PrefabManager::getPrefabName(const std::string& prefabID) {
 	return m_prefabRegistry[prefabID].name;
@@ -130,15 +207,15 @@ const std::string& PrefabManager::getPrefabName(const std::string& prefabID) con
 	return m_prefabRegistry.at(prefabID).name;
 }
 
-std::string PrefabManager::findPrefabIDByFilename(const std::string& filename) {
+std::string PrefabManager::findPrefabIDByFilename(const std::filesystem::path& filename) {
+	std::filesystem::path filenameOnly{ filename };
+	std::string f{ filenameOnly.filename().string() };
+
 	for (const auto& [id, info] : m_prefabRegistry) {
-		const std::string& path{ info.path };
+		std::filesystem::path path{ info.path };
+		std::string prefabFile{ path.filename().string() }; // extract only the filename of the 
 
-		// remove the parent folder name, cut to only filename
-		size_t lastSlash{ path.find_last_of("/\\") };
-		std::string prefabFile = (lastSlash != std::string::npos) ? path.substr(lastSlash + 1) : path;
-
-		if (prefabFile == filename) {
+		if (prefabFile == f) {
 			return id;
 		}
 	}

@@ -966,15 +966,13 @@ void UI::assetWindow(GameObjectManager& manager) {
                 }
             }
 
-			// open popup window and rename this current asset (rename not for prefab YET)
-            if (asset.folder != m_AssetBrowserState.currentFolder + "Prefab") {
-                if (ImGui::MenuItem("Rename Asset")) {
-                    m_AssetBrowserState.fullPathToRename = fullPath;
-                    m_AssetBrowserState.showRenamePopup = true;
+			// open popup window and rename this current asset
+            if (ImGui::MenuItem("Rename Asset")) {
+                m_AssetBrowserState.fullPathToRename = fullPath;
+                m_AssetBrowserState.showRenamePopup = true;
 
-                    // pre-fill the current name
-                    std::strncpy(m_AssetBrowserState.newNameBuffer, asset.name.c_str(), sizeof(m_AssetBrowserState.newNameBuffer));
-                }
+                // pre-fill the current name
+                std::strncpy(m_AssetBrowserState.newNameBuffer, asset.name.c_str(), sizeof(m_AssetBrowserState.newNameBuffer));
             }
 
 			// open popup window and replace this current asset
@@ -1147,6 +1145,7 @@ void UI::assetRenamePopup() {
             if (!m_AssetBrowserState.fullPathToRename.empty()) {
                 std::filesystem::path old = m_AssetBrowserState.fullPathToRename;
                 std::filesystem::path newPath = old.parent_path() / m_AssetBrowserState.newNameBuffer;
+                // Debug/shaders/Prefab\\platform.json
 
 				// keep the extension if not provided
                 if (newPath.extension().empty())
@@ -1154,21 +1153,21 @@ void UI::assetRenamePopup() {
 
                 if (!std::filesystem::exists(newPath)) {
                     std::filesystem::rename(old, newPath);
-                    assetsChangedFlag = true; // reload assets
-
+                    assetsChangedFlag = true; // reload assets to reflect new name
+             
 					// change in the project folder as well
                     std::filesystem::path sourceDir(SOURCE_DIR_R);
                     
 					// split the "shaders/" part to get relative path
                     std::string relative;
-                    auto pos = old.string().find("shaders/");
+                    size_t pos = old.string().find("shaders/");
                     if (pos != std::string::npos) {
                         relative = old.string().substr(pos + strlen("shaders/"));
                     }
                     else {
                         relative = old.filename().string();
                     }
-
+                    
 					// combine relative path to rename
                     std::filesystem::path projectOld = sourceDir / relative;
                     std::filesystem::path projectNew = projectOld.parent_path() / newPath.filename();
@@ -1176,6 +1175,18 @@ void UI::assetRenamePopup() {
                         std::filesystem::rename(projectOld, projectNew);
                     }
 
+
+                    /* -------- Changing Prefab Name + Registry Entry -------- */
+
+                    // get prefabid by the path
+                    std::string prefabID = PrefabManager::Instance().findPrefabIDByFilename(old);
+                    if (!prefabID.empty()) {
+                        // change prefab name and save
+                        PrefabManager::Instance().setPrefabPath(prefabID, newPath.string());
+                    }
+
+                    /* ------- END ------- */
+                    
                     addDebugMessage("Renamed asset: " + old.string() + " -> " + newPath.string() + "\n");
                 }
                 else {

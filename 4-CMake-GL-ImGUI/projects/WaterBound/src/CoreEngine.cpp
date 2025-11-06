@@ -87,7 +87,7 @@ void CoreEngine::Init() {
     m_fontSystem = std::make_unique<FontSystem>();
     m_guiSystem = std::make_unique<GUISystem>();
 
-    PrefabManager::Instance().loadPrefabRegistry(std::string(RUNTIME_DIR_R) + "/Prefab/prefab_registry.json");
+    PrefabManager::Instance().loadPrefabRegistry();
     m_luaSystem->init();
     //m_manager->init();
     m_guiSystem->init(*m_manager);
