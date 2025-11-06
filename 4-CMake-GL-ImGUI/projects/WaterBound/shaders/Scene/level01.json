@@ -83,7 +83,23 @@
           "scale": [ 1.0, 1.0, 0.0 ]
         },
         "FontComponent": {
-          "word": "fonts, you a bitch 1 2 3 456",
+          "word": "test 123",
+          "color": [0.0, 0.0, 0.0],
+          "scale": 1.0,
+          "fontType": 0
+        }
+      }
+    },
+    {
+      "name": "text2",
+      "components": {
+        "Transform": {
+          "pos": [-5.0, 5.0, 0.01],
+          "rotation": 1.0,
+          "scale": [ 1.0, 1.0, 0.0 ]
+        },
+        "FontComponent": {
+          "word": "test 123",
           "color": [0.0, 0.0, 0.0],
           "scale": 1.0,
           "fontType": 1

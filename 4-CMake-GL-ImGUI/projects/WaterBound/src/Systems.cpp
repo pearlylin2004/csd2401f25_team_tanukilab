@@ -720,7 +720,7 @@ void FontSystem::RenderText(GLuint& s, std::string text, float x, float y, float
 	default: fontPath = "shaders/ARIAL.TTF"; break;
 	}
 
-	const FontData& fontData = ResourceManager::getInstance().getFont(fc->fontPath);
+	const FontData& fontData = ResourceManager::getInstance().getFont(fontPath);
 
 	/*std::cout << "FontData has " << fontData.characters.size() << " characters loaded" << std::endl;
 	if (fontData.characters.empty()) {
