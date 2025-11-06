@@ -1,6 +1,8 @@
 #pragma once
 #include "GameObjectManager.h"
 #include "input.h"
+#include <string>
+#include <unordered_map>
 
 class LuaSystem;
 
@@ -8,6 +10,8 @@ enum class GameState {
     MENU,
     PLAYING
 };
+
+// ButtonData is now defined in GameObjectManager.h - no need to redefine it here
 
 class GUISystem {
 public:
@@ -27,7 +31,9 @@ private:
     void stopGame(GameObjectManager& manager);
 
     bool isPointInButton(const glm::vec2& point, GameObject* button);
-    //glm::vec2 convertScreenToWorld(double screenX, double screenY);
+
+    // Store button data retrieved from GameObjectManager
+    std::unordered_map<std::string, ButtonData> m_buttonData;
 
     GameState m_currentState = GameState::MENU;
     GameObject* m_playButton = nullptr;
@@ -35,4 +41,5 @@ private:
     bool m_buttonsCreated = false;
     GameObjectManager* g_manager = nullptr;
     LuaSystem* g_luaSystem = nullptr;
+    bool m_buttonDataLoaded = false;
 };

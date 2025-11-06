@@ -69,10 +69,10 @@ void PhysicsForces::shoot(GameObject* bullet, const Transform* origin) {
     t->x = origin->x;
     t->y = origin->y;
     t->z = 0.0f;
-    t->scaleX = 0.5f;
-    t->scaleY = 0.5f;
-    t->scaleZ = 0.5f;
-    t->rotation = 0.0f;
+    //t->scaleX = 0.5f;
+    //t->scaleY = 0.5f;
+    //t->scaleZ = 0.5f;
+    //t->rotation = 0.0f;
 
     // Set bullet velocity to move horizontally along x-axis
     p->dynamics.velocity.x = 10.0f; // speed along x

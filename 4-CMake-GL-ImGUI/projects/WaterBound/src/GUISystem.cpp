@@ -2,6 +2,13 @@
 #include "Systems.h"
 #include "input.h"
 #include <iostream>
+#include <fstream>
+
+#define RUNTIME_SCENE_DIR_R "./shaders/Scene"
+
+static std::string runtimeScenePath(std::string const& name) {
+    return std::string(RUNTIME_SCENE_DIR_R) + "/" + name;
+}
 
 GUISystem::GUISystem() {
     std::cout << "GUISystem constructor called" << std::endl;
@@ -13,6 +20,22 @@ GUISystem::~GUISystem() {
 
 void GUISystem::init(GameObjectManager& manager, LuaSystem& luaSystem) {
     std::cout << "GUISystem::init started" << std::endl;
+
+    // Load the menu scene - this will populate button data in the manager
+    manager.loadScene(runtimeScenePath("menu_scene.json"));
+
+    // Get button data from the manager
+    if (manager.hasButtonData()) {
+        m_buttonData = manager.getButtonData();
+        m_buttonDataLoaded = true;
+        std::cout << "Successfully loaded " << m_buttonData.size() << " button(s) from GameObjectManager" << std::endl;
+    }
+    else {
+        std::cout << "No button data found in GameObjectManager" << std::endl;
+        m_buttonDataLoaded = false;
+    }
+
+    // Create the actual button game objects
     createMenuButtons(manager);
     g_manager = &manager;
     g_luaSystem = &luaSystem;
@@ -28,7 +51,6 @@ void GUISystem::update(GameObjectManager& manager) {
             Vector2D mousePos = InputHandler::getMousePosition();
 
             // Convert screen coordinates to world coordinates
-            //glm::vec2 worldPos = convertScreenToWorld(mousePos.x, mousePos.y);
             Vector2D worldMousePos = InputHandler::getWorldMousePosition();
             glm::vec2 worldPos = glm::vec2(worldMousePos.x, worldMousePos.y);
 
@@ -48,8 +70,6 @@ void GUISystem::update(GameObjectManager& manager) {
 }
 
 void GUISystem::createMenuButtons(GameObjectManager& manager) {
-    std::cout << "GUISystem::createMenuButtons started" << std::endl;
-
     if (m_buttonsCreated) {
         std::cout << "Buttons already created, returning early" << std::endl;
         return;
@@ -69,12 +89,30 @@ void GUISystem::createMenuButtons(GameObjectManager& manager) {
     playRender->hasTex = false;
 
     Transform* playTransform = m_playButton->addComponent<Transform>();
-    playTransform->x = -6.0f;
-    playTransform->y = 0.0f;
-    playTransform->z = 0.1f;
-    playTransform->scaleX = 6.0f;
-    playTransform->scaleY = 1.0f;
-    playTransform->scaleZ = 1.0f;
+
+    // Use JSON data if available
+    if (m_buttonDataLoaded && m_buttonData.find("play_button") != m_buttonData.end()) {
+        const ButtonData& data = m_buttonData["play_button"];
+        playTransform->x = data.position.x;
+        playTransform->y = data.position.y;
+        playTransform->z = data.position.z;
+        playTransform->scaleX = data.scale.x;
+        playTransform->scaleY = data.scale.y;
+        playTransform->scaleZ = data.scale.z;
+        std::cout << "Play button created with JSON data: pos("
+            << data.position.x << ", " << data.position.y << ", " << data.position.z
+            << ") scale(" << data.scale.x << ", " << data.scale.y << ", " << data.scale.z << ")" << std::endl;
+    }
+    else {
+        // Fallback to default values
+        playTransform->x = -6.0f;
+        playTransform->y = 0.0f;
+        playTransform->z = 0.1f;
+        playTransform->scaleX = 6.0f;
+        playTransform->scaleY = 1.0f;
+        playTransform->scaleZ = 1.0f;
+        std::cout << "Play button created with default data (no JSON data found)" << std::endl;
+    }
 
     manager.assignObjectToLayer(m_playButton, 2);
     
@@ -90,12 +128,30 @@ void GUISystem::createMenuButtons(GameObjectManager& manager) {
     stopRender->hasTex = false;
 
     Transform* stopTransform = m_stopButton->addComponent<Transform>();
-    stopTransform->x = 3.0f;
-    stopTransform->y = 0.0f;
-    stopTransform->z = 0.1f;
-    stopTransform->scaleX = 6.0f;
-    stopTransform->scaleY = 1.0f;
-    stopTransform->scaleZ = 1.0f;
+
+    // Use JSON data if available
+    if (m_buttonDataLoaded && m_buttonData.find("stop_button") != m_buttonData.end()) {
+        const ButtonData& data = m_buttonData["stop_button"];
+        stopTransform->x = data.position.x;
+        stopTransform->y = data.position.y;
+        stopTransform->z = data.position.z;
+        stopTransform->scaleX = data.scale.x;
+        stopTransform->scaleY = data.scale.y;
+        stopTransform->scaleZ = data.scale.z;
+        std::cout << "Stop button created with JSON data: pos("
+            << data.position.x << ", " << data.position.y << ", " << data.position.z
+            << ") scale(" << data.scale.x << ", " << data.scale.y << ", " << data.scale.z << ")" << std::endl;
+    }
+    else {
+        // Fallback to default values
+        stopTransform->x = 3.0f;
+        stopTransform->y = 0.0f;
+        stopTransform->z = 0.1f;
+        stopTransform->scaleX = 6.0f;
+        stopTransform->scaleY = 1.0f;
+        stopTransform->scaleZ = 1.0f;
+        std::cout << "Stop button created with default data (no JSON data found)" << std::endl;
+    }
 
 
     manager.assignObjectToLayer(m_stopButton, 2);
@@ -165,8 +221,6 @@ void GUISystem::stopGame(GameObjectManager& manager) {
     if (window) {
         glfwSetWindowShouldClose(window, true);
     }
-
-    std::cout << "Application quit requested" << std::endl;
 }
 
 bool GUISystem::isPointInButton(const glm::vec2& point, GameObject* button) {
@@ -183,24 +237,3 @@ bool GUISystem::isPointInButton(const glm::vec2& point, GameObject* button) {
         point.y >= transform->y - halfHeight &&
         point.y <= transform->y + halfHeight);
 }
-
-//glm::vec2 GUISystem::convertScreenToWorld(double screenX, double screenY) {
-//    // Get window dimensions from GLFW
-//    GLFWwindow* window = glfwGetCurrentContext();
-//    int windowWidth, windowHeight;
-//    glfwGetWindowSize(window, &windowWidth, &windowHeight);
-//
-//    if (windowWidth == 0 || windowHeight == 0) {
-//        return glm::vec2(0.0f, 0.0f);
-//    }
-//
-//    // Convert to normalized device coordinates (-1 to +1)
-//    float ndcX = (2.0f * static_cast<float>(screenX)) / windowWidth - 1.0f;
-//    float ndcY = 1.0f - (2.0f * static_cast<float>(screenY)) / windowHeight;
-//
-//    // Convert to world coordinates using camera parameters
-//    float worldX = (ndcX * renderer::cam.ar * renderer::cam.zoom) + renderer::cam.campos.x;
-//    float worldY = (ndcY * renderer::cam.zoom) + renderer::cam.campos.y;
-//
-//    return glm::vec2(worldX, worldY);
-//}
