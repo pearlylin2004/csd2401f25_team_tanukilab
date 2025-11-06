@@ -58,7 +58,7 @@ private:
 	void editorMenuBar(GameObjectManager& manager);
 	void objHierarchyWindow(GameObjectManager& manager);
 	void objInspectorWindow(GameObjectManager& manager);
-	void assetWindow(GameObjectManager& manager);
+	void assetWindow();
 	void editorCameraControls();
 
 	void newScenePopup(GameObjectManager& manager);
