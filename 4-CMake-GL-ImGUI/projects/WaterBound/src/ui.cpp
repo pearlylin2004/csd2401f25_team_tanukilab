@@ -44,7 +44,7 @@ void UI::update(GameObjectManager& manager) {
     objPicking(manager);
     objDragging();
 
-    assetWindow(manager);
+    assetWindow();
     drawPerformance();
     drawDebug();
 
@@ -104,8 +104,8 @@ void UI::drawShapes(GameObjectManager& manager) {
             if (!manager.getGameObject("player2")) {
                 GameObject* player2 = manager.createGameObject("player2");
 
-                Transform* transform = player2->addComponent<Transform>();
-                Physics* physics = player2->addComponent<Physics>();
+                player2->addComponent<Transform>();
+                player2->addComponent<Physics>();
                 Render* render = player2->addComponent<Render>();
 
                 render->modelRef = renderer::models[static_cast<int>(shape::square)];
@@ -125,14 +125,13 @@ void UI::drawShapes(GameObjectManager& manager) {
                     physics = newObj->addComponent<Physics>();
                 }
 
-                int randomX = rand() % 20;
-                int randomY = rand() % 10;
-				int rotation = rand() % 360;
-				int scaleX = (rand() % 3) + 1;
-				int scaleY = (rand() % 3) + 1;
-                float velX = (rand() % 3) - 1;
-                float velY = (rand() % 3) - 1;
-                int speed = (rand() % 2) + 1;
+                float randomX = (rand() % 2000) / 100.0f;
+                float randomY = (rand() % 1000) / 100.0f;     // 0.0 to 9.99
+                float rotation = (rand() % 36000) / 100.0f;   // 0.0 to 359.99
+                float scaleX = ((rand() % 300) / 100.0f) + 1; // 1.00 to 3.00
+                float scaleY = ((rand() % 300) / 100.0f) + 1;
+                float velX = ((rand() % 300) / 100.0f) - 1;   // -1.00 to 2.00
+                float velY = ((rand() % 300) / 100.0f) - 1;
 
                 // avoid zero velocity
                 if (velX == 0.0f) velX = 0.5f;
@@ -151,7 +150,6 @@ void UI::drawShapes(GameObjectManager& manager) {
 				transform->scaleY = scaleY;
 
                 physics->gravity = 0.0;
-                //physics->Speed = speed;
                 physics->dynamics.velocity.x = velX;
                 physics->dynamics.velocity.y = velY;
 			}
@@ -661,7 +659,7 @@ void UI::objHierarchyWindow(GameObjectManager& manager) {
 
     /* ----------- Receive Dropped Prefab from Asset Browser ----------- */
     // make entire hierarchy viewport a invisible button that can receive asset
-    ImGuiID targetID = ImGui::GetID("HierarchyWindowDropTarget");
+    //ImGuiID targetID = ImGui::GetID("HierarchyWindowDropTarget");
     ImGui::SetCursorPos(ImVec2(0, 0));
     ImGui::InvisibleButton("##drop_target", ImGui::GetContentRegionAvail());
 
@@ -1006,7 +1004,7 @@ void UI::loadAssetsFromDirectory() {
     addDebugMessage("Assets loaded from " + m_AssetBrowserState.currentFolder + "\n");
 }
 
-void UI::assetWindow(GameObjectManager& manager) {
+void UI::assetWindow() {
     ImGui::Begin("Assets");
 
     // refresh to update assets from the actual asset folder
