@@ -968,13 +968,12 @@ void GameObjectManager::loadSceneFromJson(const std::string& filename) {
 		
 	}
 
-	std::cout << "\n=== BUTTON DATA EXTRACTION START ===" << std::endl;
 	std::cout << "Total game objects loaded: " << m_gameObjects.size() << std::endl;
 
 	m_buttonData.clear(); // Ensure it's empty before populating
 
 	// Extract from loaded game objects with "button" in the name
-	std::cout << "\nScanning loaded game objects for buttons..." << std::endl;
+	//std::cout << "\nScanning loaded game objects for buttons..." << std::endl;
 	int foundCount = 0;
 
 	for (const auto& [name, obj] : m_gameObjects) {
