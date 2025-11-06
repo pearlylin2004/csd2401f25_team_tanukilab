@@ -1,10 +1,17 @@
 #pragma once
 #include "GameObjectManager.h"
 #include "input.h"
+#include <string>
+#include <unordered_map>
 
 enum class GameState {
     MENU,
     PLAYING
+};
+
+struct ButtonData {
+    glm::vec3 position;
+    glm::vec3 scale;
 };
 
 class GUISystem {
@@ -24,11 +31,17 @@ private:
     void startGame(GameObjectManager& manager);
     void stopGame(GameObjectManager& manager);
 
+    // New method to load button data from JSON
+    bool loadButtonDataFromJSON(const std::string& filename);
+
+    // Store button data
+    std::unordered_map<std::string, ButtonData> m_buttonData;
+
     bool isPointInButton(const glm::vec2& point, GameObject* button);
-    //glm::vec2 convertScreenToWorld(double screenX, double screenY);
 
     GameState m_currentState = GameState::MENU;
     GameObject* m_playButton = nullptr;
     GameObject* m_stopButton = nullptr;
     bool m_buttonsCreated = false;
+    bool m_buttonDataLoaded = false;
 };

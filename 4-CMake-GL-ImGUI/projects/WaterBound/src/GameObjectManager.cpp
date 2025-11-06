@@ -1212,7 +1212,6 @@ void GameObjectManager::loadScene(const std::string& path) {
 	//		std::cout << "[Setup] Added StateMachine to player\n";
 	//	}
 	//}
-
 }
 
 void GameObjectManager::saveScene(const std::string& path, bool isNew) const {
