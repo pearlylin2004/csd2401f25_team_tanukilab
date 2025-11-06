@@ -167,17 +167,9 @@ void RenderSystem::update(GameObjectManager& manager, float const& deltaTime)
 					render->texChanged = false;
 				}
 
-				/*if (render->hasTex)
-					objectWithTex.push_back(object);
-				else
-					objectWithoutTex.push_back(object);*/
-					
 			}
 
-			/*if (object->getComponent<Render>()->hasTex)
-				objectWithTex.push_back(object);
-			else
-				objectWithoutTex.push_back(object);*/
+			
 		}
 
 
@@ -937,7 +929,6 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 				auto& cellObject = grid[i][j].objects; //get objects in the cell
 				//loop through objects in the cell to check for collision
 				for (size_t n = 0; n < cellObject.size(); n++) {
-					std::cout << "Cell has " << cellObject.size() << " objects" << std::endl;  // ADD THIS
 
 					//object 1
 					GameObject* obj1 = cellObject[n];
@@ -964,14 +955,10 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 						Physics* p2 = obj2->getComponent<Physics>();
 						Vector2D vel2{ p2->velX, p2->velY };
 
-						std::cout << "CHECKING PAIR!" << std::endl;  // ADD THIS
 						CollisionInfo info = Collision::CollisionIntersection_RectRect_Dynamic_Info(aabb1, vel1, aabb2, vel2);
-						std::cout << "info.collided = " << info.collided << std::endl;  // ADD THIS
 					
 						//checking if collided
 						if (info.collided) {
-							std::cout << "COLLISION RESPONSE: normal=(" << info.normal.x << ", " << info.normal.y << ") penetration=" << info.penetration << std::endl;
-							std::cout << "  Before: obj1 pos=(" << t1->x << ", " << t1->y << ") obj2 pos=(" << t2->x << ", " << t2->y << ")" << std::endl;
 							//update the velocity and penetrations for BOTH objects
 							if (info.normal.x != 0) {
 								t1->x += info.normal.x * info.penetration * 0.5f;
@@ -997,9 +984,7 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 									p1->onGround = true;
 								}
 							}
-							std::cout << "  After: obj1 pos=(" << t1->x << ", " << t1->y << ") obj2 pos=(" << t2->x << ", " << t2->y << ")" << std::endl;
 							
-
 							UI::addDebugMessage("Collision detected between Object.\n"); //message for debugger
 
 						}else { p1->onGround = false; }
