@@ -736,6 +736,7 @@ void UI::objInspectorWindow(GameObjectManager& manager) {
                     addDebugMessage("Failed to rename: name already exists\n");
                 }
             }
+            ImGui::SetItemDefaultFocus();
 
             ImGui::Spacing();
             ImGui::Separator();
@@ -947,7 +948,6 @@ void UI::createPrefabPopup(GameObjectManager& manager) {
 
             ImGui::CloseCurrentPopup();
         }
-        //ImGui::SetItemDefaultFocus();
 
         if (ImGui::Button("Create but Do Not Pack")) {            
             
@@ -1099,11 +1099,14 @@ void UI::assetWindow(GameObjectManager& manager) {
             }
 
 			// open popup window and replace this current asset
-			/*if (ImGui::MenuItem("Replace Asset")) {
-                m_AssetBrowserState.fullPathToReplace = fullPath;
-                m_AssetBrowserState.showReplacePopup = true;
-                m_AssetBrowserState.replacePathBuffer[0] = '\0';
-			}*/
+            if (asset.folder != m_AssetBrowserState.currentFolder + "Prefab") {
+                if (ImGui::MenuItem("Replace Asset")) {
+                    m_AssetBrowserState.fullPathToReplace = fullPath;
+                    m_AssetBrowserState.showReplacePopup = true;
+                    m_AssetBrowserState.replacePathBuffer[0] = '\0';
+                }
+            }
+
 			ImGui::EndPopup();
 		}
 
@@ -1347,9 +1350,11 @@ void UI::assetReplacePopup() {
     }
 
     if (ImGui::BeginPopupModal("Replace Asset", NULL, ImGuiWindowFlags_AlwaysAutoResize)) {
-        ImGui::Text("Select a new file to replace the asset:");
+        ImGui::Text("Select a new file to replace the asset:\n");
 
         ImGui::InputText("File Path", m_AssetBrowserState.replacePathBuffer, sizeof(m_AssetBrowserState.replacePathBuffer));
+
+        ImGui::Text("Please enter the absolute path without \"\"");
 
         if (ImGui::Button("Replace")) {
             std::filesystem::path old = m_AssetBrowserState.fullPathToReplace;

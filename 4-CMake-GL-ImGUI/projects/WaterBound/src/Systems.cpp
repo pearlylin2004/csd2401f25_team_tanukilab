@@ -302,11 +302,11 @@ void RenderSystem::renderTex(GameObject* object, float const& deltaTime)
 			Animation* animation = object->getComponent<Animation>();
 			texpos = glm::vec2{ animation->currentFrameColumn / static_cast<float>(animation->totalColumn), animation->currentFrameRow / static_cast<float>(animation->totalRow) };
 			texscale = glm::vec2{ 1.f / animation->totalColumn, 1.f / animation->totalRow };
-			if (animation->loop && !UI::isEditingMode())
+			if (animation->loop)
 			{
 				animation->frameTimer += deltaTime;
 				//std::cout << "\n-------Frame Timer---------\n" << animation->frameTimer << "\n\n";
-				if (animation->frameTimer >= animation->frameTime)
+				if (animation->frameTimer >= animation->frameTime && !UI::isEditingMode())
 				{
 					animation->frameTimer -= animation->frameTime;
 					/*if (animation->runItBack && animation->currentFrameColumn == 0)
@@ -897,7 +897,7 @@ void UISystem::dockingSetUp() {
 		ImGui::DockBuilderSplitNode(dockLeft, ImGuiDir_Down, 0.3f, &dockLeftSecond, &dockLeft);
 		ImGui::DockBuilderSplitNode(dockParent, ImGuiDir_Right, 0.4f, &dockRight, &dockParent);
 		ImGui::DockBuilderSplitNode(dockRight, ImGuiDir_Down, 0.4f, &dockRightSecond, &dockRight);
-		ImGui::DockBuilderSplitNode(dockParent, ImGuiDir_Down, 0.4f, &dockDown, &dockParent);
+		ImGui::DockBuilderSplitNode(dockParent, ImGuiDir_Down, 0.5f, &dockDown, &dockParent);
 
 		// Dock windows
 
