@@ -401,11 +401,11 @@ void GameObjectManager::loadSceneFromJson(const std::string& filename) {
 	for (auto& jObj : doc["objects"].GetArray()) {
 		if (!jObj.IsObject()) continue;
 
-		std::string name = (jObj.HasMember("name") && jObj["name"].IsString())
+		std::string nameOjb = (jObj.HasMember("name") && jObj["name"].IsString())
 			? jObj["name"].GetString()
 			: ("Object_" + std::to_string(m_gameObjects.size()));
 
-		GameObject* go = createGameObject(name);
+		GameObject* go = createGameObject(nameOjb);
 
 
 		// check if this object references a prefab
