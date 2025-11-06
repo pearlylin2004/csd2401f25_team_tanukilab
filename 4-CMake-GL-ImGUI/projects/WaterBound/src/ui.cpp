@@ -1441,4 +1441,10 @@ void UI::objDragging() const {
     Vector2D mousePos = InputHandler::getMouseDeltaWorldInViewport(m_SceneWindowState.sceneSize);
     transform->x += mousePos.x;
     transform->y += mousePos.y;
+
+    // if obj has physics, do not follow gravity while dragging
+    Physics* physics = obj->getComponent<Physics>();
+    if (!physics) return;
+
+    physics->velY = 0.0f;
 }
