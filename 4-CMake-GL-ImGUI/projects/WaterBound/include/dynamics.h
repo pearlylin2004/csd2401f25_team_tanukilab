@@ -30,5 +30,7 @@ class DynamicsSystem
 public:
     static void AddForce(Dynamics& dyn, const Vector3D& direction, float magnitude, float lifetime = -1.0f);
     static void UpdateForces(Dynamics& dyn, float deltaTime);
-    static void Integrate(Dynamics& dyn, float deltaTime, const Vector3D& gravity = { 0.0f, -9.8f, 0.0f });
+    static void Integrate(Dynamics& dyn, float deltaTime, float gravityValue, bool onGround);
+       
+
 };

@@ -43,39 +43,39 @@ void InputSystem::update(GameObjectManager& manager, const float& deltaTime) {
 	std::vector<GameObject*> gameObjects;
 	manager.getAllGameObjects(gameObjects);
 
-	for (GameObject* iterator : gameObjects) {
-		//check for objects that have input 
-		if (iterator->hasComponent<Input>()) {
-			Input* input = iterator->getComponent<Input>();
-			if (iterator->hasComponent<Physics>()) {//player got that velocity in him
-				Physics* velocity = iterator->getComponent<Physics>();
+	//for (GameObject* iterator : gameObjects) {
+	//	//check for objects that have input 
+	//	if (iterator->hasComponent<Input>()) {
+	//		Input* input = iterator->getComponent<Input>();
+	//		if (iterator->hasComponent<Physics>()) {//player got that velocity in him
+	//			Physics* velocity = iterator->getComponent<Physics>();
 
 
-				if (InputHandler::isKeyHeld(GLFW_KEY_W)) {
-					velocity->velY = input->moveSpeed;
-				}
-				if (InputHandler::isKeyHeld(GLFW_KEY_S)) {
-					velocity->velY = -input->moveSpeed;
-				}
-				if (InputHandler::isKeyHeld(GLFW_KEY_A)) {
-					velocity->velX = -input->moveSpeed;
-				}
-				if (InputHandler::isKeyHeld(GLFW_KEY_D)) {
-					velocity->velX = input->moveSpeed;
-				}
+	//			if (InputHandler::isKeyHeld(GLFW_KEY_W)) {
+	//				velocity->velY = input->moveSpeed;
+	//			}
+	//			if (InputHandler::isKeyHeld(GLFW_KEY_S)) {
+	//				velocity->velY = -input->moveSpeed;
+	//			}
+	//			if (InputHandler::isKeyHeld(GLFW_KEY_A)) {
+	//				velocity->velX = -input->moveSpeed;
+	//			}
+	//			if (InputHandler::isKeyHeld(GLFW_KEY_D)) {
+	//				velocity->velX = input->moveSpeed;
+	//			}
 
-				if (InputHandler::isComboKeyTriggered(GLFW_KEY_0)) {
-					UISystem::toggleUI();
-				}
+	//			if (InputHandler::isComboKeyTriggered(GLFW_KEY_0)) {
+	//				UISystem::toggleUI();
+	//			}
 
-				// Press F9 to simulate a failure (for crash logger)
-				if (InputHandler::isKeyTriggered(GLFW_KEY_F9)) {
-					throw std::runtime_error("F9 test: simulated failure in update()");
-				}
-				
-			}
-		}
-	}
+	//			// Press F9 to simulate a failure (for crash logger)
+	//			if (InputHandler::isKeyTriggered(GLFW_KEY_F9)) {
+	//				throw std::runtime_error("F9 test: simulated failure in update()");
+	//			}
+	//			
+	//		}
+	//	}
+	//}
 	auto end = std::chrono::high_resolution_clock::now();
 	double ms = std::chrono::duration<double, std::milli>(end - start).count(); //get elapse time in ms
 	g_SystemTimers.push_back({ "Input", ms }); //saving timing for UI output
@@ -589,47 +589,58 @@ void FontSystem::RenderText(GLuint& s, std::string text, float x, float y, float
 }
 
 // Physics system - updates position based on velocity and applies gravity
-void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime)
-{
+void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime) {
 	auto start = std::chrono::high_resolution_clock::now();
 
+	// Step mode toggling
 	if (InputHandler::isComboKeyTriggered(GLFW_KEY_Z))
 		m_stepMode = !m_stepMode;
-
 	if (m_stepMode && InputHandler::isKeyTriggered(GLFW_KEY_Z))
 		m_stepReq = true;
-
-	if (m_stepMode && !m_stepReq) return;
-	if (m_stepReq) m_stepReq = false;
+	if (m_stepMode && !m_stepReq)
+		return;
+	if (m_stepReq)
+		m_stepReq = false;
 
 	std::vector<GameObject*> gameObjects;
 	manager.getAllGameObjects(gameObjects);
-
 	GameObject* bullet = manager.getGameObject("bullet");
 
 	for (auto object : gameObjects) {
-		if (!object->hasComponent<Transform>() || !object->hasComponent<Physics>())
+		if (!object->hasComponent<Transform>() ||
+			!object->hasComponent<Physics>() ||
+			!object->hasComponent<Input>())
 			continue;
 
+		Input* input = object->getComponent<Input>();
 		Transform* transform = object->getComponent<Transform>();
 		Physics* physics = object->getComponent<Physics>();
 
-		// Apply gravity and damping
-		PhysicsForces::applyGravity(physics, deltaTime);
+		float targetVelX = 0.0f;
+		float targetVelY = 0.0f;
+		if (InputHandler::isKeyHeld(GLFW_KEY_A)) {
+			physics->canMove = true;
+			targetVelX = -input->moveSpeed;
+		}
+		else if (InputHandler::isKeyHeld(GLFW_KEY_D) && physics->canMove) {
+			targetVelX = input->moveSpeed;
+		}
+
+		physics->dynamics.velocity.x = targetVelX;
+		//physics->dynamics.velocity.y = targetVelY;
+
+		//PhysicsForces::applyGravity(physics, deltaTime);
 		PhysicsForces::applyDamping(physics);
 
-		// Handle input
+
 		if (object->hasComponent<Input>()) {
 			if (InputHandler::isKeyTriggered(GLFW_KEY_B)) {
 				PhysicsForces::jump(object);
 			}
-
 			if (InputHandler::isKeyTriggered(GLFW_KEY_SPACE) && bullet != nullptr) {
 				PhysicsForces::shoot(bullet, transform);
 			}
 		}
-
-		// Update position
 		PhysicsForces::updatePosition(transform, physics, deltaTime);
 	}
 
@@ -637,6 +648,7 @@ void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime)
 	double ms = std::chrono::duration<double, std::milli>(end - start).count();
 	g_SystemTimers.push_back({ "Physics", ms });
 }
+
 
 
 // Collision system - detects and resolves collisions between game objects
@@ -694,7 +706,7 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 				Transform* t1 = obj1->getComponent<Transform>();
 				Collision::AABB aabb1 = Collision::getObjectAABB(t1);
 				Physics* p1 = obj1->getComponent<Physics>();
-				Vector2D vel1{ p1->velX, p1->velY };
+				Vector2D vel1{ p1->dynamics.velocity.x, p1->dynamics.velocity.y };
 				//object 2 looping
 				for (size_t m = n + 1; m < cellObject.size(); m++) {
 					//object 2
@@ -711,25 +723,28 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 					Transform* t2 = obj2->getComponent<Transform>();
 					Collision::AABB aabb2 = Collision::getObjectAABB(t2);
 					Physics* p2 = obj2->getComponent<Physics>();
-					Vector2D vel2{ p2->velX, p2->velY };
+					Vector2D vel2{ p2->dynamics.velocity.x, p2->dynamics.velocity.y };
 
 					CollisionInfo info = Collision::CollisionIntersection_RectRect_Dynamic_Info(aabb1, vel1, aabb2, vel2); //check collision
 					
-					//checking if collided
 					if (info.collided) {
-						//update the velocity and penetrations
-						if (info.normal.x != 0) {
-							t1->x += info.normal.x * info.penetration;
-							p1->velX = 0; //stop horizontal movement
-						}
+						// Prevent movement for obj1
+						p1->canMove = false;
 
-						// resolve Y
+						if (info.normal.x != 0) {
+							t1->x += info.normal.x * info.penetration * 0.5f;
+							p1->dynamics.velocity.x = 0;
+						}
 						if (info.normal.y != 0) {
-							t1->y += info.normal.y * info.penetration;
-							p1->velY = 0; //stop vertical movement
-						}				
-						UI::addDebugMessage("Collision detected between Object.\n"); //message for debugger
+							t1->y += info.normal.y * info.penetration * 0.5f;
+							p1->dynamics.velocity.y = 0;
+							p1->canMove = true;
+							
+							
+						}
+						UI::addDebugMessage("Collision detected - movement stopped.\n");
 					}
+					
 				}
 			}
 		}

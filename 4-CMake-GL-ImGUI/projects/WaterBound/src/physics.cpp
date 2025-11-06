@@ -1,24 +1,42 @@
 #include "physics.h"
 #include "input.h"
 #include "ui.h"
+#include "dynamics.h"
 
 void PhysicsForces::applyGravity(Physics* physics, float deltaTime) {
-    physics->velY += physics->gravity * deltaTime;
+    // Gravity as a constant downward force: F = m * g
+    Vector3D gravityForce = { 0.0f, physics->gravity * physics->dynamics.mass, 0.0f };
+    DynamicsSystem::AddForce(physics->dynamics, gravityForce, 1.0f);
 }
 
 void PhysicsForces::applyDamping(Physics* physics) {
-    physics->velX *= physics->damping;
-}
+    // Simple velocity damping 
+    physics->damping = 0.98f; // instead of 0.99f
 
+    physics->dynamics.velocity.x *= physics->damping;
+   // physics->dynamics.velocity.y *= physics->damping;
+}
 void PhysicsForces::updatePosition(Transform* transform, Physics* physics, float deltaTime) {
-    transform->x += physics->velX * deltaTime;
-    transform->y += physics->velY * deltaTime;
+    DynamicsSystem::UpdateForces(physics->dynamics, deltaTime);
+    //DynamicsSystem::Integrate(physics->dynamics, deltaTime);
+
+    Vector3D gravity = { 0.0f, physics->gravity * physics->dynamics.mass, 0.0f };
+    DynamicsSystem::Integrate(physics->dynamics, deltaTime, physics->gravity, physics->onGround);
+
+
+
+    transform->x = physics->dynamics.position.x;
+    transform->y = physics->dynamics.position.y;
+
+   
+    physics->velX = physics->dynamics.velocity.x;
+    physics->velY = physics->dynamics.velocity.y;
 
     // Ground collision
-    if (transform->y < physics->floorY) {
-        transform->y = physics->floorY;
+    if (transform->y <= physics->floorY) {
+        transform->y = physics->dynamics.position.y = physics->floorY;
+        physics->dynamics.velocity.y = 0.0f;
         physics->velY = 0.0f;
-        physics->velX = 0.0f;
         physics->onGround = true;
     }
 }
@@ -28,9 +46,14 @@ void PhysicsForces::jump(GameObject* object) {
         return;
 
     Physics* physics = object->getComponent<Physics>();
+
     if (physics->onGround) {
-        physics->velY = physics->jumpForce;
+        // Apply upward 
+        Vector3D jumpDir = { 0.0f, 1.0f, 0.0f };
+        DynamicsSystem::AddForce(physics->dynamics, jumpDir, physics->jumpForce, 0.1f);
+        //physics->dynamics.velocity.y = 5.0f; // Instant upward velocity
         physics->onGround = false;
+
         UI::addDebugMessage("Player jumped!");
     }
 }
@@ -59,42 +82,3 @@ void PhysicsForces::shoot(GameObject* bullet, const Transform* origin) {
     UI::addDebugMessage("Bullet spawned!");
 }
 
-
-
-void UpdateJump(int direction, float dt)
-{
-    if (InputHandler::isKeyTriggered(GLFW_KEY_SPACE) && !isJumping)
-    {
-        isJumping = true;
-        playerVel = Vec_Set(direction * jumpSpeed, jumpPower);
-    }
-
-    if (isJumping)
-    {
-        // Apply gravity: vel = vel + g * dt
-        Vector2D gStep = Vec_Scale(&gravity, dt);
-        playerVel = Vec_Add(&playerVel, &gStep);
-
-        // Update position: pos = pos + vel * dt
-        Vector2D moveStep = Vec_Scale(&playerVel, dt);
-        playerPos = Vec_Add(&playerPos, &moveStep);
-
-        // Check for ground collision
-        if (playerPos.y <= groundY)
-        {
-            playerPos.y = groundY;
-            playerVel = Vec_Zero();
-            isJumping = false;
-        }
-    }
-}
-
-//Vector2D GetMouseWorldPosition() {
-//    Vector2D mouse;
-//    mouse = InputHandler::getCursorPosition();
-//
-//    float worldX = (float)mouse.x - 800.0f;
-//    float worldY = (float)(900 - mouse.y) - 450.0f;
-//
-//    return Vec_Set(worldX, worldY);
-//}

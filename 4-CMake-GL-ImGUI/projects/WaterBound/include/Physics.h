@@ -1,6 +1,7 @@
 #pragma once
 #include "Component.h"
 #include "gameObject.h"
+#include "dynamics.h"
 
 // Struct to handle jump and bullet physics
 struct PhysicsForces {
@@ -11,4 +12,6 @@ struct PhysicsForces {
 
     static void jump(GameObject* object);           // Apply jump force
     static void shoot(GameObject* bullet, const Transform* origin);  // Shoot bullet from origin
+
+    /*static void applyDynamics(Physics* physics, float deltaTime);*/
 };
