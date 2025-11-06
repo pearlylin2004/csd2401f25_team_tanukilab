@@ -53,7 +53,9 @@ static bool syncSceneToRuntime(const std::string& name) {
     std::cout << "Scene synced: " << dst << "\n";
     return true;
 }
-bool UI::assetsChangedFlag = true;
+
+bool UI::assetsChangedFlag{ true };
+bool UI::isEditing{ false };
 
 UI::UI() {
 
@@ -331,9 +333,10 @@ void UI::editorMenuBar(GameObjectManager& manager) {
 
     /* ------------------- Simulation ------------------- */
     if (ImGui::BeginMenu("Simulation")) {
-        if (!m_isPlaying) {
+        if (!m_isPlaying && isEditing) {
             if (ImGui::MenuItem("Play")) {
                 m_isPlaying = true;
+                isEditing = false;
 
                 // save current state to a temp scene file
                 //manager.saveScene(m_tempSceneName);
@@ -345,6 +348,7 @@ void UI::editorMenuBar(GameObjectManager& manager) {
         else {
             if (ImGui::MenuItem("Stop")) {
                 m_isPlaying = false;
+                isEditing = true;
 
                 // load back the temp scene file to restore state
                 manager.loadScene(runtimeScenePath(m_tempSceneName));

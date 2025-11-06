@@ -64,6 +64,7 @@ void InputSystem::update(GameObjectManager& manager, const float& deltaTime) {
 
 				if (InputHandler::isComboKeyTriggered(GLFW_KEY_0)) {
 					UISystem::toggleUI();
+					UI::toggleEditing(true);
 				}
 
 				// Press F9 to simulate a failure (for crash logger)
@@ -298,7 +299,7 @@ void RenderSystem::renderTex(GameObject* object, float const& deltaTime)
 			Animation* animation = object->getComponent<Animation>();
 			texpos = glm::vec2{ animation->currentFrameColumn / static_cast<float>(animation->totalColumn), animation->currentFrameRow / static_cast<float>(animation->totalRow) };
 			texscale = glm::vec2{ 1.f / animation->totalColumn, 1.f / animation->totalRow };
-			if (animation->loop)
+			if (animation->loop && !UI::isEditingMode())
 			{
 				animation->frameTimer += deltaTime;
 				//std::cout << "\n-------Frame Timer---------\n" << animation->frameTimer << "\n\n";

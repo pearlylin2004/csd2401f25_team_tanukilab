@@ -32,7 +32,6 @@ Technology is prohibited.
 #include "performance.h"
 #include "prefabManager.h"
 
-// imma replicate a very scuffed version of Unity :) call me tian cai
 class UI {
 public:
 	UI(); // only used to initialize shape presets, can be =DEFAULT later when loading from json
@@ -43,6 +42,8 @@ public:
 	// debug message logging
 	static void addDebugMessage(const std::string& msg);
 	static void assetChanged() { assetsChangedFlag = true; } // set to true to reload assets in UI
+	static bool isEditingMode() { return isEditing; }
+	static void toggleEditing(bool e) { isEditing = e; } // if true then editing mode, dun play animation, obj dun move
 
 	// load assets from asset directory (when flagged)
 	void loadAssetsFromDirectory();
@@ -152,6 +153,7 @@ private:
 
 
 	static inline std::vector<std::string> m_debugMessages;
+	static bool isEditing; // true means editing and game obj not movements
 
 	std::vector<Asset> m_assets;
 	static bool assetsChangedFlag; // whether need to update asset browser
