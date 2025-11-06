@@ -23,6 +23,7 @@ Technology is prohibited.
 #define SOURCE_DIR_R "./projects/WaterBound/shaders"
 #endif
 #include "prefabManager.h"
+#include "JsonIO.h"
 
 // -- helpers --
 namespace {
