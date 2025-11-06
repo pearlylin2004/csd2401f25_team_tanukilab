@@ -279,13 +279,21 @@ void UI::drawShapes(GameObjectManager& manager) {
 void UI::drawDebug() {
     ImGui::Begin("Debug Info");
 
+    // horizontal scrollbar
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
+    ImGui::BeginChild("DebugScrollRegion", ImVec2(0, 0), false, ImGuiWindowFlags_HorizontalScrollbar);
+    ImGui::PopStyleVar();
+
+    // print the message
     for (const auto& msg : m_debugMessages) {
         ImGui::Text("%s", msg.c_str());
     }
 
-    //auto-scroll if at the bottom
+    // auto-scroll if at the bottom
     if (ImGui::GetScrollY() >= ImGui::GetScrollMaxY())
         ImGui::SetScrollHereY(1.0f);
+
+    ImGui::EndChild();
 
     ImGui::End();
 }
