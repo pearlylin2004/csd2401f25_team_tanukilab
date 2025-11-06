@@ -650,7 +650,10 @@ void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime) {
 				physics->onGround = false;
 			}
 		}
-		physics->velX *= physics->damping;
+
+		// should apply for every obj, this is for temp auto move checking
+		if(!object->checkAutoMove()) 
+			physics->velX *= physics->damping;
 
 		transform->y += physics->velY * deltaTime;
 		transform->x += physics->velX * deltaTime;
