@@ -13,6 +13,7 @@ without the prior written consent of DigiPen Institute of
 Technology is prohibited.
 */
 /* End Header **************************************************************************/
+
 #pragma once
 #include "subscriber.h"
 #include <unordered_map>
@@ -46,7 +47,6 @@ public:
                 sub->onNotify(message);
         }
     }
-
 private:
     std::unordered_map<std::string, std::vector<subscriber*>> subscribers;
 };

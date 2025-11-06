@@ -27,4 +27,4 @@ struct SystemTimer {
 };
 
 extern std::vector<SystemTimer> g_SystemTimers;
-void LogSystemTimersEveryInterval(float deltaTime, double intervalSeconds = 30.0); //for console
+void LogSystemTimersEveryInterval(float deltaTime, double intervalSeconds = 15.0); //for console

@@ -9,5 +9,6 @@ function bullet.Update(obj, deltaTime)
         y = y + jumpSpeed * deltaTime
         setPosition(obj, x, y)
         print(string.format("space pressed, x: %.2f, y: %.2f", x, y))
+        SendInputEvent("SPACE", x, y)
     end
 end

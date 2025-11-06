@@ -46,6 +46,7 @@ int LuaSystem::Lua_IsKeyHeld(lua_State* L) {
     else if (strcmp(keyStr, "S") == 0) key = GLFW_KEY_S;
     else if (strcmp(keyStr, "D") == 0) key = GLFW_KEY_D;
     else if (strcmp(keyStr, "SPACE") == 0) key = GLFW_KEY_SPACE;
+    else if (strcmp(keyStr, "B") == 0) key = GLFW_KEY_B;
     //add more keys if needed in the future
 
     bool held = false;
@@ -181,7 +182,6 @@ bool LuaSystem::updateObjectScript(const std::string& tableName, GameObject* obj
 
 //for message
 int LuaSystem::Lua_SendInputEvent(lua_State* L) {
-    // get self (LuaSystem)
     LuaSystem* self = static_cast<LuaSystem*>(lua_touserdata(L, lua_upvalueindex(1)));
     if (!self || !self->messageBus) return 0;
 

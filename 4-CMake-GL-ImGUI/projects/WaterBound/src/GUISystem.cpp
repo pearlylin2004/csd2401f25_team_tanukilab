@@ -11,9 +11,11 @@ GUISystem::~GUISystem() {
     std::cout << "GUISystem destructor called" << std::endl;
 }
 
-void GUISystem::init(GameObjectManager& manager) {
+void GUISystem::init(GameObjectManager& manager, LuaSystem& luaSystem) {
     std::cout << "GUISystem::init started" << std::endl;
     createMenuButtons(manager);
+    g_manager = &manager;
+    g_luaSystem = &luaSystem;
     std::cout << "GUISystem::init completed successfully" << std::endl;
 }
 
@@ -122,6 +124,29 @@ void GUISystem::startGame(GameObjectManager& manager) {
 
     // Change game state
     m_currentState = GameState::PLAYING;
+
+    std::vector<GameObject*> gameObjects;
+    g_manager->getAllGameObjects(gameObjects);
+    //iterate over all Lua scripts in the folder
+    for (const auto& file : std::filesystem::directory_iterator("../projects/WaterBound/scripting")) {
+        if (file.path().extension() != ".lua") continue; //have to be .lua files if not it will skip
+        std::string filename = file.path().filename().string();
+
+        //strip ".lua" to get object name
+        std::string objectName = filename.substr(0, filename.size() - 4);
+
+        GameObject* obj = g_manager->getGameObject(objectName);
+        if (obj) {
+            obj->addComponent<LuaScript>(file.path().string()); //add LuaScript component to object
+            //load Lua script into Lua state
+            if (!g_luaSystem->loadScriptForObject(file.path().string(), objectName)) {
+                std::cerr << "[Lua] Failed to load script for " << objectName << std::endl;
+            }
+            else {
+                std::cout << "[Lua] Loaded script " << filename << " for object " << objectName << std::endl;
+            }
+        }
+    }
 
     std::cout << "Game started - loaded json" << std::endl;
 }

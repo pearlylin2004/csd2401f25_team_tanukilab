@@ -93,62 +93,10 @@ void CoreEngine::Init() {
     PrefabManager::Instance().loadPrefabRegistry(std::string(RUNTIME_DIR_R) + "/Prefab/prefab_registry.json");
     m_luaSystem->init();
     //m_manager->init();
-    m_guiSystem->init(*m_manager);
+    m_guiSystem->init(*m_manager, *m_luaSystem);
 	m_renderSystem->init(*m_manager, cfg.width, cfg.height);
 	m_uiSystem->init(m_window, m_renderSystem.get());
     m_fontSystem->init(*m_manager);
-
-
-    namespace fs = std::filesystem;
-
-    const fs::path root = Paths::scripts();
-    std::error_code ec;
-
-    if (!fs::exists(root)) {
-        std::cerr << "[Lua] Scripts folder not found: " << root.string() << "\n";
-    }
-    else {
-        for (fs::directory_iterator it(root, ec), end; it != end; it.increment(ec)) {
-            if (ec) { ec.clear(); continue; }
-
-            const fs::path& p = it->path();
-            if (!p.has_extension() || p.extension() != ".lua") continue;
-
-            const std::string filename = p.filename().string();
-            const std::string objectName = filename.substr(0, filename.size() - 4); // strip ".lua"
-
-            if (GameObject* obj = m_manager->getGameObject(objectName)) {
-                obj->addComponent<LuaScript>(p.string());
-
-                if (!m_luaSystem->loadScriptForObject(p.string(), objectName)) {
-                    std::cerr << "[Lua] Failed to load script for " << objectName << "\n";
-                }
-                else {
-                    std::cout << "[Lua] Loaded script " << filename << " for object " << objectName << "\n";
-                }
-            }
-        }
-    }
-    //iterate over all Lua scripts in the folder
-   // for (const auto& file : std::filesystem::directory_iterator("../projects/WaterBound/scripting")) {
-   //     if (file.path().extension() != ".lua") continue; //have to be .lua files if not it will skip
-   //     std::string filename = file.path().filename().string();
-
-   //     //strip ".lua" to get object name
-   //     std::string objectName = filename.substr(0, filename.size() - 4);
-
-   //     GameObject* obj = m_manager->getGameObject(objectName);
-   //     if (obj) {
-			//obj->addComponent<LuaScript>(file.path().string()); //add LuaScript component to object
-   //         //load Lua script into Lua state
-   //         if (!m_luaSystem->loadScriptForObject(file.path().string(), objectName)) {
-   //             std::cerr << "[Lua] Failed to load script for " << objectName << std::endl;
-   //         }
-   //         else {
-   //             std::cout << "[Lua] Loaded script " << filename << " for object " << objectName << std::endl;
-   //         }
-   //     }
-   // }
 
     //advance messaging 
     m_messageBus->subscribe("KeyPressed", m_playerController.get());
@@ -234,24 +182,23 @@ void CoreEngine::Update(float deltaTime) {
             Transform* newTransform = newObject->getComponent<Transform>();
             newTransform->y += 1.5f * (static_cast<float>(cloneCount) - 1); // Offset the new clone's position
         }
+    }
 
-        //lua scripting update for all objects with LuaScript component
-        std::vector<GameObject*> gameObjects;
-        m_manager->getAllGameObjects(gameObjects);
+    //lua scripting update for all objects with LuaScript component
+    std::vector<GameObject*> gameObjects;
+    m_manager->getAllGameObjects(gameObjects);
 
-        for (GameObject* obj : gameObjects) {
-            if (obj->hasComponent<LuaScript>()) {
-                LuaScript* scriptComp = obj->getComponent<LuaScript>();
-                m_luaSystem->updateObjectScript(scriptComp->scriptName, obj, deltaTime);
-            }
+    for (GameObject* obj : gameObjects) {
+        if (obj->hasComponent<LuaScript>()) {
+            LuaScript* scriptComp = obj->getComponent<LuaScript>();
+            m_luaSystem->updateObjectScript(scriptComp->scriptName, obj, deltaTime);
         }
-        // Update all systems in order
-        m_inputSystem->update(*m_manager, deltaTime, *m_messageBus);
-        m_collisionSystem->update(*m_manager, deltaTime);
-        m_physicsSystem->update(*m_manager, deltaTime, *m_messageBus);
     }
 
     // Update all systems in order
+    m_inputSystem->update(*m_manager, deltaTime, *m_messageBus);
+    m_collisionSystem->update(*m_manager, deltaTime);
+    m_physicsSystem->update(*m_manager, deltaTime, *m_messageBus);
     m_logicSystem->update(*m_manager, deltaTime);
     m_renderSystem->update(*m_manager, deltaTime);
     m_fontSystem->update(*m_manager);
@@ -259,7 +206,6 @@ void CoreEngine::Update(float deltaTime) {
     if (UISystem::isShowUI()) glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
     m_uiSystem->update(*m_manager);
-
 }
 
 void CoreEngine::Shutdown() {

@@ -636,7 +636,7 @@ void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime, M
 			if (InputHandler::isKeyTriggered(GLFW_KEY_SPACE)) {
 				messageBus.publish(Message("KeyPressed", nullptr, KeyEvent{ "SPACE", true }));
 				//std::cout << "bullet is spawned\n";
-				UI::addDebugMessage("bullet is spawned");
+				//UI::addDebugMessage("bullet is spawned");
 				static int bulletCount = 0;
 
 				Transform* t = bullet->getComponent<Transform>();
@@ -655,9 +655,10 @@ void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime, M
 			}
 
 			// Jump
-			if (InputHandler::isKeyTriggered(GLFW_KEY_B)){// && physics->onGround) {
+			if (InputHandler::isKeyTriggered(GLFW_KEY_B)){// && physics->onGround) 
+				messageBus.publish(Message("KeyPressed", nullptr, KeyEvent{ "B", true }));
 				//std::cout << "player is jumping\n";
-				UI::addDebugMessage("player is jumping");
+				//UI::addDebugMessage("player is jumping");
 				physics->velY = physics->jumpForce;
 				//physics->velX = physics->Speed;
 				physics->onGround = false;

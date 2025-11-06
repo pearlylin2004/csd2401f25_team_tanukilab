@@ -30,7 +30,7 @@ void LogSystemTimersEveryInterval(float deltaTime, double intervalSeconds){
         for (auto& timer : g_SystemTimers)
             totalMs += timer.ms;
 
-        std::cout << "\n=== System Performance Report(every 30 seconds) ===\n";
+        std::cout << "\n=== System Performance Report(every 15 seconds) ===\n";
         for (auto& timer : g_SystemTimers){
             float percent = totalMs > 0.0 ? (float)((timer.ms / totalMs) * 100.0) : 0.0f;
             std::cout << timer.name << ": " << timer.ms << " ms (" << percent << "%)" << std::endl;

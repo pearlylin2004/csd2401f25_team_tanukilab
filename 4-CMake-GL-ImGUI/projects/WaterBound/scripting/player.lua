@@ -1,8 +1,14 @@
 --player(leave)
 
+--for jumping
+local isJumping = false
+local velocityY = 0
+local gravity = -9.8
+local jumpForce = 5.0
+local floorY = 0.0  
+
 player = {}
 function player.Update(obj, deltaTime)
-    --print("lua is running!!!") --for testing
     local speed = 5
     local x, y = getPosition(obj)
     --for going up
@@ -32,5 +38,25 @@ function player.Update(obj, deltaTime)
         setPosition(obj, x, y)
         print(string.format("input D, x: %.2f, y: %.2f", x, y))
         SendInputEvent("D", x, y)
+    end
+    --for jumping
+    if Input_isKeyHeld("B") and not isJumping then
+        isJumping = true
+        velocityY = jumpForce
+        print(string.format("input B, x: %.2f, y: %.2f", x, y))
+        SendInputEvent("B", x, y)
+    end
+    --check for landing
+    if isJumping then
+        velocityY = velocityY + gravity * deltaTime
+        y = y + velocityY * deltaTime
+        -- stop at floor
+        if y <= floorY then
+            y = floorY
+            velocityY = 0
+            isJumping = false
+            print("Landed!")
+        end
+        setPosition(obj, x, y)
     end
 end
