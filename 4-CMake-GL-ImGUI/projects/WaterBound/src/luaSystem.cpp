@@ -26,6 +26,7 @@ void LuaSystem::init() {
     lua_pushlightuserdata(L, this);
     lua_pushcclosure(L, Lua_SendInputEvent, 1);
     lua_setglobal(L, "SendInputEvent");
+    manager = std::make_unique<GameObjectManager>();
 }
 
 void LuaSystem::cleanup() {
@@ -199,4 +200,16 @@ int LuaSystem::Lua_SendInputEvent(lua_State* L) {
     self->messageBus->publish(Message("KeyPressed", nullptr, evt));
 
     return 0;
+}
+
+void LuaSystem::update(GameObjectManager& manager, float deltaTime) {
+    std::vector<GameObject*> gameObjects;
+    manager.getAllGameObjects(gameObjects);
+
+    for (GameObject* obj : gameObjects) {
+        if (obj->hasComponent<LuaScript>()) {
+            LuaScript* scriptComp = obj->getComponent<LuaScript>();
+            updateObjectScript(scriptComp->scriptName, obj, deltaTime);
+        }
+    }
 }

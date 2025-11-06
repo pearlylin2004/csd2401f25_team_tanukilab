@@ -91,9 +91,9 @@ void CoreEngine::Init() {
     m_playerController = std::make_unique<PlayerControllerSystem>();
 
     PrefabManager::Instance().loadPrefabRegistry(std::string(RUNTIME_DIR_R) + "/Prefab/prefab_registry.json");
-    m_luaSystem->init();
     //m_manager->init();
     m_guiSystem->init(*m_manager, *m_luaSystem);
+    m_luaSystem->init();
 	m_renderSystem->init(*m_manager, cfg.width, cfg.height);
 	m_uiSystem->init(m_window, m_renderSystem.get());
     m_fontSystem->init(*m_manager);
@@ -185,15 +185,7 @@ void CoreEngine::Update(float deltaTime) {
     }
 
     //lua scripting update for all objects with LuaScript component
-    std::vector<GameObject*> gameObjects;
-    m_manager->getAllGameObjects(gameObjects);
-
-    for (GameObject* obj : gameObjects) {
-        if (obj->hasComponent<LuaScript>()) {
-            LuaScript* scriptComp = obj->getComponent<LuaScript>();
-            m_luaSystem->updateObjectScript(scriptComp->scriptName, obj, deltaTime);
-        }
-    }
+    m_luaSystem->update(*m_manager, deltaTime);
 
     // Update all systems in order
     m_inputSystem->update(*m_manager, deltaTime, *m_messageBus);

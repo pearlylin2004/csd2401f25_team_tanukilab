@@ -21,6 +21,8 @@ Technology is prohibited.
 #include "input.h"
 #include "Component.h"
 #include "messageBus.h"
+#include "ui.h"
+#include "GameObjectManager.h"
 
 extern "C" {
 #include "lua.h"
@@ -45,8 +47,10 @@ public:
     static int Lua_IsKeyHeld(lua_State* L);
 	static int Lua_SendInputEvent(lua_State* L);
     void setMessageBus(MessageBus* bus) { messageBus = bus; }
+    void update(GameObjectManager& manager, float deltaTime);
 
 private:
     lua_State* L = nullptr;
     MessageBus* messageBus = nullptr;
+    std::unique_ptr<GameObjectManager> manager;
 };
