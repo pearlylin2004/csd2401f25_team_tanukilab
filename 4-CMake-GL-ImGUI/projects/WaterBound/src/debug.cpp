@@ -428,6 +428,18 @@ namespace DebugInput {
     }
 }
 
+/*!
+\brief Audits and prints the engine's runtime directory structure.
+
+This function checks the existence of important directories used by the
+WaterBound engine at runtime. It prints out the resolved path for each
+directory and indicates whether the directory exists. It can be used to
+diagnose missing folders such as shaders, scenes, scripting, or resources.
+
+The function also optionally lists a few files (up to 5) from each directory
+to help verify that expected contents are present. This is useful during
+debugging when the game cannot locate required assets.
+*/
 namespace DebugDiag {
 
     void AuditRuntimePaths()
