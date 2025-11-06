@@ -1,6 +1,7 @@
 #pragma once
 #include "GameObjectManager.h"
 #include "input.h"
+#include "luaSystem.h"
 
 enum class GameState {
     MENU,
@@ -12,7 +13,7 @@ public:
     GUISystem();
     ~GUISystem();
 
-    void init(GameObjectManager& manager);
+    void init(GameObjectManager& manager, LuaSystem& luaSystem);
     void update(GameObjectManager& manager);
 
     bool isPlaying() const { return m_currentState == GameState::PLAYING; }
@@ -31,4 +32,6 @@ private:
     GameObject* m_playButton = nullptr;
     GameObject* m_stopButton = nullptr;
     bool m_buttonsCreated = false;
+    GameObjectManager* g_manager = nullptr;
+    LuaSystem* g_luaSystem = nullptr;
 };

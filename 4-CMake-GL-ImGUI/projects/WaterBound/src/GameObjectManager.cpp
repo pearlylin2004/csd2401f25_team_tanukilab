@@ -16,6 +16,7 @@ Technology is prohibited.
 /* End Header **************************************************************************/
 
 #include "GameObjectManager.h"
+#include "JsonIO.h"
 #include "config.h"
 #include "prefabManager.h"
 #include "Component.h"
@@ -41,23 +42,13 @@ GameObject* GameObjectManager::createGameObject(const std::string& name) {
 	// Create a new GameObject and wrap it in a unique_ptr
 	auto newObject = std::make_unique<GameObject>(name);
 
-
 	// Get raw pointer before transferring ownership
 	GameObject* ptr = newObject.get();
-
-
-	//assign to default layer (game layer)
-	m_layerManager.assignObjectToLayer(ptr, 1);
 
 	// Store the unique_ptr in the map
 	m_gameObjects[name] = std::move(newObject);
 
-
 	return ptr;
-}
-
-std::unique_ptr<GameObject> GameObjectManager::createTempGameObject(const std::string& name) {
-	return std::make_unique<GameObject>(name);
 }
 
 //use this when objects need to interact with each other
@@ -74,8 +65,6 @@ GameObject* GameObjectManager::getGameObject(const std::string& name) {
 
 void GameObjectManager::deleteGameObject(GameObject* object) {
 	if (!object) return;
-
-	m_layerManager.removeObjectFromLayer(object);
 
 	for (auto iterator = m_gameObjects.begin(); iterator != m_gameObjects.end(); ++iterator) {
 		if (iterator->second.get() == object) {
@@ -156,7 +145,6 @@ void GameObjectManager::loadFromFile(const std::string& filename)
 	}
 	std::cout << "file opened\n";
 
-	m_layerManager.clearAllLayers();
 	m_gameObjects.clear(); // clear existing objects before loading new ones
 
 	std::string checker{};
@@ -404,7 +392,6 @@ void GameObjectManager::loadSceneFromJson(const std::string& filename) {
 
 		GameObject* go = createGameObject(name);
 
-
 		// check if this object references a prefab
 		if (jObj.HasMember("prefabid") && jObj["prefabid"].IsString()) {
 			std::string prefabID = jObj["prefabid"].GetString();
@@ -582,7 +569,7 @@ void GameObjectManager::loadSceneFromJson(const std::string& filename) {
 				sm = go->addComponent<StateMachine>();
 
 			if (smj.HasMember("state") && smj["state"].IsString())
-				sm->state = parsePlayerState(smj["state"].GetString());
+				sm->state = JsonIO::parsePlayerState(smj["state"].GetString());
 
 			if (smj.HasMember("facingRight")) {
 				if (smj["facingRight"].IsBool())       sm->facingRight = smj["facingRight"].GetBool();
@@ -660,12 +647,6 @@ void GameObjectManager::saveSceneToJson(const std::string& filename, bool isNew)
 
 			// name
 			jObj.AddMember("name", rapidjson::Value(obj->getObjectName().c_str(), a), a);
-
-
-			int layerID = obj->getLayer();
-			if (layerID != -1 && layerID != 1) {  // Only save if not default game layer
-				jObj.AddMember("layer", layerID, a);
-			}
 
 			// get prefab JSON if obj referencing a prefab
 			const rapidjson::Document* prefabDoc{ nullptr };
@@ -815,8 +796,8 @@ void GameObjectManager::saveSceneToJson(const std::string& filename, bool isNew)
 				rapidjson::Value js(rapidjson::kObjectType);
 				const rapidjson::Value* prefabSM = PrefabManager::Instance().getPrefabJsonComp(prefabDoc, "StateMachine");
 
-				if (!prefabSM || !prefabSM->HasMember("state") || sm->state != parsePlayerState((*prefabSM)["state"].GetString()))
-					js.AddMember("state", rapidjson::Value(playerStateToStr(sm->state), a), a);
+				if (!prefabSM || !prefabSM->HasMember("state") || sm->state != JsonIO::parsePlayerState((*prefabSM)["state"].GetString()))
+					js.AddMember("state", rapidjson::Value(JsonIO::playerStateToStr(sm->state), a), a);
 
 				if (!prefabSM || !prefabSM->HasMember("facingRight") ||
 					((*prefabSM)["facingRight"].IsBool() && differsBool((*prefabSM)["facingRight"].GetBool(), sm->facingRight)) ||

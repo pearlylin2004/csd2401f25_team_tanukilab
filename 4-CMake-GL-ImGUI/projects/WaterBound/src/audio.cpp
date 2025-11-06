@@ -148,7 +148,7 @@ FMOD::Channel* AudioHandler::playSound(soundID id, float volume) {
 		std::cerr << "Error! Sound not loaded..." << std::endl;
 		return nullptr;
 	}*/
-	//bool loop = (id == soundID::bg);
+	bool loop = (id == soundID::bg);
 	FMOD::Sound* sound = ResourceManager::getInstance().getSound(path);
 	if(!sound) {
 		std::cerr << "Error! Sound could not be loaded: " << path << std::endl;

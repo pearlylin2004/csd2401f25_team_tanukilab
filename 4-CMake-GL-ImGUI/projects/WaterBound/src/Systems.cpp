@@ -35,8 +35,9 @@ Technology is prohibited.
 //JumpForce jumpForce;
 //BulletForce bulletForce;
 // Input system - reads user input and updates velocity accordingly
-void InputSystem::update(GameObjectManager& manager, const float& deltaTime) {
+void InputSystem::update(GameObjectManager& manager, const float& deltaTime, MessageBus& messageBus) {
 	(void)deltaTime;
+	(void)messageBus;
 	//record current time for performance tracking
 	auto start = std::chrono::high_resolution_clock::now();
 
@@ -50,21 +51,35 @@ void InputSystem::update(GameObjectManager& manager, const float& deltaTime) {
 	//		if (iterator->hasComponent<Physics>()) {//player got that velocity in him
 	//			Physics* velocity = iterator->getComponent<Physics>();
 
+				if (InputHandler::isKeyHeld(GLFW_KEY_W)) {
+					velocity->velY = input->moveSpeed;
+					messageBus.publish(Message("KeyPressed", nullptr, KeyEvent{ "W", true }));
+				}
+				if (InputHandler::isKeyHeld(GLFW_KEY_S)) {
+					velocity->velY = -input->moveSpeed;
+					messageBus.publish(Message("KeyPressed", nullptr, KeyEvent{ "S", true }));
+				}
+				if (InputHandler::isKeyHeld(GLFW_KEY_A)) {
+					velocity->velX = -input->moveSpeed;
+					messageBus.publish(Message("KeyPressed", nullptr, KeyEvent{ "A", true }));
+				}
+				if (InputHandler::isKeyHeld(GLFW_KEY_D)) {
+					velocity->velX = input->moveSpeed;
+					messageBus.publish(Message("KeyPressed", nullptr, KeyEvent{ "D", true }));
+				}
 
-	//			if (InputHandler::isKeyHeld(GLFW_KEY_W)) {
-	//				velocity->velY = input->moveSpeed;
-	//			}
-	//			if (InputHandler::isKeyHeld(GLFW_KEY_S)) {
-	//				velocity->velY = -input->moveSpeed;
-	//			}
-	//			if (InputHandler::isKeyHeld(GLFW_KEY_A)) {
-	//				velocity->velX = -input->moveSpeed;
-	//			}
-	//			if (InputHandler::isKeyHeld(GLFW_KEY_D)) {
-	//				velocity->velX = input->moveSpeed;
-	//			}
-	if (InputHandler::isComboKeyTriggered(GLFW_KEY_0)) {
-		UISystem::toggleUI();
+				if (InputHandler::isComboKeyTriggered(GLFW_KEY_0)) {
+					UISystem::toggleUI();
+					messageBus.publish(Message("KeyPressed", nullptr, KeyEvent{ "0", true }));
+				}
+
+				// Press F9 to simulate a failure (for crash logger)
+				if (InputHandler::isKeyTriggered(GLFW_KEY_F9)) {
+					throw std::runtime_error("F9 test: simulated failure in update()");
+				}
+				
+			}
+		}
 	}
 
 	// Press F9 to simulate a failure (for crash logger)
@@ -85,12 +100,8 @@ void RenderSystem::update(GameObjectManager& manager, float const& deltaTime)
 	auto start = std::chrono::high_resolution_clock::now();
 	batchingSetUp(manager, deltaTime);
 
-	//we aint doing this anymore 
-	//std::vector<GameObject*> gameObjects;
-	//manager.getAllGameObjects(gameObjects);
-
-	LayerManager& layerManager = manager.getLayerManager();
-	std::vector<Layer*> layers = layerManager.getAllLayers();
+	std::vector<GameObject*> gameObjects;
+	manager.getAllGameObjects(gameObjects);
 
 	glm::mat4 camView, camProj;
 
@@ -115,64 +126,34 @@ void RenderSystem::update(GameObjectManager& manager, float const& deltaTime)
 	//std::vector<GameObject*> objectWithoutTex;
 
 	// Update textures if they have changed (in level editor)
-	//for (GameObject* object : gameObjects)
-	//{
-	//	if (object->hasComponent<Render>())
-	//	{
-	//		Render* render = object->getComponent<Render>();
+	for (GameObject* object : gameObjects)
+	{
+		if (object->hasComponent<Render>())
+		{
+			Render* render = object->getComponent<Render>();
 
-	//		if (render->texChanged) {
-	//			if (render->hasTex) {
+			if (render->texChanged) {
+				if (render->hasTex) {
 
-	//				//glDeleteTextures(1, &render->texHDL); // to avoid leak
-	//				//render->texHDL = 0;
-	//				//no more deleting textures here, handled in ResourceManager cus we have a cache now
+					//glDeleteTextures(1, &render->texHDL); // to avoid leak
+					//render->texHDL = 0;
+					//no more deleting textures here, handled in ResourceManager cus we have a cache now
 
-	//				//the below code is for future use
-	//				TextureData texData = ResourceManager::getInstance().getTexture(render->texFile);
-	//				render->texHDL = texData.id;
-	//				render->isTransparent = texData.isTransparent;
-	//				render->texChanged = false;
-	//			}
-	//			//render->texHDL = uploadtex(render->texFile, render->isTransparent);
-	//			TextureData texData = ResourceManager::getInstance().getTexture(render->texFile);
-	//			render->texHDL = texData.id;
-	//			render->isTransparent = texData.isTransparent;
-
-	//			render->texChanged = false;
-	//		}
-	//	}
-	//}
-
-	for (Layer* layer : layers) {
-		if (!layer) continue;
-		
-		//gettem objects bro
-		const std::vector<GameObject*>& gameObjects = layer->getObjects();
-		for (GameObject* object : gameObjects) {
-			if (object->hasComponent<Render>()) {
-				Render* render = object->getComponent<Render>();
-
-				if (render->texChanged) {
-					if (render->hasTex) {
-						TextureData texData = ResourceManager::getInstance().getTexture(render->texFile);
-						render->texHDL = texData.id;
-						render->isTransparent = texData.isTransparent;
-						render->texChanged = false;
-					}
-
+					//the below code is for future use
 					TextureData texData = ResourceManager::getInstance().getTexture(render->texFile);
 					render->texHDL = texData.id;
 					render->isTransparent = texData.isTransparent;
 					render->texChanged = false;
 				}
+				//render->texHDL = uploadtex(render->texFile, render->isTransparent);
+				TextureData texData = ResourceManager::getInstance().getTexture(render->texFile);
+				render->texHDL = texData.id;
+				render->isTransparent = texData.isTransparent;
 
 			}
 
 			
 		}
-
-
 	}
 
 	//rendering objects without texture, just color
@@ -302,38 +283,23 @@ void RenderSystem::unbindFBO() {
 }
 
 void RenderSystem::createFBO() {
-	// only create FBO once if its not created
-	if (!fbo) {
-		/* --- Create and set up a framebuffer object (FBO) --- */
-		glGenFramebuffers(1, &fbo);
-		glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+	if (texture) glDeleteTextures(1, &texture);
+	if (fbo) glDeleteFramebuffers(1, &fbo);
 
-		/* --- Create and colour texture attachment for fbo --- */
-		glGenTextures(1, &texture);
-		glBindTexture(GL_TEXTURE_2D, texture);
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, fboWidth, fboHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture, 0);
+	glGenFramebuffers(1, &fbo);
+	glBindFramebuffer(GL_FRAMEBUFFER, fbo);
 
-		/* --- Create a depth and stencil renderbuffer --- */
-		glGenRenderbuffers(1, &depthBuffer);
-		glBindRenderbuffer(GL_RENDERBUFFER, depthBuffer);
-		glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, fboWidth, fboHeight);
-		glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, depthBuffer);
-	}
-	else {
-		glBindFramebuffer(GL_FRAMEBUFFER, fbo);
-	}
-
-	/* --- Clear the FBO's color and depth buffers before rendering  --- */
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glGenTextures(1, &texture);
+	glBindTexture(GL_TEXTURE_2D, texture);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, fboWidth, fboHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture, 0);
 }
 
 RenderSystem::~RenderSystem() {
 	if (texture) glDeleteTextures(1, &texture);
 	if (fbo) glDeleteFramebuffers(1, &fbo);
-	if (depthBuffer) glDeleteRenderbuffers(1, &depthBuffer);
 }
 
 // Load all textures for game objects with a Render component
@@ -771,8 +737,8 @@ void FontSystem::RenderText(GLuint& s, std::string text, float x, float y, float
 }
 
 // Physics system - updates position based on velocity and applies gravity
-
-void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime) {
+void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime, MessageBus& messageBus) {
+	//record current time for performance tracking
 	auto start = std::chrono::high_resolution_clock::now();
 
 	// Step mode toggling
@@ -806,6 +772,13 @@ void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime) {
 
 		if (object->hasComponent<Input>()) {
 			Input* input = object->getComponent<Input>();
+			//std::cout << object << " has input component\n";
+			//bullet
+			if (InputHandler::isKeyTriggered(GLFW_KEY_SPACE)) {
+				messageBus.publish(Message("KeyPressed", nullptr, KeyEvent{ "SPACE", true }));
+				//std::cout << "bullet is spawned\n";
+				//UI::addDebugMessage("bullet is spawned");
+				static int bulletCount = 0;
 
 			float targetVelX = 0.0f;
 
@@ -822,6 +795,13 @@ void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime) {
 			// Jump
 			if (InputHandler::isKeyTriggered(GLFW_KEY_B)) {
 				PhysicsForces::jump(object);
+			if (InputHandler::isKeyTriggered(GLFW_KEY_B)){// && physics->onGround) 
+				messageBus.publish(Message("KeyPressed", nullptr, KeyEvent{ "B", true }));
+				//std::cout << "player is jumping\n";
+				//UI::addDebugMessage("player is jumping");
+				physics->velY = physics->jumpForce;
+				//physics->velX = physics->Speed;
+				physics->onGround = false;
 			}
 
 			// Shoot bullet
@@ -912,11 +892,13 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 			minCellY = std::max(0, std::min(minCellY, GRID_HEIGHT - 1));
 			maxCellY = std::max(0, std::min(maxCellY, GRID_HEIGHT - 1));
 
-			//putting the object into the grid cells it occupies
-			for (int x = minCellX; x <= maxCellX; ++x) {
-				for (int y = minCellY; y <= maxCellY; ++y) {
-					grid[x][y].objects.push_back(obj);
-				}
+		//putting the object into the grid cells it occupies
+		for (int x = minCellX; x <= maxCellX; ++x) {
+			for (int y = minCellY; y <= maxCellY; ++y) {
+				grid[x][y].objects.push_back(obj);
+				//for output into console for debugging and prove
+				UI::addDebugMessage("Object " + obj->getObjectName()
+					+ " inserted into cell (" + std::to_string(x) + "," + std::to_string(y) + ")\n");
 			}
 		}
 
