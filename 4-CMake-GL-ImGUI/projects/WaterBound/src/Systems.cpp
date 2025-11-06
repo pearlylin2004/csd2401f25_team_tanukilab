@@ -86,8 +86,13 @@ void RenderSystem::update(GameObjectManager& manager, float const& deltaTime)
 	//record current time for performance tracking
 	auto start = std::chrono::high_resolution_clock::now();
 	batchingSetUp(manager, deltaTime);
-	std::vector<GameObject*> gameObjects;
-	manager.getAllGameObjects(gameObjects);
+
+	//we aint doing this anymore 
+	//std::vector<GameObject*> gameObjects;
+	//manager.getAllGameObjects(gameObjects);
+
+	LayerManager& layerManager = manager.getLayerManager();
+	std::vector<Layer*> layers = layerManager.getAllLayers();
 
 	glm::mat4 camView, camProj;
 
@@ -112,31 +117,63 @@ void RenderSystem::update(GameObjectManager& manager, float const& deltaTime)
 	//std::vector<GameObject*> objectWithoutTex;
 
 	// Update textures if they have changed (in level editor)
-	for (GameObject* object : gameObjects)
-	{
-		if (object->hasComponent<Render>())
-		{
-			Render* render = object->getComponent<Render>();
+	//for (GameObject* object : gameObjects)
+	//{
+	//	if (object->hasComponent<Render>())
+	//	{
+	//		Render* render = object->getComponent<Render>();
 
-			if (render->texChanged) {
-				if (render->hasTex) {
+	//		if (render->texChanged) {
+	//			if (render->hasTex) {
 
-					//glDeleteTextures(1, &render->texHDL); // to avoid leak
-					//render->texHDL = 0;
-					//no more deleting textures here, handled in ResourceManager cus we have a cache now
+	//				//glDeleteTextures(1, &render->texHDL); // to avoid leak
+	//				//render->texHDL = 0;
+	//				//no more deleting textures here, handled in ResourceManager cus we have a cache now
 
-					//the below code is for future use
+	//				//the below code is for future use
+	//				TextureData texData = ResourceManager::getInstance().getTexture(render->texFile);
+	//				render->texHDL = texData.id;
+	//				render->isTransparent = texData.isTransparent;
+	//				render->texChanged = false;
+	//			}
+	//			//render->texHDL = uploadtex(render->texFile, render->isTransparent);
+	//			TextureData texData = ResourceManager::getInstance().getTexture(render->texFile);
+	//			render->texHDL = texData.id;
+	//			render->isTransparent = texData.isTransparent;
+
+	//			render->texChanged = false;
+	//		}
+	//	}
+	//}
+
+	for (Layer* layer : layers) {
+		if (!layer) continue;
+		
+		//gettem objects bro
+		const std::vector<GameObject*>& gameObjects = layer->getObjects();
+		for (GameObject* object : gameObjects) {
+			if (object->hasComponent<Render>()) {
+				Render* render = object->getComponent<Render>();
+
+				if (render->texChanged) {
+					if (render->hasTex) {
+						TextureData texData = ResourceManager::getInstance().getTexture(render->texFile);
+						render->texHDL = texData.id;
+						render->isTransparent = texData.isTransparent;
+						render->texChanged = false;
+					}
+
 					TextureData texData = ResourceManager::getInstance().getTexture(render->texFile);
 					render->texHDL = texData.id;
 					render->isTransparent = texData.isTransparent;
 					render->texChanged = false;
 				}
-				//render->texHDL = uploadtex(render->texFile, render->isTransparent);
-				TextureData texData = ResourceManager::getInstance().getTexture(render->texFile);
-				render->texHDL = texData.id;
-				render->isTransparent = texData.isTransparent;
 
-				render->texChanged = false;
+				if (render->hasTex)
+					objectWithTex.push_back(object);
+				else
+					objectWithoutTex.push_back(object);
+					
 			}
 
 			/*if (object->getComponent<Render>()->hasTex)
@@ -144,6 +181,8 @@ void RenderSystem::update(GameObjectManager& manager, float const& deltaTime)
 			else
 				objectWithoutTex.push_back(object);*/
 		}
+
+
 	}
 
 	//rendering objects without texture, just color
@@ -183,35 +222,83 @@ void RenderSystem::update(GameObjectManager& manager, float const& deltaTime)
 	
 
 	//drawing models without texture
-	glUseProgram(renderer::shdr_pgm[1]);
-	GLint uView = glGetUniformLocation(renderer::shdr_pgm[1], "V");
-	GLint uProj = glGetUniformLocation(renderer::shdr_pgm[1], "P");
-	glUniformMatrix4fv(uView, 1, GL_FALSE, glm::value_ptr(camView));
-	glUniformMatrix4fv(uProj, 1, GL_FALSE, glm::value_ptr(camProj));
-	for (std::pair<const shape, std::vector<renderer::InstanceData>>& pair : objectWithoutTex)
-	{
-		shape meshType = pair.first;
-		renderer::drawInstances(renderer::models[(int)meshType], pair.second);
-	}
-	//drawing models with texture
-	glUseProgram(renderer::shdr_pgm[0]); // hasTex shader
-	uView = glGetUniformLocation(renderer::shdr_pgm[0], "V");
-	uProj = glGetUniformLocation(renderer::shdr_pgm[0], "P");
-	glUniformMatrix4fv(uView, 1, GL_FALSE, glm::value_ptr(camView));
-	glUniformMatrix4fv(uProj, 1, GL_FALSE, glm::value_ptr(camProj));
-	for (std::pair<const BatchKey, std::vector<renderer::InstanceData>>& pair : objectWithTex)
-	{
-		const BatchKey& key = pair.first;
-		std::vector<renderer::InstanceData>& instances = pair.second;
-		glBindTextureUnit(0, key.texID);
-		GLint uTexLoc = glGetUniformLocation(renderer::shdr_pgm[0], "uTex2d");
-		if (uTexLoc != -1) 
-			glUniform1i(uTexLoc, 0);
-		renderer::model& mdl = renderer::models[(int)key.meshType];
-		renderer::drawInstances(mdl, pair.second);
-	}
-	//if (UISystem::isShowUI()) glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	// glUseProgram(renderer::shdr_pgm[1]);
+	// GLint uView = glGetUniformLocation(renderer::shdr_pgm[1], "V");
+	// GLint uProj = glGetUniformLocation(renderer::shdr_pgm[1], "P");
+	// glUniformMatrix4fv(uView, 1, GL_FALSE, glm::value_ptr(camView));
+	// glUniformMatrix4fv(uProj, 1, GL_FALSE, glm::value_ptr(camProj));
+	// for (std::pair<const shape, std::vector<renderer::InstanceData>>& pair : objectWithoutTex)
+	// {
+	// 	shape meshType = pair.first;
+	// 	renderer::drawInstances(renderer::models[(int)meshType], pair.second);
+	// }
+	// //drawing models with texture
+	// glUseProgram(renderer::shdr_pgm[0]); // hasTex shader
+	// uView = glGetUniformLocation(renderer::shdr_pgm[0], "V");
+	// uProj = glGetUniformLocation(renderer::shdr_pgm[0], "P");
+	// glUniformMatrix4fv(uView, 1, GL_FALSE, glm::value_ptr(camView));
+	// glUniformMatrix4fv(uProj, 1, GL_FALSE, glm::value_ptr(camProj));
+	// for (std::pair<const BatchKey, std::vector<renderer::InstanceData>>& pair : objectWithTex)
+	// {
+	// 	const BatchKey& key = pair.first;
+	// 	std::vector<renderer::InstanceData>& instances = pair.second;
+	// 	glBindTextureUnit(0, key.texID);
+	// 	GLint uTexLoc = glGetUniformLocation(renderer::shdr_pgm[0], "uTex2d");
+	// 	if (uTexLoc != -1) 
+	// 		glUniform1i(uTexLoc, 0);
+	// 	renderer::model& mdl = renderer::models[(int)key.meshType];
+	// 	renderer::drawInstances(mdl, pair.second);
+	// }
+	// //if (UISystem::isShowUI()) glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	//glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+
+
+	//all rendering must be done per layer noww
+	//cooked
+
+	for (Layer* layer : layers)
+	{
+		if (!layer) continue;
+		//gettem objects bro (again)
+		const std::vector<GameObject*>& gameObjects = layer->getObjects();
+
+		//if(objectWithTex.empty() && objectWithoutTex.empty())
+		//	continue;
+
+		//drawing models without texture
+		glUseProgram(renderer::shdr_pgm[1]);
+		GLint uView = glGetUniformLocation(renderer::shdr_pgm[1], "V");
+		GLint uProj = glGetUniformLocation(renderer::shdr_pgm[1], "P");
+		glUniformMatrix4fv(uView, 1, GL_FALSE, glm::value_ptr(camView));
+		glUniformMatrix4fv(uProj, 1, GL_FALSE, glm::value_ptr(camProj));
+		for (std::pair<const shape, std::vector<renderer::InstanceData>>& pair : objectWithoutTex)
+		{
+			shape meshType = pair.first;
+			renderer::drawInstances(renderer::models[(int)meshType], pair.second);
+		}
+		//drawing models with texture
+		glUseProgram(renderer::shdr_pgm[0]); // hasTex shader
+		uView = glGetUniformLocation(renderer::shdr_pgm[0], "V");
+		uProj = glGetUniformLocation(renderer::shdr_pgm[0], "P");
+		glUniformMatrix4fv(uView, 1, GL_FALSE, glm::value_ptr(camView));
+		glUniformMatrix4fv(uProj, 1, GL_FALSE, glm::value_ptr(camProj));
+		for (std::pair<const BatchKey, std::vector<renderer::InstanceData>>& pair : objectWithTex)
+		{
+			const BatchKey& key = pair.first;
+			std::vector<renderer::InstanceData>& instances = pair.second;
+			glBindTextureUnit(0, key.texID);
+			GLint uTexLoc = glGetUniformLocation(renderer::shdr_pgm[0], "uTex2d");
+			if (uTexLoc != -1) 
+				glUniform1i(uTexLoc, 0);
+			renderer::model& mdl = renderer::models[(int)key.meshType];
+			renderer::drawInstances(mdl, pair.second);
+		}
+
+	}
+
+	/*if (UISystem::isShowUI()) glBindFramebuffer(GL_FRAMEBUFFER, 0);*/
+
 	//record end time for performance tracking
 	auto end = std::chrono::high_resolution_clock::now();
 	double ms = std::chrono::duration<double, std::milli>(end - start).count(); //get elapse time in ms
@@ -781,18 +868,38 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 	//record current time for performance tracking
 	auto start = std::chrono::high_resolution_clock::now();
 
+	//get layer manager
+	LayerManager& layerManager = manager.getLayerManager();
+
+	//process each layer separately
+	//rn only layer 1 should have any sort of collision
+	Layer* gameLayer = layerManager.getLayer(1);
+
+
+	if (!gameLayer) {
+		auto end = std::chrono::high_resolution_clock::now();
+		double ms = std::chrono::duration<double, std::milli>(end - start).count();
+		g_SystemTimers.push_back({ "Collisions", ms });
+		std::cerr << "CollisionSystem::update() - Layer " << gameLayer->getLayerID() << " not found!\n";
+		return;
+	}
+
+
+	const std::vector<GameObject*>& layerObjects = gameLayer->getObjects();
+
+	//we dont do this anymore cus we got them layersss
 	//getting all objects
-	std::vector<GameObject*> gameObjects;
-	manager.getAllGameObjects(gameObjects);
+	/*std::vector<GameObject*> gameObjects;
+	manager.getAllGameObjects(gameObjects);*/
 
 	//create grid
 	const float CELL_SIZE = 2.0f;
 	const int GRID_WIDTH = 20;
 	const int GRID_HEIGHT = 20;
 	std::vector<std::vector<Collision::Cell>> grid(GRID_WIDTH, std::vector<Collision::Cell>(GRID_HEIGHT));
+		
 
-
-	for (GameObject* obj : gameObjects) {
+	for (GameObject* obj : layerObjects) {
 		if (!obj->getComponent<CollisionInfo>() || !obj->hasComponent<Transform>()) continue;
 		Transform* objT = obj->getComponent<Transform>();
 		Collision::AABB box = Collision::getObjectAABB(objT);
