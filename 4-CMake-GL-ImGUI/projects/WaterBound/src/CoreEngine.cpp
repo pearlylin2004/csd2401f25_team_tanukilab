@@ -184,16 +184,16 @@ void CoreEngine::Update(float deltaTime) {
     m_guiSystem->update(*m_manager);
 	//for clonigng player2
     if (m_guiSystem->isPlaying()) {
-        if (InputHandler::isKeyTriggered(GLFW_KEY_C)) {
-            static int cloneCount = 1; // Use a static counter for unique names
-            std::string newName = "player2_clone_" + std::to_string(cloneCount++);
-            GameObject* newObject = m_manager->CloneGameObject("player2", newName);
+        //if (InputHandler::isKeyTriggered(GLFW_KEY_C)) {
+        //    static int cloneCount = 1; // Use a static counter for unique names
+        //    std::string newName = "player2_clone_" + std::to_string(cloneCount++);
+        //    GameObject* newObject = m_manager->CloneGameObject("player2", newName);
 
-            std::cout << newName << " created.\n";
+        //    std::cout << newName << " created.\n";
 
-            Transform* newTransform = newObject->getComponent<Transform>();
-            newTransform->y += 1.5f * (static_cast<float>(cloneCount) - 1); // Offset the new clone's position
-        }
+        //    Transform* newTransform = newObject->getComponent<Transform>();
+        //    newTransform->y += 1.5f * (static_cast<float>(cloneCount) - 1); // Offset the new clone's position
+        //}
 
         //lua scripting update for all objects with LuaScript component
         std::vector<GameObject*> gameObjects;
