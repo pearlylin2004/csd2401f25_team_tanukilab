@@ -5,7 +5,7 @@
             - 100% of the file
 \par        p.lin@digipen.edu
 \date       November, 4th, 2025
-\brief
+\brief      Handles input events and letting C++ respond directly or forwarding to Lua scripts.
 
 Copyright (C) 2025 DigiPen Institute of Technology.
 Reproduction or disclosure of this file or its contents
@@ -53,30 +53,30 @@ public:
 //for lua
 class LuaSubscriber : public subscriber {
 public:
-    LuaSubscriber(lua_State* L) : L(L) {}
+    LuaSubscriber(lua_State* L) : L(L) {} //to store lua state 
 
-    void onNotify(const Message& msg) override {
-        if (!L) return;
+    void onNotify(const Message& msg) override { //handling message
+        if (!L) return; //lua state is null
 
         //push global Lua function if it exists
-        lua_getglobal(L, "onInputEvent");
+        lua_getglobal(L, "onInputEvent"); 
 
         if (lua_isfunction(L, -1)) {
             try {
-                auto keyEvent = std::any_cast<KeyEvent>(msg.payload);
+				auto keyEvent = std::any_cast<KeyEvent>(msg.payload); //get payload
 
-                lua_pushstring(L, msg.type.c_str());
-                lua_pushstring(L, keyEvent.key.c_str());
-                lua_pushnumber(L, keyEvent.x); 
-                lua_pushnumber(L, keyEvent.y);
+				lua_pushstring(L, msg.type.c_str()); //push message type
+				lua_pushstring(L, keyEvent.key.c_str()); //push key
+				lua_pushnumber(L, keyEvent.x); //push x position
+				lua_pushnumber(L, keyEvent.y); //push y position
 
                 //call Lua function (4 args, 0 return)
                 if (lua_pcall(L, 4, 0, 0) != LUA_OK) {
                     std::cerr << "Lua error: " << lua_tostring(L, -1) << "\n";
-                    lua_pop(L, 1);
+                    lua_pop(L, 1); //to remove error message from stack
                 }
             }
-            catch (const std::bad_any_cast&) {
+            catch (const std::bad_any_cast&) { //payload is not an event 
                 std::cerr << "Invalid KeyEvent payload in LuaSubscriber\n";
             }
         }

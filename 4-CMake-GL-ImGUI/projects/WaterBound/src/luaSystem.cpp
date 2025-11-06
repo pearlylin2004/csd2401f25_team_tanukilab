@@ -202,6 +202,7 @@ int LuaSystem::Lua_SendInputEvent(lua_State* L) {
     return 0;
 }
 
+//lua updates for all objects with LuaScript component
 void LuaSystem::update(GameObjectManager& manager, float deltaTime) {
     std::vector<GameObject*> gameObjects;
     manager.getAllGameObjects(gameObjects);
