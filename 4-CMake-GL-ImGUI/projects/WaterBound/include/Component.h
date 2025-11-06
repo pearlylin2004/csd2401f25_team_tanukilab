@@ -121,9 +121,8 @@ public:
     Dynamics dynamics;
 
     bool canMove = true;  // Add this flag
-    float topWall;
-   
-    float intendedMoveY = 0.0f;
+    
+  
     float velX = 0.0f;
     float velY = 0.0f;
     float gravity = -9.8f;
@@ -133,7 +132,7 @@ public:
     float jumpForce =100.0f;  
     float floorY = 0.0f;
     bool onGround = false;  
-    float Speed = 150.0f;
+
     bool alive = false;
 
     //water bullet

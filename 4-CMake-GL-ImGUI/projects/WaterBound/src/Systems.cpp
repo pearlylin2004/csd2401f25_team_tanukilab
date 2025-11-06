@@ -589,66 +589,87 @@ void FontSystem::RenderText(GLuint& s, std::string text, float x, float y, float
 }
 
 // Physics system - updates position based on velocity and applies gravity
+
 void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime) {
 	auto start = std::chrono::high_resolution_clock::now();
 
 	// Step mode toggling
 	if (InputHandler::isComboKeyTriggered(GLFW_KEY_Z))
 		m_stepMode = !m_stepMode;
+
 	if (m_stepMode && InputHandler::isKeyTriggered(GLFW_KEY_Z))
 		m_stepReq = true;
+
 	if (m_stepMode && !m_stepReq)
 		return;
+
 	if (m_stepReq)
 		m_stepReq = false;
 
 	std::vector<GameObject*> gameObjects;
 	manager.getAllGameObjects(gameObjects);
+
+	// Get the bullet object once
 	GameObject* bullet = manager.getGameObject("bullet");
 
 	for (auto object : gameObjects) {
-		if (!object->hasComponent<Transform>() ||
-			!object->hasComponent<Physics>() ||
-			!object->hasComponent<Input>())
+		if (!object->hasComponent<Transform>() || !object->hasComponent<Physics>())
 			continue;
 
-		Input* input = object->getComponent<Input>();
 		Transform* transform = object->getComponent<Transform>();
 		Physics* physics = object->getComponent<Physics>();
 
-		float targetVelX = 0.0f;
-		float targetVelY = 0.0f;
-		if (InputHandler::isKeyHeld(GLFW_KEY_A)) {
-			physics->canMove = true;
-			targetVelX = -input->moveSpeed;
-		}
-		else if (InputHandler::isKeyHeld(GLFW_KEY_D) && physics->canMove) {
-			targetVelX = input->moveSpeed;
-		}
-
-		physics->dynamics.velocity.x = targetVelX;
-		//physics->dynamics.velocity.y = targetVelY;
-
-		//PhysicsForces::applyGravity(physics, deltaTime);
-		PhysicsForces::applyDamping(physics);
-
-
+		// Player input handling
 		if (object->hasComponent<Input>()) {
+			Input* input = object->getComponent<Input>();
+
+			float targetVelX = 0.0f;
+
+			if (InputHandler::isKeyHeld(GLFW_KEY_A)) {
+				physics->canMove = true;
+				targetVelX = -input->moveSpeed;
+			}
+			else if (InputHandler::isKeyHeld(GLFW_KEY_D) && physics->canMove) {
+				targetVelX = input->moveSpeed;
+			}
+
+			physics->dynamics.velocity.x = targetVelX;
+
+			// Jump
 			if (InputHandler::isKeyTriggered(GLFW_KEY_B)) {
 				PhysicsForces::jump(object);
 			}
-			if (InputHandler::isKeyTriggered(GLFW_KEY_SPACE) && bullet != nullptr) {
+
+			// Shoot bullet
+			if (bullet != nullptr && InputHandler::isKeyTriggered(GLFW_KEY_SPACE)) {
 				PhysicsForces::shoot(bullet, transform);
 			}
+
+			// Apply damping and update player position
+			PhysicsForces::applyDamping(physics);
+			PhysicsForces::updatePosition(transform, physics, deltaTime);
 		}
-		PhysicsForces::updatePosition(transform, physics, deltaTime);
+	}
+
+	// Update bullet separately if it exists
+	if (bullet != nullptr && bullet->hasComponent<Physics>() && bullet->hasComponent<Transform>()) {
+		Transform* bulletTransform = bullet->getComponent<Transform>();
+		Physics* bulletPhysics = bullet->getComponent<Physics>();
+
+		// Only move horizontally along x-axis
+		bulletPhysics->dynamics.velocity.y = 0.0f;
+		bulletPhysics->dynamics.velocity.z = 0.0f;
+
+		DynamicsSystem::Integrate(bulletPhysics->dynamics, deltaTime, 0.0f, false);
+
+		bulletTransform->x = bulletPhysics->dynamics.position.x;
+		bulletTransform->y = bulletPhysics->dynamics.position.y;
 	}
 
 	auto end = std::chrono::high_resolution_clock::now();
 	double ms = std::chrono::duration<double, std::milli>(end - start).count();
 	g_SystemTimers.push_back({ "Physics", ms });
 }
-
 
 
 // Collision system - detects and resolves collisions between game objects
@@ -738,8 +759,7 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 						if (info.normal.y != 0) {
 							t1->y += info.normal.y * info.penetration * 0.5f;
 							p1->dynamics.velocity.y = 0;
-							p1->canMove = true;
-							
+							p1->onGround = true;
 							
 						}
 						UI::addDebugMessage("Collision detected - movement stopped.\n");

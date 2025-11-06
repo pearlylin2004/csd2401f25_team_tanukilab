@@ -11,7 +11,7 @@ void PhysicsForces::applyGravity(Physics* physics, float deltaTime) {
 
 void PhysicsForces::applyDamping(Physics* physics) {
     // Simple velocity damping 
-    physics->damping = 0.98f; // instead of 0.99f
+    physics->damping; // instead of 0.99f
 
     physics->dynamics.velocity.x *= physics->damping;
    // physics->dynamics.velocity.y *= physics->damping;
@@ -53,7 +53,7 @@ void PhysicsForces::jump(GameObject* object) {
         DynamicsSystem::AddForce(physics->dynamics, jumpDir, physics->jumpForce, 0.1f);
         //physics->dynamics.velocity.y = 5.0f; // Instant upward velocity
         physics->onGround = false;
-
+        //physics->canMove = true;
         UI::addDebugMessage("Player jumped!");
     }
 }
@@ -65,20 +65,23 @@ void PhysicsForces::shoot(GameObject* bullet, const Transform* origin) {
     Transform* t = bullet->getComponent<Transform>();
     Physics* p = bullet->getComponent<Physics>();
 
-    // Set bullet position to origin (player)
+    // Spawn at player position
     t->x = origin->x;
     t->y = origin->y;
-    t->z = 0.02f;
+    t->z = 0.0f;
     t->scaleX = 0.5f;
     t->scaleY = 0.5f;
     t->scaleZ = 0.5f;
     t->rotation = 0.0f;
 
-    // Set bullet velocity
-    p->velX = 5.0f;
-    p->velY = 5.0f;
-    p->onGround = false;
+    // Set bullet velocity to move horizontally along x-axis
+    p->dynamics.velocity.x = 10.0f; // speed along x
+    p->dynamics.velocity.y = 0.0f;  // no vertical motion
 
-    UI::addDebugMessage("Bullet spawned!");
+    // Optional: clear forces so bullet is not affected by gravity
+    p->dynamics.forces.clear();
+
+    UI::addDebugMessage("Bullet fired horizontally!");
 }
+
 
