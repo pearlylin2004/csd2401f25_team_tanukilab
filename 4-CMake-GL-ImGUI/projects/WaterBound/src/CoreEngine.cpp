@@ -200,10 +200,12 @@ void CoreEngine::Update(float deltaTime) {
         m_manager->getAllGameObjects(gameObjects);
 
         //running Lua scripts for each object that has a LuaScript component
-        for (GameObject* obj : gameObjects) {
-            if (obj->hasComponent<LuaScript>()) {
-                //LuaScript* scriptComp = obj->getComponent<LuaScript>();
-                m_luaSystem->updateObjectScript(obj->getObjectName(), obj, deltaTime);
+        if(!UI::isEditingMode()) {
+            for (GameObject* obj : gameObjects) {
+                if (obj->hasComponent<LuaScript>()) {
+                    //LuaScript* scriptComp = obj->getComponent<LuaScript>();
+                    m_luaSystem->updateObjectScript(obj->getObjectName(), obj, deltaTime);
+                }
             }
         }
         // Update all systems in order
@@ -213,7 +215,7 @@ void CoreEngine::Update(float deltaTime) {
     }
 
     // Update all systems in order
-    m_logicSystem->update(*m_manager, deltaTime);
+    if (!UI::isEditingMode()) m_logicSystem->update(*m_manager, deltaTime);
     m_renderSystem->update(*m_manager, deltaTime);
     m_fontSystem->update(*m_manager);
 

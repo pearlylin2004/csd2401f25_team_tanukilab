@@ -48,23 +48,26 @@ void InputSystem::update(GameObjectManager& manager, const float& deltaTime) {
 			if (iterator->hasComponent<Physics>()) {//player got that velocity in him
 				Physics* velocity = iterator->getComponent<Physics>();
 
-
-				if (InputHandler::isKeyHeld(GLFW_KEY_W)) {
-					velocity->velY = input->moveSpeed;
-				}
-				if (InputHandler::isKeyHeld(GLFW_KEY_S)) {
-					velocity->velY = -input->moveSpeed;
-				}
-				if (InputHandler::isKeyHeld(GLFW_KEY_A)) {
-					velocity->velX = -input->moveSpeed;
-				}
-				if (InputHandler::isKeyHeld(GLFW_KEY_D)) {
-					velocity->velX = input->moveSpeed;
+				if (!UI::isEditingMode()) {
+					if (InputHandler::isKeyHeld(GLFW_KEY_W)) {
+						velocity->velY = input->moveSpeed;
+					}
+					if (InputHandler::isKeyHeld(GLFW_KEY_S)) {
+						velocity->velY = -input->moveSpeed;
+					}
+					if (InputHandler::isKeyHeld(GLFW_KEY_A)) {
+						velocity->velX = -input->moveSpeed;
+					}
+					if (InputHandler::isKeyHeld(GLFW_KEY_D)) {
+						velocity->velX = input->moveSpeed;
+					}
 				}
 
 				if (InputHandler::isComboKeyTriggered(GLFW_KEY_0)) {
 					UISystem::toggleUI();
-					UI::toggleEditing(true);
+
+					if (UI::isEditingMode()) UI::toggleEditing(false);
+					else UI::toggleEditing(true);
 				}
 
 				// Press F9 to simulate a failure (for crash logger)
@@ -619,7 +622,7 @@ void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime) {
 
 		physics->velY += physics->gravity * deltaTime;
 
-		if (object->hasComponent<Input>()) {
+		if (object->hasComponent<Input>() && !UI::isEditingMode()) {
 			//std::cout << object << " has input component\n";
 			//bullet
 			if (InputHandler::isKeyTriggered(GLFW_KEY_SPACE)) {

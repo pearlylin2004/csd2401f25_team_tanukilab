@@ -92,6 +92,7 @@ void UI::update(GameObjectManager& manager) {
 	newScenePopup(manager); // popup for creating new scene
 	duplicateScenePopup(manager); // popup for duplicating scene
 	loadScenePopup(manager); // popup for loading scene
+    objDeletePopup(manager); // delete obj pop up
 	assetDeletePopup(); // popup for confirming asset deletion
 	assetRenamePopup(); // popup for renaming asset
 	assetReplacePopup(); // popup for replacing asset
@@ -862,36 +863,10 @@ void UI::objInspectorWindow(GameObjectManager& manager) {
         if (selected == m_SelectionState.selectedObject) {
             std::string name = selected->getObjectName();
             if (ImGui::Button("Delete Object")) {
-                ImGui::OpenPopup("Confirm Delete Object");
+                m_AssetBrowserState.showDeletePopup = true;
+                //ImGui::OpenPopup("Confirm Delete Object");
             }
 
-            // delete confirm popup
-            if (ImGui::BeginPopupModal("Confirm Delete Object", NULL, ImGuiWindowFlags_AlwaysAutoResize)) {
-                ImGui::Text("Are you sure you want to delete this object?");
-
-                if (ImGui::Button("Delete")) {
-
-                    manager.deleteGameObject(m_SelectionState.selectedObject);
-
-                    addDebugMessage("Object " + name + " deleted from manager\n");
-
-                    m_SelectionState.selectedObject = nullptr;
-                    m_SelectionState.draggedObject = nullptr;
-                    m_SelectionState.selectedIndex = -1;
-
-                    addDebugMessage("Object " + name + " deleted\n");
-
-                    ImGui::CloseCurrentPopup();
-                }
-
-                ImGui::SameLine();
-
-                if (ImGui::Button("No")) {
-                    ImGui::CloseCurrentPopup();
-                }
-
-                ImGui::EndPopup();
-            }
         }
 
     }
@@ -900,6 +875,42 @@ void UI::objInspectorWindow(GameObjectManager& manager) {
     }
 
 	ImGui::End();
+}
+
+void UI::objDeletePopup(GameObjectManager& manager) {
+    // open popup if flagged
+    if (m_AssetBrowserState.showDeletePopup) {
+        ImGui::OpenPopup("Confirm Delete Object");
+        m_AssetBrowserState.showDeletePopup = false;
+    }
+
+    /*---------------- Cannot delete current loaded scene ----------------*/
+    // delete confirm popup
+    if (ImGui::BeginPopupModal("Confirm Delete Object", NULL, ImGuiWindowFlags_AlwaysAutoResize)) {
+        ImGui::Text("Are you sure you want to delete this object?");
+
+        if (ImGui::Button("Delete")) {
+            std::string name = m_SelectionState.selectedObject->getObjectName();
+
+            manager.deleteGameObject(m_SelectionState.selectedObject);
+
+            m_SelectionState.selectedObject = nullptr;
+            m_SelectionState.draggedObject = nullptr;
+            m_SelectionState.selectedIndex = -1;
+
+            addDebugMessage("Object " + name + " deleted\n");
+
+            ImGui::CloseCurrentPopup();
+        }
+
+        ImGui::SameLine();
+
+        if (ImGui::Button("No")) {
+            ImGui::CloseCurrentPopup();
+        }
+
+        ImGui::EndPopup();
+    }
 }
 
 void UI::loadAssetsFromDirectory() {
