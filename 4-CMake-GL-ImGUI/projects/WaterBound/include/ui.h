@@ -32,7 +32,6 @@ Technology is prohibited.
 #include "performance.h"
 #include "prefabManager.h"
 
-// imma replicate a very scuffed version of Unity :) call me tian cai
 class UI {
 public:
 	UI(); // only used to initialize shape presets, can be =DEFAULT later when loading from json
@@ -43,6 +42,8 @@ public:
 	// debug message logging
 	static void addDebugMessage(const std::string& msg);
 	static void assetChanged() { assetsChangedFlag = true; } // set to true to reload assets in UI
+	static bool isEditingMode() { return isEditing; }
+	static void toggleEditing(bool e) { isEditing = e; } // if true then editing mode, dun play animation, obj dun move
 
 	// load assets from asset directory (when flagged)
 	void loadAssetsFromDirectory();
@@ -64,6 +65,9 @@ private:
 	void duplicateScenePopup(GameObjectManager& manager);
 	void loadScenePopup(GameObjectManager& manager);
 
+	void objDeletePopup(GameObjectManager& manager);
+	void createPrefabPopup(GameObjectManager& manager);
+
 	void newScene(GameObjectManager& manager);
 	void duplicateScene(GameObjectManager& manager);
 	void loadScene(GameObjectManager& manager);
@@ -74,6 +78,10 @@ private:
 
 	void objPicking(GameObjectManager& manager);
 	void objDragging() const;
+
+	void themeSinLeDark();
+	void themeSinLeLight();
+	void themeForest();
 
 	/* ----------------- Menu Bar -----------------*/
 	struct menuBarState {
@@ -99,6 +107,9 @@ private:
 		bool ratioSet = false;
 		float ratioY = 1.0f;
 		float ratioZ = 1.0f;
+
+		bool showDeletePopup = false;
+		bool showCreatePrefabPopup = false;
 	} m_SelectionState;
 	/* ----------------- Game Object Selection End -----------------*/
 
@@ -152,12 +163,13 @@ private:
 
 
 	static inline std::vector<std::string> m_debugMessages;
+	static bool isEditing; // true means editing and game obj not movements
 
 	std::vector<Asset> m_assets;
-	static bool assetsChangedFlag;
+	static bool assetsChangedFlag; // whether need to update asset browser
 
-	std::string m_currentSceneName;
-	std::string m_tempSceneName;
+	std::string m_currentSceneName; // filename of the current scene
+	std::string m_tempSceneName; // a temp file to store the data while playing so it wont affect the actual scene data
 	bool m_isPlaying; // to track Play/Stop mode
 };
 

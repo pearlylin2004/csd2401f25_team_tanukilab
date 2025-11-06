@@ -88,7 +88,7 @@ struct FontComponent : public Component {
     }
 
     //GLuint texHdl;
-    Font::FontMdl mdl;
+    Font::FontMdl mdl = Font::fontMdls[0];
     std::string word = "";
     float scale = 1;
     glm::vec3 clr{ 0.f,0.f,0.f };

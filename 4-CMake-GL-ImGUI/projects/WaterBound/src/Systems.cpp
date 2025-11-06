@@ -67,7 +67,10 @@ void InputSystem::update(GameObjectManager& manager, const float& deltaTime, Mes
 	if (InputHandler::isComboKeyTriggered(GLFW_KEY_0)) {
 		UISystem::toggleUI();
 		messageBus.publish(Message("KeyPressed", nullptr, KeyEvent{ "0", true }));
+			if (UI::isEditingMode()) UI::toggleEditing(false);
+					else UI::toggleEditing(true);
 	}
+	
 
 	// Press F9 to simulate a failure (for crash logger)
 	if (InputHandler::isKeyTriggered(GLFW_KEY_F9)) {
@@ -487,7 +490,7 @@ void RenderSystem::renderTex(GameObject* object, float const& deltaTime)
 			{
 				animation->frameTimer += deltaTime;
 				//std::cout << "\n-------Frame Timer---------\n" << animation->frameTimer << "\n\n";
-				if (animation->frameTimer >= animation->frameTime)
+				if (animation->frameTimer >= animation->frameTime && !UI::isEditingMode())
 				{
 					animation->frameTimer -= animation->frameTime;
 					/*if (animation->runItBack && animation->currentFrameColumn == 0)
@@ -806,8 +809,28 @@ void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime, M
 		/*if (!physics->onGround)
 			physics->velY += physics->gravity * deltaTime;*/
 
-		if (object->hasComponent<Input>()) {
+		if (object->hasComponent<Input>() && !UI::isEditingMode()) {
+			//std::cout << object << " has input component\n";
+			//bullet
 			Input* input = object->getComponent<Input>();
+
+			if (InputHandler::isKeyTriggered(GLFW_KEY_SPACE)) {
+				//std::cout << "bullet is spawned\n";
+				UI::addDebugMessage("bullet is spawned");
+				static int bulletCount = 0;
+			}
+
+		// should apply for every obj, this is for temp auto move checking
+		if(!object->checkAutoMove()) {
+			PhysicsForces::applyDamping(physics);
+			PhysicsForces::updatePosition(transform, physics, deltaTime);
+		}
+
+			// Shoot bullet
+			if (bullet != nullptr && InputHandler::isKeyTriggered(GLFW_KEY_SPACE)) {
+				PhysicsForces::shoot(bullet, transform);
+				messageBus.publish(Message("KeyPressed", nullptr, KeyEvent{ "SPACE", true }));
+			}
 
 			float targetVelX = 0.0f;
 
@@ -828,17 +851,23 @@ void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime, M
 				PhysicsForces::jump(object);
 				messageBus.publish(Message("KeyPressed", nullptr, KeyEvent{ "B", true }));
 			}
+		
 
-			// Shoot bullet
-			if (bullet != nullptr && InputHandler::isKeyTriggered(GLFW_KEY_SPACE)) {
-				PhysicsForces::shoot(bullet, transform);
-				messageBus.publish(Message("KeyPressed", nullptr, KeyEvent{ "SPACE", true }));
-			}
-
-			// Apply damping and update player position
-			PhysicsForces::applyDamping(physics);
-			PhysicsForces::updatePosition(transform, physics, deltaTime);
+		if (transform->y < physics->floorY /* temp for obj auto move*/ && !object->checkAutoMove()) {
+			transform->y = physics->floorY;
+			physics->velY = 0.0f;
+			physics->onGround = true;
+			physics->velX = 0.0f;
 		}
+		transform->x += physics->velX * deltaTime;
+
+		/* ----- TEMPORARY FOR MOVING THE SPAWNED OBJ AUTO ----- */ 
+		if (object->checkAutoMove()) { 
+
+			transform->y += physics->velY * deltaTime * physics->Speed;
+			transform->x += physics->velX * deltaTime * physics->Speed;
+		} 
+		/* ----- TEMP END ----- */
 	}
 
 	// Update bullet separately if it exists
@@ -1017,15 +1046,14 @@ void UISystem::init(GLFWwindow* window, RenderSystem* renderer) {
 	io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard
 			| ImGuiConfigFlags_DockingEnable
 			| ImGuiConfigFlags_ViewportsEnable;
-	ImGui::StyleColorsDark();
+	ImGui::StyleColorsClassic();
+	//ImGui::StyleColorsDark();
 	// io.IniFilename = "imgui_layout.ini";
 	ImGui_ImplGlfw_InitForOpenGL(window, true);
 	ImGui_ImplOpenGL3_Init("#version 450");
 
 	// no show task bar icon for additional viewports
 	io.ConfigViewportsNoTaskBarIcon = true;
-
-	m_UI.loadAssetsFromDirectory();
 
 	m_renderer = renderer;
 }
@@ -1115,21 +1143,23 @@ void UISystem::dockingSetUp() {
 		// Split the dockspace into major areas
 		ImGuiID dockParent = dockspaceID;
 		ImGuiID dockDown, dockRight, dockLeft;
-		ImGuiID dockRightSecond;
+		ImGuiID dockLeftSecond, dockRightSecond;
 
 		ImGui::DockBuilderSplitNode(dockParent, ImGuiDir_Left, 0.3f, &dockLeft, &dockParent);
+		ImGui::DockBuilderSplitNode(dockLeft, ImGuiDir_Down, 0.3f, &dockLeftSecond, &dockLeft);
 		ImGui::DockBuilderSplitNode(dockParent, ImGuiDir_Right, 0.4f, &dockRight, &dockParent);
 		ImGui::DockBuilderSplitNode(dockRight, ImGuiDir_Down, 0.4f, &dockRightSecond, &dockRight);
-		ImGui::DockBuilderSplitNode(dockParent, ImGuiDir_Down, 0.4f, &dockDown, &dockParent);
+		ImGui::DockBuilderSplitNode(dockParent, ImGuiDir_Down, 0.5f, &dockDown, &dockParent);
 
 		// Dock windows
 
 		// Left
 		ImGui::DockBuilderDockWindow("Hierarchy", dockLeft);
-		ImGui::DockBuilderDockWindow("Inspector", dockRight);
-		ImGui::DockBuilderDockWindow("Editor Camera", dockRight);
+		ImGui::DockBuilderDockWindow("Debug Info", dockLeftSecond);
 
 		// Right
+		ImGui::DockBuilderDockWindow("Inspector", dockRight);
+		ImGui::DockBuilderDockWindow("Editor Camera", dockRight);
 		ImGui::DockBuilderDockWindow("Create Object", dockRightSecond);
 
 		// Middle
@@ -1137,7 +1167,6 @@ void UISystem::dockingSetUp() {
 		
 		// Bottom
 		ImGui::DockBuilderDockWindow("Performance", dockDown);
-		ImGui::DockBuilderDockWindow("Debug Info", dockDown);
 		ImGui::DockBuilderDockWindow("Assets", dockDown);
 
 		ImGui::DockBuilderFinish(dockspaceID);

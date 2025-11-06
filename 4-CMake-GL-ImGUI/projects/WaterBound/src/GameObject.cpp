@@ -16,7 +16,7 @@ Technology is prohibited.
 #include "GameObject.h"
 
 //constructor
-GameObject::GameObject(const std::string& name, const std::string& prefabID) : m_name(name), m_prefabID(prefabID) {}
+GameObject::GameObject(const std::string& name, const std::string& prefabID) : m_name(name), m_prefabID(prefabID) { autoMove = false;  }
 
 const std::string& GameObject::getObjectName() const {
     return m_name;

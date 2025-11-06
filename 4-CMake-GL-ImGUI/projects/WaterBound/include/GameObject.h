@@ -96,9 +96,13 @@ public:
     const std::string& getObjectPrefabID() const;
     std::string& getObjectPrefabID();
 
+    bool checkAutoMove() { return autoMove;  }
+    void changeAutoMove(bool temp) { autoMove = temp; }
+
 private:
     std::string m_name;//name of object
     std::string m_prefabID; // optional, empty if created without prefab
+    bool autoMove;
 
 	// Map of components attached to the game object
     std::unordered_map<std::type_index, std::unique_ptr<Component>> m_components;

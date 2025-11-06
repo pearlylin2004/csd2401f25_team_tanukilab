@@ -90,7 +90,7 @@ void CoreEngine::Init() {
     m_messageBus = std::make_unique<MessageBus>();
     m_playerController = std::make_unique<PlayerControllerSystem>();
 
-    PrefabManager::Instance().loadPrefabRegistry(std::string(RUNTIME_DIR_R) + "/Prefab/prefab_registry.json");
+    PrefabManager::Instance().loadPrefabRegistry();
     m_guiSystem->init(*m_manager, *m_luaSystem);
     m_luaSystem->init();
     //m_manager->init();

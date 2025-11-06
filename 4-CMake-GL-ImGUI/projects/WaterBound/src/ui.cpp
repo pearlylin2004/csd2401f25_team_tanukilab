@@ -17,7 +17,7 @@ Technology is prohibited.
 
 #include "ui.h"
 #include <cstdlib>
-#include "JsonIO.h""
+#include "JsonIO.h"
 
 bool UI::assetsChangedFlag = true;
 
@@ -56,6 +56,8 @@ void UI::update(GameObjectManager& manager) {
 	newScenePopup(manager); // popup for creating new scene
 	duplicateScenePopup(manager); // popup for duplicating scene
 	loadScenePopup(manager); // popup for loading scene
+    createPrefabPopup(manager); // create prefab pop up
+    objDeletePopup(manager); // delete obj pop up
 	assetDeletePopup(); // popup for confirming asset deletion
 	assetRenamePopup(); // popup for renaming asset
 	assetReplacePopup(); // popup for replacing asset
@@ -97,18 +99,45 @@ void UI::drawShapes(GameObjectManager& manager) {
 			if (spawnCount == 2048)
 				spawnCount = 2500; //cap at 400 objects
 
+            // if player2 not exist then create player2
+            if (!manager.getGameObject("player2")) {
+                GameObject* player2 = manager.createGameObject("player2");
+
+                Transform* transform = player2->addComponent<Transform>();
+                Physics* physics = player2->addComponent<Physics>();
+                Render* render = player2->addComponent<Render>();
+
+                render->modelRef = renderer::models[static_cast<int>(shape::square)];
+                render->hasTex = true;
+                render->texFile = "shaders/Sample_tilemap.png";
+                render->texChanged = true;
+            }
+
 			for (int i = count; i < spawnCount; ++i) {
 				std::string cloneName = "Player_Clone(" + std::to_string(i + 1) + ")";
 			    GameObject* newObj = manager.CloneGameObject("player2", cloneName);
+                newObj->changeAutoMove(true); // set to true so it auto move
 				
                 Transform* transform = newObj->getComponent<Transform>();
+                Physics* physics = newObj->getComponent<Physics>();
+                if (!physics) {
+                    physics = newObj->addComponent<Physics>();
+                }
 
                 int randomX = rand() % 20;
                 int randomY = rand() % 10;
 				int rotation = rand() % 360;
 				int scaleX = (rand() % 3) + 1;
 				int scaleY = (rand() % 3) + 1;
+                float velX = (rand() % 3) - 1;
+                float velY = (rand() % 3) - 1;
+                int speed = (rand() % 2) + 1;
 
+                // avoid zero velocity
+                if (velX == 0.0f) velX = 0.5f;
+                if (velY == 0.0f) velY = 0.5f;
+
+                // make sure 
 				if (rand() % 2 == 0)
 					randomX = -randomX;
 				if (rand() % 2 == 1)
@@ -119,6 +148,11 @@ void UI::drawShapes(GameObjectManager& manager) {
 				transform->rotation = rotation;
 				transform->scaleX = scaleX;
 				transform->scaleY = scaleY;
+
+                physics->gravity = 0.0;
+                physics->Speed = speed;
+                physics->velX = velX;
+                physics->velY = velY;
 			}
 
 			count = spawnCount;
@@ -209,13 +243,22 @@ void UI::drawShapes(GameObjectManager& manager) {
 void UI::drawDebug() {
     ImGui::Begin("Debug Info");
 
+    // horizontal scrollbar
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
+    ImGui::BeginChild("DebugScrollRegion", ImVec2(0, 0), false, ImGuiWindowFlags_HorizontalScrollbar);
+    ImGui::PopStyleVar();
+
+    // print the message
+    ImGui::Text("Current Scene: %s", m_currentSceneName.c_str());
     for (const auto& msg : m_debugMessages) {
         ImGui::Text("%s", msg.c_str());
     }
 
-    //auto-scroll if at the bottom
+    // auto-scroll if at the bottom
     if (ImGui::GetScrollY() >= ImGui::GetScrollMaxY())
         ImGui::SetScrollHereY(1.0f);
+
+    ImGui::EndChild();
 
     ImGui::End();
 }
@@ -265,9 +308,10 @@ void UI::editorMenuBar(GameObjectManager& manager) {
 
     /* ------------------- Simulation ------------------- */
     if (ImGui::BeginMenu("Simulation")) {
-        if (!m_isPlaying) {
+        if (!m_isPlaying && isEditing) {
             if (ImGui::MenuItem("Play")) {
                 m_isPlaying = true;
+                isEditing = false;
 
                 // save current state to a temp scene file
                 //manager.saveScene(m_tempSceneName);
@@ -279,6 +323,7 @@ void UI::editorMenuBar(GameObjectManager& manager) {
         else {
             if (ImGui::MenuItem("Stop")) {
                 m_isPlaying = false;
+                isEditing = true;
 
                 // load back the temp scene file to restore state
                 manager.loadScene(JsonIO::runtimeScenePath(m_tempSceneName));
@@ -296,6 +341,29 @@ void UI::editorMenuBar(GameObjectManager& manager) {
                     std::filesystem::remove(tempFull);
                 addDebugMessage("Simulation stopped.\n");
             }
+        }
+        ImGui::EndMenu();
+    }
+
+    /* ------------------- Editor Theme ------------------- */
+    if (ImGui::BeginMenu("Theme")) {
+        if (ImGui::MenuItem("Dark")) {
+            ImGui::StyleColorsDark();
+        }
+        if (ImGui::MenuItem("Light")) {
+            ImGui::StyleColorsLight();
+        }
+        if (ImGui::MenuItem("Classic")) {
+            ImGui::StyleColorsClassic();
+        }
+        if (ImGui::MenuItem("Sin Le Dark")) {
+            themeSinLeDark();
+        }
+        if (ImGui::MenuItem("Sin Le Light")) {
+            themeSinLeLight();
+        }
+        if (ImGui::MenuItem("Forest")) {
+            themeForest();
         }
         ImGui::EndMenu();
     }
@@ -492,6 +560,11 @@ void UI::duplicateScene(GameObjectManager& manager) {
         m_currentSceneName = newSceneName;
         manager.saveScene(JsonIO::sourceScenePath(m_currentSceneName));
         JsonIO::syncSceneToRuntime(m_currentSceneName);
+
+        // if current scene got /, remove it (to compare and highlight this asset in browser)
+        if (m_currentSceneName[0] == '/') {
+            m_currentSceneName.erase(0, 1);
+        }
         assetsChangedFlag = true;
 
         m_SelectionState.selectedObject = nullptr;
@@ -530,7 +603,7 @@ void UI::objHierarchyWindow(GameObjectManager& manager) {
     ImGuiTreeNodeFlags baseFlags = ImGuiTreeNodeFlags_Leaf;
 
     for (size_t i = 0; i < gameObjects.size(); i++) {
-        // if no children -> in the future
+        // if no children (in the future)
     //    baseFlags |= ImGuiTreeNodeFlags_Leaf;
 
 		// highlight selected row
@@ -547,6 +620,27 @@ void UI::objHierarchyWindow(GameObjectManager& manager) {
                 m_SelectionState.selectedIndex = static_cast<int>(i);
                 m_SelectionState.selectedObject = gameObjects[i];
             }
+
+            /* ------- right clicj context menu ------- */
+            if (ImGui::BeginPopupContextItem()) {
+                if (ImGui::MenuItem("Save as Prefab")) {
+                    // save this obj into a prefab
+                    /*PrefabManager::Instance().createPrefabFromGameObj(gameObjects[i]);
+                    addDebugMessage("Prefab created.\n");*/
+                    m_SelectionState.selectedIndex = static_cast<int>(i);
+                    m_SelectionState.selectedObject = gameObjects[i];
+                    m_SelectionState.showCreatePrefabPopup = true;
+                }
+
+                if (ImGui::MenuItem("Delete Object")) {
+                    m_SelectionState.selectedIndex = static_cast<int>(i);
+                    m_SelectionState.selectedObject = gameObjects[i];
+                    m_SelectionState.showDeletePopup = true;
+                }
+
+                ImGui::EndPopup();
+            }
+
             ImGui::TreePop();
 
         }
@@ -565,7 +659,7 @@ void UI::objHierarchyWindow(GameObjectManager& manager) {
     ImGui::SetCursorPos(ImVec2(0, 0));
     ImGui::InvisibleButton("##drop_target", ImGui::GetContentRegionAvail());
 
-    // receive prefab logic
+    // receive prefab and make it into a game obj referecing the prefab
     if (ImGui::BeginDragDropTarget()) {
         if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("PREFAB")) {
             addDebugMessage("in here yey\n");
@@ -580,6 +674,7 @@ void UI::objHierarchyWindow(GameObjectManager& manager) {
             prefabObj->getObjectPrefabID() = prefabID;
             if (prefabObj) {
                 PrefabManager::Instance().instantiate(prefabObj, manager);
+
                 addDebugMessage("Added game obj from prefab\n");
             }
             else {
@@ -642,6 +737,7 @@ void UI::objInspectorWindow(GameObjectManager& manager) {
                     addDebugMessage("Failed to rename: name already exists\n");
                 }
             }
+            ImGui::SetItemDefaultFocus();
 
             ImGui::Spacing();
             ImGui::Separator();
@@ -657,9 +753,16 @@ void UI::objInspectorWindow(GameObjectManager& manager) {
         Transform* transform = selected->getComponent<Transform>();
         if (ImGui::CollapsingHeader("Transform")) {
 
-            ImGui::DragFloat("X", &transform->x);
-            ImGui::DragFloat("Y", &transform->y);
-            ImGui::DragFloat("Z", &transform->z);
+            ImGui::DragFloat("X", &transform->x, 0.1f);
+            ImGui::DragFloat("Y", &transform->y, 0.1f);
+
+            // set z to stay within the editor camera (-1.f <= z < 1.f)
+            glm::mat4& proj = renderer::editorCam.proj;
+            float m22 = proj[2][2];
+            float m32 = proj[3][2];
+            float near = (m32 - 1.f) / m22;
+            float far = (m32 + 1.f) / m22;
+            ImGui::DragFloat("Z", &transform->z, 0.1f, far, near);
 
             /*addDebugMessage("Transform updated: Position(" +
                 std::to_string(transform->x) + ", " +
@@ -717,6 +820,7 @@ void UI::objInspectorWindow(GameObjectManager& manager) {
             std::string texName = render->texFile.empty() ? "(Drop new texture here)" : render->texFile;
             ImGui::Button(texName.c_str());
 
+            /* -------------- Drag and Drop From Asset Browser to Change Texture ------------- */
             if (ImGui::BeginDragDropTarget()) {
                 if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("ASSET")) {
                     const char* droppedPath = (const char*)payload->Data;
@@ -724,13 +828,28 @@ void UI::objInspectorWindow(GameObjectManager& manager) {
   
                     const std::string debugPrefix = "Debug/";
                     size_t pos = path.find(debugPrefix);
-                    if (pos != std::string::npos)
-                        path = path.substr(pos + debugPrefix.size());
+                    if (pos != std::string::npos) path = path.substr(pos + debugPrefix.size());
 
-                    render->texFile = path;
-                    render->hasTex = true;
-                    render->texChanged = true;
-                    addDebugMessage("Changed texture of " + selected->getObjectName() + " to " + render->texFile + "\n");
+                    /* --- File extension validation --- */
+                    std::string ext;
+                    size_t dotPos = path.find_last_of('.');
+                    if (dotPos != std::string::npos) ext = path.substr(dotPos + 1);
+
+                    // Convert to lowercase for consistency
+                    std::transform(ext.begin(), ext.end(), ext.begin(), ::tolower);
+
+                    // only accept if dropped file is a png/jpg/jpeg
+                    if (ext == "png" || ext == "jpg" || ext == "jpeg") {
+                        render->texFile = path;
+                        render->hasTex = true;
+                        render->texChanged = true;
+                        addDebugMessage("Changed texture of " + selected->getObjectName() + " to " + render->texFile + "\n");
+                    }
+                    else {
+                        // invalid texture format �> don't change anything
+                        addDebugMessage("Invalid texture format : " + path + "\n");
+                    }
+
                 }
                 ImGui::EndDragDropTarget();
             }
@@ -756,36 +875,10 @@ void UI::objInspectorWindow(GameObjectManager& manager) {
         if (selected == m_SelectionState.selectedObject) {
             std::string name = selected->getObjectName();
             if (ImGui::Button("Delete Object")) {
-                ImGui::OpenPopup("Confirm Delete Object");
+                m_SelectionState.showDeletePopup = true;
+                //ImGui::OpenPopup("Confirm Delete Object");
             }
 
-            // delete confirm popup
-            if (ImGui::BeginPopupModal("Confirm Delete Object", NULL, ImGuiWindowFlags_AlwaysAutoResize)) {
-                ImGui::Text("Are you sure you want to delete this object?");
-
-                if (ImGui::Button("Delete")) {
-
-                    manager.deleteGameObject(m_SelectionState.selectedObject);
-
-                    addDebugMessage("Object " + name + " deleted from manager\n");
-
-                    m_SelectionState.selectedObject = nullptr;
-                    m_SelectionState.draggedObject = nullptr;
-                    m_SelectionState.selectedIndex = -1;
-
-                    addDebugMessage("Object " + name + " deleted\n");
-
-                    ImGui::CloseCurrentPopup();
-                }
-
-                ImGui::SameLine();
-
-                if (ImGui::Button("No")) {
-                    ImGui::CloseCurrentPopup();
-                }
-
-                ImGui::EndPopup();
-            }
         }
 
     }
@@ -796,6 +889,86 @@ void UI::objInspectorWindow(GameObjectManager& manager) {
 	ImGui::End();
 }
 
+void UI::objDeletePopup(GameObjectManager& manager) {
+    // open popup if flagged
+    if (m_SelectionState.showDeletePopup) {
+        ImGui::OpenPopup("Confirm Delete Object");
+        m_SelectionState.showDeletePopup = false;
+    }
+
+    /*---------------- Cannot delete current loaded scene ----------------*/
+    // delete confirm popup
+    if (ImGui::BeginPopupModal("Confirm Delete Object", NULL, ImGuiWindowFlags_AlwaysAutoResize)) {
+        ImGui::Text("Are you sure you want to delete this object?");
+
+        if (ImGui::Button("Delete")) {
+            if (!m_SelectionState.selectedObject) std::cout << "fuck\n\n";
+            std::string name = m_SelectionState.selectedObject->getObjectName();
+
+            manager.deleteGameObject(m_SelectionState.selectedObject);
+
+            m_SelectionState.selectedObject = nullptr;
+            m_SelectionState.draggedObject = nullptr;
+            m_SelectionState.selectedIndex = -1;
+
+            addDebugMessage("Object " + name + " deleted\n");
+
+            ImGui::CloseCurrentPopup();
+        }
+
+        ImGui::SameLine();
+
+        if (ImGui::Button("No")) {
+            ImGui::CloseCurrentPopup();
+        }
+
+        ImGui::EndPopup();
+    }
+}
+
+void UI::createPrefabPopup(GameObjectManager& manager) {
+    // open popup if flagged
+    if (m_SelectionState.showCreatePrefabPopup) {
+        ImGui::OpenPopup("Confirm Create Prefab");
+        m_SelectionState.showCreatePrefabPopup = false;
+    }
+
+    /*---------------- Cannot delete current loaded scene ----------------*/
+    // delete confirm popup
+    if (ImGui::BeginPopupModal("Confirm Create Prefab", NULL, ImGuiWindowFlags_AlwaysAutoResize)) {
+        ImGui::Text("Do you want to pack this object into the new prefab?");
+
+        if (ImGui::Button("Create and Pack")) {
+            
+            if (PrefabManager::Instance().createPrefabFromGameObj(m_SelectionState.selectedObject, "", true))
+                addDebugMessage("Prefab created.\n");
+            else addDebugMessage("Prefab not created.\n");
+
+            manager.saveScene(sourceScenePath(m_currentSceneName));
+            syncSceneToRuntime(m_currentSceneName);
+
+            ImGui::CloseCurrentPopup();
+        }
+
+        if (ImGui::Button("Create but Do Not Pack")) {            
+            
+            if (PrefabManager::Instance().createPrefabFromGameObj(m_SelectionState.selectedObject))
+                addDebugMessage("Prefab created.\n");
+            else addDebugMessage("Prefab not created.\n");
+
+            ImGui::CloseCurrentPopup();
+        }
+
+        ImGui::SameLine();
+
+        if (ImGui::Button("Cancel")) {
+            ImGui::CloseCurrentPopup();
+        }
+
+        ImGui::EndPopup();
+    }
+}
+
 void UI::loadAssetsFromDirectory() {
     if (assetsChangedFlag == false) return; // only reload if flagged
     m_assets.clear(); // clear existing assets before loading new ones
@@ -804,7 +977,15 @@ void UI::loadAssetsFromDirectory() {
     for (const std::filesystem::directory_entry& entry : std::filesystem::recursive_directory_iterator(m_AssetBrowserState.currentFolder)) {
         if (entry.is_regular_file()) {
             Asset asset;
-            asset.name = entry.path().filename().string();
+            std::string filename = entry.path().filename().string();
+            std::string extension = entry.path().extension().string();
+
+            // skip unwanted files
+            if (filename == m_tempSceneName) continue;
+            if (filename == "prefab_registry.json") continue;
+            if (extension == ".vert" || extension == ".frag") continue;
+
+            asset.name = std::move(filename);
             asset.path = entry.path().string();
             asset.folder = entry.path().parent_path().string(); // folder in assets that contains this file, for future filtering
 
@@ -876,6 +1057,13 @@ void UI::assetWindow(GameObjectManager& manager) {
 
         ImGui::PushID(index++);
 
+        // if the asset is the current scene
+        if (asset.name == m_currentSceneName) {
+            ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(1.f, 0.4f, 0.7f, 1.0f));
+            /*ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.3f, 0.6f, 0.9f, 1.0f));
+            ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.1f, 0.4f, 0.7f, 1.0f));*/
+        }
+
         // display button and the name of the file
         ImGui::BeginGroup();
 
@@ -885,6 +1073,11 @@ void UI::assetWindow(GameObjectManager& manager) {
         ImGui::Button(asset.name.c_str(), ImVec2(m_AssetBrowserState.iconSize, m_AssetBrowserState.iconSize));
 
         ImGui::PopStyleVar();
+
+        // pop style for the highlight current scene
+        if (asset.name == m_currentSceneName) {
+            ImGui::PopStyleColor();
+        }
 
 		// right click asset and show context menu
 		if (ImGui::BeginPopupContextItem("AssetContextMenu")) {
@@ -901,29 +1094,32 @@ void UI::assetWindow(GameObjectManager& manager) {
 				system(command.c_str());
 			}
 
-            // open popup window and ask whether to delete this current asset
-			if (ImGui::MenuItem("Delete Asset")) {
-				m_AssetBrowserState.fullPathToDelete = fullPath;
-				m_AssetBrowserState.showDeletePopup = true;
-			}
-
-			// open popup window and rename this current asset (rename not for prefab YET)
+            // open popup window and ask whether to delete this current asset (delete not for prefab YET)
             if (asset.folder != m_AssetBrowserState.currentFolder + "Prefab") {
-                if (ImGui::MenuItem("Rename Asset")) {
-                    m_AssetBrowserState.fullPathToRename = fullPath;
-                    m_AssetBrowserState.showRenamePopup = true;
-
-                    // pre-fill the current name
-                    std::strncpy(m_AssetBrowserState.newNameBuffer, asset.name.c_str(), sizeof(m_AssetBrowserState.newNameBuffer));
+                if (ImGui::MenuItem("Delete Asset")) {
+                    m_AssetBrowserState.fullPathToDelete = fullPath;
+                    m_AssetBrowserState.showDeletePopup = true;
                 }
             }
 
+			// open popup window and rename this current asset
+            if (ImGui::MenuItem("Rename Asset")) {
+                m_AssetBrowserState.fullPathToRename = fullPath;
+                m_AssetBrowserState.showRenamePopup = true;
+
+                // pre-fill the current name
+                std::strncpy(m_AssetBrowserState.newNameBuffer, asset.name.c_str(), sizeof(m_AssetBrowserState.newNameBuffer));
+            }
+
 			// open popup window and replace this current asset
-			/*if (ImGui::MenuItem("Replace Asset")) {
-                m_AssetBrowserState.fullPathToReplace = fullPath;
-                m_AssetBrowserState.showReplacePopup = true;
-                m_AssetBrowserState.replacePathBuffer[0] = '\0';
-			}*/
+            if (asset.folder != m_AssetBrowserState.currentFolder + "Prefab") {
+                if (ImGui::MenuItem("Replace Asset")) {
+                    m_AssetBrowserState.fullPathToReplace = fullPath;
+                    m_AssetBrowserState.showReplacePopup = true;
+                    m_AssetBrowserState.replacePathBuffer[0] = '\0';
+                }
+            }
+
 			ImGui::EndPopup();
 		}
 
@@ -975,16 +1171,17 @@ void UI::assetWindow(GameObjectManager& manager) {
 
         /* ----------- Drag and Drop Logic ----------- */
 
-        // drag a texture to inspector window to change texture of selected object
         if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID)) {
-            ImGui::SetDragDropPayload("ASSET", asset.path.c_str(), asset.path.size() + 1);
-            ImGui::Text("%s", asset.name.c_str());
-            ImGui::EndDragDropSource();
-        }
-
-        if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID)) {
-            ImGui::SetDragDropPayload("PREFAB", asset.name.c_str(), asset.name.size() + 1);
-            ImGui::Text("Prefab: %s", asset.name.c_str());
+            if (asset.folder == m_AssetBrowserState.currentFolder + "Prefab") {
+                // drag a prefab to hierarchy to make a game obj
+                ImGui::SetDragDropPayload("PREFAB", asset.name.c_str(), asset.name.size() + 1);
+                ImGui::Text("Prefab: %s", asset.name.c_str());
+            }
+            else {
+                // drag a texture to inspector window to change texture of selected object
+                ImGui::SetDragDropPayload("ASSET", asset.path.c_str(), asset.path.size() + 1);
+                ImGui::Text("%s", asset.name.c_str());
+            }
             ImGui::EndDragDropSource();
         }
 
@@ -1002,25 +1199,6 @@ void UI::assetDeletePopup() {
         ImGui::OpenPopup("Confirm Delete Asset");
         m_AssetBrowserState.showDeletePopup = false;
     }
-
-    /*---------------- Cannot delete current loaded scene ----------------*/
-    if (!m_AssetBrowserState.fullPathToDelete.empty() &&
-        m_currentSceneName == std::filesystem::path(m_AssetBrowserState.fullPathToDelete).filename().string())
-    {
-        ImGui::OpenPopup("Cannot Delete Current Scene");
-        m_AssetBrowserState.fullPathToDelete.clear(); // clear so the check doesn't repeat
-    }
-
-    if (ImGui::BeginPopupModal("Cannot Delete Current Scene", NULL, ImGuiWindowFlags_AlwaysAutoResize)) {
-        ImGui::Text("Cannot delete the currently loaded scene!");
-
-        if (ImGui::Button("OK")) {
-            ImGui::CloseCurrentPopup();
-        }
-
-        ImGui::EndPopup();
-    }
-    /*-------------------- END -------------------*/
 
 
     /*---------------- Delete Confirmation ----------------*/
@@ -1040,7 +1218,7 @@ void UI::assetDeletePopup() {
 
                 // split the "shaders/" part to get relative path
                 std::string relativePath;
-                auto pos = m_AssetBrowserState.fullPathToDelete.find("shaders/");
+                size_t pos = m_AssetBrowserState.fullPathToDelete.find("shaders/");
                 if (pos != std::string::npos) {
                     relativePath = m_AssetBrowserState.fullPathToDelete.substr(pos + strlen("shaders/"));
                 }
@@ -1051,6 +1229,13 @@ void UI::assetDeletePopup() {
                     std::filesystem::remove(projectPath);
                     std::cout << "Deleted asset (Project): " << projectPath.string() << std::endl;
                 }
+
+                /* -------- Prefab Delete (WIP) -------- */
+                std::string prefabID = PrefabManager::Instance().findPrefabIDByFilename(relativePath);
+                if (!prefabID.empty()) {
+                    PrefabManager::Instance().deletePrefab(prefabID);
+                }
+                /* -------- END --------- */
 
                 addDebugMessage("Deleted asset: " + m_AssetBrowserState.fullPathToDelete + "\n");
             }
@@ -1063,6 +1248,26 @@ void UI::assetDeletePopup() {
 
         if (ImGui::Button("No")) {
             m_AssetBrowserState.fullPathToDelete.clear();
+            ImGui::CloseCurrentPopup();
+        }
+
+        ImGui::EndPopup();
+    }
+    /*-------------------- END -------------------*/
+
+
+    /*---------------- Cannot delete current loaded scene ----------------*/
+    if (!m_AssetBrowserState.fullPathToDelete.empty() &&
+        m_currentSceneName == std::filesystem::path(m_AssetBrowserState.fullPathToDelete).filename().string())
+    {
+        ImGui::OpenPopup("Cannot Delete Current Scene");
+        m_AssetBrowserState.fullPathToDelete.clear(); // clear so the check doesn't repeat
+    }
+
+    if (ImGui::BeginPopupModal("Cannot Delete Current Scene", NULL, ImGuiWindowFlags_AlwaysAutoResize)) {
+        ImGui::Text("Cannot delete the currently loaded scene!");
+
+        if (ImGui::Button("OK")) {
             ImGui::CloseCurrentPopup();
         }
 
@@ -1087,6 +1292,7 @@ void UI::assetRenamePopup() {
             if (!m_AssetBrowserState.fullPathToRename.empty()) {
                 std::filesystem::path old = m_AssetBrowserState.fullPathToRename;
                 std::filesystem::path newPath = old.parent_path() / m_AssetBrowserState.newNameBuffer;
+                // Debug/shaders/Prefab\\platform.json
 
 				// keep the extension if not provided
                 if (newPath.extension().empty())
@@ -1094,21 +1300,21 @@ void UI::assetRenamePopup() {
 
                 if (!std::filesystem::exists(newPath)) {
                     std::filesystem::rename(old, newPath);
-                    assetsChangedFlag = true; // reload assets
-
+                    assetsChangedFlag = true; // reload assets to reflect new name
+             
 					// change in the project folder as well
                     std::filesystem::path sourceDir(SOURCE_DIR_R);
                     
 					// split the "shaders/" part to get relative path
                     std::string relative;
-                    auto pos = old.string().find("shaders/");
+                    size_t pos = old.string().find("shaders/");
                     if (pos != std::string::npos) {
                         relative = old.string().substr(pos + strlen("shaders/"));
                     }
                     else {
                         relative = old.filename().string();
                     }
-
+                    
 					// combine relative path to rename
                     std::filesystem::path projectOld = sourceDir / relative;
                     std::filesystem::path projectNew = projectOld.parent_path() / newPath.filename();
@@ -1116,6 +1322,18 @@ void UI::assetRenamePopup() {
                         std::filesystem::rename(projectOld, projectNew);
                     }
 
+
+                    /* -------- Changing Prefab Name + Registry Entry -------- */
+
+                    // get prefabid by the path
+                    std::string prefabID = PrefabManager::Instance().findPrefabIDByFilename(old);
+                    if (!prefabID.empty()) {
+                        // change prefab name and save
+                        PrefabManager::Instance().setPrefabPath(prefabID, newPath.string());
+                    }
+
+                    /* ------- END ------- */
+                    
                     addDebugMessage("Renamed asset: " + old.string() + " -> " + newPath.string() + "\n");
                 }
                 else {
@@ -1145,9 +1363,11 @@ void UI::assetReplacePopup() {
     }
 
     if (ImGui::BeginPopupModal("Replace Asset", NULL, ImGuiWindowFlags_AlwaysAutoResize)) {
-        ImGui::Text("Select a new file to replace the asset:");
+        ImGui::Text("Select a new file to replace the asset:\n");
 
         ImGui::InputText("File Path", m_AssetBrowserState.replacePathBuffer, sizeof(m_AssetBrowserState.replacePathBuffer));
+
+        ImGui::Text("Please enter the absolute path without \"\"");
 
         if (ImGui::Button("Replace")) {
             std::filesystem::path old = m_AssetBrowserState.fullPathToReplace;
@@ -1270,6 +1490,8 @@ void UI::objPicking(GameObjectManager& manager) {
     manager.getAllGameObjects(gameObjects);
 
     GameObject* selected = nullptr;
+    GameObject* topmost = nullptr;
+    float highestZ = -INFINITY;
 
     for (auto* obj : gameObjects) {
         // dont let user click and select platform
@@ -1283,10 +1505,14 @@ void UI::objPicking(GameObjectManager& manager) {
 
         // check if mouse point intersects with the game obj
         if (Collision::CollisionIntersection_CircleAABB_Static(mousePoint, aabb)) {
-            selected = obj;
+            if (transform->z > highestZ) {
+                highestZ = transform->z;
+                topmost = obj;
+            }
         }
     }
 
+    selected = topmost;
     // if something is selected, update selection state
     if (selected) {
         m_SelectionState.selectedPrefab = nullptr;
@@ -1321,4 +1547,98 @@ void UI::objDragging() const {
     Vector2D mousePos = InputHandler::getMouseDeltaWorldInViewport(m_SceneWindowState.sceneSize);
     transform->x += mousePos.x;
     transform->y += mousePos.y;
+
+    // if obj has physics, do not follow gravity while dragging
+    Physics* physics = obj->getComponent<Physics>();
+    if (!physics) return;
+
+    physics->velY = 0.0f;
+}
+
+void UI::themeSinLeDark() {
+    ImGuiStyle& style = ImGui::GetStyle();
+    ImVec4* colors = style.Colors;
+
+    // start with dark theme
+    ImGui::StyleColorsDark();
+
+    // button
+    colors[ImGuiCol_Button] = ImVec4(0.75f, 0.35f, 0.55f, 1.00f);
+    colors[ImGuiCol_ButtonHovered] = ImVec4(0.85f, 0.45f, 0.65f, 1.00f);
+    colors[ImGuiCol_ButtonActive] = ImVec4(0.65f, 0.25f, 0.45f, 1.00f);
+
+    // header
+    colors[ImGuiCol_Header] = ImVec4(0.75f, 0.35f, 0.55f, 0.45f);
+    colors[ImGuiCol_HeaderHovered] = ImVec4(0.85f, 0.45f, 0.65f, 0.80f);
+    colors[ImGuiCol_HeaderActive] = ImVec4(0.65f, 0.25f, 0.45f, 1.00f);
+
+    // slider
+    colors[ImGuiCol_SliderGrab] = ImVec4(0.75f, 0.35f, 0.55f, 1.00f);
+    colors[ImGuiCol_SliderGrabActive] = ImVec4(0.85f, 0.45f, 0.65f, 1.00f);
+
+    colors[ImGuiCol_CheckMark] = ImVec4(0.75f, 0.35f, 0.55f, 1.00f);
+
+    // tab
+    colors[ImGuiCol_Tab] = ImVec4(0.88f, 0.70f, 0.80f, 1.00f);
+    colors[ImGuiCol_TabHovered] = ImVec4(0.95f, 0.75f, 0.85f, 1.00f);
+    colors[ImGuiCol_TabActive] = ImVec4(0.80f, 0.60f, 0.70f, 1.00f);
+    colors[ImGuiCol_TabUnfocused] = ImVec4(0.90f, 0.80f, 0.85f, 1.00f);
+    colors[ImGuiCol_TabUnfocusedActive] = ImVec4(0.85f, 0.65f, 0.75f, 1.00f);
+
+    // pinkie borders
+    colors[ImGuiCol_Border] = ImVec4(0.40f, 0.20f, 0.30f, 1.00f);
+}
+
+void UI::themeSinLeLight() {
+    ImGuiStyle& style = ImGui::GetStyle();
+    ImVec4* colors = style.Colors;
+
+    // Light pink backgrounds
+    colors[ImGuiCol_WindowBg] = ImVec4(0.95f, 0.90f, 0.92f, 1.00f);
+    colors[ImGuiCol_ChildBg] = ImVec4(0.92f, 0.87f, 0.89f, 1.00f);
+    colors[ImGuiCol_PopupBg] = ImVec4(0.94f, 0.89f, 0.91f, 0.98f);
+
+    // Dark text for contrast
+    colors[ImGuiCol_Text] = ImVec4(0.20f, 0.15f, 0.18f, 1.00f);
+    colors[ImGuiCol_TextDisabled] = ImVec4(0.50f, 0.45f, 0.48f, 1.00f);
+
+    // Soft pink buttons
+    colors[ImGuiCol_Button] = ImVec4(0.85f, 0.65f, 0.75f, 1.00f);
+    colors[ImGuiCol_ButtonHovered] = ImVec4(0.90f, 0.70f, 0.80f, 1.00f);
+    colors[ImGuiCol_ButtonActive] = ImVec4(0.80f, 0.60f, 0.70f, 1.00f);
+
+    // Input fields
+    colors[ImGuiCol_FrameBg] = ImVec4(0.88f, 0.78f, 0.82f, 1.00f);
+    colors[ImGuiCol_FrameBgHovered] = ImVec4(0.92f, 0.82f, 0.86f, 1.00f);
+    colors[ImGuiCol_FrameBgActive] = ImVec4(0.96f, 0.86f, 0.90f, 1.00f);
+
+    // tab
+    colors[ImGuiCol_Tab] = ImVec4(0.88f, 0.70f, 0.80f, 1.00f);
+    colors[ImGuiCol_TabHovered] = ImVec4(0.95f, 0.75f, 0.85f, 1.00f);
+    colors[ImGuiCol_TabActive] = ImVec4(0.80f, 0.60f, 0.70f, 1.00f);
+    colors[ImGuiCol_TabUnfocused] = ImVec4(0.90f, 0.80f, 0.85f, 1.00f);
+    colors[ImGuiCol_TabUnfocusedActive] = ImVec4(0.85f, 0.65f, 0.75f, 1.00f);
+
+    style.WindowRounding = 8.0f;
+    style.FrameRounding = 6.0f;
+}
+
+void UI::themeForest() {
+    ImGuiStyle& style = ImGui::GetStyle();
+    ImVec4* colors = style.Colors;
+
+    // Dark forest green background
+    colors[ImGuiCol_WindowBg] = ImVec4(0.08f, 0.12f, 0.08f, 0.94f);
+    colors[ImGuiCol_ChildBg] = ImVec4(0.10f, 0.14f, 0.10f, 1.00f);
+
+    // Light tan text
+    colors[ImGuiCol_Text] = ImVec4(0.92f, 0.88f, 0.80f, 1.00f);
+
+    // Moss green buttons
+    colors[ImGuiCol_Button] = ImVec4(0.35f, 0.55f, 0.35f, 1.00f);
+    colors[ImGuiCol_ButtonHovered] = ImVec4(0.45f, 0.65f, 0.45f, 1.00f);
+    colors[ImGuiCol_ButtonActive] = ImVec4(0.25f, 0.45f, 0.25f, 1.00f);
+
+    // Dark green frames
+    colors[ImGuiCol_FrameBg] = ImVec4(0.12f, 0.18f, 0.12f, 1.00f);
 }

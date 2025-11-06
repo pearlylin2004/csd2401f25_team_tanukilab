@@ -72,9 +72,11 @@ PrefabManager& PrefabManager::Instance() {
 	return instance;
 }
 
-void PrefabManager::loadPrefabRegistry(const std::string& filename) {
+void PrefabManager::loadPrefabRegistry() {
 	rapidjson::Document doc;
 	std::string err;
+
+	std::string filename = std::string(RUNTIME_DIR_R) + registryFile;
 
 	if (!JsonIO::ReadFileToDocument(filename, doc, &err)) {
 		std::cerr << "Prefab registry load failed: " << err << "\n";
@@ -115,13 +117,88 @@ void PrefabManager::loadPrefabRegistry(const std::string& filename) {
 	std::cout << "Prefab registry loaded: " << filename << " (" << m_prefabRegistry.size() << " prefabs)\n";
 }
 
-std::string& PrefabManager::getPrefabPath(const std::string& prefabID) {
-	return m_prefabRegistry[prefabID].path;
+void PrefabManager::savePrefabRegistry() {
+	rapidjson::Document doc;
+	doc.SetObject();
+	auto& a = doc.GetAllocator();
+
+	//rapidjson::Value prefabs(rapidjson::kArrayType);
+
+	// version number (same as loader)
+	doc.AddMember("version", 1, a);
+
+	// Create the prefabIndex array
+	rapidjson::Value prefabArray(rapidjson::kArrayType);
+
+	for (const auto& [id, prefab] : m_prefabRegistry) {
+		rapidjson::Value prefabObj(rapidjson::kObjectType);
+
+		prefabObj.AddMember("id", rapidjson::Value(id.c_str(), a), a);
+		prefabObj.AddMember("name", rapidjson::Value(prefab.name.c_str(), a), a);
+		prefabObj.AddMember("path", rapidjson::Value(prefab.path.c_str(), a), a);
+
+		prefabArray.PushBack(prefabObj, a);
+	}
+
+	doc.AddMember("prefabIndex", prefabArray, a);
+
+	// write to run time file
+	std::string runtime = std::string(RUNTIME_DIR_R) + registryFile;
+	std::string err;
+	if (!JsonIO::WriteDocumentToFile(runtime, doc, /*pretty=*/true, &err)) {
+		std::cerr << "Registry save failed: " << err << "\n";
+		return;
+	}
+
+	// write to source (project dir)
+	std::string dir = std::string(SOURCE_DIR_R) + registryFile;
+	if (!JsonIO::WriteDocumentToFile(dir, doc, /*pretty=*/true, &err)) {
+		std::cerr << "Prefab save failed (source): " << err << "\n";
+		return;
+	}
+	else {
+		std::cout << "Prefab saved (source JSON): " << dir << "\n";
+	}
+
+	std::cout << "Prefab registry saved at " << registryFile << "\n";
 }
+
+//std::string& PrefabManager::getPrefabPath(const std::string& prefabID) {
+//	return m_prefabRegistry[prefabID].path;
+//}
 
 const std::string& PrefabManager::getPrefabPath(const std::string& prefabID) const {
 	return m_prefabRegistry.at(prefabID).path;
 }
+
+bool PrefabManager::setPrefabPath(const std::string& prefabID, const std::string& newName) {
+	auto iterator = m_prefabRegistry.find(prefabID);
+	if (iterator == m_prefabRegistry.end()) {
+		std::cout << "Prefab ID " << prefabID << "not found.\n";
+		return false;
+	}
+
+	std::filesystem::path path{ newName };
+	std::string newNameWPath = path.filename().string();
+
+	iterator->second.path = "/Prefab/" + newNameWPath;
+	savePrefabRegistry();
+	std::cout << "[Debug] Updated prefab path for ID " << prefabID << " -> " << newNameWPath << "\n";
+	return true;
+}
+
+std::string PrefabManager::getPrefabFilename(const std::string& prefabID) const {
+	auto it = m_prefabRegistry.find(prefabID);
+	if (it == m_prefabRegistry.end()) {
+		std::cerr << "[Error] Prefab ID '" << prefabID << "' not found.\n";
+		return {};
+	}
+
+	// extract filename from path
+	std::filesystem::path fullPath = it->second.path;
+	return fullPath.filename().string();  // e.g. "platform.json"
+}
+
 
 std::string& PrefabManager::getPrefabName(const std::string& prefabID) {
 	return m_prefabRegistry[prefabID].name;
@@ -131,15 +208,15 @@ const std::string& PrefabManager::getPrefabName(const std::string& prefabID) con
 	return m_prefabRegistry.at(prefabID).name;
 }
 
-std::string PrefabManager::findPrefabIDByFilename(const std::string& filename) {
+std::string PrefabManager::findPrefabIDByFilename(const std::filesystem::path& filename) {
+	std::filesystem::path filenameOnly{ filename };
+	std::string f{ filenameOnly.filename().string() };
+
 	for (const auto& [id, info] : m_prefabRegistry) {
-		const std::string& path{ info.path };
+		std::filesystem::path path{ info.path };
+		std::string prefabFile{ path.filename().string() }; // extract only the filename of the 
 
-		// remove the parent folder name, cut to only filename
-		size_t lastSlash{ path.find_last_of("/\\") };
-		std::string prefabFile = (lastSlash != std::string::npos) ? path.substr(lastSlash + 1) : path;
-
-		if (prefabFile == filename) {
+		if (prefabFile == f) {
 			return id;
 		}
 	}
@@ -555,7 +632,7 @@ bool PrefabManager::savePrefab(const GameObject* prefabObj) {
 	}
 
 	// objects array
-	rapidjson::Value objects(rapidjson::kArrayType);
+	//rapidjson::Value objects(rapidjson::kArrayType);
 	// components container
 	rapidjson::Value comps(rapidjson::kObjectType);
 
@@ -647,4 +724,208 @@ bool PrefabManager::savePrefab(const GameObject* prefabObj) {
 	m_prefabCache[prefabID].CopyFrom(doc, m_prefabCache[prefabID].GetAllocator());
 
 	return true;
+}
+
+bool PrefabManager::createPrefabFromGameObj(GameObject* go, const std::string& name, bool makeRef) {
+	if (!go) return false;
+
+	std::string prefabID = generateUUID();
+
+	// if Prefab folder not created yet, create one
+	std::filesystem::path preFabDir = SOURCE_DIR_R + prefabFolder;
+	if (!std::filesystem::exists(preFabDir)) {
+		std::filesystem::create_directories(preFabDir);
+	}
+
+	// if name is not given, use the name of the game obj
+	std::string prefabName = (name.empty()) ? go->getObjectName() : name;
+	std::string filename = prefabFolder + "/" + prefabName + ".json";
+	std::filesystem::path prefabPath = preFabDir / prefabName;
+
+	auto pathExistsInRegistry = [this](const std::string& path) -> bool {
+		for (const auto& [id, info] : m_prefabRegistry) {
+			if (info.path == path) {
+				return true;
+			}
+		}
+		return false;
+		};
+
+	// Rename if path already registered
+	if (pathExistsInRegistry(filename)) {
+		int counter = 1;
+		std::string newFilename;
+		do {
+			newFilename = prefabFolder + "/" + prefabName + "_" + std::to_string(counter) + ".json";
+			counter++;
+		} while (pathExistsInRegistry(newFilename));
+		filename = newFilename;
+	}
+
+	PrefabInfo info;
+	info.name = prefabName;
+	info.path = filename;
+	m_prefabRegistry[prefabID] = info;
+
+	rapidjson::Document doc;
+	doc.SetObject();
+	auto& a = doc.GetAllocator();
+
+	// prefab id
+	doc.AddMember("id", rapidjson::Value(prefabID.c_str(), a), a);
+	// name
+	doc.AddMember("name", rapidjson::Value(prefabName.c_str(), a), a);
+
+	rapidjson::Value comps(rapidjson::kObjectType);
+
+	// ---- Transform ----
+	if (auto t = go->getComponent<Transform>()) {
+		rapidjson::Value jt(rapidjson::kObjectType);
+
+		rapidjson::Value pos(rapidjson::kArrayType);
+		pos.PushBack(t->x, a).PushBack(t->y, a).PushBack(t->z, a);
+		jt.AddMember("pos", pos, a);
+
+		jt.AddMember("rotation", t->rotation, a);
+
+		rapidjson::Value sc(rapidjson::kArrayType);
+		sc.PushBack(t->scaleX, a).PushBack(t->scaleY, a).PushBack(t->scaleZ, a);
+		jt.AddMember("scale", sc, a);
+
+		comps.AddMember("Transform", jt, a);
+	}
+
+	// ---- Render ----
+	if (auto r = go->getComponent<Render>()) {
+		rapidjson::Value jr(rapidjson::kObjectType);
+
+		jr.AddMember("shape", rapidjson::Value(ShapeToStr(r->modelRef.shape), a), a);
+
+		jr.AddMember("hasTex", r->hasTex ? 1 : 0, a);
+
+		if (r->hasTex && !r->texFile.empty())
+			jr.AddMember("texture", rapidjson::Value(r->texFile.c_str(), a), a);
+
+		jr.AddMember("hasAnimation", r->hasAnimation ? 1 : 0, a);
+
+		comps.AddMember("Render", jr, a);
+	}
+
+	// ---- Physics ----
+	if (auto p = go->getComponent<Physics>()) {
+		rapidjson::Value jp(rapidjson::kObjectType);
+
+		jp.AddMember("inWater", p->inWater ? 1 : 0, a);
+
+		jp.AddMember("buoyancy", p->buoancy ? 1 : 0, a);
+
+		comps.AddMember("Physics", jp, a);
+	}
+
+	// ---- Animation ----
+	if (auto an = go->getComponent<Animation>()) {
+		rapidjson::Value ja(rapidjson::kObjectType);
+
+		ja.AddMember("loop", an->loop ? 1 : 0, a);
+
+		ja.AddMember("currentFrameColumn", an->currentFrameColumn, a);
+
+		ja.AddMember("currentFrameRow", an->currentFrameRow, a);
+
+		ja.AddMember("totalColumn", an->totalColumn, a);
+
+		ja.AddMember("totalRow", an->totalRow, a);
+
+		ja.AddMember("frameTime", an->frameTime, a);
+
+		comps.AddMember("Animation", ja, a);
+	}
+
+	// ---- StateMachine ----
+	if (auto sm = go->getComponent<StateMachine>()) {
+		rapidjson::Value js(rapidjson::kObjectType);
+
+		js.AddMember("state", rapidjson::Value(playerStateToStr(sm->state), a), a);
+
+		js.AddMember("facingRight", sm->facingRight ? 1 : 0, a);
+
+		js.AddMember("stateTime", sm->stateTime, a);
+
+		comps.AddMember("StateMachine", js, a);
+	}
+
+	doc.AddMember("components", comps, a);
+
+	/* -------- Save new prefab to a new .json file ------- */
+	std::string path = std::string(RUNTIME_DIR_R) + getPrefabPath(prefabID);
+	std::string err;
+	if (!JsonIO::WriteDocumentToFile(path, doc, /*pretty=*/true, &err)) {
+		std::cerr << "Prefab save failed (runtime): " << err << "\n";
+		return false;
+	}
+	else {
+		std::cout << "Prefab saved (runtime JSON): " << path << "\n";
+	}
+
+	path = std::string(SOURCE_DIR_R) + getPrefabPath(prefabID);
+	if (!JsonIO::WriteDocumentToFile(path, doc, /*pretty=*/true, &err)) {
+		std::cerr << "Prefab save failed (source): " << err << "\n";
+		return false;
+	}
+	else {
+		std::cout << "Prefab saved (source JSON): " << path << "\n";
+	}
+	/* -------- END ------- */
+
+	// save in prefab registry file
+	savePrefabRegistry();
+
+	// set this game object to be reference to the created prefab
+	if(makeRef) go->getObjectPrefabID() = prefabID;
+
+	// update cache
+	//m_prefabCache[prefabID].SetObject();
+	m_prefabCache[prefabID].CopyFrom(doc, m_prefabCache[prefabID].GetAllocator());
+
+	return true;
+}
+
+bool PrefabManager::deletePrefab(const std::string prefabID) {
+	auto iterator = m_prefabRegistry.find(prefabID);
+	if (iterator == m_prefabRegistry.end()) {
+		std::cerr << "PrefabManager::deleteprefab: failed — prefab ID not found: " << prefabID << "\n";
+		return false;
+	}
+
+	// remove prefab from prefab registry and prefab cache
+	m_prefabRegistry.erase(iterator);
+	m_prefabCache.erase(prefabID);
+
+	// save updated prefab registry to file
+	savePrefabRegistry();
+
+	return true;
+}
+
+std::string PrefabManager::generateUUID() {
+	std::random_device rd;
+	std::mt19937 gen(rd());
+	std::uniform_int_distribution<unsigned> dis1(0, 15); // 0 - F
+	std::uniform_int_distribution<unsigned> dis2(8, 11); // variant
+
+	std::stringstream uuid;
+	int i;
+	for (i = 0; i < 8; ++i) uuid << std::hex << dis1(gen); // first 8 hex
+	uuid << "-";
+	for (i = 0; i < 4; ++i) uuid << std::hex << dis1(gen); // next 4 digits
+	uuid << "-";
+	uuid << 4; // version 4
+	for (i = 0; i < 3; ++i) uuid << std::hex << dis1(gen); // next 3 digits
+	uuid << "-";
+	uuid << std::hex << dis2(gen); // variant
+	for (i = 0; i < 3; ++i) uuid << std::hex << dis1(gen); // next 3 digits
+	uuid << "-";
+	for (i = 0; i < 12; ++i) uuid << std::hex << dis1(gen); // last 12 digits
+
+	return uuid.str();
 }
