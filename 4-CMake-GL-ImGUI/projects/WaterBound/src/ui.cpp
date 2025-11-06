@@ -627,6 +627,10 @@ void UI::objHierarchyWindow(GameObjectManager& manager) {
                     addDebugMessage("Prefab created.\n");
                 }
 
+                if (ImGui::MenuItem("Delete Object")) {
+                    m_AssetBrowserState.showDeletePopup = true;
+                }
+
                 ImGui::EndPopup();
             }
 
@@ -921,7 +925,15 @@ void UI::loadAssetsFromDirectory() {
     for (const std::filesystem::directory_entry& entry : std::filesystem::recursive_directory_iterator(m_AssetBrowserState.currentFolder)) {
         if (entry.is_regular_file()) {
             Asset asset;
-            asset.name = entry.path().filename().string();
+            std::string filename = entry.path().filename().string();
+            std::string extension = entry.path().extension().string();
+
+            // skip unwanted files
+            if (filename == m_tempSceneName) continue;
+            if (filename == "prefab_registry.json") continue;
+            if (extension == ".vert" || extension == ".frag") continue;
+
+            asset.name = std::move(filename);
             asset.path = entry.path().string();
             asset.folder = entry.path().parent_path().string(); // folder in assets that contains this file, for future filtering
 
@@ -1121,25 +1133,6 @@ void UI::assetDeletePopup() {
         m_AssetBrowserState.showDeletePopup = false;
     }
 
-    /*---------------- Cannot delete current loaded scene ----------------*/
-    if (!m_AssetBrowserState.fullPathToDelete.empty() &&
-        m_currentSceneName == std::filesystem::path(m_AssetBrowserState.fullPathToDelete).filename().string())
-    {
-        ImGui::OpenPopup("Cannot Delete Current Scene");
-        m_AssetBrowserState.fullPathToDelete.clear(); // clear so the check doesn't repeat
-    }
-
-    if (ImGui::BeginPopupModal("Cannot Delete Current Scene", NULL, ImGuiWindowFlags_AlwaysAutoResize)) {
-        ImGui::Text("Cannot delete the currently loaded scene!");
-
-        if (ImGui::Button("OK")) {
-            ImGui::CloseCurrentPopup();
-        }
-
-        ImGui::EndPopup();
-    }
-    /*-------------------- END -------------------*/
-
 
     /*---------------- Delete Confirmation ----------------*/
     if (ImGui::BeginPopupModal("Confirm Delete Asset", NULL, ImGuiWindowFlags_AlwaysAutoResize)) {
@@ -1158,7 +1151,7 @@ void UI::assetDeletePopup() {
 
                 // split the "shaders/" part to get relative path
                 std::string relativePath;
-                auto pos = m_AssetBrowserState.fullPathToDelete.find("shaders/");
+                size_t pos = m_AssetBrowserState.fullPathToDelete.find("shaders/");
                 if (pos != std::string::npos) {
                     relativePath = m_AssetBrowserState.fullPathToDelete.substr(pos + strlen("shaders/"));
                 }
@@ -1169,6 +1162,13 @@ void UI::assetDeletePopup() {
                     std::filesystem::remove(projectPath);
                     std::cout << "Deleted asset (Project): " << projectPath.string() << std::endl;
                 }
+
+                /* -------- Prefab Delete (WIP) -------- */
+                std::string prefabID = PrefabManager::Instance().findPrefabIDByFilename(relativePath);
+                if (!prefabID.empty()) {
+                    PrefabManager::Instance().deletePrefab(prefabID);
+                }
+                /* -------- END --------- */
 
                 addDebugMessage("Deleted asset: " + m_AssetBrowserState.fullPathToDelete + "\n");
             }
@@ -1181,6 +1181,26 @@ void UI::assetDeletePopup() {
 
         if (ImGui::Button("No")) {
             m_AssetBrowserState.fullPathToDelete.clear();
+            ImGui::CloseCurrentPopup();
+        }
+
+        ImGui::EndPopup();
+    }
+    /*-------------------- END -------------------*/
+
+
+    /*---------------- Cannot delete current loaded scene ----------------*/
+    if (!m_AssetBrowserState.fullPathToDelete.empty() &&
+        m_currentSceneName == std::filesystem::path(m_AssetBrowserState.fullPathToDelete).filename().string())
+    {
+        ImGui::OpenPopup("Cannot Delete Current Scene");
+        m_AssetBrowserState.fullPathToDelete.clear(); // clear so the check doesn't repeat
+    }
+
+    if (ImGui::BeginPopupModal("Cannot Delete Current Scene", NULL, ImGuiWindowFlags_AlwaysAutoResize)) {
+        ImGui::Text("Cannot delete the currently loaded scene!");
+
+        if (ImGui::Button("OK")) {
             ImGui::CloseCurrentPopup();
         }
 

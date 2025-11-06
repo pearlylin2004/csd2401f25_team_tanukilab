@@ -72,6 +72,9 @@ public:
 	// create a prefab out of a game obj
 	bool createPrefabFromGameObj(GameObject* go, const std::string& name = "", /* whether to make this game obj ref to the game obj */ bool makeRef = false);
 
+	// DO NOT USE THIS, IN COMPLETE
+	bool deletePrefab(const std::string prefabID);
+
 private:
 	struct PrefabInfo {
 		std::string name;

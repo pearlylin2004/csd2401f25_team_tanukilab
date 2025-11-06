@@ -66,7 +66,7 @@ private:
 	void loadScenePopup(GameObjectManager& manager);
 
 	void objDeletePopup(GameObjectManager& manager);
-	void createPrefabPopup();
+	//void createPrefabPopup();
 
 	void newScene(GameObjectManager& manager);
 	void duplicateScene(GameObjectManager& manager);

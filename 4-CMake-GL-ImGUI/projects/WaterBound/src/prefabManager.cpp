@@ -853,6 +853,23 @@ bool PrefabManager::createPrefabFromGameObj(GameObject* go, const std::string& n
 	return true;
 }
 
+bool PrefabManager::deletePrefab(const std::string prefabID) {
+	auto iterator = m_prefabRegistry.find(prefabID);
+	if (iterator == m_prefabRegistry.end()) {
+		std::cerr << "PrefabManager::deleteprefab: failed — prefab ID not found: " << prefabID << "\n";
+		return false;
+	}
+
+	// remove prefab from prefab registry and prefab cache
+	m_prefabRegistry.erase(iterator);
+	m_prefabCache.erase(prefabID);
+
+	// save updated prefab registry to file
+	savePrefabRegistry();
+
+	return true;
+}
+
 std::string PrefabManager::generateUUID() {
 	std::random_device rd;
 	std::mt19937 gen(rd());
