@@ -146,7 +146,7 @@ namespace Collision {
             cp.x += vel1.x * tFirst;
             cp.y += vel1.y * tFirst;
             info.contactPoint = cp;
-            return info;
+            //return info;
         }
 
         //testing

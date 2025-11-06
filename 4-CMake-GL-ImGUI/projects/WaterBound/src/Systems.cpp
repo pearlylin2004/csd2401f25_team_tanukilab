@@ -937,13 +937,15 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 				auto& cellObject = grid[i][j].objects; //get objects in the cell
 				//loop through objects in the cell to check for collision
 				for (size_t n = 0; n < cellObject.size(); n++) {
+					std::cout << "Cell has " << cellObject.size() << " objects" << std::endl;  // ADD THIS
+
 					//object 1
 					GameObject* obj1 = cellObject[n];
 					if (!obj1->hasComponent<Physics>()) continue;
 					Transform* t1 = obj1->getComponent<Transform>();
 					Collision::AABB aabb1 = Collision::getObjectAABB(t1);
 					Physics* p1 = obj1->getComponent<Physics>();
-					Vector2D vel1{ p1->velX, p1->velY };
+					Vector2D vel1{ p1->dynamics.velocity.x, p1->dynamics.velocity.y };
 					//object 2 looping
 					for (size_t m = n + 1; m < cellObject.size(); m++) {
 						//object 2
@@ -962,22 +964,40 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 						Physics* p2 = obj2->getComponent<Physics>();
 						Vector2D vel2{ p2->velX, p2->velY };
 
-						CollisionInfo info = Collision::CollisionIntersection_RectRect_Dynamic_Info(aabb1, vel1, aabb2, vel2); //check collision
+						std::cout << "CHECKING PAIR!" << std::endl;  // ADD THIS
+						CollisionInfo info = Collision::CollisionIntersection_RectRect_Dynamic_Info(aabb1, vel1, aabb2, vel2);
+						std::cout << "info.collided = " << info.collided << std::endl;  // ADD THIS
 					
 						//checking if collided
 						if (info.collided) {
-							//update the velocity and penetrations
+							std::cout << "COLLISION RESPONSE: normal=(" << info.normal.x << ", " << info.normal.y << ") penetration=" << info.penetration << std::endl;
+							std::cout << "  Before: obj1 pos=(" << t1->x << ", " << t1->y << ") obj2 pos=(" << t2->x << ", " << t2->y << ")" << std::endl;
+							//update the velocity and penetrations for BOTH objects
 							if (info.normal.x != 0) {
-								t1->x += info.normal.x * info.penetration;
-								p1->velX = 0; //stop horizontal movement
+								t1->x += info.normal.x * info.penetration * 0.5f;
+								p1->velX = 0;
+								p1->dynamics.velocity.x = 0;
+
+								t2->x -= info.normal.x * info.penetration * 0.5f;
+								p2->velX = 0;
+								p2->dynamics.velocity.x = 0;
 							}
 
 							// resolve Y
 							if (info.normal.y != 0) {
-								t1->y += info.normal.y * info.penetration;
-								p1->velY = 0; //stop vertical movement
-								p1->onGround = true;
+								t1->y += info.normal.y * info.penetration * 0.5f;
+								p1->velY = 0;
+								p1->dynamics.velocity.y = 0;
+
+								t2->y -= info.normal.y * info.penetration * 0.5f;
+								p2->velY = 0;
+								p2->dynamics.velocity.y = 0;
+
+								if (info.normal.y > 0) {
+									p1->onGround = true;
+								}
 							}
+							std::cout << "  After: obj1 pos=(" << t1->x << ", " << t1->y << ") obj2 pos=(" << t2->x << ", " << t2->y << ")" << std::endl;
 							
 
 							UI::addDebugMessage("Collision detected between Object.\n"); //message for debugger
