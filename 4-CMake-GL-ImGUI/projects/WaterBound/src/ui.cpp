@@ -686,6 +686,8 @@ void UI::objHierarchyWindow(GameObjectManager& manager) {
             prefabObj->getObjectPrefabID() = prefabID;
             if (prefabObj) {
                 PrefabManager::Instance().instantiate(prefabObj, manager);
+                Render* render = prefabObj->getComponent<Render>();
+                if (render) render->texChanged = true;
 
                 addDebugMessage("Added game obj from prefab\n");
             }
