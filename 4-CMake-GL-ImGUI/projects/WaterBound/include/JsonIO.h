@@ -3,7 +3,7 @@
 \file		JsonIO.h
 \author     Varick, v.teo, 2403417
 \par        v.teo@digipen.edu
-\date		October, 1st, 2025
+\date		November, 5th, 2025
 \brief      Declarations for JSON loading/saving utilities for the WaterBound engine.
 
 Copyright (C) 2025 DigiPen Institute of Technology.
