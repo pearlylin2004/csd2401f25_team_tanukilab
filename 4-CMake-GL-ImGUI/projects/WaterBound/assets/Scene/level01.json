@@ -52,7 +52,7 @@
         "Render": {
           "shape": "square",
           "hasTex": 1,
-          "texture": "shaders/Smoke-Sprite-Sheet.png",
+          "texture": "assets/Smoke-Sprite-Sheet.png",
           "hasAnimation": 1
         },
         "Animation": {
