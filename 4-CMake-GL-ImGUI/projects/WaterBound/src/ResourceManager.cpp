@@ -292,7 +292,7 @@ FontData ResourceManager::loadFontFromFile(const std::string& path) {
             texture,
             glm::ivec2(fontData.face->glyph->bitmap.width, fontData.face->glyph->bitmap.rows),
             glm::ivec2(fontData.face->glyph->bitmap_left, fontData.face->glyph->bitmap_top),
-            fontData.face->glyph->advance.x
+            static_cast<GLuint>(fontData.face->glyph->advance.x)
         };
 
         fontData.characters[c] = character;
