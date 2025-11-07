@@ -1,14 +1,14 @@
 /* Start Header ************************************************************************/
 /*!
-\file       input.cpp
+\file       prefabManager.h
 \author     Tan Chee Qing, cheeqing.tan, 2401486
-			- 100% of the file
+			- 80% of the file
+			Varick, v.teo, 2403417
+			- 20% of the file
 \par        cheeqing.tan@digipen.edu
-\date       September, 15th, 2025
-\brief      This source file implements the InputHandler class, which centralizes input
-			handling for GLFW. It maintains arrays of current and previous states for
-			keyboard keys and mouse buttons, enabling detection of triggered, released,
-			held, and combo inputs.
+\par		v.teo@digipen.edu
+\date       November, 07th, 2025
+\brief      A class that load and manage the prefabs by maintaining a prefab registry.
 
 Copyright (C) 2025 DigiPen Institute of Technology.
 Reproduction or disclosure of this file or its contents

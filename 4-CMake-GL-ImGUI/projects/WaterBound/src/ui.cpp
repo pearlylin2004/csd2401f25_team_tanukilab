@@ -1,9 +1,12 @@
 /* Start Header ************************************************************************/
 /*!
 \file       ui.cpp
-\author     Pearly Lin Lee Ying, p.lin, 2401591
-            - 100% of the file
+\author     Tan Chee Qing, cheeqing.tan, 2401486
+            - 90%
+            Pearly Lin Lee Ying, p.lin, 2401591
+            - 10% of the file
 \par        p.lin@digipen.edu
+\par		cheeqing.tan@digipen.edu
 \date       September, 17th, 2025
 \brief      definition of functions, drawPerformance, drawControls, drawDebug, shapeControl
             for the imgui windows
@@ -485,6 +488,15 @@ void UI::loadScenePopup(GameObjectManager& manager) {
             JsonIO::syncSceneToRuntime(m_currentSceneName);
 
             loadScene(manager);
+            std::vector<GameObject*> gameObjects;
+            manager.getAllGameObjects(gameObjects);
+
+            for (GameObject* object : gameObjects) {
+                Render* r = object->getComponent<Render>();
+                if (r) {
+                    r->texChanged = true;
+                }
+            }
             ImGui::CloseCurrentPopup();
         }
 
@@ -492,6 +504,16 @@ void UI::loadScenePopup(GameObjectManager& manager) {
         ImGui::SameLine();
         if (ImGui::Button("Discard Changes")) {
             loadScene(manager);
+
+            std::vector<GameObject*> gameObjects;
+            manager.getAllGameObjects(gameObjects);
+
+            for (GameObject* object : gameObjects) {
+                Render* r = object->getComponent<Render>();
+                if (r) {
+                    r->texChanged = true;
+                }
+            }
             ImGui::CloseCurrentPopup();
         }
 
@@ -683,6 +705,8 @@ void UI::objHierarchyWindow(GameObjectManager& manager) {
             prefabObj->getObjectPrefabID() = prefabID;
             if (prefabObj) {
                 PrefabManager::Instance().instantiate(prefabObj, manager);
+                Render* render = prefabObj->getComponent<Render>();
+                if (render) render->texChanged = true;
 
                 addDebugMessage("Added game obj from prefab\n");
             }

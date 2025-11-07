@@ -1,9 +1,12 @@
 ﻿/* Start Header ************************************************************************/
 /*!
 \file       ui.h
-\author     Pearly Lin Lee Ying, p.lin, 2401591
-			- 100% of the file
+\author     Tan Chee Qing, cheeqing.tan, 2401486
+			- 90%
+			Pearly Lin Lee Ying, p.lin, 2401591
+			- 10% of the file
 \par        p.lin@digipen.edu
+\par		cheeqing.tan@digipen.edu
 \date       September, 24th, 2025
 \brief      Declaration of functions, drawDemo, drawControls, drawDebug, shapeControl
 			for the imgui windows
@@ -58,15 +61,31 @@ public:
 	void sceneWindow(GLuint texture, float aspectRatio);
 
 private:
+	// viewport for performance of each system
 	void drawPerformance();
+
+	// draw circle / rectangle / spawn object
 	void drawShapes(GameObjectManager& manager);
+
+	// viewport for displaying debug messages
 	void drawDebug();
 
+
+	// top menu bar for file, toggle simulation and choosing UI theme of editor
 	void editorMenuBar(GameObjectManager& manager);
+
+	// hierarchy object window list
 	void objHierarchyWindow(GameObjectManager& manager);
+
+	// object properties viewport
 	void objInspectorWindow(GameObjectManager& manager);
+
+	// asset browser
 	void assetWindow();
+
+	// control editor camera
 	void editorCameraControls();
+
 
 	void newScenePopup(GameObjectManager& manager);
 	void duplicateScenePopup(GameObjectManager& manager);
@@ -75,20 +94,32 @@ private:
 	void objDeletePopup(GameObjectManager& manager);
 	void createPrefabPopup(GameObjectManager& manager);
 
+	// create new scene and open
 	void newScene(GameObjectManager& manager);
+
+	// dup current scene and open
 	void duplicateScene(GameObjectManager& manager);
+
+	// load existing scene
 	void loadScene(GameObjectManager& manager);
+
 
 	void assetDeletePopup();
 	void assetRenamePopup();
 	void assetReplacePopup();
 
+
+	// handle click and select logic and collision
 	void objPicking(GameObjectManager& manager);
+
+	// handle dragging of the obj (obj will follow cursor)
 	void objDragging() const;
 
+	/* ----------------- UI Theme -----------------*/
 	void themeSinLeDark();
 	void themeSinLeLight();
 	void themeForest();
+	/* ----------------- End -----------------*/
 
 	/* ----------------- Menu Bar -----------------*/
 	struct menuBarState {
