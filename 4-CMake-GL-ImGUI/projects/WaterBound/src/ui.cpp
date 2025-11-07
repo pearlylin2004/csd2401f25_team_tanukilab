@@ -36,8 +36,13 @@ UI::UI() {
 void UI::update(GameObjectManager& manager) {
     if (InputHandler::isComboKeyTriggered(GLFW_KEY_S, GLFW_KEY_LEFT_CONTROL) ||
         InputHandler::isComboKeyTriggered(GLFW_KEY_S, GLFW_KEY_RIGHT_CONTROL)) {
-        manager.saveScene(JsonIO::sourceScenePath(m_currentSceneName));
-        JsonIO::syncSceneToRuntime(m_currentSceneName);
+        if (!m_isPlaying) {
+            manager.saveScene(JsonIO::sourceScenePath(m_currentSceneName));
+            JsonIO::syncSceneToRuntime(m_currentSceneName);
+        }
+        else {
+            addDebugMessage("Playing simulation. File cannot be saved.");
+        }
     }
 
     editorMenuBar(manager);
@@ -378,7 +383,8 @@ void UI::editorMenuBar(GameObjectManager& manager) {
 void UI::newScenePopup(GameObjectManager& manager) {
     // open popup if flagged
     if (m_MenuBarState.showNewScenePopup) {
-        ImGui::OpenPopup("Confirm New Scene");
+        if (!m_isPlaying) ImGui::OpenPopup("Confirm New Scene"); // only load scene when not playing simulation
+        else addDebugMessage("Playing simulation, cannot load scene.\n");
         m_MenuBarState.showNewScenePopup = false;
     }
 
@@ -427,7 +433,8 @@ void UI::newScenePopup(GameObjectManager& manager) {
 void UI::duplicateScenePopup(GameObjectManager& manager) {
     if (m_MenuBarState.showDuplicatePopup) {
         m_MenuBarState.showDuplicatePopup = false;
-        ImGui::OpenPopup("Confirm Duplicate Scene");
+        if (!m_isPlaying) ImGui::OpenPopup("Confirm Duplicate Scene"); // only duplicate scene when not playing simulation
+        else addDebugMessage("Playing simulation, cannot load scene.\n");
     }
 
 	if (ImGui::BeginPopupModal("Confirm Duplicate Scene", NULL, ImGuiWindowFlags_AlwaysAutoResize)) {
@@ -463,8 +470,9 @@ void UI::duplicateScenePopup(GameObjectManager& manager) {
 
 void UI::loadScenePopup(GameObjectManager& manager) {
     if (m_MenuBarState.showLoadScenePopup) {
-        ImGui::OpenPopup("Confirm Load Scene");
         m_MenuBarState.showLoadScenePopup = false;
+        if (!m_isPlaying) ImGui::OpenPopup("Confirm Load Scene"); // only load scene when not playing simulation
+        else addDebugMessage("Playing simulation, cannot load scene.\n");
     }
 
     if (ImGui::BeginPopupModal("Confirm Load Scene", NULL, ImGuiWindowFlags_AlwaysAutoResize)) {
