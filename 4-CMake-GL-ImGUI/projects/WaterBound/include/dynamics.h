@@ -1,3 +1,20 @@
+/* Start Header ************************************************************************/
+/*!
+\file       dynamics.h
+\author     Asha Mathyalakan, asha.m, 2402886
+            - 100% of the file
+\par        asha.m@digipen.edu
+\date       November, 7th, 2025
+\brief      Defines the Force and Dynamics structures along with the
+            DynamicsSystem class responsible for handling physics-based
+            motion and force integration in the game.
+
+Copyright (C) 2025 DigiPen Institute of Technology.
+Reproduction or disclosure of this file or its contents
+without the prior written consent of DigiPen Institute of
+Technology is prohibited.
+*/
+/* End Header **************************************************************************/
 #pragma once
 #include "mathlib.h"
 #include <vector>

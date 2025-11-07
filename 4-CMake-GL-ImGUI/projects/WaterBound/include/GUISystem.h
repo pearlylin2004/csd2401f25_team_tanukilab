@@ -1,3 +1,23 @@
+/* Start Header ************************************************************************/
+/*!
+\file       GUISystem.h
+\author     Asha Mathyalakan, asha.m, 2402886
+            - 90% of the file
+\author     Pearly Lin Lee Ying, p.lin, 2401591
+            - 10% of the file
+\par        asha.m@digipen.edu
+\par        p.lin@digipen.edu
+\date       November, 7th, 2025
+\brief      Consists of declarations for managing creation and removal
+//          of menu buttons, detects button clicks, and updates game state
+//          accordingly.
+
+Copyright (C) 2025 DigiPen Institute of Technology.
+Reproduction or disclosure of this file or its contents
+without the prior written consent of DigiPen Institute of
+Technology is prohibited.
+*/
+/* End Header **************************************************************************/
 #pragma once
 #include "GameObjectManager.h"
 #include "input.h"

@@ -1,3 +1,19 @@
+/* Start Header ************************************************************************/
+/*!
+\file       dynamics.cpp
+\author     Asha Mathyalakan, asha.m, 2402886
+            - 100% of the file
+\par        asha.m@digipen.edu
+\date       November, 7th, 2025
+\brief      Implements the functionality defined in DynamicsSystem.h for
+            simulating physics-based motion and force application.
+
+Copyright (C) 2025 DigiPen Institute of Technology.
+Reproduction or disclosure of this file or its contents
+without the prior written consent of DigiPen Institute of
+Technology is prohibited.
+*/
+/* End Header **************************************************************************/
 #include "dynamics.h"
 
 // Add a new force
