@@ -19,8 +19,11 @@ Technology is prohibited.
 #include "ui.h"
 #include "input.h"
 
+#ifndef RUNTIME_DIR_R
+#define RUNTIME_DIR_R "./assets"
+#endif
 #ifndef SOURCE_DIR_R
-#define SOURCE_DIR_R "./projects/WaterBound/shaders"
+#define SOURCE_DIR_R "./projects/WaterBound/assets"
 #endif
 
 GLFWwindow* InputHandler::m_window = nullptr;
@@ -377,8 +380,8 @@ void InputHandler::scrollCallback(GLFWwindow* window, double xoffset, double yof
 void InputHandler::dropCallback(GLFWwindow* window, int count, const char** paths) {
 	(void)window;
 
-	std::filesystem::path buildDir("Debug/shaders"); // build/debug folder (run time)
-	std::filesystem::path projectDir(SOURCE_DIR_R); // project folder
+    std::filesystem::path buildDir(RUNTIME_DIR_R); // "./assets"
+    std::filesystem::path projectDir(SOURCE_DIR_R);  // "./projects/WaterBound/assets"
 
 	for (int i = 0; i < count; ++i) {
 		std::filesystem::path src(paths[i]);

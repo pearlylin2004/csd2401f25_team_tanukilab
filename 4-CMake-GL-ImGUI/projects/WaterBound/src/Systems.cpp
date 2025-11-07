@@ -641,9 +641,9 @@ void FontSystem::init(GameObjectManager& manager)
 {
 	Font::init();
 
-	ResourceManager::getInstance().getFont("shaders/Orange Knight.ttf");
-	ResourceManager::getInstance().getFont("shaders/ARIAL.TTF");
-	ResourceManager::getInstance().getFont("shaders/times.ttf");
+	ResourceManager::getInstance().getFont("assets/Orange Knight.ttf");
+	ResourceManager::getInstance().getFont("assets/ARIAL.TTF");
+	ResourceManager::getInstance().getFont("assets/times.ttf");
 
 	std::vector<GameObject*> gameObjects;
 	manager.getAllGameObjects(gameObjects);
@@ -723,10 +723,10 @@ void FontSystem::RenderText(GLuint& s, std::string text, float x, float y, float
 	
 	std::string fontPath;
 	switch (fc->fontType) {
-	case 0: fontPath = "shaders/Orange Knight.ttf"; break;
-	case 1: fontPath = "shaders/ARIAL.TTF"; break;
-	case 2: fontPath = "shaders/times.ttf"; break;
-	default: fontPath = "shaders/ARIAL.TTF"; break;
+	case 0: fontPath = "assets/Orange Knight.ttf"; break;
+	case 1: fontPath = "assets/ARIAL.TTF"; break;
+	case 2: fontPath = "assets/times.ttf"; break;
+	default: fontPath = "assets/ARIAL.TTF"; break;
 	}
 
 	const FontData& fontData = ResourceManager::getInstance().getFont(fontPath);

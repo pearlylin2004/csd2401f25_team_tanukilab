@@ -32,6 +32,13 @@ Technology is prohibited.
 #include "performance.h"
 #include "prefabManager.h"
 
+#ifndef RUNTIME_DIR_R
+#define RUNTIME_DIR_R "./assets"
+#endif
+#ifndef SOURCE_DIR_R
+#define SOURCE_DIR_R "./projects/WaterBound/assets"
+#endif
+
 class UI {
 public:
 	UI(); // only used to initialize shape presets, can be =DEFAULT later when loading from json
@@ -139,7 +146,8 @@ private:
 	};
 
 	struct AssetBrowserState {
-		std::string currentFolder = "Debug/shaders/"; // we dont have a asset folder yet :(
+		//std::string currentFolder = "Debug/shaders/"; // we dont have a asset folder yet :(
+		std::string currentFolder = std::string(RUNTIME_DIR_R) + "/"; // "./assets/"
 		std::filesystem::file_time_type lastTopLevelRefresh; // top level folder timestamp
 		std::filesystem::file_time_type lastRefresh;
 		

@@ -260,8 +260,7 @@ void renderer::drawInstances(model& mdl, const std::vector<InstanceData>& instan
 
 void renderer::setup_shdrpgm()
 {
-	//shdr_pgm.push_back(LoadShaders("shaders/hasTex.vert", "shaders/hasTex.frag", true));
-	//shdr_pgm.push_back(LoadShaders("shaders/noTex.vert", "shaders/noTex.frag", true));
+
 	GLuint shader1 = ResourceManager::getInstance().getShader("shaders/hasTex.vert", "shaders/hasTex.frag");
 	std::cout << "Shader program ID (hasTex): " << shader1 << std::endl;
 	GLuint shader2 = ResourceManager::getInstance().getShader("shaders/noTex.vert", "shaders/noTex.frag");

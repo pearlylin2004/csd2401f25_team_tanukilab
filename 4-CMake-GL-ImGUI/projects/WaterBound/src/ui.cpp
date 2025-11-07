@@ -24,10 +24,7 @@ bool UI::isEditing = false;
 
 UI::UI() {
 
-    //m_currentSceneName = "shaders/Scene/level01.json";
-    ////m_currentSceneName = "shaders/Scene/temp_serialize.txt";
-    ////m_tempSceneName = "shaders/Scene/temp_scene";
-    //m_tempSceneName = "shaders/Scene/temp_scene.json";
+
     m_currentSceneName = "level01.json";
     m_tempSceneName = "temp_scene.json";
     m_isPlaying = false;
@@ -115,7 +112,7 @@ void UI::drawShapes(GameObjectManager& manager) {
 
                 render->modelRef = renderer::models[static_cast<int>(shape::square)];
                 render->hasTex = true;
-                render->texFile = "shaders/Sample_tilemap.png";
+                render->texFile = "./assets/Sample_tilemap.jpg";
                 render->texChanged = true;
             }
 

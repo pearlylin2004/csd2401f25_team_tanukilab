@@ -17,10 +17,10 @@ Technology is prohibited.
 */
 /* End Header **************************************************************************/
 #ifndef RUNTIME_DIR_R
-#define RUNTIME_DIR_R "./shaders"
+#define RUNTIME_DIR_R "./assets"
 #endif
 #ifndef SOURCE_DIR_R
-#define SOURCE_DIR_R "./projects/WaterBound/shaders"
+#define SOURCE_DIR_R "./projects/WaterBound/assets"
 #endif
 #include "prefabManager.h"
 #include "JsonIO.h"

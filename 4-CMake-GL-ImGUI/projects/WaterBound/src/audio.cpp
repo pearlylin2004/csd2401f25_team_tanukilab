@@ -304,13 +304,13 @@ std::string AudioHandler::soundIDToFilePath(soundID id) {
 	// for now file paths are hardcoded, to change once deserialization is implemented
 	switch (id) {
 	case soundID::water:
-		return "shaders/audio/water.wav";
+		return "assets/audio/water.wav";
 	case soundID::shoot:
-		return "shaders/audio/underwater.wav";
+		return "assets/audio/underwater.wav";
 	case soundID::fire:
-		return "shaders/audio/fire.wav";
+		return "assets/audio/fire.wav";
 	case soundID::bg:
-		return "shaders/audio/bg.wav";
+		return "assets/audio/bg.wav";
 	default:
 		return "";
 	}

@@ -18,13 +18,16 @@ Technology is prohibited.
 #include "renderer.h"
 
 #ifndef RUNTIME_SCENE_DIR_R
-#define RUNTIME_SCENE_DIR_R "./shaders/Scene"
+#define RUNTIME_SCENE_DIR_R "./assets/Scene"
 #endif
-#ifndef SOURCE_SCENE_DIR_R
-#define SOURCE_SCENE_DIR_R "./projects/WaterBound/shaders/Scene"
+#ifndef SOURCE_ASSETS_DIR_R
+#define SOURCE_ASSETS_DIR_R "./projects/WaterBound/assets"
+#endif
+#ifndef RUNTIME_DIR_R
+#define RUNTIME_DIR_R "./assets"
 #endif
 #ifndef SOURCE_DIR_R
-#define SOURCE_DIR_R "./projects/WaterBound/shaders"
+#define SOURCE_DIR_R "./projects/WaterBound/assets"
 #endif
 //==============================================================================
 // Paths
@@ -123,7 +126,7 @@ namespace JsonIO {
      * \param name Scene file name (e.g., \c level01.json ).
      * \return Absolute/relative path into \c RUNTIME_SCENE_DIR_R .
      */
-    std::string runtimeScenePath(const std::string& name) {
+    std::string JsonIO::runtimeScenePath(const std::string& name) {
         return std::string(RUNTIME_SCENE_DIR_R) + "/" + name;
     }
 
@@ -132,8 +135,8 @@ namespace JsonIO {
      * \param name Scene file name (e.g., \c level01.json ).
      * \return Absolute/relative path into \c SOURCE_SCENE_DIR_R .
      */
-    std::string sourceScenePath(const std::string& name) {
-        return std::string(SOURCE_SCENE_DIR_R) + "/" + name;
+    std::string JsonIO::sourceScenePath(const std::string& name) {
+        return std::string(SOURCE_ASSETS_DIR_R) + "/Scene/" + name;
     }
 
     /**

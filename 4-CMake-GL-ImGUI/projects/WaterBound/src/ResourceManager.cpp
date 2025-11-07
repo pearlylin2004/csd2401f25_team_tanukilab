@@ -164,33 +164,56 @@ FMOD::Sound* ResourceManager::loadSoundFromFile(const std::string& path, bool lo
 }
 
 GLuint ResourceManager::getShader(const std::string& vertPath, const std::string& fragPath) {
-    if (vertPath.empty() || fragPath.empty()) {
-        return 0;
-    }
+    if (vertPath.empty() || fragPath.empty()) return 0;
 
-    // Create key for the cache
-    std::string key = vertPath + "|" + fragPath;
+    auto normalize = [](std::string p) -> std::string {
+        // Trim leading "./"
+        if (p.rfind("./", 0) == 0) p.erase(0, 2);
 
-    //Check if shader is already in cache
-    auto it = m_shaderCache.find(key);
-    if (it != m_shaderCache.end()) {
+        // If already under assets/ (absolute relative path), keep as-is
+        if (p.rfind("assets/", 0) == 0) return "./" + p;
+
+        // If caller included "shaders/", strip it — we'll re-prepend the runtime dir
+        const std::string shadersPrefix = "shaders/";
+        if (p.rfind(shadersPrefix, 0) == 0) p.erase(0, shadersPrefix.size());
+
+        // Now p should be just "file.vert" or "folder/file.vert"
+        return std::string("./assets/shaders/") + p;
+        };
+
+    // Build normalized FULL paths for loading
+    std::string fullVert = normalize(vertPath);
+    std::string fullFrag = normalize(fragPath);
+
+    // Create a stable cache key based on the normalized *relative-to-shaders* names
+    // (i.e., after stripping any leading "shaders/"). This avoids duplicate programs.
+    auto cacheKeyPart = [](std::string p) -> std::string {
+        if (p.rfind("./assets/shaders/", 0) == 0) p.erase(0, std::string("./assets/shaders/").size());
+        if (p.rfind("shaders/", 0) == 0)         p.erase(0, std::string("shaders/").size());
+        if (p.rfind("./", 0) == 0)               p.erase(0, 2);
+        return p;
+        };
+    std::string key = cacheKeyPart(fullVert) + "|" + cacheKeyPart(fullFrag);
+
+    // Cache check
+    if (auto it = m_shaderCache.find(key); it != m_shaderCache.end()) {
         return it->second;
     }
 
-    //If not in cache, load it by calling the existing LoadShaders function
-    std::cout << "ResourceManager: Loading shader program: " << vertPath << " + " << fragPath << std::endl;
+    std::cout << "ResourceManager: Loading shader program: "
+        << fullVert << " + " << fullFrag << std::endl;
 
-    //Call the existing global LoadShaders function from shader.cpp
-    GLuint newProgramID = LoadShaders(vertPath, fragPath, true);
-
-    if (newProgramID != 0) {
-        m_shaderCache[key] = newProgramID;
-    }else{
-		std::cout << "ResourceManager Error: Failed to load shader program: " << vertPath << " + " << fragPath << std::endl;
+    GLuint program = LoadShaders(fullVert, fullFrag, /*p_loadFromFile=*/true);
+    if (program != 0) {
+        m_shaderCache[key] = program;
     }
-
-    return newProgramID;
+    else {
+        std::cout << "ResourceManager Error: Failed to load shader program: "
+            << vertPath << " + " << fragPath << std::endl;
+    }
+    return program;
 }
+
 
 const FontData& ResourceManager::getFont(const std::string& relativePath) {
     if(relativePath.empty()) {

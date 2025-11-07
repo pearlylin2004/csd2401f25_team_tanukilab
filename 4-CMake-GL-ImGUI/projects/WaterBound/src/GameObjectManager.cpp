@@ -22,10 +22,10 @@ Technology is prohibited.
 #include "JsonIO.h"
 
 #ifndef RUNTIME_SCENE_DIR_R
-#define RUNTIME_SCENE_DIR_R "./shaders/Scene"
+#define RUNTIME_SCENE_DIR_R "./assets/Scene"
 #endif
-#ifndef SOURCE_SCENE_DIR_R
-#define SOURCE_SCENE_DIR_R "./projects/WaterBound/shaders/Scene"
+#ifndef SOURCE_ASSETS_DIR_R
+#define SOURCE_ASSETS_DIR_R "./projects/WaterBound/assets"
 #endif
 
 namespace {
@@ -124,7 +124,7 @@ void GameObjectManager::getAllGameObjects(std::vector<GameObject*>& gameObjects)
 
 void GameObjectManager::init()
 {
-	//loadFromFile("shaders/Scene/temp_serialize.txt");
+
 	loadScene(JsonIO::runtimeScenePath("level01.json"));
 }
 

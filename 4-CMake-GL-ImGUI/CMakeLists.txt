@@ -1,166 +1,104 @@
 # ======================= Project Configuration =========================
-cmake_minimum_required(VERSION 2.8...3.13)
-
-# Set the CMake policy version (this enables all policies up to CMake 3.5)
-cmake_policy(VERSION 3.5)
-
+cmake_minimum_required(VERSION 3.20)          # Updated to avoid policy warnings
 project(WaterBound)
 
-# Set the directory where custom CMake modules are stored
 set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
-
-# Include project-wide utility and dependency modules
 include(ImportDependencies)
 importDependencies()
 
-# Global compile flags and macros
 add_definitions(-DGLEW_STATIC)
-add_definitions(-DUSE_CSD3151_AUTOMATION=0) # Used for instructor's automation
+add_definitions(-DUSE_CSD3151_AUTOMATION=0)
 
-# List of external libraries
 set(ALL_LIBS
   PRIVATE glfw
   PRIVATE libglew_static
   PRIVATE imgui
   PRIVATE stb
-  PRIVATE lua 
+  PRIVATE lua
   PRIVATE rapidjson
   PRIVATE freetype
 )
 
-# Include path for GLM (optional if not using FetchContent)
 include_directories(${CMAKE_CURRENT_LIST_DIR}/lib/glm)
 
 # ======================= AUTO PROJECT DISCOVERY =========================
-
-# Get all subdirectories in the projects folder
-file(GLOB children RELATIVE "${CMAKE_CURRENT_LIST_DIR}/projects" "${CMAKE_CURRENT_LIST_DIR}/projects/*")
-
-
-
+file(GLOB children RELATIVE "${CMAKE_CURRENT_LIST_DIR}/projects"
+     "${CMAKE_CURRENT_LIST_DIR}/projects/*")
 
 foreach(child ${children})
-    if(IS_DIRECTORY "${CMAKE_CURRENT_LIST_DIR}/projects/${child}")
-        message(STATUS "Configuring project: ${child}")
+  if(IS_DIRECTORY "${CMAKE_CURRENT_LIST_DIR}/projects/${child}")
+    message(STATUS "Configuring project: ${child}")
 
-        # Collect sources
-        file(GLOB_RECURSE ${child}_source_files
-            ${CMAKE_CURRENT_LIST_DIR}/projects/${child}/src/*.cpp
-            ${CMAKE_CURRENT_LIST_DIR}/projects/${child}/include/*.h
-            ${CMAKE_CURRENT_LIST_DIR}/projects/${child}/include/*.hpp
-        )
+    file(GLOB_RECURSE ${child}_source_files
+         ${CMAKE_CURRENT_LIST_DIR}/projects/${child}/src/*.cpp
+         ${CMAKE_CURRENT_LIST_DIR}/projects/${child}/include/*.h
+         ${CMAKE_CURRENT_LIST_DIR}/projects/${child}/include/*.hpp)
 
-        # Create executable
-        add_executable(${child}
-            ${${child}_source_files}
-        )
+    add_executable(${child} ${${child}_source_files})
+    target_link_libraries(${child} ${ALL_LIBS})
+    set_property(TARGET ${child} PROPERTY CXX_STANDARD 20)
 
-        # Link libraries
-        target_link_libraries(${child}
-            ${ALL_LIBS}
-        )
-
-        # Set C++ standard
-        set_property(TARGET ${child} PROPERTY CXX_STANDARD 20)
-
-        # Warnings based on compiler
-        if (CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
-            target_compile_options(${child} PRIVATE -Wall ${DisableWarnings})
-        elseif (MSVC)
-            target_compile_options(${child} PRIVATE /W4 /WX-)
-        endif()
-
-        # Include path for each project
-        target_include_directories(${child} PRIVATE
-            ${CMAKE_CURRENT_LIST_DIR}/projects/${child}/include
-	    ${lua_SOURCE_DIR}
-        )
-
-        # ==== Shaders (copy to build dir so the exe can load them) ====
-        set(${child}_SHADER_DIR "${CMAKE_CURRENT_LIST_DIR}/projects/${child}/shaders")
-
-        # (Optional) If the shaders folder exists, copy it next to the target binary
-        if (EXISTS "${${child}_SHADER_DIR}")
-          # Show shader files in IDE (they're not compiled, just for convenience)
-          file(GLOB_RECURSE ${child}_shader_files
-               "${${child}_SHADER_DIR}/*.vert"
-               "${${child}_SHADER_DIR}/*.frag"
-               "${${child}_SHADER_DIR}/*.glsl")
-          if(${child}_shader_files)
-            set_source_files_properties(${${child}_shader_files} PROPERTIES HEADER_FILE_ONLY TRUE)
-            target_sources(${child} PRIVATE ${${child}_shader_files})
-          endif()
-
-          # Copy the entire shaders directory into the runtime dir (next to the exe)
-          add_custom_command(TARGET ${child} POST_BUILD
-            COMMAND ${CMAKE_COMMAND} -E copy_directory
-                    "${${child}_SHADER_DIR}"
-                    "$<TARGET_FILE_DIR:${child}>/shaders"
-            COMMENT "Copying shaders for ${child} to runtime directory"
-          )
-
-	  add_custom_command(TARGET ${child} POST_BUILD
-            COMMAND ${CMAKE_COMMAND} -E copy_directory
-                    "${${child}_SHADER_DIR}"
-                    "${CMAKE_CURRENT_LIST_DIR}/build/shaders"
-            COMMENT "Copying shaders for ${child} to runtime directory"
-          )
-          endif()
+    if (CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+      target_compile_options(${child} PRIVATE -Wall ${DisableWarnings})
+    elseif (MSVC)
+      target_compile_options(${child} PRIVATE /W4 /WX-)
     endif()
+
+    target_include_directories(${child} PRIVATE
+      ${CMAKE_CURRENT_LIST_DIR}/projects/${child}/include
+      ${lua_SOURCE_DIR}
+    )
+  endif()
 endforeach()
 
+# ======================= WaterBound-specific config ====================
+set(WB_DIR        "${CMAKE_CURRENT_LIST_DIR}/projects/WaterBound")
+set(WB_ASSETS_DIR "${WB_DIR}/assets")
+
+# Include + link (FMOD)
 target_include_directories(WaterBound PRIVATE
-	${CMAKE_CURRENT_LIST_DIR}/projects/WaterBound/assets)
+  "${WB_DIR}/assets"
+  "${WB_DIR}/lib/FMOD"
+)
+target_link_directories(WaterBound PRIVATE "${WB_DIR}/lib")
+target_link_libraries(WaterBound PRIVATE fmod_vc.lib fmodL_vc.lib lua)
 
-target_include_directories(WaterBound PRIVATE
-	${CMAKE_CURRENT_LIST_DIR}/projects/WaterBound/lib/FMOD)
-
-target_link_directories(WaterBound PRIVATE
-	${CMAKE_CURRENT_LIST_DIR}/projects/WaterBound/lib)
-
-target_link_libraries(WaterBound PRIVATE
-	fmod_vc.lib
-	fmodL_vc.lib)
-
-target_link_libraries(WaterBound PRIVATE lua)
-
+# FMOD DLLs next to exe
 add_custom_command(TARGET WaterBound POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy
-        "${CMAKE_CURRENT_LIST_DIR}/projects/WaterBound/lib/fmod.dll"
-        "$<TARGET_FILE_DIR:WaterBound>/fmod.dll"
-
-    COMMAND ${CMAKE_COMMAND} -E copy
-        "${CMAKE_CURRENT_LIST_DIR}/projects/WaterBound/lib/fmodL.dll"
-        "$<TARGET_FILE_DIR:WaterBound>/fmodL.dll"
+  COMMAND ${CMAKE_COMMAND} -E copy
+          "${WB_DIR}/lib/fmod.dll"  "$<TARGET_FILE_DIR:WaterBound>/fmod.dll"
+  COMMAND ${CMAKE_COMMAND} -E copy
+          "${WB_DIR}/lib/fmodL.dll" "$<TARGET_FILE_DIR:WaterBound>/fmodL.dll"
 )
 
-# ==== Sync Scene folder for runtime ====
-set(SCENE_SOURCE_DIR "${CMAKE_CURRENT_LIST_DIR}/projects/WaterBound/shaders/Scene")
+# Make shaders visible in IDE (not compiled)
+file(GLOB_RECURSE WB_SHADER_FILES
+     "${WB_ASSETS_DIR}/shaders/*.vert"
+     "${WB_ASSETS_DIR}/shaders/*.frag"
+     "${WB_ASSETS_DIR}/shaders/*.glsl")
+if(WB_SHADER_FILES)
+  set_source_files_properties(${WB_SHADER_FILES} PROPERTIES HEADER_FILE_ONLY TRUE)
+  target_sources(WaterBound PRIVATE ${WB_SHADER_FILES})
+endif()
 
-# Copy scenes to both build/shaders/Scene and build/Debug/shaders/Scene
+# FIXED: No more cyclic custom target!
+# Assets copied using POST_BUILD instead of a separate target
 add_custom_command(TARGET WaterBound POST_BUILD
-  COMMAND ${CMAKE_COMMAND} -E make_directory "$<TARGET_FILE_DIR:WaterBound>/shaders/Scene"
-  COMMAND ${CMAKE_COMMAND} -E copy_directory
-          "${SCENE_SOURCE_DIR}"
-          "$<TARGET_FILE_DIR:WaterBound>/shaders/Scene"
-  COMMAND ${CMAKE_COMMAND} -E copy_directory
-          "${SCENE_SOURCE_DIR}"
-          "${CMAKE_CURRENT_LIST_DIR}/build/Debug/shaders/Scene"
-  COMMENT "Syncing Scene folder to both runtime and Debug directories"
+  COMMAND ${CMAKE_COMMAND} -E copy_directory "${WB_ASSETS_DIR}" "$<TARGET_FILE_DIR:WaterBound>/assets"
+  COMMAND ${CMAKE_COMMAND} -E copy_directory "${WB_ASSETS_DIR}" "${CMAKE_BINARY_DIR}/assets"
+  COMMENT "Copying WaterBound assets to runtime and build directories"
 )
 
-# Absolute paths we want the game to know at compile time
-set(WATERBOUND_RUNTIME_SCENE_DIR "$<TARGET_FILE_DIR:WaterBound>/shaders/Scene")
-set(WATERBOUND_SOURCE_SCENE_DIR  "${CMAKE_CURRENT_LIST_DIR}/projects/WaterBound/shaders/Scene")
-set(WATERBOUND_SCENE_DIR  "${CMAKE_CURRENT_LIST_DIR}/projects/WaterBound/shaders")
-set(WATERBOUND_RUNTIME_DIR  "$<TARGET_FILE_DIR:WaterBound>/shaders")
-
-# Expose as preprocessor string literals usable in C++
+# Compile-time path macros used by your C++ code
 target_compile_definitions(WaterBound PRIVATE
-  RUNTIME_SCENE_DIR_R="$<JOIN:${WATERBOUND_RUNTIME_SCENE_DIR},>"
-  SOURCE_SCENE_DIR_R="${WATERBOUND_SOURCE_SCENE_DIR}"
-  SOURCE_DIR_R="${WATERBOUND_SCENE_DIR}"
-  RUNTIME_DIR_R="$<JOIN:${WATERBOUND_RUNTIME_DIR},>"
+  RUNTIME_ASSETS_DIR_R="./assets"
+  RUNTIME_SHADER_DIR_R="./assets/shaders"
+  RUNTIME_SCENE_DIR_R="./assets/Scene"
+  RUNTIME_PREFAB_DIR_R="./assets/Prefab"
+  RUNTIME_AUDIO_DIR_R="./assets/Audio"
+  RUNTIME_SCRIPT_DIR_R="./assets/scripting"
+  RUNTIME_RES_DIR_R="./assets/resources"
+  SOURCE_ASSETS_DIR_R="${WB_ASSETS_DIR}"
 )
 
 # ======================= END AUTO CONFIGURATION =========================

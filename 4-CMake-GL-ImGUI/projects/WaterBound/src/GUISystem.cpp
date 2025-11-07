@@ -4,7 +4,7 @@
 #include <iostream>
 #include <fstream>
 
-#define RUNTIME_SCENE_DIR_R "./shaders/Scene"
+#define RUNTIME_SCENE_DIR_R "./assets/Scene"
 
 static std::string runtimeScenePath(std::string const& name) {
     return std::string(RUNTIME_SCENE_DIR_R) + "/" + name;
@@ -189,7 +189,7 @@ void GUISystem::startGame(GameObjectManager& manager) {
     std::vector<GameObject*> gameObjects;
     g_manager->getAllGameObjects(gameObjects);
     //iterate over all Lua scripts in the folder
-    for (const auto& file : std::filesystem::directory_iterator("../projects/WaterBound/scripting")) {
+    for (const auto& file : std::filesystem::directory_iterator("./assets/scripting")) {
         if (file.path().extension() != ".lua") continue; //have to be .lua files if not it will skip
         std::string filename = file.path().filename().string();
 
