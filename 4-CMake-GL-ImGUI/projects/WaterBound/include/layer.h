@@ -1,3 +1,20 @@
+/* Start Header ************************************************************************/
+/*!
+\file       layer.h
+\author     Hugo Low Ren Hao, low.h, 2402272
+
+\par        low.h@digipen.edu
+\date       October, 30, 2025
+\brief      This file contains the declaration of the Layer class. 
+			It manages a collection of GameObjects assigned to a specific layer.
+
+Copyright (C) 2025 DigiPen Institute of Technology.
+Reproduction or disclosure of this file or its contents
+without the prior written consent of DigiPen Institute of
+Technology is prohibited.
+*/
+/* End Header **************************************************************************/
+
 #pragma once
 
 #include <string>
