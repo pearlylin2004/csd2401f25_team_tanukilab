@@ -121,6 +121,7 @@ struct renderer
 		GLuint instanceVBO = 0;
 		GLsizei maxInstances = 5000; 
 
+		model() : shape(shape::square), primitive_type(GL_TRIANGLES), vaoid(0), vbo(0), ebo(0), elem_cnt(0), draw_cnt(0), primitive_cnt(0) {}
 	};
 	/*!***********************************************************************
 	\brief
