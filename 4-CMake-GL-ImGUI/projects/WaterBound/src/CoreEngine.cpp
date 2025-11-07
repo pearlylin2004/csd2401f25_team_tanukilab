@@ -203,6 +203,9 @@ void CoreEngine::Update(float deltaTime) {
     //m_renderSystem->unbindFBO();
     //if (UISystem::isShowUI()) glBindFramebuffer(GL_FRAMEBUFFER, 0);
     m_uiSystem->update(*m_manager);
+
+    //performance update
+    LogSystemTimersEveryInterval(deltaTime,15.0);
 }
 
 void CoreEngine::Shutdown() {
