@@ -337,6 +337,15 @@ void GameObjectManager::saveToFile(const std::string& filename) const {
 	std::cout << "Scene saved to " << filename << "\n";
 }
 
+/*!
+\brief Converts a string into a PlayerState enum value.
+
+This helper is used when loading state machine data from JSON.
+Recognized values: "Idle", "Walking", "Jumping", "Falling", "Shooting".
+
+\param s Input string from JSON.
+\return Corresponding PlayerState value. Defaults to Idle if unknown.
+*/
 
 static PlayerState parsePlayerState(const std::string& s) {
 	if (s == "Idle")     return PlayerState::Idle;
@@ -346,6 +355,14 @@ static PlayerState parsePlayerState(const std::string& s) {
 	if (s == "Shooting") return PlayerState::Shooting;
 	return PlayerState::Idle; // default/fallback
 }
+/*!
+\brief Converts a PlayerState enum value into a string.
+
+This function is used when saving state machine data back to JSON.
+
+\param state The PlayerState to convert.
+\return A string representation of the state (Idle, Walking, Jumping, etc.).
+*/
 
 static const char* playerStateToStr(PlayerState state) {
 	switch (state) {
@@ -360,6 +377,22 @@ static const char* playerStateToStr(PlayerState state) {
 
 
 
+/*!
+\brief Loads a scene from a JSON file and rebuilds all game objects.
+
+This function:
+- Reads and parses JSON file content.
+- Destroys old objects and clears old textures.
+- Instantiates new objects, including prefab-based objects.
+- Applies layer assignments.
+- Overrides prefab defaults with scene-specific component data.
+- Loads components such as Transform, Render, Physics, Animation,
+  CollisionInfo, Input, StateMachine, and FontComponent.
+
+If the JSON is missing or malformed, the function prints an error and stops.
+
+\param filename Path to the JSON scene file.
+*/
 
 void GameObjectManager::loadSceneFromJson(const std::string& filename) {
 
@@ -692,6 +725,22 @@ void GameObjectManager::loadSceneFromJson(const std::string& filename) {
 
 	//std::cout << "Scene loaded (JSON): " << filename << "\n";
 }
+/*!
+\brief Saves all current game objects and component data to a JSON file.
+
+This function:
+- Creates a JSON document with version and object list.
+- Includes prefab IDs when the object originates from a prefab.
+- Saves only component values that differ from prefab defaults,
+  minimizing redundant scene data.
+- Exports components such as Transform, Render, Physics, Animation,
+  CollisionInfo, Input, StateMachine, and FontComponent.
+
+If writing fails, an error message is printed.
+
+\param filename Output JSON file path.
+\param isNew If true, writes an empty scene structure with only version header.
+*/
 
 void GameObjectManager::saveSceneToJson(const std::string& filename, bool isNew) const {
 	rapidjson::Document doc;
@@ -933,6 +982,14 @@ void GameObjectManager::saveSceneToJson(const std::string& filename, bool isNew)
 		std::cout << "Scene saved (JSON): " << filename << "\n";
 	}
 }
+/*!
+\brief Loads a scene automatically based on file extension.
+
+If the path ends with ".json", loads a JSON scene.
+Otherwise, falls back to legacy .txt scene loading.
+
+\param path Scene file path.
+*/
 
 void GameObjectManager::loadScene(const std::string& path) {
 	if (ends_with(path, ".json")) loadSceneFromJson(path);
@@ -944,22 +1001,21 @@ void GameObjectManager::loadScene(const std::string& path) {
 	//	}
 	//}
 }
+/*!
+\brief Saves a scene automatically based on file extension.
+
+If the path ends with ".json", writes JSON using saveSceneToJson.
+Otherwise, writes using legacy .txt serialization.
+
+\param path Output scene path.
+\param isNew If true, writes an empty or simplified scene header.
+*/
 
 void GameObjectManager::saveScene(const std::string& path, bool isNew) const {
 	if (ends_with(path, ".json")) saveSceneToJson(path, isNew);
 	else                          saveToFile(path);
 }
 
-
-//void GameObjectManager::loadScene(const std::string& path) {
-//	if (ends_with(path, ".json")) loadFromJson(path);
-//	else                          loadFromFile(path);   // keep legacy .txt scenes
-//}
-//
-//void GameObjectManager::saveScene(const std::string& path, bool isNew) const {
-//	if (ends_with(path, ".json")) saveToJson(path, isNew);
-//	else                          saveToFile(path);
-//}
 
 //layer stuff
 LayerManager& GameObjectManager::getLayerManager() {

@@ -1,4 +1,17 @@
-//JsonIO.h
+/* Start Header ************************************************************************/
+/*!
+\file		JsonIO.h
+\author     Varick, v.teo, 2403417
+\par        v.teo@digipen.edu
+\date		October, 1st, 2025
+\brief      Declarations for JSON loading/saving utilities for the WaterBound engine.
+
+Copyright (C) 2025 DigiPen Institute of Technology.
+Reproduction or disclosure of this file or its contents
+without the prior written consent of DigiPen Institute of
+Technology is prohibited.
+*/
+/* End Header **************************************************************************/
 #pragma once
 #define NOMINMAX
 #define WIN32_LEAN_AND_MEAN
@@ -28,7 +41,14 @@
 #include "Component.h"
 #include "renderer.h"
 
-
+/*!
+ * \namespace Paths
+ * \brief Provides OS-aware helpers to locate engine directories relative
+ *        to the executable (EXE) directory.
+ *
+ * These utilities ensure that the engine can load configs, shaders and scenes
+ * correctly regardless of where the executable is deployed.
+ */
 namespace Paths {
 	std::filesystem::path exe_dir();
 	std::filesystem::path shaders();
@@ -37,6 +57,15 @@ namespace Paths {
 	std::filesystem::path scripts();
 	void ensure_dir(const std::filesystem::path& p);
 }
+
+/*!
+ * \namespace JsonIO
+ * \brief Collection of JSON reading/writing helpers using RapidJSON.
+ *
+ * All JSON parsing, serialization and data extraction utilities live here.
+ * This keeps GameObjectManager and engine systems clean and independent of
+ * RapidJSON internals.
+ */
 namespace JsonIO {
 
 	// ---- Path helpers ----

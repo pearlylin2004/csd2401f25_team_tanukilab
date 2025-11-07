@@ -198,7 +198,15 @@ namespace DebugInput {
     std::deque<std::string> Recent(size_t max = 32);
 }
 
+/*!
+\namespace DebugDiag
+\brief Contains debugging and diagnostic tools for verifying engine paths.
 
+The DebugDiag namespace provides utility functions that help validate the
+engine's installation directories, asset folders, and configuration files.
+These tools are useful for diagnosing missing assets or incorrect project
+structure during development.
+*/
 namespace DebugDiag {
 
 	void AuditRuntimePaths();
