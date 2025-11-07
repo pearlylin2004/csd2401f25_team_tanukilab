@@ -1,11 +1,11 @@
 /* Start Header ************************************************************************/
 /*!
-\file       input.h
+\file       prefabManager.h
 \author     Tan Chee Qing, cheeqing.tan, 2401486
 			- 100% of the file
 \par        cheeqing.tan@digipen.edu
-\date       September, 15th, 2025
-\brief      A static utility class that manages all input handling for a GLFW window.
+\date       November, 07th, 2025
+\brief      A class that load and manage the prefabs by maintaining a prefab registry.
 
 Copyright (C) 2025 DigiPen Institute of Technology.
 Reproduction or disclosure of this file or its contents
@@ -38,8 +38,10 @@ public:
 	// singleton access
 	static PrefabManager& Instance();
 
+	// load the registry
 	void loadPrefabRegistry();
 
+	// save the registry (e.g. aft renaming, will auto call)
 	void savePrefabRegistry();
 
 	/*std::string& getPrefabPath(const std::string& prefabID);*/
@@ -56,8 +58,10 @@ public:
 	// find prefabid by filename, this will auto remove the parent folder
 	std::string findPrefabIDByFilename(const std::filesystem::path& filename);
 
+	// looks up a prefab’s JSON document by its ID in opened json cache
 	const rapidjson::Document* getPrefabJson(const std::string& prefabID) const;
 
+	// retrieves component’s JSON data inside a prefab’s JSON document
 	const rapidjson::Value* getPrefabJsonComp(const rapidjson::Document* prefabDoc, const std::string& compName) const;
 
 	//GameObject* instantiate(const std::string& id, GameObjectManager& manager);
@@ -91,5 +95,6 @@ private:
 	std::string prefabFolder = "/Prefab";
 	std::string registryFile = "/Prefab/prefab_registry.json";
 
+	// generate UUID for creation of the prefab
 	std::string generateUUID();
 };
