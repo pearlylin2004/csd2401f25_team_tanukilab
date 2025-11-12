@@ -914,13 +914,11 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 
 	//get layer manager
 	LayerManager& layerManager = manager.getLayerManager();
-
 	std::vector<Layer*> layers = layerManager.getAllLayers();
 
 	//process each layer separately
-	//rn only layer 1 should have any sort of collision
+	//right now only layer 1 should have any sort of collision
 	for(Layer* layer : layers){
-	
 		if (!layer) {
 			auto end = std::chrono::high_resolution_clock::now();
 			double ms = std::chrono::duration<double, std::milli>(end - start).count();
@@ -1004,7 +1002,6 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 							//update the velocity and penetrations for BOTH objects
 							if (info.normal.x != 0) {
 								//can think about momentum in the future
-
 								t1->x += info.normal.x * info.penetration * 0.5f;
 								//p1->dynamics.velocity.x = 0;
 
@@ -1025,15 +1022,11 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 								if (info.normal.y > 0) {
 									p1->onGround = true;
 								}
-
 							}
-							
 							UI::addDebugMessage("Collision detected between Object.\n"); //message for debugger
-
 						}
 						else { p1->onGround = false; }
 					}
-					
 				}
 			}
 		}

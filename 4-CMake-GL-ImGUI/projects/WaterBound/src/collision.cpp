@@ -277,13 +277,13 @@ namespace Collision {
     }
 
     //circle to circle
-    /*bool CollisionIntersection_CircleCircle_Static(const Circle& c1, const Circle& c2) {
+    bool CollisionIntersection_CircleCircle_Static(const Circle& c1, const Circle& c2) {
 
     }
 
     CollisionInfo CollisionIntersection_CircleCircle_Dynamic_Info(const Circle& c1, const Vector2D& velC1, const Circle& c2, const Vector2D& velC2) {
 
-    }*/
+    }
 
     //remove normal ... when object hit the wall
     static inline Vector2D RemoveNormalComponent(const Vector2D& v, const Vector2D& n) {
