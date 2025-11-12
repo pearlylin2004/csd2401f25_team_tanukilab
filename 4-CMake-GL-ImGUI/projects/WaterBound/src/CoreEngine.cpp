@@ -115,48 +115,6 @@ void CoreEngine::Run() {
     }
 }
 
-//void CoreEngine::GameLoop() {
-//    glfwPollEvents();
-//    if (glfwWindowShouldClose(m_window) || InputHandler::isKeyHeld(GLFW_KEY_ESCAPE)) {
-//        m_isRunning = false;
-//        return;
-//    }
-//    // --- Update Timing ---
-//
-//    int    steps = 0;        // how many fixed updates to run this frame
-//    double alpha = 0.0;      // interpolation factor [0,1)
-//    //Perf::UpdateTime(m_delta, m_fps, 0.5);
-//    Perf::UpdateTime(m_delta, m_fps, 0.5,
-//        m_fixedDt, steps, alpha,8);
-//
-//    Perf::UpdateWindowTitle(m_window, m_title, m_fps, true);
-//
-//    audio.update();
-//
-//    InputHandler::update();
-//
-//
-//    for (int i = 0; i < steps; ++i) {
-//
-//        m_collisionSystem->update(*m_manager, static_cast<float>(m_fixedDt));
-//        m_physicsSystem->update(*m_manager, static_cast<float>(m_fixedDt));
-//   
-//        // (put any other time-based deterministic systems here)
-//    }
-//    // --- Main Update ---
-//    glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
-//    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-//
-//    m_inputSystem->update(*m_manager, (float)m_delta);
-//    m_renderSystem->update(*m_manager, (float)m_delta);
-//    m_uiSystem->update(*m_manager);
-//
-//
-//    // --- Swapping Buffers ---
-//    glfwSwapBuffers(m_window);
-//
-//}
-
 void CoreEngine::GameLoop() {
     if (glfwWindowShouldClose(m_window) || InputHandler::isKeyHeld(GLFW_KEY_ESCAPE)) { m_isRunning = false; return; } 
      //--- Update Timing --- 
@@ -172,24 +130,6 @@ void CoreEngine::GameLoop() {
 void CoreEngine::Update(float deltaTime) {
     InputHandler::update();
     m_guiSystem->update(*m_manager);
-	//for clonigng player2
-    //if (m_guiSystem->isPlaying()) {
-
-    //    //lua scripting update for all objects with LuaScript component
-    //    std::vector<GameObject*> gameObjects;
-    //    m_manager->getAllGameObjects(gameObjects);
-
-    //    //running Lua scripts for each object that has a LuaScript component
-    //    for (GameObject* obj : gameObjects) {
-    //        if (obj->hasComponent<LuaScript>()) {
-    //            //LuaScript* scriptComp = obj->getComponent<LuaScript>();
-    //            m_luaSystem->updateObjectScript(obj->getObjectName(), obj, deltaTime);
-    //        }
-    //    }
-    //    // Update all systems in order
-    //    
-    //    
-    //}
 
     if(!UI::isEditingMode()) m_luaSystem->update(*m_manager, deltaTime);
 
@@ -200,8 +140,6 @@ void CoreEngine::Update(float deltaTime) {
     m_logicSystem->update(*m_manager, deltaTime);
     m_renderSystem->update(*m_manager, deltaTime);
     m_fontSystem->update(*m_manager);
-    //m_renderSystem->unbindFBO();
-    //if (UISystem::isShowUI()) glBindFramebuffer(GL_FRAMEBUFFER, 0);
     m_uiSystem->update(*m_manager);
 
     //performance update

@@ -313,7 +313,7 @@ void RenderSystem::update(GameObjectManager& manager, float const& deltaTime)
 	//record end time for performance tracking
 	auto end = std::chrono::high_resolution_clock::now();
 	double ms = std::chrono::duration<double, std::milli>(end - start).count(); //get elapse time in ms
-	g_SystemTimers.push_back({ "Render", ms }); //saving timing for UI output
+	g_SystemTimers.push_back({"Render", ms }); //saving timing for UI output
 }
 
 void RenderSystem::unbindFBO() {
@@ -899,11 +899,10 @@ void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime, M
 			bulletTransform->x = bulletPhysics->dynamics.position.x;
 			bulletTransform->y = bulletPhysics->dynamics.position.y;
 		}
-
-		auto end = std::chrono::high_resolution_clock::now();
-		double ms = std::chrono::duration<double, std::milli>(end - start).count();
-		g_SystemTimers.push_back({ "Physics", ms });
 	}
+	auto end = std::chrono::high_resolution_clock::now();
+	double ms = std::chrono::duration<double, std::milli>(end - start).count();
+	g_SystemTimers.push_back({ "Physics", ms });
 }
 
 
@@ -922,8 +921,6 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 	//rn only layer 1 should have any sort of collision
 	for(Layer* layer : layers){
 	
-
-
 		if (!layer) {
 			auto end = std::chrono::high_resolution_clock::now();
 			double ms = std::chrono::duration<double, std::milli>(end - start).count();
@@ -932,13 +929,7 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 			return;
 		}
 
-
 		const std::vector<GameObject*>& layerObjects = layer->getObjects();
-
-		//we dont do this anymore cus we got them layersss
-		//getting all objects
-		/*std::vector<GameObject*> gameObjects;
-		manager.getAllGameObjects(gameObjects);*/
 
 		//create grid
 		const float CELL_SIZE = 2.0f;
@@ -1121,7 +1112,7 @@ void UISystem::update(GameObjectManager& manager) {
 
 	auto end = std::chrono::high_resolution_clock::now();
 	double ms = std::chrono::duration<double, std::milli>(end - start).count(); //get elapse time in ms
-	g_SystemTimers.push_back({ "IMGUI", ms }); //saving timing for UI output
+	g_SystemTimers.push_back({"IMGUI", ms }); //saving timing for UI output
 }
 
 void UISystem::dockingSetUp() {
