@@ -1035,7 +1035,6 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 								t2->x -= info.normal.x * info.penetration * 0.5f;
 								//p2->dynamics.velocity.x = 0;
 							}
-
 							// resolve Y
 							if (info.normal.y != 0) {
 								t1->y += info.normal.y * info.penetration * 0.5f;
