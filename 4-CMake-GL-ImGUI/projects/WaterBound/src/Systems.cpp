@@ -977,7 +977,10 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 					GameObject* obj1 = cellObject[n];
 					if (!obj1->hasComponent<Physics>()) continue;
 					Transform* t1 = obj1->getComponent<Transform>();
-					Collision::AABB aabb1 = Collision::getObjectAABB(t1);
+
+					//to get obj1 shape
+					Render* render1 = obj1->getComponent<Render>();
+					
 					Physics* p1 = obj1->getComponent<Physics>();
 					Vector2D vel1{ p1->dynamics.velocity.x, p1->dynamics.velocity.y };
 					//object 2 looping
@@ -992,14 +995,35 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 						//mark as checked both ways
 						checked[obj1].push_back(obj2);
 						checked[obj2].push_back(obj1);
-
 						Transform* t2 = obj2->getComponent<Transform>();
-						Collision::AABB aabb2 = Collision::getObjectAABB(t2);
+
+						//to get obj1 shape
+						Render* render2 = obj2->getComponent<Render>();
+
 						Physics* p2 = obj2->getComponent<Physics>();
 						Vector2D vel2{ p2->dynamics.velocity.x, p2->dynamics.velocity.y };
 
-						CollisionInfo info = Collision::CollisionIntersection_RectRect_Dynamic_Info(aabb1, vel1, aabb2, vel2);
-					
+						//check collision based on shape
+						//check obj1 shape 
+						if (!render1 || !t1) return;
+						//check obj2 shape 
+						if (!render2 || !t2) return;
+
+						//collision info
+						CollisionInfo info;
+						//if both square
+						if (render1->modelRef.shape != shape::square && render2->modelRef.shape != shape::square) {
+							Collision::AABB aabb1 = Collision::getObjectAABB(t1);
+							Collision::AABB aabb2 = Collision::getObjectAABB(t2);
+							CollisionInfo info = Collision::CollisionIntersection_RectRect_Dynamic_Info(aabb1, vel1, aabb2, vel2);
+						}
+						//if both circle
+						else if (render1->modelRef.shape == shape::circle && render2->modelRef.shape == shape::circle) {
+							Collision::Circle circle1 = Collision::getObjectCircle(t1);
+							Collision::Circle circle2 = Collision::getObjectCircle(t2);
+							CollisionInfo info = Collision::CollisionIntersection_CircleCircle_Dynamic_Info(circle1, vel1, circle2, vel2);
+						}
+
 						//checking if collided
 						if (info.collided) {
 							//update the velocity and penetrations for BOTH objects

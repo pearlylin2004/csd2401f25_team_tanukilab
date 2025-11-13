@@ -322,7 +322,8 @@ namespace Collision {
                 n = Vec_Normalize(&n); // normalize to unit vector
             }
             info.normal = n;
-            info.contactPoint = Vec_Sub(&c1.getCenter(), &Vec_Scale(&n, c1.getRadius()));
+            Vector2D scaledNormal = Vec_Scale(&n, c1.getRadius());
+            info.contactPoint = Vec_Sub(&c1.getCenter(), &scaledNormal);
             return info;
         }
 
@@ -352,8 +353,11 @@ namespace Collision {
             info.collided = false;
             return info;
         }
-        Vector2D c1AtT = Vec_Add(&c1.getCenter(), &Vec_Scale(&velC1, toi));
-        Vector2D c2AtT = Vec_Add(&c2.getCenter(), &Vec_Scale(&velC2, toi));
+		//normal at contact
+		Vector2D vScale1 = Vec_Scale(&velC1, toi);
+		Vector2D vScale2 = Vec_Scale(&velC2, toi);
+        Vector2D c1AtT = Vec_Add(&c1.getCenter(), &vScale1);
+        Vector2D c2AtT = Vec_Add(&c2.getCenter(), &vScale2);
 
         Vector2D normal = Vec_Sub(&c1AtT, &c2AtT);
         if (Vec_Length(&normal) <= EPSILON) {
@@ -365,7 +369,8 @@ namespace Collision {
         info.normal = normal;
 
         //contact point 
-        info.contactPoint = Vec_Sub(&c1AtT, &Vec_Scale(&normal, c1.getRadius()));
+		Vector2D cpScale = Vec_Scale(&normal, c1.getRadius());
+        info.contactPoint = Vec_Sub(&c1AtT, &cpScale);
 
         info.collided = true;
         info.timeOfImpact = toi;
@@ -449,14 +454,14 @@ namespace Collision {
         }
     }
 
-    void Resolve_Circle_Circle(Collision::Circle& c1, Vector2D& velC1, float massC1,
+    /*void Resolve_Circle_Circle(Collision::Circle& c1, Vector2D& velC1, float massC1,
         Collision::Circle& c2, Vector2D& velC2, float massC2,
-        const CollisionInfo& info, CollisionResponseMode mode, float restitution = 0.0f) {
+        const CollisionInfo& info, CollisionResponseMode mode) {
 
         if (!info.collided) return;
 
         //move to contact
         Vector2D deltaC1 = Vec_Scale(&velC1, info.timeOfImpact);
         Vector2D deltaC2 = Vec_Scale(&velC2, info.timeOfImpact);
-    }
+    }*/
 }

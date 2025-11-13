@@ -106,8 +106,8 @@ namespace Collision {
         Collision::AABB& aabb, Vector2D& velAABB, float massAABB,
         const CollisionInfo& info, CollisionResponseMode mode);
 
-    void Resolve_Circle_Circle(Collision::Circle& c1, Vector2D& velC1, float massC1,
+    /*void Resolve_Circle_Circle(Collision::Circle& c1, Vector2D& velC1, float massC1,
         Collision::Circle& c2, Vector2D& velC2, float massC2,
-		const CollisionInfo& info, CollisionResponseMode mode, float restitution = 0.0f);
+		const CollisionInfo& info, CollisionResponseMode mode);*/
 }
 #endif
