@@ -95,7 +95,7 @@ namespace Collision {
 
     //circle and circle 
     bool CollisionIntersection_CircleCircle_Static(const Circle& c1, const Circle& c2);
-    CollisionInfo CollisionIntersection_CircleCircle_Dynamic_Info(const Circle& c1, const Vector2D& velC1, const Circle& c2, const Vector2D& velC2);
+    //CollisionInfo CollisionIntersection_CircleCircle_Dynamic_Info(const Circle& c1, const Vector2D& velC1, const Circle& c2, const Vector2D& velC2);
 
     //response functions apply on velocities and optionally translate objects to time of impact
     void Resolve_AABB_AABB(Collision::AABB& aabbA, Vector2D& velA, float massA,

@@ -909,8 +909,7 @@ void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime, M
 // Collision system - detects and resolves collisions between game objects
 void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime) {
 	(void)deltaTime;
-	//record current time for performance tracking
-	auto start = std::chrono::high_resolution_clock::now();
+	double ms = 0.0;
 
 	//get layer manager
 	LayerManager& layerManager = manager.getLayerManager();
@@ -919,10 +918,11 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 	//process each layer separately
 	//right now only layer 1 should have any sort of collision
 	for(Layer* layer : layers){
+		//skip missing layer
 		if (!layer) {
-			auto end = std::chrono::high_resolution_clock::now();
+			/*auto end = std::chrono::high_resolution_clock::now();
 			double ms = std::chrono::duration<double, std::milli>(end - start).count();
-			g_SystemTimers.push_back({ "Collisions", ms });
+			g_SystemTimers.push_back({ "Collisions", ms })*/
 			std::cerr << "CollisionSystem::update() - Layer " << layer->getLayerID() << " not found!\n";
 			return;
 		}
@@ -961,9 +961,12 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 		}
 
 		//temporary container to track checked objects for this frame
+		//to advoid duplicate checks
 		std::unordered_map<GameObject*, std::vector<GameObject*>> checked;
 
 		//checking collision 
+		//record current time for performance tracking
+		auto start = std::chrono::high_resolution_clock::now();
 		for (int i = 0; i < GRID_WIDTH; i++) {
 			for (int j = 0; j < GRID_HEIGHT; j++) {
 				auto& cellObject = grid[i][j].objects; //get objects in the cell
@@ -1025,14 +1028,15 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 							}
 							UI::addDebugMessage("Collision detected between Object.\n"); //message for debugger
 						}
+						//if no collision
 						else { p1->onGround = false; }
 					}
 				}
 			}
 		}
+		auto end = std::chrono::high_resolution_clock::now();
+		ms += std::chrono::duration<double, std::milli>(end - start).count(); //get elapse time in ms
 	}
-	auto end = std::chrono::high_resolution_clock::now();
-	double ms = std::chrono::duration<double, std::milli>(end - start).count(); //get elapse time in ms
 	g_SystemTimers.push_back({ "Collisions", ms }); //saving timing for UI output
 }
 
