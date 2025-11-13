@@ -1015,13 +1015,13 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 						if (render1->modelRef.shape != shape::square && render2->modelRef.shape != shape::square) {
 							Collision::AABB aabb1 = Collision::getObjectAABB(t1);
 							Collision::AABB aabb2 = Collision::getObjectAABB(t2);
-							CollisionInfo info = Collision::CollisionIntersection_RectRect_Dynamic_Info(aabb1, vel1, aabb2, vel2);
+							info = Collision::CollisionIntersection_RectRect_Dynamic_Info(aabb1, vel1, aabb2, vel2);
 						}
 						//if both circle
 						else if (render1->modelRef.shape == shape::circle && render2->modelRef.shape == shape::circle) {
 							Collision::Circle circle1 = Collision::getObjectCircle(t1);
 							Collision::Circle circle2 = Collision::getObjectCircle(t2);
-							CollisionInfo info = Collision::CollisionIntersection_CircleCircle_Dynamic_Info(circle1, vel1, circle2, vel2);
+							info = Collision::CollisionIntersection_CircleCircle_Dynamic_Info(circle1, vel1, circle2, vel2);
 						}
 
 						//checking if collided
