@@ -64,6 +64,14 @@ void SceneWindow::render(GLuint texture, float aspectRatio, GameObjectManager& m
             renderer::editorCam.zoomInOut(InputHandler::getMouseScroll());
         }
 
+        if (InputHandler::isMouseLeftClicked()) {
+            objPicking(manager);
+        }
+
+        if (InputHandler::isMouseDragging()) {
+            objDragging();
+        }
+
     }
 
     ImGui::EndChild();
@@ -335,8 +343,6 @@ Future implementation (jic i forget)
 - Undo/redo
 */
 void SceneWindow::objPicking(GameObjectManager& manager) {
-    if (!InputHandler::isMouseLeftClicked()) return;
-
     Vector2D mousePos = InputHandler::getMousePositionInImGuiViewport(m_sceneWindowState.scenePos, m_sceneWindowState.sceneSize);
 
     std::vector<GameObject*> gameObjects;
@@ -387,12 +393,8 @@ void SceneWindow::objPicking(GameObjectManager& manager) {
 
 void SceneWindow::objDragging() const {
     // early return if no obj is selected
-    // early return if no obj is selected
     GameObject* obj = m_objSelectionState.draggedObject;
     if (!obj) return;
-
-    // early return if mouse is not dragging
-    if (!InputHandler::isMouseDragging()) return;
 
     Transform* transform = obj->getComponent<Transform>();
     if (!transform) return;

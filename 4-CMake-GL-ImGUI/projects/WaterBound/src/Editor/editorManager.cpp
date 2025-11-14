@@ -21,6 +21,7 @@ Technology is prohibited.
 #include "Editor/editorManager.h"
 
 EditorManager::EditorManager() :
+    addObjWindow(Editor::circleInput, Editor::rectangleInput),
     assetBrowser(Editor::assetBrowserState, Editor::objSelectionState, Editor::menuBarState),
     editorDebugWindow(DebugMode::Editor),
     playDebugWindow(DebugMode::PlaySimul),
@@ -36,13 +37,13 @@ void EditorManager::update(GameObjectManager& manager) {
         assetsChangedFlag = false;
     }
 
+    handleShortcutKeys(manager);
+    /*sceneWindow.objPicking(manager);
+    sceneWindow.objDragging();*/
 
-    sceneWindow.objPicking(manager);
-    sceneWindow.objDragging();
-
+    addObjWindow.render(manager);
     assetBrowser.render();
     editorDebugWindow.render();
-    playDebugWindow.render();
     hierarchyWindow.render(manager);
     inspectorWindow.render(manager);
     menuBar.render(manager);

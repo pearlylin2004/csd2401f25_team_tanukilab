@@ -26,7 +26,6 @@ Technology is prohibited.
 #include <algorithm>
 #include "Editor/editorState.h"
 #include "Editor/gameDebugLog.h"
-#include "Editor/themeManager.h"
 #include "collision.h"
 #include "GameObjectManager.h"
 #include "JsonIO.h"
@@ -196,6 +195,7 @@ public:
 private:
 	void handleShortcutKeys(GameObjectManager& manager);
 
+	AddObjWindow addObjWindow;
 	AssetBrowser assetBrowser;
 	DebugWindow editorDebugWindow;
 	DebugWindow playDebugWindow;
