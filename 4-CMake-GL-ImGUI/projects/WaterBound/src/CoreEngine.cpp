@@ -191,7 +191,7 @@ void CoreEngine::Update(float deltaTime) {
     //    
     //}
 
-    if(!UI::isEditingMode()) m_luaSystem->update(*m_manager, deltaTime);
+    if(!EditorManager::isEditingMode()) m_luaSystem->update(*m_manager, deltaTime);
 
     // Update all systems in order
     m_inputSystem->update(*m_manager, deltaTime, *m_messageBus);

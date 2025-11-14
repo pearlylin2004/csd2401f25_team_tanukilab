@@ -412,10 +412,10 @@ void InputHandler::dropCallback(GLFWwindow* window, int count, const char** path
 			}
 
 			UI::assetChanged(); // flag to reload assets
-			UI::addDebugMessage("Added asset " + src.string() + " to " + dstBuild.string() + " and " + dstProject.string() + "\n");
+			DebugLog::addMessage("Added asset " + src.string() + " to " + dstBuild.string() + " and " + dstProject.string() + "\n");
 		}
 		catch (const std::filesystem::filesystem_error& e) {
-			UI::addDebugMessage("Failed to add asset " + src.string() + ": " + e.what() + "\n");
+			DebugLog::addMessage("Failed to add asset " + src.string() + ": " + e.what() + "\n");
 		}
 	}
 }

@@ -122,6 +122,10 @@ void GameObjectManager::getAllGameObjects(std::vector<GameObject*>& gameObjects)
 	}
 }
 
+int GameObjectManager::getGameObjectCount() {
+	return static_cast<int>(m_gameObjects.size());
+}
+
 void GameObjectManager::init()
 {
 

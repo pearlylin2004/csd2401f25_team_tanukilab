@@ -24,7 +24,8 @@ Technology is prohibited.
 //#include <stb_image.h>
 #include "collision.h"
 #include "imgui_internal.h" // for docking in UISystem
-#include <ui.h>
+//#include <ui.h>
+#include "Editor/editorManager.h"
 #include "font.h"
 #include "messageBus.h"
 #include "controllerSystem.h"
@@ -151,7 +152,8 @@ public:
 private:
 	void dockingSetUp();
 	void renderMultipleViewPorts();
-	UI m_UI;
+	//UI m_UI;
+	EditorManager m_UI;
 	static bool showUI;
 	bool m_firstTime = true;
 	RenderSystem* m_renderer = nullptr;

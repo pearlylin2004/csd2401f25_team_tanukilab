@@ -19,7 +19,8 @@ Technology is prohibited.
 #include <GLFW/glfw3.h>
 #include <cstring>
 #include <filesystem>
-#include "imgui.h"
+#include <imgui.h>
+#include "Editor/gameDebugLog.h"
 #include "mathlib.h"
 #include "config.h"
 

@@ -73,7 +73,7 @@ void PhysicsForces::jump(GameObject* object) {
         //physics->dynamics.velocity.y = 5.0f; // Instant upward velocity
         physics->onGround = false;
         //physics->canMove = true;
-        UI::addDebugMessage("Player jumped!");
+        DebugLog::addMessage("Player jumped!", DebugMode::PlaySimul);
     }
 }
 
@@ -100,7 +100,7 @@ void PhysicsForces::shoot(GameObject* bullet, const Transform* origin) {
     // Optional: clear forces so bullet is not affected by gravity
     p->dynamics.forces.clear();
 
-    UI::addDebugMessage("Bullet fired horizontally!");
+    DebugLog::addMessage("Bullet fired horizontally!", DebugMode::PlaySimul);
 }
 
 

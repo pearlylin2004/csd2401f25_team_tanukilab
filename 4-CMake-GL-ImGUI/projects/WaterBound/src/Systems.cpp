@@ -72,11 +72,11 @@ void InputSystem::update(GameObjectManager& manager, const float& deltaTime, Mes
 
 		AudioHandler::getInstance().toggleSoundPause(soundID::bg);
 
-		if (UI::isEditingMode()) UI::toggleEditing(false);
-				else UI::toggleEditing(true);
+		if (EditorManager::isEditingMode()) EditorManager::toggleEditing(false);
+		else EditorManager::toggleEditing(true);
 	}
 	
-	if (!UI::isEditingMode()) {
+	if (!EditorManager::isEditingMode()) {
 		if (InputHandler::isKeyTriggered(GLFW_KEY_1)) {
 			AudioHandler::getInstance().playSound(soundID::fire);
 		}
@@ -417,7 +417,7 @@ void RenderSystem::batchingSetUp(GameObjectManager& manager, float const& deltaT
 				if (animation->loop)
 				{
 					animation->frameTimer += deltaTime;
-					if (animation->frameTimer >= animation->frameTime && !UI::isEditingMode())
+					if (animation->frameTimer >= animation->frameTime && !EditorManager::isEditingMode())
 					{
 						animation->frameTimer -= animation->frameTime;
 						animation->currentFrameColumn = (animation->currentFrameColumn + 1) % animation->totalColumn;
@@ -506,7 +506,7 @@ void RenderSystem::renderTex(GameObject* object, float const& deltaTime)
 			{
 				animation->frameTimer += deltaTime;
 				//std::cout << "\n-------Frame Timer---------\n" << animation->frameTimer << "\n\n";
-				if (animation->frameTimer >= animation->frameTime && !UI::isEditingMode())
+				if (animation->frameTimer >= animation->frameTime && !EditorManager::isEditingMode())
 				{
 					animation->frameTimer -= animation->frameTime;
 					/*if (animation->runItBack && animation->currentFrameColumn == 0)
@@ -824,14 +824,14 @@ void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime, M
 		/*if (!physics->onGround)
 			physics->velY += physics->gravity * deltaTime;*/
 
-		if (object->hasComponent<Input>() && !UI::isEditingMode()) {
+		if (object->hasComponent<Input>() && !EditorManager::isEditingMode()) {
 			//std::cout << object << " has input component\n";
 			//bullet
 			Input* input = object->getComponent<Input>();
 
 			if (InputHandler::isKeyTriggered(GLFW_KEY_SPACE)) {
 				//std::cout << "bullet is spawned\n";
-				UI::addDebugMessage("bullet is spawned");
+				DebugLog::addMessage("bullet is spawned", DebugMode::PlaySimul);
 				static int bulletCount = 0;
 			}
 
@@ -1037,7 +1037,7 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 
 							}
 							
-							UI::addDebugMessage("Collision detected between Object.\n"); //message for debugger
+							DebugLog::addMessage("Collision detected between Object.\n", DebugMode::PlaySimul); //message for debugger
 
 						}
 						else { p1->onGround = false; }
@@ -1105,9 +1105,9 @@ void UISystem::update(GameObjectManager& manager) {
 
 	// all ImGui windows
 	m_UI.update(manager);
-	m_UI.sceneWindow(m_renderer->getTexture(), static_cast<float>(fboWidth) / static_cast<float>(fboHeight));
+	m_UI.renderScene(m_renderer->getTexture(), static_cast<float>(fboWidth) / static_cast<float>(fboHeight), manager);
 
-	m_UI.loadAssetsFromDirectory(); // only reload if assets flag is set (e.g. new asset added)
+	//m_UI.loadAssetsFromDirectory(); // only reload if assets flag is set (e.g. new asset added)
 
 	// this will CRASH if change scene in editor
 	//Transform* leavesT = gameObjects[0]->getComponent<Transform>();
@@ -1152,43 +1152,43 @@ void UISystem::dockingSetUp() {
 	ImGuiID dockspaceID = ImGui::GetID("DockSpace");
 	ImGui::DockSpace(dockspaceID, { 0.0f, 0.0f }, dockspace_flags);
 
-	if (m_firstTime) {
-		m_firstTime = false;
-		ImGui::DockBuilderRemoveNode(dockspaceID); // Clear any existing layout
-		ImGui::DockBuilderAddNode(dockspaceID, ImGuiDockNodeFlags_DockSpace);
-		ImGui::DockBuilderSetNodeSize(dockspaceID, viewport->Size);
+	//if (m_firstTime) {
+	//	m_firstTime = false;
+	//	ImGui::DockBuilderRemoveNode(dockspaceID); // Clear any existing layout
+	//	ImGui::DockBuilderAddNode(dockspaceID, ImGuiDockNodeFlags_DockSpace);
+	//	ImGui::DockBuilderSetNodeSize(dockspaceID, viewport->Size);
 
-		// Split the dockspace into major areas
-		ImGuiID dockParent = dockspaceID;
-		ImGuiID dockDown, dockRight, dockLeft;
-		ImGuiID dockLeftSecond, dockRightSecond;
+	//	// Split the dockspace into major areas
+	//	ImGuiID dockParent = dockspaceID;
+	//	ImGuiID dockDown, dockRight, dockLeft;
+	//	ImGuiID dockLeftSecond, dockRightSecond;
 
-		ImGui::DockBuilderSplitNode(dockParent, ImGuiDir_Left, 0.3f, &dockLeft, &dockParent);
-		ImGui::DockBuilderSplitNode(dockLeft, ImGuiDir_Down, 0.3f, &dockLeftSecond, &dockLeft);
-		ImGui::DockBuilderSplitNode(dockParent, ImGuiDir_Right, 0.4f, &dockRight, &dockParent);
-		ImGui::DockBuilderSplitNode(dockRight, ImGuiDir_Down, 0.4f, &dockRightSecond, &dockRight);
-		ImGui::DockBuilderSplitNode(dockParent, ImGuiDir_Down, 0.5f, &dockDown, &dockParent);
+	//	ImGui::DockBuilderSplitNode(dockParent, ImGuiDir_Left, 0.3f, &dockLeft, &dockParent);
+	//	ImGui::DockBuilderSplitNode(dockLeft, ImGuiDir_Down, 0.3f, &dockLeftSecond, &dockLeft);
+	//	ImGui::DockBuilderSplitNode(dockParent, ImGuiDir_Right, 0.4f, &dockRight, &dockParent);
+	//	ImGui::DockBuilderSplitNode(dockRight, ImGuiDir_Down, 0.4f, &dockRightSecond, &dockRight);
+	//	ImGui::DockBuilderSplitNode(dockParent, ImGuiDir_Down, 0.5f, &dockDown, &dockParent);
 
-		// Dock windows
+	//	// Dock windows
 
-		// Left
-		ImGui::DockBuilderDockWindow("Hierarchy", dockLeft);
-		ImGui::DockBuilderDockWindow("Debug Info", dockLeftSecond);
+	//	// Left
+	//	ImGui::DockBuilderDockWindow("Hierarchy", dockLeft);
+	//	ImGui::DockBuilderDockWindow("Debug Info", dockLeftSecond);
 
-		// Right
-		ImGui::DockBuilderDockWindow("Inspector", dockRight);
-		ImGui::DockBuilderDockWindow("Editor Camera", dockRight);
-		ImGui::DockBuilderDockWindow("Create Object", dockRightSecond);
+	//	// Right
+	//	ImGui::DockBuilderDockWindow("Inspector", dockRight);
+	//	ImGui::DockBuilderDockWindow("Editor Camera", dockRight);
+	//	ImGui::DockBuilderDockWindow("Create Object", dockRightSecond);
 
-		// Middle
-		ImGui::DockBuilderDockWindow("Scene", dockParent);
-		
-		// Bottom
-		ImGui::DockBuilderDockWindow("Performance", dockDown);
-		ImGui::DockBuilderDockWindow("Assets", dockDown);
+	//	// Middle
+	//	ImGui::DockBuilderDockWindow("Scene", dockParent);
+	//	
+	//	// Bottom
+	//	ImGui::DockBuilderDockWindow("Performance", dockDown);
+	//	ImGui::DockBuilderDockWindow("Assets", dockDown);
 
-		ImGui::DockBuilderFinish(dockspaceID);
-	}
+	//	ImGui::DockBuilderFinish(dockspaceID);
+	//}
 
 	ImGui::End();
 }

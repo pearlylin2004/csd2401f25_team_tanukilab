@@ -48,6 +48,9 @@ public:
 	//used for all the component systems
 	void getAllGameObjects(std::vector<GameObject*>& gameObjects);
 
+	// get the number of game objects
+	int getGameObjectCount();
+
 	//initialize game objects from a file
 	void init();
 
