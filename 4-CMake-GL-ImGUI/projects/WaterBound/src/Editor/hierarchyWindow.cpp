@@ -66,15 +66,14 @@ void HierarchyWindow::render(GameObjectManager& manager) {
     }
 
     /* ----------- Receive Dropped Prefab from Asset Browser ----------- */
-    handlePrefabDragDrop(manager);
-    
     // make entire hierarchy viewport a invisible button that can receive asset
     //ImGuiID targetID = ImGui::GetID("HierarchyWindowDropTarget");
     ImGui::SetCursorPos(ImVec2(0, 0));
     ImGui::InvisibleButton("##drop_target", ImGui::GetContentRegionAvail());
 
+    // accept the prefab drop
+    handlePrefabDragDrop(manager);
     /* ---------- END --------- */
-
 
     ImGui::End();
 
@@ -88,12 +87,9 @@ void HierarchyWindow::handlePrefabDragDrop(GameObjectManager& manager) {
     // receive prefab and make it into a game obj referecing the prefab
     if (ImGui::BeginDragDropTarget()) {
         if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("PREFAB")) {
-            DebugLog::addMessage("in here yey\n");
             const char* prefabPath = static_cast<const char*>(payload->Data);
-            DebugLog::addMessage("Prefab path: " + std::string(prefabPath) + "\n");
 
             std::string prefabID = PrefabManager::Instance().findPrefabIDByFilename(prefabPath);
-            DebugLog::addMessage("Prefab ID: " + prefabID + "\n");
 
             std::string objName = PrefabManager::Instance().getPrefabName(prefabID);
             GameObject* prefabObj = manager.createGameObject(objName + "(" + std::to_string(manager.getGameObjectCount()) + ")");
