@@ -166,6 +166,8 @@ private:
 	void objDragging() const;
 	/* -------- END -------- */
 
+	void resetSelection();
+
 	AssetBrowser& m_assetBrowser;
 	Editor::ObjSelectionState& m_objSelectionState;
 	Editor::MenuBarState& m_menuBarState;

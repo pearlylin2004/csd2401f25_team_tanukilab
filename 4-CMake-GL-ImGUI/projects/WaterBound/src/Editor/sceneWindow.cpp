@@ -119,10 +119,7 @@ void SceneWindow::newScene(GameObjectManager& manager) {
     JsonIO::syncSceneToRuntime(m_sceneState.currentSceneName);
     EditorManager::assetChanged();
 
-    m_objSelectionState.selectedObject = nullptr;
-    m_objSelectionState.draggedObject = nullptr;
-    m_objSelectionState.selectedPrefab = nullptr;
-    m_objSelectionState.selectedIndex = -1;
+    resetSelection();
 
     DebugLog::addMessage("New scene " + m_sceneState.currentSceneName + " created.\n");
 }
@@ -164,10 +161,7 @@ void SceneWindow::duplicateScene(GameObjectManager& manager) {
         }
         EditorManager::assetChanged();
 
-        m_objSelectionState.selectedObject = nullptr;
-        m_objSelectionState.draggedObject = nullptr;
-        m_objSelectionState.selectedPrefab = nullptr;
-        m_objSelectionState.selectedIndex = -1;
+        resetSelection();
         DebugLog::addMessage("Scene duplicated to: " + newSceneName + "\n");
     }
     else {
@@ -183,10 +177,7 @@ void SceneWindow::loadScene(GameObjectManager& manager) {
 
     m_sceneState.currentSceneName = std::move(m_menuBarState.sceneToLoad);
 
-    m_objSelectionState.selectedObject = nullptr;
-    m_objSelectionState.draggedObject = nullptr;
-    m_objSelectionState.selectedPrefab = nullptr;
-    m_objSelectionState.selectedIndex = -1;
+    resetSelection();
 
     DebugLog::addMessage("Loaded scene: " + m_sceneState.currentSceneName + "\n");
 }
@@ -413,4 +404,11 @@ void SceneWindow::objDragging() const {
     if (!physics) return;
 
     physics->velY = 0.0f;
+}
+
+void SceneWindow::resetSelection() {
+    m_objSelectionState.selectedObject = nullptr;
+    m_objSelectionState.draggedObject = nullptr;
+    m_objSelectionState.selectedPrefab = nullptr;
+    m_objSelectionState.selectedIndex = -1;
 }
