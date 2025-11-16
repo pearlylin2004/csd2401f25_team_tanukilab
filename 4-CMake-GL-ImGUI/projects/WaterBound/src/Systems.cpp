@@ -1152,43 +1152,52 @@ void UISystem::dockingSetUp() {
 	ImGuiID dockspaceID = ImGui::GetID("DockSpace");
 	ImGui::DockSpace(dockspaceID, { 0.0f, 0.0f }, dockspace_flags);
 
-	//if (m_firstTime) {
-	//	m_firstTime = false;
-	//	ImGui::DockBuilderRemoveNode(dockspaceID); // Clear any existing layout
-	//	ImGui::DockBuilderAddNode(dockspaceID, ImGuiDockNodeFlags_DockSpace);
-	//	ImGui::DockBuilderSetNodeSize(dockspaceID, viewport->Size);
+	if (m_firstTime) {
+		m_firstTime = false;
+		ImGui::DockBuilderRemoveNode(dockspaceID);
+		ImGui::DockBuilderAddNode(dockspaceID, ImGuiDockNodeFlags_DockSpace);
+		ImGui::DockBuilderSetNodeSize(dockspaceID, viewport->Size);
 
-	//	// Split the dockspace into major areas
-	//	ImGuiID dockParent = dockspaceID;
-	//	ImGuiID dockDown, dockRight, dockLeft;
-	//	ImGuiID dockLeftSecond, dockRightSecond;
+		ImGuiID dockMain = dockspaceID;
 
-	//	ImGui::DockBuilderSplitNode(dockParent, ImGuiDir_Left, 0.3f, &dockLeft, &dockParent);
-	//	ImGui::DockBuilderSplitNode(dockLeft, ImGuiDir_Down, 0.3f, &dockLeftSecond, &dockLeft);
-	//	ImGui::DockBuilderSplitNode(dockParent, ImGuiDir_Right, 0.4f, &dockRight, &dockParent);
-	//	ImGui::DockBuilderSplitNode(dockRight, ImGuiDir_Down, 0.4f, &dockRightSecond, &dockRight);
-	//	ImGui::DockBuilderSplitNode(dockParent, ImGuiDir_Down, 0.5f, &dockDown, &dockParent);
+		ImGuiID dockLeft, dockRight, dockBottom;
+		ImGui::DockBuilderSplitNode(dockMain, ImGuiDir_Left, 0.25f, &dockLeft, &dockMain);
+		// split off right panel (30% of remaining width)
+		ImGui::DockBuilderSplitNode(dockMain, ImGuiDir_Right, 0.30f, &dockRight, &dockMain);
+		// split off bottom panel (30% of remaining height)
+		ImGui::DockBuilderSplitNode(dockMain, ImGuiDir_Down, 0.30f, &dockBottom, &dockMain);
 
-	//	// Dock windows
+		// subdivide the panels
+		ImGuiID dockLeftBottom, dockRightBottom;
+		// split left panel into top and bottom
+		ImGui::DockBuilderSplitNode(dockLeft, ImGuiDir_Down, 0.40f, &dockLeftBottom, &dockLeft);
+		// split right panel into top and bottom
+		ImGui::DockBuilderSplitNode(dockRight, ImGuiDir_Down, 0.40f, &dockRightBottom, &dockRight);
 
-	//	// Left
-	//	ImGui::DockBuilderDockWindow("Hierarchy", dockLeft);
-	//	ImGui::DockBuilderDockWindow("Debug Info", dockLeftSecond);
 
-	//	// Right
-	//	ImGui::DockBuilderDockWindow("Inspector", dockRight);
-	//	ImGui::DockBuilderDockWindow("Editor Camera", dockRight);
-	//	ImGui::DockBuilderDockWindow("Create Object", dockRightSecond);
+		// dock windows to their respective areas
+		// left top: Hierarchy
+		ImGui::DockBuilderDockWindow("Hierarchy", dockLeft);
 
-	//	// Middle
-	//	ImGui::DockBuilderDockWindow("Scene", dockParent);
-	//	
-	//	// Bottom
-	//	ImGui::DockBuilderDockWindow("Performance", dockDown);
-	//	ImGui::DockBuilderDockWindow("Assets", dockDown);
+		// left bottom: Debug
+		ImGui::DockBuilderDockWindow("Debug - Editor", dockLeftBottom);
+		ImGui::DockBuilderDockWindow("Debug - Playing", dockLeftBottom);
 
-	//	ImGui::DockBuilderFinish(dockspaceID);
-	//}
+		// center: Scene viewport
+		ImGui::DockBuilderDockWindow("Scene", dockMain);
+
+		// right top: Inspector
+		ImGui::DockBuilderDockWindow("Inspector", dockRight);
+
+		// right bottom: Create Object
+		ImGui::DockBuilderDockWindow("Create Object", dockRightBottom);
+
+		// bottom: Assets and Performance
+		ImGui::DockBuilderDockWindow("Assets", dockBottom);
+		ImGui::DockBuilderDockWindow("Performance", dockBottom);
+
+		ImGui::DockBuilderFinish(dockspaceID);
+	}
 
 	ImGui::End();
 }

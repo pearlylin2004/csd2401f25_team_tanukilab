@@ -141,7 +141,6 @@ void HierarchyWindow::objDeletePopup(GameObjectManager& manager) {
         ImGui::Text("Are you sure you want to delete this object?");
 
         if (ImGui::Button("Delete")) {
-            if (!m_objSelectionState.selectedObject) std::cout << "fuck\n\n";
             std::string name = m_objSelectionState.selectedObject->getObjectName();
 
             manager.deleteGameObject(m_objSelectionState.selectedObject);
