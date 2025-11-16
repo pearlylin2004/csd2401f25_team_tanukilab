@@ -360,17 +360,22 @@ void AssetBrowser::assetRenamePopup() {
                     newPath.replace_extension(old.extension());
 
                 if (!std::filesystem::exists(newPath)) {
+                    // if renamed asset is current scene, rename current scene name as well
+                    if (Editor::sceneState.currentSceneName == old.filename().string()) {
+                        Editor::sceneState.currentSceneName = newPath.filename().string();
+                    }
+
                     std::filesystem::rename(old, newPath);
                     EditorManager::assetChanged(); // reload assets to reflect new name
 
                     // change in the project folder as well
                     std::filesystem::path sourceDir(SOURCE_DIR_R);
 
-                    // split the "shaders/" part to get relative path
+                    // split the "assets/" part to get relative path
                     std::string relative;
-                    size_t pos = old.string().find("shaders/");
+                    size_t pos = old.string().find("assets/");
                     if (pos != std::string::npos) {
-                        relative = old.string().substr(pos + strlen("shaders/"));
+                        relative = old.string().substr(pos + strlen("assets/"));
                     }
                     else {
                         relative = old.filename().string();
