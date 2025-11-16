@@ -166,6 +166,7 @@ private:
 	void objDragging() const;
 	/* -------- END -------- */
 
+	// reusable func to clear obj selections
 	void resetSelection();
 
 	AssetBrowser& m_assetBrowser;

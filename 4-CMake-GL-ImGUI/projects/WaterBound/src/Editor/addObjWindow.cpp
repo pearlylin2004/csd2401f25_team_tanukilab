@@ -115,10 +115,7 @@ void AddObjWindow::render(GameObjectManager& manager){
     //ImGui::PopItemWidth();
 
     if (ImGui::Button("Add Circle")) {
-        std::vector<GameObject*> gameObjects;
-        manager.getAllGameObjects(gameObjects);
-
-        GameObject* circleObj = manager.createGameObject("Circle_" + std::to_string(gameObjects.size()));
+        GameObject* circleObj = manager.createGameObject("Circle_" + std::to_string(manager.getGameObjectCount()));
 
         Transform* transform = circleObj->addComponent<Transform>();
         Render* render = circleObj->addComponent<Render>();
@@ -151,10 +148,7 @@ void AddObjWindow::render(GameObjectManager& manager){
     ImGui::Spacing();
 
     if (ImGui::Button("Add Rectangle")) {
-        std::vector<GameObject*> gameObjects;
-        manager.getAllGameObjects(gameObjects);
-
-        GameObject* recobj = manager.createGameObject("Rectangle_" + std::to_string(gameObjects.size()));
+        GameObject* recobj = manager.createGameObject("Rectangle_" + std::to_string(manager.getGameObjectCount()));
 
         Transform* transform = recobj->addComponent<Transform>();
         Render* render = recobj->addComponent<Render>();
