@@ -179,6 +179,7 @@ void SceneWindow::duplicateScene(GameObjectManager& manager) {
 void SceneWindow::loadScene(GameObjectManager& manager) {
     //manager.loadFromFile(m_MenuBarState.sceneToLoad);
     manager.loadScene(JsonIO::runtimeScenePath(m_menuBarState.sceneToLoad));
+    manager.initializeSceneResources();
 
     m_sceneState.currentSceneName = std::move(m_menuBarState.sceneToLoad);
 

@@ -16,15 +16,8 @@ without the prior written consent of DigiPen Institute of
 Technology is prohibited.
 */
 /* End Header **************************************************************************/
-#include "ui.h"
+#include "editor/editorManager.h"
 #include "input.h"
-
-#ifndef RUNTIME_DIR_R
-#define RUNTIME_DIR_R "./assets"
-#endif
-#ifndef SOURCE_DIR_R
-#define SOURCE_DIR_R "./projects/WaterBound/assets"
-#endif
 
 GLFWwindow* InputHandler::m_window = nullptr;
 AppConfig InputHandler::m_cfg;
@@ -411,7 +404,7 @@ void InputHandler::dropCallback(GLFWwindow* window, int count, const char** path
 				std::filesystem::copy_file(src, dstProject, std::filesystem::copy_options::overwrite_existing);
 			}
 
-			UI::assetChanged(); // flag to reload assets
+			EditorManager::assetChanged(); // flag to reload assets
 			DebugLog::addMessage("Added asset " + src.string() + " to " + dstBuild.string() + " and " + dstProject.string() + "\n");
 		}
 		catch (const std::filesystem::filesystem_error& e) {

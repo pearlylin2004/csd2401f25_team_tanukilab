@@ -76,8 +76,8 @@ void AssetBrowser::render() {
         std::string fullPath = asset.folder + "/" + asset.name;
         //if (fullPath == m_tempSceneName) continue;
 
-        if (asset.name == Editor::sceneState.tempSceneName) continue;
-        if (asset.name == "prefab_registry.json") continue;
+        /*if (asset.name == Editor::sceneState.tempSceneName) continue;
+        if (asset.name == "prefab_registry.json") continue;*/
 
         ImGui::PushID(index++);
 
@@ -236,7 +236,7 @@ void AssetBrowser::loadAssetsFromDirectory() {
             // skip unwanted files
             if (filename == Editor::sceneState.tempSceneName) continue;
             if (filename == "prefab_registry.json") continue;
-            if (extension == ".vert" || extension == ".frag") continue;
+            if (extension == ".vert" || extension == ".frag" || extension == ".lua") continue;
 
             asset.name = std::move(filename);
             asset.path = entry.path().string();
@@ -268,6 +268,7 @@ void AssetBrowser::assetDeletePopup() {
 
             if (!m_AssetBrowserState.fullPathToDelete.empty() &&
                 std::filesystem::exists(m_AssetBrowserState.fullPathToDelete)) {
+               /* std::cout << "\n\nfirst fullpath: " << m_AssetBrowserState.fullPathToDelete << "\n\n";*/
                 std::filesystem::remove(m_AssetBrowserState.fullPathToDelete);
                 EditorManager::assetChanged(); // to reload assets
 
@@ -275,18 +276,19 @@ void AssetBrowser::assetDeletePopup() {
                 std::filesystem::path fullPath(m_AssetBrowserState.fullPathToDelete);
                 std::string filename = fullPath.filename().string();
 
-                // split the "shaders/" part to get relative path
+                // split the "assets/" part to get relative path
                 std::string relativePath;
-                size_t pos = m_AssetBrowserState.fullPathToDelete.find("shaders/");
+                size_t pos = m_AssetBrowserState.fullPathToDelete.find("assets/");
                 if (pos != std::string::npos) {
-                    relativePath = m_AssetBrowserState.fullPathToDelete.substr(pos + strlen("shaders/"));
+                    relativePath = m_AssetBrowserState.fullPathToDelete.substr(pos + strlen("assets/"));
                 }
 
                 // combine relative path to delete
                 std::filesystem::path projectPath = std::string(SOURCE_DIR_R) + "/" + relativePath;
+                
                 if (std::filesystem::exists(projectPath)) {
                     std::filesystem::remove(projectPath);
-                    std::cout << "Deleted asset (Project): " << projectPath.string() << std::endl;
+                    /*std::cout << "\n\nDeleted asset (Project): " << projectPath.string() << "\n\n";*/
                 }
 
                 /* -------- Prefab Delete (WIP) -------- */

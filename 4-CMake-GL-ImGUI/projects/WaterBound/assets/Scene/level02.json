@@ -38,8 +38,7 @@
         },
         "Render": {
           "hasTex": 1,
-          "texture": "shaders/Sample_tilemap.jpg",
-          "hasTex": 1
+          "texture": "assets/Sample_tilemap.jpg"
         }
       }
     }

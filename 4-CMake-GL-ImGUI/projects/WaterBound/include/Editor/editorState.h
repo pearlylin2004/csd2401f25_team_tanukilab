@@ -60,7 +60,7 @@ namespace Editor {
 	};
 
 	struct AssetBrowserState {
-		std::string currentFolder = "assets/"; // we dont have a asset folder yet :(
+		std::string currentFolder = "assets/"; // we have an asset folder yayy
 		std::filesystem::file_time_type lastTopLevelRefresh; // top level folder timestamp
 		std::filesystem::file_time_type lastRefresh;
 
