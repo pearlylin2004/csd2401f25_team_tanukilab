@@ -59,15 +59,18 @@ void SceneWindow::render(GLuint texture, float aspectRatio, GameObjectManager& m
             renderer::editorCam.pan(InputHandler::getMouseDeltaWorldInViewport(m_sceneWindowState.sceneSize));
         }
 
+        // zoom in/out with middle mouse button
         if (InputHandler::getMouseScroll() != 0.f)
         {
             renderer::editorCam.zoomInOut(InputHandler::getMouseScroll());
         }
 
+        // left click to select obj
         if (InputHandler::isMouseLeftClicked()) {
             objPicking(manager);
         }
 
+        // drag to reposition obj
         if (InputHandler::isMouseDragging()) {
             objDragging();
         }
@@ -295,7 +298,7 @@ void SceneWindow::loadScenePopup(GameObjectManager& manager) {
             JsonIO::syncSceneToRuntime(m_sceneState.currentSceneName);
 
             loadScene(manager);
-            std::vector<GameObject*> gameObjects;
+            /*std::vector<GameObject*> gameObjects;
             manager.getAllGameObjects(gameObjects);
 
             for (GameObject* object : gameObjects) {
@@ -303,7 +306,7 @@ void SceneWindow::loadScenePopup(GameObjectManager& manager) {
                 if (r) {
                     r->texChanged = true;
                 }
-            }
+            }*/
             ImGui::CloseCurrentPopup();
         }
 
@@ -312,7 +315,7 @@ void SceneWindow::loadScenePopup(GameObjectManager& manager) {
         if (ImGui::Button("Discard Changes")) {
             loadScene(manager);
 
-            std::vector<GameObject*> gameObjects;
+            /*std::vector<GameObject*> gameObjects;
             manager.getAllGameObjects(gameObjects);
 
             for (GameObject* object : gameObjects) {
@@ -320,7 +323,7 @@ void SceneWindow::loadScenePopup(GameObjectManager& manager) {
                 if (r) {
                     r->texChanged = true;
                 }
-            }
+            }*/
             ImGui::CloseCurrentPopup();
         }
 

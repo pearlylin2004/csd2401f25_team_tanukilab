@@ -141,14 +141,6 @@ public:
 
 	void render(GLuint texture, float aspectRatio, GameObjectManager& manager);
 
-	/* -------- Object Click and Drag -------- */
-	// handle click and select logic and collision
-	void objPicking(GameObjectManager& manager);
-
-	// handle dragging of the obj (obj will follow cursor)
-	void objDragging() const;
-	/* -------- END -------- */
-
 	std::string getCurrentSceneName() const { return m_sceneState.currentSceneName; }
 
 private:
@@ -161,11 +153,17 @@ private:
 	void loadScene(GameObjectManager& manager);
 
 	/* --------- Pop up Modals -------- */
-
 	void newScenePopup(GameObjectManager& manager);
 	void duplicateScenePopup(GameObjectManager& manager);
 	void loadScenePopup(GameObjectManager& manager);
+	/* -------- END -------- */
 
+	/* -------- Object Click and Drag -------- */
+	// handle click and select logic and collision
+	void objPicking(GameObjectManager& manager);
+
+	// handle dragging of the obj (obj will follow cursor)
+	void objDragging() const;
 	/* -------- END -------- */
 
 	AssetBrowser& m_assetBrowser;
