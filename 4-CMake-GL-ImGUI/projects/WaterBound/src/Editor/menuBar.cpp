@@ -43,8 +43,14 @@ void MenuBar::render(GameObjectManager& manager){
 }
 
 void MenuBar::toggleSimulation(GameObjectManager& manager) {
+
     if (EditorManager::isEditingMode()) playSimulation(manager);
     else stopSimulation(manager);
+}
+
+void MenuBar::pauseResumeSimul() {
+    if (!EditorManager::isPaused()) pauseSimulation();
+    else if (EditorManager::isPaused()) resumeSimulation();
 }
 
 void MenuBar::drawFileMenu(GameObjectManager& manager) {
@@ -96,6 +102,17 @@ void MenuBar::drawSimulationMenu(GameObjectManager& manager) {
             }
         }
         else {
+            if (!EditorManager::isPaused()) {
+                if (ImGui::MenuItem("Pause")) {
+                    pauseSimulation();
+                }
+            }
+            else {
+                if (ImGui::MenuItem("Resume")) {
+                    resumeSimulation();
+                }
+            }
+
             if (ImGui::MenuItem("Stop")) {
                 stopSimulation(manager);
             }
@@ -141,11 +158,25 @@ void MenuBar::stopSimulation(GameObjectManager& manager) {
     m_objSelectionState.selectedPrefab = nullptr;
     m_objSelectionState.selectedIndex = -1;
 
+    DebugLog::clearPlaySimulMsg();
+
     // remove temp scene file
     const auto tempFull = JsonIO::runtimeScenePath(m_sceneState.tempSceneName);
     if (std::filesystem::exists(tempFull))
         std::filesystem::remove(tempFull);
     DebugLog::addMessage("Simulation stopped.\n");
+}
+
+void MenuBar::pauseSimulation() {
+    EditorManager::togglePause(true);
+
+    DebugLog::addMessage("Simulation paused.\n");
+}
+
+void MenuBar::resumeSimulation() {
+    EditorManager::togglePause(false);
+
+    DebugLog::addMessage("Simulation resumed.\n");
 }
 
 void MenuBar::themeSinLeDark() {

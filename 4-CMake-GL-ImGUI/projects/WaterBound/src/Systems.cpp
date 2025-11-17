@@ -76,7 +76,7 @@ void InputSystem::update(GameObjectManager& manager, const float& deltaTime, Mes
 		else EditorManager::toggleEditing(true);
 	}
 	
-	if (!EditorManager::isEditingMode()) {
+	if (!EditorManager::isEditingMode() && !EditorManager::isPaused()) {
 		if (InputHandler::isKeyTriggered(GLFW_KEY_1)) {
 			AudioHandler::getInstance().playSound(soundID::fire);
 		}
@@ -417,7 +417,7 @@ void RenderSystem::batchingSetUp(GameObjectManager& manager, float const& deltaT
 				if (animation->loop)
 				{
 					animation->frameTimer += deltaTime;
-					if (animation->frameTimer >= animation->frameTime && !EditorManager::isEditingMode())
+					if (animation->frameTimer >= animation->frameTime && !EditorManager::isEditingMode() && !EditorManager::isPaused())
 					{
 						animation->frameTimer -= animation->frameTime;
 						animation->currentFrameColumn = (animation->currentFrameColumn + 1) % animation->totalColumn;
@@ -506,7 +506,7 @@ void RenderSystem::renderTex(GameObject* object, float const& deltaTime)
 			{
 				animation->frameTimer += deltaTime;
 				//std::cout << "\n-------Frame Timer---------\n" << animation->frameTimer << "\n\n";
-				if (animation->frameTimer >= animation->frameTime && !EditorManager::isEditingMode())
+				if (animation->frameTimer >= animation->frameTime && !EditorManager::isEditingMode() && !EditorManager::isPaused())
 				{
 					animation->frameTimer -= animation->frameTime;
 					/*if (animation->runItBack && animation->currentFrameColumn == 0)
@@ -824,7 +824,7 @@ void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime, M
 		/*if (!physics->onGround)
 			physics->velY += physics->gravity * deltaTime;*/
 
-		if (object->hasComponent<Input>() && !EditorManager::isEditingMode()) {
+		if (object->hasComponent<Input>() && !EditorManager::isEditingMode() && !EditorManager::isPaused()) {
 			//std::cout << object << " has input component\n";
 			//bullet
 			Input* input = object->getComponent<Input>();

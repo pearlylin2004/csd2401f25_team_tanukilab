@@ -58,7 +58,7 @@ void EditorManager::renderScene(GLuint texture, float aspectRatio, GameObjectMan
 void EditorManager::handleShortcutKeys(GameObjectManager& manager) {
     /* --------------- "CTRL" + "S" -> Save Scene --------------- */
     {
-        if (InputHandler::isComboKeyTriggered(GLFW_KEY_S, GLFW_KEY_LEFT_CONTROL) ||
+        if (InputHandler::isComboKeyTriggered(GLFW_KEY_S) ||
             InputHandler::isComboKeyTriggered(GLFW_KEY_S, GLFW_KEY_RIGHT_CONTROL)) {
             if (isEditingMode()) {
                 manager.saveScene(JsonIO::sourceScenePath(sceneWindow.getCurrentSceneName()));
@@ -72,9 +72,14 @@ void EditorManager::handleShortcutKeys(GameObjectManager& manager) {
     /* --------------- END --------------- */
 
 
-    /* --------------- "F5" -> Play/Stop Simulation --------------- */
+    /* ------------- "CTRL" + "F5" -> Pause/Resume Simulation ------------- */
+    /* ------------- "F5" -> Play/Stop Simulation ------------- */
     {
-        if (InputHandler::isKeyTriggered(GLFW_KEY_F5)) {
+        if (InputHandler::isComboKeyTriggered(GLFW_KEY_F5) ||
+            InputHandler::isComboKeyTriggered(GLFW_KEY_F5, GLFW_KEY_RIGHT_CONTROL)) {
+            if (!isEditing) menuBar.pauseResumeSimul();
+        }
+        else if (InputHandler::isKeyTriggered(GLFW_KEY_F5)) {
             menuBar.toggleSimulation(manager);
         }
     }
@@ -94,7 +99,7 @@ void EditorManager::handleShortcutKeys(GameObjectManager& manager) {
 
     /* --------------- "CTRL" + "D" -> Duplicate Game Object --------------- */
     {
-        if (InputHandler::isComboKeyTriggered(GLFW_KEY_D, GLFW_KEY_LEFT_CONTROL) ||
+        if (InputHandler::isComboKeyTriggered(GLFW_KEY_D) ||
             InputHandler::isComboKeyTriggered(GLFW_KEY_D, GLFW_KEY_RIGHT_CONTROL)) {
             if (Editor::objSelectionState.selectedObject) {
                 AddObjWindow::dupObj(manager, Editor::objSelectionState.selectedObject);

@@ -116,7 +116,8 @@ class MenuBar {
 public:
 	MenuBar(AssetBrowser& aBrowser, Editor::AssetBrowserState& Astate, Editor::MenuBarState& Mstate, Editor::ObjSelectionState& Ostate, Editor::SceneState& sceneState);
 	void render(GameObjectManager& manager);
-	void toggleSimulation(GameObjectManager& manager);
+	void toggleSimulation(GameObjectManager& manager); // play/stop simulation
+	void pauseResumeSimul();
 
 private:
 	void drawFileMenu(GameObjectManager& manager);
@@ -125,6 +126,9 @@ private:
 
 	void playSimulation(GameObjectManager& manager);
 	void stopSimulation(GameObjectManager& manager);
+	void pauseSimulation();
+	void resumeSimulation();
+
 	void themeSinLeDark();
 	void themeSinLeLight();
 	void themeForest();
@@ -199,6 +203,9 @@ public:
 	static bool isEditingMode() { return isEditing; }
 	static void toggleEditing(bool e) { isEditing = e; } // if true then editing mode, dun play animation, obj dun move
 
+	static bool isPaused() { return pausedSimul; }
+	static void togglePause(bool e) { pausedSimul = e; }
+
 private:
 	void handleShortcutKeys(GameObjectManager& manager);
 
@@ -213,5 +220,6 @@ private:
 	SceneWindow sceneWindow;
 
 	static inline bool isEditing = false;
+	static inline bool pausedSimul = false;
 	static inline bool assetsChangedFlag = true;
 };
