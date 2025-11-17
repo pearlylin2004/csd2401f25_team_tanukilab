@@ -56,12 +56,6 @@ public:
 
 	bool renameGameObject(GameObject* obj, const std::string& newName);
 
-	// load from file (read)
-	void loadFromFile(const std::string& filename);
-
-	// save to file (write)
-	void saveToFile(const std::string& filename) const;
-
 	void loadFromJson(const std::string& filename);
 
 	void saveToJson(const std::string& filename, bool isNew) const;
