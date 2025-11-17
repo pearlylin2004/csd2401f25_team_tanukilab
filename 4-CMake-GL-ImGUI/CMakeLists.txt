@@ -34,6 +34,25 @@ foreach(child ${children})
          ${CMAKE_CURRENT_LIST_DIR}/projects/${child}/include/*.h
          ${CMAKE_CURRENT_LIST_DIR}/projects/${child}/include/*.hpp)
 
+# ===================== Filter for editor files in VS =====================
+    file(GLOB_RECURSE ${child}_editor_headers
+        ${CMAKE_CURRENT_LIST_DIR}/projects/${child}/include/Editor/*.h
+        ${CMAKE_CURRENT_LIST_DIR}/projects/${child}/include/Editor/*.hpp
+    )
+
+    file(GLOB_RECURSE ${child}_editor_sources
+        ${CMAKE_CURRENT_LIST_DIR}/projects/${child}/src/Editor/*.cpp
+    )
+
+    source_group("Header Files\\Editor" FILES ${${child}_editor_headers})
+    source_group("Source Files\\Editor" FILES ${${child}_editor_sources})
+
+    list(APPEND ${child}_source_files
+        ${${child}_editor_headers}
+        ${${child}_editor_sources}
+    )
+# ========================================================================
+
     add_executable(${child} ${${child}_source_files})
     target_link_libraries(${child} ${ALL_LIBS})
     set_property(TARGET ${child} PROPERTY CXX_STANDARD 20)
