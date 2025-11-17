@@ -86,7 +86,7 @@ public:
 
 private:
 	void handlePrefabDragDrop(GameObjectManager& manager);
-	void showContextMenu(GameObject* obj, int objIndex);
+	void showContextMenu(GameObjectManager& manager, GameObject* obj, int objIndex);
 
 	void objDeletePopup(GameObjectManager& manager);
 	void createPrefabPopup(GameObjectManager& manager);

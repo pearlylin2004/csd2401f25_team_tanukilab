@@ -98,70 +98,76 @@ void AddObjWindow::render(GameObjectManager& manager){
 
     //ImGui::PushItemWidth(150.0f);
 
-    // For drawing circle
-    ImGui::Text("X");
-    ImGui::SameLine();
-    ImGui::InputFloat("##X", &m_circleInput.inputX, 0.1f);
+    /* --------------- Add Circle Logic --------------- */
+    {
+        ImGui::Text("X");
+        ImGui::SameLine();
+        ImGui::InputFloat("##X", &m_circleInput.inputX, 0.1f);
 
-    ImGui::Text("Y");
-    ImGui::SameLine();
-    ImGui::InputFloat("##Y", &m_circleInput.inputY, 0.1f);
+        ImGui::Text("Y");
+        ImGui::SameLine();
+        ImGui::InputFloat("##Y", &m_circleInput.inputY, 0.1f);
 
-    ImGui::Text("Z");
-    ImGui::SameLine();
-    ImGui::InputFloat("##Z", &m_circleInput.inputZ, 0.1f);
-    ImGui::Spacing();
+        ImGui::Text("Z");
+        ImGui::SameLine();
+        ImGui::InputFloat("##Z", &m_circleInput.inputZ, 0.1f);
+        ImGui::Spacing();
 
     //ImGui::PopItemWidth();
+        if (ImGui::Button("Add Circle")) {
+            GameObject* circleObj = manager.createGameObject("Circle_" + std::to_string(manager.getGameObjectCount()));
 
-    if (ImGui::Button("Add Circle")) {
-        GameObject* circleObj = manager.createGameObject("Circle_" + std::to_string(manager.getGameObjectCount()));
+            Transform* transform = circleObj->addComponent<Transform>();
+            Render* render = circleObj->addComponent<Render>();
+            render->modelRef = renderer::models[static_cast<int>(shape::circle) + static_cast<int>(shape::circle)];
 
-        Transform* transform = circleObj->addComponent<Transform>();
-        Render* render = circleObj->addComponent<Render>();
-        render->modelRef = renderer::models[static_cast<int>(shape::circle) + static_cast<int>(shape::circle)];
-        //render->modelRef = renderer::models[static_cast<int>(shape::circle)];
-        transform->x = m_circleInput.inputX;
-        transform->y = m_circleInput.inputY;
-        transform->z = m_circleInput.inputZ;
+            transform->x = m_circleInput.inputX;
+            transform->y = m_circleInput.inputY;
+            transform->z = m_circleInput.inputZ;
 
-        //auto* coll = circleObj->addComponent<CollisionInfo>();
-        DebugLog::addMessage("Circle created at (" + std::to_string(transform->x) + ", " + std::to_string(transform->y) + ", " + std::to_string(transform->z) + ")\n");
+            DebugLog::addMessage("Circle created at (" + std::to_string(transform->x) + ", " + std::to_string(transform->y) + ", " + std::to_string(transform->z) + ")\n");
+        }
+
+        /* --------------- END --------------- */
     }
 
     ImGui::Spacing();
     ImGui::Separator();
     ImGui::Spacing();
 
-    // For drawing rectangle        
-    ImGui::Text("X");
-    ImGui::SameLine();
-    ImGui::InputFloat("##X1", &m_rectangleInput.inputX, 0.1f);
+        
+    /* --------------- Add Rectangle Logic --------------- */
+    {
+        ImGui::Text("X");
+        ImGui::SameLine();
+        ImGui::InputFloat("##X1", &m_rectangleInput.inputX, 0.1f);
 
-    ImGui::Text("Y");
-    ImGui::SameLine();
-    ImGui::InputFloat("##Y1", &m_rectangleInput.inputY, 0.1f);
+        ImGui::Text("Y");
+        ImGui::SameLine();
+        ImGui::InputFloat("##Y1", &m_rectangleInput.inputY, 0.1f);
 
-    ImGui::Text("Z");
-    ImGui::SameLine();
-    ImGui::InputFloat("##Z1", &m_rectangleInput.inputZ, 0.1f);
-    ImGui::Spacing();
+        ImGui::Text("Z");
+        ImGui::SameLine();
+        ImGui::InputFloat("##Z1", &m_rectangleInput.inputZ, 0.1f);
+        ImGui::Spacing();
 
-    if (ImGui::Button("Add Rectangle")) {
-        GameObject* recobj = manager.createGameObject("Rectangle_" + std::to_string(manager.getGameObjectCount()));
 
-        Transform* transform = recobj->addComponent<Transform>();
-        Render* render = recobj->addComponent<Render>();
-        render->modelRef = renderer::models[static_cast<int>(shape::square)];
-        //render->modelRef = renderer::setup_square({ 1.0f, 0.f, 0.f });
+        if (ImGui::Button("Add Rectangle")) {
+            GameObject* recobj = manager.createGameObject("Rectangle_" + std::to_string(manager.getGameObjectCount()));
 
-        transform->x = m_rectangleInput.inputX;
-        transform->y = m_rectangleInput.inputY;
-        transform->z = m_rectangleInput.inputZ;
+            Transform* transform = recobj->addComponent<Transform>();
+            Render* render = recobj->addComponent<Render>();
+            render->modelRef = renderer::models[static_cast<int>(shape::square)];
 
-        //auto* col = recobj->addComponent<CollisionInfo>();
-        DebugLog::addMessage("Rectangle created at (" + std::to_string(transform->x) + ", " + std::to_string(transform->y) + ", " + std::to_string(transform->z) + ")\n");
+            transform->x = m_rectangleInput.inputX;
+            transform->y = m_rectangleInput.inputY;
+            transform->z = m_rectangleInput.inputZ;
+
+            //auto* col = recobj->addComponent<CollisionInfo>();
+            DebugLog::addMessage("Rectangle created at (" + std::to_string(transform->x) + ", " + std::to_string(transform->y) + ", " + std::to_string(transform->z) + ")\n");
+        }
     }
+    /* --------------- END --------------- */
 
     ImGui::End();
 }

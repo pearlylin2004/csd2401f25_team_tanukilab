@@ -38,8 +38,6 @@ void EditorManager::update(GameObjectManager& manager) {
     }
 
     handleShortcutKeys(manager);
-    /*sceneWindow.objPicking(manager);
-    sceneWindow.objDragging();*/
 
     addObjWindow.render(manager);
     assetBrowser.render();

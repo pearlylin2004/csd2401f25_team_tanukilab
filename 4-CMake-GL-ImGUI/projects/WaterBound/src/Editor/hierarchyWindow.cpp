@@ -51,7 +51,7 @@ void HierarchyWindow::render(GameObjectManager& manager) {
             }
 
             /* ------- right click context menu ------- */
-            showContextMenu(gameObjects[i], i);
+            showContextMenu(manager, gameObjects[i], i);
 
             ImGui::TreePop();
 
@@ -109,19 +109,31 @@ void HierarchyWindow::handlePrefabDragDrop(GameObjectManager& manager) {
     }
 }
 
-void HierarchyWindow::showContextMenu(GameObject* obj, int objIndex) {
+void HierarchyWindow::showContextMenu(GameObjectManager& manager, GameObject* obj, int objIndex) {
     /* ------- right click context menu ------- */
     if (ImGui::BeginPopupContextItem()) {
-        if (ImGui::MenuItem("Save as Prefab")) {
-            m_objSelectionState.selectedIndex = objIndex;
-            m_objSelectionState.selectedObject = obj;
-            m_objSelectionState.showCreatePrefabPopup = true;
+        if (ImGui::MenuItem("Add Object")) {
+            GameObject* recobj = manager.createGameObject("Rectangle_" + std::to_string(manager.getGameObjectCount()));
+
+            Transform* transform = recobj->addComponent<Transform>();
+            Render* render = recobj->addComponent<Render>();
+            render->modelRef = renderer::models[static_cast<int>(shape::square)];
+
+            transform->x = 0.f;
+            transform->y = 0.f;
+            transform->z = 0.f;
         }
 
         if (ImGui::MenuItem("Delete Object")) {
             m_objSelectionState.selectedIndex = objIndex;
             m_objSelectionState.selectedObject = obj;
             m_objSelectionState.showDeletePopup = true;
+        }
+
+        if (ImGui::MenuItem("Save as Prefab")) {
+            m_objSelectionState.selectedIndex = objIndex;
+            m_objSelectionState.selectedObject = obj;
+            m_objSelectionState.showCreatePrefabPopup = true;
         }
 
         ImGui::EndPopup();
