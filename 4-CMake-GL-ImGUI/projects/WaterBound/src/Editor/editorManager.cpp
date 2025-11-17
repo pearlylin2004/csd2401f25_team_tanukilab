@@ -58,21 +58,38 @@ void EditorManager::renderScene(GLuint texture, float aspectRatio, GameObjectMan
 }
 
 void EditorManager::handleShortcutKeys(GameObjectManager& manager) {
-    // CTRL + S -> save scene
-    if (InputHandler::isComboKeyTriggered(GLFW_KEY_S, GLFW_KEY_LEFT_CONTROL) ||
-        InputHandler::isComboKeyTriggered(GLFW_KEY_S, GLFW_KEY_RIGHT_CONTROL)) {
-        if (isEditingMode()) {
-            manager.saveScene(JsonIO::sourceScenePath(sceneWindow.getCurrentSceneName()));
-            JsonIO::syncSceneToRuntime(sceneWindow.getCurrentSceneName());
-        }
-        else {
-            DebugLog::addMessage("Playing simulation. File cannot be saved.");
+    /* --------------- CTRL + S-> Save Scene --------------- */
+    {
+        if (InputHandler::isComboKeyTriggered(GLFW_KEY_S, GLFW_KEY_LEFT_CONTROL) ||
+            InputHandler::isComboKeyTriggered(GLFW_KEY_S, GLFW_KEY_RIGHT_CONTROL)) {
+            if (isEditingMode()) {
+                manager.saveScene(JsonIO::sourceScenePath(sceneWindow.getCurrentSceneName()));
+                JsonIO::syncSceneToRuntime(sceneWindow.getCurrentSceneName());
+            }
+            else {
+                DebugLog::addMessage("Playing simulation. File cannot be saved.");
+            }
         }
     }
+    /* --------------- END --------------- */
 
 
-    // F5 -> Play/Stop Simulation
-    if (InputHandler::isKeyTriggered(GLFW_KEY_F5)) {
-        menuBar.toggleSimulation(manager);
+    /* --------------- F5 -> Play/Stop Simulation --------------- */
+    {
+        if (InputHandler::isKeyTriggered(GLFW_KEY_F5)) {
+            menuBar.toggleSimulation(manager);
+        }
     }
+    /* --------------- END --------------- */
+
+
+    /* --------------- "DEL" -> Delete Game Object --------------- */
+    {
+        if (InputHandler::isKeyTriggered(GLFW_KEY_DELETE)) {
+            if (Editor::objSelectionState.selectedObject) {
+                Editor::objSelectionState.showDeletePopup = true;
+            }
+        }
+    }
+    /* --------------- END --------------- */
 }
