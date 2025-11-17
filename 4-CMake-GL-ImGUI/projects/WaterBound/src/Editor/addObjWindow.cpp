@@ -200,4 +200,6 @@ void AddObjWindow::dupObj(GameObjectManager& manager, GameObject* oriObj) {
         dupT->x = oriT->x + 1.f;
         dupT->y = oriT->y + 1.f;
     }
+
+    DebugLog::addMessage("Object duplicated!");
 }
