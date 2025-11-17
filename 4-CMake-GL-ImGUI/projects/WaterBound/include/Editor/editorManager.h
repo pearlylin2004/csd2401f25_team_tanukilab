@@ -44,6 +44,12 @@ public:
 	AddObjWindow(Editor::ShapeControlState& Cshape, Editor::ShapeControlState& Rshape);
 	void render(GameObjectManager& manager);
 
+	static void createRec(GameObjectManager& manager, float x = 0, float y = 0, float z = 0);
+
+	static void createCir(GameObjectManager& manager, float x = 0, float y = 0, float z = 0);
+
+	static void dupObj(GameObjectManager& manager, GameObject* oriObj);
+
 private:
 	Editor::ShapeControlState& m_circleInput;
 	Editor::ShapeControlState& m_rectangleInput;

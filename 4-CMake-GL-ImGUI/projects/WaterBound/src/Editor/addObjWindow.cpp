@@ -115,17 +115,7 @@ void AddObjWindow::render(GameObjectManager& manager){
 
     //ImGui::PopItemWidth();
         if (ImGui::Button("Add Circle")) {
-            GameObject* circleObj = manager.createGameObject("Circle_" + std::to_string(manager.getGameObjectCount()));
-
-            Transform* transform = circleObj->addComponent<Transform>();
-            Render* render = circleObj->addComponent<Render>();
-            render->modelRef = renderer::models[static_cast<int>(shape::circle) + static_cast<int>(shape::circle)];
-
-            transform->x = m_circleInput.inputX;
-            transform->y = m_circleInput.inputY;
-            transform->z = m_circleInput.inputZ;
-
-            DebugLog::addMessage("Circle created at (" + std::to_string(transform->x) + ", " + std::to_string(transform->y) + ", " + std::to_string(transform->z) + ")\n");
+            createCir(manager, m_circleInput.inputX, m_circleInput.inputY, m_circleInput.inputZ);
         }
 
         /* --------------- END --------------- */
@@ -153,21 +143,61 @@ void AddObjWindow::render(GameObjectManager& manager){
 
 
         if (ImGui::Button("Add Rectangle")) {
-            GameObject* recobj = manager.createGameObject("Rectangle_" + std::to_string(manager.getGameObjectCount()));
-
-            Transform* transform = recobj->addComponent<Transform>();
-            Render* render = recobj->addComponent<Render>();
-            render->modelRef = renderer::models[static_cast<int>(shape::square)];
-
-            transform->x = m_rectangleInput.inputX;
-            transform->y = m_rectangleInput.inputY;
-            transform->z = m_rectangleInput.inputZ;
-
-            //auto* col = recobj->addComponent<CollisionInfo>();
-            DebugLog::addMessage("Rectangle created at (" + std::to_string(transform->x) + ", " + std::to_string(transform->y) + ", " + std::to_string(transform->z) + ")\n");
+            createRec(manager, m_rectangleInput.inputX, m_rectangleInput.inputY, m_rectangleInput.inputZ);
         }
     }
     /* --------------- END --------------- */
 
     ImGui::End();
+}
+
+void AddObjWindow::createRec(GameObjectManager& manager, float x, float y, float z) {
+    GameObject* recobj = manager.createGameObject("Rectangle_" + std::to_string(manager.getGameObjectCount()));
+
+    Transform* transform = recobj->addComponent<Transform>();
+    Render* render = recobj->addComponent<Render>();
+    if (!transform || !render) {
+        DebugLog::addMessage("Error creating a game object. Component doesn't exist.");
+        return;
+    }
+
+    render->modelRef = renderer::models[static_cast<int>(shape::square)];
+
+    transform->x = x;
+    transform->y = y;
+    transform->z = z;
+
+    DebugLog::addMessage("Rectangle created at (" + std::to_string(x) + ", " + std::to_string(y) + ", " + std::to_string(z) + ")\n");
+}
+
+
+void AddObjWindow::createCir(GameObjectManager& manager, float x, float y, float z) {
+    GameObject* circleObj = manager.createGameObject("Circle_" + std::to_string(manager.getGameObjectCount()));
+
+    Transform* transform = circleObj->addComponent<Transform>();
+    Render* render = circleObj->addComponent<Render>();
+    if (!transform || !render) {
+        DebugLog::addMessage("Error creating a game object. Component doesn't exist.");
+        return;
+    }
+
+    render->modelRef = renderer::models[static_cast<int>(shape::circle) + static_cast<int>(shape::circle)];
+
+    transform->x = x;
+    transform->y = y;
+    transform->z = z;
+
+    DebugLog::addMessage("Circle created at (" + std::to_string(x) + ", " + std::to_string(y) + ", " + std::to_string(z) + ")\n");
+}
+
+void AddObjWindow::dupObj(GameObjectManager& manager, GameObject* oriObj) {
+    GameObject* dupObj = manager.CloneGameObject(oriObj->getObjectName(), oriObj->getObjectName() + std::to_string(manager.getGameObjectCount()));
+
+    if (Transform* oriT = oriObj->getComponent<Transform>()) {
+        Transform* dupT = dupObj->getComponent<Transform>();
+
+        // add offset from original object
+        dupT->x = oriT->x + 1.f;
+        dupT->y = oriT->y + 1.f;
+    }
 }

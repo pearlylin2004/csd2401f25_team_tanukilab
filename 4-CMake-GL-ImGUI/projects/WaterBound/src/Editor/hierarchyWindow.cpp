@@ -113,15 +113,11 @@ void HierarchyWindow::showContextMenu(GameObjectManager& manager, GameObject* ob
     /* ------- right click context menu ------- */
     if (ImGui::BeginPopupContextItem()) {
         if (ImGui::MenuItem("Add Object")) {
-            GameObject* recobj = manager.createGameObject("Rectangle_" + std::to_string(manager.getGameObjectCount()));
+            AddObjWindow::createRec(manager);
+        }
 
-            Transform* transform = recobj->addComponent<Transform>();
-            Render* render = recobj->addComponent<Render>();
-            render->modelRef = renderer::models[static_cast<int>(shape::square)];
-
-            transform->x = 0.f;
-            transform->y = 0.f;
-            transform->z = 0.f;
+        if (ImGui::MenuItem("Duplicate")) {
+            AddObjWindow::dupObj(manager, obj);
         }
 
         if (ImGui::MenuItem("Delete Object")) {
