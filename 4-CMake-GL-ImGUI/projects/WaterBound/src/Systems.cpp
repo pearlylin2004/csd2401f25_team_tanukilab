@@ -116,7 +116,7 @@ void RenderSystem::update(GameObjectManager& manager, float const& deltaTime)
 	glm::mat4 camView, camProj;
 
 	// Attach texture to FBO and update editor camera if editor is on
-	if (UISystem::isShowUI())
+	if (UISystem::isShowUI()/* && EditorManager::isEditingMode()*/)
 	{
 		createFBO();
 		renderer::editorCam.update();

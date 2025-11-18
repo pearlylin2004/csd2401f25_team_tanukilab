@@ -146,6 +146,14 @@ namespace Editor {
 
 		{"Animation",
 			[](GameObject* obj) {
+			// animation need render component
+			Render* r = obj->getComponent<Render>();
+			if (!r) r = obj->addComponent<Render>();
+			DebugLog::addMessage("Added Render component for " + obj->getObjectName());
+
+			/*r->hasAnimation = true;
+			r->hasTex = true;*/
+
 			obj->addComponent<Animation>();
 			DebugLog::addMessage("Added Animation component for " + obj->getObjectName());
 			},

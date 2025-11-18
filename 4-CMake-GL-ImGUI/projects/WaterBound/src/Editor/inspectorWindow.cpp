@@ -83,8 +83,8 @@ void InspectorWindow::render(GameObjectManager& manager) {
 
         /* ------------------- Object Transformation ------------------- */
         if (Transform* transform = selected->getComponent<Transform>()) {
-            if (CollisionInfo* collision = selected->getComponent<CollisionInfo>()) renderTransform(transform, collision);
-            else renderTransform(transform);
+            CollisionInfo* collision = selected->getComponent<CollisionInfo>();
+            renderTransform(transform, collision);
         }
         /* ------------------- END ------------------- */
 
@@ -96,6 +96,18 @@ void InspectorWindow::render(GameObjectManager& manager) {
         /* ------------------- Render ------------------- */
         if (Render* render = selected->getComponent<Render>()) {
             renderRender(render, selected);
+
+            ImGui::Spacing();
+            ImGui::Separator();
+            ImGui::Spacing();
+        }
+        /* ------------------- END ------------------- */
+
+
+        /* ------------------- Animation ------------------- */
+        if (Animation* animation = selected->getComponent<Animation>()) {
+            Render* render = selected->getComponent<Render>();
+            renderAnimation(animation, render);
 
             ImGui::Spacing();
             ImGui::Separator();
@@ -236,9 +248,11 @@ void InspectorWindow::renderTransform(Transform* transform, CollisionInfo* colli
                 transform->scaleZ = transform->scaleX * m_objSelectionState.ratioZ;
             }
 
-            if (collision->autoFitScale) {
-                collision->colliderSize.x = transform->scaleX;
-                collision->colliderSize.y = transform->scaleY;
+            if (collision) {
+                if (collision->autoFitScale) {
+                    collision->colliderSize.x = transform->scaleX;
+                    collision->colliderSize.y = transform->scaleY;
+                }
             }
 
             ImGui::TreePop();
@@ -421,6 +435,30 @@ void InspectorWindow::renderPhysics(Physics* physic, bool canMove) {
             ImGui::Text("Inverse Mass: %.4f", physic->dynamics.inverseMass);
 
             ImGui::TreePop();
+        }
+    }
+}
+
+void InspectorWindow::renderAnimation(Animation* animation, Render* render) {
+    if (ImGui::CollapsingHeader("Animation")) {
+        if (render->hasTex) {
+            ImGui::Checkbox("Is animated", &render->hasAnimation);
+
+            if (ImGui::TreeNode("Settings")) {
+                ImGui::BeginDisabled(!render->hasAnimation);
+                ImGui::Checkbox("Loop", &animation->loop);
+
+                ImGui::InputInt("Column", &animation->totalColumn);
+                ImGui::InputInt("Row", &animation->totalRow);
+
+                ImGui::InputFloat("Frame Time", &animation->frameTime, 0.1f);
+
+                ImGui::EndDisabled();
+                ImGui::TreePop();
+            }
+        }
+        else {
+            ImGui::Text("Add a texture to Render to enable animation");
         }
     }
 }

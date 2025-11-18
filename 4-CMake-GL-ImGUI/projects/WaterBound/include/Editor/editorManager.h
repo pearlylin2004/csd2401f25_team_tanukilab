@@ -109,11 +109,12 @@ public:
 
 private:
 	void addComponent(GameObject* selected);
-	void renderTransform(Transform* transform, CollisionInfo* collision = nullptr);
+	void renderTransform(Transform* transform, CollisionInfo* collision);
 	void renderRender(Render* render, GameObject* selected);
 	void renderCollision(CollisionInfo* collision, Transform* transform, GameObject* selected);
 	void renderInput();
 	void renderPhysics(Physics* physic, bool canMove);
+	void renderAnimation(Animation* animation, Render* render);
 
 	Editor::ObjSelectionState& m_objSelectionState;
 };
