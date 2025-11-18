@@ -48,6 +48,9 @@ public:
     // Shuts down all engine systems
     void Shutdown();
 
+    //for resume and pause
+    void onWindowFocusGained();
+
 private:
     void GameLoop();
     void Update(float deltaTime);
@@ -60,6 +63,12 @@ private:
     std::string m_title;
     bool m_isRunning;
 	AudioHandler& audio;
+
+    //for pasuing and window focus
+    bool m_isPaused = false;
+    bool m_windowHasFocus = true;
+    bool m_isMinimized = false;
+    //bool m_pendingMaximize = false;
 
     // Core Engine Systems
     std::unique_ptr<GameObjectManager> m_manager;

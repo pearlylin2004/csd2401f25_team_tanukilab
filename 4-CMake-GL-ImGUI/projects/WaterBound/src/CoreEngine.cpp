@@ -153,3 +153,19 @@ void CoreEngine::Shutdown() {
     glfwDestroyWindow(m_window);
     glfwTerminate();
 }
+
+//---------- WINDOWS ----------
+//when windows lost focus
+void CoreEngine::onWindowFocusGained() {
+    m_windowHasFocus = true;
+
+    //resume only if window is not minimized
+    if (!m_isMinimized && m_isPaused) {
+        m_isPaused = false;
+        audio.resumeAll();
+        InputHandler::update();
+        //InputHandler::clearState();
+        //glfwSetInputMode(m_window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+        std::cout << "Resumed all audio due to focus gained" << std::endl;
+    }
+}
