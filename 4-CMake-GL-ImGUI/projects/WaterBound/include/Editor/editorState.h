@@ -88,6 +88,16 @@ namespace Editor {
 		std::string currentSceneName = "level01.json";
 		std::string tempSceneName = "temp_scene.json"; // for simulation
 	};
+	/* ----------------- Scene End -----------------*/
+
+
+	/* ----------------- Component Entry ---------------- */
+	struct ComponentEntry {
+		std::string name;
+		std::function<void(GameObject*)>addComp; // func to add component (hlp3 is now my fav module)
+		std::function<bool(const GameObject*)>hasComp; // func to check if has component
+	};
+	/* ----------------- Component End ---------------- */
 
 	inline MenuBarState menuBarState;
 	inline ObjSelectionState objSelectionState;
@@ -96,4 +106,42 @@ namespace Editor {
 	inline SceneWindowState sceneWindowState;
 	inline AssetBrowserState assetBrowserState;
 	inline SceneState sceneState;
+
+	/* ----------------- Component Registry ---------------- */
+	// add useful func here to check/add components for Editor Inspector
+	// do not add transform component here, every obj should by default has a transform alr
+	inline static std::vector<ComponentEntry> componentRegistry{
+		{"Render",
+			[](GameObject* obj) {
+			Render* r = obj->addComponent<Render>();
+			r->modelRef = renderer::models[static_cast<int>(shape::square)];
+			DebugLog::addMessage("Added Render component for " + obj->getObjectName());
+			},
+			[](const GameObject* obj) { return obj->hasComponent<Render>(); }
+		},
+
+		{"Collision",
+			[] (GameObject* obj) {
+			obj->addComponent<CollisionInfo>();
+			DebugLog::addMessage("Added Collision component for " + obj->getObjectName());
+			},
+			[](const GameObject* obj) { return obj->hasComponent<CollisionInfo>(); }
+		},
+
+		{"Physics",
+			[] (GameObject* obj) {
+			obj->addComponent<Physics>();
+			DebugLog::addMessage("Added Physics component for " + obj->getObjectName());
+			},
+			[](const GameObject* obj) { return obj->hasComponent<Physics>(); }
+		},
+
+		{"Animation",
+			[](GameObject* obj) {
+			obj->addComponent<Animation>();
+			DebugLog::addMessage("Added Animation component for " + obj->getObjectName());
+			},
+			[](const GameObject* obj) { return obj->hasComponent<Animation>(); }}
+	};
+	/* ----------------- Component End ---------------- */
 }
