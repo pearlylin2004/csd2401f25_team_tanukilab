@@ -70,36 +70,57 @@ void InspectorWindow::render(GameObjectManager& manager) {
                 }
             }
             ImGui::SetItemDefaultFocus();
-
-            ImGui::Spacing();
-            ImGui::Separator();
-            ImGui::Spacing();
         }
         else {
             ImGui::Text("Prefab Name: "); ImGui::SameLine();
             ImGui::Text(selected->getObjectName().c_str());
         }
 
+        ImGui::Spacing();
+        ImGui::Separator();
+        ImGui::Spacing();
+
 
         /* ------------------- Object Transformation ------------------- */
         if (Transform* transform = selected->getComponent<Transform>()) {
             renderTransform(transform);
         }
+        /* ------------------- END ------------------- */
 
         ImGui::Spacing();
         ImGui::Separator();
         ImGui::Spacing();
 
-        /* ------------------- Change Texture ------------------- */
-        // drag and drop received from asset window
+
+        /* ------------------- Render ------------------- */
         if (Render* render = selected->getComponent<Render>()) {
             renderRender(render, selected);
         }
+        /* ------------------- END ------------------- */
 
         ImGui::Spacing();
         ImGui::Separator();
         ImGui::Spacing();
 
+
+        /* ------------------- Collision ------------------- */
+        if (CollisionInfo* collision = selected->getComponent<CollisionInfo>()) {
+            renderCollision(collision);
+        }
+        /* ------------------- END ------------------- */
+
+        ImGui::Spacing();
+        ImGui::Separator();
+        ImGui::Spacing();
+
+        /* ------------------- Add Component ------------------- */
+        addComponent(selected);
+        /* ------------------- END ------------------- */
+
+
+        ImGui::Spacing();
+        ImGui::Separator();
+        ImGui::Spacing();
     }
     else {
         ImGui::Text("No object selected");
@@ -108,46 +129,88 @@ void InspectorWindow::render(GameObjectManager& manager) {
     ImGui::End();
 }
 
+void InspectorWindow::addComponent(GameObject* selected) {
+    //if (!ImGui::CollapsingHeader("Add Component")) return;
+
+    ImGui::BeginChild("AddComponentSection", ImVec2(0, 300), true, ImGuiWindowFlags_NoScrollbar);
+    ImGui::TextDisabled("Add Component");
+    ImGui::Separator();
+
+    static char search[64] = "";
+    ImGui::InputTextWithHint("##search", "Search components...", search, sizeof(search));
+
+    for (const Editor::ComponentEntry& comp : Editor::componentRegistry) {
+        // skip if selected obj alr has this component
+        if (comp.hasComp(selected)) continue;
+
+        // search
+        if (sizeof(search) > 0) {
+            std::string compName = comp.name;
+            std::string find = search;
+
+            std::transform(compName.begin(), compName.end(), compName.begin(), ::tolower);
+            std::transform(find.begin(), find.end(), find.begin(), ::tolower);
+
+            if (compName.find(find) == std::string::npos) continue;
+        }
+
+        // draw component selectable
+        if (ImGui::Selectable(comp.name.c_str())) {
+            comp.addComp(selected);
+            ImGui::CloseCurrentPopup();
+        }
+    }
+    ImGui::EndChild();
+}
+
 void InspectorWindow::renderTransform(Transform* transform) {
     if (ImGui::CollapsingHeader("Transform")) {
 
-        ImGui::DragFloat("X", &transform->x, 0.1f);
-        ImGui::DragFloat("Y", &transform->y, 0.1f);
+        if (ImGui::TreeNode("Position")) {
+            ImGui::DragFloat("X", &transform->x, 0.1f);
+            ImGui::DragFloat("Y", &transform->y, 0.1f);
 
-        // set z to stay within the editor camera (-1.f <= z < 1.f)
-        glm::mat4& proj = renderer::editorCam.proj;
-        float m22 = proj[2][2];
-        float m32 = proj[3][2];
-        float near1 = (m32 - 1.f) / m22;
-        float far1 = (m32 + 1.f) / m22;
-        ImGui::DragFloat("Z", &transform->z, 0.1f, far1, near1);
-    }
+            // set z to stay within the editor camera (-1.f <= z < 1.f)
+            glm::mat4& proj = renderer::editorCam.proj;
+            float m22 = proj[2][2];
+            float m32 = proj[3][2];
+            float near1 = (m32 - 1.f) / m22;
+            float far1 = (m32 + 1.f) / m22;
+            ImGui::DragFloat("Z", &transform->z, 0.1f, far1, near1);
 
-    /* ------------------- Object Rotation ------------------- */
-    if (ImGui::CollapsingHeader("Rotation")) {
-        ImGui::DragFloat("Angle", &transform->rotation);
-    }
-
-    /* ------------------- Object Scale ------------------- */
-    if (ImGui::CollapsingHeader("Scale")) {
-        ImGui::Checkbox("Aspect Ratio (X only)", &m_objSelectionState.aspectRatioLock);
-
-        if (m_objSelectionState.aspectRatioLock && !m_objSelectionState.ratioSet) {
-            m_objSelectionState.ratioY = transform->scaleY / transform->scaleX;
-            m_objSelectionState.ratioZ = transform->scaleZ / transform->scaleX;
-            m_objSelectionState.ratioSet = true;
+            ImGui::TreePop();
         }
 
-        if (!m_objSelectionState.aspectRatioLock) m_objSelectionState.ratioSet = false;
+        /* ------------------- Object Rotation ------------------- */
+        if (ImGui::TreeNode("Rotation")) {
+            ImGui::DragFloat("Angle", &transform->rotation);
 
-        // clamp scale to be non-negative
-        ImGui::DragFloat("X1", &transform->scaleX, 0.1f, 0.0f, FLT_MAX);
-        ImGui::DragFloat("Y1", &transform->scaleY, 0.1f, 0.0f, FLT_MAX);
-        ImGui::DragFloat("Z1", &transform->scaleZ, 0.1f, 0.0f, FLT_MAX);
+            ImGui::TreePop();
+        }
 
-        if (m_objSelectionState.aspectRatioLock && transform->scaleX != 0.0f) {
-            transform->scaleY = transform->scaleX * m_objSelectionState.ratioY;
-            transform->scaleZ = transform->scaleX * m_objSelectionState.ratioZ;
+        /* ------------------- Object Scale ------------------- */
+        if (ImGui::TreeNode("Scale")) {
+            ImGui::Checkbox("Aspect Ratio (X only)", &m_objSelectionState.aspectRatioLock);
+
+            if (m_objSelectionState.aspectRatioLock && !m_objSelectionState.ratioSet) {
+                m_objSelectionState.ratioY = transform->scaleY / transform->scaleX;
+                m_objSelectionState.ratioZ = transform->scaleZ / transform->scaleX;
+                m_objSelectionState.ratioSet = true;
+            }
+
+            if (!m_objSelectionState.aspectRatioLock) m_objSelectionState.ratioSet = false;
+
+            // clamp scale to be non-negative
+            ImGui::DragFloat("X1", &transform->scaleX, 0.1f, 0.0f, FLT_MAX);
+            ImGui::DragFloat("Y1", &transform->scaleY, 0.1f, 0.0f, FLT_MAX);
+            ImGui::DragFloat("Z1", &transform->scaleZ, 0.1f, 0.0f, FLT_MAX);
+
+            if (m_objSelectionState.aspectRatioLock && transform->scaleX != 0.0f) {
+                transform->scaleY = transform->scaleX * m_objSelectionState.ratioY;
+                transform->scaleZ = transform->scaleX * m_objSelectionState.ratioZ;
+            }
+
+            ImGui::TreePop();
         }
     }
 }
@@ -205,5 +268,29 @@ void InspectorWindow::renderRender(Render* render, GameObject* selected) {
                 render->texChanged = false;
             }
         }
+
+
+        ImGui::Spacing();
+        ImGui::Spacing();
+        ImGui::Separator();
+        ImGui::Spacing();
+
+        if (ImGui::Button("Remove Component (WIP)", ImVec2(-1, 0))) {
+            // add a delete component func here
+
+            DebugLog::addMessage("Removed Render Component");
+        }
+    }
+}
+
+void InspectorWindow::renderCollision(CollisionInfo* collision) {
+    if (ImGui::CollapsingHeader("Collision")) {
+        ImGui::Checkbox("Is Trigger", &collision->collisionFlag);
+
+        ImGui::InputFloat("Collider Width", &collision->colliderSize.x, 1.f);
+        ImGui::InputFloat("Collider Height", &collision->colliderSize.y, 1.f);
+
+        DebugLog::addMessage("Collider width: " + std::to_string(collision->colliderSize.x));
+        DebugLog::addMessage("Collider height: " + std::to_string(collision->colliderSize.y));
     }
 }

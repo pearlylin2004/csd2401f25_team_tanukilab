@@ -106,8 +106,10 @@ public:
 	void render(GameObjectManager& manager);
 
 private:
+	void addComponent(GameObject* selected);
 	void renderTransform(Transform* transform);
 	void renderRender(Render* render, GameObject* selected);
+	void renderCollision(CollisionInfo* collision);
 
 	Editor::ObjSelectionState& m_objSelectionState;
 };

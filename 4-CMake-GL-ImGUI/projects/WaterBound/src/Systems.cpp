@@ -949,8 +949,12 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 
 		for (GameObject* obj : layerObjects) {
 			if (!obj->getComponent<CollisionInfo>() || !obj->hasComponent<Transform>()) continue;
+			CollisionInfo* c = obj->getComponent<CollisionInfo>();
+			if (!c->collisionFlag) continue; // skip if obj not supposed to collide
+
 			Transform* objT = obj->getComponent<Transform>();
-			Collision::AABB box = Collision::getObjectAABB(objT);
+			//Collision::AABB box = Collision::getObjectAABB(objT);
+			Collision::AABB box = Collision::getObjectAABBbyCollider(objT, c->colliderSize); // use customized collider instead of scale
 
 			int minCellX = static_cast<int>(box.getMin().x / CELL_SIZE);
 			int maxCellX = static_cast<int>(box.getMax().x / CELL_SIZE);
@@ -985,7 +989,8 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 					GameObject* obj1 = cellObject[n];
 					if (!obj1->hasComponent<Physics>()) continue;
 					Transform* t1 = obj1->getComponent<Transform>();
-					Collision::AABB aabb1 = Collision::getObjectAABB(t1);
+					//Collision::AABB aabb1 = Collision::getObjectAABB(t1);
+					Collision::AABB aabb1 = Collision::getObjectAABBbyCollider(t1, obj1->getComponent<CollisionInfo>()->colliderSize);
 					Physics* p1 = obj1->getComponent<Physics>();
 					Vector2D vel1{ p1->dynamics.velocity.x, p1->dynamics.velocity.y };
 					//object 2 looping
@@ -1002,7 +1007,8 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 						checked[obj2].push_back(obj1);
 
 						Transform* t2 = obj2->getComponent<Transform>();
-						Collision::AABB aabb2 = Collision::getObjectAABB(t2);
+						//Collision::AABB aabb2 = Collision::getObjectAABB(t2);
+						Collision::AABB aabb2 = Collision::getObjectAABBbyCollider(t2, obj2->getComponent<CollisionInfo>()->colliderSize);
 						Physics* p2 = obj2->getComponent<Physics>();
 						Vector2D vel2{ p2->dynamics.velocity.x, p2->dynamics.velocity.y };
 

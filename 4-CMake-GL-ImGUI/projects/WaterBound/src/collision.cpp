@@ -35,6 +35,16 @@ namespace Collision {
         return Collision::AABB(min, max);
     }
 
+    AABB getObjectAABBbyCollider(const Transform* transform, const Vector2D& collider) {
+        float halfWidth = collider.x * 0.5f;
+        float halfHeight = collider.y * 0.5f;
+
+        Vector2D center(transform->x, transform->y);
+        Vector2D min(center.x - halfWidth, center.y - halfHeight);
+        Vector2D max(center.x + halfWidth, center.y + halfHeight);
+        return Collision::AABB(min, max);                         
+    }                                                             
+
 	//helper function to get a Circle from a renderer object
     Circle getObjectCircle(const Transform* transform) {
         Vector2D center(transform->x, transform->y);

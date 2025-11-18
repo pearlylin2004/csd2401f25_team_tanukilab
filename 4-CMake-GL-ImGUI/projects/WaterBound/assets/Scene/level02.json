@@ -17,30 +17,16 @@
     },
     {
       "prefabid": "dd60e1e1-641c-4ed5-b69d-ffadfa02fb7a",
-      "name": "player(1)",
+      "name": "player",
       "components": {
         "StateMachine": {
-          "state": "Walking"
+          "stateTime": 1.8189562559127808
         }
       }
     },
     {
       "prefabid": "4828c393-9fcf-42f8-8b05-ddc8d75096be",
-      "name": "player2(2)",
-      "layer": 0,
-      "components": {
-        "Transform": {
-          "scale": [
-            3.5999999046325684,
-            3.5999999046325684,
-            0.0
-          ]
-        },
-        "Render": {
-          "hasTex": 1,
-          "texture": "assets/Sample_tilemap.jpg"
-        }
-      }
+      "name": "player1"
     }
   ]
 }

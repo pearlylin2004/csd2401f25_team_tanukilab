@@ -392,9 +392,22 @@ void GameObjectManager::loadSceneFromJson(const std::string& filename) {
 
 		// ---- CollisionInfo (presence only) ----
 		if (comps.HasMember("CollisionInfo") && comps["CollisionInfo"].IsObject()) {
+			const auto& jc = comps["CollisionInfo"];
 			auto* c = go->getComponent<CollisionInfo>();
 			if (!c)
 				c = go->addComponent<CollisionInfo>();
+
+			if (jc.HasMember("collisionFlag")) {
+				c->collisionFlag = jc["collisionFlag"].IsBool()
+					? jc["collisionFlag"].GetBool()
+					: (jc["collisionFlag"].GetInt() != 0);
+			}
+
+			if (jc.HasMember("colliderSize") && jc["colliderSize"].IsArray() && jc["colliderSize"].Size() == 2)
+			{
+				c->colliderSize.x = jc["colliderSize"][0].GetFloat();
+				c->colliderSize.y = jc["colliderSize"][1].GetFloat();
+			}
 		}
 
 		// ---- Animation ----
@@ -585,15 +598,16 @@ void GameObjectManager::saveSceneToJson(const std::string& filename, bool isNew)
 			jObj.AddMember("name", rapidjson::Value(obj->getObjectName().c_str(), a), a);
 
 
-			int layerID = obj->getLayer();
-			if (layerID != -1 && layerID != 1) {  // Only save if not default game layer
-				jObj.AddMember("layer", layerID, a);
-			}
-
 			// get prefab JSON if obj referencing a prefab
 			const rapidjson::Document* prefabDoc{ nullptr };
 			if (!prefabID.empty()) {
 				prefabDoc = PrefabManager::Instance().getPrefabJson(prefabID);
+			}
+
+			int layerID = obj->getLayer();
+			const rapidjson::Value* prefabLayer = PM.getPrefabJsonComp(prefabDoc, "layer");
+			if (layerID != -1 && layerID != 1 && (!prefabLayer || !prefabLayer->IsInt() || prefabLayer->GetInt() != layerID)) {  // Only save if not default game layer
+				jObj.AddMember("layer", layerID, a);
 			}
 
 			/* ------------ Useful lambda for comparing later ------------ */
@@ -697,9 +711,32 @@ void GameObjectManager::saveSceneToJson(const std::string& filename, bool isNew)
 			}
 
 			// ---- CollisionInfo (presence only) ----
-			if (obj->hasComponent<CollisionInfo>()) {
+			if (auto c = obj->getComponent<CollisionInfo>()) {
+				rapidjson::Value jc(rapidjson::kObjectType);
 				const rapidjson::Value* prefabC = PM.getPrefabJsonComp(prefabDoc, "CollisionInfo");
-				if (!prefabC) comps.AddMember("CollisionInfo", rapidjson::Value(rapidjson::kObjectType), a);
+
+				if (!prefabC || !prefabC->HasMember("colliderSize") ||
+					differsFloat((*prefabC)["colliderSize"][0].GetFloat(), c->colliderSize.x) ||
+					differsFloat((*prefabC)["colliderSize"][1].GetFloat(), c->colliderSize.y)) {
+
+					rapidjson::Value sc(rapidjson::kArrayType);
+					sc.PushBack(c->colliderSize.x, a).PushBack(c->colliderSize.y, a);
+					jc.AddMember("colliderSize", sc, a);
+				}
+
+				auto pushIfDiffBool = [&](const char* key, bool val) {
+					if (!prefabC || !prefabC->HasMember(key) ||
+						((*prefabC)[key].IsBool() && differsBool((*prefabC)[key].GetBool(), val)) ||
+						((*prefabC)[key].IsInt() && differsBool((*prefabC)[key].GetInt() != 0, val))) {
+						jc.AddMember(rapidjson::Value(key, a), rapidjson::Value(val ? 1 : 0), a);
+					}
+					};
+
+				pushIfDiffBool("collisionFlag", c->collisionFlag);
+
+				if (!jc.ObjectEmpty()) {
+					comps.AddMember("CollisionInfo", jc, a);
+				}
 			}
 
 			// ---- Animation ----

@@ -1,7 +1,7 @@
 {
     "id": "4828c393-9fcf-42f8-8b05-ddc8d75096be",
     "name": "player2",
-    "layer": 0,
+    "layer": 1,
     "components":{
         "Transform": {
           "pos": [8.0, 0.0, 0.01],
@@ -17,6 +17,9 @@
           "inWater": 0, 
           "buoyancy": 0 
         },
-        "CollisionInfo": {}
+        "CollisionInfo": {
+          "collisionFlag": 1,
+          "colliderSize": [1.0, 1.0]
+        }
     }
 }

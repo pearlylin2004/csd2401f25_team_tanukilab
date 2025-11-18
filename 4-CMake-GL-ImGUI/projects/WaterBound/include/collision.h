@@ -83,6 +83,7 @@ namespace Collision {
     };
 
     AABB getObjectAABB(const Transform* transform);
+    AABB getObjectAABBbyCollider(const Transform* transform, const Vector2D& collider); // use customized collider for AABB
     Circle getObjectCircle(const Transform* transform);
 
     //AABB and AABB
