@@ -847,45 +847,45 @@ void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime, M
 				messageBus.publish(Message("KeyPressed", nullptr, KeyEvent{ "SPACE", true }));
 			}
 
-			float targetVelX = 0.0f;
+float targetVelX = 0.0f;
 
-			if (InputHandler::isKeyHeld(GLFW_KEY_A)) {
-				physics->canMove = true;
-				targetVelX = -input->moveSpeed;
-				messageBus.publish(Message("KeyPressed", nullptr, KeyEvent{ "A", true }));
-			}
-			else if (InputHandler::isKeyHeld(GLFW_KEY_D) && physics->canMove) {
-				targetVelX = input->moveSpeed;
-				messageBus.publish(Message("KeyPressed", nullptr, KeyEvent{ "D", true }));
-			}
+if (InputHandler::isKeyHeld(GLFW_KEY_A)) {
+	physics->canMove = true;
+	targetVelX = -input->moveSpeed;
+	messageBus.publish(Message("KeyPressed", nullptr, KeyEvent{ "A", true }));
+}
+else if (InputHandler::isKeyHeld(GLFW_KEY_D) && physics->canMove) {
+	targetVelX = input->moveSpeed;
+	messageBus.publish(Message("KeyPressed", nullptr, KeyEvent{ "D", true }));
+}
 
-			physics->dynamics.velocity.x = targetVelX;
+physics->dynamics.velocity.x = targetVelX;
 
-			// Jump
-			if (InputHandler::isKeyTriggered(GLFW_KEY_B)) {
-				PhysicsForces::jump(object);
-				messageBus.publish(Message("KeyPressed", nullptr, KeyEvent{ "B", true }));
-			}
+// Jump
+if (InputHandler::isKeyTriggered(GLFW_KEY_B)) {
+	PhysicsForces::jump(object);
+	messageBus.publish(Message("KeyPressed", nullptr, KeyEvent{ "B", true }));
+}
 
 
-			if (transform->y < physics->floorY /* temp for obj auto move*/ && !object->checkAutoMove()) {
-				transform->y = physics->floorY;
-				physics->velY = 0.0f;
-				physics->onGround = true;
-				physics->velX = 0.0f;
-			}
-			transform->x += physics->velX * deltaTime;
+if (transform->y < physics->floorY /* temp for obj auto move*/ && !object->checkAutoMove()) {
+	transform->y = physics->floorY;
+	physics->velY = 0.0f;
+	physics->onGround = true;
+	physics->velX = 0.0f;
+}
+transform->x += physics->velX * deltaTime;
 
 		}
-			/* ----- TEMPORARY FOR MOVING THE SPAWNED OBJ AUTO ----- */
-			if (object->checkAutoMove()) {
+		/* ----- TEMPORARY FOR MOVING THE SPAWNED OBJ AUTO ----- */
+		if (object->checkAutoMove()) {
 
-				transform->y += physics->dynamics.velocity.y * deltaTime;
-				transform->x += physics->dynamics.velocity.x * deltaTime;
-			}
-			/* ----- TEMP END ----- */
+			transform->y += physics->dynamics.velocity.y * deltaTime;
+			transform->x += physics->dynamics.velocity.x * deltaTime;
+		}
+		/* ----- TEMP END ----- */
 
-		// Update bullet separately if it exists
+	// Update bullet separately if it exists
 		if (bullet != nullptr && bullet->hasComponent<Physics>() && bullet->hasComponent<Transform>()) {
 			Transform* bulletTransform = bullet->getComponent<Transform>();
 			Physics* bulletPhysics = bullet->getComponent<Physics>();
@@ -917,7 +917,7 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 
 	//process each layer separately
 	//right now only layer 1 should have any sort of collision
-	for(Layer* layer : layers){
+	for (Layer* layer : layers) {
 		//skip missing layer
 		if (!layer) {
 			/*auto end = std::chrono::high_resolution_clock::now();
@@ -934,7 +934,7 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 		const int GRID_WIDTH = 20;
 		const int GRID_HEIGHT = 20;
 		std::vector<std::vector<Collision::Cell>> grid(GRID_WIDTH, std::vector<Collision::Cell>(GRID_HEIGHT));
-		
+
 
 		for (GameObject* obj : layerObjects) {
 			if (!obj->getComponent<CollisionInfo>() || !obj->hasComponent<Transform>()) continue;
@@ -942,13 +942,19 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 			if (!c->collisionFlag) continue; // skip if obj not supposed to collide
 
 			Transform* objT = obj->getComponent<Transform>();
+			Render* renderS = obj->getComponent<Render>();
 			//Collision::AABB box = Collision::getObjectAABB(objT);
-			Collision::AABB box = Collision::getObjectAABBbyCollider(objT, c->colliderSize); // use customized collider instead of scale
-
-			int minCellX = static_cast<int>(box.getMin().x / CELL_SIZE);
-			int maxCellX = static_cast<int>(box.getMax().x / CELL_SIZE);
-			int minCellY = static_cast<int>(box.getMin().y / CELL_SIZE);
-			int maxCellY = static_cast<int>(box.getMax().y / CELL_SIZE);
+			int minCellX, maxCellX, minCellY, maxCellY;
+			if (renderS->modelRef.shape != shape::square){
+				Collision::AABB box = Collision::getObjectAABBbyCollider(objT, c->colliderSize); // use customized collider instead of scale
+				minCellX = static_cast<int>(box.getMin().x / CELL_SIZE);
+				maxCellX = static_cast<int>(box.getMax().x / CELL_SIZE);
+				minCellY = static_cast<int>(box.getMin().y / CELL_SIZE);
+				maxCellY = static_cast<int>(box.getMax().y / CELL_SIZE);
+			}
+			else if (renderS->modelRef.shape != shape::circle) {
+				//need one for circle
+			}
 
 			//clamp to grid boundaries so it dont go out the valid range of grid
 			minCellX = std::max(0, std::min(minCellX, GRID_WIDTH - 1));
