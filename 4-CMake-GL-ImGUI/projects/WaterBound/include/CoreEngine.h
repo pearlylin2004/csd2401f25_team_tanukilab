@@ -51,6 +51,7 @@ public:
     //for resume and pause
     void onWindowFocusGained();
     void onWindowFocusLost();
+    void onWindowMinimized();
 
 private:
     void GameLoop();

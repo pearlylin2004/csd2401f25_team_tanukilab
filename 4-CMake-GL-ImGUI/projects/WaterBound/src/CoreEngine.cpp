@@ -182,3 +182,15 @@ void CoreEngine::onWindowFocusLost() {
         std::cout << "Paused all audio due to focus lost" << std::endl;
     }
 }
+
+//when windows minimized
+void CoreEngine::onWindowMinimized() {
+    if (!m_isMinimized) {
+        m_isMinimized = true;
+        m_isPaused = true;
+        audio.pauseAll();
+        InputHandler::clearState();
+        //glfwSetInputMode(m_window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+        std::cout << "Paused all audio due to minimize" << std::endl;
+    }
+}
