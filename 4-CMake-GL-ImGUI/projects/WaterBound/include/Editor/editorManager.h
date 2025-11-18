@@ -107,7 +107,7 @@ public:
 
 private:
 	void addComponent(GameObject* selected);
-	void renderTransform(Transform* transform);
+	void renderTransform(Transform* transform, CollisionInfo* collision = nullptr);
 	void renderRender(Render* render, GameObject* selected);
 	void renderCollision(CollisionInfo* collision);
 

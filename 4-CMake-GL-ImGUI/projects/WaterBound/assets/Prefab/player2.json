@@ -19,6 +19,7 @@
         },
         "CollisionInfo": {
           "collisionFlag": 1,
+          "autoFitScale": 1,
           "colliderSize": [1.0, 1.0]
         }
     }

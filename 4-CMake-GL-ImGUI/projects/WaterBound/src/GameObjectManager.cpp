@@ -403,6 +403,12 @@ void GameObjectManager::loadSceneFromJson(const std::string& filename) {
 					: (jc["collisionFlag"].GetInt() != 0);
 			}
 
+			if (jc.HasMember("autoFitScale")) {
+				c->autoFitScale = jc["autoFitScale"].IsBool()
+					? jc["autoFitScale"].GetBool()
+					: (jc["autoFitScale"].GetInt() != 0);
+			}
+
 			if (jc.HasMember("colliderSize") && jc["colliderSize"].IsArray() && jc["colliderSize"].Size() == 2)
 			{
 				c->colliderSize.x = jc["colliderSize"][0].GetFloat();
@@ -733,6 +739,7 @@ void GameObjectManager::saveSceneToJson(const std::string& filename, bool isNew)
 					};
 
 				pushIfDiffBool("collisionFlag", c->collisionFlag);
+				pushIfDiffBool("autoFitScale", c->autoFitScale);
 
 				if (!jc.ObjectEmpty()) {
 					comps.AddMember("CollisionInfo", jc, a);

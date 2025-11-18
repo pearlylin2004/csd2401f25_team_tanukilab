@@ -21,6 +21,7 @@
         },
         "CollisionInfo": {
             "collisionFlag": 1,
+            "autoFitScale": 1,
             "colliderSize": [5.0, 3.0]
         },
         "StateMachine": {

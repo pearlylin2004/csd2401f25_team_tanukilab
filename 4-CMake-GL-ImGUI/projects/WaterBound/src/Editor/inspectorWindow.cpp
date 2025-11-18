@@ -83,7 +83,8 @@ void InspectorWindow::render(GameObjectManager& manager) {
 
         /* ------------------- Object Transformation ------------------- */
         if (Transform* transform = selected->getComponent<Transform>()) {
-            renderTransform(transform);
+            if (CollisionInfo* collision = selected->getComponent<CollisionInfo>()) renderTransform(transform, collision);
+            else renderTransform(transform);
         }
         /* ------------------- END ------------------- */
 
@@ -105,7 +106,8 @@ void InspectorWindow::render(GameObjectManager& manager) {
 
         /* ------------------- Collision ------------------- */
         if (CollisionInfo* collision = selected->getComponent<CollisionInfo>()) {
-            renderCollision(collision);
+            Transform* transform = selected->getComponent<Transform>();
+            renderCollision(collision, transform, selected);
         }
         /* ------------------- END ------------------- */
 
@@ -163,7 +165,7 @@ void InspectorWindow::addComponent(GameObject* selected) {
     ImGui::EndChild();
 }
 
-void InspectorWindow::renderTransform(Transform* transform) {
+void InspectorWindow::renderTransform(Transform* transform, CollisionInfo* collision) {
     if (ImGui::CollapsingHeader("Transform")) {
 
         if (ImGui::TreeNode("Position")) {
@@ -208,6 +210,11 @@ void InspectorWindow::renderTransform(Transform* transform) {
             if (m_objSelectionState.aspectRatioLock && transform->scaleX != 0.0f) {
                 transform->scaleY = transform->scaleX * m_objSelectionState.ratioY;
                 transform->scaleZ = transform->scaleX * m_objSelectionState.ratioZ;
+            }
+
+            if (collision->autoFitScale) {
+                collision->colliderSize.x = transform->scaleX;
+                collision->colliderSize.y = transform->scaleY;
             }
 
             ImGui::TreePop();
@@ -283,14 +290,43 @@ void InspectorWindow::renderRender(Render* render, GameObject* selected) {
     }
 }
 
-void InspectorWindow::renderCollision(CollisionInfo* collision) {
+void InspectorWindow::renderCollision(CollisionInfo* collision, Transform* transform, GameObject* selected) {
     if (ImGui::CollapsingHeader("Collision")) {
-        ImGui::Checkbox("Is Trigger", &collision->collisionFlag);
+        {
+            // checked means this object can collide with obj in the same layer
+            ImGui::Checkbox("Is Trigger", &collision->collisionFlag);
+            
+            // WIP, select layer
+            /*int layer = selected->getLayer();
+            if (ImGui::InputInt("Layer", &layer)) {
+                if (layer < 0) layer = 0;
+                
+                selected->setLayer(layer);
 
-        ImGui::InputFloat("Collider Width", &collision->colliderSize.x, 1.f);
-        ImGui::InputFloat("Collider Height", &collision->colliderSize.y, 1.f);
+                DebugLog::addMessage(selected->getObjectName() + " changed layer to " + std::to_string(selected->getLayer()));
+            }*/
+        }
 
-        DebugLog::addMessage("Collider width: " + std::to_string(collision->colliderSize.x));
-        DebugLog::addMessage("Collider height: " + std::to_string(collision->colliderSize.y));
+        ImGui::Spacing();
+        ImGui::Separator();
+
+        {
+            if (ImGui::TreeNode("Collider")) {
+                // cannot edit if obj cannot collide
+                ImGui::BeginDisabled(!collision->collisionFlag);
+                ImGui::Checkbox("Auto-fit Scale", &collision->autoFitScale);
+                ImGui::EndDisabled();
+
+                // cannot edit if obj cannot collide or auto-fit collider size with obj size is on
+                bool editableCollider = collision->collisionFlag && !collision->autoFitScale;
+                ImGui::BeginDisabled(!editableCollider);
+                ImGui::InputFloat("Width", &collision->colliderSize.x, 1.f);
+                ImGui::InputFloat("Height", &collision->colliderSize.y, 1.f);
+                ImGui::EndDisabled();
+
+                ImGui::TreePop();
+            }
+        }
+
     }
 }

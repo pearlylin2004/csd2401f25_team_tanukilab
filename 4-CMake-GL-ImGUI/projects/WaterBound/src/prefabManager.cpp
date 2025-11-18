@@ -391,6 +391,12 @@ GameObject* PrefabManager::instantiate(GameObject* go, GameObjectManager& manage
 				: (jc["collisionFlag"].GetInt() != 0);
 		}
 
+		if (jc.HasMember("autoFitScale")) {
+			c->autoFitScale = jc["autoFitScale"].IsBool()
+				? jc["autoFitScale"].GetBool()
+				: (jc["autoFitScale"].GetInt() != 0);
+		}
+
 		if (jc.HasMember("colliderSize") && jc["colliderSize"].IsArray() && jc["colliderSize"].Size() == 2)
 		{
 			c->colliderSize.x = jc["colliderSize"][0].GetFloat();
@@ -581,6 +587,12 @@ std::unique_ptr<GameObject> PrefabManager::createTempPrefabObj(const std::string
 				: (jc["collisionFlag"].GetInt() != 0);
 		}
 
+		if (jc.HasMember("autoFitScale")) {
+			c->autoFitScale = jc["autoFitScale"].IsBool()
+				? jc["autoFitScale"].GetBool()
+				: (jc["autoFitScale"].GetInt() != 0);
+		}
+
 		if (jc.HasMember("colliderSize") && jc["colliderSize"].IsArray() && jc["colliderSize"].Size() == 2)
 		{
 			c->colliderSize.x = jc["colliderSize"][0].GetFloat();
@@ -707,6 +719,7 @@ bool PrefabManager::savePrefab(const GameObject* prefabObj) {
 	if (auto c = prefabObj->getComponent<CollisionInfo>()) {
 		rapidjson::Value jc(rapidjson::kObjectType);
 		jc.AddMember("collisionFlag", c->collisionFlag ? 1 : 0, a);
+		jc.AddMember("autoFitScale", c->autoFitScale ? 1 : 0, a);
 
 		rapidjson::Value colliderArray(rapidjson::kArrayType);
 		colliderArray.PushBack(c->colliderSize.x, a);
@@ -866,6 +879,7 @@ bool PrefabManager::createPrefabFromGameObj(GameObject* go, const std::string& n
 		rapidjson::Value jc(rapidjson::kObjectType);
 
 		jc.AddMember("collisionFlag", c->collisionFlag ? 1 : 0, a);
+		jc.AddMember("autoFitScale", c->autoFitScale ? 1 : 0, a);
 
 		rapidjson::Value sc(rapidjson::kArrayType);
 		sc.PushBack(c->colliderSize.x, a).PushBack(c->colliderSize.y, a);
