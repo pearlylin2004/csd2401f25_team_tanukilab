@@ -171,16 +171,19 @@ enum class CollisionResponseMode {
 // CollisionInfo component to store collision-related information
 struct CollisionInfo : public Component {
 public:
-
+                           
     std::unique_ptr<Component> clone() const override {
         return std::make_unique<CollisionInfo>(*this);
     }
 
-    bool collided = false;
+    bool collisionFlag = false; // whether objest can collide with another obj
+    bool collided = false; // check whether obj alr collided
     float timeOfImpact = 0.0f;
     Vector2D normal{ 0,0 };
     Vector2D contactPoint = { 0,0 };
     float penetration = 0.0f; //for it to not overlap 
+    Vector2D colliderSize{ 0,0 }; // size of the bounding box
+    bool autoFitScale = false; // auto-fit the collider with the size of the game obj (i.e. obj bigger -> collider bigger)
 };
 
 // For imgui(testing)

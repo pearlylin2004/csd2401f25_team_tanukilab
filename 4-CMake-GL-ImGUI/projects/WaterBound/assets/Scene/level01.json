@@ -37,8 +37,7 @@
       "name": "player1",
       "layer" : 1,
       "components": {
-        "Physics": { "inWater": 0, "buoyancy": 0 },
-        "CollisionInfo": {}
+        "Physics": { "inWater": 0, "buoyancy": 0 }
       }
     },
     {

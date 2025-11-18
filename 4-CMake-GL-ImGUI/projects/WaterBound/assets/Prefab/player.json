@@ -19,7 +19,11 @@
             "inWater": 0,
             "buoyancy": 0
         },
-        "CollisionInfo": {},
+        "CollisionInfo": {
+            "collisionFlag": 1,
+            "autoFitScale": 1,
+            "colliderSize": [5.0, 3.0]
+        },
         "StateMachine": {
             "state": "Idle",
             "facingRight": true,

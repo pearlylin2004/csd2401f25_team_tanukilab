@@ -75,7 +75,7 @@ void LogicContainer::enter(GameObject& obj, PlayerState next)
         {
             std::string msg = "[LogicContainer] "
                 + obj.getObjectName() + " -> " + ToString(next);
-            UI::addDebugMessage(msg);
+            DebugLog::addMessage(msg, DebugMode::PlaySimul);
             std::cout << msg << std::endl;
         }
 
@@ -106,7 +106,7 @@ void LogicContainer::tickIdle(GameObject& obj, float /*dt*/) {
         physics->velY = physics->jumpForce;
         physics->onGround = false;
         enter(obj, PlayerState::Jumping);
-        UI::addDebugMessage("FSM: Jump");
+        DebugLog::addMessage("FSM: Jump", DebugMode::PlaySimul);
     }
     // walk
     else if (anyMoveHeld()) {
@@ -149,7 +149,7 @@ void LogicContainer::tickWalking(GameObject& obj, float /*dt*/) {
         physics->velY = physics->jumpForce;
         physics->onGround = false;
         enter(obj, PlayerState::Jumping);
-        UI::addDebugMessage("FSM: Jump");
+        DebugLog::addMessage("FSM: Jump", DebugMode::PlaySimul);
         return;
     }
 }
@@ -230,7 +230,7 @@ void LogicContainer::trySpawnBulletNear(GameObject& obj, GameObjectManager& mana
     p->velY = 5.0f;
     p->onGround = false;
 
-    UI::addDebugMessage("[LogicContainer] player fired bullet");
+    DebugLog::addMessage("[LogicContainer] player fired bullet", DebugMode::PlaySimul);
     std::cout << "[LogicContainer] player fired bullet\n";
 }
 

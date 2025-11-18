@@ -72,11 +72,11 @@ void InputSystem::update(GameObjectManager& manager, const float& deltaTime, Mes
 
 		AudioHandler::getInstance().toggleSoundPause(soundID::bg);
 
-		if (UI::isEditingMode()) UI::toggleEditing(false);
-				else UI::toggleEditing(true);
+		if (EditorManager::isEditingMode()) EditorManager::toggleEditing(false);
+		else EditorManager::toggleEditing(true);
 	}
 	
-	if (!UI::isEditingMode()) {
+	if (!EditorManager::isEditingMode() && !EditorManager::isPaused()) {
 		if (InputHandler::isKeyTriggered(GLFW_KEY_1)) {
 			AudioHandler::getInstance().playSound(soundID::fire);
 		}
@@ -417,7 +417,7 @@ void RenderSystem::batchingSetUp(GameObjectManager& manager, float const& deltaT
 				if (animation->loop)
 				{
 					animation->frameTimer += deltaTime;
-					if (animation->frameTimer >= animation->frameTime && !UI::isEditingMode())
+					if (animation->frameTimer >= animation->frameTime && !EditorManager::isEditingMode() && !EditorManager::isPaused())
 					{
 						animation->frameTimer -= animation->frameTime;
 						animation->currentFrameColumn = (animation->currentFrameColumn + 1) % animation->totalColumn;
@@ -506,7 +506,7 @@ void RenderSystem::renderTex(GameObject* object, float const& deltaTime)
 			{
 				animation->frameTimer += deltaTime;
 				//std::cout << "\n-------Frame Timer---------\n" << animation->frameTimer << "\n\n";
-				if (animation->frameTimer >= animation->frameTime && !UI::isEditingMode())
+				if (animation->frameTimer >= animation->frameTime && !EditorManager::isEditingMode() && !EditorManager::isPaused())
 				{
 					animation->frameTimer -= animation->frameTime;
 					/*if (animation->runItBack && animation->currentFrameColumn == 0)
@@ -824,14 +824,14 @@ void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime, M
 		/*if (!physics->onGround)
 			physics->velY += physics->gravity * deltaTime;*/
 
-		if (object->hasComponent<Input>() && !UI::isEditingMode()) {
+		if (object->hasComponent<Input>() && !EditorManager::isEditingMode() && !EditorManager::isPaused()) {
 			//std::cout << object << " has input component\n";
 			//bullet
 			Input* input = object->getComponent<Input>();
 
 			if (InputHandler::isKeyTriggered(GLFW_KEY_SPACE)) {
 				//std::cout << "bullet is spawned\n";
-				UI::addDebugMessage("bullet is spawned");
+				DebugLog::addMessage("bullet is spawned", DebugMode::PlaySimul);
 				static int bulletCount = 0;
 			}
 
@@ -938,8 +938,12 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 
 		for (GameObject* obj : layerObjects) {
 			if (!obj->getComponent<CollisionInfo>() || !obj->hasComponent<Transform>()) continue;
+			CollisionInfo* c = obj->getComponent<CollisionInfo>();
+			if (!c->collisionFlag) continue; // skip if obj not supposed to collide
+
 			Transform* objT = obj->getComponent<Transform>();
-			Collision::AABB box = Collision::getObjectAABB(objT);
+			//Collision::AABB box = Collision::getObjectAABB(objT);
+			Collision::AABB box = Collision::getObjectAABBbyCollider(objT, c->colliderSize); // use customized collider instead of scale
 
 			int minCellX = static_cast<int>(box.getMin().x / CELL_SIZE);
 			int maxCellX = static_cast<int>(box.getMax().x / CELL_SIZE);
@@ -977,10 +981,8 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 					GameObject* obj1 = cellObject[n];
 					if (!obj1->hasComponent<Physics>()) continue;
 					Transform* t1 = obj1->getComponent<Transform>();
-
 					//to get obj1 shape
 					Render* render1 = obj1->getComponent<Render>();
-					
 					Physics* p1 = obj1->getComponent<Physics>();
 					Vector2D vel1{ p1->dynamics.velocity.x, p1->dynamics.velocity.y };
 					//object 2 looping
@@ -996,10 +998,8 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 						checked[obj1].push_back(obj2);
 						checked[obj2].push_back(obj1);
 						Transform* t2 = obj2->getComponent<Transform>();
-
 						//to get obj1 shape
 						Render* render2 = obj2->getComponent<Render>();
-
 						Physics* p2 = obj2->getComponent<Physics>();
 						Vector2D vel2{ p2->dynamics.velocity.x, p2->dynamics.velocity.y };
 
@@ -1013,8 +1013,10 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 						CollisionInfo info;
 						//if both square
 						if (render1->modelRef.shape != shape::square && render2->modelRef.shape != shape::square) {
-							Collision::AABB aabb1 = Collision::getObjectAABB(t1);
-							Collision::AABB aabb2 = Collision::getObjectAABB(t2);
+							//Collision::AABB aabb1 = Collision::getObjectAABB(t1);
+							Collision::AABB aabb1 = Collision::getObjectAABBbyCollider(t1, obj1->getComponent<CollisionInfo>()->colliderSize);
+							//Collision::AABB aabb2 = Collision::getObjectAABB(t2);
+							Collision::AABB aabb2 = Collision::getObjectAABBbyCollider(t2, obj2->getComponent<CollisionInfo>()->colliderSize);
 							info = Collision::CollisionIntersection_RectRect_Dynamic_Info(aabb1, vel1, aabb2, vel2);
 						}
 						//if both circle
@@ -1049,7 +1051,7 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 									p1->onGround = true;
 								}
 							}
-							UI::addDebugMessage("Collision detected between Object.\n"); //message for debugger
+							DebugLog::addMessage("Collision detected between Object.\n", DebugMode::PlaySimul); //message for debugger
 						}
 						//if no collision
 						else { p1->onGround = false; }
@@ -1116,14 +1118,7 @@ void UISystem::update(GameObjectManager& manager) {
 
 	// all ImGui windows
 	m_UI.update(manager);
-	m_UI.sceneWindow(m_renderer->getTexture(), static_cast<float>(fboWidth) / static_cast<float>(fboHeight));
-
-	m_UI.loadAssetsFromDirectory(); // only reload if assets flag is set (e.g. new asset added)
-
-	// this will CRASH if change scene in editor
-	//Transform* leavesT = gameObjects[0]->getComponent<Transform>();
-	//Transform* bulletT = gameObjects[2]->getComponent<Transform>();
-	//m_UI.shapeControl(*leavesT, *bulletT); 
+	m_UI.renderScene(m_renderer->getTexture(), static_cast<float>(fboWidth) / static_cast<float>(fboHeight), manager);
 
 	ImGui::Render();
 	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
@@ -1165,38 +1160,47 @@ void UISystem::dockingSetUp() {
 
 	if (m_firstTime) {
 		m_firstTime = false;
-		ImGui::DockBuilderRemoveNode(dockspaceID); // Clear any existing layout
+		ImGui::DockBuilderRemoveNode(dockspaceID);
 		ImGui::DockBuilderAddNode(dockspaceID, ImGuiDockNodeFlags_DockSpace);
 		ImGui::DockBuilderSetNodeSize(dockspaceID, viewport->Size);
 
-		// Split the dockspace into major areas
-		ImGuiID dockParent = dockspaceID;
-		ImGuiID dockDown, dockRight, dockLeft;
-		ImGuiID dockLeftSecond, dockRightSecond;
+		ImGuiID dockMain = dockspaceID;
 
-		ImGui::DockBuilderSplitNode(dockParent, ImGuiDir_Left, 0.3f, &dockLeft, &dockParent);
-		ImGui::DockBuilderSplitNode(dockLeft, ImGuiDir_Down, 0.3f, &dockLeftSecond, &dockLeft);
-		ImGui::DockBuilderSplitNode(dockParent, ImGuiDir_Right, 0.4f, &dockRight, &dockParent);
-		ImGui::DockBuilderSplitNode(dockRight, ImGuiDir_Down, 0.4f, &dockRightSecond, &dockRight);
-		ImGui::DockBuilderSplitNode(dockParent, ImGuiDir_Down, 0.5f, &dockDown, &dockParent);
+		ImGuiID dockLeft, dockRight, dockBottom;
+		ImGui::DockBuilderSplitNode(dockMain, ImGuiDir_Left, 0.25f, &dockLeft, &dockMain);
+		// split off right panel (30% of remaining width)
+		ImGui::DockBuilderSplitNode(dockMain, ImGuiDir_Right, 0.30f, &dockRight, &dockMain);
+		// split off bottom panel (30% of remaining height)
+		ImGui::DockBuilderSplitNode(dockMain, ImGuiDir_Down, 0.30f, &dockBottom, &dockMain);
 
-		// Dock windows
+		// subdivide the panels
+		ImGuiID dockLeftBottom, dockRightBottom;
+		// split left panel into top and bottom
+		ImGui::DockBuilderSplitNode(dockLeft, ImGuiDir_Down, 0.40f, &dockLeftBottom, &dockLeft);
+		// split right panel into top and bottom
+		ImGui::DockBuilderSplitNode(dockRight, ImGuiDir_Down, 0.40f, &dockRightBottom, &dockRight);
 
-		// Left
+
+		// dock windows to their respective areas
+		// left top: Hierarchy
 		ImGui::DockBuilderDockWindow("Hierarchy", dockLeft);
-		ImGui::DockBuilderDockWindow("Debug Info", dockLeftSecond);
 
-		// Right
+		// left bottom: Debug
+		ImGui::DockBuilderDockWindow("Debug - Editor", dockLeftBottom);
+		ImGui::DockBuilderDockWindow("Debug - Playing", dockLeftBottom);
+
+		// center: Scene viewport
+		ImGui::DockBuilderDockWindow("Scene", dockMain);
+
+		// right top: Inspector
 		ImGui::DockBuilderDockWindow("Inspector", dockRight);
-		ImGui::DockBuilderDockWindow("Editor Camera", dockRight);
-		ImGui::DockBuilderDockWindow("Create Object", dockRightSecond);
 
-		// Middle
-		ImGui::DockBuilderDockWindow("Scene", dockParent);
-		
-		// Bottom
-		ImGui::DockBuilderDockWindow("Performance", dockDown);
-		ImGui::DockBuilderDockWindow("Assets", dockDown);
+		// right bottom: Create Object
+		ImGui::DockBuilderDockWindow("Create Object", dockRightBottom);
+
+		// bottom: Assets and Performance
+		ImGui::DockBuilderDockWindow("Assets", dockBottom);
+		ImGui::DockBuilderDockWindow("Performance", dockBottom);
 
 		ImGui::DockBuilderFinish(dockspaceID);
 	}

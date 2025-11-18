@@ -122,6 +122,10 @@ void GameObjectManager::getAllGameObjects(std::vector<GameObject*>& gameObjects)
 	}
 }
 
+int GameObjectManager::getGameObjectCount() {
+	return static_cast<int>(m_gameObjects.size());
+}
+
 void GameObjectManager::init()
 {
 
@@ -144,197 +148,6 @@ bool GameObjectManager::renameGameObject(GameObject* obj, const std::string& new
 	obj->getObjectName() = newName;
 	return true;
 
-}
-
-void GameObjectManager::loadFromFile(const std::string& filename)
-{
-	std::ifstream is{ filename };
-	if (!is)
-	{
-		std::cerr << "file not found: " + filename + "\n";
-		return;
-	}
-	std::cout << "file opened\n";
-
-	m_layerManager.clearAllLayers();
-	m_gameObjects.clear(); // clear existing objects before loading new ones
-
-	std::string checker{};
-	std::string objectName;
-	std::string shape;
-	while (is >> checker)
-	{
-		/*for (; is >> checker, checker == "object";)
-			if (checker == "object") break;*/
-		if (checker == "object")
-		{
-			is >> objectName;
-			std::unique_ptr<GameObject> newObject = std::make_unique<GameObject>(objectName);
-			m_gameObjects.emplace(objectName, std::move(newObject));
-			std::cout << "\nnew object:\n";
-			std::cout << objectName << "\n";
-		}
-		/*for (; is >> checker, checker == "renderer";)
-			if (checker == "renderer") break;*/
-		if (checker == "renderer")
-		{
-			Render* renderptr = m_gameObjects[objectName]->addComponent<Render>();
-			is >> shape;
-			if (shape == "square")
-			{
-				renderptr->modelRef = renderer::models[static_cast<int>(shape::square)];
-			}
-			if (shape == "circle")
-			{
-				renderptr->modelRef = renderer::models[static_cast<int>(shape::circle)];
-			}
-			is >> renderptr->hasTex;
-			if (renderptr->hasTex == true)
-			{
-				is >> renderptr->texFile;
-				renderptr->texHDL = 0;
-				renderptr->texChanged = false;
-				is >> renderptr->hasAnimation;
-			}
-			else {
-				renderptr->texFile.clear();
-				renderptr->texHDL = 0;
-				renderptr->texChanged = false;
-			}
-			std::cout << shape << "\n";
-		}
-		/*for (; is >> checker, checker == "transform";)
-			if (checker == "transform") break;*/
-		if (checker == "transform")
-		{
-			Transform* transformptr = m_gameObjects[objectName]->addComponent<Transform>();
-			is >> transformptr->x >> transformptr->y >> transformptr->z;
-			is >> transformptr->rotation;
-			is >> transformptr->scaleX >> transformptr->scaleY >> transformptr->scaleZ;
-			std::cout << "transform :" << transformptr->x << " ," << transformptr->y << " ," << transformptr->z << "\n";
-			std::cout << "rotation :" << transformptr->rotation << "\n";
-			std::cout << "scale :" << transformptr->scaleX << " ," << transformptr->scaleY << " ," << transformptr->scaleZ << "\n";
-		}
-		if (checker == "input")
-		{
-			m_gameObjects[objectName]->addComponent<Input>(1.f);
-			std::cout << "input component added\n";
-		}
-		if (checker == "physics") {
-			Physics* phyptr = m_gameObjects[objectName]->addComponent<Physics>();
-			is >> phyptr->inWater >> phyptr->buoancy;
-			std::cout << "inwater : " << phyptr->inWater << ", " << phyptr->buoancy << "\n";
-		}
-		if (checker == "collision")
-		{
-			m_gameObjects[objectName]->addComponent<CollisionInfo>();
-			std::cout << "collision component added\n";
-		}
-
-		if (checker == "animation")
-		{
-			Animation* animationptr = m_gameObjects[objectName]->addComponent<Animation>();
-			is >> animationptr->loop >> animationptr->currentFrameColumn >> animationptr->currentFrameRow >> animationptr->totalColumn >> animationptr->totalRow >> animationptr->frameTime;
-			std::cout << "animation component added\n";
-		}
-
-		if (checker == "font")
-		{
-			FontComponent* fc = m_gameObjects[objectName]->addComponent<FontComponent>();
-			std::string line;
-			std::getline(is >> std::ws, line);
-			std::istringstream iss(line);
-			iss >> std::quoted(fc->word) >> fc->clr.r >> fc->clr.g >> fc->clr.b >> fc->scale;
-		}
-
-		//m_gameObjects["player"]->addComponent<Input>(1.f);
-		
-	}
-}
-
-void GameObjectManager::saveToFile(const std::string& filename) const {
-	std::ofstream os{ filename };
-	if (!os)
-	{
-		std::cerr << "file not found: " << filename << std::endl;
-		return;
-	}
-
-	for (auto& [name, obj] : m_gameObjects)
-	{
-		os << "object " << obj->getObjectName() << "\n";
-
-		if (auto render = obj->getComponent<Render>())
-		{
-			os << "renderer ";
-
-			switch (render->modelRef.shape) {
-			case shape::square:
-				os << "square ";
-				break;
-			case shape::circle:
-				os << "circle ";
-				break;
-			default:
-				os << "circle ";
-				break;
-			}
-
-			os << render->hasTex << " ";
-			if (render->hasTex)
-				os << render->texFile;
-
-			if(render->hasAnimation)
-				os << " " << render->hasAnimation;
-			else
-				os << " " << 0;
-
-			os << "\n";
-		}
-
-		if (auto transform = obj->getComponent<Transform>())
-		{
-			os << "transform "
-				<< transform->x << " "
-				<< transform->y << " "
-				<< transform->z << " "
-				<< transform->rotation << " "
-				<< transform->scaleX << " "
-				<< transform->scaleY << " "
-				<< transform->scaleZ << "\n";
-		}
-
-		if (obj->hasComponent<Input>())
-		{
-			os << "input\n";
-		}
-
-		if (auto physics = obj->getComponent<Physics>())
-		{
-			os << "physics "
-				<< physics->inWater << " "
-				<< physics->buoancy << "\n";
-		}
-
-		if (obj->hasComponent<CollisionInfo>())
-		{
-			os << "collision\n";
-		}
-
-		if (Animation* animationptr = obj->getComponent<Animation>()) {
-			os << "animation "
-				<< animationptr->loop << " "
-				<< animationptr->currentFrameColumn << " "
-				<< animationptr->currentFrameRow << " "
-				<< animationptr->totalColumn << " "
-				<< animationptr->totalRow << " "
-				<< animationptr->frameTime << "\n";
-		}
-
-		os << "\n";
-	}
-
-	std::cout << "Scene saved to " << filename << "\n";
 }
 
 /*!
@@ -579,9 +392,28 @@ void GameObjectManager::loadSceneFromJson(const std::string& filename) {
 
 		// ---- CollisionInfo (presence only) ----
 		if (comps.HasMember("CollisionInfo") && comps["CollisionInfo"].IsObject()) {
+			const auto& jc = comps["CollisionInfo"];
 			auto* c = go->getComponent<CollisionInfo>();
 			if (!c)
 				c = go->addComponent<CollisionInfo>();
+
+			if (jc.HasMember("collisionFlag")) {
+				c->collisionFlag = jc["collisionFlag"].IsBool()
+					? jc["collisionFlag"].GetBool()
+					: (jc["collisionFlag"].GetInt() != 0);
+			}
+
+			if (jc.HasMember("autoFitScale")) {
+				c->autoFitScale = jc["autoFitScale"].IsBool()
+					? jc["autoFitScale"].GetBool()
+					: (jc["autoFitScale"].GetInt() != 0);
+			}
+
+			if (jc.HasMember("colliderSize") && jc["colliderSize"].IsArray() && jc["colliderSize"].Size() == 2)
+			{
+				c->colliderSize.x = jc["colliderSize"][0].GetFloat();
+				c->colliderSize.y = jc["colliderSize"][1].GetFloat();
+			}
 		}
 
 		// ---- Animation ----
@@ -772,15 +604,16 @@ void GameObjectManager::saveSceneToJson(const std::string& filename, bool isNew)
 			jObj.AddMember("name", rapidjson::Value(obj->getObjectName().c_str(), a), a);
 
 
-			int layerID = obj->getLayer();
-			if (layerID != -1 && layerID != 1) {  // Only save if not default game layer
-				jObj.AddMember("layer", layerID, a);
-			}
-
 			// get prefab JSON if obj referencing a prefab
 			const rapidjson::Document* prefabDoc{ nullptr };
 			if (!prefabID.empty()) {
 				prefabDoc = PrefabManager::Instance().getPrefabJson(prefabID);
+			}
+
+			int layerID = obj->getLayer();
+			const rapidjson::Value* prefabLayer = PM.getPrefabJsonComp(prefabDoc, "layer");
+			if (layerID != -1 && layerID != 1 && (!prefabLayer || !prefabLayer->IsInt() || prefabLayer->GetInt() != layerID)) {  // Only save if not default game layer
+				jObj.AddMember("layer", layerID, a);
 			}
 
 			/* ------------ Useful lambda for comparing later ------------ */
@@ -884,9 +717,33 @@ void GameObjectManager::saveSceneToJson(const std::string& filename, bool isNew)
 			}
 
 			// ---- CollisionInfo (presence only) ----
-			if (obj->hasComponent<CollisionInfo>()) {
+			if (auto c = obj->getComponent<CollisionInfo>()) {
+				rapidjson::Value jc(rapidjson::kObjectType);
 				const rapidjson::Value* prefabC = PM.getPrefabJsonComp(prefabDoc, "CollisionInfo");
-				if (!prefabC) comps.AddMember("CollisionInfo", rapidjson::Value(rapidjson::kObjectType), a);
+
+				if (!prefabC || !prefabC->HasMember("colliderSize") ||
+					differsFloat((*prefabC)["colliderSize"][0].GetFloat(), c->colliderSize.x) ||
+					differsFloat((*prefabC)["colliderSize"][1].GetFloat(), c->colliderSize.y)) {
+
+					rapidjson::Value sc(rapidjson::kArrayType);
+					sc.PushBack(c->colliderSize.x, a).PushBack(c->colliderSize.y, a);
+					jc.AddMember("colliderSize", sc, a);
+				}
+
+				auto pushIfDiffBool = [&](const char* key, bool val) {
+					if (!prefabC || !prefabC->HasMember(key) ||
+						((*prefabC)[key].IsBool() && differsBool((*prefabC)[key].GetBool(), val)) ||
+						((*prefabC)[key].IsInt() && differsBool((*prefabC)[key].GetInt() != 0, val))) {
+						jc.AddMember(rapidjson::Value(key, a), rapidjson::Value(val ? 1 : 0), a);
+					}
+					};
+
+				pushIfDiffBool("collisionFlag", c->collisionFlag);
+				pushIfDiffBool("autoFitScale", c->autoFitScale);
+
+				if (!jc.ObjectEmpty()) {
+					comps.AddMember("CollisionInfo", jc, a);
+				}
 			}
 
 			// ---- Animation ----
@@ -993,7 +850,6 @@ Otherwise, falls back to legacy .txt scene loading.
 
 void GameObjectManager::loadScene(const std::string& path) {
 	if (ends_with(path, ".json")) loadSceneFromJson(path);
-	else                          loadFromFile(path);   // keep legacy .txt scenes
 	//if (GameObject* p = getGameObject("player")) {
 	//	if (!p->hasComponent<StateMachine>()) {
 	//		p->addComponent<StateMachine>();
@@ -1013,7 +869,6 @@ Otherwise, writes using legacy .txt serialization.
 
 void GameObjectManager::saveScene(const std::string& path, bool isNew) const {
 	if (ends_with(path, ".json")) saveSceneToJson(path, isNew);
-	else                          saveToFile(path);
 }
 
 

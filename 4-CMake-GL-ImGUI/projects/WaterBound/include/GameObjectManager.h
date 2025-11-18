@@ -48,16 +48,13 @@ public:
 	//used for all the component systems
 	void getAllGameObjects(std::vector<GameObject*>& gameObjects);
 
+	// get the number of game objects
+	int getGameObjectCount();
+
 	//initialize game objects from a file
 	void init();
 
 	bool renameGameObject(GameObject* obj, const std::string& newName);
-
-	// load from file (read)
-	void loadFromFile(const std::string& filename);
-
-	// save to file (write)
-	void saveToFile(const std::string& filename) const;
 
 	void loadFromJson(const std::string& filename);
 
