@@ -315,3 +315,34 @@ std::string AudioHandler::soundIDToFilePath(soundID id) {
 		return "";
 	}
 }
+
+//pause all sounds
+void AudioHandler::pauseAll()
+{
+	if (!system) return;
+
+	for (auto channel : channels) {
+		if (channel) {
+			bool isPlaying = false;
+			channel->isPlaying(&isPlaying);
+			if (isPlaying) {
+				channel->setPaused(true);
+			}
+		}
+	}
+}
+
+//resume all sounds
+void AudioHandler::resumeAll() {
+	if (!system) return;
+
+	for (auto channel : channels) {
+		if (channel) {
+			bool isPaused = false;
+			channel->getPaused(&isPaused);
+			if (isPaused) {
+				channel->setPaused(false);
+			}
+		}
+	}
+}
