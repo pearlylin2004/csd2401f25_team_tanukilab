@@ -262,56 +262,84 @@ void InspectorWindow::renderTransform(Transform* transform, CollisionInfo* colli
 
 void InspectorWindow::renderRender(Render* render, GameObject* selected) {
     if (ImGui::CollapsingHeader("Render")) {
-        ImGui::Text("Texture");
-        ImGui::SameLine();
 
-        std::string texName = render->texFile.empty() ? "(Drop new texture here)" : render->texFile;
-        ImGui::Button(texName.c_str());
+        if (ImGui::TreeNode("Texture")) {
 
-        /* -------------- Drag and Drop From Asset Browser to Change Texture ------------- */
-        if (ImGui::BeginDragDropTarget()) {
-            if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("ASSET")) {
-                const char* droppedPath = (const char*)payload->Data;
-                std::string path = droppedPath;
+            std::string texName = render->texFile.empty() ? "(Drop new texture here)" : render->texFile;
+            ImGui::Button(texName.c_str());
 
-                const std::string debugPrefix = "Debug/";
-                size_t pos = path.find(debugPrefix);
-                if (pos != std::string::npos) path = path.substr(pos + debugPrefix.size());
+            /* -------------- Drag and Drop From Asset Browser to Change Texture ------------- */
+            if (ImGui::BeginDragDropTarget()) {
+                if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("ASSET")) {
+                    const char* droppedPath = (const char*)payload->Data;
+                    std::string path = droppedPath;
 
-                /* --- File extension validation --- */
-                std::string ext;
-                size_t dotPos = path.find_last_of('.');
-                if (dotPos != std::string::npos) ext = path.substr(dotPos + 1);
+                    const std::string debugPrefix = "Debug/";
+                    size_t pos = path.find(debugPrefix);
+                    if (pos != std::string::npos) path = path.substr(pos + debugPrefix.size());
 
-                // Convert to lowercase for consistency
-                std::transform(ext.begin(), ext.end(), ext.begin(), ::tolower);
+                    /* --- File extension validation --- */
+                    std::string ext;
+                    size_t dotPos = path.find_last_of('.');
+                    if (dotPos != std::string::npos) ext = path.substr(dotPos + 1);
 
-                // only accept if dropped file is a png/jpg/jpeg
-                if (ext == "png" || ext == "jpg" || ext == "jpeg") {
-                    render->texFile = path;
-                    render->hasTex = true;
-                    render->texChanged = true;
-                    DebugLog::addMessage("Changed texture of " + selected->getObjectName() + " to " + render->texFile + "\n");
+                    // Convert to lowercase for consistency
+                    std::transform(ext.begin(), ext.end(), ext.begin(), ::tolower);
+
+                    // only accept if dropped file is a png/jpg/jpeg
+                    if (ext == "png" || ext == "jpg" || ext == "jpeg") {
+                        render->texFile = path;
+                        render->hasTex = true;
+                        render->texChanged = true;
+                        DebugLog::addMessage("Changed texture of " + selected->getObjectName() + " to " + render->texFile + "\n");
+                    }
+                    else {
+                        // invalid texture format -> don't change anything
+                        DebugLog::addMessage("Invalid texture format : " + path + "\n");
+                    }
+
                 }
-                else {
-                    // invalid texture format -> don't change anything
-                    DebugLog::addMessage("Invalid texture format : " + path + "\n");
-                }
-
+                ImGui::EndDragDropTarget();
             }
-            ImGui::EndDragDropTarget();
+
+            ImGui::SameLine();
+            if (render->hasTex) {
+                ImGui::Spacing();
+                ImGui::Separator();
+                ImGui::Spacing();
+                if (ImGui::Button("Clear Texture")) {
+                    glDeleteTextures(1, &render->texHDL);
+                    render->texHDL = 0;
+                    render->hasTex = false;
+                    render->texFile.clear();
+                    render->texChanged = false;
+                }
+            }
+            ImGui::TreePop();
         }
 
-        ImGui::SameLine();
-        if (render->hasTex) {
-            ImGui::Spacing();
-            if (ImGui::Button("Clear Texture")) {
-                glDeleteTextures(1, &render->texHDL);
-                render->texHDL = 0;
-                render->hasTex = false;
-                render->texFile.clear();
-                render->texChanged = false;
+        if (ImGui::TreeNode("Shape")) {
+            const char* shapes[] = { "Rectangle", "Circle" };
+            int current = (render->modelRef.shape == shape::square) ? 0 : 1;
+
+            if (ImGui::Combo("##Shape", &current, shapes, IM_ARRAYSIZE(shapes))) {
+                if (current == 0)
+                    render->modelRef.shape = shape::square;
+                else
+                    render->modelRef.shape = shape::triangle; // oops triangle is white circle actually
             }
+
+            ImGui::TreePop();
+        } 
+
+        if (ImGui::TreeNode("Colour")) {
+            // cannot edit colour if obj has a texture
+            ImGui::BeginDisabled(render->hasTex);
+
+            ImGui::ColorEdit3("##Colour", &render->clr.x); // pass pointer of the first float cuz imgui want that
+
+            ImGui::EndDisabled();
+            ImGui::TreePop();
         }
 
 
@@ -446,12 +474,17 @@ void InspectorWindow::renderAnimation(Animation* animation, Render* render) {
 
             if (ImGui::TreeNode("Settings")) {
                 ImGui::BeginDisabled(!render->hasAnimation);
+
                 ImGui::Checkbox("Loop", &animation->loop);
 
                 ImGui::InputInt("Column", &animation->totalColumn);
+                animation->totalColumn = std::max(animation->totalColumn, 1);
+
                 ImGui::InputInt("Row", &animation->totalRow);
+                animation->totalRow = std::max(animation->totalRow, 1);
 
                 ImGui::InputFloat("Frame Time", &animation->frameTime, 0.1f);
+                
 
                 ImGui::EndDisabled();
                 ImGui::TreePop();
