@@ -102,15 +102,15 @@ void AddObjWindow::render(GameObjectManager& manager){
     {
         ImGui::Text("X");
         ImGui::SameLine();
-        ImGui::InputFloat("##X", &m_circleInput.inputX, 0.1f);
+        ImGui::InputFloat("##X", &m_circleInput.inputX, 1.f);
 
         ImGui::Text("Y");
         ImGui::SameLine();
-        ImGui::InputFloat("##Y", &m_circleInput.inputY, 0.1f);
+        ImGui::InputFloat("##Y", &m_circleInput.inputY, 1.f);
 
         ImGui::Text("Z");
         ImGui::SameLine();
-        ImGui::InputFloat("##Z", &m_circleInput.inputZ, 0.1f);
+        ImGui::InputFloat("##Z", &m_circleInput.inputZ, 1.f);
         ImGui::Spacing();
 
     //ImGui::PopItemWidth();
@@ -130,15 +130,15 @@ void AddObjWindow::render(GameObjectManager& manager){
     {
         ImGui::Text("X");
         ImGui::SameLine();
-        ImGui::InputFloat("##X1", &m_rectangleInput.inputX, 0.1f);
+        ImGui::InputFloat("##X1", &m_rectangleInput.inputX, 1.f);
 
         ImGui::Text("Y");
         ImGui::SameLine();
-        ImGui::InputFloat("##Y1", &m_rectangleInput.inputY, 0.1f);
+        ImGui::InputFloat("##Y1", &m_rectangleInput.inputY, 1.f);
 
         ImGui::Text("Z");
         ImGui::SameLine();
-        ImGui::InputFloat("##Z1", &m_rectangleInput.inputZ, 0.1f);
+        ImGui::InputFloat("##Z1", &m_rectangleInput.inputZ, 1.f);
         ImGui::Spacing();
 
 
