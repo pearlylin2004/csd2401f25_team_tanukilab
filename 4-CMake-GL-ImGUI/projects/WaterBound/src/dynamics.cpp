@@ -56,6 +56,9 @@ void DynamicsSystem::Integrate(Dynamics& dyn, float deltaTime, float gravityValu
         totalForce = Vec3_Add(&totalForce, &gravityForce);
     }
 
+    if (dyn.mass == 0.f) dyn.inverseMass = 0.f;
+    else dyn.inverseMass = 1.f / dyn.mass;
+
     dyn.acceleration = Vec3_Scale(&totalForce, dyn.inverseMass);
     Vector3D deltaVel = Vec3_Scale(&dyn.acceleration, deltaTime);
     dyn.velocity = Vec3_Add(&dyn.velocity, &deltaVel);

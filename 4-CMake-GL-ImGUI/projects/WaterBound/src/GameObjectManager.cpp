@@ -368,7 +368,7 @@ void GameObjectManager::loadSceneFromJson(const std::string& filename) {
 		// ---- Input (presence only) ----
 		if (comps.HasMember("Input") && comps["Input"].IsObject()) {
 			auto* i = go->getComponent<Input>();
-			if (!i) i = go->addComponent<Input>(1.f);
+			if (!i) i = go->addComponent<Input>();
 		}
 
 		// ---- Physics ----
@@ -377,6 +377,25 @@ void GameObjectManager::loadSceneFromJson(const std::string& filename) {
 			
 			auto* p = go->getComponent<Physics>();
 			if (!p) p = go->addComponent<Physics>();
+
+			if (jp.HasMember("physicsFlag")) {
+				p->physicsFlag = jp["physicsFlag"].IsBool()
+					? jp["physicsFlag"].GetBool()
+					: (jp["physicsFlag"].GetInt() != 0);
+			}
+
+			if (jp.HasMember("moveSpeed") && jp["moveSpeed"].IsNumber())
+				p->moveSpeed = jp["moveSpeed"].GetFloat();
+
+			if (jp.HasMember("jumpForce") && jp["jumpForce"].IsNumber())
+				p->jumpForce = jp["jumpForce"].GetFloat();
+
+			if (jp.HasMember("damping") && jp["damping"].IsNumber())
+				p->damping = jp["damping"].GetFloat();
+
+			if (jp.HasMember("mass") && jp["mass"].IsNumber())
+				p->dynamics.mass = jp["mass"].GetFloat();
+
 
 			if (jp.HasMember("inWater")) {
 				p->inWater = jp["inWater"].IsBool()
@@ -703,9 +722,24 @@ void GameObjectManager::saveSceneToJson(const std::string& filename, bool isNew)
 					}
 					};
 
+				auto pushIfDiffFloat = [&](const char* key, float val) {
+					if (!prefabP || !prefabP->HasMember(key) ||
+						!(*prefabP)[key].IsNumber() ||
+						((*prefabP)[key].GetFloat() != val))
+					{
+						jp.AddMember(rapidjson::Value(key, a), rapidjson::Value(val), a);
+					}
+					};
+
 				// if different then change scene data
+				pushIfDiffBool("physicsFlag", p->physicsFlag);
 				pushIfDiffBool("inWater", p->inWater);
 				pushIfDiffBool("buoyancy", p->buoancy);
+
+				pushIfDiffFloat("moveSpeed", p->moveSpeed);
+				pushIfDiffFloat("jumpForce", p->jumpForce);
+				pushIfDiffFloat("mass", p->dynamics.mass);
+				pushIfDiffFloat("damping", p->damping);
 
 				if (!jp.ObjectEmpty()) comps.AddMember("Physics", jp, a);
 			}

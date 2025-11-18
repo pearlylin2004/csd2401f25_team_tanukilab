@@ -361,18 +361,38 @@ GameObject* PrefabManager::instantiate(GameObject* go, GameObjectManager& manage
 
 	// ---- Input (presence only) ----
 	if (comps.HasMember("Input") && comps["Input"].IsObject()) {
-		go->addComponent<Input>(1.f);
+		go->addComponent<Input>();
 	}
 
 	// ---- Physics ----
 	if (comps.HasMember("Physics") && comps["Physics"].IsObject()) {
 		const auto& jp = comps["Physics"];
 		auto* p = go->addComponent<Physics>();
+
+		if (jp.HasMember("physicsFlag")) {
+			p->physicsFlag = jp["physicsFlag"].IsBool()
+				? jp["physicsFlag"].GetBool()
+				: (jp["physicsFlag"].GetInt() != 0);
+		}
+
+		if (jp.HasMember("moveSpeed") && jp["moveSpeed"].IsNumber())
+			p->moveSpeed = jp["moveSpeed"].GetFloat();
+
+		if (jp.HasMember("damping") && jp["damping"].IsNumber())
+			p->damping = jp["damping"].GetFloat();
+
+		if (jp.HasMember("jumpForce") && jp["jumpForce"].IsNumber())
+			p->jumpForce = jp["jumpForce"].GetFloat();
+
+		if (jp.HasMember("mass") && jp["mass"].IsNumber())
+			p->dynamics.mass = jp["mass"].GetFloat();
+
 		if (jp.HasMember("inWater")) {
 			p->inWater = jp["inWater"].IsBool()
 				? jp["inWater"].GetBool()
 				: (jp["inWater"].GetInt() != 0);
 		}
+
 		if (jp.HasMember("buoyancy")) {
 			p->buoancy = jp["buoyancy"].IsBool()
 				? jp["buoyancy"].GetBool()
@@ -557,18 +577,39 @@ std::unique_ptr<GameObject> PrefabManager::createTempPrefabObj(const std::string
 
 	// ---- Input (presence only) ----
 	if (comps.HasMember("Input") && comps["Input"].IsObject()) {
-		tempGO->addComponent<Input>(1.f);
+		tempGO->addComponent<Input>();
 	}
 
 	// ---- Physics ----
 	if (comps.HasMember("Physics") && comps["Physics"].IsObject()) {
 		const auto& jp = comps["Physics"];
 		auto* p = tempGO->addComponent<Physics>();
+
+		if (jp.HasMember("physicsFlag")) {
+			p->physicsFlag = jp["physicsFlag"].IsBool()
+				? jp["physicsFlag"].GetBool()
+				: (jp["physicsFlag"].GetInt() != 0);
+		}
+
+		if (jp.HasMember("moveSpeed") && jp["moveSpeed"].IsNumber())
+			p->moveSpeed = jp["moveSpeed"].GetFloat();
+
+		if (jp.HasMember("jumpForce") && jp["jumpForce"].IsNumber())
+			p->jumpForce = jp["jumpForce"].GetFloat();
+
+		if (jp.HasMember("damping") && jp["damping"].IsNumber())
+			p->damping = jp["damping"].GetFloat();
+
+		if (jp.HasMember("mass") && jp["mass"].IsNumber())
+			p->dynamics.mass = jp["mass"].GetFloat();
+
+
 		if (jp.HasMember("inWater")) {
 			p->inWater = jp["inWater"].IsBool()
 				? jp["inWater"].GetBool()
 				: (jp["inWater"].GetInt() != 0);
 		}
+
 		if (jp.HasMember("buoyancy")) {
 			p->buoancy = jp["buoyancy"].IsBool()
 				? jp["buoyancy"].GetBool()
@@ -707,11 +748,25 @@ bool PrefabManager::savePrefab(const GameObject* prefabObj) {
 		comps.AddMember("Render", jr, a);
 	}
 
+	if (auto i = prefabObj->getComponent<Input>()) {
+		rapidjson::Value ji(rapidjson::kObjectType);
+		comps.AddMember("Input", ji, a);
+	}
+
 	//// ---- Physics ----
 	if (auto p = prefabObj->getComponent<Physics>()) {
 		rapidjson::Value jp(rapidjson::kObjectType);
+
+		jp.AddMember("physicsFlag", p->physicsFlag ? 1 : 0, a);
+
+		jp.AddMember("moveSpeed", p->moveSpeed, a);
+		jp.AddMember("jumpForce", p->jumpForce, a);
+		jp.AddMember("damping", p->damping, a);
+		jp.AddMember("mass", p->dynamics.mass, a);
+
 		jp.AddMember("inWater", p->inWater ? 1 : 0, a);
 		jp.AddMember("buoyancy", p->buoancy ? 1 : 0, a);
+
 		comps.AddMember("Physics", jp, a);
 	}
 
@@ -863,12 +918,25 @@ bool PrefabManager::createPrefabFromGameObj(GameObject* go, const std::string& n
 		comps.AddMember("Render", jr, a);
 	}
 
+	// ---- Input ----
+	if (auto i = go->getComponent<Input>()) {
+		rapidjson::Value ji(rapidjson::kObjectType);
+
+		comps.AddMember("Input", ji, a);
+	}
+
 	// ---- Physics ----
 	if (auto p = go->getComponent<Physics>()) {
 		rapidjson::Value jp(rapidjson::kObjectType);
 
-		jp.AddMember("inWater", p->inWater ? 1 : 0, a);
+		jp.AddMember("physicsFlag", p->physicsFlag ? 1 : 0, a);
 
+		jp.AddMember("moveSpeed", p->moveSpeed, a);
+		jp.AddMember("jumpForce", p->jumpForce, a);
+		jp.AddMember("damping", p->damping, a);
+		jp.AddMember("mass", p->dynamics.mass, a);
+
+		jp.AddMember("inWater", p->inWater ? 1 : 0, a);
 		jp.AddMember("buoyancy", p->buoancy ? 1 : 0, a);
 
 		comps.AddMember("Physics", jp, a);

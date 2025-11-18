@@ -112,6 +112,8 @@ private:
 	void renderTransform(Transform* transform, CollisionInfo* collision = nullptr);
 	void renderRender(Render* render, GameObject* selected);
 	void renderCollision(CollisionInfo* collision, Transform* transform, GameObject* selected);
+	void renderInput();
+	void renderPhysics(Physics* physic, bool canMove);
 
 	Editor::ObjSelectionState& m_objSelectionState;
 };

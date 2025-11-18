@@ -14,6 +14,7 @@
           "hasAnimation": 0
         },
         "Physics": { 
+          "physicsFlag": 1,
           "inWater": 0, 
           "buoyancy": 0 
         },

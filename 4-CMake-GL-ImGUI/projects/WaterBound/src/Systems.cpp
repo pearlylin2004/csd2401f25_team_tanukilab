@@ -818,8 +818,9 @@ void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime, M
 		if (!object->hasComponent<Transform>() || !object->hasComponent<Physics>())
 			continue;
 
-		Transform* transform = object->getComponent<Transform>();
 		Physics* physics = object->getComponent<Physics>();
+		if (!physics->physicsFlag) continue;
+		Transform* transform = object->getComponent<Transform>();
 
 		/*if (!physics->onGround)
 			physics->velY += physics->gravity * deltaTime;*/
@@ -851,11 +852,11 @@ void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime, M
 
 			if (InputHandler::isKeyHeld(GLFW_KEY_A)) {
 				physics->canMove = true;
-				targetVelX = -input->moveSpeed;
+				targetVelX = -physics->moveSpeed;
 				messageBus.publish(Message("KeyPressed", nullptr, KeyEvent{ "A", true }));
 			}
 			else if (InputHandler::isKeyHeld(GLFW_KEY_D) && physics->canMove) {
-				targetVelX = input->moveSpeed;
+				targetVelX = physics->moveSpeed;
 				messageBus.publish(Message("KeyPressed", nullptr, KeyEvent{ "D", true }));
 			}
 
@@ -1015,7 +1016,7 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 						CollisionInfo info = Collision::CollisionIntersection_RectRect_Dynamic_Info(aabb1, vel1, aabb2, vel2);
 					
 						//checking if collided
-						if (info.collided) {
+						if (info.collided && p1->physicsFlag && p2->physicsFlag) {
 							//update the velocity and penetrations for BOTH objects
 							if (info.normal.x != 0) {
 								//can think about momentum in the future

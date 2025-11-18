@@ -96,24 +96,48 @@ void InspectorWindow::render(GameObjectManager& manager) {
         /* ------------------- Render ------------------- */
         if (Render* render = selected->getComponent<Render>()) {
             renderRender(render, selected);
+
+            ImGui::Spacing();
+            ImGui::Separator();
+            ImGui::Spacing();
         }
         /* ------------------- END ------------------- */
-
-        ImGui::Spacing();
-        ImGui::Separator();
-        ImGui::Spacing();
 
 
         /* ------------------- Collision ------------------- */
         if (CollisionInfo* collision = selected->getComponent<CollisionInfo>()) {
             Transform* transform = selected->getComponent<Transform>();
             renderCollision(collision, transform, selected);
+
+            ImGui::Spacing();
+            ImGui::Separator();
+            ImGui::Spacing();
         }
         /* ------------------- END ------------------- */
 
-        ImGui::Spacing();
-        ImGui::Separator();
-        ImGui::Spacing();
+
+        /* ------------------- Input Control ------------------- */
+        if (selected->hasComponent<Input>()) {
+            renderInput();
+
+            ImGui::Spacing();
+            ImGui::Separator();
+            ImGui::Spacing();
+        }
+        /* ------------------- END ------------------- */
+
+
+        /* ------------------- Physics ------------------- */
+        if (Physics* physics = selected->getComponent<Physics>()) {
+            //Transform* transform = selected->getComponent<Transform>();
+            renderPhysics(physics, selected->hasComponent<Input>());
+
+            ImGui::Spacing();
+            ImGui::Separator();
+            ImGui::Spacing();
+        }
+        /* ------------------- END ------------------- */
+
 
         /* ------------------- Add Component ------------------- */
         addComponent(selected);
@@ -294,7 +318,7 @@ void InspectorWindow::renderCollision(CollisionInfo* collision, Transform* trans
     if (ImGui::CollapsingHeader("Collision")) {
         {
             // checked means this object can collide with obj in the same layer
-            ImGui::Checkbox("Is Trigger", &collision->collisionFlag);
+            ImGui::Checkbox("Enable", &collision->collisionFlag);
             
             // WIP, select layer
             /*int layer = selected->getLayer();
@@ -328,5 +352,75 @@ void InspectorWindow::renderCollision(CollisionInfo* collision, Transform* trans
             }
         }
 
+    }
+}
+
+void InspectorWindow::renderInput() {
+    if (ImGui::CollapsingHeader("Input Control")) {
+        ImGui::Text("Means can control through keyboard");
+    }
+}
+
+void InspectorWindow::renderPhysics(Physics* physic, bool canMove) {
+    if (ImGui::CollapsingHeader("Physics")) {
+        ImGui::Checkbox("Is Trigger", &physic->physicsFlag);
+
+        ImGui::Spacing();
+        ImGui::Separator();
+        
+        // only show movement data if object is controlable via input
+        if (canMove) {
+            if (ImGui::TreeNode("Movement")) {
+                ImGui::InputFloat("Speed", &physic->moveSpeed, 1.f);
+                physic->moveSpeed = std::max(physic->moveSpeed, 0.f); // set the min speed to 0.f
+
+                ImGui::InputFloat("Jump Force", &physic->jumpForce, 1.f);
+                physic->jumpForce = std::max(physic->jumpForce, 0.f); // set the min jump force to 0.f
+
+                ImGui::InputFloat("Mass", &physic->dynamics.mass, 1.f);
+                physic->dynamics.mass = std::max(physic->dynamics.mass, 0.f); // 0.f mass means static obj (never move, e.g. wall)
+
+                ImGui::TreePop();
+            }
+
+            if (ImGui::TreeNode("Environment")) {
+                ImGui::InputFloat("Damping", &physic->damping, 0.1f);
+                physic->damping = std::clamp(physic->damping, 0.f, 1.f); // damping within 0.1 to 1.f
+
+                ImGui::TreePop();
+            }
+        }
+
+        if (ImGui::TreeNode("Water")) {
+            ImGui::Checkbox("Buoyancy (we dh)", &physic->buoancy);
+
+            ImGui::TreePop();
+        }
+
+        if (ImGui::TreeNode("Debug Info")) {
+            ImGui::Text("Velocity: (%.2f, %.2f, %.2f)",
+                physic->dynamics.velocity.x,
+                physic->dynamics.velocity.y,
+                physic->dynamics.velocity.z);
+
+            ImGui::Spacing();
+
+            Vector2D vel2D{ physic->dynamics.velocity.x, physic->dynamics.velocity.y };
+            float vel = Vec_Length(&vel2D);
+            ImGui::Text("Speed: %.2f", vel);
+
+            ImGui::Spacing();
+
+            ImGui::Text("Acceleration: (%.2f, %.2f, %.2f)",
+                physic->dynamics.acceleration.x,
+                physic->dynamics.acceleration.y,
+                physic->dynamics.acceleration.z);
+
+            ImGui::Spacing();
+
+            ImGui::Text("Inverse Mass: %.4f", physic->dynamics.inverseMass);
+
+            ImGui::TreePop();
+        }
     }
 }

@@ -751,7 +751,7 @@ void GameObjectManager::loadFromJson(const std::string& filename) {
 
         // ---- Input (presence only) ----
         if (comps.HasMember("Input") && comps["Input"].IsObject()) {
-            go->addComponent<Input>(1.f);
+            go->addComponent<Input>();
         }
 
         // ---- Physics ----

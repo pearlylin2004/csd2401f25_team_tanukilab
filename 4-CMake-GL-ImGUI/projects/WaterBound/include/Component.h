@@ -118,6 +118,9 @@ public:
         return std::make_unique<Physics>(*this);
 	}
 
+    bool physicsFlag = false;
+    float moveSpeed = 1.0f;
+
     Dynamics dynamics;
 
     bool canMove = true;  // Add this flag
@@ -152,14 +155,14 @@ public:
 // Input component to store input-related properties
 struct Input : public Component {
 public:
-	Input(float speed = 0.0f) : moveSpeed(speed) {}
+	//Input(float speed = 0.0f) : moveSpeed(speed) {}
 
     std::unique_ptr<Component> clone() const override {
         return std::make_unique<Input>(*this);
     }
 
 public:
-    float moveSpeed = 0.0f;
+    //float moveSpeed = 0.0f;
 
 };
 

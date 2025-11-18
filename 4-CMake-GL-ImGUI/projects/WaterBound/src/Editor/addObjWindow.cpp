@@ -151,6 +151,22 @@ void AddObjWindow::render(GameObjectManager& manager){
     ImGui::End();
 }
 
+void AddObjWindow::createEmpty(GameObjectManager& manager, float x, float y, float z) {
+    GameObject* recobj = manager.createGameObject("Rectangle_" + std::to_string(manager.getGameObjectCount()));
+
+    Transform* transform = recobj->addComponent<Transform>();
+    if (!transform) {
+        DebugLog::addMessage("Error creating a game object. Component doesn't exist.");
+        return;
+    }
+
+    transform->x = x;
+    transform->y = y;
+    transform->z = z;
+
+    DebugLog::addMessage("Rectangle created at (" + std::to_string(x) + ", " + std::to_string(y) + ", " + std::to_string(z) + ")\n");
+}
+
 void AddObjWindow::createRec(GameObjectManager& manager, float x, float y, float z) {
     GameObject* recobj = manager.createGameObject("Rectangle_" + std::to_string(manager.getGameObjectCount()));
 
