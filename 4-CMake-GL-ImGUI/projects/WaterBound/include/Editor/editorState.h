@@ -126,22 +126,7 @@ namespace Editor {
 			DebugLog::addMessage("Added Collision component for " + obj->getObjectName());
 			},
 			[](const GameObject* obj) { return obj->hasComponent<CollisionInfo>(); }
-		},
-
-		{"Physics",
-			[] (GameObject* obj) {
-			obj->addComponent<Physics>();
-			DebugLog::addMessage("Added Physics component for " + obj->getObjectName());
-			},
-			[](const GameObject* obj) { return obj->hasComponent<Physics>(); }
-		},
-
-		{"Animation",
-			[](GameObject* obj) {
-			obj->addComponent<Animation>();
-			DebugLog::addMessage("Added Animation component for " + obj->getObjectName());
-			},
-			[](const GameObject* obj) { return obj->hasComponent<Animation>(); }}
+		}
 	};
 	/* ----------------- Component End ---------------- */
 }
