@@ -169,3 +169,16 @@ void CoreEngine::onWindowFocusGained() {
         std::cout << "Resumed all audio due to focus gained" << std::endl;
     }
 }
+
+//when windows gained focus
+void CoreEngine::onWindowFocusLost() {
+    m_windowHasFocus = false;
+
+    if (!m_isPaused) {
+        m_isPaused = true;
+        audio.pauseAll();
+        InputHandler::clearState();
+        //glfwSetInputMode(m_window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+        std::cout << "Paused all audio due to focus lost" << std::endl;
+    }
+}
