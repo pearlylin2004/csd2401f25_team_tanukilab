@@ -112,6 +112,10 @@ void HierarchyWindow::handlePrefabDragDrop(GameObjectManager& manager) {
 void HierarchyWindow::showContextMenu(GameObjectManager& manager, GameObject* obj, int objIndex) {
     /* ------- right click context menu ------- */
     if (ImGui::BeginPopupContextItem()) {
+        if (ImGui::MenuItem("Add Empty")) {
+            AddObjWindow::createEmpty(manager);
+        }
+
         if (ImGui::MenuItem("Add Object")) {
             AddObjWindow::createRec(manager);
         }

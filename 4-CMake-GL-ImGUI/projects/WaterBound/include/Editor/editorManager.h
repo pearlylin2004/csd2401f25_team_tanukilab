@@ -44,6 +44,8 @@ public:
 	AddObjWindow(Editor::ShapeControlState& Cshape, Editor::ShapeControlState& Rshape);
 	void render(GameObjectManager& manager);
 
+	static void createEmpty(GameObjectManager& manager, float x = 0, float y = 0, float z = 0);
+
 	static void createRec(GameObjectManager& manager, float x = 0, float y = 0, float z = 0);
 
 	static void createCir(GameObjectManager& manager, float x = 0, float y = 0, float z = 0);
