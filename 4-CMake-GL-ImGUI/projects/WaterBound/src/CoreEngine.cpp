@@ -194,3 +194,18 @@ void CoreEngine::onWindowMinimized() {
         std::cout << "Paused all audio due to minimize" << std::endl;
     }
 }
+
+//when windows is restored
+void CoreEngine::onWindowRestored() {
+    m_isMinimized = false;
+    m_pendingMaximize = true; //mark for next gameloop frame
+
+    if (m_windowHasFocus) {
+        m_isPaused = false;
+        audio.resumeAll();
+        InputHandler::update();
+        //InputHandler::clearState();
+        //glfwSetInputMode(m_window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+        std::cout << "Restored window, will maximize next frame" << std::endl;
+    }
+}

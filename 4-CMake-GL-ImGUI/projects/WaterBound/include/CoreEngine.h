@@ -52,6 +52,7 @@ public:
     void onWindowFocusGained();
     void onWindowFocusLost();
     void onWindowMinimized();
+    void onWindowRestored();
 
 private:
     void GameLoop();
@@ -70,7 +71,7 @@ private:
     bool m_isPaused = false;
     bool m_windowHasFocus = true;
     bool m_isMinimized = false;
-    //bool m_pendingMaximize = false;
+    bool m_pendingMaximize = false;
 
     // Core Engine Systems
     std::unique_ptr<GameObjectManager> m_manager;
