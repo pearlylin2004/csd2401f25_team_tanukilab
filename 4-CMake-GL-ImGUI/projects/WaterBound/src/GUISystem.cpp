@@ -111,17 +111,14 @@ void GUISystem::createButtons(GameObjectManager& manager) {
     manager.getAllGameObjects(allObjs);
 
 	//loop through all objects to find buttons
-    for (GameObject* obj : allObjs)
-    {
-        if (!obj) continue;
-
+    for (GameObject* obj : allObjs){
 		//get object name
         const std::string name = obj->getObjectName();
         //only consider objects that have both transform and render
         if (!obj->hasComponent<Transform>() || !obj->hasComponent<Render>()) continue;
 
-		Transform* t = obj->getComponent<Transform>(); // get transform
-		Render* r = obj->getComponent<Render>(); // get render
+		Transform* t = obj->getComponent<Transform>(); //get transform
+		Render* r = obj->getComponent<Render>(); //get render
 
         //find if its a button
         bool isButton = r->hasTex || (name.find("_button") != std::string::npos);
