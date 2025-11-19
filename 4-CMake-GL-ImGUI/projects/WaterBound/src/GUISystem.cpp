@@ -56,7 +56,7 @@ void GUISystem::init(GameObjectManager& manager, LuaSystem& luaSystem) {
     }
 
     // Create the actual button game objects
-    createMenuButtons(manager);
+    createButtons(manager); //creating buttons from json
     g_manager = &manager;
     g_luaSystem = &luaSystem;
     std::cout << "GUISystem::init completed successfully" << std::endl;
@@ -89,11 +89,17 @@ void GUISystem::update(GameObjectManager& manager) {
     }
 }
 
-void GUISystem::createMenuButtons(GameObjectManager& manager) {
-    if (m_buttonsCreated) {
-        std::cout << "Buttons already created, returning early" << std::endl;
+void GUISystem::createButtons(GameObjectManager& manager) {
+    //check if json loaded
+    if (!m_buttonDataLoaded) {
+        std::cout << "No JSON data loaded, cannot create GUI objects" << std::endl;
         return;
     }
+    
+    /*if (m_buttonsCreated) {
+        std::cout << "Buttons already created, returning early" << std::endl;
+        return;
+    }*/
 
     std::cout << "Creating buttons..." << std::endl;
 
@@ -172,7 +178,6 @@ void GUISystem::createMenuButtons(GameObjectManager& manager) {
         stopTransform->scaleZ = 1.0f;
         std::cout << "Stop button created with default data (no JSON data found)" << std::endl;
     }
-
 
     manager.assignObjectToLayer(m_stopButton, 2);
 

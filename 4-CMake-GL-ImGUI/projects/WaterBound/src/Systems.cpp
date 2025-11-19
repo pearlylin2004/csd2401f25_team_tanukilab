@@ -98,7 +98,6 @@ void InputSystem::update(GameObjectManager& manager, const float& deltaTime, Mes
 	g_SystemTimers.push_back({ "Input", ms }); //saving timing for UI output
 }
 
-
 // Render system - draws all game objects with a Render component
 void RenderSystem::update(GameObjectManager& manager, float const& deltaTime) 
 {
@@ -262,9 +261,6 @@ void RenderSystem::update(GameObjectManager& manager, float const& deltaTime)
 	// }
 	// //if (UISystem::isShowUI()) glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	//glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-
-
 	//all rendering must be done per layer noww
 	//cooked
 

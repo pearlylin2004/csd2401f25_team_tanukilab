@@ -45,7 +45,7 @@ public:
     GameState getCurrentState() const { return m_currentState; } //check current state
 
 private:
-    void createMenuButtons(GameObjectManager& manager); //create menu buttons
+    void createButtons(GameObjectManager& manager); //create menu buttons
     void removeMenuButtons(GameObjectManager& manager); //remove menu buttons
 	void startGame(GameObjectManager& manager); //start game
     void stopGame(GameObjectManager& manager); //stop game
