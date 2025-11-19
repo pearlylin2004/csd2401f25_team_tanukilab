@@ -108,7 +108,7 @@ void InspectorWindow::render(GameObjectManager& manager) {
         /* ------------------- Collision ------------------- */
         if (CollisionInfo* collision = selected->getComponent<CollisionInfo>()) {
             Transform* transform = selected->getComponent<Transform>();
-            renderCollision(collision, transform, selected);
+            renderCollision(collision, transform, selected, manager);
 
             ImGui::Spacing();
             ImGui::Separator();
@@ -392,21 +392,27 @@ void InspectorWindow::renderRender(Render* render, GameObject* selected, Animati
     }
 }
 
-void InspectorWindow::renderCollision(CollisionInfo* collision, Transform* transform, GameObject* selected) {
+void InspectorWindow::renderCollision(CollisionInfo* collision, Transform* transform, GameObject* selected, GameObjectManager& manager) {
     if (ImGui::CollapsingHeader("Collision")) {
         {
             // checked means this object can collide with obj in the same layer
             ImGui::Checkbox("Enable", &collision->collisionFlag);
             
             // WIP, select layer
-            /*int layer = selected->getLayer();
+            int layer = selected->getLayer();
             if (ImGui::InputInt("Layer", &layer)) {
                 if (layer < 0) layer = 0;
                 
-                selected->setLayer(layer);
+                if (manager.assignObjectToLayer(selected, layer)) {
+                    DebugLog::addMessage(selected->getObjectName() + " changed layer to " + std::to_string(selected->getLayer()));
 
-                DebugLog::addMessage(selected->getObjectName() + " changed layer to " + std::to_string(selected->getLayer()));
-            }*/
+                }
+                else {
+                    DebugLog::addMessage(selected->getObjectName() + " failed to change layer!" );
+                }
+
+            }
+
         }
 
         ImGui::Spacing();
