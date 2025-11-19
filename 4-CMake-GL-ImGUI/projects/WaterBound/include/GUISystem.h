@@ -50,16 +50,16 @@ private:
 	void startGame(GameObjectManager& manager); //start game
     void stopGame(GameObjectManager& manager); //stop game
 
-    bool isPointInButton(const glm::vec2& point, GameObject* button);
+    bool isPointInButton(const Vector2D& point, GameObject* button);
+
+    std::unordered_map<std::string, GameObject*> m_buttons; //for storing buttons 
 
     // Store button data retrieved from GameObjectManager
-    std::unordered_map<std::string, ButtonData> m_buttonData;
+    //std::unordered_map<std::string, ButtonData> m_buttonData;
 
     GameState m_currentState = GameState::MENU;
-    GameObject* m_playButton = nullptr;
-    GameObject* m_stopButton = nullptr;
     bool m_buttonsCreated = false;
     GameObjectManager* g_manager = nullptr;
     LuaSystem* g_luaSystem = nullptr;
-    bool m_buttonDataLoaded = false;
+    //bool m_buttonDataLoaded = false;
 };
