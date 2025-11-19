@@ -956,14 +956,14 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 			Render* renderS = obj->getComponent<Render>();
 			//Collision::AABB box = Collision::getObjectAABB(objT);
 			int minCellX, maxCellX, minCellY, maxCellY;
-			if (renderS->modelRef.shape != shape::square){
+			if (renderS->modelRef.shape == shape::square){
 				Collision::AABB box = Collision::getObjectAABBbyCollider(objT, c->colliderSize); // use customized collider instead of scale
 				minCellX = static_cast<int>(box.getMin().x / CELL_SIZE);
 				maxCellX = static_cast<int>(box.getMax().x / CELL_SIZE);
 				minCellY = static_cast<int>(box.getMin().y / CELL_SIZE);
 				maxCellY = static_cast<int>(box.getMax().y / CELL_SIZE);
 			}
-			else if (renderS->modelRef.shape != shape::circle) {
+			else if (renderS->modelRef.shape == shape::circle) {
 				//need one for circle
 			}
 
@@ -1029,7 +1029,7 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 						//collision info
 						CollisionInfo info;
 						//if both square
-						if (render1->modelRef.shape != shape::square && render2->modelRef.shape != shape::square) {
+						if (render1->modelRef.shape == shape::square && render2->modelRef.shape == shape::square) {
 							//Collision::AABB aabb1 = Collision::getObjectAABB(t1);
 							Collision::AABB aabb1 = Collision::getObjectAABBbyCollider(t1, obj1->getComponent<CollisionInfo>()->colliderSize);
 							//Collision::AABB aabb2 = Collision::getObjectAABB(t2);
