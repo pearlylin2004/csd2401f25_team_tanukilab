@@ -106,6 +106,9 @@ GameObject* GameObjectManager::CloneGameObject(const std::string& sourceName, co
 	GameObject* ptr = clonedObject.get();//raw pointer
 
 	m_gameObjects[newName] = std::move(clonedObject);//move into map
+	
+	//now to do for layer as well
+	assignObjectToLayer(ptr, iterator->second->getLayer());
 
 	return ptr;//return the raw pointer
 }
