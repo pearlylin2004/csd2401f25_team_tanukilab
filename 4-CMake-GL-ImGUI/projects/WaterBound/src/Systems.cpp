@@ -854,7 +854,7 @@ void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime, M
 				messageBus.publish(Message("KeyPressed", nullptr, KeyEvent{ "SPACE", true }));
 			}
 
-float targetVelX = 0.0f;
+			float targetVelX = 0.0f;
 
 			if (InputHandler::isKeyHeld(GLFW_KEY_A)) {
 				physics->canMove = true;
@@ -866,22 +866,22 @@ float targetVelX = 0.0f;
 				messageBus.publish(Message("KeyPressed", nullptr, KeyEvent{ "D", true }));
 			}
 
-physics->dynamics.velocity.x = targetVelX;
+			physics->dynamics.velocity.x = targetVelX;
 
-// Jump
-if (InputHandler::isKeyTriggered(GLFW_KEY_B)) {
-	PhysicsForces::jump(object);
-	messageBus.publish(Message("KeyPressed", nullptr, KeyEvent{ "B", true }));
-}
+			// Jump
+			if (InputHandler::isKeyTriggered(GLFW_KEY_B)) {
+				PhysicsForces::jump(object);
+				messageBus.publish(Message("KeyPressed", nullptr, KeyEvent{ "B", true }));
+			}
 
 
-if (transform->y < physics->floorY /* temp for obj auto move*/ && !object->checkAutoMove()) {
-	transform->y = physics->floorY;
-	physics->velY = 0.0f;
-	physics->onGround = true;
-	physics->velX = 0.0f;
-}
-transform->x += physics->velX * deltaTime;
+			if (transform->y < physics->floorY /* temp for obj auto move*/ && !object->checkAutoMove()) {
+				transform->y = physics->floorY;
+				physics->velY = 0.0f;
+				physics->onGround = true;
+				physics->velX = 0.0f;
+			}
+			transform->x += physics->velX * deltaTime;
 
 		}
 		/* ----- TEMPORARY FOR MOVING THE SPAWNED OBJ AUTO ----- */
