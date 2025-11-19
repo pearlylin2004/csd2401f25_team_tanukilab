@@ -58,6 +58,12 @@ void CoreEngine::Init() {
         glfwTerminate();
         throw std::runtime_error("Window creation failed");
     }
+    // --- Set the user pointer BEFORE setting the callback ---
+    glfwSetWindowUserPointer(m_window, this);
+
+    // --- Register the iconify callback ---
+    glfwSetWindowIconifyCallback(m_window, CoreEngine::windowIconifyCallback);
+
     glfwMakeContextCurrent(m_window);
     glViewport(0, 0, cfg.width, cfg.height);
     glewExperimental = GL_TRUE;
@@ -76,7 +82,6 @@ void CoreEngine::Init() {
 
     InputHandler::init(m_window, cfg);
     renderer::init(cfg.width, cfg.height);
-
 
     m_manager = std::make_unique<GameObjectManager>();
 	m_logicSystem = std::make_unique<LogicSystem>();
@@ -116,7 +121,18 @@ void CoreEngine::Run() {
 
 void CoreEngine::GameLoop() {
     if (glfwWindowShouldClose(m_window) || InputHandler::isKeyHeld(GLFW_KEY_ESCAPE)) { m_isRunning = false; return; } 
-     //--- Update Timing --- 
+    
+    //use glfwGetWindowAttrib to check the GLFW_ICONIFIED status for efficient waiting
+    int status = glfwGetWindowAttrib(m_window, GLFW_ICONIFIED);
+
+    if (status) {
+        // Window is minimized. The audio is already paused by the callback.
+        // Use glfwWaitEvents() to sleep until an event occurs (like restoring the window)
+        glfwWaitEvents();
+        return; //skip the rest of the loop
+    }
+
+    //--- Update Timing --- 
      Perf::UpdateTime(m_delta, m_fps, 0.5);
      Perf::UpdateWindowTitle(m_window, m_title, m_fps, true);
      audio.update();
@@ -154,6 +170,22 @@ void CoreEngine::Shutdown() {
     glfwTerminate();
 }
 
+void CoreEngine::windowIconifyCallback(GLFWwindow* window, int iconified) {
+	CoreEngine* engine = static_cast<CoreEngine*>(glfwGetWindowUserPointer(window)); //retrieve engine instance
+    if (engine) {
+        if (iconified) {
+            // Window was minimized
+            engine->audio.pauseAll();
+        }
+        else {
+            // Window was restored (maximized or simply returned to normal/restored state)
+            // Resume the background music or other necessary sounds
+            engine->audio.playSound(soundID::bg, 0.2f);
+        }
+    }
+}
+
+/*
 //---------- WINDOWS ----------
 //when windows lost focus
 void CoreEngine::onWindowFocusGained() {
@@ -208,4 +240,4 @@ void CoreEngine::onWindowRestored() {
         //glfwSetInputMode(m_window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
         std::cout << "Restored window, will maximize next frame" << std::endl;
     }
-}
+}*/

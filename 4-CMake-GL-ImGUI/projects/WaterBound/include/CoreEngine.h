@@ -49,10 +49,7 @@ public:
     void Shutdown();
 
     //for resume and pause
-    void onWindowFocusGained();
-    void onWindowFocusLost();
-    void onWindowMinimized();
-    void onWindowRestored();
+    static void windowIconifyCallback(GLFWwindow* window, int iconified);
 
 private:
     void GameLoop();
@@ -67,12 +64,6 @@ private:
     bool m_isRunning;
 	AudioHandler& audio;
 
-    //for pasuing and window focus
-    bool m_isPaused = false;
-    bool m_windowHasFocus = true;
-    bool m_isMinimized = false;
-    bool m_pendingMaximize = false;
-
     // Core Engine Systems
     std::unique_ptr<GameObjectManager> m_manager;
     std::unique_ptr<InputSystem> m_inputSystem;
@@ -86,5 +77,4 @@ private:
     std::unique_ptr<GUISystem> m_guiSystem;
     std::unique_ptr<MessageBus> m_messageBus;
     std::unique_ptr<PlayerControllerSystem> m_playerController;
-
 };
