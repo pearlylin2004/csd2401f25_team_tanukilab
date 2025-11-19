@@ -126,8 +126,8 @@ void CoreEngine::GameLoop() {
     int status = glfwGetWindowAttrib(m_window, GLFW_ICONIFIED);
 
     if (status) {
-        // Window is minimized. The audio is already paused by the callback.
-        // Use glfwWaitEvents() to sleep until an event occurs (like restoring the window)
+        //window is minimized audio is already paused by the callback.
+        //use glfwWaitEvents() to sleep until an event occurs (like restoring the window)
         glfwWaitEvents();
         return; //skip the rest of the loop
     }
@@ -174,70 +174,13 @@ void CoreEngine::windowIconifyCallback(GLFWwindow* window, int iconified) {
 	CoreEngine* engine = static_cast<CoreEngine*>(glfwGetWindowUserPointer(window)); //retrieve engine instance
     if (engine) {
         if (iconified) {
-            // Window was minimized
+            //window was minimized
             engine->audio.pauseAll();
         }
         else {
-            // Window was restored (maximized or simply returned to normal/restored state)
-            // Resume the background music or other necessary sounds
+            //window was restored maximized or simply returned to normal state
+            //resume the background music or other necessary sounds
             engine->audio.playSound(soundID::bg, 0.2f);
         }
     }
 }
-
-/*
-//---------- WINDOWS ----------
-//when windows lost focus
-void CoreEngine::onWindowFocusGained() {
-    m_windowHasFocus = true;
-
-    //resume only if window is not minimized
-    if (!m_isMinimized && m_isPaused) {
-        m_isPaused = false;
-        audio.resumeAll();
-        InputHandler::update();
-        //InputHandler::clearState();
-        //glfwSetInputMode(m_window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
-        std::cout << "Resumed all audio due to focus gained" << std::endl;
-    }
-}
-
-//when windows gained focus
-void CoreEngine::onWindowFocusLost() {
-    m_windowHasFocus = false;
-
-    if (!m_isPaused) {
-        m_isPaused = true;
-        audio.pauseAll();
-        InputHandler::clearState();
-        //glfwSetInputMode(m_window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-        std::cout << "Paused all audio due to focus lost" << std::endl;
-    }
-}
-
-//when windows minimized
-void CoreEngine::onWindowMinimized() {
-    if (!m_isMinimized) {
-        m_isMinimized = true;
-        m_isPaused = true;
-        audio.pauseAll();
-        InputHandler::clearState();
-        //glfwSetInputMode(m_window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-        std::cout << "Paused all audio due to minimize" << std::endl;
-    }
-}
-
-//when windows is restored
-void CoreEngine::onWindowRestored() {
-    m_isMinimized = false;
-    m_pendingMaximize = true; //mark for next gameloop frame
-
-    if (m_windowHasFocus) {
-        m_isPaused = false;
-        audio.resumeAll();
-        InputHandler::update();
-        //InputHandler::clearState();
-        //glfwSetInputMode(m_window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
-        std::cout << "Restored window, will maximize next frame" << std::endl;
-    }
-}*/
