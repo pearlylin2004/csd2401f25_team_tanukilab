@@ -39,16 +39,16 @@ public:
     ~GUISystem();
 
     void init(GameObjectManager& manager, LuaSystem& luaSystem);
-    void update(GameObjectManager& manager);
+	void update(GameObjectManager& manager); //update GUI system
 
-    bool isPlaying() const { return m_currentState == GameState::PLAYING; }
-    GameState getCurrentState() const { return m_currentState; }
+    bool isPlaying() const { return m_currentState == GameState::PLAYING; } //check if its playing
+    GameState getCurrentState() const { return m_currentState; } //check current state
 
 private:
-    void createMenuButtons(GameObjectManager& manager);
-    void removeMenuButtons(GameObjectManager& manager);
-    void startGame(GameObjectManager& manager);
-    void stopGame(GameObjectManager& manager);
+    void createMenuButtons(GameObjectManager& manager); //create menu buttons
+    void removeMenuButtons(GameObjectManager& manager); //remove menu buttons
+	void startGame(GameObjectManager& manager); //start game
+    void stopGame(GameObjectManager& manager); //stop game
 
     bool isPointInButton(const glm::vec2& point, GameObject* button);
 
