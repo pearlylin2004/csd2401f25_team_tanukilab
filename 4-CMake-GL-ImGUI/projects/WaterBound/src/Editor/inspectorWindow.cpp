@@ -539,7 +539,7 @@ void InspectorWindow::renderFont(FontComponent* font) {
                 "Times New Roman"
             };
 
-            (ImGui::Combo("Font Type", &font->fontType, fontNames, IM_ARRAYSIZE(fontNames)))
+            (ImGui::Combo("Font Type", &font->fontType, fontNames, IM_ARRAYSIZE(fontNames)));
         }
 
     }
