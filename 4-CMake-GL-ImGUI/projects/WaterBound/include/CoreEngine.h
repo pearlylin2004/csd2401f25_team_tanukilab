@@ -77,4 +77,5 @@ private:
     std::unique_ptr<GUISystem> m_guiSystem;
     std::unique_ptr<MessageBus> m_messageBus;
     std::unique_ptr<PlayerControllerSystem> m_playerController;
+    std::unique_ptr<AudioSystem> m_audioSystem;
 };

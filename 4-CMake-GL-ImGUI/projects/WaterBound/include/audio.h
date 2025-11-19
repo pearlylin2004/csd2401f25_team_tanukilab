@@ -30,6 +30,12 @@ Technology is prohibited.
 #include "ResourceManager.h"
 #include "performance.h"
 
+enum class AudioState {
+	Stopped,
+	Playing,
+	Paused
+};
+
 enum class soundID : int {
 	water = 0,
 	shoot,
@@ -39,6 +45,19 @@ enum class soundID : int {
 	count
 };
 
+struct FadeInfo {
+	bool isFading = false;
+	bool isFadingIn = false;
+	float startVolume = 0.0f;
+	float targetVolume = 0.0f;
+	float fadeDuration = 0.0f;
+	float fadeTimer = 0.0f;
+
+	float defaultFadeInDuration = 1.0f;
+	float defaultFadeOutDuration = 1.0f;
+};
+
+
 class AudioHandler {
 public:
 	// get the singleton instance
@@ -47,7 +66,7 @@ public:
 	// check for FMOD errors (future: can change to logging instead of exit(-1))
 	void init();
 	// initialize the audio system and load sounds
-	void update();
+	void update(float deltaTime);
 	// release all sounds and shut down the audio system (will shutdown automatically when dtor called)
 	void shutdown(); // no need to manually call, dtor will call this automatically
 
@@ -92,6 +111,11 @@ public:
 	void pauseAll();
 	void resumeAll();
 
+	void fadeIn(soundID id, float targetVolume = 1.0f, float duration = 1.0f);
+	void fadeOut(soundID id, float duration = 1.0f);
+	bool isFading(soundID id) const;
+	void stopFade(soundID id);
+
 	// perform error check for FMOD functions
 	// moved to AudioUtility.h
 	//static void FMODErrorCheck(FMOD_RESULT result);
@@ -104,7 +128,10 @@ private:
 	// currently hardcoded the path, to change once deserialization is implemented
 	std::string soundIDToFilePath(soundID id);
 
+	void updateFades(float deltaTime);
+
 	FMOD::System* system;
 	//std::vector<FMOD::Sound*> sounds;
 	std::vector<FMOD::Channel*> channels;
+	std::vector<FadeInfo> fadeInfo;
 };

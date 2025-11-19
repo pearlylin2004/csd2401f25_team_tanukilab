@@ -27,6 +27,7 @@ Technology is prohibited.
 #include "mathlib.h"
 #include "font.h"
 #include "dynamics.h"
+#include "audio.h"
 
 
 // basic component class
@@ -229,3 +230,60 @@ struct StateMachine : public Component {
     }
 };
 
+//Audio component
+enum class soundID : int;
+enum class AudioState;
+class FMOD::Channel;
+struct AudioComponent : public Component {
+public:
+    AudioComponent() = default;
+
+    AudioComponent(soundID sound, float vol = 1.0f, bool shouldLoop = false, bool playStart = false)
+        : soundId(sound)
+        , volume(vol)
+        , loop(shouldLoop)
+        , playOnStart(playStart)
+    {}
+
+    std::unique_ptr<Component> clone() const override {
+        return std::make_unique<AudioComponent>(*this);
+    }
+
+    // Audio ID - which sound to play
+    soundID soundId = static_cast<soundID>(0);
+
+    // IMPORTANT: Each AudioComponent gets its own channel now
+    // This is NOT managed by AudioHandler's channels vector
+    FMOD::Channel* channel = nullptr;
+
+    // Audio Settings
+    float volume = 1.0f;
+    float pitch = 1.0f;
+    bool loop = false;
+    bool playOnStart = false;
+    bool muted = false;
+
+    // Fade Settings (per-component)
+    bool fadeInOnStart = false;
+    float fadeInDuration = 1.0f;
+    bool fadeOutOnStop = false;
+    float fadeOutDuration = 1.0f;
+
+    // Per-component fade state
+    bool isFading = false;
+    bool isFadingIn = false;
+    float fadeStartVolume = 0.0f;
+    float fadeTargetVolume = 0.0f;
+    float fadeDuration = 0.0f;
+    float fadeTimer = 0.0f;
+
+    // State Tracking
+    AudioState state = AudioState::Stopped;
+    bool isPendingPlay = false;
+    bool isPendingStop = false;
+
+    // Helper Methods
+    bool isPlaying() const { return state == AudioState::Playing; }
+    bool isPaused() const { return state == AudioState::Paused; }
+    bool isStopped() const { return state == AudioState::Stopped; }
+};
