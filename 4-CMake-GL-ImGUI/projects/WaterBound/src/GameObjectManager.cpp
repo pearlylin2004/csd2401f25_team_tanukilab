@@ -611,6 +611,7 @@ void GameObjectManager::loadSceneFromJson(const std::string& filename) {
 
 	std::cout << "Total game objects loaded: " << m_gameObjects.size() << std::endl;
 
+	/*
 	m_buttonData.clear(); // Ensure it's empty before populating
 
 	// Extract from loaded game objects with "button" in the name
@@ -635,9 +636,9 @@ void GameObjectManager::loadSceneFromJson(const std::string& filename) {
 				// Only add if not already added from buttons array
 				if (m_buttonData.find(name) == m_buttonData.end()) {
 					m_buttonData[name] = data;
-					/*std::cout << "    ✓ Extracted from object: pos(" << data.position.x << ", "
+					std::cout << "    ✓ Extracted from object: pos(" << data.position.x << ", "
 						<< data.position.y << ", " << data.position.z << "), scale("
-						<< data.scale.x << ", " << data.scale.y << ", " << data.scale.z << ")" << std::endl;*/
+						<< data.scale.x << ", " << data.scale.y << ", " << data.scale.z << ")" << std::endl;
 				}
 				else {
 					std::cout << "Already loaded from buttons array" << std::endl;
@@ -648,6 +649,7 @@ void GameObjectManager::loadSceneFromJson(const std::string& filename) {
 			}
 		}
 	}
+	
 
 	//std::cout << "\nButton objects found during scan: " << foundCount << std::endl;
 	//std::cout << "Total button data entries: " << m_buttonData.size() << std::endl;
@@ -662,8 +664,8 @@ void GameObjectManager::loadSceneFromJson(const std::string& filename) {
 				<< data.position.y << ", " << data.position.z << "), scale("
 				<< data.scale.x << ", " << data.scale.y << ", " << data.scale.z << ")" << std::endl;
 		}
-	}
-
+	}*/
+	
 	//std::cout << "Scene loaded (JSON): " << filename << "\n";
 }
 /*!
