@@ -69,3 +69,15 @@ const int& GameObject::getLayer() const {
 bool GameObject::isOnLayer(int layerID) const {
     return m_layerID == layerID;
 }
+
+//remove component of type T
+template <typename T>
+bool GameObject::removeComponent() {
+	auto iterator = m_components.find(std::type_index(typeid(T)));
+    if (iterator != m_components.end()) {
+        m_components.erase(iterator);
+		return true;//component removed
+	}
+	return false;//component not found
+}
+//use like obj->removeComponent<Transform>();
