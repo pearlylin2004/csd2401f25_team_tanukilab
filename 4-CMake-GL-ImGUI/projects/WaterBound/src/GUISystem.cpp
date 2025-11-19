@@ -2,9 +2,9 @@
 /*!
 \file       GUISystem.cpp
 \author     Asha Mathyalakan, asha.m, 2402886
-            - 70% of the file
+            - 60% of the file
 \author     Pearly Lin Lee Ying, p.lin, 2401591
-            - 30% of the file
+            - 40% of the file
 \par        asha.m@digipen.edu
 \par        p.lin@digipen.edu
 \date       November, 7th, 2025
@@ -59,7 +59,6 @@ void GUISystem::update(GameObjectManager& manager) {
     if (!InputHandler::isMouseButtonClicked(GLFW_MOUSE_BUTTON_LEFT)) return; //only if left click
 
     //get mouse position
-    //Vector2D mousePos = InputHandler::getMousePosition();
     Vector2D worldMousePos = InputHandler::getWorldMousePosition();
     Vector2D worldPos = Vec_Set(worldMousePos.x, worldMousePos.y);
 
@@ -116,7 +115,6 @@ void GUISystem::createButtons(GameObjectManager& manager) {
         m_buttons[name] = obj; //store button
     }
     m_buttonsCreated = !m_buttons.empty(); //buttons created if map is not empty
-    //m_currentState = GameState::MENU;
     std::cout << "Menu buttons created successfully" << std::endl;
 }
 
@@ -129,7 +127,6 @@ void GUISystem::removeMenuButtons(GameObjectManager& manager) {
 			manager.deleteGameObject(btn); //delete from manager
         }
     }
-
     m_buttons.clear(); //clear map
     m_buttonsCreated = false;
 }
@@ -172,6 +169,7 @@ void GUISystem::startGame(GameObjectManager& manager) {
     std::cout << "Game started - loaded json" << std::endl;
 }
 
+//stop game and quit
 void GUISystem::stopGame(GameObjectManager& manager) {
     std::cout << "Stop button clicked - quitting application" << std::endl;
 
