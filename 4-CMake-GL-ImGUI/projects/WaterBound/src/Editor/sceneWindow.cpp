@@ -20,12 +20,13 @@ Technology is prohibited.
 
 #include "Editor/editorManager.h"
 
-SceneWindow::SceneWindow(AssetBrowser& aBrowser, Editor::ObjSelectionState& Ostate, Editor::MenuBarState& Mstate, Editor::SceneWindowState& Sstate, Editor::SceneState& sceneState) :
+SceneWindow::SceneWindow(AssetBrowser& aBrowser, Editor::ObjSelectionState& Ostate, Editor::MenuBarState& Mstate, Editor::SceneWindowState& Sstate, Editor::SceneState& sceneState, Editor::GizmoState& gizmoState) :
     m_assetBrowser(aBrowser), 
     m_objSelectionState(Ostate),
     m_menuBarState(Mstate),
     m_sceneWindowState(Sstate),
-    m_sceneState(sceneState) {}
+    m_sceneState(sceneState),
+    m_gizmoState(gizmoState) {}
 
 void SceneWindow::render(GLuint texture, float aspectRatio, GameObjectManager& manager) {
     ImGui::Begin("Scene", nullptr);
@@ -51,6 +52,9 @@ void SceneWindow::render(GLuint texture, float aspectRatio, GameObjectManager& m
 
     ImGui::Image((void*)(intptr_t)texture, size, ImVec2(0, 1), ImVec2(1, 0));
 
+    m_sceneWindowState.scenePos = ImGui::GetItemRectMin();
+    m_sceneWindowState.sceneSize = ImGui::GetItemRectSize();
+
     if (ImGui::IsWindowHovered())
     {
         // Pan with middle mouse button
@@ -66,22 +70,21 @@ void SceneWindow::render(GLuint texture, float aspectRatio, GameObjectManager& m
         }
 
         // left click to select obj
-        if (InputHandler::isMouseLeftClicked()) {
+        if (InputHandler::isMouseLeftClicked() && !ImGuizmo::IsUsing()) {
             objPicking(manager);
         }
 
         // drag to reposition obj
-        if (InputHandler::isMouseDragging()) {
+        if (InputHandler::isMouseDragging() && !ImGuizmo::IsUsing()) {
             objDragging();
         }
 
     }
 
+    ImGuizmo::BeginFrame();
+    renderGizmo(manager);
+
     ImGui::EndChild();
-
-
-    m_sceneWindowState.scenePos = ImGui::GetItemRectMin();
-    m_sceneWindowState.sceneSize = ImGui::GetItemRectSize();
 
     ImGui::End();
 
@@ -90,6 +93,108 @@ void SceneWindow::render(GLuint texture, float aspectRatio, GameObjectManager& m
     duplicateScenePopup(manager);
     loadScenePopup(manager);
     /* ---------- END --------- */
+}
+
+void SceneWindow::renderGizmo(GameObjectManager& manager) {
+    // early return if no obj selected OR playing simulation OR gizmo is off
+    if (!m_objSelectionState.selectedObject || !EditorManager::isEditingMode()) return;
+    if (m_gizmoState.currentOp == Editor::GIZMO_NONE) return;
+
+    GameObject* selected = m_objSelectionState.selectedObject;
+    Transform* t = selected->getComponent<Transform>();
+    if (!t) return;
+
+    // for 2D editors
+    ImGuizmo::SetOrthographic(true);
+    ImGuizmo::SetDrawlist();
+    // define the screen area where gizmo will appear (follow the Scene viewport)
+    ImGuizmo::SetRect(m_sceneWindowState.scenePos.x, m_sceneWindowState.scenePos.y,
+        m_sceneWindowState.sceneSize.x, m_sceneWindowState.sceneSize.y); 
+
+    glm::mat4 view = renderer::editorCam.view;
+    glm::mat4 proj = renderer::editorCam.proj;
+
+    // set up transform matrix
+    glm::mat4 model = glm::mat4(1.0f);
+    model = glm::translate(model, glm::vec3(t->x, t->y, t->z));
+    model = glm::rotate(model, glm::radians(t->rotation), glm::vec3(0, 0, 1));
+    model = glm::scale(model, glm::vec3(t->scaleX, t->scaleY, t->scaleZ));
+
+    //Mat44 model;
+    //Mat44_Identity(&model);
+    //
+    //// Create individual transformation matrices using your mathlib
+    //Mat44 translationMat, rotationMat, scaleMat;
+    //
+    //// Translation
+    //Mat44_Trans(&translationMat, t->x, t->y, t->z);
+    //
+    //// Rotation (Z-axis for 2D)
+    //Mat44_RotZ(&rotationMat, DegToRad(t->rotation));
+    //
+    //// Scale
+    //Mat44_Scale(&scaleMat, t->scaleX, t->scaleY, t->scaleZ);
+    //
+    //// Combine: model = translation * rotation * scale
+    //Mat44 temp;
+    //Mat44_Con_cat(&temp, &rotationMat, &scaleMat);
+    //Mat44_Con_cat(&model, &translationMat, &temp);
+
+    // set up snapping
+    float* snapPtr = nullptr;
+    float snapValue[3];
+    if (m_gizmoState.useSnap) {
+        if (m_gizmoState.currentOp == ImGuizmo::ROTATE) {
+            snapValue[0] = snapValue[1] = snapValue[2] = m_gizmoState.snapAngle;
+        }
+        else {
+            snapValue[0] = m_gizmoState.snapValues[0];
+            snapValue[1] = m_gizmoState.snapValues[1];
+            snapValue[2] = m_gizmoState.snapValues[2];
+        }
+        snapPtr = snapValue;
+    }
+
+    // draw gizmo and settle the changes
+    if (ImGuizmo::Manipulate(glm::value_ptr(view), glm::value_ptr(proj),
+        static_cast<ImGuizmo::OPERATION>(m_gizmoState.currentOp), m_gizmoState.currentMode,
+        glm::value_ptr(model), nullptr, snapPtr)) {
+
+        // break matrix back into t, r, s
+        glm::vec3 translation, rotation, scale;
+        ImGuizmo::DecomposeMatrixToComponents(glm::value_ptr(model),
+            glm::value_ptr(translation),
+            glm::value_ptr(rotation),
+            glm::value_ptr(scale));
+
+        // update the object
+        t->x = translation.x;
+        t->y = translation.y;
+        t->z = translation.z;
+        t->rotation = rotation.z;
+        t->scaleX = scale.x;
+        t->scaleY = scale.y;
+        t->scaleZ = scale.z;
+
+        // if collider size set to auto-fit, update its size to match mesh size
+        if (CollisionInfo* collision = selected->getComponent<CollisionInfo>()) {
+            if (collision->autoFitScale) {
+                collision->colliderSize.x = t->scaleX;
+                collision->colliderSize.y = t->scaleY;
+            }
+        }
+    }
+
+    /*DebugLog::addMessage(
+        "Gizmo - Op: " + std::to_string(m_gizmoState.currentOp) +
+        ", Mode: " + std::to_string(m_gizmoState.currentMode) +
+        ", IsOver: " + std::to_string(ImGuizmo::IsOver()) +
+        ", IsUsing: " + std::to_string(ImGuizmo::IsUsing()) +
+        ", Bounds: " + std::to_string(m_sceneWindowState.scenePos.x) + "," +
+        std::to_string(m_sceneWindowState.scenePos.y) + " " +
+        std::to_string(m_sceneWindowState.sceneSize.x) + "x" +
+        std::to_string(m_sceneWindowState.sceneSize.y) + "\n"
+    );*/
 }
 
 void SceneWindow::newScene(GameObjectManager& manager) {

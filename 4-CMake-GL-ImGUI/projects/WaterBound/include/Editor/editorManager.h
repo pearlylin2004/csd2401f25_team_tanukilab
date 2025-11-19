@@ -104,11 +104,12 @@ private:
 
 class InspectorWindow {
 public:
-	InspectorWindow(Editor::ObjSelectionState& Ostate);
+	InspectorWindow(Editor::ObjSelectionState& Ostate, Editor::GizmoState& gState);
 	void render(GameObjectManager& manager);
 
 private:
 	void addComponent(GameObject* selected);
+	void renderGizmoCtrl();
 	void renderTransform(Transform* transform, CollisionInfo* collision);
 	void renderRender(Render* render, GameObject* selected, Animation* animation);
 	void renderCollision(CollisionInfo* collision, Transform* transform, GameObject* selected);
@@ -117,6 +118,7 @@ private:
 	void renderFont(FontComponent* font);
 
 	Editor::ObjSelectionState& m_objSelectionState;
+	Editor::GizmoState& m_gizmoState;
 };
 
 class MenuBar {
@@ -154,11 +156,14 @@ public:
 
 class SceneWindow {
 public:
-	SceneWindow(AssetBrowser& aBrowser, Editor::ObjSelectionState& Ostate, Editor::MenuBarState& Mstate, Editor::SceneWindowState& Sstate, Editor::SceneState& sceneState);
+	SceneWindow(AssetBrowser& aBrowser, Editor::ObjSelectionState& Ostate, Editor::MenuBarState& Mstate, Editor::SceneWindowState& Sstate, Editor::SceneState& sceneState, Editor::GizmoState& gizmoState);
 
 	void render(GLuint texture, float aspectRatio, GameObjectManager& manager);
 
 	std::string getCurrentSceneName() const { return m_sceneState.currentSceneName; }
+
+	// reusable func to clear obj selections
+	void resetSelection();
 
 private:
 	void newScene(GameObjectManager& manager);
@@ -175,22 +180,21 @@ private:
 	void loadScenePopup(GameObjectManager& manager);
 	/* -------- END -------- */
 
+	void renderGizmo(GameObjectManager& manager);
+
 	/* -------- Object Click and Drag -------- */
 	// handle click and select logic and collision
 	void objPicking(GameObjectManager& manager);
-
 	// handle dragging of the obj (obj will follow cursor)
 	void objDragging() const;
 	/* -------- END -------- */
-
-	// reusable func to clear obj selections
-	void resetSelection();
 
 	AssetBrowser& m_assetBrowser;
 	Editor::ObjSelectionState& m_objSelectionState;
 	Editor::MenuBarState& m_menuBarState;
 	Editor::SceneWindowState& m_sceneWindowState;
 	Editor::SceneState& m_sceneState;
+	Editor::GizmoState& m_gizmoState;
 };
 
 
