@@ -852,6 +852,10 @@ void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime, M
 			if (bullet != nullptr && InputHandler::isKeyTriggered(GLFW_KEY_SPACE)) {
 				PhysicsForces::shoot(bullet, transform);
 				messageBus.publish(Message("KeyPressed", nullptr, KeyEvent{ "SPACE", true }));
+				if (bullet && bullet->hasComponent<AudioComponent>()) {
+					AudioComponent * audio = bullet->getComponent<AudioComponent>();
+					audio->isPendingPlay = true;
+				}
 			}
 
 			float targetVelX = 0.0f;
@@ -1243,5 +1247,156 @@ void LogicSystem::update(GameObjectManager& manager, float const& dt) {
 		if (!go->hasComponent<Transform>() || !go->hasComponent<Physics>()) continue;
 
 		container.update(*go, dt, manager); 
+	}
+}
+
+void AudioSystem::init(GameObjectManager& manager) {
+	auto start = std::chrono::high_resolution_clock::now();
+
+	std::vector<GameObject*> gameObjects;
+	manager.getAllGameObjects(gameObjects);
+
+	AudioHandler& audioHandler = AudioHandler::getInstance();
+
+	for (GameObject* obj : gameObjects) {
+		if (!obj->hasComponent<AudioComponent>()) continue;
+
+		AudioComponent* audio = obj->getComponent<AudioComponent>();
+
+		// Play on start 
+		if (audio->playOnStart) {
+			audio->channel = audioHandler.playSound(audio->soundId, audio->volume);
+			if (audio->channel) {
+				audio->state = AudioState::Playing;
+
+				// Apply fade in
+				if (audio->fadeInOnStart) {
+					audioHandler.fadeIn(audio->soundId, audio->volume, audio->fadeInDuration);
+				}
+
+				// Apply pitch
+				if (audio->pitch != 1.0f) {
+					audioHandler.setSoundpitch(audio->soundId, audio->pitch);
+				}
+
+				// Apply mute state
+				if (audio->muted) {
+					audioHandler.muteSound(audio->soundId);
+				}
+			}
+		}
+	}
+
+	auto end = std::chrono::high_resolution_clock::now();
+	double ms = std::chrono::duration<double, std::milli>(end - start).count();
+	g_SystemTimers.push_back({ "Audio Init", ms });
+}
+
+void AudioSystem::update(GameObjectManager& manager, float deltaTime) {
+	auto start = std::chrono::high_resolution_clock::now();
+
+	std::vector<GameObject*> gameObjects;
+	manager.getAllGameObjects(gameObjects);
+
+	AudioHandler& audioHandler = AudioHandler::getInstance();
+
+	for (GameObject* obj : gameObjects) {
+		if (!obj->hasComponent<AudioComponent>()) continue;
+
+		AudioComponent* audio = obj->getComponent<AudioComponent>();
+
+		if (audio->soundId == soundID::bg && audio->playOnStart) {
+			if (!audio->channel || !audioHandler.isSoundPlaying(audio->soundId)) {
+				// Restart background music if  not playing
+				audio->channel = audioHandler.playSound(audio->soundId, audio->volume);
+				if (audio->channel) {
+					audio->state = AudioState::Playing;
+					audioHandler.setSoundpitch(audio->soundId, audio->pitch);
+					if (audio->muted) {
+						audioHandler.muteSound(audio->soundId);
+					}
+				}
+			}
+		}
+		processAudioComponent(obj, audio, deltaTime);
+	}
+
+	auto end = std::chrono::high_resolution_clock::now();
+	double ms = std::chrono::duration<double, std::milli>(end - start).count();
+	g_SystemTimers.push_back({ "Audio", ms });
+}
+
+void AudioSystem::processAudioComponent(GameObject* obj, AudioComponent* audio, float deltaTime) {
+	(void)deltaTime;
+	AudioHandler& audioHandler = AudioHandler::getInstance();
+
+
+	if (audio->isPendingPlay) {
+		audio->isPendingPlay = false;
+
+		audio->channel = audioHandler.playSound(audio->soundId, audio->volume);
+		if (audio->channel) {
+			audio->state = AudioState::Playing;
+
+
+			if (audio->fadeInOnStart) {
+				audioHandler.fadeIn(audio->soundId, audio->volume, audio->fadeInDuration);
+			}
+
+			if (audio->pitch != 1.0f) {
+				audioHandler.setSoundpitch(audio->soundId, audio->pitch);
+			}
+
+			if (audio->muted) {
+				audioHandler.muteSound(audio->soundId);
+			}
+		}
+	}
+
+	if (audio->isPendingStop) {
+		audio->isPendingStop = false;
+
+		if (audio->fadeOutOnStop && audio->state == AudioState::Playing) {
+			audioHandler.fadeOut(audio->soundId, audio->fadeOutDuration);
+		}
+		else {
+			audioHandler.stopSound(audio->soundId);
+			audio->channel = nullptr;
+			audio->state = AudioState::Stopped;
+		}
+	}
+
+	// Update state 
+	if (audio->channel && audio->state == AudioState::Playing) {
+		if (!audioHandler.isSoundPlaying(audio->soundId)) {
+			audio->state = AudioState::Stopped;
+			audio->channel = nullptr;
+		}
+	}
+
+	if (audio->state == AudioState::Playing && audio->channel) {
+		// Check if paused 
+		if (audioHandler.isSoundPaused(audio->soundId)) {
+			audio->state = AudioState::Paused;
+		}
+	}
+}
+
+void AudioSystem::cleanup(GameObjectManager& manager) {
+	std::vector<GameObject*> gameObjects;
+	manager.getAllGameObjects(gameObjects);
+
+	AudioHandler& audioHandler = AudioHandler::getInstance();
+
+	for (GameObject* obj : gameObjects) {
+		if (!obj->hasComponent<AudioComponent>()) continue;
+
+		AudioComponent* audio = obj->getComponent<AudioComponent>();
+
+		if (audio->state == AudioState::Playing || audio->state == AudioState::Paused) {
+			audioHandler.stopSound(audio->soundId);
+			audio->channel = nullptr;
+			audio->state = AudioState::Stopped;
+		}
 	}
 }

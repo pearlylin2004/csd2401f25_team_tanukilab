@@ -29,7 +29,17 @@
           "hasAnimation": 0,
           "clr": [ 1.0, 1.0, 1.0 ]
         },
-        "Physics": { "inWater": 0, "buoyancy": 0 }
+        "Physics": { "inWater": 0, "buoyancy": 0 },
+	"AudioComponent": {
+          "soundId": "shoot",
+          "volume": 0.8,
+          "playOnStart": 0,
+	  "fadeInOnStart": 1,
+          "fadeInDuration": 0.2,
+          "fadeOutOnStop": 1,
+          "fadeOutDuration": 0.5
+        }
+
       }
     },
     {

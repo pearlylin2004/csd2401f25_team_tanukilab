@@ -163,3 +163,13 @@ class LogicSystem {
 public:
 	void update(GameObjectManager& manager, const float& deltaTime);
 };
+
+class AudioSystem {
+public:
+	void init(GameObjectManager & manager);
+	void update(GameObjectManager& manager, float deltaTime);
+	void cleanup(GameObjectManager& manager);
+
+private:
+	void processAudioComponent(GameObject* obj, AudioComponent* audio, float deltaTime);
+};

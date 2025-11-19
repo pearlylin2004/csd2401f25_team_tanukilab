@@ -191,7 +191,24 @@ static const char* playerStateToStr(PlayerState state) {
 	}
 }
 
+inline soundID strToSoundID(const std::string& str) {
+	if (str == "water") return soundID::water;
+	if (str == "shoot") return soundID::shoot;
+	if (str == "fire") return soundID::fire;
+	if (str == "bg") return soundID::bg;
+	return soundID::water; // default fallback
+}
 
+// Add this helper function to convert soundID to string
+inline const char* soundIDToStr(soundID id) {
+	switch (id) {
+		case soundID::water: return "water";
+		case soundID::shoot: return "shoot";
+		case soundID::fire: return "fire";
+		case soundID::bg: return "bg";
+		default: return "water";
+	}
+}
 
 /*!
 \brief Loads a scene from a JSON file and rebuilds all game objects.
@@ -521,6 +538,73 @@ void GameObjectManager::loadSceneFromJson(const std::string& filename) {
 			}
 
 			
+		}
+
+		if (comps.HasMember("AudioComponent") && comps["AudioComponent"].IsObject()) {
+				const auto & ja = comps["AudioComponent"];
+
+			auto* audio = go->getComponent<AudioComponent>();
+			if (!audio) {
+				// Create with default sound ID
+				audio = go->addComponent<AudioComponent>();
+			}
+
+			// Load sound ID from string
+			if (ja.HasMember("soundId") && ja["soundId"].IsString()) {
+				audio->soundId = strToSoundID(ja["soundId"].GetString());
+			}
+
+			// Volume
+			if (ja.HasMember("volume") && ja["volume"].IsNumber()) {
+				audio->volume = ja["volume"].GetFloat();
+			}
+
+			// Pitch
+			if (ja.HasMember("pitch") && ja["pitch"].IsNumber()) {
+				audio->pitch = ja["pitch"].GetFloat();
+			}
+
+			// Loop
+			if (ja.HasMember("loop")) {
+				audio->loop = ja["loop"].IsBool()
+					? ja["loop"].GetBool()
+					: (ja["loop"].GetInt() != 0);
+			}
+
+			// Play on start
+			if (ja.HasMember("playOnStart")) {
+				audio->playOnStart = ja["playOnStart"].IsBool()
+					? ja["playOnStart"].GetBool()
+					: (ja["playOnStart"].GetInt() != 0);
+			}
+
+			// Muted
+			if (ja.HasMember("muted")) {
+				audio->muted = ja["muted"].IsBool()
+					? ja["muted"].GetBool()
+					: (ja["muted"].GetInt() != 0);
+			}
+
+			// Fade settings
+			if (ja.HasMember("fadeInOnStart")) {
+				audio->fadeInOnStart = ja["fadeInOnStart"].IsBool()
+					? ja["fadeInOnStart"].GetBool()
+					: (ja["fadeInOnStart"].GetInt() != 0);
+			}
+
+			if (ja.HasMember("fadeInDuration") && ja["fadeInDuration"].IsNumber()) {
+				audio->fadeInDuration = ja["fadeInDuration"].GetFloat();
+			}
+
+			if (ja.HasMember("fadeOutOnStop")) {
+				audio->fadeOutOnStop = ja["fadeOutOnStop"].IsBool()
+					? ja["fadeOutOnStop"].GetBool()
+					: (ja["fadeOutOnStop"].GetInt() != 0);
+			}
+
+			if (ja.HasMember("fadeOutDuration") && ja["fadeOutDuration"].IsNumber()) {
+				audio->fadeOutDuration = ja["fadeOutDuration"].GetFloat();
+			}
 		}
 		
 	}
@@ -861,6 +945,51 @@ void GameObjectManager::saveSceneToJson(const std::string& filename, bool isNew)
 				jf.AddMember("fontType", rapidjson::Value(fc->fontType), a);
 
 				comps.AddMember("FontComponent", jf, a);
+			}
+
+			if (auto ac = obj->getComponent<AudioComponent>()) {
+				rapidjson::Value jac(rapidjson::kObjectType);
+				const rapidjson::Value* prefabAC = PM.getPrefabJsonComp(prefabDoc, "AudioComponent");
+
+				auto pushIfDiffStr = [&](const char* key, const char* val) {
+					if (!prefabAC || !prefabAC->HasMember(key) ||
+						std::strcmp((*prefabAC)[key].GetString(), val) != 0) {
+						jac.AddMember(rapidjson::Value(key, a),
+							rapidjson::Value(val, a), a);
+					}
+				};
+
+				auto pushIfDiffFloat = [&](const char* key, float val) {
+					if (!prefabAC || !prefabAC->HasMember(key) ||
+						differsFloat((*prefabAC)[key].GetFloat(), val)) {
+						jac.AddMember(rapidjson::Value(key, a),
+							rapidjson::Value(val), a);
+					}
+				};
+
+				auto pushIfDiffBool = [&](const char* key, bool val) {
+					if (!prefabAC || !prefabAC->HasMember(key) ||
+						((*prefabAC)[key].IsBool() && differsBool((*prefabAC)[key].GetBool(), val)) ||
+						((*prefabAC)[key].IsInt() && differsBool((*prefabAC)[key].GetInt() != 0, val))) {
+						jac.AddMember(rapidjson::Value(key, a),
+							rapidjson::Value(val ? 1 : 0), a);
+					}
+				};
+
+				pushIfDiffStr("soundId", soundIDToStr(ac->soundId));
+				pushIfDiffFloat("volume", ac->volume);
+				pushIfDiffFloat("pitch", ac->pitch);
+				pushIfDiffBool("loop", ac->loop);
+				pushIfDiffBool("playOnStart", ac->playOnStart);
+				pushIfDiffBool("muted", ac->muted);
+				pushIfDiffBool("fadeInOnStart", ac->fadeInOnStart);
+				pushIfDiffFloat("fadeInDuration", ac->fadeInDuration);
+				pushIfDiffBool("fadeOutOnStop", ac->fadeOutOnStop);
+				pushIfDiffFloat("fadeOutDuration", ac->fadeOutDuration);
+
+				if (!jac.ObjectEmpty()) {
+					comps.AddMember("AudioComponent", jac, a);
+				}
 			}
 
 			if (!comps.ObjectEmpty()) jObj.AddMember("components", comps, a);
