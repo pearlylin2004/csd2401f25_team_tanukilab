@@ -287,13 +287,106 @@ namespace Collision {
     }
 
     //circle to circle
-    /*bool CollisionIntersection_CircleCircle_Static(const Circle& c1, const Circle& c2) {
+    bool CollisionIntersection_CircleCircle_Static(const Circle& c1, const Circle& c2) {
+        //get radius
+        float radius1 = c1.getRadius();
+        float radius2 = c2.getRadius();
+        //get center
+		const Vector2D& center1 = c1.getCenter();
+		const Vector2D& center2 = c2.getCenter();
 
+		//distance between centers x and y
+		float dx = center2.x - center1.x;
+		float dy = center2.y - center1.y;
+		//distance squared so dont need to square root
+        float distSq = dx * dx + dy * dy;
+		float radiusSum = radius1 + radius2;
+        
+        return distSq <= radiusSum * radiusSum + EPSILON;
     }
 
     CollisionInfo CollisionIntersection_CircleCircle_Dynamic_Info(const Circle& c1, const Vector2D& velC1, const Circle& c2, const Vector2D& velC2) {
+        CollisionInfo info;
+        info.collided = false;
+        info.timeOfImpact = static_cast<float>(g_dt);
+        info.normal = { 0, 0 };
+        info.contactPoint = { 0, 0 };
+        info.penetration = 0.0f;
 
-    }*/
+		//relative positions and velocities
+        Vector2D s = Vec_Sub(&c1.getCenter(), &c2.getCenter()); //vector from c2 to c1
+        Vector2D v = Vec_Sub(&velC1, &velC2);                   //relative velocity from c2 to c1
+        float rSum = c1.getRadius() + c2.getRadius();
+        
+        float sDotS = Vec_Dot(&s, &s);  //squared distance between centers
+        float rSumSq = rSum * rSum;     //squared sum of r
+
+        if (sDotS <= rSumSq + EPSILON) {
+            info.collided = true;
+            info.timeOfImpact = 0.0f;
+            Vector2D n = s;
+            if (Vec_Length(&n) <= EPSILON) {
+                n = Vector2D{ 1.0f, 0.0f }; // fallback if centers coincide
+            }
+            else {
+                n = Vec_Normalize(&n); // normalize to unit vector
+            }
+            info.normal = n;
+            Vector2D scaledNormal = Vec_Scale(&n, c1.getRadius());
+            info.contactPoint = Vec_Sub(&c1.getCenter(), &scaledNormal);
+            return info;
+        }
+
+        //to get the quadratic equation
+        float a = Vec_Dot(&v, &v); 
+        if (a <= EPSILON) {
+            info.collided = false; //no collide
+            return info;
+        }
+        
+        float b = 2.0f * Vec_Dot(&s, &v);
+        float c = sDotS - rSumSq;
+
+        float discriminant = b * b - 4.0f * a * c;
+        if (discriminant < 0.0f) {
+            info.collided = false; //no collide
+            return info;
+        }
+        float sqrtD = std::sqrt(discriminant);
+        float t1 = (-b - sqrtD) / (2.0f * a);
+        float t2 = (-b + sqrtD) / (2.0f * a);
+        float toi = INFINITY;
+        if (t1 >= 0.0f && t1 <= static_cast<float>(g_dt)) toi = t1;
+        else if (t2 >= 0.0f && t2 <= static_cast<float>(g_dt)) toi = t2;
+
+        if (!std::isfinite(toi)) {
+            info.collided = false;
+            return info;
+        }
+		//normal at contact
+		Vector2D vScale1 = Vec_Scale(&velC1, toi);
+		Vector2D vScale2 = Vec_Scale(&velC2, toi);
+        Vector2D c1AtT = Vec_Add(&c1.getCenter(), &vScale1);
+        Vector2D c2AtT = Vec_Add(&c2.getCenter(), &vScale2);
+
+        Vector2D normal = Vec_Sub(&c1AtT, &c2AtT);
+        if (Vec_Length(&normal) <= EPSILON) {
+            normal = Vector2D{ 1.0f, 0.0f }; //fall back
+        }
+        else {
+            normal = Vec_Normalize(&normal);
+        }
+        info.normal = normal;
+
+        //contact point 
+		Vector2D cpScale = Vec_Scale(&normal, c1.getRadius());
+        info.contactPoint = Vec_Sub(&c1AtT, &cpScale);
+
+        info.collided = true;
+        info.timeOfImpact = toi;
+        info.penetration = 0.0f;
+        return info;
+    }
 
     //remove normal ... when object hit the wall
     static inline Vector2D RemoveNormalComponent(const Vector2D& v, const Vector2D& n) {
@@ -370,4 +463,15 @@ namespace Collision {
             return;
         }
     }
+
+    /*void Resolve_Circle_Circle(Collision::Circle& c1, Vector2D& velC1, float massC1,
+        Collision::Circle& c2, Vector2D& velC2, float massC2,
+        const CollisionInfo& info, CollisionResponseMode mode) {
+
+        if (!info.collided) return;
+
+        //move to contact
+        Vector2D deltaC1 = Vec_Scale(&velC1, info.timeOfImpact);
+        Vector2D deltaC2 = Vec_Scale(&velC2, info.timeOfImpact);
+    }*/
 }

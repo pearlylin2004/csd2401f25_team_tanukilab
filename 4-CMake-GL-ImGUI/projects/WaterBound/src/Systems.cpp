@@ -313,7 +313,7 @@ void RenderSystem::update(GameObjectManager& manager, float const& deltaTime)
 	//record end time for performance tracking
 	auto end = std::chrono::high_resolution_clock::now();
 	double ms = std::chrono::duration<double, std::milli>(end - start).count(); //get elapse time in ms
-	g_SystemTimers.push_back({ "Render", ms }); //saving timing for UI output
+	g_SystemTimers.push_back({"Render", ms }); //saving timing for UI output
 }
 
 void RenderSystem::unbindFBO() {
@@ -664,6 +664,8 @@ void FontSystem::update(GameObjectManager& manager)
 	//for debugging only
 
 	//std::cout << "=== FontSystem::update() called ===" << std::endl;
+	//record current time for performance tracking
+	auto start = std::chrono::high_resolution_clock::now();
 
 	std::vector<GameObject*> gameObjects;
 	manager.getAllGameObjects(gameObjects);
@@ -712,6 +714,10 @@ void FontSystem::update(GameObjectManager& manager)
 		}
 	}
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+	auto end = std::chrono::high_resolution_clock::now();
+	double ms = std::chrono::duration<double, std::milli>(end - start).count(); //get elapse time in ms
+	g_SystemTimers.push_back({ "Font", ms }); //saving timing for UI output
 }
 
 void FontSystem::RenderText(GLuint& s, std::string text, float x, float y, float scale, glm::vec3 color, GameObject* object)
@@ -848,7 +854,7 @@ void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime, M
 				messageBus.publish(Message("KeyPressed", nullptr, KeyEvent{ "SPACE", true }));
 			}
 
-			float targetVelX = 0.0f;
+float targetVelX = 0.0f;
 
 			if (InputHandler::isKeyHeld(GLFW_KEY_A)) {
 				physics->canMove = true;
@@ -860,33 +866,33 @@ void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime, M
 				messageBus.publish(Message("KeyPressed", nullptr, KeyEvent{ "D", true }));
 			}
 
-			physics->dynamics.velocity.x = targetVelX;
+physics->dynamics.velocity.x = targetVelX;
 
-			// Jump
-			if (InputHandler::isKeyTriggered(GLFW_KEY_B)) {
-				PhysicsForces::jump(object);
-				messageBus.publish(Message("KeyPressed", nullptr, KeyEvent{ "B", true }));
-			}
+// Jump
+if (InputHandler::isKeyTriggered(GLFW_KEY_B)) {
+	PhysicsForces::jump(object);
+	messageBus.publish(Message("KeyPressed", nullptr, KeyEvent{ "B", true }));
+}
 
 
-			if (transform->y < physics->floorY /* temp for obj auto move*/ && !object->checkAutoMove()) {
-				transform->y = physics->floorY;
-				physics->velY = 0.0f;
-				physics->onGround = true;
-				physics->velX = 0.0f;
-			}
-			transform->x += physics->velX * deltaTime;
+if (transform->y < physics->floorY /* temp for obj auto move*/ && !object->checkAutoMove()) {
+	transform->y = physics->floorY;
+	physics->velY = 0.0f;
+	physics->onGround = true;
+	physics->velX = 0.0f;
+}
+transform->x += physics->velX * deltaTime;
 
 		}
-			/* ----- TEMPORARY FOR MOVING THE SPAWNED OBJ AUTO ----- */
-			if (object->checkAutoMove()) {
+		/* ----- TEMPORARY FOR MOVING THE SPAWNED OBJ AUTO ----- */
+		if (object->checkAutoMove()) {
 
-				transform->y += physics->dynamics.velocity.y * deltaTime;
-				transform->x += physics->dynamics.velocity.x * deltaTime;
-			}
-			/* ----- TEMP END ----- */
+			transform->y += physics->dynamics.velocity.y * deltaTime;
+			transform->x += physics->dynamics.velocity.x * deltaTime;
+		}
+		/* ----- TEMP END ----- */
 
-		// Update bullet separately if it exists
+	// Update bullet separately if it exists
 		if (bullet != nullptr && bullet->hasComponent<Physics>() && bullet->hasComponent<Transform>()) {
 			Transform* bulletTransform = bullet->getComponent<Transform>();
 			Physics* bulletPhysics = bullet->getComponent<Physics>();
@@ -900,53 +906,42 @@ void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime, M
 			bulletTransform->x = bulletPhysics->dynamics.position.x;
 			bulletTransform->y = bulletPhysics->dynamics.position.y;
 		}
-
-		auto end = std::chrono::high_resolution_clock::now();
-		double ms = std::chrono::duration<double, std::milli>(end - start).count();
-		g_SystemTimers.push_back({ "Physics", ms });
 	}
+	auto end = std::chrono::high_resolution_clock::now();
+	double ms = std::chrono::duration<double, std::milli>(end - start).count();
+	g_SystemTimers.push_back({ "Physics", ms });
 }
 
 
 // Collision system - detects and resolves collisions between game objects
 void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime) {
 	(void)deltaTime;
-	//record current time for performance tracking
-	auto start = std::chrono::high_resolution_clock::now();
+	double ms = 0.0;
 
 	//get layer manager
 	LayerManager& layerManager = manager.getLayerManager();
-
 	std::vector<Layer*> layers = layerManager.getAllLayers();
 
 	//process each layer separately
-	//rn only layer 1 should have any sort of collision
-	for(Layer* layer : layers){
-	
-
-
+	//right now only layer 1 should have any sort of collision
+	for (Layer* layer : layers) {
+		//skip missing layer
 		if (!layer) {
-			auto end = std::chrono::high_resolution_clock::now();
+			/*auto end = std::chrono::high_resolution_clock::now();
 			double ms = std::chrono::duration<double, std::milli>(end - start).count();
-			g_SystemTimers.push_back({ "Collisions", ms });
+			g_SystemTimers.push_back({ "Collisions", ms })*/
 			std::cerr << "CollisionSystem::update() - Layer " << layer->getLayerID() << " not found!\n";
 			return;
 		}
 
-
 		const std::vector<GameObject*>& layerObjects = layer->getObjects();
-
-		//we dont do this anymore cus we got them layersss
-		//getting all objects
-		/*std::vector<GameObject*> gameObjects;
-		manager.getAllGameObjects(gameObjects);*/
 
 		//create grid
 		const float CELL_SIZE = 2.0f;
 		const int GRID_WIDTH = 20;
 		const int GRID_HEIGHT = 20;
 		std::vector<std::vector<Collision::Cell>> grid(GRID_WIDTH, std::vector<Collision::Cell>(GRID_HEIGHT));
-		
+
 
 		for (GameObject* obj : layerObjects) {
 			if (!obj->getComponent<CollisionInfo>() || !obj->hasComponent<Transform>()) continue;
@@ -954,13 +949,19 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 			if (!c->collisionFlag) continue; // skip if obj not supposed to collide
 
 			Transform* objT = obj->getComponent<Transform>();
+			Render* renderS = obj->getComponent<Render>();
 			//Collision::AABB box = Collision::getObjectAABB(objT);
-			Collision::AABB box = Collision::getObjectAABBbyCollider(objT, c->colliderSize); // use customized collider instead of scale
-
-			int minCellX = static_cast<int>(box.getMin().x / CELL_SIZE);
-			int maxCellX = static_cast<int>(box.getMax().x / CELL_SIZE);
-			int minCellY = static_cast<int>(box.getMin().y / CELL_SIZE);
-			int maxCellY = static_cast<int>(box.getMax().y / CELL_SIZE);
+			int minCellX, maxCellX, minCellY, maxCellY;
+			if (renderS->modelRef.shape != shape::square){
+				Collision::AABB box = Collision::getObjectAABBbyCollider(objT, c->colliderSize); // use customized collider instead of scale
+				minCellX = static_cast<int>(box.getMin().x / CELL_SIZE);
+				maxCellX = static_cast<int>(box.getMax().x / CELL_SIZE);
+				minCellY = static_cast<int>(box.getMin().y / CELL_SIZE);
+				maxCellY = static_cast<int>(box.getMax().y / CELL_SIZE);
+			}
+			else if (renderS->modelRef.shape != shape::circle) {
+				//need one for circle
+			}
 
 			//clamp to grid boundaries so it dont go out the valid range of grid
 			minCellX = std::max(0, std::min(minCellX, GRID_WIDTH - 1));
@@ -977,9 +978,12 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 		}
 
 		//temporary container to track checked objects for this frame
+		//to advoid duplicate checks
 		std::unordered_map<GameObject*, std::vector<GameObject*>> checked;
 
 		//checking collision 
+		//record current time for performance tracking
+		auto start = std::chrono::high_resolution_clock::now();
 		for (int i = 0; i < GRID_WIDTH; i++) {
 			for (int j = 0; j < GRID_HEIGHT; j++) {
 				auto& cellObject = grid[i][j].objects; //get objects in the cell
@@ -990,8 +994,8 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 					GameObject* obj1 = cellObject[n];
 					if (!obj1->hasComponent<Physics>()) continue;
 					Transform* t1 = obj1->getComponent<Transform>();
-					//Collision::AABB aabb1 = Collision::getObjectAABB(t1);
-					Collision::AABB aabb1 = Collision::getObjectAABBbyCollider(t1, obj1->getComponent<CollisionInfo>()->colliderSize);
+					//to get obj1 shape
+					Render* render1 = obj1->getComponent<Render>();
 					Physics* p1 = obj1->getComponent<Physics>();
 					Vector2D vel1{ p1->dynamics.velocity.x, p1->dynamics.velocity.y };
 					//object 2 looping
@@ -1006,28 +1010,46 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 						//mark as checked both ways
 						checked[obj1].push_back(obj2);
 						checked[obj2].push_back(obj1);
-
 						Transform* t2 = obj2->getComponent<Transform>();
-						//Collision::AABB aabb2 = Collision::getObjectAABB(t2);
-						Collision::AABB aabb2 = Collision::getObjectAABBbyCollider(t2, obj2->getComponent<CollisionInfo>()->colliderSize);
+						//to get obj1 shape
+						Render* render2 = obj2->getComponent<Render>();
 						Physics* p2 = obj2->getComponent<Physics>();
 						Vector2D vel2{ p2->dynamics.velocity.x, p2->dynamics.velocity.y };
 
-						CollisionInfo info = Collision::CollisionIntersection_RectRect_Dynamic_Info(aabb1, vel1, aabb2, vel2);
-					
+						//check collision based on shape
+						//check obj1 shape 
+						if (!render1 || !t1) return;
+						//check obj2 shape 
+						if (!render2 || !t2) return;
+
+						//collision info
+						CollisionInfo info;
+						//if both square
+						if (render1->modelRef.shape != shape::square && render2->modelRef.shape != shape::square) {
+							//Collision::AABB aabb1 = Collision::getObjectAABB(t1);
+							Collision::AABB aabb1 = Collision::getObjectAABBbyCollider(t1, obj1->getComponent<CollisionInfo>()->colliderSize);
+							//Collision::AABB aabb2 = Collision::getObjectAABB(t2);
+							Collision::AABB aabb2 = Collision::getObjectAABBbyCollider(t2, obj2->getComponent<CollisionInfo>()->colliderSize);
+							info = Collision::CollisionIntersection_RectRect_Dynamic_Info(aabb1, vel1, aabb2, vel2);
+						}
+						//if both circle
+						else if (render1->modelRef.shape == shape::circle && render2->modelRef.shape == shape::circle) {
+							Collision::Circle circle1 = Collision::getObjectCircle(t1);
+							Collision::Circle circle2 = Collision::getObjectCircle(t2);
+							info = Collision::CollisionIntersection_CircleCircle_Dynamic_Info(circle1, vel1, circle2, vel2);
+						}
+
 						//checking if collided
 						if (info.collided && p1->physicsFlag && p2->physicsFlag) {
 							//update the velocity and penetrations for BOTH objects
 							if (info.normal.x != 0) {
 								//can think about momentum in the future
-
 								t1->x += info.normal.x * info.penetration * 0.5f;
 								//p1->dynamics.velocity.x = 0;
 
 								t2->x -= info.normal.x * info.penetration * 0.5f;
 								//p2->dynamics.velocity.x = 0;
 							}
-
 							// resolve Y
 							if (info.normal.y != 0) {
 								t1->y += info.normal.y * info.penetration * 0.5f;
@@ -1041,21 +1063,18 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 								if (info.normal.y > 0) {
 									p1->onGround = true;
 								}
-
 							}
-							
 							DebugLog::addMessage("Collision detected between Object.\n", DebugMode::PlaySimul); //message for debugger
-
 						}
+						//if no collision
 						else { p1->onGround = false; }
 					}
-					
 				}
 			}
 		}
+		auto end = std::chrono::high_resolution_clock::now();
+		ms += std::chrono::duration<double, std::milli>(end - start).count(); //get elapse time in ms
 	}
-	auto end = std::chrono::high_resolution_clock::now();
-	double ms = std::chrono::duration<double, std::milli>(end - start).count(); //get elapse time in ms
 	g_SystemTimers.push_back({ "Collisions", ms }); //saving timing for UI output
 }
 
@@ -1121,7 +1140,7 @@ void UISystem::update(GameObjectManager& manager) {
 
 	auto end = std::chrono::high_resolution_clock::now();
 	double ms = std::chrono::duration<double, std::milli>(end - start).count(); //get elapse time in ms
-	g_SystemTimers.push_back({ "IMGUI", ms }); //saving timing for UI output
+	g_SystemTimers.push_back({"IMGUI", ms }); //saving timing for UI output
 }
 
 void UISystem::dockingSetUp() {

@@ -28,6 +28,7 @@ Technology is prohibited.
 
 #include "AudioUtility.h"
 #include "ResourceManager.h"
+#include "performance.h"
 
 enum class soundID : int {
 	water = 0,
@@ -86,6 +87,10 @@ public:
 
 	// set a specific pitch
 	void setSoundpitch(soundID id, float pitch); // 0.5f (half speed) to 2.0f (double speed)
+
+	//pause and resume
+	void pauseAll();
+	void resumeAll();
 
 	// perform error check for FMOD functions
 	// moved to AudioUtility.h

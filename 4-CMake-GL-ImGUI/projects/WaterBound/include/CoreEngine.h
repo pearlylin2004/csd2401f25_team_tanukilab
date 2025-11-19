@@ -48,6 +48,9 @@ public:
     // Shuts down all engine systems
     void Shutdown();
 
+    //for resume and pause
+    static void windowIconifyCallback(GLFWwindow* window, int iconified);
+
 private:
     void GameLoop();
     void Update(float deltaTime);
@@ -74,5 +77,4 @@ private:
     std::unique_ptr<GUISystem> m_guiSystem;
     std::unique_ptr<MessageBus> m_messageBus;
     std::unique_ptr<PlayerControllerSystem> m_playerController;
-
 };

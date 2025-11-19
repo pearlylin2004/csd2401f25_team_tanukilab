@@ -34,8 +34,8 @@ Technology is prohibited.
 enum class shape
 {
 	square = 0,
-	circle,
-	triangle
+	circle = 1,
+	triangle = 2,
 };
 
 /*!***********************************************************************
