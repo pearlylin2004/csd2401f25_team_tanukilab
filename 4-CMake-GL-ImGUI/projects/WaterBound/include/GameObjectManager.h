@@ -21,11 +21,11 @@ Technology is prohibited.
 #include "GameObject.h"
 #include "layerManager.h"
 
-//idk why it workss here but
+/*//idk why it workss here but
 struct ButtonData {
 	glm::vec3 position;
 	glm::vec3 scale;
-};
+};*/
 
 // This class is responsible for creating, storing, and providing access to game objects.
 class GameObjectManager {
@@ -77,8 +77,8 @@ public:
 	void initializeSceneResources();
 	
 	// NEW: Get button data from loaded scene
-	const std::unordered_map<std::string, ButtonData>& getButtonData() const { return m_buttonData; }
-	bool hasButtonData() const { return !m_buttonData.empty(); }
+	//const std::unordered_map<std::string, ButtonData>& getButtonData() const { return m_buttonData; }
+	//bool hasButtonData() const { return !m_buttonData.empty(); }
 
 private:
 	//map of all game objects
@@ -86,5 +86,5 @@ private:
 
 	LayerManager m_layerManager;
 	
-	std::unordered_map<std::string, ButtonData> m_buttonData;
+	//std::unordered_map<std::string, ButtonData> m_buttonData;
 };

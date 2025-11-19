@@ -31,15 +31,15 @@ static std::string runtimeScenePath(std::string const& name) {
 }
 
 GUISystem::GUISystem() {
-    std::cout << "GUISystem constructor called" << std::endl;
+    std::cout << "[GUI] GUISystem constructor called" << std::endl;
 }
 
 GUISystem::~GUISystem() {
-    std::cout << "GUISystem destructor called" << std::endl;
+    std::cout << "[GUI] GUISystem destructor called" << std::endl;
 }
 
 void GUISystem::init(GameObjectManager& manager, LuaSystem& luaSystem) {
-    std::cout << "GUISystem::init started" << std::endl;
+    std::cout << "[GUI] GUISystem::init started" << std::endl;
 
     // Load the menu scene - this will populate button data in the manager
     manager.loadScene(runtimeScenePath("menu_scene.json"));
@@ -48,7 +48,7 @@ void GUISystem::init(GameObjectManager& manager, LuaSystem& luaSystem) {
 
     g_manager = &manager;
     g_luaSystem = &luaSystem;
-    std::cout << "GUISystem::init completed successfully" << std::endl;
+    std::cout << "[GUI] GUISystem::init completed successfully" << std::endl;
 }
 
 //update function to check for button clicking
@@ -115,7 +115,7 @@ void GUISystem::createButtons(GameObjectManager& manager) {
         m_buttons[name] = obj; //store button
     }
     m_buttonsCreated = !m_buttons.empty(); //buttons created if map is not empty
-    std::cout << "Menu buttons created successfully" << std::endl;
+    std::cout << "[GUI] Menu buttons created successfully" << std::endl;
 }
 
 //removing of buttons 
@@ -132,7 +132,7 @@ void GUISystem::removeMenuButtons(GameObjectManager& manager) {
 }
 
 void GUISystem::startGame(GameObjectManager& manager) {
-    std::cout << "Play button clicked - starting game" << std::endl;
+    std::cout << "[GUI] Play button clicked - starting game" << std::endl;
     
     // Remove menu buttons
     removeMenuButtons(manager);
@@ -166,12 +166,12 @@ void GUISystem::startGame(GameObjectManager& manager) {
             }
         }
     }
-    std::cout << "Game started - loaded json" << std::endl;
+    std::cout << "[GUI] Game started - loaded json" << std::endl;
 }
 
 //stop game and quit
 void GUISystem::stopGame(GameObjectManager& manager) {
-    std::cout << "Stop button clicked - quitting application" << std::endl;
+    std::cout << "[GUI] Stop button clicked - quitting application" << std::endl;
 
     // Close the GLFW window to exit the application
     GLFWwindow* window = glfwGetCurrentContext();
