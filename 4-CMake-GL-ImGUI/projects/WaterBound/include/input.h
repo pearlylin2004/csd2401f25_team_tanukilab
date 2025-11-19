@@ -120,9 +120,6 @@ public:
 
 	static void dropCallback(GLFWwindow* window, int count, const char** paths);
 
-	//to clear state
-	static void clearState();
-
 	// Add these to the public section
 	//static bool isMouseButtonClicked(int button);
 	//static Vector2D getMousePosition();

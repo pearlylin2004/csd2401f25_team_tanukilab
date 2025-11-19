@@ -412,26 +412,3 @@ void InputHandler::dropCallback(GLFWwindow* window, int count, const char** path
 		}
 	}
 }
-
-//clear state
-void InputHandler::clearState() {
-	//clear all key states
-	memset(m_keys, 0, sizeof(m_keys));
-	memset(m_keysPrevious, 0, sizeof(m_keysPrevious));
-
-	//clear mouse button states
-	memset(m_mouseButtons, 0, sizeof(m_mouseButtons));
-	memset(m_mouseButtonsPrevious, 0, sizeof(m_mouseButtonsPrevious));
-
-	//reset dragging states
-	memset(m_isDragging, 0, sizeof(m_isDragging));
-
-	for (int i = 0; i < 8; i++) m_mouseDragStartPos[i] = { 0.0f, 0.0f };
-
-	//reset mouse positions
-	m_mousePosition = { 0.0f, 0.0f };
-	m_mousePositionPrevious = { 0.0f, 0.0f };
-
-	//reset scroll
-	m_scrollOffset = 0.0f;
-}
