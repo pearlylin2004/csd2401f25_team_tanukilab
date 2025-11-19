@@ -101,9 +101,52 @@ void GUISystem::createButtons(GameObjectManager& manager) {
         return;
     }*/
 
-    std::cout << "Creating buttons..." << std::endl;
+    //clear previous references
+    m_playButton = nullptr;
+    m_stopButton = nullptr;
+    m_buttonsCreated = false;
 
-    // Create Play Button
+	//get all game objects from manager
+    std::vector<GameObject*> allObjs;
+    manager.getAllGameObjects(allObjs);
+
+	//loop through all objects to find buttons
+    for (GameObject* obj : allObjs)
+    {
+        if (!obj) continue;
+
+		//get object name
+        const std::string name = obj->getObjectName();
+        //only consider objects that have both transform and render
+        if (!obj->hasComponent<Transform>() || !obj->hasComponent<Render>()) continue;
+
+		Transform* t = obj->getComponent<Transform>(); // get transform
+		Render* r = obj->getComponent<Render>(); // get render
+
+        //find if its a button
+        bool isButton = r->hasTex || (name.find("_button") != std::string::npos);
+
+		if (!isButton) continue; //skip non buttons
+
+        //sssign object to layer 2
+        manager.assignObjectToLayer(obj, 2);
+
+        //register special buttons so existing click logic works
+        if (name == "play_button") {
+            m_playButton = obj;
+            std::cout << "[GUI] Registered play_button\n";
+        }
+        else if (name == "exit_button") {
+            m_stopButton = obj;
+            std::cout << "[GUI] Registered exit button: " << name << "\n";
+        }
+
+        std::cout << "[GUI] Created GUI button object: " << name
+            << " pos=(" << t->x << "," << t->y << "," << t->z << ")"
+            << " scale=(" << t->scaleX << "," << t->scaleY << ")\n";
+    }
+
+    /*// Create Play Button
     m_playButton = manager.createGameObject("play_button");
     if (!m_playButton) {
         std::cout << "ERROR: Failed to create play button!" << std::endl;
@@ -179,11 +222,11 @@ void GUISystem::createButtons(GameObjectManager& manager) {
         std::cout << "Stop button created with default data (no JSON data found)" << std::endl;
     }
 
-    manager.assignObjectToLayer(m_stopButton, 2);
+    manager.assignObjectToLayer(m_stopButton, 2);*/
 
     m_buttonsCreated = true;
     m_currentState = GameState::MENU;
-    std::cout << "Menu buttons created successfully" << std::endl;
+    //std::cout << "Menu buttons created successfully" << std::endl;
 }
 
 void GUISystem::removeMenuButtons(GameObjectManager& manager) {
@@ -233,8 +276,6 @@ void GUISystem::startGame(GameObjectManager& manager) {
             }
         }
     }
-
-
     std::cout << "Game started - loaded json" << std::endl;
 }
 
