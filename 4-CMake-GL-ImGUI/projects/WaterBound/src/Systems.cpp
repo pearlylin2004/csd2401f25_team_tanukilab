@@ -268,14 +268,6 @@ void RenderSystem::update(GameObjectManager& manager, float const& deltaTime)
 	//all rendering must be done per layer noww
 	//cooked
 
-	for (Layer* layer : layers)
-	{
-		if (!layer) continue;
-		//gettem objects bro (again)
-		const std::vector<GameObject*>& gameObjects = layer->getObjects();
-
-		//if(objectWithTex.empty() && objectWithoutTex.empty())
-		//	continue;
 
 		//drawing models without texture
 		glUseProgram(renderer::shdr_pgm[1]);
@@ -305,8 +297,6 @@ void RenderSystem::update(GameObjectManager& manager, float const& deltaTime)
 			renderer::model& mdl = renderer::models[(int)key.meshType];
 			renderer::drawInstances(mdl, pair.second);
 		}
-
-	}
 
 	/*if (UISystem::isShowUI()) glBindFramebuffer(GL_FRAMEBUFFER, 0);*/
 
