@@ -114,6 +114,7 @@ private:
 	void renderCollision(CollisionInfo* collision, Transform* transform, GameObject* selected);
 	void renderInput();
 	void renderPhysics(Physics* physic, bool canMove);
+	void renderFont(FontComponent* font);
 
 	Editor::ObjSelectionState& m_objSelectionState;
 };
