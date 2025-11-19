@@ -28,6 +28,7 @@ Technology is prohibited.
 
 #include "AudioUtility.h"
 #include "ResourceManager.h"
+#include "performance.h"
 
 enum class soundID : int {
 	water = 0,

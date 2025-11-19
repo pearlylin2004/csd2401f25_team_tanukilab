@@ -664,6 +664,8 @@ void FontSystem::update(GameObjectManager& manager)
 	//for debugging only
 
 	//std::cout << "=== FontSystem::update() called ===" << std::endl;
+	//record current time for performance tracking
+	auto start = std::chrono::high_resolution_clock::now();
 
 	std::vector<GameObject*> gameObjects;
 	manager.getAllGameObjects(gameObjects);
@@ -712,6 +714,10 @@ void FontSystem::update(GameObjectManager& manager)
 		}
 	}
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+	auto end = std::chrono::high_resolution_clock::now();
+	double ms = std::chrono::duration<double, std::milli>(end - start).count(); //get elapse time in ms
+	g_SystemTimers.push_back({ "Font", ms }); //saving timing for UI output
 }
 
 void FontSystem::RenderText(GLuint& s, std::string text, float x, float y, float scale, glm::vec3 color, GameObject* object)

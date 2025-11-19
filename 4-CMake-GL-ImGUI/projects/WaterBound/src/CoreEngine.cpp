@@ -183,4 +183,3 @@ void CoreEngine::windowIconifyCallback(GLFWwindow* window, int iconified) {
             engine->audio.playSound(soundID::bg, 0.2f);
         }
     }
-}

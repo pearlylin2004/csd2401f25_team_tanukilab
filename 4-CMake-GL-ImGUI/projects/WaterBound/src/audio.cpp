@@ -74,6 +74,8 @@ void AudioHandler::init() {
 
 // update the audio system each frame and set inactive channel to nullptr
 void AudioHandler::update() {
+	//record current time for performance tracking
+	auto start = std::chrono::high_resolution_clock::now();
 	if (system) {
 		system->update();
 	}
@@ -87,7 +89,9 @@ void AudioHandler::update() {
 			}
 		}
 	}
-
+	auto end = std::chrono::high_resolution_clock::now();
+	double ms = std::chrono::duration<double, std::milli>(end - start).count(); //get elapse time in ms
+	g_SystemTimers.push_back({ "Audio", ms }); //saving timing for UI output
 }
 
 // release all sounds and shut down the audio system (will shutdown automatically when dtor called)
