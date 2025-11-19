@@ -140,6 +140,18 @@ void InspectorWindow::render(GameObjectManager& manager) {
         /* ------------------- END ------------------- */
 
 
+        /* ------------------- Font ------------------- */
+        if (FontComponent* font = selected->getComponent<FontComponent>()) {
+            //Transform* transform = selected->getComponent<Transform>();
+            renderFont(font);
+
+            ImGui::Spacing();
+            ImGui::Separator();
+            ImGui::Spacing();
+        }
+        /* ------------------- END ------------------- */
+
+
         /* ------------------- Add Component ------------------- */
         addComponent(selected);
         /* ------------------- END ------------------- */
@@ -496,5 +508,40 @@ void InspectorWindow::renderPhysics(Physics* physic, bool canMove) {
 
             ImGui::TreePop();
         }
+    }
+}
+
+void InspectorWindow::renderFont(FontComponent* font) {
+    if (ImGui::CollapsingHeader("Font")) {
+        {
+            std::string& objName = font->word;
+            char buffer[128];
+            strncpy(buffer, objName.c_str(), sizeof(buffer));
+            buffer[sizeof(buffer) - 1] = '\0';
+
+            if (ImGui::InputText("##Word", buffer, sizeof(buffer))) {
+                font->word = buffer;
+            }
+
+            ImGui::InputFloat("Size", &font->scale, 1.f);
+            font->scale = std::max(font->scale, 0.f);
+
+            ImGui::ColorEdit3("Colour", &font->clr.x);
+
+            /* scuffed way to select font */
+            static const char* fontNames[] = {
+                "Orange Knight",
+                "Arial",
+                "Times New Roman"
+            };
+
+            //int fontCount = IM_ARRAYSIZE(fontNames);
+            int currentFont = font->fontType;
+
+            if (ImGui::Combo("Font Type", &font->fontType, fontNames, IM_ARRAYSIZE(fontNames))) {
+                //font->fontType = currentFont;
+            }
+        }
+
     }
 }

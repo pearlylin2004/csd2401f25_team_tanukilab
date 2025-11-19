@@ -144,20 +144,29 @@ namespace Editor {
 			[](const GameObject* obj) { return obj->hasComponent<Input>(); }
 		},
 
-		{"Animation",
+		//{"Animation",
+		//	[](GameObject* obj) {
+		//	// animation need render component
+		//	/*Render* r = obj->getComponent<Render>();
+		//	if (!r) r = obj->addComponent<Render>();
+		//	DebugLog::addMessage("Added Render component for " + obj->getObjectName());*/
+
+		//	/*r->hasAnimation = true;
+		//	r->hasTex = true;*/
+
+		//	obj->addComponent<Animation>();
+		//	DebugLog::addMessage("Added Animation component for " + obj->getObjectName());
+		//	},
+		//	[](const GameObject* obj) { return obj->hasComponent<Animation>();}
+		//},
+
+		{"Font",
 			[](GameObject* obj) {
-			// animation need render component
-			Render* r = obj->getComponent<Render>();
-			if (!r) r = obj->addComponent<Render>();
-			DebugLog::addMessage("Added Render component for " + obj->getObjectName());
-
-			/*r->hasAnimation = true;
-			r->hasTex = true;*/
-
-			obj->addComponent<Animation>();
-			DebugLog::addMessage("Added Animation component for " + obj->getObjectName());
+			obj->addComponent<FontComponent>();
+			DebugLog::addMessage("Added Font component for " + obj->getObjectName());
 			},
-			[](const GameObject* obj) { return obj->hasComponent<Animation>(); }}
+			[](const GameObject* obj) { return obj->hasComponent<FontComponent>(); }
+		}
 	};
 	/* ----------------- Component End ---------------- */
 }

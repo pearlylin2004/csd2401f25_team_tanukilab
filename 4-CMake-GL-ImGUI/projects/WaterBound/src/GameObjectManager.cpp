@@ -487,7 +487,10 @@ void GameObjectManager::loadSceneFromJson(const std::string& filename) {
 		//font component
 		if (comps.HasMember("FontComponent") && comps["FontComponent"].IsObject()) {
 			const auto& jf = comps["FontComponent"];
-			auto* fc = go->addComponent<FontComponent>();
+			
+			auto* fc = go->getComponent<FontComponent>();
+			if (!fc)
+				fc = go->addComponent<FontComponent>();
 
 			// word/text
 			if (jf.HasMember("word") && jf["word"].IsString()) {
