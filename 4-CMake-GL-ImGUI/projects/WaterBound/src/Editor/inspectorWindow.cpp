@@ -514,6 +514,7 @@ void InspectorWindow::renderPhysics(Physics* physic, bool canMove) {
 void InspectorWindow::renderFont(FontComponent* font) {
     if (ImGui::CollapsingHeader("Font")) {
         {
+            // word to display
             std::string& objName = font->word;
             char buffer[128];
             strncpy(buffer, objName.c_str(), sizeof(buffer));
@@ -523,11 +524,14 @@ void InspectorWindow::renderFont(FontComponent* font) {
                 font->word = buffer;
             }
 
+            // size of the text
             ImGui::InputFloat("Size", &font->scale, 1.f);
             font->scale = std::max(font->scale, 0.f);
 
+            // colour of the text
             ImGui::ColorEdit3("Colour", &font->clr.x);
 
+            // font type of the text
             /* scuffed way to select font */
             static const char* fontNames[] = {
                 "Orange Knight",
@@ -535,12 +539,7 @@ void InspectorWindow::renderFont(FontComponent* font) {
                 "Times New Roman"
             };
 
-            //int fontCount = IM_ARRAYSIZE(fontNames);
-            int currentFont = font->fontType;
-
-            if (ImGui::Combo("Font Type", &font->fontType, fontNames, IM_ARRAYSIZE(fontNames))) {
-                //font->fontType = currentFont;
-            }
+            (ImGui::Combo("Font Type", &font->fontType, fontNames, IM_ARRAYSIZE(fontNames)))
         }
 
     }
