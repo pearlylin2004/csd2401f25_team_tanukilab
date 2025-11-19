@@ -95,19 +95,8 @@ void InspectorWindow::render(GameObjectManager& manager) {
 
         /* ------------------- Render ------------------- */
         if (Render* render = selected->getComponent<Render>()) {
-            renderRender(render, selected);
-
-            ImGui::Spacing();
-            ImGui::Separator();
-            ImGui::Spacing();
-        }
-        /* ------------------- END ------------------- */
-
-
-        /* ------------------- Animation ------------------- */
-        if (Animation* animation = selected->getComponent<Animation>()) {
-            Render* render = selected->getComponent<Render>();
-            renderAnimation(animation, render);
+            Animation* animation = selected->getComponent<Animation>();
+            renderRender(render, selected, animation);
 
             ImGui::Spacing();
             ImGui::Separator();
@@ -260,7 +249,7 @@ void InspectorWindow::renderTransform(Transform* transform, CollisionInfo* colli
     }
 }
 
-void InspectorWindow::renderRender(Render* render, GameObject* selected) {
+void InspectorWindow::renderRender(Render* render, GameObject* selected, Animation* animation) {
     if (ImGui::CollapsingHeader("Render")) {
 
         if (ImGui::TreeNode("Texture")) {
@@ -341,6 +330,41 @@ void InspectorWindow::renderRender(Render* render, GameObject* selected) {
             ImGui::EndDisabled();
             ImGui::TreePop();
         }
+        
+        
+        if (ImGui::TreeNode("Animation")) {
+            if (!animation) {
+                ImGui::Spacing();
+                if (ImGui::Selectable("Add Animation")) {
+                    selected->addComponent<Animation>();
+                }
+            }
+            else if (render->hasTex) {
+                ImGui::Checkbox("Is animated", &render->hasAnimation);
+
+                ImGui::Separator();
+
+                ImGui::BeginDisabled(!render->hasAnimation);
+
+                ImGui::Checkbox("Loop (WIP)", &animation->loop);
+
+                ImGui::InputInt("Column", &animation->totalColumn);
+                animation->totalColumn = std::max(animation->totalColumn, 1);
+
+                ImGui::InputInt("Row", &animation->totalRow);
+                animation->totalRow = std::max(animation->totalRow, 1);
+
+                ImGui::InputFloat("Frame Time", &animation->frameTime, 0.1f);
+
+
+                ImGui::EndDisabled();
+            }
+            else {
+                ImGui::TextWrapped("Add a texture to Render to enable animation");
+            }
+
+            ImGui::TreePop();
+        }
 
 
         ImGui::Spacing();
@@ -399,7 +423,7 @@ void InspectorWindow::renderCollision(CollisionInfo* collision, Transform* trans
 
 void InspectorWindow::renderInput() {
     if (ImGui::CollapsingHeader("Input Control")) {
-        ImGui::Text("Means can control through keyboard");
+        ImGui::TextWrapped("This object can be controlled by keyboard input");
     }
 }
 
@@ -409,28 +433,36 @@ void InspectorWindow::renderPhysics(Physics* physic, bool canMove) {
 
         ImGui::Spacing();
         ImGui::Separator();
-        
+       
+
         // only show movement data if object is controlable via input
-        if (canMove) {
-            if (ImGui::TreeNode("Movement")) {
-                ImGui::InputFloat("Speed", &physic->moveSpeed, 1.f);
-                physic->moveSpeed = std::max(physic->moveSpeed, 0.f); // set the min speed to 0.f
+        if (ImGui::TreeNode("Input Movement Control")) {
+            if (canMove) {
+                if (ImGui::TreeNode("Movement")) {
+                    ImGui::InputFloat("Speed", &physic->moveSpeed, 1.f);
+                    physic->moveSpeed = std::max(physic->moveSpeed, 0.f); // set the min speed to 0.f
 
-                ImGui::InputFloat("Jump Force", &physic->jumpForce, 1.f);
-                physic->jumpForce = std::max(physic->jumpForce, 0.f); // set the min jump force to 0.f
+                    ImGui::InputFloat("Jump Force", &physic->jumpForce, 1.f);
+                    physic->jumpForce = std::max(physic->jumpForce, 0.f); // set the min jump force to 0.f
 
-                ImGui::InputFloat("Mass", &physic->dynamics.mass, 1.f);
-                physic->dynamics.mass = std::max(physic->dynamics.mass, 0.f); // 0.f mass means static obj (never move, e.g. wall)
+                    ImGui::InputFloat("Mass", &physic->dynamics.mass, 1.f);
+                    physic->dynamics.mass = std::max(physic->dynamics.mass, 0.f); // 0.f mass means static obj (never move, e.g. wall)
 
-                ImGui::TreePop();
+                    ImGui::TreePop();
+                }
+
+                if (ImGui::TreeNode("Environment")) {
+                    ImGui::InputFloat("Damping", &physic->damping, 0.1f);
+                    physic->damping = std::clamp(physic->damping, 0.f, 1.f); // damping within 0.1 to 1.f
+
+                    ImGui::TreePop();
+                }
+            }
+            else {
+                ImGui::TextWrapped("Requires Input component to move");
             }
 
-            if (ImGui::TreeNode("Environment")) {
-                ImGui::InputFloat("Damping", &physic->damping, 0.1f);
-                physic->damping = std::clamp(physic->damping, 0.f, 1.f); // damping within 0.1 to 1.f
-
-                ImGui::TreePop();
-            }
+            ImGui::TreePop();
         }
 
         if (ImGui::TreeNode("Water")) {
@@ -463,35 +495,6 @@ void InspectorWindow::renderPhysics(Physics* physic, bool canMove) {
             ImGui::Text("Inverse Mass: %.4f", physic->dynamics.inverseMass);
 
             ImGui::TreePop();
-        }
-    }
-}
-
-void InspectorWindow::renderAnimation(Animation* animation, Render* render) {
-    if (ImGui::CollapsingHeader("Animation")) {
-        if (render->hasTex) {
-            ImGui::Checkbox("Is animated", &render->hasAnimation);
-
-            if (ImGui::TreeNode("Settings")) {
-                ImGui::BeginDisabled(!render->hasAnimation);
-
-                ImGui::Checkbox("Loop", &animation->loop);
-
-                ImGui::InputInt("Column", &animation->totalColumn);
-                animation->totalColumn = std::max(animation->totalColumn, 1);
-
-                ImGui::InputInt("Row", &animation->totalRow);
-                animation->totalRow = std::max(animation->totalRow, 1);
-
-                ImGui::InputFloat("Frame Time", &animation->frameTime, 0.1f);
-                
-
-                ImGui::EndDisabled();
-                ImGui::TreePop();
-            }
-        }
-        else {
-            ImGui::Text("Add a texture to Render to enable animation");
         }
     }
 }

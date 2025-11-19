@@ -29,7 +29,7 @@ void AddObjWindow::render(GameObjectManager& manager){
 
     //// spawning objects (double up every click)
     static int count = 0;
-    if (ImGui::Button("Spawn Object")) {
+    if (ImGui::Button("Stress Test")) {
         int spawnCount = (count == 0) ? 1 : count * 2;
         if (spawnCount == 2048)
             spawnCount = 2500; //cap at 400 objects
