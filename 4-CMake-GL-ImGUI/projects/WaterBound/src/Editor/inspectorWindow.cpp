@@ -290,9 +290,9 @@ void InspectorWindow::renderRender(Render* render, GameObject* selected, Animati
                 }
                 ImGui::EndDragDropTarget();
             }
-
-            ImGui::SameLine();
+            
             if (render->hasTex) {
+                ImGui::SameLine();
                 ImGui::Spacing();
                 ImGui::Separator();
                 ImGui::Spacing();

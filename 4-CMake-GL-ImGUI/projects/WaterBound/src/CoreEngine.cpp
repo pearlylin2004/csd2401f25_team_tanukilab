@@ -171,7 +171,7 @@ void CoreEngine::Shutdown() {
 }
 
 void CoreEngine::windowIconifyCallback(GLFWwindow* window, int iconified) {
-	CoreEngine* engine = static_cast<CoreEngine*>(glfwGetWindowUserPointer(window)); //retrieve engine instance
+    CoreEngine* engine = static_cast<CoreEngine*>(glfwGetWindowUserPointer(window)); //retrieve engine instance
     if (engine) {
         if (iconified) {
             //window was minimized
@@ -182,4 +182,6 @@ void CoreEngine::windowIconifyCallback(GLFWwindow* window, int iconified) {
             //resume the background music or other necessary sounds
             engine->audio.playSound(soundID::bg, 0.2f);
         }
+
     }
+}
