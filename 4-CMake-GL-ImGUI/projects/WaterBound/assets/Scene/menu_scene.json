@@ -2,6 +2,21 @@
   "version": 1,
   "objects": [
     {
+      "name": "background",
+      "components": {
+        "Transform": {
+          "pos": [0.0, 0.0, 0.0],
+          "scale": [20.0, 15.0, 15.0] 
+        },
+        "Render": {
+          "shape": "square",
+          "hasTex": 1,
+          "texture": "assets/menu/background.png",
+          "clr": [ 1.0, 1.0, 1.0 ]
+        }
+      }
+    },
+    {
       "name": "play_button",
       "components": {
         "Transform": {
@@ -11,12 +26,13 @@
         "Render": {
           "shape": "square",
           "hasTex": 1,
-          "texture": "assets/menu/start_button.png"
+          "texture": "assets/menu/start_button.png",
+          "clr": [ 1.0, 1.0, 1.0 ]
         }
       }
     },
     {
-      "name": "crontrol_button",
+      "name": "control_button",
       "components": {
         "Transform": {
           "pos": [0.0, 1.0, 0.0],
@@ -25,7 +41,8 @@
         "Render": {
           "shape": "square",
           "hasTex": 1,
-          "texture": "assets/menu/control_button.png"
+          "texture": "assets/menu/control_button.png",
+          "clr": [ 1.0, 1.0, 1.0 ]
         }
       }
     },
@@ -39,7 +56,8 @@
         "Render": {
           "shape": "square",
           "hasTex": 1,
-          "texture": "assets/menu/quit_button.png"
+          "texture": "assets/menu/quit_button.png",
+          "clr": [ 1.0, 1.0, 1.0 ]
         }
       }
     }
