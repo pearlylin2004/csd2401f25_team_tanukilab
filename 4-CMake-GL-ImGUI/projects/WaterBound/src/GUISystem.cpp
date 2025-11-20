@@ -82,7 +82,7 @@ void GUISystem::update(GameObjectManager& manager) {
                     stopGame(manager);
                     return; //stop checking after a click
                 }
-                else if (name == "credit_button") {
+                else if (name == "crontrol_button") {
                     //need a credit function 
                     return; //stop checking after a click
                 }
