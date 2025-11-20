@@ -115,10 +115,6 @@ void GUISystem::createButtons(GameObjectManager& manager) {
     for (GameObject* obj : allObjs){
 		//get object name
         const std::string name = obj->getObjectName();
-        if (name == "background") {
-            manager.assignObjectToLayer(obj, 0); // always behind
-            continue;
-        }
         //only consider objects that have both transform and render
         if (!obj->hasComponent<Transform>() || !obj->hasComponent<Render>()) continue;
 
@@ -126,12 +122,17 @@ void GUISystem::createButtons(GameObjectManager& manager) {
 
         //find if its a button
         bool isButton = r->hasTex || (name.find("_button") != std::string::npos);
-        if (!isButton) continue; //skip non buttons
 
-        //assign object to layer 2
-        manager.assignObjectToLayer(obj, 2);
-
-        m_buttons[name] = obj; //store button
+        if (name == "background") {
+            manager.assignObjectToLayer(obj, 2);
+        }
+        else if (isButton) {
+            manager.assignObjectToLayer(obj, 0);
+            m_buttons[name] = obj;
+        }
+        else {
+			return; //not a button so skip
+        }
     }
     m_buttonsCreated = !m_buttons.empty(); //buttons created if map is not empty
     std::cout << "[GUI] Menu buttons created successfully" << std::endl;
