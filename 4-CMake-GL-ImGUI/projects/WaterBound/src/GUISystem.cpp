@@ -131,7 +131,7 @@ void GUISystem::createButtons(GameObjectManager& manager) {
             m_buttons[name] = obj;
         }
         else {
-			return; //not a button so skip
+			continue; //not a button so skip
         }
     }
     m_buttonsCreated = !m_buttons.empty(); //buttons created if map is not empty
