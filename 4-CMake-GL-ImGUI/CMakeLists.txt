@@ -13,6 +13,7 @@ set(ALL_LIBS
   PRIVATE glfw
   PRIVATE libglew_static
   PRIVATE imgui
+  PRIVATE ImGuizmo
   PRIVATE stb
   PRIVATE lua
   PRIVATE rapidjson

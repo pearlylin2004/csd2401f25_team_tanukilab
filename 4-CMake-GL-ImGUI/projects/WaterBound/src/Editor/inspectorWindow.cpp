@@ -20,7 +20,9 @@ Technology is prohibited.
 
 #include "Editor/editorManager.h"
 
-InspectorWindow::InspectorWindow(Editor::ObjSelectionState& Ostate) : m_objSelectionState(Ostate) {}
+InspectorWindow::InspectorWindow(Editor::ObjSelectionState& Ostate, Editor::GizmoState& gState) : 
+    m_objSelectionState(Ostate),
+    m_gizmoState(gState) {}
 
 void InspectorWindow::render(GameObjectManager& manager) {
     ImGui::Begin("Inspector");
@@ -80,9 +82,15 @@ void InspectorWindow::render(GameObjectManager& manager) {
         ImGui::Separator();
         ImGui::Spacing();
 
-
         /* ------------------- Object Transformation ------------------- */
         if (Transform* transform = selected->getComponent<Transform>()) {
+            renderGizmoCtrl();
+
+
+            ImGui::Spacing();
+            ImGui::Separator();
+            ImGui::Spacing();
+
             CollisionInfo* collision = selected->getComponent<CollisionInfo>();
             renderTransform(transform, collision);
         }
@@ -202,6 +210,40 @@ void InspectorWindow::addComponent(GameObject* selected) {
     ImGui::EndChild();
 }
 
+void InspectorWindow::renderGizmoCtrl() {
+    if (ImGui::TreeNode("Gizmo Control")) {
+        if (ImGui::RadioButton("Move (W)", m_gizmoState.currentOp == Editor::GIZMO_TRANSLATE)) {
+            m_gizmoState.currentOp = Editor::GIZMO_TRANSLATE;
+        }
+
+        if (ImGui::RadioButton("Rotate (E)", m_gizmoState.currentOp == Editor::GIZMO_ROTATE)) {
+            m_gizmoState.currentOp = Editor::GIZMO_ROTATE;
+        }
+
+        if (ImGui::RadioButton("Scale (R)", m_gizmoState.currentOp == Editor::GIZMO_SCALE)) {
+            m_gizmoState.currentOp = Editor::GIZMO_SCALE;
+        }
+
+        ImGui::Checkbox("Snap", &m_gizmoState.useSnap);
+        if (m_gizmoState.useSnap) {
+            // if rotating, show the snap value (only 1 value)
+            if (m_gizmoState.currentOp == Editor::GIZMO_ROTATE) {
+                if (ImGui::DragFloat("##Snap Angle", &m_gizmoState.snapAngle)) {
+                    // clamp to 1–180 degrees
+                    m_gizmoState.snapAngle = glm::clamp(m_gizmoState.snapAngle, 1.f, 365.f);
+                }
+            }
+            else {
+                if (ImGui::DragFloat3("###Snap XYZ", m_gizmoState.snapValues)) {
+                    for (int i = 0; i < 3; i++)
+                        m_gizmoState.snapValues[i] = glm::max(m_gizmoState.snapValues[i], 0.01f);
+                }
+            }
+        }
+        ImGui::TreePop();
+    }
+}
+
 void InspectorWindow::renderTransform(Transform* transform, CollisionInfo* collision) {
     if (ImGui::CollapsingHeader("Transform")) {
 
@@ -222,14 +264,14 @@ void InspectorWindow::renderTransform(Transform* transform, CollisionInfo* colli
 
         /* ------------------- Object Rotation ------------------- */
         if (ImGui::TreeNode("Rotation")) {
-            ImGui::DragFloat("Angle", &transform->rotation);
+            if (ImGui::DragFloat("Angle", &transform->rotation)) transform->rotation = std::clamp(transform->rotation, 0.f, 360.f);
 
             ImGui::TreePop();
         }
 
         /* ------------------- Object Scale ------------------- */
         if (ImGui::TreeNode("Scale")) {
-            ImGui::Checkbox("Aspect Ratio (X only)", &m_objSelectionState.aspectRatioLock);
+            ImGui::Checkbox("Aspect Ratio", &m_objSelectionState.aspectRatioLock);
 
             if (m_objSelectionState.aspectRatioLock && !m_objSelectionState.ratioSet) {
                 m_objSelectionState.ratioY = transform->scaleY / transform->scaleX;
@@ -240,15 +282,19 @@ void InspectorWindow::renderTransform(Transform* transform, CollisionInfo* colli
             if (!m_objSelectionState.aspectRatioLock) m_objSelectionState.ratioSet = false;
 
             // clamp scale to be non-negative
-            ImGui::DragFloat("X1", &transform->scaleX, 0.1f, 0.0f, FLT_MAX);
-            ImGui::DragFloat("Y1", &transform->scaleY, 0.1f, 0.0f, FLT_MAX);
-            ImGui::DragFloat("Z1", &transform->scaleZ, 0.1f, 0.0f, FLT_MAX);
+            if (ImGui::DragFloat("X1", &transform->scaleX, 0.1f, 0.f)) transform->scaleX = std::max(transform->scaleX, 0.f);
+
+            ImGui::BeginDisabled(m_objSelectionState.aspectRatioLock);
+            if (ImGui::DragFloat("Y1", &transform->scaleY, 0.1f, 0.f)) transform->scaleY = std::max(transform->scaleY, 0.f);
+            if (ImGui::DragFloat("Z1", &transform->scaleZ, 0.1f, 0.f)) transform->scaleZ = std::max(transform->scaleZ, 0.f);
+            ImGui::EndDisabled();
 
             if (m_objSelectionState.aspectRatioLock && transform->scaleX != 0.0f) {
                 transform->scaleY = transform->scaleX * m_objSelectionState.ratioY;
                 transform->scaleZ = transform->scaleX * m_objSelectionState.ratioZ;
             }
 
+            // if collision and its set to auto-fit scale, adjust the collider size also
             if (collision) {
                 if (collision->autoFitScale) {
                     collision->colliderSize.x = transform->scaleX;
@@ -360,13 +406,14 @@ void InspectorWindow::renderRender(Render* render, GameObject* selected, Animati
 
                 ImGui::Checkbox("Loop (WIP)", &animation->loop);
 
-                ImGui::InputInt("Column", &animation->totalColumn);
-                animation->totalColumn = std::max(animation->totalColumn, 1);
+                if(ImGui::InputInt("Column", &animation->totalColumn))
+                    animation->totalColumn = std::max(animation->totalColumn, 1);
 
-                ImGui::InputInt("Row", &animation->totalRow);
-                animation->totalRow = std::max(animation->totalRow, 1);
+                if(ImGui::InputInt("Row", &animation->totalRow))
+                    animation->totalRow = std::max(animation->totalRow, 1);
 
-                ImGui::InputFloat("Frame Time", &animation->frameTime, 0.1f);
+                if (ImGui::InputFloat("Frame Time", &animation->frameTime, 0.1f))
+                    animation->frameTime = std::max(animation->frameTime, 0.001f);
 
 
                 ImGui::EndDisabled();
@@ -428,8 +475,13 @@ void InspectorWindow::renderCollision(CollisionInfo* collision, Transform* trans
                 // cannot edit if obj cannot collide or auto-fit collider size with obj size is on
                 bool editableCollider = collision->collisionFlag && !collision->autoFitScale;
                 ImGui::BeginDisabled(!editableCollider);
-                ImGui::InputFloat("Width", &collision->colliderSize.x, 1.f);
-                ImGui::InputFloat("Height", &collision->colliderSize.y, 1.f);
+
+                if (ImGui::InputFloat("Width", &collision->colliderSize.x, 1.f))
+                    collision->colliderSize.x = std::max(collision->colliderSize.x, 0.f);
+
+                if (ImGui::InputFloat("Height", &collision->colliderSize.y, 1.f))
+                    collision->colliderSize.y = std::max(collision->colliderSize.y, 0.f);
+
                 ImGui::EndDisabled();
 
                 ImGui::TreePop();
@@ -457,21 +509,21 @@ void InspectorWindow::renderPhysics(Physics* physic, bool canMove) {
         if (ImGui::TreeNode("Input Movement Control")) {
             if (canMove) {
                 if (ImGui::TreeNode("Movement")) {
-                    ImGui::InputFloat("Speed", &physic->moveSpeed, 1.f);
-                    physic->moveSpeed = std::max(physic->moveSpeed, 0.f); // set the min speed to 0.f
+                    if(ImGui::InputFloat("Speed", &physic->moveSpeed, 1.f))
+                        physic->moveSpeed = std::max(physic->moveSpeed, 0.f); // set the min speed to 0.f
 
-                    ImGui::InputFloat("Jump Force", &physic->jumpForce, 1.f);
-                    physic->jumpForce = std::max(physic->jumpForce, 0.f); // set the min jump force to 0.f
+                    if(ImGui::InputFloat("Jump Force", &physic->jumpForce, 1.f))
+                        physic->jumpForce = std::max(physic->jumpForce, 0.f); // set the min jump force to 0.f
 
-                    ImGui::InputFloat("Mass", &physic->dynamics.mass, 1.f);
-                    physic->dynamics.mass = std::max(physic->dynamics.mass, 0.f); // 0.f mass means static obj (never move, e.g. wall)
+                    if(ImGui::InputFloat("Mass", &physic->dynamics.mass, 1.f))
+                        physic->dynamics.mass = std::max(physic->dynamics.mass, 0.f); // 0.f mass means static obj (never move, e.g. wall)
 
                     ImGui::TreePop();
                 }
 
                 if (ImGui::TreeNode("Environment")) {
-                    ImGui::InputFloat("Damping", &physic->damping, 0.1f);
-                    physic->damping = std::clamp(physic->damping, 0.f, 1.f); // damping within 0.1 to 1.f
+                    if(ImGui::InputFloat("Damping", &physic->damping, 0.1f))
+                        physic->damping = std::clamp(physic->damping, 0.f, 1.f); // damping within 0.1 to 1.f
 
                     ImGui::TreePop();
                 }
@@ -531,8 +583,8 @@ void InspectorWindow::renderFont(FontComponent* font) {
             }
 
             // size of the text
-            ImGui::InputFloat("Size", &font->scale, 1.f);
-            font->scale = std::max(font->scale, 0.f);
+            if(ImGui::InputFloat("Size", &font->scale, 1.f))
+                font->scale = std::max(font->scale, 0.f);
 
             // colour of the text
             ImGui::ColorEdit3("Colour", &font->clr.x);
