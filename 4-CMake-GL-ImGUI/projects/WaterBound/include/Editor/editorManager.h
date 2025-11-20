@@ -112,7 +112,7 @@ private:
 	void renderGizmoCtrl();
 	void renderTransform(Transform* transform, CollisionInfo* collision);
 	void renderRender(Render* render, GameObject* selected, Animation* animation);
-	void renderCollision(CollisionInfo* collision, Transform* transform, GameObject* selected);
+	void renderCollision(CollisionInfo* collision, Transform* transform, GameObject* selected, GameObjectManager& manager);
 	void renderInput();
 	void renderPhysics(Physics* physic, bool canMove);
 	void renderFont(FontComponent* font);

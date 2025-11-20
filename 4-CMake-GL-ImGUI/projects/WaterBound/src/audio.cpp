@@ -48,6 +48,7 @@ void AudioHandler::init() {
 
 	//sounds.resize(static_cast<size_t>(soundID::count), nullptr);
 	channels.resize(static_cast<size_t>(soundID::count), nullptr);
+	fadeInfo.resize(static_cast<size_t>(soundID::count));
 
 	for (int i = 0; i < static_cast<int>(soundID::count); ++i) {
 		soundID id = static_cast<soundID>(i);	
@@ -73,19 +74,20 @@ void AudioHandler::init() {
 }
 
 // update the audio system each frame and set inactive channel to nullptr
-void AudioHandler::update() {
+void AudioHandler::update(float deltaTime) {
 	//record current time for performance tracking
 	auto start = std::chrono::high_resolution_clock::now();
 	if (system) {
 		system->update();
 	}
-
+	updateFades(deltaTime);
 	for (size_t i = 0; i < channels.size(); ++i) {
 		if (channels[i]) {
 			bool isPlaying = false;
 			channels[i]->isPlaying(&isPlaying);  // NEED to call fmoderrorcheck() here once exit(-1) change to logging
 			if (!isPlaying) {
 				channels[i] = nullptr;
+				fadeInfo[i].isFading = false;
 			}
 		}
 	}
@@ -106,6 +108,7 @@ void AudioHandler::shutdown() {
 	//ResourceManager will handle releasing sounds now
 
 	channels.clear();
+	fadeInfo.clear();
 
 	if (system) {
 		system->close();
@@ -166,6 +169,7 @@ FMOD::Channel* AudioHandler::playSound(soundID id, float volume) {
 		channel->setVolume(volume);
 		//channels[pos] = channel; // store this for controlling ltr
 		channels[static_cast<size_t>(id)] = channel;
+		fadeInfo[static_cast<size_t>(id)].isFading = false;
 	}
 
 	return channel;
@@ -214,6 +218,7 @@ void AudioHandler::stopSound(soundID id) {
 	if (channels[pos]) {
 		FMODErrorCheck(channels[pos]->stop());
 		channels[pos] = nullptr;
+		fadeInfo[pos].isFading = false;
 	}
 }
 
@@ -302,6 +307,94 @@ void AudioHandler::setSoundpitch(soundID id, float pitch) {
 		FMODErrorCheck(channels[pos]->setPitch(pitch));
 }
 
+void AudioHandler::fadeIn(soundID id, float targetVolume, float duration) {
+	size_t pos = static_cast<size_t>(id);
+
+	if (!channels[pos]) {
+		std::cerr << "Error! Cannot fade in - channel not active..." << std::endl;
+		return;
+	}
+
+	FMODErrorCheck(channels[pos]->setVolume(0.0f));
+
+	fadeInfo[pos].isFading = true;
+	fadeInfo[pos].isFadingIn = true;
+	fadeInfo[pos].startVolume = 0.0f;
+	fadeInfo[pos].targetVolume = targetVolume;
+	fadeInfo[pos].fadeDuration = duration;
+	fadeInfo[pos].fadeTimer = 0.0f;
+}
+
+void AudioHandler::fadeOut(soundID id, float duration) {
+	size_t pos = static_cast<size_t>(id);
+
+	if (!channels[pos]) {
+		std::cerr << "Error! Cannot fade out - channel not active..." << std::endl;
+		return;
+	}
+
+	float currentVolume = 0.0f;
+	FMODErrorCheck(channels[pos]->getVolume(&currentVolume));
+
+	fadeInfo[pos].isFading = true;
+	fadeInfo[pos].isFadingIn = false;
+	fadeInfo[pos].startVolume = currentVolume;
+	fadeInfo[pos].targetVolume = 0.0f;
+	fadeInfo[pos].fadeDuration = duration;
+	fadeInfo[pos].fadeTimer = 0.0f;
+}
+
+// check if a sound is  fading
+bool AudioHandler::isFading(soundID id) const {
+	size_t pos = static_cast<size_t>(id);
+	return fadeInfo[pos].isFading;
+}
+
+// stop any active fade for a sound
+void AudioHandler::stopFade(soundID id) {
+	size_t pos = static_cast<size_t>(id);
+	fadeInfo[pos].isFading = false;
+}
+
+void AudioHandler::updateFades(float deltaTime) {
+
+	//if (system) {
+	//	system->getSoftwareFormat(&rate, nullptr, nullptr);
+	//}
+
+	for (size_t i = 0; i < fadeInfo.size(); ++i) {
+		if (!fadeInfo[i].isFading || !channels[i]) {
+			continue;
+		}
+
+
+		fadeInfo[i].fadeTimer += deltaTime;
+
+		float progress = fadeInfo[i].fadeTimer / fadeInfo[i].fadeDuration;
+		if (progress > 1.0f) progress = 1.0f;
+
+		float currentVolume;
+		if (fadeInfo[i].isFadingIn) {
+			currentVolume = fadeInfo[i].startVolume + (fadeInfo[i].targetVolume - fadeInfo[i].startVolume) * progress;
+			std::cerr << "sound fading" << currentVolume << std::endl;
+		}
+		else {
+			currentVolume = fadeInfo[i].startVolume + (fadeInfo[i].targetVolume - fadeInfo[i].startVolume) * progress;
+		}
+
+		FMODErrorCheck(channels[i]->setVolume(currentVolume));
+
+		if (progress >= 1.0f) {
+			fadeInfo[i].isFading = false;
+
+			if (!fadeInfo[i].isFadingIn && fadeInfo[i].targetVolume == 0.0f) {
+				channels[i]->stop();
+				channels[i] = nullptr;
+			}
+		}
+	}
+}
+
 /* HELPER FUNCTION */
 // helper function to convert soundID to file path
 std::string AudioHandler::soundIDToFilePath(soundID id) {
@@ -349,4 +442,61 @@ void AudioHandler::resumeAll() {
 			}
 		}
 	}
+}
+
+
+// Setters for audiio fading
+void AudioHandler::setFadeInDuration(soundID id, float duration) {
+	size_t pos = static_cast<size_t>(id);
+	if (pos < fadeInfo.size() && duration > 0.0f) {
+		fadeInfo[pos].defaultFadeInDuration = duration;
+	}
+}
+
+void AudioHandler::setFadeOutDuration(soundID id, float duration) {
+	size_t pos = static_cast<size_t>(id);
+	if (pos < fadeInfo.size() && duration > 0.0f) {
+		fadeInfo[pos].defaultFadeOutDuration = duration;
+	}
+}
+
+void AudioHandler::setFadeVolume(soundID id, float volume) {
+	size_t pos = static_cast<size_t>(id);
+	if (pos < fadeInfo.size()) {
+		fadeInfo[pos].targetVolume = std::max(0.0f, std::min(volume, 1.0f)); // clamp between 0 and 1
+	}
+}
+
+// Getters
+float AudioHandler::getFadeInDuration(soundID id) const {
+	size_t pos = static_cast<size_t>(id);
+	return (pos < fadeInfo.size()) ? fadeInfo[pos].defaultFadeInDuration : 1.0f;
+}
+
+float AudioHandler::getFadeOutDuration(soundID id) const {
+	size_t pos = static_cast<size_t>(id);
+	return (pos < fadeInfo.size()) ? fadeInfo[pos].defaultFadeOutDuration : 1.0f;
+}
+
+float AudioHandler::getFadeTargetVolume(soundID id) const {
+	size_t pos = static_cast<size_t>(id);
+	return (pos < fadeInfo.size()) ? fadeInfo[pos].targetVolume : 0.0f;
+}
+
+float AudioHandler::getFadeProgress(soundID id) const {
+	size_t pos = static_cast<size_t>(id);
+	if (pos < fadeInfo.size() && fadeInfo[pos].isFading && fadeInfo[pos].fadeDuration > 0.0f) {
+		return fadeInfo[pos].fadeTimer / fadeInfo[pos].fadeDuration;
+	}
+	return 0.0f;
+}
+
+bool AudioHandler::isFadingIn(soundID id) const {
+	size_t pos = static_cast<size_t>(id);
+	return (pos < fadeInfo.size()) && fadeInfo[pos].isFading && fadeInfo[pos].isFadingIn;
+}
+
+bool AudioHandler::isFadingOut(soundID id) const {
+	size_t pos = static_cast<size_t>(id);
+	return (pos < fadeInfo.size()) && fadeInfo[pos].isFading && !fadeInfo[pos].isFadingIn;
 }

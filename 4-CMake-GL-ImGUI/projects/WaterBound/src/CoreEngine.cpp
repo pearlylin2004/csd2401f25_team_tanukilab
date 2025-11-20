@@ -95,6 +95,7 @@ void CoreEngine::Init() {
     m_guiSystem = std::make_unique<GUISystem>();
     m_messageBus = std::make_unique<MessageBus>();
     m_playerController = std::make_unique<PlayerControllerSystem>();
+    m_audioSystem = std::make_unique<AudioSystem>();
 
     PrefabManager::Instance().loadPrefabRegistry();
     m_guiSystem->init(*m_manager, *m_luaSystem);
@@ -102,6 +103,7 @@ void CoreEngine::Init() {
 	m_renderSystem->init(*m_manager, cfg.width, cfg.height);
 	m_uiSystem->init(m_window, m_renderSystem.get());
     m_fontSystem->init(*m_manager);
+    m_audioSystem->init(*m_manager);
 
     //advance messaging 
     m_messageBus->subscribe("KeyPressed", m_playerController.get());
@@ -135,7 +137,7 @@ void CoreEngine::GameLoop() {
     //--- Update Timing --- 
      Perf::UpdateTime(m_delta, m_fps, 0.5);
      Perf::UpdateWindowTitle(m_window, m_title, m_fps, true);
-     audio.update();
+     audio.update(m_delta);
      // --- Main Update --- glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
      glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
      Update(static_cast<float>(m_delta));
@@ -155,6 +157,7 @@ void CoreEngine::Update(float deltaTime) {
     m_logicSystem->update(*m_manager, deltaTime);
     m_renderSystem->update(*m_manager, deltaTime);
     m_fontSystem->update(*m_manager);
+    m_audioSystem->update(*m_manager, deltaTime);
     m_uiSystem->update(*m_manager);
 
     //performance update

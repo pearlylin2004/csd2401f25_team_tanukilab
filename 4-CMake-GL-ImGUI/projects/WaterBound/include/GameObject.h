@@ -99,6 +99,10 @@ public:
     bool checkAutoMove() { return autoMove;  }
     void changeAutoMove(bool temp) { autoMove = temp; }
 
+	//remove component of type T
+    template <typename T>
+    bool removeComponent();
+
 private:
     std::string m_name;//name of object
     std::string m_prefabID; // optional, empty if created without prefab

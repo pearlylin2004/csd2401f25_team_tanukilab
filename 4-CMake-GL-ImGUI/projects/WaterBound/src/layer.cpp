@@ -40,7 +40,7 @@ bool Layer::removeGameObject(GameObject* obj) {
 
 	auto setIt = m_objectSet.find(obj);
 	if (setIt == m_objectSet.end()) {
-		std::cerr << "Layer Manager Warning: Attempted to remove a GameObject that does not exist in the layer.\n";
+		//std::cerr << "Layer Manager Warning: Attempted to remove a GameObject that does not exist in the layer.\n";
 		return false;
 	}
 

@@ -39,6 +39,7 @@ std::unique_ptr<GameObject> GameObject::clone(const std::string& name) const {
 	std::unique_ptr<GameObject> newObject = std::make_unique<GameObject>(name);
 
     newObject->m_prefabID = this->m_prefabID;
+	newObject->setLayer(this->m_layerID);
 
     // Iterate through all components of the source object.
 	for (const auto& pair : m_components) { // Pair is [type_index, unique_ptr<Component>]
@@ -69,3 +70,15 @@ const int& GameObject::getLayer() const {
 bool GameObject::isOnLayer(int layerID) const {
     return m_layerID == layerID;
 }
+
+//remove component of type T
+template <typename T>
+bool GameObject::removeComponent() {
+	auto iterator = m_components.find(std::type_index(typeid(T)));
+    if (iterator != m_components.end()) {
+        m_components.erase(iterator);
+		return true;//component removed
+	}
+	return false;//component not found
+}
+//use like obj->removeComponent<Transform>();

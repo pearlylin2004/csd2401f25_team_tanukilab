@@ -106,6 +106,9 @@ GameObject* GameObjectManager::CloneGameObject(const std::string& sourceName, co
 	GameObject* ptr = clonedObject.get();//raw pointer
 
 	m_gameObjects[newName] = std::move(clonedObject);//move into map
+	
+	//now to do for layer as well
+	assignObjectToLayer(ptr, iterator->second->getLayer());
 
 	return ptr;//return the raw pointer
 }
@@ -188,7 +191,24 @@ static const char* playerStateToStr(PlayerState state) {
 	}
 }
 
+inline soundID strToSoundID(const std::string& str) {
+	if (str == "water") return soundID::water;
+	if (str == "shoot") return soundID::shoot;
+	if (str == "fire") return soundID::fire;
+	if (str == "bg") return soundID::bg;
+	return soundID::water; // default fallback
+}
 
+// Add this helper function to convert soundID to string
+inline const char* soundIDToStr(soundID id) {
+	switch (id) {
+		case soundID::water: return "water";
+		case soundID::shoot: return "shoot";
+		case soundID::fire: return "fire";
+		case soundID::bg: return "bg";
+		default: return "water";
+	}
+}
 
 /*!
 \brief Loads a scene from a JSON file and rebuilds all game objects.
@@ -519,63 +539,77 @@ void GameObjectManager::loadSceneFromJson(const std::string& filename) {
 
 			
 		}
+
+		if (comps.HasMember("AudioComponent") && comps["AudioComponent"].IsObject()) {
+				const auto & ja = comps["AudioComponent"];
+
+			auto* audio = go->getComponent<AudioComponent>();
+			if (!audio) {
+				// Create with default sound ID
+				audio = go->addComponent<AudioComponent>();
+			}
+
+			// Load sound ID from string
+			if (ja.HasMember("soundId") && ja["soundId"].IsString()) {
+				audio->soundId = strToSoundID(ja["soundId"].GetString());
+			}
+
+			// Volume
+			if (ja.HasMember("volume") && ja["volume"].IsNumber()) {
+				audio->volume = ja["volume"].GetFloat();
+			}
+
+			// Pitch
+			if (ja.HasMember("pitch") && ja["pitch"].IsNumber()) {
+				audio->pitch = ja["pitch"].GetFloat();
+			}
+
+			// Loop
+			if (ja.HasMember("loop")) {
+				audio->loop = ja["loop"].IsBool()
+					? ja["loop"].GetBool()
+					: (ja["loop"].GetInt() != 0);
+			}
+
+			// Play on start
+			if (ja.HasMember("playOnStart")) {
+				audio->playOnStart = ja["playOnStart"].IsBool()
+					? ja["playOnStart"].GetBool()
+					: (ja["playOnStart"].GetInt() != 0);
+			}
+
+			// Muted
+			if (ja.HasMember("muted")) {
+				audio->muted = ja["muted"].IsBool()
+					? ja["muted"].GetBool()
+					: (ja["muted"].GetInt() != 0);
+			}
+
+			// Fade settings
+			if (ja.HasMember("fadeInOnStart")) {
+				audio->fadeInOnStart = ja["fadeInOnStart"].IsBool()
+					? ja["fadeInOnStart"].GetBool()
+					: (ja["fadeInOnStart"].GetInt() != 0);
+			}
+
+			if (ja.HasMember("fadeInDuration") && ja["fadeInDuration"].IsNumber()) {
+				audio->fadeInDuration = ja["fadeInDuration"].GetFloat();
+			}
+
+			if (ja.HasMember("fadeOutOnStop")) {
+				audio->fadeOutOnStop = ja["fadeOutOnStop"].IsBool()
+					? ja["fadeOutOnStop"].GetBool()
+					: (ja["fadeOutOnStop"].GetInt() != 0);
+			}
+
+			if (ja.HasMember("fadeOutDuration") && ja["fadeOutDuration"].IsNumber()) {
+				audio->fadeOutDuration = ja["fadeOutDuration"].GetFloat();
+			}
+		}
 		
 	}
 
 	std::cout << "Total game objects loaded: " << m_gameObjects.size() << std::endl;
-
-	m_buttonData.clear(); // Ensure it's empty before populating
-
-	// Extract from loaded game objects with "button" in the name
-	//std::cout << "\nScanning loaded game objects for buttons..." << std::endl;
-	int foundCount = 0;
-
-	for (const auto& [name, obj] : m_gameObjects) {
-		//std::cout << "  Checking object: " << name << std::endl;
-
-		std::string lowerName = name;
-		std::transform(lowerName.begin(), lowerName.end(), lowerName.begin(), ::tolower);
-
-		if (lowerName.find("button") != std::string::npos) {
-			//std::cout << "    → Found button object!" << std::endl;
-			foundCount++;
-
-			if (auto* transform = obj->getComponent<Transform>()) {
-				ButtonData data;
-				data.position = glm::vec3(transform->x, transform->y, transform->z);
-				data.scale = glm::vec3(transform->scaleX, transform->scaleY, transform->scaleZ);
-
-				// Only add if not already added from buttons array
-				if (m_buttonData.find(name) == m_buttonData.end()) {
-					m_buttonData[name] = data;
-					/*std::cout << "    ✓ Extracted from object: pos(" << data.position.x << ", "
-						<< data.position.y << ", " << data.position.z << "), scale("
-						<< data.scale.x << ", " << data.scale.y << ", " << data.scale.z << ")" << std::endl;*/
-				}
-				else {
-					std::cout << "Already loaded from buttons array" << std::endl;
-				}
-			}
-			else {
-				std::cout << " No Transform component!" << std::endl;
-			}
-		}
-	}
-
-	//std::cout << "\nButton objects found during scan: " << foundCount << std::endl;
-	//std::cout << "Total button data entries: " << m_buttonData.size() << std::endl;
-
-	if (m_buttonData.empty()) {
-		std::cout << "WARNING: No button data was extracted!" << std::endl;
-	}
-	else {
-		//std::cout << "SUCCESS: Button data loaded:" << std::endl;
-		for (const auto& [name, data] : m_buttonData) {
-			std::cout << "  - " << name << ": pos(" << data.position.x << ", "
-				<< data.position.y << ", " << data.position.z << "), scale("
-				<< data.scale.x << ", " << data.scale.y << ", " << data.scale.z << ")" << std::endl;
-		}
-	}
 
 	//std::cout << "Scene loaded (JSON): " << filename << "\n";
 }
@@ -858,6 +892,51 @@ void GameObjectManager::saveSceneToJson(const std::string& filename, bool isNew)
 				jf.AddMember("fontType", rapidjson::Value(fc->fontType), a);
 
 				comps.AddMember("FontComponent", jf, a);
+			}
+
+			if (auto ac = obj->getComponent<AudioComponent>()) {
+				rapidjson::Value jac(rapidjson::kObjectType);
+				const rapidjson::Value* prefabAC = PM.getPrefabJsonComp(prefabDoc, "AudioComponent");
+
+				auto pushIfDiffStr = [&](const char* key, const char* val) {
+					if (!prefabAC || !prefabAC->HasMember(key) ||
+						std::strcmp((*prefabAC)[key].GetString(), val) != 0) {
+						jac.AddMember(rapidjson::Value(key, a),
+							rapidjson::Value(val, a), a);
+					}
+				};
+
+				auto pushIfDiffFloat = [&](const char* key, float val) {
+					if (!prefabAC || !prefabAC->HasMember(key) ||
+						differsFloat((*prefabAC)[key].GetFloat(), val)) {
+						jac.AddMember(rapidjson::Value(key, a),
+							rapidjson::Value(val), a);
+					}
+				};
+
+				auto pushIfDiffBool = [&](const char* key, bool val) {
+					if (!prefabAC || !prefabAC->HasMember(key) ||
+						((*prefabAC)[key].IsBool() && differsBool((*prefabAC)[key].GetBool(), val)) ||
+						((*prefabAC)[key].IsInt() && differsBool((*prefabAC)[key].GetInt() != 0, val))) {
+						jac.AddMember(rapidjson::Value(key, a),
+							rapidjson::Value(val ? 1 : 0), a);
+					}
+				};
+
+				pushIfDiffStr("soundId", soundIDToStr(ac->soundId));
+				pushIfDiffFloat("volume", ac->volume);
+				pushIfDiffFloat("pitch", ac->pitch);
+				pushIfDiffBool("loop", ac->loop);
+				pushIfDiffBool("playOnStart", ac->playOnStart);
+				pushIfDiffBool("muted", ac->muted);
+				pushIfDiffBool("fadeInOnStart", ac->fadeInOnStart);
+				pushIfDiffFloat("fadeInDuration", ac->fadeInDuration);
+				pushIfDiffBool("fadeOutOnStop", ac->fadeOutOnStop);
+				pushIfDiffFloat("fadeOutDuration", ac->fadeOutDuration);
+
+				if (!jac.ObjectEmpty()) {
+					comps.AddMember("AudioComponent", jac, a);
+				}
 			}
 
 			if (!comps.ObjectEmpty()) jObj.AddMember("components", comps, a);
