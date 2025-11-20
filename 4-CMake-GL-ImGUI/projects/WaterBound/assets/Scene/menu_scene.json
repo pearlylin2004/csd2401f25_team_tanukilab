@@ -16,7 +16,7 @@
       }
     },
     {
-      "name": "exit_button",
+      "name": "credit_button",
       "components": {
         "Transform": {
           "pos": [0.0, 1.0, 0.0],
@@ -30,7 +30,7 @@
       }
     },
     {
-      "name": "credit_button",
+      "name": "exit_button",
       "components": {
         "Transform": {
           "pos": [0.0, -3.0, 0.0],

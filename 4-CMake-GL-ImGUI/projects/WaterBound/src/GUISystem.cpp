@@ -56,34 +56,38 @@ void GUISystem::update(GameObjectManager& manager) {
     // Only handle GUI interactions in menu state
     if (m_currentState != GameState::MENU) return;
 
-    if (!InputHandler::isMouseButtonClicked(GLFW_MOUSE_BUTTON_LEFT)) return; //only if left click
+    if (!InputHandler::isMouseButtonClicked(GLFW_MOUSE_BUTTON_LEFT)) {
 
-    //get mouse position
-    Vector2D worldMousePos = InputHandler::getWorldMousePosition();
-    Vector2D worldPos = Vec_Set(worldMousePos.x, worldMousePos.y);
+    }
 
-    //loop through all buttons in the map
-    for (auto& pair : m_buttons) {
-        const std::string& name = pair.first;
-        GameObject* btn = pair.second;
+    else {
+        //get mouse position
+        Vector2D worldMousePos = InputHandler::getWorldMousePosition();
+        Vector2D worldPos = Vec_Set(worldMousePos.x, worldMousePos.y);
 
-        if (!btn) continue;
+        //loop through all buttons in the map
+        for (auto& pair : m_buttons) {
+            const std::string& name = pair.first;
+            GameObject* btn = pair.second;
 
-        if (isPointInButton(worldPos, btn)) {
-            //handle button action dynamically based on name
-            if (name == "play_button") {
-                startGame(manager);
-                return; //stop checking after a click
+            if (!btn) continue;
+
+            if (isPointInButton(worldPos, btn)) {
+                //handle button action dynamically based on name
+                if (name == "play_button") {
+                    startGame(manager);
+                    return; //stop checking after a click
+                }
+                else if (name == "exit_button") {
+                    stopGame(manager);
+                    return; //stop checking after a click
+                }
+                else if (name == "credit_button") {
+                    //need a credit function 
+                    return; //stop checking after a click
+                }
+                //idk if we need more buttons
             }
-            else if (name == "exit_button") {
-                stopGame(manager);
-                return; //stop checking after a click
-            }
-            else if (name == "credit_button") {
-                //need a credit function 
-                return; //stop checking after a click
-            }
-            //idk if we need more buttons
         }
     }
 }
