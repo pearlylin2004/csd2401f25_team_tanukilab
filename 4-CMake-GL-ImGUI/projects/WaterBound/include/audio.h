@@ -116,6 +116,18 @@ public:
 	bool isFading(soundID id) const;
 	void stopFade(soundID id);
 
+	//setters for fadeing
+	void setFadeInDuration(soundID id, float duration);
+	void setFadeOutDuration(soundID id, float duration);
+	void setFadeVolume(soundID id, float volume);
+	//getters
+	float getFadeInDuration(soundID id) const;
+	float getFadeOutDuration(soundID id) const;
+	float getFadeTargetVolume(soundID id) const;
+	float getFadeProgress(soundID id) const;
+	bool isFadingIn(soundID id) const;
+	bool isFadingOut(soundID id) const;
+
 	// perform error check for FMOD functions
 	// moved to AudioUtility.h
 	//static void FMODErrorCheck(FMOD_RESULT result);

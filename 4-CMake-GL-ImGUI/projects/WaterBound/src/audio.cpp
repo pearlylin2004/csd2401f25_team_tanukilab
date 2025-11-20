@@ -443,3 +443,60 @@ void AudioHandler::resumeAll() {
 		}
 	}
 }
+
+
+// Setters for audiio fading
+void AudioHandler::setFadeInDuration(soundID id, float duration) {
+	size_t pos = static_cast<size_t>(id);
+	if (pos < fadeInfo.size() && duration > 0.0f) {
+		fadeInfo[pos].defaultFadeInDuration = duration;
+	}
+}
+
+void AudioHandler::setFadeOutDuration(soundID id, float duration) {
+	size_t pos = static_cast<size_t>(id);
+	if (pos < fadeInfo.size() && duration > 0.0f) {
+		fadeInfo[pos].defaultFadeOutDuration = duration;
+	}
+}
+
+void AudioHandler::setFadeVolume(soundID id, float volume) {
+	size_t pos = static_cast<size_t>(id);
+	if (pos < fadeInfo.size()) {
+		fadeInfo[pos].targetVolume = std::max(0.0f, std::min(volume, 1.0f)); // clamp between 0 and 1
+	}
+}
+
+// Getters
+float AudioHandler::getFadeInDuration(soundID id) const {
+	size_t pos = static_cast<size_t>(id);
+	return (pos < fadeInfo.size()) ? fadeInfo[pos].defaultFadeInDuration : 1.0f;
+}
+
+float AudioHandler::getFadeOutDuration(soundID id) const {
+	size_t pos = static_cast<size_t>(id);
+	return (pos < fadeInfo.size()) ? fadeInfo[pos].defaultFadeOutDuration : 1.0f;
+}
+
+float AudioHandler::getFadeTargetVolume(soundID id) const {
+	size_t pos = static_cast<size_t>(id);
+	return (pos < fadeInfo.size()) ? fadeInfo[pos].targetVolume : 0.0f;
+}
+
+float AudioHandler::getFadeProgress(soundID id) const {
+	size_t pos = static_cast<size_t>(id);
+	if (pos < fadeInfo.size() && fadeInfo[pos].isFading && fadeInfo[pos].fadeDuration > 0.0f) {
+		return fadeInfo[pos].fadeTimer / fadeInfo[pos].fadeDuration;
+	}
+	return 0.0f;
+}
+
+bool AudioHandler::isFadingIn(soundID id) const {
+	size_t pos = static_cast<size_t>(id);
+	return (pos < fadeInfo.size()) && fadeInfo[pos].isFading && fadeInfo[pos].isFadingIn;
+}
+
+bool AudioHandler::isFadingOut(soundID id) const {
+	size_t pos = static_cast<size_t>(id);
+	return (pos < fadeInfo.size()) && fadeInfo[pos].isFading && !fadeInfo[pos].isFadingIn;
+}
