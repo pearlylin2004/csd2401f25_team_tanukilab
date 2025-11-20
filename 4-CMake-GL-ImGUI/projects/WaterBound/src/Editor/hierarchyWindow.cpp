@@ -62,7 +62,11 @@ void HierarchyWindow::render(GameObjectManager& manager) {
         m_objSelectionState.selectedObject = nullptr;
         m_objSelectionState.draggedObject = nullptr;
         m_objSelectionState.selectedIndex = -1;
+
         ImGui::Text("No GameObjects available");
+        if (ImGui::Button("Create Empty")) {
+            AddObjWindow::createEmpty(manager);
+        }
     }
 
     /* ----------- Receive Dropped Prefab from Asset Browser ----------- */
@@ -112,11 +116,11 @@ void HierarchyWindow::handlePrefabDragDrop(GameObjectManager& manager) {
 void HierarchyWindow::showContextMenu(GameObjectManager& manager, GameObject* obj, int objIndex) {
     /* ------- right click context menu ------- */
     if (ImGui::BeginPopupContextItem()) {
-        if (ImGui::MenuItem("Add Empty")) {
+        if (ImGui::MenuItem("Create Empty")) {
             AddObjWindow::createEmpty(manager);
         }
 
-        if (ImGui::MenuItem("Add Object")) {
+        if (ImGui::MenuItem("Create Object")) {
             AddObjWindow::createRec(manager);
         }
 
