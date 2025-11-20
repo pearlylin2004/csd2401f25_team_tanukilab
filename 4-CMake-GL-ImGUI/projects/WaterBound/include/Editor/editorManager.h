@@ -110,12 +110,12 @@ public:
 private:
 	void addComponent(GameObject* selected);
 	void renderGizmoCtrl();
-	void renderTransform(Transform* transform, CollisionInfo* collision);
-	void renderRender(Render* render, GameObject* selected, Animation* animation);
-	void renderCollision(CollisionInfo* collision, Transform* transform, GameObject* selected, GameObjectManager& manager);
-	void renderInput();
-	void renderPhysics(Physics* physic, bool canMove);
-	void renderFont(FontComponent* font);
+	void renderTransform(GameObject* selected);
+	void renderRender(GameObject* selected);
+	void renderCollision(GameObject* selected, GameObjectManager& manager);
+	void renderInput(GameObject* selected);
+	void renderPhysics(GameObject* selected, bool canMove);
+	void renderFont(GameObject* selected);
 
 	Editor::ObjSelectionState& m_objSelectionState;
 	Editor::GizmoState& m_gizmoState;

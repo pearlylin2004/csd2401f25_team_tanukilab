@@ -101,7 +101,14 @@ public:
 
 	//remove component of type T
     template <typename T>
-    bool removeComponent();
+    bool removeComponent() {
+        auto iterator = m_components.find(std::type_index(typeid(T)));
+        if (iterator != m_components.end()) {
+            m_components.erase(iterator);
+            return true;//component removed
+        }
+        return false;//component not found
+    }
 
 private:
     std::string m_name;//name of object

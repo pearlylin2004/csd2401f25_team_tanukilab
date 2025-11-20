@@ -934,7 +934,7 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 
 
 		for (GameObject* obj : layerObjects) {
-			if (!obj->getComponent<CollisionInfo>() || !obj->hasComponent<Transform>()) continue;
+			if (!obj->getComponent<CollisionInfo>() || !obj->hasComponent<Transform>() || !obj->hasComponent<Render>()) continue;
 			CollisionInfo* c = obj->getComponent<CollisionInfo>();
 			if (!c->collisionFlag) continue; // skip if obj not supposed to collide
 
