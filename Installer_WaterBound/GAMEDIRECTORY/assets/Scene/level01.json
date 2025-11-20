@@ -1,0 +1,122 @@
+{
+  "version": 1,
+  "objects": [
+    {
+      "prefabid": "dd60e1e1-641c-4ed5-b69d-ffadfa02fb7a",
+      "name": "player",
+      "components": {
+        "Transform": {
+         "pos": [0.0, 0.0, 0.03]
+        },
+        "AudioComponent": {}
+      }
+    },
+    {
+      "prefabid": "f7665aa3-619e-49a1-892a-31fbc8b377a2",
+      "name": "platform",
+      "components": {}
+    },
+    {
+      "name": "bullet",
+      "components": {
+        "Transform": {
+          "pos": [0.0, 0.0, 0.02],
+          "rotation": 0.5,
+          "scale": [0.5, 0.5, 0.0]
+        },
+        "Render": {
+          "shape": "square",
+          "hasTex": 0,
+          "hasAnimation": 0,
+          "clr": [ 1.0, 1.0, 1.0 ]
+        },
+        "Physics": { "inWater": 0, "buoyancy": 0 },
+	      "AudioComponent": {
+          "soundId": "shoot",
+          "volume": 0.8,
+          "playOnStart": 0,
+	        "fadeInOnStart": 1,
+          "fadeInDuration": 0.2,
+          "fadeOutOnStop": 1,
+          "fadeOutDuration": 0.5
+        }
+
+      }
+    },
+    {
+      "prefabid": "4828c393-9fcf-42f8-8b05-ddc8d75096be",
+      "name": "player1",
+      "layer" : 1,
+      "components": {
+        "AudioComponent": {}
+      }
+    },
+    {
+      "name": "smoke",
+      "components": {
+        "Transform": {
+          "pos": [-12.0, 0.0, 0.02],
+          "rotation": 1.0,
+          "scale": [3.0, 5.0, 0.0]
+        },
+        "Render": {
+          "shape": "square",
+          "hasTex": 1,
+          "texture": "assets/Smoke-Sprite-Sheet.png",
+          "hasAnimation": 1
+        },
+        "Animation": {
+          "loop": 1,
+          "currentFrameColumn": 0,
+          "currentFrameRow": 0,
+          "totalColumn": 8,
+          "totalRow": 1,
+          "frameTime": 0.147
+        },
+        "AudioComponent": {}
+      }
+    },
+    {
+      "prefabid": "4828c393-9fcf-42f8-8b05-ddc8d75096be",
+      "name": "player2",
+      "components": {
+        "Transform": {
+          "pos": [-5.0, 0.0, 0.01]
+        },
+        "AudioComponent": {}
+      }
+    },
+    {
+      "name": "text",
+      "components": {
+        "Transform": {
+          "pos": [5.0, 5.0, 0.01],
+          "rotation": 1.0,
+          "scale": [ 1.0, 1.0, 0.0 ]
+        },
+        "FontComponent": {
+          "word": "test 123",
+          "color": [0.0, 0.0, 0.0],
+          "scale": 1.0,
+          "fontType": 0
+        }
+      }
+    },
+    {
+      "name": "text2",
+      "components": {
+        "Transform": {
+          "pos": [-5.0, 5.0, 0.01],
+          "rotation": 1.0,
+          "scale": [ 1.0, 1.0, 0.0 ]
+        },
+        "FontComponent": {
+          "word": "test 123",
+          "color": [0.0, 0.0, 0.0],
+          "scale": 1.0,
+          "fontType": 1
+        }
+      }
+    }
+  ]
+}
