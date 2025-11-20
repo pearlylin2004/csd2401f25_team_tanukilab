@@ -140,7 +140,13 @@ namespace Editor {
 
 		{"Collision",
 			[] (GameObject* obj) {
-			obj->addComponent<CollisionInfo>();
+			CollisionInfo* c = obj->addComponent<CollisionInfo>();
+
+			Transform* t = obj->getComponent<Transform>();
+			if (t) {
+				c->colliderSize.x = t->scaleX;
+				c->colliderSize.y = t->scaleY;
+			}
 			DebugLog::addMessage("Added Collision component for " + obj->getObjectName());
 			},
 			[](const GameObject* obj) { return obj->hasComponent<CollisionInfo>(); }

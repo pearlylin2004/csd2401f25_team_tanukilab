@@ -186,7 +186,7 @@ public:
     Vector2D contactPoint = { 0,0 };
     float penetration = 0.0f; //for it to not overlap 
     Vector2D colliderSize{ 0,0 }; // size of the bounding box
-    bool autoFitScale = false; // auto-fit the collider with the size of the game obj (i.e. obj bigger -> collider bigger)
+    bool autoFitScale = true; // auto-fit the collider with the size of the game obj (i.e. obj bigger -> collider bigger)
 };
 
 // For imgui(testing)
