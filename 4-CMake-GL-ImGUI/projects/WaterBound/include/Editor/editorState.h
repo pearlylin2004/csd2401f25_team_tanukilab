@@ -3,6 +3,7 @@
 #include <memory>
 #include <filesystem>
 #include <imgui.h>
+#include <ImGuizmo.h>
 #include "GameObjectManager.h"
 
 namespace Editor {
@@ -91,6 +92,22 @@ namespace Editor {
 	/* ----------------- Scene End -----------------*/
 
 
+	enum GizmoOperation {
+		GIZMO_NONE = -1,
+		GIZMO_TRANSLATE = ImGuizmo::TRANSLATE,
+		GIZMO_ROTATE = ImGuizmo::ROTATE,
+		GIZMO_SCALE = ImGuizmo::SCALE
+	};
+
+	struct GizmoState {
+		GizmoOperation currentOp = GIZMO_NONE; // ImGuizmo::OPERATION
+		ImGuizmo::MODE currentMode = ImGuizmo::WORLD; // do not change
+		bool useSnap = false;
+		float snapValues[3] = { 1.f, 1.f, 1.f };
+		float snapAngle = 15.f;
+	};
+
+
 	/* ----------------- Component Entry ---------------- */
 	struct ComponentEntry {
 		std::string name;
@@ -106,6 +123,7 @@ namespace Editor {
 	inline SceneWindowState sceneWindowState;
 	inline AssetBrowserState assetBrowserState;
 	inline SceneState sceneState;
+	inline GizmoState gizmoState;
 
 	/* ----------------- Component Registry ---------------- */
 	// add useful func here to check/add components for Editor Inspector
@@ -122,7 +140,13 @@ namespace Editor {
 
 		{"Collision",
 			[] (GameObject* obj) {
-			obj->addComponent<CollisionInfo>();
+			CollisionInfo* c = obj->addComponent<CollisionInfo>();
+
+			Transform* t = obj->getComponent<Transform>();
+			if (t) {
+				c->colliderSize.x = t->scaleX;
+				c->colliderSize.y = t->scaleY;
+			}
 			DebugLog::addMessage("Added Collision component for " + obj->getObjectName());
 			},
 			[](const GameObject* obj) { return obj->hasComponent<CollisionInfo>(); }

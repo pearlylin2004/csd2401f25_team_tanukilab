@@ -78,6 +78,24 @@ macro(import_imgui)
         set_property(TARGET imgui PROPERTY CXX_STANDARD 11)
         set_property(TARGET imgui PROPERTY CXX_STANDARD_REQUIRED ON)
     endif()
+    
+    # =============== Import ImGuizmo =====================
+    if(NOT TARGET ImGuizmo)
+        FetchContent_Declare(
+            imguizmo
+            GIT_REPOSITORY https://github.com/CedricGuillemet/ImGuizmo.git
+            GIT_TAG master
+        )
+        FetchContent_MakeAvailable(imguizmo)
+
+        file(GLOB IMGUIZMO_SOURCES 
+            ${imguizmo_SOURCE_DIR}/ImGuizmo.cpp
+        )
+
+        add_library(ImGuizmo STATIC ${IMGUIZMO_SOURCES})
+        target_include_directories(ImGuizmo PUBLIC ${imguizmo_SOURCE_DIR})
+        target_link_libraries(ImGuizmo PUBLIC imgui)
+    endif()
 endmacro()
 
 # ===================== Import stb (header-only) =====================

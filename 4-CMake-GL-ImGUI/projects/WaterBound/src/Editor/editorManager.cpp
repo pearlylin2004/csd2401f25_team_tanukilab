@@ -26,10 +26,10 @@ EditorManager::EditorManager() :
     editorDebugWindow(DebugMode::Editor),
     playDebugWindow(DebugMode::PlaySimul),
     hierarchyWindow(Editor::objSelectionState),
-    inspectorWindow(Editor::objSelectionState),
+    inspectorWindow(Editor::objSelectionState, Editor::gizmoState),
     menuBar(assetBrowser, Editor::assetBrowserState, Editor::menuBarState, Editor::objSelectionState, Editor::sceneState),
     performanceWindow(),
-    sceneWindow(assetBrowser, Editor::objSelectionState, Editor::menuBarState, Editor::sceneWindowState, Editor::sceneState) {}
+    sceneWindow(assetBrowser, Editor::objSelectionState, Editor::menuBarState, Editor::sceneWindowState, Editor::sceneState, Editor::gizmoState) {}
 
 void EditorManager::update(GameObjectManager& manager) {
     if (assetsChangedFlag) {
@@ -56,6 +56,32 @@ void EditorManager::renderScene(GLuint texture, float aspectRatio, GameObjectMan
 }
 
 void EditorManager::handleShortcutKeys(GameObjectManager& manager) {
+
+    /* --------------- ""Q" -> Deselect Obj --------------- */
+    if (InputHandler::isKeyTriggered(GLFW_KEY_Q)) {
+        if (Editor::objSelectionState.selectedObject) {
+            sceneWindow.resetSelection();
+        }
+    }
+    /* --------------- END --------------- */
+
+    /* --------------- GIZMO CONTROL --------------- */
+    if (Editor::objSelectionState.selectedObject && !ImGuizmo::IsUsing()) {
+        if (InputHandler::isKeyTriggered(GLFW_KEY_W)) {
+            Editor::gizmoState.currentOp = Editor::GIZMO_TRANSLATE;
+        }
+        if (InputHandler::isKeyTriggered(GLFW_KEY_E)) {
+            Editor::gizmoState.currentOp = Editor::GIZMO_ROTATE;
+        }
+        if (InputHandler::isKeyTriggered(GLFW_KEY_R)) {
+            Editor::gizmoState.currentOp = Editor::GIZMO_SCALE;
+        }
+        if (InputHandler::isKeyTriggered(GLFW_KEY_T)) {
+            Editor::gizmoState.currentOp = Editor::GIZMO_NONE;
+        }
+    }
+    /* --------------- END --------------- */
+
     /* --------------- "CTRL" + "S" -> Save Scene --------------- */
     {
         if (InputHandler::isComboKeyTriggered(GLFW_KEY_S) ||
