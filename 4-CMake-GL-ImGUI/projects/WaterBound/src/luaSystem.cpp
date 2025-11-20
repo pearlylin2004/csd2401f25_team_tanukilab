@@ -23,9 +23,6 @@ void LuaSystem::init() {
     lua_register(L, "getPosition", Lua_getPosition);
     lua_register(L, "setPosition", Lua_setPosition);
 
-    //register for menu button
-    
-        
     //for message
     lua_pushlightuserdata(L, this);
     lua_pushcclosure(L, Lua_SendInputEvent, 1);
