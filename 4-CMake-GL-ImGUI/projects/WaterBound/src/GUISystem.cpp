@@ -79,6 +79,10 @@ void GUISystem::update(GameObjectManager& manager) {
                 stopGame(manager);
                 return; //stop checking after a click
             }
+            else if (name == "credit_button") {
+                //need a credit function 
+                return; //stop checking after a click
+            }
             //idk if we need more buttons
         }
     }
