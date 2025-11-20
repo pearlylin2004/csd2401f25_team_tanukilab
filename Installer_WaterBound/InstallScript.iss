@@ -13,7 +13,7 @@ AppPublisher=DigiPen Institute of Technology
 AppPublisherURL=http://www.digipen.edu/
 AppSupportURL=http://www.digipen.edu/
 
-; Default install path in Program Files (requirement 1907)
+; Default install path in Program Files
 DefaultDirName={pf}\DigiPen\WaterBound
 
 ; Start menu directory
@@ -25,10 +25,10 @@ OutputDir=.\INSTALLER
 ; Setup executable installer
 OutputBaseFilename=WaterBound_Setup
 
-; Path to the DigiPen EULA (Needed to pass TCRs)
+; Path to the DigiPen EULA
 LicenseFile=INSTALLERFILES\DigiPen_EULA.txt
 
-; Path to the icon for the installer (TCR check requires custom icon)
+; Path to the icon for the installer 
 SetupIconFile=.\INSTALLERFILES\SetupIcon.ico
 
 ; Compression scheme for the installer.
@@ -49,9 +49,6 @@ Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{
 [Files]
 ; Main game directory (your Release exe + assets) -> {app}
 Source: ".\GAMEDIRECTORY\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
-
-; Optional: user documents (readme, controls, etc.) -> Documents\WaterBound
-Source: ".\USERDOCS\*"; DestDir: "{userdocs}\WaterBound"; Flags: ignoreversion recursesubdirs createallsubdirs
 
 ; VC++ Redistributable copied to temp
 Source: ".\REDIST\VC_redist.x64.exe"; DestDir: "{tmp}"; Flags: ignoreversion
@@ -76,8 +73,3 @@ Filename: "{tmp}\VC_redist.x64.exe"; Parameters: "/install /quiet /norestart"; \
 ; Option to launch the game after install
 Filename: "{app}\WaterBound.exe"; Description: "{cm:LaunchProgram,WaterBound}"; \
     Flags: nowait postinstall skipifsilent
-
-; To build WaterBound_Setup.exe:
-; 1) Install Inno Setup
-; 2) Open this .iss file
-; 3) Compile
