@@ -4,7 +4,7 @@
 ; !!NOTE!!: The value of AppId uniquely identifies this application.
 ; You can generate a new GUID in Visual Studio (Tools -> Create GUID),
 ; then replace the one below.
-AppId={{6E54C5F5-2B5F-4B7D-9F31-8F2A4F0E9F31}
+AppId={{10479E23-9D27-4730-B89F-8B9E0485DFDB}
 
 ; ---- Standard app data ----
 AppName=WaterBound
@@ -59,8 +59,6 @@ Source: ".\REDIST\VC_redist.x64.exe"; DestDir: "{tmp}"; Flags: ignoreversion
 Name: "{group}\WaterBound"; Filename: "{app}\WaterBound.exe"; WorkingDir: "{app}"; IconFilename: "{app}\Icon.ico"
 Name: "{group}\{cm:UninstallProgram,WaterBound}"; Filename: "{uninstallexe}"
 Name: "{group}\{cm:UninstallProgram,WaterBound}"; Filename: "{uninstallexe}"; IconFilename: "{app}\Icon.ico"
-
-; Desktop shortcut (optional task)
 Name: "{commondesktop}\WaterBound"; Filename: "{app}\WaterBound.exe"; \
     Tasks: desktopicon; WorkingDir: "{app}"; IconFilename: "{app}\Icon.ico"
 
