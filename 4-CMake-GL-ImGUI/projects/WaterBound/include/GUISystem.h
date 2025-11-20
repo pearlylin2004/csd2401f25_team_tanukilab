@@ -48,7 +48,7 @@ private:
     void createButtons(GameObjectManager& manager); //create menu buttons
     void removeMenuButtons(GameObjectManager& manager); //remove menu buttons
 	void startGame(GameObjectManager& manager); //start game
-    void stopGame(GameObjectManager& manager); //stop game
+    void stopGame(); //stop game
 
     bool isPointInButton(const Vector2D& point, GameObject* button);
 

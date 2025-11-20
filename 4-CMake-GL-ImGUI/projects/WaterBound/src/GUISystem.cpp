@@ -24,8 +24,6 @@ Technology is prohibited.
 #include <iostream>
 #include <fstream>
 
-#define RUNTIME_SCENE_DIR_R "./assets/Scene"
-
 static std::string runtimeScenePath(std::string const& name) {
     return std::string(RUNTIME_SCENE_DIR_R) + "/" + name;
 }
@@ -79,7 +77,7 @@ void GUISystem::update(GameObjectManager& manager) {
                     return; //stop checking after a click
                 }
                 else if (name == "exit_button") {
-                    stopGame(manager);
+                    stopGame();
                     return; //stop checking after a click
                 }
                 else if (name == "crontrol_button") {
@@ -178,7 +176,7 @@ void GUISystem::startGame(GameObjectManager& manager) {
 }
 
 //stop game and quit
-void GUISystem::stopGame(GameObjectManager& manager) {
+void GUISystem::stopGame() {
     std::cout << "[GUI] Stop button clicked - quitting application" << std::endl;
 
     // Close the GLFW window to exit the application
