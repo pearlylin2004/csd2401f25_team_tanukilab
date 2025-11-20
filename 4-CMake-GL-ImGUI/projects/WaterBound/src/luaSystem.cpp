@@ -24,20 +24,8 @@ void LuaSystem::init() {
     lua_register(L, "setPosition", Lua_setPosition);
 
     //register for menu button
-    /*lua_register(L, "startGame", [](lua_State* L) {
-        if (guiSystem && guiSystem->g_manager) {
-            guiSystem->startGame(*guiSystem->g_manager);
-        }
-        return 0;
-        });
-
-    lua_register(L, "stopGame", [](lua_State* L) {
-        if (guiSystem && guiSystem->g_manager) {
-            guiSystem->stopGame(*guiSystem->g_manager);
-        }
-        return 0;
-        });
-        */
+    
+        
     //for message
     lua_pushlightuserdata(L, this);
     lua_pushcclosure(L, Lua_SendInputEvent, 1);
