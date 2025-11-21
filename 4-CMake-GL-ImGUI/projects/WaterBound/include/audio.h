@@ -77,7 +77,7 @@ public:
 	// bool loadSound(soundID id, const std::string& filePath, bool loop = false);
 	
 	// play the sound, return the channel pointer if successful, nullptr if failed
-	FMOD::Channel* playSound(AudioComponent* audio, float volume = 1.0f);
+	FMOD::Channel* playSound(AudioComponent* audio);
 
 	// call this to PAUSE / RESUME sound
 	/*void toggleSoundPause(AudioComponent* audio);*/

@@ -190,6 +190,13 @@ namespace Editor {
 			DebugLog::addMessage("Added Font component for " + obj->getObjectName());
 			},
 			[](const GameObject* obj) { return obj->hasComponent<FontComponent>(); }
+		},
+		{"Audio",
+			[](GameObject* obj) {
+			obj->addComponent<AudioComponent>();
+			DebugLog::addMessage("Added Audio component for " + obj->getObjectName());
+			},
+			[](const GameObject* obj) { return obj->hasComponent<AudioComponent>(); }
 		}
 	};
 	/* ----------------- Component End ---------------- */

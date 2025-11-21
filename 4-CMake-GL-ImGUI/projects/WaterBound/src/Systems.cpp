@@ -1239,7 +1239,7 @@ void AudioSystem::init(GameObjectManager& manager) {
 
 		// Play on start 
 		if (audio->playOnStart) {
-			audio->channel = audioHandler.playSound(audio, audio->volume);
+			audio->channel = audioHandler.playSound(audio);
 			if (audio->channel) {
 				audio->state = AudioState::Playing;
 
@@ -1284,7 +1284,7 @@ void AudioSystem::update(GameObjectManager& manager, float deltaTime) {
 		if (/*audio->soundId == soundID::bg && */ audio->playOnStart) {
 			if (!audio->channel || !audioHandler.isSoundPlaying(audio)) {
 				// Restart background music if  not playing
-				audio->channel = audioHandler.playSound(audio, audio->volume);
+				audio->channel = audioHandler.playSound(audio);
 				if (audio->channel) {
 					audio->state = AudioState::Playing;
 					audioHandler.setSoundpitch(audio, audio->pitch);
@@ -1319,7 +1319,7 @@ void AudioSystem::processAudioComponent(GameObject* obj, AudioComponent* audio, 
 	if (audio->isPendingPlay) {
 		audio->isPendingPlay = false;
 
-		audio->channel = audioHandler.playSound(audio, audio->volume);
+		audio->channel = audioHandler.playSound(audio);
 		if (audio->channel) {
 			audio->state = AudioState::Playing;
 

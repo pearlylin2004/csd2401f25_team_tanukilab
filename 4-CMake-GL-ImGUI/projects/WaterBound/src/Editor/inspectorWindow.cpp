@@ -156,6 +156,17 @@ void InspectorWindow::render(GameObjectManager& manager) {
         }
         /* ------------------- END ------------------- */
 
+        /* ------------------- Font ------------------- */
+        if (selected->hasComponent<AudioComponent>()) {
+            //Transform* transform = selected->getComponent<Transform>();
+            renderAudio(selected);
+
+            ImGui::Spacing();
+            ImGui::Separator();
+            ImGui::Spacing();
+        }
+        /* ------------------- END ------------------- */
+
 
         /* ------------------- Add Component ------------------- */
         addComponent(selected);
@@ -326,19 +337,18 @@ void InspectorWindow::renderRender( GameObject* selected) {
                     std::string path = droppedPath;
 
                     const std::string debugPrefix = "Debug/";
-                    size_t pos = path.find(debugPrefix);
-                    if (pos != std::string::npos) path = path.substr(pos + debugPrefix.size());
 
-                    /* --- File extension validation --- */
-                    std::string ext;
-                    size_t dotPos = path.find_last_of('.');
-                    if (dotPos != std::string::npos) ext = path.substr(dotPos + 1);
+                    std::filesystem::path fsPath(path);
+                    if (fsPath.string().find(debugPrefix) == 0) {
+                        fsPath = fsPath.string().substr(debugPrefix.size());
+                    }
 
-                    // Convert to lowercase for consistency
+                    // extract file extension
+                    std::string ext = fsPath.extension().string();
                     std::transform(ext.begin(), ext.end(), ext.begin(), ::tolower);
 
                     // only accept if dropped file is a png/jpg/jpeg
-                    if (ext == "png" || ext == "jpg" || ext == "jpeg") {
+                    if (ext == ".png" || ext == ".jpg" || ext == ".jpeg") {
                         render->texFile = path;
                         render->hasTex = true;
                         render->texChanged = true;
@@ -644,6 +654,98 @@ void InspectorWindow::renderFont(GameObject* selected) {
             // add a delete component func here
             selected->removeComponent<FontComponent>();
             DebugLog::addMessage("Removed Font Component");
+        }
+    }
+}
+
+void InspectorWindow::renderAudio(GameObject* selected) {
+    AudioComponent* audio = selected->getComponent<AudioComponent>();
+
+    if (ImGui::CollapsingHeader("Audio", ImGuiTreeNodeFlags_DefaultOpen)) {
+
+        std::string audioName = audio->audioFile.empty() ? "(Drop new audio here)" : audio->audioFile;
+        ImGui::Button(audioName.c_str());
+
+        /* -------------- Drag and Drop From Asset Browser to Change Audio ------------- */
+        if (ImGui::BeginDragDropTarget()) {
+            if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("ASSET")) {
+                const char* droppedPath = (const char*)payload->Data;
+                std::string path = droppedPath;
+
+                const std::string debugPrefix = "Debug/";
+                std::filesystem::path fsPath(path);
+                if (fsPath.string().find(debugPrefix) == 0) {
+                    fsPath = fsPath.string().substr(debugPrefix.size());
+                }
+
+                // extract file extension
+                std::string ext = fsPath.extension().string(); // includes the dot, e.g. ".wav"
+                std::transform(ext.begin(), ext.end(), ext.begin(), ::tolower);
+
+                // only accept if dropped file is a wav/ogg/mp3
+                if (ext == ".wav" || ext == ".ogg" || ext == ".mp3") {
+                    audio->audioFile = path;
+                    DebugLog::addMessage("Changed audio of " + selected->getObjectName() + " to " + audio->audioFile + "\n");
+                }
+                else {
+                    /* ERROR POP UP HEREEEEEEE */
+
+
+
+                    // invalid audio format -> don't change anything
+                    DebugLog::addMessage("Unsupported audio format : " + path + "\n");
+                }
+
+            }
+            ImGui::EndDragDropTarget();
+        }
+
+        if (!audio->audioFile.empty()) {
+            ImGui::SameLine();
+            ImGui::Spacing();
+            ImGui::Separator();
+            ImGui::Spacing();
+
+            ImGui::Checkbox("Loop", &audio->loop);
+
+            ImGui::Checkbox("Play On Start", &audio->playOnStart);
+
+            ImGui::Checkbox("Fade In On Start", &audio->fadeInOnStart);
+            if (audio->fadeInOnStart) {
+                ImGui::DragFloat("Fade In Duration", &audio->fadeInDuration);
+                audio->fadeInDuration = std::clamp(audio->fadeInDuration, 0.f, 10.f);
+            }
+
+            ImGui::Checkbox("Fade Out On Stop", &audio->fadeOutOnStop);
+            if (audio->fadeOutOnStop) {
+                ImGui::DragFloat("Fade Out Duration", &audio->fadeOutDuration);
+                audio->fadeOutDuration = std::clamp(audio->fadeOutDuration, 0.f, 10.f);
+            }
+
+            if (ImGui::DragFloat("Volume", &audio->volume)) {
+                audio->volume = std::clamp(audio->volume, 0.f, 1.f);
+            }
+
+
+            if (ImGui::DragFloat("Pitch", &audio->pitch)) {
+                audio->pitch = std::clamp(audio->pitch, 0.f, 2.f);
+            }
+
+            // move this to audio in the future
+            if (audio->channel) {
+                audio->channel->stop();
+                audio->channel = nullptr;
+            }
+
+            if (ImGui::Button("Remove Sound")) {
+                audio->audioFile = "";
+            }
+        }
+
+        if (ImGui::Button("Remove Audio", ImVec2(-1, 0))) {
+            // add a delete component func here
+            selected->removeComponent<AudioComponent>();
+            DebugLog::addMessage("Removed Audio Component");
         }
     }
 }
