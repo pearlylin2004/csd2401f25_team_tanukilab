@@ -116,6 +116,7 @@ private:
 	void renderInput(GameObject* selected);
 	void renderPhysics(GameObject* selected, bool canMove);
 	void renderFont(GameObject* selected);
+	void renderAudio(GameObject* selected);
 
 	Editor::ObjSelectionState& m_objSelectionState;
 	Editor::GizmoState& m_gizmoState;

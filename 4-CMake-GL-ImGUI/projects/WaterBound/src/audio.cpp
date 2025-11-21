@@ -143,7 +143,7 @@ void AudioHandler::shutdown() {
 //}
 
 // play the sound, return the channel pointer if successful, nullptr if failed
-FMOD::Channel* AudioHandler::playSound(AudioComponent* audio, float volume) {
+FMOD::Channel* AudioHandler::playSound(AudioComponent* audio) {
 	if (!system) {
 		std::cerr << "Error! Audio system not initialized..." << std::endl;
 		return nullptr;
@@ -165,12 +165,14 @@ FMOD::Channel* AudioHandler::playSound(AudioComponent* audio, float volume) {
 		return nullptr;
 	}
 
+	FMODErrorCheck(sound->setMode(audio->loop ? FMOD_LOOP_NORMAL : FMOD_LOOP_OFF));
+
 	FMOD::Channel* channel = nullptr;
 	//FMODErrorCheck(system->playSound(sounds[pos], nullptr, false, &channel));
 	FMODErrorCheck(system->playSound(sound, nullptr, false, &channel));
 	if (channel) {
-		channel->setVolume(volume);
-		channel->setMode(audio->loop ? FMOD_LOOP_NORMAL : FMOD_LOOP_OFF);
+		channel->setVolume(audio->volume);
+		channel->setPitch(audio->pitch);
 		//channels[pos] = channel; // store this for controlling ltr
 		/*channels[static_cast<size_t>(id)] = channel;
 		fadeInfo[static_cast<size_t>(id)].isFading = false;*/
