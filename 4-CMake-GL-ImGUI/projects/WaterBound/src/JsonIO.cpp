@@ -495,6 +495,282 @@ namespace JsonIO {
 
     /// @}
 
+    /* ---------- Saving obj state in json for undo/redo ---------- */
+    std::string serializeGameObj(GameObject* obj) {
+        if (!obj) return "";
+
+        using namespace rapidjson; // save my life
+
+        Document doc;
+        doc.SetObject();
+        auto& a = doc.GetAllocator();
+
+        // Basic info
+        doc.AddMember("name", Value(obj->getObjectName().c_str(), a), a);
+        doc.AddMember("prefabID", Value(obj->getObjectPrefabID().c_str(), a), a);
+        doc.AddMember("layer", obj->getLayer(), a);
+
+        // Transform
+        if (Transform* t = obj->getComponent<Transform>()) {
+            Value jt(kObjectType);
+            JsonIO::WriteVec3(jt, "pos", t->x, t->y, t->z, a);
+            jt.AddMember("rotation", Value().SetFloat(t->rotation), a);
+            JsonIO::WriteVec3(jt, "scale", t->scaleX, t->scaleY, t->scaleZ, a);
+            doc.AddMember("Transform", jt, a);
+        }
+
+        // Render
+        if (Render* r = obj->getComponent<Render>()) {
+            Value jr(kObjectType);
+
+            jr.AddMember("shape", Value(JsonIO::ShapeToStr(r->modelRef.shape), a),a);
+            jr.AddMember("hasTex", Value().SetBool(r->hasTex), a);
+            if (r->hasTex && !r->texFile.empty()) {
+                jr.AddMember("texture", Value(r->texFile.c_str(), a), a);
+            }
+
+            // 0/1 to mirror prior text formats
+            jr.AddMember("hasAnimation", Value(r->hasAnimation ? 1 : 0), a);
+            JsonIO::WriteVec3(jr, "clr", r->clr.x, r->clr.y, r->clr.z, a);
+
+            doc.AddMember("Render", jr, a);
+        }
+
+        // Physics
+        if (Physics* p = obj->getComponent<Physics>()) {
+            Value jp(kObjectType);
+
+            // lazy to type, but no need to convert boolean to 1/0 should be fine for the obj still
+            jp.AddMember("physicsFlag", p->physicsFlag, a);
+            jp.AddMember("moveSpeed", p->moveSpeed, a);
+            jp.AddMember("jumpForce", p->jumpForce, a);
+            jp.AddMember("gravity", p->gravity, a);
+            jp.AddMember("damping", p->damping, a);
+            jp.AddMember("mass", p->dynamics.mass, a);
+            jp.AddMember("buoyancy", p->buoancy, a);
+
+            doc.AddMember("Physics", jp, a);
+        }
+
+        // Collision
+        if (CollisionInfo* c = obj->getComponent<CollisionInfo>()) {
+            Value jc(kObjectType);
+
+            jc.AddMember("collisionFlag", c->collisionFlag, a);
+            jc.AddMember("autoFitScale", c->autoFitScale, a);
+            jc.AddMember("width", c->colliderSize.x, a);
+            jc.AddMember("height", c->colliderSize.y, a);
+
+            doc.AddMember("Collision", jc, a);
+        }
+
+        // Input
+        if (obj->hasComponent<Input>()) {
+            doc.AddMember("Input", true, a);
+        }
+
+        // Animation
+        if (Animation* an = obj->getComponent<Animation>()) {
+            Value ja(kObjectType);
+
+            ja.AddMember("loop", an->loop, a);
+            ja.AddMember("totalColumn", an->totalColumn, a);
+            ja.AddMember("totalRow", an->totalRow, a);
+            ja.AddMember("frameTime", an->frameTime, a);
+
+            doc.AddMember("Animation", ja, a);
+        }
+
+        // Font
+        if (FontComponent* f = obj->getComponent<FontComponent>()) {
+            Value jf(kObjectType);
+
+            jf.AddMember("word", Value(f->word.c_str(), a), a);
+            jf.AddMember("scale", f->scale, a);
+            jf.AddMember("fontType", f->fontType, a);
+            JsonIO::WriteVec3(jf, "clr", f->clr.x, f->clr.y, f->clr.z, a);
+
+            doc.AddMember("Font", jf, a);
+        }
+
+        // Audio
+        if (AudioComponent* ac = obj->getComponent<AudioComponent>()) {
+            Value ja(kObjectType);
+
+            ja.AddMember("audioFile", Value(ac->audioFile.c_str(), a), a);
+            ja.AddMember("loop", ac->loop, a);
+            ja.AddMember("playOnStart", ac->playOnStart, a);
+            ja.AddMember("volume", ac->volume, a);
+            ja.AddMember("pitch", ac->pitch, a);
+            ja.AddMember("fadeInOnStart", ac->fadeInOnStart, a);
+            ja.AddMember("fadeInDuration", ac->fadeInDuration, a);
+            ja.AddMember("fadeOutOnStop", ac->fadeOutOnStop, a);
+            ja.AddMember("fadeOutDuration", ac->fadeOutDuration, a);
+
+            doc.AddMember("Audio", ja, a);
+        }
+
+        // convert to string
+        StringBuffer buffer;
+        Writer<StringBuffer> writer(buffer);
+        doc.Accept(writer);
+
+        return buffer.GetString();
+    }
+
+    GameObject* deserializeGameObj(GameObjectManager& manager, const std::string& jsonStr) {
+        if (jsonStr.empty()) return nullptr;
+
+        using namespace rapidjson;
+
+        try {
+            Document doc;
+            doc.Parse(jsonStr.c_str());
+            if (doc.HasParseError()) return nullptr;
+
+            std::string name = doc.HasMember("name") ? doc["name"].GetString() : "Unnamed";
+            GameObject* obj = manager.createGameObject(name);
+            if (!obj) return nullptr;
+
+            if (doc.HasMember("prefabID")) obj->getObjectPrefabID() = doc["prefabID"].GetString();
+
+            if (doc.HasMember("layer")) manager.assignObjectToLayer(obj, doc["layer"].GetInt());
+
+            // Transform
+            if (doc.HasMember("Transform")) {
+                const Value& jt = doc["Transform"];
+                Transform* t = obj->addComponent<Transform>();
+
+                ReadVec3(jt, "pos", t->x, t->y, t->z);
+                GetFloat(jt, "rotation", t->rotation);
+                ReadVec3(jt, "scale", t->scaleX, t->scaleY, t->scaleZ);
+            }
+
+            // Render
+            if (doc.HasMember("Render")) {
+                const Value& jr = doc["Render"];
+                Render* r = obj->addComponent<Render>();
+
+                std::string shp = (jr.HasMember("shape") && jr["shape"].IsString())
+                    ? jr["shape"].GetString()
+                    : "square";
+                r->modelRef = renderer::models[static_cast<int>(JsonIO::StrToShape(shp))];
+
+                // hasTex / texture (accept bool or 0/1)
+                if (jr.HasMember("hasTex")) {
+                    r->hasTex = jr["hasTex"].IsBool()
+                        ? jr["hasTex"].GetBool()
+                        : (jr["hasTex"].GetInt() != 0);
+                }
+                else {
+                    r->hasTex = false;
+                }
+
+                if (r->hasTex && jr.HasMember("texture") && jr["texture"].IsString()) {
+                    r->texFile = jr["texture"].GetString();
+                    r->texHDL = 0;         // will be uploaded later by renderer
+                    r->texChanged = true;     // flag for upload
+                }
+                else {
+                    r->texFile.clear();
+                    r->texHDL = 0;
+                    r->texChanged = false;
+                }
+
+                if (jr.HasMember("hasAnimation")) {
+                    r->hasAnimation = jr["hasAnimation"].IsBool()
+                        ? jr["hasAnimation"].GetBool()
+                        : (jr["hasAnimation"].GetInt() != 0);
+                }
+                else {
+                    r->hasAnimation = false;
+                }
+
+                ReadVec3(jr, "clr", r->clr.x, r->clr.y, r->clr.z);
+            }
+
+            // Physics
+            if (doc.HasMember("Physics")) {
+                const Value& jp = doc["Physics"];
+                Physics* p = obj->addComponent<Physics>();
+
+                p->physicsFlag = jp["physicsFlag"].GetBool();
+                p->moveSpeed = jp["moveSpeed"].GetFloat();
+                p->jumpForce = jp["jumpForce"].GetFloat();
+                p->gravity = jp["gravity"].GetFloat();
+                p->damping = jp["damping"].GetFloat();
+                p->dynamics.mass = jp["mass"].GetFloat();
+                p->buoancy = jp["buoyancy"].GetBool();
+            }
+
+            // Collision
+            if (doc.HasMember("Collision")) {
+                const Value& jc = doc["Collision"];
+                CollisionInfo* c = obj->addComponent<CollisionInfo>();
+
+                c->collisionFlag = jc["collisionFlag"].GetBool();
+                c->autoFitScale = jc["autoFitScale"].GetBool();
+                c->colliderSize.x = jc["width"].GetFloat();
+                c->colliderSize.y = jc["height"].GetFloat();
+            }
+
+            // Input
+            if (doc.HasMember("Input") && doc["Input"].GetBool()) {
+                obj->addComponent<Input>();
+            }
+
+            // Animation
+            if (doc.HasMember("Animation")) {
+                const Value& ja = doc["Animation"];
+                Animation* a = obj->addComponent<Animation>();
+
+                if (ja.HasMember("loop")) {
+                    a->loop = ja["loop"].IsBool()
+                        ? ja["loop"].GetBool()
+                        : (ja["loop"].GetInt() != 0);
+                }
+
+                a->totalColumn = ja["totalColumn"].GetInt();
+                a->totalRow = ja["totalRow"].GetInt();
+                a->frameTime = ja["frameTime"].GetFloat();
+            }
+
+            // Font
+            if (doc.HasMember("Font")) {
+                const Value& jf = doc["Font"];
+                FontComponent* f = obj->addComponent<FontComponent>();
+
+                f->word = jf["word"].GetString();
+                f->scale = jf["scale"].GetFloat();
+                f->fontType = jf["fontType"].GetInt();
+                ReadVec3(jf, "clr", f->clr.x, f->clr.y, f->clr.z);
+            }
+
+            // Audio
+            if (doc.HasMember("Audio")) {
+                const Value& ja = doc["Audio"];
+                AudioComponent* a = obj->addComponent<AudioComponent>();
+
+                a->audioFile = ja["audioFile"].GetString();
+                a->loop = ja["loop"].GetBool();
+                a->playOnStart = ja["playOnStart"].GetBool();
+                a->volume = ja["volume"].GetFloat();
+                a->pitch = ja["pitch"].GetFloat();
+                a->fadeInOnStart = ja["fadeInOnStart"].GetBool();
+                a->fadeInDuration = ja["fadeInDuration"].GetFloat();
+                a->fadeOutOnStop = ja["fadeOutOnStop"].GetBool();
+                a->fadeOutDuration = ja["fadeOutDuration"].GetFloat();
+            }
+
+            return obj;
+        }
+        catch (...) {
+            DebugLog::addMessage("Failed to deserialize GameObject with RapidJSON.");
+            return nullptr;
+        }
+    }
+    /* ---------- END ---------- */
+
 } // namespace JsonIO
 
 

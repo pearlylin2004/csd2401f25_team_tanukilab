@@ -37,7 +37,7 @@ Technology is prohibited.
 #include <rapidjson/prettywriter.h>
 #include <rapidjson/filewritestream.h>
 
-#include "GameObject.h"
+#include "GameObjectManager.h"
 #include "Component.h"
 #include "renderer.h"
 
@@ -132,4 +132,9 @@ namespace JsonIO {
 		const glm::vec4& v,
 		rapidjson::Document::AllocatorType& alloc);
 
+
+	// ---- for undo/redo in editor ----
+	std::string serializeGameObj(GameObject* obj);
+	GameObject* deserializeGameObj(GameObjectManager& manager, const std::string& jsonStr);
+	// ---- END ----
 }
