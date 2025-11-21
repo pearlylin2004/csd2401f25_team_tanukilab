@@ -31,13 +31,16 @@ void MenuBar::render(GameObjectManager& manager){
     ImGui::BeginMainMenuBar();
 
     /* ------------------- File Menu ------------------- */
-    drawFileMenu(manager);
+    drawFileMenu(manager); // create/load/duplicate/save
+
+    /* ------------------- Edit Menu ------------------- */
+    drawEditMenu(); // undo/redo
 
     /* ------------------- Simulation ------------------- */
-    drawSimulationMenu(manager);
+    drawSimulationMenu(manager); // play/pause/resume/stop simulation
 
     /* ------------------- Editor Theme ------------------- */
-    drawThemeMenu();
+    drawThemeMenu(); // change theme
 
     ImGui::EndMainMenuBar();
 }
@@ -67,7 +70,7 @@ void MenuBar::drawFileMenu(GameObjectManager& manager) {
         }
 
         // save current scene to file
-        if (ImGui::MenuItem("Save Scene")) {
+        if (ImGui::MenuItem("Save Scene", "CTRL+S")) {
             //manager.saveScene(m_currentSceneName);
             manager.saveScene(JsonIO::sourceScenePath(m_sceneState.currentSceneName));
             JsonIO::syncSceneToRuntime(m_sceneState.currentSceneName);
@@ -94,29 +97,41 @@ void MenuBar::drawFileMenu(GameObjectManager& manager) {
     }
 }
 
+void MenuBar::drawEditMenu() {
+    if (ImGui::BeginMenu("Edit")) {
+        if (ImGui::MenuItem("Undo", "Ctrl+Z", false, UndoRedoManager::Instance().canUndo())) {
+            UndoRedoManager::Instance().undo();
+        }
+
+        if (ImGui::MenuItem("Redo", "Ctrl+Y", false, UndoRedoManager::Instance().canRedo())) {
+            UndoRedoManager::Instance().redo();
+        }
+        ImGui::EndMenu();
+    }
+}
+
 void MenuBar::drawSimulationMenu(GameObjectManager& manager) {
     if (ImGui::BeginMenu("Simulation")) {
-        if (EditorManager::isEditingMode()) {
-            if (ImGui::MenuItem("Play")) {
-                playSimulation(manager);
-            }
+        // show "PLAY" when editing (not playing simulation)
+        if (ImGui::MenuItem("Play", "F5", false, EditorManager::isEditingMode())) {
+            playSimulation(manager);
         }
-        else {
-            if (!EditorManager::isPaused()) {
-                if (ImGui::MenuItem("Pause")) {
-                    pauseSimulation();
-                }
-            }
-            else {
-                if (ImGui::MenuItem("Resume")) {
-                    resumeSimulation();
-                }
-            }
 
-            if (ImGui::MenuItem("Stop")) {
-                stopSimulation(manager);
-            }
+        // show PAUSE when not editing and playing simulation
+        if (ImGui::MenuItem("Pause", "CTRL+F5", false, !EditorManager::isPaused()&&!EditorManager::isEditingMode())) {
+            pauseSimulation();
         }
+
+        // show RESUME when not editing and simulation paused
+        if (ImGui::MenuItem("Resume", "CTRL+F5", false, EditorManager::isPaused()&&!EditorManager::isEditingMode())) {
+            resumeSimulation();
+        }
+
+        // show STOP when playing simulation (not editing)
+        if (ImGui::MenuItem("Stop", "F5", false, !EditorManager::isEditingMode())) {
+            stopSimulation(manager);
+        }
+
         ImGui::EndMenu();
     }
 }
@@ -151,6 +166,9 @@ void MenuBar::stopSimulation(GameObjectManager& manager) {
     // load back the temp scene file to restore state
     manager.loadScene(JsonIO::runtimeScenePath(m_sceneState.tempSceneName));
     manager.initializeSceneResources();
+
+    // clear all undo/redo
+    UndoRedoManager::Instance().clear();
 
 
     m_objSelectionState.selectedObject = nullptr;

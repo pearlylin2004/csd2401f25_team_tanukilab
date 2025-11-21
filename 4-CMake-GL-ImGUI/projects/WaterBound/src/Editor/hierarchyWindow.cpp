@@ -159,7 +159,11 @@ void HierarchyWindow::objDeletePopup(GameObjectManager& manager) {
         if (ImGui::Button("Delete")) {
             std::string name = m_objSelectionState.selectedObject->getObjectName();
 
-            manager.deleteGameObject(m_objSelectionState.selectedObject);
+            //manager.deleteGameObject(m_objSelectionState.selectedObject); -> CREATE DELETE CMD will handle the deletion
+
+            // call CREATE DELETE CMD to settle the deletion, and save in a stack (for undo)
+            auto cmd = std::make_unique<DeleteObjCmd>(manager, m_objSelectionState.selectedObject);
+            UndoRedoManager::Instance().executeCmd(std::move(cmd));
 
             m_objSelectionState.selectedObject = nullptr;
             m_objSelectionState.draggedObject = nullptr;

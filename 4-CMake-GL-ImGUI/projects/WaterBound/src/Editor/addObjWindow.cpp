@@ -168,6 +168,7 @@ void AddObjWindow::createEmpty(GameObjectManager& manager, float x, float y, flo
 }
 
 void AddObjWindow::createRec(GameObjectManager& manager, float x, float y, float z) {
+    std::string name = "Rectangle_" + std::to_string(manager.getGameObjectCount());
     GameObject* recobj = manager.createGameObject("Rectangle_" + std::to_string(manager.getGameObjectCount()));
 
     Transform* transform = recobj->addComponent<Transform>();
@@ -182,6 +183,37 @@ void AddObjWindow::createRec(GameObjectManager& manager, float x, float y, float
     transform->x = x;
     transform->y = y;
     transform->z = z;
+
+    // here we go another lambda, to settle the creation (add Transform & Render)
+    /*auto create = [x, y, z, name](GameObjectManager& manager) -> GameObject* {
+        GameObject* obj = manager.createGameObject(name);
+
+        Transform* t = obj->addComponent<Transform>();
+        Render* r = obj->addComponent<Render>();
+        if (!t || !r) {
+            DebugLog::addMessage("Error creating a game object. Component doesn't exist.");
+            return nullptr;
+        }
+
+        r->modelRef = renderer::models[static_cast<int>(shape::square)];
+
+        t->x = x;
+        t->y = y;
+        t->z = z;
+
+        return obj;
+    };*/
+
+    // create the object
+    //GameObject* recobj = create(manager);
+    if (!recobj) {
+        DebugLog::addMessage("Error creating game object.");
+        return;
+    }
+
+    // record the create command (for undo)
+    auto cmd = std::make_unique<CreateObjectCmd>(manager, name);
+    UndoRedoManager::Instance().executeCmd(std::move(cmd));
 
     DebugLog::addMessage("Rectangle created at (" + std::to_string(x) + ", " + std::to_string(y) + ", " + std::to_string(z) + ")\n");
 }

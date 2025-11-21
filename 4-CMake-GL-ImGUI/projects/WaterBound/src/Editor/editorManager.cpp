@@ -82,9 +82,48 @@ void EditorManager::handleShortcutKeys(GameObjectManager& manager) {
     }
     /* --------------- END --------------- */
 
+
+    /* --------------- "DEL" -> Delete Game Object --------------- */
+    if (InputHandler::isKeyTriggered(GLFW_KEY_DELETE)) {
+        if (Editor::objSelectionState.selectedObject) {
+            Editor::objSelectionState.showDeletePopup = true;
+        }
+    }
+    /* --------------- END --------------- */
+
+
+    /* --------------- "CTRL" + "D" -> Duplicate Game Object --------------- */
+    if (InputHandler::isComboKeyTriggered(GLFW_KEY_D) ||
+        InputHandler::isComboKeyTriggered(GLFW_KEY_D, GLFW_KEY_RIGHT_CONTROL)) {
+        if (Editor::objSelectionState.selectedObject) {
+            AddObjWindow::dupObj(manager, Editor::objSelectionState.selectedObject);
+        }
+    }
+    /* --------------- END --------------- */
+
+
+    /* ------------- "CTRL" + "Z" -> Undo ------------- */
+    if (InputHandler::isComboKeyTriggered(GLFW_KEY_Z) ||
+        InputHandler::isComboKeyTriggered(GLFW_KEY_Z, GLFW_KEY_RIGHT_CONTROL)) {
+        if (isEditingMode() && UndoRedoManager::Instance().canUndo()) {
+            UndoRedoManager::Instance().undo();
+        }
+    }
+    /* --------------- END --------------- */
+
+
+    /* ------------- "CTRL" + "Y" -> Redo ------------- */
+    if (InputHandler::isComboKeyTriggered(GLFW_KEY_Y) ||
+        InputHandler::isComboKeyTriggered(GLFW_KEY_Y, GLFW_KEY_RIGHT_CONTROL)) {
+        if (isEditingMode() && UndoRedoManager::Instance().canRedo()) {
+            UndoRedoManager::Instance().redo();
+        }
+    }
+    /* --------------- END --------------- */
+
+
     /* --------------- "CTRL" + "S" -> Save Scene --------------- */
-    {
-        if (InputHandler::isComboKeyTriggered(GLFW_KEY_S) ||
+    if (InputHandler::isComboKeyTriggered(GLFW_KEY_S) ||
             InputHandler::isComboKeyTriggered(GLFW_KEY_S, GLFW_KEY_RIGHT_CONTROL)) {
             if (isEditingMode()) {
                 manager.saveScene(JsonIO::sourceScenePath(sceneWindow.getCurrentSceneName()));
@@ -94,43 +133,17 @@ void EditorManager::handleShortcutKeys(GameObjectManager& manager) {
                 DebugLog::addMessage("Playing simulation. File cannot be saved.");
             }
         }
-    }
     /* --------------- END --------------- */
 
 
     /* ------------- "CTRL" + "F5" -> Pause/Resume Simulation ------------- */
     /* ------------- "F5" -> Play/Stop Simulation ------------- */
-    {
-        if (InputHandler::isComboKeyTriggered(GLFW_KEY_F5) ||
-            InputHandler::isComboKeyTriggered(GLFW_KEY_F5, GLFW_KEY_RIGHT_CONTROL)) {
-            if (!isEditing) menuBar.pauseResumeSimul();
-        }
-        else if (InputHandler::isKeyTriggered(GLFW_KEY_F5)) {
-            menuBar.toggleSimulation(manager);
-        }
+    if (InputHandler::isComboKeyTriggered(GLFW_KEY_F5) ||
+        InputHandler::isComboKeyTriggered(GLFW_KEY_F5, GLFW_KEY_RIGHT_CONTROL)) {
+        if (!isEditing) menuBar.pauseResumeSimul();
     }
-    /* --------------- END --------------- */
-
-
-    /* --------------- "DEL" -> Delete Game Object --------------- */
-    {
-        if (InputHandler::isKeyTriggered(GLFW_KEY_DELETE)) {
-            if (Editor::objSelectionState.selectedObject) {
-                Editor::objSelectionState.showDeletePopup = true;
-            }
-        }
-    }
-    /* --------------- END --------------- */
-
-
-    /* --------------- "CTRL" + "D" -> Duplicate Game Object --------------- */
-    {
-        if (InputHandler::isComboKeyTriggered(GLFW_KEY_D) ||
-            InputHandler::isComboKeyTriggered(GLFW_KEY_D, GLFW_KEY_RIGHT_CONTROL)) {
-            if (Editor::objSelectionState.selectedObject) {
-                AddObjWindow::dupObj(manager, Editor::objSelectionState.selectedObject);
-            }
-        }
+    else if (InputHandler::isKeyTriggered(GLFW_KEY_F5)) {
+        menuBar.toggleSimulation(manager);
     }
     /* --------------- END --------------- */
 }

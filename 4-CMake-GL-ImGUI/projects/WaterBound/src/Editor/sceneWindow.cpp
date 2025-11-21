@@ -79,6 +79,12 @@ void SceneWindow::render(GLuint texture, float aspectRatio, GameObjectManager& m
             objDragging();
         }
 
+        if (InputHandler::isMouseLeftReleased()) {
+            if (UndoRedoManager::Instance().isEditingTransform() && m_objSelectionState.draggedObject) {
+                UndoRedoManager::Instance().endTransformEdit(manager, m_objSelectionState.draggedObject);
+            }
+        }
+
     }
 
     ImGuizmo::BeginFrame();
@@ -155,6 +161,14 @@ void SceneWindow::renderGizmo(GameObjectManager& manager) {
         snapPtr = snapValue;
     }
 
+    static bool wasUsingGizmo = false;
+    bool isUsingGizmo = ImGuizmo::IsUsing();
+
+    // Detect gizmo drag start
+    if (isUsingGizmo && !wasUsingGizmo) {
+        UndoRedoManager::Instance().beginTransformEdit(manager, selected);
+    }
+
     // draw gizmo and settle the changes
     if (ImGuizmo::Manipulate(glm::value_ptr(view), glm::value_ptr(proj),
         static_cast<ImGuizmo::OPERATION>(m_gizmoState.currentOp), m_gizmoState.currentMode,
@@ -184,6 +198,11 @@ void SceneWindow::renderGizmo(GameObjectManager& manager) {
             }
         }
     }
+
+    if (!isUsingGizmo && wasUsingGizmo) {
+        UndoRedoManager::Instance().endTransformEdit(manager, selected);
+    }
+    wasUsingGizmo = isUsingGizmo;
 
     /*DebugLog::addMessage(
         "Gizmo - Op: " + std::to_string(m_gizmoState.currentOp) +
@@ -279,6 +298,9 @@ void SceneWindow::loadScene(GameObjectManager& manager) {
     //manager.loadFromFile(m_MenuBarState.sceneToLoad);
     manager.loadScene(JsonIO::runtimeScenePath(m_menuBarState.sceneToLoad));
     manager.initializeSceneResources();
+
+    // clear all undo/redo
+    UndoRedoManager::Instance().clear();
 
     m_sceneState.currentSceneName = std::move(m_menuBarState.sceneToLoad);
 
@@ -477,6 +499,8 @@ void SceneWindow::objPicking(GameObjectManager& manager) {
         m_objSelectionState.selectedPrefab = nullptr;
         m_objSelectionState.selectedObject = selected;
         m_objSelectionState.draggedObject = selected;
+
+        UndoRedoManager::Instance().beginTransformEdit(manager, selected);
 
         auto iterator = std::find(gameObjects.begin(), gameObjects.end(), selected);
         if (iterator != gameObjects.end()) {

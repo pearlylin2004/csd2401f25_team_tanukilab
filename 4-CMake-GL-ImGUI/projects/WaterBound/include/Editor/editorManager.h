@@ -26,6 +26,7 @@ Technology is prohibited.
 #include <algorithm>
 #include "Editor/editorState.h"
 #include "Editor/gameDebugLog.h"
+#include "Editor/undoRedo.h"
 #include "collision.h"
 #include "GameObjectManager.h"
 #include "JsonIO.h"
@@ -131,6 +132,7 @@ public:
 
 private:
 	void drawFileMenu(GameObjectManager& manager);
+	void drawEditMenu();
 	void drawSimulationMenu(GameObjectManager& manager);
 	void drawThemeMenu();
 

@@ -71,7 +71,6 @@ void InspectorWindow::render(GameObjectManager& manager) {
                     DebugLog::addMessage("Failed to rename: name already exists\n");
                 }
             }
-            ImGui::SetItemDefaultFocus();
         }
         else {
             ImGui::Text("Prefab Name: "); ImGui::SameLine();
@@ -179,6 +178,11 @@ void InspectorWindow::render(GameObjectManager& manager) {
     }
     else {
         ImGui::Text("No object selected");
+
+        m_objSelectionState.selectedObject = nullptr;
+        m_objSelectionState.draggedObject = nullptr;
+        m_objSelectionState.selectedPrefab = nullptr;
+        m_objSelectionState.selectedIndex = -1;
     }
 
     ImGui::End();
@@ -661,7 +665,7 @@ void InspectorWindow::renderFont(GameObject* selected) {
 void InspectorWindow::renderAudio(GameObject* selected) {
     AudioComponent* audio = selected->getComponent<AudioComponent>();
 
-    if (ImGui::CollapsingHeader("Audio", ImGuiTreeNodeFlags_DefaultOpen)) {
+    if (ImGui::CollapsingHeader("Audio")) {
 
         std::string audioName = audio->audioFile.empty() ? "(Drop new audio here)" : audio->audioFile;
         ImGui::Button(audioName.c_str());
