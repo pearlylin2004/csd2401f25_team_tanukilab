@@ -701,8 +701,20 @@ void InspectorWindow::renderAudio(GameObject* selected) {
         }
 
         if (!audio->audioFile.empty()) {
-            ImGui::SameLine();
             ImGui::Spacing();
+            ImGui::Separator();
+            ImGui::Spacing();
+
+            if (ImGui::Button("Remove Sound")) {
+                audio->audioFile = "";
+
+                // move this to audio in the future
+                if (audio->channel) {
+                    audio->channel->stop();
+                    audio->channel = nullptr;
+                }
+            }
+
             ImGui::Separator();
             ImGui::Spacing();
 
@@ -710,35 +722,33 @@ void InspectorWindow::renderAudio(GameObject* selected) {
 
             ImGui::Checkbox("Play On Start", &audio->playOnStart);
 
-            ImGui::Checkbox("Fade In On Start", &audio->fadeInOnStart);
-            if (audio->fadeInOnStart) {
-                ImGui::DragFloat("Fade In Duration", &audio->fadeInDuration);
-                audio->fadeInDuration = std::clamp(audio->fadeInDuration, 0.f, 10.f);
+            if (ImGui::TreeNode("Control")) {
+                if (ImGui::DragFloat("Volume", &audio->volume, 0.01f)) {
+                    audio->volume = std::clamp(audio->volume, 0.f, 1.f);
+                }
+
+
+                if (ImGui::DragFloat("Pitch", &audio->pitch, 0.01f)) {
+                    audio->pitch = std::clamp(audio->pitch, 0.f, 2.f);
+                }
+
+                ImGui::TreePop();
             }
 
-            ImGui::Checkbox("Fade Out On Stop", &audio->fadeOutOnStop);
-            if (audio->fadeOutOnStop) {
-                ImGui::DragFloat("Fade Out Duration", &audio->fadeOutDuration);
-                audio->fadeOutDuration = std::clamp(audio->fadeOutDuration, 0.f, 10.f);
-            }
+            if (ImGui::TreeNode("Fade In/Out")) {
+                ImGui::Checkbox("Fade In On Start", &audio->fadeInOnStart);
+                if (audio->fadeInOnStart) {
+                    ImGui::DragFloat("Fade In Duration", &audio->fadeInDuration, 0.01f);
+                    audio->fadeInDuration = std::clamp(audio->fadeInDuration, 0.f, 10.f);
+                }
 
-            if (ImGui::DragFloat("Volume", &audio->volume)) {
-                audio->volume = std::clamp(audio->volume, 0.f, 1.f);
-            }
+                ImGui::Checkbox("Fade Out On Stop", &audio->fadeOutOnStop);
+                if (audio->fadeOutOnStop) {
+                    ImGui::DragFloat("Fade Out Duration", &audio->fadeOutDuration, 0.01f);
+                    audio->fadeOutDuration = std::clamp(audio->fadeOutDuration, 0.f, 10.f);
+                }
 
-
-            if (ImGui::DragFloat("Pitch", &audio->pitch)) {
-                audio->pitch = std::clamp(audio->pitch, 0.f, 2.f);
-            }
-
-            // move this to audio in the future
-            if (audio->channel) {
-                audio->channel->stop();
-                audio->channel = nullptr;
-            }
-
-            if (ImGui::Button("Remove Sound")) {
-                audio->audioFile = "";
+                ImGui::TreePop();
             }
         }
 
