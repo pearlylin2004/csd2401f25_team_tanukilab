@@ -22,6 +22,7 @@ void LuaSystem::init() {
     lua_register(L, "Input_isKeyHeld", Lua_IsKeyHeld);
     lua_register(L, "getPosition", Lua_getPosition);
     lua_register(L, "setPosition", Lua_setPosition);
+
     //for message
     lua_pushlightuserdata(L, this);
     lua_pushcclosure(L, Lua_SendInputEvent, 1);
@@ -117,46 +118,6 @@ int LuaSystem::Lua_setPosition(lua_State* L) {
 
     return 0;
 }
-
-//bool LuaSystem::loadScriptForObject(const std::string& filename, const std::string& tableName) {
-//    if (!L) return false;
-//
-//    //reload only if file modified
-//    static std::unordered_map<std::string, std::filesystem::file_time_type> fileTimes;
-//    auto currentTime = std::filesystem::last_write_time(filename);
-//    bool reload = false;
-//
-//    //check if file have changed to know if need reload
-//    if (fileTimes.find(filename) == fileTimes.end() || fileTimes[filename] != currentTime) {
-//        fileTimes[filename] = currentTime;
-//        reload = true;
-//    }
-//
-//    if (reload) {
-//        //create a table for the script namespace
-//        lua_newtable(L);
-//        lua_setglobal(L, tableName.c_str()); //assign table to global
-//
-//        //load script
-//        if (luaL_dofile(L, filename.c_str()) != LUA_OK) {
-//            std::cerr << "Lua error loading " << filename << ": "
-//                << lua_tostring(L, -1) << std::endl;
-//            lua_pop(L, 1);
-//            return false;
-//        }
-//        std::cout << "[Lua] Reloaded script: " << filename << std::endl;
-//    }
-//
-//    /*
-//    //alternative
-//    //load the Lua script from file every time
-//    if (luaL_dofile(L, filename.c_str()) != LUA_OK) {
-//        std::cerr << "Lua error: " << lua_tostring(L, -1) << std::endl;
-//        lua_pop(L, 1);
-//        return false;
-//    }*/
-//    return true;
-//}
 
 bool LuaSystem::loadScriptForObject(const std::string& filename, const std::string& tableName) {
     if (!L) return false;

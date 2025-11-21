@@ -24,8 +24,6 @@ Technology is prohibited.
 #include <iostream>
 #include <fstream>
 
-#define RUNTIME_SCENE_DIR_R "./assets/Scene"
-
 static std::string runtimeScenePath(std::string const& name) {
     return std::string(RUNTIME_SCENE_DIR_R) + "/" + name;
 }
@@ -43,6 +41,15 @@ void GUISystem::init(GameObjectManager& manager, LuaSystem& luaSystem) {
 
     // Load the menu scene - this will populate button data in the manager
     manager.loadScene(runtimeScenePath("menu_scene.json"));
+    // Assign background layer explicitly
+    std::vector<GameObject*> allObjs;
+    manager.getAllGameObjects(allObjs);
+    for (GameObject* obj : allObjs) {
+        const std::string& name = obj->getObjectName();
+        if (name == "background") {
+            manager.assignObjectToLayer(obj, 0); // layer 0 for background
+        }
+    }
 
 	createButtons(manager); //create buttons from loaded scene
 
@@ -56,34 +63,38 @@ void GUISystem::update(GameObjectManager& manager) {
     // Only handle GUI interactions in menu state
     if (m_currentState != GameState::MENU) return;
 
-    if (!InputHandler::isMouseButtonClicked(GLFW_MOUSE_BUTTON_LEFT)) return; //only if left click
-
     //get mouse position
     Vector2D worldMousePos = InputHandler::getWorldMousePosition();
     Vector2D worldPos = Vec_Set(worldMousePos.x, worldMousePos.y);
 
-    //loop through all buttons in the map
-    for (auto& pair : m_buttons) {
-        const std::string& name = pair.first;
-        GameObject* btn = pair.second;
+    if (!InputHandler::isMouseButtonClicked(GLFW_MOUSE_BUTTON_LEFT)) {
+		//when hover over button we can add hover effect here
+    }
 
-        if (!btn) continue;
+    else {
+        //loop through all buttons in the map
+        for (auto& pair : m_buttons) {
+            const std::string& name = pair.first;
+            GameObject* btn = pair.second;
 
-        if (isPointInButton(worldPos, btn)) {
-            //handle button action dynamically based on name
-            if (name == "play_button") {
-                startGame(manager);
-                return; //stop checking after a click
+            if (!btn) continue;
+
+            if (isPointInButton(worldPos, btn)) {
+                //handle button action dynamically based on name
+                if (name == "play_button") {
+                    startGame(manager);
+                    return; //stop checking after a click
+                }
+                else if (name == "exit_button") {
+                    stopGame();
+                    return; //stop checking after a click
+                }
+                else if (name == "control_button") {
+					controlScreen(manager);
+                    return; //stop checking after a click
+                }
+                //idk if we need more buttons
             }
-            else if (name == "exit_button") {
-                stopGame(manager);
-                return; //stop checking after a click
-            }
-            else if (name == "credit_button") {
-                //need a credit function 
-                return; //stop checking after a click
-            }
-            //idk if we need more buttons
         }
     }
 }
@@ -111,12 +122,10 @@ void GUISystem::createButtons(GameObjectManager& manager) {
 
         //find if its a button
         bool isButton = r->hasTex || (name.find("_button") != std::string::npos);
-        if (!isButton) continue; //skip non buttons
+		if (!isButton) continue;
 
-        //assign object to layer 2
         manager.assignObjectToLayer(obj, 2);
-
-        m_buttons[name] = obj; //store button
+        m_buttons[name] = obj;
     }
     m_buttonsCreated = !m_buttons.empty(); //buttons created if map is not empty
     std::cout << "[GUI] Menu buttons created successfully" << std::endl;
@@ -174,7 +183,7 @@ void GUISystem::startGame(GameObjectManager& manager) {
 }
 
 //stop game and quit
-void GUISystem::stopGame(GameObjectManager& manager) {
+void GUISystem::stopGame() {
     std::cout << "[GUI] Stop button clicked - quitting application" << std::endl;
 
     // Close the GLFW window to exit the application
@@ -198,4 +207,15 @@ bool GUISystem::isPointInButton(const Vector2D& point, GameObject* button) {
         point.x <= transform->x + halfWidth &&
         point.y >= transform->y - halfHeight &&
         point.y <= transform->y + halfHeight);
+}
+
+void GUISystem::controlScreen(GameObjectManager& manager) {
+    std::cout << "[GUI] Control button clicked" << std::endl;
+
+    //remove menu buttons
+    removeMenuButtons(manager);
+
+    manager.loadScene(runtimeScenePath("control_scene.json"));
+	createButtons(manager); //loading scene
+    std::cout << "[GUI] Control screen created successfully!" << std::endl;
 }
