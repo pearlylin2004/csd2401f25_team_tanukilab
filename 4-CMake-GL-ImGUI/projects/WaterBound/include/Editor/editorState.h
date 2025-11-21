@@ -92,6 +92,7 @@ namespace Editor {
 	/* ----------------- Scene End -----------------*/
 
 
+	/* ----------------- Gizmo ---------------- */
 	enum GizmoOperation {
 		GIZMO_NONE = -1,
 		GIZMO_TRANSLATE = ImGuizmo::TRANSLATE,
@@ -106,6 +107,7 @@ namespace Editor {
 		float snapValues[3] = { 1.f, 1.f, 1.f };
 		float snapAngle = 15.f;
 	};
+	/* ----------------- Scene End -----------------*/
 
 
 	/* ----------------- Component Entry ---------------- */
