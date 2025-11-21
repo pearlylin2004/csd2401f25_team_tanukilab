@@ -89,7 +89,7 @@ void GUISystem::update(GameObjectManager& manager) {
                     stopGame();
                     return; //stop checking after a click
                 }
-                else if (name == "crontrol_button") {
+                else if (name == "control_button") {
 					controlScreen(manager);
                     return; //stop checking after a click
                 }
@@ -122,17 +122,10 @@ void GUISystem::createButtons(GameObjectManager& manager) {
 
         //find if its a button
         bool isButton = r->hasTex || (name.find("_button") != std::string::npos);
+		if (!isButton) continue;
 
-        if (name == "background") {
-            manager.assignObjectToLayer(obj, 2);
-        }
-        else if (isButton) {
-            manager.assignObjectToLayer(obj, 0);
-            m_buttons[name] = obj;
-        }
-        else {
-			continue; //not a button so skip
-        }
+        manager.assignObjectToLayer(obj, 2);
+        m_buttons[name] = obj;
     }
     m_buttonsCreated = !m_buttons.empty(); //buttons created if map is not empty
     std::cout << "[GUI] Menu buttons created successfully" << std::endl;
@@ -219,8 +212,10 @@ bool GUISystem::isPointInButton(const Vector2D& point, GameObject* button) {
 void GUISystem::controlScreen(GameObjectManager& manager) {
     std::cout << "[GUI] Control button clicked" << std::endl;
 
-    // Remove menu buttons
+    //remove menu buttons
     removeMenuButtons(manager);
 
     manager.loadScene(runtimeScenePath("control_scene.json"));
+	createButtons(manager); //loading scene
+    std::cout << "[GUI] Control screen created successfully!" << std::endl;
 }
