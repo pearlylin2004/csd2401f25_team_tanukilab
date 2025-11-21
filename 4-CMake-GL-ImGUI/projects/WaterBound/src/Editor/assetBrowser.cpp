@@ -242,6 +242,11 @@ void AssetBrowser::loadAssetsFromDirectory() {
             asset.path = entry.path().string();
             asset.folder = entry.path().parent_path().string(); // folder in assets that contains this file, for future filtering
 
+            /* ---- Sample for the asset struct ---- */
+            // filename: Sample_tilemap.jpg
+            // folder: assets ->immediate parent folder
+            // path: assets / Sample_tilemap.jpg
+
             /*std::cout << "Asset Name: " << asset.name <<
                 "\n Asset Path: " << asset.path <<
                 "\n Asset Folder: " << asset.folder << std::endl;*/

@@ -83,7 +83,7 @@ void InspectorWindow::render(GameObjectManager& manager) {
         ImGui::Spacing();
 
         /* ------------------- Object Transformation ------------------- */
-        if (Transform* transform = selected->getComponent<Transform>()) {
+        if (selected->hasComponent<Transform>()) {
             renderGizmoCtrl();
 
 
@@ -91,8 +91,7 @@ void InspectorWindow::render(GameObjectManager& manager) {
             ImGui::Separator();
             ImGui::Spacing();
 
-            CollisionInfo* collision = selected->getComponent<CollisionInfo>();
-            renderTransform(transform, collision);
+            renderTransform(selected);
         }
         /* ------------------- END ------------------- */
 
@@ -102,9 +101,8 @@ void InspectorWindow::render(GameObjectManager& manager) {
 
 
         /* ------------------- Render ------------------- */
-        if (Render* render = selected->getComponent<Render>()) {
-            Animation* animation = selected->getComponent<Animation>();
-            renderRender(render, selected, animation);
+        if (selected->hasComponent<Render>()) {
+            renderRender(selected);
 
             ImGui::Spacing();
             ImGui::Separator();
@@ -114,9 +112,8 @@ void InspectorWindow::render(GameObjectManager& manager) {
 
 
         /* ------------------- Collision ------------------- */
-        if (CollisionInfo* collision = selected->getComponent<CollisionInfo>()) {
-            Transform* transform = selected->getComponent<Transform>();
-            renderCollision(collision, transform, selected, manager);
+        if (selected->hasComponent<CollisionInfo>()) {
+            renderCollision(selected, manager);
 
             ImGui::Spacing();
             ImGui::Separator();
@@ -127,7 +124,7 @@ void InspectorWindow::render(GameObjectManager& manager) {
 
         /* ------------------- Input Control ------------------- */
         if (selected->hasComponent<Input>()) {
-            renderInput();
+            renderInput(selected);
 
             ImGui::Spacing();
             ImGui::Separator();
@@ -137,9 +134,9 @@ void InspectorWindow::render(GameObjectManager& manager) {
 
 
         /* ------------------- Physics ------------------- */
-        if (Physics* physics = selected->getComponent<Physics>()) {
+        if (selected->hasComponent<Physics>()) {
             //Transform* transform = selected->getComponent<Transform>();
-            renderPhysics(physics, selected->hasComponent<Input>());
+            renderPhysics(selected, selected->hasComponent<Input>());
 
             ImGui::Spacing();
             ImGui::Separator();
@@ -149,9 +146,9 @@ void InspectorWindow::render(GameObjectManager& manager) {
 
 
         /* ------------------- Font ------------------- */
-        if (FontComponent* font = selected->getComponent<FontComponent>()) {
+        if (selected->hasComponent<FontComponent>()) {
             //Transform* transform = selected->getComponent<Transform>();
-            renderFont(font);
+            renderFont(selected);
 
             ImGui::Spacing();
             ImGui::Separator();
@@ -244,7 +241,11 @@ void InspectorWindow::renderGizmoCtrl() {
     }
 }
 
-void InspectorWindow::renderTransform(Transform* transform, CollisionInfo* collision) {
+void InspectorWindow::renderTransform(GameObject* selected) {
+    //Transform* transform, CollisionInfo* collision
+    Transform* transform = selected->getComponent<Transform>();
+    CollisionInfo* collision = selected->getComponent<CollisionInfo>();
+
     if (ImGui::CollapsingHeader("Transform")) {
 
         if (ImGui::TreeNode("Position")) {
@@ -307,7 +308,10 @@ void InspectorWindow::renderTransform(Transform* transform, CollisionInfo* colli
     }
 }
 
-void InspectorWindow::renderRender(Render* render, GameObject* selected, Animation* animation) {
+void InspectorWindow::renderRender( GameObject* selected) {
+    Render* render = selected->getComponent<Render>();
+    Animation* animation = selected->getComponent<Animation>();
+
     if (ImGui::CollapsingHeader("Render")) {
 
         if (ImGui::TreeNode("Texture")) {
@@ -417,9 +421,21 @@ void InspectorWindow::renderRender(Render* render, GameObject* selected, Animati
 
 
                 ImGui::EndDisabled();
+
+                if (ImGui::Button("Remove Animation", ImVec2(-1, 0))) {
+                    // add a delete component func here
+                    selected->removeComponent<Animation>();
+                    DebugLog::addMessage("Removed Animation Component");
+                }
             }
             else {
                 ImGui::TextWrapped("Add a texture to Render to enable animation");
+
+                if (ImGui::Button("Remove Animation", ImVec2(-1, 0))) {
+                    // add a delete component func here
+                    selected->removeComponent<Animation>();
+                    DebugLog::addMessage("Removed Animation Component");
+                }
             }
 
             ImGui::TreePop();
@@ -431,15 +447,18 @@ void InspectorWindow::renderRender(Render* render, GameObject* selected, Animati
         ImGui::Separator();
         ImGui::Spacing();
 
-        if (ImGui::Button("Remove Component (WIP)", ImVec2(-1, 0))) {
+        if (ImGui::Button("Remove Render", ImVec2(-1, 0))) {
             // add a delete component func here
-
+            selected->removeComponent<Render>();
             DebugLog::addMessage("Removed Render Component");
         }
     }
 }
 
-void InspectorWindow::renderCollision(CollisionInfo* collision, Transform* transform, GameObject* selected, GameObjectManager& manager) {
+void InspectorWindow::renderCollision( GameObject* selected, GameObjectManager& manager) {
+    Transform* transform = selected->getComponent<Transform>();
+    CollisionInfo* collision = selected->getComponent<CollisionInfo>();
+
     if (ImGui::CollapsingHeader("Collision")) {
         {
             // checked means this object can collide with obj in the same layer
@@ -488,16 +507,29 @@ void InspectorWindow::renderCollision(CollisionInfo* collision, Transform* trans
             }
         }
 
+        if (ImGui::Button("Remove Collision", ImVec2(-1, 0))) {
+            // add a delete component func here
+            selected->removeComponent<CollisionInfo>();
+            DebugLog::addMessage("Removed Collision Component");
+        }
     }
 }
 
-void InspectorWindow::renderInput() {
+void InspectorWindow::renderInput(GameObject* selected) {
     if (ImGui::CollapsingHeader("Input Control")) {
         ImGui::TextWrapped("This object can be controlled by keyboard input");
+
+        if (ImGui::Button("Remove Input", ImVec2(-1, 0))) {
+            // add a delete component func here
+            selected->removeComponent<Input>();
+            DebugLog::addMessage("Removed Input Component");
+        }
     }
 }
 
-void InspectorWindow::renderPhysics(Physics* physic, bool canMove) {
+void InspectorWindow::renderPhysics(GameObject* selected, bool canMove) {
+    Physics* physic = selected->getComponent<Physics>();
+
     if (ImGui::CollapsingHeader("Physics")) {
         ImGui::Checkbox("Is Trigger", &physic->physicsFlag);
 
@@ -566,10 +598,18 @@ void InspectorWindow::renderPhysics(Physics* physic, bool canMove) {
 
             ImGui::TreePop();
         }
+
+        if (ImGui::Button("Remove Physics", ImVec2(-1, 0))) {
+            // add a delete component func here
+            selected->removeComponent<Physics>();
+            DebugLog::addMessage("Removed Physics Component");
+        }
     }
 }
 
-void InspectorWindow::renderFont(FontComponent* font) {
+void InspectorWindow::renderFont(GameObject* selected) {
+    FontComponent* font = selected->getComponent<FontComponent>();
+
     if (ImGui::CollapsingHeader("Font")) {
         {
             // word to display
@@ -597,8 +637,13 @@ void InspectorWindow::renderFont(FontComponent* font) {
                 "Times New Roman"
             };
 
-            (ImGui::Combo("Font Type", &font->fontType, fontNames, IM_ARRAYSIZE(fontNames)));
+            ImGui::Combo("Font Type", &font->fontType, fontNames, IM_ARRAYSIZE(fontNames));
         }
 
+        if (ImGui::Button("Remove Font", ImVec2(-1, 0))) {
+            // add a delete component func here
+            selected->removeComponent<FontComponent>();
+            DebugLog::addMessage("Removed Font Component");
+        }
     }
 }

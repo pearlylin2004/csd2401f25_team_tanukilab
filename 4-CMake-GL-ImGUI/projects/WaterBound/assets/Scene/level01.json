@@ -7,14 +7,14 @@
       "components": {
         "Transform": {
          "pos": [0.0, 0.0, 0.03]
-        },
-        "AudioComponent": {}
+        }
       }
     },
     {
       "prefabid": "f7665aa3-619e-49a1-892a-31fbc8b377a2",
       "name": "platform",
-      "components": {}
+      "components": {
+      }
     },
     {
       "name": "bullet",
@@ -32,7 +32,7 @@
         },
         "Physics": { "inWater": 0, "buoyancy": 0 },
 	      "AudioComponent": {
-          "soundId": "shoot",
+          "audioFile": "assets/Audio/underwater.wav",
           "volume": 0.8,
           "playOnStart": 0,
 	        "fadeInOnStart": 1,
@@ -48,7 +48,6 @@
       "name": "player1",
       "layer" : 1,
       "components": {
-        "AudioComponent": {}
       }
     },
     {
@@ -72,8 +71,7 @@
           "totalColumn": 8,
           "totalRow": 1,
           "frameTime": 0.147
-        },
-        "AudioComponent": {}
+        }
       }
     },
     {
@@ -82,8 +80,7 @@
       "components": {
         "Transform": {
           "pos": [-5.0, 0.0, 0.01]
-        },
-        "AudioComponent": {}
+        }
       }
     },
     {

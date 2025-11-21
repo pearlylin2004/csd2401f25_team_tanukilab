@@ -62,7 +62,6 @@ private:
     double m_delta;
     std::string m_title;
     bool m_isRunning;
-	AudioHandler& audio;
 
     // Core Engine Systems
     std::unique_ptr<GameObjectManager> m_manager;
