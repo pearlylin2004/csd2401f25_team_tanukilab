@@ -191,24 +191,24 @@ static const char* playerStateToStr(PlayerState state) {
 	}
 }
 
-inline soundID strToSoundID(const std::string& str) {
-	if (str == "water") return soundID::water;
-	if (str == "shoot") return soundID::shoot;
-	if (str == "fire") return soundID::fire;
-	if (str == "bg") return soundID::bg;
-	return soundID::water; // default fallback
-}
-
-// Add this helper function to convert soundID to string
-inline const char* soundIDToStr(soundID id) {
-	switch (id) {
-		case soundID::water: return "water";
-		case soundID::shoot: return "shoot";
-		case soundID::fire: return "fire";
-		case soundID::bg: return "bg";
-		default: return "water";
-	}
-}
+//inline soundID strToSoundID(const std::string& str) {
+//	if (str == "water") return soundID::water;
+//	if (str == "shoot") return soundID::shoot;
+//	if (str == "fire") return soundID::fire;
+//	if (str == "bg") return soundID::bg;
+//	return soundID::water; // default fallback
+//}
+//
+//// Add this helper function to convert soundID to string
+//inline const char* soundIDToStr(soundID id) {
+//	switch (id) {
+//		case soundID::water: return "water";
+//		case soundID::shoot: return "shoot";
+//		case soundID::fire: return "fire";
+//		case soundID::bg: return "bg";
+//		default: return "water";
+//	}
+//}
 
 /*!
 \brief Loads a scene from a JSON file and rebuilds all game objects.
@@ -550,8 +550,8 @@ void GameObjectManager::loadSceneFromJson(const std::string& filename) {
 			}
 
 			// Load sound ID from string
-			if (ja.HasMember("soundId") && ja["soundId"].IsString()) {
-				audio->soundId = strToSoundID(ja["soundId"].GetString());
+			if (ja.HasMember("audioFile") && ja["audioFile"].IsString()) {
+				audio->audioFile = ja["audioFile"].GetString();
 			}
 
 			// Volume
@@ -923,7 +923,7 @@ void GameObjectManager::saveSceneToJson(const std::string& filename, bool isNew)
 					}
 				};
 
-				pushIfDiffStr("soundId", soundIDToStr(ac->soundId));
+				pushIfDiffStr("audioFile", ac->audioFile.c_str());
 				pushIfDiffFloat("volume", ac->volume);
 				pushIfDiffFloat("pitch", ac->pitch);
 				pushIfDiffBool("loop", ac->loop);

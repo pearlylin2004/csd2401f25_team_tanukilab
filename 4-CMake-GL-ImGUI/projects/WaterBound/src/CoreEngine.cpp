@@ -30,7 +30,7 @@ Technology is prohibited.
 #include "GUISystem.h"  // Add this include
 
 CoreEngine::CoreEngine()
-    : m_window(nullptr), m_fps(0.0), m_delta(0.0), m_isRunning(false), audio(AudioHandler::getInstance()) {
+    : m_window(nullptr), m_fps(0.0), m_delta(0.0), m_isRunning(false) {
 }
 
 CoreEngine::~CoreEngine() {
@@ -78,7 +78,7 @@ void CoreEngine::Init() {
     glClearColor(cfg.clear_color[0], cfg.clear_color[1], cfg.clear_color[2], cfg.clear_color[3]);
 
     // --- System Initialization ---
-    audio.init();
+    AudioHandler::getInstance().init();
 
     InputHandler::init(m_window, cfg);
     renderer::init(cfg.width, cfg.height);
@@ -112,7 +112,7 @@ void CoreEngine::Init() {
     glfwPollEvents();
     m_isRunning = true;
 
-    AudioHandler::getInstance().playSound(soundID::bg, 0.2f);
+    //AudioHandler::getInstance().playSound(soundID::bg, 0.2f);
 }
 
 void CoreEngine::Run() {
@@ -137,7 +137,7 @@ void CoreEngine::GameLoop() {
     //--- Update Timing --- 
      Perf::UpdateTime(m_delta, m_fps, 0.5);
      Perf::UpdateWindowTitle(m_window, m_title, m_fps, true);
-     audio.update(m_delta);
+     AudioHandler::getInstance().update(m_delta);
      // --- Main Update --- glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
      glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
      Update(static_cast<float>(m_delta));
@@ -177,13 +177,17 @@ void CoreEngine::windowIconifyCallback(GLFWwindow* window, int iconified) {
     CoreEngine* engine = static_cast<CoreEngine*>(glfwGetWindowUserPointer(window)); //retrieve engine instance
     if (engine) {
         if (iconified) {
+
             //window was minimized
-            engine->audio.pauseAll();
+            //engine->audio.pauseAll();
+
+            AudioHandler::getInstance().pauseAll(*engine->m_manager);
         }
         else {
             //window was restored maximized or simply returned to normal state
             //resume the background music or other necessary sounds
-            engine->audio.playSound(soundID::bg, 0.2f);
+            //engine->audio.playSound(soundID::bg, 0.2f);
+            AudioHandler::getInstance().resumeAll(*engine->m_manager);
         }
 
     }

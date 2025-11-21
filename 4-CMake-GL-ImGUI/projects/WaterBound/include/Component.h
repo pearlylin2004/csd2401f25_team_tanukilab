@@ -27,7 +27,7 @@ Technology is prohibited.
 #include "mathlib.h"
 #include "font.h"
 #include "dynamics.h"
-#include "audio.h"
+//#include "audio.h"
 
 
 // basic component class
@@ -231,15 +231,33 @@ struct StateMachine : public Component {
 };
 
 //Audio component
-enum class soundID : int;
-enum class AudioState;
+struct FadeInfo {
+    bool isFading = false;
+    bool isFadingIn = false;
+    float startVolume = 0.0f;
+    float targetVolume = 0.0f;
+    float fadeDuration = 0.0f;
+    float fadeTimer = 0.0f;
+
+    float defaultFadeInDuration = 1.0f;
+    float defaultFadeOutDuration = 1.0f;
+};
+
+enum class AudioState {
+    Stopped,
+    Playing,
+    Paused
+};
+
+//enum class soundID : int;
+//enum class AudioState;
 class FMOD::Channel;
 struct AudioComponent : public Component {
 public:
     AudioComponent() = default;
 
-    AudioComponent(soundID sound, float vol = 1.0f, bool shouldLoop = false, bool playStart = false)
-        : soundId(sound)
+    AudioComponent(const std::string& file, float vol = 1.0f, bool shouldLoop = false, bool playStart = false)
+        : audioFile(file)
         , volume(vol)
         , loop(shouldLoop)
         , playOnStart(playStart)
@@ -250,7 +268,8 @@ public:
     }
 
     // Audio ID - which sound to play
-    soundID soundId = static_cast<soundID>(0);
+    std::string audioFile;
+    //soundID soundId = static_cast<soundID>(0);
 
     // IMPORTANT: Each AudioComponent gets its own channel now
     // This is NOT managed by AudioHandler's channels vector
@@ -270,12 +289,13 @@ public:
     float fadeOutDuration = 1.0f;
 
     // Per-component fade state
-    bool isFading = false;
+    FadeInfo fadeInfo;
+    /*bool isFading = false;
     bool isFadingIn = false;
     float fadeStartVolume = 0.0f;
     float fadeTargetVolume = 0.0f;
     float fadeDuration = 0.0f;
-    float fadeTimer = 0.0f;
+    float fadeTimer = 0.0f;*/
 
     // State Tracking
     AudioState state = AudioState::Stopped;
@@ -286,4 +306,33 @@ public:
     bool isPlaying() const { return state == AudioState::Playing; }
     bool isPaused() const { return state == AudioState::Paused; }
     bool isStopped() const { return state == AudioState::Stopped; }
+
+    void updateFades(float deltaTime) {
+        if (!fadeInfo.isFading || !channel) return;
+
+        fadeInfo.fadeTimer += deltaTime;
+
+        float progress = fadeInfo.fadeTimer / fadeInfo.fadeDuration;
+        if (progress > 1.0f) progress = 1.0f;
+
+        float currentVolume;
+        if (fadeInfo.isFadingIn) {
+            currentVolume = fadeInfo.startVolume + (fadeInfo.targetVolume - fadeInfo.startVolume) * progress;
+            std::cerr << "sound fading" << currentVolume << std::endl;
+        }
+        else {
+            currentVolume = fadeInfo.startVolume + (fadeInfo.targetVolume - fadeInfo.startVolume) * progress;
+        }
+
+        FMODErrorCheck(channel->setVolume(currentVolume));
+
+        if (progress >= 1.0f) {
+            fadeInfo.isFading = false;
+
+            if (!fadeInfo.isFadingIn && fadeInfo.targetVolume == 0.0f) {
+                channel->stop();
+                channel = nullptr;
+            }
+        }
+    }
 };

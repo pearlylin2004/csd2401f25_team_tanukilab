@@ -70,22 +70,10 @@ void InputSystem::update(GameObjectManager& manager, const float& deltaTime, Mes
 		UISystem::toggleUI();
 		messageBus.publish(Message("KeyPressed", nullptr, KeyEvent{ "0", true }));
 
-		AudioHandler::getInstance().toggleSoundPause(soundID::bg);
+		//AudioHandler::getInstance().toggleSoundPause(soundID::bg);
 
 		if (EditorManager::isEditingMode()) EditorManager::toggleEditing(false);
 		else EditorManager::toggleEditing(true);
-	}
-	
-	if (!EditorManager::isEditingMode() && !EditorManager::isPaused()) {
-		if (InputHandler::isKeyTriggered(GLFW_KEY_1)) {
-			AudioHandler::getInstance().playSound(soundID::fire);
-		}
-		if (InputHandler::isKeyTriggered(GLFW_KEY_2)) {
-			AudioHandler::getInstance().playSound(soundID::shoot, 0.1f);
-		}
-		if (InputHandler::isKeyTriggered(GLFW_KEY_3)) {
-			AudioHandler::getInstance().playSound(soundID::water, 0.4f);
-		}
 	}
 
 	// Press F9 to simulate a failure (for crash logger)
@@ -1251,23 +1239,23 @@ void AudioSystem::init(GameObjectManager& manager) {
 
 		// Play on start 
 		if (audio->playOnStart) {
-			audio->channel = audioHandler.playSound(audio->soundId, audio->volume);
+			audio->channel = audioHandler.playSound(audio, audio->volume);
 			if (audio->channel) {
 				audio->state = AudioState::Playing;
 
 				// Apply fade in
 				if (audio->fadeInOnStart) {
-					audioHandler.fadeIn(audio->soundId, audio->volume, audio->fadeInDuration);
+					audioHandler.fadeIn(audio, audio->volume, audio->fadeInDuration);
 				}
 
 				// Apply pitch
 				if (audio->pitch != 1.0f) {
-					audioHandler.setSoundpitch(audio->soundId, audio->pitch);
+					audioHandler.setSoundpitch(audio, audio->pitch);
 				}
 
 				// Apply mute state
 				if (audio->muted) {
-					audioHandler.muteSound(audio->soundId);
+					audioHandler.muteSound(audio);
 				}
 			}
 		}
@@ -1291,17 +1279,28 @@ void AudioSystem::update(GameObjectManager& manager, float deltaTime) {
 
 		AudioComponent* audio = obj->getComponent<AudioComponent>();
 
-		if (audio->soundId == soundID::bg && audio->playOnStart) {
-			if (!audio->channel || !audioHandler.isSoundPlaying(audio->soundId)) {
+		audio->updateFades(deltaTime);
+
+		if (/*audio->soundId == soundID::bg && */ audio->playOnStart) {
+			if (!audio->channel || !audioHandler.isSoundPlaying(audio)) {
 				// Restart background music if  not playing
-				audio->channel = audioHandler.playSound(audio->soundId, audio->volume);
+				audio->channel = audioHandler.playSound(audio, audio->volume);
 				if (audio->channel) {
 					audio->state = AudioState::Playing;
-					audioHandler.setSoundpitch(audio->soundId, audio->pitch);
+					audioHandler.setSoundpitch(audio, audio->pitch);
 					if (audio->muted) {
-						audioHandler.muteSound(audio->soundId);
+						audioHandler.muteSound(audio);
 					}
 				}
+			}
+		}
+
+		if (audio->channel) {
+			bool isPlaying = false;
+			audio->channel->isPlaying(&isPlaying); 
+			if (!isPlaying) {
+				audio->channel = nullptr;
+				audio->fadeInfo.isFading = false;
 			}
 		}
 		processAudioComponent(obj, audio, deltaTime);
@@ -1320,21 +1319,21 @@ void AudioSystem::processAudioComponent(GameObject* obj, AudioComponent* audio, 
 	if (audio->isPendingPlay) {
 		audio->isPendingPlay = false;
 
-		audio->channel = audioHandler.playSound(audio->soundId, audio->volume);
+		audio->channel = audioHandler.playSound(audio, audio->volume);
 		if (audio->channel) {
 			audio->state = AudioState::Playing;
 
 
 			if (audio->fadeInOnStart) {
-				audioHandler.fadeIn(audio->soundId, audio->volume, audio->fadeInDuration);
+				audioHandler.fadeIn(audio, audio->volume, audio->fadeInDuration);
 			}
 
 			if (audio->pitch != 1.0f) {
-				audioHandler.setSoundpitch(audio->soundId, audio->pitch);
+				audioHandler.setSoundpitch(audio, audio->pitch);
 			}
 
 			if (audio->muted) {
-				audioHandler.muteSound(audio->soundId);
+				audioHandler.muteSound(audio);
 			}
 		}
 	}
@@ -1343,10 +1342,10 @@ void AudioSystem::processAudioComponent(GameObject* obj, AudioComponent* audio, 
 		audio->isPendingStop = false;
 
 		if (audio->fadeOutOnStop && audio->state == AudioState::Playing) {
-			audioHandler.fadeOut(audio->soundId, audio->fadeOutDuration);
+			audioHandler.fadeOut(audio, audio->fadeOutDuration);
 		}
 		else {
-			audioHandler.stopSound(audio->soundId);
+			audioHandler.stopSound(audio);
 			audio->channel = nullptr;
 			audio->state = AudioState::Stopped;
 		}
@@ -1354,7 +1353,7 @@ void AudioSystem::processAudioComponent(GameObject* obj, AudioComponent* audio, 
 
 	// Update state 
 	if (audio->channel && audio->state == AudioState::Playing) {
-		if (!audioHandler.isSoundPlaying(audio->soundId)) {
+		if (!audioHandler.isSoundPlaying(audio)) {
 			audio->state = AudioState::Stopped;
 			audio->channel = nullptr;
 		}
@@ -1362,7 +1361,7 @@ void AudioSystem::processAudioComponent(GameObject* obj, AudioComponent* audio, 
 
 	if (audio->state == AudioState::Playing && audio->channel) {
 		// Check if paused 
-		if (audioHandler.isSoundPaused(audio->soundId)) {
+		if (audioHandler.isSoundPaused(audio)) {
 			audio->state = AudioState::Paused;
 		}
 	}
@@ -1380,7 +1379,7 @@ void AudioSystem::cleanup(GameObjectManager& manager) {
 		AudioComponent* audio = obj->getComponent<AudioComponent>();
 
 		if (audio->state == AudioState::Playing || audio->state == AudioState::Paused) {
-			audioHandler.stopSound(audio->soundId);
+			audioHandler.stopSound(audio);
 			audio->channel = nullptr;
 			audio->state = AudioState::Stopped;
 		}
