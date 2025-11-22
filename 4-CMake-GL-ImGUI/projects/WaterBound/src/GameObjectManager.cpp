@@ -452,6 +452,11 @@ void GameObjectManager::loadSceneFromJson(const std::string& filename) {
 					: (jc["autoFitScale"].GetInt() != 0);
 			}
 
+			std::string shp = (jc.HasMember("colliderType") && jc["colliderType"].IsString())
+				? jc["colliderType"].GetString()
+				: "square";
+			c->colliderType = JsonIO::StrToShape(shp);
+
 			if (jc.HasMember("colliderSize") && jc["colliderSize"].IsArray() && jc["colliderSize"].Size() == 2)
 			{
 				c->colliderSize.x = jc["colliderSize"][0].GetFloat();
@@ -803,15 +808,6 @@ void GameObjectManager::saveSceneToJson(const std::string& filename, bool isNew)
 				rapidjson::Value jc(rapidjson::kObjectType);
 				const rapidjson::Value* prefabC = PM.getPrefabJsonComp(prefabDoc, "CollisionInfo");
 
-				if (!prefabC || !prefabC->HasMember("colliderSize") ||
-					differsFloat((*prefabC)["colliderSize"][0].GetFloat(), c->colliderSize.x) ||
-					differsFloat((*prefabC)["colliderSize"][1].GetFloat(), c->colliderSize.y)) {
-
-					rapidjson::Value sc(rapidjson::kArrayType);
-					sc.PushBack(c->colliderSize.x, a).PushBack(c->colliderSize.y, a);
-					jc.AddMember("colliderSize", sc, a);
-				}
-
 				auto pushIfDiffBool = [&](const char* key, bool val) {
 					if (!prefabC || !prefabC->HasMember(key) ||
 						((*prefabC)[key].IsBool() && differsBool((*prefabC)[key].GetBool(), val)) ||
@@ -822,6 +818,19 @@ void GameObjectManager::saveSceneToJson(const std::string& filename, bool isNew)
 
 				pushIfDiffBool("collisionFlag", c->collisionFlag);
 				pushIfDiffBool("autoFitScale", c->autoFitScale);
+
+				if (!prefabC || !prefabC->HasMember("colliderSize") ||
+					differsFloat((*prefabC)["colliderSize"][0].GetFloat(), c->colliderSize.x) ||
+					differsFloat((*prefabC)["colliderSize"][1].GetFloat(), c->colliderSize.y)) {
+
+					rapidjson::Value sc(rapidjson::kArrayType);
+					sc.PushBack(c->colliderSize.x, a).PushBack(c->colliderSize.y, a);
+					jc.AddMember("colliderSize", sc, a);
+				}
+
+				std::string shapeStr = JsonIO::ShapeToStr(c->colliderType);
+				if (!prefabC || !prefabC->HasMember("colliderType") || shapeStr != (*prefabC)["colliderType"].GetString())
+					jc.AddMember("colliderType", rapidjson::Value(shapeStr.c_str(), a), a);
 
 				if (!jc.ObjectEmpty()) {
 					comps.AddMember("CollisionInfo", jc, a);
