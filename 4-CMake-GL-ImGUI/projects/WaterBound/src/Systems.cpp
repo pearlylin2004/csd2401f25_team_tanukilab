@@ -66,6 +66,7 @@ void InputSystem::update(GameObjectManager& manager, const float& deltaTime, Mes
 	//			if (InputHandler::isKeyHeld(GLFW_KEY_D)) {
 	//				velocity->velX = input->moveSpeed;
 	//			}
+#ifdef _DEBUG
 	if (InputHandler::isComboKeyTriggered(GLFW_KEY_0)) {
 		UISystem::toggleUI();
 		messageBus.publish(Message("KeyPressed", nullptr, KeyEvent{ "0", true }));
@@ -75,6 +76,7 @@ void InputSystem::update(GameObjectManager& manager, const float& deltaTime, Mes
 		if (EditorManager::isEditingMode()) EditorManager::toggleEditing(false);
 		else EditorManager::toggleEditing(true);
 	}
+#endif
 
 	// Press F9 to simulate a failure (for crash logger)
 	if (InputHandler::isKeyTriggered(GLFW_KEY_F9)) {
@@ -1075,6 +1077,7 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 	g_SystemTimers.push_back({ "Collisions", ms }); //saving timing for UI output
 }
 
+#ifdef _DEBUG
 //UI system - handles ImGui rendering and interaction
 bool UISystem::showUI = false;
 
@@ -1227,6 +1230,7 @@ void UISystem::renderMultipleViewPorts() {
 		glfwMakeContextCurrent(backup_current_context);
 	}
 }
+#endif
 
 void LogicSystem::update(GameObjectManager& manager, float const& dt) {
 

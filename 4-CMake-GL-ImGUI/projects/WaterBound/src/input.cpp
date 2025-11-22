@@ -16,7 +16,10 @@ without the prior written consent of DigiPen Institute of
 Technology is prohibited.
 */
 /* End Header **************************************************************************/
+#ifdef _DEBUG
 #include "editor/editorManager.h"
+#endif
+#include "renderer.h"
 #include "input.h"
 
 GLFWwindow* InputHandler::m_window = nullptr;
@@ -48,7 +51,9 @@ void InputHandler::init(GLFWwindow* window, const AppConfig& cfg) {
 	glfwSetCursorPosCallback(window, cursorPositionCallback);
 	glfwSetCursorEnterCallback(window, CursorEnterCallback);
 	glfwSetScrollCallback(window, scrollCallback);
+#ifdef _DEBUG
 	glfwSetDropCallback(window, dropCallback);
+#endif
 }
 
 // update input states (call once per frame)
@@ -370,6 +375,7 @@ void InputHandler::scrollCallback(GLFWwindow* window, double xoffset, double yof
 	m_scrollOffset = static_cast<float>(yoffset);
 }
 
+#ifdef _DEBUG
 void InputHandler::dropCallback(GLFWwindow* window, int count, const char** paths) {
 	(void)window;
 
@@ -412,3 +418,4 @@ void InputHandler::dropCallback(GLFWwindow* window, int count, const char** path
 		}
 	}
 }
+#endif

@@ -69,7 +69,9 @@ private:
     std::unique_ptr<CollisionSystem> m_collisionSystem;
     std::unique_ptr<PhysicsSystem> m_physicsSystem;
     std::unique_ptr<RenderSystem> m_renderSystem;
+#ifdef _DEBUG
     std::unique_ptr<UISystem> m_uiSystem;
+#endif
     std::unique_ptr<LuaSystem> m_luaSystem;
     std::unique_ptr<FontSystem> m_fontSystem;
     std::unique_ptr<LogicSystem> m_logicSystem;

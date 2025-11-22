@@ -86,7 +86,9 @@ void CoreEngine::Init() {
     m_collisionSystem = std::make_unique<CollisionSystem>();
     m_physicsSystem = std::make_unique<PhysicsSystem>();
     m_renderSystem = std::make_unique<RenderSystem>();
+    #ifdef _DEBUG
     m_uiSystem = std::make_unique<UISystem>();
+    #endif
     m_luaSystem = std::make_unique<LuaSystem>();
     m_fontSystem = std::make_unique<FontSystem>();
     m_guiSystem = std::make_unique<GUISystem>();
@@ -98,7 +100,9 @@ void CoreEngine::Init() {
     m_guiSystem->init(*m_manager, *m_luaSystem);
     m_luaSystem->init();
 	m_renderSystem->init(*m_manager, cfg.width, cfg.height);
+    #ifdef _DEBUG
 	m_uiSystem->init(m_window, m_renderSystem.get());
+    #endif
     m_fontSystem->init(*m_manager);
     m_audioSystem->init(*m_manager);
 
@@ -155,7 +159,10 @@ void CoreEngine::Update(float deltaTime) {
     m_renderSystem->update(*m_manager, deltaTime);
     m_fontSystem->update(*m_manager);
     m_audioSystem->update(*m_manager, deltaTime);
+    #ifdef _DEBUG
     m_uiSystem->update(*m_manager);
+    #endif
+
 
     //performance update
     LogSystemTimersEveryInterval(deltaTime,15.0);

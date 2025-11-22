@@ -25,7 +25,9 @@ Technology is prohibited.
 #include "collision.h"
 #include "imgui_internal.h" // for docking in UISystem
 //#include <ui.h>
+#ifdef _DEBUG
 #include "Editor/editorManager.h"
+#endif
 #include "font.h"
 #include "messageBus.h"
 #include "controllerSystem.h"
@@ -139,6 +141,8 @@ public:
 	void update(GameObjectManager& manager, const float& deltaTime);
 };
 
+// only allow editor in debug mode
+#ifdef _DEBUG
 // UI system - handles UI rendering and interactions using ImGui
 class UISystem {
 public:
@@ -158,6 +162,15 @@ private:
 	bool m_firstTime = true;
 	RenderSystem* m_renderer = nullptr;
 };
+#else
+namespace EditorManager {
+	inline bool isEditingMode() { return false; }
+	inline bool isPaused() { return false; }
+}
+namespace UISystem {
+	inline bool isShowUI() { return false; }
+}
+#endif
 
 class LogicSystem {
 public:

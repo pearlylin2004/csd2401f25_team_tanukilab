@@ -20,7 +20,9 @@ Technology is prohibited.
 #include <cstring>
 #include <filesystem>
 #include <imgui.h>
+#ifdef _DEBUG
 #include "Editor/gameDebugLog.h"
+#endif
 #include "mathlib.h"
 #include "config.h"
 
@@ -118,7 +120,9 @@ public:
 	// scroll callback function
 	static void scrollCallback(GLFWwindow* window, double xoffset, double yoffset);
 
+#ifdef _DEBUG
 	static void dropCallback(GLFWwindow* window, int count, const char** paths);
+#endif
 
 	// Add these to the public section
 	//static bool isMouseButtonClicked(int button);
