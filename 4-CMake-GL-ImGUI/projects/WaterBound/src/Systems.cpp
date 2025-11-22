@@ -773,69 +773,76 @@ void FontSystem::RenderText(GLuint& s, std::string text, float x, float y, float
 }
 
 // Physics system - updates position based on velocity and applies gravity
-
+// uncomment this debug code to see all bullets and their states
+//void debugBullets(GameObjectManager& manager) {
+//	std::vector<GameObject*> gameObjects;
+//	manager.getAllGameObjects(gameObjects);
+//
+//	for (GameObject* obj : gameObjects) {
+//		if (obj->getObjectName().find("bullet") == 0) {
+//			Physics* p = obj->getComponent<Physics>();
+//			Transform* t = obj->getComponent<Transform>();
+//			if (p && t) {
+//				std::cout << "Bullet: " << obj->getObjectName()
+//					<< " Alive: " << p->alive
+//					<< " Pos: (" << t->x << ", " << t->y << ")"
+//					<< " Vel: (" << p->dynamics.velocity.x << ", " << p->dynamics.velocity.y << ")\n";
+//			}
+//		}
+//	}
+//}
 void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime, MessageBus& messageBus) {
 	auto start = std::chrono::high_resolution_clock::now();
 
 	// Step mode toggling
 	if (InputHandler::isComboKeyTriggered(GLFW_KEY_Z))
 		m_stepMode = !m_stepMode;
-
 	if (m_stepMode && InputHandler::isKeyTriggered(GLFW_KEY_Z))
 		m_stepReq = true;
-
 	if (m_stepMode && !m_stepReq)
 		return;
-
 	if (m_stepReq)
 		m_stepReq = false;
 
 	std::vector<GameObject*> gameObjects;
 	manager.getAllGameObjects(gameObjects);
 
-	// Get the bullet object once
-	GameObject* bullet = manager.getGameObject("bullet");
-
 	for (auto object : gameObjects) {
 		if (!object->hasComponent<Transform>() || !object->hasComponent<Physics>())
 			continue;
 
 		Physics* physics = object->getComponent<Physics>();
+		if (object->getObjectName() == "bullet") continue;
 		if (!physics->physicsFlag) continue;
+		//if (physics->isStatic) continue;
 		Transform* transform = object->getComponent<Transform>();
 
-		/*if (!physics->onGround)
-			physics->velY += physics->gravity * deltaTime;*/
-
+		// Handle player input
 		if (object->hasComponent<Input>() && !EditorManager::isEditingMode() && !EditorManager::isPaused()) {
-			//std::cout << object << " has input component\n";
-			//bullet
-			//Input* input = object->getComponent<Input>();
-
-			if (InputHandler::isKeyTriggered(GLFW_KEY_SPACE)) {
-				//std::cout << "bullet is spawned\n";
-				DebugLog::addMessage("bullet is spawned", DebugMode::PlaySimul);
-				static int bulletCount = 0;
-			}
-
-			// should apply for every obj, this is for temp auto move checking
 			if (!object->checkAutoMove()) {
 				PhysicsForces::applyDamping(physics);
 				PhysicsForces::updatePosition(transform, physics, deltaTime);
 			}
 
-			// Shoot bullet
-			if (bullet != nullptr && InputHandler::isKeyTriggered(GLFW_KEY_SPACE)) {
-				PhysicsForces::shoot(bullet, transform);
-				messageBus.publish(Message("KeyPressed", nullptr, KeyEvent{ "SPACE", true }));
-				if (bullet && bullet->hasComponent<AudioComponent>()) {
-					AudioComponent * audio = bullet->getComponent<AudioComponent>();
-					audio->isPendingPlay = true;
+			if (InputHandler::isKeyTriggered(GLFW_KEY_SPACE)) {
+				GameObject* bullet = PhysicsForces::findAvailableBullet(manager);
+				//debugBullets(manager);
+				if (bullet != nullptr) {
+					PhysicsForces::shoot(bullet, transform);
+					messageBus.publish(Message("KeyPressed", nullptr, KeyEvent{ "SPACE", true }));
+
+					if (bullet->hasComponent<AudioComponent>()) {
+						AudioComponent* audio = bullet->getComponent<AudioComponent>();
+						audio->isPendingPlay = true;
+					}
+
+					DebugLog::addMessage("Bullet fired from pool!", DebugMode::PlaySimul);
+				}
+				else {
+					DebugLog::addMessage("No bullets available! Wait for reload.", DebugMode::PlaySimul);
 				}
 			}
-
 			float targetVelX = 0.0f;
-
 			if (InputHandler::isKeyHeld(GLFW_KEY_A)) {
 				physics->canMove = true;
 				targetVelX = -physics->moveSpeed;
@@ -845,7 +852,6 @@ void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime, M
 				targetVelX = physics->moveSpeed;
 				messageBus.publish(Message("KeyPressed", nullptr, KeyEvent{ "D", true }));
 			}
-
 			physics->dynamics.velocity.x = targetVelX;
 
 			// Jump
@@ -854,43 +860,70 @@ void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime, M
 				messageBus.publish(Message("KeyPressed", nullptr, KeyEvent{ "B", true }));
 			}
 
-
-			if (transform->y < physics->floorY /* temp for obj auto move*/ && !object->checkAutoMove()) {
+			// Ground collision
+			if (transform->y < physics->floorY && !object->checkAutoMove()) {
 				transform->y = physics->floorY;
-				physics->velY = 0.0f;
+				//physics->velY = 0.0f;
 				physics->onGround = true;
-				physics->velX = 0.0f;
+				//physics->velX = 0.0f;
 			}
 			transform->x += physics->velX * deltaTime;
-
 		}
-		/* ----- TEMPORARY FOR MOVING THE SPAWNED OBJ AUTO ----- */
-		if (object->checkAutoMove()) {
 
+		// Auto-move objects
+		if (object->checkAutoMove()) {
 			transform->y += physics->dynamics.velocity.y * deltaTime;
 			transform->x += physics->dynamics.velocity.x * deltaTime;
 		}
-		/* ----- TEMP END ----- */
-
-	// Update bullet separately if it exists
-		if (bullet != nullptr && bullet->hasComponent<Physics>() && bullet->hasComponent<Transform>()) {
-			Transform* bulletTransform = bullet->getComponent<Transform>();
-			Physics* bulletPhysics = bullet->getComponent<Physics>();
-
-			// Only move horizontally along x-axis
-			bulletPhysics->dynamics.velocity.y = 0.0f;
-			bulletPhysics->dynamics.velocity.z = 0.0f;
-
-			DynamicsSystem::Integrate(bulletPhysics->dynamics, deltaTime, 0.0f, false);
-
-			bulletTransform->x = bulletPhysics->dynamics.position.x;
-			bulletTransform->y = bulletPhysics->dynamics.position.y;
-		}
 	}
+
+	for (GameObject* obj : gameObjects) {
+		std::string name = obj->getObjectName();
+		if (name == "bullet") continue;
+		if (name.find("bullet") == 0 && name.length() > 6) {
+			if (name.find("bullet") == 0 && name.length() > 6) {
+				bool isNumberedBullet = true;
+				for (size_t i = 6; i < name.length(); i++) {
+					if (!std::isdigit(name[i])) {
+						isNumberedBullet = false;
+						break;
+					}
+				}
+
+				if (!isNumberedBullet) continue;
+
+				if (!obj->hasComponent<Physics>() || !obj->hasComponent<Transform>())
+					continue;
+
+				Physics* p = obj->getComponent<Physics>();
+				Transform* t = obj->getComponent<Transform>();
+
+				if (p->alive) {
+					DynamicsSystem::Integrate(p->dynamics, deltaTime, 0.0f, false);
+
+					t->x = p->dynamics.position.x;
+					t->y = p->dynamics.position.y;
+
+					float leftBound = -20.0f;
+					float rightBound = 50.0f;
+					float bottomBound = -10.0f;
+					float topBound = 30.0f;
+
+					if (t->x < leftBound || t->x > rightBound ||
+						t->y < bottomBound || t->y > topBound) {
+						PhysicsForces::deactivateBullet(obj);
+					}
+				}
+			}
+		}
+
+	}
+
 	auto end = std::chrono::high_resolution_clock::now();
 	double ms = std::chrono::duration<double, std::milli>(end - start).count();
 	g_SystemTimers.push_back({ "Physics", ms });
 }
+
 
 
 // Collision system - detects and resolves collisions between game objects

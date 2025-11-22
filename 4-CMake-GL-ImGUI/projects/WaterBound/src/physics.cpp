@@ -93,9 +93,15 @@ void PhysicsForces::shoot(GameObject* bullet, const Transform* origin) {
     //t->scaleZ = 0.5f;
     //t->rotation = 0.0f;
 
+    p->dynamics.position.x = origin->x;
+    p->dynamics.position.y = origin->y;
+
+
     // Set bullet velocity to move horizontally along x-axis
     p->dynamics.velocity.x = 10.0f; // speed along x
     p->dynamics.velocity.y = 0.0f;  // no vertical motion
+
+    p->alive = true;
 
     // Optional: clear forces so bullet is not affected by gravity
     p->dynamics.forces.clear();
@@ -104,3 +110,72 @@ void PhysicsForces::shoot(GameObject* bullet, const Transform* origin) {
 }
 
 
+GameObject* PhysicsForces::findAvailableBullet(GameObjectManager& manager) { 
+
+    std::vector<GameObject*> gameObjects;
+    manager.getAllGameObjects(gameObjects);
+
+    for (GameObject* obj : gameObjects) {
+        std::string name = obj->getObjectName();
+
+
+        if (name.find("bullet") == 0) {
+
+            bool isNumberedBullet = true;
+            if (name.length() > 6) {
+                for (size_t i = 6; i < name.length(); i++) {
+                    if (!std::isdigit(name[i])) {
+                        isNumberedBullet = false;
+                        break;
+                    }
+                }
+            }
+            else {
+                isNumberedBullet = false;
+            }
+
+            if (isNumberedBullet) {
+                if (!obj->hasComponent<Physics>() || !obj->hasComponent<Transform>())
+                    continue;
+
+                Physics* p = obj->getComponent<Physics>();
+
+
+                if (!p->alive) {
+                    return obj;
+                }
+            }
+        }
+    }
+
+    return nullptr;
+}
+
+void PhysicsForces::deactivateBullet(GameObject* bullet) { 
+
+    if (!bullet || !bullet->hasComponent<Physics>() || !bullet->hasComponent<Transform>())
+        return;
+
+    Physics* p = bullet->getComponent<Physics>();
+    Transform* t = bullet->getComponent<Transform>();
+
+    // Store original state when first deactivated
+    if (!p->isOriginalStateSet) {
+        p->originalPos = { t->x, t->y };
+        p->originalVel = { p->dynamics.velocity.x, p->dynamics.velocity.y };
+        p->isOriginalStateSet = true;
+    }
+
+    // Reset to original state instead of hardcoded values
+    t->x = p->originalPos.x;
+    t->y = p->originalPos.y;
+
+    p->dynamics.position.x = p->originalPos.x;
+    p->dynamics.position.y = p->originalPos.y;
+    p->dynamics.velocity.x = p->originalVel.x;
+    p->dynamics.velocity.y = p->originalVel.y;
+
+    p->alive = false;
+
+    DebugLog::addMessage("Bullet deactivated and returned to pool", DebugMode::PlaySimul);
+}
