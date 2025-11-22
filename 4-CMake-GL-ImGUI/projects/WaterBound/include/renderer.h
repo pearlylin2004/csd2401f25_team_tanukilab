@@ -28,7 +28,7 @@ Technology is prohibited.
 
 /*!***********************************************************************
 \brief
-	enum class for shapes
+	enum class for shapes (for both render and collision components)
 
 *************************************************************************/
 enum class shape

@@ -180,8 +180,10 @@ public:
         return std::make_unique<CollisionInfo>(*this);
     }
 
+
     bool collisionFlag = false; // whether objest can collide with another obj
-    Vector2D colliderSize{ 0,0 }; // size of the bounding box
+    shape colliderType = shape::square;
+    Vector2D colliderSize{ 0,0 }; // size of the bounding box, if collider is circle then x will be diamater
     bool autoFitScale = true; // auto-fit the collider with the size of the mesh (i.e. obj bigger -> collider bigger)
 
     // run-time calculation, do not de/serialize

@@ -808,7 +808,7 @@ void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime, M
 		if (object->hasComponent<Input>() && !EditorManager::isEditingMode() && !EditorManager::isPaused()) {
 			//std::cout << object << " has input component\n";
 			//bullet
-			Input* input = object->getComponent<Input>();
+			//Input* input = object->getComponent<Input>();
 
 			if (InputHandler::isKeyTriggered(GLFW_KEY_SPACE)) {
 				//std::cout << "bullet is spawned\n";
@@ -927,18 +927,29 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 			if (!c->collisionFlag) continue; // skip if obj not supposed to collide
 
 			Transform* objT = obj->getComponent<Transform>();
-			Render* renderS = obj->getComponent<Render>();
+			//Render* renderS = obj->getComponent<Render>();
 			//Collision::AABB box = Collision::getObjectAABB(objT);
 			int minCellX, maxCellX, minCellY, maxCellY;
-			if (renderS->modelRef.shape == shape::square){
-				Collision::AABB box = Collision::getObjectAABBbyCollider(objT, c->colliderSize); // use customized collider instead of scale
+			if (c->colliderType == shape::square){
+				Collision::AABB box = Collision::getObjectAABBbyCollider(objT, c->colliderSize); // use custom collider instead of scale
 				minCellX = static_cast<int>(box.getMin().x / CELL_SIZE);
 				maxCellX = static_cast<int>(box.getMax().x / CELL_SIZE);
 				minCellY = static_cast<int>(box.getMin().y / CELL_SIZE);
 				maxCellY = static_cast<int>(box.getMax().y / CELL_SIZE);
 			}
-			else if (renderS->modelRef.shape == shape::circle) {
+			else if (c->colliderType == shape::circle) {
 				//need one for circle
+				Collision::Circle circle = Collision::getObjectCirclebyCollider(objT, c->colliderSize);
+
+				float minX = circle.getCenter().x - circle.getRadius();
+				float maxX = circle.getCenter().x + circle.getRadius();
+				float minY = circle.getCenter().y - circle.getRadius();
+				float maxY = circle.getCenter().y + circle.getRadius();
+
+				minCellX = static_cast<int>(minX / CELL_SIZE);
+				maxCellX = static_cast<int>(maxX / CELL_SIZE);
+				minCellY = static_cast<int>(minY / CELL_SIZE);
+				maxCellY = static_cast<int>(maxY / CELL_SIZE);
 			}
 
 			//clamp to grid boundaries so it dont go out the valid range of grid
@@ -973,7 +984,8 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 					if (!obj1->hasComponent<Physics>()) continue;
 					Transform* t1 = obj1->getComponent<Transform>();
 					//to get obj1 shape
-					Render* render1 = obj1->getComponent<Render>();
+					//Render* render1 = obj1->getComponent<Render>();
+					CollisionInfo* c1 = obj1->getComponent<CollisionInfo>();
 					Physics* p1 = obj1->getComponent<Physics>();
 					Vector2D vel1{ p1->dynamics.velocity.x, p1->dynamics.velocity.y };
 					//object 2 looping
@@ -990,31 +1002,38 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 						checked[obj2].push_back(obj1);
 						Transform* t2 = obj2->getComponent<Transform>();
 						//to get obj1 shape
-						Render* render2 = obj2->getComponent<Render>();
+						CollisionInfo* c2 = obj2->getComponent<CollisionInfo>();
+						//Render* render2 = obj2->getComponent<Render>();
 						Physics* p2 = obj2->getComponent<Physics>();
 						Vector2D vel2{ p2->dynamics.velocity.x, p2->dynamics.velocity.y };
 
 						//check collision based on shape
 						//check obj1 shape 
-						if (!render1 || !t1) return;
+						if (!c1 || !t1) return;
 						//check obj2 shape 
-						if (!render2 || !t2) return;
+						if (!c2 || !t2) return;
 
 						//collision info
 						CollisionInfo info;
 						//if both square
-						if (render1->modelRef.shape == shape::square && render2->modelRef.shape == shape::square) {
+						if (c1->colliderType == shape::square && c2->colliderType == shape::square) {
 							//Collision::AABB aabb1 = Collision::getObjectAABB(t1);
-							Collision::AABB aabb1 = Collision::getObjectAABBbyCollider(t1, obj1->getComponent<CollisionInfo>()->colliderSize);
+							Collision::AABB aabb1 = Collision::getObjectAABBbyCollider(t1, c1->colliderSize);
 							//Collision::AABB aabb2 = Collision::getObjectAABB(t2);
-							Collision::AABB aabb2 = Collision::getObjectAABBbyCollider(t2, obj2->getComponent<CollisionInfo>()->colliderSize);
+							Collision::AABB aabb2 = Collision::getObjectAABBbyCollider(t2, c2->colliderSize);
 							info = Collision::CollisionIntersection_RectRect_Dynamic_Info(aabb1, vel1, aabb2, vel2);
 						}
 						//if both circle
-						else if (render1->modelRef.shape == shape::circle && render2->modelRef.shape == shape::circle) {
-							Collision::Circle circle1 = Collision::getObjectCircle(t1);
-							Collision::Circle circle2 = Collision::getObjectCircle(t2);
+						else if (c1->colliderType == shape::circle && c2->colliderType == shape::circle) {
+							Collision::Circle circle1 = Collision::getObjectCirclebyCollider(t1, c1->colliderSize);
+							Collision::Circle circle2 = Collision::getObjectCirclebyCollider(t2, c2->colliderSize);
 							info = Collision::CollisionIntersection_CircleCircle_Dynamic_Info(circle1, vel1, circle2, vel2);
+						}
+						// if one is square one is circle
+						else if (c1->colliderType == shape::square && c2->colliderType == shape::circle) {
+							Collision::AABB aabb1 = Collision::getObjectAABBbyCollider(t1, c1->colliderSize);
+							Collision::Circle circle2 = Collision::getObjectCirclebyCollider(t2, c2->colliderSize);
+							info = Collision::CollisionIntersection_CircleAABB_Dynamic_Info(circle2, vel2, aabb1, vel1);
 						}
 
 						//checking if collided

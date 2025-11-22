@@ -318,8 +318,15 @@ void InspectorWindow::renderTransform(GameObject* selected) {
             }
 
             // if collision and its set to auto-fit scale, adjust the collider size also
-            if (collision) {
-                if (collision->autoFitScale) {
+            if (collision && collision->autoFitScale) {
+                // if collider is circle, use the largest of x/y scale 
+                if (collision->colliderType == shape::circle) {
+                    float largest = std::max(transform->scaleX, transform->scaleY);
+                    collision->colliderSize.x = largest;
+                    collision->colliderSize.y = largest;
+                }
+                // for box collider, fit width and height
+                else {
                     collision->colliderSize.x = transform->scaleX;
                     collision->colliderSize.y = transform->scaleY;
                 }
@@ -333,6 +340,7 @@ void InspectorWindow::renderTransform(GameObject* selected) {
 void InspectorWindow::renderRender( GameObject* selected) {
     Render* render = selected->getComponent<Render>();
     Animation* animation = selected->getComponent<Animation>();
+    CollisionInfo* collision = selected->getComponent<CollisionInfo>();
 
     if (ImGui::CollapsingHeader("Render")) {
 
@@ -398,7 +406,11 @@ void InspectorWindow::renderRender( GameObject* selected) {
                 if (current == 0)
                     render->modelRef.shape = shape::square;
                 else
-                    render->modelRef.shape = shape::triangle; // oops triangle is white circle actually
+                    render->modelRef.shape = shape::circle;
+
+                if (collision && collision->autoFitScale) {
+                    collision->colliderType = render->modelRef.shape;
+                }
             }
 
             ImGui::TreePop();
@@ -484,7 +496,7 @@ void InspectorWindow::renderCollision( GameObject* selected, GameObjectManager& 
             // checked means this object can collide with obj in the same layer
             ImGui::Checkbox("Enable", &collision->collisionFlag);
             
-            // WIP, select layer
+            // select layer
             int layer = selected->getLayer();
             if (ImGui::InputInt("Layer", &layer)) {
                 if (layer < 0) layer = 0;
@@ -512,14 +524,30 @@ void InspectorWindow::renderCollision( GameObject* selected, GameObjectManager& 
                 ImGui::EndDisabled();
 
                 // cannot edit if obj cannot collide or auto-fit collider size with obj size is on
-                bool editableCollider = collision->collisionFlag && !collision->autoFitScale;
-                ImGui::BeginDisabled(!editableCollider);
+                bool editable = collision->collisionFlag && !collision->autoFitScale;
+                ImGui::BeginDisabled(!editable);
 
-                if (ImGui::InputFloat("Width", &collision->colliderSize.x, 1.f))
-                    collision->colliderSize.x = std::max(collision->colliderSize.x, 0.f);
+                shape colliderShape = collision->colliderType;
+                const char* shapes[] = { "Box", "Circle" };
+                int current = static_cast<int>(colliderShape);
 
-                if (ImGui::InputFloat("Height", &collision->colliderSize.y, 1.f))
-                    collision->colliderSize.y = std::max(collision->colliderSize.y, 0.f);
+                if (ImGui::Combo("Shape", &current, shapes, IM_ARRAYSIZE(shapes))) {
+                    collision->colliderType = static_cast<shape>(current);
+                }
+
+                if (collision->colliderType == shape::circle) {
+                    if (ImGui::InputFloat("Diamater", &collision->colliderSize.x, 1.f)) {
+                        collision->colliderSize.x = std::max(collision->colliderSize.x, 0.f);
+                        collision->colliderSize.y = collision->colliderSize.y;
+                    }
+                }
+                else {
+                    if (ImGui::InputFloat("Width", &collision->colliderSize.x, 1.f))
+                        collision->colliderSize.x = std::max(collision->colliderSize.x, 0.f);
+
+                    if (ImGui::InputFloat("Height", &collision->colliderSize.y, 1.f))
+                        collision->colliderSize.y = std::max(collision->colliderSize.y, 0.f);
+                }
 
                 ImGui::EndDisabled();
 
