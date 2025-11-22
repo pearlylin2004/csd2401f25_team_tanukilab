@@ -193,6 +193,8 @@ void InspectorWindow::render(GameObjectManager& manager) {
     }
 
     ImGui::End();
+
+    wrongFileTypePopup(Editor::popupState.filename);
 }
 
 void InspectorWindow::addComponent(GameObject* selected) {
@@ -374,6 +376,10 @@ void InspectorWindow::renderRender( GameObject* selected) {
                         DebugLog::addMessage("Changed texture of " + selected->getObjectName() + " to " + render->texFile + "\n");
                     }
                     else {
+                        // texture file type error pop up
+                        Editor::popupState.textureFileTypePopup = true;
+                        Editor::popupState.filename = fsPath.filename().string();
+
                         // invalid texture format -> don't change anything
                         DebugLog::addMessage("Invalid texture format : " + path + "\n");
                     }
@@ -726,9 +732,9 @@ void InspectorWindow::renderAudio(GameObject* selected) {
                     DebugLog::addMessage("Changed audio of " + selected->getObjectName() + " to " + audio->audioFile + "\n");
                 }
                 else {
-                    /* ERROR POP UP HEREEEEEEE */
-
-
+                    // audio file type error pop up
+                    Editor::popupState.audioFileTypePopup = true;
+                    Editor::popupState.filename = fsPath.filename().string();
 
                     // invalid audio format -> don't change anything
                     DebugLog::addMessage("Unsupported audio format : " + path + "\n");
@@ -795,5 +801,44 @@ void InspectorWindow::renderAudio(GameObject* selected) {
             selected->removeComponent<AudioComponent>();
             DebugLog::addMessage("Removed Audio Component");
         }
+    }
+}
+
+void InspectorWindow::wrongFileTypePopup(const std::string& filename) {
+    // open popup if flagged
+    if (Editor::popupState.textureFileTypePopup) {
+        ImGui::OpenPopup("Unsupported File Type");
+        Editor::popupState.textureFileTypePopup = false;
+
+        Editor::popupState.message = "Unsupported file type: " + filename + "\nTexture must be .png or .jpg files.";
+    }
+    else if (Editor::popupState.audioFileTypePopup) {
+        ImGui::OpenPopup("Unsupported File Type");
+        Editor::popupState.audioFileTypePopup = false;
+
+        Editor::popupState.message = "Unsupported file type: " + filename + "\nAudio must be .wav, .ogg or .mp3 files.";
+    }
+    else if (Editor::popupState.prefabFileTypePopup) {
+        ImGui::OpenPopup("Unsupported File Type");
+        Editor::popupState.prefabFileTypePopup = false;
+
+        Editor::popupState.message = "Unsupported file type: " + filename + "\nPlease drop a prefab file.";
+    }
+
+    ImVec2 center = ImGui::GetMainViewport()->GetCenter();
+    ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
+
+    // wrong file type popup
+    if (ImGui::BeginPopupModal("Unsupported File Type", NULL, ImGuiWindowFlags_AlwaysAutoResize)) {
+        ImGui::Text(Editor::popupState.message.c_str());
+
+        if (ImGui::Button("OK") || InputHandler::isKeyTriggered(GLFW_KEY_ENTER)) {
+            Editor::popupState.message.clear();
+            Editor::popupState.filename.clear();
+
+            ImGui::CloseCurrentPopup();
+        }
+
+        ImGui::EndPopup();
     }
 }

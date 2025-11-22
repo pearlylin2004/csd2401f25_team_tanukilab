@@ -124,6 +124,8 @@ private:
 	void renderFont(GameObject* selected);
 	void renderAudio(GameObject* selected);
 
+	void wrongFileTypePopup(const std::string& filename);
+
 	Editor::ObjSelectionState& m_objSelectionState;
 	Editor::GizmoState& m_gizmoState;
 };

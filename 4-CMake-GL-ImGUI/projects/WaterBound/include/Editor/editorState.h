@@ -92,6 +92,17 @@ namespace Editor {
 	/* ----------------- Scene End -----------------*/
 
 
+	/* ----------------- Popup End -----------------*/
+	struct PopupState {
+		bool audioFileTypePopup = false;
+		bool textureFileTypePopup = false;
+		bool prefabFileTypePopup = false;
+		std::string filename;
+		std::string message;
+	};
+	/* ----------------- Popup End -----------------*/
+
+
 	/* ----------------- Gizmo ---------------- */
 	enum GizmoOperation {
 		GIZMO_NONE = -1,
@@ -107,7 +118,7 @@ namespace Editor {
 		float snapValues[3] = { 1.f, 1.f, 1.f };
 		float snapAngle = 15.f;
 	};
-	/* ----------------- Scene End -----------------*/
+	/* ----------------- Gizmo End -----------------*/
 
 
 	/* ----------------- Component Entry ---------------- */
@@ -125,7 +136,9 @@ namespace Editor {
 	inline SceneWindowState sceneWindowState;
 	inline AssetBrowserState assetBrowserState;
 	inline SceneState sceneState;
+	inline PopupState popupState;
 	inline GizmoState gizmoState;
+
 
 	/* ----------------- Component Registry ---------------- */
 	// add useful func here to check/add components for Editor Inspector

@@ -90,23 +90,36 @@ void HierarchyWindow::render(GameObjectManager& manager) {
 void HierarchyWindow::handlePrefabDragDrop(GameObjectManager& manager) {
     // receive prefab and make it into a game obj referecing the prefab
     if (ImGui::BeginDragDropTarget()) {
-        if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("PREFAB")) {
+        if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("ASSET")) {
             const char* prefabPath = static_cast<const char*>(payload->Data);
+            std::filesystem::path path = prefabPath;
+            std::string folder = path.parent_path().filename().string();
 
-            std::string prefabID = PrefabManager::Instance().findPrefabIDByFilename(prefabPath);
+            // only accept if its in prefab folder
+            if (folder == "Prefab") {
+                std::string prefabID = PrefabManager::Instance().findPrefabIDByFilename(prefabPath);
 
-            std::string objName = PrefabManager::Instance().getPrefabName(prefabID);
-            GameObject* prefabObj = manager.createGameObject(objName + "(" + std::to_string(manager.getGameObjectCount()) + ")");
-            prefabObj->getObjectPrefabID() = prefabID;
-            if (prefabObj) {
-                PrefabManager::Instance().instantiate(prefabObj, manager);
-                Render* render = prefabObj->getComponent<Render>();
-                if (render) render->texChanged = true;
+                std::string objName = PrefabManager::Instance().getPrefabName(prefabID);
+                GameObject* prefabObj = manager.createGameObject(objName + "(" + std::to_string(manager.getGameObjectCount()) + ")");
+                prefabObj->getObjectPrefabID() = prefabID;
+                if (prefabObj) {
+                    PrefabManager::Instance().instantiate(prefabObj, manager);
+                    Render* render = prefabObj->getComponent<Render>();
+                    if (render) render->texChanged = true;
 
-                DebugLog::addMessage("Added game obj from prefab\n");
+                    DebugLog::addMessage("Added game obj from prefab\n");
+                }
+                else {
+                    Editor::popupState.prefabFileTypePopup = true;
+                    Editor::popupState.filename = path.filename().string();
+                    DebugLog::addMessage("Failed to receive\n");
+                }
             }
             else {
-                DebugLog::addMessage("Failed to receive\n");
+                Editor::popupState.prefabFileTypePopup = true;
+                Editor::popupState.filename = path.filename().string();
+
+                DebugLog::addMessage("Wrong prefab file received: " + path.filename().string() + "\n");
             }
         }
         ImGui::EndDragDropTarget();

@@ -155,7 +155,7 @@ void AssetBrowser::render() {
                 m_menuBarState.showLoadScenePopup = true;
             }
 
-            // if its a prefab, convert to temp game obj for editting in inspector
+            // if its a prefab, convert to temp game obj for editing in inspector
             if (asset.folder == m_AssetBrowserState.currentFolder + "Prefab") {
                 // get ID of the double clicked prefab by its filename
                 std::string prefabID = PrefabManager::Instance().findPrefabIDByFilename(asset.name);
@@ -196,16 +196,9 @@ void AssetBrowser::render() {
         /* ----------- Drag and Drop Logic ----------- */
 
         if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID)) {
-            if (asset.folder == m_AssetBrowserState.currentFolder + "Prefab") {
-                // drag a prefab to hierarchy to make a game obj
-                ImGui::SetDragDropPayload("PREFAB", asset.name.c_str(), asset.name.size() + 1);
-                ImGui::Text("Prefab: %s", asset.name.c_str());
-            }
-            else {
-                // drag a texture to inspector window to change texture of selected object
-                ImGui::SetDragDropPayload("ASSET", asset.path.c_str(), asset.path.size() + 1);
-                ImGui::Text("%s", asset.name.c_str());
-            }
+            // drag a texture to inspector/hierarchy window
+            ImGui::SetDragDropPayload("ASSET", asset.path.c_str(), asset.path.size() + 1);
+            ImGui::Text("%s", asset.name.c_str());
             ImGui::EndDragDropSource();
         }
 
