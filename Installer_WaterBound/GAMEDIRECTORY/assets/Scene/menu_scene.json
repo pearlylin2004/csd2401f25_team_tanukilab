@@ -1,0 +1,47 @@
+{
+  "version": 1,
+  "objects": [
+    {
+      "name": "play_button",
+      "components": {
+        "Transform": {
+          "pos": [0.0, 5.0, 0.0],
+          "scale": [5.0, 3.0, 0.0]
+        },
+        "Render": {
+          "shape": "square",
+          "hasTex": 1,
+          "texture": "assets/menu/button_base.png"
+        }
+      }
+    },
+    {
+      "name": "exit_button",
+      "components": {
+        "Transform": {
+          "pos": [0.0, 1.0, 0.0],
+          "scale": [5.0, 3.0, 0.0]
+        },
+        "Render": {
+          "shape": "square",
+          "hasTex": 1,
+          "texture": "assets/menu/button_base.png"
+        }
+      }
+    },
+    {
+      "name": "credit_button",
+      "components": {
+        "Transform": {
+          "pos": [0.0, -3.0, 0.0],
+          "scale": [5.0, 3.0, 0.0]
+        },
+        "Render": {
+          "shape": "square",
+          "hasTex": 1,
+          "texture": "assets/menu/button_base.png"
+        }
+      }
+    }
+  ]
+}

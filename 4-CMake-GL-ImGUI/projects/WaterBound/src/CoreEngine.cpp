@@ -23,9 +23,6 @@ Technology is prohibited.
 /* End Header **************************************************************************/
 
 #define STB_IMAGE_IMPLEMENTATION
-#ifndef RUNTIME_DIR_R
-#define RUNTIME_DIR_R "./assets"
-#endif
 #include "CoreEngine.h"
 #include "GUISystem.h"  // Add this include
 

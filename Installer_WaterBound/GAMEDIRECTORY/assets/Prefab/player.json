@@ -1,0 +1,37 @@
+{
+    "id": "dd60e1e1-641c-4ed5-b69d-ffadfa02fb7a",
+    "name": "player",
+    "layer": 1,
+    "components":{
+        "Transform":{
+            "pos": [0.0, 0.0, 0.03],
+            "rotation": 1.0,
+            "scale": [5.0, 3.0, 0.0]
+        },
+        "Render": {
+            "shape": "square",
+            "hasTex": 1,
+            "texture": "assets/Leaf_Gun_Empty.png",
+            "hasAnimation": 0
+        },
+        "Input": {},
+        "Physics": {
+            "physicsFlag": 1,
+            "moveSpeed": 1.0,
+            "jumpForce": 100.0,
+            "mass": 1.0,
+            "inWater": 0,
+            "buoyancy": 0
+        },
+        "CollisionInfo": {
+            "collisionFlag": 1,
+            "autoFitScale": 1,
+            "colliderSize": [5.0, 3.0]
+        },
+        "StateMachine": {
+            "state": "Idle",
+            "facingRight": true,
+            "stateTime": 0.0
+        }
+    }
+}
