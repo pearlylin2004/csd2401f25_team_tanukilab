@@ -152,9 +152,10 @@ void AddObjWindow::render(GameObjectManager& manager){
 }
 
 void AddObjWindow::createEmpty(GameObjectManager& manager, float x, float y, float z) {
-    GameObject* recobj = manager.createGameObject("Rectangle_" + std::to_string(manager.getGameObjectCount()));
+    std::string name = "Empty_" + std::to_string(manager.getGameObjectCount());
+    GameObject* obj = manager.createGameObject(name);
 
-    Transform* transform = recobj->addComponent<Transform>();
+    Transform* transform = obj->addComponent<Transform>();
     if (!transform) {
         DebugLog::addMessage("Error creating a game object. Component doesn't exist.");
         return;
@@ -164,12 +165,16 @@ void AddObjWindow::createEmpty(GameObjectManager& manager, float x, float y, flo
     transform->y = y;
     transform->z = z;
 
-    DebugLog::addMessage("Rectangle created at (" + std::to_string(x) + ", " + std::to_string(y) + ", " + std::to_string(z) + ")\n");
+    // record the create command (for undo)
+    auto cmd = std::make_unique<CreateObjectCmd>(manager, name);
+    UndoRedoManager::Instance().executeCmd(std::move(cmd));
+
+    DebugLog::addMessage("Empty created at (" + std::to_string(x) + ", " + std::to_string(y) + ", " + std::to_string(z) + ")\n");
 }
 
 void AddObjWindow::createRec(GameObjectManager& manager, float x, float y, float z) {
     std::string name = "Rectangle_" + std::to_string(manager.getGameObjectCount());
-    GameObject* recobj = manager.createGameObject("Rectangle_" + std::to_string(manager.getGameObjectCount()));
+    GameObject* recobj = manager.createGameObject(name);
 
     Transform* transform = recobj->addComponent<Transform>();
     Render* render = recobj->addComponent<Render>();
@@ -177,35 +182,13 @@ void AddObjWindow::createRec(GameObjectManager& manager, float x, float y, float
         DebugLog::addMessage("Error creating a game object. Component doesn't exist.");
         return;
     }
-
+    
     render->modelRef = renderer::models[static_cast<int>(shape::square)];
 
     transform->x = x;
     transform->y = y;
     transform->z = z;
 
-    // here we go another lambda, to settle the creation (add Transform & Render)
-    /*auto create = [x, y, z, name](GameObjectManager& manager) -> GameObject* {
-        GameObject* obj = manager.createGameObject(name);
-
-        Transform* t = obj->addComponent<Transform>();
-        Render* r = obj->addComponent<Render>();
-        if (!t || !r) {
-            DebugLog::addMessage("Error creating a game object. Component doesn't exist.");
-            return nullptr;
-        }
-
-        r->modelRef = renderer::models[static_cast<int>(shape::square)];
-
-        t->x = x;
-        t->y = y;
-        t->z = z;
-
-        return obj;
-    };*/
-
-    // create the object
-    //GameObject* recobj = create(manager);
     if (!recobj) {
         DebugLog::addMessage("Error creating game object.");
         return;
@@ -220,7 +203,8 @@ void AddObjWindow::createRec(GameObjectManager& manager, float x, float y, float
 
 
 void AddObjWindow::createCir(GameObjectManager& manager, float x, float y, float z) {
-    GameObject* circleObj = manager.createGameObject("Circle_" + std::to_string(manager.getGameObjectCount()));
+    std::string name = "Circle_" + std::to_string(manager.getGameObjectCount());
+    GameObject* circleObj = manager.createGameObject(name);
 
     Transform* transform = circleObj->addComponent<Transform>();
     Render* render = circleObj->addComponent<Render>();
@@ -235,11 +219,16 @@ void AddObjWindow::createCir(GameObjectManager& manager, float x, float y, float
     transform->y = y;
     transform->z = z;
 
+    // record the create command (for undo)
+    auto cmd = std::make_unique<CreateObjectCmd>(manager, name);
+    UndoRedoManager::Instance().executeCmd(std::move(cmd));
+
     DebugLog::addMessage("Circle created at (" + std::to_string(x) + ", " + std::to_string(y) + ", " + std::to_string(z) + ")\n");
 }
 
 void AddObjWindow::dupObj(GameObjectManager& manager, GameObject* oriObj) {
-    GameObject* dupObj = manager.CloneGameObject(oriObj->getObjectName(), oriObj->getObjectName() + std::to_string(manager.getGameObjectCount()));
+    std::string name = oriObj->getObjectName() + std::to_string(manager.getGameObjectCount());
+    GameObject* dupObj = manager.CloneGameObject(oriObj->getObjectName(), name);
 
     if (Transform* oriT = oriObj->getComponent<Transform>()) {
         Transform* dupT = dupObj->getComponent<Transform>();
@@ -248,6 +237,12 @@ void AddObjWindow::dupObj(GameObjectManager& manager, GameObject* oriObj) {
         dupT->x = oriT->x + 1.f;
         dupT->y = oriT->y + 1.f;
     }
+
+    // record the create command (for undo)
+    auto cmd = std::make_unique<CreateObjectCmd>(manager, name);
+    UndoRedoManager::Instance().executeCmd(std::move(cmd));
+
+    Editor::objSelectionState.selectedObject = dupObj;
 
     DebugLog::addMessage("Object duplicated!");
 }
