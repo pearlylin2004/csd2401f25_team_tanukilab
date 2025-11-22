@@ -68,6 +68,9 @@ namespace Editor {
 		std::string currentViewFolder;
 		std::vector<std::string> subFolders;
 
+		// for dropping of files from file explorer
+		std::string hoverFolder;
+
 		// for deleting asset via browser
 		std::string fullPathToDelete;
 		bool showDeletePopup = false;

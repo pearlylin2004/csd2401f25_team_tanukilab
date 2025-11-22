@@ -380,10 +380,34 @@ void InputHandler::dropCallback(GLFWwindow* window, int count, const char** path
     std::filesystem::path buildDir(RUNTIME_DIR_R); // "./assets"
     std::filesystem::path projectDir(SOURCE_DIR_R);  // "./projects/WaterBound/assets"
 
+	// check if dropping onto a specific folder in editor
+	std::string targetFolder = Editor::assetBrowserState.hoverFolder;
+
 	for (int i = 0; i < count; ++i) {
 		std::filesystem::path src(paths[i]);
+		std::string ext = src.extension().string();
 		std::filesystem::path dstBuild = buildDir / src.filename();
 		std::filesystem::path dstProject = projectDir / src.filename();
+
+		std::transform(ext.begin(), ext.end(), ext.begin(), ::tolower);
+
+		// Auto-detect folder based on extension if no hover target
+		if (targetFolder.empty()) {
+			// if audio file, auto add to Audio
+			if (ext == ".wav" || ext == ".ogg" || ext == ".mp3") {
+				targetFolder = "Audio";
+			}
+			// if textures, auto add to textures
+			else if (ext == ".png" || ext == ".jpg" || ext == ".jpeg") {
+				targetFolder = "Texture";
+			}
+		}
+		else if (targetFolder == "Misc") targetFolder.clear();
+
+		if (!targetFolder.empty()) {
+			dstBuild = buildDir / targetFolder / src.filename();
+			dstProject = projectDir / targetFolder / src.filename();
+		}
 
 		try {
 			// Copy to build/debug folder

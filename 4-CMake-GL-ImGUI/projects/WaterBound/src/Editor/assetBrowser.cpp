@@ -27,6 +27,8 @@ AssetBrowser::AssetBrowser(Editor::AssetBrowserState& Astate, Editor::ObjSelecti
 {}
 
 void AssetBrowser::render() {
+    m_AssetBrowserState.hoverFolder = "";
+
     ImGui::Begin("Assets");
 
     // refresh to update assets from the actual asset folder
@@ -69,9 +71,12 @@ void AssetBrowser::render() {
     ImGui::Separator();
 
     if (!m_AssetBrowserState.currentViewFolder.empty()) {
-        if (ImGui::Button("<- Back")) {
+        if (ImGui::Button("< Back")) {
             m_AssetBrowserState.currentViewFolder.clear();
         }
+
+        // if inside a folder and drag and drop a file, add it into the folder
+        m_AssetBrowserState.hoverFolder = m_AssetBrowserState.currentViewFolder;
 
         ImGui::SameLine();
         ImGui::Text("Folder: %s", m_AssetBrowserState.currentViewFolder.c_str());
@@ -91,6 +96,11 @@ void AssetBrowser::render() {
             // folder button
             if (ImGui::Button(folder.c_str(), ImVec2(m_AssetBrowserState.iconSize, m_AssetBrowserState.iconSize))) {
                 m_AssetBrowserState.currentViewFolder = folder;
+            }
+
+            // see if mouse is on which folder (for dropping of files from file explorer)
+            if (ImGui::IsItemHovered()) {
+                m_AssetBrowserState.hoverFolder = folder;
             }
 
             ImGui::PopStyleVar();
@@ -115,10 +125,13 @@ void AssetBrowser::render() {
 
         if (m_AssetBrowserState.currentFolder.empty()) {
             // if at root (Asset folder), show only folders
-            if (asset.folder != m_AssetBrowserState.currentFolder) continue;
+            //if (asset.folder != m_AssetBrowserState.currentFolder) continue;
             continue;
         }
         else {
+            // if file is directly inside Assets, put them in Misc
+            if (m_AssetBrowserState.currentViewFolder == "Misc" && assetFolderName == "assets") assetFolderName = "Misc";
+
             // if in subfolder, show assets in that folder only
             if (assetFolderName != m_AssetBrowserState.currentViewFolder) continue;
         }
@@ -275,6 +288,9 @@ void AssetBrowser::loadAssetsFromDirectory() {
             m_AssetBrowserState.subFolders.push_back(folderName);
         }
     }
+
+    // for all files directly in Assets
+    m_AssetBrowserState.subFolders.push_back("Misc");
 
     // iterate over all files and folders in this directory and push all files to m_assets (flat list)
     for (const std::filesystem::directory_entry& entry : std::filesystem::recursive_directory_iterator(m_AssetBrowserState.currentFolder)) {
