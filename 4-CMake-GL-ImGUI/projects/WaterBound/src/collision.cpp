@@ -53,6 +53,12 @@ namespace Collision {
         return Collision::Circle(center, radius);
     }
 
+    Circle getObjectCirclebyCollider(const Transform* transform, const Vector2D& collider) {
+        Vector2D center(transform->x, transform->y);
+        float radius = std::max(collider.x, collider.y) * 0.5f; // x and y will be the same actually
+        return Collision::Circle(center, radius);
+    }
+
     //AABB
     bool CollisionIntersection_RectRect_Static(const AABB& aabb1, const AABB& aabb2)
     {

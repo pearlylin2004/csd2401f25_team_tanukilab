@@ -86,6 +86,7 @@ namespace Collision {
     AABB getObjectAABB(const Transform* transform);
     AABB getObjectAABBbyCollider(const Transform* transform, const Vector2D& collider); // use customized collider for AABB
     Circle getObjectCircle(const Transform* transform);
+    Circle getObjectCirclebyCollider(const Transform* transform, const Vector2D& collider);
 
     //AABB and AABB
     bool CollisionIntersection_RectRect_Static(const AABB& aabb1, const AABB& aabb2);
