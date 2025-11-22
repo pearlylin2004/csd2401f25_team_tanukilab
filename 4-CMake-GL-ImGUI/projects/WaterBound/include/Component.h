@@ -137,9 +137,10 @@ public:
     float floorY = 0.0f;
     bool onGround = false;  
 
-    bool alive = false;
-
     //water bullet
+    bool alive = false;
+    float lifeTimer = 0.0f;     
+    float maxLifetime = 3.0f;
     Vector2D originalPos{ 0, 0 };
     Vector2D originalVel{ 0, 0 };
     bool isOriginalStateSet = false;

@@ -877,47 +877,43 @@ void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime, M
 		}
 	}
 
-	for (GameObject* obj : gameObjects) {
+	for (GameObject* obj : gameObjects) { 
 		std::string name = obj->getObjectName();
-		if (name == "bullet") continue;
-		if (name.find("bullet") == 0 && name.length() > 6) {
-			if (name.find("bullet") == 0 && name.length() > 6) {
-				bool isNumberedBullet = true;
-				for (size_t i = 6; i < name.length(); i++) {
-					if (!std::isdigit(name[i])) {
-						isNumberedBullet = false;
-						break;
-					}
-				}
 
-				if (!isNumberedBullet) continue;
+		// Skip if not a numbered bullet
+		if (name.find("bullet") != 0 || name.length() <= 6) continue;
 
-				if (!obj->hasComponent<Physics>() || !obj->hasComponent<Transform>())
-					continue;
-
-				Physics* p = obj->getComponent<Physics>();
-				Transform* t = obj->getComponent<Transform>();
-
-				if (p->alive) {
-					DynamicsSystem::Integrate(p->dynamics, deltaTime, 0.0f, false);
-
-					t->x = p->dynamics.position.x;
-					t->y = p->dynamics.position.y;
-
-					float leftBound = -20.0f;
-					float rightBound = 50.0f;
-					float bottomBound = -10.0f;
-					float topBound = 30.0f;
-
-					if (t->x < leftBound || t->x > rightBound ||
-						t->y < bottomBound || t->y > topBound) {
-						PhysicsForces::deactivateBullet(obj);
-					}
-				}
+		// Check if it's a numbered bullet (bullet1, bullet2, etc.)
+		bool isNumberedBullet = true;
+		for (size_t i = 6; i < name.length(); i++) {
+			if (!std::isdigit(name[i])) {
+				isNumberedBullet = false;
+				break;
 			}
 		}
+		if (!isNumberedBullet) continue;
 
-	}
+		if (!obj->hasComponent<Physics>() || !obj->hasComponent<Transform>())
+			continue;
+
+		Physics* p = obj->getComponent<Physics>();
+		Transform* t = obj->getComponent<Transform>();
+
+		if (p->alive) {
+			// Update bullet physics
+			DynamicsSystem::Integrate(p->dynamics, deltaTime, 0.0f, false);
+			t->x = p->dynamics.position.x;
+			t->y = p->dynamics.position.y;
+
+			// Update life timer
+			p->lifeTimer += deltaTime;
+
+			// Deactivate if lifetime exceeded
+			if (p->lifeTimer >= p->maxLifetime) {
+				PhysicsForces::deactivateBullet(obj);
+			}
+		}
+	} 
 
 	auto end = std::chrono::high_resolution_clock::now();
 	double ms = std::chrono::duration<double, std::milli>(end - start).count();

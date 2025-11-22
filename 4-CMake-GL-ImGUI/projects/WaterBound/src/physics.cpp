@@ -101,6 +101,7 @@ void PhysicsForces::shoot(GameObject* bullet, const Transform* origin) {
     p->dynamics.velocity.x = 10.0f; // speed along x
     p->dynamics.velocity.y = 0.0f;  // no vertical motion
 
+    p->lifeTimer = 0.0f;
     p->alive = true;
 
     // Optional: clear forces so bullet is not affected by gravity
@@ -175,6 +176,7 @@ void PhysicsForces::deactivateBullet(GameObject* bullet) {
     p->dynamics.velocity.x = p->originalVel.x;
     p->dynamics.velocity.y = p->originalVel.y;
 
+    p->lifeTimer = 0.0f;
     p->alive = false;
 
     DebugLog::addMessage("Bullet deactivated and returned to pool", DebugMode::PlaySimul);
