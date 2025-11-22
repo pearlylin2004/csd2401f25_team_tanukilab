@@ -1,7 +1,7 @@
 ﻿#pragma once
 #include <string>
 #include <memory>
-#include <stack>
+#include <deque>
 #include <functional>
 #include "GameObjectManager.h"
 #include "Editor/gameDebugLog.h"
@@ -22,22 +22,28 @@ public:
 	// these function dont have implementation in this class, any derived class must implement them
 	virtual void execute() = 0;
 	virtual void undo() = 0;
+
+	// to be override in derived class, store obj name (in case of rename)
+	virtual void updateObjName(const std::string&, const std::string&) {}
 };
 
-// handle undo/redo for transform changes
+// store transform changes
 class TransformCmd : public CmdInterface {
 public:
 	// ctor with before/other state
 	TransformCmd(GameObjectManager& manager, const std::string& objName, const TransformSnapshot& before, const TransformSnapshot& after);
 
-	// apply AFTER transform snapshot
+	// apply AFTER transform snapshot (final position aft transform changed)
 	void execute() override;
 
-	// apply BEFORE transform snapshot
+	// apply BEFORE transform snapshot (put back to initial transform)
 	void undo() override;
 
+	// if renamed, save the old name and new name (so undo/redo still work)
+	void updateObjName(const std::string& oldName, const std::string& newName);
+
 private:
-	// helper to add transform data to a game obj
+	// helper to write transform data to a game obj
 	void applySnapshot(const TransformSnapshot& snap);
 
 	GameObjectManager& m_manager;
@@ -46,7 +52,7 @@ private:
 	TransformSnapshot m_after;
 };
 
-// handle undo/redo for obj creation
+// store obj creation
 class CreateObjectCmd : public CmdInterface {
 public:
 	CreateObjectCmd(GameObjectManager& manager, const std::string& objName);
@@ -57,6 +63,9 @@ public:
 	// delete the created obj (undo the creation)
 	void undo() override;
 
+	// if renamed, save the old name and new name (so undo/redo still work)
+	void updateObjName(const std::string& oldName, const std::string& newName);
+
 private:
 	GameObjectManager& m_manager;
 	std::string m_objectName;
@@ -64,7 +73,7 @@ private:
 	bool m_wasExecuted = false;
 };
 
-// handle undo/redo for obj deletion
+// store for obj deletion
 class DeleteObjCmd : public CmdInterface {
 public:
 	DeleteObjCmd(GameObjectManager& manager, GameObject* obj);
@@ -74,6 +83,9 @@ public:
 
 	// recreate obj from serialized data (undo the deletion)
 	void undo() override;
+
+	// if renamed, save the old name and new name (so undo/redo still work)
+	void updateObjName(const std::string& oldName, const std::string& newName);
 
 private:
 	GameObjectManager& m_manager;
@@ -93,6 +105,9 @@ public:
 	// exesute and store a command
 	void executeCmd(std::unique_ptr<CmdInterface> cmd);
 
+	// if renamed, save the old name and new name (so undo/redo still work)
+	void updateObjName(const std::string& oldName, const std::string& newName);
+
 	// undo last command
 	void undo();
 
@@ -100,8 +115,8 @@ public:
 	void redo();
 
 	// boolean to check if undo/redo is doable
-	bool canUndo() const { return !m_undoStack.empty(); }
-	bool canRedo() const { return !m_redoStack.empty(); }
+	bool canUndo() const { return !m_undoDeque.empty(); }
+	bool canRedo() const { return !m_redoDeque.empty(); }
 
 	// clear all history (i.e. load scene, stop simulation)
 	void clear();
@@ -120,8 +135,8 @@ public:
 private:
 	UndoRedoManager() = default;
 
-	std::stack<std::unique_ptr<CmdInterface>> m_undoStack;
-	std::stack<std::unique_ptr<CmdInterface>> m_redoStack;
+	std::deque<std::unique_ptr<CmdInterface>> m_undoDeque;
+	std::deque<std::unique_ptr<CmdInterface>> m_redoDeque;
 
 	// for transform
 	bool m_isEditingTransform = false;
@@ -129,5 +144,5 @@ private:
 	TransformSnapshot m_transformBefore;
 };
 
-
+// take a snapshot of an object's transform state
 TransformSnapshot captureTransform(GameObject* obj);

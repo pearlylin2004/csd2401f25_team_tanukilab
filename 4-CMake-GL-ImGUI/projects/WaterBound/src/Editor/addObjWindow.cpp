@@ -27,9 +27,66 @@ AddObjWindow::AddObjWindow(Editor::ShapeControlState& Cshape, Editor::ShapeContr
 void AddObjWindow::render(GameObjectManager& manager){
     ImGui::Begin("Create Object");
 
+    //ImGui::PushItemWidth(150.0f);
+
+    /* --------------- Add Circle Logic --------------- */
+    {
+        ImGui::Text("X");
+        ImGui::SameLine();
+        ImGui::InputFloat("##X", &m_circleInput.inputX, 1.f);
+
+        ImGui::Text("Y");
+        ImGui::SameLine();
+        ImGui::InputFloat("##Y", &m_circleInput.inputY, 1.f);
+
+        ImGui::Text("Z");
+        ImGui::SameLine();
+        ImGui::InputFloat("##Z", &m_circleInput.inputZ, 1.f);
+        ImGui::Spacing();
+
+    //ImGui::PopItemWidth();
+        if (ImGui::Button("Add Circle")) {
+            createCir(manager, m_circleInput.inputX, m_circleInput.inputY, m_circleInput.inputZ);
+        }
+
+        /* --------------- END --------------- */
+    }
+
+    ImGui::Spacing();
+    ImGui::Separator();
+    ImGui::Spacing();
+
+        
+    /* --------------- Add Rectangle Logic --------------- */
+    {
+        ImGui::Text("X");
+        ImGui::SameLine();
+        ImGui::InputFloat("##X1", &m_rectangleInput.inputX, 1.f);
+
+        ImGui::Text("Y");
+        ImGui::SameLine();
+        ImGui::InputFloat("##Y1", &m_rectangleInput.inputY, 1.f);
+
+        ImGui::Text("Z");
+        ImGui::SameLine();
+        ImGui::InputFloat("##Z1", &m_rectangleInput.inputZ, 1.f);
+        ImGui::Spacing();
+
+
+        if (ImGui::Button("Add Rectangle")) {
+            createRec(manager, m_rectangleInput.inputX, m_rectangleInput.inputY, m_rectangleInput.inputZ);
+        }
+    }
+    /* --------------- END --------------- */
+
+    ImGui::Spacing();
+    ImGui::Separator();
+    ImGui::Spacing();
+
+
     //// spawning objects (double up every click)
     static int count = 0;
-    if (ImGui::Button("Stress Test")) {
+    if (ImGui::Button("Stress Test (Do not click)")) {
         int spawnCount = (count == 0) ? 1 : count * 2;
         if (spawnCount == 2048)
             spawnCount = 2500; //cap at 400 objects
@@ -90,63 +147,6 @@ void AddObjWindow::render(GameObjectManager& manager){
 
         count = spawnCount;
     }
-
-
-    ImGui::Spacing();
-    ImGui::Separator();
-    ImGui::Spacing();
-
-    //ImGui::PushItemWidth(150.0f);
-
-    /* --------------- Add Circle Logic --------------- */
-    {
-        ImGui::Text("X");
-        ImGui::SameLine();
-        ImGui::InputFloat("##X", &m_circleInput.inputX, 1.f);
-
-        ImGui::Text("Y");
-        ImGui::SameLine();
-        ImGui::InputFloat("##Y", &m_circleInput.inputY, 1.f);
-
-        ImGui::Text("Z");
-        ImGui::SameLine();
-        ImGui::InputFloat("##Z", &m_circleInput.inputZ, 1.f);
-        ImGui::Spacing();
-
-    //ImGui::PopItemWidth();
-        if (ImGui::Button("Add Circle")) {
-            createCir(manager, m_circleInput.inputX, m_circleInput.inputY, m_circleInput.inputZ);
-        }
-
-        /* --------------- END --------------- */
-    }
-
-    ImGui::Spacing();
-    ImGui::Separator();
-    ImGui::Spacing();
-
-        
-    /* --------------- Add Rectangle Logic --------------- */
-    {
-        ImGui::Text("X");
-        ImGui::SameLine();
-        ImGui::InputFloat("##X1", &m_rectangleInput.inputX, 1.f);
-
-        ImGui::Text("Y");
-        ImGui::SameLine();
-        ImGui::InputFloat("##Y1", &m_rectangleInput.inputY, 1.f);
-
-        ImGui::Text("Z");
-        ImGui::SameLine();
-        ImGui::InputFloat("##Z1", &m_rectangleInput.inputZ, 1.f);
-        ImGui::Spacing();
-
-
-        if (ImGui::Button("Add Rectangle")) {
-            createRec(manager, m_rectangleInput.inputX, m_rectangleInput.inputY, m_rectangleInput.inputZ);
-        }
-    }
-    /* --------------- END --------------- */
 
     ImGui::End();
 }

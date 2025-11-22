@@ -62,9 +62,16 @@ void InspectorWindow::render(GameObjectManager& manager) {
 
             ImGui::Text("Name");
             ImGui::SameLine();
-            if (ImGui::InputText("##Name", buffer, sizeof(buffer))) {
+
+            // ENTER to apply name change
+            if (ImGui::InputText("##Name", buffer, sizeof(buffer), ImGuiInputTextFlags_EnterReturnsTrue)) {
+                std::string oldObjName = objName;
                 std::string newObjName = buffer;
+
                 if (manager.renameGameObject(m_objSelectionState.selectedObject, newObjName)) {
+                    // update obj new name jic redo/undo
+                    UndoRedoManager::Instance().updateObjName(oldObjName, newObjName);
+
                     DebugLog::addMessage("Object renamed to " + newObjName + "\n");
                 }
                 else {
@@ -470,7 +477,6 @@ void InspectorWindow::renderRender( GameObject* selected) {
 }
 
 void InspectorWindow::renderCollision( GameObject* selected, GameObjectManager& manager) {
-    Transform* transform = selected->getComponent<Transform>();
     CollisionInfo* collision = selected->getComponent<CollisionInfo>();
 
     if (ImGui::CollapsingHeader("Collision")) {

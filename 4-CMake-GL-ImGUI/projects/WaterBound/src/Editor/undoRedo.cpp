@@ -71,15 +71,22 @@ void TransformCmd::applySnapshot(const TransformSnapshot& snap) {
     }
 }
 
+void TransformCmd::updateObjName(const std::string& oldName, const std::string& newName) {
+    if (m_objectName == oldName) {
+        m_objectName = newName;
+    }
+}
+
 CreateObjectCmd::CreateObjectCmd(GameObjectManager& manager, const std::string& objName)
     : m_manager(manager), m_objectName(objName) {}
 
 void CreateObjectCmd::execute() {
+    // when creating new object
     if (!m_wasExecuted) {
         GameObject* obj = m_manager.getGameObject(m_objectName);
-        //GameObject* obj = m_createFunc(m_manager);
+    
         if (obj) {
-            // serialize current state of obj to a json string
+            // serialize current state of obj to a json string (to store all its component)
             m_serializedData = JsonIO::serializeGameObj(obj);
         }
         m_wasExecuted = true;
@@ -87,7 +94,9 @@ void CreateObjectCmd::execute() {
     else {
         if (!m_serializedData.empty()) {
             // deserialize json string to recreate the gameobject
-            JsonIO::deserializeGameObj(m_manager, m_serializedData);
+            GameObject* obj = JsonIO::deserializeGameObj(m_manager, m_serializedData);
+
+            if (obj) obj->getObjectName() = m_objectName;
         }
     }
 }
@@ -104,14 +113,28 @@ void CreateObjectCmd::undo() {
             Editor::objSelectionState.selectedIndex = -1;
         }
 
+        // delete the obj (to undo create)
         m_manager.deleteGameObject(obj);
     }
 }
+
+void CreateObjectCmd::updateObjName(const std::string& oldName, const std::string& newName) {
+    if (m_objectName == oldName) {
+        m_objectName = newName;
+
+        if (GameObject* obj = m_manager.getGameObject(m_objectName)) {
+            m_serializedData = JsonIO::serializeGameObj(obj);
+        }
+    }
+}
+
 
 DeleteObjCmd::DeleteObjCmd(GameObjectManager& manager, GameObject* obj) : m_manager(manager) {
     if (obj) {
         m_objectName = obj->getObjectName();
         m_layer = obj->getLayer();
+
+        // save the final state before delete
         m_serializedData = JsonIO::serializeGameObj(obj);
     }
 }
@@ -119,71 +142,85 @@ DeleteObjCmd::DeleteObjCmd(GameObjectManager& manager, GameObject* obj) : m_mana
 void DeleteObjCmd::execute() {
     GameObject* obj = m_manager.getGameObject(m_objectName);
     if (obj) {
+        // serialize the obj to store its component data
         m_serializedData = JsonIO::serializeGameObj(obj);
+
+        // remove the obj
         m_manager.deleteGameObject(obj);
     }
 }
 
 void DeleteObjCmd::undo() {
     if (!m_serializedData.empty()) {
+        // create a obj from the stored component data
         GameObject* ori = JsonIO::deserializeGameObj(m_manager, m_serializedData);
         if (ori) {
+            ori->getObjectName() = m_objectName;
             m_manager.assignObjectToLayer(ori, m_layer);
         }
     }
 }
 
+void DeleteObjCmd::updateObjName(const std::string& oldName, const std::string& newName) {
+    if (m_objectName == oldName) {
+        m_objectName = newName;
+    }
+}
+
 void UndoRedoManager::executeCmd(std::unique_ptr<CmdInterface> cmd) {
+    // execute the command (transform/create/delete)
     cmd->execute();
-    m_undoStack.push(std::move(cmd));
 
-    while (!m_redoStack.empty()) m_redoStack.pop();
+    // push to undo deque
+    m_undoDeque.push_back(std::move(cmd));
 
-    if (m_undoStack.size() > MAX_UNDO_STEPS) {
-        std::stack<std::unique_ptr<CmdInterface>> temp;
-        size_t keep = MAX_UNDO_STEPS;
+    // clear redo history
+    m_redoDeque.clear();
 
-        while (!m_undoStack.empty() && keep > 0) {
-            temp.push(std::move(m_undoStack.top()));
-            m_undoStack.pop();
+    // trim oldest one if too large (more than max steps)
+    if (m_undoDeque.size() > MAX_UNDO_STEPS) {
+        m_undoDeque.pop_front();
+    }
+}
 
-            --keep;
-        }
+void UndoRedoManager::updateObjName(const std::string& oldName, const std::string& newName) {
+    for (std::unique_ptr<CmdInterface>& cmd : m_undoDeque) {
+        cmd->updateObjName(oldName, newName);
+    }
 
-        while (!m_undoStack.empty()) m_undoStack.pop();
-
-        while (!temp.empty()) {
-            m_undoStack.push(std::move(temp.top()));
-            temp.pop();
-        }
+    for (std::unique_ptr<CmdInterface>& cmd : m_redoDeque) {
+        cmd->updateObjName(oldName, newName);
     }
 }
 
 void UndoRedoManager::undo() {
-    if (m_undoStack.empty()) return;
+    if (m_undoDeque.empty()) return;
 
-    std::unique_ptr<CmdInterface> cmd = std::move(m_undoStack.top());
-    m_undoStack.pop();
+    // take the last command from undo deque
+    std::unique_ptr<CmdInterface> cmd = std::move(m_undoDeque.back());
+    m_undoDeque.pop_back();
 
+    // undo it
     cmd->undo();
 
-    m_redoStack.push(std::move(cmd));
+    // push the undo step to redo deque
+    m_redoDeque.push_back(std::move(cmd));
 }
 
 void UndoRedoManager::redo() {
-    if (m_redoStack.empty()) return;
+    if (m_redoDeque.empty()) return;
 
-    std::unique_ptr<CmdInterface> cmd = std::move(m_redoStack.top());
-    m_redoStack.pop();
+    std::unique_ptr<CmdInterface> cmd = std::move(m_redoDeque.back());
+    m_redoDeque.pop_back();
 
     cmd->execute();
 
-    m_undoStack.push(std::move(cmd));
+    m_undoDeque.push_back(std::move(cmd));
 }
 
 void UndoRedoManager::clear() {
-    while (!m_undoStack.empty()) m_undoStack.pop();
-    while (!m_redoStack.empty()) m_redoStack.pop();
+    m_undoDeque.clear();
+    m_redoDeque.clear();
     m_isEditingTransform = false;
 }
 
@@ -216,20 +253,16 @@ void UndoRedoManager::endTransformEdit(GameObjectManager& manager, GameObject* o
 
     if (changed) {
         auto cmd = std::make_unique<TransformCmd>(manager, m_editingObjName, m_transformBefore, after);
-        m_undoStack.push(std::move(cmd));
-        while (!m_redoStack.empty()) m_redoStack.pop();
 
-        if (m_undoStack.size() > MAX_UNDO_STEPS) {
-            std::stack<std::unique_ptr<CmdInterface>> temp;
-            for (size_t i = 0; i < MAX_UNDO_STEPS && !m_undoStack.empty(); ++i) {
-                temp.push(std::move(m_undoStack.top()));
-                m_undoStack.pop();
-            }
-            while (!m_undoStack.empty()) m_undoStack.pop();
-            while (!temp.empty()) {
-                m_undoStack.push(std::move(temp.top()));
-                temp.pop();
-            }
+        // add to undo deque
+        m_undoDeque.push_back(std::move(cmd));
+
+        // clear redo
+        m_redoDeque.clear();
+
+        // trim oldest step if more than 20 steps saved
+        if (m_undoDeque.size() > MAX_UNDO_STEPS) {
+            m_undoDeque.pop_front();
         }
     }
 

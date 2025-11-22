@@ -139,13 +139,15 @@ bool GameObjectManager::renameGameObject(GameObject* obj, const std::string& new
 	if (!obj) return false;
 	if (newName.empty()) return false;
 
-	for (auto& odject : m_gameObjects) {
-		// return false another object has the same name
-		GameObject* other = odject.second.get();
-		if (other != obj && other->getObjectName() == newName) {
-			return false;
-		}
-	}
+	std::string oldName = obj->getObjectName();
+
+	if (m_gameObjects.find(newName) != m_gameObjects.end()) return false;
+
+	auto node = m_gameObjects.extract(oldName);
+	if (node.empty()) return false;
+
+	node.key() = newName;
+	m_gameObjects.insert(std::move(node));
 
 	// rename if no duplicated name
 	obj->getObjectName() = newName;
