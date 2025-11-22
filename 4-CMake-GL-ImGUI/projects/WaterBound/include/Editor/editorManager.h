@@ -40,6 +40,7 @@ Technology is prohibited.
 #define SOURCE_DIR_R "../projects/WaterBound/assets"
 #endif
 
+// add obj window & obj creation+deletion func
 class AddObjWindow {
 public:
 	AddObjWindow(Editor::ShapeControlState& Cshape, Editor::ShapeControlState& Rshape);
@@ -58,6 +59,7 @@ private:
 	Editor::ShapeControlState& m_rectangleInput;
 };
 
+// hot loaded asset browser
 class AssetBrowser {
 public:
 	AssetBrowser(Editor::AssetBrowserState& Astate, Editor::ObjSelectionState& Ostate, Editor::MenuBarState& Mstate);
@@ -79,6 +81,7 @@ private:
 	std::vector<Editor::Asset> m_assets;
 };
 
+// Debug console
 class DebugWindow {
 public:
 	DebugWindow(DebugMode Dmode);
@@ -88,6 +91,7 @@ private:
 	DebugMode mode;
 };
 
+// Hierarchy (object list)
 class HierarchyWindow {
 public:
 	HierarchyWindow(Editor::ObjSelectionState& Ostate);
@@ -103,6 +107,7 @@ private:
 	Editor::ObjSelectionState& m_objSelectionState;
 };
 
+// Inspector (property editor)
 class InspectorWindow {
 public:
 	InspectorWindow(Editor::ObjSelectionState& Ostate, Editor::GizmoState& gState);
@@ -123,6 +128,7 @@ private:
 	Editor::GizmoState& m_gizmoState;
 };
 
+// Top menu bar
 class MenuBar {
 public:
 	MenuBar(AssetBrowser& aBrowser, Editor::AssetBrowserState& Astate, Editor::MenuBarState& Mstate, Editor::ObjSelectionState& Ostate, Editor::SceneState& sceneState);
@@ -152,11 +158,13 @@ private:
 	Editor::SceneState& m_sceneState;
 };
 
+// Performance
 class PerformanceWindow {
 public:
 	void render();
 };
 
+// Scene Window & Editor Camera Window
 class SceneWindow {
 public:
 	SceneWindow(AssetBrowser& aBrowser, Editor::ObjSelectionState& Ostate, Editor::MenuBarState& Mstate, Editor::SceneWindowState& Sstate, Editor::SceneState& sceneState, Editor::GizmoState& gizmoState);
@@ -169,13 +177,18 @@ public:
 	void resetSelection();
 
 private:
-	void newScene(GameObjectManager& manager);
+	/* --------- Render -------- */
+	void renderGizmo(GameObjectManager& manager);
+	void editorCameraControls();
+	/* -------- END -------- */
 
+	/* --------- Scene Management -------- */
+	void newScene(GameObjectManager& manager);
 	// dup current scene and open
 	void duplicateScene(GameObjectManager& manager);
-
 	// load existing scene
 	void loadScene(GameObjectManager& manager);
+	/* -------- END -------- */
 
 	/* --------- Pop up Modals -------- */
 	void newScenePopup(GameObjectManager& manager);
@@ -183,7 +196,6 @@ private:
 	void loadScenePopup(GameObjectManager& manager);
 	/* -------- END -------- */
 
-	void renderGizmo(GameObjectManager& manager);
 
 	/* -------- Object Click and Drag -------- */
 	// handle click and select logic and collision

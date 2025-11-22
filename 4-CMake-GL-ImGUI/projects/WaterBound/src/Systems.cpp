@@ -1204,6 +1204,7 @@ void UISystem::dockingSetUp() {
 
 		// right top: Inspector
 		ImGui::DockBuilderDockWindow("Inspector", dockRight);
+		ImGui::DockBuilderDockWindow("Editor Camera", dockRight);
 
 		// right bottom: Create Object
 		ImGui::DockBuilderDockWindow("Create Object", dockRightBottom);
