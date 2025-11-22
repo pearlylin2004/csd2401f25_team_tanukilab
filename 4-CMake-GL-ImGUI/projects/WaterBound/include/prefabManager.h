@@ -83,6 +83,9 @@ public:
 	// save current state of prefab to its file
 	bool savePrefab(const GameObject* prefabObj); // prefabObj is a temp obj rep the prefab
 
+	// apply prefab changes to all existing instances in current scene and return affected counts
+	int applyToAllInstances(const std::string& prefabID, GameObjectManager& manager);
+
 	// create a prefab out of a game obj
 	bool createPrefabFromGameObj(GameObject* go, const std::string& name = "", /* whether to make this game obj ref to the game obj */ bool makeRef = false);
 	/* -------- END -------- */

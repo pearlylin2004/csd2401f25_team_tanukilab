@@ -33,9 +33,12 @@ void InspectorWindow::render(GameObjectManager& manager) {
         selected = m_objSelectionState.selectedPrefab.get();
 
         if (ImGui::Button("Save")) {
+            const std::string& prefabID = selected->getObjectPrefabID();
+
             if (PrefabManager::Instance().savePrefab(selected)) {
+                int count = PrefabManager::Instance().applyToAllInstances(prefabID, manager);
                 /*manager.loadScene(JsonIO::runtimeScenePath(Editor::sceneState.currentSceneName));*/
-                DebugLog::addMessage("Prefab saved\n");
+                DebugLog::addMessage("Applied prefab changes to " + std::to_string(count) + " instances\n");
             }
             else {
                 DebugLog::addMessage("Prefab not saved\n");

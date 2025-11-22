@@ -386,6 +386,68 @@ bool PrefabManager::savePrefab(const GameObject* prefabObj) {
 	return true;
 }
 
+// apply prefab changes to all existing instances in current scene
+int PrefabManager::applyToAllInstances(const std::string& prefabID, GameObjectManager& manager) {
+	if (prefabID.empty()) return 0;
+
+	std::vector<GameObject*> gameObjects;
+	manager.getAllGameObjects(gameObjects);
+
+	int count{};
+
+	for (GameObject* obj : gameObjects) {
+		// only affect those obj ref to a prefab
+		if (obj->getObjectPrefabID() != prefabID) continue;
+
+		// store scene-specific data (transform)
+		Transform* t = obj->getComponent<Transform>();
+		float posX = t ? t->x : 0.f;
+		float posY = t ? t->y : 0.f;
+		float posZ = t ? t->z : 0.f;
+		std::string objName = obj->getObjectName();
+		int layer = obj->getLayer();
+
+		// Remove all existing components
+		obj->removeComponent<Transform>();
+		obj->removeComponent<Render>();
+		obj->removeComponent<Input>();
+		obj->removeComponent<Physics>();
+		obj->removeComponent<CollisionInfo>();
+		obj->removeComponent<Animation>();
+		obj->removeComponent<StateMachine>();
+		obj->removeComponent<AudioComponent>();
+		obj->removeComponent<FontComponent>();
+
+		// reapply prefab components from cache
+		auto cacheIt = m_prefabCache.find(prefabID);
+		if (cacheIt != m_prefabCache.end()) {
+			const rapidjson::Document& doc = cacheIt->second;
+
+			if (doc.HasMember("components") && doc["components"].IsObject()) {
+				applyPrefabComponents(obj, doc["components"]);
+			}
+		}
+
+		Transform* newT = obj->getComponent<Transform>();
+		if (newT) {
+			newT->x = posX;
+			newT->y = posY;
+			newT->z = posZ;
+		}
+
+		if (Render* r = obj->getComponent<Render>()) {
+			if (r->hasTex && !r->texFile.empty()) {
+				r->texChanged = true;
+			}
+		}
+
+		++count;
+	}
+
+	manager.initializeSceneResources();
+	return count;
+}
+
 bool PrefabManager::createPrefabFromGameObj(GameObject* go, const std::string& name, bool makeRef) {
 	if (!go) return false;
 
