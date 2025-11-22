@@ -17,7 +17,7 @@ without the prior written consent of DigiPen Institute of
 Technology is prohibited.
 */
 /* End Header **************************************************************************/
-
+#ifdef _DEBUG
 #include "Editor/editorManager.h"
 
 AssetBrowser::AssetBrowser(Editor::AssetBrowserState& Astate, Editor::ObjSelectionState& Ostate, Editor::MenuBarState& Mstate) :
@@ -517,3 +517,4 @@ void AssetBrowser::assetReplacePopup() {
         ImGui::EndPopup();
     }
 }
+#endif

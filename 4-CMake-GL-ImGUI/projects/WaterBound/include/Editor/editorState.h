@@ -1,4 +1,5 @@
-﻿#pragma once
+﻿#ifdef _DEBUG
+#pragma once
 #include <string>
 #include <memory>
 #include <filesystem>
@@ -218,3 +219,4 @@ namespace Editor {
 	};
 	/* ----------------- Component End ---------------- */
 }
+#endif

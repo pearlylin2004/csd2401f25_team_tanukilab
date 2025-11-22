@@ -17,7 +17,7 @@ without the prior written consent of DigiPen Institute of
 Technology is prohibited.
 */
 /* End Header **************************************************************************/
-
+#ifdef _DEBUG
 #include "Editor/editorManager.h"
 
 InspectorWindow::InspectorWindow(Editor::ObjSelectionState& Ostate, Editor::GizmoState& gState) : 
@@ -842,3 +842,5 @@ void InspectorWindow::wrongFileTypePopup(const std::string& filename) {
         ImGui::EndPopup();
     }
 }
+
+#endif

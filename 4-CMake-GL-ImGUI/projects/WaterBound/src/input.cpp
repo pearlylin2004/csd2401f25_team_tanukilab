@@ -16,9 +16,7 @@ without the prior written consent of DigiPen Institute of
 Technology is prohibited.
 */
 /* End Header **************************************************************************/
-#ifdef _DEBUG
 #include "editor/editorManager.h"
-#endif
 #include "renderer.h"
 #include "input.h"
 

@@ -18,6 +18,7 @@ Technology is prohibited.
 */
 /* End Header **************************************************************************/
 
+#ifdef _DEBUG
 #include "Editor/editorManager.h"
 
 SceneWindow::SceneWindow(AssetBrowser& aBrowser, Editor::ObjSelectionState& Ostate, Editor::MenuBarState& Mstate, Editor::SceneWindowState& Sstate, Editor::SceneState& sceneState, Editor::GizmoState& gizmoState) :
@@ -575,3 +576,4 @@ void SceneWindow::resetSelection() {
     m_objSelectionState.selectedPrefab = nullptr;
     m_objSelectionState.selectedIndex = -1;
 }
+#endif

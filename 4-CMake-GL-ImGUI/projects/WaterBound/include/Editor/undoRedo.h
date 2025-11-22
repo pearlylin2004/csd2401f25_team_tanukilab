@@ -1,4 +1,5 @@
-﻿#pragma once
+﻿#ifdef _DEBUG
+#pragma once
 #include <string>
 #include <memory>
 #include <deque>
@@ -146,3 +147,4 @@ private:
 
 // take a snapshot of an object's transform state
 TransformSnapshot captureTransform(GameObject* obj);
+#endif

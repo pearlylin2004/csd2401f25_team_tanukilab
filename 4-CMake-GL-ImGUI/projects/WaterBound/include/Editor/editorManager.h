@@ -17,7 +17,7 @@ without the prior written consent of DigiPen Institute of
 Technology is prohibited.
 */
 /* End Header **************************************************************************/
-
+#ifdef _DEBUG
 #pragma once
 #include <imgui.h> //for use of imgui in UISystem
 #include <imgui_impl_glfw.h> //for use of imgui in UISystem
@@ -251,3 +251,4 @@ private:
 	static inline bool pausedSimul = false;
 	static inline bool assetsChangedFlag = true;
 };
+#endif
