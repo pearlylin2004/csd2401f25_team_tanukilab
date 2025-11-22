@@ -213,7 +213,7 @@ void AddObjWindow::createCir(GameObjectManager& manager, float x, float y, float
         return;
     }
 
-    render->modelRef = renderer::models[static_cast<int>(shape::circle) + static_cast<int>(shape::circle)];
+    render->modelRef = renderer::models[static_cast<int>(shape::circle)];
 
     transform->x = x;
     transform->y = y;
