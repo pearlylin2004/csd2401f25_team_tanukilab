@@ -210,7 +210,7 @@ void InspectorWindow::addComponent(GameObject* selected) {
         if (comp.hasComp(selected)) continue;
 
         // search
-        if (sizeof(search) > 0) {
+        if (strlen(search) > 0) {
             std::string compName = comp.name;
             std::string find = search;
 
