@@ -208,31 +208,31 @@ void LogicContainer::tickFalling(GameObject& obj, float /*dt*/) {
  * \param obj The player.
  * \param manager Reference to GameObjectManager for accessing existing bullet object.
  */
-void LogicContainer::trySpawnBulletNear(GameObject& obj, GameObjectManager& manager) {
-    auto* playerT = obj.getComponent<Transform>();
-    auto* fsm = obj.getComponent<StateMachine>();
-    if (!playerT || !fsm) return;
-
-    GameObject* bullet = manager.getGameObject("bullet");
-    if (!bullet) return;
-
-    Transform* t = bullet->getComponent<Transform>();
-    Physics* p = bullet->getComponent<Physics>();
-    if (!t || !p) return;
-
-    const bool right = fsm->facingRight;
-    t->x = playerT->x + (right ? 0.8f : -0.8f);
-    t->y = playerT->y + 0.3f;
-    t->z = 0.02f;
-    t->scaleX = t->scaleY = t->scaleZ = 0.5f;
-
-    p->velX = right ? 6.0f : -6.0f;
-    p->velY = 5.0f;
-    p->onGround = false;
-
-    DebugLog::addMessage("[LogicContainer] player fired bullet", DebugMode::PlaySimul);
-    std::cout << "[LogicContainer] player fired bullet\n";
-}
+//void LogicContainer::trySpawnBulletNear(GameObject& obj, GameObjectManager& manager) {
+//    auto* playerT = obj.getComponent<Transform>();
+//    auto* fsm = obj.getComponent<StateMachine>();
+//    if (!playerT || !fsm) return;
+//
+//    GameObject* bullet = manager.getGameObject("bullet");
+//    if (!bullet) return;
+//
+//    Transform* t = bullet->getComponent<Transform>();
+//    Physics* p = bullet->getComponent<Physics>();
+//    if (!t || !p) return;
+//
+//    const bool right = fsm->facingRight;
+//    t->x = playerT->x + (right ? 0.8f : -0.8f);
+//    t->y = playerT->y + 0.3f;
+//    t->z = 0.02f;
+//    t->scaleX = t->scaleY = t->scaleZ = 0.5f;
+//
+//    p->velX = right ? 6.0f : -6.0f;
+//    p->velY = 5.0f;
+//    p->onGround = false;
+//
+//    DebugLog::addMessage("[LogicContainer] player fired bullet", DebugMode::PlaySimul);
+//    std::cout << "[LogicContainer] player fired bullet\n";
+//}
 
 // ============================================================================
 // Main Update
@@ -256,9 +256,9 @@ void LogicContainer::update(GameObject& obj, float dt, GameObjectManager& manage
     fsm->stateTime += dt;
 
     // Immediate action: shooting
-    if (InputHandler::isKeyTriggered(GLFW_KEY_SPACE)) {
+    /*if (InputHandler::isKeyTriggered(GLFW_KEY_SPACE)) {
         trySpawnBulletNear(obj, manager);
-    }
+    }*/
 
     switch (fsm->state) {
     case PlayerState::Idle:     tickIdle(obj, dt);     break;

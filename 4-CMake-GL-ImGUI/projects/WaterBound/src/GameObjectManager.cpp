@@ -611,6 +611,13 @@ void GameObjectManager::loadSceneFromJson(const std::string& filename) {
 		
 	}
 
+	//create bullet pool
+	GameObject* templateBullet = getGameObject("bullet"); 
+
+	if (templateBullet) {
+		createBulletPool("bullet", 10);
+	}
+
 	std::cout << "Total game objects loaded: " << m_gameObjects.size() << std::endl;
 
 	//std::cout << "Scene loaded (JSON): " << filename << "\n";
@@ -1039,4 +1046,45 @@ void GameObjectManager::initializeSceneResources() {
 			}
 		}
 	}
+}
+
+
+void GameObjectManager::createBulletPool(const std::string& templateBulletName, int poolSize) {
+	GameObject* templateBullet = getGameObject(templateBulletName);
+	if (!templateBullet) {
+		std::cerr << "Error: Template bullet '" << templateBulletName << "' not found!\n";
+		return;
+	}
+
+	std::cout << "Creating bullet pool with " << poolSize << " bullets...\n";
+
+	for (int i = 1; i <= poolSize; ++i) {
+		std::string bulletName = templateBulletName + std::to_string(i);
+
+		if (getGameObject(bulletName)) {
+			std::cout << "  Bullet already exists: " << bulletName << "\n";
+			continue;
+		}
+
+		GameObject* clonedBullet = CloneGameObject(templateBulletName, bulletName);
+
+		if (clonedBullet) {
+			if (clonedBullet->hasComponent<Transform>()) {
+				Transform* t = clonedBullet->getComponent<Transform>();
+				/*t->x = -1000.0f;
+				t->y = -1000.0f;*/
+			}
+			if (clonedBullet->hasComponent<Physics>()) {
+				Physics* p = clonedBullet->getComponent<Physics>();
+				/*p->alive = false;
+				p->dynamics.position.x = -1000.0f;
+				p->dynamics.position.y = -1000.0f;
+				p->dynamics.velocity.x = 0.0f;
+				p->dynamics.velocity.y = 0.0f;
+				p->dynamics.velocity.z = 0.0f;*/
+			}
+			std::cout << "  Created: " << bulletName << "\n";
+		}
+	}
+	std::cout << "Bullet pool creation completed.\n";
 }

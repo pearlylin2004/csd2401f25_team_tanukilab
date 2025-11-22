@@ -140,9 +140,9 @@ public:
     bool alive = false;
 
     //water bullet
-    Vector2D posBullet;
-    Vector2D velBullet;
-    bool aliveBullet;
+    Vector2D originalPos{ 0, 0 };
+    Vector2D originalVel{ 0, 0 };
+    bool isOriginalStateSet = false;
 
     //bool inWaterTriggered; // true only when W is pressed
 

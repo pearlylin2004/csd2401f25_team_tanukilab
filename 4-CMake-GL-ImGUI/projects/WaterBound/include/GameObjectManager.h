@@ -62,6 +62,8 @@ public:
 
 	void saveScene(const std::string& path, bool isNew = false) const;
 
+	void createBulletPool(const std::string& templateBulletName, int poolSize = 10);
+
 	//layering manager stuff
 	LayerManager& getLayerManager();
 

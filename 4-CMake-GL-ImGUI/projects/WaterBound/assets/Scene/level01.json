@@ -20,17 +20,24 @@
       "name": "bullet",
       "components": {
         "Transform": {
-          "pos": [0.0, 0.0, 0.02],
+          "pos": [-1000.0, -1000.0, 0.02],
           "rotation": 0.5,
-          "scale": [0.5, 0.5, 0.0]
+          "scale": [0.2, 0.2, 0.0]
         },
         "Render": {
-          "shape": "square",
+          "shape": "circle",
           "hasTex": 0,
           "hasAnimation": 0,
           "clr": [ 1.0, 1.0, 1.0 ]
         },
-        "Physics": { "inWater": 0, "buoyancy": 0 },
+        "Physics": {
+          "physicsFlag": false, 
+          "alive": false,
+          "inWater": 0, 
+          "buoyancy": 0,
+          "moveSpeed": 0.0,
+          "gravity": 0.0
+        },
 	      "AudioComponent": {
           "audioFile": "assets/Audio/underwater.wav",
           "volume": 0.8,
@@ -40,7 +47,6 @@
           "fadeOutOnStop": 1,
           "fadeOutDuration": 0.5
         }
-
       }
     },
     {
