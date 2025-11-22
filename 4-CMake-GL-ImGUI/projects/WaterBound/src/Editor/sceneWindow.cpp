@@ -329,16 +329,16 @@ void SceneWindow::duplicateScene(GameObjectManager& manager) {
 
 // load existing scene
 void SceneWindow::loadScene(GameObjectManager& manager) {
-    //manager.loadFromFile(m_MenuBarState.sceneToLoad);
-    manager.loadScene(JsonIO::runtimeScenePath(m_menuBarState.sceneToLoad));
-    manager.initializeSceneResources();
+    resetSelection();
 
     // clear all undo/redo
     UndoRedoManager::Instance().clear();
 
-    m_sceneState.currentSceneName = std::move(m_menuBarState.sceneToLoad);
+    //manager.loadFromFile(m_MenuBarState.sceneToLoad);
+    manager.loadScene(JsonIO::runtimeScenePath(m_menuBarState.sceneToLoad));
+    manager.initializeSceneResources();
 
-    resetSelection();
+    m_sceneState.currentSceneName = std::move(m_menuBarState.sceneToLoad); 
 
     DebugLog::addMessage("Loaded scene: " + m_sceneState.currentSceneName + "\n");
 }

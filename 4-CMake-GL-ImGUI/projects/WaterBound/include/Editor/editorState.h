@@ -64,6 +64,8 @@ namespace Editor {
 		std::string currentFolder = "assets/"; // we have an asset folder yayy
 		std::filesystem::file_time_type lastTopLevelRefresh; // top level folder timestamp
 		std::filesystem::file_time_type lastRefresh;
+		std::string currentViewFolder;
+		std::vector<std::string> subFolders;
 
 		// for deleting asset via browser
 		std::string fullPathToDelete;
@@ -86,7 +88,7 @@ namespace Editor {
 	
 	/* ----------------- Scene State ---------------- */
 	struct SceneState {
-		std::string currentSceneName = "level01.json";
+		std::string currentSceneName = "";
 		std::string tempSceneName = "temp_scene.json"; // for simulation
 	};
 	/* ----------------- Scene End -----------------*/

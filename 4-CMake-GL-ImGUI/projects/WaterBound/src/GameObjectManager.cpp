@@ -20,8 +20,10 @@ Technology is prohibited.
 #include "prefabManager.h"
 #include "Component.h"
 #include "JsonIO.h"
-#include "Editor/editorState.h"
-#include "Editor/undoRedo.h"
+#ifdef _DEBUG
+	#include "Editor/editorState.h"
+	#include "Editor/undoRedo.h"
+#endif
 
 #ifndef RUNTIME_SCENE_DIR_R
 #define RUNTIME_SCENE_DIR_R "./assets/Scene"
