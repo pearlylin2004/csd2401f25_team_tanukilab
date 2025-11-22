@@ -20,6 +20,8 @@ Technology is prohibited.
 #include "prefabManager.h"
 #include "Component.h"
 #include "JsonIO.h"
+#include "Editor/editorState.h"
+#include "Editor/undoRedo.h"
 
 #ifndef RUNTIME_SCENE_DIR_R
 #define RUNTIME_SCENE_DIR_R "./assets/Scene"
@@ -968,12 +970,23 @@ void GameObjectManager::saveSceneToJson(const std::string& filename, bool isNew)
 \brief Loads a scene automatically based on file extension.
 
 If the path ends with ".json", loads a JSON scene.
-Otherwise, falls back to legacy .txt scene loading.
 
 \param path Scene file path.
 */
 
 void GameObjectManager::loadScene(const std::string& path) {
+
+	// PLEASE STOP CRASHING
+#ifdef _DEBUG
+	Editor::objSelectionState.selectedObject = nullptr;
+	Editor::objSelectionState.selectedPrefab = nullptr;
+	Editor::objSelectionState.draggedObject = nullptr;
+	Editor::objSelectionState.selectedIndex = -1;
+	UndoRedoManager::Instance().clear();
+
+	Editor::sceneState.currentSceneName = std::filesystem::path(path).filename().string();
+#endif
+
 	if (ends_with(path, ".json")) loadSceneFromJson(path);
 	//if (GameObject* p = getGameObject("player")) {
 	//	if (!p->hasComponent<StateMachine>()) {
@@ -986,7 +999,6 @@ void GameObjectManager::loadScene(const std::string& path) {
 \brief Saves a scene automatically based on file extension.
 
 If the path ends with ".json", writes JSON using saveSceneToJson.
-Otherwise, writes using legacy .txt serialization.
 
 \param path Output scene path.
 \param isNew If true, writes an empty or simplified scene header.
