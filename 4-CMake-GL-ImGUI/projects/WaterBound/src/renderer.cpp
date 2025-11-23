@@ -39,6 +39,18 @@ void renderer::init(int w, int h)
 	setup_shdrpgm();
 }
 
+void renderer::onResize(int w, int h)
+{
+	// Update gameplay camera
+	cam.width = w;
+	cam.ar = static_cast<float>(w) / static_cast<float>(h);
+
+	// Update editor camera too so picking is consistent there as well
+	editorCam.width = w;
+	editorCam.ar = cam.ar;
+}
+
+
 renderer::model renderer::setup_square(glm::vec3 clr)
 {
 	model mdl;

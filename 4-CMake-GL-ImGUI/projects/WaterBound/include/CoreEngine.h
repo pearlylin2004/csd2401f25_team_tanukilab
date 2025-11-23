@@ -40,7 +40,7 @@ public:
     ~CoreEngine();
 
     // Initializes all engine systems and the window
-    void Init();
+    void Init(bool forceWindowed = false);
 
     // Runs the main game loop
     void Run();
@@ -65,8 +65,17 @@ private:
     std::string m_title;
     bool m_isRunning;
 
-    //game state
+    bool m_isFullscreen = false;
+    int  m_windowedWidth = 0;
+    int  m_windowedHeight = 0;
+    int  m_windowPosX = 100;
+    int  m_windowPosY = 100;
+    bool m_forceWindowed = false;
+
+    void toggleFullscreen();
+
     std::unique_ptr<GUISystem> m_guiSystem;
+
 
     // Core Engine Systems
     std::unique_ptr<GameObjectManager> m_manager;

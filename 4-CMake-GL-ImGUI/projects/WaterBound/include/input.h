@@ -124,6 +124,7 @@ public:
 	static void dropCallback(GLFWwindow* window, int count, const char** paths);
 #endif
 
+	static void setWindowSize(int width, int height);
 	// Add these to the public section
 	//static bool isMouseButtonClicked(int button);
 	//static Vector2D getMousePosition();

@@ -102,6 +102,9 @@ struct renderer
 	*************************************************************************/
 	static void init(int w, int h);
 
+	// Update camera aspect when window size changes
+	static void onResize(int w, int h);
+
 	/*!***********************************************************************
 	\brief
 		struct for everything to do with meshes
