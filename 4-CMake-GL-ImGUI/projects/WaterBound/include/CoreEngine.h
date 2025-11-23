@@ -52,6 +52,7 @@ public:
     static void windowIconifyCallback(GLFWwindow* window, int iconified);
     static void windowFocusCallback(GLFWwindow* window, int focused);
 
+
 private:
     void GameLoop();
     void Update(float deltaTime);
@@ -63,6 +64,9 @@ private:
     double m_delta;
     std::string m_title;
     bool m_isRunning;
+
+    //game state
+    std::unique_ptr<GUISystem> m_guiSystem;
 
     // Core Engine Systems
     std::unique_ptr<GameObjectManager> m_manager;
@@ -76,7 +80,6 @@ private:
     std::unique_ptr<LuaSystem> m_luaSystem;
     std::unique_ptr<FontSystem> m_fontSystem;
     std::unique_ptr<LogicSystem> m_logicSystem;
-    std::unique_ptr<GUISystem> m_guiSystem;
     std::unique_ptr<MessageBus> m_messageBus;
     std::unique_ptr<PlayerControllerSystem> m_playerController;
     std::unique_ptr<AudioSystem> m_audioSystem;

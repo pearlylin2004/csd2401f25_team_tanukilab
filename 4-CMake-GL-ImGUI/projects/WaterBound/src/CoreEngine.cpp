@@ -126,7 +126,7 @@ void CoreEngine::Run() {
 }
 
 void CoreEngine::GameLoop() {
-    if (glfwWindowShouldClose(m_window) || InputHandler::isKeyHeld(GLFW_KEY_ESCAPE)) { m_isRunning = false; return; } 
+    if (glfwWindowShouldClose(m_window)) { m_isRunning = false; return; } 
    
     //use glfwGetWindowAttrib to check the GLFW_ICONIFIED status for efficient waiting
     int status = glfwGetWindowAttrib(m_window, GLFW_ICONIFIED);
@@ -150,7 +150,12 @@ void CoreEngine::GameLoop() {
 
 void CoreEngine::Update(float deltaTime) {
     InputHandler::update();
-    m_guiSystem->update(*m_manager);
+    //check current game state
+    GameState state = m_guiSystem->getCurrentState();
+    //if state is menu
+    if (state == GameState::MENU) {
+        m_guiSystem->update(*m_manager);
+    }
 
     if(!EditorManager::isEditingMode() && !EditorManager::isPaused()) m_luaSystem->update(*m_manager, deltaTime);
 

@@ -28,7 +28,9 @@ class LuaSystem;
 
 enum class GameState {
     MENU,
-    PLAYING
+    PLAYING,
+    CONTROL,
+    PAUSED
 };
 
 // ButtonData is now defined in GameObjectManager.h - no need to redefine it here

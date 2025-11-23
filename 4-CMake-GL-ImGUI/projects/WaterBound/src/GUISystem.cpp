@@ -40,16 +40,7 @@ void GUISystem::init(GameObjectManager& manager, LuaSystem& luaSystem) {
     std::cout << "[GUI] GUISystem::init started" << std::endl;
 
     // Load the menu scene - this will populate button data in the manager
-    manager.loadScene(runtimeScenePath("menu_scene.json"));
-    // Assign background layer explicitly
-    std::vector<GameObject*> allObjs;
-    manager.getAllGameObjects(allObjs);
-    for (GameObject* obj : allObjs) {
-        const std::string& name = obj->getObjectName();
-        if (name == "background") {
-            manager.assignObjectToLayer(obj, 0); // layer 0 for background
-        }
-    }
+    manager.loadScene(runtimeScenePath("menu_scene.json"));\
 
 	createButtons(manager); //create buttons from loaded scene
 
@@ -60,9 +51,6 @@ void GUISystem::init(GameObjectManager& manager, LuaSystem& luaSystem) {
 
 //update function to check for button clicking
 void GUISystem::update(GameObjectManager& manager) {
-    // Only handle GUI interactions in menu state
-    if (m_currentState != GameState::MENU) return;
-
     //get mouse position
     Vector2D worldMousePos = InputHandler::getWorldMousePosition();
     Vector2D worldPos = Vec_Set(worldMousePos.x, worldMousePos.y);
@@ -82,6 +70,7 @@ void GUISystem::update(GameObjectManager& manager) {
             if (isPointInButton(worldPos, btn)) {
                 //handle button action dynamically based on name
                 if (name == "play_button") {
+                    GameState::PLAYING;
                     startGame(manager);
                     return; //stop checking after a click
                 }
@@ -90,6 +79,7 @@ void GUISystem::update(GameObjectManager& manager) {
                     return; //stop checking after a click
                 }
                 else if (name == "control_button") {
+                    GameState::CONTROL;
 					controlScreen(manager);
                     return; //stop checking after a click
                 }
@@ -121,8 +111,11 @@ void GUISystem::createButtons(GameObjectManager& manager) {
 		Render* r = obj->getComponent<Render>(); //get render
 
         //find if its a button
-        bool isButton = r->hasTex || (name.find("_button") != std::string::npos);
-		if (!isButton) continue;
+        bool isButton = (name.find("_button") != std::string::npos); // remove r->hasTex check
+        if (!isButton) {
+            manager.assignObjectToLayer(obj, 0); // assign all non-buttons to layer 0
+            continue;
+        }
 
         manager.assignObjectToLayer(obj, 2);
         m_buttons[name] = obj;
@@ -214,8 +207,8 @@ void GUISystem::controlScreen(GameObjectManager& manager) {
 
     //remove menu buttons
     removeMenuButtons(manager);
-
     manager.loadScene(runtimeScenePath("control_scene.json"));
+    manager.initializeSceneResources(); //to get resources loaded
 	createButtons(manager); //loading scene
     std::cout << "[GUI] Control screen created successfully!" << std::endl;
 }
