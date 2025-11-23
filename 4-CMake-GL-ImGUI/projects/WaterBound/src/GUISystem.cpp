@@ -40,13 +40,20 @@ void GUISystem::init(GameObjectManager& manager, LuaSystem& luaSystem) {
     std::cout << "[GUI] GUISystem::init started" << std::endl;
 
     // Load the menu scene - this will populate button data in the manager
-    manager.loadScene(runtimeScenePath("menu_scene.json"));\
-
-	createButtons(manager); //create buttons from loaded scene
+	loadMenu(manager);
 
     g_manager = &manager;
     g_luaSystem = &luaSystem;
     std::cout << "[GUI] GUISystem::init completed successfully" << std::endl;
+}
+
+void GUISystem::loadMenu(GameObjectManager& manager) {
+    std::cout << "[GUI] Load Menu" << std::endl;
+    removeMenuButtons(manager);
+    manager.loadScene(runtimeScenePath("menu_scene.json"));
+    manager.initializeSceneResources(); //to get resources loaded
+    createButtons(manager); //loading scene
+    std::cout << "[GUI] Load Menu created successfully!" << std::endl;
 }
 
 //update function to check for button clicking
@@ -70,7 +77,7 @@ void GUISystem::update(GameObjectManager& manager) {
             if (isPointInButton(worldPos, btn)) {
                 //handle button action dynamically based on name
                 if (name == "play_button") {
-                    GameState::PLAYING;
+                    m_currentState = GameState::PLAYING;
                     startGame(manager);
                     return; //stop checking after a click
                 }
@@ -79,12 +86,36 @@ void GUISystem::update(GameObjectManager& manager) {
                     return; //stop checking after a click
                 }
                 else if (name == "control_button") {
-                    GameState::CONTROL;
+                    m_currentState = GameState::CONTROL;
 					controlScreen(manager);
                     return; //stop checking after a click
                 }
                 //idk if we need more buttons
             }
+        }
+    }
+}
+
+void GUISystem::controlUpdate(GameObjectManager& manager) {
+	//get mouse position
+    Vector2D worldMousePos = InputHandler::getWorldMousePosition();
+    Vector2D worldPos = Vec_Set(worldMousePos.x, worldMousePos.y);
+
+    //loop through all buttons in the map
+    for (auto& pair : m_buttons) {
+        const std::string& name = pair.first;
+        GameObject* btn = pair.second;
+
+        if (!btn) continue;
+
+        if (isPointInButton(worldPos, btn)) {
+            //handle button action dynamically based on name
+            if (name == "back_button") {
+                m_currentState = GameState::MENU;
+                loadMenu(manager);
+                return; //stop checking after a click
+            }
+            //idk if we need more buttons
         }
     }
 }
@@ -204,7 +235,6 @@ bool GUISystem::isPointInButton(const Vector2D& point, GameObject* button) {
 
 void GUISystem::controlScreen(GameObjectManager& manager) {
     std::cout << "[GUI] Control button clicked" << std::endl;
-
     //remove menu buttons
     removeMenuButtons(manager);
     manager.loadScene(runtimeScenePath("control_scene.json"));

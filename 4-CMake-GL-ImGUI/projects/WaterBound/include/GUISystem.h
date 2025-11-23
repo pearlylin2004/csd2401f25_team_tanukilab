@@ -41,7 +41,8 @@ public:
     ~GUISystem();
 
     void init(GameObjectManager& manager, LuaSystem& luaSystem);
-	void update(GameObjectManager& manager); //update GUI system
+	void update(GameObjectManager& manager); //update menu system
+	void controlUpdate(GameObjectManager& manager); //update control screen
 
     bool isPlaying() const { return m_currentState == GameState::PLAYING; } //check if its playing
     GameState getCurrentState() const { return m_currentState; } //check current state
@@ -52,6 +53,7 @@ private:
 	void startGame(GameObjectManager& manager); //start game
     void stopGame(); //stop game
 	void controlScreen(GameObjectManager& manager); //control screen button
+	void loadMenu(GameObjectManager& manager); //load menu screen
 
     bool isPointInButton(const Vector2D& point, GameObject* button);
 

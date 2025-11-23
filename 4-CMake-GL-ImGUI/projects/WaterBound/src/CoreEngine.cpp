@@ -156,6 +156,10 @@ void CoreEngine::Update(float deltaTime) {
     if (state == GameState::MENU) {
         m_guiSystem->update(*m_manager);
     }
+	//if state is control
+    else if (state == GameState::CONTROL) {
+        m_guiSystem->controlUpdate(*m_manager);
+	}
 
     if(!EditorManager::isEditingMode() && !EditorManager::isPaused()) m_luaSystem->update(*m_manager, deltaTime);
 
