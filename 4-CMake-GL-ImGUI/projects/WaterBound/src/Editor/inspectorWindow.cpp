@@ -122,7 +122,7 @@ void InspectorWindow::render(GameObjectManager& manager) {
 
         /* ------------------- Object Transformation ------------------- */
         if (selected->hasComponent<Transform>()) {
-            renderGizmoCtrl();
+            if (selected == m_objSelectionState.selectedObject) renderGizmoCtrl();
 
 
             ImGui::Spacing();
