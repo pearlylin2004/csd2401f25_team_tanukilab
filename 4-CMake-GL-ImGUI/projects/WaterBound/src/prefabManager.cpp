@@ -2,11 +2,8 @@
 /*!
 \file       prefabManager.h
 \author     Tan Chee Qing, cheeqing.tan, 2401486
-			- 80% of the file
-			Varick, v.teo, 2403417
-			- 20% of the file
+			- 100% of the file
 \par        cheeqing.tan@digipen.edu
-\par		v.teo@digipen.edu
 \date       November, 07th, 2025
 \brief      A class that load and manage the prefabs by maintaining a prefab registry.
 
@@ -27,28 +24,44 @@ Technology is prohibited.
 
 // -- helpers --
 namespace {
-	const char* ShapeToStr(shape s) {
-		switch (s) {
-		case shape::square:   return "square";
-		case shape::circle:   return "circle";
-		case shape::triangle: return "triangle";
-		default:              return "square";
-		}
+
+	void removeComponentByName(GameObject* obj, const std::string& compName) {
+		if (compName == "Transform") obj->removeComponent<Transform>();
+		else if (compName == "Render") obj->removeComponent<Render>();
+		else if (compName == "Input") obj->removeComponent<Input>();
+		else if (compName == "Physics") obj->removeComponent<Physics>();
+		else if (compName == "CollisionInfo") obj->removeComponent<CollisionInfo>();
+		else if (compName == "Animation") obj->removeComponent<Animation>();
+		else if (compName == "StateMachine") obj->removeComponent<StateMachine>();
+		else if (compName == "AudioComponent") obj->removeComponent<AudioComponent>();
+		else if (compName == "FontComponent") obj->removeComponent<FontComponent>();
 	}
-	shape StrToShape(const std::string& s) {
-		if (s == "square")   return shape::square;
-		if (s == "circle")   return shape::circle;
-		if (s == "triangle") return shape::triangle;
-		return shape::square;
+
+	void removeAllComponents(GameObject* obj) {
+		obj->removeComponent<Transform>();
+		obj->removeComponent<Render>();
+		obj->removeComponent<Input>();
+		obj->removeComponent<Physics>();
+		obj->removeComponent<CollisionInfo>();
+		obj->removeComponent<Animation>();
+		obj->removeComponent<StateMachine>();
+		obj->removeComponent<AudioComponent>();
+		obj->removeComponent<FontComponent>();
 	}
-	inline bool ends_with(const std::string& s, const char* suf) {
-		const size_t n = std::strlen(suf);
-		return s.size() >= n && 0 == s.compare(s.size() - n, n, suf);
+
+	void applyComponentFromJson(GameObject* obj, const char* compName, const rapidjson::Value& compData, rapidjson::Document::AllocatorType& allocator, const std::function<void(GameObject*, const rapidjson::Value&)>& func) {
+
+		rapidjson::Value temp(rapidjson::kObjectType);
+		rapidjson::Value copy;
+
+		copy.CopyFrom(compData, allocator);
+		temp.AddMember(rapidjson::Value(compName, allocator), copy, allocator);
+
+		func(obj, temp);
 	}
 }
 
 static PlayerState parsePlayerState(const std::string& s) {
-	if (s == "Idle")     return PlayerState::Idle;
 	if (s == "Walking")  return PlayerState::Walking;
 	if (s == "Jumping")  return PlayerState::Jumping;
 	if (s == "Falling")  return PlayerState::Falling;
@@ -58,7 +71,6 @@ static PlayerState parsePlayerState(const std::string& s) {
 
 static const char* playerStateToStr(PlayerState state) {
 	switch (state) {
-	case PlayerState::Idle:     return "Idle";
 	case PlayerState::Walking:  return "Walking";
 	case PlayerState::Jumping:  return "Jumping";
 	case PlayerState::Falling:  return "Falling";
@@ -107,11 +119,7 @@ void PrefabManager::loadPrefabRegistry() {
 
 		std::string path = (jPrefab.HasMember("path") && jPrefab["path"].IsString()) ? jPrefab["path"].GetString() : "";
 
-		if (id.empty()) {
-			DebugLog::addMessage("Skipping prefab " + name + " with missing id.");
-		}
-
-		m_prefabRegistry[id] = { name, path };
+		if (!id.empty()) m_prefabRegistry[id] = { name, path };
 	}
 
 	std::cout << "Prefab registry loaded: " << filename << " (" << m_prefabRegistry.size() << " prefabs)\n";
@@ -121,8 +129,6 @@ void PrefabManager::savePrefabRegistry() {
 	rapidjson::Document doc;
 	doc.SetObject();
 	auto& a = doc.GetAllocator();
-
-	//rapidjson::Value prefabs(rapidjson::kArrayType);
 
 	// version number (same as loader)
 	doc.AddMember("version", 1, a);
@@ -142,30 +148,16 @@ void PrefabManager::savePrefabRegistry() {
 
 	doc.AddMember("prefabIndex", prefabArray, a);
 
+	std::string err;
 	// write to run time file
 	std::string runtime = std::string(RUNTIME_DIR_R) + registryFile;
-	std::string err;
-	if (!JsonIO::WriteDocumentToFile(runtime, doc, /*pretty=*/true, &err)) {
-		DebugLog::addMessage("Registry save failed: " + err);
-		return;
-	}
-
-	// write to source (project dir)
 	std::string dir = std::string(SOURCE_DIR_R) + registryFile;
-	if (!JsonIO::WriteDocumentToFile(dir, doc, /*pretty=*/true, &err)) {
-		DebugLog::addMessage("Prefab save failed (source): " + err);
-		return;
-	}
-	else {
-		std::cout << "Prefab saved (source JSON): " << dir << "\n";
-	}
+
+	JsonIO::WriteDocumentToFile(runtime, doc, true, &err);
+	JsonIO::WriteDocumentToFile(dir, doc, true, &err);
 
 	std::cout << "Prefab registry saved at " << registryFile << "\n";
 }
-
-//std::string& PrefabManager::getPrefabPath(const std::string& prefabID) {
-//	return m_prefabRegistry[prefabID].path;
-//}
 
 const std::string& PrefabManager::getPrefabPath(const std::string& prefabID) const {
 	return m_prefabRegistry.at(prefabID).path;
@@ -183,6 +175,7 @@ bool PrefabManager::setPrefabPath(const std::string& prefabID, const std::string
 
 	iterator->second.path = "/Prefab/" + newNameWPath;
 	savePrefabRegistry();
+
 	DebugLog::addMessage("Updated prefab path for ID " + prefabID + " -> " + newNameWPath);
 	return true;
 }
@@ -190,15 +183,13 @@ bool PrefabManager::setPrefabPath(const std::string& prefabID, const std::string
 std::string PrefabManager::getPrefabFilename(const std::string& prefabID) const {
 	auto it = m_prefabRegistry.find(prefabID);
 	if (it == m_prefabRegistry.end()) {
-		DebugLog::addMessage("[Error] Prefab ID '" + prefabID + "' not found.");
+		DebugLog::addMessage("Error: Prefab ID '" + prefabID + "' not found.");
 		return {};
 	}
 
 	// extract filename from path
-	std::filesystem::path fullPath = it->second.path;
-	return fullPath.filename().string();  // e.g. "platform.json"
+	return std::filesystem::path(it->second.path).filename().string();  // e.g. "platform.json"
 }
-
 
 std::string& PrefabManager::getPrefabName(const std::string& prefabID) {
 	return m_prefabRegistry[prefabID].name;
@@ -209,16 +200,11 @@ const std::string& PrefabManager::getPrefabName(const std::string& prefabID) con
 }
 
 std::string PrefabManager::findPrefabIDByFilename(const std::filesystem::path& filename) {
-	std::filesystem::path filenameOnly{ filename };
-	std::string f{ filenameOnly.filename().string() };
+	std::string f{ filename.filename().string() };
 
 	for (const auto& [id, info] : m_prefabRegistry) {
-		std::filesystem::path path{ info.path };
-		std::string prefabFile{ path.filename().string() }; // extract only the filename of the 
-
-		if (prefabFile == f) {
+		if (std::filesystem::path(info.path).filename().string() == f)
 			return id;
-		}
 	}
 
 	return "";
@@ -226,10 +212,8 @@ std::string PrefabManager::findPrefabIDByFilename(const std::filesystem::path& f
 
 const rapidjson::Document* PrefabManager::getPrefabJson(const std::string& prefabID) const {
 	auto iterator = m_prefabCache.find(prefabID);
-	if (iterator != m_prefabCache.end()) {
-		return &iterator->second;
-	}
-	return nullptr;
+
+	return (iterator != m_prefabCache.end()) ? &iterator->second : nullptr;
 }
 
 const rapidjson::Value* PrefabManager::getPrefabJsonComp(const rapidjson::Document* prefabDoc, const std::string& compName) const {
@@ -238,9 +222,8 @@ const rapidjson::Value* PrefabManager::getPrefabJsonComp(const rapidjson::Docume
 
 	// if prefab dont have the given components
 	const auto& comps = (*prefabDoc)["components"];
-	if (!comps.HasMember(compName.c_str())) return nullptr;
 
-	return &comps[compName.c_str()];
+	return comps.HasMember(compName.c_str()) ? &comps[compName.c_str()] : nullptr;
 }
 
 GameObject* PrefabManager::instantiate(GameObject* go, GameObjectManager& manager) {
@@ -280,18 +263,6 @@ GameObject* PrefabManager::instantiate(GameObject* go, GameObjectManager& manage
 		applyPrefabComponents(go, doc["components"]);
 	}
 
-	/* ---- SCUFFED way to get bullet work ---- */
-	static bool bulletCreated = false;
-	if (!bulletCreated && id == "b1a12273-a692-4ce0-8072-156da2c70842") {
-		bulletCreated = true;
-		manager.createBulletPool(go->getObjectName(), 10);
-	}
-	/* ---- END ---- */
-
-	/* --------- Load Component ---------*/
-	//const auto& comps = doc["components"];
-
-	// std::cout << "Instantiated prefab '" << "' (" << id << ")\n";
 	return go;
 }
 
@@ -355,9 +326,6 @@ bool PrefabManager::savePrefab(const GameObject* prefabObj) {
 	doc.SetObject();
 	auto& a = doc.GetAllocator();
 
-	// original prefab
-	//const rapidjson::Document* prefabDoc{ getPrefabJson(prefabID) };
-
 	// prefab id
 	doc.AddMember("id", rapidjson::Value(prefabID.c_str(), a), a);
 	// name
@@ -368,34 +336,16 @@ bool PrefabManager::savePrefab(const GameObject* prefabObj) {
 		doc.AddMember("layer", layerID, a);
 	}
 
-	// objects array
-	//rapidjson::Value objects(rapidjson::kArrayType);
 	// components container
 	rapidjson::Value comps(rapidjson::kObjectType);
 	serializeComponents(prefabObj, comps, a);
 
 	doc.AddMember("components", comps, a);
 
-	// save to runtime
-	std::string path = std::string(RUNTIME_DIR_R) + getPrefabPath(prefabID);
+	// save to runtime & source
 	std::string err;
-	if (!JsonIO::WriteDocumentToFile(path, doc, /*pretty=*/true, &err)) {
-		DebugLog::addMessage("Prefab save failed (runtime): " + err);
-		return false;
-	}
-	else {
-		std::cout << "Prefab saved (runtime JSON): " << path << "\n";
-	}
-
-	// save to source
-	path = std::string(SOURCE_DIR_R) + getPrefabPath(prefabID);
-	if (!JsonIO::WriteDocumentToFile(path, doc, /*pretty=*/true, &err)) {
-		DebugLog::addMessage("Prefab save failed (source): " + err);
-		return false;
-	}
-	else {
-		std::cout << "Prefab saved (source JSON): " << path << "\n";
-	}
+	JsonIO::WriteDocumentToFile(std::string(RUNTIME_DIR_R) + getPrefabPath(prefabID), doc, true, &err);
+	JsonIO::WriteDocumentToFile(std::string(SOURCE_DIR_R) + getPrefabPath(prefabID), doc, true, &err);
 
 	// update cache
 	m_prefabCache[prefabID].CopyFrom(doc, m_prefabCache[prefabID].GetAllocator());
@@ -407,13 +357,7 @@ bool PrefabManager::savePrefab(const GameObject* prefabObj) {
 }
 
 GameObject* PrefabManager::revertToPrefab(GameObject* obj, GameObjectManager& manager) {
-	if (!obj) return obj;
-
-	const std::string& prefabID = obj->getObjectPrefabID();
-	if (prefabID.empty()) {
-		DebugLog::addMessage("Error: Object has no prefab.");
-		return obj;
-	}
+	if (!obj || obj->getObjectPrefabID().empty()) return obj;
 
 	// store scene data first (preserve position)
 	Transform* t = obj->getComponent<Transform>();
@@ -425,18 +369,10 @@ GameObject* PrefabManager::revertToPrefab(GameObject* obj, GameObjectManager& ma
 	int layer = obj->getLayer();
 
 	// remove existing components
-	obj->removeComponent<Transform>();
-	obj->removeComponent<Render>();
-	obj->removeComponent<Input>();
-	obj->removeComponent<Physics>();
-	obj->removeComponent<CollisionInfo>();
-	obj->removeComponent<Animation>();
-	obj->removeComponent<StateMachine>();
-	obj->removeComponent<AudioComponent>();
-	obj->removeComponent<FontComponent>();
+	removeAllComponents(obj);
 
-	// reapply prefan
-	this->instantiate(obj, manager);
+	// reapply prefab
+	instantiate(obj, manager);
 
 	// restore the position
 	if (Transform* newT = obj->getComponent<Transform>()) {
@@ -448,7 +384,7 @@ GameObject* PrefabManager::revertToPrefab(GameObject* obj, GameObjectManager& ma
 	obj->getObjectName() = name;
 	manager.assignObjectToLayer(obj, layer);
 
-	// --- Reinitialize resources if needed ---
+	// reiniatialize
 	manager.initializeSceneResources();
 
 	return obj;
@@ -462,13 +398,11 @@ int PrefabManager::applyToAllInstances(const std::string& prefabID, GameObjectMa
 	auto newI = m_prefabCache.find(prefabID); // aft edit and save
 
 	if (oldI == m_prefabBeforeEdit.end()) {
-		DebugLog::addMessage("No cached 'before edit' state for prefab: " + prefabID + "\n");
-		DebugLog::addMessage("Falling back to simple reload (all overrides preserved)\n");
-
-		// Try to load from disk as fallback
+		// load from disk as fallback
 		const std::string& path = std::string(RUNTIME_DIR_R) + getPrefabPath(prefabID);
 		rapidjson::Document diskDoc;
 		std::string err;
+
 		if (JsonIO::ReadFileToDocument(path, diskDoc, &err)) {
 			m_prefabBeforeEdit[prefabID].CopyFrom(diskDoc, m_prefabBeforeEdit[prefabID].GetAllocator());
 			oldI = m_prefabBeforeEdit.find(prefabID);
@@ -479,116 +413,41 @@ int PrefabManager::applyToAllInstances(const std::string& prefabID, GameObjectMa
 	if (oldI == m_prefabBeforeEdit.end()) {
 		// PLEASE DONT HAPPEN
 		DebugLog::addMessage("No cached state found for prefab.");
-		DebugLog::addMessage("Fall back to simple reload (all overrides preserved.");
-
-		if (newI == m_prefabCache.end()) return 0;
-
-		std::vector<GameObject*> gameObjects;
-		manager.getAllGameObjects(gameObjects);
-
-		int count{};
-
-		const rapidjson::Document& newPrefabDoc = newI->second;
-		if (!newPrefabDoc.HasMember("components")) return 0;
-
-		for (GameObject* obj : gameObjects) {
-			// only affect those obj ref to a prefab
-			if (obj->getObjectPrefabID() != prefabID) continue;
-
-			rapidjson::Document objDoc;
-			objDoc.SetObject();
-			auto& a = objDoc.GetAllocator();
-
-			rapidjson::Value comps(rapidjson::kObjectType);
-			serializeComponents(obj, comps, a); // save obj to json to store its data
-			objDoc.AddMember("components", comps, a);
-
-			/*objDoc.AddMember("name", rapidjson::Value(obj->getObjectName().c_str(), a), a);
-			objDoc.AddMember("layer", obj->getLayer(), a);*/
-
-			// remove all existing components
-			obj->removeComponent<Transform>();
-			obj->removeComponent<Render>();
-			obj->removeComponent<Input>();
-			obj->removeComponent<Physics>();
-			obj->removeComponent<CollisionInfo>();
-			obj->removeComponent<Animation>();
-			obj->removeComponent<StateMachine>();
-			obj->removeComponent<AudioComponent>();
-			obj->removeComponent<FontComponent>();
-
-			applyPrefabComponents(obj, newPrefabDoc["components"]);
-
-			if (objDoc.HasMember("components")) {
-				applyPrefabComponents(obj, objDoc["components"]);
-			}
-
-			// reapply scene data
-			if (Render* r = obj->getComponent<Render>()) {
-				if (r->hasTex && !r->texFile.empty()) {
-					r->texChanged = true;
-				}
-			}
-
-			++count;
-		}
-
-		manager.initializeSceneResources();
-		return count;
+		return applyAllInstancesFallback(prefabID, manager);
 	}
 	
-	// cached found yay
-	if (newI == m_prefabCache.end()) return 0;
+	auto* oldComps = JsonIO::GetObj(oldI->second, "components");
+	auto* newComps = JsonIO::GetObj(newI->second, "components");
+	if (!oldComps || !newComps) return 0;
 
-	const rapidjson::Document& oldPrefabDoc = oldI->second;
-	const rapidjson::Document& newPrefabDoc = newI->second;
-
-	if (!oldPrefabDoc.HasMember("components") || !oldPrefabDoc["components"].IsObject()) {
-		DebugLog::addMessage("Old prefab missing components object\n");
-		return 0;
-	}
-	if (!newPrefabDoc.HasMember("components") || !newPrefabDoc["components"].IsObject()) {
-		DebugLog::addMessage("New prefab missing components object\n");
-		return 0;
-	}
-
-	int oldPrefabLayer = (oldPrefabDoc.HasMember("layer") && oldPrefabDoc["layer"].IsInt()) ? oldPrefabDoc["layer"].GetInt() : 1; // 1 is default game layer
-
-	int newPrefabLayer = (newPrefabDoc.HasMember("layer") && newPrefabDoc["layer"].IsInt()) ? newPrefabDoc["layer"].GetInt() : 1;
-
-	const rapidjson::Value& oldPrefabComps = oldPrefabDoc["components"];
-	const rapidjson::Value& newPrefabComps = newPrefabDoc["components"];
-
-	/*std::cout << "\nApplying Prefab Changes\n";
-	std::cout << "Old prefab has " << oldPrefabComps.MemberCount() << " components\n";
-	std::cout << "New prefab has " << newPrefabComps.MemberCount() << " components\n";*/
+	// get layer data
+	int oldLayer = JsonIO::GetIntOr(oldI->second, "layer", 1);
+	int newLayer = JsonIO::GetIntOr(newI->second, "layer", 1);
 
 	std::vector<GameObject*> gameObjects;
 	manager.getAllGameObjects(gameObjects);
 
+	std::vector<GameObject*> instances;
+	for (GameObject* obj : gameObjects) {
+		if (obj->getObjectPrefabID() == prefabID)
+			instances.push_back(obj);
+	}
+
 	int count{};
 
-	for (GameObject* obj : gameObjects) {
+	// apply to all instances (that ref the prefab)
+	for (GameObject* obj : instances) {
 		if (obj->getObjectPrefabID() != prefabID) continue;
 
 		std::string objName = obj->getObjectName();
 		int objLayer = obj->getLayer();
 
-		applyPrefabComponentsSelective(obj, oldPrefabComps, newPrefabComps);
+		// apply component changes with override checking
+		applyPrefabComponentsSelective(obj, *oldComps, *newComps);
 
+		// restore its name
 		obj->getObjectName() = objName;
-		manager.assignObjectToLayer(obj, objLayer);
-
-		if (objLayer == oldPrefabLayer) {
-			// Layer wasn't overridden, apply new prefab layer
-			std::cout << "  Layer matches old prefab - applying new layer: " << newPrefabLayer << "\n";
-			manager.assignObjectToLayer(obj, newPrefabLayer);
-		}
-		else {
-			// Layer was overridden, keep instance's layer
-			std::cout << "  Layer was overridden - keeping instance layer\n";
-			manager.assignObjectToLayer(obj, objLayer);
-		}
+		manager.assignObjectToLayer(obj, (objLayer == oldLayer) ? newLayer : objLayer);
 
 		if (Render* r = obj->getComponent<Render>()) {
 			if (r->hasTex && !r->texFile.empty()) {
@@ -600,9 +459,53 @@ int PrefabManager::applyToAllInstances(const std::string& prefabID, GameObjectMa
 	}
 
 	manager.initializeSceneResources();
-
 	m_prefabBeforeEdit.erase(prefabID);
 
+	return count;
+}
+
+int PrefabManager::applyAllInstancesFallback(const std::string& prefabID, GameObjectManager& manager) {
+	auto newI = m_prefabCache.find(prefabID);
+	if (newI == m_prefabCache.end()) return 0;
+
+	const rapidjson::Document& newPrefabDoc = newI->second;
+	if (!newPrefabDoc.HasMember("components")) return 0;
+
+	std::vector<GameObject*> gameObjects;
+	manager.getAllGameObjects(gameObjects);
+
+	int count = 0;
+	for (GameObject* obj : gameObjects) {
+		if (obj->getObjectPrefabID() != prefabID) continue;
+
+		// Serialize current state
+		rapidjson::Document objDoc;
+		objDoc.SetObject();
+		auto& a = objDoc.GetAllocator();
+
+		rapidjson::Value comps(rapidjson::kObjectType);
+		serializeComponents(obj, comps, a);
+		objDoc.AddMember("components", comps, a);
+
+		// clear all components
+		removeAllComponents(obj);
+
+		// apply prefab first
+		applyPrefabComponents(obj, newPrefabDoc["components"]);
+
+		// override with scene data
+		if (objDoc.HasMember("components")) {
+			applyPrefabComponents(obj, objDoc["components"]);
+		}
+
+		if (Render* r = obj->getComponent<Render>()) {
+			if (r->hasTex && !r->texFile.empty()) r->texChanged = true;
+		}
+
+		++count;
+	}
+
+	manager.initializeSceneResources();
 	return count;
 }
 
@@ -624,9 +527,7 @@ bool PrefabManager::createPrefabFromGameObj(GameObject* go, const std::string& n
 
 	auto pathExistsInRegistry = [this](const std::string& path) -> bool {
 		for (const auto& [id, info] : m_prefabRegistry) {
-			if (info.path == path) {
-				return true;
-			}
+			if (info.path == path) return true;
 		}
 		return false;
 		};
@@ -659,30 +560,13 @@ bool PrefabManager::createPrefabFromGameObj(GameObject* go, const std::string& n
 	doc.AddMember("components", comps, a);
 
 	/* -------- Save new prefab to a new .json file ------- */
-	std::string path = std::string(RUNTIME_DIR_R) + getPrefabPath(prefabID);
 	std::string err;
-	if (!JsonIO::WriteDocumentToFile(path, doc, /*pretty=*/true, &err)) {
-		DebugLog::addMessage("Prefab save failed (runtime): " + err);
-		return false;
-	}
-	else {
-		std::cout << "Prefab saved (runtime JSON): " << path << "\n";
-	}
-
-	path = std::string(SOURCE_DIR_R) + getPrefabPath(prefabID);
-	if (!JsonIO::WriteDocumentToFile(path, doc, /*pretty=*/true, &err)) {
-		DebugLog::addMessage("Prefab save failed (source): " + err);
-		return false;
-	}
-	else {
-		std::cout << "Prefab saved (source JSON): " << path << "\n";
-	}
+	JsonIO::WriteDocumentToFile(std::string(RUNTIME_DIR_R) + filename, doc, true, &err);
+	JsonIO::WriteDocumentToFile(std::string(SOURCE_DIR_R) + filename, doc, true, &err);
 	/* -------- END ------- */
-
 
 	// save in prefab registry file
 	savePrefabRegistry();
-
 
 	// set this game object to be reference to the created prefab
 	if(makeRef) go->getObjectPrefabID() = prefabID;
@@ -768,44 +652,18 @@ void PrefabManager::applyPrefabComponents(GameObject* go, const rapidjson::Value
 		std::string shp = (jr.HasMember("shape") && jr["shape"].IsString())
 			? jr["shape"].GetString()
 			: "square";
-		r->modelRef = renderer::models[static_cast<int>(StrToShape(shp))];
+		r->modelRef = renderer::models[static_cast<int>(
+			JsonIO::GetString(jr, "shape", shp) ? JsonIO::StrToShape(shp) : shape::square)];
 
-		// hasTex / texture (accept bool or 0/1)
-		if (jr.HasMember("hasTex")) {
-			r->hasTex = jr["hasTex"].IsBool()
-				? jr["hasTex"].GetBool()
-				: (jr["hasTex"].GetInt() != 0);
-		}
-		else {
-			r->hasTex = false;
-		}
-
-		if (r->hasTex && jr.HasMember("texture") && jr["texture"].IsString()) {
-			r->texFile = jr["texture"].GetString();
-			r->texHDL = 0;
-			r->texChanged = false;   // lazy GPU load later
-		}
-		else {
-			r->texFile.clear();
+		// hasTex / texture
+		r->hasTex = JsonIO::GetBoolOr(jr, "hasTex", false);
+		if (r->hasTex && JsonIO::GetString(jr, "texture", r->texFile)) {
 			r->texHDL = 0;
 			r->texChanged = false;
 		}
 
-		if (jr.HasMember("hasAnimation")) {
-			r->hasAnimation = jr["hasAnimation"].IsBool()
-				? jr["hasAnimation"].GetBool()
-				: (jr["hasAnimation"].GetInt() != 0);
-		}
-		else {
-			r->hasAnimation = false;
-		}
-
-		if (jr.HasMember("clr") && jr["clr"].IsArray() && jr["clr"].Size() == 3)
-		{
-			r->clr.r = jr["clr"][0].GetFloat();
-			r->clr.g = jr["clr"][1].GetFloat();
-			r->clr.b = jr["clr"][2].GetFloat();
-		}
+		r->hasAnimation = JsonIO::GetBoolOr(jr, "hasAnimation", false);
+		JsonIO::ReadVec3(jr, "clr", r->clr.r, r->clr.g, r->clr.b);
 
 	}
 
@@ -819,35 +677,13 @@ void PrefabManager::applyPrefabComponents(GameObject* go, const rapidjson::Value
 		const auto& jp = comps["Physics"];
 		auto* p = go->addComponent<Physics>();
 
-		if (jp.HasMember("physicsFlag")) {
-			p->physicsFlag = jp["physicsFlag"].IsBool()
-				? jp["physicsFlag"].GetBool()
-				: (jp["physicsFlag"].GetInt() != 0);
-		}
-
-		if (jp.HasMember("moveSpeed") && jp["moveSpeed"].IsNumber())
-			p->moveSpeed = jp["moveSpeed"].GetFloat();
-
-		if (jp.HasMember("damping") && jp["damping"].IsNumber())
-			p->damping = jp["damping"].GetFloat();
-
-		if (jp.HasMember("jumpForce") && jp["jumpForce"].IsNumber())
-			p->jumpForce = jp["jumpForce"].GetFloat();
-
-		if (jp.HasMember("mass") && jp["mass"].IsNumber())
-			p->dynamics.mass = jp["mass"].GetFloat();
-
-		if (jp.HasMember("inWater")) {
-			p->inWater = jp["inWater"].IsBool()
-				? jp["inWater"].GetBool()
-				: (jp["inWater"].GetInt() != 0);
-		}
-
-		if (jp.HasMember("buoyancy")) {
-			p->buoancy = jp["buoyancy"].IsBool()
-				? jp["buoyancy"].GetBool()
-				: (jp["buoyancy"].GetInt() != 0);
-		}
+		p->physicsFlag = JsonIO::GetBoolOr(jp, "physicsFlag", true);
+		p->moveSpeed = JsonIO::GetFloatOr(jp, "moveSpeed", 0.f);
+		p->damping = JsonIO::GetFloatOr(jp, "damping", 0.f);
+		p->jumpForce = JsonIO::GetFloatOr(jp, "jumpForce", 0.f);
+		p->dynamics.mass = JsonIO::GetFloatOr(jp, "mass", 1.f);
+		p->inWater = JsonIO::GetBoolOr(jp, "inWater", false);
+		p->buoancy = JsonIO::GetBoolOr(jp, "buoyancy", false);
 	}
 
 	// ---- CollisionInfo (presence only) ----
@@ -855,27 +691,14 @@ void PrefabManager::applyPrefabComponents(GameObject* go, const rapidjson::Value
 		const auto& jc = comps["CollisionInfo"];
 		auto* c = go->addComponent<CollisionInfo>();
 
-		if (jc.HasMember("collisionFlag")) {
-			c->collisionFlag = jc["collisionFlag"].IsBool()
-				? jc["collisionFlag"].GetBool()
-				: (jc["collisionFlag"].GetInt() != 0);
-		}
-
-		if (jc.HasMember("autoFitScale")) {
-			c->autoFitScale = jc["autoFitScale"].IsBool()
-				? jc["autoFitScale"].GetBool()
-				: (jc["autoFitScale"].GetInt() != 0);
-		}
-
-		std::string shp = (jc.HasMember("colliderType") && jc["colliderType"].IsString())
-			? jc["colliderType"].GetString()
-			: "square";
-		c->colliderType = JsonIO::StrToShape(shp);
-
-		if (jc.HasMember("colliderSize") && jc["colliderSize"].IsArray() && jc["colliderSize"].Size() == 2)
-		{
-			c->colliderSize.x = jc["colliderSize"][0].GetFloat();
-			c->colliderSize.y = jc["colliderSize"][1].GetFloat();
+		c->collisionFlag = JsonIO::GetBoolOr(jc, "collisionFlag", true);
+		c->autoFitScale = JsonIO::GetBoolOr(jc, "autoFitScale", false);
+		std::string shp;
+		c->colliderType = JsonIO::GetString(jc, "colliderType", shp) ? JsonIO::StrToShape(shp) : shape::square;
+		std::array<float, 3> size;
+		if (JsonIO::GetArray3f(jc, "colliderSize", size)) {
+			c->colliderSize.x = size[0];
+			c->colliderSize.y = size[1];
 		}
 	}
 
@@ -883,21 +706,13 @@ void PrefabManager::applyPrefabComponents(GameObject* go, const rapidjson::Value
 	if (comps.HasMember("Animation") && comps["Animation"].IsObject()) {
 		const auto& ja = comps["Animation"];
 		auto* a = go->addComponent<Animation>();
-		if (ja.HasMember("loop")) {
-			a->loop = ja["loop"].IsBool()
-				? ja["loop"].GetBool()
-				: (ja["loop"].GetInt() != 0);
-		}
-		if (ja.HasMember("currentFrameColumn") && ja["currentFrameColumn"].IsInt())
-			a->currentFrameColumn = ja["currentFrameColumn"].GetInt();
-		if (ja.HasMember("currentFrameRow") && ja["currentFrameRow"].IsInt())
-			a->currentFrameRow = ja["currentFrameRow"].GetInt();
-		if (ja.HasMember("totalColumn") && ja["totalColumn"].IsInt())
-			a->totalColumn = ja["totalColumn"].GetInt();
-		if (ja.HasMember("totalRow") && ja["totalRow"].IsInt())
-			a->totalRow = ja["totalRow"].GetInt();
-		if (ja.HasMember("frameTime") && ja["frameTime"].IsNumber())
-			a->frameTime = ja["frameTime"].GetFloat();
+
+		a->loop = JsonIO::GetBoolOr(ja, "loop", true);
+		a->currentFrameColumn = JsonIO::GetIntOr(ja, "currentFrameColumn", 0);
+		a->currentFrameRow = JsonIO::GetIntOr(ja, "currentFrameRow", 0);
+		a->totalColumn = JsonIO::GetIntOr(ja, "totalColumn", 1);
+		a->totalRow = JsonIO::GetIntOr(ja, "totalRow", 1);
+		a->frameTime = JsonIO::GetFloatOr(ja, "frameTime", 0.1f);
 	}
 
 	// ---- State Machine ----
@@ -905,16 +720,10 @@ void PrefabManager::applyPrefabComponents(GameObject* go, const rapidjson::Value
 		const auto& smj = comps["StateMachine"];
 		auto* sm = go->addComponent<StateMachine>();
 
-		if (smj.HasMember("state") && smj["state"].IsString())
-			sm->state = parsePlayerState(smj["state"].GetString());
-
-		if (smj.HasMember("facingRight")) {
-			if (smj["facingRight"].IsBool())       sm->facingRight = smj["facingRight"].GetBool();
-			else if (smj["facingRight"].IsInt())   sm->facingRight = (smj["facingRight"].GetInt() != 0);
-		}
-
-		if (smj.HasMember("stateTime") && smj["stateTime"].IsNumber())
-			sm->stateTime = static_cast<float>(smj["stateTime"].GetDouble());
+		std::string state;
+		sm->state = JsonIO::GetString(smj, "state", state) ? parsePlayerState(state) : PlayerState::Idle;
+		sm->facingRight = JsonIO::GetBoolOr(smj, "facingRight", true);
+		sm->stateTime = JsonIO::GetFloatOr(smj, "stateTime", 0.f);
 	}
 
 	// ---- AudioComponent ----
@@ -922,31 +731,16 @@ void PrefabManager::applyPrefabComponents(GameObject* go, const rapidjson::Value
 		const auto& ja = comps["AudioComponent"];
 		auto* ac = go->addComponent<AudioComponent>();
 
-		if (ja.HasMember("audioFile") && ja["audioFile"].IsString())
-			ac->audioFile = ja["audioFile"].GetString();
-		if (ja.HasMember("volume") && ja["volume"].IsNumber())
-			ac->volume = ja["volume"].GetFloat();
-		if (ja.HasMember("pitch") && ja["pitch"].IsNumber())
-			ac->pitch = ja["pitch"].GetFloat();
-		if (ja.HasMember("loop")) {
-			ac->loop = ja["loop"].IsBool() ? ja["loop"].GetBool() : (ja["loop"].GetInt() != 0);
-		}
-		if (ja.HasMember("playOnStart")) {
-			ac->playOnStart = ja["playOnStart"].IsBool() ? ja["playOnStart"].GetBool() : (ja["playOnStart"].GetInt() != 0);
-		}
-		if (ja.HasMember("muted")) {
-			ac->muted = ja["muted"].IsBool() ? ja["muted"].GetBool() : (ja["muted"].GetInt() != 0);
-		}
-		if (ja.HasMember("fadeInOnStart")) {
-			ac->fadeInOnStart = ja["fadeInOnStart"].IsBool() ? ja["fadeInOnStart"].GetBool() : (ja["fadeInOnStart"].GetInt() != 0);
-		}
-		if (ja.HasMember("fadeInDuration") && ja["fadeInDuration"].IsNumber())
-			ac->fadeInDuration = ja["fadeInDuration"].GetFloat();
-		if (ja.HasMember("fadeOutOnStop")) {
-			ac->fadeOutOnStop = ja["fadeOutOnStop"].IsBool() ? ja["fadeOutOnStop"].GetBool() : (ja["fadeOutOnStop"].GetInt() != 0);
-		}
-		if (ja.HasMember("fadeOutDuration") && ja["fadeOutDuration"].IsNumber())
-			ac->fadeOutDuration = ja["fadeOutDuration"].GetFloat();
+		JsonIO::GetString(ja, "audioFile", ac->audioFile);
+		ac->volume = JsonIO::GetFloatOr(ja, "volume", 1.f);
+		ac->pitch = JsonIO::GetFloatOr(ja, "pitch", 1.f);
+		ac->loop = JsonIO::GetBoolOr(ja, "loop", false);
+		ac->playOnStart = JsonIO::GetBoolOr(ja, "playOnStart", false);
+		ac->muted = JsonIO::GetBoolOr(ja, "muted", false);
+		ac->fadeInOnStart = JsonIO::GetBoolOr(ja, "fadeInOnStart", false);
+		ac->fadeInDuration = JsonIO::GetFloatOr(ja, "fadeInDuration", 0.f);
+		ac->fadeOutOnStop = JsonIO::GetBoolOr(ja, "fadeOutOnStop", false);
+		ac->fadeOutDuration = JsonIO::GetFloatOr(ja, "fadeOutDuration", 0.f);
 	}
 
 	// ---- FontComponent ----
@@ -954,17 +748,10 @@ void PrefabManager::applyPrefabComponents(GameObject* go, const rapidjson::Value
 		const auto& jf = comps["FontComponent"];
 		auto* fc = go->addComponent<FontComponent>();
 
-		if (jf.HasMember("word") && jf["word"].IsString())
-			fc->word = jf["word"].GetString();
-		if (jf.HasMember("scale") && jf["scale"].IsNumber())
-			fc->scale = jf["scale"].GetFloat();
-		if (jf.HasMember("fontType") && jf["fontType"].IsInt())
-			fc->fontType = jf["fontType"].GetInt();
-		if (jf.HasMember("color") && jf["color"].IsArray() && jf["color"].Size() == 3) {
-			fc->clr.r = jf["color"][0].GetFloat();
-			fc->clr.g = jf["color"][1].GetFloat();
-			fc->clr.b = jf["color"][2].GetFloat();
-		}
+		JsonIO::GetString(jf, "word", fc->word);
+		fc->scale = JsonIO::GetFloatOr(jf, "scale", 1.f);
+		fc->fontType = JsonIO::GetIntOr(jf, "fontType", 0);
+		JsonIO::ReadVec3(jf, "color", fc->clr.r, fc->clr.g, fc->clr.b);
 	}
 }
 
@@ -972,14 +759,10 @@ void PrefabManager::serializeComponents(const GameObject* obj, rapidjson::Value&
 	//// ---- Transform ----
 	if (auto t = obj->getComponent<Transform>()) {
 		rapidjson::Value jt(rapidjson::kObjectType);
-		rapidjson::Value pos(rapidjson::kArrayType);
 
-		pos.PushBack(t->x, a).PushBack(t->y, a).PushBack(t->z, a);
-		jt.AddMember("pos", pos, a);
+		JsonIO::WriteVec3(jt, "pos", t->x, t->y, t->z, a);
 		jt.AddMember("rotation", t->rotation, a);
-		rapidjson::Value sc(rapidjson::kArrayType);
-		sc.PushBack(t->scaleX, a).PushBack(t->scaleY, a).PushBack(t->scaleZ, a);
-		jt.AddMember("scale", sc, a);
+		JsonIO::WriteVec3(jt, "scale", t->scaleX, t->scaleY, t->scaleZ, a);
 
 		comps.AddMember("Transform", jt, a);
 	}
@@ -988,15 +771,13 @@ void PrefabManager::serializeComponents(const GameObject* obj, rapidjson::Value&
 	if (auto r = obj->getComponent<Render>()) {
 		rapidjson::Value jr(rapidjson::kObjectType);
 
-		jr.AddMember("shape", rapidjson::Value(ShapeToStr(r->modelRef.shape), a), a);
+		jr.AddMember("shape", rapidjson::Value(JsonIO::ShapeToStr(r->modelRef.shape), a), a);
 		jr.AddMember("hasTex", r->hasTex ? 1 : 0, a);
 		if (r->hasTex && !r->texFile.empty())
 			jr.AddMember("texture", rapidjson::Value(r->texFile.c_str(), a), a);
 		jr.AddMember("hasAnimation", r->hasAnimation ? 1 : 0, a);
 		if (r->clr.r != 1.f || r->clr.g != 1.f || r->clr.b != 1.f) {
-			rapidjson::Value clr(rapidjson::kArrayType);
-			clr.PushBack(r->clr.r, a).PushBack(r->clr.g, a).PushBack(r->clr.b, a);
-			jr.AddMember("clr", clr, a);
+			JsonIO::WriteVec3(jr, "clr", r->clr.r, r->clr.g, r->clr.b, a);
 		}
 
 		comps.AddMember("Render", jr, a);
@@ -1026,15 +807,13 @@ void PrefabManager::serializeComponents(const GameObject* obj, rapidjson::Value&
 	//// ---- Collision ----
 	if (auto c = obj->getComponent<CollisionInfo>()) {
 		rapidjson::Value jc(rapidjson::kObjectType);
+
 		jc.AddMember("collisionFlag", c->collisionFlag ? 1 : 0, a);
 		jc.AddMember("autoFitScale", c->autoFitScale ? 1 : 0, a);
 
-		rapidjson::Value colliderArray(rapidjson::kArrayType);
-		colliderArray.PushBack(c->colliderSize.x, a);colliderArray.PushBack(c->colliderSize.y, a);
-		jc.AddMember("colliderSize", colliderArray, a);
+		JsonIO::PutArray3f(jc, "colliderSize", { c->colliderSize.x, c->colliderSize.y, 0.f }, a);
 
-		std::string shapeStr = JsonIO::ShapeToStr(c->colliderType);
-		jc.AddMember("colliderType", rapidjson::Value(shapeStr.c_str(), a), a);
+		jc.AddMember("colliderType", rapidjson::Value(JsonIO::ShapeToStr(c->colliderType), a), a);
 
 		comps.AddMember("CollisionInfo", jc, a);
 	}
@@ -1148,27 +927,12 @@ void PrefabManager::applyPrefabComponentsSelective(GameObject* obj, const rapidj
 	}
 
 	// remove component that no longer in new prefab (means removed)
-	std::vector<std::string> componentsToRemove;
-	for (auto it = objComps.MemberBegin(); it != objComps.MemberEnd(); ++it) {
-		const char* compName = it->name.GetString();
+	for (auto i = objComps.MemberBegin(); i != objComps.MemberEnd(); ++i) {
+		const char* compName = i->name.GetString();
 
-		// if this component existed in old prefab but NOT in new prefab, remove it
 		if (oldPrefabComps.HasMember(compName) && !newPrefabCompSet.count(compName)) {
-			componentsToRemove.push_back(compName);
+			removeComponentByName(obj, compName);
 		}
-	}
-
-	// remove the components
-	for (const std::string& compName : componentsToRemove) {
-		if (compName == "Transform") obj->removeComponent<Transform>();
-		else if (compName == "Render") obj->removeComponent<Render>();
-		else if (compName == "Input") obj->removeComponent<Input>();
-		else if (compName == "Physics") obj->removeComponent<Physics>();
-		else if (compName == "CollisionInfo") obj->removeComponent<CollisionInfo>();
-		else if (compName == "Animation") obj->removeComponent<Animation>();
-		else if (compName == "StateMachine") obj->removeComponent<StateMachine>();
-		else if (compName == "AudioComponent") obj->removeComponent<AudioComponent>();
-		else if (compName == "FontComponent") obj->removeComponent<FontComponent>();
 	}
 
 	// for each component in new prefab
@@ -1178,26 +942,10 @@ void PrefabManager::applyPrefabComponentsSelective(GameObject* obj, const rapidj
 
 		// if new prefab has a new component
 		if (!oldPrefabComps.HasMember(compName)) {
-			//std::cout << "  Component '" << compName << "' is NEW in prefab!! applying fully\n\n";
-
 			// remove if exists (to start fresh)
-			if (compName == std::string("Transform")) obj->removeComponent<Transform>();
-			else if (compName == std::string("Render")) obj->removeComponent<Render>();
-			else if (compName == std::string("Input")) obj->removeComponent<Input>();
-			else if (compName == std::string("Physics")) obj->removeComponent<Physics>();
-			else if (compName == std::string("CollisionInfo")) obj->removeComponent<CollisionInfo>();
-			else if (compName == std::string("Animation")) obj->removeComponent<Animation>();
-			else if (compName == std::string("StateMachine")) obj->removeComponent<StateMachine>();
-			else if (compName == std::string("AudioComponent")) obj->removeComponent<AudioComponent>();
-			else if (compName == std::string("FontComponent")) obj->removeComponent<FontComponent>();
+			removeComponentByName(obj, compName);
 
-			// apply new component
-			rapidjson::Value temp(rapidjson::kObjectType);
-			rapidjson::Value copy;
-			copy.CopyFrom(newCompData, a);
-			temp.AddMember(rapidjson::Value(compName, a), copy, a);
-
-			applyPrefabComponents(obj, temp);
+			applyComponentFromJson(obj, compName, newCompData, a, [this](GameObject* o, const rapidjson::Value& v) { applyPrefabComponents(o, v);});
 
 			continue;
 		}
@@ -1210,12 +958,7 @@ void PrefabManager::applyPrefabComponentsSelective(GameObject* obj, const rapidj
 		if (!objComps.HasMember(compName)) {
 			/*std::cout << "  Object missing component '" << compName << "', applying from prefab\n";*/
 
-			rapidjson::Value temp(rapidjson::kObjectType);
-			rapidjson::Value copy;
-			copy.CopyFrom(newCompData, a);
-			temp.AddMember(rapidjson::Value(compName, a), copy, a);
-
-			applyPrefabComponents(obj, temp);
+			applyComponentFromJson(obj, compName, newCompData, a, [this](GameObject* o, const rapidjson::Value& v) { applyPrefabComponents(o, v); });
 
 			continue;
 		}
@@ -1229,82 +972,29 @@ void PrefabManager::applyPrefabComponentsSelective(GameObject* obj, const rapidj
 		for (auto propIt = newCompData.MemberBegin(); propIt != newCompData.MemberEnd(); ++propIt) {
 			const char* propName = propIt->name.GetString();
 			const rapidjson::Value& newValue = propIt->value;
+			const rapidjson::Value* sourceValue = nullptr;
 
 			// property is NEW in the prefab (shouldnt be??)
-			if (!oldCompData.HasMember(propName)) {
+			if (!oldCompData.HasMember(propName) || !objCompData.HasMember(propName)) {
 				/*std::cout << "    Property '" << compName << "." << propName << "' is NEW - using prefab value\n";*/
-
-				rapidjson::Value copy;
-				copy.CopyFrom(newValue, a);
-
-				finalCompData.AddMember(rapidjson::Value(propName, a), copy, a);
-
-				continue;
-			}
-
-			const rapidjson::Value& oldValue = oldCompData[propName];
-
-			// object doesn't have this property (shouldnt be??)
-			if (!objCompData.HasMember(propName)) {
-				/*std::cout << "    Property '" << compName << "." << propName << "' missing in object - using prefab value\n";*/
-
-				rapidjson::Value copy;
-				copy.CopyFrom(newValue, a);
-
-				finalCompData.AddMember(rapidjson::Value(propName, a), copy, a);
-
-				continue;
-			}
-
-			const rapidjson::Value& objValue = objCompData[propName];
-
-			// compare values 
-			if (valuesEqual(objValue, oldValue)) {
-				// object value matches old prefab -> not override -> use new prefab value
-				/*std::cout << "    Property '" << compName << "." << propName << "' matches old prefab - applying NEW value\n";*/
-
-				rapidjson::Value copy;
-				copy.CopyFrom(newValue, a);
-
-				finalCompData.AddMember(rapidjson::Value(propName, a), copy, a);
+				sourceValue = &newValue;
 			}
 			else {
-				// object value differs from old prefab -> override -> keep object value
-				/*std::cout << "    Property '" << compName << "." << propName << "' was OVERRIDDEN - keeping object value\n";*/
+				const rapidjson::Value& oldValue = oldCompData[propName];
+				const rapidjson::Value& objValue = objCompData[propName];
 
-				rapidjson::Value copy;
-				copy.CopyFrom(objValue, a);
-
-				finalCompData.AddMember(rapidjson::Value(propName, a), copy, a);
+				// use new prefab if object matches old prefab (means no override)
+				sourceValue = valuesEqual(objValue, oldValue) ? &newValue : &objValue;
 			}
+
+			rapidjson::Value copy;
+			copy.CopyFrom(*sourceValue, a);
+			finalCompData.AddMember(rapidjson::Value(propName, a), copy, a);
 		}
 
-		// remove and add back component with final data
-		if (compName == std::string("Transform")) obj->removeComponent<Transform>();
-		else if (compName == std::string("Render")) obj->removeComponent<Render>();
-		else if (compName == std::string("Input")) obj->removeComponent<Input>();
-		else if (compName == std::string("Physics")) obj->removeComponent<Physics>();
-		else if (compName == std::string("CollisionInfo")) obj->removeComponent<CollisionInfo>();
-		else if (compName == std::string("Animation")) obj->removeComponent<Animation>();
-		else if (compName == std::string("StateMachine")) obj->removeComponent<StateMachine>();
-		else if (compName == std::string("AudioComponent")) obj->removeComponent<AudioComponent>();
-		else if (compName == std::string("FontComponent")) obj->removeComponent<FontComponent>();
-
+		removeComponentByName(obj, compName);
 		rapidjson::Value temp(rapidjson::kObjectType);
 		temp.AddMember(rapidjson::Value(compName, a), finalCompData, a);
-
 		applyPrefabComponents(obj, temp);
 	}
-
-
-	// preserve scene-specific components
-	//for (auto it = objComps.MemberBegin(); it != objComps.MemberEnd(); ++it) {
-	//	const char* compName = it->name.GetString();
-
-	//	// scene-specific component
-	//	if (!oldPrefabComps.HasMember(compName) && !newPrefabCompSet.count(compName)) {
-	//		//std::cout << "  Component '" << compName << "' is SCENE-ONLY - preserving\n";
-	//		// component already exists, no action needed
-	//	}
-	//}
 }

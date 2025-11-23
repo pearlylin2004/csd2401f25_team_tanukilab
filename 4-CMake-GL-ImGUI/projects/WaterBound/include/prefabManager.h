@@ -126,6 +126,9 @@ private:
 	// serialize components from JSON
 	void serializeComponents(const GameObject* obj, rapidjson::Value& comps, rapidjson::Document::AllocatorType& a);
 
+	// scene data override all
+	int applyAllInstancesFallback(const std::string& prefabID, GameObjectManager& manager);
+
 	// compare 2 json values
 	bool valuesEqual(const rapidjson::Value& lhs, const rapidjson::Value& rhs) const;
 
