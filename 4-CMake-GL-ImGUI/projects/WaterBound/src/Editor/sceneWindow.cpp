@@ -92,7 +92,7 @@ void SceneWindow::render(GLuint texture, float aspectRatio, GameObjectManager& m
         }
 
     }
-
+    
     ImGuizmo::BeginFrame();
     renderGizmo(manager);
 

@@ -168,6 +168,12 @@ namespace Editor {
 				c->colliderSize.x = t->scaleX;
 				c->colliderSize.y = t->scaleY;
 			}
+
+			Render* r = obj->getComponent<Render>();
+			if (r) {
+				c->colliderType = r->modelRef.shape;
+			}
+
 			DebugLog::addMessage("Added Collision component for " + obj->getObjectName());
 			},
 			[](const GameObject* obj) { return obj->hasComponent<CollisionInfo>(); }

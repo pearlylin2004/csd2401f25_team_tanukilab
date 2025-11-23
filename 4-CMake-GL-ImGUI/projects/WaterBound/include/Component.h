@@ -119,7 +119,7 @@ public:
         return std::make_unique<Physics>(*this);
 	}
 
-    bool physicsFlag = false;
+    bool physicsFlag = true;
     float moveSpeed = 1.0f;
 
     Dynamics dynamics;
@@ -182,7 +182,7 @@ public:
     }
 
 
-    bool collisionFlag = false; // whether objest can collide with another obj
+    bool collisionFlag = true; // whether objest can collide with another obj
     shape colliderType = shape::square;
     Vector2D colliderSize{ 0,0 }; // size of the bounding box, if collider is circle then x will be diamater
     bool autoFitScale = true; // auto-fit the collider with the size of the mesh (i.e. obj bigger -> collider bigger)

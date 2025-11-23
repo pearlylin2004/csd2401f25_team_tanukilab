@@ -102,6 +102,7 @@ void HierarchyWindow::handlePrefabDragDrop(GameObjectManager& manager) {
                 std::string objName = PrefabManager::Instance().getPrefabName(prefabID);
                 GameObject* prefabObj = manager.createGameObject(objName + "(" + std::to_string(manager.getGameObjectCount()) + ")");
                 prefabObj->getObjectPrefabID() = prefabID;
+
                 if (prefabObj) {
                     PrefabManager::Instance().instantiate(prefabObj, manager);
                     Render* render = prefabObj->getComponent<Render>();
