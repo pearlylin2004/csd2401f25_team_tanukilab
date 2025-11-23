@@ -200,7 +200,7 @@ void CoreEngine::windowIconifyCallback(GLFWwindow* window, int iconified) {
     }
 }
 
-//for alt-tab
+//for alt-tab --this shld work for ctrl-alt-del too, need to test on lab pcs
 void CoreEngine::windowFocusCallback(GLFWwindow* window, int focused) {
     CoreEngine* engine = static_cast<CoreEngine*>(glfwGetWindowUserPointer(window));
     if (engine) {
