@@ -21,7 +21,6 @@ Technology is prohibited.
 #include "input.h"
 #include "Component.h"
 #include "messageBus.h"
-#include "ui.h"
 #include "GameObjectManager.h"
 #include "GUISystem.h"
 
