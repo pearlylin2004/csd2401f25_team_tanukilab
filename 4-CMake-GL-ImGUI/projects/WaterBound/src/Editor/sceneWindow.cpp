@@ -63,14 +63,14 @@ void SceneWindow::render(GLuint texture, float aspectRatio, GameObjectManager& m
 
     if (ImGui::IsWindowHovered())
     {
-        // Pan with middle mouse button
-        if (InputHandler::isMouseDragging(GLFW_MOUSE_BUTTON_MIDDLE))
+        // Pan with middle mouse button (and in editing mode)
+        if (InputHandler::isMouseDragging(GLFW_MOUSE_BUTTON_MIDDLE) && EditorManager::isEditingMode())
         {
             renderer::editorCam.pan(InputHandler::getMouseDeltaWorldInViewport(m_sceneWindowState.sceneSize));
         }
 
-        // zoom in/out with middle mouse button
-        if (InputHandler::getMouseScroll() != 0.f)
+        // zoom in/out with middle mouse button (and in editing mode)
+        if (InputHandler::getMouseScroll() != 0.f && EditorManager::isEditingMode())
         {
             renderer::editorCam.zoomInOut(InputHandler::getMouseScroll());
         }
@@ -330,6 +330,10 @@ void SceneWindow::duplicateScene(GameObjectManager& manager) {
 
 // load existing scene
 void SceneWindow::loadScene(GameObjectManager& manager) {
+    // reset cam pos
+    renderer::editorCam.campos = glm::vec3(0.f);
+    renderer::editorCam.zoom = 10.f;
+
     resetSelection();
 
     // clear all undo/redo
