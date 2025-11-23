@@ -332,10 +332,13 @@ void AssetBrowser::assetDeletePopup() {
 
 
     /*---------------- Delete Confirmation ----------------*/
+    ImVec2 center = ImGui::GetMainViewport()->GetCenter();
+    ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
+
     if (ImGui::BeginPopupModal("Confirm Delete Asset", NULL, ImGuiWindowFlags_AlwaysAutoResize)) {
         ImGui::Text("Are you sure you want to delete this asset?");
 
-        if (ImGui::Button("Delete")) {
+        if (ImGui::Button("Delete") || InputHandler::isKeyTriggered(GLFW_KEY_ENTER)) {
 
             if (!m_AssetBrowserState.fullPathToDelete.empty() &&
                 std::filesystem::exists(m_AssetBrowserState.fullPathToDelete)) {
@@ -415,12 +418,15 @@ void AssetBrowser::assetRenamePopup() {
         m_AssetBrowserState.showRenamePopup = false;
     }
 
+    ImVec2 center = ImGui::GetMainViewport()->GetCenter();
+    ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
+
     if (ImGui::BeginPopupModal("Rename Asset", NULL, ImGuiWindowFlags_AlwaysAutoResize)) {
         ImGui::Text("Enter new name for the asset");
 
         ImGui::InputText("##newName", m_AssetBrowserState.newNameBuffer, sizeof(m_AssetBrowserState.newNameBuffer));
 
-        if (ImGui::Button("Rename")) {
+        if (ImGui::Button("Rename") || InputHandler::isKeyTriggered(GLFW_KEY_ENTER)) {
             if (!m_AssetBrowserState.fullPathToRename.empty()) {
                 std::filesystem::path old = m_AssetBrowserState.fullPathToRename;
                 std::filesystem::path newPath = old.parent_path() / m_AssetBrowserState.newNameBuffer;
@@ -499,6 +505,9 @@ void AssetBrowser::assetReplacePopup() {
         m_AssetBrowserState.showReplacePopup = false;
     }
 
+    ImVec2 center = ImGui::GetMainViewport()->GetCenter();
+    ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
+
     if (ImGui::BeginPopupModal("Replace Asset", NULL, ImGuiWindowFlags_AlwaysAutoResize)) {
         ImGui::Text("Select a new file to replace the asset:\n");
 
@@ -506,7 +515,7 @@ void AssetBrowser::assetReplacePopup() {
 
         ImGui::Text("Please enter the absolute path without \"\"");
 
-        if (ImGui::Button("Replace")) {
+        if (ImGui::Button("Replace") || InputHandler::isKeyTriggered(GLFW_KEY_ENTER)) {
             std::filesystem::path old = m_AssetBrowserState.fullPathToReplace;
             std::filesystem::path newPath = m_AssetBrowserState.replacePathBuffer;
 

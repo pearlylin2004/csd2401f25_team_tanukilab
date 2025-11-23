@@ -356,11 +356,14 @@ void SceneWindow::newScenePopup(GameObjectManager& manager) {
         m_menuBarState.showNewScenePopup = false;
     }
 
+    ImVec2 center = ImGui::GetMainViewport()->GetCenter();
+    ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
+
     if (ImGui::BeginPopupModal("Confirm New Scene", NULL, ImGuiWindowFlags_AlwaysAutoResize)) {
         ImGui::Text("Create a new scene? Unsaved changes will be lost.");
 
         // Save and open new scene
-        if (ImGui::Button("Save and Create New")) {
+        if (ImGui::Button("Save and Create New") || InputHandler::isKeyTriggered(GLFW_KEY_1)) {
             //manager.saveToFile(m_currentSceneName);
             manager.saveScene(JsonIO::sourceScenePath(m_sceneState.currentSceneName));
             JsonIO::syncSceneToRuntime(m_sceneState.currentSceneName);
@@ -377,7 +380,7 @@ void SceneWindow::newScenePopup(GameObjectManager& manager) {
 
         // Discard changes and open new scene
         ImGui::SameLine();
-        if (ImGui::Button("Discard Changes")) {
+        if (ImGui::Button("Discard Changes") || InputHandler::isKeyTriggered(GLFW_KEY_2)) {
 
             // create new scene
             newScene(manager);
@@ -390,7 +393,7 @@ void SceneWindow::newScenePopup(GameObjectManager& manager) {
 
         // Cancel duplicate and stay in current scene
         ImGui::SameLine();
-        if (ImGui::Button("Cancel")) {
+        if (ImGui::Button("Cancel") || InputHandler::isKeyTriggered(GLFW_KEY_3)) {
             ImGui::CloseCurrentPopup();
         }
 
@@ -405,11 +408,14 @@ void SceneWindow::duplicateScenePopup(GameObjectManager& manager) {
         else DebugLog::addMessage("Playing simulation, cannot load scene.\n");
     }
 
+    ImVec2 center = ImGui::GetMainViewport()->GetCenter();
+    ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
+
     if (ImGui::BeginPopupModal("Confirm Duplicate Scene", NULL, ImGuiWindowFlags_AlwaysAutoResize)) {
         ImGui::Text("Duplicate and open new a scene? Unsaved changes will be lost.");
 
         // Save and open newly duplicated scene
-        if (ImGui::Button("Save and Duplicate")) {
+        if (ImGui::Button("Save and Duplicate") || InputHandler::isKeyTriggered(GLFW_KEY_1)) {
             //manager.saveToFile(m_currentSceneName);
             manager.saveScene(JsonIO::sourceScenePath(m_sceneState.currentSceneName));
             JsonIO::syncSceneToRuntime(m_sceneState.currentSceneName);
@@ -420,7 +426,7 @@ void SceneWindow::duplicateScenePopup(GameObjectManager& manager) {
 
         // Discard changes and open newly duplicated scene
         ImGui::SameLine();
-        if (ImGui::Button("Discard Changes")) {
+        if (ImGui::Button("Discard Changes") || InputHandler::isKeyTriggered(GLFW_KEY_2)) {
 
             duplicateScene(manager);
             ImGui::CloseCurrentPopup();
@@ -428,7 +434,7 @@ void SceneWindow::duplicateScenePopup(GameObjectManager& manager) {
 
         // Cancel duplicate and stay in current scene
         ImGui::SameLine();
-        if (ImGui::Button("Cancel")) {
+        if (ImGui::Button("Cancel") || InputHandler::isKeyTriggered(GLFW_KEY_3)) {
             ImGui::CloseCurrentPopup();
         }
 
@@ -443,6 +449,9 @@ void SceneWindow::loadScenePopup(GameObjectManager& manager) {
         else DebugLog::addMessage("Playing simulation, cannot load scene.\n");
     }
 
+    ImVec2 center = ImGui::GetMainViewport()->GetCenter();
+    ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
+
     if (ImGui::BeginPopupModal("Confirm Load Scene", NULL, ImGuiWindowFlags_AlwaysAutoResize)) {
         // show different title if reloading current scene
         std::string title = (m_menuBarState.sceneToLoad == m_sceneState.currentSceneName) ? "Reload current scene? Unsaved changes will be lost." : "Load another scene? Unsaved changes will be lost";
@@ -450,7 +459,7 @@ void SceneWindow::loadScenePopup(GameObjectManager& manager) {
         ImGui::Text(title.c_str());
 
         // Save and load another scene
-        if (ImGui::Button("Save and Load")) {
+        if (ImGui::Button("Save and Load") || InputHandler::isKeyTriggered(GLFW_KEY_1)) {
             //manager.saveToFile(m_currentSceneName);
             manager.saveScene(JsonIO::sourceScenePath(m_sceneState.currentSceneName));
             JsonIO::syncSceneToRuntime(m_sceneState.currentSceneName);
@@ -470,7 +479,7 @@ void SceneWindow::loadScenePopup(GameObjectManager& manager) {
 
         // Discard changes and load selected scene
         ImGui::SameLine();
-        if (ImGui::Button("Discard Changes")) {
+        if (ImGui::Button("Discard Changes") || InputHandler::isKeyTriggered(GLFW_KEY_2)) {
             loadScene(manager);
 
             /*std::vector<GameObject*> gameObjects;
@@ -487,7 +496,7 @@ void SceneWindow::loadScenePopup(GameObjectManager& manager) {
 
         // Cancel loading and stay in current scene
         ImGui::SameLine();
-        if (ImGui::Button("Cancel")) {
+        if (ImGui::Button("Cancel") || InputHandler::isKeyTriggered(GLFW_KEY_3)) {
             ImGui::CloseCurrentPopup();
         }
 

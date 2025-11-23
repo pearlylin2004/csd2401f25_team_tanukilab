@@ -202,12 +202,16 @@ void HierarchyWindow::objDeletePopup(GameObjectManager& manager) {
         m_objSelectionState.showDeletePopup = false;
     }
 
+
+    ImVec2 center = ImGui::GetMainViewport()->GetCenter();
+    ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
+
     /*---------------- Cannot delete current loaded scene ----------------*/
     // delete confirm popup
     if (ImGui::BeginPopupModal("Confirm Delete Object", NULL, ImGuiWindowFlags_AlwaysAutoResize)) {
         ImGui::Text("Are you sure you want to delete this object?");
 
-        if (ImGui::Button("Delete")) {
+        if (ImGui::Button("Delete") || InputHandler::isKeyTriggered(GLFW_KEY_ENTER)) {
             std::string name = m_objSelectionState.selectedObject->getObjectName();
 
             //manager.deleteGameObject(m_objSelectionState.selectedObject); -> CREATE DELETE CMD will handle the deletion
@@ -241,6 +245,9 @@ void HierarchyWindow::createPrefabPopup() {
         ImGui::OpenPopup("Confirm Create Prefab");
         m_objSelectionState.showCreatePrefabPopup = false;
     }
+
+    ImVec2 center = ImGui::GetMainViewport()->GetCenter();
+    ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
 
     /*---------------- Cannot delete current loaded scene ----------------*/
     // delete confirm popup
