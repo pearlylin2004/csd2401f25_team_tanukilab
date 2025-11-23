@@ -104,8 +104,11 @@ void RenderSystem::update(GameObjectManager& manager, float const& deltaTime)
 
 	glm::mat4 camView, camProj;
 
-	// Attach texture to FBO and update editor camera if editor is on
-	if (UISystem::isShowUI()/* && EditorManager::isEditingMode()*/)
+	// decide where to render
+	renderFBO();
+
+	// Attach texture to FBO and update editor camera if editor is on & update camera
+	if (UISystem::isShowUI() && EditorManager::isEditingMode())
 	{
 		createFBO();
 		renderer::editorCam.update();
@@ -292,9 +295,12 @@ void RenderSystem::update(GameObjectManager& manager, float const& deltaTime)
 	g_SystemTimers.push_back({"Render", ms }); //saving timing for UI output
 }
 
-void RenderSystem::unbindFBO() {
-	if (UISystem::isShowUI()) {
-		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+void RenderSystem::renderFBO() {
+	if (!UISystem::isShowUI()) {
+		glBindFramebuffer(GL_FRAMEBUFFER, 0); // render directly to screen
+	}
+	else {
+		createFBO();
 	}
 }
 

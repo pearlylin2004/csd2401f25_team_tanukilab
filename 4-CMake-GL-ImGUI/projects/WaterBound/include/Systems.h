@@ -90,7 +90,7 @@ public:
 	//GLuint uploadtex(std::string const& filename, bool& isTransparent);
 	void renderTex(GameObject* object, float const& deltaTime);
 	void renderNoTex(GameObject* object);
-	void unbindFBO();
+	void renderFBO();
 	GLuint getTexture() const { return texture; }
 
 	void renderCollision(Collision::AABB const& box, glm::vec3 const& clr);
