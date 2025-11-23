@@ -1209,11 +1209,11 @@ void UISystem::dockingSetUp() {
 		ImGuiID dockMain = dockspaceID;
 
 		ImGuiID dockLeft, dockRight, dockBottom;
-		ImGui::DockBuilderSplitNode(dockMain, ImGuiDir_Left, 0.25f, &dockLeft, &dockMain);
+		ImGui::DockBuilderSplitNode(dockMain, ImGuiDir_Left, 0.28f, &dockLeft, &dockMain);
 		// split off right panel (30% of remaining width)
-		ImGui::DockBuilderSplitNode(dockMain, ImGuiDir_Right, 0.30f, &dockRight, &dockMain);
+		ImGui::DockBuilderSplitNode(dockMain, ImGuiDir_Right, 0.35f, &dockRight, &dockMain);
 		// split off bottom panel (30% of remaining height)
-		ImGui::DockBuilderSplitNode(dockMain, ImGuiDir_Down, 0.30f, &dockBottom, &dockMain);
+		ImGui::DockBuilderSplitNode(dockMain, ImGuiDir_Down, 0.50f, &dockBottom, &dockMain);
 
 		// subdivide the panels
 		ImGuiID dockLeftBottom, dockRightBottom;
