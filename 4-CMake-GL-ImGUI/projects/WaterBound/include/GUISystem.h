@@ -62,5 +62,4 @@ private:
     bool m_buttonsCreated = false;
     GameObjectManager* g_manager = nullptr;
     LuaSystem* g_luaSystem = nullptr;
-    //bool m_buttonDataLoaded = false;
 };
