@@ -50,6 +50,7 @@ public:
 
     //for resume and pause
     static void windowIconifyCallback(GLFWwindow* window, int iconified);
+    static void windowFocusCallback(GLFWwindow* window, int focused);
 
 private:
     void GameLoop();

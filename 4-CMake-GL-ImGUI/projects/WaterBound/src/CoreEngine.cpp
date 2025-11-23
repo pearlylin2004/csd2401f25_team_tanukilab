@@ -61,6 +61,9 @@ void CoreEngine::Init() {
     // --- Register the iconify callback ---
     glfwSetWindowIconifyCallback(m_window, CoreEngine::windowIconifyCallback);
 
+    // --- Register the focus callback ---
+    glfwSetWindowFocusCallback(m_window, CoreEngine::windowFocusCallback);
+
     glfwMakeContextCurrent(m_window);
     glViewport(0, 0, cfg.width, cfg.height);
     glewExperimental = GL_TRUE;
@@ -194,5 +197,20 @@ void CoreEngine::windowIconifyCallback(GLFWwindow* window, int iconified) {
             AudioHandler::getInstance().resumeAll(*engine->m_manager);
         }
 
+    }
+}
+
+//for alt-tab
+void CoreEngine::windowFocusCallback(GLFWwindow* window, int focused) {
+    CoreEngine* engine = static_cast<CoreEngine*>(glfwGetWindowUserPointer(window));
+    if (engine) {
+        if (!focused) {
+            // Window lost focus (Alt-Tab, switch window)
+            AudioHandler::getInstance().pauseAll(*engine->m_manager);
+        }
+        else {
+            // Window regained focus
+            AudioHandler::getInstance().resumeAll(*engine->m_manager);
+        }
     }
 }
