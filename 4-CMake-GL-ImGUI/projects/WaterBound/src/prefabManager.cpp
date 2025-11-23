@@ -280,6 +280,14 @@ GameObject* PrefabManager::instantiate(GameObject* go, GameObjectManager& manage
 		applyPrefabComponents(go, doc["components"]);
 	}
 
+	/* ---- SCUFFED way to get bullet work ---- */
+	static bool bulletCreated = false;
+	if (!bulletCreated && id == "b1a12273-a692-4ce0-8072-156da2c70842") {
+		bulletCreated = true;
+		manager.createBulletPool(go->getObjectName(), 10);
+	}
+	/* ---- END ---- */
+
 	/* --------- Load Component ---------*/
 	//const auto& comps = doc["components"];
 

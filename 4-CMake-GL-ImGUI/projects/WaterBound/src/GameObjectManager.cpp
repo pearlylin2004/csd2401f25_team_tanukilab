@@ -268,6 +268,9 @@ void GameObjectManager::loadSceneFromJson(const std::string& filename) {
 		return;
 	}
 
+	// prepare template for bullet
+	GameObject* templateBullet = nullptr;
+
 	for (auto& jObj : doc["objects"].GetArray()) {
 		if (!jObj.IsObject()) continue;
 
@@ -277,20 +280,26 @@ void GameObjectManager::loadSceneFromJson(const std::string& filename) {
 
 		GameObject* go = createGameObject(nameOjb);
 
-
 		// check if this object references a prefab
 		if (jObj.HasMember("prefabid") && jObj["prefabid"].IsString()) {
 			std::string prefabID = jObj["prefabid"].GetString();
 			go->getObjectPrefabID() = prefabID;
 			PrefabManager::Instance().instantiate(go, *this);
 
+			/* ---- SCUFFED WAY TO GET BULLETS CLONE ---- */
+			// still hardcoded but slightly better than using name only
+			// if its bullet prefab, make this obj the template
+			if (prefabID == "b1a12273-a692-4ce0-8072-156da2c70842" && !templateBullet) {
+				templateBullet = go;
+			}
+			/* ---- END ---- */
 		}
-		else {
-			// if no prefab, just create a fresh game object
-			std::string name = (jObj.HasMember("name") && jObj["name"].IsString())
-				? jObj["name"].GetString()
-				: ("Object_" + std::to_string(m_gameObjects.size()));
-		}
+		//else {
+		//	// if no prefab, just create a fresh game object
+		//	std::string name = (jObj.HasMember("name") && jObj["name"].IsString())
+		//		? jObj["name"].GetString()
+		//		: ("Object_" + std::to_string(m_gameObjects.size()));
+		//}
 
 		if (jObj.HasMember("layer") && jObj["layer"].IsInt()) {
 			int layerID = jObj["layer"].GetInt();
@@ -619,11 +628,13 @@ void GameObjectManager::loadSceneFromJson(const std::string& filename) {
 	}
 
 	//create bullet pool
-	GameObject* templateBullet = getGameObject("bullet"); 
+	/* ---- SCUFFED WAY TO GET BULLET WORK ---- */
+	if (!templateBullet) templateBullet = getGameObject("bullet");
 
 	if (templateBullet) {
-		createBulletPool("bullet", 10);
+		createBulletPool(templateBullet->getObjectName(), 10);
 	}
+	/* ---- END ---- */
 
 	std::cout << "Total game objects loaded: " << m_gameObjects.size() << std::endl;
 
@@ -1076,6 +1087,9 @@ void GameObjectManager::createBulletPool(const std::string& templateBulletName, 
 		std::cerr << "Error: Template bullet '" << templateBulletName << "' not found!\n";
 		return;
 	}
+
+	// ensure only 11 bullets (1+10 clone)
+	if (templateBullet->getObjectName() != "bullet") renameGameObject(templateBullet, "bullet");
 
 	std::cout << "Creating bullet pool with " << poolSize << " bullets...\n";
 
