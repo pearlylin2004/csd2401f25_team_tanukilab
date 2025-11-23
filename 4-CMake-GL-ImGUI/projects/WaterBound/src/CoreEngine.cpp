@@ -205,11 +205,11 @@ void CoreEngine::windowFocusCallback(GLFWwindow* window, int focused) {
     CoreEngine* engine = static_cast<CoreEngine*>(glfwGetWindowUserPointer(window));
     if (engine) {
         if (!focused) {
-            // Window lost focus (Alt-Tab, switch window)
+            //window lost focus
             AudioHandler::getInstance().pauseAll(*engine->m_manager);
         }
         else {
-            // Window regained focus
+            //window regained focus
             AudioHandler::getInstance().resumeAll(*engine->m_manager);
         }
     }
