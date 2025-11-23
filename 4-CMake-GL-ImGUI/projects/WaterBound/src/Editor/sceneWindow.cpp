@@ -18,6 +18,7 @@ Technology is prohibited.
 */
 /* End Header **************************************************************************/
 
+#ifdef _DEBUG
 #include "Editor/editorManager.h"
 
 SceneWindow::SceneWindow(AssetBrowser& aBrowser, Editor::ObjSelectionState& Ostate, Editor::MenuBarState& Mstate, Editor::SceneWindowState& Sstate, Editor::SceneState& sceneState, Editor::GizmoState& gizmoState) :
@@ -329,16 +330,16 @@ void SceneWindow::duplicateScene(GameObjectManager& manager) {
 
 // load existing scene
 void SceneWindow::loadScene(GameObjectManager& manager) {
-    //manager.loadFromFile(m_MenuBarState.sceneToLoad);
-    manager.loadScene(JsonIO::runtimeScenePath(m_menuBarState.sceneToLoad));
-    manager.initializeSceneResources();
+    resetSelection();
 
     // clear all undo/redo
     UndoRedoManager::Instance().clear();
 
-    m_sceneState.currentSceneName = std::move(m_menuBarState.sceneToLoad);
+    //manager.loadFromFile(m_MenuBarState.sceneToLoad);
+    manager.loadScene(JsonIO::runtimeScenePath(m_menuBarState.sceneToLoad));
+    manager.initializeSceneResources();
 
-    resetSelection();
+    m_sceneState.currentSceneName = std::move(m_menuBarState.sceneToLoad); 
 
     DebugLog::addMessage("Loaded scene: " + m_sceneState.currentSceneName + "\n");
 }
@@ -575,3 +576,4 @@ void SceneWindow::resetSelection() {
     m_objSelectionState.selectedPrefab = nullptr;
     m_objSelectionState.selectedIndex = -1;
 }
+#endif

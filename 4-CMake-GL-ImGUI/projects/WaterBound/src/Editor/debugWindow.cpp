@@ -17,7 +17,7 @@ without the prior written consent of DigiPen Institute of
 Technology is prohibited.
 */
 /* End Header **************************************************************************/
-
+#ifdef _DEBUG
 #include "Editor/editorManager.h"
 
 DebugWindow::DebugWindow(DebugMode Dmode) : mode(Dmode){}
@@ -45,3 +45,4 @@ void DebugWindow::render() {
     ImGui::EndChild();
     ImGui::End();
 }
+#endif

@@ -17,7 +17,7 @@ without the prior written consent of DigiPen Institute of
 Technology is prohibited.
 */
 /* End Header **************************************************************************/
-
+#ifdef _DEBUG
 #include "JsonIO.h"
 #include "Editor/undoRedo.h"
 
@@ -268,3 +268,5 @@ void UndoRedoManager::endTransformEdit(GameObjectManager& manager, GameObject* o
 
     m_isEditingTransform = false;
 }
+
+#endif

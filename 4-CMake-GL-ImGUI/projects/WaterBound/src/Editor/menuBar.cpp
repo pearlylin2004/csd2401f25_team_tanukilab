@@ -18,6 +18,7 @@ Technology is prohibited.
 */
 /* End Header **************************************************************************/
 
+#ifdef _DEBUG
 #include "Editor/editorManager.h"
 
 MenuBar::MenuBar(AssetBrowser& aBrowser, Editor::AssetBrowserState& Astate, Editor::MenuBarState& Mstate, Editor::ObjSelectionState& Ostate, Editor::SceneState& sceneState):
@@ -284,3 +285,5 @@ void MenuBar::themeForest() {
     // Dark green frames
     colors[ImGuiCol_FrameBg] = ImVec4(0.12f, 0.18f, 0.12f, 1.00f);
 }
+
+#endif

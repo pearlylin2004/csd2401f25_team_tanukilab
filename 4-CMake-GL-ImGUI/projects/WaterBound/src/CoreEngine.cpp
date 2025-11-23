@@ -101,7 +101,7 @@ void CoreEngine::Init() {
     m_luaSystem->init();
 	m_renderSystem->init(*m_manager, cfg.width, cfg.height);
     #ifdef _DEBUG
-	m_uiSystem->init(m_window, m_renderSystem.get());
+	    m_uiSystem->init(m_window, m_renderSystem.get());
     #endif
     m_fontSystem->init(*m_manager);
     m_audioSystem->init(*m_manager);
@@ -160,7 +160,7 @@ void CoreEngine::Update(float deltaTime) {
     m_fontSystem->update(*m_manager);
     m_audioSystem->update(*m_manager, deltaTime);
     #ifdef _DEBUG
-    m_uiSystem->update(*m_manager);
+        m_uiSystem->update(*m_manager);
     #endif
 
 

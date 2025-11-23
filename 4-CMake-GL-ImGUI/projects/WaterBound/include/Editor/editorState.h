@@ -1,4 +1,5 @@
-﻿#pragma once
+﻿#ifdef _DEBUG
+#pragma once
 #include <string>
 #include <memory>
 #include <filesystem>
@@ -64,6 +65,11 @@ namespace Editor {
 		std::string currentFolder = "assets/"; // we have an asset folder yayy
 		std::filesystem::file_time_type lastTopLevelRefresh; // top level folder timestamp
 		std::filesystem::file_time_type lastRefresh;
+		std::string currentViewFolder;
+		std::vector<std::string> subFolders;
+
+		// for dropping of files from file explorer
+		std::string hoverFolder;
 
 		// for deleting asset via browser
 		std::string fullPathToDelete;
@@ -86,10 +92,21 @@ namespace Editor {
 	
 	/* ----------------- Scene State ---------------- */
 	struct SceneState {
-		std::string currentSceneName = "level01.json";
+		std::string currentSceneName = "";
 		std::string tempSceneName = "temp_scene.json"; // for simulation
 	};
 	/* ----------------- Scene End -----------------*/
+
+
+	/* ----------------- Popup End -----------------*/
+	struct PopupState {
+		bool audioFileTypePopup = false;
+		bool textureFileTypePopup = false;
+		bool prefabFileTypePopup = false;
+		std::string filename;
+		std::string message;
+	};
+	/* ----------------- Popup End -----------------*/
 
 
 	/* ----------------- Gizmo ---------------- */
@@ -107,7 +124,7 @@ namespace Editor {
 		float snapValues[3] = { 1.f, 1.f, 1.f };
 		float snapAngle = 15.f;
 	};
-	/* ----------------- Scene End -----------------*/
+	/* ----------------- Gizmo End -----------------*/
 
 
 	/* ----------------- Component Entry ---------------- */
@@ -125,7 +142,9 @@ namespace Editor {
 	inline SceneWindowState sceneWindowState;
 	inline AssetBrowserState assetBrowserState;
 	inline SceneState sceneState;
+	inline PopupState popupState;
 	inline GizmoState gizmoState;
+
 
 	/* ----------------- Component Registry ---------------- */
 	// add useful func here to check/add components for Editor Inspector
@@ -203,3 +222,4 @@ namespace Editor {
 	};
 	/* ----------------- Component End ---------------- */
 }
+#endif

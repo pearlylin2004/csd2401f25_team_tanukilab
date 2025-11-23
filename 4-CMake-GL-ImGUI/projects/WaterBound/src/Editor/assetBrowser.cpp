@@ -17,7 +17,7 @@ without the prior written consent of DigiPen Institute of
 Technology is prohibited.
 */
 /* End Header **************************************************************************/
-
+#ifdef _DEBUG
 #include "Editor/editorManager.h"
 
 AssetBrowser::AssetBrowser(Editor::AssetBrowserState& Astate, Editor::ObjSelectionState& Ostate, Editor::MenuBarState& Mstate) :
@@ -27,6 +27,8 @@ AssetBrowser::AssetBrowser(Editor::AssetBrowserState& Astate, Editor::ObjSelecti
 {}
 
 void AssetBrowser::render() {
+    m_AssetBrowserState.hoverFolder = "";
+
     ImGui::Begin("Assets");
 
     // refresh to update assets from the actual asset folder
@@ -68,20 +70,77 @@ void AssetBrowser::render() {
 
     ImGui::Separator();
 
+    if (!m_AssetBrowserState.currentViewFolder.empty()) {
+        if (ImGui::Button("< Back")) {
+            m_AssetBrowserState.currentViewFolder.clear();
+        }
+
+        // if inside a folder and drag and drop a file, add it into the folder
+        m_AssetBrowserState.hoverFolder = m_AssetBrowserState.currentViewFolder;
+
+        ImGui::SameLine();
+        ImGui::Text("Folder: %s", m_AssetBrowserState.currentViewFolder.c_str());
+        ImGui::Separator();
+    }
+
     float windowVisibleX2 = ImGui::GetWindowPos().x + ImGui::GetWindowContentRegionMax().x;
+
+    // show folders & files directly under Assets folder
+    if (m_AssetBrowserState.currentViewFolder.empty()) {
+        for (const std::string& folder : m_AssetBrowserState.subFolders) {
+            ImGui::PushID(folder.c_str());
+
+            ImGui::BeginGroup();
+            ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(100, 40));
+
+            // folder button
+            if (ImGui::Button(folder.c_str(), ImVec2(m_AssetBrowserState.iconSize, m_AssetBrowserState.iconSize))) {
+                m_AssetBrowserState.currentViewFolder = folder;
+            }
+
+            // see if mouse is on which folder (for dropping of files from file explorer)
+            if (ImGui::IsItemHovered()) {
+                m_AssetBrowserState.hoverFolder = folder;
+            }
+
+            ImGui::PopStyleVar();
+
+            ImGui::PushTextWrapPos(ImGui::GetCursorPosX() + m_AssetBrowserState.iconSize);
+            ImGui::Text("%s", folder.c_str());
+            ImGui::PopTextWrapPos();
+
+            ImGui::EndGroup();
+
+            float lastButtonX2 = ImGui::GetItemRectMax().x;
+            float nextButtonX2 = lastButtonX2 + m_AssetBrowserState.iconSize;
+            if (nextButtonX2 < windowVisibleX2) ImGui::SameLine();
+
+            ImGui::PopID();
+        }
+    }
 
     int index{};
     for (const Editor::Asset& asset : m_assets) {
-        // skip temp scene file (for play/stop)
-        std::string fullPath = asset.folder + "/" + asset.name;
-        //if (fullPath == m_tempSceneName) continue;
+        std::string assetFolderName = std::filesystem::path(asset.folder).filename().string();
 
-        /*if (asset.name == Editor::sceneState.tempSceneName) continue;
-        if (asset.name == "prefab_registry.json") continue;*/
+        if (m_AssetBrowserState.currentFolder.empty()) {
+            // if at root (Asset folder), show only folders
+            //if (asset.folder != m_AssetBrowserState.currentFolder) continue;
+            continue;
+        }
+        else {
+            // if file is directly inside Assets, put them in Misc
+            if (m_AssetBrowserState.currentViewFolder == "Misc" && assetFolderName == "assets") assetFolderName = "Misc";
+
+            // if in subfolder, show assets in that folder only
+            if (assetFolderName != m_AssetBrowserState.currentViewFolder) continue;
+        }
+
+        std::string fullPath = asset.folder + "/" + asset.name;
 
         ImGui::PushID(index++);
 
-        // if the asset is the current scene
+        // highlight if the asset is the current scene
         if (asset.name == Editor::sceneState.currentSceneName) {
             ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(1.f, 0.4f, 0.7f, 1.0f));
             /*ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.3f, 0.6f, 0.9f, 1.0f));
@@ -103,7 +162,7 @@ void AssetBrowser::render() {
             ImGui::PopStyleColor();
         }
 
-        // right click asset and show context menu
+        // RIGHT CLICK asset and show context menu
         if (ImGui::BeginPopupContextItem("AssetContextMenu")) {
             // show this asset in window explorer
             if (ImGui::MenuItem("Show in Explorer")) {
@@ -119,7 +178,7 @@ void AssetBrowser::render() {
             }
 
             // open popup window and ask whether to delete this current asset (delete not for prefab YET)
-            if (asset.folder != m_AssetBrowserState.currentFolder + "Prefab") {
+            if (assetFolderName != "Prefab") {
                 if (ImGui::MenuItem("Delete Asset")) {
                     m_AssetBrowserState.fullPathToDelete = fullPath;
                     m_AssetBrowserState.showDeletePopup = true;
@@ -135,8 +194,8 @@ void AssetBrowser::render() {
                 std::strncpy(m_AssetBrowserState.newNameBuffer, asset.name.c_str(), sizeof(m_AssetBrowserState.newNameBuffer));
             }
 
-            // open popup window and replace this current asset
-            if (asset.folder != m_AssetBrowserState.currentFolder + "Prefab") {
+            // open popup window and replace this current asset (not for prefab)
+            if (assetFolderName != "Prefab") {
                 if (ImGui::MenuItem("Replace Asset")) {
                     m_AssetBrowserState.fullPathToReplace = fullPath;
                     m_AssetBrowserState.showReplacePopup = true;
@@ -150,13 +209,13 @@ void AssetBrowser::render() {
         // DOUBLE click logic
         if (ImGui::IsItemHovered() && InputHandler::isMouseLeftDoubleClicked()) {
             // if its a scene file, load the scene
-            if (asset.folder == m_AssetBrowserState.currentFolder + "Scene") {
+            if (assetFolderName == "Scene") {
                 m_menuBarState.sceneToLoad = asset.name;
                 m_menuBarState.showLoadScenePopup = true;
             }
 
-            // if its a prefab, convert to temp game obj for editting in inspector
-            if (asset.folder == m_AssetBrowserState.currentFolder + "Prefab") {
+            // if its a prefab, convert to temp game obj for editing in inspector
+            if (assetFolderName == "Prefab") {
                 // get ID of the double clicked prefab by its filename
                 std::string prefabID = PrefabManager::Instance().findPrefabIDByFilename(asset.name);
                 if (prefabID.empty()) {
@@ -196,16 +255,9 @@ void AssetBrowser::render() {
         /* ----------- Drag and Drop Logic ----------- */
 
         if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID)) {
-            if (asset.folder == m_AssetBrowserState.currentFolder + "Prefab") {
-                // drag a prefab to hierarchy to make a game obj
-                ImGui::SetDragDropPayload("PREFAB", asset.name.c_str(), asset.name.size() + 1);
-                ImGui::Text("Prefab: %s", asset.name.c_str());
-            }
-            else {
-                // drag a texture to inspector window to change texture of selected object
-                ImGui::SetDragDropPayload("ASSET", asset.path.c_str(), asset.path.size() + 1);
-                ImGui::Text("%s", asset.name.c_str());
-            }
+            // drag a texture to inspector/hierarchy window
+            ImGui::SetDragDropPayload("ASSET", asset.path.c_str(), asset.path.size() + 1);
+            ImGui::Text("%s", asset.name.c_str());
             ImGui::EndDragDropSource();
         }
 
@@ -213,6 +265,7 @@ void AssetBrowser::render() {
 
         ImGui::PopID();
     }
+
 
     ImGui::End();
 
@@ -225,6 +278,19 @@ void AssetBrowser::render() {
 
 void AssetBrowser::loadAssetsFromDirectory() {
     m_assets.clear(); // clear existing assets before loading new ones
+    m_AssetBrowserState.subFolders.clear();
+    std::vector<std::string>& subFolders = m_AssetBrowserState.subFolders;
+
+    for (const auto& entry : std::filesystem::directory_iterator(m_AssetBrowserState.currentFolder)) {
+        if (entry.is_directory()) {
+            std::string folderName = entry.path().filename().string();
+            if (folderName == "resources" || folderName == "scripting" || folderName == "shaders") continue;
+            m_AssetBrowserState.subFolders.push_back(folderName);
+        }
+    }
+
+    // for all files directly in Assets
+    m_AssetBrowserState.subFolders.push_back("Misc");
 
     // iterate over all files and folders in this directory and push all files to m_assets (flat list)
     for (const std::filesystem::directory_entry& entry : std::filesystem::recursive_directory_iterator(m_AssetBrowserState.currentFolder)) {
@@ -242,10 +308,11 @@ void AssetBrowser::loadAssetsFromDirectory() {
             asset.path = entry.path().string();
             asset.folder = entry.path().parent_path().string(); // folder in assets that contains this file, for future filtering
 
-            /* ---- Sample for the asset struct ---- */
-            // filename: Sample_tilemap.jpg
-            // folder: assets ->immediate parent folder
-            // path: assets / Sample_tilemap.jpg
+            ///* ---- Sample for the asset struct ---- */
+            // filename: control_scene.json
+            // folder: assets/Scene ->asset+immediate parent folder
+            // path: assets/Scene\control_scene.json
+            ///* ---- END ---- */
 
             /*std::cout << "Asset Name: " << asset.name <<
                 "\n Asset Path: " << asset.path <<
@@ -466,3 +533,4 @@ void AssetBrowser::assetReplacePopup() {
         ImGui::EndPopup();
     }
 }
+#endif

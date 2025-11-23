@@ -20,6 +20,8 @@ Technology is prohibited.
 #include "prefabManager.h"
 #include "Component.h"
 #include "JsonIO.h"
+#include "Editor/editorState.h"
+#include "Editor/undoRedo.h"
 
 #ifndef RUNTIME_SCENE_DIR_R
 #define RUNTIME_SCENE_DIR_R "./assets/Scene"
@@ -450,6 +452,11 @@ void GameObjectManager::loadSceneFromJson(const std::string& filename) {
 					: (jc["autoFitScale"].GetInt() != 0);
 			}
 
+			std::string shp = (jc.HasMember("colliderType") && jc["colliderType"].IsString())
+				? jc["colliderType"].GetString()
+				: "square";
+			c->colliderType = JsonIO::StrToShape(shp);
+
 			if (jc.HasMember("colliderSize") && jc["colliderSize"].IsArray() && jc["colliderSize"].Size() == 2)
 			{
 				c->colliderSize.x = jc["colliderSize"][0].GetFloat();
@@ -801,15 +808,6 @@ void GameObjectManager::saveSceneToJson(const std::string& filename, bool isNew)
 				rapidjson::Value jc(rapidjson::kObjectType);
 				const rapidjson::Value* prefabC = PM.getPrefabJsonComp(prefabDoc, "CollisionInfo");
 
-				if (!prefabC || !prefabC->HasMember("colliderSize") ||
-					differsFloat((*prefabC)["colliderSize"][0].GetFloat(), c->colliderSize.x) ||
-					differsFloat((*prefabC)["colliderSize"][1].GetFloat(), c->colliderSize.y)) {
-
-					rapidjson::Value sc(rapidjson::kArrayType);
-					sc.PushBack(c->colliderSize.x, a).PushBack(c->colliderSize.y, a);
-					jc.AddMember("colliderSize", sc, a);
-				}
-
 				auto pushIfDiffBool = [&](const char* key, bool val) {
 					if (!prefabC || !prefabC->HasMember(key) ||
 						((*prefabC)[key].IsBool() && differsBool((*prefabC)[key].GetBool(), val)) ||
@@ -820,6 +818,19 @@ void GameObjectManager::saveSceneToJson(const std::string& filename, bool isNew)
 
 				pushIfDiffBool("collisionFlag", c->collisionFlag);
 				pushIfDiffBool("autoFitScale", c->autoFitScale);
+
+				if (!prefabC || !prefabC->HasMember("colliderSize") ||
+					differsFloat((*prefabC)["colliderSize"][0].GetFloat(), c->colliderSize.x) ||
+					differsFloat((*prefabC)["colliderSize"][1].GetFloat(), c->colliderSize.y)) {
+
+					rapidjson::Value sc(rapidjson::kArrayType);
+					sc.PushBack(c->colliderSize.x, a).PushBack(c->colliderSize.y, a);
+					jc.AddMember("colliderSize", sc, a);
+				}
+
+				std::string shapeStr = JsonIO::ShapeToStr(c->colliderType);
+				if (!prefabC || !prefabC->HasMember("colliderType") || shapeStr != (*prefabC)["colliderType"].GetString())
+					jc.AddMember("colliderType", rapidjson::Value(shapeStr.c_str(), a), a);
 
 				if (!jc.ObjectEmpty()) {
 					comps.AddMember("CollisionInfo", jc, a);
@@ -968,12 +979,23 @@ void GameObjectManager::saveSceneToJson(const std::string& filename, bool isNew)
 \brief Loads a scene automatically based on file extension.
 
 If the path ends with ".json", loads a JSON scene.
-Otherwise, falls back to legacy .txt scene loading.
 
 \param path Scene file path.
 */
 
 void GameObjectManager::loadScene(const std::string& path) {
+
+	// PLEASE STOP CRASHING
+#ifdef _DEBUG
+	Editor::objSelectionState.selectedObject = nullptr;
+	Editor::objSelectionState.selectedPrefab = nullptr;
+	Editor::objSelectionState.draggedObject = nullptr;
+	Editor::objSelectionState.selectedIndex = -1;
+	UndoRedoManager::Instance().clear();
+
+	Editor::sceneState.currentSceneName = std::filesystem::path(path).filename().string();
+#endif
+
 	if (ends_with(path, ".json")) loadSceneFromJson(path);
 	//if (GameObject* p = getGameObject("player")) {
 	//	if (!p->hasComponent<StateMachine>()) {
@@ -986,7 +1008,6 @@ void GameObjectManager::loadScene(const std::string& path) {
 \brief Saves a scene automatically based on file extension.
 
 If the path ends with ".json", writes JSON using saveSceneToJson.
-Otherwise, writes using legacy .txt serialization.
 
 \param path Output scene path.
 \param isNew If true, writes an empty or simplified scene header.

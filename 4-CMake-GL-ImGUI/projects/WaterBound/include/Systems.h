@@ -25,9 +25,7 @@ Technology is prohibited.
 #include "collision.h"
 #include "imgui_internal.h" // for docking in UISystem
 //#include <ui.h>
-#ifdef _DEBUG
 #include "Editor/editorManager.h"
-#endif
 #include "font.h"
 #include "messageBus.h"
 #include "controllerSystem.h"
