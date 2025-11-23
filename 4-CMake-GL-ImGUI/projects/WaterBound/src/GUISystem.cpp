@@ -96,6 +96,7 @@ void GUISystem::update(GameObjectManager& manager) {
     }
 }
 
+//updating the control screen 
 void GUISystem::controlUpdate(GameObjectManager& manager) {
 	//get mouse position
     Vector2D worldMousePos = InputHandler::getWorldMousePosition();
