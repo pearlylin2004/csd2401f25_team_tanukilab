@@ -243,3 +243,14 @@ void GUISystem::controlScreen(GameObjectManager& manager) {
 	createButtons(manager); //loading scene
     std::cout << "[GUI] Control screen created successfully!" << std::endl;
 }
+
+//confirmation screen for quitting
+void GUISystem::confirmationScreen(GameObjectManager& manager) {
+    std::cout << "[GUI] Quit button clicked" << std::endl;
+    //remove menu buttons
+    //removeMenuButtons(manager);
+    manager.loadScene(runtimeScenePath("confirmation_scene.json"));
+    manager.initializeSceneResources(); //to get resources loaded
+    createButtons(manager); //loading scene
+    std::cout << "[GUI] Confirmation screen created successfully!" << std::endl;
+}

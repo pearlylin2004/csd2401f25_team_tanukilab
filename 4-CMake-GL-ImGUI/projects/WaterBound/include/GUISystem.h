@@ -54,6 +54,7 @@ private:
     void stopGame(); //stop game
 	void controlScreen(GameObjectManager& manager); //control screen button
 	void loadMenu(GameObjectManager& manager); //load menu screen
+	void confirmationScreen(GameObjectManager& manager); //confirmation screen for quitting
 
     bool isPointInButton(const Vector2D& point, GameObject* button);
 
