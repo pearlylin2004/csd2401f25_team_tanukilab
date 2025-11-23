@@ -38,12 +38,15 @@ void PhysicsForces::applyDamping(Physics* physics) {
 void PhysicsForces::updatePosition(Transform* transform, Physics* physics, float deltaTime) {
     DynamicsSystem::UpdateForces(physics->dynamics, deltaTime);
     //DynamicsSystem::Integrate(physics->dynamics, deltaTime);
+    if (!physics->onGround) {
+        Vector3D gravity = { 0.0f, physics->gravity * physics->dynamics.mass, 0.0f };
+        DynamicsSystem::Integrate(physics->dynamics, deltaTime, physics->gravity, false);
+    }
+    else {
+        physics->dynamics.velocity.y = 0.0f;
+        physics->velY = 0.0f;
 
-    Vector3D gravity = { 0.0f, physics->gravity * physics->dynamics.mass, 0.0f };
-    DynamicsSystem::Integrate(physics->dynamics, deltaTime, physics->gravity, physics->onGround);
-
-
-
+    }
     transform->x = physics->dynamics.position.x;
     transform->y = physics->dynamics.position.y;
 
@@ -51,13 +54,6 @@ void PhysicsForces::updatePosition(Transform* transform, Physics* physics, float
     physics->velX = physics->dynamics.velocity.x;
     physics->velY = physics->dynamics.velocity.y;
 
-    // Ground collision
-    if (transform->y <= physics->floorY) {
-        transform->y = physics->dynamics.position.y = physics->floorY;
-        physics->dynamics.velocity.y = 0.0f;
-        physics->velY = 0.0f;
-        physics->onGround = true;
-    }
 }
 
 void PhysicsForces::jump(GameObject* object) {
@@ -66,15 +62,14 @@ void PhysicsForces::jump(GameObject* object) {
 
     Physics* physics = object->getComponent<Physics>();
 
-    if (physics->onGround) {
-        // Apply upward 
-        Vector3D jumpDir = { 0.0f, 1.0f, 0.0f };
-        DynamicsSystem::AddForce(physics->dynamics, jumpDir, physics->jumpForce, 0.1f);
-        //physics->dynamics.velocity.y = 5.0f; // Instant upward velocity
-        physics->onGround = false;
-        //physics->canMove = true;
-        DebugLog::addMessage("Player jumped!", DebugMode::PlaySimul);
-    }
+
+    // Apply upward 
+    Vector3D jumpDir = { 0.0f, 1.0f, 0.0f };
+    DynamicsSystem::AddForce(physics->dynamics, jumpDir, physics->jumpForce, 0.1f);
+    //physics->dynamics.velocity.y = 5.0f; // Instant upward velocity
+    physics->onGround = false;
+    //physics->canMove = true;
+    DebugLog::addMessage("Player jumped!", DebugMode::PlaySimul);
 }
 
 void PhysicsForces::shoot(GameObject* bullet, const Transform* origin) {
