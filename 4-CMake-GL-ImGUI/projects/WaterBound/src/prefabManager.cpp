@@ -79,7 +79,7 @@ void PrefabManager::loadPrefabRegistry() {
 	std::string filename = std::string(RUNTIME_DIR_R) + registryFile;
 
 	if (!JsonIO::ReadFileToDocument(filename, doc, &err)) {
-		std::cerr << "Prefab registry load failed: " << err << "\n";
+		DebugLog::addMessage("Prefab registry load failed: " + err);
 		return;
 	}
 
@@ -87,12 +87,12 @@ void PrefabManager::loadPrefabRegistry() {
 	if (doc.HasMember("version") && doc["version"].IsInt())
 		version = doc["version"].GetInt();
 	if (version != 1)
-		std::cerr << "Warning: unsupported prefab registry version " << version << std::endl;
+		DebugLog::addMessage("Warning: unsupported prefab registry version " + version);
 
 	m_prefabRegistry.clear();
 
 	if (!doc.HasMember("prefabIndex") || !doc["prefabIndex"].IsArray()) {
-		std::cerr << "Prefab registry JSON missing PREFABINDEX array.\n";
+		DebugLog::addMessage("Prefab registry JSON missing PREFABINDEX array.");
 		return;
 	}
 
@@ -108,7 +108,7 @@ void PrefabManager::loadPrefabRegistry() {
 		std::string path = (jPrefab.HasMember("path") && jPrefab["path"].IsString()) ? jPrefab["path"].GetString() : "";
 
 		if (id.empty()) {
-			std::cerr << "Skipping prefab " << name << " with missing id.\n";
+			DebugLog::addMessage("Skipping prefab " + name + " with missing id.");
 		}
 
 		m_prefabRegistry[id] = { name, path };
@@ -146,14 +146,14 @@ void PrefabManager::savePrefabRegistry() {
 	std::string runtime = std::string(RUNTIME_DIR_R) + registryFile;
 	std::string err;
 	if (!JsonIO::WriteDocumentToFile(runtime, doc, /*pretty=*/true, &err)) {
-		std::cerr << "Registry save failed: " << err << "\n";
+		DebugLog::addMessage("Registry save failed: " + err);
 		return;
 	}
 
 	// write to source (project dir)
 	std::string dir = std::string(SOURCE_DIR_R) + registryFile;
 	if (!JsonIO::WriteDocumentToFile(dir, doc, /*pretty=*/true, &err)) {
-		std::cerr << "Prefab save failed (source): " << err << "\n";
+		DebugLog::addMessage("Prefab save failed (source): " + err);
 		return;
 	}
 	else {
@@ -174,7 +174,7 @@ const std::string& PrefabManager::getPrefabPath(const std::string& prefabID) con
 bool PrefabManager::setPrefabPath(const std::string& prefabID, const std::string& newName) {
 	auto iterator = m_prefabRegistry.find(prefabID);
 	if (iterator == m_prefabRegistry.end()) {
-		std::cout << "Prefab ID " << prefabID << "not found.\n";
+		DebugLog::addMessage("Prefab ID " + prefabID + "not found.");
 		return false;
 	}
 
@@ -183,14 +183,14 @@ bool PrefabManager::setPrefabPath(const std::string& prefabID, const std::string
 
 	iterator->second.path = "/Prefab/" + newNameWPath;
 	savePrefabRegistry();
-	std::cout << "[Debug] Updated prefab path for ID " << prefabID << " -> " << newNameWPath << "\n";
+	DebugLog::addMessage("Updated prefab path for ID " + prefabID + " -> " + newNameWPath);
 	return true;
 }
 
 std::string PrefabManager::getPrefabFilename(const std::string& prefabID) const {
 	auto it = m_prefabRegistry.find(prefabID);
 	if (it == m_prefabRegistry.end()) {
-		std::cerr << "[Error] Prefab ID '" << prefabID << "' not found.\n";
+		DebugLog::addMessage("[Error] Prefab ID '" + prefabID + "' not found.");
 		return {};
 	}
 
@@ -247,7 +247,7 @@ GameObject* PrefabManager::instantiate(GameObject* go, GameObjectManager& manage
 	const std::string& id = go->getObjectPrefabID();
 	auto iterator = m_prefabRegistry.find(id);
 	if (iterator == m_prefabRegistry.end() || id.empty()) {
-		std::cerr << "PrefabManager::instantiate() failed � prefab ID not found: " << id << "\n";
+		DebugLog::addMessage("PrefabManager::instantiate() failed: prefab ID not found: " + id);
 		return nullptr;
 	}
 
@@ -264,7 +264,7 @@ GameObject* PrefabManager::instantiate(GameObject* go, GameObjectManager& manage
 		// if json never load before, read from disk
 		std::string err;
 		if (!JsonIO::ReadFileToDocument(path, doc, &err)) {
-			std::cerr << "Failed to load prefab file '" << path << "': " << err << "\n";
+			DebugLog::addMessage("Failed to load prefab file '" + path + "': " + err);
 			return nullptr;
 		}
 
@@ -290,7 +290,7 @@ GameObject* PrefabManager::instantiate(GameObject* go, GameObjectManager& manage
 std::unique_ptr<GameObject> PrefabManager::createTempPrefabObj(const std::string& prefabID) {
 	auto iterator = m_prefabRegistry.find(prefabID);
 	if (iterator == m_prefabRegistry.end()) {
-		std::cerr << "PrefabManager::createTempPrefabObject: failed � prefab ID not found: " << prefabID << "\n";
+		DebugLog::addMessage("Prefab not found in registry.");
 		return nullptr;
 	}
 
@@ -306,7 +306,7 @@ std::unique_ptr<GameObject> PrefabManager::createTempPrefabObj(const std::string
 		// if json never load before, read from disk
 		std::string err;
 		if (!JsonIO::ReadFileToDocument(path, doc, &err)) {
-			std::cerr << "Failed to load prefab file '" << path << "': " << err << "\n";
+			DebugLog::addMessage("Failed to load prefab file '" + path + "': " + err);
 			return nullptr;
 		}
 
@@ -314,16 +314,25 @@ std::unique_ptr<GameObject> PrefabManager::createTempPrefabObj(const std::string
 	}
 
 	if (!doc.HasMember("components") || !doc["components"].IsObject()) {
-		std::cerr << "Prefab file '" << path << "' missing COMPONENT object.\n";
+		DebugLog::addMessage("Prefab file '" + path + "' missing COMPONENT object.");
 		return nullptr;
 	}
 
+	// cache original prefab state before editing (for comparison after saving later)
+	m_prefabBeforeEdit[prefabID].CopyFrom(doc, m_prefabBeforeEdit[prefabID].GetAllocator());
+
+	// create a new temp obj
 	std::unique_ptr<GameObject> tempGO = GameObjectManager::createTempGameObject(iterator->second.name);
 	tempGO->getObjectPrefabID() = prefabID;
 
-	applyPrefabComponents(tempGO.get(), doc["components"]);
+	if (doc.HasMember("layer") && doc["layer"].IsInt()) {
+		int layerID = doc["layer"].GetInt();
+		// Just store the layer value, don't register
+		tempGO->setLayer(layerID);  // Assuming GameObject has a setLayer method
+	}
 
-	//const auto& comps = doc["components"];
+	// apply prefab changes on the obj
+	applyPrefabComponents(tempGO.get(), doc["components"]);
 
 	return tempGO;
 }
@@ -339,7 +348,7 @@ bool PrefabManager::savePrefab(const GameObject* prefabObj) {
 	auto& a = doc.GetAllocator();
 
 	// original prefab
-	const rapidjson::Document* prefabDoc{ getPrefabJson(prefabID) };
+	//const rapidjson::Document* prefabDoc{ getPrefabJson(prefabID) };
 
 	// prefab id
 	doc.AddMember("id", rapidjson::Value(prefabID.c_str(), a), a);
@@ -363,7 +372,7 @@ bool PrefabManager::savePrefab(const GameObject* prefabObj) {
 	std::string path = std::string(RUNTIME_DIR_R) + getPrefabPath(prefabID);
 	std::string err;
 	if (!JsonIO::WriteDocumentToFile(path, doc, /*pretty=*/true, &err)) {
-		std::cerr << "Prefab save failed (runtime): " << err << "\n";
+		DebugLog::addMessage("Prefab save failed (runtime): " + err);
 		return false;
 	}
 	else {
@@ -373,7 +382,7 @@ bool PrefabManager::savePrefab(const GameObject* prefabObj) {
 	// save to source
 	path = std::string(SOURCE_DIR_R) + getPrefabPath(prefabID);
 	if (!JsonIO::WriteDocumentToFile(path, doc, /*pretty=*/true, &err)) {
-		std::cerr << "Prefab save failed (source): " << err << "\n";
+		DebugLog::addMessage("Prefab save failed (source): " + err);
 		return false;
 	}
 	else {
@@ -441,50 +450,122 @@ GameObject* PrefabManager::revertToPrefab(GameObject* obj, GameObjectManager& ma
 int PrefabManager::applyToAllInstances(const std::string& prefabID, GameObjectManager& manager) {
 	if (prefabID.empty()) return 0;
 
+	auto oldI = m_prefabBeforeEdit.find(prefabID); // before edit
+	auto newI = m_prefabCache.find(prefabID); // aft edit and save
+
+	if (oldI == m_prefabBeforeEdit.end()) {
+		DebugLog::addMessage("No cached 'before edit' state for prefab: " + prefabID + "\n");
+		DebugLog::addMessage("Falling back to simple reload (all overrides preserved)\n");
+
+		// Try to load from disk as fallback
+		const std::string& path = std::string(RUNTIME_DIR_R) + getPrefabPath(prefabID);
+		rapidjson::Document diskDoc;
+		std::string err;
+		if (JsonIO::ReadFileToDocument(path, diskDoc, &err)) {
+			m_prefabBeforeEdit[prefabID].CopyFrom(diskDoc, m_prefabBeforeEdit[prefabID].GetAllocator());
+			oldI = m_prefabBeforeEdit.find(prefabID);
+		}
+	}
+
+	// if no cached before editing state found for prefab, fall back to original obj state
+	if (oldI == m_prefabBeforeEdit.end()) {
+		// PLEASE DONT HAPPEN
+		DebugLog::addMessage("No cached state found for prefab.");
+		DebugLog::addMessage("Fall back to simple reload (all overrides preserved.");
+
+		if (newI == m_prefabCache.end()) return 0;
+
+		std::vector<GameObject*> gameObjects;
+		manager.getAllGameObjects(gameObjects);
+
+		int count{};
+
+		const rapidjson::Document& newPrefabDoc = newI->second;
+		if (!newPrefabDoc.HasMember("components")) return 0;
+
+		for (GameObject* obj : gameObjects) {
+			// only affect those obj ref to a prefab
+			if (obj->getObjectPrefabID() != prefabID) continue;
+
+			rapidjson::Document objDoc;
+			objDoc.SetObject();
+			auto& a = objDoc.GetAllocator();
+
+			rapidjson::Value comps(rapidjson::kObjectType);
+			serializeComponents(obj, comps, a); // save obj to json to store its data
+			objDoc.AddMember("components", comps, a);
+
+			/*objDoc.AddMember("name", rapidjson::Value(obj->getObjectName().c_str(), a), a);
+			objDoc.AddMember("layer", obj->getLayer(), a);*/
+
+			// remove all existing components
+			obj->removeComponent<Transform>();
+			obj->removeComponent<Render>();
+			obj->removeComponent<Input>();
+			obj->removeComponent<Physics>();
+			obj->removeComponent<CollisionInfo>();
+			obj->removeComponent<Animation>();
+			obj->removeComponent<StateMachine>();
+			obj->removeComponent<AudioComponent>();
+			obj->removeComponent<FontComponent>();
+
+			applyPrefabComponents(obj, newPrefabDoc["components"]);
+
+			if (objDoc.HasMember("components")) {
+				applyPrefabComponents(obj, objDoc["components"]);
+			}
+
+			// reapply scene data
+			if (Render* r = obj->getComponent<Render>()) {
+				if (r->hasTex && !r->texFile.empty()) {
+					r->texChanged = true;
+				}
+			}
+
+			++count;
+		}
+
+		manager.initializeSceneResources();
+		return count;
+	}
+	
+	// cached found yay
+	if (newI == m_prefabCache.end()) return 0;
+
+	const rapidjson::Document& oldPrefabDoc = oldI->second;
+	const rapidjson::Document& newPrefabDoc = newI->second;
+
+	if (!oldPrefabDoc.HasMember("components") || !oldPrefabDoc["components"].IsObject()) {
+		DebugLog::addMessage("Old prefab missing components object\n");
+		return 0;
+	}
+	if (!newPrefabDoc.HasMember("components") || !newPrefabDoc["components"].IsObject()) {
+		DebugLog::addMessage("New prefab missing components object\n");
+		return 0;
+	}
+
+	const rapidjson::Value& oldPrefabComps = oldPrefabDoc["components"];
+	const rapidjson::Value& newPrefabComps = newPrefabDoc["components"];
+
+	/*std::cout << "\nApplying Prefab Changes\n";
+	std::cout << "Old prefab has " << oldPrefabComps.MemberCount() << " components\n";
+	std::cout << "New prefab has " << newPrefabComps.MemberCount() << " components\n";*/
+
 	std::vector<GameObject*> gameObjects;
 	manager.getAllGameObjects(gameObjects);
 
 	int count{};
 
 	for (GameObject* obj : gameObjects) {
-		// only affect those obj ref to a prefab
 		if (obj->getObjectPrefabID() != prefabID) continue;
 
-		// store scene-specific data (transform)
-		Transform* t = obj->getComponent<Transform>();
-		float posX = t ? t->x : 0.f;
-		float posY = t ? t->y : 0.f;
-		float posZ = t ? t->z : 0.f;
 		std::string objName = obj->getObjectName();
-		int layer = obj->getLayer();
+		int objLayer = obj->getLayer();
 
-		// Remove all existing components
-		obj->removeComponent<Transform>();
-		obj->removeComponent<Render>();
-		obj->removeComponent<Input>();
-		obj->removeComponent<Physics>();
-		obj->removeComponent<CollisionInfo>();
-		obj->removeComponent<Animation>();
-		obj->removeComponent<StateMachine>();
-		obj->removeComponent<AudioComponent>();
-		obj->removeComponent<FontComponent>();
+		applyPrefabComponentsSelective(obj, oldPrefabComps, newPrefabComps);
 
-		// reapply prefab components from cache
-		auto cacheIt = m_prefabCache.find(prefabID);
-		if (cacheIt != m_prefabCache.end()) {
-			const rapidjson::Document& doc = cacheIt->second;
-
-			if (doc.HasMember("components") && doc["components"].IsObject()) {
-				applyPrefabComponents(obj, doc["components"]);
-			}
-		}
-
-		Transform* newT = obj->getComponent<Transform>();
-		if (newT) {
-			newT->x = posX;
-			newT->y = posY;
-			newT->z = posZ;
-		}
+		obj->getObjectName() = objName;
+		manager.assignObjectToLayer(obj, objLayer);
 
 		if (Render* r = obj->getComponent<Render>()) {
 			if (r->hasTex && !r->texFile.empty()) {
@@ -496,6 +577,9 @@ int PrefabManager::applyToAllInstances(const std::string& prefabID, GameObjectMa
 	}
 
 	manager.initializeSceneResources();
+
+	m_prefabBeforeEdit.erase(prefabID);
+
 	return count;
 }
 
@@ -555,7 +639,7 @@ bool PrefabManager::createPrefabFromGameObj(GameObject* go, const std::string& n
 	std::string path = std::string(RUNTIME_DIR_R) + getPrefabPath(prefabID);
 	std::string err;
 	if (!JsonIO::WriteDocumentToFile(path, doc, /*pretty=*/true, &err)) {
-		std::cerr << "Prefab save failed (runtime): " << err << "\n";
+		DebugLog::addMessage("Prefab save failed (runtime): " + err);
 		return false;
 	}
 	else {
@@ -564,7 +648,7 @@ bool PrefabManager::createPrefabFromGameObj(GameObject* go, const std::string& n
 
 	path = std::string(SOURCE_DIR_R) + getPrefabPath(prefabID);
 	if (!JsonIO::WriteDocumentToFile(path, doc, /*pretty=*/true, &err)) {
-		std::cerr << "Prefab save failed (source): " << err << "\n";
+		DebugLog::addMessage("Prefab save failed (source): " + err);
 		return false;
 	}
 	else {
@@ -589,7 +673,7 @@ bool PrefabManager::createPrefabFromGameObj(GameObject* go, const std::string& n
 bool PrefabManager::deletePrefab(const std::string prefabID) {
 	auto iterator = m_prefabRegistry.find(prefabID);
 	if (iterator == m_prefabRegistry.end()) {
-		std::cerr << "PrefabManager::deleteprefab: failed � prefab ID not found: " << prefabID << "\n";
+		DebugLog::addMessage("PrefabManager::deleteprefab: failed � prefab ID not found: " + prefabID);
 		return false;
 	}
 
@@ -986,4 +1070,218 @@ void PrefabManager::serializeComponents(const GameObject* obj, rapidjson::Value&
 		jf.AddMember("color", clr, a);
 		comps.AddMember("FontComponent", jf, a);
 	}
+}
+
+bool PrefabManager::valuesEqual(const rapidjson::Value& lhs, const rapidjson::Value& rhs) const {
+	// make sure lhs and rhs are the same type before continue
+	if (lhs.GetType() != rhs.GetType()) return false;
+
+	if (lhs.IsNull()) return rhs.IsNull();
+
+	if (lhs.IsBool()) return lhs.GetBool() == rhs.GetBool();
+
+	if (lhs.IsInt()) return lhs.GetInt() == rhs.GetInt();
+
+	if (lhs.IsDouble()) {
+		return std::abs(lhs.GetDouble() - rhs.GetDouble()) < 0.0001;
+	}
+
+	if (lhs.IsString()) {
+		return std::strcmp(lhs.GetString(), rhs.GetString()) == 0;
+	}
+
+	if (lhs.IsArray()) {
+		if (lhs.Size() != rhs.Size()) return false;
+		for (rapidjson::SizeType i = 0; i < lhs.Size(); ++i) {
+			if (!valuesEqual(lhs[i], rhs[i])) return false;
+		}
+		return true;
+	}
+
+	if (lhs.IsObject()) {
+		if (lhs.MemberCount() != rhs.MemberCount()) return false;
+		for (auto it = lhs.MemberBegin(); it != lhs.MemberEnd(); ++it) {
+			if (!rhs.HasMember(it->name.GetString())) return false;
+			if (!valuesEqual(it->value, rhs[it->name.GetString()])) return false;
+		}
+		return true;
+	}
+
+	return false;
+}
+
+void PrefabManager::applyPrefabComponentsSelective(GameObject* obj, const rapidjson::Value& oldPrefabComps, const rapidjson::Value& newPrefabComps) {
+	rapidjson::Document objDoc;
+	objDoc.SetObject();
+	auto& a = objDoc.GetAllocator();
+
+	rapidjson::Value objComps(rapidjson::kObjectType);
+	serializeComponents(obj, objComps, a);
+
+	// track which components exist in new prefab
+	std::unordered_set<std::string> newPrefabCompSet;
+	for (auto it = newPrefabComps.MemberBegin(); it != newPrefabComps.MemberEnd(); ++it) {
+		newPrefabCompSet.insert(it->name.GetString());
+	}
+
+	// remove component that no longer in new prefab (means removed)
+	std::vector<std::string> componentsToRemove;
+	for (auto it = objComps.MemberBegin(); it != objComps.MemberEnd(); ++it) {
+		const char* compName = it->name.GetString();
+
+		// if this component existed in old prefab but NOT in new prefab, remove it
+		if (oldPrefabComps.HasMember(compName) && !newPrefabCompSet.count(compName)) {
+			componentsToRemove.push_back(compName);
+		}
+	}
+
+	// remove the components
+	for (const std::string& compName : componentsToRemove) {
+		if (compName == "Transform") obj->removeComponent<Transform>();
+		else if (compName == "Render") obj->removeComponent<Render>();
+		else if (compName == "Input") obj->removeComponent<Input>();
+		else if (compName == "Physics") obj->removeComponent<Physics>();
+		else if (compName == "CollisionInfo") obj->removeComponent<CollisionInfo>();
+		else if (compName == "Animation") obj->removeComponent<Animation>();
+		else if (compName == "StateMachine") obj->removeComponent<StateMachine>();
+		else if (compName == "AudioComponent") obj->removeComponent<AudioComponent>();
+		else if (compName == "FontComponent") obj->removeComponent<FontComponent>();
+	}
+
+	// for each component in new prefab
+	for (auto compI = newPrefabComps.MemberBegin(); compI != newPrefabComps.MemberEnd(); ++compI) {
+		const char* compName = compI->name.GetString();
+		const rapidjson::Value& newCompData = compI->value;
+
+		// if new prefab has a new component
+		if (!oldPrefabComps.HasMember(compName)) {
+			//std::cout << "  Component '" << compName << "' is NEW in prefab!! applying fully\n\n";
+
+			// remove if exists (to start fresh)
+			if (compName == std::string("Transform")) obj->removeComponent<Transform>();
+			else if (compName == std::string("Render")) obj->removeComponent<Render>();
+			else if (compName == std::string("Input")) obj->removeComponent<Input>();
+			else if (compName == std::string("Physics")) obj->removeComponent<Physics>();
+			else if (compName == std::string("CollisionInfo")) obj->removeComponent<CollisionInfo>();
+			else if (compName == std::string("Animation")) obj->removeComponent<Animation>();
+			else if (compName == std::string("StateMachine")) obj->removeComponent<StateMachine>();
+			else if (compName == std::string("AudioComponent")) obj->removeComponent<AudioComponent>();
+			else if (compName == std::string("FontComponent")) obj->removeComponent<FontComponent>();
+
+			// apply new component
+			rapidjson::Value temp(rapidjson::kObjectType);
+			rapidjson::Value copy;
+			copy.CopyFrom(newCompData, a);
+			temp.AddMember(rapidjson::Value(compName, a), copy, a);
+
+			applyPrefabComponents(obj, temp);
+
+			continue;
+		}
+
+
+		const rapidjson::Value& oldCompData = oldPrefabComps[compName];
+
+
+		// if obj doesnt have this component
+		if (!objComps.HasMember(compName)) {
+			/*std::cout << "  Object missing component '" << compName << "', applying from prefab\n";*/
+
+			rapidjson::Value temp(rapidjson::kObjectType);
+			rapidjson::Value copy;
+			copy.CopyFrom(newCompData, a);
+			temp.AddMember(rapidjson::Value(compName, a), copy, a);
+
+			applyPrefabComponents(obj, temp);
+
+			continue;
+		}
+
+
+		const rapidjson::Value& objCompData = objComps[compName];
+
+
+		// component exists in all three -> compare properties
+		rapidjson::Value finalCompData(rapidjson::kObjectType);
+		for (auto propIt = newCompData.MemberBegin(); propIt != newCompData.MemberEnd(); ++propIt) {
+			const char* propName = propIt->name.GetString();
+			const rapidjson::Value& newValue = propIt->value;
+
+			// property is NEW in the prefab (shouldnt be??)
+			if (!oldCompData.HasMember(propName)) {
+				/*std::cout << "    Property '" << compName << "." << propName << "' is NEW - using prefab value\n";*/
+
+				rapidjson::Value copy;
+				copy.CopyFrom(newValue, a);
+
+				finalCompData.AddMember(rapidjson::Value(propName, a), copy, a);
+
+				continue;
+			}
+
+			const rapidjson::Value& oldValue = oldCompData[propName];
+
+			// object doesn't have this property (shouldnt be??)
+			if (!objCompData.HasMember(propName)) {
+				/*std::cout << "    Property '" << compName << "." << propName << "' missing in object - using prefab value\n";*/
+
+				rapidjson::Value copy;
+				copy.CopyFrom(newValue, a);
+
+				finalCompData.AddMember(rapidjson::Value(propName, a), copy, a);
+
+				continue;
+			}
+
+			const rapidjson::Value& objValue = objCompData[propName];
+
+			// compare values 
+			if (valuesEqual(objValue, oldValue)) {
+				// object value matches old prefab -> not override -> use new prefab value
+				/*std::cout << "    Property '" << compName << "." << propName << "' matches old prefab - applying NEW value\n";*/
+
+				rapidjson::Value copy;
+				copy.CopyFrom(newValue, a);
+
+				finalCompData.AddMember(rapidjson::Value(propName, a), copy, a);
+			}
+			else {
+				// object value differs from old prefab -> override -> keep object value
+				/*std::cout << "    Property '" << compName << "." << propName << "' was OVERRIDDEN - keeping object value\n";*/
+
+				rapidjson::Value copy;
+				copy.CopyFrom(objValue, a);
+
+				finalCompData.AddMember(rapidjson::Value(propName, a), copy, a);
+			}
+		}
+
+		// remove and add back component with final data
+		if (compName == std::string("Transform")) obj->removeComponent<Transform>();
+		else if (compName == std::string("Render")) obj->removeComponent<Render>();
+		else if (compName == std::string("Input")) obj->removeComponent<Input>();
+		else if (compName == std::string("Physics")) obj->removeComponent<Physics>();
+		else if (compName == std::string("CollisionInfo")) obj->removeComponent<CollisionInfo>();
+		else if (compName == std::string("Animation")) obj->removeComponent<Animation>();
+		else if (compName == std::string("StateMachine")) obj->removeComponent<StateMachine>();
+		else if (compName == std::string("AudioComponent")) obj->removeComponent<AudioComponent>();
+		else if (compName == std::string("FontComponent")) obj->removeComponent<FontComponent>();
+
+		rapidjson::Value temp(rapidjson::kObjectType);
+		temp.AddMember(rapidjson::Value(compName, a), finalCompData, a);
+
+		applyPrefabComponents(obj, temp);
+	}
+
+
+	// preserve scene-specific components
+	//for (auto it = objComps.MemberBegin(); it != objComps.MemberEnd(); ++it) {
+	//	const char* compName = it->name.GetString();
+
+	//	// scene-specific component
+	//	if (!oldPrefabComps.HasMember(compName) && !newPrefabCompSet.count(compName)) {
+	//		//std::cout << "  Component '" << compName << "' is SCENE-ONLY - preserving\n";
+	//		// component already exists, no action needed
+	//	}
+	//}
 }

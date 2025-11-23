@@ -91,6 +91,9 @@ void InspectorWindow::render(GameObjectManager& manager) {
                     DebugLog::addMessage("Prefab renamed to " + newObjName + "\n");
                 }
             }
+            const std::string& prefabID = selected->getObjectPrefabID();
+            std::unique_ptr<GameObject> tempPrefab = PrefabManager::Instance().createTempPrefabObj(prefabID);
+
         //}
         //else {
         //    /*ImGui::Text("Prefab Name: "); ImGui::SameLine();
@@ -539,7 +542,10 @@ void InspectorWindow::renderCollision( GameObject* selected, GameObjectManager& 
             if (ImGui::InputInt("Layer", &layer)) {
                 if (layer < 0) layer = 0;
                 
-                if (manager.assignObjectToLayer(selected, layer)) {
+                if (m_objSelectionState.selectedPrefab) {
+                    selected->setLayer(layer);
+                }
+                else if (manager.assignObjectToLayer(selected, layer)) {
                     DebugLog::addMessage(selected->getObjectName() + " changed layer to " + std::to_string(selected->getLayer()));
 
                 }

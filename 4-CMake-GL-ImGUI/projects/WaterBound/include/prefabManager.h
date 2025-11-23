@@ -107,8 +107,11 @@ private:
 	// format {prefabID: {name, path}}
 	std::unordered_map<std::string, PrefabInfo> m_prefabRegistry;
 
-	// prefab jsons cache aft first load
+	// prefab jsons cache aft its first load
 	std::unordered_map<std::string, rapidjson::Document> m_prefabCache;
+
+	// cache original prefab state before editing (for comparing later)
+	std::unordered_map<std::string, rapidjson::Document> m_prefabBeforeEdit;
 
 	std::string prefabFolder = "/Prefab";
 	std::string registryFile = "/Prefab/prefab_registry.json";
@@ -122,5 +125,11 @@ private:
 
 	// serialize components from JSON
 	void serializeComponents(const GameObject* obj, rapidjson::Value& comps, rapidjson::Document::AllocatorType& a);
+
+	// compare 2 json values
+	bool valuesEqual(const rapidjson::Value& lhs, const rapidjson::Value& rhs) const;
+
+	// apply prefab changes based on comparison result
+	void applyPrefabComponentsSelective(GameObject* obj, const rapidjson::Value& oldPrefabComps, const rapidjson::Value& newPrefabComps);
 	/* -------- END -------- */
 };
