@@ -175,7 +175,6 @@ void CoreEngine::Update(float deltaTime) {
         m_uiSystem->update(*m_manager);
     #endif
 
-
     //performance update
     LogSystemTimersEveryInterval(deltaTime,15.0);
 }
@@ -189,14 +188,13 @@ void CoreEngine::Shutdown() {
     glfwTerminate();
 }
 
+//for minimize and restore
 void CoreEngine::windowIconifyCallback(GLFWwindow* window, int iconified) {
     CoreEngine* engine = static_cast<CoreEngine*>(glfwGetWindowUserPointer(window)); //retrieve engine instance
     if (engine) {
         if (iconified) {
-
             //window was minimized
             //engine->audio.pauseAll();
-
             AudioHandler::getInstance().pauseAll(*engine->m_manager);
         }
         else {
@@ -205,7 +203,6 @@ void CoreEngine::windowIconifyCallback(GLFWwindow* window, int iconified) {
             //engine->audio.playSound(soundID::bg, 0.2f);
             AudioHandler::getInstance().resumeAll(*engine->m_manager);
         }
-
     }
 }
 

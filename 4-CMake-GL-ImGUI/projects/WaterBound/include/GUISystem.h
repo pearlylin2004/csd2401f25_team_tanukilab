@@ -33,8 +33,6 @@ enum class GameState {
     PAUSED
 };
 
-// ButtonData is now defined in GameObjectManager.h - no need to redefine it here
-
 class GUISystem {
 public:
     GUISystem();
@@ -59,9 +57,6 @@ private:
     bool isPointInButton(const Vector2D& point, GameObject* button);
 
     std::unordered_map<std::string, GameObject*> m_buttons; //for storing buttons 
-
-    // Store button data retrieved from GameObjectManager
-    //std::unordered_map<std::string, ButtonData> m_buttonData;
 
     GameState m_currentState = GameState::MENU;
     bool m_buttonsCreated = false;
