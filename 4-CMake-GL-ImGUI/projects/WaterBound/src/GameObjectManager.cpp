@@ -675,6 +675,12 @@ void GameObjectManager::saveSceneToJson(const std::string& filename, bool isNew)
 		for (auto const& kv : m_gameObjects) {
 			const GameObject* obj = kv.second.get();
 
+			// if its a clone of bullet, do not serialize
+			std::string objName = obj->getObjectName();
+			if (objName.find("bullet") == 0 && objName.length() > 6) {
+				continue;
+			}
+
 			rapidjson::Value jObj(rapidjson::kObjectType);
 
 			// prefab ID
