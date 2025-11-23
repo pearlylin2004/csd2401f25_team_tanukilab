@@ -230,10 +230,10 @@ void AssetBrowser::render() {
                     m_objSelectionState.selectedIndex = -1;
                     m_objSelectionState.selectedPrefab = std::move(tempPrefab);
 
-                    DebugLog::addMessage("Selected Prefab " + m_objSelectionState.selectedPrefab->getObjectName() + ".\n");
+                    DebugLog::addMessage("Open Prefab " + m_objSelectionState.selectedPrefab->getObjectName() + ".\n");
                 }
                 else {
-                    DebugLog::addMessage("Failed to select prefab " + prefabID + " object for editing.\n");
+                    DebugLog::addMessage("Failed to open prefab " + prefabID + " object for editing.\n");
                 }
 
             }

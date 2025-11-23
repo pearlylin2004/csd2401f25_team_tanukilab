@@ -794,15 +794,15 @@ void FontSystem::RenderText(GLuint& s, std::string text, float x, float y, float
 void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime, MessageBus& messageBus) {
 	auto start = std::chrono::high_resolution_clock::now();
 
-	// Step mode toggling
-	if (InputHandler::isComboKeyTriggered(GLFW_KEY_Z))
+	// Step mode toggling (doesnt seem to be working with the new physics system)
+	/*if (InputHandler::isComboKeyTriggered(GLFW_KEY_Z))
 		m_stepMode = !m_stepMode;
 	if (m_stepMode && InputHandler::isKeyTriggered(GLFW_KEY_Z))
 		m_stepReq = true;
 	if (m_stepMode && !m_stepReq)
 		return;
 	if (m_stepReq)
-		m_stepReq = false;
+		m_stepReq = false;*/
 
 	std::vector<GameObject*> gameObjects;
 	manager.getAllGameObjects(gameObjects);

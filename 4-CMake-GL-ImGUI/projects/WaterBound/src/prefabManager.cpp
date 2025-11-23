@@ -20,7 +20,7 @@ Technology is prohibited.
 #define RUNTIME_DIR_R "./assets"
 #endif
 #ifndef SOURCE_DIR_R
-#define SOURCE_DIR_R "./projects/WaterBound/assets"
+#define SOURCE_DIR_R "../projects/WaterBound/assets"
 #endif
 #include "prefabManager.h"
 #include "JsonIO.h"
