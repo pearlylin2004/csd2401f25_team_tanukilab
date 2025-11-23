@@ -61,6 +61,9 @@ void CoreEngine::Init() {
     // --- Register the iconify callback ---
     glfwSetWindowIconifyCallback(m_window, CoreEngine::windowIconifyCallback);
 
+    // --- Register the focus callback ---
+    glfwSetWindowFocusCallback(m_window, CoreEngine::windowFocusCallback);
+
     glfwMakeContextCurrent(m_window);
     glViewport(0, 0, cfg.width, cfg.height);
     glewExperimental = GL_TRUE;
@@ -123,7 +126,7 @@ void CoreEngine::Run() {
 }
 
 void CoreEngine::GameLoop() {
-    if (glfwWindowShouldClose(m_window) || InputHandler::isKeyHeld(GLFW_KEY_ESCAPE)) { m_isRunning = false; return; } 
+    if (glfwWindowShouldClose(m_window)) { m_isRunning = false; return; } 
    
     //use glfwGetWindowAttrib to check the GLFW_ICONIFIED status for efficient waiting
     int status = glfwGetWindowAttrib(m_window, GLFW_ICONIFIED);
@@ -147,7 +150,16 @@ void CoreEngine::GameLoop() {
 
 void CoreEngine::Update(float deltaTime) {
     InputHandler::update();
-    m_guiSystem->update(*m_manager);
+    //check current game state
+    GameState state = m_guiSystem->getCurrentState();
+    //if state is menu
+    if (state == GameState::MENU) {
+        m_guiSystem->update(*m_manager);
+    }
+	//if state is control
+    else if (state == GameState::CONTROL) {
+        m_guiSystem->controlUpdate(*m_manager);
+	}
 
     if(!EditorManager::isEditingMode() && !EditorManager::isPaused()) m_luaSystem->update(*m_manager, deltaTime);
 
@@ -163,7 +175,6 @@ void CoreEngine::Update(float deltaTime) {
         m_uiSystem->update(*m_manager);
     #endif
 
-
     //performance update
     LogSystemTimersEveryInterval(deltaTime,15.0);
 }
@@ -177,14 +188,13 @@ void CoreEngine::Shutdown() {
     glfwTerminate();
 }
 
+//for minimize and restore
 void CoreEngine::windowIconifyCallback(GLFWwindow* window, int iconified) {
     CoreEngine* engine = static_cast<CoreEngine*>(glfwGetWindowUserPointer(window)); //retrieve engine instance
     if (engine) {
         if (iconified) {
-
             //window was minimized
             //engine->audio.pauseAll();
-
             AudioHandler::getInstance().pauseAll(*engine->m_manager);
         }
         else {
@@ -193,6 +203,20 @@ void CoreEngine::windowIconifyCallback(GLFWwindow* window, int iconified) {
             //engine->audio.playSound(soundID::bg, 0.2f);
             AudioHandler::getInstance().resumeAll(*engine->m_manager);
         }
+    }
+}
 
+//for alt-tab --this shld work for ctrl-alt-del too, need to test on lab pcs
+void CoreEngine::windowFocusCallback(GLFWwindow* window, int focused) {
+    CoreEngine* engine = static_cast<CoreEngine*>(glfwGetWindowUserPointer(window));
+    if (engine) {
+        if (!focused) {
+            //window lost focus
+            AudioHandler::getInstance().pauseAll(*engine->m_manager);
+        }
+        else {
+            //window regained focus
+            AudioHandler::getInstance().resumeAll(*engine->m_manager);
+        }
     }
 }

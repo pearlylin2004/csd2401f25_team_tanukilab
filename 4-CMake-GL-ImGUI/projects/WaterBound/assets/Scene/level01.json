@@ -7,6 +7,25 @@
       "components": {
         "Transform": {
          "pos": [0.0, 0.0, 0.03]
+        },
+        "Physics": {
+          "physicsFlag": true,
+          "alive": true,
+          "inWater": 0,
+          "buoyancy": 0,
+          "moveSpeed": 5.0,
+          "gravity": -9.8,
+          "jumpForce": 100.0,
+          "damping": 0.98,
+          "floorY": 0.0,
+          "onGround": true,
+          "canMove": true
+        },
+        "CollisionInfo": {
+          "collisionFlag": true,
+          "colliderType": "square",
+          "colliderSize": [5.0, 3.0],
+          "autoFitScale": true
         }
       }
     },
@@ -86,6 +105,17 @@
       "components": {
         "Transform": {
           "pos": [-5.0, 0.0, 0.01]
+        },
+        "Physics": {
+          "physicsFlag": true,
+          "inWater": 0,
+          "buoyancy": 0
+        },
+        "CollisionInfo": {
+          "collisionFlag": true,
+          "colliderType": "square",
+          "colliderSize": [1.0, 1.0],
+          "autoFitScale": true
         }
       }
     },

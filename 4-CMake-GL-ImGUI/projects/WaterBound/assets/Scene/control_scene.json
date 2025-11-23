@@ -2,16 +2,31 @@
   "version": 1,
   "objects": [
     {
-      "name": "background",
+      "name": "control_background",
       "components": {
         "Transform": {
           "pos": [0.0, 0.0, 0.0],
-          "scale": [5.0, 5.0, 5.0] 
+          "scale": [30.0, 25.0, 0.0] 
         },
         "Render": {
           "shape": "square",
           "hasTex": 1,
-          "texture": "assets/menu/control/control_background.png",
+          "texture": "assets/control_background.png",
+          "clr": [ 1.0, 1.0, 1.0 ]
+        }
+      }
+    },
+    {
+      "name": "back_button",
+      "components": {
+        "Transform": {
+          "pos": [-16.0, 8.5, 0.0],
+          "scale": [6.0, 2.0, 0.0]
+        },
+        "Render": {
+          "shape": "square",
+          "hasTex": 1,
+          "texture": "assets/button.png",
           "clr": [ 1.0, 1.0, 1.0 ]
         }
       }

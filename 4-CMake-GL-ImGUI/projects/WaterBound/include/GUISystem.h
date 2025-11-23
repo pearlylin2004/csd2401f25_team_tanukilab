@@ -28,10 +28,10 @@ class LuaSystem;
 
 enum class GameState {
     MENU,
-    PLAYING
+    PLAYING,
+    CONTROL,
+    PAUSED
 };
-
-// ButtonData is now defined in GameObjectManager.h - no need to redefine it here
 
 class GUISystem {
 public:
@@ -39,7 +39,8 @@ public:
     ~GUISystem();
 
     void init(GameObjectManager& manager, LuaSystem& luaSystem);
-	void update(GameObjectManager& manager); //update GUI system
+	void update(GameObjectManager& manager); //update menu system
+	void controlUpdate(GameObjectManager& manager); //update control screen
 
     bool isPlaying() const { return m_currentState == GameState::PLAYING; } //check if its playing
     GameState getCurrentState() const { return m_currentState; } //check current state
@@ -50,13 +51,12 @@ private:
 	void startGame(GameObjectManager& manager); //start game
     void stopGame(); //stop game
 	void controlScreen(GameObjectManager& manager); //control screen button
+	void loadMenu(GameObjectManager& manager); //load menu screen
+	void confirmationScreen(GameObjectManager& manager); //confirmation screen for quitting
 
     bool isPointInButton(const Vector2D& point, GameObject* button);
 
     std::unordered_map<std::string, GameObject*> m_buttons; //for storing buttons 
-
-    // Store button data retrieved from GameObjectManager
-    //std::unordered_map<std::string, ButtonData> m_buttonData;
 
     GameState m_currentState = GameState::MENU;
     bool m_buttonsCreated = false;
