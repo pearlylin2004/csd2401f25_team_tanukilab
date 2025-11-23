@@ -83,6 +83,9 @@ public:
 	// save current state of prefab to its file
 	bool savePrefab(const GameObject* prefabObj); // prefabObj is a temp obj rep the prefab
 
+	// revert game object back to follow prefab
+	GameObject* revertToPrefab(GameObject* obj, GameObjectManager& manager);
+
 	// apply prefab changes to all existing instances in current scene and return affected counts
 	int applyToAllInstances(const std::string& prefabID, GameObjectManager& manager);
 

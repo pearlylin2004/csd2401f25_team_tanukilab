@@ -383,7 +383,58 @@ bool PrefabManager::savePrefab(const GameObject* prefabObj) {
 	// update cache
 	m_prefabCache[prefabID].CopyFrom(doc, m_prefabCache[prefabID].GetAllocator());
 
+	// update registry incase of name change
+	savePrefabRegistry();
+
 	return true;
+}
+
+GameObject* PrefabManager::revertToPrefab(GameObject* obj, GameObjectManager& manager) {
+	if (!obj) return obj;
+
+	const std::string& prefabID = obj->getObjectPrefabID();
+	if (prefabID.empty()) {
+		DebugLog::addMessage("Error: Object has no prefab.");
+		return obj;
+	}
+
+	// store scene data first (preserve position)
+	Transform* t = obj->getComponent<Transform>();
+	float posX = t ? t->x : 0.f;
+	float posY = t ? t->y : 0.f;
+	float posZ = t ? t->z : 0.f;
+
+	std::string name = obj->getObjectName();
+	int layer = obj->getLayer();
+
+	// remove existing components
+	obj->removeComponent<Transform>();
+	obj->removeComponent<Render>();
+	obj->removeComponent<Input>();
+	obj->removeComponent<Physics>();
+	obj->removeComponent<CollisionInfo>();
+	obj->removeComponent<Animation>();
+	obj->removeComponent<StateMachine>();
+	obj->removeComponent<AudioComponent>();
+	obj->removeComponent<FontComponent>();
+
+	// reapply prefan
+	this->instantiate(obj, manager);
+
+	// restore the position
+	if (Transform* newT = obj->getComponent<Transform>()) {
+		newT->x = posX;
+		newT->y = posY;
+		newT->z = posZ;
+	}
+
+	obj->getObjectName() = name;
+	manager.assignObjectToLayer(obj, layer);
+
+	// --- Reinitialize resources if needed ---
+	manager.initializeSceneResources();
+
+	return obj;
 }
 
 // apply prefab changes to all existing instances in current scene

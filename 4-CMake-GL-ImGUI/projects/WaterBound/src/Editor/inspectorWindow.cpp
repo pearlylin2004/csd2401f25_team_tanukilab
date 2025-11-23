@@ -57,7 +57,7 @@ void InspectorWindow::render(GameObjectManager& manager) {
     if (selected) {
 
         /* ------------------- Edit Object Name ------------------- */
-        if (selected == m_objSelectionState.selectedObject) {
+        /*if (selected == m_objSelectionState.selectedObject) {*/
             std::string& objName = selected->getObjectName();
             char buffer[128];
             strncpy(buffer, objName.c_str(), sizeof(buffer));
@@ -71,21 +71,50 @@ void InspectorWindow::render(GameObjectManager& manager) {
                 std::string oldObjName = objName;
                 std::string newObjName = buffer;
 
-                if (manager.renameGameObject(m_objSelectionState.selectedObject, newObjName)) {
-                    // update obj new name jic redo/undo
-                    UndoRedoManager::Instance().updateObjName(oldObjName, newObjName);
+                if (selected == m_objSelectionState.selectedObject) {
+                    if (manager.renameGameObject(m_objSelectionState.selectedObject, newObjName)) {
+                        // update obj new name jic redo/undo
+                        UndoRedoManager::Instance().updateObjName(oldObjName, newObjName);
 
-                    DebugLog::addMessage("Object renamed to " + newObjName + "\n");
+                        DebugLog::addMessage("Object renamed to " + newObjName + "\n");
+                    }
+                    else {
+                        DebugLog::addMessage("Failed to rename: name already exists\n");
+                    }
                 }
                 else {
-                    DebugLog::addMessage("Failed to rename: name already exists\n");
+                    const std::string& prefabID = selected->getObjectPrefabID();
+                    PrefabManager::Instance().getPrefabName(prefabID) = newObjName;
+                    selected->getObjectName() = newObjName;
+                    //PrefabManager::Instance().savePrefabRegistry();
+
+                    DebugLog::addMessage("Prefab renamed to " + newObjName + "\n");
                 }
             }
-        }
-        else {
-            ImGui::Text("Prefab Name: "); ImGui::SameLine();
-            ImGui::Text(selected->getObjectName().c_str());
-        }
+        //}
+        //else {
+        //    /*ImGui::Text("Prefab Name: "); ImGui::SameLine();
+        //    ImGui::Text(selected->getObjectName().c_str());*/
+        //    std::string& prefabName = selected->getObjectName();
+        //    char buffer[128];
+        //    strncpy(buffer, prefabName.c_str(), sizeof(buffer));
+        //    buffer[sizeof(buffer) - 1] = '\0';
+
+        //    ImGui::Text("Prefab Name");
+        //    ImGui::SameLine();
+
+        //    if (ImGui::InputText("##PrefabName", buffer, sizeof(buffer), ImGuiInputTextFlags_EnterReturnsTrue)) {
+        //        std::string newName = buffer;
+        //        prefabName = newName;
+
+        //        // Update the prefab registry name (optional - updates display name)
+        //        const std::string& prefabID = selected->getObjectPrefabID();
+        //        PrefabManager::Instance().getPrefabName(prefabID) = newName;
+        //        //PrefabManager::Instance().savePrefabRegistry();
+
+        //        DebugLog::addMessage("Prefab renamed to " + newName + "\n");
+        //    }
+        //}
 
         ImGui::Spacing();
         ImGui::Separator();

@@ -129,13 +129,6 @@ void HierarchyWindow::handlePrefabDragDrop(GameObjectManager& manager) {
 void HierarchyWindow::showContextMenu(GameObjectManager& manager, GameObject* obj, int objIndex) {
     /* ------- right click context menu ------- */
     if (ImGui::BeginPopupContextItem()) {
-        if (ImGui::MenuItem("Create Empty")) {
-            AddObjWindow::createEmpty(manager);
-        }
-
-        if (ImGui::MenuItem("Create Object")) {
-            AddObjWindow::createRec(manager);
-        }
 
         if (ImGui::MenuItem("Duplicate")) {
             AddObjWindow::dupObj(manager, obj);
@@ -147,10 +140,54 @@ void HierarchyWindow::showContextMenu(GameObjectManager& manager, GameObject* ob
             m_objSelectionState.showDeletePopup = true;
         }
 
+        ImGui::Spacing();
+        ImGui::Separator();
+        ImGui::Spacing();
+
         if (ImGui::MenuItem("Save as Prefab")) {
             m_objSelectionState.selectedIndex = objIndex;
             m_objSelectionState.selectedObject = obj;
             m_objSelectionState.showCreatePrefabPopup = true;
+        }
+
+        // if selected object is ref a prefab
+        if (!obj->getObjectPrefabID().empty()) {
+            if (ImGui::MenuItem("Edit Prefab")) {
+                std::unique_ptr<GameObject> tempPrefab = PrefabManager::Instance().createTempPrefabObj(obj->getObjectPrefabID());
+                if (tempPrefab) {
+                    m_objSelectionState.selectedObject = nullptr;
+                    m_objSelectionState.selectedIndex = -1;
+                    m_objSelectionState.selectedPrefab = std::move(tempPrefab);
+
+                    DebugLog::addMessage("Open Prefab " + m_objSelectionState.selectedPrefab->getObjectName() + ".");
+                }
+                else {
+                    DebugLog::addMessage("Failed to open prefab " + obj->getObjectPrefabID() + " object for editing.\n");
+                }
+            }
+
+            if (ImGui::MenuItem("Revert to Prefab")) {
+                obj = PrefabManager::Instance().revertToPrefab(obj, manager);
+
+                DebugLog::addMessage("Reverted " + obj->getObjectName() + " to its prefab" + obj->getObjectPrefabID() + ".");
+            }
+
+            if (ImGui::MenuItem("Unpack Prefab")) {
+                obj->getObjectPrefabID().clear();
+                DebugLog::addMessage("Unpacked prefab: " + obj->getObjectName() + " is now a regular object.");
+            }
+        }
+
+        ImGui::Spacing();
+        ImGui::Separator();
+        ImGui::Spacing();
+
+        if (ImGui::MenuItem("Create Empty")) {
+            AddObjWindow::createEmpty(manager);
+        }
+
+        if (ImGui::MenuItem("Create Object")) {
+            AddObjWindow::createRec(manager);
         }
 
         ImGui::EndPopup();
@@ -215,9 +252,9 @@ void HierarchyWindow::createPrefabPopup(GameObjectManager& manager) {
                 DebugLog::addMessage("Prefab created.\n");
             else DebugLog::addMessage("Prefab not created.\n");
 
-            // attach the prefab id to the obj in json
-            manager.saveScene(JsonIO::sourceScenePath(Editor::sceneState.currentSceneName));
-            JsonIO::syncSceneToRuntime(Editor::sceneState.currentSceneName);
+            // attach the prefab id to the obj in json (auto save)
+            /*manager.saveScene(JsonIO::sourceScenePath(Editor::sceneState.currentSceneName));
+            JsonIO::syncSceneToRuntime(Editor::sceneState.currentSceneName);*/
 
             ImGui::CloseCurrentPopup();
         }
