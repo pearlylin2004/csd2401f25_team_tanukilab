@@ -51,7 +51,7 @@ void HierarchyWindow::render(GameObjectManager& manager) {
             }
 
             /* ------- right click context menu ------- */
-            showContextMenu(manager, gameObjects[i], i);
+            showContextMenu(manager, gameObjects[i], static_cast<int>(i));
 
             ImGui::TreePop();
 
@@ -83,7 +83,7 @@ void HierarchyWindow::render(GameObjectManager& manager) {
 
     /* ---------- Popup Modal Call --------- */
     objDeletePopup(manager);
-    createPrefabPopup(manager);
+    createPrefabPopup();
     /* ---------- END --------- */
 }
 
@@ -235,7 +235,7 @@ void HierarchyWindow::objDeletePopup(GameObjectManager& manager) {
     }
 }
 
-void HierarchyWindow::createPrefabPopup(GameObjectManager& manager) {
+void HierarchyWindow::createPrefabPopup() {
     // open popup if flagged
     if (m_objSelectionState.showCreatePrefabPopup) {
         ImGui::OpenPopup("Confirm Create Prefab");

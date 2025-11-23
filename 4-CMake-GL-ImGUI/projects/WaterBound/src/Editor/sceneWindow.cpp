@@ -173,7 +173,7 @@ void SceneWindow::renderGizmo(GameObjectManager& manager) {
 
     // Detect gizmo drag start
     if (isUsingGizmo && !wasUsingGizmo) {
-        UndoRedoManager::Instance().beginTransformEdit(manager, selected);
+        UndoRedoManager::Instance().beginTransformEdit(selected);
     }
 
     // draw gizmo and settle the changes
@@ -539,7 +539,7 @@ void SceneWindow::objPicking(GameObjectManager& manager) {
         m_objSelectionState.selectedObject = selected;
         m_objSelectionState.draggedObject = selected;
 
-        UndoRedoManager::Instance().beginTransformEdit(manager, selected);
+        UndoRedoManager::Instance().beginTransformEdit(selected);
 
         auto iterator = std::find(gameObjects.begin(), gameObjects.end(), selected);
         if (iterator != gameObjects.end()) {

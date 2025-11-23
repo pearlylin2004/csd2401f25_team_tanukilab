@@ -224,7 +224,8 @@ void UndoRedoManager::clear() {
     m_isEditingTransform = false;
 }
 
-void UndoRedoManager::beginTransformEdit(GameObjectManager& manager, GameObject* obj) {
+void UndoRedoManager::beginTransformEdit(GameObject* obj) {
+    //(void)manager;
     if (!obj || m_isEditingTransform) return;
 
     m_isEditingTransform = true;

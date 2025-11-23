@@ -91,6 +91,7 @@ void InspectorWindow::render(GameObjectManager& manager) {
                     DebugLog::addMessage("Prefab renamed to " + newObjName + "\n");
                 }
             }
+            ImGui::Text("ENTER to apply");
 
         ImGui::Spacing();
         ImGui::Separator();

@@ -29,34 +29,6 @@ void AddObjWindow::render(GameObjectManager& manager){
 
     //ImGui::PushItemWidth(150.0f);
 
-    /* --------------- Add Circle Logic --------------- */
-    {
-        ImGui::Text("X");
-        ImGui::SameLine();
-        ImGui::InputFloat("##X", &m_circleInput.inputX, 1.f);
-
-        ImGui::Text("Y");
-        ImGui::SameLine();
-        ImGui::InputFloat("##Y", &m_circleInput.inputY, 1.f);
-
-        ImGui::Text("Z");
-        ImGui::SameLine();
-        ImGui::InputFloat("##Z", &m_circleInput.inputZ, 1.f);
-        ImGui::Spacing();
-
-    //ImGui::PopItemWidth();
-        if (ImGui::Button("Add Circle")) {
-            createCir(manager, m_circleInput.inputX, m_circleInput.inputY, m_circleInput.inputZ);
-        }
-
-        /* --------------- END --------------- */
-    }
-
-    ImGui::Spacing();
-    ImGui::Separator();
-    ImGui::Spacing();
-
-        
     /* --------------- Add Rectangle Logic --------------- */
     {
         ImGui::Text("X");
@@ -78,6 +50,34 @@ void AddObjWindow::render(GameObjectManager& manager){
         }
     }
     /* --------------- END --------------- */
+
+    ImGui::Spacing();
+    ImGui::Separator();
+    ImGui::Spacing();
+
+
+    /* --------------- Add Circle Logic --------------- */
+    {
+        ImGui::Text("X");
+        ImGui::SameLine();
+        ImGui::InputFloat("##X", &m_circleInput.inputX, 1.f);
+
+        ImGui::Text("Y");
+        ImGui::SameLine();
+        ImGui::InputFloat("##Y", &m_circleInput.inputY, 1.f);
+
+        ImGui::Text("Z");
+        ImGui::SameLine();
+        ImGui::InputFloat("##Z", &m_circleInput.inputZ, 1.f);
+        ImGui::Spacing();
+
+        //ImGui::PopItemWidth();
+        if (ImGui::Button("Add Circle")) {
+            createCir(manager, m_circleInput.inputX, m_circleInput.inputY, m_circleInput.inputZ);
+        }
+
+        /* --------------- END --------------- */
+    }
 
     ImGui::Spacing();
     ImGui::Separator();
