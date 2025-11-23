@@ -51,7 +51,7 @@ void HierarchyWindow::render(GameObjectManager& manager) {
             }
 
             /* ------- right click context menu ------- */
-            showContextMenu(manager, gameObjects[i], i);
+            showContextMenu(manager, gameObjects[i], static_cast<int>(i));
 
             ImGui::TreePop();
 
@@ -83,7 +83,7 @@ void HierarchyWindow::render(GameObjectManager& manager) {
 
     /* ---------- Popup Modal Call --------- */
     objDeletePopup(manager);
-    createPrefabPopup(manager);
+    createPrefabPopup();
     /* ---------- END --------- */
 }
 
@@ -102,6 +102,7 @@ void HierarchyWindow::handlePrefabDragDrop(GameObjectManager& manager) {
                 std::string objName = PrefabManager::Instance().getPrefabName(prefabID);
                 GameObject* prefabObj = manager.createGameObject(objName + "(" + std::to_string(manager.getGameObjectCount()) + ")");
                 prefabObj->getObjectPrefabID() = prefabID;
+
                 if (prefabObj) {
                     PrefabManager::Instance().instantiate(prefabObj, manager);
                     Render* render = prefabObj->getComponent<Render>();
@@ -129,13 +130,6 @@ void HierarchyWindow::handlePrefabDragDrop(GameObjectManager& manager) {
 void HierarchyWindow::showContextMenu(GameObjectManager& manager, GameObject* obj, int objIndex) {
     /* ------- right click context menu ------- */
     if (ImGui::BeginPopupContextItem()) {
-        if (ImGui::MenuItem("Create Empty")) {
-            AddObjWindow::createEmpty(manager);
-        }
-
-        if (ImGui::MenuItem("Create Object")) {
-            AddObjWindow::createRec(manager);
-        }
 
         if (ImGui::MenuItem("Duplicate")) {
             AddObjWindow::dupObj(manager, obj);
@@ -147,10 +141,54 @@ void HierarchyWindow::showContextMenu(GameObjectManager& manager, GameObject* ob
             m_objSelectionState.showDeletePopup = true;
         }
 
+        ImGui::Spacing();
+        ImGui::Separator();
+        ImGui::Spacing();
+
         if (ImGui::MenuItem("Save as Prefab")) {
             m_objSelectionState.selectedIndex = objIndex;
             m_objSelectionState.selectedObject = obj;
             m_objSelectionState.showCreatePrefabPopup = true;
+        }
+
+        // if selected object is ref a prefab
+        if (!obj->getObjectPrefabID().empty()) {
+            if (ImGui::MenuItem("Edit Prefab")) {
+                std::unique_ptr<GameObject> tempPrefab = PrefabManager::Instance().createTempPrefabObj(obj->getObjectPrefabID());
+                if (tempPrefab) {
+                    m_objSelectionState.selectedObject = nullptr;
+                    m_objSelectionState.selectedIndex = -1;
+                    m_objSelectionState.selectedPrefab = std::move(tempPrefab);
+
+                    DebugLog::addMessage("Open Prefab " + m_objSelectionState.selectedPrefab->getObjectName() + ".");
+                }
+                else {
+                    DebugLog::addMessage("Failed to open prefab " + obj->getObjectPrefabID() + " object for editing.\n");
+                }
+            }
+
+            if (ImGui::MenuItem("Revert to Prefab")) {
+                obj = PrefabManager::Instance().revertToPrefab(obj, manager);
+
+                DebugLog::addMessage("Reverted " + obj->getObjectName() + " to its prefab" + obj->getObjectPrefabID() + ".");
+            }
+
+            if (ImGui::MenuItem("Unpack Prefab")) {
+                obj->getObjectPrefabID().clear();
+                DebugLog::addMessage("Unpacked prefab: " + obj->getObjectName() + " is now a regular object.");
+            }
+        }
+
+        ImGui::Spacing();
+        ImGui::Separator();
+        ImGui::Spacing();
+
+        if (ImGui::MenuItem("Create Empty")) {
+            AddObjWindow::createEmpty(manager);
+        }
+
+        if (ImGui::MenuItem("Create Object")) {
+            AddObjWindow::createRec(manager);
         }
 
         ImGui::EndPopup();
@@ -164,12 +202,16 @@ void HierarchyWindow::objDeletePopup(GameObjectManager& manager) {
         m_objSelectionState.showDeletePopup = false;
     }
 
+
+    ImVec2 center = ImGui::GetMainViewport()->GetCenter();
+    ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
+
     /*---------------- Cannot delete current loaded scene ----------------*/
     // delete confirm popup
     if (ImGui::BeginPopupModal("Confirm Delete Object", NULL, ImGuiWindowFlags_AlwaysAutoResize)) {
         ImGui::Text("Are you sure you want to delete this object?");
 
-        if (ImGui::Button("Delete")) {
+        if (ImGui::Button("Delete") || InputHandler::isKeyTriggered(GLFW_KEY_ENTER)) {
             std::string name = m_objSelectionState.selectedObject->getObjectName();
 
             //manager.deleteGameObject(m_objSelectionState.selectedObject); -> CREATE DELETE CMD will handle the deletion
@@ -197,12 +239,15 @@ void HierarchyWindow::objDeletePopup(GameObjectManager& manager) {
     }
 }
 
-void HierarchyWindow::createPrefabPopup(GameObjectManager& manager) {
+void HierarchyWindow::createPrefabPopup() {
     // open popup if flagged
     if (m_objSelectionState.showCreatePrefabPopup) {
         ImGui::OpenPopup("Confirm Create Prefab");
         m_objSelectionState.showCreatePrefabPopup = false;
     }
+
+    ImVec2 center = ImGui::GetMainViewport()->GetCenter();
+    ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
 
     /*---------------- Cannot delete current loaded scene ----------------*/
     // delete confirm popup
@@ -215,9 +260,9 @@ void HierarchyWindow::createPrefabPopup(GameObjectManager& manager) {
                 DebugLog::addMessage("Prefab created.\n");
             else DebugLog::addMessage("Prefab not created.\n");
 
-            // attach the prefab id to the obj in json
-            manager.saveScene(JsonIO::sourceScenePath(Editor::sceneState.currentSceneName));
-            JsonIO::syncSceneToRuntime(Editor::sceneState.currentSceneName);
+            // attach the prefab id to the obj in json (auto save)
+            /*manager.saveScene(JsonIO::sourceScenePath(Editor::sceneState.currentSceneName));
+            JsonIO::syncSceneToRuntime(Editor::sceneState.currentSceneName);*/
 
             ImGui::CloseCurrentPopup();
         }

@@ -123,7 +123,7 @@ public:
 	void clear();
 
 	// start tracking transform changes
-	void beginTransformEdit(GameObjectManager& manager, GameObject* obj);
+	void beginTransformEdit(GameObject* obj);
 
 	// ebd tracking and create command if changed detected
 	void endTransformEdit(GameObjectManager& manager, GameObject* obj);

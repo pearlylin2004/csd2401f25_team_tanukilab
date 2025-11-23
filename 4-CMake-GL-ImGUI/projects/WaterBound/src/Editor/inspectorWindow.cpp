@@ -33,9 +33,12 @@ void InspectorWindow::render(GameObjectManager& manager) {
         selected = m_objSelectionState.selectedPrefab.get();
 
         if (ImGui::Button("Save")) {
+            const std::string& prefabID = selected->getObjectPrefabID();
+
             if (PrefabManager::Instance().savePrefab(selected)) {
+                int count = PrefabManager::Instance().applyToAllInstances(prefabID, manager);
                 /*manager.loadScene(JsonIO::runtimeScenePath(Editor::sceneState.currentSceneName));*/
-                DebugLog::addMessage("Prefab saved\n");
+                DebugLog::addMessage("Applied prefab changes to " + std::to_string(count) + " instances\n");
             }
             else {
                 DebugLog::addMessage("Prefab not saved\n");
@@ -54,7 +57,7 @@ void InspectorWindow::render(GameObjectManager& manager) {
     if (selected) {
 
         /* ------------------- Edit Object Name ------------------- */
-        if (selected == m_objSelectionState.selectedObject) {
+        /*if (selected == m_objSelectionState.selectedObject) {*/
             std::string& objName = selected->getObjectName();
             char buffer[128];
             strncpy(buffer, objName.c_str(), sizeof(buffer));
@@ -68,21 +71,27 @@ void InspectorWindow::render(GameObjectManager& manager) {
                 std::string oldObjName = objName;
                 std::string newObjName = buffer;
 
-                if (manager.renameGameObject(m_objSelectionState.selectedObject, newObjName)) {
-                    // update obj new name jic redo/undo
-                    UndoRedoManager::Instance().updateObjName(oldObjName, newObjName);
+                if (selected == m_objSelectionState.selectedObject) {
+                    if (manager.renameGameObject(m_objSelectionState.selectedObject, newObjName)) {
+                        // update obj new name jic redo/undo
+                        UndoRedoManager::Instance().updateObjName(oldObjName, newObjName);
 
-                    DebugLog::addMessage("Object renamed to " + newObjName + "\n");
+                        DebugLog::addMessage("Object renamed to " + newObjName + "\n");
+                    }
+                    else {
+                        DebugLog::addMessage("Failed to rename: name already exists\n");
+                    }
                 }
                 else {
-                    DebugLog::addMessage("Failed to rename: name already exists\n");
+                    const std::string& prefabID = selected->getObjectPrefabID();
+                    PrefabManager::Instance().getPrefabName(prefabID) = newObjName;
+                    selected->getObjectName() = newObjName;
+                    //PrefabManager::Instance().savePrefabRegistry();
+
+                    DebugLog::addMessage("Prefab renamed to " + newObjName + "\n");
                 }
             }
-        }
-        else {
-            ImGui::Text("Prefab Name: "); ImGui::SameLine();
-            ImGui::Text(selected->getObjectName().c_str());
-        }
+            ImGui::Text("ENTER to apply");
 
         ImGui::Spacing();
         ImGui::Separator();
@@ -90,7 +99,7 @@ void InspectorWindow::render(GameObjectManager& manager) {
 
         /* ------------------- Object Transformation ------------------- */
         if (selected->hasComponent<Transform>()) {
-            renderGizmoCtrl();
+            if (selected == m_objSelectionState.selectedObject) renderGizmoCtrl();
 
 
             ImGui::Spacing();
@@ -507,7 +516,10 @@ void InspectorWindow::renderCollision( GameObject* selected, GameObjectManager& 
             if (ImGui::InputInt("Layer", &layer)) {
                 if (layer < 0) layer = 0;
                 
-                if (manager.assignObjectToLayer(selected, layer)) {
+                if (m_objSelectionState.selectedPrefab) {
+                    selected->setLayer(layer);
+                }
+                else if (manager.assignObjectToLayer(selected, layer)) {
                     DebugLog::addMessage(selected->getObjectName() + " changed layer to " + std::to_string(selected->getLayer()));
 
                 }

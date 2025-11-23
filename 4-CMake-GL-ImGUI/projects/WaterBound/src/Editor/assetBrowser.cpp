@@ -195,7 +195,7 @@ void AssetBrowser::render() {
             }
 
             // open popup window and replace this current asset (not for prefab)
-            if (assetFolderName != "Prefab") {
+            if (assetFolderName != "Prefab" && assetFolderName != "Scene") {
                 if (ImGui::MenuItem("Replace Asset")) {
                     m_AssetBrowserState.fullPathToReplace = fullPath;
                     m_AssetBrowserState.showReplacePopup = true;
@@ -230,10 +230,10 @@ void AssetBrowser::render() {
                     m_objSelectionState.selectedIndex = -1;
                     m_objSelectionState.selectedPrefab = std::move(tempPrefab);
 
-                    DebugLog::addMessage("Selected Prefab " + m_objSelectionState.selectedPrefab->getObjectName() + ".\n");
+                    DebugLog::addMessage("Open Prefab " + m_objSelectionState.selectedPrefab->getObjectName() + ".\n");
                 }
                 else {
-                    DebugLog::addMessage("Failed to select prefab " + prefabID + " object for editing.\n");
+                    DebugLog::addMessage("Failed to open prefab " + prefabID + " object for editing.\n");
                 }
 
             }
@@ -279,7 +279,6 @@ void AssetBrowser::render() {
 void AssetBrowser::loadAssetsFromDirectory() {
     m_assets.clear(); // clear existing assets before loading new ones
     m_AssetBrowserState.subFolders.clear();
-    std::vector<std::string>& subFolders = m_AssetBrowserState.subFolders;
 
     for (const auto& entry : std::filesystem::directory_iterator(m_AssetBrowserState.currentFolder)) {
         if (entry.is_directory()) {
@@ -333,10 +332,13 @@ void AssetBrowser::assetDeletePopup() {
 
 
     /*---------------- Delete Confirmation ----------------*/
+    ImVec2 center = ImGui::GetMainViewport()->GetCenter();
+    ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
+
     if (ImGui::BeginPopupModal("Confirm Delete Asset", NULL, ImGuiWindowFlags_AlwaysAutoResize)) {
         ImGui::Text("Are you sure you want to delete this asset?");
 
-        if (ImGui::Button("Delete")) {
+        if (ImGui::Button("Delete") || InputHandler::isKeyTriggered(GLFW_KEY_ENTER)) {
 
             if (!m_AssetBrowserState.fullPathToDelete.empty() &&
                 std::filesystem::exists(m_AssetBrowserState.fullPathToDelete)) {
@@ -416,12 +418,15 @@ void AssetBrowser::assetRenamePopup() {
         m_AssetBrowserState.showRenamePopup = false;
     }
 
+    ImVec2 center = ImGui::GetMainViewport()->GetCenter();
+    ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
+
     if (ImGui::BeginPopupModal("Rename Asset", NULL, ImGuiWindowFlags_AlwaysAutoResize)) {
         ImGui::Text("Enter new name for the asset");
 
         ImGui::InputText("##newName", m_AssetBrowserState.newNameBuffer, sizeof(m_AssetBrowserState.newNameBuffer));
 
-        if (ImGui::Button("Rename")) {
+        if (ImGui::Button("Rename") || InputHandler::isKeyTriggered(GLFW_KEY_ENTER)) {
             if (!m_AssetBrowserState.fullPathToRename.empty()) {
                 std::filesystem::path old = m_AssetBrowserState.fullPathToRename;
                 std::filesystem::path newPath = old.parent_path() / m_AssetBrowserState.newNameBuffer;
@@ -500,6 +505,9 @@ void AssetBrowser::assetReplacePopup() {
         m_AssetBrowserState.showReplacePopup = false;
     }
 
+    ImVec2 center = ImGui::GetMainViewport()->GetCenter();
+    ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
+
     if (ImGui::BeginPopupModal("Replace Asset", NULL, ImGuiWindowFlags_AlwaysAutoResize)) {
         ImGui::Text("Select a new file to replace the asset:\n");
 
@@ -507,7 +515,7 @@ void AssetBrowser::assetReplacePopup() {
 
         ImGui::Text("Please enter the absolute path without \"\"");
 
-        if (ImGui::Button("Replace")) {
+        if (ImGui::Button("Replace") || InputHandler::isKeyTriggered(GLFW_KEY_ENTER)) {
             std::filesystem::path old = m_AssetBrowserState.fullPathToReplace;
             std::filesystem::path newPath = m_AssetBrowserState.replacePathBuffer;
 

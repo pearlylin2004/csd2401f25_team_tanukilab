@@ -179,7 +179,7 @@ void CoreEngine::GameLoop() {
     //--- Update Timing --- 
      Perf::UpdateTime(m_delta, m_fps, 0.5);
      Perf::UpdateWindowTitle(m_window, m_title, m_fps, true);
-     AudioHandler::getInstance().update(m_delta);
+     AudioHandler::getInstance().update(static_cast<float>(m_delta));
      // --- Main Update --- glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
      glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
      Update(static_cast<float>(m_delta));
