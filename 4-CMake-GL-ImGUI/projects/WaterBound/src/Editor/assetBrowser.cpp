@@ -195,7 +195,7 @@ void AssetBrowser::render() {
             }
 
             // open popup window and replace this current asset (not for prefab)
-            if (assetFolderName != "Prefab") {
+            if (assetFolderName != "Prefab" && assetFolderName != "Scene") {
                 if (ImGui::MenuItem("Replace Asset")) {
                     m_AssetBrowserState.fullPathToReplace = fullPath;
                     m_AssetBrowserState.showReplacePopup = true;

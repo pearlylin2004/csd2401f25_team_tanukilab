@@ -91,33 +91,6 @@ void InspectorWindow::render(GameObjectManager& manager) {
                     DebugLog::addMessage("Prefab renamed to " + newObjName + "\n");
                 }
             }
-            const std::string& prefabID = selected->getObjectPrefabID();
-            std::unique_ptr<GameObject> tempPrefab = PrefabManager::Instance().createTempPrefabObj(prefabID);
-
-        //}
-        //else {
-        //    /*ImGui::Text("Prefab Name: "); ImGui::SameLine();
-        //    ImGui::Text(selected->getObjectName().c_str());*/
-        //    std::string& prefabName = selected->getObjectName();
-        //    char buffer[128];
-        //    strncpy(buffer, prefabName.c_str(), sizeof(buffer));
-        //    buffer[sizeof(buffer) - 1] = '\0';
-
-        //    ImGui::Text("Prefab Name");
-        //    ImGui::SameLine();
-
-        //    if (ImGui::InputText("##PrefabName", buffer, sizeof(buffer), ImGuiInputTextFlags_EnterReturnsTrue)) {
-        //        std::string newName = buffer;
-        //        prefabName = newName;
-
-        //        // Update the prefab registry name (optional - updates display name)
-        //        const std::string& prefabID = selected->getObjectPrefabID();
-        //        PrefabManager::Instance().getPrefabName(prefabID) = newName;
-        //        //PrefabManager::Instance().savePrefabRegistry();
-
-        //        DebugLog::addMessage("Prefab renamed to " + newName + "\n");
-        //    }
-        //}
 
         ImGui::Spacing();
         ImGui::Separator();
