@@ -279,7 +279,6 @@ void AssetBrowser::render() {
 void AssetBrowser::loadAssetsFromDirectory() {
     m_assets.clear(); // clear existing assets before loading new ones
     m_AssetBrowserState.subFolders.clear();
-    std::vector<std::string>& subFolders = m_AssetBrowserState.subFolders;
 
     for (const auto& entry : std::filesystem::directory_iterator(m_AssetBrowserState.currentFolder)) {
         if (entry.is_directory()) {

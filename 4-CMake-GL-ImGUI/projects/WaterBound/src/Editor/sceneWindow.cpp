@@ -157,7 +157,7 @@ void SceneWindow::renderGizmo(GameObjectManager& manager) {
     float* snapPtr = nullptr;
     float snapValue[3];
     if (m_gizmoState.useSnap) {
-        if (m_gizmoState.currentOp == ImGuizmo::ROTATE) {
+        if (m_gizmoState.currentOp == Editor::GIZMO_ROTATE) {
             snapValue[0] = snapValue[1] = snapValue[2] = m_gizmoState.snapAngle;
         }
         else {
