@@ -807,6 +807,19 @@ void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime, M
 	std::vector<GameObject*> gameObjects;
 	manager.getAllGameObjects(gameObjects);
 
+	std::unordered_map<GameObject*, bool> previousOnGround;
+	for (auto object : gameObjects) {
+		if (!object->hasComponent<Physics>()) continue;
+		Physics* physics = object->getComponent<Physics>();
+		previousOnGround[object] = physics->onGround;
+	}
+
+	for (auto object : gameObjects) {
+		if (!object->hasComponent<Physics>()) continue;
+		Physics* physics = object->getComponent<Physics>();
+		physics->onGround = false;
+	}
+
 	for (auto object : gameObjects) {
 		if (!object->hasComponent<Transform>() || !object->hasComponent<Physics>())
 			continue;
@@ -856,13 +869,18 @@ void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime, M
 
 			// Jump
 			if (InputHandler::isKeyTriggered(GLFW_KEY_B)) {
-				PhysicsForces::jump(object);
-				messageBus.publish(Message("KeyPressed", nullptr, KeyEvent{ "B", true }));
+				if (previousOnGround[object]) {
+					PhysicsForces::jump(object);
+					messageBus.publish(Message("KeyPressed", nullptr, KeyEvent{ "B", true }));
+				}
 			}
 
 			// Ground collision
 			if (transform->y < physics->floorY && !object->checkAutoMove()) {
 				transform->y = physics->floorY;
+				physics->dynamics.position.y = physics->floorY;
+				physics->dynamics.velocity.y = 0.0f;
+				physics->velY = 0.0f;
 				//physics->velY = 0.0f;
 				physics->onGround = true;
 				//physics->velX = 0.0f;
@@ -1068,34 +1086,70 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 						}
 
 						//checking if collided
-						if (info.collided && p1->physicsFlag && p2->physicsFlag) {
-							//update the velocity and penetrations for BOTH objects
-							if (info.normal.x != 0) {
-								//can think about momentum in the future
-								t1->x += info.normal.x * info.penetration * 0.5f;
-								//p1->dynamics.velocity.x = 0;
+						if (info.collided) {
+							std::string obj1Name = obj1->getObjectName();
+							std::string obj2Name = obj2->getObjectName();
 
+							bool isPlayerCollision =
+								(obj1Name == "player" && obj2Name == "player2") ||
+								(obj1Name == "player2" && obj2Name == "player");
+
+							if (info.normal.x != 0) {
+								t1->x += info.normal.x * info.penetration * 0.5f;
 								t2->x -= info.normal.x * info.penetration * 0.5f;
-								//p2->dynamics.velocity.x = 0;
 							}
-							// resolve Y
+
 							if (info.normal.y != 0) {
 								t1->y += info.normal.y * info.penetration * 0.5f;
-								//p1->velY = 0;
-								p1->dynamics.velocity.y = 0;
+								//t2->y -= info.normal.y * info.penetration * 0.5f;
 
-								t2->y -= info.normal.y * info.penetration * 0.5f;
-								//p2->velY = 0;
-								p2->dynamics.velocity.y = 0;
+								// Update physics positions to match transforms
+								p1->dynamics.position.y = t1->y;
+								p2->dynamics.position.y = t2->y;
+							}
 
-								if (info.normal.y > 0) {
-									p1->onGround = true;
+							//update the velocity and penetrations for BOTH objects
+							if (isPlayerCollision) {
+								// Resolve penetration
+								if (info.normal.x != 0) {
+									// Stop horizontal movement for player
+									if (obj1Name == "player") {
+										p1->dynamics.velocity.x = 0.0f;
+										p1->velX = 0.0f;
+									}
+									else if (obj2Name == "player") {
+										p2->dynamics.velocity.x = 0.0f;
+										p2->velX = 0.0f;
+									}
+								}
+
+								if (info.normal.y != 0) {
+									p1->dynamics.velocity.y = 0.0f;
+									p2->dynamics.velocity.y = 0.0f;
+
+									// If normal points upward, the object below is on ground
+									if (info.normal.y > 0) {
+										// obj1 is below obj2
+										p1->onGround = true;
+									}
+									else {
+										// obj2 is below obj1  
+										p2->onGround = true;
+									}
+								}
+
+								DebugLog::addMessage("Collision detected between Object.\n", DebugMode::PlaySimul);
+							}
+							else {
+								if (info.normal.y != 0) {
+									p1->dynamics.velocity.y = 0.0f;
+									p2->dynamics.velocity.y = 0.0f;
+
+									if (info.normal.y > 0) p1->onGround = true;
+									else p2->onGround = true;
 								}
 							}
-							DebugLog::addMessage("Collision detected between Object.\n", DebugMode::PlaySimul); //message for debugger
 						}
-						//if no collision
-						else { p1->onGround = false; }
 					}
 				}
 			}
