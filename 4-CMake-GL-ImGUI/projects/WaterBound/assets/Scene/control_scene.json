@@ -11,7 +11,7 @@
         "Render": {
           "shape": "square",
           "hasTex": 1,
-          "texture": "assets/menu/control/control_background.png",
+          "texture": "assets/control_background.png",
           "clr": [ 1.0, 1.0, 1.0 ]
         }
       }

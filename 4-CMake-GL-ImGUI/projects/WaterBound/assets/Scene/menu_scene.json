@@ -11,7 +11,7 @@
         "Render": {
           "shape": "square",
           "hasTex": 1,
-          "texture": "assets/menu/start/menu_background.png",
+          "texture": "assets/menu_background.png",
           "clr": [ 1.0, 1.0, 1.0 ]
         }
       }
@@ -26,7 +26,7 @@
         "Render": {
           "shape": "square",
           "hasTex": 1,
-          "texture": "assets/menu/start/start_button.png",
+          "texture": "assets/start_button.png",
           "clr": [ 1.0, 1.0, 1.0 ]
         }
       }
@@ -41,7 +41,7 @@
         "Render": {
           "shape": "square",
           "hasTex": 1,
-          "texture": "assets/menu/start/control_button.png",
+          "texture": "assets/control_button.png",
           "clr": [ 1.0, 1.0, 1.0 ]
         }
       }
@@ -56,7 +56,7 @@
         "Render": {
           "shape": "square",
           "hasTex": 1,
-          "texture": "assets/menu/start/quit_button.png",
+          "texture": "assets/quit_button.png",
           "clr": [ 1.0, 1.0, 1.0 ]
         }
       }
