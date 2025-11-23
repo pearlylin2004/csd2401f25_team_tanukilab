@@ -327,8 +327,8 @@ std::unique_ptr<GameObject> PrefabManager::createTempPrefabObj(const std::string
 
 	if (doc.HasMember("layer") && doc["layer"].IsInt()) {
 		int layerID = doc["layer"].GetInt();
-		// Just store the layer value, don't register
-		tempGO->setLayer(layerID);  // Assuming GameObject has a setLayer method
+		// store the layer value, do not register!!!
+		tempGO->setLayer(layerID); 
 	}
 
 	// apply prefab changes on the obj
@@ -544,6 +544,10 @@ int PrefabManager::applyToAllInstances(const std::string& prefabID, GameObjectMa
 		return 0;
 	}
 
+	int oldPrefabLayer = (oldPrefabDoc.HasMember("layer") && oldPrefabDoc["layer"].IsInt()) ? oldPrefabDoc["layer"].GetInt() : 1; // 1 is default game layer
+
+	int newPrefabLayer = (newPrefabDoc.HasMember("layer") && newPrefabDoc["layer"].IsInt()) ? newPrefabDoc["layer"].GetInt() : 1;
+
 	const rapidjson::Value& oldPrefabComps = oldPrefabDoc["components"];
 	const rapidjson::Value& newPrefabComps = newPrefabDoc["components"];
 
@@ -566,6 +570,17 @@ int PrefabManager::applyToAllInstances(const std::string& prefabID, GameObjectMa
 
 		obj->getObjectName() = objName;
 		manager.assignObjectToLayer(obj, objLayer);
+
+		if (objLayer == oldPrefabLayer) {
+			// Layer wasn't overridden, apply new prefab layer
+			std::cout << "  Layer matches old prefab - applying new layer: " << newPrefabLayer << "\n";
+			manager.assignObjectToLayer(obj, newPrefabLayer);
+		}
+		else {
+			// Layer was overridden, keep instance's layer
+			std::cout << "  Layer was overridden - keeping instance layer\n";
+			manager.assignObjectToLayer(obj, objLayer);
+		}
 
 		if (Render* r = obj->getComponent<Render>()) {
 			if (r->hasTex && !r->texFile.empty()) {
