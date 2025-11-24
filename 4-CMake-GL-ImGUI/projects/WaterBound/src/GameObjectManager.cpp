@@ -473,31 +473,6 @@ void GameObjectManager::loadSceneFromJson(const std::string& filename) {
 			}
 		}
 
-		// ---- Animation ----
-		if (comps.HasMember("Animation") && comps["Animation"].IsObject()) {
-			const auto& ja = comps["Animation"];
-
-			auto* a = go->getComponent<Animation>();
-			if (!a)
-				a = go->addComponent<Animation>();
-
-			if (ja.HasMember("loop")) {
-				a->loop = ja["loop"].IsBool()
-					? ja["loop"].GetBool()
-					: (ja["loop"].GetInt() != 0);
-			}
-			if (ja.HasMember("currentFrameColumn") && ja["currentFrameColumn"].IsInt())
-				a->currentFrameColumn = ja["currentFrameColumn"].GetInt();
-			if (ja.HasMember("currentFrameRow") && ja["currentFrameRow"].IsInt())
-				a->currentFrameRow = ja["currentFrameRow"].GetInt();
-			if (ja.HasMember("totalColumn") && ja["totalColumn"].IsInt())
-				a->totalColumn = ja["totalColumn"].GetInt();
-			if (ja.HasMember("totalRow") && ja["totalRow"].IsInt())
-				a->totalRow = ja["totalRow"].GetInt();
-			if (ja.HasMember("frameTime") && ja["frameTime"].IsNumber())
-				a->frameTime = ja["frameTime"].GetFloat();
-		}
-
 		// ---- State Machine ----
 		if (comps.HasMember("StateMachine") && comps["StateMachine"].IsObject()) {
 			const auto& smj = comps["StateMachine"];
@@ -520,6 +495,60 @@ void GameObjectManager::loadSceneFromJson(const std::string& filename) {
 			/*std::cout << "\n\nReading scene...\n";
 			std::cout << "State: " << sm->facingRight << std::endl;
 			std::cout << "State Time: " << sm->stateTime << std::endl;*/
+
+			/* ---- Animation based on state ---- */
+			// Helper lambda to parse a single animation state
+			auto parseAnimState = [](const rapidjson::Value& animJson) -> AnimateState {
+				AnimateState state;
+
+				if (animJson.HasMember("texture") && animJson["texture"].IsString())
+					state.texFile = animJson["texture"].GetString();
+
+				if (animJson.HasMember("loop")) {
+					if (animJson["loop"].IsBool())
+						state.loop = animJson["loop"].GetBool();
+					else if (animJson["loop"].IsInt())
+						state.loop = (animJson["loop"].GetInt() != 0);
+				}
+
+				if (animJson.HasMember("currentFrameColumn") && animJson["currentFrameColumn"].IsInt())
+					state.currentFrameColumn = animJson["currentFrameColumn"].GetInt();
+
+				if (animJson.HasMember("currentFrameRow") && animJson["currentFrameRow"].IsInt())
+					state.currentFrameRow = animJson["currentFrameRow"].GetInt();
+
+				if (animJson.HasMember("totalColumn") && animJson["totalColumn"].IsInt())
+					state.totalColumn = animJson["totalColumn"].GetInt();
+
+				if (animJson.HasMember("totalRow") && animJson["totalRow"].IsInt())
+					state.totalRow = animJson["totalRow"].GetInt();
+
+				if (animJson.HasMember("frameTime") && animJson["frameTime"].IsNumber())
+					state.frameTime = static_cast<float>(animJson["frameTime"].GetDouble());
+
+				return state;
+				};
+
+			// parse each state's animation in the order: Idle, Walking, Jumping, Falling, Shooting
+			// matches PlayerState enum order
+			std::vector<std::string>stateNames = JsonIO::stateNames;
+
+			for (size_t i = 0; i < stateNames.size(); ++i) {
+				if (smj.HasMember(stateNames[i].c_str()) && smj[stateNames[i].c_str()].IsObject()) {
+					Animation* anim = go->getComponent<Animation>();
+					if (!anim) {
+						anim = go->addComponent<Animation>();
+						anim->animState.resize(stateNames.size());
+					}
+
+					const rapidjson::Value& stateObj = smj[stateNames[i].c_str()];
+
+					if (stateObj.HasMember("animState") && stateObj["animState"].IsObject()) {
+						AnimateState parsed = parseAnimState(stateObj["animState"]);
+						anim->animState[i] = parsed;
+					}
+				}
+			}
 		}
 
 		//font component
@@ -854,37 +883,6 @@ void GameObjectManager::saveSceneToJson(const std::string& filename, bool isNew)
 				}
 			}
 
-			// ---- Animation ----
-			if (auto an = obj->getComponent<Animation>()) {
-				rapidjson::Value ja(rapidjson::kObjectType);
-				const rapidjson::Value* prefabA = PM.getPrefabJsonComp(prefabDoc, "Animation");
-
-				auto pushIfDiffInt = [&](const char* key, int val) {
-					if (!prefabA || !prefabA->HasMember(key) || differsInt((*prefabA)[key].GetInt(), val))
-						ja.AddMember(rapidjson::Value(key, a), rapidjson::Value(val), a);
-					};
-				auto pushIfDiffFloat = [&](const char* key, float val) {
-					if (!prefabA || !prefabA->HasMember(key) || differsFloat((*prefabA)[key].GetFloat(), val))
-						ja.AddMember(rapidjson::Value(key, a), rapidjson::Value(val), a);
-					};
-				auto pushIfDiffBool = [&](const char* key, bool val) {
-					if (!prefabA || !prefabA->HasMember(key) ||
-						((*prefabA)[key].IsBool() && differsBool((*prefabA)[key].GetBool(), val)) ||
-						((*prefabA)[key].IsInt() && differsBool((*prefabA)[key].GetInt() != 0, val))) {
-						ja.AddMember(rapidjson::Value(key, a), rapidjson::Value(val ? 1 : 0), a);
-					}
-					};
-
-				pushIfDiffBool("loop", an->loop);
-				pushIfDiffInt("currentFrameColumn", an->currentFrameColumn);
-				pushIfDiffInt("currentFrameRow", an->currentFrameRow);
-				pushIfDiffInt("totalColumn", an->totalColumn);
-				pushIfDiffInt("totalRow", an->totalRow);
-				pushIfDiffFloat("frameTime", an->frameTime);
-
-				if (!ja.ObjectEmpty()) comps.AddMember("Animation", ja, a);
-			}
-
 			// ---- StateMachine ----
 			if (auto sm = obj->getComponent<StateMachine>()) {
 				rapidjson::Value js(rapidjson::kObjectType);
@@ -901,6 +899,61 @@ void GameObjectManager::saveSceneToJson(const std::string& filename, bool isNew)
 				if (!prefabSM || !prefabSM->HasMember("stateTime") ||
 					differsFloat((*prefabSM)["stateTime"].GetFloat(), sm->stateTime))
 					js.AddMember("stateTime", rapidjson::Value(sm->stateTime), a);
+
+
+				/* ------ Animation for states ----- */
+				if (auto anim = obj->getComponent<Animation>()) {
+					std::vector<std::string> stateNames = JsonIO::stateNames;
+
+					for (size_t i = 0; i < stateNames.size() && i < anim->animState.size(); ++i) {
+						const AnimateState& animState = anim->animState[i];
+
+						// check if this state differs from prefab
+						bool shouldSerialize = false;
+						const rapidjson::Value* prefabStateObj = nullptr;
+
+						if (prefabSM && prefabSM->HasMember(stateNames[i].c_str())) {
+							prefabStateObj = &(*prefabSM)[stateNames[i].c_str()];
+							if (prefabStateObj->IsObject() && prefabStateObj->HasMember("animState")) {
+								const auto& prefabAnimState = (*prefabStateObj)["animState"];
+
+								shouldSerialize =
+									(!prefabAnimState.HasMember("texture") || animState.texFile != prefabAnimState["texture"].GetString()) ||
+									(!prefabAnimState.HasMember("loop") || animState.loop != (prefabAnimState["loop"].IsBool() ? prefabAnimState["loop"].GetBool() : (prefabAnimState["loop"].GetInt() != 0))) ||
+									(!prefabAnimState.HasMember("currentFrameColumn") || animState.currentFrameColumn != prefabAnimState["currentFrameColumn"].GetInt()) ||
+									(!prefabAnimState.HasMember("currentFrameRow") || animState.currentFrameRow != prefabAnimState["currentFrameRow"].GetInt()) ||
+									(!prefabAnimState.HasMember("totalColumn") || animState.totalColumn != prefabAnimState["totalColumn"].GetInt()) ||
+									(!prefabAnimState.HasMember("totalRow") || animState.totalRow != prefabAnimState["totalRow"].GetInt()) ||
+									(!prefabAnimState.HasMember("frameTime") || differsFloat(static_cast<float>(prefabAnimState["frameTime"].GetDouble()), animState.frameTime));
+							}
+							else {
+								shouldSerialize = true; // prefab doesn't have animState for this state
+							}
+						}
+						else {
+							shouldSerialize = true; // prefab dont this this
+						}
+
+						// only serialize if different from prefab or if no prefab
+						if (shouldSerialize) {
+							rapidjson::Value stateObj(rapidjson::kObjectType);
+							rapidjson::Value animStateObj(rapidjson::kObjectType);
+
+							animStateObj.AddMember("texture", rapidjson::Value(animState.texFile.c_str(), a), a);
+							animStateObj.AddMember("loop", rapidjson::Value(animState.loop ? 1 : 0), a);
+							animStateObj.AddMember("currentFrameColumn", rapidjson::Value(animState.currentFrameColumn), a);
+							animStateObj.AddMember("currentFrameRow", rapidjson::Value(animState.currentFrameRow), a);
+							animStateObj.AddMember("totalColumn", rapidjson::Value(animState.totalColumn), a);
+							animStateObj.AddMember("totalRow", rapidjson::Value(animState.totalRow), a);
+							animStateObj.AddMember("frameTime", rapidjson::Value(animState.frameTime), a);
+
+							stateObj.AddMember("animState", animStateObj, a);
+							js.AddMember(rapidjson::Value(stateNames[i].c_str(), a), stateObj, a);
+						}
+					}
+				}
+				/* ---------- END ---------- */
+
 
 				if (!js.ObjectEmpty())
 					comps.AddMember("StateMachine", js, a);
@@ -1081,6 +1134,19 @@ void GameObjectManager::initializeSceneResources() {
 			FontComponent* fc = obj->getComponent<FontComponent>();
 			if (!Font::fontMdls.empty()) {
 				fc->mdl = Font::fontMdls[0];
+			}
+		}
+		//initialize animation texture
+		if (obj->hasComponent<Animation>()) {
+			Animation* animation = obj->getComponent<Animation>();
+			if (!animation->animState.empty())
+			{
+				for (AnimateState& as : animation->animState) {
+					if (!as.texFile.empty()) {
+						TextureData textureData = ResourceManager::getInstance().getTexture(as.texFile);
+						as.texHDL = textureData.id;
+					}
+				}
 			}
 		}
 	}

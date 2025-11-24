@@ -187,9 +187,20 @@ void RenderSystem::update(GameObjectManager& manager, float const& deltaTime)
 					render->texChanged = false;
 				}
 
-			}
+				if (object->hasComponent<Animation>()) {
+					Animation* animation = object->getComponent<Animation>();
+					if (!animation->animState.empty())
+					{
+						for (AnimateState& as : animation->animState) {
+							if (as.texChanged && !as.texFile.empty()) {
+								TextureData textureData = ResourceManager::getInstance().getTexture(as.texFile);
+								as.texHDL = textureData.id;
+							}
+						}
+					}
+				}
 
-			
+			}
 		}
 
 
@@ -368,10 +379,24 @@ void RenderSystem::init(GameObjectManager& manager, int fboW, int fboH)
 				//std::cerr << "Is Transparent: " << (render->isTransparent ? "Yes" : "No") << std::endl;
 			}
 		}
+
+		if (object->hasComponent<Animation>()) {
+			Animation* animation = object->getComponent<Animation>();
+			if (!animation->animState.empty())
+			{
+				for (AnimateState& as : animation->animState) {
+					if (!as.texFile.empty()) {
+						TextureData textureData = ResourceManager::getInstance().getTexture(as.texFile);
+						as.texHDL = textureData.id;
+					}
+				}
+			}
+		}
 	}
 	fboWidth = fboW;
 	fboHeight = fboH;
 }
+
 void RenderSystem::batchingSetUp(GameObjectManager& manager, float const& deltaTime)
 {
 	std::vector<GameObject*> gameObjects;
@@ -396,27 +421,39 @@ void RenderSystem::batchingSetUp(GameObjectManager& manager, float const& deltaT
 		data.color = glm::vec4(render->clr, 1);
 		data.texParams = glm::vec4(0, 0, 1, 1); // default, no texture frame
 
-		if (render->hasTex)
+		bool animated = false;
+		// if obj has animation & state machine component
+		if (obj->hasComponent<Animation>() && obj->hasComponent<StateMachine>())
 		{
-			if (render->hasAnimation && obj->hasComponent<Animation>())
-			{
-				Animation* animation = obj->getComponent<Animation>();
-				glm::vec2 texOffSet{ animation->currentFrameColumn / static_cast<float>(animation->totalColumn), animation->currentFrameRow / static_cast<float>(animation->totalRow) };
-				glm::vec2 texScale{ 1.f / animation->totalColumn, 1.f / animation->totalRow };
-				if (animation->loop)
+			Animation* animation = obj->getComponent<Animation>();
+			StateMachine* sm = obj->getComponent<StateMachine>();
+
+			AnimateState& as = animation->animState[static_cast<int>(sm->state)];
+
+			if (render->hasAnimation && !as.texFile.empty()) {
+				glm::vec2 texOffSet{ as.currentFrameColumn / static_cast<float>(as.totalColumn), as.currentFrameRow / static_cast<float>(as.totalRow) };
+				glm::vec2 texScale{ 1.f / as.totalColumn, 1.f / as.totalRow };
+
+				if (as.loop)
 				{
-					animation->frameTimer += deltaTime;
-					if (animation->frameTimer >= animation->frameTime && !EditorManager::isEditingMode() && !EditorManager::isPaused())
+					as.frameTimer += deltaTime;
+					if (as.frameTimer >= as.frameTime && !EditorManager::isEditingMode() && !EditorManager::isPaused())
 					{
-						animation->frameTimer -= animation->frameTime;
-						animation->currentFrameColumn = (animation->currentFrameColumn + 1) % animation->totalColumn;
-						animation->currentFrameRow = (animation->currentFrameRow + 1) % animation->totalRow;
+						as.frameTimer -= as.frameTime;
+						as.currentFrameColumn = (as.currentFrameColumn + 1) % as.totalColumn;
+						as.currentFrameRow = (as.currentFrameRow + 1) % as.totalRow;
 						animation->runItBack = true;
 
+						animated = true;
 					}
 				}
 				data.texParams = { texOffSet,texScale };
+				BatchKey key{ render->modelRef.shape, as.texHDL };
+				objectWithTex[key].push_back(data);
 			}
+		}
+		else if (render->hasTex)
+		{
 			BatchKey key{ render->modelRef.shape, render->texHDL };
 			objectWithTex[key].push_back(data);
 		}
@@ -473,6 +510,7 @@ void RenderSystem::renderTex(GameObject* object, float const& deltaTime)
 		transform->mdlWorld = glm::translate(transform->mdlWorld, glm::vec3(transform->x, transform->y, transform->z));
 		transform->mdlWorld = glm::rotate(transform->mdlWorld, angle, glm::vec3(0, 0, 1.f));
 		transform->mdlWorld = glm::scale(transform->mdlWorld, glm::vec3(transform->scaleX, transform->scaleY, transform->scaleZ));
+
 		glBindTextureUnit(0, render->texHDL);
 		//std::cerr << "Binding Texture ID: " << render->texHDL << " for object: " << object->getObjectName() << std::endl;
 
@@ -489,29 +527,34 @@ void RenderSystem::renderTex(GameObject* object, float const& deltaTime)
 		if (render->hasAnimation)
 		{
 			Animation* animation = object->getComponent<Animation>();
-			texpos = glm::vec2{ animation->currentFrameColumn / static_cast<float>(animation->totalColumn), animation->currentFrameRow / static_cast<float>(animation->totalRow) };
-			texscale = glm::vec2{ 1.f / animation->totalColumn, 1.f / animation->totalRow };
-			if (animation->loop)
-			{
-				animation->frameTimer += deltaTime;
-				//std::cout << "\n-------Frame Timer---------\n" << animation->frameTimer << "\n\n";
-				if (animation->frameTimer >= animation->frameTime && !EditorManager::isEditingMode() && !EditorManager::isPaused())
-				{
-					animation->frameTimer -= animation->frameTime;
-					/*if (animation->runItBack && animation->currentFrameColumn == 0)
+			if (StateMachine* sm = object->getComponent<StateMachine>()) {
+				AnimateState& as = animation->animState[static_cast<int>(sm->state)];
+				if (!as.texFile.empty()) {
+					texpos = glm::vec2{ as.currentFrameColumn / static_cast<float>(as.totalColumn), as.currentFrameRow / static_cast<float>(as.totalRow) };
+					texscale = glm::vec2{ 1.f / as.totalColumn, 1.f / as.totalRow };
+					if (as.loop)
 					{
-						animation->runItBack = false;
+						as.frameTimer += deltaTime;
+						//std::cout << "\n-------Frame Timer---------\n" << animation->frameTimer << "\n\n";
+						if (as.frameTimer >= as.frameTime && !EditorManager::isEditingMode() && !EditorManager::isPaused())
+						{
+							as.frameTimer -= as.frameTime;
+							/*if (animation->runItBack && animation->currentFrameColumn == 0)
+							{
+								animation->runItBack = false;
+							}
+							else
+							{
+								animation->currentFrameColumn = (animation->currentFrameColumn + 1) % animation->totalColumn;
+								animation->currentFrameRow = (animation->currentFrameRow + 1) % animation->totalRow;
+								animation->runItBack = true;
+							}*/
+							as.currentFrameColumn = (as.currentFrameColumn + 1) % as.totalColumn;
+							as.currentFrameRow = (as.currentFrameRow + 1) % as.totalRow;
+							animation->runItBack = true;
+
+						}
 					}
-					else
-					{
-						animation->currentFrameColumn = (animation->currentFrameColumn + 1) % animation->totalColumn;
-						animation->currentFrameRow = (animation->currentFrameRow + 1) % animation->totalRow;
-						animation->runItBack = true;
-					}*/
-					animation->currentFrameColumn = (animation->currentFrameColumn + 1) % animation->totalColumn;
-					animation->currentFrameRow = (animation->currentFrameRow + 1) % animation->totalRow;
-					animation->runItBack = true;
-					
 				}
 			}
 		}

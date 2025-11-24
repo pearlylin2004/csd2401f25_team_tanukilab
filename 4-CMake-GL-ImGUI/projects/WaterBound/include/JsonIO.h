@@ -137,4 +137,7 @@ namespace JsonIO {
 	std::string serializeGameObj(GameObject* obj);
 	GameObject* deserializeGameObj(GameObjectManager& manager, const std::string& jsonStr);
 	// ---- END ----
+
+	// for the indexing in animation vector
+	inline std::vector<std::string> stateNames = { "Idle", "Walking", "Jumping", "Falling", "Shooting" };
 }

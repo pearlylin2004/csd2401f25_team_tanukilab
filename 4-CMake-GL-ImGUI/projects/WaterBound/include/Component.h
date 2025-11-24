@@ -98,17 +98,26 @@ struct FontComponent : public Component {
     std::string fontPath = "assets/ARIAL.TTF"; 
 };
 
+// animation for different state
+struct AnimateState {
+    bool loop = true;
+    int currentFrameColumn{}, currentFrameRow{}, totalColumn{ 1 }, totalRow{ 1 };
+    float frameTime = 0.1f, frameTimer{};
+    GLuint texHDL;
+    std::string texFile;
+
+    // do not serialize this
+    bool texChanged = false;
+};
+
 struct Animation : public Component
 {
     std::unique_ptr<Component> clone() const override {
         return std::make_unique<Animation>(*this);
     }
 
-    bool loop = false;
     bool runItBack = true;
-    GLuint texHDL;
-    int currentFrameColumn{}, currentFrameRow{}, totalColumn{ 1 }, totalRow{ 1 };
-    float frameTime = 0.1f, frameTimer{};
+    std::vector<AnimateState> animState; // to store the animation data for dff state, index by playerstate
 };
 
 // Physics component to store velocity and other physics-related properties
@@ -223,7 +232,7 @@ public:
     std::string scriptName; // Just the object name (e.g., "bullet", "player")
 };
 
-// Logic Container (FSM) 
+// Logic Container (FSM)
 enum class PlayerState { Idle, Walking, Jumping, Falling, Shooting };
 
 struct StateMachine : public Component {

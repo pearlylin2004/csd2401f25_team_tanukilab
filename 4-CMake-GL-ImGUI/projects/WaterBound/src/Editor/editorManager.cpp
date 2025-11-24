@@ -67,7 +67,7 @@ void EditorManager::handleShortcutKeys(GameObjectManager& manager) {
     /* --------------- END --------------- */
 
     /* --------------- "Y" -> Toggle Grid --------------- */
-    if (InputHandler::isKeyTriggered(GLFW_KEY_Y)) {
+    if (InputHandler::isKeyTriggered(GLFW_KEY_U)) {
         Editor::gizmoState.showGrid = !Editor::gizmoState.showGrid;
     }
     /* --------------- END --------------- */

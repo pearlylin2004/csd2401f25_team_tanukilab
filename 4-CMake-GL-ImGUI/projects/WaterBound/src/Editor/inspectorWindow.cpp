@@ -124,6 +124,18 @@ void InspectorWindow::render(GameObjectManager& manager) {
         /* ------------------- END ------------------- */
 
 
+        /* ------------------- State Machine ------------------- */
+        if (selected->hasComponent<StateMachine>()) {
+            // for animation/audio(maybe)
+            renderStateMachine(selected);
+
+            ImGui::Spacing();
+            ImGui::Separator();
+            ImGui::Spacing();
+        }
+        /* ------------------- END ------------------- */
+
+
         /* ------------------- Collision ------------------- */
         if (selected->hasComponent<CollisionInfo>()) {
             renderCollision(selected, manager);
@@ -457,40 +469,134 @@ void InspectorWindow::renderRender( GameObject* selected) {
             ImGui::TreePop();
         }
         
-        
+     
+        ImGui::Spacing();
+        ImGui::Spacing();
+        ImGui::Separator();
+        ImGui::Spacing();
+
+        if (ImGui::Button("Remove Render", ImVec2(-1, 0))) {
+            // add a delete component func here
+            selected->removeComponent<Render>();
+            DebugLog::addMessage("Removed Render Component");
+        }
+    }
+}
+
+void InspectorWindow::renderStateMachine(GameObject* selected) {
+    Render* render = selected->getComponent<Render>();
+    Animation* animation = selected->getComponent<Animation>();
+
+    if (ImGui::CollapsingHeader("State Machine")) {
+        /* ---------- Animation ---------- */
         if (ImGui::TreeNode("Animation")) {
-            if (!animation) {
+            // must have render component to animate
+            if (!render) {
+                ImGui::TextWrapped("Animation requires a Render component.");
+            }
+            else if (!animation) {
                 ImGui::Spacing();
                 if (ImGui::Selectable("Add Animation")) {
                     selected->addComponent<Animation>();
                 }
             }
-            else if (render->hasTex) {
+            else if (!animation->animState.empty()) {
                 ImGui::Checkbox("Is animated", &render->hasAnimation);
 
                 ImGui::Separator();
 
                 ImGui::BeginDisabled(!render->hasAnimation);
 
-                ImGui::Checkbox("Loop (WIP)", &animation->loop);
+                static int selectedStateIndex = 0;
+                const std::vector<std::string>& stateNames = JsonIO::stateNames;
 
-                if(ImGui::InputInt("Column", &animation->totalColumn))
-                    animation->totalColumn = std::max(animation->totalColumn, 1);
+                // Dropdown to select state
+                if (ImGui::BeginCombo("State", stateNames[selectedStateIndex].c_str())) {
+                    for (int i = 0; i < stateNames.size(); ++i) {
+                        bool isSelected = (selectedStateIndex == i);
+                        if (ImGui::Selectable(stateNames[i].c_str(), isSelected)) {
+                            selectedStateIndex = i;
+                        }
+                        if (isSelected) {
+                            ImGui::SetItemDefaultFocus();
+                        }
+                    }
+                    ImGui::EndCombo();
+                }
 
-                if(ImGui::InputInt("Row", &animation->totalRow))
-                    animation->totalRow = std::max(animation->totalRow, 1);
+                ImGui::Separator();
 
-                if (ImGui::InputFloat("Frame Time", &animation->frameTime, 0.1f))
-                    animation->frameTime = std::max(animation->frameTime, 0.001f);
+                // Edit animation for the selected state
+                if (selectedStateIndex >= 0 && selectedStateIndex < animation->animState.size()) {
+                    AnimateState& currentState = animation->animState[selectedStateIndex];
 
+                    /*ImGui::Text("Animation Settings for %s:", stateNames[selectedStateIndex].c_str());
+                    ImGui::Spacing();*/
+
+                    // Texture file button with drag and drop
+                    std::string texName = currentState.texFile.empty() ? "(Drop new texture here)" : currentState.texFile;
+                    ImGui::Button(texName.c_str(), ImVec2(-1, 0));
+
+                    /* ------- Drag and Drop From Asset Browser to Change Texture ------ */
+                    if (ImGui::BeginDragDropTarget()) {
+                        if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("ASSET")) {
+                            const char* droppedPath = (const char*)payload->Data;
+                            std::string path = droppedPath;
+
+                            const std::string debugPrefix = "Debug/";
+                            std::filesystem::path fsPath(path);
+                            if (fsPath.string().find(debugPrefix) == 0) {
+                                fsPath = fsPath.string().substr(debugPrefix.size());
+                            }
+
+                            // extract file extension
+                            std::string ext = fsPath.extension().string();
+                            std::transform(ext.begin(), ext.end(), ext.begin(), ::tolower);
+
+                            // only accept if dropped file is a png/jpg/jpeg
+                            if (ext == ".png" || ext == ".jpg" || ext == ".jpeg") {
+                                currentState.texFile = path;
+                                currentState.texChanged = true;
+                                DebugLog::addMessage("Changed texture for " + stateNames[selectedStateIndex] + " state to " + path + "\n");
+                            }
+                            else {
+                                // texture file type error pop up
+                                Editor::popupState.textureFileTypePopup = true;
+                                Editor::popupState.filename = fsPath.filename().string();
+                                // invalid texture format -> don't change anything
+                                DebugLog::addMessage("Invalid texture format : " + path + "\n");
+                            }
+                        }
+                        ImGui::EndDragDropTarget();
+                    }
+
+                    ImGui::Checkbox("Loop (WIP)", &currentState.loop);
+
+                    if (ImGui::InputInt("Total Columns", &currentState.totalColumn))
+                        currentState.totalColumn = std::max(currentState.totalColumn, 1);
+
+                    if (ImGui::InputInt("Total Rows", &currentState.totalRow))
+                        currentState.totalRow = std::max(currentState.totalRow, 1);
+
+                    // by right should be the first frame column/row
+                    /*if (ImGui::InputInt("Current Frame Column", &currentState.currentFrameColumn))
+                        currentState.currentFrameColumn = std::clamp(currentState.currentFrameColumn, 0, currentState.totalColumn - 1);
+
+                    if (ImGui::InputInt("Current Frame Row", &currentState.currentFrameRow))
+                        currentState.currentFrameRow = std::clamp(currentState.currentFrameRow, 0, currentState.totalRow - 1);*/
+
+                    if (ImGui::InputFloat("Frame Time", &currentState.frameTime, 0.01f))
+                        currentState.frameTime = std::max(currentState.frameTime, 0.001f);
+                }
 
                 ImGui::EndDisabled();
 
+                ImGui::Separator();
                 if (ImGui::Button("Remove Animation", ImVec2(-1, 0))) {
-                    // add a delete component func here
                     selected->removeComponent<Animation>();
                     DebugLog::addMessage("Removed Animation Component");
                 }
+
             }
             else {
                 ImGui::TextWrapped("Add a texture to Render to enable animation");
@@ -505,17 +611,6 @@ void InspectorWindow::renderRender( GameObject* selected) {
             ImGui::TreePop();
         }
 
-
-        ImGui::Spacing();
-        ImGui::Spacing();
-        ImGui::Separator();
-        ImGui::Spacing();
-
-        if (ImGui::Button("Remove Render", ImVec2(-1, 0))) {
-            // add a delete component func here
-            selected->removeComponent<Render>();
-            DebugLog::addMessage("Removed Render Component");
-        }
     }
 }
 

@@ -569,18 +569,6 @@ namespace JsonIO {
             doc.AddMember("Input", true, a);
         }
 
-        // Animation
-        if (Animation* an = obj->getComponent<Animation>()) {
-            Value ja(kObjectType);
-
-            ja.AddMember("loop", an->loop, a);
-            ja.AddMember("totalColumn", an->totalColumn, a);
-            ja.AddMember("totalRow", an->totalRow, a);
-            ja.AddMember("frameTime", an->frameTime, a);
-
-            doc.AddMember("Animation", ja, a);
-        }
-
         // Font
         if (FontComponent* f = obj->getComponent<FontComponent>()) {
             Value jf(kObjectType);
@@ -608,6 +596,32 @@ namespace JsonIO {
             ja.AddMember("fadeOutDuration", ac->fadeOutDuration, a);
 
             doc.AddMember("Audio", ja, a);
+        }
+
+        if (StateMachine* sm = obj->getComponent<StateMachine>()) {
+            if (Animation* anim = obj->getComponent<Animation>()) {
+                Value js(kObjectType);
+
+                for (size_t i = 0; i < stateNames.size() && i < anim->animState.size(); ++i) {
+                    const AnimateState& animState = anim->animState[i];
+
+                    rapidjson::Value stateObj(rapidjson::kObjectType);
+                    rapidjson::Value animStateObj(rapidjson::kObjectType);
+
+                    animStateObj.AddMember("texture", rapidjson::Value(animState.texFile.c_str(), a), a);
+                    animStateObj.AddMember("loop", rapidjson::Value(animState.loop ? 1 : 0), a);
+                    animStateObj.AddMember("currentFrameColumn", rapidjson::Value(animState.currentFrameColumn), a);
+                    animStateObj.AddMember("currentFrameRow", rapidjson::Value(animState.currentFrameRow), a);
+                    animStateObj.AddMember("totalColumn", rapidjson::Value(animState.totalColumn), a);
+                    animStateObj.AddMember("totalRow", rapidjson::Value(animState.totalRow), a);
+                    animStateObj.AddMember("frameTime", rapidjson::Value(animState.frameTime), a);
+                    stateObj.AddMember("animState", animStateObj, a);
+
+                    js.AddMember(rapidjson::Value(stateNames[i].c_str(), a), stateObj, a);
+                }
+
+                doc.AddMember("StateMachine", js, a);
+            }
         }
 
         // convert to string
@@ -719,22 +733,6 @@ namespace JsonIO {
                 obj->addComponent<Input>();
             }
 
-            // Animation
-            if (doc.HasMember("Animation")) {
-                const Value& ja = doc["Animation"];
-                Animation* a = obj->addComponent<Animation>();
-
-                if (ja.HasMember("loop")) {
-                    a->loop = ja["loop"].IsBool()
-                        ? ja["loop"].GetBool()
-                        : (ja["loop"].GetInt() != 0);
-                }
-
-                a->totalColumn = ja["totalColumn"].GetInt();
-                a->totalRow = ja["totalRow"].GetInt();
-                a->frameTime = ja["frameTime"].GetFloat();
-            }
-
             // Font
             if (doc.HasMember("Font")) {
                 const Value& jf = doc["Font"];
@@ -760,6 +758,36 @@ namespace JsonIO {
                 a->fadeInDuration = ja["fadeInDuration"].GetFloat();
                 a->fadeOutOnStop = ja["fadeOutOnStop"].GetBool();
                 a->fadeOutDuration = ja["fadeOutDuration"].GetFloat();
+            }
+
+            // State Machine with Animation
+            if (doc.HasMember("StateMachine")) {
+                const Value& smObj = doc["StateMachine"];
+                StateMachine* sm = obj->addComponent<StateMachine>();
+                Animation* anim = obj->addComponent<Animation>();
+                anim->animState.resize(stateNames.size());
+
+                if (sm && anim) {
+                    for (size_t i = 0; i < stateNames.size() && i < anim->animState.size(); ++i) {
+                        if (smObj.HasMember(stateNames[i].c_str())) {
+                            const Value& stateObj = smObj[stateNames[i].c_str()];
+
+                            if (stateObj.HasMember("animState")) {
+                                const Value& animStateObj = stateObj["animState"];
+                                AnimateState& animState = anim->animState[i];
+
+                                animState.texFile = animStateObj["texture"].GetString();
+                                animState.loop = animStateObj["loop"].IsBool() ? animStateObj["loop"].GetBool() : (animStateObj["loop"].GetInt() != 0);
+                                animState.currentFrameColumn = animStateObj["currentFrameColumn"].GetInt();
+                                animState.currentFrameRow = animStateObj["currentFrameRow"].GetInt();
+                                animState.totalColumn = animStateObj["totalColumn"].GetInt();
+                                animState.totalRow = animStateObj["totalRow"].GetInt();
+                                animState.frameTime = animStateObj["frameTime"].GetFloat();
+                                animState.texChanged = true; // magic boolean!!
+                            }
+                        }
+                    }
+                }
             }
 
             return obj;
@@ -889,7 +917,7 @@ void GameObjectManager::saveToJson(const std::string& filename, bool isNew) cons
             }
 
             // ---- Animation ----
-            if (auto an = obj->getComponent<Animation>()) {
+            /*if (auto an = obj->getComponent<Animation>()) {
                 rapidjson::Value ja(rapidjson::kObjectType);
                 ja.AddMember("loop", rapidjson::Value(an->loop ? 1 : 0), a);
                 ja.AddMember("currentFrameColumn", rapidjson::Value(an->currentFrameColumn), a);
@@ -898,7 +926,7 @@ void GameObjectManager::saveToJson(const std::string& filename, bool isNew) cons
                 ja.AddMember("totalRow", rapidjson::Value(an->totalRow), a);
                 ja.AddMember("frameTime", rapidjson::Value().SetFloat(an->frameTime), a);
                 comps.AddMember("Animation", ja, a);
-            }
+            }*/
 
             jObj.AddMember("components", comps, a);
             objects.PushBack(jObj, a);
@@ -1052,7 +1080,7 @@ void GameObjectManager::loadFromJson(const std::string& filename) {
         }
 
         // ---- Animation ----
-        if (comps.HasMember("Animation") && comps["Animation"].IsObject()) {
+        /*if (comps.HasMember("Animation") && comps["Animation"].IsObject()) {
             const auto& ja = comps["Animation"];
             auto* a = go->addComponent<Animation>();
             if (ja.HasMember("loop")) {
@@ -1070,7 +1098,7 @@ void GameObjectManager::loadFromJson(const std::string& filename) {
                 a->totalRow = ja["totalRow"].GetInt();
             if (ja.HasMember("frameTime") && ja["frameTime"].IsNumber())
                 a->frameTime = ja["frameTime"].GetFloat();
-        }
+        }*/
     }
 
     std::cout << "Scene loaded (JSON): " << filename << "\n";

@@ -449,11 +449,11 @@ int PrefabManager::applyToAllInstances(const std::string& prefabID, GameObjectMa
 		obj->getObjectName() = objName;
 		manager.assignObjectToLayer(obj, (objLayer == oldLayer) ? newLayer : objLayer);
 
-		if (Render* r = obj->getComponent<Render>()) {
-			if (r->hasTex && !r->texFile.empty()) {
-				r->texChanged = true;
-			}
-		}
+		//if (Render* r = obj->getComponent<Render>()) {
+		//	if (r->hasTex && !r->texFile.empty()) {
+		//		r->texChanged = true;
+		//	}
+		//}
 
 		++count;
 	}
@@ -636,11 +636,6 @@ void PrefabManager::applyPrefabComponents(GameObject* go, const rapidjson::Value
 			t->scaleY = jt["scale"][1].GetFloat();
 			t->scaleZ = jt["scale"][2].GetFloat();
 		}
-
-		/*std::cout << "\n\nReading prefab...\n";
-		std::cout << "Transform: x: " << t->x << ", y: " << t->y << ", z: " << t->z << std::endl;
-		std::cout << "Rotation: " << t->rotation << std::endl;
-		std::cout << "Scale: x: " << t->scaleX << ", y: " << t->scaleY << ", z: " << t->scaleZ << std::endl;*/
 	}
 
 	// ---- Render ----
@@ -701,20 +696,7 @@ void PrefabManager::applyPrefabComponents(GameObject* go, const rapidjson::Value
 			c->colliderSize.y = size[1];
 		}
 	}
-
-	// ---- Animation ----
-	if (comps.HasMember("Animation") && comps["Animation"].IsObject()) {
-		const auto& ja = comps["Animation"];
-		auto* a = go->addComponent<Animation>();
-
-		a->loop = JsonIO::GetBoolOr(ja, "loop", true);
-		a->currentFrameColumn = JsonIO::GetIntOr(ja, "currentFrameColumn", 0);
-		a->currentFrameRow = JsonIO::GetIntOr(ja, "currentFrameRow", 0);
-		a->totalColumn = JsonIO::GetIntOr(ja, "totalColumn", 1);
-		a->totalRow = JsonIO::GetIntOr(ja, "totalRow", 1);
-		a->frameTime = JsonIO::GetFloatOr(ja, "frameTime", 0.1f);
-	}
-
+	
 	// ---- State Machine ----
 	if (comps.HasMember("StateMachine") && comps["StateMachine"].IsObject()) {
 		const auto& smj = comps["StateMachine"];
@@ -724,6 +706,73 @@ void PrefabManager::applyPrefabComponents(GameObject* go, const rapidjson::Value
 		sm->state = JsonIO::GetString(smj, "state", state) ? parsePlayerState(state) : PlayerState::Idle;
 		sm->facingRight = JsonIO::GetBoolOr(smj, "facingRight", true);
 		sm->stateTime = JsonIO::GetFloatOr(smj, "stateTime", 0.f);
+
+		/* ---- Animation based on state ---- */
+			// Helper lambda to parse a single animation state
+		auto parseAnimState = [](const rapidjson::Value& animJson) -> AnimateState {
+			AnimateState state;
+
+			if (animJson.HasMember("texture") && animJson["texture"].IsString())
+				state.texFile = animJson["texture"].GetString();
+
+			if (animJson.HasMember("loop")) {
+				if (animJson["loop"].IsBool())
+					state.loop = animJson["loop"].GetBool();
+				else if (animJson["loop"].IsInt())
+					state.loop = (animJson["loop"].GetInt() != 0);
+			}
+
+			if (animJson.HasMember("currentFrameColumn") && animJson["currentFrameColumn"].IsInt())
+				state.currentFrameColumn = animJson["currentFrameColumn"].GetInt();
+
+			if (animJson.HasMember("currentFrameRow") && animJson["currentFrameRow"].IsInt())
+				state.currentFrameRow = animJson["currentFrameRow"].GetInt();
+
+			if (animJson.HasMember("totalColumn") && animJson["totalColumn"].IsInt())
+				state.totalColumn = animJson["totalColumn"].GetInt();
+
+			if (animJson.HasMember("totalRow") && animJson["totalRow"].IsInt())
+				state.totalRow = animJson["totalRow"].GetInt();
+
+			if (animJson.HasMember("frameTime") && animJson["frameTime"].IsNumber())
+				state.frameTime = static_cast<float>(animJson["frameTime"].GetDouble());
+
+			return state;
+			};
+
+		// parse each state's animation in the order: Idle, Walking, Jumping, Falling, Shooting
+		// match the PlayerState enum order
+		std::vector<std::string>stateNames = JsonIO::stateNames;
+
+		bool hasAnyAnimState = false;
+		for (size_t i = 0; i < stateNames.size(); ++i) {
+			if (smj.HasMember(stateNames[i].c_str()) && smj[stateNames[i].c_str()].IsObject()) {
+				const rapidjson::Value& stateObj = smj[stateNames[i].c_str()];
+				if (stateObj.HasMember("animState") && stateObj["animState"].IsObject()) {
+					hasAnyAnimState = true;
+					break;
+				}
+			}
+		}
+
+		// Add Animation component if needed
+		Animation* anim = nullptr;
+		if (hasAnyAnimState) {
+			anim = go->addComponent<Animation>();
+			anim->animState.resize(stateNames.size());
+
+			// Parse each state's animation
+			for (size_t i = 0; i < stateNames.size(); ++i) {
+				if (smj.HasMember(stateNames[i].c_str()) && smj[stateNames[i].c_str()].IsObject()) {
+					const rapidjson::Value& stateObj = smj[stateNames[i].c_str()];
+					if (stateObj.HasMember("animState") && stateObj["animState"].IsObject()) {
+						AnimateState parsed = parseAnimState(stateObj["animState"]);
+						anim->animState[i] = parsed;
+						anim->animState[i].texChanged = true;
+					}
+				}
+			}
+		}
 	}
 
 	// ---- AudioComponent ----
@@ -818,20 +867,6 @@ void PrefabManager::serializeComponents(const GameObject* obj, rapidjson::Value&
 		comps.AddMember("CollisionInfo", jc, a);
 	}
 
-	//// ---- Animation ----
-	if (auto an = obj->getComponent<Animation>()) {
-		rapidjson::Value ja(rapidjson::kObjectType);
-
-		ja.AddMember("loop", an->loop ? 1 : 0, a);
-		ja.AddMember("currentFrameColumn", an->currentFrameColumn, a);
-		ja.AddMember("currentFrameRow", an->currentFrameRow, a);
-		ja.AddMember("totalColumn", an->totalColumn, a);
-		ja.AddMember("totalRow", an->totalRow, a);
-		ja.AddMember("frameTime", an->frameTime, a);
-
-		comps.AddMember("Animation", ja, a);
-	}
-
 	//// ---- StateMachine ----
 	if (auto sm = obj->getComponent<StateMachine>()) {
 		rapidjson::Value js(rapidjson::kObjectType);
@@ -839,6 +874,29 @@ void PrefabManager::serializeComponents(const GameObject* obj, rapidjson::Value&
 		js.AddMember("state", rapidjson::Value(playerStateToStr(sm->state), a), a);
 		js.AddMember("facingRight", sm->facingRight ? 1 : 0, a);
 		js.AddMember("stateTime", sm->stateTime, a);
+
+		/* ------ Animation for states ----- */
+		if (auto anim = obj->getComponent<Animation>()) {
+			std::vector<std::string> stateNames = JsonIO::stateNames;
+			for (size_t i = 0; i < stateNames.size() && i < anim->animState.size(); ++i) {
+				const AnimateState& animState = anim->animState[i];
+
+				rapidjson::Value stateObj(rapidjson::kObjectType);
+				rapidjson::Value animStateObj(rapidjson::kObjectType);
+
+				animStateObj.AddMember("texture", rapidjson::Value(animState.texFile.c_str(), a), a);
+				animStateObj.AddMember("loop", rapidjson::Value(animState.loop ? 1 : 0), a);
+				animStateObj.AddMember("currentFrameColumn", rapidjson::Value(animState.currentFrameColumn), a);
+				animStateObj.AddMember("currentFrameRow", rapidjson::Value(animState.currentFrameRow), a);
+				animStateObj.AddMember("totalColumn", rapidjson::Value(animState.totalColumn), a);
+				animStateObj.AddMember("totalRow", rapidjson::Value(animState.totalRow), a);
+				animStateObj.AddMember("frameTime", rapidjson::Value(animState.frameTime), a);
+				stateObj.AddMember("animState", animStateObj, a);
+
+				js.AddMember(rapidjson::Value(stateNames[i].c_str(), a), stateObj, a);
+			}
+		}
+		/* ------ END ------ */
 
 		comps.AddMember("StateMachine", js, a);
 	}

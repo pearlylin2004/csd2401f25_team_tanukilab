@@ -234,7 +234,13 @@ namespace Editor {
 		//	},
 		//	[](const GameObject* obj) { return obj->hasComponent<Animation>();}
 		//},
-
+		{"State Machine",
+			[](GameObject* obj) {
+			obj->addComponent<StateMachine>();
+			DebugLog::addMessage("Added State Machine for " + obj->getObjectName());
+			},
+			[](const GameObject* obj) { return obj->hasComponent<StateMachine>(); }
+		},
 		{"Font",
 			[](GameObject* obj) {
 			obj->addComponent<FontComponent>();

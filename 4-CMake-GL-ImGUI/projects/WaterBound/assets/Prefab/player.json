@@ -12,7 +12,7 @@
             "shape": "square",
             "hasTex": 1,
             "texture": "assets/Texture/Leaf_Gun_Empty.png",
-            "hasAnimation": 0
+            "hasAnimation": 1
         },
         "Input": {},
         "Physics": {
@@ -31,7 +31,62 @@
         "StateMachine": {
             "state": "Idle",
             "facingRight": true,
-            "stateTime": 0.0
+            "stateTime": 0.0,
+          "Idle": {
+            "animState": {
+              "texture": "assets/Texture/Kinuta_Idle_SS.png",
+              "loop": 1,
+              "currentFrameColumn": 7,
+              "currentFrameRow": 0,
+              "totalColumn": 14,
+              "totalRow": 1,
+              "frameTime": 0.147
+            }
+          },
+          "Walking": {
+            "animState": {
+              "texture": "assets/Texture/Kinuta_Walk_SS.png",
+              "loop": 1,
+              "currentFrameColumn": 0,
+              "currentFrameRow": 0,
+              "totalColumn": 6,
+              "totalRow": 1,
+              "frameTime": 0.112
+            }
+          },
+          "Jumping": {
+            "animState": {
+              "texture": "assets/Texture/Kinuta_Jump_SS.png",
+              "loop": 0,
+              "currentFrameColumn": 0,
+              "currentFrameRow": 0,
+              "totalColumn": 4,
+              "totalRow": 1,
+              "frameTime": 0.15
+            }
+          },
+          "Falling": {
+            "animState": {
+              "texture": "assets/Texture/Kinuta_Fall_SS.png",
+              "loop": 0,
+              "currentFrameColumn": 0,
+              "currentFrameRow": 0,
+              "totalColumn": 4,
+              "totalRow": 1,
+              "frameTime": 0.1
+            }
+          },
+          "Shooting": {
+            "animState": {
+              "texture": "assets/Texture/Kinuta_Land_SS.png",
+              "loop": 0,
+              "currentFrameColumn": 0,
+              "currentFrameRow": 0,
+              "totalColumn": 3,
+              "totalRow": 1,
+              "frameTime": 0.08
+            }
+          }
         }
     }
 }
