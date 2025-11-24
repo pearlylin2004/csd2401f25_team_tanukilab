@@ -2,16 +2,44 @@
   "version": 1,
   "objects": [
     {
-      "name": "control_background",
+      "name": "confirmation_background",
       "components": {
         "Transform": {
           "pos": [0.0, 0.0, 0.0],
-          "scale": [30.0, 25.0, 0.0] 
+          "scale": [10.0, 5.0, 0.0] 
+        },
+        "Render": {
+          "shape": "square",
+          "hasTex": 0
+        }
+      }
+    },
+    {
+      "name": "yes_button",
+      "components": {
+        "Transform": {
+          "pos": [-11.0, -4.0, 1.0],
+          "scale": [8.0, 3.0, 0.0]
         },
         "Render": {
           "shape": "square",
           "hasTex": 1,
-          "texture": "assets/control_background.png",
+          "texture": "assets/quit_button.png",
+          "clr": [ 1.0, 1.0, 1.0 ]
+        }
+      }
+    },
+    {
+      "name": "no_button",
+      "components": {
+        "Transform": {
+          "pos": [-11.0, -4.0, 1.0],
+          "scale": [8.0, 3.0, 0.0]
+        },
+        "Render": {
+          "shape": "square",
+          "hasTex": 1,
+          "texture": "assets/quit_button.png",
           "clr": [ 1.0, 1.0, 1.0 ]
         }
       }

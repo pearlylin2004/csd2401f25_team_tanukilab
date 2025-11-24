@@ -256,7 +256,7 @@ void GUISystem::confirmationScreen(GameObjectManager& manager) {
     //remove menu buttons
     //removeMenuButtons(manager);
     manager.loadScene(runtimeScenePath("confirmation_scene.json"));
-    manager.initializeSceneResources(); //to get resources loaded
+    //manager.initializeSceneResources(); //to get resources loaded
     createButtons(manager); //loading scene
     std::cout << "[GUI] Confirmation screen created successfully!" << std::endl;
 }
