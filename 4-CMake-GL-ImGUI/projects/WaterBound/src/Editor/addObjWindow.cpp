@@ -1,15 +1,15 @@
 /* Start Header ************************************************************************/
 /*!
-\file       ui.cpp
+\file       addObjWindow.cpp
 \author     Tan Chee Qing, cheeqing.tan, 2401486
             - 90%
             Pearly Lin Lee Ying, p.lin, 2401591
             - 10% of the file
 \par        p.lin@digipen.edu
 \par		cheeqing.tan@digipen.edu
-\date       September, 17th, 2025
-\brief      definition of functions, drawPerformance, drawControls, drawDebug, shapeControl
-            for the imgui windows
+\date       November, 10th, 2025
+\brief      Definitions of rendering the window and the adding of different objects in
+            the editor.
 
 Copyright (C) 2025 DigiPen Institute of Technology.
 Reproduction or disclosure of this file or its contents
@@ -29,34 +29,6 @@ void AddObjWindow::render(GameObjectManager& manager){
 
     //ImGui::PushItemWidth(150.0f);
 
-    /* --------------- Add Circle Logic --------------- */
-    {
-        ImGui::Text("X");
-        ImGui::SameLine();
-        ImGui::InputFloat("##X", &m_circleInput.inputX, 1.f);
-
-        ImGui::Text("Y");
-        ImGui::SameLine();
-        ImGui::InputFloat("##Y", &m_circleInput.inputY, 1.f);
-
-        ImGui::Text("Z");
-        ImGui::SameLine();
-        ImGui::InputFloat("##Z", &m_circleInput.inputZ, 1.f);
-        ImGui::Spacing();
-
-    //ImGui::PopItemWidth();
-        if (ImGui::Button("Add Circle")) {
-            createCir(manager, m_circleInput.inputX, m_circleInput.inputY, m_circleInput.inputZ);
-        }
-
-        /* --------------- END --------------- */
-    }
-
-    ImGui::Spacing();
-    ImGui::Separator();
-    ImGui::Spacing();
-
-        
     /* --------------- Add Rectangle Logic --------------- */
     {
         ImGui::Text("X");
@@ -78,6 +50,34 @@ void AddObjWindow::render(GameObjectManager& manager){
         }
     }
     /* --------------- END --------------- */
+
+    ImGui::Spacing();
+    ImGui::Separator();
+    ImGui::Spacing();
+
+
+    /* --------------- Add Circle Logic --------------- */
+    {
+        ImGui::Text("X");
+        ImGui::SameLine();
+        ImGui::InputFloat("##X", &m_circleInput.inputX, 1.f);
+
+        ImGui::Text("Y");
+        ImGui::SameLine();
+        ImGui::InputFloat("##Y", &m_circleInput.inputY, 1.f);
+
+        ImGui::Text("Z");
+        ImGui::SameLine();
+        ImGui::InputFloat("##Z", &m_circleInput.inputZ, 1.f);
+        ImGui::Spacing();
+
+        //ImGui::PopItemWidth();
+        if (ImGui::Button("Add Circle")) {
+            createCir(manager, m_circleInput.inputX, m_circleInput.inputY, m_circleInput.inputZ);
+        }
+
+        /* --------------- END --------------- */
+    }
 
     ImGui::Spacing();
     ImGui::Separator();

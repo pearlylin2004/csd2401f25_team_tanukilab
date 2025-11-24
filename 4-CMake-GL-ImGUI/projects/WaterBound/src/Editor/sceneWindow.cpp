@@ -1,15 +1,13 @@
 /* Start Header ************************************************************************/
 /*!
-\file       ui.cpp
+\file       sceneWindow.cpp
 \author     Tan Chee Qing, cheeqing.tan, 2401486
-            - 90%
-            Pearly Lin Lee Ying, p.lin, 2401591
-            - 10% of the file
-\par        p.lin@digipen.edu
+            - 100%
 \par		cheeqing.tan@digipen.edu
-\date       September, 17th, 2025
-\brief      definition of functions, drawPerformance, drawControls, drawDebug, shapeControl
-            for the imgui windows
+\date       November, 10th, 2025
+\brief      Definitions of the functions for rendering of Scene in editor as well as the
+            popup for scene manipulation (load/create/duplicate/save). Rendering of gizmo
+            is also included here.
 
 Copyright (C) 2025 DigiPen Institute of Technology.
 Reproduction or disclosure of this file or its contents
@@ -63,14 +61,14 @@ void SceneWindow::render(GLuint texture, float aspectRatio, GameObjectManager& m
 
     if (ImGui::IsWindowHovered())
     {
-        // Pan with middle mouse button
-        if (InputHandler::isMouseDragging(GLFW_MOUSE_BUTTON_MIDDLE))
+        // Pan with middle mouse button (and in editing mode)
+        if (InputHandler::isMouseDragging(GLFW_MOUSE_BUTTON_MIDDLE) && EditorManager::isEditingMode())
         {
             renderer::editorCam.pan(InputHandler::getMouseDeltaWorldInViewport(m_sceneWindowState.sceneSize));
         }
 
-        // zoom in/out with middle mouse button
-        if (InputHandler::getMouseScroll() != 0.f)
+        // zoom in/out with middle mouse button (and in editing mode)
+        if (InputHandler::getMouseScroll() != 0.f && EditorManager::isEditingMode())
         {
             renderer::editorCam.zoomInOut(InputHandler::getMouseScroll());
         }
@@ -92,9 +90,16 @@ void SceneWindow::render(GLuint texture, float aspectRatio, GameObjectManager& m
         }
 
     }
-
+    
+    /* ---------- ImGuizmo --------- */
     ImGuizmo::BeginFrame();
+    // show grid
+    if (m_gizmoState.showGrid) {
+        drawGrid(renderer::editorCam.view, renderer::editorCam.proj);
+    }
+    // render gizmo
     renderGizmo(manager);
+    /* ---------- END --------- */
 
     ImGui::EndChild();
 
@@ -157,7 +162,7 @@ void SceneWindow::renderGizmo(GameObjectManager& manager) {
     float* snapPtr = nullptr;
     float snapValue[3];
     if (m_gizmoState.useSnap) {
-        if (m_gizmoState.currentOp == ImGuizmo::ROTATE) {
+        if (m_gizmoState.currentOp == Editor::GIZMO_ROTATE) {
             snapValue[0] = snapValue[1] = snapValue[2] = m_gizmoState.snapAngle;
         }
         else {
@@ -173,9 +178,9 @@ void SceneWindow::renderGizmo(GameObjectManager& manager) {
 
     // Detect gizmo drag start
     if (isUsingGizmo && !wasUsingGizmo) {
-        UndoRedoManager::Instance().beginTransformEdit(manager, selected);
+        UndoRedoManager::Instance().beginTransformEdit(selected);
     }
-
+    
     // draw gizmo and settle the changes
     if (ImGuizmo::Manipulate(glm::value_ptr(view), glm::value_ptr(proj),
         static_cast<ImGuizmo::OPERATION>(m_gizmoState.currentOp), m_gizmoState.currentMode,
@@ -221,6 +226,60 @@ void SceneWindow::renderGizmo(GameObjectManager& manager) {
         std::to_string(m_sceneWindowState.sceneSize.x) + "x" +
         std::to_string(m_sceneWindowState.sceneSize.y) + "\n"
     );*/
+}
+
+void SceneWindow::drawGrid(const glm::mat4& view, const glm::mat4& proj) {
+    ImDrawList* drawList = ImGui::GetWindowDrawList();
+
+    // grid settings
+    int gridLines = 50;
+
+    ImU32 gridColor = IM_COL32(100, 100, 100, 100); // dark dark for the normal grid
+    ImU32 axisColorX = IM_COL32(255, 80, 80, 150); // red for x axis
+    ImU32 axisColorY = IM_COL32(80, 255, 80, 150); // green for y-axis
+
+    // convert world space to screen space (with offset)
+    auto worldToScreen = [&](float x, float y, float z) -> ImVec2 {
+        glm::vec4 worldPos(x + m_gizmoState.gridOffset.x, y + m_gizmoState.gridOffset.y, z, 1.0f);
+        glm::vec4 clipPos = proj * view * worldPos;
+
+        if (clipPos.w != 0.0f) {
+            clipPos /= clipPos.w;
+        }
+
+        float screenX = m_sceneWindowState.scenePos.x +
+            (clipPos.x * 0.5f + 0.5f) * m_sceneWindowState.sceneSize.x;
+        float screenY = m_sceneWindowState.scenePos.y +
+            (1.0f - (clipPos.y * 0.5f + 0.5f)) * m_sceneWindowState.sceneSize.y;
+
+        return ImVec2(screenX, screenY);
+    };
+
+    float extent = gridLines * m_gizmoState.gridSpacing;
+
+    // draw vertical lines
+    for (int i = -gridLines; i <= gridLines; ++i) {
+        float x = i * m_gizmoState.gridSpacing;
+        ImVec2 start = worldToScreen(x, -extent, 0.0f);
+        ImVec2 end = worldToScreen(x, extent, 0.0f);
+
+        ImU32 color = (i == 0) ? axisColorY : gridColor;
+        float thickness = (i == 0) ? 2.0f : 1.0f;
+
+        drawList->AddLine(start, end, color, thickness);
+    }
+
+    // draw horizontal lines
+    for (int i = -gridLines; i <= gridLines; ++i) {
+        float y = i * m_gizmoState.gridSpacing;
+        ImVec2 start = worldToScreen(-extent, y, 0.0f);
+        ImVec2 end = worldToScreen(extent, y, 0.0f);
+
+        ImU32 color = (i == 0) ? axisColorX : gridColor;
+        float thickness = (i == 0) ? 2.0f : 1.0f;
+
+        drawList->AddLine(start, end, color, thickness);
+    }
 }
 
 void SceneWindow::editorCameraControls() {
@@ -330,6 +389,10 @@ void SceneWindow::duplicateScene(GameObjectManager& manager) {
 
 // load existing scene
 void SceneWindow::loadScene(GameObjectManager& manager) {
+    // reset cam pos
+    renderer::editorCam.campos = glm::vec3(0.f);
+    renderer::editorCam.zoom = 10.f;
+
     resetSelection();
 
     // clear all undo/redo
@@ -352,11 +415,14 @@ void SceneWindow::newScenePopup(GameObjectManager& manager) {
         m_menuBarState.showNewScenePopup = false;
     }
 
+    ImVec2 center = ImGui::GetMainViewport()->GetCenter();
+    ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
+
     if (ImGui::BeginPopupModal("Confirm New Scene", NULL, ImGuiWindowFlags_AlwaysAutoResize)) {
         ImGui::Text("Create a new scene? Unsaved changes will be lost.");
 
         // Save and open new scene
-        if (ImGui::Button("Save and Create New")) {
+        if (ImGui::Button("Save and Create New") || InputHandler::isKeyTriggered(GLFW_KEY_1)) {
             //manager.saveToFile(m_currentSceneName);
             manager.saveScene(JsonIO::sourceScenePath(m_sceneState.currentSceneName));
             JsonIO::syncSceneToRuntime(m_sceneState.currentSceneName);
@@ -373,7 +439,7 @@ void SceneWindow::newScenePopup(GameObjectManager& manager) {
 
         // Discard changes and open new scene
         ImGui::SameLine();
-        if (ImGui::Button("Discard Changes")) {
+        if (ImGui::Button("Discard Changes") || InputHandler::isKeyTriggered(GLFW_KEY_2)) {
 
             // create new scene
             newScene(manager);
@@ -386,7 +452,7 @@ void SceneWindow::newScenePopup(GameObjectManager& manager) {
 
         // Cancel duplicate and stay in current scene
         ImGui::SameLine();
-        if (ImGui::Button("Cancel")) {
+        if (ImGui::Button("Cancel") || InputHandler::isKeyTriggered(GLFW_KEY_3)) {
             ImGui::CloseCurrentPopup();
         }
 
@@ -401,11 +467,14 @@ void SceneWindow::duplicateScenePopup(GameObjectManager& manager) {
         else DebugLog::addMessage("Playing simulation, cannot load scene.\n");
     }
 
+    ImVec2 center = ImGui::GetMainViewport()->GetCenter();
+    ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
+
     if (ImGui::BeginPopupModal("Confirm Duplicate Scene", NULL, ImGuiWindowFlags_AlwaysAutoResize)) {
         ImGui::Text("Duplicate and open new a scene? Unsaved changes will be lost.");
 
         // Save and open newly duplicated scene
-        if (ImGui::Button("Save and Duplicate")) {
+        if (ImGui::Button("Save and Duplicate") || InputHandler::isKeyTriggered(GLFW_KEY_1)) {
             //manager.saveToFile(m_currentSceneName);
             manager.saveScene(JsonIO::sourceScenePath(m_sceneState.currentSceneName));
             JsonIO::syncSceneToRuntime(m_sceneState.currentSceneName);
@@ -416,7 +485,7 @@ void SceneWindow::duplicateScenePopup(GameObjectManager& manager) {
 
         // Discard changes and open newly duplicated scene
         ImGui::SameLine();
-        if (ImGui::Button("Discard Changes")) {
+        if (ImGui::Button("Discard Changes") || InputHandler::isKeyTriggered(GLFW_KEY_2)) {
 
             duplicateScene(manager);
             ImGui::CloseCurrentPopup();
@@ -424,7 +493,7 @@ void SceneWindow::duplicateScenePopup(GameObjectManager& manager) {
 
         // Cancel duplicate and stay in current scene
         ImGui::SameLine();
-        if (ImGui::Button("Cancel")) {
+        if (ImGui::Button("Cancel") || InputHandler::isKeyTriggered(GLFW_KEY_3)) {
             ImGui::CloseCurrentPopup();
         }
 
@@ -439,6 +508,9 @@ void SceneWindow::loadScenePopup(GameObjectManager& manager) {
         else DebugLog::addMessage("Playing simulation, cannot load scene.\n");
     }
 
+    ImVec2 center = ImGui::GetMainViewport()->GetCenter();
+    ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
+
     if (ImGui::BeginPopupModal("Confirm Load Scene", NULL, ImGuiWindowFlags_AlwaysAutoResize)) {
         // show different title if reloading current scene
         std::string title = (m_menuBarState.sceneToLoad == m_sceneState.currentSceneName) ? "Reload current scene? Unsaved changes will be lost." : "Load another scene? Unsaved changes will be lost";
@@ -446,7 +518,7 @@ void SceneWindow::loadScenePopup(GameObjectManager& manager) {
         ImGui::Text(title.c_str());
 
         // Save and load another scene
-        if (ImGui::Button("Save and Load")) {
+        if (ImGui::Button("Save and Load") || InputHandler::isKeyTriggered(GLFW_KEY_1)) {
             //manager.saveToFile(m_currentSceneName);
             manager.saveScene(JsonIO::sourceScenePath(m_sceneState.currentSceneName));
             JsonIO::syncSceneToRuntime(m_sceneState.currentSceneName);
@@ -466,7 +538,7 @@ void SceneWindow::loadScenePopup(GameObjectManager& manager) {
 
         // Discard changes and load selected scene
         ImGui::SameLine();
-        if (ImGui::Button("Discard Changes")) {
+        if (ImGui::Button("Discard Changes") || InputHandler::isKeyTriggered(GLFW_KEY_2)) {
             loadScene(manager);
 
             /*std::vector<GameObject*> gameObjects;
@@ -483,7 +555,7 @@ void SceneWindow::loadScenePopup(GameObjectManager& manager) {
 
         // Cancel loading and stay in current scene
         ImGui::SameLine();
-        if (ImGui::Button("Cancel")) {
+        if (ImGui::Button("Cancel") || InputHandler::isKeyTriggered(GLFW_KEY_3)) {
             ImGui::CloseCurrentPopup();
         }
 
@@ -535,7 +607,7 @@ void SceneWindow::objPicking(GameObjectManager& manager) {
         m_objSelectionState.selectedObject = selected;
         m_objSelectionState.draggedObject = selected;
 
-        UndoRedoManager::Instance().beginTransformEdit(manager, selected);
+        UndoRedoManager::Instance().beginTransformEdit(selected);
 
         auto iterator = std::find(gameObjects.begin(), gameObjects.end(), selected);
         if (iterator != gameObjects.end()) {

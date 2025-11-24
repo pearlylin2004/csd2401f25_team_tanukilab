@@ -19,7 +19,6 @@ Technology is prohibited.
 /* End Header **************************************************************************/
 #include "physics.h"
 #include "input.h"
-#include "ui.h"
 #include "dynamics.h"
 
 void PhysicsForces::applyGravity(Physics* physics, float deltaTime) {

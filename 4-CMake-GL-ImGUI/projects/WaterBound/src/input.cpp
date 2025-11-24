@@ -180,24 +180,24 @@ Vector2D InputHandler::getMouseDragStartPos(int button) {
 	return m_mouseDragStartPos[button];
 }
 
-Vector2D InputHandler::getMouseDeltaWorld() {
-	Vector2D delta = getMouseDelta();
-
-	if (delta.x == 0.0f && delta.y == 0.0f) return Vector2D(0.0f);
-
-	// convert screen space to normalized
-	float normX = delta.x / (m_cfg.width / 2.f);
-	float normY = -delta.y / (m_cfg.height / 2.f);
-
-	float scaleX = (renderer::cam.width / 9.1f);
-	float scaleY = ((renderer::cam.width / renderer::cam.ar) / 9.1f);
-
-	// apply camera position and zoom
-	float worldX = (normX * scaleX) / renderer::cam.zoom;
-	float worldY = (normY * scaleY) / renderer::cam.zoom;
-
-	return Vector2D(worldX, worldY);
-}
+//Vector2D InputHandler::getMouseDeltaWorld() {
+//	Vector2D delta = getMouseDelta();
+//
+//	if (delta.x == 0.0f && delta.y == 0.0f) return Vector2D(0.0f);
+//
+//	// convert screen space to normalized
+//	float normX = delta.x / (m_cfg.width / 2.f);
+//	float normY = -delta.y / (m_cfg.height / 2.f);
+//
+//	float scaleX = (renderer::cam.width / 9.1f);
+//	float scaleY = ((renderer::cam.width / renderer::cam.ar) / 9.1f);
+//
+//	// apply camera position and zoom
+//	float worldX = (normX * scaleX) / renderer::cam.zoom;
+//	float worldY = (normY * scaleY) / renderer::cam.zoom;
+//
+//	return Vector2D(worldX, worldY);
+//}
 
 // get current cursor position
 Vector2D InputHandler::getMousePosition() {
@@ -270,23 +270,45 @@ Vector2D InputHandler::getMouseDeltaWorldInViewport(const ImVec2& sceneSize)
 	return world;
 }
 
-// get cursor world postion
+//// get cursor world postion
+//Vector2D InputHandler::getWorldMousePosition() {
+//	float mx = getMouseX();
+//	float my = getMouseY();
+//
+//	my = m_cfg.height - my;
+//
+//	// convert screen space to normalized
+//	float normX = (mx - m_cfg.width / 2.f) / (m_cfg.width / 2.f);
+//	float normY = (my - m_cfg.height / 2.f) / (m_cfg.height / 2.f);
+//
+//	float scaleX = (renderer::cam.width / 9.1f);
+//	float scaleY = ((renderer::cam.width / renderer::cam.ar) / 9.1f);
+//
+//	// apply camera position and zoom
+//	float worldX = (normX * scaleX) / renderer::cam.zoom + renderer::cam.campos.x;
+//	float worldY = (normY * scaleY) / renderer::cam.zoom + renderer::cam.campos.y;
+//
+//	return Vector2D(worldX, worldY);
+//}
 Vector2D InputHandler::getWorldMousePosition() {
 	float mx = getMouseX();
 	float my = getMouseY();
 
+	// Flip Y coordinate (screen origin top-left, world origin center)
 	my = m_cfg.height - my;
 
-	// convert screen space to normalized
+	// Convert screen space to normalized device coordinates [-1, 1]
 	float normX = (mx - m_cfg.width / 2.f) / (m_cfg.width / 2.f);
 	float normY = (my - m_cfg.height / 2.f) / (m_cfg.height / 2.f);
 
-	float scaleX = (renderer::cam.width / 9.1f);
-	float scaleY = ((renderer::cam.width / renderer::cam.ar) / 9.1f);
+	// Use camera's actual orthographic bounds instead of magic numbers
+	// The camera's ortho projection is: glm::ortho(-zoom * ar, zoom * ar, -zoom, zoom, -1.f, 1.f)
+	float worldWidth = renderer::cam.zoom * renderer::cam.ar * 2.0f;  // Total width in world units
+	float worldHeight = renderer::cam.zoom * 2.0f;                     // Total height in world units
 
-	// apply camera position and zoom
-	float worldX = (normX * scaleX) / renderer::cam.zoom + renderer::cam.campos.x;
-	float worldY = (normY * scaleY) / renderer::cam.zoom + renderer::cam.campos.y;
+	// Convert normalized coords to world space
+	float worldX = normX * (worldWidth / 2.0f) + renderer::cam.campos.x;
+	float worldY = normY * (worldHeight / 2.0f) + renderer::cam.campos.y;
 
 	return Vector2D(worldX, worldY);
 }
@@ -372,6 +394,13 @@ void InputHandler::scrollCallback(GLFWwindow* window, double xoffset, double yof
 	(void)xoffset;
 	m_scrollOffset = static_cast<float>(yoffset);
 }
+
+void InputHandler::setWindowSize(int width, int height)
+{
+	m_cfg.width = width;
+	m_cfg.height = height;
+}
+
 
 #ifdef _DEBUG
 void InputHandler::dropCallback(GLFWwindow* window, int count, const char** paths) {

@@ -20,8 +20,6 @@ Technology is prohibited.
 #include "Systems.h"
 #include "Component.h"
 #include "GameObjectManager.h"
-#include "ui.h"   
-
 
 // ============================================================================
 // Helper: convert PlayerState enum to readable string

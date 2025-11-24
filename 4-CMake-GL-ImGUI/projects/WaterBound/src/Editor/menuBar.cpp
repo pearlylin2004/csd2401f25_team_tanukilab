@@ -1,15 +1,12 @@
 /* Start Header ************************************************************************/
 /*!
-\file       ui.cpp
+\file       menuBar.cpp
 \author     Tan Chee Qing, cheeqing.tan, 2401486
-            - 90%
-            Pearly Lin Lee Ying, p.lin, 2401591
-            - 10% of the file
-\par        p.lin@digipen.edu
+            - 100%
 \par		cheeqing.tan@digipen.edu
-\date       September, 17th, 2025
-\brief      definition of functions, drawPerformance, drawControls, drawDebug, shapeControl
-            for the imgui windows
+\date       November, 10th, 2025
+\brief      Definitions of the functions for rendering of the top menu bar in game.
+            Also include the setting up of colours for different group in the editor.
 
 Copyright (C) 2025 DigiPen Institute of Technology.
 Reproduction or disclosure of this file or its contents

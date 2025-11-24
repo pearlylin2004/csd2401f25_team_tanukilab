@@ -1,15 +1,16 @@
 ﻿/* Start Header ************************************************************************/
 /*!
-\file       ui.h
+\file       editorManager.h
 \author     Tan Chee Qing, cheeqing.tan, 2401486
-			- 90%
+			- 95%
 			Pearly Lin Lee Ying, p.lin, 2401591
-			- 10% of the file
+			- 5% of the file
 \par        p.lin@digipen.edu
 \par		cheeqing.tan@digipen.edu
-\date       September, 24th, 2025
-\brief      Declaration of functions, drawDemo, drawControls, drawDebug, shapeControl
-			for the imgui windows
+\date       November, 10th, 2025
+\brief      Multiple class for the rendering of different ImGui viewports for editor.
+			Each class will have its own utility functions to aid in the purpose it served.
+			EditorManager will be the only public interface needed to update in UISystem.
 
 Copyright (C) 2025 DigiPen Institute of Technology.
 Reproduction or disclosure of this file or its contents
@@ -102,7 +103,7 @@ private:
 	void showContextMenu(GameObjectManager& manager, GameObject* obj, int objIndex);
 
 	void objDeletePopup(GameObjectManager& manager);
-	void createPrefabPopup(GameObjectManager& manager);
+	void createPrefabPopup();
 
 	Editor::ObjSelectionState& m_objSelectionState;
 };
@@ -181,8 +182,10 @@ public:
 private:
 	/* --------- Render -------- */
 	void renderGizmo(GameObjectManager& manager);
+	void drawGrid(const glm::mat4& view, const glm::mat4& proj);
 	void editorCameraControls();
 	/* -------- END -------- */
+
 
 	/* --------- Scene Management -------- */
 	void newScene(GameObjectManager& manager);

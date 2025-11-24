@@ -53,24 +53,38 @@ namespace {
     }
 }
 
-/* ============================ Public API ============================ */
 bool LoadConfig(const std::string& path, AppConfig& out, std::string* err)
 {
     rapidjson::Document doc;
-    if (!JsonIO::ReadFileToDocument(path, doc, err)) return false;   // <�� change here
+    if (!JsonIO::ReadFileToDocument(path, doc, err))
+        return false;
+    //out.width = 1600;
+    //out.height = 800;
+    //out.title = "WaterBound";
+    //out.vsync = true;
+    //out.fullscreen = true;              
+    //out.clear_color[0] = 0.2f;
+    //out.clear_color[1] = 0.2f;
+    //out.clear_color[2] = 0.25f;
+    //out.clear_color[3] = 1.0f;
+    //out.show_fps_in_title = true;
+    //out.show_input_debug = false;
 
+    // ---- Read from JSON ----
     if (doc.HasMember("window") && doc["window"].IsObject()) {
         const auto& w = doc["window"];
         applyInt(w, "width", out.width);
         applyInt(w, "height", out.height);
         applyStr(w, "title", out.title);
         applyBool(w, "vsync", out.vsync);
-        applyBool(w, "fullscreen", out.fullscreen);
+        applyBool(w, "fullscreen", out.fullscreen);   
     }
+
     if (doc.HasMember("render") && doc["render"].IsObject()) {
         const auto& r = doc["render"];
         applyFloat4(r, "clear_color", out.clear_color);
     }
+
     if (doc.HasMember("debug") && doc["debug"].IsObject()) {
         const auto& d = doc["debug"];
         applyBool(d, "show_fps_in_title", out.show_fps_in_title);
@@ -79,7 +93,9 @@ bool LoadConfig(const std::string& path, AppConfig& out, std::string* err)
 
     gShowFpsInTitle = out.show_fps_in_title;
     gShowInputDebug = out.show_input_debug;
-    for (int i = 0; i < 4; ++i) gClearColor[i] = out.clear_color[i];
+    for (int i = 0; i < 4; ++i)
+        gClearColor[i] = out.clear_color[i];
+
     return true;
 }
 

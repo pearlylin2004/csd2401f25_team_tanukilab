@@ -83,6 +83,13 @@ void InputSystem::update(GameObjectManager& manager, const float& deltaTime, Mes
 		throw std::runtime_error("F9 test: simulated failure in update()");
 	}
 
+	/* --- for showing fps scuffed scuffed ---- */
+	if (InputHandler::isKeyTriggered(GLFW_KEY_F8)) {
+		FontSystem::showFPS = !FontSystem::showFPS;
+	}
+	/* ---- END ---- */
+
+
 	auto end = std::chrono::high_resolution_clock::now();
 	double ms = std::chrono::duration<double, std::milli>(end - start).count(); //get elapse time in ms
 	g_SystemTimers.push_back({ "Input", ms }); //saving timing for UI output
@@ -104,8 +111,11 @@ void RenderSystem::update(GameObjectManager& manager, float const& deltaTime)
 
 	glm::mat4 camView, camProj;
 
-	// Attach texture to FBO and update editor camera if editor is on
-	if (UISystem::isShowUI()/* && EditorManager::isEditingMode()*/)
+	// decide where to render
+	renderFBO();
+
+	// Attach texture to FBO and update editor camera if editor is on & update camera
+	if (UISystem::isShowUI() && EditorManager::isEditingMode())
 	{
 		createFBO();
 		renderer::editorCam.update();
@@ -292,9 +302,12 @@ void RenderSystem::update(GameObjectManager& manager, float const& deltaTime)
 	g_SystemTimers.push_back({"Render", ms }); //saving timing for UI output
 }
 
-void RenderSystem::unbindFBO() {
-	if (UISystem::isShowUI()) {
-		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+void RenderSystem::renderFBO() {
+	if (!UISystem::isShowUI()) {
+		glBindFramebuffer(GL_FRAMEBUFFER, 0); // render directly to screen
+	}
+	else {
+		createFBO();
 	}
 }
 
@@ -635,7 +648,7 @@ void FontSystem::init(GameObjectManager& manager)
 	}
 }
 
-void FontSystem::update(GameObjectManager& manager)
+void FontSystem::update(GameObjectManager& manager, double fps)
 {
 	//for debugging only
 
@@ -689,6 +702,21 @@ void FontSystem::update(GameObjectManager& manager)
 			RenderText(Font::fontShaders, fc->word, transform->x, transform->y, fc->scale, fc->clr, object);
 		}
 	}
+
+	/* ---- scuffed way to render fps for M3 ---- */
+	if (showFPS) {
+		std::unique_ptr<GameObject> fpsText = manager.createTempGameObject("fpsText");
+		if (Transform* t = fpsText->addComponent<Transform>()) {
+			if (FontComponent* fc = fpsText->addComponent<FontComponent>()) {
+				fc->word = "FPS: " + std::to_string(fps);
+				t->x = -15.f;
+				t->y = 9.f;
+				RenderText(Font::fontShaders, fc->word, t->x, t->y, fc->scale, fc->clr, fpsText.get());
+			}
+		}
+	}
+	/* ---- END ---- */
+
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 	auto end = std::chrono::high_resolution_clock::now();
@@ -794,15 +822,15 @@ void FontSystem::RenderText(GLuint& s, std::string text, float x, float y, float
 void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime, MessageBus& messageBus) {
 	auto start = std::chrono::high_resolution_clock::now();
 
-	// Step mode toggling
-	if (InputHandler::isComboKeyTriggered(GLFW_KEY_Z))
+	// Step mode toggling (doesnt seem to be working with the new physics system)
+	/*if (InputHandler::isComboKeyTriggered(GLFW_KEY_Z))
 		m_stepMode = !m_stepMode;
 	if (m_stepMode && InputHandler::isKeyTriggered(GLFW_KEY_Z))
 		m_stepReq = true;
 	if (m_stepMode && !m_stepReq)
 		return;
 	if (m_stepReq)
-		m_stepReq = false;
+		m_stepReq = false;*/
 
 	std::vector<GameObject*> gameObjects;
 	manager.getAllGameObjects(gameObjects);
@@ -1263,11 +1291,11 @@ void UISystem::dockingSetUp() {
 		ImGuiID dockMain = dockspaceID;
 
 		ImGuiID dockLeft, dockRight, dockBottom;
-		ImGui::DockBuilderSplitNode(dockMain, ImGuiDir_Left, 0.25f, &dockLeft, &dockMain);
+		ImGui::DockBuilderSplitNode(dockMain, ImGuiDir_Left, 0.28f, &dockLeft, &dockMain);
 		// split off right panel (30% of remaining width)
-		ImGui::DockBuilderSplitNode(dockMain, ImGuiDir_Right, 0.30f, &dockRight, &dockMain);
+		ImGui::DockBuilderSplitNode(dockMain, ImGuiDir_Right, 0.35f, &dockRight, &dockMain);
 		// split off bottom panel (30% of remaining height)
-		ImGui::DockBuilderSplitNode(dockMain, ImGuiDir_Down, 0.30f, &dockBottom, &dockMain);
+		ImGui::DockBuilderSplitNode(dockMain, ImGuiDir_Down, 0.50f, &dockBottom, &dockMain);
 
 		// subdivide the panels
 		ImGuiID dockLeftBottom, dockRightBottom;

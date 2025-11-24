@@ -1,4 +1,21 @@
-﻿#ifdef _DEBUG
+﻿/* Start Header ************************************************************************/
+/*!
+\file       undoRedo.h
+\author     Tan Chee Qing, cheeqing.tan, 2401486
+			- 10%
+\par		cheeqing.tan@digipen.edu
+\date       November, 10th, 2025
+\brief      Class for recording the steps and snapshots for undo and redo. UndoRedoManager
+			should be the only public interface needed to track and execute undo and redo
+			in the editor.
+
+Copyright (C) 2025 DigiPen Institute of Technology.
+Reproduction or disclosure of this file or its contents
+without the prior written consent of DigiPen Institute of
+Technology is prohibited.
+*/
+/* End Header **************************************************************************/
+#ifdef _DEBUG
 #pragma once
 #include <string>
 #include <memory>
@@ -123,7 +140,7 @@ public:
 	void clear();
 
 	// start tracking transform changes
-	void beginTransformEdit(GameObjectManager& manager, GameObject* obj);
+	void beginTransformEdit(GameObject* obj);
 
 	// ebd tracking and create command if changed detected
 	void endTransformEdit(GameObjectManager& manager, GameObject* obj);

@@ -27,14 +27,24 @@ Technology is prohibited.
 #include "GUISystem.h"  // Add this include
 
 CoreEngine::CoreEngine()
-    : m_window(nullptr), m_fps(0.0), m_delta(0.0), m_isRunning(false) {
+    : m_window(nullptr), 
+    m_fps(0.0), 
+    m_delta(0.0), 
+    m_isRunning(false),
+    m_isFullscreen(false),
+    m_windowedWidth(0),
+    m_windowedHeight(0),
+    m_windowPosX(100),
+    m_windowPosY(100),
+    m_forceWindowed(false)
+{
 }
 
 CoreEngine::~CoreEngine() {
     // The smart pointers will automatically clean up the systems
 }
 
-void CoreEngine::Init() {
+void CoreEngine::Init(bool forceWindowed) {
     AppConfig cfg;
     std::string err;
     if (!LoadConfig(std::string(RUNTIME_RES_DIR_R) + "/config.json", cfg, &err)) {
@@ -42,6 +52,11 @@ void CoreEngine::Init() {
     }
 
     m_title = cfg.title;
+    
+    m_forceWindowed = forceWindowed;
+
+    bool wantFullscreen = cfg.fullscreen && !m_forceWindowed;
+    m_isFullscreen = wantFullscreen;
 
     // --- GLFW/GLEW Initialization ---
     if (!glfwInit()) throw std::runtime_error("GLFW initialization failed");
@@ -50,7 +65,30 @@ void CoreEngine::Init() {
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 
-    m_window = glfwCreateWindow(cfg.width, cfg.height, m_title.c_str(), nullptr, nullptr);
+    GLFWmonitor* monitor = nullptr;
+    int winWidth = cfg.width;
+    int winHeight = cfg.height;
+
+    if (wantFullscreen) {
+        monitor = glfwGetPrimaryMonitor();
+        const GLFWvidmode* mode = glfwGetVideoMode(monitor);
+        winWidth = mode->width;
+        winHeight = mode->height;
+
+        // remember windowed size for when we toggle back
+        m_windowedWidth = cfg.width;
+        m_windowedHeight = cfg.height;
+    }
+    else {
+        m_windowedWidth = cfg.width;
+        m_windowedHeight = cfg.height;
+    }
+
+    cfg.width = winWidth;
+    cfg.height = winHeight;
+    
+    m_window = glfwCreateWindow(winWidth, winHeight, m_title.c_str(), monitor, nullptr);
+
     if (!m_window) {
         glfwTerminate();
         throw std::runtime_error("Window creation failed");
@@ -65,7 +103,7 @@ void CoreEngine::Init() {
     glfwSetWindowFocusCallback(m_window, CoreEngine::windowFocusCallback);
 
     glfwMakeContextCurrent(m_window);
-    glViewport(0, 0, cfg.width, cfg.height);
+    glViewport(0, 0, winWidth, winHeight);
     glewExperimental = GL_TRUE;
     if (glewInit() != GLEW_OK) {
         glfwTerminate();
@@ -81,7 +119,7 @@ void CoreEngine::Init() {
     AudioHandler::getInstance().init();
 
     InputHandler::init(m_window, cfg);
-    renderer::init(cfg.width, cfg.height);
+    renderer::init(winWidth, winHeight);
 
     m_manager = std::make_unique<GameObjectManager>();
 	m_logicSystem = std::make_unique<LogicSystem>();
@@ -102,7 +140,7 @@ void CoreEngine::Init() {
     PrefabManager::Instance().loadPrefabRegistry();
     m_guiSystem->init(*m_manager, *m_luaSystem);
     m_luaSystem->init();
-	m_renderSystem->init(*m_manager, cfg.width, cfg.height);
+    m_renderSystem->init(*m_manager, winWidth, winHeight);
     #ifdef _DEBUG
 	    m_uiSystem->init(m_window, m_renderSystem.get());
     #endif
@@ -141,7 +179,7 @@ void CoreEngine::GameLoop() {
     //--- Update Timing --- 
      Perf::UpdateTime(m_delta, m_fps, 0.5);
      Perf::UpdateWindowTitle(m_window, m_title, m_fps, true);
-     AudioHandler::getInstance().update(m_delta);
+     AudioHandler::getInstance().update(static_cast<float>(m_delta));
      // --- Main Update --- glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
      glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
      Update(static_cast<float>(m_delta));
@@ -150,16 +188,17 @@ void CoreEngine::GameLoop() {
 
 void CoreEngine::Update(float deltaTime) {
     InputHandler::update();
-    //check current game state
+    if (InputHandler::isKeyTriggered(GLFW_KEY_F11)) {
+        toggleFullscreen();
+    }
+
     GameState state = m_guiSystem->getCurrentState();
-    //if state is menu
     if (state == GameState::MENU) {
         m_guiSystem->update(*m_manager);
     }
-	//if state is control
     else if (state == GameState::CONTROL) {
         m_guiSystem->controlUpdate(*m_manager);
-	}
+    }
 
     if(!EditorManager::isEditingMode() && !EditorManager::isPaused()) m_luaSystem->update(*m_manager, deltaTime);
 
@@ -169,7 +208,7 @@ void CoreEngine::Update(float deltaTime) {
     m_collisionSystem->update(*m_manager, deltaTime);
     m_logicSystem->update(*m_manager, deltaTime);
     m_renderSystem->update(*m_manager, deltaTime);
-    m_fontSystem->update(*m_manager);
+    m_fontSystem->update(*m_manager, m_fps);
     m_audioSystem->update(*m_manager, deltaTime);
     #ifdef _DEBUG
         m_uiSystem->update(*m_manager);
@@ -178,6 +217,119 @@ void CoreEngine::Update(float deltaTime) {
     //performance update
     LogSystemTimersEveryInterval(deltaTime,15.0);
 }
+void CoreEngine::toggleFullscreen()
+{
+    m_isFullscreen = !m_isFullscreen;
+
+    GLFWmonitor* monitor = nullptr;
+    int          newWidth = 0;
+    int          newHeight = 0;
+
+    if (m_isFullscreen)
+    {
+        // Windowed -> fullscreen: remember current windowed pos/size
+        glfwGetWindowPos(m_window, &m_windowPosX, &m_windowPosY);
+        glfwGetWindowSize(m_window, &m_windowedWidth, &m_windowedHeight);
+
+        monitor = glfwGetPrimaryMonitor();
+        const GLFWvidmode* mode = glfwGetVideoMode(monitor);
+
+        glfwSetWindowMonitor(
+            m_window,
+            monitor,
+            0, 0,
+            mode->width,
+            mode->height,
+            mode->refreshRate
+        );
+    }
+    else
+    {
+        // Fullscreen -> windowed: restore previous pos/size
+        glfwSetWindowMonitor(
+            m_window,
+            nullptr,
+            m_windowPosX,
+            m_windowPosY,
+            m_windowedWidth,
+            m_windowedHeight,
+            0
+        );
+    }
+
+    //// IMPORTANT: query the real framebuffer size after switching
+    //int fbw = 0, fbh = 0;
+    //glfwGetFramebufferSize(m_window, &fbw, &fbh);
+
+    //// Update GL viewport
+    //glViewport(0, 0, fbw, fbh);
+
+    //// Tell your input + camera systems about the new size
+    //InputHandler::setWindowSize(fbw, fbh);
+    //renderer::onResize(fbw, fbh);
+
+    int fbw = 0, fbh = 0;
+    glfwGetFramebufferSize(m_window, &fbw, &fbh);
+    glViewport(0, 0, fbw, fbh);
+
+    int winW = 0, winH = 0;
+    glfwGetWindowSize(m_window, &winW, &winH);
+    InputHandler::setWindowSize(winW, winH);
+
+    renderer::onResize(fbw, fbh);
+
+    renderer::cam.update();
+    renderer::editorCam.update();
+	glfwPollEvents();
+}
+
+
+//void CoreEngine::toggleFullscreen() {
+//    m_isFullscreen = !m_isFullscreen;
+//
+//    GLFWmonitor* monitor = glfwGetPrimaryMonitor();
+//    const GLFWvidmode* mode = glfwGetVideoMode(monitor);
+//
+//    if (m_isFullscreen) {
+//        // --- Going WINDOWED to FULLSCREEN ---
+//        glfwGetWindowPos(m_window, &m_windowPosX, &m_windowPosY);
+//        glfwGetWindowSize(m_window, &m_windowedWidth, &m_windowedHeight);
+//
+//        glfwSetWindowMonitor(
+//            m_window,
+//            monitor,
+//            0, 0,
+//            mode->width,
+//            mode->height,
+//            mode->refreshRate
+//        );
+//    }
+//    else {
+//        // --- Going FULLSCREEN to WINDOWED ---
+//        glfwSetWindowMonitor(
+//            m_window,
+//            nullptr,
+//            m_windowPosX,
+//            m_windowPosY,
+//            m_windowedWidth,
+//            m_windowedHeight,
+//            0
+//        );
+//    }
+//
+//    int fbw = 0, fbh = 0;
+//    glfwGetFramebufferSize(m_window, &fbw, &fbh);
+//
+//    glViewport(0, 0, fbw, fbh);
+//
+//    // 3. Resize the renderer cameras
+//    renderer::resize(fbw, fbh);
+//
+//    InputHandler::setWindowSize(fbw, fbh);
+//
+//    glfwPollEvents();
+//}
+
 
 void CoreEngine::Shutdown() {
 	ResourceManager::getInstance().shutdown();

@@ -1,4 +1,21 @@
-﻿#ifdef _DEBUG
+﻿/* Start Header ************************************************************************/
+/*!
+\file       editorState.h
+\author     Tan Chee Qing, cheeqing.tan, 2401486
+			- 100%
+\par		cheeqing.tan@digipen.edu
+\date       November, 10th, 2025
+\brief      Useful structs for the the editor, e.g. selection of objects, width and height
+			of a viewport, etc. Also there is a magic vector to allow adding of components
+			in the editor.
+
+Copyright (C) 2025 DigiPen Institute of Technology.
+Reproduction or disclosure of this file or its contents
+without the prior written consent of DigiPen Institute of
+Technology is prohibited.
+*/
+/* End Header **************************************************************************/
+#ifdef _DEBUG
 #pragma once
 #include <string>
 #include <memory>
@@ -120,9 +137,16 @@ namespace Editor {
 	struct GizmoState {
 		GizmoOperation currentOp = GIZMO_NONE; // ImGuizmo::OPERATION
 		ImGuizmo::MODE currentMode = ImGuizmo::WORLD; // do not change
+
+		// snapping
 		bool useSnap = false;
 		float snapValues[3] = { 1.f, 1.f, 1.f };
 		float snapAngle = 15.f;
+
+		// grid
+		bool showGrid = false;
+		int gridSpacing = 1;
+		Vector2D gridOffset{ 0.0f, 0.0f };
 	};
 	/* ----------------- Gizmo End -----------------*/
 
@@ -168,6 +192,12 @@ namespace Editor {
 				c->colliderSize.x = t->scaleX;
 				c->colliderSize.y = t->scaleY;
 			}
+
+			Render* r = obj->getComponent<Render>();
+			if (r) {
+				c->colliderType = r->modelRef.shape;
+			}
+
 			DebugLog::addMessage("Added Collision component for " + obj->getObjectName());
 			},
 			[](const GameObject* obj) { return obj->hasComponent<CollisionInfo>(); }

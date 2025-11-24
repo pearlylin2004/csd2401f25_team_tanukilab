@@ -1,15 +1,13 @@
 /* Start Header ************************************************************************/
 /*!
-\file       ui.cpp
+\file       inspectorWindow.cpp
 \author     Tan Chee Qing, cheeqing.tan, 2401486
-            - 90%
-            Pearly Lin Lee Ying, p.lin, 2401591
-            - 10% of the file
-\par        p.lin@digipen.edu
+            - 100%
 \par		cheeqing.tan@digipen.edu
-\date       September, 17th, 2025
-\brief      definition of functions, drawPerformance, drawControls, drawDebug, shapeControl
-            for the imgui windows
+\date       November, 10th, 2025
+\brief      Definitions of the functions for rendering of different components in the
+            Inspector. Magic vector is used here to allow adding of components not
+            owe by the object. Gizmo toggling with mouse is also included here.
 
 Copyright (C) 2025 DigiPen Institute of Technology.
 Reproduction or disclosure of this file or its contents
@@ -33,9 +31,12 @@ void InspectorWindow::render(GameObjectManager& manager) {
         selected = m_objSelectionState.selectedPrefab.get();
 
         if (ImGui::Button("Save")) {
+            const std::string& prefabID = selected->getObjectPrefabID();
+
             if (PrefabManager::Instance().savePrefab(selected)) {
+                int count = PrefabManager::Instance().applyToAllInstances(prefabID, manager);
                 /*manager.loadScene(JsonIO::runtimeScenePath(Editor::sceneState.currentSceneName));*/
-                DebugLog::addMessage("Prefab saved\n");
+                DebugLog::addMessage("Applied prefab changes to " + std::to_string(count) + " instances\n");
             }
             else {
                 DebugLog::addMessage("Prefab not saved\n");
@@ -54,7 +55,7 @@ void InspectorWindow::render(GameObjectManager& manager) {
     if (selected) {
 
         /* ------------------- Edit Object Name ------------------- */
-        if (selected == m_objSelectionState.selectedObject) {
+        /*if (selected == m_objSelectionState.selectedObject) {*/
             std::string& objName = selected->getObjectName();
             char buffer[128];
             strncpy(buffer, objName.c_str(), sizeof(buffer));
@@ -68,21 +69,27 @@ void InspectorWindow::render(GameObjectManager& manager) {
                 std::string oldObjName = objName;
                 std::string newObjName = buffer;
 
-                if (manager.renameGameObject(m_objSelectionState.selectedObject, newObjName)) {
-                    // update obj new name jic redo/undo
-                    UndoRedoManager::Instance().updateObjName(oldObjName, newObjName);
+                if (selected == m_objSelectionState.selectedObject) {
+                    if (manager.renameGameObject(m_objSelectionState.selectedObject, newObjName)) {
+                        // update obj new name jic redo/undo
+                        UndoRedoManager::Instance().updateObjName(oldObjName, newObjName);
 
-                    DebugLog::addMessage("Object renamed to " + newObjName + "\n");
+                        DebugLog::addMessage("Object renamed to " + newObjName + "\n");
+                    }
+                    else {
+                        DebugLog::addMessage("Failed to rename: name already exists\n");
+                    }
                 }
                 else {
-                    DebugLog::addMessage("Failed to rename: name already exists\n");
+                    const std::string& prefabID = selected->getObjectPrefabID();
+                    PrefabManager::Instance().getPrefabName(prefabID) = newObjName;
+                    selected->getObjectName() = newObjName;
+                    //PrefabManager::Instance().savePrefabRegistry();
+
+                    DebugLog::addMessage("Prefab renamed to " + newObjName + "\n");
                 }
             }
-        }
-        else {
-            ImGui::Text("Prefab Name: "); ImGui::SameLine();
-            ImGui::Text(selected->getObjectName().c_str());
-        }
+            ImGui::Text("ENTER to apply");
 
         ImGui::Spacing();
         ImGui::Separator();
@@ -90,7 +97,7 @@ void InspectorWindow::render(GameObjectManager& manager) {
 
         /* ------------------- Object Transformation ------------------- */
         if (selected->hasComponent<Transform>()) {
-            renderGizmoCtrl();
+            if (selected == m_objSelectionState.selectedObject) renderGizmoCtrl();
 
 
             ImGui::Spacing();
@@ -233,6 +240,7 @@ void InspectorWindow::addComponent(GameObject* selected) {
 
 void InspectorWindow::renderGizmoCtrl() {
     if (ImGui::TreeNode("Gizmo Control")) {
+        // toggle gizmo
         if (ImGui::RadioButton("Move (W)", m_gizmoState.currentOp == Editor::GIZMO_TRANSLATE)) {
             m_gizmoState.currentOp = Editor::GIZMO_TRANSLATE;
         }
@@ -245,22 +253,39 @@ void InspectorWindow::renderGizmoCtrl() {
             m_gizmoState.currentOp = Editor::GIZMO_SCALE;
         }
 
-        ImGui::Checkbox("Snap", &m_gizmoState.useSnap);
-        if (m_gizmoState.useSnap) {
-            // if rotating, show the snap value (only 1 value)
-            if (m_gizmoState.currentOp == Editor::GIZMO_ROTATE) {
-                if (ImGui::DragFloat("##Snap Angle", &m_gizmoState.snapAngle)) {
-                    // clamp to 1–180 degrees
-                    m_gizmoState.snapAngle = glm::clamp(m_gizmoState.snapAngle, 1.f, 365.f);
+        // snapping
+        if (ImGui::TreeNode("Snap")) {
+            ImGui::Checkbox("Enable", &m_gizmoState.useSnap);
+            if (m_gizmoState.useSnap) {
+                // if rotating, show the snap value (only 1 value)
+                if (m_gizmoState.currentOp == Editor::GIZMO_ROTATE) {
+                    if (ImGui::DragFloat("##Snap Angle", &m_gizmoState.snapAngle)) {
+                        // clamp to 1–180 degrees
+                        m_gizmoState.snapAngle = glm::clamp(m_gizmoState.snapAngle, 1.f, 365.f);
+                    }
+                }
+                else {
+                    if (ImGui::DragFloat3("###Snap XYZ", m_gizmoState.snapValues)) {
+                        for (int i = 0; i < 3; i++)
+                            m_gizmoState.snapValues[i] = glm::max(m_gizmoState.snapValues[i], 0.01f);
+                    }
                 }
             }
-            else {
-                if (ImGui::DragFloat3("###Snap XYZ", m_gizmoState.snapValues)) {
-                    for (int i = 0; i < 3; i++)
-                        m_gizmoState.snapValues[i] = glm::max(m_gizmoState.snapValues[i], 0.01f);
-                }
-            }
+            ImGui::TreePop();
         }
+
+        // grid
+        if (ImGui::TreeNode("Grid")) {
+            ImGui::Checkbox("Enable", &m_gizmoState.showGrid);
+            if (m_gizmoState.showGrid) {
+                ImGui::Indent();
+                if (ImGui::InputInt("Grid Spacing", &m_gizmoState.gridSpacing))
+                    m_gizmoState.gridSpacing = std::max(m_gizmoState.gridSpacing, 0);
+                ImGui::Unindent();
+            }
+            ImGui::TreePop();
+        }
+
         ImGui::TreePop();
     }
 }
@@ -507,7 +532,10 @@ void InspectorWindow::renderCollision( GameObject* selected, GameObjectManager& 
             if (ImGui::InputInt("Layer", &layer)) {
                 if (layer < 0) layer = 0;
                 
-                if (manager.assignObjectToLayer(selected, layer)) {
+                if (m_objSelectionState.selectedPrefab) {
+                    selected->setLayer(layer);
+                }
+                else if (manager.assignObjectToLayer(selected, layer)) {
                     DebugLog::addMessage(selected->getObjectName() + " changed layer to " + std::to_string(selected->getLayer()));
 
                 }

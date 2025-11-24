@@ -90,7 +90,7 @@ public:
 	//GLuint uploadtex(std::string const& filename, bool& isTransparent);
 	void renderTex(GameObject* object, float const& deltaTime);
 	void renderNoTex(GameObject* object);
-	void unbindFBO();
+	void renderFBO();
 	GLuint getTexture() const { return texture; }
 
 	void renderCollision(Collision::AABB const& box, glm::vec3 const& clr);
@@ -108,8 +108,11 @@ private:
 class FontSystem {
 public:
 	void init(GameObjectManager& manager);
-	void update(GameObjectManager& manager);
+	void update(GameObjectManager& manager, double fps);
 	void RenderText(GLuint& s, std::string text, float x, float y, float scale, glm::vec3 color, GameObject* object);
+
+	// sorry very scuffed but can remove aft submission
+	static inline bool showFPS = false;
 };
 
 /*!***********************************************************************
