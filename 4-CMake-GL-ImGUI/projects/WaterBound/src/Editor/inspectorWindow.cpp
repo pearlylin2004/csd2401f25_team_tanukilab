@@ -1,15 +1,13 @@
 /* Start Header ************************************************************************/
 /*!
-\file       ui.cpp
+\file       inspectorWindow.cpp
 \author     Tan Chee Qing, cheeqing.tan, 2401486
-            - 90%
-            Pearly Lin Lee Ying, p.lin, 2401591
-            - 10% of the file
-\par        p.lin@digipen.edu
+            - 100%
 \par		cheeqing.tan@digipen.edu
-\date       September, 17th, 2025
-\brief      definition of functions, drawPerformance, drawControls, drawDebug, shapeControl
-            for the imgui windows
+\date       November, 10th, 2025
+\brief      Definitions of the functions for rendering of different components in the
+            Inspector. Magic vector is used here to allow adding of components not
+            owe by the object. Gizmo toggling with mouse is also included here.
 
 Copyright (C) 2025 DigiPen Institute of Technology.
 Reproduction or disclosure of this file or its contents
@@ -242,6 +240,7 @@ void InspectorWindow::addComponent(GameObject* selected) {
 
 void InspectorWindow::renderGizmoCtrl() {
     if (ImGui::TreeNode("Gizmo Control")) {
+        // toggle gizmo
         if (ImGui::RadioButton("Move (W)", m_gizmoState.currentOp == Editor::GIZMO_TRANSLATE)) {
             m_gizmoState.currentOp = Editor::GIZMO_TRANSLATE;
         }
@@ -254,22 +253,39 @@ void InspectorWindow::renderGizmoCtrl() {
             m_gizmoState.currentOp = Editor::GIZMO_SCALE;
         }
 
-        ImGui::Checkbox("Snap", &m_gizmoState.useSnap);
-        if (m_gizmoState.useSnap) {
-            // if rotating, show the snap value (only 1 value)
-            if (m_gizmoState.currentOp == Editor::GIZMO_ROTATE) {
-                if (ImGui::DragFloat("##Snap Angle", &m_gizmoState.snapAngle)) {
-                    // clamp to 1–180 degrees
-                    m_gizmoState.snapAngle = glm::clamp(m_gizmoState.snapAngle, 1.f, 365.f);
+        // snapping
+        if (ImGui::TreeNode("Snap")) {
+            ImGui::Checkbox("Enable", &m_gizmoState.useSnap);
+            if (m_gizmoState.useSnap) {
+                // if rotating, show the snap value (only 1 value)
+                if (m_gizmoState.currentOp == Editor::GIZMO_ROTATE) {
+                    if (ImGui::DragFloat("##Snap Angle", &m_gizmoState.snapAngle)) {
+                        // clamp to 1–180 degrees
+                        m_gizmoState.snapAngle = glm::clamp(m_gizmoState.snapAngle, 1.f, 365.f);
+                    }
+                }
+                else {
+                    if (ImGui::DragFloat3("###Snap XYZ", m_gizmoState.snapValues)) {
+                        for (int i = 0; i < 3; i++)
+                            m_gizmoState.snapValues[i] = glm::max(m_gizmoState.snapValues[i], 0.01f);
+                    }
                 }
             }
-            else {
-                if (ImGui::DragFloat3("###Snap XYZ", m_gizmoState.snapValues)) {
-                    for (int i = 0; i < 3; i++)
-                        m_gizmoState.snapValues[i] = glm::max(m_gizmoState.snapValues[i], 0.01f);
-                }
-            }
+            ImGui::TreePop();
         }
+
+        // grid
+        if (ImGui::TreeNode("Grid")) {
+            ImGui::Checkbox("Enable", &m_gizmoState.showGrid);
+            if (m_gizmoState.showGrid) {
+                ImGui::Indent();
+                if (ImGui::InputInt("Grid Spacing", &m_gizmoState.gridSpacing))
+                    m_gizmoState.gridSpacing = std::max(m_gizmoState.gridSpacing, 0);
+                ImGui::Unindent();
+            }
+            ImGui::TreePop();
+        }
+
         ImGui::TreePop();
     }
 }

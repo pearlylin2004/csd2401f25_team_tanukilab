@@ -1,15 +1,12 @@
 /* Start Header ************************************************************************/
 /*!
-\file       ui.cpp
+\file       editorManager.cpp
 \author     Tan Chee Qing, cheeqing.tan, 2401486
-            - 90%
-            Pearly Lin Lee Ying, p.lin, 2401591
-            - 10% of the file
-\par        p.lin@digipen.edu
+            - 100%
 \par		cheeqing.tan@digipen.edu
-\date       September, 17th, 2025
-\brief      definition of functions, drawPerformance, drawControls, drawDebug, shapeControl
-            for the imgui windows
+\date       November, 10th, 2025
+\brief      Definitions of the functions for Editor Manager class. Initialize the other
+            editor class to allow rendering. Also handle shortcut keys in the editor.
 
 Copyright (C) 2025 DigiPen Institute of Technology.
 Reproduction or disclosure of this file or its contents
@@ -57,11 +54,17 @@ void EditorManager::renderScene(GLuint texture, float aspectRatio, GameObjectMan
 
 void EditorManager::handleShortcutKeys(GameObjectManager& manager) {
 
-    /* --------------- ""Q" -> Deselect Obj --------------- */
+    /* --------------- "Q" -> Deselect Obj --------------- */
     if (InputHandler::isKeyTriggered(GLFW_KEY_Q)) {
         if (Editor::objSelectionState.selectedObject) {
             sceneWindow.resetSelection();
         }
+    }
+    /* --------------- END --------------- */
+
+    /* --------------- "Y" -> Toggle Grid --------------- */
+    if (InputHandler::isKeyTriggered(GLFW_KEY_Y)) {
+        Editor::gizmoState.showGrid = !Editor::gizmoState.showGrid;
     }
     /* --------------- END --------------- */
 

@@ -1,15 +1,15 @@
 /* Start Header ************************************************************************/
 /*!
-\file       ui.cpp
+\file       addObjWindow.cpp
 \author     Tan Chee Qing, cheeqing.tan, 2401486
             - 90%
             Pearly Lin Lee Ying, p.lin, 2401591
             - 10% of the file
 \par        p.lin@digipen.edu
 \par		cheeqing.tan@digipen.edu
-\date       September, 17th, 2025
-\brief      definition of functions, drawPerformance, drawControls, drawDebug, shapeControl
-            for the imgui windows
+\date       November, 10th, 2025
+\brief      Definitions of rendering the window and the adding of different objects in
+            the editor.
 
 Copyright (C) 2025 DigiPen Institute of Technology.
 Reproduction or disclosure of this file or its contents
