@@ -690,10 +690,9 @@ void PrefabManager::applyPrefabComponents(GameObject* go, const rapidjson::Value
 		c->autoFitScale = JsonIO::GetBoolOr(jc, "autoFitScale", false);
 		std::string shp;
 		c->colliderType = JsonIO::GetString(jc, "colliderType", shp) ? JsonIO::StrToShape(shp) : shape::square;
-		std::array<float, 3> size;
-		if (JsonIO::GetArray3f(jc, "colliderSize", size)) {
-			c->colliderSize.x = size[0];
-			c->colliderSize.y = size[1];
+		if (jc.HasMember("colliderSize") && jc["colliderSize"].IsArray() && jc["colliderSize"].Size() >= 2) {
+			c->colliderSize.x = jc["colliderSize"][0].GetFloat();
+			c->colliderSize.y = jc["colliderSize"][1].GetFloat();
 		}
 	}
 	

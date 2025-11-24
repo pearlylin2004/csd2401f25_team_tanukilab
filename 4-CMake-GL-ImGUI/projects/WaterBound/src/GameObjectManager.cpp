@@ -695,6 +695,7 @@ void GameObjectManager::saveSceneToJson(const std::string& filename, bool isNew)
 
 	// version header
 	doc.AddMember("version", rapidjson::Value(1), a);
+	bool bulletSerialized = false;
 
 	if (!isNew) {
 
@@ -704,10 +705,18 @@ void GameObjectManager::saveSceneToJson(const std::string& filename, bool isNew)
 		for (auto const& kv : m_gameObjects) {
 			const GameObject* obj = kv.second.get();
 
-			// if its a clone of bullet, do not serialize
 			std::string objName = obj->getObjectName();
-			if (objName.find("bullet") == 0 && objName.length() > 6) {
-				continue;
+
+			// if its a clone of bullet, serialize only the first one
+			if (obj->getObjectPrefabID() == "b1a12273-a692-4ce0-8072-156da2c70842") {
+				// if its a bullet, change name to bullet
+				if (!bulletSerialized) {
+					objName = "bullet";
+					bulletSerialized = true;
+				}
+				else {
+					continue;
+				}
 			}
 
 			rapidjson::Value jObj(rapidjson::kObjectType);
@@ -719,7 +728,7 @@ void GameObjectManager::saveSceneToJson(const std::string& filename, bool isNew)
 			}
 
 			// name
-			jObj.AddMember("name", rapidjson::Value(obj->getObjectName().c_str(), a), a);
+			jObj.AddMember("name", rapidjson::Value(objName.c_str(), a), a);
 
 
 			// get prefab JSON if obj referencing a prefab
