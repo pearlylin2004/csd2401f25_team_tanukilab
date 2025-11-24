@@ -89,14 +89,14 @@ void SceneWindow::render(GLuint texture, float aspectRatio, GameObjectManager& m
             }
         }
 
+    }if (m_gizmoState.showGrid) {
+        drawGrid(renderer::editorCam.view, renderer::editorCam.proj);
     }
     
     /* ---------- ImGuizmo --------- */
     ImGuizmo::BeginFrame();
     // show grid
-    if (m_gizmoState.showGrid) {
-        drawGrid(renderer::editorCam.view, renderer::editorCam.proj);
-    }
+    
     // render gizmo
     renderGizmo(manager);
     /* ---------- END --------- */
@@ -238,9 +238,9 @@ void SceneWindow::drawGrid(const glm::mat4& view, const glm::mat4& proj) {
     ImU32 axisColorX = IM_COL32(255, 80, 80, 150); // red for x axis
     ImU32 axisColorY = IM_COL32(80, 255, 80, 150); // green for y-axis
 
-    // convert world space to screen space
+    // convert world space to screen space (with offset)
     auto worldToScreen = [&](float x, float y, float z) -> ImVec2 {
-        glm::vec4 worldPos(x, y, z, 1.0f);
+        glm::vec4 worldPos(x + m_gizmoState.gridOffset.x, y + m_gizmoState.gridOffset.y, z, 1.0f);
         glm::vec4 clipPos = proj * view * worldPos;
 
         if (clipPos.w != 0.0f) {
@@ -253,7 +253,7 @@ void SceneWindow::drawGrid(const glm::mat4& view, const glm::mat4& proj) {
             (1.0f - (clipPos.y * 0.5f + 0.5f)) * m_sceneWindowState.sceneSize.y;
 
         return ImVec2(screenX, screenY);
-        };
+    };
 
     float extent = gridLines * m_gizmoState.gridSpacing;
 
