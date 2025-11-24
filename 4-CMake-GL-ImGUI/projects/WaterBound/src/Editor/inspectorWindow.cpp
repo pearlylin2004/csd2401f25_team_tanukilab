@@ -1,15 +1,13 @@
 /* Start Header ************************************************************************/
 /*!
-\file       ui.cpp
+\file       inspectorWindow.cpp
 \author     Tan Chee Qing, cheeqing.tan, 2401486
-            - 90%
-            Pearly Lin Lee Ying, p.lin, 2401591
-            - 10% of the file
-\par        p.lin@digipen.edu
+            - 100%
 \par		cheeqing.tan@digipen.edu
-\date       September, 17th, 2025
-\brief      definition of functions, drawPerformance, drawControls, drawDebug, shapeControl
-            for the imgui windows
+\date       November, 10th, 2025
+\brief      Definitions of the functions for rendering of different components in the
+            Inspector. Magic vector is used here to allow adding of components not
+            owe by the object. Gizmo toggling with mouse is also included here.
 
 Copyright (C) 2025 DigiPen Institute of Technology.
 Reproduction or disclosure of this file or its contents
