@@ -83,6 +83,13 @@ void InputSystem::update(GameObjectManager& manager, const float& deltaTime, Mes
 		throw std::runtime_error("F9 test: simulated failure in update()");
 	}
 
+	/* --- for showing fps scuffed scuffed ---- */
+	if (InputHandler::isKeyTriggered(GLFW_KEY_F8)) {
+		FontSystem::showFPS = !FontSystem::showFPS;
+	}
+	/* ---- END ---- */
+
+
 	auto end = std::chrono::high_resolution_clock::now();
 	double ms = std::chrono::duration<double, std::milli>(end - start).count(); //get elapse time in ms
 	g_SystemTimers.push_back({ "Input", ms }); //saving timing for UI output
@@ -641,7 +648,7 @@ void FontSystem::init(GameObjectManager& manager)
 	}
 }
 
-void FontSystem::update(GameObjectManager& manager)
+void FontSystem::update(GameObjectManager& manager, double fps)
 {
 	//for debugging only
 
@@ -695,6 +702,21 @@ void FontSystem::update(GameObjectManager& manager)
 			RenderText(Font::fontShaders, fc->word, transform->x, transform->y, fc->scale, fc->clr, object);
 		}
 	}
+
+	/* ---- scuffed way to render fps for M3 ---- */
+	if (showFPS) {
+		std::unique_ptr<GameObject> fpsText = manager.createTempGameObject("fpsText");
+		if (Transform* t = fpsText->addComponent<Transform>()) {
+			if (FontComponent* fc = fpsText->addComponent<FontComponent>()) {
+				fc->word = "FPS: " + std::to_string(fps);
+				t->x = -15;
+				t->y = 9;
+				RenderText(Font::fontShaders, fc->word, t->x, t->y, fc->scale, fc->clr, fpsText.get());
+			}
+		}
+	}
+	/* ---- END ---- */
+
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 	auto end = std::chrono::high_resolution_clock::now();

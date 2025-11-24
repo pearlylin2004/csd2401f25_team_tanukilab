@@ -108,8 +108,11 @@ private:
 class FontSystem {
 public:
 	void init(GameObjectManager& manager);
-	void update(GameObjectManager& manager);
+	void update(GameObjectManager& manager, double fps);
 	void RenderText(GLuint& s, std::string text, float x, float y, float scale, glm::vec3 color, GameObject* object);
+
+	// sorry very scuffed but can remove aft submission
+	static inline bool showFPS = false;
 };
 
 /*!***********************************************************************
