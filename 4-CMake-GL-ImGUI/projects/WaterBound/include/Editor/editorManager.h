@@ -182,8 +182,10 @@ public:
 private:
 	/* --------- Render -------- */
 	void renderGizmo(GameObjectManager& manager);
+	void drawGrid(const glm::mat4& view, const glm::mat4& proj);
 	void editorCameraControls();
 	/* -------- END -------- */
+
 
 	/* --------- Scene Management -------- */
 	void newScene(GameObjectManager& manager);

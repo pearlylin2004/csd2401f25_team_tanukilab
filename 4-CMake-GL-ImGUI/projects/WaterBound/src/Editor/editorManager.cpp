@@ -54,11 +54,17 @@ void EditorManager::renderScene(GLuint texture, float aspectRatio, GameObjectMan
 
 void EditorManager::handleShortcutKeys(GameObjectManager& manager) {
 
-    /* --------------- ""Q" -> Deselect Obj --------------- */
+    /* --------------- "Q" -> Deselect Obj --------------- */
     if (InputHandler::isKeyTriggered(GLFW_KEY_Q)) {
         if (Editor::objSelectionState.selectedObject) {
             sceneWindow.resetSelection();
         }
+    }
+    /* --------------- END --------------- */
+
+    /* --------------- "Y" -> Toggle Grid --------------- */
+    if (InputHandler::isKeyTriggered(GLFW_KEY_Y)) {
+        Editor::gizmoState.showGrid = !Editor::gizmoState.showGrid;
     }
     /* --------------- END --------------- */
 

@@ -91,8 +91,15 @@ void SceneWindow::render(GLuint texture, float aspectRatio, GameObjectManager& m
 
     }
     
+    /* ---------- ImGuizmo --------- */
     ImGuizmo::BeginFrame();
+    // show grid
+    if (m_gizmoState.showGrid) {
+        drawGrid(renderer::editorCam.view, renderer::editorCam.proj);
+    }
+    // render gizmo
     renderGizmo(manager);
+    /* ---------- END --------- */
 
     ImGui::EndChild();
 
@@ -173,7 +180,7 @@ void SceneWindow::renderGizmo(GameObjectManager& manager) {
     if (isUsingGizmo && !wasUsingGizmo) {
         UndoRedoManager::Instance().beginTransformEdit(selected);
     }
-
+    
     // draw gizmo and settle the changes
     if (ImGuizmo::Manipulate(glm::value_ptr(view), glm::value_ptr(proj),
         static_cast<ImGuizmo::OPERATION>(m_gizmoState.currentOp), m_gizmoState.currentMode,
@@ -219,6 +226,60 @@ void SceneWindow::renderGizmo(GameObjectManager& manager) {
         std::to_string(m_sceneWindowState.sceneSize.x) + "x" +
         std::to_string(m_sceneWindowState.sceneSize.y) + "\n"
     );*/
+}
+
+void SceneWindow::drawGrid(const glm::mat4& view, const glm::mat4& proj) {
+    ImDrawList* drawList = ImGui::GetWindowDrawList();
+
+    // grid settings
+    int gridLines = 50;
+
+    ImU32 gridColor = IM_COL32(100, 100, 100, 100); // dark dark for the normal grid
+    ImU32 axisColorX = IM_COL32(255, 80, 80, 150); // red for x axis
+    ImU32 axisColorY = IM_COL32(80, 255, 80, 150); // green for y-axis
+
+    // convert world space to screen space
+    auto worldToScreen = [&](float x, float y, float z) -> ImVec2 {
+        glm::vec4 worldPos(x, y, z, 1.0f);
+        glm::vec4 clipPos = proj * view * worldPos;
+
+        if (clipPos.w != 0.0f) {
+            clipPos /= clipPos.w;
+        }
+
+        float screenX = m_sceneWindowState.scenePos.x +
+            (clipPos.x * 0.5f + 0.5f) * m_sceneWindowState.sceneSize.x;
+        float screenY = m_sceneWindowState.scenePos.y +
+            (1.0f - (clipPos.y * 0.5f + 0.5f)) * m_sceneWindowState.sceneSize.y;
+
+        return ImVec2(screenX, screenY);
+        };
+
+    float extent = gridLines * m_gizmoState.gridSpacing;
+
+    // draw vertical lines
+    for (int i = -gridLines; i <= gridLines; ++i) {
+        float x = i * m_gizmoState.gridSpacing;
+        ImVec2 start = worldToScreen(x, -extent, 0.0f);
+        ImVec2 end = worldToScreen(x, extent, 0.0f);
+
+        ImU32 color = (i == 0) ? axisColorY : gridColor;
+        float thickness = (i == 0) ? 2.0f : 1.0f;
+
+        drawList->AddLine(start, end, color, thickness);
+    }
+
+    // draw horizontal lines
+    for (int i = -gridLines; i <= gridLines; ++i) {
+        float y = i * m_gizmoState.gridSpacing;
+        ImVec2 start = worldToScreen(-extent, y, 0.0f);
+        ImVec2 end = worldToScreen(extent, y, 0.0f);
+
+        ImU32 color = (i == 0) ? axisColorX : gridColor;
+        float thickness = (i == 0) ? 2.0f : 1.0f;
+
+        drawList->AddLine(start, end, color, thickness);
+    }
 }
 
 void SceneWindow::editorCameraControls() {

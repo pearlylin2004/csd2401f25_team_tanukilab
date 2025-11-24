@@ -137,9 +137,15 @@ namespace Editor {
 	struct GizmoState {
 		GizmoOperation currentOp = GIZMO_NONE; // ImGuizmo::OPERATION
 		ImGuizmo::MODE currentMode = ImGuizmo::WORLD; // do not change
+
+		// snapping
 		bool useSnap = false;
 		float snapValues[3] = { 1.f, 1.f, 1.f };
 		float snapAngle = 15.f;
+
+		// grid
+		bool showGrid = false;
+		int gridSpacing = 1;
 	};
 	/* ----------------- Gizmo End -----------------*/
 
