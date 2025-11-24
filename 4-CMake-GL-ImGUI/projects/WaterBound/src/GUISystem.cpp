@@ -102,21 +102,26 @@ void GUISystem::controlUpdate(GameObjectManager& manager) {
     Vector2D worldMousePos = InputHandler::getWorldMousePosition();
     Vector2D worldPos = Vec_Set(worldMousePos.x, worldMousePos.y);
 
-    //loop through all buttons in the map
-    for (auto& pair : m_buttons) {
-        const std::string& name = pair.first;
-        GameObject* btn = pair.second;
+    if (!InputHandler::isMouseButtonClicked(GLFW_MOUSE_BUTTON_LEFT)) {
+        //when hover over button we can add hover effect here
+    }
+    else {
+        //loop through all buttons in the map
+        for (auto& pair : m_buttons) {
+            const std::string& name = pair.first;
+            GameObject* btn = pair.second;
 
-        if (!btn) continue;
+            if (!btn) continue;
 
-        if (isPointInButton(worldPos, btn)) {
-            //handle button action dynamically based on name
-            if (name == "back_button") {
-                m_currentState = GameState::MENU;
-                loadMenu(manager);
-                return; //stop checking after a click
+            if (isPointInButton(worldPos, btn)) {
+                //handle button action dynamically based on name
+                if (name == "back_button") {
+                    m_currentState = GameState::MENU;
+                    loadMenu(manager);
+                    return; //stop checking after a click
+                }
+                //idk if we need more buttons
             }
-            //idk if we need more buttons
         }
     }
 }
