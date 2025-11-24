@@ -618,6 +618,7 @@ std::string PrefabManager::generateUUID() {
 }
 
 void PrefabManager::applyPrefabComponents(GameObject* go, const rapidjson::Value& comps) {
+	//std::cout << go->getObjectName() << "data\n\n";
 	// ---- Transform ----
 	if (comps.HasMember("Transform") && comps["Transform"].IsObject()) {
 		const auto& jt = comps["Transform"];
@@ -627,14 +628,20 @@ void PrefabManager::applyPrefabComponents(GameObject* go, const rapidjson::Value
 			t->x = jt["pos"][0].GetFloat();
 			t->y = jt["pos"][1].GetFloat();
 			t->z = jt["pos"][2].GetFloat();
+
+			//std::cout << t->x << " " << t->y << " " << t->z << "pos\n\n";
 		}
 		if (jt.HasMember("rotation") && jt["rotation"].IsNumber()) {
 			t->rotation = jt["rotation"].GetFloat();
+
+			//std::cout << t->rotation << "rotation\n\n";
 		}
 		if (jt.HasMember("scale") && jt["scale"].IsArray() && jt["scale"].Size() == 3) {
 			t->scaleX = jt["scale"][0].GetFloat();
 			t->scaleY = jt["scale"][1].GetFloat();
 			t->scaleZ = jt["scale"][2].GetFloat();
+
+			//std::cout << t->scaleX << " " << t->scaleY << " " << t->scaleZ << "scale\n\n";
 		}
 	}
 
@@ -660,6 +667,8 @@ void PrefabManager::applyPrefabComponents(GameObject* go, const rapidjson::Value
 		r->hasAnimation = JsonIO::GetBoolOr(jr, "hasAnimation", false);
 		JsonIO::ReadVec3(jr, "clr", r->clr.r, r->clr.g, r->clr.b);
 
+		/*std::cout << r->hasTex << " has tex\n\n";
+		std::cout << r->hasAnimation << " has animation\n\n";*/
 	}
 
 	// ---- Input (presence only) ----

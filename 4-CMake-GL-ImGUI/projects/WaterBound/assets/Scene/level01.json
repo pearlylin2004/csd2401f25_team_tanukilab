@@ -5,10 +5,6 @@
       "prefabid": "dd60e1e1-641c-4ed5-b69d-ffadfa02fb7a",
       "name": "player",
       "components": {
-        "Physics": {
-          "moveSpeed": 5.0,
-          "damping": 0.98
-        },
         "CollisionInfo": {
           "colliderType": "square"
         },
@@ -139,7 +135,6 @@
           "shape": "square",
           "hasTex": 1,
           "texture": "assets/Texture/Smoke-Sprite-Sheet.jpg",
-          "hasTex": 1,
           "hasAnimation": 1
         },
         "StateMachine": {

@@ -17,7 +17,8 @@
         "Input": {},
         "Physics": {
             "physicsFlag": 1,
-            "moveSpeed": 1.0,
+            "moveSpeed": 5.0,
+            "damping": 0.98,
             "jumpForce": 100.0,
             "mass": 1.0,
             "inWater": 0,

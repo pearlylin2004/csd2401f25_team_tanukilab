@@ -138,6 +138,7 @@ void EditorManager::handleShortcutKeys(GameObjectManager& manager) {
             }
             else {
                 DebugLog::addMessage("Playing simulation. File cannot be saved.");
+                DebugLog::addMessage("Playing simulation. File cannot be saved.", DebugMode::PlaySimul);
             }
         }
     /* --------------- END --------------- */
