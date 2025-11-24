@@ -451,6 +451,10 @@ void RenderSystem::batchingSetUp(GameObjectManager& manager, float const& deltaT
 				BatchKey key{ render->modelRef.shape, as.texHDL };
 				objectWithTex[key].push_back(data);
 			}
+			// draw shape if obj texture file is empty
+			else {
+				objectWithoutTex[render->modelRef.shape].push_back(data);
+			}
 		}
 		else if (render->hasTex)
 		{

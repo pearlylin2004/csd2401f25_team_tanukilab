@@ -529,10 +529,7 @@ void InspectorWindow::renderStateMachine(GameObject* selected) {
                 // Edit animation for the selected state
                 if (selectedStateIndex >= 0 && selectedStateIndex < animation->animState.size()) {
                     AnimateState& currentState = animation->animState[selectedStateIndex];
-
-                    /*ImGui::Text("Animation Settings for %s:", stateNames[selectedStateIndex].c_str());
-                    ImGui::Spacing();*/
-
+                                   
                     // Texture file button with drag and drop
                     std::string texName = currentState.texFile.empty() ? "(Drop new texture here)" : currentState.texFile;
                     ImGui::Button(texName.c_str(), ImVec2(-1, 0));
@@ -570,6 +567,24 @@ void InspectorWindow::renderStateMachine(GameObject* selected) {
                         ImGui::EndDragDropTarget();
                     }
 
+                    ImGui::BeginDisabled(currentState.texFile.empty());
+
+                    ImGui::SameLine();
+                    ImGui::Spacing();
+                    ImGui::Separator();
+                    ImGui::Spacing();
+
+                    if (ImGui::Button("Clear Texture")) {
+                        glDeleteTextures(1, &currentState.texHDL);
+                        currentState.texHDL = 0;
+                        currentState.texFile.clear();
+                        currentState.texChanged = false;
+                    }
+
+                    ImGui::Spacing();
+                    ImGui::Separator();
+                    ImGui::Spacing();
+
                     ImGui::Checkbox("Loop (WIP)", &currentState.loop);
 
                     if (ImGui::InputInt("Total Columns", &currentState.totalColumn))
@@ -587,6 +602,8 @@ void InspectorWindow::renderStateMachine(GameObject* selected) {
 
                     if (ImGui::InputFloat("Frame Time", &currentState.frameTime, 0.01f))
                         currentState.frameTime = std::max(currentState.frameTime, 0.001f);
+
+                    ImGui::EndDisabled();
                 }
 
                 ImGui::EndDisabled();
