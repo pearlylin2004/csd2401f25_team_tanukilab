@@ -1072,7 +1072,10 @@ void GameObjectManager::loadScene(const std::string& path) {
 	Editor::objSelectionState.selectedIndex = -1;
 	UndoRedoManager::Instance().clear();
 
-	Editor::sceneState.currentSceneName = std::filesystem::path(path).filename().string();
+	// do not set current scene to the temp scene (during simulation)
+	std::string filename = std::filesystem::path(path).filename().string();
+	if(filename != Editor::sceneState.tempSceneName)
+		Editor::sceneState.currentSceneName = filename;
 #endif
 
 	if (ends_with(path, ".json")) loadSceneFromJson(path);
