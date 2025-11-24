@@ -89,14 +89,14 @@ void SceneWindow::render(GLuint texture, float aspectRatio, GameObjectManager& m
             }
         }
 
-    }if (m_gizmoState.showGrid) {
-        drawGrid(renderer::editorCam.view, renderer::editorCam.proj);
     }
     
     /* ---------- ImGuizmo --------- */
     ImGuizmo::BeginFrame();
     // show grid
-    
+    if (m_gizmoState.showGrid) {
+        drawGrid(renderer::editorCam.view, renderer::editorCam.proj);
+    }
     // render gizmo
     renderGizmo(manager);
     /* ---------- END --------- */
