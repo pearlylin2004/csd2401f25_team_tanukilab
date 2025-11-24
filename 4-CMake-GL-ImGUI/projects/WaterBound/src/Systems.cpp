@@ -709,8 +709,8 @@ void FontSystem::update(GameObjectManager& manager, double fps)
 		if (Transform* t = fpsText->addComponent<Transform>()) {
 			if (FontComponent* fc = fpsText->addComponent<FontComponent>()) {
 				fc->word = "FPS: " + std::to_string(fps);
-				t->x = -15;
-				t->y = 9;
+				t->x = -15.f;
+				t->y = 9.f;
 				RenderText(Font::fontShaders, fc->word, t->x, t->y, fc->scale, fc->clr, fpsText.get());
 			}
 		}
