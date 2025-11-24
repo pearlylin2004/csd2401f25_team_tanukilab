@@ -30,7 +30,8 @@ enum class GameState {
     MENU,
     PLAYING,
     CONTROL,
-    PAUSED
+    PAUSED,
+	LEVELS //maybe for future use
 };
 
 class GUISystem {

@@ -10,7 +10,7 @@
 \date       November, 7th, 2025
 \brief      Handles initialization, updates, and GUI interactions such as
             creating/removing menu buttons and transitioning between
-            MENU and PLAYING states.
+            MENU, CONTROl and PLAYING states.
 
 Copyright (C) 2025 DigiPen Institute of Technology.
 Reproduction or disclosure of this file or its contents
@@ -82,7 +82,8 @@ void GUISystem::update(GameObjectManager& manager) {
                     return; //stop checking after a click
                 }
                 else if (name == "exit_button") {
-                    stopGame();
+                    //stopGame();
+                    confirmationScreen(manager);
                     return; //stop checking after a click
                 }
                 else if (name == "control_button") {
