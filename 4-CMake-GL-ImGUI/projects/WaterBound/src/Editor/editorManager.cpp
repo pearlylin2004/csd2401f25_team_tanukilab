@@ -53,6 +53,10 @@ void EditorManager::renderScene(GLuint texture, float aspectRatio, GameObjectMan
 }
 
 void EditorManager::handleShortcutKeys(GameObjectManager& manager) {
+    // block shortcut if typing
+    if (ImGui::GetIO().WantTextInput) {
+        return;
+    }
 
     /* --------------- "Q" -> Deselect Obj --------------- */
     if (InputHandler::isKeyTriggered(GLFW_KEY_Q)) {

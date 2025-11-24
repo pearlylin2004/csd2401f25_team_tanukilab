@@ -146,6 +146,7 @@ namespace Editor {
 		// grid
 		bool showGrid = false;
 		int gridSpacing = 1;
+		Vector2D gridOffset{ 0.0f, 0.0f };
 	};
 	/* ----------------- Gizmo End -----------------*/
 
