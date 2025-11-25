@@ -30,6 +30,38 @@
       }
     },
     {
+      "name": "yes_text",
+      "components": {
+        "Transform": {
+          "pos": [-2.5, -1.5, 1.0],
+          "rotation": 0.0,
+          "scale": [20.0, 20.0, 0.0]
+        },
+        "FontComponent": {
+          "word": "YES",
+          "color": [0.0, 0.0, 0.0],
+          "scale": 1.0,
+          "fontType": 1
+        }
+      }
+    },
+    {
+      "name": "no_text",
+      "components": {
+        "Transform": {
+          "pos": [2.5, -1.5, 1.0],
+          "rotation": 0.0,
+          "scale": [20.0, 20.0, 0.0]
+        },
+        "FontComponent": {
+          "word": "NO",
+          "color": [0.0, 0.0, 0.0],
+          "scale": 1.0,
+          "fontType": 1
+        }
+      }
+    },
+    {
       "name": "no_button",
       "components": {
         "Transform": {
