@@ -213,8 +213,8 @@ void CoreEngine::Update(float deltaTime) {
     m_physicsSystem->update(*m_manager, deltaTime, *m_messageBus);
     m_collisionSystem->update(*m_manager, deltaTime);
     m_logicSystem->update(*m_manager, deltaTime);
-    m_fontSystem->update(*m_manager, m_fps); //render text first
     m_renderSystem->update(*m_manager, deltaTime);
+    m_fontSystem->update(*m_manager, m_fps);    
     m_audioSystem->update(*m_manager, deltaTime);
     #ifdef _DEBUG
         m_uiSystem->update(*m_manager);
