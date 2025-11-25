@@ -86,7 +86,8 @@ void CoreEngine::Init(bool forceWindowed) {
 
     cfg.width = winWidth;
     cfg.height = winHeight;
-    
+
+    glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
     m_window = glfwCreateWindow(winWidth, winHeight, m_title.c_str(), monitor, nullptr);
 
     if (!m_window) {
