@@ -154,37 +154,6 @@
     {
       "prefabid": "b1a12273-a692-4ce0-8072-156da2c70842",
       "name": "bullet"
-    },
-    {
-      "name": "back_button",
-      "components": {
-        "Transform": {
-          "pos": [-16.0, 8.5, 0.0],
-          "scale": [6.0, 2.0, 0.0]
-        },
-        "Render": {
-          "shape": "square",
-          "hasTex": 1,
-          "texture": "assets/button.png",
-          "clr": [ 1.0, 1.0, 1.0 ]
-        }
-      }
-    },
-    {
-      "name": "back_text",
-      "components": {
-        "Transform": {
-          "pos": [-18.0, 8.3, 1.0],
-          "rotation": 0.0,
-          "scale": [20.0, 20.0, 0.0]
-        },
-        "FontComponent": {
-          "word": "BACK",
-          "color": [0.0, 0.0, 0.0],
-          "scale": 1.0,
-          "fontType": 1
-        }
-      }
     }
   ]
 }

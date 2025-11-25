@@ -31,9 +31,7 @@ int main(){
     // Initialize the crash logger
     CrashLog::Init("crash_log.txt");
 
-    //bool forceWindowed = false; //sorry i will change back later
-    bool forceWindowed = true;
-
+    bool forceWindowed = false; 
 
     // Create the engine using a smart pointer for automatic cleanup
     auto engine = std::make_unique<CoreEngine>();
