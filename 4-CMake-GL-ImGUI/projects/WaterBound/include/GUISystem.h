@@ -31,6 +31,8 @@ enum class GameState {
     PLAYING,
     CONTROL,
     PAUSED,
+    EXIT,
+    EXITCONFIRMATION,
 	LEVELS //maybe for future use
 };
 
@@ -42,6 +44,7 @@ public:
     void init(GameObjectManager& manager, LuaSystem& luaSystem);
 	void update(GameObjectManager& manager); //update menu system
 	void controlUpdate(GameObjectManager& manager); //update control screen
+	void exitUpdate(GameObjectManager& manager); //update exit confirmation screen
 
     bool isPlaying() const { return m_currentState == GameState::PLAYING; } //check if its playing
     GameState getCurrentState() const { return m_currentState; } //check current state

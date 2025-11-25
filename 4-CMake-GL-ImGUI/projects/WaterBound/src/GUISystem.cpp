@@ -83,6 +83,7 @@ void GUISystem::update(GameObjectManager& manager) {
                 }
                 else if (name == "exit_button") {
                     //stopGame();
+                    m_currentState = GameState::EXITCONFIRMATION;
                     confirmationScreen(manager);
                     return; //stop checking after a click
                 }
@@ -121,6 +122,41 @@ void GUISystem::controlUpdate(GameObjectManager& manager) {
                     loadMenu(manager);
                     return; //stop checking after a click
                 }
+                //idk if we need more buttons
+            }
+        }
+    }
+}
+
+//updating for exit confirmation
+void GUISystem::exitUpdate(GameObjectManager& manager) {
+    //get mouse position
+    Vector2D worldMousePos = InputHandler::getWorldMousePosition();
+    Vector2D worldPos = Vec_Set(worldMousePos.x, worldMousePos.y);
+
+    if (!InputHandler::isMouseButtonClicked(GLFW_MOUSE_BUTTON_LEFT)) {
+        //when hover over button we can add hover effect here
+    }
+    else {
+        //loop through all buttons in the map
+        for (auto& pair : m_buttons) {
+            const std::string& name = pair.first;
+            GameObject* btn = pair.second;
+
+            if (!btn) continue;
+
+            if (isPointInButton(worldPos, btn)) {
+                //handle button action dynamically based on name
+                if (name == "yes_button") {
+                    m_currentState = GameState::EXIT;
+                    stopGame();
+                    return; //stop checking after a click
+                }
+                else if(name == "no_button") {
+                    m_currentState = GameState::MENU;
+                    loadMenu(manager);
+                    return; //stop checking after a click
+				}
                 //idk if we need more buttons
             }
         }
