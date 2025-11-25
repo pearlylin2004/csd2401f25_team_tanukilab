@@ -180,18 +180,25 @@ void GUISystem::createButtons(GameObjectManager& manager) {
 		//get object name
         const std::string name = obj->getObjectName();
         //only consider objects that have both transform and render
-        if (!obj->hasComponent<Transform>() || !obj->hasComponent<Render>()) continue;
+        if (!obj->hasComponent<Transform>() /* || !obj->hasComponent<Render>()*/) continue;
 
-		Render* r = obj->getComponent<Render>(); //get render
+		//Render* r = obj->getComponent<Render>(); //get render
 
         //find if its a button
-        bool isButton = (name.find("_button") != std::string::npos); // remove r->hasTex check
+        bool isButton = (name.find("_button") != std::string::npos);
         if (!isButton) {
             manager.assignObjectToLayer(obj, 0); // assign all non-buttons to layer 0
             continue;
         }
+        //for font
+        if (obj->hasComponent<FontComponent>()) {
+            manager.assignObjectToLayer(obj, 1); // or any GUI layer
+        }
+        else {
+            //for button
+            manager.assignObjectToLayer(obj, 2);
+        }
 
-        manager.assignObjectToLayer(obj, 2);
         m_buttons[name] = obj;
     }
     m_buttonsCreated = !m_buttons.empty(); //buttons created if map is not empty

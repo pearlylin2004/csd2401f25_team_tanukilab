@@ -164,7 +164,8 @@ void CoreEngine::Run() {
 }
 
 void CoreEngine::GameLoop() {
-    if (glfwWindowShouldClose(m_window)) { m_isRunning = false; return; } 
+    //Q button also quits the game
+    if (glfwWindowShouldClose(m_window) || InputHandler::isKeyHeld(GLFW_KEY_Q)) { m_isRunning = false; return; }
    
     //use glfwGetWindowAttrib to check the GLFW_ICONIFIED status for efficient waiting
     int status = glfwGetWindowAttrib(m_window, GLFW_ICONIFIED);
