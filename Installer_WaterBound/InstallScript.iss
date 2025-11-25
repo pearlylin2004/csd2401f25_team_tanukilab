@@ -55,12 +55,38 @@ Source: ".\REDIST\VC_redist.x64.exe"; DestDir: "{tmp}"; Flags: ignoreversion
 
 ; -------------- Shortcuts --------------
 [Icons]
+
 ; Start menu shortcuts
-Name: "{group}\WaterBound"; Filename: "{app}\WaterBound.exe"; WorkingDir: "{app}"; IconFilename: "{app}\Icon.ico"
-Name: "{group}\{cm:UninstallProgram,WaterBound}"; Filename: "{uninstallexe}"
-Name: "{group}\{cm:UninstallProgram,WaterBound}"; Filename: "{uninstallexe}"; IconFilename: "{app}\Icon.ico"
-Name: "{commondesktop}\WaterBound"; Filename: "{app}\WaterBound.exe"; \
-    Tasks: desktopicon; WorkingDir: "{app}"; IconFilename: "{app}\Icon.ico"
+Name: "{group}\WaterBound (Fullscreen)"; \
+    Filename: "{app}\WaterBound.exe"; \
+    WorkingDir: "{app}"; \
+    IconFilename: "{app}\Icon.ico"
+
+Name: "{group}\WaterBound (Windowed Mode)"; \
+    Filename: "{app}\WaterBound.exe"; \
+    Parameters: "--windowed"; \
+    WorkingDir: "{app}"; \
+    IconFilename: "{app}\Icon.ico"
+
+; Single uninstaller entry (uninstalls everything)
+Name: "{group}\{cm:UninstallProgram,WaterBound}"; \
+    Filename: "{uninstallexe}"; \
+    IconFilename: "{app}\Icon.ico"
+
+; Desktop shortcut (fullscreen launcher)
+Name: "{commondesktop}\WaterBound"; \
+    Filename: "{app}\WaterBound.exe"; \
+    Tasks: desktopicon; \
+    WorkingDir: "{app}"; \
+    IconFilename: "{app}\Icon.ico"
+;Desktop shortcut (windowed launcher)
+Name: "{commondesktop}\WaterBound (Windowed)"; \
+    Filename: "{app}\WaterBound.exe"; \
+    Parameters: "--windowed"; \
+    Tasks: desktopicon; \
+    WorkingDir: "{app}"; \
+    IconFilename: "{app}\Icon.ico"
+
 
 ; -------------- Things to run during/after install --------------
 [Run]
