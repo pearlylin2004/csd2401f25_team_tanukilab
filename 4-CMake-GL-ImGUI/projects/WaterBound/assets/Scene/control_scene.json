@@ -17,6 +17,22 @@
       }
     },
     {
+      "name": "back_text",
+      "components": {
+        "Transform": {
+          "pos": [-18.0, 8.0, 1.0],
+          "rotation": 0.0,
+          "scale": [20.0, 20.0, 0.0]
+        },
+        "FontComponent": {
+          "word": "BACK",
+          "color": [0.0, 0.0, 0.0],
+          "scale": 1.0,
+          "fontType": 1
+        }
+      }
+    },
+    {
       "name": "back_button",
       "components": {
         "Transform": {

@@ -36,7 +36,8 @@ CoreEngine::CoreEngine()
     m_windowedHeight(0),
     m_windowPosX(100),
     m_windowPosY(100),
-    m_forceWindowed(false)
+    m_forceWindowed(false),
+	m_isPaused(false) //for pause
 {
 }
 
@@ -165,7 +166,15 @@ void CoreEngine::Run() {
 }
 
 void CoreEngine::GameLoop() {
-    if (glfwWindowShouldClose(m_window)) { m_isRunning = false; return; } 
+    //change to fn because Q will affect the editor
+    if (glfwWindowShouldClose(m_window) || InputHandler::isKeyTriggered(GLFW_KEY_F1)) { m_isRunning = false; return; }
+	//pause checking, and set it to paused state if escape is held
+    if (InputHandler::isKeyTriggered(GLFW_KEY_ESCAPE)) { 
+		//m_isPaused = true;
+		m_guiSystem->setPreviousState(m_guiSystem->getCurrentState()); //store previous state
+        m_guiSystem->setCurrentState(GameState::PAUSED); //set current state
+		m_guiSystem->pauseScreen(*m_manager); //draw pause screen 
+    }
    
     //use glfwGetWindowAttrib to check the GLFW_ICONIFIED status for efficient waiting
     int status = glfwGetWindowAttrib(m_window, GLFW_ICONIFIED);
@@ -187,6 +196,15 @@ void CoreEngine::GameLoop() {
      Perf::UpdateWindowTitle(m_window, m_title, 0.0f, false);
 #endif
      AudioHandler::getInstance().update(static_cast<float>(m_delta));
+
+     //to skip physics logic lua and input when paused
+     if (m_isPaused) {
+         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+         glfwSwapBuffers(m_window);
+         glfwPollEvents();
+         return; //to skip
+     }
+
      // --- Main Update --- glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
      glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
      Update(static_cast<float>(m_delta));
@@ -198,14 +216,23 @@ void CoreEngine::Update(float deltaTime) {
     if (InputHandler::isKeyTriggered(GLFW_KEY_F11)) {
         toggleFullscreen();
     }
-
+    //menu checking
     GameState state = m_guiSystem->getCurrentState();
     if (state == GameState::MENU) {
         m_guiSystem->update(*m_manager);
     }
+    //control menu checking
     else if (state == GameState::CONTROL) {
         m_guiSystem->controlUpdate(*m_manager);
     }
+    //exit confirmation checking
+    else if (state == GameState::EXITCONFIRMATION) {
+        m_guiSystem->exitUpdate(*m_manager);
+	}
+	//pause menu checking
+    else if(state == GameState::PAUSED) {
+        m_guiSystem->pauseUpdate(*m_manager);
+	}
 
     if(!EditorManager::isEditingMode() && !EditorManager::isPaused()) m_luaSystem->update(*m_manager, deltaTime);
 
@@ -215,7 +242,7 @@ void CoreEngine::Update(float deltaTime) {
     m_collisionSystem->update(*m_manager, deltaTime);
     m_logicSystem->update(*m_manager, deltaTime);
     m_renderSystem->update(*m_manager, deltaTime);
-    m_fontSystem->update(*m_manager, m_fps);
+    m_fontSystem->update(*m_manager, m_fps);    
     m_audioSystem->update(*m_manager, deltaTime);
     #ifdef _DEBUG
         m_uiSystem->update(*m_manager);
@@ -357,12 +384,14 @@ void CoreEngine::windowIconifyCallback(GLFWwindow* window, int iconified) {
             //window was minimized
             //engine->audio.pauseAll();
             AudioHandler::getInstance().pauseAll(*engine->m_manager);
+			engine->m_isPaused = true; //set paused flag
         }
         else {
             //window was restored maximized or simply returned to normal state
             //resume the background music or other necessary sounds
             //engine->audio.playSound(soundID::bg, 0.2f);
             AudioHandler::getInstance().resumeAll(*engine->m_manager);
+			engine->m_isPaused = false; //clear paused flag
         }
     }
 }
@@ -372,10 +401,12 @@ void CoreEngine::windowFocusCallback(GLFWwindow* window, int focused) {
     CoreEngine* engine = static_cast<CoreEngine*>(glfwGetWindowUserPointer(window));
     if (engine) {
         if (!focused) {
+            engine->m_isPaused = true; //set paused flag
             //window lost focus
             AudioHandler::getInstance().pauseAll(*engine->m_manager);
         }
         else {
+            engine->m_isPaused = false; //clear paused flag
             //window regained focus
             AudioHandler::getInstance().resumeAll(*engine->m_manager);
         }
