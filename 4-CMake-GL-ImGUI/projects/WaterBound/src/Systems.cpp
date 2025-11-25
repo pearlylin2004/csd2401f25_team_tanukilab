@@ -435,7 +435,6 @@ void RenderSystem::batchingSetUp(GameObjectManager& manager, float const& deltaT
 		data.color = glm::vec4(render->clr, 1);
 		data.texParams = glm::vec4(0, 0, 1, 1); // default, no texture frame
 
-		bool animated = false;
 		// if obj has animation & state machine component
 		if (obj->hasComponent<Animation>() && obj->hasComponent<StateMachine>())
 		{
@@ -454,11 +453,26 @@ void RenderSystem::batchingSetUp(GameObjectManager& manager, float const& deltaT
 					if (as.frameTimer >= as.frameTime && !EditorManager::isEditingMode() && !EditorManager::isPaused())
 					{
 						as.frameTimer -= as.frameTime;
-						as.currentFrameColumn = (as.currentFrameColumn + 1) % as.totalColumn;
-						as.currentFrameRow = (as.currentFrameRow + 1) % as.totalRow;
+						if (as.currentFrameColumn == as.lastFrame.x && as.currentFrameRow == as.lastFrame.y)
+						{
+							as.currentFrameColumn = as.initialFrame.x;
+							as.currentFrameRow = as.initialFrame.y;
+						}
+						else
+						{
+							if (as.currentFrameColumn == as.totalColumn)
+							{
+								as.currentFrameColumn = as.initialFrame.x;
+								++as.currentFrameRow;
+							}
+							else
+							{
+								++as.currentFrameColumn;
+							}
+						}
+						/*as.currentFrameColumn = (as.currentFrameColumn + 1) % as.totalColumn;
+						as.currentFrameRow = (as.currentFrameRow + 1) % as.totalRow;*/
 						animation->runItBack = true;
-
-						animated = true;
 					}
 				}
 				data.texParams = { texOffSet,texScale };

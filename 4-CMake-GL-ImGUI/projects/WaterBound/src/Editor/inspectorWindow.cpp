@@ -603,6 +603,18 @@ void InspectorWindow::renderStateMachine(GameObject* selected) {
                     if (ImGui::InputFloat("Frame Time", &currentState.frameTime, 0.01f))
                         currentState.frameTime = std::max(currentState.frameTime, 0.001f);
 
+                    if(ImGui::InputInt("Initial Column", (int*)&currentState.initialFrame.x))
+                        currentState.initialFrame.x = currentState.initialFrame.x;
+
+                    if (ImGui::InputInt("Initial Row", (int*)&currentState.initialFrame.y))
+                        currentState.initialFrame.y = currentState.initialFrame.y;
+
+                    if (ImGui::InputInt("Last Column", (int*)&currentState.lastFrame.x))
+                        currentState.lastFrame.x = currentState.lastFrame.x;
+
+                    if (ImGui::InputInt("Last Row", (int*)&currentState.lastFrame.y))
+                        currentState.lastFrame.y = currentState.lastFrame.y;
+
                     ImGui::EndDisabled();
                 }
 
