@@ -31,6 +31,7 @@ static std::string runtimeScenePath(std::string const& name) {
 GUISystem::GUISystem() :
     m_currentState(GameState::MENU), 
     m_previousState(GameState::MENU),
+    m_stateBeforePause(GameState::MENU),
     m_buttonsCreated(false),
     g_manager(nullptr),
     g_luaSystem(nullptr) {
@@ -200,11 +201,11 @@ void GUISystem::pauseUpdate(GameObjectManager& manager) {
                     return; //stop checking after a click
                 }
                 else if (name == "resume_button") {
-                    if (m_previousState == GameState::PLAYING) {
+                    if (m_stateBeforePause == GameState::PLAYING) {
                         m_currentState = GameState::PLAYING;
                         //idk
                     }
-                    else if (m_previousState == GameState::MENU){
+                    else if (m_stateBeforePause == GameState::MENU){
                         m_currentState = GameState::MENU;
 						loadMenu(manager);
                     }

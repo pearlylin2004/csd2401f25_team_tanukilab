@@ -52,6 +52,7 @@ public:
     GameState getCurrentState() const { return m_currentState; } //check current state
 	void setCurrentState(GameState state) { m_currentState = state; } //set current state
 	void setPreviousState(GameState state) { m_previousState = state; } //set previous state
+	void setStateBeforePause(GameState state) { m_stateBeforePause = state; } //set state before pause
 
 private:
     void createButtons(GameObjectManager& manager); //create menu buttons
@@ -69,6 +70,7 @@ private:
 
     GameState m_currentState;
 	GameState m_previousState;
+    GameState m_stateBeforePause;
     bool m_buttonsCreated = false;
     GameObjectManager* g_manager = nullptr;
     LuaSystem* g_luaSystem = nullptr;

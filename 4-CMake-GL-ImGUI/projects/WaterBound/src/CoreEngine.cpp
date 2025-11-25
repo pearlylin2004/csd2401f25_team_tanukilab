@@ -171,6 +171,7 @@ void CoreEngine::GameLoop() {
 	//pause checking, and set it to paused state if escape is held
     if (InputHandler::isKeyTriggered(GLFW_KEY_ESCAPE)) { 
 		//m_isPaused = true;
+		m_guiSystem->setStateBeforePause(m_guiSystem->getCurrentState()); //store state before pausing
 		m_guiSystem->setPreviousState(m_guiSystem->getCurrentState()); //store previous state
         m_guiSystem->setCurrentState(GameState::PAUSED); //set current state
 		m_guiSystem->pauseScreen(*m_manager); //draw pause screen 
