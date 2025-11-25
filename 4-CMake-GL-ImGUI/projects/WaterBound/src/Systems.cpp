@@ -749,6 +749,13 @@ void FontSystem::RenderText(GLuint& s, std::string text, float x, float y, float
 		return;
 	}*/
 
+	// --- Add this block --- //for text to be on top of everything
+	glDisable(GL_DEPTH_TEST);
+	glDepthMask(GL_FALSE);
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	// ----------------------
+
 	glUseProgram(s);
 	glUniform3f(glGetUniformLocation(s, "textColor"), color.x, color.y, color.z);
 	glActiveTexture(GL_TEXTURE0);
@@ -798,6 +805,10 @@ void FontSystem::RenderText(GLuint& s, std::string text, float x, float y, float
 	}
 	glBindVertexArray(0);
 	glBindTexture(GL_TEXTURE_2D, 0);
+
+	// --- Restore state --- //for text to be on top of everything
+	glDepthMask(GL_TRUE);
+	glEnable(GL_DEPTH_TEST);
 }
 
 // Physics system - updates position based on velocity and applies gravity
