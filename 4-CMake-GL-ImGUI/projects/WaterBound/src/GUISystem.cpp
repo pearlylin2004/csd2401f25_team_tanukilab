@@ -123,8 +123,14 @@ void GUISystem::controlUpdate(GameObjectManager& manager) {
             if (isPointInButton(worldPos, btn)) {
                 //handle button action dynamically based on name
                 if (name == "back_button") {
-                    m_currentState = GameState::MENU;
-                    loadMenu(manager);
+                    if (m_previousState == GameState::PAUSED) {
+						pauseScreen(manager);
+						m_currentState = GameState::PAUSED;
+                    }
+                    else {
+                        m_currentState = GameState::MENU;
+                        loadMenu(manager);
+                    }                    
                     return; //stop checking after a click
                 }
                 //idk if we need more buttons
@@ -188,6 +194,7 @@ void GUISystem::pauseUpdate(GameObjectManager& manager) {
             if (isPointInButton(worldPos, btn)) {
                 //handle button action dynamically based on name
                 if (name == "control_button") {
+					m_previousState = m_currentState; //set to pause state before going to control
                     m_currentState = GameState::CONTROL;
 					controlScreen(manager);
                     return; //stop checking after a click
