@@ -306,11 +306,11 @@ void GUISystem::confirmationScreen(GameObjectManager& manager) {
 
 //pause screen
 void GUISystem::pauseScreen(GameObjectManager& manager) {
-    std::cout << "[GUI] Quit button clicked" << std::endl;
+    std::cout << "[GUI] Pause button clicked" << std::endl;
     //remove menu buttons
     //removeMenuButtons(manager);
     manager.loadScene(runtimeScenePath("pause_scene.json"));
     manager.initializeSceneResources(); //to get resources loaded
     createButtons(manager); //loading scene
-    std::cout << "[GUI] Confirmation screen created successfully!" << std::endl;
+    std::cout << "[GUI] Pause screen created successfully!" << std::endl;
 }
