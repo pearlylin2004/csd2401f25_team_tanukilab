@@ -1186,24 +1186,24 @@ void GameObjectManager::createBulletPool(const std::string& templateBulletName, 
 		}
 
 		GameObject* clonedBullet = CloneGameObject(templateBulletName, bulletName);
-
-		if (clonedBullet) {
-			if (clonedBullet->hasComponent<Transform>()) {
-				Transform* t = clonedBullet->getComponent<Transform>();
-				/*t->x = -1000.0f;
-				t->y = -1000.0f;*/
-			}
-			if (clonedBullet->hasComponent<Physics>()) {
-				Physics* p = clonedBullet->getComponent<Physics>();
-				/*p->alive = false;
-				p->dynamics.position.x = -1000.0f;
-				p->dynamics.position.y = -1000.0f;
-				p->dynamics.velocity.x = 0.0f;
-				p->dynamics.velocity.y = 0.0f;
-				p->dynamics.velocity.z = 0.0f;*/
-			}
-			std::cout << "  Created: " << bulletName << "\n";
-		}
+		//incase of bullets not cloned properly
+		//if (clonedBullet) {
+		//	if (clonedBullet->hasComponent<Transform>()) {
+		//		Transform* t = clonedBullet->getComponent<Transform>();
+		//		/*t->x = -1000.0f;
+		//		t->y = -1000.0f;*/
+		//	}
+		//	if (clonedBullet->hasComponent<Physics>()) {
+		//		Physics* p = clonedBullet->getComponent<Physics>();
+		//		/*p->alive = false;
+		//		p->dynamics.position.x = -1000.0f;
+		//		p->dynamics.position.y = -1000.0f;
+		//		p->dynamics.velocity.x = 0.0f;
+		//		p->dynamics.velocity.y = 0.0f;
+		//		p->dynamics.velocity.z = 0.0f;*/
+		//	}
+		//	std::cout << "  Created: " << bulletName << "\n";
+		//}
 	}
 	std::cout << "Bullet pool creation completed.\n";
 }

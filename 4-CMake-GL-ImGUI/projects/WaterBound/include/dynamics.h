@@ -29,12 +29,12 @@ struct Force
 
 struct Dynamics
 {
-    Vector3D position;
-    Vector3D velocity;
-    Vector3D acceleration;
+    Vector3D position{ 0.0f, 0.0f, 0.0f };
+    Vector3D velocity{ 0.0f, 0.0f, 0.0f };
+    Vector3D acceleration{ 0.0f, 0.0f, 0.0f };
 
-    Vector3D angularVelocity;
-    Vector3D angularAcceleration;
+    Vector3D angularVelocity{ 0.0f, 0.0f, 0.0f };
+    Vector3D angularAcceleration{ 0.0f, 0.0f, 0.0f };
 
     float mass = 1.0f;
     float inverseMass = 1.0f;
