@@ -166,7 +166,14 @@ void CoreEngine::Run() {
 
 void CoreEngine::GameLoop() {
     //change to fn because Q will affect the editor
-    if (glfwWindowShouldClose(m_window) || InputHandler::isKeyHeld(GLFW_KEY_F1)) { m_isRunning = false; return; }
+    if (glfwWindowShouldClose(m_window) || InputHandler::isKeyTriggered(GLFW_KEY_F1)) { m_isRunning = false; return; }
+	//pause checking, and set it to paused state if escape is held
+    if (InputHandler::isKeyTriggered(GLFW_KEY_ESCAPE)) { 
+		//m_isPaused = true;
+		m_guiSystem->setPreviousState(m_guiSystem->getCurrentState()); //store previous state
+        m_guiSystem->setCurrentState(GameState::PAUSED); //set current state
+		m_guiSystem->pauseScreen(*m_manager); //draw pause screen 
+    }
    
     //use glfwGetWindowAttrib to check the GLFW_ICONIFIED status for efficient waiting
     int status = glfwGetWindowAttrib(m_window, GLFW_ICONIFIED);
@@ -214,6 +221,10 @@ void CoreEngine::Update(float deltaTime) {
     //exit confirmation checking
     else if (state == GameState::EXITCONFIRMATION) {
         m_guiSystem->exitUpdate(*m_manager);
+	}
+	//pause menu checking
+    else if(state == GameState::PAUSED) {
+        m_guiSystem->pauseUpdate(*m_manager);
 	}
 
     if(!EditorManager::isEditingMode() && !EditorManager::isPaused()) m_luaSystem->update(*m_manager, deltaTime);

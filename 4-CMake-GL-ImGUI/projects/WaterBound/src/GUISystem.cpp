@@ -28,7 +28,12 @@ static std::string runtimeScenePath(std::string const& name) {
     return std::string(RUNTIME_SCENE_DIR_R) + "/" + name;
 }
 
-GUISystem::GUISystem() {
+GUISystem::GUISystem() :
+    m_currentState(GameState::MENU), 
+    m_previousState(GameState::MENU),
+    m_buttonsCreated(false),
+    g_manager(nullptr),
+    g_luaSystem(nullptr) {
     std::cout << "[GUI] GUISystem constructor called" << std::endl;
 }
 
@@ -157,6 +162,48 @@ void GUISystem::exitUpdate(GameObjectManager& manager) {
                     loadMenu(manager);
                     return; //stop checking after a click
 				}
+                //idk if we need more buttons
+            }
+        }
+    }
+}
+
+//updating for pause confirmation
+void GUISystem::pauseUpdate(GameObjectManager& manager) {
+    //get mouse position
+    Vector2D worldMousePos = InputHandler::getWorldMousePosition();
+    Vector2D worldPos = Vec_Set(worldMousePos.x, worldMousePos.y);
+
+    if (!InputHandler::isMouseButtonClicked(GLFW_MOUSE_BUTTON_LEFT)) {
+        //when hover over button we can add hover effect here
+    }
+    else {
+        //loop through all buttons in the map
+        for (auto& pair : m_buttons) {
+            const std::string& name = pair.first;
+            GameObject* btn = pair.second;
+
+            if (!btn) continue;
+
+            if (isPointInButton(worldPos, btn)) {
+                //handle button action dynamically based on name
+                if (name == "control_button") {
+                    m_currentState = GameState::CONTROL;
+					controlScreen(manager);
+                    return; //stop checking after a click
+                }
+                else if (name == "resume_button") {
+                    if (m_previousState == GameState::PLAYING) {
+                        m_currentState = GameState::PLAYING;
+                        //idk
+                    }
+                    else if (m_previousState == GameState::MENU){
+                        m_currentState = GameState::MENU;
+						loadMenu(manager);
+                    }
+                    //can have more?
+                    return; //stop checking after a click
+                }
                 //idk if we need more buttons
             }
         }
@@ -296,8 +343,6 @@ void GUISystem::controlScreen(GameObjectManager& manager) {
 //confirmation screen for quitting
 void GUISystem::confirmationScreen(GameObjectManager& manager) {
     std::cout << "[GUI] Quit button clicked" << std::endl;
-    //remove menu buttons
-    //removeMenuButtons(manager);
     manager.loadScene(runtimeScenePath("confirmation_scene.json"));
     manager.initializeSceneResources(); //to get resources loaded
     createButtons(manager); //loading scene
@@ -307,8 +352,6 @@ void GUISystem::confirmationScreen(GameObjectManager& manager) {
 //pause screen
 void GUISystem::pauseScreen(GameObjectManager& manager) {
     std::cout << "[GUI] Pause button clicked" << std::endl;
-    //remove menu buttons
-    //removeMenuButtons(manager);
     manager.loadScene(runtimeScenePath("pause_scene.json"));
     manager.initializeSceneResources(); //to get resources loaded
     createButtons(manager); //loading scene
