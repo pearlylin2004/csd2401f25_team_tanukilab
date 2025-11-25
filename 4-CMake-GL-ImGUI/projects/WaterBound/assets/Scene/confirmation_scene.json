@@ -75,6 +75,22 @@
           "clr": [ 1.0, 1.0, 1.0 ]
         }
       }
+    },
+    {
+      "name": "confirmation_text",
+      "components": {
+        "Transform": {
+          "pos": [-3.5, 0.0, 1.0],
+          "rotation": 0.0,
+          "scale": [20.0, 20.0, 0.0]
+        },
+        "FontComponent": {
+          "word": "Confirm Quit",
+          "color": [0.0, 0.0, 0.0],
+          "scale": 1.0,
+          "fontType": 1
+        }
+      }
     }
   ]
 }
