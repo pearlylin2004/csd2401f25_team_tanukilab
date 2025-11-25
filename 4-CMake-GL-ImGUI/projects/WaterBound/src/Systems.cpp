@@ -322,6 +322,18 @@ void RenderSystem::renderFBO() {
 	}
 }
 
+void RenderSystem::resizeFBO(int width, int height) {
+	fboWidth = width;
+	fboHeight = height;
+
+	if (fbo) {
+		if (texture) glDeleteTextures(1, &texture);
+		if (fbo) glDeleteFramebuffers(1, &fbo);
+		if (depthBuffer) glDeleteRenderbuffers(1, &depthBuffer);
+		fbo = 0;  // reset so createFBO will recreate it
+	}
+}
+
 void RenderSystem::createFBO() {
 	// only create FBO once if its not created
 	if (!fbo) {

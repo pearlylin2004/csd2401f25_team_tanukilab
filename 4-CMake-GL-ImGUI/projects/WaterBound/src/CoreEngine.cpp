@@ -281,6 +281,8 @@ void CoreEngine::toggleFullscreen()
     renderer::cam.update();
     renderer::editorCam.update();
 	glfwPollEvents();
+
+    m_renderSystem->resizeFBO(winW, winH);
 }
 
 
