@@ -169,6 +169,21 @@
           "clr": [ 1.0, 1.0, 1.0 ]
         }
       }
+    },
+    {
+      "name": "back_button",
+      "components": {
+        "Transform": {
+          "pos": [-16.0, 8.5, 0.0],
+          "scale": [6.0, 2.0, 0.0]
+        },
+        "Render": {
+          "shape": "square",
+          "hasTex": 1,
+          "texture": "assets/button.png",
+          "clr": [ 1.0, 1.0, 1.0 ]
+        }
+      }
     }
   ]
 }
