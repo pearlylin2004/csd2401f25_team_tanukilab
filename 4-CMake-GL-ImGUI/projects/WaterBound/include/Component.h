@@ -54,6 +54,7 @@ public:
     float x{ 0.f }, y{ 0.f }, z{ 0.f };
     float rotation = 0.0f;
     float scaleX = 1.0f, scaleY = 1.0f, scaleZ{ 0.f };
+    bool flipX = false; // flip scaleX when change direction, true means flip to left
     glm::mat4 mdlWorld = 1.f;
 };
 

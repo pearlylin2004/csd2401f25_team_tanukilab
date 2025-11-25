@@ -411,12 +411,14 @@ void RenderSystem::batchingSetUp(GameObjectManager& manager, float const& deltaT
 		Render* render = obj->getComponent<Render>();
 		Transform* transform = obj->getComponent<Transform>();
 
+		float scaleX = transform->flipX ? -transform->scaleX : transform->scaleX;
+
 		renderer::InstanceData data;
 		float angle = glm::radians(transform->rotation);
 		transform->mdlWorld = glm::mat4{ 1 };
 		transform->mdlWorld = glm::translate(transform->mdlWorld, glm::vec3(transform->x, transform->y, transform->z));
 		transform->mdlWorld = glm::rotate(transform->mdlWorld, angle, glm::vec3(0, 0, 1.f));
-		transform->mdlWorld = glm::scale(transform->mdlWorld, glm::vec3(transform->scaleX, transform->scaleY, transform->scaleZ));
+		transform->mdlWorld = glm::scale(transform->mdlWorld, glm::vec3(scaleX, transform->scaleY, transform->scaleZ));
 		data.model = transform->mdlWorld;
 		data.color = glm::vec4(render->clr, 1);
 		data.texParams = glm::vec4(0, 0, 1, 1); // default, no texture frame
@@ -934,10 +936,12 @@ void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime, M
 			if (InputHandler::isKeyHeld(GLFW_KEY_A)) {
 				physics->canMove = true;
 				targetVelX = -physics->moveSpeed;
+				transform->flipX = true; // flip to face left
 				messageBus.publish(Message("KeyPressed", nullptr, KeyEvent{ "A", true }));
 			}
 			else if (InputHandler::isKeyHeld(GLFW_KEY_D) && physics->canMove) {
 				targetVelX = physics->moveSpeed;
+				transform->flipX = false; // flip to face right
 				messageBus.publish(Message("KeyPressed", nullptr, KeyEvent{ "D", true }));
 			}
 			physics->dynamics.velocity.x = targetVelX;

@@ -411,7 +411,10 @@ void SceneWindow::newScenePopup(GameObjectManager& manager) {
     // open popup if flagged
     if (m_menuBarState.showNewScenePopup) {
         if (EditorManager::isEditingMode()) ImGui::OpenPopup("Confirm New Scene"); // only load scene when not playing simulation
-        else DebugLog::addMessage("Playing simulation, cannot load another scene.\n");
+        else {
+            DebugLog::addMessage("Playing simulation, cannot load another scene.\n");
+            DebugLog::addMessage("Playing simulation, cannot load another scene.\n", DebugMode::PlaySimul);
+        }
         m_menuBarState.showNewScenePopup = false;
     }
 
@@ -464,7 +467,10 @@ void SceneWindow::duplicateScenePopup(GameObjectManager& manager) {
     if (m_menuBarState.showDuplicatePopup) {
         m_menuBarState.showDuplicatePopup = false;
         if (EditorManager::isEditingMode()) ImGui::OpenPopup("Confirm Duplicate Scene"); // only duplicate scene when not playing simulation
-        else DebugLog::addMessage("Playing simulation, cannot load scene.\n");
+        else {
+            DebugLog::addMessage("Playing simulation, cannot duplicate scene.\n");
+            DebugLog::addMessage("Playing simulation, cannot duplicate scene.\n", DebugMode::PlaySimul);
+        }
     }
 
     ImVec2 center = ImGui::GetMainViewport()->GetCenter();
@@ -505,7 +511,10 @@ void SceneWindow::loadScenePopup(GameObjectManager& manager) {
     if (m_menuBarState.showLoadScenePopup) {
         m_menuBarState.showLoadScenePopup = false;
         if (EditorManager::isEditingMode()) ImGui::OpenPopup("Confirm Load Scene"); // only load scene when not playing simulation
-        else DebugLog::addMessage("Playing simulation, cannot load scene.\n");
+        else {
+            DebugLog::addMessage("Playing simulation, cannot load scene.\n");
+            DebugLog::addMessage("Playing simulation, cannot load scene.\n", DebugMode::PlaySimul);
+        }
     }
 
     ImVec2 center = ImGui::GetMainViewport()->GetCenter();
