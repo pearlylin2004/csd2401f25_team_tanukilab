@@ -179,7 +179,13 @@ void CoreEngine::GameLoop() {
 
     //--- Update Timing --- 
      Perf::UpdateTime(m_delta, m_fps, 0.5);
+#if defined(_DEBUG) || defined(DEBUG)
+     // Show FPS only in debug builds
      Perf::UpdateWindowTitle(m_window, m_title, m_fps, true);
+#else
+     // Release build never show FPS
+     Perf::UpdateWindowTitle(m_window, m_title, 0.0f, false);
+#endif
      AudioHandler::getInstance().update(static_cast<float>(m_delta));
      // --- Main Update --- glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
      glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -223,8 +229,8 @@ void CoreEngine::toggleFullscreen()
     m_isFullscreen = !m_isFullscreen;
 
     GLFWmonitor* monitor = nullptr;
-    int          newWidth = 0;
-    int          newHeight = 0;
+    //int          newWidth = 0;
+    //int          newHeight = 0;
 
     if (m_isFullscreen)
     {
