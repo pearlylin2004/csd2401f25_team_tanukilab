@@ -600,20 +600,19 @@ void InspectorWindow::renderStateMachine(GameObject* selected) {
                     if (ImGui::InputInt("Current Frame Row", &currentState.currentFrameRow))
                         currentState.currentFrameRow = std::clamp(currentState.currentFrameRow, 0, currentState.totalRow - 1);*/
 
-                    if (ImGui::InputFloat("Frame Time", &currentState.frameTime, 0.01f))
-                        currentState.frameTime = std::max(currentState.frameTime, 0.001f);
+                    int tempInitCol = (int)currentState.initialFrame.x;
+                    int tempInitRow = (int)currentState.initialFrame.y;
+                    int tempLastCol = (int)currentState.lastFrame.x;
+                    int tempLastRow = (int)currentState.lastFrame.y;
 
-                    if(ImGui::InputInt("Initial Column", (int*)&currentState.initialFrame.x))
-                        currentState.initialFrame.x = currentState.initialFrame.x;
-
-                    if (ImGui::InputInt("Initial Row", (int*)&currentState.initialFrame.y))
-                        currentState.initialFrame.y = currentState.initialFrame.y;
-
-                    if (ImGui::InputInt("Last Column", (int*)&currentState.lastFrame.x))
-                        currentState.lastFrame.x = currentState.lastFrame.x;
-
-                    if (ImGui::InputInt("Last Row", (int*)&currentState.lastFrame.y))
-                        currentState.lastFrame.y = currentState.lastFrame.y;
+                    if (ImGui::InputInt("Initial Column", &tempInitCol))
+                        currentState.initialFrame.x = (float)tempInitCol;
+                    if (ImGui::InputInt("Initial Row", &tempInitRow))
+                        currentState.initialFrame.y = (float)tempInitRow;
+                    if (ImGui::InputInt("Last Column", &tempLastCol))
+                        currentState.lastFrame.x = (float)tempLastCol;
+                    if (ImGui::InputInt("Last Row", &tempLastRow))
+                        currentState.lastFrame.y = (float)tempLastRow;
 
                     ImGui::EndDisabled();
                 }
