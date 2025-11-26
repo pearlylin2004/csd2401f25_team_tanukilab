@@ -48,7 +48,6 @@ public:
 	void pauseUpdate(GameObjectManager& manager); //update pause screen
     void pauseScreen(GameObjectManager& manager); //pause screen
 
-    bool isPlaying() const { return m_currentState == GameState::PLAYING; } //check if its playing
     GameState getCurrentState() const { return m_currentState; } //check current state
 	void setCurrentState(GameState state) { m_currentState = state; } //set current state
 	void setPreviousState(GameState state) { m_previousState = state; } //set previous state
@@ -62,7 +61,6 @@ private:
 	void controlScreen(GameObjectManager& manager); //control screen button
 	void loadMenu(GameObjectManager& manager); //load menu screen
 	void confirmationScreen(GameObjectManager& manager); //confirmation screen for quitting
-	
 
     bool isPointInButton(const Vector2D& point, GameObject* button);
 
@@ -71,7 +69,6 @@ private:
     GameState m_currentState;
 	GameState m_previousState;
     GameState m_stateBeforePause;
-    bool m_buttonsCreated = false;
     GameObjectManager* g_manager = nullptr;
     LuaSystem* g_luaSystem = nullptr;
 };

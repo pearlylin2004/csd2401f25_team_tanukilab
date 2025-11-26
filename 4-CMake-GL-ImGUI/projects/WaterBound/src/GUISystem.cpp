@@ -32,7 +32,6 @@ GUISystem::GUISystem() :
     m_currentState(GameState::MENU), 
     m_previousState(GameState::MENU),
     m_stateBeforePause(GameState::MENU),
-    m_buttonsCreated(false),
     g_manager(nullptr),
     g_luaSystem(nullptr) {
     std::cout << "[GUI] GUISystem constructor called" << std::endl;
@@ -51,15 +50,6 @@ void GUISystem::init(GameObjectManager& manager, LuaSystem& luaSystem) {
     g_manager = &manager;
     g_luaSystem = &luaSystem;
     std::cout << "[GUI] GUISystem::init completed successfully" << std::endl;
-}
-
-void GUISystem::loadMenu(GameObjectManager& manager) {
-    std::cout << "[GUI] Load Menu" << std::endl;
-    removeMenuButtons(manager);
-    manager.loadScene(runtimeScenePath("menu_scene.json"));
-    manager.initializeSceneResources(); //to get resources loaded
-    createButtons(manager); //loading scene
-    std::cout << "[GUI] Load Menu created successfully!" << std::endl;
 }
 
 //update function to check for button clicking
@@ -256,7 +246,6 @@ void GUISystem::createButtons(GameObjectManager& manager) {
 
         m_buttons[name] = obj;
     }
-    m_buttonsCreated = !m_buttons.empty(); //buttons created if map is not empty
     std::cout << "[GUI] Menu buttons created successfully" << std::endl;
 }
 
@@ -270,7 +259,6 @@ void GUISystem::removeMenuButtons(GameObjectManager& manager) {
         }
     }
     m_buttons.clear(); //clear map
-    m_buttonsCreated = false;
 }
 
 void GUISystem::startGame(GameObjectManager& manager) {
@@ -351,6 +339,8 @@ void GUISystem::controlScreen(GameObjectManager& manager) {
 //confirmation screen for quitting
 void GUISystem::confirmationScreen(GameObjectManager& manager) {
     std::cout << "[GUI] Quit button clicked" << std::endl;
+    //remove menu buttons
+    removeMenuButtons(manager);
     manager.loadScene(runtimeScenePath("confirmation_scene.json"));
     manager.initializeSceneResources(); //to get resources loaded
     createButtons(manager); //loading scene
@@ -360,8 +350,20 @@ void GUISystem::confirmationScreen(GameObjectManager& manager) {
 //pause screen
 void GUISystem::pauseScreen(GameObjectManager& manager) {
     std::cout << "[GUI] Pause button clicked" << std::endl;
+    //remove menu buttons
+    removeMenuButtons(manager);
     manager.loadScene(runtimeScenePath("pause_scene.json"));
     manager.initializeSceneResources(); //to get resources loaded
     createButtons(manager); //loading scene
     std::cout << "[GUI] Pause screen created successfully!" << std::endl;
+}
+
+//load menu screen
+void GUISystem::loadMenu(GameObjectManager& manager) {
+    std::cout << "[GUI] Load Menu" << std::endl;
+    removeMenuButtons(manager);
+    manager.loadScene(runtimeScenePath("menu_scene.json"));
+    manager.initializeSceneResources(); //to get resources loaded
+    createButtons(manager); //loading scene
+    std::cout << "[GUI] Load Menu created successfully!" << std::endl;
 }
