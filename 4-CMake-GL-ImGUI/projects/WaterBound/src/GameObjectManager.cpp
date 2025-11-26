@@ -466,6 +466,10 @@ void GameObjectManager::loadSceneFromJson(const std::string& filename) {
 				: "square";
 			c->colliderType = JsonIO::StrToShape(shp);
 
+			if (jc.HasMember("collisionRes") && jc["collisionRes"].IsString()) {
+				c->collisionRes = JsonIO::StrToCollisionResponseMode(jc["collisionRes"].GetString());
+			}
+
 			if (jc.HasMember("colliderSize") && jc["colliderSize"].IsArray() && jc["colliderSize"].Size() == 2)
 			{
 				c->colliderSize.x = jc["colliderSize"][0].GetFloat();
@@ -886,6 +890,11 @@ void GameObjectManager::saveSceneToJson(const std::string& filename, bool isNew)
 				std::string shapeStr = JsonIO::ShapeToStr(c->colliderType);
 				if (!prefabC || !prefabC->HasMember("colliderType") || shapeStr != (*prefabC)["colliderType"].GetString())
 					jc.AddMember("colliderType", rapidjson::Value(shapeStr.c_str(), a), a);
+
+				std::string collisionResStr = JsonIO::CollisionResponseModeToStr(c->collisionRes);
+				if (!prefabC || !prefabC->HasMember("collisionRes") || collisionResStr != (*prefabC)["collisionRes"].GetString()) {
+					jc.AddMember("collisionRes", rapidjson::Value(collisionResStr.c_str(), a), a);
+				}
 
 				if (!jc.ObjectEmpty()) {
 					comps.AddMember("CollisionInfo", jc, a);

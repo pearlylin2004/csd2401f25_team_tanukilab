@@ -214,6 +214,30 @@ namespace JsonIO {
 
 
     /**
+     * \brief Converts a CollisionResponseMode enum to a string.
+     * \param mode The collision response mode enum.
+     * \return String representation ("StopWhenCollide" or "MoveWhenCollide").
+     */
+    const char* CollisionResponseModeToStr(CollisionResponseMode mode) {
+        switch (mode) {
+        case CollisionResponseMode::StopWhenCollide: return "StopWhenCollide";
+        case CollisionResponseMode::MoveWhenCollide: return "MoveWhenCollide";
+        default:                                    return "StopWhenCollide";
+        }
+    }
+
+    /**
+     * \brief Converts a JSON string into a CollisionResponseMode enum.
+     * \param s JSON string ("StopWhenCollide" or "MoveWhenCollide").
+     * \return Parsed enum; defaults to CollisionResponseMode::StopWhenCollide.
+     */
+    CollisionResponseMode StrToCollisionResponseMode(const std::string& s) {
+        if (s == "MoveWhenCollide") return CollisionResponseMode::MoveWhenCollide;
+        return CollisionResponseMode::StopWhenCollide;
+    }
+
+
+    /**
      * \brief Atomically replaces a target file with a temporary file.
      * \param tmp Path to the temporary file (already fully written and flushed).
      * \param dst Final destination path to replace.
@@ -561,6 +585,9 @@ namespace JsonIO {
             jc.AddMember("width", c->colliderSize.x, a);
             jc.AddMember("height", c->colliderSize.y, a);
 
+            Value collisionResStr(CollisionResponseModeToStr(c->collisionRes), a);
+            jc.AddMember("collisionRes", collisionResStr, a);
+
             doc.AddMember("Collision", jc, a);
         }
 
@@ -726,6 +753,10 @@ namespace JsonIO {
                 c->autoFitScale = jc["autoFitScale"].GetBool();
                 c->colliderSize.x = jc["width"].GetFloat();
                 c->colliderSize.y = jc["height"].GetFloat();
+
+                if (jc.HasMember("collisionRes")) {
+                    c->collisionRes = StrToCollisionResponseMode(jc["collisionRes"].GetString());
+                }
             }
 
             // Input

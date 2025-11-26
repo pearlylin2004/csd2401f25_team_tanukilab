@@ -178,10 +178,12 @@ public:
 
 };
 
-// enum class used for CollisionSystem
+// enum class used for CollisionSystem, to determine to stop/push by force (currently not force ig)
 enum class CollisionResponseMode {
-    Stop
+    StopWhenCollide, // if collide by another obj, just stop
+    MoveWhenCollide // if collide by another obj, apply "fake" force and kena push
 };
+//
 
 // CollisionInfo component to store collision-related information
 struct CollisionInfo : public Component {
@@ -196,6 +198,7 @@ public:
     shape colliderType = shape::square;
     Vector2D colliderSize{ 0,0 }; // size of the bounding box, if collider is circle then x will be diamater
     bool autoFitScale = true; // auto-fit the collider with the size of the mesh (i.e. obj bigger -> collider bigger)
+    CollisionResponseMode collisionRes = CollisionResponseMode::StopWhenCollide;
 
     // run-time calculation, do not de/serialize
     bool collided = false; // check whether obj alr collided

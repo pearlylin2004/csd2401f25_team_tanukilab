@@ -77,6 +77,10 @@ namespace JsonIO {
 	const char* ShapeToStr(shape s);
 	shape StrToShape(const std::string& s);
 
+	// ---- Collision Response Mode helper
+	const char* CollisionResponseModeToStr(CollisionResponseMode mode);
+	CollisionResponseMode StrToCollisionResponseMode(const std::string& s);
+
 	// ---- JSON file IO helpers ----
 	bool syncSceneToRuntime(const std::string& name);
 	bool AtomicMove(const std::string& tmp, const std::string& dst, std::string* err = nullptr);

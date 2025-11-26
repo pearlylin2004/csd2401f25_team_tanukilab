@@ -667,6 +667,15 @@ void InspectorWindow::renderCollision( GameObject* selected, GameObjectManager& 
                 // cannot edit if obj cannot collide
                 ImGui::BeginDisabled(!collision->collisionFlag);
                 ImGui::Checkbox("Auto-fit Scale", &collision->autoFitScale);
+
+                CollisionResponseMode mode = collision->collisionRes;
+                const char* modes[] = { "Static", "Pushable" };
+                int current = static_cast<int>(mode);
+
+                if (ImGui::Combo("Collision Response", &current, modes, IM_ARRAYSIZE(modes))) {
+                    collision->collisionRes = static_cast<CollisionResponseMode>(current);
+                }
+
                 ImGui::EndDisabled();
 
                 // cannot edit if obj cannot collide or auto-fit collider size with obj size is on
@@ -675,12 +684,12 @@ void InspectorWindow::renderCollision( GameObject* selected, GameObjectManager& 
 
                 shape colliderShape = collision->colliderType;
                 const char* shapes[] = { "Box", "Circle" };
-                int current = static_cast<int>(colliderShape);
+                current = static_cast<int>(colliderShape);
 
                 if (ImGui::Combo("Shape", &current, shapes, IM_ARRAYSIZE(shapes))) {
                     collision->colliderType = static_cast<shape>(current);
                 }
-
+                                
                 if (collision->colliderType == shape::circle) {
                     if (ImGui::InputFloat("Diamater", &collision->colliderSize.x, 1.f)) {
                         collision->colliderSize.x = std::max(collision->colliderSize.x, 0.f);

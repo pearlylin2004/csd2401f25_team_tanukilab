@@ -699,6 +699,8 @@ void PrefabManager::applyPrefabComponents(GameObject* go, const rapidjson::Value
 		c->autoFitScale = JsonIO::GetBoolOr(jc, "autoFitScale", false);
 		std::string shp;
 		c->colliderType = JsonIO::GetString(jc, "colliderType", shp) ? JsonIO::StrToShape(shp) : shape::square;
+		std::string res;
+		c->collisionRes = JsonIO::GetString(jc, "collisionRes", res) ? JsonIO::StrToCollisionResponseMode(res) : CollisionResponseMode::StopWhenCollide;
 		if (jc.HasMember("colliderSize") && jc["colliderSize"].IsArray() && jc["colliderSize"].Size() >= 2) {
 			c->colliderSize.x = jc["colliderSize"][0].GetFloat();
 			c->colliderSize.y = jc["colliderSize"][1].GetFloat();
@@ -871,6 +873,8 @@ void PrefabManager::serializeComponents(const GameObject* obj, rapidjson::Value&
 		JsonIO::PutArray3f(jc, "colliderSize", { c->colliderSize.x, c->colliderSize.y, 0.f }, a);
 
 		jc.AddMember("colliderType", rapidjson::Value(JsonIO::ShapeToStr(c->colliderType), a), a);
+
+		jc.AddMember("collisionRes", rapidjson::Value(JsonIO::CollisionResponseModeToStr(c->collisionRes), a), a);
 
 		comps.AddMember("CollisionInfo", jc, a);
 	}

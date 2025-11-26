@@ -29,7 +29,8 @@
           "damping": 0.0
         },
         "CollisionInfo": {
-          "colliderType": "square"
+          "colliderType": "square",
+          "collisionRes": "MoveWhenCollide"
         }
       }
     },
