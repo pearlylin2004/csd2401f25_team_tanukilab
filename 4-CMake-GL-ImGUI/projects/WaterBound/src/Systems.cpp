@@ -296,7 +296,7 @@ void RenderSystem::update(GameObjectManager& manager, float const& deltaTime)
 		for (std::pair<const BatchKey, std::vector<renderer::InstanceData>>& pair : objectWithTex)
 		{
 			const BatchKey& key = pair.first;
-			std::vector<renderer::InstanceData>& instances = pair.second;
+			//std::vector<renderer::InstanceData>& instances = pair.second;
 			glBindTextureUnit(0, key.texID);
 			GLint uTexLoc = glGetUniformLocation(renderer::shdr_pgm[0], "uTex2d");
 			if (uTexLoc != -1) 
@@ -464,8 +464,8 @@ void RenderSystem::batchingSetUp(GameObjectManager& manager, float const& deltaT
 						as.frameTimer -= as.frameTime;
 						if (as.currentFrameColumn >= as.lastFrame.x && as.currentFrameRow >= as.lastFrame.y)
 						{
-							as.currentFrameColumn = as.initialFrame.x;
-							as.currentFrameRow = as.initialFrame.y;
+							as.currentFrameColumn = (int)as.initialFrame.x;
+							as.currentFrameRow = (int)as.initialFrame.y;
 							as.frameTimer = 0;
 						}
 						else
@@ -479,8 +479,8 @@ void RenderSystem::batchingSetUp(GameObjectManager& manager, float const& deltaT
 
 								if (as.currentFrameRow > as.lastFrame.y)
 								{
-									as.currentFrameColumn = as.initialFrame.x;
-									as.currentFrameRow = as.initialFrame.y;
+									as.currentFrameColumn = (int)as.initialFrame.x;
+									as.currentFrameRow = (int)as.initialFrame.y;
 								}
 							}
 						}

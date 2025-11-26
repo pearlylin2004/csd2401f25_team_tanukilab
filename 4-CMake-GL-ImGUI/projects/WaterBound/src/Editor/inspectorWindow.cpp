@@ -378,7 +378,7 @@ void InspectorWindow::renderTransform(GameObject* selected) {
 
 void InspectorWindow::renderRender( GameObject* selected) {
     Render* render = selected->getComponent<Render>();
-    Animation* animation = selected->getComponent<Animation>();
+    //Animation* animation = selected->getComponent<Animation>();
     CollisionInfo* collision = selected->getComponent<CollisionInfo>();
 
     if (ImGui::CollapsingHeader("Render")) {

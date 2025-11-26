@@ -61,7 +61,7 @@ public:
 // Render component to store rendering-related properties
 struct Render : public Component {
 public:
-    Render() = default;
+    Render() : texHDL{ 0 } {}
 
     std::unique_ptr<Component> clone() const override {
         return std::make_unique<Render>(*this);
