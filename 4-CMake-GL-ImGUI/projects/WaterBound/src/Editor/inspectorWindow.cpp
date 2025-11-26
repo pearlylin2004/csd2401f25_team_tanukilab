@@ -593,13 +593,6 @@ void InspectorWindow::renderStateMachine(GameObject* selected) {
                     if (ImGui::InputInt("Total Rows", &currentState.totalRow))
                         currentState.totalRow = std::max(currentState.totalRow, 1);
 
-                    // by right should be the first frame column/row
-                    if (ImGui::InputInt("Current Frame Column", &currentState.currentFrameColumn))
-                        currentState.currentFrameColumn = std::clamp(currentState.currentFrameColumn, 0, currentState.totalColumn - 1);
-
-                    if (ImGui::InputInt("Current Frame Row", &currentState.currentFrameRow))
-                        currentState.currentFrameRow = std::clamp(currentState.currentFrameRow, 0, currentState.totalRow - 1);
-
                     int tempInitCol = (int)currentState.initialFrame.x;
                     int tempInitRow = (int)currentState.initialFrame.y;
                     int tempLastCol = (int)currentState.lastFrame.x;

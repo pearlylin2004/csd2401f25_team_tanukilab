@@ -6,7 +6,7 @@
       "pos": [
         0.0,
         0.0,
-        0.029999999329447746
+        0.03
       ],
       "rotation": 1.0,
       "scale": [
@@ -26,7 +26,7 @@
       "physicsFlag": 1,
       "moveSpeed": 5.0,
       "jumpForce": 100.0,
-      "damping": 0.9800000190734863,
+      "damping": 0.98,
       "mass": 1.0,
       "inWater": 0,
       "buoyancy": 0
@@ -50,8 +50,6 @@
         "animState": {
           "texture": "assets/Texture/Kinuta_Idle_SS.png",
           "loop": 1,
-          "currentFrameColumn": 0,
-          "currentFrameRow": 0,
           "totalColumn": 4,
           "totalRow": 4,
           "frameTime": 0.1469999998807907,
@@ -65,8 +63,6 @@
         "animState": {
           "texture": "assets/Texture/Kinuta_Walk_SS.png",
           "loop": 1,
-          "currentFrameColumn": 0,
-          "currentFrameRow": 0,
           "totalColumn": 6,
           "totalRow": 1,
           "frameTime": 0.09599997103214264,
@@ -80,8 +76,6 @@
         "animState": {
           "texture": "assets/Texture/Kinuta_Jump_SS.png",
           "loop": 1,
-          "currentFrameColumn": 0,
-          "currentFrameRow": 0,
           "totalColumn": 4,
           "totalRow": 1,
           "frameTime": 0.5,
@@ -95,8 +89,6 @@
         "animState": {
           "texture": "assets/Texture/Kinuta_Fall_SS.png",
           "loop": 0,
-          "currentFrameColumn": 0,
-          "currentFrameRow": 0,
           "totalColumn": 4,
           "totalRow": 1,
           "frameTime": 0.10000000149011612,
@@ -110,8 +102,6 @@
         "animState": {
           "texture": "assets/Texture/Kinuta_Land_SS.png",
           "loop": 0,
-          "currentFrameColumn": 0,
-          "currentFrameRow": 0,
           "totalColumn": 3,
           "totalRow": 1,
           "frameTime": 0.0820000022649765,

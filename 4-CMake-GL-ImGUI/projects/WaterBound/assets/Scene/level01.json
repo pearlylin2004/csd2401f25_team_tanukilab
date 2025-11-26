@@ -146,7 +146,6 @@
             "animState": {
               "texture": "assets/Texture/Smoke_Sprite_Sheet.png",
               "loop": 1,
-              "currentFrameColumn": 0,
               "totalColumn": 6,
               "totalRow": 4,
               "frameTime": 0.1469999998807907,

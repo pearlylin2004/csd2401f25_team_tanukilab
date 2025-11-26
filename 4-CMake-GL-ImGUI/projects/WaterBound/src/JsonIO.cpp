@@ -637,8 +637,6 @@ namespace JsonIO {
 
                     animStateObj.AddMember("texture", rapidjson::Value(animState.texFile.c_str(), a), a);
                     animStateObj.AddMember("loop", rapidjson::Value(animState.loop ? 1 : 0), a);
-                    animStateObj.AddMember("currentFrameColumn", rapidjson::Value(animState.currentFrameColumn), a);
-                    animStateObj.AddMember("currentFrameRow", rapidjson::Value(animState.currentFrameRow), a);
                     animStateObj.AddMember("totalColumn", rapidjson::Value(animState.totalColumn), a);
                     animStateObj.AddMember("totalRow", rapidjson::Value(animState.totalRow), a);
                     animStateObj.AddMember("frameTime", rapidjson::Value(animState.frameTime), a);

@@ -515,12 +515,6 @@ void GameObjectManager::loadSceneFromJson(const std::string& filename) {
 						state.loop = (animJson["loop"].GetInt() != 0);
 				}
 
-				if (animJson.HasMember("currentFrameColumn") && animJson["currentFrameColumn"].IsInt())
-					state.currentFrameColumn = animJson["currentFrameColumn"].GetInt();
-
-				if (animJson.HasMember("currentFrameRow") && animJson["currentFrameRow"].IsInt())
-					state.currentFrameRow = animJson["currentFrameRow"].GetInt();
-
 				if (animJson.HasMember("totalColumn") && animJson["totalColumn"].IsInt())
 					state.totalColumn = animJson["totalColumn"].GetInt();
 
@@ -950,8 +944,6 @@ void GameObjectManager::saveSceneToJson(const std::string& filename, bool isNew)
 								shouldSerialize =
 									(!prefabAnimState.HasMember("texture") || animState.texFile != prefabAnimState["texture"].GetString()) ||
 									(!prefabAnimState.HasMember("loop") || animState.loop != (prefabAnimState["loop"].IsBool() ? prefabAnimState["loop"].GetBool() : (prefabAnimState["loop"].GetInt() != 0))) ||
-									(!prefabAnimState.HasMember("currentFrameColumn") || animState.currentFrameColumn != prefabAnimState["currentFrameColumn"].GetInt()) ||
-									(!prefabAnimState.HasMember("currentFrameRow") || animState.currentFrameRow != prefabAnimState["currentFrameRow"].GetInt()) ||
 									(!prefabAnimState.HasMember("totalColumn") || animState.totalColumn != prefabAnimState["totalColumn"].GetInt()) ||
 									(!prefabAnimState.HasMember("totalRow") || animState.totalRow != prefabAnimState["totalRow"].GetInt()) ||
 									(!prefabAnimState.HasMember("frameTime") || differsFloat(static_cast<float>(prefabAnimState["frameTime"].GetDouble()), animState.frameTime));
@@ -975,8 +967,6 @@ void GameObjectManager::saveSceneToJson(const std::string& filename, bool isNew)
 
 							animStateObj.AddMember("texture", rapidjson::Value(animState.texFile.c_str(), a), a);
 							animStateObj.AddMember("loop", rapidjson::Value(animState.loop ? 1 : 0), a);
-							animStateObj.AddMember("currentFrameColumn", rapidjson::Value(animState.currentFrameColumn), a);
-							animStateObj.AddMember("currentFrameRow", rapidjson::Value(animState.currentFrameRow), a);
 							animStateObj.AddMember("totalColumn", rapidjson::Value(animState.totalColumn), a);
 							animStateObj.AddMember("totalRow", rapidjson::Value(animState.totalRow), a);
 							animStateObj.AddMember("frameTime", rapidjson::Value(animState.frameTime), a);
