@@ -453,7 +453,7 @@ void RenderSystem::batchingSetUp(GameObjectManager& manager, float const& deltaT
 			std::cout << "Total: (" << as.totalColumn << ", " << as.totalRow << ")" << std::endl;
 
 			if (render->hasAnimation && !as.texFile.empty()) {
-				glm::vec2 texOffSet{ as.currentFrameColumn / static_cast<float>(as.totalColumn), as.currentFrameRow / static_cast<float>(as.totalRow) };
+				glm::vec2 texOffSet{ as.currentFrameColumn / static_cast<float>(as.totalColumn), 1.f - ((as.currentFrameRow + 1) / static_cast<float>(as.totalRow)) };
 				glm::vec2 texScale{ 1.f / as.totalColumn, 1.f / as.totalRow };
 
 				if (as.loop)
