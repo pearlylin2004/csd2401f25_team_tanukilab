@@ -262,7 +262,7 @@ void GUISystem::createButtons(GameObjectManager& manager) {
 }
 
 //removing of buttons 
-void GUISystem::removeMenuButtons(GameObjectManager& manager) {
+void GUISystem::removeButtons(GameObjectManager& manager) {
     //delete button objects
     for (auto& pair : m_buttons) {
 		GameObject* btn = pair.second; //get button object
@@ -277,7 +277,7 @@ void GUISystem::startGame(GameObjectManager& manager) {
     std::cout << "[GUI] Play button clicked - starting game" << std::endl;
     
     // Remove menu buttons
-    removeMenuButtons(manager);
+    removeButtons(manager);
 
     // Load the game scene
     manager.init();
@@ -341,7 +341,7 @@ bool GUISystem::isPointInButton(const Vector2D& point, GameObject* button) {
 //load a specific screen using the filename
 void GUISystem::loadScreen(GameObjectManager& manager, const std::string& sceneName) {
     std::cout << "[GUI] Load Screen: " << sceneName << std::endl;
-    removeMenuButtons(manager);
+    removeButtons(manager);
     manager.loadScene(runtimeScenePath(sceneName));
     manager.initializeSceneResources(); //to get resources loaded
     createButtons(manager); //loading scene
