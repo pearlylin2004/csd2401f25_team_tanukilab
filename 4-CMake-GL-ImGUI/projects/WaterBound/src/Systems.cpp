@@ -3,9 +3,9 @@
 \file        Systems.cpp
 \author      Seow Sin Le, s.sinle, 2401084, 40%
 \author 	 Hugo Low Ren Hao, low.h, 2402272, 15%
-\author 	 Pearly Lin Lee Ying, p.lin, 2401591, 15%
+\author 	 Pearly Lin Lee Ying, p.lin, 2401591, 10%
 \author		 Asha Mathyalakan, asha.m, 2402886, 15%
-\author		 Tan Chee Qing, cheeqing.tan, 2401486, 15%
+\author		 Tan Chee Qing, cheeqing.tan, 2401486, 20%
 \par         s.sinle@digipen.edu
 \par		 low.h@digipen.edu
 \par		 p.lin@digipen.edu

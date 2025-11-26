@@ -46,10 +46,10 @@ public:
 	void controlUpdate(GameObjectManager& manager); //update control screen
 	void exitUpdate(GameObjectManager& manager); //update exit confirmation screen
 	void pauseUpdate(GameObjectManager& manager); //update pause screen
-    void pauseScreen(GameObjectManager& manager); //pause screen
+    void loadScreen(GameObjectManager& manager, const std::string& sceneName); //load a screen
 
-    bool isPlaying() const { return m_currentState == GameState::PLAYING; } //check if its playing
     GameState getCurrentState() const { return m_currentState; } //check current state
+	GameState getPreviousState() const { return m_previousState; } //check previous state
 	void setCurrentState(GameState state) { m_currentState = state; } //set current state
 	void setPreviousState(GameState state) { m_previousState = state; } //set previous state
 	void setStateBeforePause(GameState state) { m_stateBeforePause = state; } //set state before pause
@@ -58,11 +58,7 @@ private:
     void createButtons(GameObjectManager& manager); //create menu buttons
     void removeMenuButtons(GameObjectManager& manager); //remove menu buttons
 	void startGame(GameObjectManager& manager); //start game
-    void stopGame(); //stop game
-	void controlScreen(GameObjectManager& manager); //control screen button
-	void loadMenu(GameObjectManager& manager); //load menu screen
-	void confirmationScreen(GameObjectManager& manager); //confirmation screen for quitting
-	
+    void stopGame(); //stop game	
 
     bool isPointInButton(const Vector2D& point, GameObject* button);
 
@@ -71,7 +67,6 @@ private:
     GameState m_currentState;
 	GameState m_previousState;
     GameState m_stateBeforePause;
-    bool m_buttonsCreated = false;
     GameObjectManager* g_manager = nullptr;
     LuaSystem* g_luaSystem = nullptr;
 };
