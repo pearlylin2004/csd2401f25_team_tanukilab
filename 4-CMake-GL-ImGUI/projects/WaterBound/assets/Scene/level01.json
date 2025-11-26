@@ -29,7 +29,8 @@
           "damping": 0.0
         },
         "CollisionInfo": {
-          "colliderType": "square"
+          "colliderType": "square",
+          "collisionRes": "MoveWhenCollide"
         }
       }
     },
@@ -134,7 +135,7 @@
         "Render": {
           "shape": "square",
           "hasTex": 1,
-          "texture": "assets/Texture/Smoke-Sprite-Sheet.jpg",
+          "texture": "assets/Texture/Smoke_Sprite_Sheet.jpg",
           "hasAnimation": 1
         },
         "StateMachine": {
@@ -143,13 +144,15 @@
           "stateTime": 0.0,
           "Idle": {
             "animState": {
-              "texture": "assets/Texture/Smoke-Sprite-Sheet.png",
+              "texture": "assets/Texture/Smoke_Sprite_Sheet.png",
               "loop": 1,
-              "currentFrameColumn": 7,
-              "currentFrameRow": 0,
-              "totalColumn": 8,
-              "totalRow": 1,
-              "frameTime": 0.147
+              "totalColumn": 6,
+              "totalRow": 4,
+              "frameTime": 0.1469999998807907,
+              "initialFramCol": 0.0,
+              "initialFramRow": 0.0,
+              "lastFramCol": 5.0,
+              "lastFramRow": 3.0
             }
           }
         }

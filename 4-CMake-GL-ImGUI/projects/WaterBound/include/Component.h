@@ -27,8 +27,13 @@ Technology is prohibited.
 #include "mathlib.h"
 #include "font.h"
 #include "dynamics.h"
-//#include "audio.h"
 
+
+// at least it works!!!
+namespace JsonIO {
+    // for the indexing in animation vector
+    inline std::vector<std::string> stateNames = { "Idle", "Walking", "Jumping", "Falling", "Shooting" };
+}
 
 // basic component class
 class Component {
@@ -114,6 +119,7 @@ struct AnimateState {
 
 struct Animation : public Component
 {
+    Animation() { animState.resize(JsonIO::stateNames.size()); } // set animState to be of equal size of statenames
     std::unique_ptr<Component> clone() const override {
         return std::make_unique<Animation>(*this);
     }
@@ -179,10 +185,12 @@ public:
 
 };
 
-// enum class used for CollisionSystem
+// enum class used for CollisionSystem, to determine to stop/push by force (currently not force ig)
 enum class CollisionResponseMode {
-    Stop
+    StopWhenCollide, // if collide by another obj, just stop
+    MoveWhenCollide // if collide by another obj, apply "fake" force and kena push
 };
+//
 
 // CollisionInfo component to store collision-related information
 struct CollisionInfo : public Component {
@@ -197,6 +205,7 @@ public:
     shape colliderType = shape::square;
     Vector2D colliderSize{ 0,0 }; // size of the bounding box, if collider is circle then x will be diamater
     bool autoFitScale = true; // auto-fit the collider with the size of the mesh (i.e. obj bigger -> collider bigger)
+    CollisionResponseMode collisionRes = CollisionResponseMode::StopWhenCollide;
 
     // run-time calculation, do not de/serialize
     bool collided = false; // check whether obj alr collided

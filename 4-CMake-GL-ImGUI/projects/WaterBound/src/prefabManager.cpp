@@ -6,6 +6,9 @@
 \par        cheeqing.tan@digipen.edu
 \date       November, 07th, 2025
 \brief      A class that load and manage the prefabs by maintaining a prefab registry.
+			When applying prefab changes to instances -> serialize a prefab copy before
+			saving -> compare with obj to know which are the override data -> selectively
+			apply changes on those data that is not overriden
 
 Copyright (C) 2025 DigiPen Institute of Technology.
 Reproduction or disclosure of this file or its contents
@@ -398,14 +401,21 @@ int PrefabManager::applyToAllInstances(const std::string& prefabID, GameObjectMa
 	auto newI = m_prefabCache.find(prefabID); // aft edit and save
 
 	if (oldI == m_prefabBeforeEdit.end()) {
-		// load from disk as fallback
-		const std::string& path = std::string(RUNTIME_DIR_R) + getPrefabPath(prefabID);
-		rapidjson::Document diskDoc;
-		std::string err;
-
-		if (JsonIO::ReadFileToDocument(path, diskDoc, &err)) {
-			m_prefabBeforeEdit[prefabID].CopyFrom(diskDoc, m_prefabBeforeEdit[prefabID].GetAllocator());
+		// use current cache as old prefab
+		if (newI != m_prefabCache.end()) {
+			m_prefabBeforeEdit[prefabID].CopyFrom(newI->second, m_prefabBeforeEdit[prefabID].GetAllocator());
 			oldI = m_prefabBeforeEdit.find(prefabID);
+		}
+		else {
+			// load from disk as fallback
+			const std::string& path = std::string(RUNTIME_DIR_R) + getPrefabPath(prefabID);
+			rapidjson::Document diskDoc;
+			std::string err;
+
+			if (JsonIO::ReadFileToDocument(path, diskDoc, &err)) {
+				m_prefabBeforeEdit[prefabID].CopyFrom(diskDoc, m_prefabBeforeEdit[prefabID].GetAllocator());
+				oldI = m_prefabBeforeEdit.find(prefabID);
+			}
 		}
 	}
 
@@ -459,7 +469,8 @@ int PrefabManager::applyToAllInstances(const std::string& prefabID, GameObjectMa
 	}
 
 	manager.initializeSceneResources();
-	m_prefabBeforeEdit.erase(prefabID);
+	m_prefabBeforeEdit[prefabID].CopyFrom(newI->second, m_prefabBeforeEdit[prefabID].GetAllocator());
+	//m_prefabBeforeEdit.erase(prefabID);
 
 	return count;
 }
@@ -553,6 +564,11 @@ bool PrefabManager::createPrefabFromGameObj(GameObject* go, const std::string& n
 	doc.AddMember("id", rapidjson::Value(prefabID.c_str(), a), a);
 	// name
 	doc.AddMember("name", rapidjson::Value(prefabName.c_str(), a), a);
+
+	int layerID = go->getLayer();
+	if (layerID != -1 && layerID != 1) { 
+		doc.AddMember("layer", layerID, a);
+	}
 
 	rapidjson::Value comps(rapidjson::kObjectType);
 	serializeComponents(go, comps, a);
@@ -699,6 +715,8 @@ void PrefabManager::applyPrefabComponents(GameObject* go, const rapidjson::Value
 		c->autoFitScale = JsonIO::GetBoolOr(jc, "autoFitScale", false);
 		std::string shp;
 		c->colliderType = JsonIO::GetString(jc, "colliderType", shp) ? JsonIO::StrToShape(shp) : shape::square;
+		std::string res;
+		c->collisionRes = JsonIO::GetString(jc, "collisionRes", res) ? JsonIO::StrToCollisionResponseMode(res) : CollisionResponseMode::StopWhenCollide;
 		if (jc.HasMember("colliderSize") && jc["colliderSize"].IsArray() && jc["colliderSize"].Size() >= 2) {
 			c->colliderSize.x = jc["colliderSize"][0].GetFloat();
 			c->colliderSize.y = jc["colliderSize"][1].GetFloat();
@@ -729,12 +747,6 @@ void PrefabManager::applyPrefabComponents(GameObject* go, const rapidjson::Value
 				else if (animJson["loop"].IsInt())
 					state.loop = (animJson["loop"].GetInt() != 0);
 			}
-
-			if (animJson.HasMember("currentFrameColumn") && animJson["currentFrameColumn"].IsInt())
-				state.currentFrameColumn = animJson["currentFrameColumn"].GetInt();
-
-			if (animJson.HasMember("currentFrameRow") && animJson["currentFrameRow"].IsInt())
-				state.currentFrameRow = animJson["currentFrameRow"].GetInt();
 
 			if (animJson.HasMember("totalColumn") && animJson["totalColumn"].IsInt())
 				state.totalColumn = animJson["totalColumn"].GetInt();
@@ -884,6 +896,8 @@ void PrefabManager::serializeComponents(const GameObject* obj, rapidjson::Value&
 
 		jc.AddMember("colliderType", rapidjson::Value(JsonIO::ShapeToStr(c->colliderType), a), a);
 
+		jc.AddMember("collisionRes", rapidjson::Value(JsonIO::CollisionResponseModeToStr(c->collisionRes), a), a);
+
 		comps.AddMember("CollisionInfo", jc, a);
 	}
 
@@ -906,8 +920,6 @@ void PrefabManager::serializeComponents(const GameObject* obj, rapidjson::Value&
 
 				animStateObj.AddMember("texture", rapidjson::Value(animState.texFile.c_str(), a), a);
 				animStateObj.AddMember("loop", rapidjson::Value(animState.loop ? 1 : 0), a);
-				animStateObj.AddMember("currentFrameColumn", rapidjson::Value(animState.currentFrameColumn), a);
-				animStateObj.AddMember("currentFrameRow", rapidjson::Value(animState.currentFrameRow), a);
 				animStateObj.AddMember("totalColumn", rapidjson::Value(animState.totalColumn), a);
 				animStateObj.AddMember("totalRow", rapidjson::Value(animState.totalRow), a);
 				animStateObj.AddMember("frameTime", rapidjson::Value(animState.frameTime), a);
@@ -1008,14 +1020,87 @@ void PrefabManager::applyPrefabComponentsSelective(GameObject* obj, const rapidj
 		newPrefabCompSet.insert(it->name.GetString());
 	}
 
-	// remove component that no longer in new prefab (means removed)
+	// remove component that no longer in new prefab (means removed) if not overridden
 	for (auto i = objComps.MemberBegin(); i != objComps.MemberEnd(); ++i) {
 		const char* compName = i->name.GetString();
 
 		if (oldPrefabComps.HasMember(compName) && !newPrefabCompSet.count(compName)) {
-			removeComponentByName(obj, compName);
+			// check if instance has overridden this component
+			const rapidjson::Value& objCompData = i->value;
+			const rapidjson::Value& oldPrefabCompData = oldPrefabComps[compName];
+
+			// if instance data match old prefab, NOT overridden
+			bool wasOverridden = !valuesEqual(objCompData, oldPrefabCompData);
+
+			if (!wasOverridden) {
+				// remove if instance no override prefab
+				removeComponentByName(obj, compName);
+				/*DebugLog::addMessage(std::string("Removed component '") + compName + "' from instance (removed from prefab)");*/
+			}
+			else {
+				// instance has override data, keep it
+				/*DebugLog::addMessage(std::string("Kept overridden component '") + compName + "' on instance despite prefab removal");*/
+			}
 		}
 	}
+
+
+	/* ---------- Special Case -> Animation Component check ---------- */
+	// check if Animation was removed from the prefab StateMachine
+	bool oldPrefabHadAnimation = false;
+	bool newPrefabHasAnimation = false;
+
+	// check if old prefab has a statemachine
+	if (oldPrefabComps.HasMember("StateMachine") && oldPrefabComps["StateMachine"].IsObject()) {
+		const auto& oldSM = oldPrefabComps["StateMachine"];
+
+		// check if any state has animState
+		for (const auto& stateName : JsonIO::stateNames) {
+			if (oldSM.HasMember(stateName.c_str()) && oldSM[stateName.c_str()].IsObject()) {
+				const auto& stateObj = oldSM[stateName.c_str()];
+
+				if (stateObj.HasMember("animState") && stateObj["animState"].IsObject()) {
+					oldPrefabHadAnimation = true;
+					break;
+				}
+
+			}
+		}
+	}
+
+	// check if new prefab has a statemachine
+	if (newPrefabComps.HasMember("StateMachine") && newPrefabComps["StateMachine"].IsObject()) {
+		const auto& newSM = newPrefabComps["StateMachine"];
+		std::vector<std::string> stateNames = JsonIO::stateNames;
+		for (const auto& stateName : stateNames) {
+			if (newSM.HasMember(stateName.c_str()) && newSM[stateName.c_str()].IsObject()) {
+				const auto& stateObj = newSM[stateName.c_str()];
+
+				if (stateObj.HasMember("animState") && stateObj["animState"].IsObject()) {
+					newPrefabHasAnimation = true;
+					break;
+				}
+
+			}
+		}
+	}
+
+	// check if object matches old prefab (no override)
+	/*
+	  for now just assume that if both instance and old prefab has it, means its not
+	  overriden (means if animation is removed in prefab -> instance also no more)
+	*/
+	bool noOverride = false;
+	if (obj->getComponent<Animation>() && oldPrefabHadAnimation && objComps.HasMember("StateMachine")) {
+		noOverride = true;
+	}
+
+	// remove Animation if removed from prefab and obj didnt override it
+	if (oldPrefabHadAnimation && !newPrefabHasAnimation && noOverride) {
+		obj->removeComponent<Animation>();
+		/*DebugLog::addMessage("Removed Animation component from instance (removed from prefab)");*/
+	}
+	/* -------------------- END -------------------- */
 
 	// for each component in new prefab
 	for (auto compI = newPrefabComps.MemberBegin(); compI != newPrefabComps.MemberEnd(); ++compI) {
@@ -1056,7 +1141,7 @@ void PrefabManager::applyPrefabComponentsSelective(GameObject* obj, const rapidj
 			const rapidjson::Value& newValue = propIt->value;
 			const rapidjson::Value* sourceValue = nullptr;
 
-			// property is NEW in the prefab (shouldnt be??)
+			// property is NEW in the prefab
 			if (!oldCompData.HasMember(propName) || !objCompData.HasMember(propName)) {
 				/*std::cout << "    Property '" << compName << "." << propName << "' is NEW - using prefab value\n";*/
 				sourceValue = &newValue;

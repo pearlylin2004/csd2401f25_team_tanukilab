@@ -466,6 +466,10 @@ void GameObjectManager::loadSceneFromJson(const std::string& filename) {
 				: "square";
 			c->colliderType = JsonIO::StrToShape(shp);
 
+			if (jc.HasMember("collisionRes") && jc["collisionRes"].IsString()) {
+				c->collisionRes = JsonIO::StrToCollisionResponseMode(jc["collisionRes"].GetString());
+			}
+
 			if (jc.HasMember("colliderSize") && jc["colliderSize"].IsArray() && jc["colliderSize"].Size() == 2)
 			{
 				c->colliderSize.x = jc["colliderSize"][0].GetFloat();
@@ -510,12 +514,6 @@ void GameObjectManager::loadSceneFromJson(const std::string& filename) {
 					else if (animJson["loop"].IsInt())
 						state.loop = (animJson["loop"].GetInt() != 0);
 				}
-
-				if (animJson.HasMember("currentFrameColumn") && animJson["currentFrameColumn"].IsInt())
-					state.currentFrameColumn = animJson["currentFrameColumn"].GetInt();
-
-				if (animJson.HasMember("currentFrameRow") && animJson["currentFrameRow"].IsInt())
-					state.currentFrameRow = animJson["currentFrameRow"].GetInt();
 
 				if (animJson.HasMember("totalColumn") && animJson["totalColumn"].IsInt())
 					state.totalColumn = animJson["totalColumn"].GetInt();
@@ -899,6 +897,11 @@ void GameObjectManager::saveSceneToJson(const std::string& filename, bool isNew)
 				if (!prefabC || !prefabC->HasMember("colliderType") || shapeStr != (*prefabC)["colliderType"].GetString())
 					jc.AddMember("colliderType", rapidjson::Value(shapeStr.c_str(), a), a);
 
+				std::string collisionResStr = JsonIO::CollisionResponseModeToStr(c->collisionRes);
+				if (!prefabC || !prefabC->HasMember("collisionRes") || collisionResStr != (*prefabC)["collisionRes"].GetString()) {
+					jc.AddMember("collisionRes", rapidjson::Value(collisionResStr.c_str(), a), a);
+				}
+
 				if (!jc.ObjectEmpty()) {
 					comps.AddMember("CollisionInfo", jc, a);
 				}
@@ -941,8 +944,6 @@ void GameObjectManager::saveSceneToJson(const std::string& filename, bool isNew)
 								shouldSerialize =
 									(!prefabAnimState.HasMember("texture") || animState.texFile != prefabAnimState["texture"].GetString()) ||
 									(!prefabAnimState.HasMember("loop") || animState.loop != (prefabAnimState["loop"].IsBool() ? prefabAnimState["loop"].GetBool() : (prefabAnimState["loop"].GetInt() != 0))) ||
-									(!prefabAnimState.HasMember("currentFrameColumn") || animState.currentFrameColumn != prefabAnimState["currentFrameColumn"].GetInt()) ||
-									(!prefabAnimState.HasMember("currentFrameRow") || animState.currentFrameRow != prefabAnimState["currentFrameRow"].GetInt()) ||
 									(!prefabAnimState.HasMember("totalColumn") || animState.totalColumn != prefabAnimState["totalColumn"].GetInt()) ||
 									(!prefabAnimState.HasMember("totalRow") || animState.totalRow != prefabAnimState["totalRow"].GetInt()) ||
 									(!prefabAnimState.HasMember("frameTime") || differsFloat(static_cast<float>(prefabAnimState["frameTime"].GetDouble()), animState.frameTime));
@@ -966,8 +967,6 @@ void GameObjectManager::saveSceneToJson(const std::string& filename, bool isNew)
 
 							animStateObj.AddMember("texture", rapidjson::Value(animState.texFile.c_str(), a), a);
 							animStateObj.AddMember("loop", rapidjson::Value(animState.loop ? 1 : 0), a);
-							animStateObj.AddMember("currentFrameColumn", rapidjson::Value(animState.currentFrameColumn), a);
-							animStateObj.AddMember("currentFrameRow", rapidjson::Value(animState.currentFrameRow), a);
 							animStateObj.AddMember("totalColumn", rapidjson::Value(animState.totalColumn), a);
 							animStateObj.AddMember("totalRow", rapidjson::Value(animState.totalRow), a);
 							animStateObj.AddMember("frameTime", rapidjson::Value(animState.frameTime), a);

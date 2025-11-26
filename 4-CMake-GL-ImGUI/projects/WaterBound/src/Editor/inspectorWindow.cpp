@@ -435,7 +435,7 @@ void InspectorWindow::renderRender( GameObject* selected) {
                     render->texHDL = 0;
                     render->hasTex = false;
                     render->texFile.clear();
-                    render->texChanged = false;
+                    render->texChanged = true;
                 }
             }
             ImGui::TreePop();
@@ -497,7 +497,7 @@ void InspectorWindow::renderStateMachine(GameObject* selected) {
             else if (!animation) {
                 ImGui::Spacing();
                 if (ImGui::Selectable("Add Animation")) {
-                    selected->addComponent<Animation>();
+                    Animation* a = selected->addComponent<Animation>();
                 }
             }
             else if (!animation->animState.empty()) {
@@ -574,11 +574,13 @@ void InspectorWindow::renderStateMachine(GameObject* selected) {
                     ImGui::Separator();
                     ImGui::Spacing();
 
-                    if (ImGui::Button("Clear Texture")) {
-                        glDeleteTextures(1, &currentState.texHDL);
-                        currentState.texHDL = 0;
-                        currentState.texFile.clear();
-                        currentState.texChanged = false;
+                    if (!currentState.texFile.empty()){
+                        if (ImGui::Button("Clear Texture")) {
+                            glDeleteTextures(1, &currentState.texHDL);
+                            currentState.texHDL = 0;
+                            currentState.texFile.clear();
+                            currentState.texChanged = true;
+                        }
                     }
 
                     ImGui::Spacing();
@@ -592,13 +594,6 @@ void InspectorWindow::renderStateMachine(GameObject* selected) {
 
                     if (ImGui::InputInt("Total Rows", &currentState.totalRow))
                         currentState.totalRow = std::max(currentState.totalRow, 1);
-
-                    // by right should be the first frame column/row
-                    if (ImGui::InputInt("Current Frame Column", &currentState.currentFrameColumn))
-                        currentState.currentFrameColumn = std::clamp(currentState.currentFrameColumn, 0, currentState.totalColumn - 1);
-
-                    if (ImGui::InputInt("Current Frame Row", &currentState.currentFrameRow))
-                        currentState.currentFrameRow = std::clamp(currentState.currentFrameRow, 0, currentState.totalRow - 1);
 
                     int tempInitCol = (int)currentState.initialFrame.x;
                     int tempInitRow = (int)currentState.initialFrame.y;
@@ -630,7 +625,6 @@ void InspectorWindow::renderStateMachine(GameObject* selected) {
 
             }
             else {
-                ImGui::TextWrapped("Add a texture to Render to enable animation");
 
                 if (ImGui::Button("Remove Animation", ImVec2(-1, 0))) {
                     // add a delete component func here
@@ -638,8 +632,18 @@ void InspectorWindow::renderStateMachine(GameObject* selected) {
                     DebugLog::addMessage("Removed Animation Component");
                 }
             }
-
+                        
             ImGui::TreePop();
+        }
+
+        ImGui::Spacing();
+        ImGui::Separator();
+        ImGui::Spacing();
+
+        if (ImGui::Button("Remove State Machine", ImVec2(-1, 0))) {
+            // add a delete component func here
+            selected->removeComponent<StateMachine>();
+            DebugLog::addMessage("Removed State Machine");
         }
 
     }
@@ -647,6 +651,8 @@ void InspectorWindow::renderStateMachine(GameObject* selected) {
 
 void InspectorWindow::renderCollision( GameObject* selected, GameObjectManager& manager) {
     CollisionInfo* collision = selected->getComponent<CollisionInfo>();
+    Transform* transform = selected->getComponent<Transform>();
+    Render* render = selected->getComponent<Render>();
 
     if (ImGui::CollapsingHeader("Collision")) {
         {
@@ -680,7 +686,25 @@ void InspectorWindow::renderCollision( GameObject* selected, GameObjectManager& 
             if (ImGui::TreeNode("Collider")) {
                 // cannot edit if obj cannot collide
                 ImGui::BeginDisabled(!collision->collisionFlag);
-                ImGui::Checkbox("Auto-fit Scale", &collision->autoFitScale);
+                if (ImGui::Checkbox("Auto-fit Scale", &collision->autoFitScale)) {
+                    if (collision->autoFitScale && transform) {
+                        collision->colliderSize.x = transform->scaleX;
+                        collision->colliderSize.y = transform->scaleY;
+                    }
+
+                    if (collision->autoFitScale && render) {
+                        collision->colliderType = render->modelRef.shape;
+                    }
+                }
+
+                CollisionResponseMode mode = collision->collisionRes;
+                const char* modes[] = { "Static", "Pushable" };
+                int current = static_cast<int>(mode);
+
+                if (ImGui::Combo("Collision Response", &current, modes, IM_ARRAYSIZE(modes))) {
+                    collision->collisionRes = static_cast<CollisionResponseMode>(current);
+                }
+
                 ImGui::EndDisabled();
 
                 // cannot edit if obj cannot collide or auto-fit collider size with obj size is on
@@ -689,12 +713,12 @@ void InspectorWindow::renderCollision( GameObject* selected, GameObjectManager& 
 
                 shape colliderShape = collision->colliderType;
                 const char* shapes[] = { "Box", "Circle" };
-                int current = static_cast<int>(colliderShape);
+                current = static_cast<int>(colliderShape);
 
                 if (ImGui::Combo("Shape", &current, shapes, IM_ARRAYSIZE(shapes))) {
                     collision->colliderType = static_cast<shape>(current);
                 }
-
+                                
                 if (collision->colliderType == shape::circle) {
                     if (ImGui::InputFloat("Diamater", &collision->colliderSize.x, 1.f)) {
                         collision->colliderSize.x = std::max(collision->colliderSize.x, 0.f);

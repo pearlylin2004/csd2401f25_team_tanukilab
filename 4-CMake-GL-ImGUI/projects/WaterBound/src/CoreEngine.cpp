@@ -76,7 +76,7 @@ void CoreEngine::Init(bool forceWindowed) {
         winWidth = mode->width;
         winHeight = mode->height;
 
-        // remember windowed size for when we toggle back
+        //// remember windowed size for when we toggle back
         m_windowedWidth = cfg.width;
         m_windowedHeight = cfg.height;
     }

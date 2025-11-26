@@ -1217,59 +1217,58 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 
 						//checking if collided
 						if (info.collided) {
-							std::string obj1Name = obj1->getObjectName();
-							std::string obj2Name = obj2->getObjectName();
-
-							bool isPlayerCollision =
-								(obj1Name == "player" && obj2Name == "player2") ||
-								(obj1Name == "player2" && obj2Name == "player");
-
-							if (info.normal.x != 0) {
-								t1->x += info.normal.x * info.penetration * 0.5f;
-								t2->x -= info.normal.x * info.penetration * 0.5f;
-							}
-
-							if (info.normal.y != 0) {
-								t1->y += info.normal.y * info.penetration * 0.5f;
-								//t2->y -= info.normal.y * info.penetration * 0.5f;
-
-								// Update physics positions to match transforms
-								p1->dynamics.position.y = t1->y;
-								p2->dynamics.position.y = t2->y;
-							}
-
-							//update the velocity and penetrations for BOTH objects
-							if (isPlayerCollision) {
-								// Resolve penetration
+							// c1 is the moving obj (player), c2 is the obj it collide with
+							// CASE 1: collided obj is pushable
+							if (c2->collisionRes == CollisionResponseMode::MoveWhenCollide) {
 								if (info.normal.x != 0) {
-									// Stop horizontal movement for player
-									if (obj1Name == "player") {
-										p1->dynamics.velocity.x = 0.0f;
-										p1->velX = 0.0f;
-									}
-									else if (obj2Name == "player") {
-										p2->dynamics.velocity.x = 0.0f;
-										p2->velX = 0.0f;
-									}
+									// move both obj away from each other (to simulate push)
+									t1->x += info.normal.x * info.penetration * 0.5f;
+									t2->x -= info.normal.x * info.penetration * 0.5f;
+
+									p1->dynamics.position.x = t1->x;
+									p2->dynamics.position.x = t2->x;
 								}
 
 								if (info.normal.y != 0) {
-									p1->dynamics.velocity.y = 0.0f;
-									p2->dynamics.velocity.y = 0.0f;
+									t1->y += info.normal.y * info.penetration * 0.5f;
+									t2->y -= info.normal.y * info.penetration * 0.5f;
 
-									// If normal points upward, the object below is on ground
-									if (info.normal.y > 0) {
-										// obj1 is below obj2
-										p1->onGround = true;
-									}
-									else {
-										// obj2 is below obj1  
-										p2->onGround = true;
-									}
+									// Update physics positions to match transforms
+									p1->dynamics.position.y = t1->y;
+									p2->dynamics.position.y = t2->y;
+
+									p1->dynamics.velocity.y = 0.f;
+									p2->dynamics.velocity.y = 0.f;
+
+									if (info.normal.y > 0) p1->onGround = true;
+									else p2->onGround = true;
+								}
+							}
+							// CASE 2: collided obj is static
+							else if (c2->collisionRes == CollisionResponseMode::StopWhenCollide) {
+								// Resolve penetration
+								if (info.normal.x != 0) {
+									// push moving obj out of collided obj
+									t1->x += info.normal.x * info.penetration;
+									p1->dynamics.position.x = t1->x;
+
+									p1->dynamics.velocity.x = 0.f;
+									p1->velX = 0.f;
+
+								}
+
+								if (info.normal.y != 0) {
+									t1->y += info.normal.y * info.penetration;
+									p1->dynamics.position.y = t1->y;
+
+									p1->dynamics.velocity.y = 0.0f;
+
+									if (info.normal.y > 0) p1->onGround = true;
 								}
 
 								DebugLog::addMessage("Collision detected between Object.\n", DebugMode::PlaySimul);
 							}
+							// CASE 3: anything else
 							else {
 								if (info.normal.y != 0) {
 									p1->dynamics.velocity.y = 0.0f;
