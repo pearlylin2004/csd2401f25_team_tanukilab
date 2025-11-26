@@ -71,6 +71,11 @@ void LogicContainer::enter(GameObject& obj, PlayerState next)
     {
         if (fsm->state != next)
         {
+            // reset animation frame
+            if (Animation* a = obj.getComponent<Animation>()) {
+                a->animState[static_cast<int>(fsm->state)].currentFrameColumn = a->animState[static_cast<int>(fsm->state)].initialFrame.x;
+                a->animState[static_cast<int>(fsm->state)].currentFrameRow = a->animState[static_cast<int>(fsm->state)].initialFrame.y;
+            }
             std::string msg = "[LogicContainer] "
                 + obj.getObjectName() + " -> " + ToString(next);
             DebugLog::addMessage(msg, DebugMode::PlaySimul);
