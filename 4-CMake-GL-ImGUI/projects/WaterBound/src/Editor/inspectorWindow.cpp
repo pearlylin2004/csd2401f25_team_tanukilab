@@ -633,6 +633,7 @@ void InspectorWindow::renderStateMachine(GameObject* selected) {
 
 void InspectorWindow::renderCollision( GameObject* selected, GameObjectManager& manager) {
     CollisionInfo* collision = selected->getComponent<CollisionInfo>();
+    Transform* transform = selected->getComponent<Transform>();
 
     if (ImGui::CollapsingHeader("Collision")) {
         {
@@ -666,7 +667,12 @@ void InspectorWindow::renderCollision( GameObject* selected, GameObjectManager& 
             if (ImGui::TreeNode("Collider")) {
                 // cannot edit if obj cannot collide
                 ImGui::BeginDisabled(!collision->collisionFlag);
-                ImGui::Checkbox("Auto-fit Scale", &collision->autoFitScale);
+                if (ImGui::Checkbox("Auto-fit Scale", &collision->autoFitScale)) {
+                    if (collision->autoFitScale && transform) {
+                        collision->colliderSize.x = transform->scaleX;
+                        collision->colliderSize.y = transform->scaleY;
+                    }
+                }
 
                 CollisionResponseMode mode = collision->collisionRes;
                 const char* modes[] = { "Static", "Pushable" };
