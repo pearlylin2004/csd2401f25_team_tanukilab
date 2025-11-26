@@ -615,6 +615,10 @@ namespace JsonIO {
                     animStateObj.AddMember("totalColumn", rapidjson::Value(animState.totalColumn), a);
                     animStateObj.AddMember("totalRow", rapidjson::Value(animState.totalRow), a);
                     animStateObj.AddMember("frameTime", rapidjson::Value(animState.frameTime), a);
+                    animStateObj.AddMember("initialFramCol", rapidjson::Value(animState.initialFrame.x), a);
+                    animStateObj.AddMember("initialFramRow", rapidjson::Value(animState.initialFrame.y), a);
+                    animStateObj.AddMember("lastFramCol", rapidjson::Value(animState.lastFrame.x), a);
+                    animStateObj.AddMember("lastFramRow", rapidjson::Value(animState.lastFrame.y), a);
                     stateObj.AddMember("animState", animStateObj, a);
 
                     js.AddMember(rapidjson::Value(stateNames[i].c_str(), a), stateObj, a);
@@ -783,6 +787,10 @@ namespace JsonIO {
                                 animState.totalColumn = animStateObj["totalColumn"].GetInt();
                                 animState.totalRow = animStateObj["totalRow"].GetInt();
                                 animState.frameTime = animStateObj["frameTime"].GetFloat();
+                                animState.initialFrame.x = animStateObj["initialFrameCol"].GetInt();
+                                animState.initialFrame.y = animStateObj["initialFrameRow"].GetInt();
+                                animState.lastFrame.x = animStateObj["lastFrameCol"].GetInt();
+                                animState.lastFrame.y = animStateObj["lastFrameRow"].GetInt();
                                 animState.texChanged = true; // magic boolean!!
                             }
                         }

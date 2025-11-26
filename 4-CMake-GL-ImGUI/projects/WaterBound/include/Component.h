@@ -102,6 +102,7 @@ struct FontComponent : public Component {
 // animation for different state
 struct AnimateState {
     bool loop = true;
+    Vector2D initialFrame{}, lastFrame{};
     int currentFrameColumn{}, currentFrameRow{}, totalColumn{ 1 }, totalRow{ 1 };
     float frameTime = 0.1f, frameTimer{};
     GLuint texHDL;

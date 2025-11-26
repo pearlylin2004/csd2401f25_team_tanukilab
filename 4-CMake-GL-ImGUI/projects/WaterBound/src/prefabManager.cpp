@@ -745,6 +745,18 @@ void PrefabManager::applyPrefabComponents(GameObject* go, const rapidjson::Value
 			if (animJson.HasMember("frameTime") && animJson["frameTime"].IsNumber())
 				state.frameTime = static_cast<float>(animJson["frameTime"].GetDouble());
 
+			if (animJson.HasMember("initialFramCol") && animJson["initialFramCol"].IsNumber())
+					state.initialFrame.x = static_cast<float>(animJson["initialFramCol"].GetDouble());
+
+			if (animJson.HasMember("initialFramRow") && animJson["initialFramRow"].IsNumber())
+				state.initialFrame.y = static_cast<float>(animJson["initialFramRow"].GetDouble());
+
+			if (animJson.HasMember("lastFramCol") && animJson["lastFramCol"].IsNumber())
+				state.lastFrame.x = static_cast<float>(animJson["lastFramCol"].GetDouble());
+
+			if (animJson.HasMember("lastFramRow") && animJson["lastFramRow"].IsNumber())
+				state.lastFrame.y = static_cast<float>(animJson["lastFramRow"].GetDouble());
+
 			return state;
 			};
 
@@ -899,6 +911,10 @@ void PrefabManager::serializeComponents(const GameObject* obj, rapidjson::Value&
 				animStateObj.AddMember("totalColumn", rapidjson::Value(animState.totalColumn), a);
 				animStateObj.AddMember("totalRow", rapidjson::Value(animState.totalRow), a);
 				animStateObj.AddMember("frameTime", rapidjson::Value(animState.frameTime), a);
+				animStateObj.AddMember("initialFramCol", rapidjson::Value(animState.initialFrame.x), a);
+				animStateObj.AddMember("initialFramRow", rapidjson::Value(animState.initialFrame.y), a);
+				animStateObj.AddMember("lastFramCol", rapidjson::Value(animState.lastFrame.x), a);
+				animStateObj.AddMember("lastFramRow", rapidjson::Value(animState.lastFrame.y), a);
 				stateObj.AddMember("animState", animStateObj, a);
 
 				js.AddMember(rapidjson::Value(stateNames[i].c_str(), a), stateObj, a);
