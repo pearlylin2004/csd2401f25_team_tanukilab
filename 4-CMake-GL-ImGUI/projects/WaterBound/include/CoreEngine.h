@@ -52,7 +52,6 @@ public:
     static void windowIconifyCallback(GLFWwindow* window, int iconified);
     static void windowFocusCallback(GLFWwindow* window, int focused);
 
-
 private:
     void GameLoop();
     void Update(float deltaTime);

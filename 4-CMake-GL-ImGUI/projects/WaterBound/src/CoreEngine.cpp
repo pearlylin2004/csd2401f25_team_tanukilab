@@ -1,11 +1,11 @@
 /* Start Header ************************************************************************/
 /*!
 \file		CoreEngine.cpp
-\author 	Seow Sin Le, s.sinle, 2401084, 60%
+\author 	Seow Sin Le, s.sinle, 2401084, 55%
 \author     Hugo Low Ren Hao, low.h, 2402272, 20%
 \author     Tan Chee Qing, cheeqing.tan, 2401486, 10%
 \author     Varick Teo, v.teo, 2403417, 10%
-\author     Pearly Lin Lee Ying, p.lin, 2401591, 5%
+\author     Pearly Lin Lee Ying, p.lin, 2401591, 10%
 \par        s.sinle@digipen.edu
 \par        low.h@digipen.edu
 \par        cheeqing.tan@digipen.edu
