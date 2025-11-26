@@ -312,6 +312,7 @@ namespace Collision {
         return distSq <= radiusSum * radiusSum + EPSILON;
     }
 
+    //circle to circle dynamic 
     CollisionInfo CollisionIntersection_CircleCircle_Dynamic_Info(const Circle& c1, const Vector2D& velC1, const Circle& c2, const Vector2D& velC2) {
         CollisionInfo info;
         info.collided = false;
@@ -418,6 +419,7 @@ namespace Collision {
 		float distSq = Vec_Dot(&diff, &diff); //distance squared
 		return distSq <= radius * radius + EPSILON; 
     }
+	//circle to line dynamic
     CollisionInfo CollisionIntersection_CircleLine_Dynamic_Info(const Circle& c, const Vector2D& velC, const Vector2D& lineStart, const Vector2D& lineEnd) {
         CollisionInfo info;
 		info.collided = false;
