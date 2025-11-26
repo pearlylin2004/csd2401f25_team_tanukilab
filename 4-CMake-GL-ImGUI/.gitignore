@@ -12,8 +12,8 @@ Makefile
 
 # Ignore Visual Studio files
 *.sln
-!*.vcxproj
-!*.vcxproj.filters
+*.vcxproj
+*.vcxproj.filters
 *.vcxproj.user
 *.user
 *.opensdf
