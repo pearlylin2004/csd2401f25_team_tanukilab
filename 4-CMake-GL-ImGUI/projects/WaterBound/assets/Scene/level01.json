@@ -135,7 +135,7 @@
         "Render": {
           "shape": "square",
           "hasTex": 1,
-          "texture": "assets/Texture/Smoke-Sprite-Sheet.jpg",
+          "texture": "assets/Texture/Smoke_Sprite_Sheet.jpg",
           "hasAnimation": 1
         },
         "StateMachine": {
@@ -144,7 +144,7 @@
           "stateTime": 0.0,
           "Idle": {
             "animState": {
-              "texture": "assets/Texture/Smoke-Sprite-Sheet.png",
+              "texture": "assets/Texture/Smoke_Sprite_Sheet.png",
               "loop": 1,
               "currentFrameColumn": 0,
               "totalColumn": 6,
