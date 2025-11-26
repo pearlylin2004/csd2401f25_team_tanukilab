@@ -142,6 +142,8 @@ namespace JsonIO {
 	GameObject* deserializeGameObj(GameObjectManager& manager, const std::string& jsonStr);
 	// ---- END ----
 
+	/* ------ moved to components.h ------ */
 	// for the indexing in animation vector
-	inline std::vector<std::string> stateNames = { "Idle", "Walking", "Jumping", "Falling", "Shooting" };
+	//inline std::vector<std::string> stateNames = { "Idle", "Walking", "Jumping", "Falling", "Shooting" };
+	/* ------- END ------- */
 }

@@ -27,8 +27,13 @@ Technology is prohibited.
 #include "mathlib.h"
 #include "font.h"
 #include "dynamics.h"
-//#include "audio.h"
 
+
+// at least it works!!!
+namespace JsonIO {
+    // for the indexing in animation vector
+    inline std::vector<std::string> stateNames = { "Idle", "Walking", "Jumping", "Falling", "Shooting" };
+}
 
 // basic component class
 class Component {
@@ -114,6 +119,7 @@ struct AnimateState {
 
 struct Animation : public Component
 {
+    Animation() { animState.resize(JsonIO::stateNames.size()); } // set animState to be of equal size of statenames
     std::unique_ptr<Component> clone() const override {
         return std::make_unique<Animation>(*this);
     }

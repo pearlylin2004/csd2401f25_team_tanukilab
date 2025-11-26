@@ -435,7 +435,7 @@ void InspectorWindow::renderRender( GameObject* selected) {
                     render->texHDL = 0;
                     render->hasTex = false;
                     render->texFile.clear();
-                    render->texChanged = false;
+                    render->texChanged = true;
                 }
             }
             ImGui::TreePop();
@@ -497,7 +497,7 @@ void InspectorWindow::renderStateMachine(GameObject* selected) {
             else if (!animation) {
                 ImGui::Spacing();
                 if (ImGui::Selectable("Add Animation")) {
-                    selected->addComponent<Animation>();
+                    Animation* a = selected->addComponent<Animation>();
                 }
             }
             else if (!animation->animState.empty()) {
@@ -574,11 +574,13 @@ void InspectorWindow::renderStateMachine(GameObject* selected) {
                     ImGui::Separator();
                     ImGui::Spacing();
 
-                    if (ImGui::Button("Clear Texture")) {
-                        glDeleteTextures(1, &currentState.texHDL);
-                        currentState.texHDL = 0;
-                        currentState.texFile.clear();
-                        currentState.texChanged = false;
+                    if (!currentState.texFile.empty()){
+                        if (ImGui::Button("Clear Texture")) {
+                            glDeleteTextures(1, &currentState.texHDL);
+                            currentState.texHDL = 0;
+                            currentState.texFile.clear();
+                            currentState.texChanged = true;
+                        }
                     }
 
                     ImGui::Spacing();
@@ -623,7 +625,6 @@ void InspectorWindow::renderStateMachine(GameObject* selected) {
 
             }
             else {
-                ImGui::TextWrapped("Add a texture to Render to enable animation");
 
                 if (ImGui::Button("Remove Animation", ImVec2(-1, 0))) {
                     // add a delete component func here
@@ -631,8 +632,18 @@ void InspectorWindow::renderStateMachine(GameObject* selected) {
                     DebugLog::addMessage("Removed Animation Component");
                 }
             }
-
+                        
             ImGui::TreePop();
+        }
+
+        ImGui::Spacing();
+        ImGui::Separator();
+        ImGui::Spacing();
+
+        if (ImGui::Button("Remove State Machine", ImVec2(-1, 0))) {
+            // add a delete component func here
+            selected->removeComponent<StateMachine>();
+            DebugLog::addMessage("Removed State Machine");
         }
 
     }
@@ -641,6 +652,7 @@ void InspectorWindow::renderStateMachine(GameObject* selected) {
 void InspectorWindow::renderCollision( GameObject* selected, GameObjectManager& manager) {
     CollisionInfo* collision = selected->getComponent<CollisionInfo>();
     Transform* transform = selected->getComponent<Transform>();
+    Render* render = selected->getComponent<Render>();
 
     if (ImGui::CollapsingHeader("Collision")) {
         {
@@ -678,6 +690,10 @@ void InspectorWindow::renderCollision( GameObject* selected, GameObjectManager& 
                     if (collision->autoFitScale && transform) {
                         collision->colliderSize.x = transform->scaleX;
                         collision->colliderSize.y = transform->scaleY;
+                    }
+
+                    if (collision->autoFitScale && render) {
+                        collision->colliderType = render->modelRef.shape;
                     }
                 }
 
