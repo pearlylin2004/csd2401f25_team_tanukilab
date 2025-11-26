@@ -1205,7 +1205,7 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 									else p2->onGround = true;
 								}
 							}
-							// if collided obj is static
+							// CASE 2: collided obj is static
 							else if (c2->collisionRes == CollisionResponseMode::StopWhenCollide) {
 								// Resolve penetration
 								if (info.normal.x != 0) {
@@ -1229,6 +1229,7 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 
 								DebugLog::addMessage("Collision detected between Object.\n", DebugMode::PlaySimul);
 							}
+							// CASE 3: anything else
 							else {
 								if (info.normal.y != 0) {
 									p1->dynamics.velocity.y = 0.0f;
