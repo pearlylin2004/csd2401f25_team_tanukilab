@@ -73,8 +73,16 @@ void LogicContainer::enter(GameObject& obj, PlayerState next)
         {
             // reset animation frame
             if (Animation* a = obj.getComponent<Animation>()) {
-                a->animState[static_cast<int>(fsm->state)].currentFrameColumn = a->animState[static_cast<int>(fsm->state)].initialFrame.x;
-                a->animState[static_cast<int>(fsm->state)].currentFrameRow = a->animState[static_cast<int>(fsm->state)].initialFrame.y;
+
+                //a->animState[static_cast<int>(fsm->state)].currentFrameColumn = a->animState[static_cast<int>(fsm->state)].initialFrame.x;
+                //a->animState[static_cast<int>(fsm->state)].currentFrameRow = a->animState[static_cast<int>(fsm->state)].initialFrame.y;
+                int stateIndex = static_cast<int>(fsm->state);
+
+                a->animState[stateIndex].currentFrameColumn =
+                    static_cast<int>(a->animState[stateIndex].initialFrame.x);
+
+                a->animState[stateIndex].currentFrameRow =
+                    static_cast<int>(a->animState[stateIndex].initialFrame.y);
             }
             std::string msg = "[LogicContainer] "
                 + obj.getObjectName() + " -> " + ToString(next);
@@ -201,6 +209,36 @@ void LogicContainer::tickFalling(GameObject& obj, float /*dt*/) {
 }
 
 // ============================================================================
+// State: Dead
+// ============================================================================
+/*!
+ * \brief Per-frame update for Dead state.
+ *
+ * Disables movement and handles respawn logic after a delay.
+ *
+ * \param obj The player GameObject.
+ * \param dt Delta time (unused).
+ */
+void LogicContainer::tickDead(GameObject& obj, float /*dt*/) {
+    auto* physics = obj.getComponent<Physics>();
+    auto* fsm = obj.getComponent<StateMachine>();
+    if (!fsm) return;
+    // 1) Disable player movement
+    if (physics) {
+        physics->velX = 0.0f;
+        
+        physics->velY = 0.0f;
+		physics->onGround = true;
+
+    }
+    // 2) After some delay, respawn or reload level
+    //const float respawnDelay = 1.5f; // seconds
+    //if (fsm->stateTime > respawnDelay) {
+    //    // respawn logic here
+    //    
+    //}
+}
+// ============================================================================
 // Shooting Logic
 // ============================================================================
 /*!
@@ -247,12 +285,11 @@ void LogicContainer::tickFalling(GameObject& obj, float /*dt*/) {
  * - Increase state time
  * - Handle shooting (SPACE key)
  * - Run per-state tick function (Idle/Walking/Jumping/Falling)
- *
  * \param obj The player GameObject being updated.
  * \param dt Delta time in seconds.
  * \param manager GameObjectManager used for spawning bullets.
  */
-void LogicContainer::update(GameObject& obj, float dt, GameObjectManager& manager) {
+void LogicContainer::update(GameObject& obj, float dt, GameObjectManager& /*manager*/) {
     auto* fsm = obj.getComponent<StateMachine>();
     if (!fsm) return;
 
@@ -268,7 +305,7 @@ void LogicContainer::update(GameObject& obj, float dt, GameObjectManager& manage
     case PlayerState::Walking:  tickWalking(obj, dt);  break;
     case PlayerState::Jumping:  tickJumping(obj, dt);  break;
     case PlayerState::Falling:  tickFalling(obj, dt);  break;
-    case PlayerState::Dead:                            break;
+    case PlayerState::Dead:     tickDead(obj, dt);     break;
     default: break;
     }
 }

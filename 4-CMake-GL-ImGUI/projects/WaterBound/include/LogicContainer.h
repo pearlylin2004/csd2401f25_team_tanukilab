@@ -120,6 +120,6 @@ private:
      */
     //static void trySpawnBulletNear(GameObject& obj, GameObjectManager& manager);\
 
-	
+	static void tickDead(GameObject& obj, float dt);
 };
 
