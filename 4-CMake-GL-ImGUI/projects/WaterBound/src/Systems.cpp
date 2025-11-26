@@ -1182,6 +1182,7 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 							// CASE 1: collided obj is pushable
 							if (c2->collisionRes == CollisionResponseMode::MoveWhenCollide) {
 								if (info.normal.x != 0) {
+									// move both obj away from each other (to simulate push)
 									t1->x += info.normal.x * info.penetration * 0.5f;
 									t2->x -= info.normal.x * info.penetration * 0.5f;
 
@@ -1204,19 +1205,16 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 									else p2->onGround = true;
 								}
 							}
-							//update the velocity and penetrations for BOTH objects
+							// if collided obj is static
 							else if (c2->collisionRes == CollisionResponseMode::StopWhenCollide) {
 								// Resolve penetration
 								if (info.normal.x != 0) {
-									// Stop horizontal movement for player
+									// push moving obj out of collided obj
 									t1->x += info.normal.x * info.penetration;
 									p1->dynamics.position.x = t1->x;
 
 									p1->dynamics.velocity.x = 0.f;
 									p1->velX = 0.f;
-									/*p1->dynamics.velocity.x = 0.0f;
-									p1->velX = 0.0f;
-									p1->dynamics.position.x -= info.normal.x * info.penetration;*/
 
 								}
 
@@ -1225,17 +1223,7 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 									p1->dynamics.position.y = t1->y;
 
 									p1->dynamics.velocity.y = 0.0f;
-									/*p2->dynamics.velocity.y -= info.normal.y * info.penetration;*/
 
-									// If normal points upward, the object below is on ground
-									//if (info.normal.y > 0) {
-									//	// obj1 is below obj2
-									//	p1->onGround = true;
-									//}
-									//else {
-									//	// obj2 is below obj1  
-									//	p2->onGround = true;
-									//}
 									if (info.normal.y > 0) p1->onGround = true;
 								}
 
