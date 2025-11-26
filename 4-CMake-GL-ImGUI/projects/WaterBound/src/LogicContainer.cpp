@@ -268,6 +268,7 @@ void LogicContainer::update(GameObject& obj, float dt, GameObjectManager& manage
     case PlayerState::Walking:  tickWalking(obj, dt);  break;
     case PlayerState::Jumping:  tickJumping(obj, dt);  break;
     case PlayerState::Falling:  tickFalling(obj, dt);  break;
+    case PlayerState::Dead:                            break;
     default: break;
     }
 }
