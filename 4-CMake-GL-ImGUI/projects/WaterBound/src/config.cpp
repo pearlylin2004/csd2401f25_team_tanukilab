@@ -58,17 +58,6 @@ bool LoadConfig(const std::string& path, AppConfig& out, std::string* err)
     rapidjson::Document doc;
     if (!JsonIO::ReadFileToDocument(path, doc, err))
         return false;
-    //out.width = 1600;
-    //out.height = 800;
-    //out.title = "WaterBound";
-    //out.vsync = true;
-    //out.fullscreen = true;              
-    //out.clear_color[0] = 0.2f;
-    //out.clear_color[1] = 0.2f;
-    //out.clear_color[2] = 0.25f;
-    //out.clear_color[3] = 1.0f;
-    //out.show_fps_in_title = true;
-    //out.show_input_debug = false;
 
     // ---- Read from JSON ----
     if (doc.HasMember("window") && doc["window"].IsObject()) {

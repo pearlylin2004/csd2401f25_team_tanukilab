@@ -530,6 +530,18 @@ void GameObjectManager::loadSceneFromJson(const std::string& filename) {
 				if (animJson.HasMember("frameTime") && animJson["frameTime"].IsNumber())
 					state.frameTime = static_cast<float>(animJson["frameTime"].GetDouble());
 
+				if (animJson.HasMember("initialFramCol") && animJson["initialFramCol"].IsNumber())
+					state.initialFrame.x = static_cast<float>(animJson["initialFramCol"].GetDouble());
+
+				if (animJson.HasMember("initialFramRow") && animJson["initialFramRow"].IsNumber())
+					state.initialFrame.y = static_cast<float>(animJson["initialFramRow"].GetDouble());
+
+				if (animJson.HasMember("lastFramCol") && animJson["lastFramCol"].IsNumber())
+					state.lastFrame.x = static_cast<float>(animJson["lastFramCol"].GetDouble());
+
+				if (animJson.HasMember("lastFramRow") && animJson["lastFramRow"].IsNumber())
+					state.lastFrame.y = static_cast<float>(animJson["lastFramRow"].GetDouble());
+
 				return state;
 				};
 
@@ -943,6 +955,10 @@ void GameObjectManager::saveSceneToJson(const std::string& filename, bool isNew)
 									(!prefabAnimState.HasMember("totalColumn") || animState.totalColumn != prefabAnimState["totalColumn"].GetInt()) ||
 									(!prefabAnimState.HasMember("totalRow") || animState.totalRow != prefabAnimState["totalRow"].GetInt()) ||
 									(!prefabAnimState.HasMember("frameTime") || differsFloat(static_cast<float>(prefabAnimState["frameTime"].GetDouble()), animState.frameTime));
+									(!prefabAnimState.HasMember("initialFramCol") || differsFloat(static_cast<float>(prefabAnimState["initialFramCol"].GetDouble()), animState.initialFrame.x));
+									(!prefabAnimState.HasMember("initialFramRow") || differsFloat(static_cast<float>(prefabAnimState["initialFramRow"].GetDouble()), animState.initialFrame.y));
+									(!prefabAnimState.HasMember("lastFrameCol") || differsFloat(static_cast<float>(prefabAnimState["lastFrameCol"].GetDouble()), animState.lastFrame.x));
+									(!prefabAnimState.HasMember("lastFrameRow") || differsFloat(static_cast<float>(prefabAnimState["lastFrameRow"].GetDouble()), animState.lastFrame.y));
 							}
 							else {
 								shouldSerialize = true; // prefab doesn't have animState for this state
@@ -964,6 +980,10 @@ void GameObjectManager::saveSceneToJson(const std::string& filename, bool isNew)
 							animStateObj.AddMember("totalColumn", rapidjson::Value(animState.totalColumn), a);
 							animStateObj.AddMember("totalRow", rapidjson::Value(animState.totalRow), a);
 							animStateObj.AddMember("frameTime", rapidjson::Value(animState.frameTime), a);
+							animStateObj.AddMember("initialFramCol", rapidjson::Value(animState.initialFrame.x), a);
+							animStateObj.AddMember("initialFramRow", rapidjson::Value(animState.initialFrame.y), a);
+							animStateObj.AddMember("lastFramCol", rapidjson::Value(animState.lastFrame.x), a);
+							animStateObj.AddMember("lastFramRow", rapidjson::Value(animState.lastFrame.y), a);
 
 							stateObj.AddMember("animState", animStateObj, a);
 							js.AddMember(rapidjson::Value(stateNames[i].c_str(), a), stateObj, a);
@@ -1195,24 +1215,24 @@ void GameObjectManager::createBulletPool(const std::string& templateBulletName, 
 		}
 
 		GameObject* clonedBullet = CloneGameObject(templateBulletName, bulletName);
-
-		if (clonedBullet) {
-			if (clonedBullet->hasComponent<Transform>()) {
-				Transform* t = clonedBullet->getComponent<Transform>();
-				/*t->x = -1000.0f;
-				t->y = -1000.0f;*/
-			}
-			if (clonedBullet->hasComponent<Physics>()) {
-				Physics* p = clonedBullet->getComponent<Physics>();
-				/*p->alive = false;
-				p->dynamics.position.x = -1000.0f;
-				p->dynamics.position.y = -1000.0f;
-				p->dynamics.velocity.x = 0.0f;
-				p->dynamics.velocity.y = 0.0f;
-				p->dynamics.velocity.z = 0.0f;*/
-			}
-			std::cout << "  Created: " << bulletName << "\n";
-		}
+		//incase of bullets not cloned properly
+		//if (clonedBullet) {
+		//	if (clonedBullet->hasComponent<Transform>()) {
+		//		Transform* t = clonedBullet->getComponent<Transform>();
+		//		/*t->x = -1000.0f;
+		//		t->y = -1000.0f;*/
+		//	}
+		//	if (clonedBullet->hasComponent<Physics>()) {
+		//		Physics* p = clonedBullet->getComponent<Physics>();
+		//		/*p->alive = false;
+		//		p->dynamics.position.x = -1000.0f;
+		//		p->dynamics.position.y = -1000.0f;
+		//		p->dynamics.velocity.x = 0.0f;
+		//		p->dynamics.velocity.y = 0.0f;
+		//		p->dynamics.velocity.z = 0.0f;*/
+		//	}
+		//	std::cout << "  Created: " << bulletName << "\n";
+		//}
 	}
 	std::cout << "Bullet pool creation completed.\n";
 }

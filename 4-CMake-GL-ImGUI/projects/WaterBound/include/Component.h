@@ -61,7 +61,7 @@ public:
 // Render component to store rendering-related properties
 struct Render : public Component {
 public:
-    Render() = default;
+    Render() : texHDL{ 0 } {}
 
     std::unique_ptr<Component> clone() const override {
         return std::make_unique<Render>(*this);
@@ -102,6 +102,7 @@ struct FontComponent : public Component {
 // animation for different state
 struct AnimateState {
     bool loop = true;
+    Vector2D initialFrame{}, lastFrame{};
     int currentFrameColumn{}, currentFrameRow{}, totalColumn{ 1 }, totalRow{ 1 };
     float frameTime = 0.1f, frameTimer{};
     GLuint texHDL;

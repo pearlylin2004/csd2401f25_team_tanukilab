@@ -2,16 +2,47 @@
   "version": 1,
   "objects": [
     {
-      "name": "play_button",
+      "name": "background",
       "components": {
         "Transform": {
-          "pos": [0.0, 5.0, 0.0],
-          "scale": [5.0, 3.0, 0.0]
+          "pos": [0.0, 0.0, 0.0],
+          "scale": [45.0, 25.0, 15.0] 
         },
         "Render": {
           "shape": "square",
           "hasTex": 1,
-          "texture": "assets/menu/button_base.png"
+          "texture": "assets/menu_background.png",
+          "clr": [ 1.0, 1.0, 1.0 ]
+        }
+      }
+    },
+    {
+      "name": "play_button",
+      "components": {
+        "Transform": {
+          "pos": [-11.0, 3.0, 1.0],
+          "scale": [8.0, 3.0, 0.0]
+        },
+        "Render": {
+          "shape": "square",
+          "hasTex": 1,
+          "texture": "assets/start_button.png",
+          "clr": [ 1.0, 1.0, 1.0 ]
+        }
+      }
+    },
+    {
+      "name": "control_button",
+      "components": {
+        "Transform": {
+          "pos": [-11.0, -0.5, 1.0],
+          "scale": [8.0, 3.0, 0.0]
+        },
+        "Render": {
+          "shape": "square",
+          "hasTex": 1,
+          "texture": "assets/control_button.png",
+          "clr": [ 1.0, 1.0, 1.0 ]
         }
       }
     },
@@ -19,27 +50,14 @@
       "name": "exit_button",
       "components": {
         "Transform": {
-          "pos": [0.0, 1.0, 0.0],
-          "scale": [5.0, 3.0, 0.0]
+          "pos": [-11.0, -4.0, 1.0],
+          "scale": [8.0, 3.0, 0.0]
         },
         "Render": {
           "shape": "square",
           "hasTex": 1,
-          "texture": "assets/menu/button_base.png"
-        }
-      }
-    },
-    {
-      "name": "credit_button",
-      "components": {
-        "Transform": {
-          "pos": [0.0, -3.0, 0.0],
-          "scale": [5.0, 3.0, 0.0]
-        },
-        "Render": {
-          "shape": "square",
-          "hasTex": 1,
-          "texture": "assets/menu/button_base.png"
+          "texture": "assets/quit_button.png",
+          "clr": [ 1.0, 1.0, 1.0 ]
         }
       }
     }

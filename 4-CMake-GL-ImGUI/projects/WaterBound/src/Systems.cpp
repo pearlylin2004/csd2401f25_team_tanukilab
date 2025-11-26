@@ -296,7 +296,7 @@ void RenderSystem::update(GameObjectManager& manager, float const& deltaTime)
 		for (std::pair<const BatchKey, std::vector<renderer::InstanceData>>& pair : objectWithTex)
 		{
 			const BatchKey& key = pair.first;
-			std::vector<renderer::InstanceData>& instances = pair.second;
+			//std::vector<renderer::InstanceData>& instances = pair.second;
 			glBindTextureUnit(0, key.texID);
 			GLint uTexLoc = glGetUniformLocation(renderer::shdr_pgm[0], "uTex2d");
 			if (uTexLoc != -1) 
@@ -435,7 +435,6 @@ void RenderSystem::batchingSetUp(GameObjectManager& manager, float const& deltaT
 		data.color = glm::vec4(render->clr, 1);
 		data.texParams = glm::vec4(0, 0, 1, 1); // default, no texture frame
 
-		bool animated = false;
 		// if obj has animation & state machine component
 		if (obj->hasComponent<Animation>() && obj->hasComponent<StateMachine>())
 		{
@@ -444,8 +443,17 @@ void RenderSystem::batchingSetUp(GameObjectManager& manager, float const& deltaT
 
 			AnimateState& as = animation->animState[static_cast<int>(sm->state)];
 
+			std::cout << "=== ANIMATION DEBUG for " << obj->getObjectName() << " ===" << std::endl;
+			std::cout << "State: " << static_cast<int>(sm->state) << std::endl;
+			std::cout << "render->hasAnimation: " << render->hasAnimation << std::endl;
+			std::cout << "as.texFile: '" << as.texFile << "'" << std::endl;
+			std::cout << "as.texFile.empty(): " << as.texFile.empty() << std::endl;
+			std::cout << "as.texHDL: " << as.texHDL << std::endl;
+			std::cout << "Current frame: (" << as.currentFrameColumn << ", " << as.currentFrameRow << ")" << std::endl;
+			std::cout << "Total: (" << as.totalColumn << ", " << as.totalRow << ")" << std::endl;
+
 			if (render->hasAnimation && !as.texFile.empty()) {
-				glm::vec2 texOffSet{ as.currentFrameColumn / static_cast<float>(as.totalColumn), as.currentFrameRow / static_cast<float>(as.totalRow) };
+				glm::vec2 texOffSet{ as.currentFrameColumn / static_cast<float>(as.totalColumn), 1.f - ((as.currentFrameRow + 1) / static_cast<float>(as.totalRow)) };
 				glm::vec2 texScale{ 1.f / as.totalColumn, 1.f / as.totalRow };
 
 				if (as.loop)
@@ -454,11 +462,31 @@ void RenderSystem::batchingSetUp(GameObjectManager& manager, float const& deltaT
 					if (as.frameTimer >= as.frameTime && !EditorManager::isEditingMode() && !EditorManager::isPaused())
 					{
 						as.frameTimer -= as.frameTime;
-						as.currentFrameColumn = (as.currentFrameColumn + 1) % as.totalColumn;
-						as.currentFrameRow = (as.currentFrameRow + 1) % as.totalRow;
-						animation->runItBack = true;
+						if (as.currentFrameColumn >= as.lastFrame.x && as.currentFrameRow >= as.lastFrame.y)
+						{
+							as.currentFrameColumn = (int)as.initialFrame.x;
+							as.currentFrameRow = (int)as.initialFrame.y;
+							as.frameTimer = 0;
+						}
+						else
+						{
+							++as.currentFrameColumn;
 
-						animated = true;
+							if (as.currentFrameColumn >= as.totalColumn)
+							{
+								as.currentFrameColumn = 0;
+								++as.currentFrameRow;
+
+								if (as.currentFrameRow > as.lastFrame.y)
+								{
+									as.currentFrameColumn = (int)as.initialFrame.x;
+									as.currentFrameRow = (int)as.initialFrame.y;
+								}
+							}
+						}
+						/*as.currentFrameColumn = (as.currentFrameColumn + 1) % as.totalColumn;
+						as.currentFrameRow = (as.currentFrameRow + 1) % as.totalRow;*/
+						animation->runItBack = true;
 					}
 				}
 				data.texParams = { texOffSet,texScale };
@@ -810,6 +838,13 @@ void FontSystem::RenderText(GLuint& s, std::string text, float x, float y, float
 		return;
 	}*/
 
+	// --- Add this block --- //for text to be on top of everything
+	glDisable(GL_DEPTH_TEST);
+	glDepthMask(GL_FALSE);
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	// ----------------------
+
 	glUseProgram(s);
 	glUniform3f(glGetUniformLocation(s, "textColor"), color.x, color.y, color.z);
 	glActiveTexture(GL_TEXTURE0);
@@ -859,6 +894,10 @@ void FontSystem::RenderText(GLuint& s, std::string text, float x, float y, float
 	}
 	glBindVertexArray(0);
 	glBindTexture(GL_TEXTURE_2D, 0);
+
+	// --- Restore state --- //for text to be on top of everything
+	glDepthMask(GL_TRUE);
+	glEnable(GL_DEPTH_TEST);
 }
 
 // Physics system - updates position based on velocity and applies gravity

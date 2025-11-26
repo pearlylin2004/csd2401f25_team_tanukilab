@@ -71,6 +71,7 @@ private:
     int  m_windowPosX = 100;
     int  m_windowPosY = 100;
     bool m_forceWindowed = false;
+	bool m_isPaused; //for alt-tab pause
 
     void toggleFullscreen();
 
