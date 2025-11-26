@@ -2,9 +2,9 @@
 /*!
 \file       GUISystem.cpp
 \author     Asha Mathyalakan, asha.m, 2402886
-            - 60% of the file
+            - 10% of the file
 \author     Pearly Lin Lee Ying, p.lin, 2401591
-            - 40% of the file
+            - 90% of the file
 \par        asha.m@digipen.edu
 \par        p.lin@digipen.edu
 \date       November, 7th, 2025
