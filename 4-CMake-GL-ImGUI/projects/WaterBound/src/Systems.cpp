@@ -442,16 +442,7 @@ void RenderSystem::batchingSetUp(GameObjectManager& manager, float const& deltaT
 			StateMachine* sm = obj->getComponent<StateMachine>();
 
 			AnimateState& as = animation->animState[static_cast<int>(sm->state)];
-
-			std::cout << "=== ANIMATION DEBUG for " << obj->getObjectName() << " ===" << std::endl;
-			std::cout << "State: " << static_cast<int>(sm->state) << std::endl;
-			std::cout << "render->hasAnimation: " << render->hasAnimation << std::endl;
-			std::cout << "as.texFile: '" << as.texFile << "'" << std::endl;
-			std::cout << "as.texFile.empty(): " << as.texFile.empty() << std::endl;
-			std::cout << "as.texHDL: " << as.texHDL << std::endl;
-			std::cout << "Current frame: (" << as.currentFrameColumn << ", " << as.currentFrameRow << ")" << std::endl;
-			std::cout << "Total: (" << as.totalColumn << ", " << as.totalRow << ")" << std::endl;
-
+				
 			if (render->hasAnimation && !as.texFile.empty()) {
 				glm::vec2 texOffSet{ as.currentFrameColumn / static_cast<float>(as.totalColumn), 1.f - ((as.currentFrameRow + 1) / static_cast<float>(as.totalRow)) };
 				glm::vec2 texScale{ 1.f / as.totalColumn, 1.f / as.totalRow };
@@ -1157,10 +1148,10 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 				auto& cellObject = grid[i][j].objects; //get objects in the cell
 				//loop through objects in the cell to check for collision
 				for (size_t n = 0; n < cellObject.size(); n++) {
-
 					//object 1
 					GameObject* obj1 = cellObject[n];
 					if (!obj1->hasComponent<Physics>()) continue;
+					
 					Transform* t1 = obj1->getComponent<Transform>();
 					//to get obj1 shape
 					//Render* render1 = obj1->getComponent<Render>();
@@ -1214,9 +1205,55 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 							Collision::Circle circle2 = Collision::getObjectCirclebyCollider(t2, c2->colliderSize);
 							info = Collision::CollisionIntersection_CircleAABB_Dynamic_Info(circle2, vel2, aabb1, vel1);
 						}
+									
 
 						//checking if collided
 						if (info.collided) {
+							// skip bullet & player collision
+							if ((obj1->getObjectPrefabID() == "b1a12273-a692-4ce0-8072-156da2c70842" && obj2->getObjectPrefabID() == "dd60e1e1-641c-4ed5-b69d-ffadfa02fb7a") || (obj1->getObjectPrefabID() == "dd60e1e1-641c-4ed5-b69d-ffadfa02fb7a" && obj2->getObjectPrefabID() == "b1a12273-a692-4ce0-8072-156da2c70842")) return;
+
+							GameObject* bulletObj = nullptr;
+							if (obj1->getObjectPrefabID() == "b1a12273-a692-4ce0-8072-156da2c70842") {
+								bulletObj = obj1;
+							}
+							if (obj2->getObjectPrefabID() == "b1a12273-a692-4ce0-8072-156da2c70842") {
+								bulletObj = obj2;
+							}
+
+							
+
+							GameObject* fireObj = nullptr;
+							if (obj1->getObjectPrefabID() == "eaa2ba42-971a-413b-b8c4-99b2f5ab674d") {
+								fireObj = obj1;
+							}
+							if (obj2->getObjectPrefabID() == "eaa2ba42-971a-413b-b8c4-99b2f5ab674d") {
+								fireObj = obj2;
+							}
+
+							if (bulletObj && fireObj) {
+								if (StateMachine* sm = fireObj->getComponent<StateMachine>()) {
+									sm->state = PlayerState::Walking;
+									sm->fixState = true;
+									sm->stateTime = 0.f;
+
+									if (AudioComponent* a = fireObj->getComponent<AudioComponent>()) {
+										/*a->playOnStart = false;
+										AudioHandler::getInstance().playSound(a);*/
+										if (a->state != AudioState::Playing && !a->isPendingPlay) {
+											a->loop = false;
+											a->playOnStart = false;
+											a->isPendingPlay = true;
+										}
+									}
+
+									if (bulletObj->hasComponent<Physics>()) {
+										PhysicsForces::deactivateBullet(bulletObj);
+										bulletObj->getComponent<Transform>()->x = 1000.f;
+									}
+									continue;
+								}
+							}
+
 							// c1 is the moving obj (player), c2 is the obj it collide with
 							// CASE 1: collided obj is pushable
 							if (c2->collisionRes == CollisionResponseMode::MoveWhenCollide) {
@@ -1517,9 +1554,10 @@ void AudioSystem::update(GameObjectManager& manager, float deltaTime) {
 
 		audio->updateFades(deltaTime);
 
-		if (/*audio->soundId == soundID::bg && */ audio->playOnStart) {
+		if (/*audio->soundId == soundID::bg && */ audio->playOnStart && audio->loop) {
 			if (!audio->channel || !audioHandler.isSoundPlaying(audio)) {
 				// Restart background music if  not playing
+				std::cout << "[AudioSystem] Auto-restarting: " << obj->getObjectName() << std::endl;
 				audio->channel = audioHandler.playSound(audio);
 				if (audio->channel) {
 					audio->state = AudioState::Playing;
@@ -1535,6 +1573,7 @@ void AudioSystem::update(GameObjectManager& manager, float deltaTime) {
 			bool isPlaying = false;
 			audio->channel->isPlaying(&isPlaying); 
 			if (!isPlaying) {
+				std::cout << "[AudioSystem] Channel finished for: " << obj->getObjectName() << std::endl;
 				audio->channel = nullptr;
 				audio->fadeInfo.isFading = false;
 			}

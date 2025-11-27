@@ -2,14 +2,42 @@
   "version": 1,
   "objects": [
     {
+      "prefabid": "b1a12273-a692-4ce0-8072-156da2c70842",
+      "name": "bullet",
+      "components": {
+        "Transform": {
+          "pos": [
+            -1000.0,
+            -1005.99853515625,
+            0.019999999552965164
+          ]
+        },
+        "CollisionInfo": {
+          "collisionFlag": 1,
+          "autoFitScale": 0,
+          "colliderSize": [
+            0.20000000298023224,
+            0.20000000298023224
+          ],
+          "colliderType": "square",
+          "collisionRes": "StopWhenCollide"
+        }
+      }
+    },
+    {
       "prefabid": "dd60e1e1-641c-4ed5-b69d-ffadfa02fb7a",
       "name": "player",
       "components": {
-        "CollisionInfo": {
-          "colliderType": "square"
+        "Transform": {
+          "pos": [
+            0.0,
+            -8.0,
+            0.029999999329447746
+          ]
         },
         "StateMachine": {
-          "state": "Walking"
+          "state": "Walking",
+          "facingRight": 0
         }
       }
     },
@@ -22,6 +50,13 @@
       "prefabid": "4828c393-9fcf-42f8-8b05-ddc8d75096be",
       "name": "player1",
       "components": {
+        "Transform": {
+          "pos": [
+            5.293728828430176,
+            -8.514852523803711,
+            0.009999999776482582
+          ]
+        },
         "Physics": {
           "moveSpeed": 0.0,
           "jumpForce": 0.0,
@@ -63,7 +98,7 @@
           "pos": [
             5.0,
             5.0,
-            0.02
+            0.019999999552965164
           ],
           "rotation": 1.0,
           "scale": [
@@ -85,13 +120,108 @@
       }
     },
     {
+      "name": "smoke",
+      "components": {
+        "Transform": {
+          "pos": [
+            -12.0,
+            0.0,
+            0.019999999552965164
+          ],
+          "rotation": 1.0,
+          "scale": [
+            3.0,
+            5.0,
+            0.0
+          ]
+        },
+        "Render": {
+          "shape": "square",
+          "hasTex": 1,
+          "texture": "assets/Texture/Smoke_Sprite_Sheet.jpg",
+          "hasTex": 1,
+          "hasAnimation": 1
+        },
+        "StateMachine": {
+          "state": "Idle",
+          "facingRight": 1,
+          "stateTime": 0.0,
+          "Idle": {
+            "animState": {
+              "texture": "assets/Texture/Smoke_Sprite_Sheet.png",
+              "loop": 1,
+              "totalColumn": 6,
+              "totalRow": 4,
+              "frameTime": 0.1469999998807907,
+              "initialFramCol": 0.0,
+              "initialFramRow": 0.0,
+              "lastFramCol": 5.0,
+              "lastFramRow": 3.0
+            }
+          },
+          "Walking": {
+            "animState": {
+              "texture": "",
+              "loop": 1,
+              "totalColumn": 1,
+              "totalRow": 1,
+              "frameTime": 0.10000000149011612,
+              "initialFramCol": 0.0,
+              "initialFramRow": 0.0,
+              "lastFramCol": 0.0,
+              "lastFramRow": 0.0
+            }
+          },
+          "Jumping": {
+            "animState": {
+              "texture": "",
+              "loop": 1,
+              "totalColumn": 1,
+              "totalRow": 1,
+              "frameTime": 0.10000000149011612,
+              "initialFramCol": 0.0,
+              "initialFramRow": 0.0,
+              "lastFramCol": 0.0,
+              "lastFramRow": 0.0
+            }
+          },
+          "Falling": {
+            "animState": {
+              "texture": "",
+              "loop": 1,
+              "totalColumn": 1,
+              "totalRow": 1,
+              "frameTime": 0.10000000149011612,
+              "initialFramCol": 0.0,
+              "initialFramRow": 0.0,
+              "lastFramCol": 0.0,
+              "lastFramRow": 0.0
+            }
+          },
+          "Shooting": {
+            "animState": {
+              "texture": "",
+              "loop": 1,
+              "totalColumn": 1,
+              "totalRow": 1,
+              "frameTime": 0.10000000149011612,
+              "initialFramCol": 0.0,
+              "initialFramRow": 0.0,
+              "lastFramCol": 0.0,
+              "lastFramRow": 0.0
+            }
+          }
+        }
+      }
+    },
+    {
       "name": "text2",
       "components": {
         "Transform": {
           "pos": [
             -5.0,
             5.0,
-            0.1
+            0.10000000149011612
           ],
           "rotation": 1.0,
           "scale": [
@@ -113,63 +243,62 @@
       }
     },
     {
-      "prefabid": "b1a12273-a692-4ce0-8072-156da2c70842",
-      "name": "bullet"
-    },
-    {
-      "name": "smoke",
+      "name": "back_button",
       "components": {
         "Transform": {
           "pos": [
-            -12.0,
-            0.0,
-            0.02
+            -16.0,
+            8.5,
+            0.0
           ],
-          "rotation": 1.0,
+          "rotation": 0.0,
           "scale": [
-            3.0,
-            5.0,
+            6.0,
+            2.0,
             0.0
           ]
         },
         "Render": {
           "shape": "square",
           "hasTex": 1,
-          "texture": "assets/Texture/Smoke_Sprite_Sheet.jpg",
-          "hasAnimation": 1
-        },
-        "StateMachine": {
-          "state": "Idle",
-          "facingRight": 1,
-          "stateTime": 0.0,
-          "Idle": {
-            "animState": {
-              "texture": "assets/Texture/Smoke_Sprite_Sheet.png",
-              "loop": 1,
-              "totalColumn": 6,
-              "totalRow": 4,
-              "frameTime": 0.1469999998807907,
-              "initialFramCol": 0.0,
-              "initialFramRow": 0.0,
-              "lastFramCol": 5.0,
-              "lastFramRow": 3.0
-            }
-          }
+          "texture": "assets/button.png",
+          "hasTex": 1,
+          "hasAnimation": 0
         }
       }
     },
     {
-      "name": "back_button",
+      "prefabid": "eaa2ba42-971a-413b-b8c4-99b2f5ab674d",
+      "name": "fire(20)",
       "components": {
         "Transform": {
-          "pos": [-16.0, 8.5, 0.0],
-          "scale": [6.0, 2.0, 0.0]
+          "pos": [
+            11.070913314819336,
+            -7.783690452575684,
+            0.019999999552965164
+          ]
         },
-        "Render": {
-          "shape": "square",
-          "hasTex": 1,
-          "texture": "assets/button.png",
-          "clr": [ 1.0, 1.0, 1.0 ]
+        "Physics": {
+          "physicsFlag": 1,
+          "inWater": 0,
+          "buoyancy": 0,
+          "moveSpeed": 1.0,
+          "jumpForce": 100.0,
+          "mass": 1.0,
+          "damping": 0.9800000190734863
+        },
+        "CollisionInfo": {
+          "collisionFlag": 1,
+          "autoFitScale": 1,
+          "colliderSize": [
+            5.0,
+            3.4375
+          ],
+          "colliderType": "square",
+          "collisionRes": "StopWhenCollide"
+        },
+        "StateMachine": {
+          "state": "Walking"
         }
       }
     },
@@ -177,13 +306,25 @@
       "name": "back_text",
       "components": {
         "Transform": {
-          "pos": [-18.0, 8.3, 1.0],
+          "pos": [
+            -18.0,
+            8.300000190734863,
+            1.0
+          ],
           "rotation": 0.0,
-          "scale": [20.0, 20.0, 0.0]
+          "scale": [
+            20.0,
+            20.0,
+            0.0
+          ]
         },
         "FontComponent": {
           "word": "BACK",
-          "color": [0.0, 0.0, 0.0],
+          "color": [
+            0.0,
+            0.0,
+            0.0
+          ],
           "scale": 1.0,
           "fontType": 1
         }
