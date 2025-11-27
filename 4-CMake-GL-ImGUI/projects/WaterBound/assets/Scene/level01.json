@@ -13,7 +13,9 @@
           ]
         },
         "Render": {
-          "shape": "square"
+          "shape": "square",
+          "hasTex" : 1,
+          "texture": "assets/Texture/water_texture.png"
         }
       }
     },
