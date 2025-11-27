@@ -272,7 +272,7 @@ void InspectorWindow::renderGizmoCtrl() {
                 // if rotating, show the snap value (only 1 value)
                 if (m_gizmoState.currentOp == Editor::GIZMO_ROTATE) {
                     if (ImGui::DragFloat("##Snap Angle", &m_gizmoState.snapAngle)) {
-                        // clamp to 1–180 degrees
+                        // clamp to 1ï¿½180 degrees
                         m_gizmoState.snapAngle = glm::clamp(m_gizmoState.snapAngle, 1.f, 365.f);
                     }
                 }
@@ -885,7 +885,9 @@ void InspectorWindow::renderAudio(GameObject* selected) {
 
     if (ImGui::CollapsingHeader("Audio")) {
 
-        std::string audioName = audio->audioFile.empty() ? "(Drop new audio here)" : audio->audioFile;
+        AudioChannel* ch = audio->getDefaultChannel();
+
+        std::string audioName = ch->audioFile.empty() ? "(Drop new audio here)" : ch->audioFile;
         ImGui::Button(audioName.c_str());
 
         /* -------------- Drag and Drop From Asset Browser to Change Audio ------------- */
@@ -906,8 +908,8 @@ void InspectorWindow::renderAudio(GameObject* selected) {
 
                 // only accept if dropped file is a wav/ogg/mp3
                 if (ext == ".wav" || ext == ".ogg" || ext == ".mp3") {
-                    audio->audioFile = path;
-                    DebugLog::addMessage("Changed audio of " + selected->getObjectName() + " to " + audio->audioFile + "\n");
+                    ch->audioFile = path;
+                    DebugLog::addMessage("Changed audio of " + selected->getObjectName() + " to " + ch->audioFile + "\n");
                 }
                 else {
                     // audio file type error pop up
@@ -922,52 +924,52 @@ void InspectorWindow::renderAudio(GameObject* selected) {
             ImGui::EndDragDropTarget();
         }
 
-        if (!audio->audioFile.empty()) {
+        if (!ch->audioFile.empty()) {
             ImGui::Spacing();
             ImGui::Separator();
             ImGui::Spacing();
 
             if (ImGui::Button("Remove Sound")) {
-                audio->audioFile = "";
+                ch->audioFile = "";
 
                 // move this to audio in the future
-                if (audio->channel) {
-                    audio->channel->stop();
-                    audio->channel = nullptr;
+                if (ch->channel) {
+                    ch->channel->stop();
+                    ch->channel = nullptr;
                 }
             }
 
             ImGui::Separator();
             ImGui::Spacing();
 
-            ImGui::Checkbox("Loop", &audio->loop);
+            ImGui::Checkbox("Loop", &ch->loop);
 
-            ImGui::Checkbox("Play On Start", &audio->playOnStart);
+            ImGui::Checkbox("Play On Start", &ch->playOnStart);
 
             if (ImGui::TreeNode("Control")) {
-                if (ImGui::DragFloat("Volume", &audio->volume, 0.01f)) {
-                    audio->volume = std::clamp(audio->volume, 0.f, 1.f);
+                if (ImGui::DragFloat("Volume", &ch->volume, 0.01f)) {
+                    ch->volume = std::clamp(ch->volume, 0.f, 1.f);
                 }
 
 
-                if (ImGui::DragFloat("Pitch", &audio->pitch, 0.01f)) {
-                    audio->pitch = std::clamp(audio->pitch, 0.f, 2.f);
+                if (ImGui::DragFloat("Pitch", &ch->pitch, 0.01f)) {
+                    ch->pitch = std::clamp(ch->pitch, 0.f, 2.f);
                 }
 
                 ImGui::TreePop();
             }
 
             if (ImGui::TreeNode("Fade In/Out")) {
-                ImGui::Checkbox("Fade In On Start", &audio->fadeInOnStart);
-                if (audio->fadeInOnStart) {
-                    ImGui::DragFloat("Fade In Duration", &audio->fadeInDuration, 0.01f);
-                    audio->fadeInDuration = std::clamp(audio->fadeInDuration, 0.f, 10.f);
+                ImGui::Checkbox("Fade In On Start", &ch->fadeInOnStart);
+                if (ch->fadeInOnStart) {
+                    ImGui::DragFloat("Fade In Duration", &ch->fadeInDuration, 0.01f);
+                    ch->fadeInDuration = std::clamp(ch->fadeInDuration, 0.f, 10.f);
                 }
 
-                ImGui::Checkbox("Fade Out On Stop", &audio->fadeOutOnStop);
-                if (audio->fadeOutOnStop) {
-                    ImGui::DragFloat("Fade Out Duration", &audio->fadeOutDuration, 0.01f);
-                    audio->fadeOutDuration = std::clamp(audio->fadeOutDuration, 0.f, 10.f);
+                ImGui::Checkbox("Fade Out On Stop", &ch->fadeOutOnStop);
+                if (ch->fadeOutOnStop) {
+                    ImGui::DragFloat("Fade Out Duration", &ch->fadeOutDuration, 0.01f);
+                    ch->fadeOutDuration = std::clamp(ch->fadeOutDuration, 0.f, 10.f);
                 }
 
                 ImGui::TreePop();

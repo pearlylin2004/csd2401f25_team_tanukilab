@@ -275,6 +275,27 @@ enum class AudioState {
     Paused
 };
 
+struct AudioChannel {
+    FMOD::Channel* channel = nullptr;
+    std::string audioFile;
+    AudioState state = AudioState::Stopped;
+
+    float volume = 1.0f;
+    float pitch = 1.0f;
+    bool loop = false;
+    bool muted = false;
+
+    bool fadeInOnStart = false;
+    float fadeInDuration = 1.0f;
+    bool fadeOutOnStop = false;
+    float fadeOutDuration = 1.0f;
+    FadeInfo fadeInfo;
+
+    bool isPendingPlay = false;
+    bool isPendingStop = false;
+    bool playOnStart = false;
+};
+
 //enum class soundID : int;
 //enum class AudioState;
 class FMOD::Channel;
@@ -282,83 +303,123 @@ struct AudioComponent : public Component {
 public:
     AudioComponent() = default;
 
-    AudioComponent(const std::string& file, float vol = 1.0f, bool shouldLoop = false, bool playStart = false)
+    /*AudioComponent(const std::string& file, float vol = 1.0f, bool shouldLoop = false, bool playStart = false)
         : audioFile(file)
         , volume(vol)
         , loop(shouldLoop)
         , playOnStart(playStart)
-    {}
+    {}*/
+    //need to change this to make it work with multiple sounds
+
+    AudioComponent(const std::string& file, float vol = 1.0f,
+        bool shouldLoop = false, bool playStart = false)
+    {
+        // Create "default" channel with these parameters
+        AudioChannel& ch = audioChannels["default"];
+        ch.audioFile = file;
+        ch.volume = vol;
+        ch.loop = shouldLoop;
+        ch.playOnStart = playStart;
+    }
 
     std::unique_ptr<Component> clone() const override {
-        return std::make_unique<AudioComponent>(*this);
+        auto cloned = std::make_unique<AudioComponent>();
+
+        for (const auto& pair : audioChannels) {
+            cloned->audioChannels[pair.first] = pair.second;
+            cloned->audioChannels[pair.first].channel = nullptr;
+            cloned->audioChannels[pair.first].state = AudioState::Stopped;
+            cloned->audioChannels[pair.first].fadeInfo.isFading = false;
+        }
+
+        return cloned;
     }
 
     // Audio ID - which sound to play
-    std::string audioFile;
+    //std::string audioFile;
+
+    //prolly need a map for 1 component to multiple sounds
+    std::map<std::string, AudioChannel> audioChannels;
+
     //soundID soundId = static_cast<soundID>(0);
 
-    // IMPORTANT: Each AudioComponent gets its own channel now
-    // This is NOT managed by AudioHandler's channels vector
-    FMOD::Channel* channel = nullptr;
+    AudioChannel* getChannel(const std::string& channelName) {
+        auto it = audioChannels.find(channelName);
+        if (it != audioChannels.end()) {
+            return &(it->second);
+        }
+        return nullptr;
+    }
 
-    // Audio Settings
-    float volume = 1.0f;
-    float pitch = 1.0f;
-    bool loop = false;
-    bool playOnStart = false;
-    bool muted = false;
+    const AudioChannel* getChannel(const std::string& channelName) const {
+        auto it = audioChannels.find(channelName);
+        if (it != audioChannels.end()) {
+            return &(it->second);
+        }
+        return nullptr;
+    }
 
-    // Fade Settings (per-component)
-    bool fadeInOnStart = false;
-    float fadeInDuration = 1.0f;
-    bool fadeOutOnStop = false;
-    float fadeOutDuration = 1.0f;
+    //get or create channel
+    AudioChannel* getOrCreateChannel(const std::string& name) {
+        return &audioChannels[name];
+    }
 
-    // Per-component fade state
-    FadeInfo fadeInfo;
-    /*bool isFading = false;
-    bool isFadingIn = false;
-    float fadeStartVolume = 0.0f;
-    float fadeTargetVolume = 0.0f;
-    float fadeDuration = 0.0f;
-    float fadeTimer = 0.0f;*/
+    //check if channel exists
+    bool hasChannel(const std::string& name) const {
+        return audioChannels.find(name) != audioChannels.end();
+    }
 
-    // State Tracking
-    AudioState state = AudioState::Stopped;
-    bool isPendingPlay = false;
-    bool isPendingStop = false;
+    //remove a channel
+    void removeChannel(const std::string& name) {
+        auto it = audioChannels.find(name);
+        if (it != audioChannels.end()) {
+            //stop the channel if playing
+            if (it->second.channel) {
+                it->second.isPendingStop = true;
+            }
+            audioChannels.erase(it);
+        }
+    }
 
-    // Helper Methods
-    bool isPlaying() const { return state == AudioState::Playing; }
-    bool isPaused() const { return state == AudioState::Paused; }
-    bool isStopped() const { return state == AudioState::Stopped; }
+    //idk if we need this
+    AudioChannel* getDefaultChannel() {
+        return getOrCreateChannel("default");
+    }
+
+
 
     void updateFades(float deltaTime) {
-        if (!fadeInfo.isFading || !channel) return;
+        for (auto& pair : audioChannels) {
+            AudioChannel& ch = pair.second;
 
-        fadeInfo.fadeTimer += deltaTime;
+            if (!ch.fadeInfo.isFading || !ch.channel) return;
 
-        float progress = fadeInfo.fadeTimer / fadeInfo.fadeDuration;
-        if (progress > 1.0f) progress = 1.0f;
+            ch.fadeInfo.fadeTimer += deltaTime;
 
-        float currentVolume;
-        if (fadeInfo.isFadingIn) {
-            currentVolume = fadeInfo.startVolume + (fadeInfo.targetVolume - fadeInfo.startVolume) * progress;
-            std::cerr << "sound fading" << currentVolume << std::endl;
-        }
-        else {
-            currentVolume = fadeInfo.startVolume + (fadeInfo.targetVolume - fadeInfo.startVolume) * progress;
-        }
+            float progress = ch.fadeInfo.fadeTimer / ch.fadeInfo.fadeDuration;
+            if (progress > 1.0f) progress = 1.0f;
 
-        FMODErrorCheck(channel->setVolume(currentVolume));
-
-        if (progress >= 1.0f) {
-            fadeInfo.isFading = false;
-
-            if (!fadeInfo.isFadingIn && fadeInfo.targetVolume == 0.0f) {
-                channel->stop();
-                channel = nullptr;
+            float currentVolume;
+            if (ch.fadeInfo.isFadingIn) {
+                currentVolume = ch.fadeInfo.startVolume + (ch.fadeInfo.targetVolume - ch.fadeInfo.startVolume) * progress;
+                std::cerr << "sound fading" << currentVolume << std::endl;
             }
+            else {
+                currentVolume = ch.fadeInfo.startVolume + (ch.fadeInfo.targetVolume - ch.fadeInfo.startVolume) * progress;
+            }
+
+            FMODErrorCheck(ch.channel->setVolume(currentVolume));
+
+            if (progress >= 1.0f) {
+                ch.fadeInfo.isFading = false;
+
+                if (!ch.fadeInfo.isFadingIn && ch.fadeInfo.targetVolume == 0.0f) {
+                    ch.channel->stop();
+                    ch.channel = nullptr;
+                }
+            }
+
         }
+
     }
 };

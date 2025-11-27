@@ -143,14 +143,14 @@ void AudioHandler::shutdown() {
 //}
 
 // play the sound, return the channel pointer if successful, nullptr if failed
-FMOD::Channel* AudioHandler::playSound(AudioComponent* audio) {
+FMOD::Channel* AudioHandler::playSound(AudioChannel* audio) {
 	if (!system) {
 		std::cerr << "Error! Audio system not initialized..." << std::endl;
 		return nullptr;
 	}
 
 	//std::string path = soundIDToFilePath(id);
-	if(audio->audioFile.empty()) {
+	if (audio->audioFile.empty()) {
 		std::cerr << "Error! Sound file path is empty..." << std::endl;
 		return nullptr;
 	}
@@ -160,7 +160,7 @@ FMOD::Channel* AudioHandler::playSound(AudioComponent* audio) {
 	}*/
 	//bool loop = (id == soundID::bg);
 	FMOD::Sound* sound = ResourceManager::getInstance().getSound(audio->audioFile);
-	if(!sound) {
+	if (!sound) {
 		std::cerr << "Error! Sound could not be loaded: " << audio->audioFile << std::endl;
 		return nullptr;
 	}
@@ -178,6 +178,7 @@ FMOD::Channel* AudioHandler::playSound(AudioComponent* audio) {
 		fadeInfo[static_cast<size_t>(id)].isFading = false;*/
 		audio->channel = channel;
 		audio->fadeInfo.isFading = false;
+		std::cout << "[AUDIO] Playing: " << audio->audioFile << std::endl;
 	}
 
 	return channel;
@@ -191,10 +192,17 @@ void AudioHandler::pauseAll(GameObjectManager& manager) {
 		if (!obj->hasComponent<AudioComponent>()) continue;
 		AudioComponent* ac = obj->getComponent<AudioComponent>();
 
-		if (ac->state == AudioState::Playing && ac->channel) {
-			pauseSound(ac);
-			ac->state = AudioState::Paused;
+		for (auto& pair : ac->audioChannels) {
+
+			AudioChannel& ch = pair.second;
+
+			if (ch.state == AudioState::Playing && ch.channel) {
+				pauseSound(&ch);
+				ch.state = AudioState::Paused;
+			}
+
 		}
+
 	}
 }
 
@@ -206,15 +214,22 @@ void AudioHandler::resumeAll(GameObjectManager& manager) {
 		if (!obj->hasComponent<AudioComponent>()) continue;
 		AudioComponent* ac = obj->getComponent<AudioComponent>();
 
-		if (ac->state == AudioState::Paused && ac->channel) {
-			resumeSound(ac);
-			ac->state = AudioState::Playing;
+		for (auto& pair : ac->audioChannels) {
+
+			AudioChannel& ch = pair.second;
+
+			if (ch.state == AudioState::Paused && ch.channel) {
+				resumeSound(&ch);
+				ch.state = AudioState::Playing;
+			}
+
 		}
+
 	}
 }
 
 // PAUSE / RESUME a particular sound
-//void AudioHandler::toggleSoundPause(AudioComponent* audio) {
+//void AudioHandler::toggleSoundPause(AudioChannel* audio) {
 //	//size_t pos = static_cast<size_t>(id);
 //	bool isPaused = false;
 //
@@ -227,14 +242,14 @@ void AudioHandler::resumeAll(GameObjectManager& manager) {
 //}
 
 // PAUSE sound
-void AudioHandler::pauseSound(AudioComponent* audio) {
+void AudioHandler::pauseSound(AudioChannel* audio) {
 	if (audio->channel) {
 		FMODErrorCheck(audio->channel->setPaused(true));
 	}
 }
 
 // RESUME sound
-void AudioHandler::resumeSound(AudioComponent* audio) {
+void AudioHandler::resumeSound(AudioChannel* audio) {
 	if (audio->channel) {
 		FMODErrorCheck(audio->channel->setPaused(false));
 	}
@@ -253,12 +268,12 @@ void AudioHandler::resumeSound(AudioComponent* audio) {
 //}
 
 // check whether sound is paused
-bool AudioHandler::isSoundPaused(AudioComponent* audio) {
+bool AudioHandler::isSoundPaused(AudioChannel* audio) {
 	//size_t pos = static_cast<size_t>(id);
 	bool isPaused = false;
 
 	/*if (channels[pos]) {*/
-	if(audio->channel){
+	if (audio->channel) {
 		FMODErrorCheck(audio->channel->getPaused(&isPaused));
 		return isPaused;
 	}
@@ -267,7 +282,7 @@ bool AudioHandler::isSoundPaused(AudioComponent* audio) {
 }
 
 // stop a particular sound
-void AudioHandler::stopSound(AudioComponent* audio) {
+void AudioHandler::stopSound(AudioChannel* audio) {
 	//size_t pos = static_cast<size_t>(id);
 
 	/*if (channels[pos]) {*/
@@ -279,7 +294,7 @@ void AudioHandler::stopSound(AudioComponent* audio) {
 }
 
 // check whether channel still alive (ie. sound finished playing)
-bool AudioHandler::isSoundPlaying(AudioComponent* audio) {
+bool AudioHandler::isSoundPlaying(AudioChannel* audio) {
 	//size_t pos = static_cast<size_t>(id);
 
 	/*if (channels[pos]) {*/
@@ -292,7 +307,7 @@ bool AudioHandler::isSoundPlaying(AudioComponent* audio) {
 }
 
 // mute specific sound
-void AudioHandler::muteSound(AudioComponent* audio) {
+void AudioHandler::muteSound(AudioChannel* audio) {
 	//size_t pos = static_cast<size_t>(id);
 
 	/*if (channels[pos]) {*/
@@ -311,7 +326,7 @@ void AudioHandler::muteSound(AudioComponent* audio) {
 //}
 
 // unmute specific sound
-void AudioHandler::unmuteSound(AudioComponent* audio) {
+void AudioHandler::unmuteSound(AudioChannel* audio) {
 	//size_t pos = static_cast<size_t>(id);
 	/*if (channels[pos]) {*/
 	if (audio->channel) {
@@ -329,9 +344,9 @@ void AudioHandler::unmuteSound(AudioComponent* audio) {
 //}
 
 // increase by 0.1f
-void AudioHandler::increaseSoundVolume(AudioComponent* audio) {
+void AudioHandler::increaseSoundVolume(AudioChannel* audio) {
 	//size_t pos = static_cast<size_t>(id);
-	
+
 	if (audio->channel) {
 		float volume = 0.0f;
 		FMODErrorCheck(audio->channel->getVolume(&volume));
@@ -342,9 +357,9 @@ void AudioHandler::increaseSoundVolume(AudioComponent* audio) {
 }
 
 // decrease by 0.1f
-void AudioHandler::decreaseSoundVolume(AudioComponent* audio) {
+void AudioHandler::decreaseSoundVolume(AudioChannel* audio) {
 	//size_t pos = static_cast<size_t>(id);
-	
+
 	if (audio->channel) {
 		float volume = 0.0f;
 		FMODErrorCheck(audio->channel->getVolume(&volume));
@@ -355,7 +370,7 @@ void AudioHandler::decreaseSoundVolume(AudioComponent* audio) {
 }
 
 // set volume of a sound to a specific value between 0.0f (muted) to 1.0f (full)
-void AudioHandler::setSoundVolume(AudioComponent* audio, float volume) {
+void AudioHandler::setSoundVolume(AudioChannel* audio, float volume) {
 	//size_t pos = static_cast<size_t>(id);
 
 	if (audio->channel)
@@ -363,14 +378,14 @@ void AudioHandler::setSoundVolume(AudioComponent* audio, float volume) {
 }
 
 // set a specific pitch between 0.5f (half speed) to 2.0f (double speed)
-void AudioHandler::setSoundpitch(AudioComponent* audio, float pitch) {
+void AudioHandler::setSoundpitch(AudioChannel* audio, float pitch) {
 	//size_t pos = static_cast<size_t>(id);
-	
+
 	if (audio->channel)
 		FMODErrorCheck(audio->channel->setPitch(pitch));
 }
 
-void AudioHandler::fadeIn(AudioComponent* audio, float targetVolume, float duration) {
+void AudioHandler::fadeIn(AudioChannel* audio, float targetVolume, float duration) {
 	//size_t pos = static_cast<size_t>(id);
 
 	if (!audio->channel) {
@@ -395,7 +410,7 @@ void AudioHandler::fadeIn(AudioComponent* audio, float targetVolume, float durat
 	fadeInfo[pos].fadeTimer = 0.0f;*/
 }
 
-void AudioHandler::fadeOut(AudioComponent* audio, float duration) {
+void AudioHandler::fadeOut(AudioChannel* audio, float duration) {
 	//size_t pos = static_cast<size_t>(id);
 
 	if (!audio->channel) {
@@ -422,13 +437,13 @@ void AudioHandler::fadeOut(AudioComponent* audio, float duration) {
 }
 
 // check if a sound is  fading
-bool AudioHandler::isFading(AudioComponent* audio) const {
+bool AudioHandler::isFading(AudioChannel* audio) const {
 	//size_t pos = static_cast<size_t>(id);
 	return audio->fadeInfo.isFading;
 }
 
 // stop any active fade for a sound
-void AudioHandler::stopFade(AudioComponent* audio) {
+void AudioHandler::stopFade(AudioChannel* audio) {
 	//size_t pos = static_cast<size_t>(id);
 	audio->fadeInfo.isFading = false;
 }
@@ -523,23 +538,23 @@ void AudioHandler::stopFade(AudioComponent* audio) {
 
 
 // Setters for audiio fading
-void AudioHandler::setFadeInDuration(AudioComponent* audio, float duration) {
+void AudioHandler::setFadeInDuration(AudioChannel* audio, float duration) {
 	//size_t pos = static_cast<size_t>(id);
-	
+
 	//if (pos < fadeInfo.size() && duration > 0.0f) {
 	audio->fadeInfo.defaultFadeInDuration = duration;
 	//}
 }
 
-void AudioHandler::setFadeOutDuration(AudioComponent* audio, float duration) {
+void AudioHandler::setFadeOutDuration(AudioChannel* audio, float duration) {
 	//size_t pos = static_cast<size_t>(id);
-	
+
 	//if (pos < fadeInfo.size() && duration > 0.0f) {
 	audio->fadeInfo.defaultFadeOutDuration = duration;
 	//}
 }
 
-void AudioHandler::setFadeVolume(AudioComponent* audio, float volume) {
+void AudioHandler::setFadeVolume(AudioChannel* audio, float volume) {
 	//size_t pos = static_cast<size_t>(id);
 	//if (pos < fadeInfo.size()) {
 	audio->fadeInfo.targetVolume = std::max(0.0f, std::min(volume, 1.0f)); // clamp between 0 and 1
@@ -547,25 +562,25 @@ void AudioHandler::setFadeVolume(AudioComponent* audio, float volume) {
 }
 
 // Getters
-float AudioHandler::getFadeInDuration(AudioComponent* audio) const {
+float AudioHandler::getFadeInDuration(AudioChannel* audio) const {
 	//size_t pos = static_cast<size_t>(id);
 	//return (pos < fadeInfo.size()) ? fadeInfo[pos].defaultFadeInDuration : 1.0f;
 	return audio->fadeInfo.defaultFadeInDuration;
 }
 
-float AudioHandler::getFadeOutDuration(AudioComponent* audio) const {
+float AudioHandler::getFadeOutDuration(AudioChannel* audio) const {
 	//size_t pos = static_cast<size_t>(id);
 	//return (pos < fadeInfo.size()) ? fadeInfo[pos].defaultFadeOutDuration : 1.0f;
 	return audio->fadeInfo.defaultFadeOutDuration;
 }
 
-float AudioHandler::getFadeTargetVolume(AudioComponent* audio) const {
+float AudioHandler::getFadeTargetVolume(AudioChannel* audio) const {
 	//size_t pos = static_cast<size_t>(id);
 	//return (pos < fadeInfo.size()) ? fadeInfo[pos].targetVolume : 0.0f;
 	return audio->fadeInfo.targetVolume;
 }
 
-float AudioHandler::getFadeProgress(AudioComponent* audio) const {
+float AudioHandler::getFadeProgress(AudioChannel* audio) const {
 	//size_t pos = static_cast<size_t>(id);
 	if (audio->fadeInfo.isFading && audio->fadeInfo.fadeDuration > 0.0f) {
 		return audio->fadeInfo.fadeTimer / audio->fadeInfo.fadeDuration;
@@ -573,12 +588,12 @@ float AudioHandler::getFadeProgress(AudioComponent* audio) const {
 	return 0.0f;
 }
 
-bool AudioHandler::isFadingIn(AudioComponent* audio) const {
+bool AudioHandler::isFadingIn(AudioChannel* audio) const {
 	//size_t pos = static_cast<size_t>(id);
 	return audio->fadeInfo.isFading && audio->fadeInfo.isFadingIn;
 }
 
-bool AudioHandler::isFadingOut(AudioComponent* audio) const {
+bool AudioHandler::isFadingOut(AudioChannel* audio) const {
 	//size_t pos = static_cast<size_t>(id);
 	return audio->fadeInfo.isFading && !audio->fadeInfo.isFadingIn;
 }

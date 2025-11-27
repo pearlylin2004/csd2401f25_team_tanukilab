@@ -965,7 +965,8 @@ void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime, M
 
 					if (bullet->hasComponent<AudioComponent>()) {
 						AudioComponent* audio = bullet->getComponent<AudioComponent>();
-						audio->isPendingPlay = true;
+						AudioChannel* ch = audio->getDefaultChannel();
+						ch->isPendingPlay = true;
 					}
 
 					DebugLog::addMessage("Bullet fired from pool!", DebugMode::PlaySimul);
@@ -1242,10 +1243,16 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 									if (AudioComponent* a = fireObj->getComponent<AudioComponent>()) {
 										/*a->playOnStart = false;
 										AudioHandler::getInstance().playSound(a);*/
-										if (a->state != AudioState::Playing && !a->isPendingPlay) {
-											a->loop = false;
-											a->playOnStart = false;
-											a->isPendingPlay = true;
+
+										for (auto& pair : a->audioChannels) {
+
+											AudioChannel& ch = pair.second;
+
+											if (ch.state != AudioState::Playing && !ch.isPendingPlay) {
+												ch.loop = false;
+												ch.playOnStart = false;
+												ch.isPendingPlay = true;
+											}
 										}
 									}
 
@@ -1593,25 +1600,27 @@ void AudioSystem::init(GameObjectManager& manager) {
 
 		AudioComponent* audio = obj->getComponent<AudioComponent>();
 
+		AudioChannel* ch = audio->getDefaultChannel();
+
 		// Play on start 
-		if (audio->playOnStart) {
-			audio->channel = audioHandler.playSound(audio);
-			if (audio->channel) {
-				audio->state = AudioState::Playing;
+		if (ch->playOnStart) {
+			ch->channel = audioHandler.playSound(ch);
+			if (ch->channel) {
+				ch->state = AudioState::Playing;
 
 				// Apply fade in
-				if (audio->fadeInOnStart) {
-					audioHandler.fadeIn(audio, audio->volume, audio->fadeInDuration);
+				if (ch->fadeInOnStart) {
+					audioHandler.fadeIn(ch, ch->volume, ch->fadeInDuration);
 				}
 
 				// Apply pitch
-				if (audio->pitch != 1.0f) {
-					audioHandler.setSoundpitch(audio, audio->pitch);
+				if (ch->pitch != 1.0f) {
+					audioHandler.setSoundpitch(ch, ch->pitch);
 				}
 
 				// Apply mute state
-				if (audio->muted) {
-					audioHandler.muteSound(audio);
+				if (ch->muted) {
+					audioHandler.muteSound(ch);
 				}
 			}
 		}
@@ -1637,31 +1646,35 @@ void AudioSystem::update(GameObjectManager& manager, float deltaTime) {
 
 		audio->updateFades(deltaTime);
 
-		if (/*audio->soundId == soundID::bg && */ audio->playOnStart && audio->loop) {
-			if (!audio->channel || !audioHandler.isSoundPlaying(audio)) {
-				// Restart background music if  not playing
-				std::cout << "[AudioSystem] Auto-restarting: " << obj->getObjectName() << std::endl;
-				audio->channel = audioHandler.playSound(audio);
-				if (audio->channel) {
-					audio->state = AudioState::Playing;
-					audioHandler.setSoundpitch(audio, audio->pitch);
-					if (audio->muted) {
-						audioHandler.muteSound(audio);
+		for (auto& pair : audio->audioChannels) {
+			AudioChannel& ch = pair.second;
+
+			if (/*ch.soundId == soundID::bg && */ ch.playOnStart) {
+				if (!ch.channel || !audioHandler.isSoundPlaying(&ch)) {
+					// Restart background music if  not playing
+					ch.channel = audioHandler.playSound(&ch);
+					if (ch.channel) {
+						ch.state = AudioState::Playing;
+						audioHandler.setSoundpitch(&ch, ch.pitch);
+						if (ch.muted) {
+							audioHandler.muteSound(&ch);
+						}
 					}
+				}
+			}
+
+			processAudio(obj, &ch, deltaTime);
+
+			if (ch.channel) {
+				bool isPlaying = false;
+				ch.channel->isPlaying(&isPlaying); 
+				if (!isPlaying) {
+					ch.channel = nullptr;
+					ch.fadeInfo.isFading = false;
 				}
 			}
 		}
 
-		if (audio->channel) {
-			bool isPlaying = false;
-			audio->channel->isPlaying(&isPlaying); 
-			if (!isPlaying) {
-				std::cout << "[AudioSystem] Channel finished for: " << obj->getObjectName() << std::endl;
-				audio->channel = nullptr;
-				audio->fadeInfo.isFading = false;
-			}
-		}
-		processAudioComponent(obj, audio, deltaTime);
 	}
 
 	auto end = std::chrono::high_resolution_clock::now();
@@ -1669,13 +1682,32 @@ void AudioSystem::update(GameObjectManager& manager, float deltaTime) {
 	g_SystemTimers.push_back({ "Audio", ms });
 }
 
-void AudioSystem::processAudioComponent(GameObject* obj, AudioComponent* audio, float deltaTime) {
+void AudioSystem::processAudio(GameObject* obj, AudioChannel* audio, float deltaTime) {
 	(void)deltaTime;
 	AudioHandler& audioHandler = AudioHandler::getInstance();
 
 
+	if (audio->isPendingStop) {
+		audio->isPendingStop = false;
+
+		if (audio->fadeOutOnStop && audio->state == AudioState::Playing) {
+			audioHandler.fadeOut(audio, audio->fadeOutDuration);
+		}
+		else {
+			audioHandler.stopSound(audio);
+			audio->channel = nullptr;
+			audio->state = AudioState::Stopped;
+		}
+	}
+
 	if (audio->isPendingPlay) {
 		audio->isPendingPlay = false;
+
+		if (audio->channel != nullptr) {
+			audioHandler.stopSound(audio);
+			audio->channel = nullptr;
+		}
+		audio->state = AudioState::Stopped;
 
 		audio->channel = audioHandler.playSound(audio);
 		if (audio->channel) {
@@ -1694,17 +1726,7 @@ void AudioSystem::processAudioComponent(GameObject* obj, AudioComponent* audio, 
 				audioHandler.muteSound(audio);
 			}
 		}
-	}
-
-	if (audio->isPendingStop) {
-		audio->isPendingStop = false;
-
-		if (audio->fadeOutOnStop && audio->state == AudioState::Playing) {
-			audioHandler.fadeOut(audio, audio->fadeOutDuration);
-		}
 		else {
-			audioHandler.stopSound(audio);
-			audio->channel = nullptr;
 			audio->state = AudioState::Stopped;
 		}
 	}
@@ -1730,16 +1752,21 @@ void AudioSystem::cleanup(GameObjectManager& manager) {
 	manager.getAllGameObjects(gameObjects);
 
 	AudioHandler& audioHandler = AudioHandler::getInstance();
-
+	
 	for (GameObject* obj : gameObjects) {
 		if (!obj->hasComponent<AudioComponent>()) continue;
 
 		AudioComponent* audio = obj->getComponent<AudioComponent>();
 
-		if (audio->state == AudioState::Playing || audio->state == AudioState::Paused) {
-			audioHandler.stopSound(audio);
-			audio->channel = nullptr;
-			audio->state = AudioState::Stopped;
+		for (auto& pair : audio->audioChannels) {
+			AudioChannel& ch = pair.second;
+
+			if (ch.state == AudioState::Playing || ch.state == AudioState::Paused) {
+				audioHandler.stopSound(&ch);
+				ch.channel = nullptr;
+				ch.state = AudioState::Stopped;
+			}
 		}
+
 	}
 }

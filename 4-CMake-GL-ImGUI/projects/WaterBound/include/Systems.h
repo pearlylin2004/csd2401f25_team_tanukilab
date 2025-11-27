@@ -186,5 +186,5 @@ public:
 	void cleanup(GameObjectManager& manager);
 
 private:
-	void processAudioComponent(GameObject* obj, AudioComponent* audio, float deltaTime);
+	void processAudio(GameObject* obj, AudioChannel* audio, float deltaTime);
 };

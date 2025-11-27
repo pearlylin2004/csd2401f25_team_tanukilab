@@ -607,62 +607,62 @@ void GameObjectManager::loadSceneFromJson(const std::string& filename) {
 				// Create with default sound ID
 				audio = go->addComponent<AudioComponent>();
 			}
-
+			AudioChannel* ch = audio->getDefaultChannel();
 			// Load sound ID from string
 			if (ja.HasMember("audioFile") && ja["audioFile"].IsString()) {
-				audio->audioFile = ja["audioFile"].GetString();
+				ch->audioFile = ja["audioFile"].GetString();
 			}
 
 			// Volume
 			if (ja.HasMember("volume") && ja["volume"].IsNumber()) {
-				audio->volume = ja["volume"].GetFloat();
+				ch->volume = ja["volume"].GetFloat();
 			}
 
 			// Pitch
 			if (ja.HasMember("pitch") && ja["pitch"].IsNumber()) {
-				audio->pitch = ja["pitch"].GetFloat();
+				ch->pitch = ja["pitch"].GetFloat();
 			}
 
 			// Loop
 			if (ja.HasMember("loop")) {
-				audio->loop = ja["loop"].IsBool()
+				ch->loop = ja["loop"].IsBool()
 					? ja["loop"].GetBool()
 					: (ja["loop"].GetInt() != 0);
 			}
 
 			// Play on start
 			if (ja.HasMember("playOnStart")) {
-				audio->playOnStart = ja["playOnStart"].IsBool()
+				ch->playOnStart = ja["playOnStart"].IsBool()
 					? ja["playOnStart"].GetBool()
 					: (ja["playOnStart"].GetInt() != 0);
 			}
 
 			// Muted
 			if (ja.HasMember("muted")) {
-				audio->muted = ja["muted"].IsBool()
+				ch->muted = ja["muted"].IsBool()
 					? ja["muted"].GetBool()
 					: (ja["muted"].GetInt() != 0);
 			}
 
 			// Fade settings
 			if (ja.HasMember("fadeInOnStart")) {
-				audio->fadeInOnStart = ja["fadeInOnStart"].IsBool()
+				ch->fadeInOnStart = ja["fadeInOnStart"].IsBool()
 					? ja["fadeInOnStart"].GetBool()
 					: (ja["fadeInOnStart"].GetInt() != 0);
 			}
 
 			if (ja.HasMember("fadeInDuration") && ja["fadeInDuration"].IsNumber()) {
-				audio->fadeInDuration = ja["fadeInDuration"].GetFloat();
+				ch->fadeInDuration = ja["fadeInDuration"].GetFloat();
 			}
 
 			if (ja.HasMember("fadeOutOnStop")) {
-				audio->fadeOutOnStop = ja["fadeOutOnStop"].IsBool()
+				ch->fadeOutOnStop = ja["fadeOutOnStop"].IsBool()
 					? ja["fadeOutOnStop"].GetBool()
 					: (ja["fadeOutOnStop"].GetInt() != 0);
 			}
 
 			if (ja.HasMember("fadeOutDuration") && ja["fadeOutDuration"].IsNumber()) {
-				audio->fadeOutDuration = ja["fadeOutDuration"].GetFloat();
+				ch->fadeOutDuration = ja["fadeOutDuration"].GetFloat();
 			}
 		}
 		
@@ -1043,16 +1043,18 @@ void GameObjectManager::saveSceneToJson(const std::string& filename, bool isNew)
 					}
 				};
 
-				pushIfDiffStr("audioFile", ac->audioFile.c_str());
-				pushIfDiffFloat("volume", ac->volume);
-				pushIfDiffFloat("pitch", ac->pitch);
-				pushIfDiffBool("loop", ac->loop);
-				pushIfDiffBool("playOnStart", ac->playOnStart);
-				pushIfDiffBool("muted", ac->muted);
-				pushIfDiffBool("fadeInOnStart", ac->fadeInOnStart);
-				pushIfDiffFloat("fadeInDuration", ac->fadeInDuration);
-				pushIfDiffBool("fadeOutOnStop", ac->fadeOutOnStop);
-				pushIfDiffFloat("fadeOutDuration", ac->fadeOutDuration);
+				const AudioChannel* ch = ac->getChannel("default");
+
+				pushIfDiffStr("audioFile", ch->audioFile.c_str());
+				pushIfDiffFloat("volume", ch->volume);
+				pushIfDiffFloat("pitch", ch->pitch);
+				pushIfDiffBool("loop", ch->loop);
+				pushIfDiffBool("playOnStart", ch->playOnStart);
+				pushIfDiffBool("muted", ch->muted);
+				pushIfDiffBool("fadeInOnStart", ch->fadeInOnStart);
+				pushIfDiffFloat("fadeInDuration", ch->fadeInDuration);
+				pushIfDiffBool("fadeOutOnStop", ch->fadeOutOnStop);
+				pushIfDiffFloat("fadeOutDuration", ch->fadeOutDuration);
 
 				if (!jac.ObjectEmpty()) {
 					comps.AddMember("AudioComponent", jac, a);

@@ -191,7 +191,7 @@ GLuint ResourceManager::getShader(const std::string& vertPath, const std::string
         // If already under assets/ (absolute relative path), keep as-is
         if (p.rfind("assets/", 0) == 0) return "./" + p;
 
-        // If caller included "shaders/", strip it — we'll re-prepend the runtime dir
+        // If caller included "shaders/", strip it ï¿½ we'll re-prepend the runtime dir
         const std::string shadersPrefix = "shaders/";
         if (p.rfind(shadersPrefix, 0) == 0) p.erase(0, shadersPrefix.size());
 

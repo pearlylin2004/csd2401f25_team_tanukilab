@@ -75,74 +75,74 @@ public:
 	// load the sound from file path, if loop is true, sound will loop until stopped (default false)
 	// now done in ResourceManager
 	// bool loadSound(soundID id, const std::string& filePath, bool loop = false);
-	
+
 	// play the sound, return the channel pointer if successful, nullptr if failed
-	FMOD::Channel* playSound(AudioComponent* audio);
+	FMOD::Channel* playSound(AudioChannel* audio);
 
 	// call this to PAUSE / RESUME sound
-	/*void toggleSoundPause(AudioComponent* audio);*/
+	/*void toggleSoundPause(AudioChannel* audio);*/
 
 	// temp to just pause/resume all audio for game obj
 	void pauseAll(GameObjectManager& manager);
 	void resumeAll(GameObjectManager& manager);
 
-	void pauseSound(AudioComponent* audio);
+	void pauseSound(AudioChannel* audio);
 
-	void resumeSound(AudioComponent* audio);
+	void resumeSound(AudioChannel* audio);
 	// use this to PAUSE / RESUME ALL sounds
 	//void toggleAllSoundPause(); // DO NOT USE!!
 	// use this to check whether sound is paused
-	bool isSoundPaused(AudioComponent* audio);
+	bool isSoundPaused(AudioChannel* audio);
 
 	// to stop a particular sound
-	void stopSound(AudioComponent* audio);
+	void stopSound(AudioChannel* audio);
 	// to check whether channel still alive (ie. sound finished playing)
-	bool isSoundPlaying(AudioComponent* audio);
+	bool isSoundPlaying(AudioChannel* audio);
 
 	// mute specific sound
-	void muteSound(AudioComponent* audio);
+	void muteSound(AudioChannel* audio);
 	// mute all sounds
 	//void muteAllSound(); // DO NO USE!!
 	// unmute specific sound
-	void unmuteSound(AudioComponent* audio);
+	void unmuteSound(AudioChannel* audio);
 	// unmute all sounds
 	//void unmuteAllSound(); // DO NOT USE!!
 	// increase by 0.1f
-	void increaseSoundVolume(AudioComponent* audio);
+	void increaseSoundVolume(AudioChannel* audio);
 	// decrease by 0.1f
-	void decreaseSoundVolume(AudioComponent* audio);
+	void decreaseSoundVolume(AudioChannel* audio);
 	// set a specific volume
-	void setSoundVolume(AudioComponent* audio, float volume); // 0.0f (muted) to 1.0f (full)
+	void setSoundVolume(AudioChannel* audio, float volume); // 0.0f (muted) to 1.0f (full)
 
 	// set a specific pitch
-	void setSoundpitch(AudioComponent* audio, float pitch); // 0.5f (half speed) to 2.0f (double speed)
+	void setSoundpitch(AudioChannel* audio, float pitch); // 0.5f (half speed) to 2.0f (double speed)
 
 	//pause and resume
 	//void pauseAll(); // DO NOT USE!!
 	//void resumeAll(); // DO NOT USE!!
 
-	void fadeIn(AudioComponent* audio, float targetVolume = 1.0f, float duration = 1.0f);
-	void fadeOut(AudioComponent* audio, float duration = 1.0f);
-	bool isFading(AudioComponent* audio) const;
-	void stopFade(AudioComponent* audio);
+	void fadeIn(AudioChannel* audio, float targetVolume = 1.0f, float duration = 1.0f);
+	void fadeOut(AudioChannel* audio, float duration = 1.0f);
+	bool isFading(AudioChannel* audio) const;
+	void stopFade(AudioChannel* audio);
 
 	//setters for fadeing
-	void setFadeInDuration(AudioComponent* audio, float duration);
-	void setFadeOutDuration(AudioComponent* audio, float duration);
-	void setFadeVolume(AudioComponent* audio, float volume);
+	void setFadeInDuration(AudioChannel* audio, float duration);
+	void setFadeOutDuration(AudioChannel* audio, float duration);
+	void setFadeVolume(AudioChannel* audio, float volume);
 	//getters
-	float getFadeInDuration(AudioComponent* audio) const;
-	float getFadeOutDuration(AudioComponent* audio) const;
-	float getFadeTargetVolume(AudioComponent* audio) const;
-	float getFadeProgress(AudioComponent* audio) const;
-	bool isFadingIn(AudioComponent* audio) const;
-	bool isFadingOut(AudioComponent* audio) const;
+	float getFadeInDuration(AudioChannel* audio) const;
+	float getFadeOutDuration(AudioChannel* audio) const;
+	float getFadeTargetVolume(AudioChannel* audio) const;
+	float getFadeProgress(AudioChannel* audio) const;
+	bool isFadingIn(AudioChannel* audio) const;
+	bool isFadingOut(AudioChannel* audio) const;
 
 	// perform error check for FMOD functions
 	// moved to AudioUtility.h
 	//static void FMODErrorCheck(FMOD_RESULT result);
 
-private: 
+private:
 	AudioHandler() : system(nullptr) {}
 	~AudioHandler() { shutdown(); } // auto shutdown once instance is destroyed
 
