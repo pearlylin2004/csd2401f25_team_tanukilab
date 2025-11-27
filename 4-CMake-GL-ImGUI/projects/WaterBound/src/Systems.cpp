@@ -1257,14 +1257,11 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 
 							// player go up when collide with fire
 							GameObject* playerObj = nullptr;
-							Transform* playerT = nullptr;
 							if (obj1->getObjectPrefabID() == "dd60e1e1-641c-4ed5-b69d-ffadfa02fb7a") {
 								playerObj = obj1;
-								playerT = obj1->getComponent<Transform>();
 							}
 							if (obj2->getObjectPrefabID() == "dd60e1e1-641c-4ed5-b69d-ffadfa02fb7a") {
 								playerObj = obj2;
-								playerT = obj2->getComponent<Transform>();
 							}
 
 							if (playerObj && fireObj) {
@@ -1281,6 +1278,43 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 									}
 								}
 							}
+
+							GameObject* tileObj = nullptr;
+							if (obj1->getObjectPrefabID() == "94d018f7-a766-4ee6-95be-f39272697938") {
+								tileObj = obj1;
+							}
+							if (obj2->getObjectPrefabID() == "94d018f7-a766-4ee6-95be-f39272697938") {
+								tileObj = obj2;
+							}
+							if (bulletObj && tileObj) {
+								continue;
+							}
+							
+							GameObject* toWin = nullptr;
+							if (obj1->getObjectPrefabID() == "98416fa9-2ae1-4432-bcf4-0d4352a9b29a") {
+								toWin = obj1;
+							}
+							if (obj2->getObjectPrefabID() == "98416fa9-2ae1-4432-bcf4-0d4352a9b29a") {
+								toWin = obj2;
+							}
+
+							if (toWin && playerObj) {
+								
+								GameObject* winScreen = nullptr;
+								for (auto* go : layerObjects) {
+									if (go->getObjectPrefabID() == "887d25cd-bd8d-481f-9f64-f371300a2cf0")
+									{
+										winScreen = go;
+										continue;
+									}
+								}
+
+								if (winScreen) {
+									winScreen->getComponent<Transform>()->x = 0;
+								}
+								//continue;
+							}
+
 
 							/* ---------- temp setting ---------- */
 

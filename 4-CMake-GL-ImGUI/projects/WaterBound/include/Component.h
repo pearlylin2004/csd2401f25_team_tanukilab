@@ -151,7 +151,7 @@ public:
     //Jump 
     float damping = 0.98f;
     float jumpForce =100.0f;  
-    float floorY = -8.0f;
+    float floorY = -7.5f;
     bool onGround = false;  
 
     //water bullet

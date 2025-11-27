@@ -25,6 +25,26 @@
       "id": "eaa2ba42-971a-413b-b8c4-99b2f5ab674d",
       "name": "fire",
       "path": "/Prefab/fire.json"
+    },
+    {
+      "id": "89e34681-0689-4005-ac16-d6c7e0e5fa55",
+      "name": "tile",
+      "path": "/Prefab/tile.json"
+    },
+    {
+      "id": "94d018f7-a766-4ee6-95be-f39272697938",
+      "name": "tile_platform",
+      "path": "/Prefab/tile_platform.json"
+    },
+    {
+      "id": "887d25cd-bd8d-481f-9f64-f371300a2cf0",
+      "name": "win screen",
+      "path": "/Prefab/win screen.json"
+    },
+    {
+      "id": "98416fa9-2ae1-4432-bcf4-0d4352a9b29a",
+      "name": "to win",
+      "path": "/Prefab/to win.json"
     }
   ]
 }
