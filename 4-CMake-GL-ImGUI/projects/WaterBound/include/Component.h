@@ -424,6 +424,7 @@ public:
     }
 };
 
+// tile map component
 struct TileMap : public Component
 {
     std::unique_ptr<Component> clone() const override {

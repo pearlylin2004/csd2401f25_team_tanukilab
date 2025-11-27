@@ -55,7 +55,7 @@ private:
 
 /*!***********************************************************************
 \brief
-	render component
+	render system
 
 *************************************************************************/
 class RenderSystem {
@@ -94,6 +94,7 @@ public:
 	void resizeFBO(int width, int height);
 	GLuint getTexture() const { return texture; }
 
+	//not implemented yet, hopefully tri break can do
 	void renderCollision(Collision::AABB const& box, glm::vec3 const& clr);
 	//GLuint getTexture() const { return texture; }
 	void batchingSetUp(GameObjectManager& manager, float const& deltaTime);
@@ -107,13 +108,41 @@ private:
 	std::unordered_map<shape, std::vector<renderer::InstanceData>> objectWithoutTex;
 };
 
+/*!***********************************************************************
+\brief
+	Tile Map system
+
+*************************************************************************/
 class TileMapSystem
 {
 public:
+	/*!***********************************************************************
+	\brief
+		update cycle to push the data in tiles to objectWithTex2 to be rendered in render system
+
+	\param[in] manager
+		array of all objects
+
+	*************************************************************************/
 	void update(GameObjectManager& manager);
+
+	/*!***********************************************************************
+	\brief
+		update the tiles for the object selected with the texture selected
+
+	\param[in] obj
+		object with TileMap component
+
+	*************************************************************************/
 	void tileUpdate(GameObject* obj);
 	//std::unordered_map<BatchKey, std::vector<renderer::InstanceData>, BatchKeyHash> objectWithTex2{};
 
+	/*!***********************************************************************
+	\brief
+		to store the filename and filepath of the asset that the mouse has clicked
+		and use it to paint the tile map
+
+	*************************************************************************/
 	static std::string filename;
 };
 
@@ -129,7 +158,7 @@ public:
 
 /*!***********************************************************************
 \brief
-	transform component
+	transform system
 
 *************************************************************************/
 class TransformSystem {
