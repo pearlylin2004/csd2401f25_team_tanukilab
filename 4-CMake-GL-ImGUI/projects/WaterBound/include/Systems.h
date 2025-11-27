@@ -101,9 +101,20 @@ public:
 	void fboAspectRatio(int& width, int& height) const;
 	~RenderSystem();
 	//bool batchRebuild = true;
+	static std::unordered_map<BatchKey, std::vector<renderer::InstanceData>, BatchKeyHash> objectWithTex2;
 private:
 	std::unordered_map<BatchKey, std::vector<renderer::InstanceData>, BatchKeyHash> objectWithTex;
 	std::unordered_map<shape, std::vector<renderer::InstanceData>> objectWithoutTex;
+};
+
+class TileMapSystem
+{
+public:
+	void update(GameObjectManager& manager);
+	void tileUpdate(GameObject* obj);
+	//std::unordered_map<BatchKey, std::vector<renderer::InstanceData>, BatchKeyHash> objectWithTex2{};
+
+	static std::string filename;
 };
 
 class FontSystem {

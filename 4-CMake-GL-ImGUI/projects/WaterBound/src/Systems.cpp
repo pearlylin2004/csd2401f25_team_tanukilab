@@ -26,7 +26,7 @@ Technology is prohibited.
 #include "Systems.h"
 #include "Physics.h"
 
-
+std::string TileMapSystem::filename{};
 //here we go buddies
 
 //all the systems need to get all game objects
@@ -205,105 +205,45 @@ void RenderSystem::update(GameObjectManager& manager, float const& deltaTime)
 
 
 	}
-
-	//rendering objects without texture, just color
-	//glUseProgram(renderer::shdr_pgm[1]);
-	//GLint vTransformView = glGetUniformLocation(renderer::shdr_pgm[1], "V");
-	//glUniformMatrix4fv(vTransformView, 1, GL_FALSE, glm::value_ptr(camView));
-	//GLint vTransformProj = glGetUniformLocation(renderer::shdr_pgm[1], "P");
-	//glUniformMatrix4fv(vTransformProj, 1, GL_FALSE, glm::value_ptr(camProj));
-	//for (GameObject* object : objectWithoutTex)
-	//	renderNoTex(object);
-
-	////rendering objects with textures
-	//glUseProgram(renderer::shdr_pgm[0]);
-	//vTransformView = glGetUniformLocation(renderer::shdr_pgm[0], "V");
-	//glUniformMatrix4fv(vTransformView, 1, GL_FALSE, glm::value_ptr(camView));
-	//vTransformProj = glGetUniformLocation(renderer::shdr_pgm[0], "P");
-	//glUniformMatrix4fv(vTransformProj, 1, GL_FALSE, glm::value_ptr(camProj));
-	//for (GameObject* object : objectWithTex)
-	//	renderTex(object, deltaTime);
-
-	//std::vector<renderer::InstanceData> batch;
-
-	//for (GameObject* obj : objectWithTex) {
-	//	Transform* t = obj->getComponent<Transform>();
-	//	Render* r = obj->getComponent<Render>();
-	//	Animation* animation = obj->getComponent<Animation>();
-
-	//	renderer::InstanceData i;
-	//	i.model = t->mdlWorld;
-	//	i.color = glm::vec4(r->clr, 1); // or r->color
-	//	i.texParams = glm::vec4(animation->currentFrameColumn, animation->currentFrameRow, texScale.x, texScale.y);
-	//	batch.push_back(i);
-	//}
-
-	//renderer::drawInstances(renderer::models[(int)shape::square], batch);
-
-	
-
 	//drawing models without texture
-	// glUseProgram(renderer::shdr_pgm[1]);
-	// GLint uView = glGetUniformLocation(renderer::shdr_pgm[1], "V");
-	// GLint uProj = glGetUniformLocation(renderer::shdr_pgm[1], "P");
-	// glUniformMatrix4fv(uView, 1, GL_FALSE, glm::value_ptr(camView));
-	// glUniformMatrix4fv(uProj, 1, GL_FALSE, glm::value_ptr(camProj));
-	// for (std::pair<const shape, std::vector<renderer::InstanceData>>& pair : objectWithoutTex)
-	// {
-	// 	shape meshType = pair.first;
-	// 	renderer::drawInstances(renderer::models[(int)meshType], pair.second);
-	// }
-	// //drawing models with texture
-	// glUseProgram(renderer::shdr_pgm[0]); // hasTex shader
-	// uView = glGetUniformLocation(renderer::shdr_pgm[0], "V");
-	// uProj = glGetUniformLocation(renderer::shdr_pgm[0], "P");
-	// glUniformMatrix4fv(uView, 1, GL_FALSE, glm::value_ptr(camView));
-	// glUniformMatrix4fv(uProj, 1, GL_FALSE, glm::value_ptr(camProj));
-	// for (std::pair<const BatchKey, std::vector<renderer::InstanceData>>& pair : objectWithTex)
-	// {
-	// 	const BatchKey& key = pair.first;
-	// 	std::vector<renderer::InstanceData>& instances = pair.second;
-	// 	glBindTextureUnit(0, key.texID);
-	// 	GLint uTexLoc = glGetUniformLocation(renderer::shdr_pgm[0], "uTex2d");
-	// 	if (uTexLoc != -1) 
-	// 		glUniform1i(uTexLoc, 0);
-	// 	renderer::model& mdl = renderer::models[(int)key.meshType];
-	// 	renderer::drawInstances(mdl, pair.second);
-	// }
-	// //if (UISystem::isShowUI()) glBindFramebuffer(GL_FRAMEBUFFER, 0);
-	//glBindFramebuffer(GL_FRAMEBUFFER, 0);
-	//all rendering must be done per layer noww
-	//cooked
-
-
-		//drawing models without texture
-		glUseProgram(renderer::shdr_pgm[1]);
-		GLint uView = glGetUniformLocation(renderer::shdr_pgm[1], "V");
-		GLint uProj = glGetUniformLocation(renderer::shdr_pgm[1], "P");
-		glUniformMatrix4fv(uView, 1, GL_FALSE, glm::value_ptr(camView));
-		glUniformMatrix4fv(uProj, 1, GL_FALSE, glm::value_ptr(camProj));
-		for (std::pair<const shape, std::vector<renderer::InstanceData>>& pair : objectWithoutTex)
-		{
-			shape meshType = pair.first;
-			renderer::drawInstances(renderer::models[(int)meshType], pair.second);
-		}
-		//drawing models with texture
-		glUseProgram(renderer::shdr_pgm[0]); // hasTex shader
-		uView = glGetUniformLocation(renderer::shdr_pgm[0], "V");
-		uProj = glGetUniformLocation(renderer::shdr_pgm[0], "P");
-		glUniformMatrix4fv(uView, 1, GL_FALSE, glm::value_ptr(camView));
-		glUniformMatrix4fv(uProj, 1, GL_FALSE, glm::value_ptr(camProj));
-		for (std::pair<const BatchKey, std::vector<renderer::InstanceData>>& pair : objectWithTex)
-		{
-			const BatchKey& key = pair.first;
-			//std::vector<renderer::InstanceData>& instances = pair.second;
-			glBindTextureUnit(0, key.texID);
-			GLint uTexLoc = glGetUniformLocation(renderer::shdr_pgm[0], "uTex2d");
-			if (uTexLoc != -1) 
-				glUniform1i(uTexLoc, 0);
-			renderer::model& mdl = renderer::models[(int)key.meshType];
-			renderer::drawInstances(mdl, pair.second);
-		}
+	glUseProgram(renderer::shdr_pgm[1]);
+	GLint uView = glGetUniformLocation(renderer::shdr_pgm[1], "V");
+	GLint uProj = glGetUniformLocation(renderer::shdr_pgm[1], "P");
+	glUniformMatrix4fv(uView, 1, GL_FALSE, glm::value_ptr(camView));
+	glUniformMatrix4fv(uProj, 1, GL_FALSE, glm::value_ptr(camProj));
+	for (std::pair<const shape, std::vector<renderer::InstanceData>>& pair : objectWithoutTex)
+	{
+		shape meshType = pair.first;
+		renderer::drawInstances(renderer::models[(int)meshType], pair.second);
+	}
+	//drawing models with texture
+	glUseProgram(renderer::shdr_pgm[0]); // hasTex shader
+	uView = glGetUniformLocation(renderer::shdr_pgm[0], "V");
+	uProj = glGetUniformLocation(renderer::shdr_pgm[0], "P");
+	glUniformMatrix4fv(uView, 1, GL_FALSE, glm::value_ptr(camView));
+	glUniformMatrix4fv(uProj, 1, GL_FALSE, glm::value_ptr(camProj));
+	for (std::pair<const BatchKey, std::vector<renderer::InstanceData>>& pair : objectWithTex)
+	{
+		const BatchKey& key = pair.first;
+		//std::vector<renderer::InstanceData>& instances = pair.second;
+		glBindTextureUnit(0, key.texID);
+		GLint uTexLoc = glGetUniformLocation(renderer::shdr_pgm[0], "uTex2d");
+		if (uTexLoc != -1) 
+			glUniform1i(uTexLoc, 0);
+		renderer::model& mdl = renderer::models[(int)key.meshType];
+		renderer::drawInstances(mdl, pair.second);
+	}
+	for (std::pair<const BatchKey, std::vector<renderer::InstanceData>>& pair : objectWithTex2)
+	{
+		const BatchKey& key = pair.first;
+		//std::vector<renderer::InstanceData>& instances = pair.second;
+		glBindTextureUnit(0, key.texID);
+		GLint uTexLoc = glGetUniformLocation(renderer::shdr_pgm[0], "uTex2d");
+		if (uTexLoc != -1)
+			glUniform1i(uTexLoc, 0);
+		renderer::model& mdl = renderer::models[(int)key.meshType];
+		renderer::drawInstances(mdl, pair.second);
+	}
 
 	/*if (UISystem::isShowUI()) glBindFramebuffer(GL_FRAMEBUFFER, 0);*/
 

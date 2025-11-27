@@ -665,6 +665,39 @@ void GameObjectManager::loadSceneFromJson(const std::string& filename) {
 				ch->fadeOutDuration = ja["fadeOutDuration"].GetFloat();
 			}
 		}
+
+		// ---- TileMap ----
+		if (comps.HasMember("TileMap") && comps["TileMap"].IsObject()) {
+			const auto& tmj = comps["TileMap"];
+			TileMap* tm = go->getComponent<TileMap>();
+			if (!tm) tm = go->addComponent<TileMap>();
+
+			if (tmj.HasMember("tileW") && tmj["tileW"].IsNumber())
+				tm->tileW = tmj["tileW"].GetFloat();
+
+			if (tmj.HasMember("tileH") && tmj["tileH"].IsNumber())
+				tm->tileH = tmj["tileH"].GetFloat();
+
+			if (tmj.HasMember("columns") && tmj["columns"].IsInt())
+				tm->columns = tmj["columns"].GetInt();
+
+			if (tmj.HasMember("rows") && tmj["rows"].IsInt())
+				tm->rows = tmj["rows"].GetInt();
+
+			tm->tiles.clear();
+
+			if (tmj.HasMember("tiles") && tmj["tiles"].IsArray()) {
+				for (const auto& t : tmj["tiles"].GetArray()) {
+					if (!t.IsObject()) continue;
+
+					int x = t["x"].GetInt();
+					int y = t["y"].GetInt();
+					std::string id = t["id"].GetString();
+
+					tm->setTile(x, y, id);
+				}
+			}
+		}
 		
 	}
 
@@ -1059,6 +1092,53 @@ void GameObjectManager::saveSceneToJson(const std::string& filename, bool isNew)
 				if (!jac.ObjectEmpty()) {
 					comps.AddMember("AudioComponent", jac, a);
 				}
+			}
+
+			// ---- TileMap ----
+			if (auto tm = obj->getComponent<TileMap>()) {
+				rapidjson::Value jt(rapidjson::kObjectType);
+				const rapidjson::Value* prefabTM = PM.getPrefabJsonComp(prefabDoc, "TileMap");
+
+				// compare helper
+				auto diffFloat = [&](const char* key, float val) {
+					return (!prefabTM || !prefabTM->HasMember(key) ||
+						std::fabs(prefabTM->FindMember(key)->value.GetFloat() - val) > 1e-6f);
+					};
+
+				auto diffInt = [&](const char* key, int val) {
+					return (!prefabTM || !prefabTM->HasMember(key) ||
+						prefabTM->FindMember(key)->value.GetInt() != val);
+					};
+
+				if (diffFloat("tileW", tm->tileW))
+					jt.AddMember("tileW", tm->tileW, a);
+
+				if (diffFloat("tileH", tm->tileH))
+					jt.AddMember("tileH", tm->tileH, a);
+
+				if (diffInt("columns", tm->columns))
+					jt.AddMember("columns", tm->columns, a);
+
+				if (diffInt("rows", tm->rows))
+					jt.AddMember("rows", tm->rows, a);
+
+				// Tiles array
+				{
+					rapidjson::Value tilesArr(rapidjson::kArrayType);
+
+					for (const auto& [key, id] : tm->tiles) {
+						rapidjson::Value t(rapidjson::kObjectType);
+						t.AddMember("x", key.x, a);
+						t.AddMember("y", key.y, a);
+						t.AddMember("id", rapidjson::Value(id.c_str(), a), a);
+						tilesArr.PushBack(t, a);
+					}
+
+					jt.AddMember("tiles", tilesArr, a);
+				}
+
+				if (!jt.ObjectEmpty())
+					comps.AddMember("TileMap", jt, a);
 			}
 
 			if (!comps.ObjectEmpty()) jObj.AddMember("components", comps, a);

@@ -138,6 +138,8 @@ void CoreEngine::Init(bool forceWindowed) {
     m_messageBus = std::make_unique<MessageBus>();
     m_playerController = std::make_unique<PlayerControllerSystem>();
     m_audioSystem = std::make_unique<AudioSystem>();
+    m_tileMapSystem = std::make_unique<TileMapSystem>();
+
 
     PrefabManager::Instance().loadPrefabRegistry();
     m_guiSystem->init(*m_manager, *m_luaSystem);
@@ -247,6 +249,7 @@ void CoreEngine::Update(float deltaTime) {
     m_physicsSystem->update(*m_manager, deltaTime, *m_messageBus);
     m_collisionSystem->update(*m_manager, deltaTime);
     m_logicSystem->update(*m_manager, deltaTime);
+    m_tileMapSystem->update(*m_manager);
     m_renderSystem->update(*m_manager, deltaTime);
     m_fontSystem->update(*m_manager, m_fps);    
     m_audioSystem->update(*m_manager, deltaTime);
