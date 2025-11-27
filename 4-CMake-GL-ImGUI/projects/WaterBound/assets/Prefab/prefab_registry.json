@@ -22,11 +22,6 @@
       "path": "/Prefab/player2.json"
     },
     {
-      "id": "6d0c3871-a189-47d1-a5e2-c75459356c6c",
-      "name": "smoke",
-      "path": "/Prefab/smoke.json"
-    },
-    {
       "id": "eaa2ba42-971a-413b-b8c4-99b2f5ab674d",
       "name": "fire",
       "path": "/Prefab/fire.json"
