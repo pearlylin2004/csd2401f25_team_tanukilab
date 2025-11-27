@@ -18,7 +18,7 @@
     "Render": {
       "shape": "square",
       "hasTex": 1,
-      "texture": "assets/Texture\\Water_Gun.png",
+      "texture": "assets/Texture\\Bell_Heated.png",
       "hasAnimation": 0
     },
     "Physics": {

@@ -1317,6 +1317,23 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 								//continue;
 							}
 
+							GameObject* waterSource = nullptr;
+							if (obj1->getObjectPrefabID() == "f04819ff-270c-41b4-8387-73382eb85103") {
+								waterSource = obj1;
+							}
+							if (obj2->getObjectPrefabID() == "f04819ff-270c-41b4-8387-73382eb85103") {
+								waterSource = obj2;
+							}
+
+							if (playerObj && waterSource) {
+								DebugLog::addMessage("wtf");
+								if (StateMachine* sm = waterSource->getComponent<StateMachine>()) {
+									sm->state = PlayerState::Walking;
+									sm->fixState = true;
+									continue;
+								}
+							}
+
 
 							/* ---------- temp setting ---------- */
 

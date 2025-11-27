@@ -120,7 +120,7 @@ void LogicContainer::tickIdle(GameObject& obj, float /*dt*/) {
         DebugLog::addMessage("FSM: Jump", DebugMode::PlaySimul);
     }
     // walk
-    else if (anyMoveHeld() && obj.getObjectPrefabID() != "eaa2ba42-971a-413b-b8c4-99b2f5ab674d") {
+    else if (anyMoveHeld() && obj.getObjectPrefabID() != "eaa2ba42-971a-413b-b8c4-99b2f5ab674d" && obj.getObjectPrefabID() != "f04819ff-270c-41b4-8387-73382eb85103") {
         enter(obj, PlayerState::Walking);
     }
 }

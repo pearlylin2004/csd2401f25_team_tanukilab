@@ -14,7 +14,8 @@
         },
         "Render": {
           "shape": "square",
-          "hasTex": 0
+          "texture": "assets/Texture\\water_texture.png",
+          "hasTex": 1
         }
       }
     },
@@ -36,7 +37,7 @@
         },
         "StateMachine": {
           "state": "Falling",
-          "stateTime": 4.31165885925293,
+          "stateTime": 12.9282808303833,
           "Dead": {
             "animState": {
               "texture": "",
