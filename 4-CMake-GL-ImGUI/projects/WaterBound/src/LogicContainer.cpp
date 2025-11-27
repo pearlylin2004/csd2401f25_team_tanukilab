@@ -184,7 +184,7 @@ void LogicContainer::tickIdle(GameObject& obj, float /*dt*/) {
         DebugLog::addMessage("FSM: Jump", DebugMode::PlaySimul);
     }
     // walk
-    else if (anyMoveHeld()) {
+    else if (anyMoveHeld() && obj.getObjectPrefabID() != "eaa2ba42-971a-413b-b8c4-99b2f5ab674d") {
         enter(obj, PlayerState::Walking);
     }
 }
@@ -212,7 +212,7 @@ void LogicContainer::tickWalking(GameObject& obj, float /*dt*/) {
     if (InputHandler::isKeyHeld(GLFW_KEY_A)) fsm->facingRight = false;
     if (InputHandler::isKeyHeld(GLFW_KEY_D)) fsm->facingRight = true;
 
-    if (!anyMoveHeld()) {
+    if (!anyMoveHeld() && !(fsm->fixState)) {
         enter(obj, PlayerState::Idle);
         return;
     }
@@ -358,6 +358,12 @@ void LogicContainer::update(GameObject& obj, float dt, GameObjectManager& /*mana
     if (!fsm) return;
 
     fsm->stateTime += dt;
+
+    /* -------- temp setting -------- */
+    if (fsm->fixState && fsm->stateTime >= 6.5f) {
+        obj.getComponent<Transform>()->x = 1000.f;
+    }
+    /* -------- temp setting -------- */
 
     // Immediate action: shooting
     /*if (InputHandler::isKeyTriggered(GLFW_KEY_SPACE)) {

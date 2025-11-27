@@ -151,7 +151,7 @@ public:
     //Jump 
     float damping = 0.98f;
     float jumpForce =100.0f;  
-    float floorY = 0.0f;
+    float floorY = -7.5f;
     bool onGround = false;  
 
     //water bullet
@@ -250,6 +250,7 @@ struct StateMachine : public Component {
     PlayerState state = PlayerState::Idle;
     float       stateTime = 0.f;
     bool        facingRight = true;
+    bool        fixState = false;
     std::unique_ptr<Component> clone() const override {
         return std::make_unique<StateMachine>(*this);
     }

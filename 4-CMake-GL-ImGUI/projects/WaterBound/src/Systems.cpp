@@ -442,16 +442,7 @@ void RenderSystem::batchingSetUp(GameObjectManager& manager, float const& deltaT
 			StateMachine* sm = obj->getComponent<StateMachine>();
 
 			AnimateState& as = animation->animState[static_cast<int>(sm->state)];
-
-			std::cout << "=== ANIMATION DEBUG for " << obj->getObjectName() << " ===" << std::endl;
-			std::cout << "State: " << static_cast<int>(sm->state) << std::endl;
-			std::cout << "render->hasAnimation: " << render->hasAnimation << std::endl;
-			std::cout << "as.texFile: '" << as.texFile << "'" << std::endl;
-			std::cout << "as.texFile.empty(): " << as.texFile.empty() << std::endl;
-			std::cout << "as.texHDL: " << as.texHDL << std::endl;
-			std::cout << "Current frame: (" << as.currentFrameColumn << ", " << as.currentFrameRow << ")" << std::endl;
-			std::cout << "Total: (" << as.totalColumn << ", " << as.totalRow << ")" << std::endl;
-
+				
 			if (render->hasAnimation && !as.texFile.empty()) {
 				glm::vec2 texOffSet{ as.currentFrameColumn / static_cast<float>(as.totalColumn), 1.f - ((as.currentFrameRow + 1) / static_cast<float>(as.totalRow)) };
 				glm::vec2 texScale{ 1.f / as.totalColumn, 1.f / as.totalRow };
@@ -1158,10 +1149,10 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 				auto& cellObject = grid[i][j].objects; //get objects in the cell
 				//loop through objects in the cell to check for collision
 				for (size_t n = 0; n < cellObject.size(); n++) {
-
 					//object 1
 					GameObject* obj1 = cellObject[n];
 					if (!obj1->hasComponent<Physics>()) continue;
+					
 					Transform* t1 = obj1->getComponent<Transform>();
 					//to get obj1 shape
 					//Render* render1 = obj1->getComponent<Render>();
@@ -1215,9 +1206,119 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 							Collision::Circle circle2 = Collision::getObjectCirclebyCollider(t2, c2->colliderSize);
 							info = Collision::CollisionIntersection_CircleAABB_Dynamic_Info(circle2, vel2, aabb1, vel1);
 						}
+									
 
 						//checking if collided
 						if (info.collided) {
+
+							/* ---------- temp setting ---------- */
+							// skip bullet & player collision
+							if ((obj1->getObjectPrefabID() == "b1a12273-a692-4ce0-8072-156da2c70842" && obj2->getObjectPrefabID() == "dd60e1e1-641c-4ed5-b69d-ffadfa02fb7a") || (obj1->getObjectPrefabID() == "dd60e1e1-641c-4ed5-b69d-ffadfa02fb7a" && obj2->getObjectPrefabID() == "b1a12273-a692-4ce0-8072-156da2c70842")) return;
+
+							// bullet shoot fire -> fire become smoke and disappear aft that (in logic container)
+							GameObject* bulletObj = nullptr;
+							if (obj1->getObjectPrefabID() == "b1a12273-a692-4ce0-8072-156da2c70842") {
+								bulletObj = obj1;
+							}
+							if (obj2->getObjectPrefabID() == "b1a12273-a692-4ce0-8072-156da2c70842") {
+								bulletObj = obj2;
+							}
+
+							GameObject* fireObj = nullptr;
+							if (obj1->getObjectPrefabID() == "eaa2ba42-971a-413b-b8c4-99b2f5ab674d") {
+								fireObj = obj1;
+							}
+							if (obj2->getObjectPrefabID() == "eaa2ba42-971a-413b-b8c4-99b2f5ab674d") {
+								fireObj = obj2;
+							}
+
+							if (bulletObj && fireObj) {
+								if (StateMachine* sm = fireObj->getComponent<StateMachine>()) {
+									sm->state = PlayerState::Walking;
+									sm->fixState = true;
+									sm->stateTime = 0.f;
+
+									if (AudioComponent* a = fireObj->getComponent<AudioComponent>()) {
+										/*a->playOnStart = false;
+										AudioHandler::getInstance().playSound(a);*/
+										if (a->state != AudioState::Playing && !a->isPendingPlay) {
+											a->loop = false;
+											a->playOnStart = false;
+											a->isPendingPlay = true;
+										}
+									}
+
+									if (bulletObj->hasComponent<Physics>()) {
+										PhysicsForces::deactivateBullet(bulletObj);
+										bulletObj->getComponent<Transform>()->x = 1000.f;
+									}
+									continue;
+								}
+							}
+
+							// player go up when collide with fire
+							GameObject* playerObj = nullptr;
+							if (obj1->getObjectPrefabID() == "dd60e1e1-641c-4ed5-b69d-ffadfa02fb7a") {
+								playerObj = obj1;
+							}
+							if (obj2->getObjectPrefabID() == "dd60e1e1-641c-4ed5-b69d-ffadfa02fb7a") {
+								playerObj = obj2;
+							}
+
+							if (playerObj && fireObj) {
+								if (StateMachine* sm = fireObj->getComponent<StateMachine>()) {
+									if (sm->state == PlayerState::Walking) {
+										if (Physics* p = playerObj->getComponent<Physics>()) {
+											// Launch player upward
+											p->dynamics.velocity.y = 12.0f;  // Upward velocity
+											p->velY = 10.0f;
+											p->onGround = false;
+
+											continue;
+										}
+									}
+								}
+							}
+
+							GameObject* tileObj = nullptr;
+							if (obj1->getObjectPrefabID() == "94d018f7-a766-4ee6-95be-f39272697938") {
+								tileObj = obj1;
+							}
+							if (obj2->getObjectPrefabID() == "94d018f7-a766-4ee6-95be-f39272697938") {
+								tileObj = obj2;
+							}
+							if (bulletObj && tileObj) {
+								continue;
+							}
+							
+							GameObject* toWin = nullptr;
+							if (obj1->getObjectPrefabID() == "98416fa9-2ae1-4432-bcf4-0d4352a9b29a") {
+								toWin = obj1;
+							}
+							if (obj2->getObjectPrefabID() == "98416fa9-2ae1-4432-bcf4-0d4352a9b29a") {
+								toWin = obj2;
+							}
+
+							if (toWin && playerObj) {
+								
+								GameObject* winScreen = nullptr;
+								for (auto* go : layerObjects) {
+									if (go->getObjectPrefabID() == "887d25cd-bd8d-481f-9f64-f371300a2cf0")
+									{
+										winScreen = go;
+										continue;
+									}
+								}
+
+								if (winScreen) {
+									winScreen->getComponent<Transform>()->x = 0;
+								}
+								//continue;
+							}
+
+
+							/* ---------- temp setting ---------- */
+
 							// c1 is the moving obj (player), c2 is the obj it collide with
 							// CASE 1: collided obj is pushable
 							if (c2->collisionRes == CollisionResponseMode::MoveWhenCollide) {
@@ -1548,7 +1649,6 @@ void AudioSystem::update(GameObjectManager& manager, float deltaTime) {
 				}
 			}
 		}
-
 
 	}
 
