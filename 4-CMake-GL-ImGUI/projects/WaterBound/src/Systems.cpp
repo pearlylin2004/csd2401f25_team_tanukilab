@@ -1281,6 +1281,8 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 								}
 							}
 
+							// skip bullet obj and water source collision
+							if (bulletObj && waterSource) continue;
 
 							/* ---------- temp setting ---------- */
 
