@@ -20,14 +20,14 @@
       "name": "back_text",
       "components": {
         "Transform": {
-          "pos": [-16.0, 8.0, 1.0],
+          "pos": [-15.0, 8.0, 1.0],
           "rotation": 0.0,
           "scale": [20.0, 20.0, 0.0]
         },
         "FontComponent": {
           "word": "BACK",
           "color": [0.0, 0.0, 0.0],
-          "scale": 1.0,
+          "scale": 0.5,
           "fontType": 1
         }
       }
