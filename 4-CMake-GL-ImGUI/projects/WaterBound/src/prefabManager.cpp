@@ -812,7 +812,9 @@ void PrefabManager::applyPrefabComponents(GameObject* go, const rapidjson::Value
 	// ---- AudioComponent ----
 	if (comps.HasMember("AudioComponent") && comps["AudioComponent"].IsObject()) {
 		const auto& ja = comps["AudioComponent"];
-		auto* ac = go->addComponent<AudioComponent>();
+		auto* audio = go->addComponent<AudioComponent>();
+
+		AudioChannel* ac = audio->getDefaultChannel();
 
 		JsonIO::GetString(ja, "audioFile", ac->audioFile);
 		ac->volume = JsonIO::GetFloatOr(ja, "volume", 1.f);
@@ -940,8 +942,10 @@ void PrefabManager::serializeComponents(const GameObject* obj, rapidjson::Value&
 	}
 
 	// AudioComponent
-	if (auto ac = obj->getComponent<AudioComponent>()) {
+	if (auto audio = obj->getComponent<AudioComponent>()) {
 		rapidjson::Value ja(rapidjson::kObjectType);
+
+		const AudioChannel* ac = audio->getChannel("default");
 
 		ja.AddMember("audioFile", rapidjson::Value(ac->audioFile.c_str(), a), a);
 		ja.AddMember("volume", ac->volume, a);

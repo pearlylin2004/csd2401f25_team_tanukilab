@@ -57,7 +57,7 @@ static inline bool anyMoveHeld() {
 // FSM Transition Helper
 // ============================================================================
 /*!
- * \brief Applies a state transition to the object’s StateMachine component.
+ * \brief Applies a state transition to the objectï¿½s StateMachine component.
  *
  * Resets state timer, logs the transition to ImGui & console,
  * and performs any enter-state side effects.
@@ -88,6 +88,70 @@ void LogicContainer::enter(GameObject& obj, PlayerState next)
                 + obj.getObjectName() + " -> " + ToString(next);
             DebugLog::addMessage(msg, DebugMode::PlaySimul);
             std::cout << msg << std::endl;
+
+
+            //get or add AudioComponent
+            AudioComponent* audio = obj.getComponent<AudioComponent>();
+            if (!audio) {
+                audio = obj.addComponent<AudioComponent>();
+            }
+
+            //if prev state was walking
+            if (fsm->state == PlayerState::Walking) {
+
+                //stop footsteps when leaving walking state
+
+                AudioChannel* footsteps = audio->getChannel("footsteps");
+                if (footsteps && footsteps->state == AudioState::Playing) {
+                    footsteps->isPendingStop = true;
+                    footsteps->fadeOutOnStop = true;
+                    footsteps->fadeOutDuration = 0.15f;
+                }
+            }
+
+            //if prev state was falling, means exiting falling state(just landed prolly)
+            if (fsm->state == PlayerState::Falling) {
+                AudioChannel* landing = audio->getOrCreateChannel("landing");
+                
+                //play sound when exiting falling state
+                landing->audioFile = "assets/audio/landing.wav";
+                landing->loop = false;
+                landing->volume = 0.5f;
+                landing->isPendingPlay = true;
+            }
+
+            //play a sound depending on next state
+            switch (next) {
+            case PlayerState::Walking : {//jump jump
+                AudioChannel* footsteps = audio->getOrCreateChannel("footsteps");
+                footsteps->audioFile = "assets/audio/footsteps.wav";
+                footsteps->loop = true;
+                footsteps->volume = 0.5f;
+                footsteps->isPendingPlay = true;
+                break;
+            }
+            case PlayerState::Jumping: {
+                AudioChannel* jump = audio->getOrCreateChannel("jump");
+                jump->audioFile = "assets/audio/jump.wav";
+                jump->loop = false;
+                jump->volume = 0.7f;
+                jump->isPendingPlay = true;
+                break;
+            }
+            case PlayerState::Falling: {
+                //play falling sound
+                break;
+            }
+            case PlayerState::Idle: {
+                //play some idle sound if needed
+                break;
+            }
+            default:
+                //prolly nothing happens
+                break;   
+            }
+
+
         }
 
         fsm->state = next;

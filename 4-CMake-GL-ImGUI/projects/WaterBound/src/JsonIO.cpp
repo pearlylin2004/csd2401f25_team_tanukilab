@@ -609,8 +609,10 @@ namespace JsonIO {
         }
 
         // Audio
-        if (AudioComponent* ac = obj->getComponent<AudioComponent>()) {
+        if (AudioComponent* audio = obj->getComponent<AudioComponent>()) {
             Value ja(kObjectType);
+
+            AudioChannel* ac = audio->getDefaultChannel();
 
             ja.AddMember("audioFile", Value(ac->audioFile.c_str(), a), a);
             ja.AddMember("loop", ac->loop, a);
@@ -780,7 +782,8 @@ namespace JsonIO {
             // Audio
             if (doc.HasMember("Audio")) {
                 const Value& ja = doc["Audio"];
-                AudioComponent* a = obj->addComponent<AudioComponent>();
+                AudioComponent* ac = obj->addComponent<AudioComponent>();
+                AudioChannel* a = ac->getDefaultChannel();
 
                 a->audioFile = ja["audioFile"].GetString();
                 a->loop = ja["loop"].GetBool();
