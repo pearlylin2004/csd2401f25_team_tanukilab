@@ -296,7 +296,7 @@ void LogicContainer::update(GameObject& obj, float dt, GameObjectManager& /*mana
     fsm->stateTime += dt;
 
     /* -------- temp setting -------- */
-    if (fsm->fixState && fsm->stateTime >= 6.5f) {
+    if (fsm->fixState && fsm->stateTime >= 6.5f && obj.getObjectPrefabID() != "f04819ff-270c-41b4-8387-73382eb85103") {
         obj.getComponent<Transform>()->x = 1000.f;
     }
     /* -------- temp setting -------- */
