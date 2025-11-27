@@ -23,7 +23,7 @@
     },
     "Physics": {
       "physicsFlag": 0,
-      "moveSpeed": 0.0,
+      "moveSpeed": 10.0,
       "jumpForce": 100.0,
       "damping": 0.9800000190734863,
       "mass": 1.0,
