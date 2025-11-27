@@ -181,6 +181,21 @@ Vector2D Vec_Transform(const Vector2D* v, const Mat33* mat) {
     return transformed;
 }
 
+Vector2D Vec_Multi(const Vector2D* a, const Vector2D* b) {
+    Vector2D result = { a->x * b->x, a->y * b->y };
+    return result;
+}
+
+Vector2D Vec_Div(const Vector2D* a, const Vector2D* b) {
+    Vector2D result = { 0.0f, 0.0f };
+    if (b->x != 0.0f && b->y != 0.0f) {
+        result.x = a->x / b->x;
+        result.y = a->y / b->y;
+    }
+    return result;
+}
+
+
 //----------------------------------------
 // Matrix Operations (3x3)
 //----------------------------------------
@@ -351,6 +366,20 @@ Vector3D Vec3_Transform(const Vector3D* v, const Mat44* mat) {
     return transformed;
 }
 
+Vector3D Vec3_Multi(const Vector3D* a, const Vector3D* b) {
+    Vector3D result = { a->x * b->x, a->y * b->y, a->z * b->z };
+    return result;
+}
+
+Vector3D Vec3_Div(const Vector3D* a, const Vector3D* b) {
+    Vector3D result = { 0.0f, 0.0f, 0.0f };
+    if (b->x != 0.0f && b->y != 0.0f && b->z != 0.0f) {
+        result.x = a->x / b->x;
+        result.y = a->y / b->y;
+        result.z = a->z / b->z;
+    }
+    return result;
+}
 //----------------------------------------
 // Matrix Operations (4x4)
 //----------------------------------------

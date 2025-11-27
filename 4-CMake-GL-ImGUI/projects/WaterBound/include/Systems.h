@@ -2,8 +2,8 @@
 /*!
 \file        Systems.h
 \author      Seow Sin Le, s.sinle, 2401084, 40%
-\author 	 Hugo Low Ren Hao, low.h, 2402272, 40%
-\author 	 Pearly Lin Lee Ying, p.lin, 2401591, 20%
+\author 	 Hugo Low Ren Hao, low.h, 2402272, 45%
+\author 	 Pearly Lin Lee Ying, p.lin, 2401591, 15%
 \par         s.sinle@digipen.edu
 \par		 low.h@digipen.edu
 \par		 p.lin@digipen.edu
@@ -24,11 +24,13 @@ Technology is prohibited.
 //#include <stb_image.h>
 #include "collision.h"
 #include "imgui_internal.h" // for docking in UISystem
-#include <ui.h>
+//#include <ui.h>
+#include "Editor/editorManager.h"
 #include "font.h"
-#include <LogicContainer.h>
 #include "messageBus.h"
 #include "controllerSystem.h"
+#include <LogicContainer.h>
+#include "audio.h"
 
 //forward declaration
 struct renderer;
@@ -88,19 +90,30 @@ public:
 	//GLuint uploadtex(std::string const& filename, bool& isTransparent);
 	void renderTex(GameObject* object, float const& deltaTime);
 	void renderNoTex(GameObject* object);
-
+	void renderFBO();
+	void resizeFBO(int width, int height);
 	GLuint getTexture() const { return texture; }
+
+	void renderCollision(Collision::AABB const& box, glm::vec3 const& clr);
+	//GLuint getTexture() const { return texture; }
+	void batchingSetUp(GameObjectManager& manager, float const& deltaTime);
 
 	void fboAspectRatio(int& width, int& height) const;
 	~RenderSystem();
-	void renderCollision(Collision::AABB const& box, glm::vec3 const& clr);
+	//bool batchRebuild = true;
+private:
+	std::unordered_map<BatchKey, std::vector<renderer::InstanceData>, BatchKeyHash> objectWithTex;
+	std::unordered_map<shape, std::vector<renderer::InstanceData>> objectWithoutTex;
 };
 
 class FontSystem {
 public:
 	void init(GameObjectManager& manager);
-	void update(GameObjectManager& manager);
+	void update(GameObjectManager& manager, double fps);
 	void RenderText(GLuint& s, std::string text, float x, float y, float scale, glm::vec3 color, GameObject* object);
+
+	// sorry very scuffed but can remove aft submission
+	static inline bool showFPS = false;
 };
 
 /*!***********************************************************************
@@ -130,6 +143,8 @@ public:
 	void update(GameObjectManager& manager, const float& deltaTime);
 };
 
+// only allow editor in debug mode
+#ifdef _DEBUG
 // UI system - handles UI rendering and interactions using ImGui
 class UISystem {
 public:
@@ -143,13 +158,33 @@ public:
 private:
 	void dockingSetUp();
 	void renderMultipleViewPorts();
-	UI m_UI;
+	//UI m_UI;
+	EditorManager m_UI;
 	static bool showUI;
 	bool m_firstTime = true;
 	RenderSystem* m_renderer = nullptr;
 };
+#else
+namespace EditorManager {
+	inline bool isEditingMode() { return false; }
+	inline bool isPaused() { return false; }
+}
+namespace UISystem {
+	inline bool isShowUI() { return false; }
+}
+#endif
 
 class LogicSystem {
 public:
 	void update(GameObjectManager& manager, const float& deltaTime);
+};
+
+class AudioSystem {
+public:
+	void init(GameObjectManager & manager);
+	void update(GameObjectManager& manager, float deltaTime);
+	void cleanup(GameObjectManager& manager);
+
+private:
+	void processAudioComponent(GameObject* obj, AudioComponent* audio, float deltaTime);
 };

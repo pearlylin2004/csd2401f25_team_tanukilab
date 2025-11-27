@@ -1,14 +1,21 @@
-//JsonIO.h
+/* Start Header ************************************************************************/
+/*!
+\file		JsonIO.h
+\author     Varick, v.teo, 2403417
+\par        v.teo@digipen.edu
+\date		November, 5th, 2025
+\brief      Declarations for JSON loading/saving utilities for the WaterBound engine.
+
+Copyright (C) 2025 DigiPen Institute of Technology.
+Reproduction or disclosure of this file or its contents
+without the prior written consent of DigiPen Institute of
+Technology is prohibited.
+*/
+/* End Header **************************************************************************/
 #pragma once
-#ifdef _WIN32
-#ifndef NOMINMAX
 #define NOMINMAX
-#endif
-#ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
-#endif
 #include <windows.h>
-#endif
 #include <cstdio>
 #include <string>
 #include <cstring>
@@ -30,12 +37,18 @@
 #include <rapidjson/prettywriter.h>
 #include <rapidjson/filewritestream.h>
 
-#include "GameObject.h"
-#include "renderer.h"
+#include "GameObjectManager.h"
 #include "Component.h"
+#include "renderer.h"
 
-
-
+/*!
+ * \namespace Paths
+ * \brief Provides OS-aware helpers to locate engine directories relative
+ *        to the executable (EXE) directory.
+ *
+ * These utilities ensure that the engine can load configs, shaders and scenes
+ * correctly regardless of where the executable is deployed.
+ */
 namespace Paths {
 	std::filesystem::path exe_dir();
 	std::filesystem::path shaders();
@@ -44,6 +57,15 @@ namespace Paths {
 	std::filesystem::path scripts();
 	void ensure_dir(const std::filesystem::path& p);
 }
+
+/*!
+ * \namespace JsonIO
+ * \brief Collection of JSON reading/writing helpers using RapidJSON.
+ *
+ * All JSON parsing, serialization and data extraction utilities live here.
+ * This keeps GameObjectManager and engine systems clean and independent of
+ * RapidJSON internals.
+ */
 namespace JsonIO {
 
 	// ---- Path helpers ----
@@ -55,9 +77,9 @@ namespace JsonIO {
 	const char* ShapeToStr(shape s);
 	shape StrToShape(const std::string& s);
 
-	// Player state helpers
-	PlayerState parsePlayerState(const std::string& s);
-	const char* playerStateToStr(PlayerState state);
+	// ---- Collision Response Mode helper
+	const char* CollisionResponseModeToStr(CollisionResponseMode mode);
+	CollisionResponseMode StrToCollisionResponseMode(const std::string& s);
 
 	// ---- JSON file IO helpers ----
 	bool syncSceneToRuntime(const std::string& name);
@@ -114,4 +136,14 @@ namespace JsonIO {
 		const glm::vec4& v,
 		rapidjson::Document::AllocatorType& alloc);
 
+
+	// ---- for undo/redo in editor ----
+	std::string serializeGameObj(GameObject* obj);
+	GameObject* deserializeGameObj(GameObjectManager& manager, const std::string& jsonStr);
+	// ---- END ----
+
+	/* ------ moved to components.h ------ */
+	// for the indexing in animation vector
+	//inline std::vector<std::string> stateNames = { "Idle", "Walking", "Jumping", "Falling", "Shooting" };
+	/* ------- END ------- */
 }

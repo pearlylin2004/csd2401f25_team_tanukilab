@@ -17,12 +17,17 @@ Technology is prohibited.
 
 #include "CoreEngine.h"
 
+#ifdef _WIN32
+#include <windows.h>
+#pragma comment(linker, "/ENTRY:mainCRTStartup")
+#endif
+
 // This allows for memory leak detection in debug builds
 #if defined(DEBUG) | defined(_DEBUG)
 #include <crtdbg.h>
 #endif
 
-int main() {
+int main(int argc, char** argv){
 #if defined(DEBUG) | defined(_DEBUG)
     // Enable run-time memory check for debug builds
     _CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
@@ -31,11 +36,20 @@ int main() {
     // Initialize the crash logger
     CrashLog::Init("crash_log.txt");
 
+    bool forceWindowed = false;
+    for (int i = 1; i < argc; ++i)
+    {
+        if (std::string(argv[i]) == "--windowed")
+        {
+            forceWindowed = true;
+        }
+    }
+
     // Create the engine using a smart pointer for automatic cleanup
     auto engine = std::make_unique<CoreEngine>();
 
     try {
-        engine->Init();
+        engine->Init(forceWindowed);
         engine->Run();
     }
     catch (const std::exception& e) {

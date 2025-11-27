@@ -1,0 +1,159 @@
+{
+  "version": 1,
+  "objects": [
+    {
+      "prefabid": "dd60e1e1-641c-4ed5-b69d-ffadfa02fb7a",
+      "name": "player",
+      "components": {
+        "CollisionInfo": {
+          "colliderType": "square"
+        },
+        "StateMachine": {
+          "state": "Walking"
+        }
+      }
+    },
+    {
+      "prefabid": "f7665aa3-619e-49a1-892a-31fbc8b377a2",
+      "name": "platform",
+      "layer": 0
+    },
+    {
+      "prefabid": "4828c393-9fcf-42f8-8b05-ddc8d75096be",
+      "name": "player1",
+      "components": {
+        "Physics": {
+          "moveSpeed": 0.0,
+          "jumpForce": 0.0,
+          "mass": 1.0,
+          "damping": 0.0
+        },
+        "CollisionInfo": {
+          "colliderType": "square"
+        }
+      }
+    },
+    {
+      "prefabid": "4828c393-9fcf-42f8-8b05-ddc8d75096be",
+      "name": "player2",
+      "components": {
+        "Transform": {
+          "pos": [
+            -5.0,
+            0.0,
+            0.0
+          ]
+        },
+        "Physics": {
+          "moveSpeed": 0.0,
+          "jumpForce": 0.0,
+          "mass": 1.0,
+          "damping": 0.0
+        },
+        "CollisionInfo": {
+          "colliderType": "square"
+        }
+      }
+    },
+    {
+      "name": "text",
+      "components": {
+        "Transform": {
+          "pos": [
+            5.0,
+            5.0,
+            0.02
+          ],
+          "rotation": 1.0,
+          "scale": [
+            1.0,
+            1.0,
+            0.0
+          ]
+        },
+        "FontComponent": {
+          "word": "test 123",
+          "color": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "scale": 1.0,
+          "fontType": 0
+        }
+      }
+    },
+    {
+      "name": "text2",
+      "components": {
+        "Transform": {
+          "pos": [
+            -5.0,
+            5.0,
+            0.1
+          ],
+          "rotation": 1.0,
+          "scale": [
+            1.0,
+            1.0,
+            0.0
+          ]
+        },
+        "FontComponent": {
+          "word": "test 123",
+          "color": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "scale": 1.0,
+          "fontType": 1
+        }
+      }
+    },
+    {
+      "prefabid": "b1a12273-a692-4ce0-8072-156da2c70842",
+      "name": "bullet"
+    },
+    {
+      "name": "smoke",
+      "components": {
+        "Transform": {
+          "pos": [
+            -12.0,
+            0.0,
+            0.02
+          ],
+          "rotation": 1.0,
+          "scale": [
+            3.0,
+            5.0,
+            0.0
+          ]
+        },
+        "Render": {
+          "shape": "square",
+          "hasTex": 1,
+          "texture": "assets/Texture/Smoke-Sprite-Sheet.jpg",
+          "hasAnimation": 1
+        },
+        "StateMachine": {
+          "state": "Idle",
+          "facingRight": 1,
+          "stateTime": 0.0,
+          "Idle": {
+            "animState": {
+              "texture": "assets/Texture/Smoke-Sprite-Sheet.png",
+              "loop": 1,
+              "currentFrameColumn": 7,
+              "currentFrameRow": 0,
+              "totalColumn": 8,
+              "totalRow": 1,
+              "frameTime": 0.147
+            }
+          }
+        }
+      }
+    }
+  ]
+}

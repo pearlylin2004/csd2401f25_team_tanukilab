@@ -16,7 +16,7 @@ Technology is prohibited.
 #include "GameObject.h"
 
 //constructor
-GameObject::GameObject(const std::string& name, const std::string& prefabID) : m_name(name), m_prefabID(prefabID) {}
+GameObject::GameObject(const std::string& name, const std::string& prefabID) : m_name(name), m_prefabID(prefabID) { autoMove = false;  }
 
 const std::string& GameObject::getObjectName() const {
     return m_name;
@@ -38,6 +38,9 @@ std::unique_ptr<GameObject> GameObject::clone(const std::string& name) const {
 
 	std::unique_ptr<GameObject> newObject = std::make_unique<GameObject>(name);
 
+    newObject->m_prefabID = this->m_prefabID;
+	newObject->setLayer(this->m_layerID);
+
     // Iterate through all components of the source object.
 	for (const auto& pair : m_components) { // Pair is [type_index, unique_ptr<Component>]
         const std::unique_ptr<Component>& sourceComponent = pair.second;
@@ -54,3 +57,20 @@ std::unique_ptr<GameObject> GameObject::clone(const std::string& name) const {
 
     return newObject;
 }
+
+// Layering functions
+void GameObject::setLayer(int layerID) {
+    m_layerID = layerID;
+}
+
+const int& GameObject::getLayer() const {
+    return m_layerID;
+}
+
+bool GameObject::isOnLayer(int layerID) const {
+    return m_layerID == layerID;
+}
+
+//remove component of type T
+
+//use like obj->removeComponent<Transform>();

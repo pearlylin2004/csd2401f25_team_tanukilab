@@ -94,7 +94,21 @@ The $\text{CMake}$ build command generate a $\text{Visual Studio 2022}$ solution
 
 The compiled executables will be located inside the `build/` directory.
 
----
+### 📂 8. Keyboard control
+### In game play
+| Key | Action |
+|-----|--------|
+| **A** | Move left |
+| **D** | Move right |
+| **ESC** | Pause the game and open the pause menu |
+| **Spacebar** | shooting of bullet/water particles |
+| **F1** | to quit the game |
+| **F8** | to show FPS at the top left corner |
+| **Ctrl-0** | to open editor |
+
+### 📂 8. Game Play
+extinguish the fire using the spacebar where it shoots water, once the water is extinguished we can use the help of the water to jump to a higher platform to go to the end of the map to finish the game
+
 
 ## 📝 Notes
 

@@ -7,6 +7,7 @@
 \date       September, 17th, 2025
 \brief      This file declares the static and dynamic collision functions, as well as
             the main AABB-AABB collision function implementation.
+            cirlce-cirlce collision
 
 Copyright (C) 2025 DigiPen Institute of Technology.
 Reproduction or disclosure of this file or its contents
@@ -83,7 +84,9 @@ namespace Collision {
     };
 
     AABB getObjectAABB(const Transform* transform);
+    AABB getObjectAABBbyCollider(const Transform* transform, const Vector2D& collider); // use customized collider for AABB
     Circle getObjectCircle(const Transform* transform);
+    Circle getObjectCirclebyCollider(const Transform* transform, const Vector2D& collider);
 
     //AABB and AABB
     bool CollisionIntersection_RectRect_Static(const AABB& aabb1, const AABB& aabb2);
@@ -94,16 +97,11 @@ namespace Collision {
     CollisionInfo CollisionIntersection_CircleAABB_Dynamic_Info(const Circle& c, const Vector2D& velC, const AABB& aabb, const Vector2D& velAABB);
 
     //circle and circle 
-    //bool CollisionIntersection_CircleCircle_Static(const Circle& c1, const Circle& c2);
-    //CollisionInfo CollisionIntersection_CircleCircle_Dynamic_Info(const Circle& c1, const Vector2D& velC1, const Circle& c2, const Vector2D& velC2);
+    bool CollisionIntersection_CircleCircle_Static(const Circle& c1, const Circle& c2);
+    CollisionInfo CollisionIntersection_CircleCircle_Dynamic_Info(const Circle& c1, const Vector2D& velC1, const Circle& c2, const Vector2D& velC2);
 
-    //response functions apply on velocities and optionally translate objects to time of impact
-    void Resolve_AABB_AABB(Collision::AABB& aabbA, Vector2D& velA, float massA,
-        Collision::AABB& aabbB, Vector2D& velB, float massB,
-        const CollisionInfo& info, CollisionResponseMode mode, float restitution = 0.0f);
-
-    void Resolve_Circle_AABB(Collision::Circle& c, Vector2D& velC,
-        Collision::AABB& aabb, Vector2D& velAABB, float massAABB,
-        const CollisionInfo& info, CollisionResponseMode mode);
+    //cirlce and line
+	bool CollisionIntersection_CircleLine_Static(const Circle& c, const Vector2D& lineStart, const Vector2D& lineEnd);
+	CollisionInfo CollisionIntersection_CircleLine_Dynamic_Info(const Circle& c, const Vector2D& velC, const Vector2D& lineStart, const Vector2D& lineEnd);
 }
 #endif

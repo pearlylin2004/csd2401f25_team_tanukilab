@@ -28,14 +28,14 @@ Technology is prohibited.
 
 /*!***********************************************************************
 \brief
-	enum class for shapes
+	enum class for shapes (for both render and collision components)
 
 *************************************************************************/
 enum class shape
 {
 	square = 0,
 	circle,
-	triangle
+	triangle,
 };
 
 /*!***********************************************************************
@@ -48,13 +48,47 @@ enum class cameraMode {
 	EDITOR
 };
 
+struct BatchKey {
+	shape meshType;
+	GLuint texID;
+
+	bool operator==(const BatchKey& other) const noexcept {
+		return meshType == other.meshType && texID == other.texID;
+	}
+};
+
+struct BatchKeyHash {
+	std::size_t operator()(const BatchKey& k) const noexcept {
+		// simple hash combine
+		return std::hash<int>()((int)k.meshType) ^ (std::hash<GLuint>()(k.texID) << 1);
+	}
+};
+
 /*!***********************************************************************
 \brief
 	struct for everything to do with rendering
 
+	for(pair(batch, std::vector<instancedata>) pair : objectWithtex)
+		render
+	for(pair(batch, std::vector<instancedata>) pair : objectWithouttex)
+		render
+
+	for each batch key
+		
+
 *************************************************************************/
 struct renderer
 {
+	/*!***********************************************************************
+	\brief
+		Data layout for one instance (transform, color, texture offset/scale)
+	*************************************************************************/
+	struct InstanceData
+	{
+		glm::mat4 model;      
+		glm::vec4 color;      
+		glm::vec4 texParams;  
+	};
 	/*!***********************************************************************
 	\brief
 		initializes the setups for the meshes and shader programs
@@ -67,6 +101,9 @@ struct renderer
 
 	*************************************************************************/
 	static void init(int w, int h);
+
+	// Update camera aspect when window size changes
+	static void onResize(int w, int h);
 
 	/*!***********************************************************************
 	\brief
@@ -84,7 +121,31 @@ struct renderer
 		GLuint draw_cnt;
 		GLuint primitive_cnt;
 
+		GLuint instanceVBO = 0;
+		GLsizei maxInstances = 5000; 
+
+		model() : shape(shape::square), primitive_type(GL_TRIANGLES), vaoid(0), vbo(0), ebo(0), elem_cnt(0), draw_cnt(0), primitive_cnt(0) {}
 	};
+	/*!***********************************************************************
+	\brief
+		Sets up instancing attributes for a given model
+
+	\param[in] mdl
+		the mesh/model that is being drawn
+	*************************************************************************/
+	static void setup_instance_attributes(model& mdl);
+
+	/*!***********************************************************************
+	\brief
+		Draws multiple instances of a model in one call
+
+	\param[in]
+		the mesh/model that is being drawn
+
+	\param[in] instances
+		relevent data to show how i should draw my mesh
+	*************************************************************************/
+	static void drawInstances(model& mdl, const std::vector<InstanceData>& instances);
 	/*!***********************************************************************
 	\brief
 		storing of shader program
@@ -120,6 +181,9 @@ struct renderer
 
 	*************************************************************************/
 	static void setup_shdrpgm();//const glm::mat4& p_modelMat);
+
+	static void cleanup();
+
 	/*!***********************************************************************
 	\brief
 		array of all the available meshes
@@ -181,6 +245,7 @@ struct renderer
 			how much to zoom in/out (scroll)
 		*************************************************************************/
 		void zoomInOut(float scrollDelta);
+
 	};
 
 	/*!***********************************************************************

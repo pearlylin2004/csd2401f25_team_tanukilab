@@ -1,4 +1,18 @@
 #include "font.h"
+/* Start Header ************************************************************************/
+/*!
+\file        font.cpp
+\author      Seow Sin Le, s.sinle, 2401084
+\par         s.sinle@digipen.edu
+\date        November, 1st, 2025
+\brief       initializes the fonts
+
+Copyright (C) 2025 DigiPen Institute of Technology.
+Reproduction or disclosure of this file or its contents
+without the prior written consent of DigiPen Institute of
+Technology is prohibited.
+*/
+/* End Header **************************************************************************/
 
 //std::vector<FT_Face> Font::face;
 //FT_Library Font::ft;
@@ -114,9 +128,22 @@ Font::FontMdl Font::fontMeshInit()
 //    }
 //}
 
-//void Font::freeFonts()
-//{
-//    for(int i = 0; i < fontTypes; ++i)
-//        FT_Done_Face(face[i]);
-//    FT_Done_FreeType(ft);
-//}
+void Font::freeFonts()
+{
+    /*for(int i = 0; i < fontTypes; ++i)
+        FT_Done_Face(face[i]);
+    FT_Done_FreeType(ft);*/
+
+    //Clean up font VAOs/VBOs
+    for (auto& mdl : fontMdls) {
+        if (mdl.vao) glDeleteVertexArrays(1, &mdl.vao);
+        if (mdl.vbo) glDeleteBuffers(1, &mdl.vbo);
+    }
+    fontMdls.clear();
+
+    //Delete shader program
+    if (fontShaders) {
+        glDeleteProgram(fontShaders);
+        fontShaders = 0;
+    }
+}

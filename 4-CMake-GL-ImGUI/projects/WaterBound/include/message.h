@@ -5,7 +5,7 @@
             - 100% of the file
 \par        p.lin@digipen.edu
 \date       November, 4th, 2025
-\brief      
+\brief      Defines struct for Message used in the Message Bus system.
 
 Copyright (C) 2025 DigiPen Institute of Technology.
 Reproduction or disclosure of this file or its contents

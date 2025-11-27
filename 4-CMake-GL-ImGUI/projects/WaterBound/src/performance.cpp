@@ -37,4 +37,5 @@ void LogSystemTimersEveryInterval(float deltaTime, double intervalSeconds){
         }
         std::cout << "=================================\n" << std::endl;
     }
+    g_SystemTimers.clear();
 }

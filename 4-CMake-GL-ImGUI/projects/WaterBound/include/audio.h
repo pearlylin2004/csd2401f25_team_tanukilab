@@ -28,13 +28,37 @@ Technology is prohibited.
 
 #include "AudioUtility.h"
 #include "ResourceManager.h"
+#include "performance.h"
+#include "Component.h"
+#include "GameObjectManager.h"
 
-enum class soundID : int {
-	effect = 0, // for water sound (placeholder only)
-	bg,
-	// keep this as the last, for getting the number of sound ids
-	count
-};
+//enum class AudioState {
+//	Stopped,
+//	Playing,
+//	Paused
+//};
+
+//enum class soundID : int {
+//	water = 0,
+//	shoot,
+//	fire,
+//	bg,
+//	// keep this as the last, for getting the number of sound ids
+//	count
+//};
+
+//struct FadeInfo {
+//	bool isFading = false;
+//	bool isFadingIn = false;
+//	float startVolume = 0.0f;
+//	float targetVolume = 0.0f;
+//	float fadeDuration = 0.0f;
+//	float fadeTimer = 0.0f;
+//
+//	float defaultFadeInDuration = 1.0f;
+//	float defaultFadeOutDuration = 1.0f;
+//};
+
 
 class AudioHandler {
 public:
@@ -44,7 +68,7 @@ public:
 	// check for FMOD errors (future: can change to logging instead of exit(-1))
 	void init();
 	// initialize the audio system and load sounds
-	void update();
+	void update(float deltaTime);
 	// release all sounds and shut down the audio system (will shutdown automatically when dtor called)
 	void shutdown(); // no need to manually call, dtor will call this automatically
 
@@ -53,37 +77,66 @@ public:
 	// bool loadSound(soundID id, const std::string& filePath, bool loop = false);
 	
 	// play the sound, return the channel pointer if successful, nullptr if failed
-	FMOD::Channel* playSound(soundID id, float volume = 1.0f);
+	FMOD::Channel* playSound(AudioComponent* audio);
 
 	// call this to PAUSE / RESUME sound
-	void toggleSoundPause(soundID id);
+	/*void toggleSoundPause(AudioComponent* audio);*/
+
+	// temp to just pause/resume all audio for game obj
+	void pauseAll(GameObjectManager& manager);
+	void resumeAll(GameObjectManager& manager);
+
+	void pauseSound(AudioComponent* audio);
+
+	void resumeSound(AudioComponent* audio);
 	// use this to PAUSE / RESUME ALL sounds
-	void toggleAllSoundPause(); 
+	//void toggleAllSoundPause(); // DO NOT USE!!
 	// use this to check whether sound is paused
-	bool isSoundPaused(soundID id); 
+	bool isSoundPaused(AudioComponent* audio);
 
 	// to stop a particular sound
-	void stopSound(soundID id); 
+	void stopSound(AudioComponent* audio);
 	// to check whether channel still alive (ie. sound finished playing)
-	bool isSoundPlaying(soundID id); 
+	bool isSoundPlaying(AudioComponent* audio);
 
 	// mute specific sound
-	void muteSound(soundID id); 
+	void muteSound(AudioComponent* audio);
 	// mute all sounds
-	void muteAllSound(); 
+	//void muteAllSound(); // DO NO USE!!
 	// unmute specific sound
-	void unmuteSound(soundID id); 
+	void unmuteSound(AudioComponent* audio);
 	// unmute all sounds
-	void unmuteAllSound(); 
+	//void unmuteAllSound(); // DO NOT USE!!
 	// increase by 0.1f
-	void increaseSoundVolume(soundID id); 
+	void increaseSoundVolume(AudioComponent* audio);
 	// decrease by 0.1f
-	void decreaseSoundVolume(soundID id); 
+	void decreaseSoundVolume(AudioComponent* audio);
 	// set a specific volume
-	void setSoundVolume(soundID id, float volume); // 0.0f (muted) to 1.0f (full)
+	void setSoundVolume(AudioComponent* audio, float volume); // 0.0f (muted) to 1.0f (full)
 
 	// set a specific pitch
-	void setSoundpitch(soundID id, float pitch); // 0.5f (half speed) to 2.0f (double speed)
+	void setSoundpitch(AudioComponent* audio, float pitch); // 0.5f (half speed) to 2.0f (double speed)
+
+	//pause and resume
+	//void pauseAll(); // DO NOT USE!!
+	//void resumeAll(); // DO NOT USE!!
+
+	void fadeIn(AudioComponent* audio, float targetVolume = 1.0f, float duration = 1.0f);
+	void fadeOut(AudioComponent* audio, float duration = 1.0f);
+	bool isFading(AudioComponent* audio) const;
+	void stopFade(AudioComponent* audio);
+
+	//setters for fadeing
+	void setFadeInDuration(AudioComponent* audio, float duration);
+	void setFadeOutDuration(AudioComponent* audio, float duration);
+	void setFadeVolume(AudioComponent* audio, float volume);
+	//getters
+	float getFadeInDuration(AudioComponent* audio) const;
+	float getFadeOutDuration(AudioComponent* audio) const;
+	float getFadeTargetVolume(AudioComponent* audio) const;
+	float getFadeProgress(AudioComponent* audio) const;
+	bool isFadingIn(AudioComponent* audio) const;
+	bool isFadingOut(AudioComponent* audio) const;
 
 	// perform error check for FMOD functions
 	// moved to AudioUtility.h
@@ -95,9 +148,14 @@ private:
 
 	// helper function to convert soundID to file path
 	// currently hardcoded the path, to change once deserialization is implemented
-	std::string soundIDToFilePath(soundID id);
+	//std::string soundIDToFilePath(soundID id);
+
+	//void updateFades(float deltaTime);
 
 	FMOD::System* system;
+
+	/* Now all audio components will have its own channel, this audioHandle can no longer manage all of the channels */
 	//std::vector<FMOD::Sound*> sounds;
-	std::vector<FMOD::Channel*> channels;
+	//std::vector<FMOD::Channel*> channels;
+	//std::vector<FadeInfo> fadeInfo;
 };

@@ -7,7 +7,7 @@
 * End Header **************************************************************************/
 
 #include "config.h"
-#include "JsonIO.h" 
+#include "JsonIO.h"
 
 bool  gShowFpsInTitle = true;
 bool  gShowInputDebug = false;
@@ -53,25 +53,27 @@ namespace {
     }
 }
 
-/* ============================ Public API ============================ */
 bool LoadConfig(const std::string& path, AppConfig& out, std::string* err)
 {
     rapidjson::Document doc;
+    if (!JsonIO::ReadFileToDocument(path, doc, err))
+        return false;
 
-    if (!JsonIO::ReadFileToDocument(path, doc, err)) return false;  
-
+    // ---- Read from JSON ----
     if (doc.HasMember("window") && doc["window"].IsObject()) {
         const auto& w = doc["window"];
         applyInt(w, "width", out.width);
         applyInt(w, "height", out.height);
         applyStr(w, "title", out.title);
         applyBool(w, "vsync", out.vsync);
-        applyBool(w, "fullscreen", out.fullscreen);
+        applyBool(w, "fullscreen", out.fullscreen);   
     }
+
     if (doc.HasMember("render") && doc["render"].IsObject()) {
         const auto& r = doc["render"];
         applyFloat4(r, "clear_color", out.clear_color);
     }
+
     if (doc.HasMember("debug") && doc["debug"].IsObject()) {
         const auto& d = doc["debug"];
         applyBool(d, "show_fps_in_title", out.show_fps_in_title);
@@ -80,8 +82,9 @@ bool LoadConfig(const std::string& path, AppConfig& out, std::string* err)
 
     gShowFpsInTitle = out.show_fps_in_title;
     gShowInputDebug = out.show_input_debug;
-    for (int i = 0; i < 4; ++i) gClearColor[i] = out.clear_color[i];
-    std::cout << "[Config] Loaded JSON: " << path << "\n";
+    for (int i = 0; i < 4; ++i)
+        gClearColor[i] = out.clear_color[i];
+
     return true;
 }
 
@@ -89,5 +92,5 @@ bool SaveConfig(const std::string& path, const AppConfig& cfg, std::string* err,
 {
     rapidjson::Document doc;
     toDocument(cfg, doc);
-    return JsonIO::WriteDocumentToFile(path, doc, pretty, err);      
+    return JsonIO::WriteDocumentToFile(path, doc, pretty, err);      // uses JsonIO
 }

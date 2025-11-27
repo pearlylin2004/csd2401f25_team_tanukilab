@@ -22,6 +22,7 @@ void LuaSystem::init() {
     lua_register(L, "Input_isKeyHeld", Lua_IsKeyHeld);
     lua_register(L, "getPosition", Lua_getPosition);
     lua_register(L, "setPosition", Lua_setPosition);
+
     //for message
     lua_pushlightuserdata(L, this);
     lua_pushcclosure(L, Lua_SendInputEvent, 1);
@@ -133,28 +134,29 @@ bool LuaSystem::loadScriptForObject(const std::string& filename, const std::stri
     }
 
     if (reload) {
-        //create a table for the script namespace
-        lua_newtable(L);
-        lua_setglobal(L, tableName.c_str()); //assign table to global
-
-        //load script
+        //load and execute the script file
         if (luaL_dofile(L, filename.c_str()) != LUA_OK) {
             std::cerr << "Lua error loading " << filename << ": "
                 << lua_tostring(L, -1) << std::endl;
             lua_pop(L, 1);
             return false;
         }
+
+        // The script should return a table, which is now on top of the stack
+        if (!lua_istable(L, -1)) {
+            std::cerr << "[Lua] Error: Script " << filename
+                << " did not return a table. Make sure it has 'return tableName' at the end."
+                << std::endl;
+            lua_pop(L, 1);
+            return false;
+        }
+
+        // Set the returned table as a global with the object name
+        lua_setglobal(L, tableName.c_str());
+
         std::cout << "[Lua] Reloaded script: " << filename << std::endl;
     }
 
-    /*
-    //alternative
-    //load the Lua script from file every time
-    if (luaL_dofile(L, filename.c_str()) != LUA_OK) {
-        std::cerr << "Lua error: " << lua_tostring(L, -1) << std::endl;
-        lua_pop(L, 1);
-        return false;
-    }*/
     return true;
 }
 
@@ -202,6 +204,7 @@ int LuaSystem::Lua_SendInputEvent(lua_State* L) {
     return 0;
 }
 
+//lua updates for all objects with LuaScript component
 void LuaSystem::update(GameObjectManager& manager, float deltaTime) {
     std::vector<GameObject*> gameObjects;
     manager.getAllGameObjects(gameObjects);

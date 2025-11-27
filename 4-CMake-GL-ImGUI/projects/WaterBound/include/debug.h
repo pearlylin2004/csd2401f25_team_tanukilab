@@ -15,16 +15,12 @@ Technology is prohibited.
 
 #pragma once
 #ifdef _WIN32
-#ifndef NOMINMAX
 #define NOMINMAX
-#endif
-#ifndef WIN32_LEAN_AND_MEAN
-#define WIN32_LEAN_AND_MEAN
-#endif
 #include <windows.h>
 #endif
-
 #include <string>
+#include <GL/glew.h>
+#include <GLFW/glfw3.h>
 #include <deque>
 #include <iostream>
 #include <sstream>
@@ -33,7 +29,6 @@ Technology is prohibited.
 #include <csignal>
 #include <mutex>
 #include <ctime>
-#include "JsonIO.h"
 
 // ======================================================================================
 // Perf namespace: frame timing & FPS display
@@ -203,6 +198,17 @@ namespace DebugInput {
     std::deque<std::string> Recent(size_t max = 32);
 }
 
+/*!
+\namespace DebugDiag
+\brief Contains debugging and diagnostic tools for verifying engine paths.
+
+The DebugDiag namespace provides utility functions that help validate the
+engine's installation directories, asset folders, and configuration files.
+These tools are useful for diagnosing missing assets or incorrect project
+structure during development.
+*/
 namespace DebugDiag {
-    void AuditRuntimePaths();   
+
+	void AuditRuntimePaths();
+
 }

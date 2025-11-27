@@ -35,9 +35,7 @@ public:
         //a variadic template can hold as many types as it wants 
         //basically allows me to make a template for a component
         //with any number of arguments
-        //pretty cool tbh
 
-        //prasanna my GOAT
         //std::forward reverts the argument to its state before
         //it was passed through the function
         auto newComponent = std::make_unique<T>(std::forward<TArgs>(args)...);
@@ -89,15 +87,37 @@ public:
     const std::string& getObjectName() const;
     std::string& getObjectName();
 
+    //layering stuff
+    void setLayer(int layerID);
+	const int& getLayer() const;
+	bool isOnLayer(int layerID) const;
+
     // Return prefab ID of the game obj
     const std::string& getObjectPrefabID() const;
     std::string& getObjectPrefabID();
 
+    bool checkAutoMove() { return autoMove;  }
+    void changeAutoMove(bool temp) { autoMove = temp; }
+
+	//remove component of type T
+    template <typename T>
+    bool removeComponent() {
+        auto iterator = m_components.find(std::type_index(typeid(T)));
+        if (iterator != m_components.end()) {
+            m_components.erase(iterator);
+            return true;//component removed
+        }
+        return false;//component not found
+    }
+
 private:
     std::string m_name;//name of object
     std::string m_prefabID; // optional, empty if created without prefab
+    bool autoMove;
 
 	// Map of components attached to the game object
     std::unordered_map<std::type_index, std::unique_ptr<Component>> m_components;
     
+    //default layer is 1
+	int m_layerID = 1;
 };

@@ -39,6 +39,18 @@ void renderer::init(int w, int h)
 	setup_shdrpgm();
 }
 
+void renderer::onResize(int w, int h)
+{
+	// Update gameplay camera
+	cam.width = w;
+	cam.ar = static_cast<float>(w) / static_cast<float>(h);
+
+	// Update editor camera too so picking is consistent there as well
+	editorCam.width = w;
+	editorCam.ar = cam.ar;
+}
+
+
 renderer::model renderer::setup_square(glm::vec3 clr)
 {
 	model mdl;
@@ -90,6 +102,17 @@ renderer::model renderer::setup_square(glm::vec3 clr)
 	glVertexArrayAttribFormat(mdl.vaoid, 2, 2, GL_FLOAT, GL_FALSE, 0);
 	glVertexArrayAttribBinding(mdl.vaoid, 2, 2);
 
+	//---------------------------------------------------------------------------------
+	//idk what im looking at, but hopefully gpt dun screw me over, to be refactored
+	//---------------------------------------------------------------------------------
+	// --- Setup instance buffer for per-instance attributes ---
+	glGenBuffers(1, &mdl.instanceVBO);
+	glBindBuffer(GL_ARRAY_BUFFER, mdl.instanceVBO);
+	glBufferData(GL_ARRAY_BUFFER, mdl.maxInstances * sizeof(InstanceData), nullptr, GL_DYNAMIC_DRAW);
+
+	// Setup layout in VAO
+	setup_instance_attributes(mdl);
+
 	mdl.primitive_type = GL_TRIANGLES;
 	std::array<GLushort, 6> idx_vtx{ 0, 1, 2, 2, 3, 0 };
 	mdl.elem_cnt = static_cast<GLuint>(idx_vtx.size());
@@ -102,6 +125,7 @@ renderer::model renderer::setup_square(glm::vec3 clr)
 	mdl.draw_cnt = static_cast<GLsizei>(pos_vtx.size());
 	mdl.primitive_cnt = mdl.elem_cnt;
 	mdl.shape = shape::square;
+	setup_instance_attributes(mdl);
 	return mdl;
 }
 
@@ -147,6 +171,10 @@ renderer::model renderer::setup_circle(glm::vec3 clr, int slices)
 	glVertexArrayVertexBuffer(mdl.vaoid, 1, vbo_hdl, pos_size, sizeof(glm::vec3));
 	glVertexArrayAttribFormat(mdl.vaoid, 1, 3, GL_FLOAT, GL_FALSE, 0);
 	glVertexArrayAttribBinding(mdl.vaoid, 1, 1);
+
+	glGenBuffers(1, &mdl.instanceVBO);
+	glBindBuffer(GL_ARRAY_BUFFER, mdl.instanceVBO);
+	glBufferData(GL_ARRAY_BUFFER, mdl.maxInstances * sizeof(InstanceData), nullptr, GL_DYNAMIC_DRAW);
 	glBindVertexArray(0);
 	// and then set up the rest of object mdl ...
 	mdl.primitive_type = GL_TRIANGLE_FAN;
@@ -155,13 +183,96 @@ renderer::model renderer::setup_circle(glm::vec3 clr, int slices)
 	mdl.ebo = 0;
 	mdl.primitive_cnt = slices; // number of primitives
 	mdl.shape = shape::circle;
+	setup_instance_attributes(mdl);
 	return mdl;
+}
+/*
+* 
+* create vao + vbo of quad
+* 
+* vector of mat4 - transforms
+* 
+* foreach object
+*	transforms[i] = object.transform
+* 
+* for(inti = 0; i < transforms.size; i +=100
+*	size = std::min(100, transforms.size - i);
+*	gluniform(size, transforms[i])
+* 
+*	gldrawinstance(vao, size)
+*/
+
+
+//---------------------------------------------------------------------------------
+//idk what im looking at, but hopefully gpt dun screw me over, to be refactored
+//---------------------------------------------------------------------------------
+void renderer::setup_instance_attributes(model& mdl)
+{
+	glBindVertexArray(mdl.vaoid);
+	glBindBuffer(GL_ARRAY_BUFFER, mdl.instanceVBO);
+
+	GLsizei stride = sizeof(InstanceData);
+	std::size_t offset = 0;
+
+	// mat4 model: locations 3,4,5,6 (each is a vec4)
+	for (int i = 0; i < 4; ++i) {
+		glEnableVertexAttribArray(3 + i);
+		glVertexAttribPointer(3 + i, 4, GL_FLOAT, GL_FALSE, stride, (void*)(offset + i * sizeof(glm::vec4)));
+		glVertexAttribDivisor(3 + i, 1);
+	}
+	offset += sizeof(glm::mat4);
+
+	// color: location 7
+	glEnableVertexAttribArray(7);
+	glVertexAttribPointer(7, 4, GL_FLOAT, GL_FALSE, stride, (void*)offset);
+	glVertexAttribDivisor(7, 1);
+	offset += sizeof(glm::vec4);
+
+	// texParams: location 8 (still present for untextured; harmless)
+	glEnableVertexAttribArray(8);
+	glVertexAttribPointer(8, 4, GL_FLOAT, GL_FALSE, stride, (void*)offset);
+	glVertexAttribDivisor(8, 1);
+
+	glBindVertexArray(0);
+}
+
+//---------------------------------------------------------------------------------
+//idk what im looking at, but hopefully gpt dun screw me over, to be refactored
+//---------------------------------------------------------------------------------
+void renderer::drawInstances(model& mdl, const std::vector<InstanceData>& instances)
+{
+	if (instances.empty())
+		return;
+
+	glBindBuffer(GL_ARRAY_BUFFER, mdl.instanceVBO);
+	glBufferSubData(GL_ARRAY_BUFFER, 0,
+		instances.size() * sizeof(InstanceData),
+		instances.data());
+
+	glBindVertexArray(mdl.vaoid);
+
+	if (mdl.elem_cnt > 0) {
+		// Indexed path (square)
+		glDrawElementsInstanced(GL_TRIANGLES,
+			mdl.elem_cnt,
+			GL_UNSIGNED_SHORT,
+			nullptr,
+			static_cast<GLsizei>(instances.size()));
+	}
+	else {
+		// Non-indexed path (circle)
+		glDrawArraysInstanced(mdl.primitive_type,
+			0,
+			mdl.draw_cnt,
+			static_cast<GLsizei>(instances.size()));
+	}
+
+	glBindVertexArray(0);
 }
 
 void renderer::setup_shdrpgm()
 {
-	//shdr_pgm.push_back(LoadShaders("shaders/hasTex.vert", "shaders/hasTex.frag", true));
-	//shdr_pgm.push_back(LoadShaders("shaders/noTex.vert", "shaders/noTex.frag", true));
+
 	GLuint shader1 = ResourceManager::getInstance().getShader("shaders/hasTex.vert", "shaders/hasTex.frag");
 	std::cout << "Shader program ID (hasTex): " << shader1 << std::endl;
 	GLuint shader2 = ResourceManager::getInstance().getShader("shaders/noTex.vert", "shaders/noTex.frag");
@@ -212,4 +323,22 @@ void renderer::camera::zoomInOut(float scrollDelta) {
 	// clamp zoom
 	zoom = std::max(minZoom, zoom);
 	zoom = std::min(maxZoom, zoom);
+}
+
+void renderer::cleanup() {
+	// Clean up all models
+	for (auto& model : models) {
+		if (model.vaoid) glDeleteVertexArrays(1, &model.vaoid);
+		if (model.vbo) glDeleteBuffers(1, &model.vbo);
+		if (model.ebo) glDeleteBuffers(1, &model.ebo);
+		if (model.instanceVBO) glDeleteBuffers(1, &model.instanceVBO);
+	}
+	models.clear();
+
+	// Clean up shader programs
+	for (GLuint program : shdr_pgm) {
+		if (program) glDeleteProgram(program);
+	}
+	shdr_pgm.clear();
+	std::cout << "Renderer cleanup complete\n";
 }

@@ -1,14 +1,16 @@
 /* Start Header ************************************************************************/
 /*!
 \file        Systems.cpp
-\author      Seow Sin Le, s.sinle, 2401084, 45%
+\author      Seow Sin Le, s.sinle, 2401084, 40%
 \author 	 Hugo Low Ren Hao, low.h, 2402272, 15%
-\author 	 Pearly Lin Lee Ying, p.lin, 2401591, 15%
+\author 	 Pearly Lin Lee Ying, p.lin, 2401591, 10%
 \author		 Asha Mathyalakan, asha.m, 2402886, 15%
+\author		 Tan Chee Qing, cheeqing.tan, 2401486, 20%
 \par         s.sinle@digipen.edu
 \par		 low.h@digipen.edu
 \par		 p.lin@digipen.edu
 \par		 asha.m@digipen.edu
+\par		 cheeqing.tan@digipen.edu
 \date        October, 1st, 2025
 \brief       This file consists of System functions to run the logic for the Game Objects
 			 and their components. 
@@ -22,6 +24,7 @@ Technology is prohibited.
 #pragma once
 
 #include "Systems.h"
+#include "Physics.h"
 
 
 //here we go buddies
@@ -31,7 +34,8 @@ Technology is prohibited.
 //game objects to check if the valid component
 //is present or not
 //so all systems need to use the getAllGameObjects() function
-
+//JumpForce jumpForce;
+//BulletForce bulletForce;
 // Input system - reads user input and updates velocity accordingly
 void InputSystem::update(GameObjectManager& manager, const float& deltaTime, MessageBus& messageBus) {
 	(void)deltaTime;
@@ -42,183 +46,328 @@ void InputSystem::update(GameObjectManager& manager, const float& deltaTime, Mes
 	std::vector<GameObject*> gameObjects;
 	manager.getAllGameObjects(gameObjects);
 
-	for (GameObject* iterator : gameObjects) {
-		//check for objects that have input 
-		if (iterator->hasComponent<Input>()) {
-			Input* input = iterator->getComponent<Input>();
-			if (iterator->hasComponent<Physics>()) {//player got that velocity in him
-				Physics* velocity = iterator->getComponent<Physics>();
+	//for (GameObject* iterator : gameObjects) {
+	//	//check for objects that have input 
+	//	if (iterator->hasComponent<Input>()) {
+	//		Input* input = iterator->getComponent<Input>();
+	//		if (iterator->hasComponent<Physics>()) {//player got that velocity in him
+	//			Physics* velocity = iterator->getComponent<Physics>();
 
-				if (InputHandler::isKeyHeld(GLFW_KEY_W)) {
-					velocity->velY = input->moveSpeed;
-					messageBus.publish(Message("KeyPressed", nullptr, KeyEvent{ "W", true }));
-				}
-				if (InputHandler::isKeyHeld(GLFW_KEY_S)) {
-					velocity->velY = -input->moveSpeed;
-					messageBus.publish(Message("KeyPressed", nullptr, KeyEvent{ "S", true }));
-				}
-				if (InputHandler::isKeyHeld(GLFW_KEY_A)) {
-					velocity->velX = -input->moveSpeed;
-					messageBus.publish(Message("KeyPressed", nullptr, KeyEvent{ "A", true }));
-				}
-				if (InputHandler::isKeyHeld(GLFW_KEY_D)) {
-					velocity->velX = input->moveSpeed;
-					messageBus.publish(Message("KeyPressed", nullptr, KeyEvent{ "D", true }));
-				}
 
-				if (InputHandler::isComboKeyTriggered(GLFW_KEY_0)) {
-					UISystem::toggleUI();
-					messageBus.publish(Message("KeyPressed", nullptr, KeyEvent{ "0", true }));
-				}
+	//			if (InputHandler::isKeyHeld(GLFW_KEY_W)) {
+	//				velocity->velY = input->moveSpeed;
+	//			}
+	//			if (InputHandler::isKeyHeld(GLFW_KEY_S)) {
+	//				velocity->velY = -input->moveSpeed;
+	//			}
+	//			if (InputHandler::isKeyHeld(GLFW_KEY_A)) {
+	//				velocity->velX = -input->moveSpeed;
+	//			}
+	//			if (InputHandler::isKeyHeld(GLFW_KEY_D)) {
+	//				velocity->velX = input->moveSpeed;
+	//			}
+#ifdef _DEBUG
+	if (InputHandler::isComboKeyTriggered(GLFW_KEY_0)) {
+		UISystem::toggleUI();
+		messageBus.publish(Message("KeyPressed", nullptr, KeyEvent{ "0", true }));
 
-				// Press F9 to simulate a failure (for crash logger)
-				if (InputHandler::isKeyTriggered(GLFW_KEY_F9)) {
-					throw std::runtime_error("F9 test: simulated failure in update()");
-				}
-				
-			}
-		}
+		//AudioHandler::getInstance().toggleSoundPause(soundID::bg);
+
+		if (EditorManager::isEditingMode()) EditorManager::toggleEditing(false);
+		else EditorManager::toggleEditing(true);
 	}
+#endif
+
+	// Press F9 to simulate a failure (for crash logger)
+	if (InputHandler::isKeyTriggered(GLFW_KEY_F9)) {
+		throw std::runtime_error("F9 test: simulated failure in update()");
+	}
+
+	/* --- for showing fps scuffed scuffed ---- */
+	if (InputHandler::isKeyTriggered(GLFW_KEY_F8)) {
+		FontSystem::showFPS = !FontSystem::showFPS;
+	}
+	/* ---- END ---- */
+
+
 	auto end = std::chrono::high_resolution_clock::now();
 	double ms = std::chrono::duration<double, std::milli>(end - start).count(); //get elapse time in ms
 	g_SystemTimers.push_back({ "Input", ms }); //saving timing for UI output
 }
-
 
 // Render system - draws all game objects with a Render component
 void RenderSystem::update(GameObjectManager& manager, float const& deltaTime) 
 {
 	//record current time for performance tracking
 	auto start = std::chrono::high_resolution_clock::now();
+	batchingSetUp(manager, deltaTime);
 
-	std::vector<GameObject*> gameObjects;
-	manager.getAllGameObjects(gameObjects);
+	//we aint doing this anymore 
+	//std::vector<GameObject*> gameObjects;
+	//manager.getAllGameObjects(gameObjects);
+
+	LayerManager& layerManager = manager.getLayerManager();
+	std::vector<Layer*> layers = layerManager.getAllLayers();
 
 	glm::mat4 camView, camProj;
 
-	// Attach texture to FBO and update editor camera if editor is on
-	if (UISystem::isShowUI()) {
+	// decide where to render
+	renderFBO();
+
+	// Attach texture to FBO and update editor camera if editor is on & update camera
+	if (UISystem::isShowUI() && EditorManager::isEditingMode())
+	{
 		createFBO();
 		renderer::editorCam.update();
 
 		camView = renderer::editorCam.view;
 		camProj = renderer::editorCam.proj;
 	}
-	// else update game camera
-	else {
+	else
+	{
 		renderer::cam.update();
 
 		camView = renderer::cam.view;
 		camProj = renderer::cam.proj;
 	}
 
-	// Update textures if they have changed (in level editor)
-	for (GameObject* object : gameObjects)
-	{
-		if (object->hasComponent<Render>())
-		{
-			Render* render = object->getComponent<Render>();
-
-			if (render->texChanged) {
-				if (render->hasTex) {
-					glDeleteTextures(1, &render->texHDL); // to avoid leak
-					render->texHDL = 0;
-				}
-				TextureData texData = ResourceManager::getInstance().getTexture(render->texFile);
-				render->texHDL = texData.id;
-				render->isTransparent = texData.isTransparent;
-
-				render->texChanged = false;
-			}
-		}
-	}
-
-
-	std::vector<GameObject*> objectWithTex;
-	std::vector<GameObject*> objectWithoutTex;
+	//std::vector<GameObject*> objectWithTex;
+	//std::vector<GameObject*> objectWithoutTex;
 
 	// Update textures if they have changed (in level editor)
-	for (GameObject* object : gameObjects)
-	{
-		if (object->hasComponent<Render>())
-		{
-			Render* render = object->getComponent<Render>();
+	//for (GameObject* object : gameObjects)
+	//{
+	//	if (object->hasComponent<Render>())
+	//	{
+	//		Render* render = object->getComponent<Render>();
 
-			if (render->texChanged) {
-				if (render->hasTex) {
+	//		if (render->texChanged) {
+	//			if (render->hasTex) {
 
-					//glDeleteTextures(1, &render->texHDL); // to avoid leak
-					//render->texHDL = 0;
-					//no more deleting textures here, handled in ResourceManager cus we have a cache now
+	//				//glDeleteTextures(1, &render->texHDL); // to avoid leak
+	//				//render->texHDL = 0;
+	//				//no more deleting textures here, handled in ResourceManager cus we have a cache now
 
-					//the below code is for future use
+	//				//the below code is for future use
+	//				TextureData texData = ResourceManager::getInstance().getTexture(render->texFile);
+	//				render->texHDL = texData.id;
+	//				render->isTransparent = texData.isTransparent;
+	//				render->texChanged = false;
+	//			}
+	//			//render->texHDL = uploadtex(render->texFile, render->isTransparent);
+	//			TextureData texData = ResourceManager::getInstance().getTexture(render->texFile);
+	//			render->texHDL = texData.id;
+	//			render->isTransparent = texData.isTransparent;
+
+	//			render->texChanged = false;
+	//		}
+	//	}
+	//}
+
+	for (Layer* layer : layers) {
+		if (!layer) continue;
+		
+		//gettem objects bro
+		const std::vector<GameObject*>& gameObjects = layer->getObjects();
+		for (GameObject* object : gameObjects) {
+			if (object->hasComponent<Render>()) {
+				Render* render = object->getComponent<Render>();
+
+				if (render->texChanged) {
+					if (render->hasTex) {
+						TextureData texData = ResourceManager::getInstance().getTexture(render->texFile);
+						render->texHDL = texData.id;
+						render->isTransparent = texData.isTransparent;
+						render->texChanged = false;
+					}
+
 					TextureData texData = ResourceManager::getInstance().getTexture(render->texFile);
 					render->texHDL = texData.id;
 					render->isTransparent = texData.isTransparent;
 					render->texChanged = false;
 				}
-				//render->texHDL = uploadtex(render->texFile, render->isTransparent);
-				TextureData texData = ResourceManager::getInstance().getTexture(render->texFile);
-				render->texHDL = texData.id;
-				render->isTransparent = texData.isTransparent;
 
-				render->texChanged = false;
+				if (object->hasComponent<Animation>()) {
+					Animation* animation = object->getComponent<Animation>();
+					if (!animation->animState.empty())
+					{
+						for (AnimateState& as : animation->animState) {
+							if (as.texChanged && !as.texFile.empty()) {
+								TextureData textureData = ResourceManager::getInstance().getTexture(as.texFile);
+								as.texHDL = textureData.id;
+							}
+						}
+					}
+				}
+
 			}
-
-			if (object->getComponent<Render>()->hasTex)
-				objectWithTex.push_back(object);
-			else
-				objectWithoutTex.push_back(object);
 		}
+
+
 	}
 
 	//rendering objects without texture, just color
-	glUseProgram(renderer::shdr_pgm[1]);
-	GLint vTransformView = glGetUniformLocation(renderer::shdr_pgm[1], "V");
-	glUniformMatrix4fv(vTransformView, 1, GL_FALSE, glm::value_ptr(camView));
-	GLint vTransformProj = glGetUniformLocation(renderer::shdr_pgm[1], "P");
-	glUniformMatrix4fv(vTransformProj, 1, GL_FALSE, glm::value_ptr(camProj));
-	for (GameObject* object : objectWithoutTex)
-		renderNoTex(object);
+	//glUseProgram(renderer::shdr_pgm[1]);
+	//GLint vTransformView = glGetUniformLocation(renderer::shdr_pgm[1], "V");
+	//glUniformMatrix4fv(vTransformView, 1, GL_FALSE, glm::value_ptr(camView));
+	//GLint vTransformProj = glGetUniformLocation(renderer::shdr_pgm[1], "P");
+	//glUniformMatrix4fv(vTransformProj, 1, GL_FALSE, glm::value_ptr(camProj));
+	//for (GameObject* object : objectWithoutTex)
+	//	renderNoTex(object);
 
-	//rendering objects with textures
-	glUseProgram(renderer::shdr_pgm[0]);
-	vTransformView = glGetUniformLocation(renderer::shdr_pgm[0], "V");
-	glUniformMatrix4fv(vTransformView, 1, GL_FALSE, glm::value_ptr(camView));
-	vTransformProj = glGetUniformLocation(renderer::shdr_pgm[0], "P");
-	glUniformMatrix4fv(vTransformProj, 1, GL_FALSE, glm::value_ptr(camProj));
-	for (GameObject* object : objectWithTex)
-		renderTex(object, deltaTime);
+	////rendering objects with textures
+	//glUseProgram(renderer::shdr_pgm[0]);
+	//vTransformView = glGetUniformLocation(renderer::shdr_pgm[0], "V");
+	//glUniformMatrix4fv(vTransformView, 1, GL_FALSE, glm::value_ptr(camView));
+	//vTransformProj = glGetUniformLocation(renderer::shdr_pgm[0], "P");
+	//glUniformMatrix4fv(vTransformProj, 1, GL_FALSE, glm::value_ptr(camProj));
+	//for (GameObject* object : objectWithTex)
+	//	renderTex(object, deltaTime);
+
+	//std::vector<renderer::InstanceData> batch;
+
+	//for (GameObject* obj : objectWithTex) {
+	//	Transform* t = obj->getComponent<Transform>();
+	//	Render* r = obj->getComponent<Render>();
+	//	Animation* animation = obj->getComponent<Animation>();
+
+	//	renderer::InstanceData i;
+	//	i.model = t->mdlWorld;
+	//	i.color = glm::vec4(r->clr, 1); // or r->color
+	//	i.texParams = glm::vec4(animation->currentFrameColumn, animation->currentFrameRow, texScale.x, texScale.y);
+	//	batch.push_back(i);
+	//}
+
+	//renderer::drawInstances(renderer::models[(int)shape::square], batch);
+
+	
+
+	//drawing models without texture
+	// glUseProgram(renderer::shdr_pgm[1]);
+	// GLint uView = glGetUniformLocation(renderer::shdr_pgm[1], "V");
+	// GLint uProj = glGetUniformLocation(renderer::shdr_pgm[1], "P");
+	// glUniformMatrix4fv(uView, 1, GL_FALSE, glm::value_ptr(camView));
+	// glUniformMatrix4fv(uProj, 1, GL_FALSE, glm::value_ptr(camProj));
+	// for (std::pair<const shape, std::vector<renderer::InstanceData>>& pair : objectWithoutTex)
+	// {
+	// 	shape meshType = pair.first;
+	// 	renderer::drawInstances(renderer::models[(int)meshType], pair.second);
+	// }
+	// //drawing models with texture
+	// glUseProgram(renderer::shdr_pgm[0]); // hasTex shader
+	// uView = glGetUniformLocation(renderer::shdr_pgm[0], "V");
+	// uProj = glGetUniformLocation(renderer::shdr_pgm[0], "P");
+	// glUniformMatrix4fv(uView, 1, GL_FALSE, glm::value_ptr(camView));
+	// glUniformMatrix4fv(uProj, 1, GL_FALSE, glm::value_ptr(camProj));
+	// for (std::pair<const BatchKey, std::vector<renderer::InstanceData>>& pair : objectWithTex)
+	// {
+	// 	const BatchKey& key = pair.first;
+	// 	std::vector<renderer::InstanceData>& instances = pair.second;
+	// 	glBindTextureUnit(0, key.texID);
+	// 	GLint uTexLoc = glGetUniformLocation(renderer::shdr_pgm[0], "uTex2d");
+	// 	if (uTexLoc != -1) 
+	// 		glUniform1i(uTexLoc, 0);
+	// 	renderer::model& mdl = renderer::models[(int)key.meshType];
+	// 	renderer::drawInstances(mdl, pair.second);
+	// }
+	// //if (UISystem::isShowUI()) glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	//glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	//all rendering must be done per layer noww
+	//cooked
+
+
+		//drawing models without texture
+		glUseProgram(renderer::shdr_pgm[1]);
+		GLint uView = glGetUniformLocation(renderer::shdr_pgm[1], "V");
+		GLint uProj = glGetUniformLocation(renderer::shdr_pgm[1], "P");
+		glUniformMatrix4fv(uView, 1, GL_FALSE, glm::value_ptr(camView));
+		glUniformMatrix4fv(uProj, 1, GL_FALSE, glm::value_ptr(camProj));
+		for (std::pair<const shape, std::vector<renderer::InstanceData>>& pair : objectWithoutTex)
+		{
+			shape meshType = pair.first;
+			renderer::drawInstances(renderer::models[(int)meshType], pair.second);
+		}
+		//drawing models with texture
+		glUseProgram(renderer::shdr_pgm[0]); // hasTex shader
+		uView = glGetUniformLocation(renderer::shdr_pgm[0], "V");
+		uProj = glGetUniformLocation(renderer::shdr_pgm[0], "P");
+		glUniformMatrix4fv(uView, 1, GL_FALSE, glm::value_ptr(camView));
+		glUniformMatrix4fv(uProj, 1, GL_FALSE, glm::value_ptr(camProj));
+		for (std::pair<const BatchKey, std::vector<renderer::InstanceData>>& pair : objectWithTex)
+		{
+			const BatchKey& key = pair.first;
+			//std::vector<renderer::InstanceData>& instances = pair.second;
+			glBindTextureUnit(0, key.texID);
+			GLint uTexLoc = glGetUniformLocation(renderer::shdr_pgm[0], "uTex2d");
+			if (uTexLoc != -1) 
+				glUniform1i(uTexLoc, 0);
+			renderer::model& mdl = renderer::models[(int)key.meshType];
+			renderer::drawInstances(mdl, pair.second);
+		}
 
 	/*if (UISystem::isShowUI()) glBindFramebuffer(GL_FRAMEBUFFER, 0);*/
 
 	//record end time for performance tracking
 	auto end = std::chrono::high_resolution_clock::now();
 	double ms = std::chrono::duration<double, std::milli>(end - start).count(); //get elapse time in ms
-	g_SystemTimers.push_back({ "Render", ms }); //saving timing for UI output
+	g_SystemTimers.push_back({"Render", ms }); //saving timing for UI output
+}
 
+void RenderSystem::renderFBO() {
+	if (!UISystem::isShowUI()) {
+		glBindFramebuffer(GL_FRAMEBUFFER, 0); // render directly to screen
+	}
+	else {
+		createFBO();
+	}
+}
+
+void RenderSystem::resizeFBO(int width, int height) {
+	fboWidth = width;
+	fboHeight = height;
+
+	if (fbo) {
+		if (texture) glDeleteTextures(1, &texture);
+		if (fbo) glDeleteFramebuffers(1, &fbo);
+		if (depthBuffer) glDeleteRenderbuffers(1, &depthBuffer);
+		fbo = 0;  // reset so createFBO will recreate it
+	}
 }
 
 void RenderSystem::createFBO() {
-	if (texture) glDeleteTextures(1, &texture);
-	if (fbo) glDeleteFramebuffers(1, &fbo);
+	// only create FBO once if its not created
+	if (!fbo) {
+		/* --- Create and set up a framebuffer object (FBO) --- */
+		glGenFramebuffers(1, &fbo);
+		glBindFramebuffer(GL_FRAMEBUFFER, fbo);
 
-	glGenFramebuffers(1, &fbo);
-	glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+		/* --- Create and colour texture attachment for fbo --- */
+		glGenTextures(1, &texture);
+		glBindTexture(GL_TEXTURE_2D, texture);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, fboWidth, fboHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture, 0);
 
-	glGenTextures(1, &texture);
-	glBindTexture(GL_TEXTURE_2D, texture);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, fboWidth, fboHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture, 0);
+		/* --- Create a depth and stencil renderbuffer --- */
+		glGenRenderbuffers(1, &depthBuffer);
+		glBindRenderbuffer(GL_RENDERBUFFER, depthBuffer);
+		glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, fboWidth, fboHeight);
+		glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, depthBuffer);
+	}
+	else {
+		glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+	}
+
+	/* --- Clear the FBO's color and depth buffers before rendering  --- */
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
 RenderSystem::~RenderSystem() {
 	if (texture) glDeleteTextures(1, &texture);
 	if (fbo) glDeleteFramebuffers(1, &fbo);
+	if (depthBuffer) glDeleteRenderbuffers(1, &depthBuffer);
 }
-
 
 // Load all textures for game objects with a Render component
 void RenderSystem::init(GameObjectManager& manager, int fboW, int fboH)
@@ -242,11 +391,117 @@ void RenderSystem::init(GameObjectManager& manager, int fboW, int fboH)
 				//std::cerr << "Is Transparent: " << (render->isTransparent ? "Yes" : "No") << std::endl;
 			}
 		}
-	}
 
+		if (object->hasComponent<Animation>()) {
+			Animation* animation = object->getComponent<Animation>();
+			if (!animation->animState.empty())
+			{
+				for (AnimateState& as : animation->animState) {
+					if (!as.texFile.empty()) {
+						TextureData textureData = ResourceManager::getInstance().getTexture(as.texFile);
+						as.texHDL = textureData.id;
+					}
+				}
+			}
+		}
+	}
 	fboWidth = fboW;
 	fboHeight = fboH;
-	Font::init();
+}
+
+void RenderSystem::batchingSetUp(GameObjectManager& manager, float const& deltaTime)
+{
+	std::vector<GameObject*> gameObjects;
+	manager.getAllGameObjects(gameObjects);
+	for (std::pair < const BatchKey, std::vector<renderer::InstanceData>>& pair : objectWithTex) pair.second.clear();
+	for (std::pair < const shape, std::vector<renderer::InstanceData>>& pair : objectWithoutTex) pair.second.clear();
+
+	for (GameObject* obj : gameObjects)
+	{
+		if (!obj->hasComponent<Render>() || !obj->hasComponent<Transform>())
+			continue;
+		Render* render = obj->getComponent<Render>();
+		Transform* transform = obj->getComponent<Transform>();
+
+		float scaleX = transform->flipX ? -transform->scaleX : transform->scaleX;
+
+		renderer::InstanceData data;
+		float angle = glm::radians(transform->rotation);
+		transform->mdlWorld = glm::mat4{ 1 };
+		transform->mdlWorld = glm::translate(transform->mdlWorld, glm::vec3(transform->x, transform->y, transform->z));
+		transform->mdlWorld = glm::rotate(transform->mdlWorld, angle, glm::vec3(0, 0, 1.f));
+		transform->mdlWorld = glm::scale(transform->mdlWorld, glm::vec3(scaleX, transform->scaleY, transform->scaleZ));
+		data.model = transform->mdlWorld;
+		data.color = glm::vec4(render->clr, 1);
+		data.texParams = glm::vec4(0, 0, 1, 1); // default, no texture frame
+
+		// if obj has animation & state machine component
+		if (obj->hasComponent<Animation>() && obj->hasComponent<StateMachine>())
+		{
+			Animation* animation = obj->getComponent<Animation>();
+			StateMachine* sm = obj->getComponent<StateMachine>();
+
+			AnimateState& as = animation->animState[static_cast<int>(sm->state)];
+				
+			if (render->hasAnimation && !as.texFile.empty()) {
+				glm::vec2 texOffSet{ as.currentFrameColumn / static_cast<float>(as.totalColumn), 1.f - ((as.currentFrameRow + 1) / static_cast<float>(as.totalRow)) };
+				glm::vec2 texScale{ 1.f / as.totalColumn, 1.f / as.totalRow };
+
+				if (as.loop)
+				{
+					as.frameTimer += deltaTime;
+					if (as.frameTimer >= as.frameTime && !EditorManager::isEditingMode() && !EditorManager::isPaused())
+					{
+						as.frameTimer -= as.frameTime;
+						if (as.currentFrameColumn >= as.lastFrame.x && as.currentFrameRow >= as.lastFrame.y)
+						{
+							as.currentFrameColumn = (int)as.initialFrame.x;
+							as.currentFrameRow = (int)as.initialFrame.y;
+							as.frameTimer = 0;
+						}
+						else
+						{
+							++as.currentFrameColumn;
+
+							if (as.currentFrameColumn >= as.totalColumn)
+							{
+								as.currentFrameColumn = 0;
+								++as.currentFrameRow;
+
+								if (as.currentFrameRow > as.lastFrame.y)
+								{
+									as.currentFrameColumn = (int)as.initialFrame.x;
+									as.currentFrameRow = (int)as.initialFrame.y;
+								}
+							}
+						}
+						/*as.currentFrameColumn = (as.currentFrameColumn + 1) % as.totalColumn;
+						as.currentFrameRow = (as.currentFrameRow + 1) % as.totalRow;*/
+						animation->runItBack = true;
+					}
+				}
+				data.texParams = { texOffSet,texScale };
+				BatchKey key{ render->modelRef.shape, as.texHDL };
+				objectWithTex[key].push_back(data);
+			}
+			// draw shape if obj texture file is empty
+			else {
+				objectWithoutTex[render->modelRef.shape].push_back(data);
+			}
+		}
+		else if (render->hasTex)
+		{
+			BatchKey key{ render->modelRef.shape, render->texHDL };
+			objectWithTex[key].push_back(data);
+		}
+		else
+		{
+			objectWithoutTex[render->modelRef.shape].push_back(data);
+		}
+	}
+
+	
+	//Font::init();
 }
 
 //this moved to ResourceManager.cpp
@@ -292,6 +547,7 @@ void RenderSystem::renderTex(GameObject* object, float const& deltaTime)
 		transform->mdlWorld = glm::translate(transform->mdlWorld, glm::vec3(transform->x, transform->y, transform->z));
 		transform->mdlWorld = glm::rotate(transform->mdlWorld, angle, glm::vec3(0, 0, 1.f));
 		transform->mdlWorld = glm::scale(transform->mdlWorld, glm::vec3(transform->scaleX, transform->scaleY, transform->scaleZ));
+
 		glBindTextureUnit(0, render->texHDL);
 		//std::cerr << "Binding Texture ID: " << render->texHDL << " for object: " << object->getObjectName() << std::endl;
 
@@ -308,29 +564,34 @@ void RenderSystem::renderTex(GameObject* object, float const& deltaTime)
 		if (render->hasAnimation)
 		{
 			Animation* animation = object->getComponent<Animation>();
-			texpos = glm::vec2{ animation->currentFrameColumn / static_cast<float>(animation->totalColumn), animation->currentFrameRow / static_cast<float>(animation->totalRow) };
-			texscale = glm::vec2{ 1.f / animation->totalColumn, 1.f / animation->totalRow };
-			if (animation->loop)
-			{
-				animation->frameTimer += deltaTime;
-				//std::cout << "\n-------Frame Timer---------\n" << animation->frameTimer << "\n\n";
-				if (animation->frameTimer >= animation->frameTime)
-				{
-					animation->frameTimer -= animation->frameTime;
-					/*if (animation->runItBack && animation->currentFrameColumn == 0)
+			if (StateMachine* sm = object->getComponent<StateMachine>()) {
+				AnimateState& as = animation->animState[static_cast<int>(sm->state)];
+				if (!as.texFile.empty()) {
+					texpos = glm::vec2{ as.currentFrameColumn / static_cast<float>(as.totalColumn), as.currentFrameRow / static_cast<float>(as.totalRow) };
+					texscale = glm::vec2{ 1.f / as.totalColumn, 1.f / as.totalRow };
+					if (as.loop)
 					{
-						animation->runItBack = false;
+						as.frameTimer += deltaTime;
+						//std::cout << "\n-------Frame Timer---------\n" << animation->frameTimer << "\n\n";
+						if (as.frameTimer >= as.frameTime && !EditorManager::isEditingMode() && !EditorManager::isPaused())
+						{
+							as.frameTimer -= as.frameTime;
+							/*if (animation->runItBack && animation->currentFrameColumn == 0)
+							{
+								animation->runItBack = false;
+							}
+							else
+							{
+								animation->currentFrameColumn = (animation->currentFrameColumn + 1) % animation->totalColumn;
+								animation->currentFrameRow = (animation->currentFrameRow + 1) % animation->totalRow;
+								animation->runItBack = true;
+							}*/
+							as.currentFrameColumn = (as.currentFrameColumn + 1) % as.totalColumn;
+							as.currentFrameRow = (as.currentFrameRow + 1) % as.totalRow;
+							animation->runItBack = true;
+
+						}
 					}
-					else
-					{
-						animation->currentFrameColumn = (animation->currentFrameColumn + 1) % animation->totalColumn;
-						animation->currentFrameRow = (animation->currentFrameRow + 1) % animation->totalRow;
-						animation->runItBack = true;
-					}*/
-					animation->currentFrameColumn = (animation->currentFrameColumn + 1) % animation->totalColumn;
-					animation->currentFrameRow = (animation->currentFrameRow + 1) % animation->totalRow;
-					animation->runItBack = true;
-					
 				}
 			}
 		}
@@ -451,9 +712,9 @@ void FontSystem::init(GameObjectManager& manager)
 {
 	Font::init();
 
-	ResourceManager::getInstance().getFont("shaders/Orange Knight.ttf");
-	ResourceManager::getInstance().getFont("shaders/ARIAL.TTF");
-	ResourceManager::getInstance().getFont("shaders/times.ttf");
+	ResourceManager::getInstance().getFont("assets/Orange Knight.ttf");
+	ResourceManager::getInstance().getFont("assets/ARIAL.TTF");
+	ResourceManager::getInstance().getFont("assets/times.ttf");
 
 	std::vector<GameObject*> gameObjects;
 	manager.getAllGameObjects(gameObjects);
@@ -467,11 +728,13 @@ void FontSystem::init(GameObjectManager& manager)
 	}
 }
 
-void FontSystem::update(GameObjectManager& manager)
+void FontSystem::update(GameObjectManager& manager, double fps)
 {
 	//for debugging only
 
 	//std::cout << "=== FontSystem::update() called ===" << std::endl;
+	//record current time for performance tracking
+	auto start = std::chrono::high_resolution_clock::now();
 
 	std::vector<GameObject*> gameObjects;
 	manager.getAllGameObjects(gameObjects);
@@ -519,6 +782,26 @@ void FontSystem::update(GameObjectManager& manager)
 			RenderText(Font::fontShaders, fc->word, transform->x, transform->y, fc->scale, fc->clr, object);
 		}
 	}
+
+	/* ---- scuffed way to render fps for M3 ---- */
+	if (showFPS) {
+		std::unique_ptr<GameObject> fpsText = manager.createTempGameObject("fpsText");
+		if (Transform* t = fpsText->addComponent<Transform>()) {
+			if (FontComponent* fc = fpsText->addComponent<FontComponent>()) {
+				fc->word = "FPS: " + std::to_string(fps);
+				t->x = -15.f;
+				t->y = 9.f;
+				RenderText(Font::fontShaders, fc->word, t->x, t->y, fc->scale, fc->clr, fpsText.get());
+			}
+		}
+	}
+	/* ---- END ---- */
+
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+	auto end = std::chrono::high_resolution_clock::now();
+	double ms = std::chrono::duration<double, std::milli>(end - start).count(); //get elapse time in ms
+	g_SystemTimers.push_back({ "Font", ms }); //saving timing for UI output
 }
 
 void FontSystem::RenderText(GLuint& s, std::string text, float x, float y, float scale, glm::vec3 color, GameObject* object)
@@ -532,13 +815,13 @@ void FontSystem::RenderText(GLuint& s, std::string text, float x, float y, float
 	
 	std::string fontPath;
 	switch (fc->fontType) {
-	case 0: fontPath = "shaders/Orange Knight.ttf"; break;
-	case 1: fontPath = "shaders/ARIAL.TTF"; break;
-	case 2: fontPath = "shaders/times.ttf"; break;
-	default: fontPath = "shaders/ARIAL.TTF"; break;
+	case 0: fontPath = "assets/Orange Knight.ttf"; break;
+	case 1: fontPath = "assets/ARIAL.TTF"; break;
+	case 2: fontPath = "assets/times.ttf"; break;
+	default: fontPath = "assets/ARIAL.TTF"; break;
 	}
 
-	const FontData& fontData = ResourceManager::getInstance().getFont(fc->fontPath);
+	const FontData& fontData = ResourceManager::getInstance().getFont(fontPath);
 
 	/*std::cout << "FontData has " << fontData.characters.size() << " characters loaded" << std::endl;
 	if (fontData.characters.empty()) {
@@ -546,11 +829,17 @@ void FontSystem::RenderText(GLuint& s, std::string text, float x, float y, float
 		return;
 	}*/
 
+	// --- Add this block --- //for text to be on top of everything
+	glDisable(GL_DEPTH_TEST);
+	glDepthMask(GL_FALSE);
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	// ----------------------
+
 	glUseProgram(s);
 	glUniform3f(glGetUniformLocation(s, "textColor"), color.x, color.y, color.z);
 	glActiveTexture(GL_TEXTURE0);
 	glBindVertexArray(mdl.vao);
-
 
 	// iterate through all characters
 	std::string::const_iterator c;
@@ -596,198 +885,512 @@ void FontSystem::RenderText(GLuint& s, std::string text, float x, float y, float
 	}
 	glBindVertexArray(0);
 	glBindTexture(GL_TEXTURE_2D, 0);
+
+	// --- Restore state --- //for text to be on top of everything
+	glDepthMask(GL_TRUE);
+	glEnable(GL_DEPTH_TEST);
 }
 
 // Physics system - updates position based on velocity and applies gravity
+// uncomment this debug code to see all bullets and their states
+//void debugBullets(GameObjectManager& manager) {
+//	std::vector<GameObject*> gameObjects;
+//	manager.getAllGameObjects(gameObjects);
+//
+//	for (GameObject* obj : gameObjects) {
+//		if (obj->getObjectName().find("bullet") == 0) {
+//			Physics* p = obj->getComponent<Physics>();
+//			Transform* t = obj->getComponent<Transform>();
+//			if (p && t) {
+//				std::cout << "Bullet: " << obj->getObjectName()
+//					<< " Alive: " << p->alive
+//					<< " Pos: (" << t->x << ", " << t->y << ")"
+//					<< " Vel: (" << p->dynamics.velocity.x << ", " << p->dynamics.velocity.y << ")\n";
+//			}
+//		}
+//	}
+//}
 void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime, MessageBus& messageBus) {
-	//record current time for performance tracking
 	auto start = std::chrono::high_resolution_clock::now();
 
-	// idk how physic programmer want to handle input for physics in the future
-	// so here is a simple implementation for toggling step-by-step mode
-	if (InputHandler::isComboKeyTriggered(GLFW_KEY_Z)) {
+	// Step mode toggling (doesnt seem to be working with the new physics system)
+	/*if (InputHandler::isComboKeyTriggered(GLFW_KEY_Z))
 		m_stepMode = !m_stepMode;
-	}
-	if (m_stepMode && InputHandler::isKeyTriggered(GLFW_KEY_Z)) {
+	if (m_stepMode && InputHandler::isKeyTriggered(GLFW_KEY_Z))
 		m_stepReq = true;
-	}
-
-	// only update if NOT step-by-step physics debug mode or step requested
-	if (m_stepMode && !m_stepReq) return;
-	if (m_stepReq) m_stepReq = false; // reset step request after one update
+	if (m_stepMode && !m_stepReq)
+		return;
+	if (m_stepReq)
+		m_stepReq = false;*/
 
 	std::vector<GameObject*> gameObjects;
 	manager.getAllGameObjects(gameObjects);
 
-	GameObject* bullet = manager.getGameObject("bullet");
+	std::unordered_map<GameObject*, bool> previousOnGround;
+	for (auto object : gameObjects) {
+		if (!object->hasComponent<Physics>()) continue;
+		Physics* physics = object->getComponent<Physics>();
+		previousOnGround[object] = physics->onGround;
+	}
+
+	for (auto object : gameObjects) {
+		if (!object->hasComponent<Physics>()) continue;
+		Physics* physics = object->getComponent<Physics>();
+		physics->onGround = false;
+	}
 
 	for (auto object : gameObjects) {
 		if (!object->hasComponent<Transform>() || !object->hasComponent<Physics>())
 			continue;
 
-		Transform* transform = object->getComponent<Transform>();
 		Physics* physics = object->getComponent<Physics>();
+		if (object->getObjectName() == "bullet") continue;
+		if (!physics->physicsFlag) continue;
+		//if (physics->isStatic) continue;
+		Transform* transform = object->getComponent<Transform>();
 
-		physics->velY += physics->gravity * deltaTime;
-
-		if (object->hasComponent<Input>()) {
-			//std::cout << object << " has input component\n";
-			//bullet
-			if (InputHandler::isKeyTriggered(GLFW_KEY_SPACE)) {
-				messageBus.publish(Message("KeyPressed", nullptr, KeyEvent{ "SPACE", true }));
-				//std::cout << "bullet is spawned\n";
-				//UI::addDebugMessage("bullet is spawned");
-				static int bulletCount = 0;
-
-				Transform* t = bullet->getComponent<Transform>();
-				t->x = transform->x;  
-				t->y = transform->y;
-				t->z = 0.02f;
-				t->scaleX = 0.5f;
-				t->scaleY = 0.5f;
-				t->scaleZ = 0.5f;
-				t->rotation = 0.0f;
-
-				Physics* p = bullet->getComponent<Physics>();
-				p->velX = 5.0f;
-				p->velY = 5.0f;
-				p->onGround = false;
+		// Handle player input
+		if (object->hasComponent<Input>() && !EditorManager::isEditingMode() && !EditorManager::isPaused()) {
+			if (!object->checkAutoMove()) {
+				PhysicsForces::applyDamping(physics);
+				PhysicsForces::updatePosition(transform, physics, deltaTime);
 			}
+
+			if (InputHandler::isKeyTriggered(GLFW_KEY_SPACE)) {
+				GameObject* bullet = PhysicsForces::findAvailableBullet(manager);
+				//debugBullets(manager);
+				if (bullet != nullptr) {
+					PhysicsForces::shoot(bullet, transform);
+					messageBus.publish(Message("KeyPressed", nullptr, KeyEvent{ "SPACE", true }));
+
+					if (bullet->hasComponent<AudioComponent>()) {
+						AudioComponent* audio = bullet->getComponent<AudioComponent>();
+						audio->isPendingPlay = true;
+					}
+
+					DebugLog::addMessage("Bullet fired from pool!", DebugMode::PlaySimul);
+				}
+				else {
+					DebugLog::addMessage("No bullets available! Wait for reload.", DebugMode::PlaySimul);
+				}
+			}
+			float targetVelX = 0.0f;
+			if (InputHandler::isKeyHeld(GLFW_KEY_A)) {
+				physics->canMove = true;
+				targetVelX = -physics->moveSpeed;
+				transform->flipX = true; // flip to face left
+				messageBus.publish(Message("KeyPressed", nullptr, KeyEvent{ "A", true }));
+			}
+			else if (InputHandler::isKeyHeld(GLFW_KEY_D) && physics->canMove) {
+				targetVelX = physics->moveSpeed;
+				transform->flipX = false; // flip to face right
+				messageBus.publish(Message("KeyPressed", nullptr, KeyEvent{ "D", true }));
+			}
+			physics->dynamics.velocity.x = targetVelX;
 
 			// Jump
-			if (InputHandler::isKeyTriggered(GLFW_KEY_B)){// && physics->onGround) 
-				messageBus.publish(Message("KeyPressed", nullptr, KeyEvent{ "B", true }));
-				//std::cout << "player is jumping\n";
-				//UI::addDebugMessage("player is jumping");
-				physics->velY = physics->jumpForce;
-				//physics->velX = physics->Speed;
-				physics->onGround = false;
+			if (InputHandler::isKeyTriggered(GLFW_KEY_B)) {
+				if (previousOnGround[object]) {
+					PhysicsForces::jump(object);
+					messageBus.publish(Message("KeyPressed", nullptr, KeyEvent{ "B", true }));
+				}
+			}
+
+			// Ground collision
+			if (transform->y < physics->floorY && !object->checkAutoMove()) {
+				transform->y = physics->floorY;
+				physics->dynamics.position.y = physics->floorY;
+				physics->dynamics.velocity.y = 0.0f;
+				physics->velY = 0.0f;
+				//physics->velY = 0.0f;
+				physics->onGround = true;
+				//physics->velX = 0.0f;
+			}
+			transform->x += physics->velX * deltaTime;
+		}
+
+		// Auto-move objects
+		if (object->checkAutoMove()) {
+			transform->y += physics->dynamics.velocity.y * deltaTime;
+			transform->x += physics->dynamics.velocity.x * deltaTime;
+		}
+	}
+
+	for (GameObject* obj : gameObjects) { 
+		std::string name = obj->getObjectName();
+
+		// Skip if not a numbered bullet
+		if (name.find("bullet") != 0 || name.length() <= 6) continue;
+
+		// Check if it's a numbered bullet (bullet1, bullet2, etc.)
+		bool isNumberedBullet = true;
+		for (size_t i = 6; i < name.length(); i++) {
+			if (!std::isdigit(name[i])) {
+				isNumberedBullet = false;
+				break;
 			}
 		}
-		physics->velX *= physics->damping;
+		if (!isNumberedBullet) continue;
 
-		transform->y += physics->velY * deltaTime;
-		transform->x += physics->velX * deltaTime;
+		if (!obj->hasComponent<Physics>() || !obj->hasComponent<Transform>())
+			continue;
 
-		if (transform->y < physics->floorY) {
-			transform->y = physics->floorY;
-			physics->velY = 0.0f;
-			physics->onGround = true;
-			physics->velX = 0.0f;
+		Physics* p = obj->getComponent<Physics>();
+		Transform* t = obj->getComponent<Transform>();
+
+		if (p->alive) {
+			// Update bullet physics
+			DynamicsSystem::Integrate(p->dynamics, deltaTime, 0.0f, false);
+			t->x = p->dynamics.position.x;
+			t->y = p->dynamics.position.y;
+
+			// Update life timer
+			p->lifeTimer += deltaTime;
+
+			// Deactivate if lifetime exceeded
+			if (p->lifeTimer >= p->maxLifetime) {
+				PhysicsForces::deactivateBullet(obj);
+			}
 		}
-		transform->x += physics->velX * deltaTime;
-	}
+	} 
+
 	auto end = std::chrono::high_resolution_clock::now();
-	double ms = std::chrono::duration<double, std::milli>(end - start).count(); //get elapse time in ms
-	g_SystemTimers.push_back({ "Physics", ms }); //saving timing for UI output
+	double ms = std::chrono::duration<double, std::milli>(end - start).count();
+	g_SystemTimers.push_back({ "Physics", ms });
 }
+
+
 
 // Collision system - detects and resolves collisions between game objects
 void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime) {
 	(void)deltaTime;
-	//record current time for performance tracking
-	auto start = std::chrono::high_resolution_clock::now();
+	double ms = 0.0;
 
-	//getting all objects
-	std::vector<GameObject*> gameObjects;
-	manager.getAllGameObjects(gameObjects);
+	//get layer manager
+	LayerManager& layerManager = manager.getLayerManager();
+	std::vector<Layer*> layers = layerManager.getAllLayers();
 
-	//create grid
-	const float CELL_SIZE = 2.0f;
-	const int GRID_WIDTH = 20;
-	const int GRID_HEIGHT = 20;
-	std::vector<std::vector<Collision::Cell>> grid(GRID_WIDTH, std::vector<Collision::Cell>(GRID_HEIGHT));
+	//process each layer separately
+	//right now only layer 1 should have any sort of collision
+	for (Layer* layer : layers) {
+		//skip missing layer
+		if (!layer) {
+			/*auto end = std::chrono::high_resolution_clock::now();
+			double ms = std::chrono::duration<double, std::milli>(end - start).count();
+			g_SystemTimers.push_back({ "Collisions", ms })*/
+			std::cerr << "CollisionSystem::update() - Layer " << layer->getLayerID() << " not found!\n";
+			return;
+		}
+
+		const std::vector<GameObject*>& layerObjects = layer->getObjects();
+
+		//create grid
+		const float CELL_SIZE = 2.0f;
+		const int GRID_WIDTH = 20;
+		const int GRID_HEIGHT = 20;
+		std::vector<std::vector<Collision::Cell>> grid(GRID_WIDTH, std::vector<Collision::Cell>(GRID_HEIGHT));
 
 
-	for (GameObject* obj : gameObjects) {
-		if (!obj->getComponent<CollisionInfo>() || !obj->hasComponent<Transform>()) continue;
-		Transform* objT = obj->getComponent<Transform>();
-		Collision::AABB box = Collision::getObjectAABB(objT);
+		for (GameObject* obj : layerObjects) {
+			if (!obj->getComponent<CollisionInfo>() || !obj->hasComponent<Transform>() || !obj->hasComponent<Render>()) continue;
+			CollisionInfo* c = obj->getComponent<CollisionInfo>();
+			if (!c->collisionFlag) continue; // skip if obj not supposed to collide
 
-		int minCellX = static_cast<int>(box.getMin().x / CELL_SIZE);
-		int maxCellX = static_cast<int>(box.getMax().x / CELL_SIZE);
-		int minCellY = static_cast<int>(box.getMin().y / CELL_SIZE);
-		int maxCellY = static_cast<int>(box.getMax().y / CELL_SIZE);
+			Transform* objT = obj->getComponent<Transform>();
+			//Render* renderS = obj->getComponent<Render>();
+			//Collision::AABB box = Collision::getObjectAABB(objT);
+			int minCellX, maxCellX, minCellY, maxCellY;
+			if (c->colliderType == shape::square){
+				Collision::AABB box = Collision::getObjectAABBbyCollider(objT, c->colliderSize); // use custom collider instead of scale
+				minCellX = static_cast<int>(box.getMin().x / CELL_SIZE);
+				maxCellX = static_cast<int>(box.getMax().x / CELL_SIZE);
+				minCellY = static_cast<int>(box.getMin().y / CELL_SIZE);
+				maxCellY = static_cast<int>(box.getMax().y / CELL_SIZE);
+			}
+			else if (c->colliderType == shape::circle) {
+				//need one for circle
+				Collision::Circle circle = Collision::getObjectCirclebyCollider(objT, c->colliderSize);
 
-		//clamp to grid boundaries so it dont go out the valid range of grid
-		minCellX = std::max(0, std::min(minCellX, GRID_WIDTH - 1));
-		maxCellX = std::max(0, std::min(maxCellX, GRID_WIDTH - 1));
-		minCellY = std::max(0, std::min(minCellY, GRID_HEIGHT - 1));
-		maxCellY = std::max(0, std::min(maxCellY, GRID_HEIGHT - 1));
+				float minX = circle.getCenter().x - circle.getRadius();
+				float maxX = circle.getCenter().x + circle.getRadius();
+				float minY = circle.getCenter().y - circle.getRadius();
+				float maxY = circle.getCenter().y + circle.getRadius();
 
-		//putting the object into the grid cells it occupies
-		for (int x = minCellX; x <= maxCellX; ++x) {
-			for (int y = minCellY; y <= maxCellY; ++y) {
-				grid[x][y].objects.push_back(obj);
-				//for output into console for debugging and prove
-				UI::addDebugMessage("Object " + obj->getObjectName()
-					+ " inserted into cell (" + std::to_string(x) + "," + std::to_string(y) + ")\n");
+				minCellX = static_cast<int>(minX / CELL_SIZE);
+				maxCellX = static_cast<int>(maxX / CELL_SIZE);
+				minCellY = static_cast<int>(minY / CELL_SIZE);
+				maxCellY = static_cast<int>(maxY / CELL_SIZE);
+			}
+
+			//clamp to grid boundaries so it dont go out the valid range of grid
+			minCellX = std::max(0, std::min(minCellX, GRID_WIDTH - 1));
+			maxCellX = std::max(0, std::min(maxCellX, GRID_WIDTH - 1));
+			minCellY = std::max(0, std::min(minCellY, GRID_HEIGHT - 1));
+			maxCellY = std::max(0, std::min(maxCellY, GRID_HEIGHT - 1));
+
+			//putting the object into the grid cells it occupies
+			for (int x = minCellX; x <= maxCellX; ++x) {
+				for (int y = minCellY; y <= maxCellY; ++y) {
+					grid[x][y].objects.push_back(obj);
+				}
 			}
 		}
-	}
-	//temporary container to track checked objects for this frame
-	std::unordered_map<GameObject*, std::vector<GameObject*>> checked;
 
-	//checking collision 
-	for (int i = 0; i < GRID_WIDTH; i++) {
-		for (int j = 0; j < GRID_HEIGHT; j++) {
-			auto& cellObject = grid[i][j].objects; //get objects in the cell
-			//loop through objects in the cell to check for collision
-			for (size_t n = 0; n < cellObject.size(); n++) {
-				//object 1
-				GameObject* obj1 = cellObject[n];
-				if (!obj1->hasComponent<Physics>()) continue;
-				Transform* t1 = obj1->getComponent<Transform>();
-				Collision::AABB aabb1 = Collision::getObjectAABB(t1);
-				Physics* p1 = obj1->getComponent<Physics>();
-				Vector2D vel1{ p1->velX, p1->velY };
-				//object 2 looping
-				for (size_t m = n + 1; m < cellObject.size(); m++) {
-					//object 2
-					GameObject* obj2 = cellObject[m];
-					//message to check for collision between objects
-					UI::addDebugMessage("Checking collision: " + obj1->getObjectName()
-						+ " vs " + obj2->getObjectName() + "\n");
-					if (!obj2->hasComponent<Physics>()) continue;
+		//temporary container to track checked objects for this frame
+		//to advoid duplicate checks
+		std::unordered_map<GameObject*, std::vector<GameObject*>> checked;
 
-					//skip if already checked
-					auto it = std::find(checked[obj1].begin(), checked[obj1].end(), obj2);
-					if (it != checked[obj1].end()) continue;
-					//mark as checked both ways
-					checked[obj1].push_back(obj2);
-					checked[obj2].push_back(obj1);
-
-					Transform* t2 = obj2->getComponent<Transform>();
-					Collision::AABB aabb2 = Collision::getObjectAABB(t2);
-					Physics* p2 = obj2->getComponent<Physics>();
-					Vector2D vel2{ p2->velX, p2->velY };
-
-					CollisionInfo info = Collision::CollisionIntersection_RectRect_Dynamic_Info(aabb1, vel1, aabb2, vel2); //check collision
+		//checking collision 
+		//record current time for performance tracking
+		auto start = std::chrono::high_resolution_clock::now();
+		for (int i = 0; i < GRID_WIDTH; i++) {
+			for (int j = 0; j < GRID_HEIGHT; j++) {
+				auto& cellObject = grid[i][j].objects; //get objects in the cell
+				//loop through objects in the cell to check for collision
+				for (size_t n = 0; n < cellObject.size(); n++) {
+					//object 1
+					GameObject* obj1 = cellObject[n];
+					if (!obj1->hasComponent<Physics>()) continue;
 					
-					//checking if collided
-					if (info.collided) {
-						//update the velocity and penetrations
-						if (info.normal.x != 0) {
-							t1->x += info.normal.x * info.penetration;
-							p1->velX = 0; //stop horizontal movement
-						}
+					Transform* t1 = obj1->getComponent<Transform>();
+					//to get obj1 shape
+					//Render* render1 = obj1->getComponent<Render>();
+					CollisionInfo* c1 = obj1->getComponent<CollisionInfo>();
+					Physics* p1 = obj1->getComponent<Physics>();
+					Vector2D vel1{ p1->dynamics.velocity.x, p1->dynamics.velocity.y };
+					//object 2 looping
+					for (size_t m = n + 1; m < cellObject.size(); m++) {
+						//object 2
+						GameObject* obj2 = cellObject[m];
+						if (!obj2->hasComponent<Physics>()) continue;
 
-						// resolve Y
-						if (info.normal.y != 0) {
-							t1->y += info.normal.y * info.penetration;
-							p1->velY = 0; //stop vertical movement
-						}				
-						UI::addDebugMessage("Collision detected between Object.\n"); //message for debugger
+						//skip if already checked
+						auto it = std::find(checked[obj1].begin(), checked[obj1].end(), obj2);
+						if (it != checked[obj1].end()) continue;
+						//mark as checked both ways
+						checked[obj1].push_back(obj2);
+						checked[obj2].push_back(obj1);
+						Transform* t2 = obj2->getComponent<Transform>();
+						//to get obj1 shape
+						CollisionInfo* c2 = obj2->getComponent<CollisionInfo>();
+						//Render* render2 = obj2->getComponent<Render>();
+						Physics* p2 = obj2->getComponent<Physics>();
+						Vector2D vel2{ p2->dynamics.velocity.x, p2->dynamics.velocity.y };
+
+						//check collision based on shape
+						//check obj1 shape 
+						if (!c1 || !t1) return;
+						//check obj2 shape 
+						if (!c2 || !t2) return;
+
+						//collision info
+						CollisionInfo info;
+						//if both square
+						if (c1->colliderType == shape::square && c2->colliderType == shape::square) {
+							//Collision::AABB aabb1 = Collision::getObjectAABB(t1);
+							Collision::AABB aabb1 = Collision::getObjectAABBbyCollider(t1, c1->colliderSize);
+							//Collision::AABB aabb2 = Collision::getObjectAABB(t2);
+							Collision::AABB aabb2 = Collision::getObjectAABBbyCollider(t2, c2->colliderSize);
+							info = Collision::CollisionIntersection_RectRect_Dynamic_Info(aabb1, vel1, aabb2, vel2);
+						}
+						//if both circle
+						else if (c1->colliderType == shape::circle && c2->colliderType == shape::circle) {
+							Collision::Circle circle1 = Collision::getObjectCirclebyCollider(t1, c1->colliderSize);
+							Collision::Circle circle2 = Collision::getObjectCirclebyCollider(t2, c2->colliderSize);
+							info = Collision::CollisionIntersection_CircleCircle_Dynamic_Info(circle1, vel1, circle2, vel2);
+						}
+						// if one is square one is circle
+						else if (c1->colliderType == shape::square && c2->colliderType == shape::circle) {
+							Collision::AABB aabb1 = Collision::getObjectAABBbyCollider(t1, c1->colliderSize);
+							Collision::Circle circle2 = Collision::getObjectCirclebyCollider(t2, c2->colliderSize);
+							info = Collision::CollisionIntersection_CircleAABB_Dynamic_Info(circle2, vel2, aabb1, vel1);
+						}
+									
+
+						//checking if collided
+						if (info.collided) {
+
+							/* ---------- temp setting ---------- */
+							// skip bullet & player collision
+							if ((obj1->getObjectPrefabID() == "b1a12273-a692-4ce0-8072-156da2c70842" && obj2->getObjectPrefabID() == "dd60e1e1-641c-4ed5-b69d-ffadfa02fb7a") || (obj1->getObjectPrefabID() == "dd60e1e1-641c-4ed5-b69d-ffadfa02fb7a" && obj2->getObjectPrefabID() == "b1a12273-a692-4ce0-8072-156da2c70842")) return;
+
+							// bullet shoot fire -> fire become smoke and disappear aft that (in logic container)
+							GameObject* bulletObj = nullptr;
+							if (obj1->getObjectPrefabID() == "b1a12273-a692-4ce0-8072-156da2c70842") {
+								bulletObj = obj1;
+							}
+							if (obj2->getObjectPrefabID() == "b1a12273-a692-4ce0-8072-156da2c70842") {
+								bulletObj = obj2;
+							}
+
+							GameObject* fireObj = nullptr;
+							if (obj1->getObjectPrefabID() == "eaa2ba42-971a-413b-b8c4-99b2f5ab674d") {
+								fireObj = obj1;
+							}
+							if (obj2->getObjectPrefabID() == "eaa2ba42-971a-413b-b8c4-99b2f5ab674d") {
+								fireObj = obj2;
+							}
+
+							if (bulletObj && fireObj) {
+								if (StateMachine* sm = fireObj->getComponent<StateMachine>()) {
+									sm->state = PlayerState::Walking;
+									sm->fixState = true;
+									sm->stateTime = 0.f;
+
+									if (AudioComponent* a = fireObj->getComponent<AudioComponent>()) {
+										/*a->playOnStart = false;
+										AudioHandler::getInstance().playSound(a);*/
+										if (a->state != AudioState::Playing && !a->isPendingPlay) {
+											a->loop = false;
+											a->playOnStart = false;
+											a->isPendingPlay = true;
+										}
+									}
+
+									if (bulletObj->hasComponent<Physics>()) {
+										PhysicsForces::deactivateBullet(bulletObj);
+										bulletObj->getComponent<Transform>()->x = 1000.f;
+									}
+									continue;
+								}
+							}
+
+							// player go up when collide with fire
+							GameObject* playerObj = nullptr;
+							if (obj1->getObjectPrefabID() == "dd60e1e1-641c-4ed5-b69d-ffadfa02fb7a") {
+								playerObj = obj1;
+							}
+							if (obj2->getObjectPrefabID() == "dd60e1e1-641c-4ed5-b69d-ffadfa02fb7a") {
+								playerObj = obj2;
+							}
+
+							if (playerObj && fireObj) {
+								if (StateMachine* sm = fireObj->getComponent<StateMachine>()) {
+									if (sm->state == PlayerState::Walking) {
+										if (Physics* p = playerObj->getComponent<Physics>()) {
+											// Launch player upward
+											p->dynamics.velocity.y = 12.0f;  // Upward velocity
+											p->velY = 10.0f;
+											p->onGround = false;
+
+											continue;
+										}
+									}
+								}
+							}
+
+							GameObject* tileObj = nullptr;
+							if (obj1->getObjectPrefabID() == "94d018f7-a766-4ee6-95be-f39272697938") {
+								tileObj = obj1;
+							}
+							if (obj2->getObjectPrefabID() == "94d018f7-a766-4ee6-95be-f39272697938") {
+								tileObj = obj2;
+							}
+							if (bulletObj && tileObj) {
+								continue;
+							}
+							
+							GameObject* toWin = nullptr;
+							if (obj1->getObjectPrefabID() == "98416fa9-2ae1-4432-bcf4-0d4352a9b29a") {
+								toWin = obj1;
+							}
+							if (obj2->getObjectPrefabID() == "98416fa9-2ae1-4432-bcf4-0d4352a9b29a") {
+								toWin = obj2;
+							}
+
+							if (toWin && playerObj) {
+								
+								GameObject* winScreen = nullptr;
+								for (auto* go : layerObjects) {
+									if (go->getObjectPrefabID() == "887d25cd-bd8d-481f-9f64-f371300a2cf0")
+									{
+										winScreen = go;
+										continue;
+									}
+								}
+
+								if (winScreen) {
+									winScreen->getComponent<Transform>()->x = 0;
+								}
+								//continue;
+							}
+
+
+							/* ---------- temp setting ---------- */
+
+							// c1 is the moving obj (player), c2 is the obj it collide with
+							// CASE 1: collided obj is pushable
+							if (c2->collisionRes == CollisionResponseMode::MoveWhenCollide) {
+								if (info.normal.x != 0) {
+									// move both obj away from each other (to simulate push)
+									t1->x += info.normal.x * info.penetration * 0.5f;
+									t2->x -= info.normal.x * info.penetration * 0.5f;
+
+									p1->dynamics.position.x = t1->x;
+									p2->dynamics.position.x = t2->x;
+								}
+
+								if (info.normal.y != 0) {
+									t1->y += info.normal.y * info.penetration * 0.5f;
+									t2->y -= info.normal.y * info.penetration * 0.5f;
+
+									// Update physics positions to match transforms
+									p1->dynamics.position.y = t1->y;
+									p2->dynamics.position.y = t2->y;
+
+									p1->dynamics.velocity.y = 0.f;
+									p2->dynamics.velocity.y = 0.f;
+
+									if (info.normal.y > 0) p1->onGround = true;
+									else p2->onGround = true;
+								}
+							}
+							// CASE 2: collided obj is static
+							else if (c2->collisionRes == CollisionResponseMode::StopWhenCollide) {
+								// Resolve penetration
+								if (info.normal.x != 0) {
+									// push moving obj out of collided obj
+									t1->x += info.normal.x * info.penetration;
+									p1->dynamics.position.x = t1->x;
+
+									p1->dynamics.velocity.x = 0.f;
+									p1->velX = 0.f;
+
+								}
+
+								if (info.normal.y != 0) {
+									t1->y += info.normal.y * info.penetration;
+									p1->dynamics.position.y = t1->y;
+
+									p1->dynamics.velocity.y = 0.0f;
+
+									if (info.normal.y > 0) p1->onGround = true;
+								}
+
+								DebugLog::addMessage("Collision detected between Object.\n", DebugMode::PlaySimul);
+							}
+							// CASE 3: anything else
+							else {
+								if (info.normal.y != 0) {
+									p1->dynamics.velocity.y = 0.0f;
+									p2->dynamics.velocity.y = 0.0f;
+
+									if (info.normal.y > 0) p1->onGround = true;
+									else p2->onGround = true;
+								}
+							}
+						}
 					}
 				}
 			}
 		}
+		auto end = std::chrono::high_resolution_clock::now();
+		ms += std::chrono::duration<double, std::milli>(end - start).count(); //get elapse time in ms
 	}
-	auto end = std::chrono::high_resolution_clock::now();
-	double ms = std::chrono::duration<double, std::milli>(end - start).count(); //get elapse time in ms
 	g_SystemTimers.push_back({ "Collisions", ms }); //saving timing for UI output
 }
 
+#ifdef _DEBUG
 //UI system - handles ImGui rendering and interaction
 bool UISystem::showUI = false;
 
@@ -800,15 +1403,14 @@ void UISystem::init(GLFWwindow* window, RenderSystem* renderer) {
 	io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard
 			| ImGuiConfigFlags_DockingEnable
 			| ImGuiConfigFlags_ViewportsEnable;
-	ImGui::StyleColorsDark();
+	ImGui::StyleColorsClassic();
+	//ImGui::StyleColorsDark();
 	// io.IniFilename = "imgui_layout.ini";
 	ImGui_ImplGlfw_InitForOpenGL(window, true);
 	ImGui_ImplOpenGL3_Init("#version 450");
 
 	// no show task bar icon for additional viewports
 	io.ConfigViewportsNoTaskBarIcon = true;
-
-	m_UI.loadAssetsFromDirectory();
 
 	m_renderer = renderer;
 }
@@ -842,14 +1444,7 @@ void UISystem::update(GameObjectManager& manager) {
 
 	// all ImGui windows
 	m_UI.update(manager);
-	m_UI.sceneWindow(m_renderer->getTexture(), static_cast<float>(fboWidth) / static_cast<float>(fboHeight));
-
-	m_UI.loadAssetsFromDirectory(); // only reload if assets flag is set (e.g. new asset added)
-
-	// this will CRASH if change scene in editor
-	//Transform* leavesT = gameObjects[0]->getComponent<Transform>();
-	//Transform* bulletT = gameObjects[2]->getComponent<Transform>();
-	//m_UI.shapeControl(*leavesT, *bulletT); 
+	m_UI.renderScene(m_renderer->getTexture(), static_cast<float>(fboWidth) / static_cast<float>(fboHeight), manager);
 
 	ImGui::Render();
 	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
@@ -858,7 +1453,7 @@ void UISystem::update(GameObjectManager& manager) {
 
 	auto end = std::chrono::high_resolution_clock::now();
 	double ms = std::chrono::duration<double, std::milli>(end - start).count(); //get elapse time in ms
-	g_SystemTimers.push_back({ "IMGUI", ms }); //saving timing for UI output
+	g_SystemTimers.push_back({"IMGUI", ms }); //saving timing for UI output
 }
 
 void UISystem::dockingSetUp() {
@@ -891,37 +1486,48 @@ void UISystem::dockingSetUp() {
 
 	if (m_firstTime) {
 		m_firstTime = false;
-		ImGui::DockBuilderRemoveNode(dockspaceID); // Clear any existing layout
+		ImGui::DockBuilderRemoveNode(dockspaceID);
 		ImGui::DockBuilderAddNode(dockspaceID, ImGuiDockNodeFlags_DockSpace);
 		ImGui::DockBuilderSetNodeSize(dockspaceID, viewport->Size);
 
-		// Split the dockspace into major areas
-		ImGuiID dockParent = dockspaceID;
-		ImGuiID dockDown, dockRight, dockLeft;
-		ImGuiID dockRightSecond;
+		ImGuiID dockMain = dockspaceID;
 
-		ImGui::DockBuilderSplitNode(dockParent, ImGuiDir_Left, 0.3f, &dockLeft, &dockParent);
-		ImGui::DockBuilderSplitNode(dockParent, ImGuiDir_Right, 0.4f, &dockRight, &dockParent);
-		ImGui::DockBuilderSplitNode(dockRight, ImGuiDir_Down, 0.4f, &dockRightSecond, &dockRight);
-		ImGui::DockBuilderSplitNode(dockParent, ImGuiDir_Down, 0.4f, &dockDown, &dockParent);
+		ImGuiID dockLeft, dockRight, dockBottom;
+		ImGui::DockBuilderSplitNode(dockMain, ImGuiDir_Left, 0.28f, &dockLeft, &dockMain);
+		// split off right panel (30% of remaining width)
+		ImGui::DockBuilderSplitNode(dockMain, ImGuiDir_Right, 0.35f, &dockRight, &dockMain);
+		// split off bottom panel (30% of remaining height)
+		ImGui::DockBuilderSplitNode(dockMain, ImGuiDir_Down, 0.50f, &dockBottom, &dockMain);
 
-		// Dock windows
+		// subdivide the panels
+		ImGuiID dockLeftBottom, dockRightBottom;
+		// split left panel into top and bottom
+		ImGui::DockBuilderSplitNode(dockLeft, ImGuiDir_Down, 0.40f, &dockLeftBottom, &dockLeft);
+		// split right panel into top and bottom
+		ImGui::DockBuilderSplitNode(dockRight, ImGuiDir_Down, 0.40f, &dockRightBottom, &dockRight);
 
-		// Left
+
+		// dock windows to their respective areas
+		// left top: Hierarchy
 		ImGui::DockBuilderDockWindow("Hierarchy", dockLeft);
+
+		// left bottom: Debug
+		ImGui::DockBuilderDockWindow("Debug - Editor", dockLeftBottom);
+		ImGui::DockBuilderDockWindow("Debug - Playing", dockLeftBottom);
+
+		// center: Scene viewport
+		ImGui::DockBuilderDockWindow("Scene", dockMain);
+
+		// right top: Inspector
 		ImGui::DockBuilderDockWindow("Inspector", dockRight);
 		ImGui::DockBuilderDockWindow("Editor Camera", dockRight);
 
-		// Right
-		ImGui::DockBuilderDockWindow("Create Object", dockRightSecond);
+		// right bottom: Create Object
+		ImGui::DockBuilderDockWindow("Create Object", dockRightBottom);
 
-		// Middle
-		ImGui::DockBuilderDockWindow("Scene", dockParent);
-		
-		// Bottom
-		ImGui::DockBuilderDockWindow("Performance", dockDown);
-		ImGui::DockBuilderDockWindow("Debug Info", dockDown);
-		ImGui::DockBuilderDockWindow("Assets", dockDown);
+		// bottom: Assets and Performance
+		ImGui::DockBuilderDockWindow("Assets", dockBottom);
+		ImGui::DockBuilderDockWindow("Performance", dockBottom);
 
 		ImGui::DockBuilderFinish(dockspaceID);
 	}
@@ -937,6 +1543,7 @@ void UISystem::renderMultipleViewPorts() {
 		glfwMakeContextCurrent(backup_current_context);
 	}
 }
+#endif
 
 void LogicSystem::update(GameObjectManager& manager, float const& dt) {
 
@@ -951,5 +1558,169 @@ void LogicSystem::update(GameObjectManager& manager, float const& dt) {
 		if (!go->hasComponent<Transform>() || !go->hasComponent<Physics>()) continue;
 
 		container.update(*go, dt, manager); 
+	}
+}
+
+void AudioSystem::init(GameObjectManager& manager) {
+	auto start = std::chrono::high_resolution_clock::now();
+
+	std::vector<GameObject*> gameObjects;
+	manager.getAllGameObjects(gameObjects);
+
+	AudioHandler& audioHandler = AudioHandler::getInstance();
+
+	for (GameObject* obj : gameObjects) {
+		if (!obj->hasComponent<AudioComponent>()) continue;
+
+		AudioComponent* audio = obj->getComponent<AudioComponent>();
+
+		// Play on start 
+		if (audio->playOnStart) {
+			audio->channel = audioHandler.playSound(audio);
+			if (audio->channel) {
+				audio->state = AudioState::Playing;
+
+				// Apply fade in
+				if (audio->fadeInOnStart) {
+					audioHandler.fadeIn(audio, audio->volume, audio->fadeInDuration);
+				}
+
+				// Apply pitch
+				if (audio->pitch != 1.0f) {
+					audioHandler.setSoundpitch(audio, audio->pitch);
+				}
+
+				// Apply mute state
+				if (audio->muted) {
+					audioHandler.muteSound(audio);
+				}
+			}
+		}
+	}
+
+	auto end = std::chrono::high_resolution_clock::now();
+	double ms = std::chrono::duration<double, std::milli>(end - start).count();
+	g_SystemTimers.push_back({ "Audio Init", ms });
+}
+
+void AudioSystem::update(GameObjectManager& manager, float deltaTime) {
+	auto start = std::chrono::high_resolution_clock::now();
+
+	std::vector<GameObject*> gameObjects;
+	manager.getAllGameObjects(gameObjects);
+
+	AudioHandler& audioHandler = AudioHandler::getInstance();
+
+	for (GameObject* obj : gameObjects) {
+		if (!obj->hasComponent<AudioComponent>()) continue;
+
+		AudioComponent* audio = obj->getComponent<AudioComponent>();
+
+		audio->updateFades(deltaTime);
+
+		if (/*audio->soundId == soundID::bg && */ audio->playOnStart && audio->loop) {
+			if (!audio->channel || !audioHandler.isSoundPlaying(audio)) {
+				// Restart background music if  not playing
+				std::cout << "[AudioSystem] Auto-restarting: " << obj->getObjectName() << std::endl;
+				audio->channel = audioHandler.playSound(audio);
+				if (audio->channel) {
+					audio->state = AudioState::Playing;
+					audioHandler.setSoundpitch(audio, audio->pitch);
+					if (audio->muted) {
+						audioHandler.muteSound(audio);
+					}
+				}
+			}
+		}
+
+		if (audio->channel) {
+			bool isPlaying = false;
+			audio->channel->isPlaying(&isPlaying); 
+			if (!isPlaying) {
+				std::cout << "[AudioSystem] Channel finished for: " << obj->getObjectName() << std::endl;
+				audio->channel = nullptr;
+				audio->fadeInfo.isFading = false;
+			}
+		}
+		processAudioComponent(obj, audio, deltaTime);
+	}
+
+	auto end = std::chrono::high_resolution_clock::now();
+	double ms = std::chrono::duration<double, std::milli>(end - start).count();
+	g_SystemTimers.push_back({ "Audio", ms });
+}
+
+void AudioSystem::processAudioComponent(GameObject* obj, AudioComponent* audio, float deltaTime) {
+	(void)deltaTime;
+	AudioHandler& audioHandler = AudioHandler::getInstance();
+
+
+	if (audio->isPendingPlay) {
+		audio->isPendingPlay = false;
+
+		audio->channel = audioHandler.playSound(audio);
+		if (audio->channel) {
+			audio->state = AudioState::Playing;
+
+
+			if (audio->fadeInOnStart) {
+				audioHandler.fadeIn(audio, audio->volume, audio->fadeInDuration);
+			}
+
+			if (audio->pitch != 1.0f) {
+				audioHandler.setSoundpitch(audio, audio->pitch);
+			}
+
+			if (audio->muted) {
+				audioHandler.muteSound(audio);
+			}
+		}
+	}
+
+	if (audio->isPendingStop) {
+		audio->isPendingStop = false;
+
+		if (audio->fadeOutOnStop && audio->state == AudioState::Playing) {
+			audioHandler.fadeOut(audio, audio->fadeOutDuration);
+		}
+		else {
+			audioHandler.stopSound(audio);
+			audio->channel = nullptr;
+			audio->state = AudioState::Stopped;
+		}
+	}
+
+	// Update state 
+	if (audio->channel && audio->state == AudioState::Playing) {
+		if (!audioHandler.isSoundPlaying(audio)) {
+			audio->state = AudioState::Stopped;
+			audio->channel = nullptr;
+		}
+	}
+
+	if (audio->state == AudioState::Playing && audio->channel) {
+		// Check if paused 
+		if (audioHandler.isSoundPaused(audio)) {
+			audio->state = AudioState::Paused;
+		}
+	}
+}
+
+void AudioSystem::cleanup(GameObjectManager& manager) {
+	std::vector<GameObject*> gameObjects;
+	manager.getAllGameObjects(gameObjects);
+
+	AudioHandler& audioHandler = AudioHandler::getInstance();
+
+	for (GameObject* obj : gameObjects) {
+		if (!obj->hasComponent<AudioComponent>()) continue;
+
+		AudioComponent* audio = obj->getComponent<AudioComponent>();
+
+		if (audio->state == AudioState::Playing || audio->state == AudioState::Paused) {
+			audioHandler.stopSound(audio);
+			audio->channel = nullptr;
+			audio->state = AudioState::Stopped;
+		}
 	}
 }

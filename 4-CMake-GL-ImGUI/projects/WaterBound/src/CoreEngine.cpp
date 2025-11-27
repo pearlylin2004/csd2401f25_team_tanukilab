@@ -1,11 +1,11 @@
 /* Start Header ************************************************************************/
 /*!
 \file		CoreEngine.cpp
-\author 	Seow Sin Le, s.sinle, 2401084, 60%
+\author 	Seow Sin Le, s.sinle, 2401084, 55%
 \author     Hugo Low Ren Hao, low.h, 2402272, 20%
 \author     Tan Chee Qing, cheeqing.tan, 2401486, 10%
 \author     Varick Teo, v.teo, 2403417, 10%
-\author     Pearly Lin Lee Ying, p.lin, 2401591, 5%
+\author     Pearly Lin Lee Ying, p.lin, 2401591, 10%
 \par        s.sinle@digipen.edu
 \par        low.h@digipen.edu
 \par        cheeqing.tan@digipen.edu
@@ -23,27 +23,41 @@ Technology is prohibited.
 /* End Header **************************************************************************/
 
 #define STB_IMAGE_IMPLEMENTATION
-#ifndef RUNTIME_DIR_R
-#define RUNTIME_DIR_R "./shaders"
-#endif
 #include "CoreEngine.h"
+#include "GUISystem.h"  // Add this include
 
 CoreEngine::CoreEngine()
-    : m_window(nullptr), m_fps(0.0), m_delta(0.0), m_isRunning(false), audio(AudioHandler::getInstance()) {
+    : m_window(nullptr), 
+    m_fps(0.0), 
+    m_delta(0.0), 
+    m_isRunning(false),
+    m_isFullscreen(false),
+    m_windowedWidth(0),
+    m_windowedHeight(0),
+    m_windowPosX(100),
+    m_windowPosY(100),
+    m_forceWindowed(false),
+	m_isPaused(false) //for pause
+{
 }
 
 CoreEngine::~CoreEngine() {
     // The smart pointers will automatically clean up the systems
 }
 
-void CoreEngine::Init() {
-    //DebugDiag::AuditRuntimePaths();
+void CoreEngine::Init(bool forceWindowed) {
     AppConfig cfg;
     std::string err;
-    LoadConfig(Paths::config().string(), cfg, &err);
-    if (!err.empty()) std::cerr << err << "\n";
+    if (!LoadConfig(std::string(RUNTIME_RES_DIR_R) + "/config.json", cfg, &err)) {
+        std::cout << err << "\n";
+    }
 
     m_title = cfg.title;
+    
+    m_forceWindowed = forceWindowed;
+
+    bool wantFullscreen = cfg.fullscreen && !m_forceWindowed;
+    m_isFullscreen = wantFullscreen;
 
     // --- GLFW/GLEW Initialization ---
     if (!glfwInit()) throw std::runtime_error("GLFW initialization failed");
@@ -52,13 +66,46 @@ void CoreEngine::Init() {
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 
-    m_window = glfwCreateWindow(cfg.width, cfg.height, m_title.c_str(), nullptr, nullptr);
+    GLFWmonitor* monitor = nullptr;
+    int winWidth = cfg.width;
+    int winHeight = cfg.height;
+
+    if (wantFullscreen) {
+        monitor = glfwGetPrimaryMonitor();
+        const GLFWvidmode* mode = glfwGetVideoMode(monitor);
+        winWidth = mode->width;
+        winHeight = mode->height;
+
+        //// remember windowed size for when we toggle back
+        m_windowedWidth = cfg.width;
+        m_windowedHeight = cfg.height;
+    }
+    else {
+        m_windowedWidth = cfg.width;
+        m_windowedHeight = cfg.height;
+    }
+
+    cfg.width = winWidth;
+    cfg.height = winHeight;
+
+    glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
+    m_window = glfwCreateWindow(winWidth, winHeight, m_title.c_str(), monitor, nullptr);
+
     if (!m_window) {
         glfwTerminate();
         throw std::runtime_error("Window creation failed");
     }
+    // --- Set the user pointer BEFORE setting the callback ---
+    glfwSetWindowUserPointer(m_window, this);
+
+    // --- Register the iconify callback ---
+    glfwSetWindowIconifyCallback(m_window, CoreEngine::windowIconifyCallback);
+
+    // --- Register the focus callback ---
+    glfwSetWindowFocusCallback(m_window, CoreEngine::windowFocusCallback);
+
     glfwMakeContextCurrent(m_window);
-    glViewport(0, 0, cfg.width, cfg.height);
+    glViewport(0, 0, winWidth, winHeight);
     glewExperimental = GL_TRUE;
     if (glewInit() != GLEW_OK) {
         glfwTerminate();
@@ -71,11 +118,10 @@ void CoreEngine::Init() {
     glClearColor(cfg.clear_color[0], cfg.clear_color[1], cfg.clear_color[2], cfg.clear_color[3]);
 
     // --- System Initialization ---
-    audio.init();
+    AudioHandler::getInstance().init();
 
     InputHandler::init(m_window, cfg);
-    renderer::init(cfg.width, cfg.height);
-
+    renderer::init(winWidth, winHeight);
 
     m_manager = std::make_unique<GameObjectManager>();
 	m_logicSystem = std::make_unique<LogicSystem>();
@@ -83,28 +129,34 @@ void CoreEngine::Init() {
     m_collisionSystem = std::make_unique<CollisionSystem>();
     m_physicsSystem = std::make_unique<PhysicsSystem>();
     m_renderSystem = std::make_unique<RenderSystem>();
+    #ifdef _DEBUG
     m_uiSystem = std::make_unique<UISystem>();
+    #endif
     m_luaSystem = std::make_unique<LuaSystem>();
     m_fontSystem = std::make_unique<FontSystem>();
     m_guiSystem = std::make_unique<GUISystem>();
     m_messageBus = std::make_unique<MessageBus>();
     m_playerController = std::make_unique<PlayerControllerSystem>();
+    m_audioSystem = std::make_unique<AudioSystem>();
 
-    PrefabManager::Instance().loadPrefabRegistry(std::string(RUNTIME_DIR_R) + "/Prefab/prefab_registry.json");
-    //m_manager->init();
+    PrefabManager::Instance().loadPrefabRegistry();
     m_guiSystem->init(*m_manager, *m_luaSystem);
     m_luaSystem->init();
-	m_renderSystem->init(*m_manager, cfg.width, cfg.height);
-	m_uiSystem->init(m_window, m_renderSystem.get());
+    m_renderSystem->init(*m_manager, winWidth, winHeight);
+    #ifdef _DEBUG
+	    m_uiSystem->init(m_window, m_renderSystem.get());
+    #endif
     m_fontSystem->init(*m_manager);
+    m_audioSystem->init(*m_manager);
 
     //advance messaging 
     m_messageBus->subscribe("KeyPressed", m_playerController.get());
     m_messageBus->subscribe("KeyReleased", m_playerController.get());
 
-    audio.init();
     glfwPollEvents();
     m_isRunning = true;
+
+    //AudioHandler::getInstance().playSound(soundID::bg, 0.2f);
 }
 
 void CoreEngine::Run() {
@@ -113,54 +165,52 @@ void CoreEngine::Run() {
     }
 }
 
-//void CoreEngine::GameLoop() {
-//    glfwPollEvents();
-//    if (glfwWindowShouldClose(m_window) || InputHandler::isKeyHeld(GLFW_KEY_ESCAPE)) {
-//        m_isRunning = false;
-//        return;
-//    }
-//    // --- Update Timing ---
-//
-//    int    steps = 0;        // how many fixed updates to run this frame
-//    double alpha = 0.0;      // interpolation factor [0,1)
-//    //Perf::UpdateTime(m_delta, m_fps, 0.5);
-//    Perf::UpdateTime(m_delta, m_fps, 0.5,
-//        m_fixedDt, steps, alpha,8);
-//
-//    Perf::UpdateWindowTitle(m_window, m_title, m_fps, true);
-//
-//    audio.update();
-//
-//    InputHandler::update();
-//
-//
-//    for (int i = 0; i < steps; ++i) {
-//
-//        m_collisionSystem->update(*m_manager, static_cast<float>(m_fixedDt));
-//        m_physicsSystem->update(*m_manager, static_cast<float>(m_fixedDt));
-//   
-//        // (put any other time-based deterministic systems here)
-//    }
-//    // --- Main Update ---
-//    glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
-//    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-//
-//    m_inputSystem->update(*m_manager, (float)m_delta);
-//    m_renderSystem->update(*m_manager, (float)m_delta);
-//    m_uiSystem->update(*m_manager);
-//
-//
-//    // --- Swapping Buffers ---
-//    glfwSwapBuffers(m_window);
-//
-//}
-
 void CoreEngine::GameLoop() {
-    if (glfwWindowShouldClose(m_window) || InputHandler::isKeyHeld(GLFW_KEY_ESCAPE)) { m_isRunning = false; return; } 
-     //--- Update Timing --- 
+    //change to fn because Q will affect the editor
+    if (glfwWindowShouldClose(m_window) || InputHandler::isKeyTriggered(GLFW_KEY_F1)) { m_isRunning = false; return; }
+	//pause checking, and set it to paused state if escape is held
+    if (InputHandler::isKeyTriggered(GLFW_KEY_ESCAPE)) { 
+		//if already at paused state do nothing
+		GameState current = m_guiSystem->getCurrentState(); //get current state
+		GameState previous = m_guiSystem->getPreviousState(); //get previous state
+        if (current != GameState::PAUSED && previous != GameState::PAUSED) {
+            if(m_guiSystem->getPreviousState() != GameState::PAUSED) m_guiSystem->setPreviousState(current); //store previous state and prevent overwriting previous state if already paused
+			m_guiSystem->setStateBeforePause(current); //store state before pausing
+			m_guiSystem->setPreviousState(current); //store previous state
+			m_guiSystem->setCurrentState(GameState::PAUSED); //set current state
+			m_guiSystem->loadScreen(*m_manager, "pause_scene.json"); //load pause screen
+        }
+    }
+   
+    //use glfwGetWindowAttrib to check the GLFW_ICONIFIED status for efficient waiting
+    int status = glfwGetWindowAttrib(m_window, GLFW_ICONIFIED);
+
+    if (status) {
+        //window is minimized audio is already paused by the callback.
+        //use glfwWaitEvents() to sleep until an event occurs (like restoring the window)
+        glfwWaitEvents();
+        return; //skip the rest of the loop
+    }
+
+    //--- Update Timing --- 
      Perf::UpdateTime(m_delta, m_fps, 0.5);
+#if defined(_DEBUG) || defined(DEBUG)
+     // Show FPS only in debug builds
      Perf::UpdateWindowTitle(m_window, m_title, m_fps, true);
-     audio.update();
+#else
+     // Release build never show FPS
+     Perf::UpdateWindowTitle(m_window, m_title, 0.0f, false);
+#endif
+     AudioHandler::getInstance().update(static_cast<float>(m_delta));
+
+     //to skip physics logic lua and input when paused
+     if (m_isPaused) {
+         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+         glfwSwapBuffers(m_window);
+         glfwPollEvents();
+         return; //to skip
+     }
+
      // --- Main Update --- glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
      glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
      Update(static_cast<float>(m_delta));
@@ -169,39 +219,202 @@ void CoreEngine::GameLoop() {
 
 void CoreEngine::Update(float deltaTime) {
     InputHandler::update();
-    m_guiSystem->update(*m_manager);
-	//for clonigng player2
-    if (m_guiSystem->isPlaying()) {
-        if (InputHandler::isKeyTriggered(GLFW_KEY_C)) {
-            static int cloneCount = 1; // Use a static counter for unique names
-            std::string newName = "player2_clone_" + std::to_string(cloneCount++);
-            GameObject* newObject = m_manager->CloneGameObject("player2", newName);
-
-            std::cout << newName << " created.\n";
-
-            Transform* newTransform = newObject->getComponent<Transform>();
-            newTransform->y += 1.5f * (static_cast<float>(cloneCount) - 1); // Offset the new clone's position
-        }
+    if (InputHandler::isKeyTriggered(GLFW_KEY_F11)) {
+        toggleFullscreen();
     }
+    //menu checking
+    GameState state = m_guiSystem->getCurrentState();
+    if (state == GameState::MENU) {
+        m_guiSystem->update(*m_manager);
+    }
+    //control menu checking
+    else if (state == GameState::CONTROL) {
+        m_guiSystem->controlUpdate(*m_manager);
+    }
+    //exit confirmation checking
+    else if (state == GameState::EXITCONFIRMATION) {
+        m_guiSystem->exitUpdate(*m_manager);
+	}
+	//pause menu checking
+    else if(state == GameState::PAUSED) {
+        m_guiSystem->pauseUpdate(*m_manager);
+	}
 
-    //lua scripting update for all objects with LuaScript component
-    m_luaSystem->update(*m_manager, deltaTime);
+    if(!EditorManager::isEditingMode() && !EditorManager::isPaused()) m_luaSystem->update(*m_manager, deltaTime);
 
     // Update all systems in order
     m_inputSystem->update(*m_manager, deltaTime, *m_messageBus);
-    m_collisionSystem->update(*m_manager, deltaTime);
     m_physicsSystem->update(*m_manager, deltaTime, *m_messageBus);
+    m_collisionSystem->update(*m_manager, deltaTime);
     m_logicSystem->update(*m_manager, deltaTime);
     m_renderSystem->update(*m_manager, deltaTime);
-    m_fontSystem->update(*m_manager);
+    m_fontSystem->update(*m_manager, m_fps);    
+    m_audioSystem->update(*m_manager, deltaTime);
+    #ifdef _DEBUG
+        m_uiSystem->update(*m_manager);
+    #endif
 
-    if (UISystem::isShowUI()) glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    //performance update
+    LogSystemTimersEveryInterval(deltaTime,15.0);
+}
+void CoreEngine::toggleFullscreen()
+{
+    m_isFullscreen = !m_isFullscreen;
 
-    m_uiSystem->update(*m_manager);
+    GLFWmonitor* monitor = nullptr;
+    //int          newWidth = 0;
+    //int          newHeight = 0;
+
+    if (m_isFullscreen)
+    {
+        // Windowed -> fullscreen: remember current windowed pos/size
+        glfwGetWindowPos(m_window, &m_windowPosX, &m_windowPosY);
+        glfwGetWindowSize(m_window, &m_windowedWidth, &m_windowedHeight);
+
+        monitor = glfwGetPrimaryMonitor();
+        const GLFWvidmode* mode = glfwGetVideoMode(monitor);
+
+        glfwSetWindowMonitor(
+            m_window,
+            monitor,
+            0, 0,
+            mode->width,
+            mode->height,
+            mode->refreshRate
+        );
+    }
+    else
+    {
+        // Fullscreen -> windowed: restore previous pos/size
+        glfwSetWindowMonitor(
+            m_window,
+            nullptr,
+            m_windowPosX,
+            m_windowPosY,
+            m_windowedWidth,
+            m_windowedHeight,
+            0
+        );
+    }
+
+    //// IMPORTANT: query the real framebuffer size after switching
+    //int fbw = 0, fbh = 0;
+    //glfwGetFramebufferSize(m_window, &fbw, &fbh);
+
+    //// Update GL viewport
+    //glViewport(0, 0, fbw, fbh);
+
+    //// Tell your input + camera systems about the new size
+    //InputHandler::setWindowSize(fbw, fbh);
+    //renderer::onResize(fbw, fbh);
+
+    int fbw = 0, fbh = 0;
+    glfwGetFramebufferSize(m_window, &fbw, &fbh);
+    glViewport(0, 0, fbw, fbh);
+
+    int winW = 0, winH = 0;
+    glfwGetWindowSize(m_window, &winW, &winH);
+    InputHandler::setWindowSize(winW, winH);
+
+    renderer::onResize(fbw, fbh);
+
+    renderer::cam.update();
+    renderer::editorCam.update();
+	glfwPollEvents();
+
+    m_renderSystem->resizeFBO(winW, winH);
 }
 
+
+//void CoreEngine::toggleFullscreen() {
+//    m_isFullscreen = !m_isFullscreen;
+//
+//    GLFWmonitor* monitor = glfwGetPrimaryMonitor();
+//    const GLFWvidmode* mode = glfwGetVideoMode(monitor);
+//
+//    if (m_isFullscreen) {
+//        // --- Going WINDOWED to FULLSCREEN ---
+//        glfwGetWindowPos(m_window, &m_windowPosX, &m_windowPosY);
+//        glfwGetWindowSize(m_window, &m_windowedWidth, &m_windowedHeight);
+//
+//        glfwSetWindowMonitor(
+//            m_window,
+//            monitor,
+//            0, 0,
+//            mode->width,
+//            mode->height,
+//            mode->refreshRate
+//        );
+//    }
+//    else {
+//        // --- Going FULLSCREEN to WINDOWED ---
+//        glfwSetWindowMonitor(
+//            m_window,
+//            nullptr,
+//            m_windowPosX,
+//            m_windowPosY,
+//            m_windowedWidth,
+//            m_windowedHeight,
+//            0
+//        );
+//    }
+//
+//    int fbw = 0, fbh = 0;
+//    glfwGetFramebufferSize(m_window, &fbw, &fbh);
+//
+//    glViewport(0, 0, fbw, fbh);
+//
+//    // 3. Resize the renderer cameras
+//    renderer::resize(fbw, fbh);
+//
+//    InputHandler::setWindowSize(fbw, fbh);
+//
+//    glfwPollEvents();
+//}
+
+
 void CoreEngine::Shutdown() {
+	ResourceManager::getInstance().shutdown();
+    renderer::cleanup();
+    Font::freeFonts();
     if (m_luaSystem) m_luaSystem->cleanup();
     glfwDestroyWindow(m_window);
     glfwTerminate();
+}
+
+//for minimize and restore
+void CoreEngine::windowIconifyCallback(GLFWwindow* window, int iconified) {
+    CoreEngine* engine = static_cast<CoreEngine*>(glfwGetWindowUserPointer(window)); //retrieve engine instance
+    if (engine) {
+        if (iconified) {
+            //window was minimized
+            //engine->audio.pauseAll();
+            AudioHandler::getInstance().pauseAll(*engine->m_manager);
+			engine->m_isPaused = true; //set paused flag
+        }
+        else {
+            //window was restored maximized or simply returned to normal state
+            //resume the background music or other necessary sounds
+            //engine->audio.playSound(soundID::bg, 0.2f);
+            AudioHandler::getInstance().resumeAll(*engine->m_manager);
+			engine->m_isPaused = false; //clear paused flag
+        }
+    }
+}
+
+//for alt-tab --this shld work for ctrl-alt-del too, need to test on lab pcs
+void CoreEngine::windowFocusCallback(GLFWwindow* window, int focused) {
+    CoreEngine* engine = static_cast<CoreEngine*>(glfwGetWindowUserPointer(window));
+    if (engine) {
+        if (!focused) {
+            engine->m_isPaused = true; //set paused flag
+            //window lost focus
+            AudioHandler::getInstance().pauseAll(*engine->m_manager);
+        }
+        else {
+            engine->m_isPaused = false; //clear paused flag
+            //window regained focus
+            AudioHandler::getInstance().resumeAll(*engine->m_manager);
+        }
+    }
 }

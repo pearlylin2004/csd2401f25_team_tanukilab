@@ -1,4 +1,4 @@
-/* Start Header ************************************************************************/
+﻿/* Start Header ************************************************************************/
 /*!
 \file        GameObjectManager.cpp
 \author      Seow Sin Le, s.sinle, 2401084, 50%
@@ -16,10 +16,19 @@ Technology is prohibited.
 /* End Header **************************************************************************/
 
 #include "GameObjectManager.h"
-#include "JsonIO.h"
 #include "config.h"
 #include "prefabManager.h"
 #include "Component.h"
+#include "JsonIO.h"
+#include "Editor/editorState.h"
+#include "Editor/undoRedo.h"
+
+#ifndef RUNTIME_SCENE_DIR_R
+#define RUNTIME_SCENE_DIR_R "./assets/Scene"
+#endif
+#ifndef SOURCE_ASSETS_DIR_R
+#define SOURCE_ASSETS_DIR_R "./projects/WaterBound/assets"
+#endif
 
 namespace {
 	inline bool ends_with(const std::string& s, const char* suf) {
@@ -34,13 +43,23 @@ GameObject* GameObjectManager::createGameObject(const std::string& name) {
 	// Create a new GameObject and wrap it in a unique_ptr
 	auto newObject = std::make_unique<GameObject>(name);
 
+
 	// Get raw pointer before transferring ownership
 	GameObject* ptr = newObject.get();
+
+
+	//assign to default layer (game layer)
+	m_layerManager.assignObjectToLayer(ptr, 1);
 
 	// Store the unique_ptr in the map
 	m_gameObjects[name] = std::move(newObject);
 
+
 	return ptr;
+}
+
+std::unique_ptr<GameObject> GameObjectManager::createTempGameObject(const std::string& name) {
+	return std::make_unique<GameObject>(name);
 }
 
 //use this when objects need to interact with each other
@@ -57,6 +76,8 @@ GameObject* GameObjectManager::getGameObject(const std::string& name) {
 
 void GameObjectManager::deleteGameObject(GameObject* object) {
 	if (!object) return;
+
+	m_layerManager.removeObjectFromLayer(object);
 
 	for (auto iterator = m_gameObjects.begin(); iterator != m_gameObjects.end(); ++iterator) {
 		if (iterator->second.get() == object) {
@@ -87,6 +108,9 @@ GameObject* GameObjectManager::CloneGameObject(const std::string& sourceName, co
 	GameObject* ptr = clonedObject.get();//raw pointer
 
 	m_gameObjects[newName] = std::move(clonedObject);//move into map
+	
+	//now to do for layer as well
+	assignObjectToLayer(ptr, iterator->second->getLayer());
 
 	return ptr;//return the raw pointer
 }
@@ -103,24 +127,29 @@ void GameObjectManager::getAllGameObjects(std::vector<GameObject*>& gameObjects)
 	}
 }
 
+int GameObjectManager::getGameObjectCount() {
+	return static_cast<int>(m_gameObjects.size());
+}
+
 void GameObjectManager::init()
 {
-	//loadFromFile("shaders/Scene/temp_serialize.txt");
-	loadScene((Paths::scenes() / "level01.json").string());
 
+	loadScene(JsonIO::runtimeScenePath("level01.json"));
 }
 
 bool GameObjectManager::renameGameObject(GameObject* obj, const std::string& newName) {
 	if (!obj) return false;
 	if (newName.empty()) return false;
 
-	for (auto& odject : m_gameObjects) {
-		// return false another object has the same name
-		GameObject* other = odject.second.get();
-		if (other != obj && other->getObjectName() == newName) {
-			return false;
-		}
-	}
+	std::string oldName = obj->getObjectName();
+
+	if (m_gameObjects.find(newName) != m_gameObjects.end()) return false;
+
+	auto node = m_gameObjects.extract(oldName);
+	if (node.empty()) return false;
+
+	node.key() = newName;
+	m_gameObjects.insert(std::move(node));
 
 	// rename if no duplicated name
 	obj->getObjectName() = newName;
@@ -128,195 +157,81 @@ bool GameObjectManager::renameGameObject(GameObject* obj, const std::string& new
 
 }
 
-void GameObjectManager::loadFromFile(const std::string& filename)
-{
-	std::ifstream is{ filename };
-	if (!is)
-	{
-		std::cerr << "file not found: " + filename + "\n";
-		return;
-	}
-	std::cout << "file opened\n";
+/*!
+\brief Converts a string into a PlayerState enum value.
 
-	m_gameObjects.clear(); // clear existing objects before loading new ones
+This helper is used when loading state machine data from JSON.
+Recognized values: "Idle", "Walking", "Jumping", "Falling", "Shooting".
 
-	std::string checker{};
-	std::string objectName;
-	std::string shape;
-	while (is >> checker)
-	{
-		/*for (; is >> checker, checker == "object";)
-			if (checker == "object") break;*/
-		if (checker == "object")
-		{
-			is >> objectName;
-			std::unique_ptr<GameObject> newObject = std::make_unique<GameObject>(objectName);
-			m_gameObjects.emplace(objectName, std::move(newObject));
-			std::cout << "\nnew object:\n";
-			std::cout << objectName << "\n";
-		}
-		/*for (; is >> checker, checker == "renderer";)
-			if (checker == "renderer") break;*/
-		if (checker == "renderer")
-		{
-			Render* renderptr = m_gameObjects[objectName]->addComponent<Render>();
-			is >> shape;
-			if (shape == "square")
-			{
-				renderptr->modelRef = renderer::models[static_cast<int>(shape::square)];
-			}
-			if (shape == "circle")
-			{
-				renderptr->modelRef = renderer::models[static_cast<int>(shape::circle)];
-			}
-			is >> renderptr->hasTex;
-			if (renderptr->hasTex == true)
-			{
-				is >> renderptr->texFile;
-				renderptr->texHDL = 0;
-				renderptr->texChanged = false;
-				is >> renderptr->hasAnimation;
-			}
-			else {
-				renderptr->texFile.clear();
-				renderptr->texHDL = 0;
-				renderptr->texChanged = false;
-			}
-			std::cout << shape << "\n";
-		}
-		/*for (; is >> checker, checker == "transform";)
-			if (checker == "transform") break;*/
-		if (checker == "transform")
-		{
-			Transform* transformptr = m_gameObjects[objectName]->addComponent<Transform>();
-			is >> transformptr->x >> transformptr->y >> transformptr->z;
-			is >> transformptr->rotation;
-			is >> transformptr->scaleX >> transformptr->scaleY >> transformptr->scaleZ;
-			std::cout << "transform :" << transformptr->x << " ," << transformptr->y << " ," << transformptr->z << "\n";
-			std::cout << "rotation :" << transformptr->rotation << "\n";
-			std::cout << "scale :" << transformptr->scaleX << " ," << transformptr->scaleY << " ," << transformptr->scaleZ << "\n";
-		}
-		if (checker == "input")
-		{
-			m_gameObjects[objectName]->addComponent<Input>(1.f);
-			std::cout << "input component added\n";
-		}
-		if (checker == "physics") {
-			Physics* phyptr = m_gameObjects[objectName]->addComponent<Physics>();
-			is >> phyptr->inWater >> phyptr->buoancy;
-			std::cout << "inwater : " << phyptr->inWater << ", " << phyptr->buoancy << "\n";
-		}
-		if (checker == "collision")
-		{
-			m_gameObjects[objectName]->addComponent<CollisionInfo>();
-			std::cout << "collision component added\n";
-		}
+\param s Input string from JSON.
+\return Corresponding PlayerState value. Defaults to Idle if unknown.
+*/
 
-		if (checker == "animation")
-		{
-			Animation* animationptr = m_gameObjects[objectName]->addComponent<Animation>();
-			is >> animationptr->loop >> animationptr->currentFrameColumn >> animationptr->currentFrameRow >> animationptr->totalColumn >> animationptr->totalRow >> animationptr->frameTime;
-			std::cout << "animation component added\n";
-		}
+static PlayerState parsePlayerState(const std::string& s) {
+	if (s == "Idle")     return PlayerState::Idle;
+	if (s == "Walking")  return PlayerState::Walking;
+	if (s == "Jumping")  return PlayerState::Jumping;
+	if (s == "Falling")  return PlayerState::Falling;
+	if (s == "Shooting") return PlayerState::Shooting;
+	if (s == "Dead")     return PlayerState::Dead;
+	return PlayerState::Idle; // default/fallback
+}
+/*!
+\brief Converts a PlayerState enum value into a string.
 
-		if (checker == "font")
-		{
-			FontComponent* fc = m_gameObjects[objectName]->addComponent<FontComponent>();
-			std::string line;
-			std::getline(is >> std::ws, line);
-			std::istringstream iss(line);
-			iss >> std::quoted(fc->word) >> fc->clr.r >> fc->clr.g >> fc->clr.b >> fc->scale;
-		}
+This function is used when saving state machine data back to JSON.
 
-		//m_gameObjects["player"]->addComponent<Input>(1.f);
-		
+\param state The PlayerState to convert.
+\return A string representation of the state (Idle, Walking, Jumping, etc.).
+*/
+
+static const char* playerStateToStr(PlayerState state) {
+	switch (state) {
+	case PlayerState::Idle:     return "Idle";
+	case PlayerState::Walking:  return "Walking";
+	case PlayerState::Jumping:  return "Jumping";
+	case PlayerState::Falling:  return "Falling";
+	case PlayerState::Shooting: return "Shooting";
+	case PlayerState::Dead:     return "Dead";
+	default:                    return "Idle";
 	}
 }
 
-void GameObjectManager::saveToFile(const std::string& filename) const {
-	std::ofstream os{ filename };
-	if (!os)
-	{
-		std::cerr << "file not found: " << filename << std::endl;
-		return;
-	}
+//inline soundID strToSoundID(const std::string& str) {
+//	if (str == "water") return soundID::water;
+//	if (str == "shoot") return soundID::shoot;
+//	if (str == "fire") return soundID::fire;
+//	if (str == "bg") return soundID::bg;
+//	return soundID::water; // default fallback
+//}
+//
+//// Add this helper function to convert soundID to string
+//inline const char* soundIDToStr(soundID id) {
+//	switch (id) {
+//		case soundID::water: return "water";
+//		case soundID::shoot: return "shoot";
+//		case soundID::fire: return "fire";
+//		case soundID::bg: return "bg";
+//		default: return "water";
+//	}
+//}
 
-	for (auto& [name, obj] : m_gameObjects)
-	{
-		os << "object " << obj->getObjectName() << "\n";
+/*!
+\brief Loads a scene from a JSON file and rebuilds all game objects.
 
-		if (auto render = obj->getComponent<Render>())
-		{
-			os << "renderer ";
+This function:
+- Reads and parses JSON file content.
+- Destroys old objects and clears old textures.
+- Instantiates new objects, including prefab-based objects.
+- Applies layer assignments.
+- Overrides prefab defaults with scene-specific component data.
+- Loads components such as Transform, Render, Physics, Animation,
+  CollisionInfo, Input, StateMachine, and FontComponent.
 
-			switch (render->modelRef.shape) {
-			case shape::square:
-				os << "square ";
-				break;
-			case shape::circle:
-				os << "circle ";
-				break;
-			default:
-				os << "circle ";
-				break;
-			}
+If the JSON is missing or malformed, the function prints an error and stops.
 
-			os << render->hasTex << " ";
-			if (render->hasTex)
-				os << render->texFile;
-
-			if(render->hasAnimation)
-				os << " " << render->hasAnimation;
-			else
-				os << " " << 0;
-
-			os << "\n";
-		}
-
-		if (auto transform = obj->getComponent<Transform>())
-		{
-			os << "transform "
-				<< transform->x << " "
-				<< transform->y << " "
-				<< transform->z << " "
-				<< transform->rotation << " "
-				<< transform->scaleX << " "
-				<< transform->scaleY << " "
-				<< transform->scaleZ << "\n";
-		}
-
-		if (obj->hasComponent<Input>())
-		{
-			os << "input\n";
-		}
-
-		if (auto physics = obj->getComponent<Physics>())
-		{
-			os << "physics "
-				<< physics->inWater << " "
-				<< physics->buoancy << "\n";
-		}
-
-		if (obj->hasComponent<CollisionInfo>())
-		{
-			os << "collision\n";
-		}
-
-		if (Animation* animationptr = obj->getComponent<Animation>()) {
-			os << "animation "
-				<< animationptr->loop << " "
-				<< animationptr->currentFrameColumn << " "
-				<< animationptr->currentFrameRow << " "
-				<< animationptr->totalColumn << " "
-				<< animationptr->totalRow << " "
-				<< animationptr->frameTime << "\n";
-		}
-
-		os << "\n";
-	}
-
-	std::cout << "Scene saved to " << filename << "\n";
-}
+\param filename Path to the JSON scene file.
+*/
 
 void GameObjectManager::loadSceneFromJson(const std::string& filename) {
 
@@ -333,6 +248,21 @@ void GameObjectManager::loadSceneFromJson(const std::string& filename) {
 	if (version != 1)
 		std::cerr << "Warning: unsupported scene version " << version << "\n";
 
+	/*for (auto& pair : m_gameObjects) {
+		GameObject* obj = pair.second.get();
+		if (obj && obj->hasComponent<Render>()) {
+			Render* render = obj->getComponent<Render>();
+			if (render->texHDL && render->hasTex) {
+				glDeleteTextures(1, &render->texHDL);
+				render->texHDL = 0;
+				render->texChanged = false;
+			}
+		}
+	}*/
+
+	//std::cerr << "Cleared textures before loading scene.\n";
+	
+	m_layerManager.clearAllLayers();
 	m_gameObjects.clear();
 
 	if (!doc.HasMember("objects") || !doc["objects"].IsArray()) {
@@ -340,14 +270,17 @@ void GameObjectManager::loadSceneFromJson(const std::string& filename) {
 		return;
 	}
 
+	// prepare template for bullet
+	GameObject* templateBullet = nullptr;
+
 	for (auto& jObj : doc["objects"].GetArray()) {
 		if (!jObj.IsObject()) continue;
 
-		std::string name = (jObj.HasMember("name") && jObj["name"].IsString())
+		std::string nameOjb = (jObj.HasMember("name") && jObj["name"].IsString())
 			? jObj["name"].GetString()
 			: ("Object_" + std::to_string(m_gameObjects.size()));
 
-		GameObject* go = createGameObject(name);
+		GameObject* go = createGameObject(nameOjb);
 
 		// check if this object references a prefab
 		if (jObj.HasMember("prefabid") && jObj["prefabid"].IsString()) {
@@ -355,12 +288,24 @@ void GameObjectManager::loadSceneFromJson(const std::string& filename) {
 			go->getObjectPrefabID() = prefabID;
 			PrefabManager::Instance().instantiate(go, *this);
 
+			/* ---- SCUFFED WAY TO GET BULLETS CLONE ---- */
+			// still hardcoded but slightly better than using name only
+			// if its bullet prefab, make this obj the template
+			if (prefabID == "b1a12273-a692-4ce0-8072-156da2c70842" && !templateBullet) {
+				templateBullet = go;
+			}
+			/* ---- END ---- */
 		}
-		else {
-			// if no prefab, just create a fresh game object
-			std::string name = (jObj.HasMember("name") && jObj["name"].IsString())
-				? jObj["name"].GetString()
-				: ("Object_" + std::to_string(m_gameObjects.size()));
+		//else {
+		//	// if no prefab, just create a fresh game object
+		//	std::string name = (jObj.HasMember("name") && jObj["name"].IsString())
+		//		? jObj["name"].GetString()
+		//		: ("Object_" + std::to_string(m_gameObjects.size()));
+		//}
+
+		if (jObj.HasMember("layer") && jObj["layer"].IsInt()) {
+			int layerID = jObj["layer"].GetInt();
+			m_layerManager.assignObjectToLayer(go, layerID);
 		}
 
 		/*
@@ -425,7 +370,7 @@ void GameObjectManager::loadSceneFromJson(const std::string& filename) {
 			if (r->hasTex && jr.HasMember("texture") && jr["texture"].IsString()) {
 				r->texFile = jr["texture"].GetString();
 				r->texHDL = 0;
-				r->texChanged = true;   // lazy GPU load later
+				r->texChanged = false;   // lazy GPU load later
 			}
 			else {
 				r->texFile.clear();
@@ -442,7 +387,14 @@ void GameObjectManager::loadSceneFromJson(const std::string& filename) {
 				r->hasAnimation = false;
 			}
 
-			// If your Render lacks these, keep them out.
+			if (jr.HasMember("clr") && jr["clr"].IsArray() && jr["clr"].Size() == 3)
+			{
+				r->clr.r = jr["clr"][0].GetFloat();
+				r->clr.g = jr["clr"][1].GetFloat();
+				r->clr.b = jr["clr"][2].GetFloat();
+			}
+
+
 //          if (jr.HasMember("visible")     && jr["visible"].IsBool())     r->visible       = jr["visible"].GetBool();
 //          if (jr.HasMember("transparent") && jr["transparent"].IsBool()) r->isTransparent = jr["transparent"].GetBool();
 //          if (jr.HasMember("wireframe")   && jr["wireframe"].IsBool())   r->wireframe     = jr["wireframe"].GetBool();
@@ -451,7 +403,7 @@ void GameObjectManager::loadSceneFromJson(const std::string& filename) {
 		// ---- Input (presence only) ----
 		if (comps.HasMember("Input") && comps["Input"].IsObject()) {
 			auto* i = go->getComponent<Input>();
-			if (!i) i = go->addComponent<Input>(1.f);
+			if (!i) i = go->addComponent<Input>();
 		}
 
 		// ---- Physics ----
@@ -460,6 +412,25 @@ void GameObjectManager::loadSceneFromJson(const std::string& filename) {
 			
 			auto* p = go->getComponent<Physics>();
 			if (!p) p = go->addComponent<Physics>();
+
+			if (jp.HasMember("physicsFlag")) {
+				p->physicsFlag = jp["physicsFlag"].IsBool()
+					? jp["physicsFlag"].GetBool()
+					: (jp["physicsFlag"].GetInt() != 0);
+			}
+
+			if (jp.HasMember("moveSpeed") && jp["moveSpeed"].IsNumber())
+				p->moveSpeed = jp["moveSpeed"].GetFloat();
+
+			if (jp.HasMember("jumpForce") && jp["jumpForce"].IsNumber())
+				p->jumpForce = jp["jumpForce"].GetFloat();
+
+			if (jp.HasMember("damping") && jp["damping"].IsNumber())
+				p->damping = jp["damping"].GetFloat();
+
+			if (jp.HasMember("mass") && jp["mass"].IsNumber())
+				p->dynamics.mass = jp["mass"].GetFloat();
+
 
 			if (jp.HasMember("inWater")) {
 				p->inWater = jp["inWater"].IsBool()
@@ -475,34 +446,37 @@ void GameObjectManager::loadSceneFromJson(const std::string& filename) {
 
 		// ---- CollisionInfo (presence only) ----
 		if (comps.HasMember("CollisionInfo") && comps["CollisionInfo"].IsObject()) {
+			const auto& jc = comps["CollisionInfo"];
 			auto* c = go->getComponent<CollisionInfo>();
 			if (!c)
 				c = go->addComponent<CollisionInfo>();
-		}
 
-		// ---- Animation ----
-		if (comps.HasMember("Animation") && comps["Animation"].IsObject()) {
-			const auto& ja = comps["Animation"];
-
-			auto* a = go->getComponent<Animation>();
-			if (!a)
-				a = go->addComponent<Animation>();
-
-			if (ja.HasMember("loop")) {
-				a->loop = ja["loop"].IsBool()
-					? ja["loop"].GetBool()
-					: (ja["loop"].GetInt() != 0);
+			if (jc.HasMember("collisionFlag")) {
+				c->collisionFlag = jc["collisionFlag"].IsBool()
+					? jc["collisionFlag"].GetBool()
+					: (jc["collisionFlag"].GetInt() != 0);
 			}
-			if (ja.HasMember("currentFrameColumn") && ja["currentFrameColumn"].IsInt())
-				a->currentFrameColumn = ja["currentFrameColumn"].GetInt();
-			if (ja.HasMember("currentFrameRow") && ja["currentFrameRow"].IsInt())
-				a->currentFrameRow = ja["currentFrameRow"].GetInt();
-			if (ja.HasMember("totalColumn") && ja["totalColumn"].IsInt())
-				a->totalColumn = ja["totalColumn"].GetInt();
-			if (ja.HasMember("totalRow") && ja["totalRow"].IsInt())
-				a->totalRow = ja["totalRow"].GetInt();
-			if (ja.HasMember("frameTime") && ja["frameTime"].IsNumber())
-				a->frameTime = ja["frameTime"].GetFloat();
+
+			if (jc.HasMember("autoFitScale")) {
+				c->autoFitScale = jc["autoFitScale"].IsBool()
+					? jc["autoFitScale"].GetBool()
+					: (jc["autoFitScale"].GetInt() != 0);
+			}
+
+			std::string shp = (jc.HasMember("colliderType") && jc["colliderType"].IsString())
+				? jc["colliderType"].GetString()
+				: "square";
+			c->colliderType = JsonIO::StrToShape(shp);
+
+			if (jc.HasMember("collisionRes") && jc["collisionRes"].IsString()) {
+				c->collisionRes = JsonIO::StrToCollisionResponseMode(jc["collisionRes"].GetString());
+			}
+
+			if (jc.HasMember("colliderSize") && jc["colliderSize"].IsArray() && jc["colliderSize"].Size() == 2)
+			{
+				c->colliderSize.x = jc["colliderSize"][0].GetFloat();
+				c->colliderSize.y = jc["colliderSize"][1].GetFloat();
+			}
 		}
 
 		// ---- State Machine ----
@@ -514,7 +488,7 @@ void GameObjectManager::loadSceneFromJson(const std::string& filename) {
 				sm = go->addComponent<StateMachine>();
 
 			if (smj.HasMember("state") && smj["state"].IsString())
-				sm->state = JsonIO::parsePlayerState(smj["state"].GetString());
+				sm->state = parsePlayerState(smj["state"].GetString());
 
 			if (smj.HasMember("facingRight")) {
 				if (smj["facingRight"].IsBool())       sm->facingRight = smj["facingRight"].GetBool();
@@ -527,12 +501,75 @@ void GameObjectManager::loadSceneFromJson(const std::string& filename) {
 			/*std::cout << "\n\nReading scene...\n";
 			std::cout << "State: " << sm->facingRight << std::endl;
 			std::cout << "State Time: " << sm->stateTime << std::endl;*/
+
+			/* ---- Animation based on state ---- */
+			// Helper lambda to parse a single animation state
+			auto parseAnimState = [](const rapidjson::Value& animJson) -> AnimateState {
+				AnimateState state;
+
+				if (animJson.HasMember("texture") && animJson["texture"].IsString())
+					state.texFile = animJson["texture"].GetString();
+
+				if (animJson.HasMember("loop")) {
+					if (animJson["loop"].IsBool())
+						state.loop = animJson["loop"].GetBool();
+					else if (animJson["loop"].IsInt())
+						state.loop = (animJson["loop"].GetInt() != 0);
+				}
+
+				if (animJson.HasMember("totalColumn") && animJson["totalColumn"].IsInt())
+					state.totalColumn = animJson["totalColumn"].GetInt();
+
+				if (animJson.HasMember("totalRow") && animJson["totalRow"].IsInt())
+					state.totalRow = animJson["totalRow"].GetInt();
+
+				if (animJson.HasMember("frameTime") && animJson["frameTime"].IsNumber())
+					state.frameTime = static_cast<float>(animJson["frameTime"].GetDouble());
+
+				if (animJson.HasMember("initialFramCol") && animJson["initialFramCol"].IsNumber())
+					state.initialFrame.x = static_cast<float>(animJson["initialFramCol"].GetDouble());
+
+				if (animJson.HasMember("initialFramRow") && animJson["initialFramRow"].IsNumber())
+					state.initialFrame.y = static_cast<float>(animJson["initialFramRow"].GetDouble());
+
+				if (animJson.HasMember("lastFramCol") && animJson["lastFramCol"].IsNumber())
+					state.lastFrame.x = static_cast<float>(animJson["lastFramCol"].GetDouble());
+
+				if (animJson.HasMember("lastFramRow") && animJson["lastFramRow"].IsNumber())
+					state.lastFrame.y = static_cast<float>(animJson["lastFramRow"].GetDouble());
+
+				return state;
+				};
+
+			// parse each state's animation in the order: Idle, Walking, Jumping, Falling, Shooting
+			// matches PlayerState enum order
+			std::vector<std::string>stateNames = JsonIO::stateNames;
+
+			for (size_t i = 0; i < stateNames.size(); ++i) {
+				if (smj.HasMember(stateNames[i].c_str()) && smj[stateNames[i].c_str()].IsObject()) {
+					Animation* anim = go->getComponent<Animation>();
+					if (!anim) {
+						anim = go->addComponent<Animation>();
+						anim->animState.resize(stateNames.size());
+					}
+
+					const rapidjson::Value& stateObj = smj[stateNames[i].c_str()];
+
+					if (stateObj.HasMember("animState") && stateObj["animState"].IsObject()) {
+						AnimateState parsed = parseAnimState(stateObj["animState"]);
+						anim->animState[i] = parsed;
+					}
+				}
+			}
 		}
 
 		//font component
 		if (comps.HasMember("FontComponent") && comps["FontComponent"].IsObject()) {
 			const auto& jf = comps["FontComponent"];
-			auto* fc = go->addComponent<FontComponent>();
+			
+			auto* fc = go->getComponent<FontComponent>();
+			if (!fc)
+				fc = go->addComponent<FontComponent>();
 
 			// word/text
 			if (jf.HasMember("word") && jf["word"].IsString()) {
@@ -558,11 +595,108 @@ void GameObjectManager::loadSceneFromJson(const std::string& filename) {
 			else {
 				fc->fontType = 1;  // Default to ARIAL
 			}
+
+			
 		}
+
+		if (comps.HasMember("AudioComponent") && comps["AudioComponent"].IsObject()) {
+				const auto & ja = comps["AudioComponent"];
+
+			auto* audio = go->getComponent<AudioComponent>();
+			if (!audio) {
+				// Create with default sound ID
+				audio = go->addComponent<AudioComponent>();
+			}
+
+			// Load sound ID from string
+			if (ja.HasMember("audioFile") && ja["audioFile"].IsString()) {
+				audio->audioFile = ja["audioFile"].GetString();
+			}
+
+			// Volume
+			if (ja.HasMember("volume") && ja["volume"].IsNumber()) {
+				audio->volume = ja["volume"].GetFloat();
+			}
+
+			// Pitch
+			if (ja.HasMember("pitch") && ja["pitch"].IsNumber()) {
+				audio->pitch = ja["pitch"].GetFloat();
+			}
+
+			// Loop
+			if (ja.HasMember("loop")) {
+				audio->loop = ja["loop"].IsBool()
+					? ja["loop"].GetBool()
+					: (ja["loop"].GetInt() != 0);
+			}
+
+			// Play on start
+			if (ja.HasMember("playOnStart")) {
+				audio->playOnStart = ja["playOnStart"].IsBool()
+					? ja["playOnStart"].GetBool()
+					: (ja["playOnStart"].GetInt() != 0);
+			}
+
+			// Muted
+			if (ja.HasMember("muted")) {
+				audio->muted = ja["muted"].IsBool()
+					? ja["muted"].GetBool()
+					: (ja["muted"].GetInt() != 0);
+			}
+
+			// Fade settings
+			if (ja.HasMember("fadeInOnStart")) {
+				audio->fadeInOnStart = ja["fadeInOnStart"].IsBool()
+					? ja["fadeInOnStart"].GetBool()
+					: (ja["fadeInOnStart"].GetInt() != 0);
+			}
+
+			if (ja.HasMember("fadeInDuration") && ja["fadeInDuration"].IsNumber()) {
+				audio->fadeInDuration = ja["fadeInDuration"].GetFloat();
+			}
+
+			if (ja.HasMember("fadeOutOnStop")) {
+				audio->fadeOutOnStop = ja["fadeOutOnStop"].IsBool()
+					? ja["fadeOutOnStop"].GetBool()
+					: (ja["fadeOutOnStop"].GetInt() != 0);
+			}
+
+			if (ja.HasMember("fadeOutDuration") && ja["fadeOutDuration"].IsNumber()) {
+				audio->fadeOutDuration = ja["fadeOutDuration"].GetFloat();
+			}
+		}
+		
 	}
 
-	std::cout << "Scene loaded (JSON): " << filename << "\n";
+	//create bullet pool
+	/* ---- SCUFFED WAY TO GET BULLET WORK ---- */
+	if (!templateBullet) templateBullet = getGameObject("bullet");
+
+	if (templateBullet) {
+		createBulletPool(templateBullet->getObjectName(), 10);
+	}
+	/* ---- END ---- */
+
+	std::cout << "Total game objects loaded: " << m_gameObjects.size() << std::endl;
+
+	//std::cout << "Scene loaded (JSON): " << filename << "\n";
 }
+/*!
+\brief Saves all current game objects and component data to a JSON file.
+
+This function:
+- Creates a JSON document with version and object list.
+- Includes prefab IDs when the object originates from a prefab.
+- Saves only component values that differ from prefab defaults,
+  minimizing redundant scene data.
+- Exports components such as Transform, Render, Physics, Animation,
+  CollisionInfo, Input, StateMachine, and FontComponent.
+
+If writing fails, an error message is printed.
+
+\param filename Output JSON file path.
+\param isNew If true, writes an empty scene structure with only version header.
+*/
 
 void GameObjectManager::saveSceneToJson(const std::string& filename, bool isNew) const {
 	rapidjson::Document doc;
@@ -573,6 +707,7 @@ void GameObjectManager::saveSceneToJson(const std::string& filename, bool isNew)
 
 	// version header
 	doc.AddMember("version", rapidjson::Value(1), a);
+	bool bulletSerialized = false;
 
 	if (!isNew) {
 
@@ -581,6 +716,20 @@ void GameObjectManager::saveSceneToJson(const std::string& filename, bool isNew)
 
 		for (auto const& kv : m_gameObjects) {
 			const GameObject* obj = kv.second.get();
+
+			std::string objName = obj->getObjectName();
+
+			// if its a clone of bullet, serialize only the first one
+			if (obj->getObjectPrefabID() == "b1a12273-a692-4ce0-8072-156da2c70842") {
+				// if its a bullet, change name to bullet
+				if (!bulletSerialized) {
+					objName = "bullet";
+					bulletSerialized = true;
+				}
+				else {
+					continue;
+				}
+			}
 
 			rapidjson::Value jObj(rapidjson::kObjectType);
 
@@ -591,12 +740,19 @@ void GameObjectManager::saveSceneToJson(const std::string& filename, bool isNew)
 			}
 
 			// name
-			jObj.AddMember("name", rapidjson::Value(obj->getObjectName().c_str(), a), a);
+			jObj.AddMember("name", rapidjson::Value(objName.c_str(), a), a);
+
 
 			// get prefab JSON if obj referencing a prefab
 			const rapidjson::Document* prefabDoc{ nullptr };
 			if (!prefabID.empty()) {
 				prefabDoc = PrefabManager::Instance().getPrefabJson(prefabID);
+			}
+
+			int layerID = obj->getLayer();
+			const rapidjson::Value* prefabLayer = PM.getPrefabJsonComp(prefabDoc, "layer");
+			if (layerID != -1 && layerID != 1 && (!prefabLayer || !prefabLayer->IsInt() || prefabLayer->GetInt() != layerID)) {  // Only save if not default game layer
+				jObj.AddMember("layer", layerID, a);
 			}
 
 			/* ------------ Useful lambda for comparing later ------------ */
@@ -686,9 +842,24 @@ void GameObjectManager::saveSceneToJson(const std::string& filename, bool isNew)
 					}
 					};
 
+				auto pushIfDiffFloat = [&](const char* key, float val) {
+					if (!prefabP || !prefabP->HasMember(key) ||
+						!(*prefabP)[key].IsNumber() ||
+						((*prefabP)[key].GetFloat() != val))
+					{
+						jp.AddMember(rapidjson::Value(key, a), rapidjson::Value(val), a);
+					}
+					};
+
 				// if different then change scene data
+				pushIfDiffBool("physicsFlag", p->physicsFlag);
 				pushIfDiffBool("inWater", p->inWater);
 				pushIfDiffBool("buoyancy", p->buoancy);
+
+				pushIfDiffFloat("moveSpeed", p->moveSpeed);
+				pushIfDiffFloat("jumpForce", p->jumpForce);
+				pushIfDiffFloat("mass", p->dynamics.mass);
+				pushIfDiffFloat("damping", p->damping);
 
 				if (!jp.ObjectEmpty()) comps.AddMember("Physics", jp, a);
 			}
@@ -700,40 +871,42 @@ void GameObjectManager::saveSceneToJson(const std::string& filename, bool isNew)
 			}
 
 			// ---- CollisionInfo (presence only) ----
-			if (obj->hasComponent<CollisionInfo>()) {
+			if (auto c = obj->getComponent<CollisionInfo>()) {
+				rapidjson::Value jc(rapidjson::kObjectType);
 				const rapidjson::Value* prefabC = PM.getPrefabJsonComp(prefabDoc, "CollisionInfo");
-				if (!prefabC) comps.AddMember("CollisionInfo", rapidjson::Value(rapidjson::kObjectType), a);
-			}
 
-			// ---- Animation ----
-			if (auto an = obj->getComponent<Animation>()) {
-				rapidjson::Value ja(rapidjson::kObjectType);
-				const rapidjson::Value* prefabA = PM.getPrefabJsonComp(prefabDoc, "Animation");
-
-				auto pushIfDiffInt = [&](const char* key, int val) {
-					if (!prefabA || !prefabA->HasMember(key) || differsInt((*prefabA)[key].GetInt(), val))
-						ja.AddMember(rapidjson::Value(key, a), rapidjson::Value(val), a);
-					};
-				auto pushIfDiffFloat = [&](const char* key, float val) {
-					if (!prefabA || !prefabA->HasMember(key) || differsFloat((*prefabA)[key].GetFloat(), val))
-						ja.AddMember(rapidjson::Value(key, a), rapidjson::Value(val), a);
-					};
 				auto pushIfDiffBool = [&](const char* key, bool val) {
-					if (!prefabA || !prefabA->HasMember(key) ||
-						((*prefabA)[key].IsBool() && differsBool((*prefabA)[key].GetBool(), val)) ||
-						((*prefabA)[key].IsInt() && differsBool((*prefabA)[key].GetInt() != 0, val))) {
-						ja.AddMember(rapidjson::Value(key, a), rapidjson::Value(val ? 1 : 0), a);
+					if (!prefabC || !prefabC->HasMember(key) ||
+						((*prefabC)[key].IsBool() && differsBool((*prefabC)[key].GetBool(), val)) ||
+						((*prefabC)[key].IsInt() && differsBool((*prefabC)[key].GetInt() != 0, val))) {
+						jc.AddMember(rapidjson::Value(key, a), rapidjson::Value(val ? 1 : 0), a);
 					}
 					};
 
-				pushIfDiffBool("loop", an->loop);
-				pushIfDiffInt("currentFrameColumn", an->currentFrameColumn);
-				pushIfDiffInt("currentFrameRow", an->currentFrameRow);
-				pushIfDiffInt("totalColumn", an->totalColumn);
-				pushIfDiffInt("totalRow", an->totalRow);
-				pushIfDiffFloat("frameTime", an->frameTime);
+				pushIfDiffBool("collisionFlag", c->collisionFlag);
+				pushIfDiffBool("autoFitScale", c->autoFitScale);
 
-				if (!ja.ObjectEmpty()) comps.AddMember("Animation", ja, a);
+				if (!prefabC || !prefabC->HasMember("colliderSize") ||
+					differsFloat((*prefabC)["colliderSize"][0].GetFloat(), c->colliderSize.x) ||
+					differsFloat((*prefabC)["colliderSize"][1].GetFloat(), c->colliderSize.y)) {
+
+					rapidjson::Value sc(rapidjson::kArrayType);
+					sc.PushBack(c->colliderSize.x, a).PushBack(c->colliderSize.y, a);
+					jc.AddMember("colliderSize", sc, a);
+				}
+
+				std::string shapeStr = JsonIO::ShapeToStr(c->colliderType);
+				if (!prefabC || !prefabC->HasMember("colliderType") || shapeStr != (*prefabC)["colliderType"].GetString())
+					jc.AddMember("colliderType", rapidjson::Value(shapeStr.c_str(), a), a);
+
+				std::string collisionResStr = JsonIO::CollisionResponseModeToStr(c->collisionRes);
+				if (!prefabC || !prefabC->HasMember("collisionRes") || collisionResStr != (*prefabC)["collisionRes"].GetString()) {
+					jc.AddMember("collisionRes", rapidjson::Value(collisionResStr.c_str(), a), a);
+				}
+
+				if (!jc.ObjectEmpty()) {
+					comps.AddMember("CollisionInfo", jc, a);
+				}
 			}
 
 			// ---- StateMachine ----
@@ -741,8 +914,8 @@ void GameObjectManager::saveSceneToJson(const std::string& filename, bool isNew)
 				rapidjson::Value js(rapidjson::kObjectType);
 				const rapidjson::Value* prefabSM = PrefabManager::Instance().getPrefabJsonComp(prefabDoc, "StateMachine");
 
-				if (!prefabSM || !prefabSM->HasMember("state") || sm->state != JsonIO::parsePlayerState((*prefabSM)["state"].GetString()))
-					js.AddMember("state", rapidjson::Value(JsonIO::playerStateToStr(sm->state), a), a);
+				if (!prefabSM || !prefabSM->HasMember("state") || sm->state != parsePlayerState((*prefabSM)["state"].GetString()))
+					js.AddMember("state", rapidjson::Value(playerStateToStr(sm->state), a), a);
 
 				if (!prefabSM || !prefabSM->HasMember("facingRight") ||
 					((*prefabSM)["facingRight"].IsBool() && differsBool((*prefabSM)["facingRight"].GetBool(), sm->facingRight)) ||
@@ -752,6 +925,65 @@ void GameObjectManager::saveSceneToJson(const std::string& filename, bool isNew)
 				if (!prefabSM || !prefabSM->HasMember("stateTime") ||
 					differsFloat((*prefabSM)["stateTime"].GetFloat(), sm->stateTime))
 					js.AddMember("stateTime", rapidjson::Value(sm->stateTime), a);
+
+
+				/* ------ Animation for states ----- */
+				if (auto anim = obj->getComponent<Animation>()) {
+					std::vector<std::string> stateNames = JsonIO::stateNames;
+
+					for (size_t i = 0; i < stateNames.size() && i < anim->animState.size(); ++i) {
+						const AnimateState& animState = anim->animState[i];
+
+						// check if this state differs from prefab
+						bool shouldSerialize = false;
+						const rapidjson::Value* prefabStateObj = nullptr;
+
+						if (prefabSM && prefabSM->HasMember(stateNames[i].c_str())) {
+							prefabStateObj = &(*prefabSM)[stateNames[i].c_str()];
+							if (prefabStateObj->IsObject() && prefabStateObj->HasMember("animState")) {
+								const auto& prefabAnimState = (*prefabStateObj)["animState"];
+
+								shouldSerialize =
+									(!prefabAnimState.HasMember("texture") || animState.texFile != prefabAnimState["texture"].GetString()) ||
+									(!prefabAnimState.HasMember("loop") || animState.loop != (prefabAnimState["loop"].IsBool() ? prefabAnimState["loop"].GetBool() : (prefabAnimState["loop"].GetInt() != 0))) ||
+									(!prefabAnimState.HasMember("totalColumn") || animState.totalColumn != prefabAnimState["totalColumn"].GetInt()) ||
+									(!prefabAnimState.HasMember("totalRow") || animState.totalRow != prefabAnimState["totalRow"].GetInt()) ||
+									(!prefabAnimState.HasMember("frameTime") || differsFloat(static_cast<float>(prefabAnimState["frameTime"].GetDouble()), animState.frameTime));
+									(!prefabAnimState.HasMember("initialFramCol") || differsFloat(static_cast<float>(prefabAnimState["initialFramCol"].GetDouble()), animState.initialFrame.x));
+									(!prefabAnimState.HasMember("initialFramRow") || differsFloat(static_cast<float>(prefabAnimState["initialFramRow"].GetDouble()), animState.initialFrame.y));
+									(!prefabAnimState.HasMember("lastFrameCol") || differsFloat(static_cast<float>(prefabAnimState["lastFrameCol"].GetDouble()), animState.lastFrame.x));
+									(!prefabAnimState.HasMember("lastFrameRow") || differsFloat(static_cast<float>(prefabAnimState["lastFrameRow"].GetDouble()), animState.lastFrame.y));
+							}
+							else {
+								shouldSerialize = true; // prefab doesn't have animState for this state
+							}
+						}
+						else {
+							shouldSerialize = true; // prefab dont this this
+						}
+
+						// only serialize if different from prefab or if no prefab
+						if (shouldSerialize) {
+							rapidjson::Value stateObj(rapidjson::kObjectType);
+							rapidjson::Value animStateObj(rapidjson::kObjectType);
+
+							animStateObj.AddMember("texture", rapidjson::Value(animState.texFile.c_str(), a), a);
+							animStateObj.AddMember("loop", rapidjson::Value(animState.loop ? 1 : 0), a);
+							animStateObj.AddMember("totalColumn", rapidjson::Value(animState.totalColumn), a);
+							animStateObj.AddMember("totalRow", rapidjson::Value(animState.totalRow), a);
+							animStateObj.AddMember("frameTime", rapidjson::Value(animState.frameTime), a);
+							animStateObj.AddMember("initialFramCol", rapidjson::Value(animState.initialFrame.x), a);
+							animStateObj.AddMember("initialFramRow", rapidjson::Value(animState.initialFrame.y), a);
+							animStateObj.AddMember("lastFramCol", rapidjson::Value(animState.lastFrame.x), a);
+							animStateObj.AddMember("lastFramRow", rapidjson::Value(animState.lastFrame.y), a);
+
+							stateObj.AddMember("animState", animStateObj, a);
+							js.AddMember(rapidjson::Value(stateNames[i].c_str(), a), stateObj, a);
+						}
+					}
+				}
+				/* ---------- END ---------- */
+
 
 				if (!js.ObjectEmpty())
 					comps.AddMember("StateMachine", js, a);
@@ -782,6 +1014,51 @@ void GameObjectManager::saveSceneToJson(const std::string& filename, bool isNew)
 				comps.AddMember("FontComponent", jf, a);
 			}
 
+			if (auto ac = obj->getComponent<AudioComponent>()) {
+				rapidjson::Value jac(rapidjson::kObjectType);
+				const rapidjson::Value* prefabAC = PM.getPrefabJsonComp(prefabDoc, "AudioComponent");
+
+				auto pushIfDiffStr = [&](const char* key, const char* val) {
+					if (!prefabAC || !prefabAC->HasMember(key) ||
+						std::strcmp((*prefabAC)[key].GetString(), val) != 0) {
+						jac.AddMember(rapidjson::Value(key, a),
+							rapidjson::Value(val, a), a);
+					}
+				};
+
+				auto pushIfDiffFloat = [&](const char* key, float val) {
+					if (!prefabAC || !prefabAC->HasMember(key) ||
+						differsFloat((*prefabAC)[key].GetFloat(), val)) {
+						jac.AddMember(rapidjson::Value(key, a),
+							rapidjson::Value(val), a);
+					}
+				};
+
+				auto pushIfDiffBool = [&](const char* key, bool val) {
+					if (!prefabAC || !prefabAC->HasMember(key) ||
+						((*prefabAC)[key].IsBool() && differsBool((*prefabAC)[key].GetBool(), val)) ||
+						((*prefabAC)[key].IsInt() && differsBool((*prefabAC)[key].GetInt() != 0, val))) {
+						jac.AddMember(rapidjson::Value(key, a),
+							rapidjson::Value(val ? 1 : 0), a);
+					}
+				};
+
+				pushIfDiffStr("audioFile", ac->audioFile.c_str());
+				pushIfDiffFloat("volume", ac->volume);
+				pushIfDiffFloat("pitch", ac->pitch);
+				pushIfDiffBool("loop", ac->loop);
+				pushIfDiffBool("playOnStart", ac->playOnStart);
+				pushIfDiffBool("muted", ac->muted);
+				pushIfDiffBool("fadeInOnStart", ac->fadeInOnStart);
+				pushIfDiffFloat("fadeInDuration", ac->fadeInDuration);
+				pushIfDiffBool("fadeOutOnStop", ac->fadeOutOnStop);
+				pushIfDiffFloat("fadeOutDuration", ac->fadeOutDuration);
+
+				if (!jac.ObjectEmpty()) {
+					comps.AddMember("AudioComponent", jac, a);
+				}
+			}
+
 			if (!comps.ObjectEmpty()) jObj.AddMember("components", comps, a);
 			objects.PushBack(jObj, a);
 		}
@@ -798,22 +1075,78 @@ void GameObjectManager::saveSceneToJson(const std::string& filename, bool isNew)
 		std::cout << "Scene saved (JSON): " << filename << "\n";
 	}
 }
+/*!
+\brief Loads a scene automatically based on file extension.
+
+If the path ends with ".json", loads a JSON scene.
+
+\param path Scene file path.
+*/
 
 void GameObjectManager::loadScene(const std::string& path) {
+
+	// PLEASE STOP CRASHING
+#ifdef _DEBUG
+	Editor::objSelectionState.selectedObject = nullptr;
+	Editor::objSelectionState.selectedPrefab = nullptr;
+	Editor::objSelectionState.draggedObject = nullptr;
+	Editor::objSelectionState.selectedIndex = -1;
+	UndoRedoManager::Instance().clear();
+
+	// do not set current scene to the temp scene (during simulation)
+	std::string filename = std::filesystem::path(path).filename().string();
+	if(filename != Editor::sceneState.tempSceneName)
+		Editor::sceneState.currentSceneName = filename;
+#endif
+
 	if (ends_with(path, ".json")) loadSceneFromJson(path);
-	else                          loadFromFile(path);   // keep legacy .txt scenes
 	//if (GameObject* p = getGameObject("player")) {
 	//	if (!p->hasComponent<StateMachine>()) {
 	//		p->addComponent<StateMachine>();
 	//		std::cout << "[Setup] Added StateMachine to player\n";
 	//	}
 	//}
-
 }
+/*!
+\brief Saves a scene automatically based on file extension.
+
+If the path ends with ".json", writes JSON using saveSceneToJson.
+
+\param path Output scene path.
+\param isNew If true, writes an empty or simplified scene header.
+*/
 
 void GameObjectManager::saveScene(const std::string& path, bool isNew) const {
 	if (ends_with(path, ".json")) saveSceneToJson(path, isNew);
-	else                          saveToFile(path);
+}
+
+
+//layer stuff
+LayerManager& GameObjectManager::getLayerManager() {
+	return m_layerManager;
+}
+
+bool GameObjectManager::assignObjectToLayer(GameObject* obj, int layerID) {
+	if (!obj) {
+		std::cerr << "GameObjectManager Error: Attempted to assign a null GameObject to layer " << layerID << ".\n";
+		return false;
+	}
+
+	//just change the id in the object itself
+	obj->setLayer(layerID);
+
+	return m_layerManager.assignObjectToLayer(obj, layerID);
+}
+
+std::vector<GameObject*> GameObjectManager::getObjectsInLayer(int layerID) {
+	Layer* layer = m_layerManager.getLayer(layerID);
+	if (layer) {
+		return std::vector<GameObject*>(layer->getObjects().begin(), layer->getObjects().end());
+	}
+
+	//if layer does not exist, return empty vector
+	std::cerr << "GameObjectManager Warning: Layer ID " << layerID << " not found.\n";
+	return std::vector<GameObject*>{};
 }
 
 void GameObjectManager::initializeSceneResources() {
@@ -826,6 +1159,7 @@ void GameObjectManager::initializeSceneResources() {
 				TextureData texData = ResourceManager::getInstance().getTexture(render->texFile);
 				render->texHDL = texData.id;
 				render->isTransparent = texData.isTransparent;
+				render->texChanged = false;
 			}
 		}
 		// Initialize font models
@@ -835,5 +1169,62 @@ void GameObjectManager::initializeSceneResources() {
 				fc->mdl = Font::fontMdls[0];
 			}
 		}
+		//initialize animation texture
+		if (obj->hasComponent<Animation>()) {
+			Animation* animation = obj->getComponent<Animation>();
+			if (!animation->animState.empty())
+			{
+				for (AnimateState& as : animation->animState) {
+					if (!as.texFile.empty()) {
+						TextureData textureData = ResourceManager::getInstance().getTexture(as.texFile);
+						as.texHDL = textureData.id;
+					}
+				}
+			}
+		}
 	}
+}
+
+
+void GameObjectManager::createBulletPool(const std::string& templateBulletName, int poolSize) {
+	GameObject* templateBullet = getGameObject(templateBulletName);
+	if (!templateBullet) {
+		std::cerr << "Error: Template bullet '" << templateBulletName << "' not found!\n";
+		return;
+	}
+
+	// ensure only 11 bullets (1+10 clone)
+	if (templateBullet->getObjectName() != "bullet") renameGameObject(templateBullet, "bullet");
+
+	std::cout << "Creating bullet pool with " << poolSize << " bullets...\n";
+
+	for (int i = 1; i <= poolSize; ++i) {
+		std::string bulletName = templateBulletName + std::to_string(i);
+
+		if (getGameObject(bulletName)) {
+			std::cout << "  Bullet already exists: " << bulletName << "\n";
+			continue;
+		}
+
+		GameObject* clonedBullet = CloneGameObject(templateBulletName, bulletName);
+		//incase of bullets not cloned properly
+		//if (clonedBullet) {
+		//	if (clonedBullet->hasComponent<Transform>()) {
+		//		Transform* t = clonedBullet->getComponent<Transform>();
+		//		/*t->x = -1000.0f;
+		//		t->y = -1000.0f;*/
+		//	}
+		//	if (clonedBullet->hasComponent<Physics>()) {
+		//		Physics* p = clonedBullet->getComponent<Physics>();
+		//		/*p->alive = false;
+		//		p->dynamics.position.x = -1000.0f;
+		//		p->dynamics.position.y = -1000.0f;
+		//		p->dynamics.velocity.x = 0.0f;
+		//		p->dynamics.velocity.y = 0.0f;
+		//		p->dynamics.velocity.z = 0.0f;*/
+		//	}
+		//	std::cout << "  Created: " << bulletName << "\n";
+		//}
+	}
+	std::cout << "Bullet pool creation completed.\n";
 }

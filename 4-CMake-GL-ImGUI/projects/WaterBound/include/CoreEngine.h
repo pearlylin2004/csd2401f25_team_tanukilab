@@ -27,10 +27,12 @@ Technology is prohibited.
 #include "Systems.h"
 #include "luaSystem.h"
 #include "ResourceManager.h"
+#include "layerManager.h"
 #include "prefabManager.h"
 #include "GUISystem.h"
 #include "messageBus.h"
 #include "JsonIO.h"
+
 
 class CoreEngine {
 public:
@@ -38,13 +40,17 @@ public:
     ~CoreEngine();
 
     // Initializes all engine systems and the window
-    void Init();
+    void Init(bool forceWindowed = false);
 
     // Runs the main game loop
     void Run();
 
     // Shuts down all engine systems
     void Shutdown();
+
+    //for resume and pause
+    static void windowIconifyCallback(GLFWwindow* window, int iconified);
+    static void windowFocusCallback(GLFWwindow* window, int focused);
 
 private:
     void GameLoop();
@@ -57,7 +63,19 @@ private:
     double m_delta;
     std::string m_title;
     bool m_isRunning;
-	AudioHandler& audio;
+
+    bool m_isFullscreen = false;
+    int  m_windowedWidth = 0;
+    int  m_windowedHeight = 0;
+    int  m_windowPosX = 100;
+    int  m_windowPosY = 100;
+    bool m_forceWindowed = false;
+	bool m_isPaused; //for alt-tab pause
+
+    void toggleFullscreen();
+
+    std::unique_ptr<GUISystem> m_guiSystem;
+
 
     // Core Engine Systems
     std::unique_ptr<GameObjectManager> m_manager;
@@ -65,11 +83,13 @@ private:
     std::unique_ptr<CollisionSystem> m_collisionSystem;
     std::unique_ptr<PhysicsSystem> m_physicsSystem;
     std::unique_ptr<RenderSystem> m_renderSystem;
+#ifdef _DEBUG
     std::unique_ptr<UISystem> m_uiSystem;
+#endif
     std::unique_ptr<LuaSystem> m_luaSystem;
     std::unique_ptr<FontSystem> m_fontSystem;
     std::unique_ptr<LogicSystem> m_logicSystem;
-    std::unique_ptr<GUISystem> m_guiSystem;
     std::unique_ptr<MessageBus> m_messageBus;
     std::unique_ptr<PlayerControllerSystem> m_playerController;
+    std::unique_ptr<AudioSystem> m_audioSystem;
 };

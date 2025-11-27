@@ -7,6 +7,7 @@
 \date       September, 17th, 2025
 \brief      This file defines the static and dynamic collision functions, as well as
             the main AABB-AABB collision function implementation.
+            circle-circle collision 
 
 Copyright (C) 2025 DigiPen Institute of Technology.
 Reproduction or disclosure of this file or its contents
@@ -35,10 +36,26 @@ namespace Collision {
         return Collision::AABB(min, max);
     }
 
+    AABB getObjectAABBbyCollider(const Transform* transform, const Vector2D& collider) {
+        float halfWidth = collider.x * 0.5f;
+        float halfHeight = collider.y * 0.5f;
+
+        Vector2D center(transform->x, transform->y);
+        Vector2D min(center.x - halfWidth, center.y - halfHeight);
+        Vector2D max(center.x + halfWidth, center.y + halfHeight);
+        return Collision::AABB(min, max);                         
+    }                                                             
+
 	//helper function to get a Circle from a renderer object
     Circle getObjectCircle(const Transform* transform) {
         Vector2D center(transform->x, transform->y);
         float radius = std::max(transform->scaleX, transform->scaleY) * 0.5f;
+        return Collision::Circle(center, radius);
+    }
+
+    Circle getObjectCirclebyCollider(const Transform* transform, const Vector2D& collider) {
+        Vector2D center(transform->x, transform->y);
+        float radius = std::max(collider.x, collider.y) * 0.5f; // x and y will be the same actually
         return Collision::Circle(center, radius);
     }
 
@@ -146,7 +163,7 @@ namespace Collision {
             cp.x += vel1.x * tFirst;
             cp.y += vel1.y * tFirst;
             info.contactPoint = cp;
-            return info;
+            //return info;
         }
 
         //testing
@@ -277,87 +294,167 @@ namespace Collision {
     }
 
     //circle to circle
-    /*bool CollisionIntersection_CircleCircle_Static(const Circle& c1, const Circle& c2) {
+    bool CollisionIntersection_CircleCircle_Static(const Circle& c1, const Circle& c2) {
+        //get radius
+        float radius1 = c1.getRadius();
+        float radius2 = c2.getRadius();
+        //get center
+		const Vector2D& center1 = c1.getCenter();
+		const Vector2D& center2 = c2.getCenter();
 
+		//distance between centers x and y
+		float dx = center2.x - center1.x;
+		float dy = center2.y - center1.y;
+		//distance squared so dont need to square root
+        float distSq = dx * dx + dy * dy;
+		float radiusSum = radius1 + radius2;
+        
+        return distSq <= radiusSum * radiusSum + EPSILON;
     }
 
+    //circle to circle dynamic 
     CollisionInfo CollisionIntersection_CircleCircle_Dynamic_Info(const Circle& c1, const Vector2D& velC1, const Circle& c2, const Vector2D& velC2) {
+        CollisionInfo info;
+        info.collided = false;
+        info.timeOfImpact = static_cast<float>(g_dt);
+        info.normal = { 0, 0 };
+        info.contactPoint = { 0, 0 };
+        info.penetration = 0.0f;
 
-    }*/
+		//relative positions and velocities
+        Vector2D s = Vec_Sub(&c1.getCenter(), &c2.getCenter()); //vector from c2 to c1
+        Vector2D v = Vec_Sub(&velC1, &velC2);                   //relative velocity from c2 to c1
+        float rSum = c1.getRadius() + c2.getRadius();
+        
+        float sDotS = Vec_Dot(&s, &s);  //squared distance between centers
+        float rSumSq = rSum * rSum;     //squared sum of r
+
+        if (sDotS <= rSumSq + EPSILON) {
+            info.collided = true;
+            info.timeOfImpact = 0.0f;
+            Vector2D n = s;
+            if (Vec_Length(&n) <= EPSILON) {
+                n = Vector2D{ 1.0f, 0.0f }; // fallback if centers coincide
+            }
+            else {
+                n = Vec_Normalize(&n); // normalize to unit vector
+            }
+            info.normal = n;
+            Vector2D scaledNormal = Vec_Scale(&n, c1.getRadius());
+            info.contactPoint = Vec_Sub(&c1.getCenter(), &scaledNormal);
+            return info;
+        }
+
+        //to get the quadratic equation
+        float a = Vec_Dot(&v, &v); 
+        if (a <= EPSILON) {
+            info.collided = false; //no collide
+            return info;
+        }
+        
+        float b = 2.0f * Vec_Dot(&s, &v);
+        float c = sDotS - rSumSq;
+
+        float discriminant = b * b - 4.0f * a * c;
+        if (discriminant < 0.0f) {
+            info.collided = false; //no collide
+            return info;
+        }
+        float sqrtD = std::sqrt(discriminant);
+        float t1 = (-b - sqrtD) / (2.0f * a);
+        float t2 = (-b + sqrtD) / (2.0f * a);
+        float toi = INFINITY;
+        if (t1 >= 0.0f && t1 <= static_cast<float>(g_dt)) toi = t1;
+        else if (t2 >= 0.0f && t2 <= static_cast<float>(g_dt)) toi = t2;
+
+        if (!std::isfinite(toi)) {
+            info.collided = false;
+            return info;
+        }
+		//normal at contact
+		Vector2D vScale1 = Vec_Scale(&velC1, toi);
+		Vector2D vScale2 = Vec_Scale(&velC2, toi);
+        Vector2D c1AtT = Vec_Add(&c1.getCenter(), &vScale1);
+        Vector2D c2AtT = Vec_Add(&c2.getCenter(), &vScale2);
+
+        Vector2D normal = Vec_Sub(&c1AtT, &c2AtT);
+        if (Vec_Length(&normal) <= EPSILON) {
+            normal = Vector2D{ 1.0f, 0.0f }; //fall back
+        }
+        else {
+            normal = Vec_Normalize(&normal);
+        }
+        info.normal = normal;
+
+        //contact point 
+		Vector2D cpScale = Vec_Scale(&normal, c1.getRadius());
+        info.contactPoint = Vec_Sub(&c1AtT, &cpScale);
+
+        info.collided = true;
+        info.timeOfImpact = toi;
+        info.penetration = 0.0f;
+        return info;
+    }
+
+    //cirlce and line
+    bool CollisionIntersection_CircleLine_Static(const Circle& c, const Vector2D& lineStart, const Vector2D& lineEnd) {
+        float radius = c.getRadius(); //get radius
+        const Vector2D& center = c.getCenter(); //get center
+
+        //line vector
+        Vector2D lineVec = Vec_Sub(&lineEnd, &lineStart);
+        Vector2D toCenter = Vec_Sub(&center,&lineStart);
+
+        //project center onto line
+		float projection = Vec_Dot(&toCenter, &lineVec) / Vec_Dot(&lineVec, &lineVec);
+
+		//clamp projection to line segment
+        if (projection < 0.0f) projection = 0.0f;
+		if (projection > 1.0f) projection = 1.0f;
+
+		//closest point on line segment to circle center
+        Vector2D scaling = Vec_Scale(&lineVec, projection); 
+        Vector2D closestPoint = Vec_Add(&lineStart, &scaling);
+		Vector2D diff = Vec_Sub(&center, &closestPoint); //distances between closest point and center
+		float distSq = Vec_Dot(&diff, &diff); //distance squared
+		return distSq <= radius * radius + EPSILON; 
+    }
+	//circle to line dynamic
+    CollisionInfo CollisionIntersection_CircleLine_Dynamic_Info(const Circle& c, const Vector2D& velC, const Vector2D& lineStart, const Vector2D& lineEnd) {
+        CollisionInfo info;
+		info.collided = false;
+
+        float radius = c.getRadius(); //get radius
+        const Vector2D& center = c.getCenter(); //get center
+
+        //line vector
+        Vector2D lineVec = Vec_Sub(&lineEnd, &lineStart);
+        Vector2D toCenter = Vec_Sub(&center, &lineStart);
+
+        //normal
+		Vector2D lineNormal = Vector2D{ -lineVec.y, lineVec.x };
+		float len = Vec_Length(&lineNormal);
+		if (len > 0.0f) lineNormal = Vec_Scale(&lineNormal, 1.0f / len);
+
+		//relative velocity along normal
+		float relVelAlongNormal = Vec_Dot(&velC, &lineNormal); //circle velocity
+		//this is for earliest contact
+		float dist = Vec_Dot(&toCenter, &lineNormal); //perpendicular distance from circle edge to line
+        if (relVelAlongNormal != 0.0f) {
+            float toi = (radius - dist) / relVelAlongNormal; //time of impact
+			if (toi >= 0.0f && toi <= static_cast<float>(g_dt)) { //within time frame
+                info.collided = true;
+                info.timeOfImpact = toi;
+                info.normal = (relVelAlongNormal < 0.0f) ? Vec_Scale(&lineNormal, -1.0f) : lineNormal;
+            }
+        }
+        return info;
+    }
 
     //remove normal ... when object hit the wall
     static inline Vector2D RemoveNormalComponent(const Vector2D& v, const Vector2D& n) {
         float d = Vec_Dot(&v, &n);
         Vector2D scaledN = Vec_Scale(&n, d);
         return Vec_Sub(&v, &scaledN);
-    }
-
-    void Resolve_AABB_AABB(Collision::AABB& aabbA, Vector2D& velA, float massA,
-        Collision::AABB& aabbB, Vector2D& velB, float massB,
-        const CollisionInfo& info, CollisionResponseMode mode, float restitution)
-    {
-        if (!info.collided) return;
-
-        Vector2D moveA = Vec_Scale(&velA, info.timeOfImpact);
-        Vector2D moveB = Vec_Scale(&velB, info.timeOfImpact);
-
-        aabbA.setMin(Vec_Add(&aabbA.getMin(), &moveA));
-        aabbA.setMax(Vec_Add(&aabbA.getMax(), &moveA));
-        aabbB.setMin(Vec_Add(&aabbB.getMin(), &moveB));
-        aabbB.setMax(Vec_Add(&aabbB.getMax(), &moveB));
-
-        if (mode == CollisionResponseMode::Stop) {
-            velA = Vector2D{ 0,0 };
-            velB = Vector2D{ 0,0 };
-            return;
-        }
-        else {
-            //testing for broken collision 
-            Vector2D relVel = Vec_Sub(&velB, &velA);
-            float velAlongNormal = Vec_Dot(&relVel, &info.normal);
-            if (velAlongNormal > 0) return; // moving apart
-            float j = -(1.0f + restitution) * velAlongNormal / (1.0f / massA + 1.0f / massB);
-            Vector2D impulse = Vec_Scale(&info.normal, j);
-            Vector2D scaledImpulseA = Vec_Scale(&impulse, 1.0f / massA);
-            Vector2D scaledImpulseB = Vec_Scale(&impulse, 1.0f / massB);
-            if (massA > 0) {
-                Vector2D tempA = Vec_Sub(&velA, &scaledImpulseA);
-                velA = tempA;
-            }
-            if (massB > 0) {
-                Vector2D tempB = Vec_Add(&velB, &scaledImpulseB);
-                velB = tempB;
-            }
-        }
-
-        Vector2D n = info.normal;
-        Vector2D relVel = Vec_Sub(&velB, &velA);
-    }
-
-    void Resolve_Circle_AABB(Collision::Circle& c, Vector2D& velC,
-        Collision::AABB& aabb, Vector2D& velAABB, float massAABB,
-        const CollisionInfo& info, CollisionResponseMode mode)
-    {
-        if (!info.collided) return;
-
-        //move to contact
-        Vector2D deltaC = Vec_Scale(&velC, info.timeOfImpact);
-        Vector2D deltaA = Vec_Scale(&velAABB, info.timeOfImpact);
-        c.setCenter(Vec_Add(&c.getCenter(), &deltaC));
-        aabb.setMin(Vec_Add(&aabb.getMin(), &deltaA));
-        aabb.setMax(Vec_Add(&aabb.getMax(), &deltaA));
-
-        Vector2D n = info.normal;
-        //relative velocity aabb treated as B
-        Vector2D relVel = Vec_Sub(&velAABB, &velC);
-
-        if (mode == CollisionResponseMode::Stop) {
-            if (massAABB <= 0.0f) velC = Vector2D{ 0,0 };
-            else {
-                velC = Vector2D{ 0,0 };
-                velAABB = Vector2D{ 0,0 };
-            }
-            return;
-        }
     }
 }

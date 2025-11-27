@@ -26,7 +26,14 @@ Technology is prohibited.
 #include "renderer.h"
 #include "mathlib.h"
 #include "font.h"
+#include "dynamics.h"
 
+
+// at least it works!!!
+namespace JsonIO {
+    // for the indexing in animation vector
+    inline std::vector<std::string> stateNames = { "Idle", "Walking", "Jumping", "Falling", "Shooting", "Dead"};
+}
 
 // basic component class
 class Component {
@@ -52,13 +59,14 @@ public:
     float x{ 0.f }, y{ 0.f }, z{ 0.f };
     float rotation = 0.0f;
     float scaleX = 1.0f, scaleY = 1.0f, scaleZ{ 0.f };
+    bool flipX = false; // flip scaleX when change direction, true means flip to left
     glm::mat4 mdlWorld = 1.f;
 };
 
 // Render component to store rendering-related properties
 struct Render : public Component {
 public:
-    Render() = default;
+    Render() : texHDL{ 0 } {}
 
     std::unique_ptr<Component> clone() const override {
         return std::make_unique<Render>(*this);
@@ -75,7 +83,7 @@ public:
     bool texChanged = false;
     GLuint texHDL;
     std::string texFile;
-    
+    glm::vec3 clr{ 1,1,1 };
     renderer::model modelRef;
 };
 
@@ -87,26 +95,37 @@ struct FontComponent : public Component {
     }
 
     //GLuint texHdl;
-    Font::FontMdl mdl;
+    Font::FontMdl mdl = Font::fontMdls[0];
     std::string word = "";
     float scale = 1;
     glm::vec3 clr{ 0.f,0.f,0.f };
     int fontType = 1;
 
-    std::string fontPath = "shaders/ARIAL.TTF"; 
+    std::string fontPath = "assets/ARIAL.TTF"; 
+};
+
+// animation for different state
+struct AnimateState {
+    bool loop = true;
+    Vector2D initialFrame{}, lastFrame{};
+    int currentFrameColumn{}, currentFrameRow{}, totalColumn{ 1 }, totalRow{ 1 };
+    float frameTime = 0.1f, frameTimer{};
+    GLuint texHDL;
+    std::string texFile;
+
+    // do not serialize this
+    bool texChanged = false;
 };
 
 struct Animation : public Component
 {
+    Animation() { animState.resize(JsonIO::stateNames.size()); } // set animState to be of equal size of statenames
     std::unique_ptr<Component> clone() const override {
         return std::make_unique<Animation>(*this);
     }
 
-    bool loop = false;
     bool runItBack = true;
-    GLuint texHDL;
-    int currentFrameColumn{}, currentFrameRow{}, totalColumn{ 1 }, totalRow{ 1 };
-    float frameTime = 0.1f, frameTimer{};
+    std::vector<AnimateState> animState; // to store the animation data for dff state, index by playerstate
 };
 
 // Physics component to store velocity and other physics-related properties
@@ -117,22 +136,31 @@ public:
         return std::make_unique<Physics>(*this);
 	}
 
+    bool physicsFlag = true;
+    float moveSpeed = 1.0f;
+
+    Dynamics dynamics;
+
+    bool canMove = true;  // Add this flag
+    
+  
     float velX = 0.0f;
     float velY = 0.0f;
     float gravity = -9.8f;
 
     //Jump 
-    float damping = 0.99f;
-    float jumpForce = 10.0f;  
-    float floorY = 0.0f;
+    float damping = 0.98f;
+    float jumpForce =100.0f;  
+    float floorY = -7.5f;
     bool onGround = false;  
-    float Speed = 150.0f;
-    bool alive = false;
 
     //water bullet
-    Vector2D posBullet{};
-    Vector2D velBullet{};
-    bool aliveBullet{};
+    bool alive = false;
+    float lifeTimer = 0.0f;     
+    float maxLifetime = 3.0f;
+    Vector2D originalPos{ 0, 0 };
+    Vector2D originalVel{ 0, 0 };
+    bool isOriginalStateSet = false;
 
     //bool inWaterTriggered; // true only when W is pressed
 
@@ -146,31 +174,41 @@ public:
 // Input component to store input-related properties
 struct Input : public Component {
 public:
-	Input(float speed = 0.0f) : moveSpeed(speed) {}
+	//Input(float speed = 0.0f) : moveSpeed(speed) {}
 
     std::unique_ptr<Component> clone() const override {
         return std::make_unique<Input>(*this);
     }
 
 public:
-    float moveSpeed = 0.0f;
+    //float moveSpeed = 0.0f;
 
 };
 
-// enum class used for CollisionSystem
+// enum class used for CollisionSystem, to determine to stop/push by force (currently not force ig)
 enum class CollisionResponseMode {
-    Stop
+    StopWhenCollide, // if collide by another obj, just stop
+    MoveWhenCollide // if collide by another obj, apply "fake" force and kena push
 };
+//
 
 // CollisionInfo component to store collision-related information
 struct CollisionInfo : public Component {
 public:
-
+                           
     std::unique_ptr<Component> clone() const override {
         return std::make_unique<CollisionInfo>(*this);
     }
 
-    bool collided = false;
+
+    bool collisionFlag = true; // whether objest can collide with another obj
+    shape colliderType = shape::square;
+    Vector2D colliderSize{ 0,0 }; // size of the bounding box, if collider is circle then x will be diamater
+    bool autoFitScale = true; // auto-fit the collider with the size of the mesh (i.e. obj bigger -> collider bigger)
+    CollisionResponseMode collisionRes = CollisionResponseMode::StopWhenCollide;
+
+    // run-time calculation, do not de/serialize
+    bool collided = false; // check whether obj alr collided
     float timeOfImpact = 0.0f;
     Vector2D normal{ 0,0 };
     Vector2D contactPoint = { 0,0 };
@@ -188,36 +226,139 @@ struct UIComponent : public Component {
 struct LuaScript : public Component {
 public:
     LuaScript(const std::string& file)
-        : filename(file)
-    {
-        //automatically determine table name from file path
-        std::string name = file;
-        size_t lastSlash = name.find_last_of("/\\");
-        if (lastSlash != std::string::npos)
-            name = name.substr(lastSlash + 1); //remove path
-        size_t dot = name.find_last_of('.');
-        if (dot != std::string::npos)
-            name = name.substr(0, dot); //remove extension
-        scriptName = name;
+        : filename(file) {
+        // Extract just the filename without extension to use as scriptName
+        size_t lastSlash = file.find_last_of("/\\");
+        std::string fname = (lastSlash != std::string::npos) ? file.substr(lastSlash + 1) : file;
+
+        size_t lastDot = fname.find_last_of('.');
+        scriptName = (lastDot != std::string::npos) ? fname.substr(0, lastDot) : fname;
     }
 
     std::unique_ptr<Component> clone() const override {
         return std::make_unique<LuaScript>(*this);
     }
 
-    std::string filename;   //path to the Lua file
-    std::string scriptName; //Lua table name
+    std::string filename;   // Full path to the Lua file
+    std::string scriptName; // Just the object name (e.g., "bullet", "player")
 };
 
-// Logic Container (FSM) 
-enum class PlayerState { Idle, Walking, Jumping, Falling, Shooting };
+// Logic Container (FSM)
+enum class PlayerState { Idle, Walking, Jumping, Falling, Shooting, Dead };
 
 struct StateMachine : public Component {
     PlayerState state = PlayerState::Idle;
     float       stateTime = 0.f;
     bool        facingRight = true;
+    bool        fixState = false;
     std::unique_ptr<Component> clone() const override {
         return std::make_unique<StateMachine>(*this);
     }
 };
 
+//Audio component
+struct FadeInfo {
+    bool isFading = false;
+    bool isFadingIn = false;
+    float startVolume = 0.0f;
+    float targetVolume = 0.0f;
+    float fadeDuration = 0.0f;
+    float fadeTimer = 0.0f;
+
+    float defaultFadeInDuration = 1.0f;
+    float defaultFadeOutDuration = 1.0f;
+};
+
+enum class AudioState {
+    Stopped,
+    Playing,
+    Paused
+};
+
+//enum class soundID : int;
+//enum class AudioState;
+class FMOD::Channel;
+struct AudioComponent : public Component {
+public:
+    AudioComponent() = default;
+
+    AudioComponent(const std::string& file, float vol = 1.0f, bool shouldLoop = false, bool playStart = false)
+        : audioFile(file)
+        , volume(vol)
+        , loop(shouldLoop)
+        , playOnStart(playStart)
+    {}
+
+    std::unique_ptr<Component> clone() const override {
+        return std::make_unique<AudioComponent>(*this);
+    }
+
+    // Audio ID - which sound to play
+    std::string audioFile;
+    //soundID soundId = static_cast<soundID>(0);
+
+    // IMPORTANT: Each AudioComponent gets its own channel now
+    // This is NOT managed by AudioHandler's channels vector
+    FMOD::Channel* channel = nullptr;
+
+    // Audio Settings
+    float volume = 1.0f;
+    float pitch = 1.0f;
+    bool loop = false;
+    bool playOnStart = false;
+    bool muted = false;
+
+    // Fade Settings (per-component)
+    bool fadeInOnStart = false;
+    float fadeInDuration = 1.0f;
+    bool fadeOutOnStop = false;
+    float fadeOutDuration = 1.0f;
+
+    // Per-component fade state
+    FadeInfo fadeInfo;
+    /*bool isFading = false;
+    bool isFadingIn = false;
+    float fadeStartVolume = 0.0f;
+    float fadeTargetVolume = 0.0f;
+    float fadeDuration = 0.0f;
+    float fadeTimer = 0.0f;*/
+
+    // State Tracking
+    AudioState state = AudioState::Stopped;
+    bool isPendingPlay = false;
+    bool isPendingStop = false;
+
+    // Helper Methods
+    bool isPlaying() const { return state == AudioState::Playing; }
+    bool isPaused() const { return state == AudioState::Paused; }
+    bool isStopped() const { return state == AudioState::Stopped; }
+
+    void updateFades(float deltaTime) {
+        if (!fadeInfo.isFading || !channel) return;
+
+        fadeInfo.fadeTimer += deltaTime;
+
+        float progress = fadeInfo.fadeTimer / fadeInfo.fadeDuration;
+        if (progress > 1.0f) progress = 1.0f;
+
+        float currentVolume;
+        if (fadeInfo.isFadingIn) {
+            currentVolume = fadeInfo.startVolume + (fadeInfo.targetVolume - fadeInfo.startVolume) * progress;
+            std::cerr << "sound fading" << currentVolume << std::endl;
+        }
+        else {
+            currentVolume = fadeInfo.startVolume + (fadeInfo.targetVolume - fadeInfo.startVolume) * progress;
+        }
+
+        FMODErrorCheck(channel->setVolume(currentVolume));
+
+        if (progress >= 1.0f) {
+            fadeInfo.isFading = false;
+
+            if (!fadeInfo.isFadingIn && fadeInfo.targetVolume == 0.0f) {
+                channel->stop();
+                channel = nullptr;
+            }
+        }
+    }
+};

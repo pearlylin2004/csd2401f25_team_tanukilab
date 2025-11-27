@@ -43,7 +43,7 @@ typedef struct {
 //------------------------------------------
 // **GLM Conversions for graphics coders only**
 // usage: Before including your mathlib.h, 
-// define this #define USE_GLM_CONVERSION
+// define this #define GLM_CONVERSION
 // 
 // Normal matrix to GLM 
 // eg. Vector2D myVec2{1.0f, 2.0f};
@@ -195,6 +195,14 @@ Vector2D Vec_Rotate(const Vector2D* v, float rad);
 // Transform a 2D vector by a 3x3 matrix
 Vector2D Vec_Transform(const Vector2D* v, const Mat33* mat);
 
+// Vector2D element-wise multiplication
+Vector2D Vec_Multi(const Vector2D* a, const Vector2D* b);
+
+// Vector2D element-wise division  
+Vector2D Vec_Div(const Vector2D* a, const Vector2D* b);
+
+
+
 // ------------------- Mat33 operations ------------------
 // Set a 3x3 matrix to identity
 void Mat33_Identity(Mat33* mat);
@@ -253,6 +261,12 @@ Vector3D Vec3_Scale(const Vector3D* v, float scale);
 
 // Transform a 3D vector by a 4x4 matrix
 Vector3D Vec3_Transform(const Vector3D* v, const Mat44* mat);
+
+// Vector3D element-wise multiplication
+Vector3D Vec3_Multi(const Vector3D* a, const Vector3D* b);
+
+// Vector3D element-wise division
+Vector3D Vec3_Div(const Vector3D* a, const Vector3D* b);
 
 // -------------- Mat44 operations --------------------- 
 
