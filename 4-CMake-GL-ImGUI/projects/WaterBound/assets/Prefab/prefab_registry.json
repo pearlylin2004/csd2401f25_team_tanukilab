@@ -2,14 +2,14 @@
   "version": 1,
   "prefabIndex": [
     {
-      "id": "b1a12273-a692-4ce0-8072-156da2c70842",
-      "name": "bullet",
-      "path": "/Prefab/bullet.json"
-    },
-    {
       "id": "dd60e1e1-641c-4ed5-b69d-ffadfa02fb7a",
       "name": "player",
       "path": "/Prefab/player.json"
+    },
+    {
+      "id": "b1a12273-a692-4ce0-8072-156da2c70842",
+      "name": "bullet",
+      "path": "/Prefab/bullet.json"
     },
     {
       "id": "f7665aa3-619e-49a1-892a-31fbc8b377a2",

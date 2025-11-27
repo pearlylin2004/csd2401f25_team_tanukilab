@@ -69,6 +69,7 @@ static PlayerState parsePlayerState(const std::string& s) {
 	if (s == "Jumping")  return PlayerState::Jumping;
 	if (s == "Falling")  return PlayerState::Falling;
 	if (s == "Shooting") return PlayerState::Shooting;
+	if (s == "Dead")     return PlayerState::Dead;
 	return PlayerState::Idle; // default/fallback
 }
 
@@ -78,6 +79,7 @@ static const char* playerStateToStr(PlayerState state) {
 	case PlayerState::Jumping:  return "Jumping";
 	case PlayerState::Falling:  return "Falling";
 	case PlayerState::Shooting: return "Shooting";
+	case PlayerState::Dead:     return "Dead";
 	default:                    return "Idle";
 	}
 }

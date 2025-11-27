@@ -12,7 +12,7 @@ Makefile
 
 # Ignore Visual Studio files
 *.sln
-*.vcxproj*
+*.vcxproj
 *.vcxproj.filters
 *.vcxproj.user
 *.user

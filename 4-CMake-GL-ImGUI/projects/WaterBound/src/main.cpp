@@ -17,6 +17,11 @@ Technology is prohibited.
 
 #include "CoreEngine.h"
 
+#ifdef _WIN32
+#include <windows.h>
+#pragma comment(linker, "/ENTRY:mainCRTStartup")
+#endif
+
 // This allows for memory leak detection in debug builds
 #if defined(DEBUG) | defined(_DEBUG)
 #include <crtdbg.h>

@@ -118,6 +118,8 @@ private:
      * \param obj      The object performing the action (typically the player).
      * \param manager  The GameObjectManager used to retrieve the bullet object.
      */
-    //static void trySpawnBulletNear(GameObject& obj, GameObjectManager& manager);
+    //static void trySpawnBulletNear(GameObject& obj, GameObjectManager& manager);\
+
+	static void tickDead(GameObject& obj, float dt);
 };
 

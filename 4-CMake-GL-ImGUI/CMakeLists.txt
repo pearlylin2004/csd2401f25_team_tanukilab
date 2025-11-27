@@ -121,4 +121,11 @@ target_compile_definitions(WaterBound PRIVATE
   SOURCE_ASSETS_DIR_R="${WB_ASSETS_DIR}"
 )
 
+if(MSVC)
+    set_target_properties(WaterBound PROPERTIES
+        LINK_FLAGS_DEBUG   "/SUBSYSTEM:CONSOLE"
+        LINK_FLAGS_RELEASE "/SUBSYSTEM:WINDOWS"
+    )
+endif()
+
 # ======================= END AUTO CONFIGURATION =========================

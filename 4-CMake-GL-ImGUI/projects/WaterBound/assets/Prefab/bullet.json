@@ -10,14 +10,15 @@
       ],
       "rotation": 0.5,
       "scale": [
-        0.20000000298023224,
-        0.20000000298023224,
+        0.5,
+        0.5,
         0.0
       ]
     },
     "Render": {
       "shape": "circle",
-      "hasTex": 0,
+      "hasTex": 1,
+      "texture": "assets/Texture/water_texture.png",
       "hasAnimation": 0
     },
     "Physics": {

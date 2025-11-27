@@ -1,11 +1,11 @@
 /* Start Header ************************************************************************/
 /*!
 \file		CoreEngine.cpp
-\author 	Seow Sin Le, s.sinle, 2401084, 60%
+\author 	Seow Sin Le, s.sinle, 2401084, 55%
 \author     Hugo Low Ren Hao, low.h, 2402272, 20%
 \author     Tan Chee Qing, cheeqing.tan, 2401486, 10%
 \author     Varick Teo, v.teo, 2403417, 10%
-\author     Pearly Lin Lee Ying, p.lin, 2401591, 5%
+\author     Pearly Lin Lee Ying, p.lin, 2401591, 10%
 \par        s.sinle@digipen.edu
 \par        low.h@digipen.edu
 \par        cheeqing.tan@digipen.edu
@@ -170,11 +170,16 @@ void CoreEngine::GameLoop() {
     if (glfwWindowShouldClose(m_window) || InputHandler::isKeyTriggered(GLFW_KEY_F1)) { m_isRunning = false; return; }
 	//pause checking, and set it to paused state if escape is held
     if (InputHandler::isKeyTriggered(GLFW_KEY_ESCAPE)) { 
-		//m_isPaused = true;
-		m_guiSystem->setStateBeforePause(m_guiSystem->getCurrentState()); //store state before pausing
-		m_guiSystem->setPreviousState(m_guiSystem->getCurrentState()); //store previous state
-        m_guiSystem->setCurrentState(GameState::PAUSED); //set current state
-		m_guiSystem->pauseScreen(*m_manager); //draw pause screen 
+		//if already at paused state do nothing
+		GameState current = m_guiSystem->getCurrentState(); //get current state
+		GameState previous = m_guiSystem->getPreviousState(); //get previous state
+        if (current != GameState::PAUSED && previous != GameState::PAUSED) {
+            if(m_guiSystem->getPreviousState() != GameState::PAUSED) m_guiSystem->setPreviousState(current); //store previous state and prevent overwriting previous state if already paused
+			m_guiSystem->setStateBeforePause(current); //store state before pausing
+			m_guiSystem->setPreviousState(current); //store previous state
+			m_guiSystem->setCurrentState(GameState::PAUSED); //set current state
+			m_guiSystem->loadScreen(*m_manager, "pause_scene.json"); //load pause screen
+        }
     }
    
     //use glfwGetWindowAttrib to check the GLFW_ICONIFIED status for efficient waiting
