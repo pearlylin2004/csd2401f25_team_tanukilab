@@ -6,38 +6,39 @@
       "pos": [
         -1000.0,
         -1000.0,
-        0.02
+        0.019999999552965164
       ],
       "rotation": 0.5,
       "scale": [
-        0.2,
-        0.2,
+        0.5,
+        0.5,
         0.0
       ]
     },
     "Render": {
       "shape": "circle",
-      "hasTex": 0,
+      "hasTex": 1,
+      "texture": "assets/Texture\\water_texture.png",
       "hasAnimation": 0
     },
     "Physics": {
       "physicsFlag": 0,
       "moveSpeed": 0.0,
       "jumpForce": 100.0,
-      "damping": 0.98,
+      "damping": 0.9800000190734863,
       "mass": 1.0,
       "inWater": 0,
       "buoyancy": 0
     },
     "AudioComponent": {
       "audioFile": "assets/Audio/underwater.wav",
-      "volume": 0.8,
+      "volume": 0.800000011920929,
       "pitch": 1.0,
       "loop": 0,
       "playOnStart": 0,
       "muted": 0,
       "fadeInOnStart": 1,
-      "fadeInDuration": 0.2,
+      "fadeInDuration": 0.20000000298023224,
       "fadeOutOnStop": 1,
       "fadeOutDuration": 0.5
     }
