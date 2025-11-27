@@ -1241,10 +1241,16 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 									if (AudioComponent* a = fireObj->getComponent<AudioComponent>()) {
 										/*a->playOnStart = false;
 										AudioHandler::getInstance().playSound(a);*/
-										if (a->state != AudioState::Playing && !a->isPendingPlay) {
-											a->loop = false;
-											a->playOnStart = false;
-											a->isPendingPlay = true;
+
+										for (auto& pair : a->audioChannels) {
+
+											AudioChannel& ch = pair.second;
+
+											if (ch.state != AudioState::Playing && !ch.isPendingPlay) {
+												ch.loop = false;
+												ch.playOnStart = false;
+												ch.isPendingPlay = true;
+											}
 										}
 									}
 
