@@ -1209,9 +1209,12 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 
 						//checking if collided
 						if (info.collided) {
+
+							/* ---------- temp setting ---------- */
 							// skip bullet & player collision
 							if ((obj1->getObjectPrefabID() == "b1a12273-a692-4ce0-8072-156da2c70842" && obj2->getObjectPrefabID() == "dd60e1e1-641c-4ed5-b69d-ffadfa02fb7a") || (obj1->getObjectPrefabID() == "dd60e1e1-641c-4ed5-b69d-ffadfa02fb7a" && obj2->getObjectPrefabID() == "b1a12273-a692-4ce0-8072-156da2c70842")) return;
 
+							// bullet shoot fire -> fire become smoke and disappear aft that (in logic container)
 							GameObject* bulletObj = nullptr;
 							if (obj1->getObjectPrefabID() == "b1a12273-a692-4ce0-8072-156da2c70842") {
 								bulletObj = obj1;
@@ -1219,8 +1222,6 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 							if (obj2->getObjectPrefabID() == "b1a12273-a692-4ce0-8072-156da2c70842") {
 								bulletObj = obj2;
 							}
-
-							
 
 							GameObject* fireObj = nullptr;
 							if (obj1->getObjectPrefabID() == "eaa2ba42-971a-413b-b8c4-99b2f5ab674d") {
@@ -1253,6 +1254,35 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 									continue;
 								}
 							}
+
+							// player go up when collide with fire
+							GameObject* playerObj = nullptr;
+							Transform* playerT = nullptr;
+							if (obj1->getObjectPrefabID() == "dd60e1e1-641c-4ed5-b69d-ffadfa02fb7a") {
+								playerObj = obj1;
+								playerT = obj1->getComponent<Transform>();
+							}
+							if (obj2->getObjectPrefabID() == "dd60e1e1-641c-4ed5-b69d-ffadfa02fb7a") {
+								playerObj = obj2;
+								playerT = obj2->getComponent<Transform>();
+							}
+
+							if (playerObj && fireObj) {
+								if (StateMachine* sm = fireObj->getComponent<StateMachine>()) {
+									if (sm->state == PlayerState::Walking) {
+										if (Physics* p = playerObj->getComponent<Physics>()) {
+											// Launch player upward
+											p->dynamics.velocity.y = 12.0f;  // Upward velocity
+											p->velY = 10.0f;
+											p->onGround = false;
+
+											continue;
+										}
+									}
+								}
+							}
+
+							/* ---------- temp setting ---------- */
 
 							// c1 is the moving obj (player), c2 is the obj it collide with
 							// CASE 1: collided obj is pushable
