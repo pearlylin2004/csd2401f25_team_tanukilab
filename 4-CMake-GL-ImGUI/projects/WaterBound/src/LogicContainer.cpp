@@ -121,9 +121,8 @@ void LogicContainer::enter(GameObject& obj, PlayerState next)
             if (fsm->state == PlayerState::Falling) {
                 AudioChannel* landing = audio->getOrCreateChannel("landing");
                 
-                std::cerr << "PLAYING LANDING SOUND WOOOOOOOOOOOOOOOOOOOOOOOOOOOO\n\n\n";
                 //play sound when exiting falling state
-                landing->audioFile = "assets/audio/landing2.wav";
+                landing->audioFile = "assets/audio/landing.wav";
                 landing->loop = false;
                 landing->volume = 1.0f;
                 landing->isPendingPlay = true;
