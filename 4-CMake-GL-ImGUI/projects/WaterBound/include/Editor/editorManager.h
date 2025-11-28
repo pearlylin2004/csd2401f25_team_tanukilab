@@ -125,6 +125,7 @@ private:
 	void renderPhysics(GameObject* selected, bool canMove);
 	void renderFont(GameObject* selected);
 	void renderAudio(GameObject* selected);
+	void renderTileMap(GameObject* selected);
 
 	void wrongFileTypePopup(const std::string& filename);
 
@@ -180,10 +181,12 @@ public:
 	// reusable func to clear obj selections
 	void resetSelection();
 
+	static bool isSceneHovered() { return s_isSceneHovered; }
+
 private:
 	/* --------- Render -------- */
 	void renderGizmo(GameObjectManager& manager);
-	void drawGrid(const glm::mat4& view, const glm::mat4& proj);
+	void drawGrid(const glm::mat4& view, const glm::mat4& proj, GameObjectManager& manager);
 	void editorCameraControls();
 	/* -------- END -------- */
 
@@ -216,6 +219,8 @@ private:
 	Editor::SceneWindowState& m_sceneWindowState;
 	Editor::SceneState& m_sceneState;
 	Editor::GizmoState& m_gizmoState;
+
+	static bool s_isSceneHovered;
 };
 
 

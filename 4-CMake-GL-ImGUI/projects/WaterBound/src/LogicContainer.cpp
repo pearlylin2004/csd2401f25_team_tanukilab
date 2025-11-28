@@ -193,7 +193,7 @@ void LogicContainer::tickIdle(GameObject& obj, float /*dt*/) {
         DebugLog::addMessage("FSM: Jump", DebugMode::PlaySimul);
     }
     // walk
-    else if (anyMoveHeld() && obj.getObjectPrefabID() != "eaa2ba42-971a-413b-b8c4-99b2f5ab674d") {
+    else if (anyMoveHeld() && obj.getObjectPrefabID() != "eaa2ba42-971a-413b-b8c4-99b2f5ab674d" && obj.getObjectPrefabID() != "f04819ff-270c-41b4-8387-73382eb85103") {
         enter(obj, PlayerState::Walking);
     }
 }
@@ -221,6 +221,22 @@ void LogicContainer::tickWalking(GameObject& obj, float /*dt*/) {
     if (InputHandler::isKeyHeld(GLFW_KEY_A)) fsm->facingRight = false;
     if (InputHandler::isKeyHeld(GLFW_KEY_D)) fsm->facingRight = true;
 
+    // if its water source, play the sound once
+    if (obj.getObjectPrefabID() == "f04819ff-270c-41b4-8387-73382eb85103" && fsm->state == PlayerState::Walking) {
+        AudioComponent* audio = obj.getComponent<AudioComponent>();
+        if (audio) {
+            AudioChannel* getWater = audio->getDefaultChannel();
+
+            if (getWater && getWater->state != AudioState::Playing && !getWater->isPendingPlay) {
+                getWater->loop = false;
+                getWater->volume = 0.5f;
+                getWater->isPendingPlay = true;
+
+				fsm->state = PlayerState::Falling;
+            }
+        }
+    }
+        
     if (!anyMoveHeld() && !(fsm->fixState)) {
         enter(obj, PlayerState::Idle);
         return;
@@ -369,8 +385,8 @@ void LogicContainer::update(GameObject& obj, float dt, GameObjectManager& /*mana
     fsm->stateTime += dt;
 
     /* -------- temp setting -------- */
-    if (fsm->fixState && fsm->stateTime >= 6.5f) {
-        obj.getComponent<Transform>()->x = 1000.f;
+    if (fsm->fixState && fsm->stateTime >= 6.5f && obj.getObjectPrefabID() != "f04819ff-270c-41b4-8387-73382eb85103") {
+        obj.getComponent<Transform>()->x = 1500.f;
     }
     /* -------- temp setting -------- */
 

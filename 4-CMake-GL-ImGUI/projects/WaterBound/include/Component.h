@@ -421,3 +421,55 @@ public:
 
     }
 };
+
+// tile map component
+struct TileMap : public Component
+{
+    std::unique_ptr<Component> clone() const override {
+        return std::make_unique<TileMap>(*this);
+    }
+
+    //std::string filename{};
+    size_t tilesetTexID = 0;
+
+    //how big is the tile
+    float tileW = 3.0f;
+    float tileH = 3.0f;
+
+    int rows = 50;
+    int columns = 50;
+
+    //size_t tilesetRows = 1, tilesetCols = 1;
+
+    struct TileKey {
+        int x;
+        int y;
+
+        bool operator==(const TileKey& other) const {
+            return x == other.x && y == other.y;
+        }
+    };
+
+    struct TileKeyHash {
+        std::size_t operator()(const TileKey& k) const noexcept {
+            return (std::hash<int>()(k.x) << 1) ^ std::hash<int>()(k.y);
+        }
+    };
+    std::unordered_map<TileKey, std::string, TileKeyHash> tiles;
+
+    std::string getTile(int x, int y) const {
+        TileKey key{ x, y };
+        auto it = tiles.find(key);
+        return (it != tiles.end()) ? it->second : ""; // -1 = empty
+    }
+
+    void setTile(int x, int y, std::string tileID) {
+        if (x >= -columns && x < columns && y >= -rows && y < rows) {
+            tiles[{x, y}] = tileID;
+        }
+    }
+
+    void clearTile(int x, int y) {
+        tiles.erase({ x, y });
+    }
+};

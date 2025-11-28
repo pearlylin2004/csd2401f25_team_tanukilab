@@ -658,6 +658,29 @@ namespace JsonIO {
             }
         }
 
+        // TileMap
+        if (TileMap* tm = obj->getComponent<TileMap>()) {
+            Value jt(kObjectType);
+
+            jt.AddMember("tileW", tm->tileW, a);
+            jt.AddMember("tileH", tm->tileH, a);
+            jt.AddMember("columns", tm->columns, a);
+            jt.AddMember("rows", tm->rows, a);
+
+            // Serialize tiles array
+            Value tileArray(kArrayType);
+            for (const auto& [key, id] : tm->tiles) {
+                Value t(kObjectType);
+                t.AddMember("x", key.x, a);
+                t.AddMember("y", key.y, a);
+                t.AddMember("id", rapidjson::Value(id.c_str(), a), a);
+                tileArray.PushBack(t, a);
+            }
+            jt.AddMember("Tiles", tileArray, a);
+
+            doc.AddMember("TileMap", jt, a);
+        }
+
         // convert to string
         StringBuffer buffer;
         Writer<StringBuffer> writer(buffer);
@@ -822,13 +845,36 @@ namespace JsonIO {
                                 animState.totalColumn = animStateObj["totalColumn"].GetInt();
                                 animState.totalRow = animStateObj["totalRow"].GetInt();
                                 animState.frameTime = animStateObj["frameTime"].GetFloat();
-                                animState.initialFrame.x = animStateObj["initialFrameCol"].GetInt();
-                                animState.initialFrame.y = animStateObj["initialFrameRow"].GetInt();
-                                animState.lastFrame.x = animStateObj["lastFrameCol"].GetInt();
-                                animState.lastFrame.y = animStateObj["lastFrameRow"].GetInt();
+                                animState.initialFrame.x = (float)animStateObj["initialFrameCol"].GetInt();
+                                animState.initialFrame.y = (float)animStateObj["initialFrameRow"].GetInt();
+                                animState.lastFrame.x = (float)animStateObj["lastFrameCol"].GetInt();
+                                animState.lastFrame.y = (float)animStateObj["lastFrameRow"].GetInt();
                                 animState.texChanged = true; // magic boolean!!
                             }
                         }
+                    }
+                }
+            }
+
+            // TileMap
+            if (doc.HasMember("TileMap"))
+            {
+                const Value& tmj = doc["TileMap"];
+                TileMap* tm = obj->addComponent<TileMap>();
+
+                if (tmj.HasMember("tileW"))    tm->tileW = tmj["tileW"].GetFloat();
+                if (tmj.HasMember("tileH"))    tm->tileH = tmj["tileH"].GetFloat();
+                if (tmj.HasMember("columns"))  tm->columns = tmj["columns"].GetInt();
+                if (tmj.HasMember("rows"))     tm->rows = tmj["rows"].GetInt();
+
+                tm->tiles.clear();
+
+                if (tmj.HasMember("tiles") && tmj["tiles"].IsArray()) {
+                    for (const auto& t : tmj["tiles"].GetArray()) {
+                        int x = t["x"].GetInt();
+                        int y = t["y"].GetInt();
+                        std::string id = t["id"].GetString();
+                        tm->setTile(x, y, id);
                     }
                 }
             }

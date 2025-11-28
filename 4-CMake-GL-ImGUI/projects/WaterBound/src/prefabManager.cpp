@@ -38,6 +38,7 @@ namespace {
 		else if (compName == "StateMachine") obj->removeComponent<StateMachine>();
 		else if (compName == "AudioComponent") obj->removeComponent<AudioComponent>();
 		else if (compName == "FontComponent") obj->removeComponent<FontComponent>();
+		else if (compName == "TileMap") obj->removeComponent<TileMap>();
 	}
 
 	void removeAllComponents(GameObject* obj) {
@@ -50,6 +51,7 @@ namespace {
 		obj->removeComponent<StateMachine>();
 		obj->removeComponent<AudioComponent>();
 		obj->removeComponent<FontComponent>();
+		obj->removeComponent<TileMap>();
 	}
 
 	void applyComponentFromJson(GameObject* obj, const char* compName, const rapidjson::Value& compData, rapidjson::Document::AllocatorType& allocator, const std::function<void(GameObject*, const rapidjson::Value&)>& func) {
@@ -731,7 +733,7 @@ void PrefabManager::applyPrefabComponents(GameObject* go, const rapidjson::Value
 		auto* sm = go->addComponent<StateMachine>();
 
 		std::string state;
-		sm->state = JsonIO::GetString(smj, "state", state) ? parsePlayerState(state) : PlayerState::Idle;
+		sm->state = /*JsonIO::GetString(smj, "state", state) ? parsePlayerState(state) :*/ PlayerState::Idle;
 		sm->facingRight = JsonIO::GetBoolOr(smj, "facingRight", true);
 		sm->stateTime = JsonIO::GetFloatOr(smj, "stateTime", 0.f);
 
@@ -805,6 +807,42 @@ void PrefabManager::applyPrefabComponents(GameObject* go, const rapidjson::Value
 						anim->animState[i].texChanged = true;
 					}
 				}
+			}
+		}
+	}
+
+	// ---- TileMapComponent ----
+	if (comps.HasMember("TileMap") && comps["TileMap"].IsObject())
+	{
+		const auto& tmj = comps["TileMap"];
+		auto* tm = go->addComponent<TileMap>();
+
+		if (tmj.HasMember("tileW") && tmj["tileW"].IsNumber())
+			tm->tileW = tmj["tileW"].GetFloat();
+
+		if (tmj.HasMember("tileH") && tmj["tileH"].IsNumber())
+			tm->tileH = tmj["tileH"].GetFloat();
+
+		if (tmj.HasMember("columns") && tmj["columns"].IsNumber())
+			tm->columns = tmj["columns"].GetInt();
+
+		if (tmj.HasMember("rows") && tmj["rows"].IsNumber())
+			tm->rows = tmj["rows"].GetInt();
+
+		// --- IMPORTANT: Deserialize actual tile data ---
+		tm->tiles.clear();  // wipe previous tile data
+
+		if (tmj.HasMember("tiles") && tmj["tiles"].IsArray())
+		{
+			for (const auto& tile : tmj["Tiles"].GetArray())
+			{
+				if (!tile.IsObject()) continue;
+
+				int x = tile.HasMember("x") ? tile["x"].GetInt() : 0;
+				int y = tile.HasMember("y") ? tile["y"].GetInt() : 0;
+				std::string id = tile["id"].GetString();
+
+				tm->setTile(x, y, id);
 			}
 		}
 	}
@@ -974,6 +1012,35 @@ void PrefabManager::serializeComponents(const GameObject* obj, rapidjson::Value&
 		clr.PushBack(fc->clr.r, a).PushBack(fc->clr.g, a).PushBack(fc->clr.b, a);
 		jf.AddMember("color", clr, a);
 		comps.AddMember("FontComponent", jf, a);
+	}
+
+	// TileMapComponent
+	if (auto tm = obj->getComponent<TileMap>())
+	{
+		rapidjson::Value jt(rapidjson::kObjectType);
+		jt.AddMember("tileW", tm->tileW, a);
+		jt.AddMember("tileH", tm->tileH, a);
+		jt.AddMember("columns", tm->columns, a);
+		jt.AddMember("rows", tm->rows, a);
+
+		// Create tiles array
+		rapidjson::Value tileArray(rapidjson::kArrayType);
+
+		for (const auto& [key, id] : tm->tiles)
+		{
+			rapidjson::Value tileObj(rapidjson::kObjectType);
+
+			tileObj.AddMember("x", key.x, a);
+			tileObj.AddMember("y", key.y, a);
+			tileObj.AddMember("id", rapidjson::Value(id.c_str(), a), a);
+
+			tileArray.PushBack(tileObj, a);
+		}
+
+		jt.AddMember("tiles", tileArray, a);
+
+		// IMPORTANT: Add TileMap to components JSON
+		comps.AddMember("TileMap", jt, a);
 	}
 }
 

@@ -192,6 +192,17 @@ void InspectorWindow::render(GameObjectManager& manager) {
         }
         /* ------------------- END ------------------- */
 
+        /* ------------------- Font ------------------- */
+        if (selected->hasComponent<TileMap>()) {
+            //Transform* transform = selected->getComponent<Transform>();
+            renderTileMap(selected);
+
+            ImGui::Spacing();
+            ImGui::Separator();
+            ImGui::Spacing();
+        }
+        /* ------------------- END ------------------- */
+
 
         /* ------------------- Add Component ------------------- */
         addComponent(selected);
@@ -942,7 +953,7 @@ void InspectorWindow::renderAudio(GameObject* selected) {
             ImGui::Separator();
             ImGui::Spacing();
 
-            ImGui::Checkbox("Loop", &ch->loop);
+            ImGui::Checkbox("Loop (WIP.)", &ch->loop);
 
             ImGui::Checkbox("Play On Start", &ch->playOnStart);
 
@@ -980,6 +991,31 @@ void InspectorWindow::renderAudio(GameObject* selected) {
             // add a delete component func here
             selected->removeComponent<AudioComponent>();
             DebugLog::addMessage("Removed Audio Component");
+        }
+    }
+}
+
+void InspectorWindow::renderTileMap(GameObject* selected)
+{
+    TileMap* tm = selected->getComponent<TileMap>();
+
+    if (ImGui::CollapsingHeader("Tile Map")) {
+        {
+            ImGui::InputInt("Grid Columns", &tm->columns);
+            ImGui::InputInt("Grid rows", &tm->rows);
+
+            ImGui::Spacing();
+            ImGui::Separator();
+            ImGui::Spacing();
+
+            ImGui::InputFloat("Tile Width", &tm->tileW, 1.f);
+            ImGui::InputFloat("Tile Height", &tm->tileH, 1.f);
+        }
+
+        if (ImGui::Button("Remove TileMap", ImVec2(-1, 0))) {
+            // add a delete component func here
+            selected->removeComponent<TileMap>();
+            DebugLog::addMessage("Removed Tile Map Component");
         }
     }
 }

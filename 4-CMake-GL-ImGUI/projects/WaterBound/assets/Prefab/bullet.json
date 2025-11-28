@@ -16,7 +16,7 @@
       ]
     },
     "Render": {
-      "shape": "circle",
+      "shape": "square",
       "hasTex": 1,
       "texture": "assets/Texture/water_texture.png",
       "hasAnimation": 0
@@ -34,11 +34,11 @@
       "collisionFlag": 1,
       "autoFitScale": 1,
       "colliderSize": [
-        0.20000000298023224,
-        0.20000000298023224,
+        0.5,
+        0.5,
         0.0
       ],
-      "colliderType": "circle",
+      "colliderType": "square",
       "collisionRes": "StopWhenCollide"
     },
     "AudioComponent": {

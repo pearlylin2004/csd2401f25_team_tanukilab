@@ -19,6 +19,8 @@ Technology is prohibited.
 #ifdef _DEBUG
 #include "Editor/editorManager.h"
 
+bool SceneWindow::s_isSceneHovered = false;
+
 SceneWindow::SceneWindow(AssetBrowser& aBrowser, Editor::ObjSelectionState& Ostate, Editor::MenuBarState& Mstate, Editor::SceneWindowState& Sstate, Editor::SceneState& sceneState, Editor::GizmoState& gizmoState) :
     m_assetBrowser(aBrowser), 
     m_objSelectionState(Ostate),
@@ -59,6 +61,8 @@ void SceneWindow::render(GLuint texture, float aspectRatio, GameObjectManager& m
     m_sceneWindowState.scenePos = ImGui::GetItemRectMin();
     m_sceneWindowState.sceneSize = ImGui::GetItemRectSize();
 
+    s_isSceneHovered = ImGui::IsWindowHovered();
+
     if (ImGui::IsWindowHovered())
     {
         // Pan with middle mouse button (and in editing mode)
@@ -95,7 +99,7 @@ void SceneWindow::render(GLuint texture, float aspectRatio, GameObjectManager& m
     ImGuizmo::BeginFrame();
     // show grid
     if (m_gizmoState.showGrid) {
-        drawGrid(renderer::editorCam.view, renderer::editorCam.proj);
+        drawGrid(renderer::editorCam.view, renderer::editorCam.proj, manager);
     }
     // render gizmo
     renderGizmo(manager);
@@ -228,58 +232,72 @@ void SceneWindow::renderGizmo(GameObjectManager& manager) {
     );*/
 }
 
-void SceneWindow::drawGrid(const glm::mat4& view, const glm::mat4& proj) {
+void SceneWindow::drawGrid(const glm::mat4& view, const glm::mat4& proj, GameObjectManager& manager) {
     ImDrawList* drawList = ImGui::GetWindowDrawList();
+    std::vector<GameObject*> gameObjects;
+    manager.getAllGameObjects(gameObjects);
 
-    // grid settings
-    int gridLines = 50;
+    for (GameObject* obj : gameObjects)
+    {
+        if (!obj->hasComponent<TileMap>() || !obj->hasComponent<Transform>())
+            continue;
 
-    ImU32 gridColor = IM_COL32(100, 100, 100, 100); // dark dark for the normal grid
-    ImU32 axisColorX = IM_COL32(255, 80, 80, 150); // red for x axis
-    ImU32 axisColorY = IM_COL32(80, 255, 80, 150); // green for y-axis
+        TileMap* tm = obj->getComponent<TileMap>();
+        Transform* transform = obj->getComponent<Transform>();
+        int gridLineX = tm->columns;
+        int gridLineY = tm->rows;
 
-    // convert world space to screen space (with offset)
-    auto worldToScreen = [&](float x, float y, float z) -> ImVec2 {
-        glm::vec4 worldPos(x + m_gizmoState.gridOffset.x, y + m_gizmoState.gridOffset.y, z, 1.0f);
-        glm::vec4 clipPos = proj * view * worldPos;
+        ImU32 gridColor = IM_COL32(100, 100, 100, 100); // dark dark for the normal grid
+        ImU32 axisColorX = IM_COL32(255, 80, 80, 150); // red for x axis
+        ImU32 axisColorY = IM_COL32(80, 255, 80, 150); // green for y-axis
 
-        if (clipPos.w != 0.0f) {
-            clipPos /= clipPos.w;
+        // convert world space to screen space (with offset)
+        auto worldToScreen = [&](float x, float y, float z) -> ImVec2 {
+            glm::vec4 worldPos(x * tm->tileW + m_gizmoState.gridOffset.x + transform->x,
+                y * tm->tileH + m_gizmoState.gridOffset.y + transform->y,
+                z, 1.0f);
+            glm::vec4 clipPos = proj * view * worldPos;
+
+            if (clipPos.w != 0.0f) {
+                clipPos /= clipPos.w;
+            }
+
+            float screenX = m_sceneWindowState.scenePos.x +
+                (clipPos.x * 0.5f + 0.5f) * m_sceneWindowState.sceneSize.x;
+            float screenY = m_sceneWindowState.scenePos.y +
+                (1.0f - (clipPos.y * 0.5f + 0.5f)) * m_sceneWindowState.sceneSize.y;
+
+            return ImVec2(screenX, screenY);
+            };
+
+        float extentX = (float)(gridLineX * m_gizmoState.gridSpacing);
+        float extentY = (float)(gridLineY * m_gizmoState.gridSpacing);
+
+        // draw vertical lines
+        for (int i = -gridLineX; i <= gridLineX; ++i) {
+            float x = (float)(i * m_gizmoState.gridSpacing);
+            ImVec2 start = worldToScreen(x, -extentY, transform->z);
+            ImVec2 end = worldToScreen(x, extentY, transform->z);
+
+            ImU32 color = (i == 0) ? axisColorY : gridColor;
+            float thickness = (i == 0) ? 2.0f : 1.0f;
+
+            drawList->AddLine(start, end, color, thickness);
         }
 
-        float screenX = m_sceneWindowState.scenePos.x +
-            (clipPos.x * 0.5f + 0.5f) * m_sceneWindowState.sceneSize.x;
-        float screenY = m_sceneWindowState.scenePos.y +
-            (1.0f - (clipPos.y * 0.5f + 0.5f)) * m_sceneWindowState.sceneSize.y;
+        // draw horizontal lines
+        for (int i = -gridLineY; i <= gridLineY; ++i) {
+            float y = (float)(i * m_gizmoState.gridSpacing);
+            ImVec2 start = worldToScreen(-extentX, y, transform->z);
+            ImVec2 end = worldToScreen(extentX, y, transform->z);
 
-        return ImVec2(screenX, screenY);
-    };
+            ImU32 color = (i == 0) ? axisColorX : gridColor;
+            float thickness = (i == 0) ? 2.0f : 1.0f;
 
-    float extent = gridLines * m_gizmoState.gridSpacing;
-
-    // draw vertical lines
-    for (int i = -gridLines; i <= gridLines; ++i) {
-        float x = i * m_gizmoState.gridSpacing;
-        ImVec2 start = worldToScreen(x, -extent, 0.0f);
-        ImVec2 end = worldToScreen(x, extent, 0.0f);
-
-        ImU32 color = (i == 0) ? axisColorY : gridColor;
-        float thickness = (i == 0) ? 2.0f : 1.0f;
-
-        drawList->AddLine(start, end, color, thickness);
+            drawList->AddLine(start, end, color, thickness);
+        }
     }
 
-    // draw horizontal lines
-    for (int i = -gridLines; i <= gridLines; ++i) {
-        float y = i * m_gizmoState.gridSpacing;
-        ImVec2 start = worldToScreen(-extent, y, 0.0f);
-        ImVec2 end = worldToScreen(extent, y, 0.0f);
-
-        ImU32 color = (i == 0) ? axisColorX : gridColor;
-        float thickness = (i == 0) ? 2.0f : 1.0f;
-
-        drawList->AddLine(start, end, color, thickness);
-    }
 }
 
 void SceneWindow::editorCameraControls() {
