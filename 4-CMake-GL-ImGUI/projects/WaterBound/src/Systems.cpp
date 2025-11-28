@@ -1311,6 +1311,9 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 							// skip bullet obj and water source collision
 							if (bulletObj && waterSource) continue;
 
+							// skip bullet obj and bell obj collison
+							if (bulletObj && toWin) continue;
+
 							/* ---------- temp setting ---------- */
 
 							// c1 is the moving obj (player), c2 is the obj it collide with
