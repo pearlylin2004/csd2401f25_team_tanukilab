@@ -215,9 +215,7 @@ void LogicContainer::tickWalking(GameObject& obj, float /*dt*/) {
     // if its water source, play the sound once
     if (obj.getObjectPrefabID() == "f04819ff-270c-41b4-8387-73382eb85103" && fsm->state == PlayerState::Walking) {
         AudioComponent* audio = obj.getComponent<AudioComponent>();
-        DebugLog::addMessage(obj.getObjectName());
         if (audio) {
-            DebugLog::addMessage(JsonIO::stateNames[static_cast<int>(fsm->state)]);
             AudioChannel* getWater = audio->getDefaultChannel();
 
             if (getWater && getWater->state != AudioState::Playing && !getWater->isPendingPlay) {
