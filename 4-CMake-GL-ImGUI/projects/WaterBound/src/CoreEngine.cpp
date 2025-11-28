@@ -220,6 +220,9 @@ void CoreEngine::GameLoop() {
      glfwSwapBuffers(m_window); }
 
 void CoreEngine::Update(float deltaTime) {
+    //for pausing
+    if (m_isPaused) return; //skip update when paused
+
     InputHandler::update();
     if (InputHandler::isKeyTriggered(GLFW_KEY_F11)) {
         toggleFullscreen();
