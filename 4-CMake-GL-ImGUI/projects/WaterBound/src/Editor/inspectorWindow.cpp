@@ -508,7 +508,7 @@ void InspectorWindow::renderStateMachine(GameObject* selected) {
             else if (!animation) {
                 ImGui::Spacing();
                 if (ImGui::Selectable("Add Animation")) {
-                    Animation* a = selected->addComponent<Animation>();
+                    //Animation* a = selected->addComponent<Animation>();
                 }
             }
             else if (!animation->animState.empty()) {

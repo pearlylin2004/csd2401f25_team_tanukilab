@@ -1686,6 +1686,9 @@ void AudioSystem::update(GameObjectManager& manager, float deltaTime) {
  */
 void AudioSystem::processAudio(GameObject* obj, AudioChannel* audio, float deltaTime) {
 	(void)deltaTime;
+	(void)obj;
+	AudioHandler& audioHandler = AudioHandler::getInstance();
+
 
 	// CRITICAL CHECK: Verify audio pointer is valid
 	if (!audio) {
@@ -1693,7 +1696,7 @@ void AudioSystem::processAudio(GameObject* obj, AudioChannel* audio, float delta
 		return;
 	}
 
-	AudioHandler& audioHandler = AudioHandler::getInstance();
+	//AudioHandler& audioHandler = AudioHandler::getInstance();
 
 	if (audio->isPendingStop) {
 		audio->isPendingStop = false;

@@ -59,9 +59,9 @@ private:
 
 *************************************************************************/
 class RenderSystem {
-	GLuint fbo;
-	GLuint texture;
-	GLuint depthBuffer;
+	GLuint fbo{};
+	GLuint texture{};
+	GLuint depthBuffer{};
 
 	int fboWidth = 0;
 	int fboHeight = 0;
@@ -95,7 +95,7 @@ public:
 	GLuint getTexture() const { return texture; }
 
 	//not implemented yet, hopefully tri break can do
-	void renderCollision(Collision::AABB const& box, glm::vec3 const& clr);
+	//void renderCollision(Collision::AABB const& box, glm::vec3 const& clr);
 	//GLuint getTexture() const { return texture; }
 	void batchingSetUp(GameObjectManager& manager, float const& deltaTime);
 
@@ -174,7 +174,7 @@ public:
 		tracking of the world time
 
 	*************************************************************************/
-	void update(GameObjectManager& manager, const float& deltaTime);
+	//void update(GameObjectManager& manager, const float& deltaTime);
 };
 
 // Collision system - detects and resolves collisions between game objects

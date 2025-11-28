@@ -78,6 +78,7 @@ void AudioHandler::init() {
 
 // update the audio system each frame and set inactive channel to nullptr
 void AudioHandler::update(float deltaTime) {
+	(void)deltaTime;
 	//record current time for performance tracking
 	auto start = std::chrono::high_resolution_clock::now();
 	if (system) {

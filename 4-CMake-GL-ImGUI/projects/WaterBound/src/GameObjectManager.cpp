@@ -1293,7 +1293,7 @@ void GameObjectManager::createBulletPool(const std::string& templateBulletName, 
 			continue;
 		}
 
-		GameObject* clonedBullet = CloneGameObject(templateBulletName, bulletName);
+		/*GameObject* clonedBullet = */CloneGameObject(templateBulletName, bulletName);
 		//incase of bullets not cloned properly
 		//if (clonedBullet) {
 		//	if (clonedBullet->hasComponent<Transform>()) {

@@ -27,7 +27,7 @@ void LuaSystem::init() {
     lua_pushlightuserdata(L, this);
     lua_pushcclosure(L, Lua_SendInputEvent, 1);
     lua_setglobal(L, "SendInputEvent");
-    manager = std::make_unique<GameObjectManager>();
+    //manager = std::make_unique<GameObjectManager>();
 }
 
 void LuaSystem::cleanup() {

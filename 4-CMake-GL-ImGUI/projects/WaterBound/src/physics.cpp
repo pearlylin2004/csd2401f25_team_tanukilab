@@ -21,7 +21,8 @@ Technology is prohibited.
 #include "input.h"
 #include "dynamics.h"
 
-void PhysicsForces::applyGravity(Physics* physics, float deltaTime) {
+//void PhysicsForces::applyGravity(Physics* physics, float deltaTime) {
+void PhysicsForces::applyGravity(Physics* physics) {
     // Gravity as a constant downward force: F = m * g
     Vector3D gravityForce = { 0.0f, physics->gravity * physics->dynamics.mass, 0.0f };
     DynamicsSystem::AddForce(physics->dynamics, gravityForce, 1.0f);

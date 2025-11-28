@@ -8,7 +8,8 @@ class GameObjectManager;
 
 // Struct to handle jump and bullet physics
 struct PhysicsForces {
-    static void applyGravity(Physics* physics, float deltaTime);
+    /*static void applyGravity(Physics* physics, float deltaTime);*/
+    static void applyGravity(Physics* physics);
     static void applyDamping(Physics* physics);
 
     static void updatePosition(Transform* transform, Physics* physics, float deltaTime);
