@@ -156,6 +156,8 @@ void CoreEngine::Init(bool forceWindowed) {
     glfwPollEvents();
     m_isRunning = true;
 
+    startBGM();
+
     //AudioHandler::getInstance().playSound(soundID::bg, 0.2f);
 }
 
@@ -256,7 +258,23 @@ void CoreEngine::Update(float deltaTime) {
 
     //performance update
     LogSystemTimersEveryInterval(deltaTime,15.0);
+
+#ifdef _DEBUG
+    static bool wasEditingMode = true;
+    bool isEditingNow = EditorManager::isEditingMode();
+
+    if (wasEditingMode && !isEditingNow) {
+        resumeBGM();  // Start when entering simulation
+    }
+    if (!wasEditingMode && isEditingNow) {
+        pauseBGM();   // Stop when returning to editor
+    }
+
+    wasEditingMode = isEditingNow;
+#endif
+
 }
+
 void CoreEngine::toggleFullscreen()
 {
     m_isFullscreen = !m_isFullscreen;
@@ -391,6 +409,7 @@ void CoreEngine::windowIconifyCallback(GLFWwindow* window, int iconified) {
             //engine->audio.pauseAll();
             AudioHandler::getInstance().pauseAll(*engine->m_manager);
 			engine->m_isPaused = true; //set paused flag
+            //engine->pauseBGM();//pause bgm
         }
         else {
             //window was restored maximized or simply returned to normal state
@@ -398,6 +417,7 @@ void CoreEngine::windowIconifyCallback(GLFWwindow* window, int iconified) {
             //engine->audio.playSound(soundID::bg, 0.2f);
             AudioHandler::getInstance().resumeAll(*engine->m_manager);
 			engine->m_isPaused = false; //clear paused flag
+            //engine->resumeBGM();
         }
     }
 }
@@ -417,4 +437,30 @@ void CoreEngine::windowFocusCallback(GLFWwindow* window, int focused) {
             AudioHandler::getInstance().resumeAll(*engine->m_manager);
         }
     }
+}
+
+void CoreEngine::startBGM() {
+    if (m_bgmChannel) return;  // Already playing
+
+    AudioChannel bgm;
+    bgm.audioFile = m_bgmFilePath;
+    bgm.loop = true;
+    bgm.volume = 0.3f;
+
+    m_bgmChannel = AudioHandler::getInstance().playSound(&bgm);
+}
+
+void CoreEngine::stopBGM() {
+    if (m_bgmChannel) {
+        m_bgmChannel->stop();
+        m_bgmChannel = nullptr;
+    }
+}
+
+void CoreEngine::pauseBGM() {
+    if (m_bgmChannel) m_bgmChannel->setPaused(true);
+}
+
+void CoreEngine::resumeBGM() {
+    if (m_bgmChannel) m_bgmChannel->setPaused(false);
 }

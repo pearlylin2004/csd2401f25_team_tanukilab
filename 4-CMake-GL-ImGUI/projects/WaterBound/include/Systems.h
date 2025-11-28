@@ -185,6 +185,8 @@ public:
 	void update(GameObjectManager& manager, float deltaTime);
 	void cleanup(GameObjectManager& manager);
 
+	static void initializeSceneAudio(GameObjectManager& manager);
+
 private:
 	void processAudio(GameObject* obj, AudioChannel* audio, float deltaTime);
 };

@@ -614,17 +614,20 @@ namespace JsonIO {
 
             AudioChannel* ac = audio->getDefaultChannel();
 
-            ja.AddMember("audioFile", Value(ac->audioFile.c_str(), a), a);
-            ja.AddMember("loop", ac->loop, a);
-            ja.AddMember("playOnStart", ac->playOnStart, a);
-            ja.AddMember("volume", ac->volume, a);
-            ja.AddMember("pitch", ac->pitch, a);
-            ja.AddMember("fadeInOnStart", ac->fadeInOnStart, a);
-            ja.AddMember("fadeInDuration", ac->fadeInDuration, a);
-            ja.AddMember("fadeOutOnStop", ac->fadeOutOnStop, a);
-            ja.AddMember("fadeOutDuration", ac->fadeOutDuration, a);
+            // CRITICAL FIX: Only serialize if "default" channel exists
+            if (ac) {
+                ja.AddMember("audioFile", Value(ac->audioFile.c_str(), a), a);
+                ja.AddMember("loop", ac->loop, a);
+                ja.AddMember("playOnStart", ac->playOnStart, a);
+                ja.AddMember("volume", ac->volume, a);
+                ja.AddMember("pitch", ac->pitch, a);
+                ja.AddMember("fadeInOnStart", ac->fadeInOnStart, a);
+                ja.AddMember("fadeInDuration", ac->fadeInDuration, a);
+                ja.AddMember("fadeOutOnStop", ac->fadeOutOnStop, a);
+                ja.AddMember("fadeOutDuration", ac->fadeOutDuration, a);
 
-            doc.AddMember("Audio", ja, a);
+                doc.AddMember("Audio", ja, a);
+            }
         }
 
         if (StateMachine* sm = obj->getComponent<StateMachine>()) {

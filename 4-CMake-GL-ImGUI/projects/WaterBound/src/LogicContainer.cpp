@@ -96,6 +96,14 @@ void LogicContainer::enter(GameObject& obj, PlayerState next)
                 audio = obj.addComponent<AudioComponent>();
             }
 
+            if (!audio) {
+                std::cerr << "[LogicContainer] Failed to get/create AudioComponent for "
+                    << obj.getObjectName() << std::endl;
+                fsm->state = next;
+                fsm->stateTime = 0.0f;
+                return;  // Early return if audio component is invalid
+            }
+
             //if prev state was walking
             if (fsm->state == PlayerState::Walking) {
 
@@ -113,10 +121,11 @@ void LogicContainer::enter(GameObject& obj, PlayerState next)
             if (fsm->state == PlayerState::Falling) {
                 AudioChannel* landing = audio->getOrCreateChannel("landing");
                 
+                std::cerr << "PLAYING LANDING SOUND WOOOOOOOOOOOOOOOOOOOOOOOOOOOO\n\n\n";
                 //play sound when exiting falling state
-                landing->audioFile = "assets/audio/landing.wav";
+                landing->audioFile = "assets/audio/landing2.wav";
                 landing->loop = false;
-                landing->volume = 0.5f;
+                landing->volume = 1.0f;
                 landing->isPendingPlay = true;
             }
 

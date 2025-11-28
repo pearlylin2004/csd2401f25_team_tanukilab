@@ -72,6 +72,15 @@ private:
     bool m_forceWindowed = false;
 	bool m_isPaused; //for alt-tab pause
 
+    //hardcoded bgm player
+    FMOD::Channel* m_bgmChannel = nullptr;
+    std::string m_bgmFilePath = "assets/audio/bg.wav";
+
+    void startBGM();
+    void stopBGM();
+    void pauseBGM();
+    void resumeBGM();
+    
     void toggleFullscreen();
 
     std::unique_ptr<GUISystem> m_guiSystem;

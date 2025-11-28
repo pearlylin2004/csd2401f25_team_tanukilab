@@ -947,18 +947,21 @@ void PrefabManager::serializeComponents(const GameObject* obj, rapidjson::Value&
 
 		const AudioChannel* ac = audio->getChannel("default");
 
-		ja.AddMember("audioFile", rapidjson::Value(ac->audioFile.c_str(), a), a);
-		ja.AddMember("volume", ac->volume, a);
-		ja.AddMember("pitch", ac->pitch, a);
-		ja.AddMember("loop", ac->loop ? 1 : 0, a);
-		ja.AddMember("playOnStart", ac->playOnStart ? 1 : 0, a);
-		ja.AddMember("muted", ac->muted ? 1 : 0, a);
-		ja.AddMember("fadeInOnStart", ac->fadeInOnStart ? 1 : 0, a);
-		ja.AddMember("fadeInDuration", ac->fadeInDuration, a);
-		ja.AddMember("fadeOutOnStop", ac->fadeOutOnStop ? 1 : 0, a);
-		ja.AddMember("fadeOutDuration", ac->fadeOutDuration, a);
+		// CRITICAL FIX: Only serialize if "default" channel exists
+		if (ac) {
+			ja.AddMember("audioFile", rapidjson::Value(ac->audioFile.c_str(), a), a);
+			ja.AddMember("volume", ac->volume, a);
+			ja.AddMember("pitch", ac->pitch, a);
+			ja.AddMember("loop", ac->loop ? 1 : 0, a);
+			ja.AddMember("playOnStart", ac->playOnStart ? 1 : 0, a);
+			ja.AddMember("muted", ac->muted ? 1 : 0, a);
+			ja.AddMember("fadeInOnStart", ac->fadeInOnStart ? 1 : 0, a);
+			ja.AddMember("fadeInDuration", ac->fadeInDuration, a);
+			ja.AddMember("fadeOutOnStop", ac->fadeOutOnStop ? 1 : 0, a);
+			ja.AddMember("fadeOutDuration", ac->fadeOutDuration, a);
 
-		comps.AddMember("AudioComponent", ja, a);
+			comps.AddMember("AudioComponent", ja, a);
+		}
 	}
 
 	// FontComponent

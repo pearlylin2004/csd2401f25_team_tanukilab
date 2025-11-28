@@ -1621,41 +1621,71 @@ void AudioSystem::update(GameObjectManager& manager, float deltaTime) {
 	AudioHandler& audioHandler = AudioHandler::getInstance();
 
 	for (GameObject* obj : gameObjects) {
+		// CRITICAL CHECK #1: Verify GameObject pointer is valid
+		if (!obj) {
+			std::cerr << "[AudioSystem] Null GameObject encountered in update loop!\n";
+			continue;
+		}
+
+		// CRITICAL CHECK #2: Verify GameObject has AudioComponent before accessing
 		if (!obj->hasComponent<AudioComponent>()) continue;
 
+		// CRITICAL CHECK #3: Verify AudioComponent pointer is valid
 		AudioComponent* audio = obj->getComponent<AudioComponent>();
+		if (!audio) {
+			std::cerr << "[AudioSystem] getComponent<AudioComponent>() returned nullptr for object: "
+				<< obj->getObjectName() << std::endl;
+			continue;
+		}
 
-		audio->updateFades(deltaTime);
+		// CRITICAL CHECK #4: Verify audioChannels map is accessible
+		// (Attempt to access the map - if audio pointer is invalid, this will crash)
+		try {
+			// Safe to call updateFades now
+			audio->updateFades(deltaTime);
 
-		for (auto& pair : audio->audioChannels) {
-			AudioChannel& ch = pair.second;
+			for (auto& pair : audio->audioChannels) {
+				AudioChannel& ch = pair.second;
 
-			if (/*ch.soundId == soundID::bg && */ ch.playOnStart) {
-				if (!ch.channel || !audioHandler.isSoundPlaying(&ch)) {
-					// Restart background music if  not playing
-					ch.channel = audioHandler.playSound(&ch);
-					if (ch.channel) {
-						ch.state = AudioState::Playing;
-						audioHandler.setSoundpitch(&ch, ch.pitch);
-						if (ch.muted) {
-							audioHandler.muteSound(&ch);
+				// Background music restart logic
+				if (ch.playOnStart) {
+					if (!ch.channel || !audioHandler.isSoundPlaying(&ch)) {
+						// Restart background music if not playing
+						ch.channel = audioHandler.playSound(&ch);
+						if (ch.channel) {
+							ch.state = AudioState::Playing;
+							audioHandler.setSoundpitch(&ch, ch.pitch);
+							if (ch.muted) {
+								audioHandler.muteSound(&ch);
+							}
 						}
 					}
 				}
-			}
 
-			processAudio(obj, &ch, deltaTime);
+				// Process audio (isPendingPlay, isPendingStop, etc.)
+				processAudio(obj, &ch, deltaTime);
 
-			if (ch.channel) {
-				bool isPlaying = false;
-				ch.channel->isPlaying(&isPlaying); 
-				if (!isPlaying) {
-					ch.channel = nullptr;
-					ch.fadeInfo.isFading = false;
+				// Check if channel is still playing
+				if (ch.channel) {
+					bool isPlaying = false;
+					ch.channel->isPlaying(&isPlaying);
+					if (!isPlaying) {
+						ch.channel = nullptr;
+						ch.fadeInfo.isFading = false;
+					}
 				}
 			}
 		}
-
+		catch (const std::exception& e) {
+			std::cerr << "[AudioSystem] Exception processing audio for object: "
+				<< obj->getObjectName() << " - " << e.what() << std::endl;
+			continue;
+		}
+		catch (...) {
+			std::cerr << "[AudioSystem] Unknown exception processing audio for object: "
+				<< obj->getObjectName() << std::endl;
+			continue;
+		}
 	}
 
 	auto end = std::chrono::high_resolution_clock::now();
@@ -1663,10 +1693,19 @@ void AudioSystem::update(GameObjectManager& manager, float deltaTime) {
 	g_SystemTimers.push_back({ "Audio", ms });
 }
 
+/*
+ * ADDITIONAL FIX: Add null check in processAudio
+ */
 void AudioSystem::processAudio(GameObject* obj, AudioChannel* audio, float deltaTime) {
 	(void)deltaTime;
-	AudioHandler& audioHandler = AudioHandler::getInstance();
 
+	// CRITICAL CHECK: Verify audio pointer is valid
+	if (!audio) {
+		std::cerr << "[AudioSystem::processAudio] Null AudioChannel pointer!\n";
+		return;
+	}
+
+	AudioHandler& audioHandler = AudioHandler::getInstance();
 
 	if (audio->isPendingStop) {
 		audio->isPendingStop = false;
@@ -1684,6 +1723,14 @@ void AudioSystem::processAudio(GameObject* obj, AudioChannel* audio, float delta
 	if (audio->isPendingPlay) {
 		audio->isPendingPlay = false;
 
+		// CRITICAL CHECK: Verify audioFile is set
+		if (audio->audioFile.empty()) {
+			std::cerr << "[AudioSystem] Cannot play audio: audioFile is empty for object: "
+				<< (obj ? obj->getObjectName() : "unknown") << std::endl;
+			audio->state = AudioState::Stopped;
+			return;
+		}
+
 		if (audio->channel != nullptr) {
 			audioHandler.stopSound(audio);
 			audio->channel = nullptr;
@@ -1693,7 +1740,6 @@ void AudioSystem::processAudio(GameObject* obj, AudioChannel* audio, float delta
 		audio->channel = audioHandler.playSound(audio);
 		if (audio->channel) {
 			audio->state = AudioState::Playing;
-
 
 			if (audio->fadeInOnStart) {
 				audioHandler.fadeIn(audio, audio->volume, audio->fadeInDuration);
@@ -1750,4 +1796,40 @@ void AudioSystem::cleanup(GameObjectManager& manager) {
 		}
 
 	}
+}
+
+void AudioSystem::initializeSceneAudio(GameObjectManager& manager) {
+	auto start = std::chrono::high_resolution_clock::now();
+
+	std::vector<GameObject*> gameObjects;
+	manager.getAllGameObjects(gameObjects);
+
+	for (GameObject* obj : gameObjects) {
+		if (!obj->hasComponent<AudioComponent>()) continue;
+
+		AudioComponent* audio = obj->getComponent<AudioComponent>();
+
+		// Pre-load all sounds for all channels
+		for (auto& [channelName, channel] : audio->audioChannels) {
+			if (!channel.audioFile.empty()) {
+				// Pre-load the sound via ResourceManager
+				FMOD::Sound* sound = ResourceManager::getInstance().getSound(channel.audioFile);
+
+				if (!sound) {
+					std::cerr << "[AudioSystem] Failed to preload: "
+						<< channel.audioFile << " for channel: "
+						<< channelName << std::endl;
+				}
+				else {
+					std::cout << "[AudioSystem] Preloaded: "
+						<< channel.audioFile << " for channel: "
+						<< channelName << std::endl;
+				}
+			}
+		}
+	}
+
+	auto end = std::chrono::high_resolution_clock::now();
+	double ms = std::chrono::duration<double, std::milli>(end - start).count();
+	g_SystemTimers.push_back({ "Audio Scene Init", ms });
 }

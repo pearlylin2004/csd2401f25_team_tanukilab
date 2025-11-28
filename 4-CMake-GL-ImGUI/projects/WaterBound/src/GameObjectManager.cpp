@@ -1045,20 +1045,25 @@ void GameObjectManager::saveSceneToJson(const std::string& filename, bool isNew)
 
 				const AudioChannel* ch = ac->getChannel("default");
 
-				pushIfDiffStr("audioFile", ch->audioFile.c_str());
-				pushIfDiffFloat("volume", ch->volume);
-				pushIfDiffFloat("pitch", ch->pitch);
-				pushIfDiffBool("loop", ch->loop);
-				pushIfDiffBool("playOnStart", ch->playOnStart);
-				pushIfDiffBool("muted", ch->muted);
-				pushIfDiffBool("fadeInOnStart", ch->fadeInOnStart);
-				pushIfDiffFloat("fadeInDuration", ch->fadeInDuration);
-				pushIfDiffBool("fadeOutOnStop", ch->fadeOutOnStop);
-				pushIfDiffFloat("fadeOutDuration", ch->fadeOutDuration);
+				if (ch) {
 
-				if (!jac.ObjectEmpty()) {
-					comps.AddMember("AudioComponent", jac, a);
+					pushIfDiffStr("audioFile", ch->audioFile.c_str());
+					pushIfDiffFloat("volume", ch->volume);
+					pushIfDiffFloat("pitch", ch->pitch);
+					pushIfDiffBool("loop", ch->loop);
+					pushIfDiffBool("playOnStart", ch->playOnStart);
+					pushIfDiffBool("muted", ch->muted);
+					pushIfDiffBool("fadeInOnStart", ch->fadeInOnStart);
+					pushIfDiffFloat("fadeInDuration", ch->fadeInDuration);
+					pushIfDiffBool("fadeOutOnStop", ch->fadeOutOnStop);
+					pushIfDiffFloat("fadeOutDuration", ch->fadeOutDuration);
+
+					if (!jac.ObjectEmpty()) {
+						comps.AddMember("AudioComponent", jac, a);
+					}
 				}
+
+				
 			}
 
 			if (!comps.ObjectEmpty()) jObj.AddMember("components", comps, a);
@@ -1229,4 +1234,44 @@ void GameObjectManager::createBulletPool(const std::string& templateBulletName, 
 		//}
 	}
 	std::cout << "Bullet pool creation completed.\n";
+}
+
+void GameObjectManager::initializeSimulationResources() {
+	// Initialize audio for all objects
+	for (auto& pair : m_gameObjects) {
+		GameObject* obj = pair.second.get();
+		if (obj->hasComponent<AudioComponent>()) {
+			AudioComponent* audio = obj->getComponent<AudioComponent>();
+
+			// Pre-load all sounds
+			for (auto& [channelName, channel] : audio->audioChannels) {
+				if (!channel.audioFile.empty()) {
+					FMOD::Sound* sound = ResourceManager::getInstance().getSound(channel.audioFile);
+					if (!sound) {
+						std::cerr << "[GameObjectManager] Failed to preload audio: "
+							<< channel.audioFile << std::endl;
+					}
+				}
+			}
+		}
+	}
+}
+
+void GameObjectManager::cleanupSimulationResources() {
+	// Stop all playing audio
+	for (auto& pair : m_gameObjects) {
+		GameObject* obj = pair.second.get();
+		if (obj->hasComponent<AudioComponent>()) {
+			AudioComponent* audio = obj->getComponent<AudioComponent>();
+			
+
+			for (auto& [channelName, channel] : audio->audioChannels) {
+				if (channel.channel) {
+					//channel.state = AudioState::Stopped;
+					channel.isPendingStop = true;
+					channel.channel = nullptr;
+				}
+			}
+		}
+	}
 }

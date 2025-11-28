@@ -386,8 +386,6 @@ public:
         return getOrCreateChannel("default");
     }
 
-
-
     void updateFades(float deltaTime) {
         for (auto& pair : audioChannels) {
             AudioChannel& ch = pair.second;
