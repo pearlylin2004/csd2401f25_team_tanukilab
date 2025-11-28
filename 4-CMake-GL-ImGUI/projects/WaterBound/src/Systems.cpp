@@ -195,6 +195,7 @@ void RenderSystem::update(GameObjectManager& manager, float const& deltaTime)
 							if (as.texChanged && !as.texFile.empty()) {
 								TextureData textureData = ResourceManager::getInstance().getTexture(as.texFile);
 								as.texHDL = textureData.id;
+								as.texChanged = false;
 							}
 						}
 					}
