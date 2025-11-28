@@ -19,10 +19,9 @@ std::unordered_map<BatchKey, std::vector<renderer::InstanceData>, BatchKeyHash> 
 
 void TileMapSystem::tileUpdate(GameObject* obj)
 {
+#ifdef _DEBUG
 	TileMap* tm = obj->getComponent<TileMap>();
 	Transform* transform = obj->getComponent<Transform>();
-
-#ifdef _DEBUG
 	Vector2D world = InputHandler::getMousePositionInImGuiViewport(Editor::sceneWindowState.scenePos, Editor::sceneWindowState.sceneSize);
 	int col = (int)floor((world.x - transform->x) / tm->tileW);
 	int row = (int)floor((world.y - transform->y) / tm->tileH);
