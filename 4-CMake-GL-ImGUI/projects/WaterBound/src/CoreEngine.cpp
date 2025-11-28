@@ -221,7 +221,7 @@ void CoreEngine::GameLoop() {
 
 void CoreEngine::Update(float deltaTime) {
     //for pausing
-	if (m_isPaused) return; //skip update when paused
+    if (m_isPaused) return; //skip update when paused
 
     InputHandler::update();
     if (InputHandler::isKeyTriggered(GLFW_KEY_F11)) {
