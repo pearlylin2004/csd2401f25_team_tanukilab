@@ -1273,7 +1273,6 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 							}
 
 							if (playerObj && waterSource) {
-								DebugLog::addMessage("wtf");
 								if (StateMachine* sm = waterSource->getComponent<StateMachine>()) {
 									sm->state = PlayerState::Walking;
 									sm->fixState = true;

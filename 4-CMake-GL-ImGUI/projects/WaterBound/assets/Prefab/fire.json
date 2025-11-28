@@ -109,10 +109,23 @@
           "lastFramCol": 0.0,
           "lastFramRow": 0.0
         }
+      },
+      "Dead": {
+        "animState": {
+          "texture": "",
+          "loop": 1,
+          "totalColumn": 1,
+          "totalRow": 1,
+          "frameTime": 0.10000000149011612,
+          "initialFramCol": 0.0,
+          "initialFramRow": 0.0,
+          "lastFramCol": 0.0,
+          "lastFramRow": 0.0
+        }
       }
     },
     "AudioComponent": {
-      "audioFile": "assets/Audio\\fire.wav",
+      "audioFile": "assets/Audio\\steam.wav",
       "volume": 1.0,
       "pitch": 1.0,
       "loop": 0,
