@@ -1,4 +1,4 @@
---player_button
+--menu
 
 local play_button = {}
 
