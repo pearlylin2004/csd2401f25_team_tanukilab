@@ -66,14 +66,14 @@ namespace {
 	}
 }
 
-static PlayerState parsePlayerState(const std::string& s) {
-	if (s == "Walking")  return PlayerState::Walking;
-	if (s == "Jumping")  return PlayerState::Jumping;
-	if (s == "Falling")  return PlayerState::Falling;
-	if (s == "Shooting") return PlayerState::Shooting;
-	if (s == "Dead")     return PlayerState::Dead;
-	return PlayerState::Idle; // default/fallback
-}
+//static PlayerState parsePlayerState(const std::string& s) {
+//	if (s == "Walking")  return PlayerState::Walking;
+//	if (s == "Jumping")  return PlayerState::Jumping;
+//	if (s == "Falling")  return PlayerState::Falling;
+//	if (s == "Shooting") return PlayerState::Shooting;
+//	if (s == "Dead")     return PlayerState::Dead;
+//	return PlayerState::Idle; // default/fallback
+//}
 
 static const char* playerStateToStr(PlayerState state) {
 	switch (state) {
