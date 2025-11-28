@@ -488,7 +488,7 @@ void GameObjectManager::loadSceneFromJson(const std::string& filename) {
 				sm = go->addComponent<StateMachine>();
 
 			if (smj.HasMember("state") && smj["state"].IsString())
-				sm->state = parsePlayerState(smj["state"].GetString());
+				sm->state = PlayerState::Idle;/*parsePlayerState(smj["state"].GetString());*/
 
 			if (smj.HasMember("facingRight")) {
 				if (smj["facingRight"].IsBool())       sm->facingRight = smj["facingRight"].GetBool();

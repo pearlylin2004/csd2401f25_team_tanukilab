@@ -1258,8 +1258,22 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 									}
 								}
 
+								if (AudioComponent* a = toWin->getComponent<AudioComponent>()) {
+
+									for (auto& pair : a->audioChannels) {
+
+										AudioChannel& ch = pair.second;
+										DebugLog::addMessage("Playing win sound effect.\n");
+										if (ch.state != AudioState::Playing && !ch.isPendingPlay) {
+											ch.loop = false;
+											ch.playOnStart = false;
+											ch.isPendingPlay = true;
+										}
+									}
+								}
+
 								if (winScreen) {
-									winScreen->getComponent<Transform>()->x = 0;
+									winScreen->getComponent<Transform>()->x = 0;							
 								}
 								//continue;
 							}
@@ -1274,8 +1288,22 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 
 							if (playerObj && waterSource) {
 								if (StateMachine* sm = waterSource->getComponent<StateMachine>()) {
-									sm->state = PlayerState::Walking;
-									sm->fixState = true;
+									if (sm->state == PlayerState::Idle) {
+										sm->state = PlayerState::Walking;
+										sm->fixState = true;
+									}
+
+									/*AudioComponent* audio = waterSource->getComponent<AudioComponent>();
+									if (audio) {
+										audio = waterSource->addComponent<AudioComponent>();
+
+
+										AudioChannel* landing = audio->getOrCreateChannel("waterget");
+										landing->audioFile = "assets/audio/landing.wav";
+										landing->loop = false;
+										landing->volume = 0.5f;
+										landing->isPendingPlay = true;
+									}*/
 									continue;
 								}
 							}

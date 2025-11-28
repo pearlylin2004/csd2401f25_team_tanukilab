@@ -12,6 +12,11 @@
       "path": "/Prefab/player.json"
     },
     {
+      "id": "98416fa9-2ae1-4432-bcf4-0d4352a9b29a",
+      "name": "to win",
+      "path": "/Prefab/to win.json"
+    },
+    {
       "id": "f7665aa3-619e-49a1-892a-31fbc8b377a2",
       "name": "platform",
       "path": "/Prefab/platform.json"
@@ -35,11 +40,6 @@
       "id": "94d018f7-a766-4ee6-95be-f39272697938",
       "name": "tile_platform",
       "path": "/Prefab/tile_platform.json"
-    },
-    {
-      "id": "98416fa9-2ae1-4432-bcf4-0d4352a9b29a",
-      "name": "to win",
-      "path": "/Prefab/to win.json"
     },
     {
       "id": "f04819ff-270c-41b4-8387-73382eb85103",

@@ -953,7 +953,7 @@ void InspectorWindow::renderAudio(GameObject* selected) {
             ImGui::Separator();
             ImGui::Spacing();
 
-            ImGui::Checkbox("Loop", &ch->loop);
+            ImGui::Checkbox("Loop (WIP.)", &ch->loop);
 
             ImGui::Checkbox("Play On Start", &ch->playOnStart);
 

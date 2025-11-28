@@ -94,8 +94,8 @@ void LogicContainer::enter(GameObject& obj, PlayerState next)
             AudioComponent* audio = obj.getComponent<AudioComponent>();
             if (!audio) {
                 audio = obj.addComponent<AudioComponent>();
-            }
-
+            }           
+           
             //if prev state was walking
             if (fsm->state == PlayerState::Walking) {
 
@@ -212,6 +212,24 @@ void LogicContainer::tickWalking(GameObject& obj, float /*dt*/) {
     if (InputHandler::isKeyHeld(GLFW_KEY_A)) fsm->facingRight = false;
     if (InputHandler::isKeyHeld(GLFW_KEY_D)) fsm->facingRight = true;
 
+    // if its water source, play the sound once
+    if (obj.getObjectPrefabID() == "f04819ff-270c-41b4-8387-73382eb85103" && fsm->state == PlayerState::Walking) {
+        AudioComponent* audio = obj.getComponent<AudioComponent>();
+        DebugLog::addMessage(obj.getObjectName());
+        if (audio) {
+            DebugLog::addMessage(JsonIO::stateNames[static_cast<int>(fsm->state)]);
+            AudioChannel* getWater = audio->getDefaultChannel();
+
+            if (getWater && getWater->state != AudioState::Playing && !getWater->isPendingPlay) {
+                getWater->loop = false;
+                getWater->volume = 0.5f;
+                getWater->isPendingPlay = true;
+
+				fsm->state = PlayerState::Falling;
+            }
+        }
+    }
+        
     if (!anyMoveHeld() && !(fsm->fixState)) {
         enter(obj, PlayerState::Idle);
         return;
@@ -361,7 +379,7 @@ void LogicContainer::update(GameObject& obj, float dt, GameObjectManager& /*mana
 
     /* -------- temp setting -------- */
     if (fsm->fixState && fsm->stateTime >= 6.5f && obj.getObjectPrefabID() != "f04819ff-270c-41b4-8387-73382eb85103") {
-        obj.getComponent<Transform>()->x = 1000.f;
+        obj.getComponent<Transform>()->x = 1500.f;
     }
     /* -------- temp setting -------- */
 
