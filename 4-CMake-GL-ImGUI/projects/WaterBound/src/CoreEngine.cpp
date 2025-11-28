@@ -263,27 +263,51 @@ void CoreEngine::Update(float deltaTime) {
     //performance update
     LogSystemTimersEveryInterval(deltaTime,15.0);
 }
+
+// ============================================================================
+// Toggle Fullscreen
+// ============================================================================
+
+/**
+ * @brief Toggles the application between windowed mode and fullscreen mode.
+ *
+ * This function switches the GLFW window between fullscreen (using the primary
+ * monitor's native resolution) and windowed mode (restoring the previous
+ * window position and size). After toggling, it updates the OpenGL viewport,
+ * input handler, renderer, cameras, and internal FBO sizes to ensure all
+ * systems match the new screen dimensions.
+ *
+ * @note Framebuffer size may differ from window size on high-DPI displays,
+ *       so both values are queried separately.
+ */
 void CoreEngine::toggleFullscreen()
 {
+    // Toggle fullscreen state flag
     m_isFullscreen = !m_isFullscreen;
 
     GLFWmonitor* monitor = nullptr;
-    //int          newWidth = 0;
-    //int          newHeight = 0;
 
     if (m_isFullscreen)
     {
-        // Windowed -> fullscreen: remember current windowed pos/size
+        /**
+         * -----------------------------
+         * WINDOWED to FULLSCREEN
+         * -----------------------------
+         */
+
+         // Store the current window position and dimensions
         glfwGetWindowPos(m_window, &m_windowPosX, &m_windowPosY);
         glfwGetWindowSize(m_window, &m_windowedWidth, &m_windowedHeight);
 
+        // Fetch the primary monitor and its current video mode
         monitor = glfwGetPrimaryMonitor();
         const GLFWvidmode* mode = glfwGetVideoMode(monitor);
 
+        // Switch the window to fullscreen using monitor resolution
         glfwSetWindowMonitor(
             m_window,
             monitor,
-            0, 0,
+            0, 0,                 ///< Fullscreen always starts at (0,0)
             mode->width,
             mode->height,
             mode->refreshRate
@@ -291,92 +315,69 @@ void CoreEngine::toggleFullscreen()
     }
     else
     {
-        // Fullscreen -> windowed: restore previous pos/size
+        /**
+         * -----------------------------
+         * FULLSCREEN to WINDOWED
+         * -----------------------------
+         */
+
+         // Restore previous window size and position
         glfwSetWindowMonitor(
             m_window,
-            nullptr,
+            nullptr,              ///< nullptr = return to windowed mode
             m_windowPosX,
             m_windowPosY,
             m_windowedWidth,
             m_windowedHeight,
-            0
+            0                     ///< Refresh rate ignored for windowed mode
         );
     }
 
-    //// IMPORTANT: query the real framebuffer size after switching
-    //int fbw = 0, fbh = 0;
-    //glfwGetFramebufferSize(m_window, &fbw, &fbh);
-
-    //// Update GL viewport
-    //glViewport(0, 0, fbw, fbh);
-
-    //// Tell your input + camera systems about the new size
-    //InputHandler::setWindowSize(fbw, fbh);
-    //renderer::onResize(fbw, fbh);
-
+    /**
+     * --------------------------------------------------------------------
+     * UPDATE GL FRAMEBUFFER SIZE & VIEWPORT
+     * (Framebuffer size may differ from window size due to DPI scaling.)
+     * --------------------------------------------------------------------
+     */
     int fbw = 0, fbh = 0;
     glfwGetFramebufferSize(m_window, &fbw, &fbh);
+
+    // Update OpenGL viewport to new framebuffer resolution
     glViewport(0, 0, fbw, fbh);
 
+    /**
+     * --------------------------------------------------------------------
+     * UPDATE WINDOW SIZE FOR INPUT SYSTEM
+     * (Input uses logical window size, not framebuffer size.)
+     * --------------------------------------------------------------------
+     */
     int winW = 0, winH = 0;
     glfwGetWindowSize(m_window, &winW, &winH);
     InputHandler::setWindowSize(winW, winH);
 
+    /**
+     * --------------------------------------------------------------------
+     * NOTIFY RENDERER ABOUT THE RESIZE
+     * Recalculates projection matrices or internal buffers.
+     * --------------------------------------------------------------------
+     */
     renderer::onResize(fbw, fbh);
 
+    // Update both gameplay camera and editor camera to new aspect ratios
     renderer::cam.update();
     renderer::editorCam.update();
-	glfwPollEvents();
 
+    // Process events to ensure GLFW internal states remain in sync
+    glfwPollEvents();
+
+    /**
+     * --------------------------------------------------------------------
+     * RESIZE INTERNAL FRAMEBUFFER OBJECT (FBO)
+     * Ensures post-processing / editor rendering matches new window size.
+     * --------------------------------------------------------------------
+     */
     m_renderSystem->resizeFBO(winW, winH);
 }
-
-
-//void CoreEngine::toggleFullscreen() {
-//    m_isFullscreen = !m_isFullscreen;
-//
-//    GLFWmonitor* monitor = glfwGetPrimaryMonitor();
-//    const GLFWvidmode* mode = glfwGetVideoMode(monitor);
-//
-//    if (m_isFullscreen) {
-//        // --- Going WINDOWED to FULLSCREEN ---
-//        glfwGetWindowPos(m_window, &m_windowPosX, &m_windowPosY);
-//        glfwGetWindowSize(m_window, &m_windowedWidth, &m_windowedHeight);
-//
-//        glfwSetWindowMonitor(
-//            m_window,
-//            monitor,
-//            0, 0,
-//            mode->width,
-//            mode->height,
-//            mode->refreshRate
-//        );
-//    }
-//    else {
-//        // --- Going FULLSCREEN to WINDOWED ---
-//        glfwSetWindowMonitor(
-//            m_window,
-//            nullptr,
-//            m_windowPosX,
-//            m_windowPosY,
-//            m_windowedWidth,
-//            m_windowedHeight,
-//            0
-//        );
-//    }
-//
-//    int fbw = 0, fbh = 0;
-//    glfwGetFramebufferSize(m_window, &fbw, &fbh);
-//
-//    glViewport(0, 0, fbw, fbh);
-//
-//    // 3. Resize the renderer cameras
-//    renderer::resize(fbw, fbh);
-//
-//    InputHandler::setWindowSize(fbw, fbh);
-//
-//    glfwPollEvents();
-//}
 
 
 void CoreEngine::Shutdown() {
