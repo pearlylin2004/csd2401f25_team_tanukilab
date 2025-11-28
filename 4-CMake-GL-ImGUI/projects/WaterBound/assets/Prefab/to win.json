@@ -42,7 +42,7 @@
       "collisionRes": "StopWhenCollide"
     },
     "AudioComponent": {
-      "audioFile": "assets/Audio\\underwater.wav",
+      "audioFile": "assets/Audio\\fire.wav",
       "volume": 1.0,
       "pitch": 1.0,
       "loop": 0,
