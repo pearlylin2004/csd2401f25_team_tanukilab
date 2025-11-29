@@ -1,9 +1,9 @@
 ﻿/* Start Header ************************************************************************/
 /*!
 \file       undoRedo.h
-\author     Tan Chee Qing, cheeqing.tan, 2401486
-			- 10%
-\par		cheeqing.tan@digipen.edu
+\author     Hugo Low Ren Hao, low.h, 2402272
+						- 100%
+\par				low.h@digipen.edu
 \date       November, 10th, 2025
 \brief      Class for recording the steps and snapshots for undo and redo. UndoRedoManager
 			should be the only public interface needed to track and execute undo and redo
