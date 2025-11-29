@@ -63,7 +63,7 @@ private:
      * \param obj   The object to transition.
      * \param next  The PlayerState to move into.
      */
-    static void enter(GameObject& obj, PlayerState next);
+    static void enter(GameObject& obj, PlayerState next, GameObject* vfx = nullptr);
 
     /*!
      * \brief Behavior function executed when the object is in Idle state.
@@ -107,7 +107,7 @@ private:
      * \param obj The object in Falling state.
      * \param dt  Time elapsed for the frame.
      */
-    static void tickFalling(GameObject& obj, float dt);
+    static void tickFalling(GameObject& obj, float dt, /* temp setting */ GameObject* vfx);
 
     /*!
      * \brief Spawns a bullet near the object and initializes its velocity.

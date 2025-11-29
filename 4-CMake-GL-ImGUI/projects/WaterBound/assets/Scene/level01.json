@@ -19,16 +19,6 @@
       }
     },
     {
-      "prefabid": "f04819ff-270c-41b4-8387-73382eb85103",
-      "name": "water_source",
-      "components": {
-        "StateMachine": {
-          "state": "Walking",
-          "stateTime": 0.0
-        }
-      }
-    },
-    {
       "prefabid": "dd60e1e1-641c-4ed5-b69d-ffadfa02fb7a",
       "name": "player",
       "components": {
@@ -36,7 +26,7 @@
           "pos": [
             0.0,
             -7.5,
-            0.9990000128746033
+            0.9980000257492065
           ],
           "scale": [
             5.0,
@@ -67,6 +57,22 @@
       }
     },
     {
+      "prefabid": "f04819ff-270c-41b4-8387-73382eb85103",
+      "name": "water_source",
+      "components": {
+        "Transform": {
+          "pos": [
+            -6.120626926422119,
+            -8.350801467895508,
+            0.0
+          ]
+        },
+        "StateMachine": {
+          "stateTime": 129.82432556152344
+        }
+      }
+    },
+    {
       "name": "back_text",
       "components": {
         "Transform": {
@@ -91,6 +97,31 @@
           ],
           "scale": 1.0,
           "fontType": 1
+        }
+      }
+    },
+    {
+      "name": "background5",
+      "components": {
+        "Transform": {
+          "pos": [
+            0.0,
+            0.0,
+            -0.07999999821186066
+          ],
+          "rotation": 0.0,
+          "scale": [
+            45.0,
+            22.0,
+            0.0
+          ]
+        },
+        "Render": {
+          "shape": "square",
+          "hasTex": 1,
+          "texture": "assets/Texture\\game_bg_layer_5.png",
+          "hasTex": 1,
+          "hasAnimation": 0
         }
       }
     },
@@ -128,31 +159,6 @@
           "shape": "square",
           "hasTex": 1,
           "texture": "assets/button.png",
-          "hasTex": 1,
-          "hasAnimation": 0
-        }
-      }
-    },
-    {
-      "name": "background5",
-      "components": {
-        "Transform": {
-          "pos": [
-            0.0,
-            0.0,
-            -0.07999999821186066
-          ],
-          "rotation": 0.0,
-          "scale": [
-            45.0,
-            22.0,
-            0.0
-          ]
-        },
-        "Render": {
-          "shape": "square",
-          "hasTex": 1,
-          "texture": "assets/Texture\\game_bg_layer_5.png",
           "hasTex": 1,
           "hasAnimation": 0
         }
@@ -245,7 +251,7 @@
           "rotation": 0.0,
           "scale": [
             45.0,
-            22.0,
+            45.0,
             0.0
           ]
         },
@@ -346,20 +352,7 @@
           ]
         },
         "StateMachine": {
-          "stateTime": 2048.200927734375,
-          "Dead": {
-            "animState": {
-              "texture": "",
-              "loop": 1,
-              "totalColumn": 1,
-              "totalRow": 1,
-              "frameTime": 0.10000000149011612,
-              "initialFramCol": 0.0,
-              "initialFramRow": 0.0,
-              "lastFramCol": 0.0,
-              "lastFramRow": 0.0
-            }
-          }
+          "stateTime": 2178.03564453125
         }
       }
     },
@@ -404,22 +397,13 @@
           ]
         },
         "StateMachine": {
-          "stateTime": 2048.200927734375,
-          "Dead": {
-            "animState": {
-              "texture": "",
-              "loop": 1,
-              "totalColumn": 1,
-              "totalRow": 1,
-              "frameTime": 0.10000000149011612,
-              "initialFramCol": 0.0,
-              "initialFramRow": 0.0,
-              "lastFramCol": 0.0,
-              "lastFramRow": 0.0
-            }
-          }
+          "stateTime": 2178.03564453125
         }
       }
+    },
+    {
+      "prefabid": "25591e7c-7d8f-47e1-a686-f950e77e91a1",
+      "name": "land_vfx(28)"
     }
   ]
 }
