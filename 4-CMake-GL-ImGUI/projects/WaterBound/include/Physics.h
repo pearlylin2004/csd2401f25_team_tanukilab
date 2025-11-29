@@ -5,11 +5,9 @@
             - 100% of the file
 \par        asha.m@digipen.edu
 \date       November, 7th, 2025
-\brief      Implements the PhysicsForces class responsible for applying
-            physics-based behaviors such as gravity, damping, jumping,
-
-            The system integrates with the DynamicsSystem to handle forces
-            and updates object positions and velocities over time.
+\brief      defines the PhysicsForces struct which provides static methods
+            for handling game physics including gravity application,
+            movement damping, jumping, shooting, and bullet object pooling.
 
 Copyright (C) 2025 DigiPen Institute of Technology.
 Reproduction or disclosure of this file or its contents
@@ -26,19 +24,42 @@ Technology is prohibited.
 
 class GameObjectManager;
 
-// Struct to handle jump and bullet physics
+/**
+ * @struct PhysicsForces
+ * @brief Handles  physics operations for game objects
+ *
+ * Provides static methods for applying gravity, damping, updating positions,
+ * and handling game-specific physics like jumping and shooting.
+ */
 struct PhysicsForces {
-    /*static void applyGravity(Physics* physics, float deltaTime);*/
+    /**
+    * @brief Applies gravity force to a physics object
+    */
     static void applyGravity(Physics* physics);
+    /**
+     * @brief Applies velocity damping to reduce movement over time
+     */
     static void applyDamping(Physics* physics);
-
+    /**
+     * @brief Updates transform position based on physics simulation
+     */
     static void updatePosition(Transform* transform, Physics* physics, float deltaTime);
-
+    /**
+     * @brief Applies jump force to object
+     */
     static void jump(GameObject* object);           // Apply jump force
+    /**
+     * @brief shoots a bullet from  origin (player)
+     */
     static void shoot(GameObject* bullet, const Transform* origin);  // Shoot bullet from origin
 
     /*static void applyDynamics(Physics* physics, float deltaTime);*/
-
+    /**
+     * @brief Finds an available/free bullet from the object pool
+     */
     static GameObject* findAvailableBullet(GameObjectManager& manager);
+    /**
+     * @brief Deactivates a bullet and returns it to the object pool
+     */
     static void deactivateBullet(GameObject* bullet);
 };
