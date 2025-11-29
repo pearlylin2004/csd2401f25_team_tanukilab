@@ -1,6 +1,6 @@
 /* Start Header ************************************************************************/
 /*!
-\file       lua.cpp
+\file       luaSystem.h
 \author     Pearly Lin Lee Ying, p.lin, 2401591
             - 100% of the file
 \par        p.lin@digipen.edu
