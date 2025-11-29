@@ -275,6 +275,7 @@ enum class AudioState {
     Paused
 };
 
+//AudioChannel serves as the real storage for sounds and their data.
 struct AudioChannel {
     FMOD::Channel* channel = nullptr;
     std::string audioFile;
@@ -299,6 +300,9 @@ struct AudioChannel {
 //enum class soundID : int;
 //enum class AudioState;
 class FMOD::Channel;
+
+//Audio component stores multiple Audio channels
+//sort of acts as a manager of AudioChannels
 struct AudioComponent : public Component {
 public:
     AudioComponent() = default;
