@@ -22,14 +22,14 @@
       "path": "/Prefab/platform.json"
     },
     {
-      "id": "4828c393-9fcf-42f8-8b05-ddc8d75096be",
-      "name": "player2",
-      "path": "/Prefab/player2.json"
-    },
-    {
       "id": "eaa2ba42-971a-413b-b8c4-99b2f5ab674d",
       "name": "fire",
       "path": "/Prefab/fire.json"
+    },
+    {
+      "id": "f04819ff-270c-41b4-8387-73382eb85103",
+      "name": "water_source",
+      "path": "/Prefab/water_source.json"
     },
     {
       "id": "887d25cd-bd8d-481f-9f64-f371300a2cf0",
@@ -42,9 +42,9 @@
       "path": "/Prefab/tile_platform.json"
     },
     {
-      "id": "f04819ff-270c-41b4-8387-73382eb85103",
-      "name": "water_source",
-      "path": "/Prefab/water_source.json"
+      "id": "25591e7c-7d8f-47e1-a686-f950e77e91a1",
+      "name": "land_vfx",
+      "path": "/Prefab/land_vfx.json"
     }
   ]
 }
