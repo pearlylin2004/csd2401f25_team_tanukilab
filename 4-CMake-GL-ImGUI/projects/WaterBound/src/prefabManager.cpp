@@ -86,17 +86,6 @@ static const char* playerStateToStr(PlayerState state) {
 	}
 }
 
-static const char* playerStateToStr(PlayerState state) {
-	switch (state) {
-	case PlayerState::Walking:  return "Walking";
-	case PlayerState::Jumping:  return "Jumping";
-	case PlayerState::Falling:  return "Falling";
-	case PlayerState::Shooting: return "Shooting";
-	case PlayerState::Dead:     return "Dead";
-	default:                    return "Idle";
-	}
-}
-
 PrefabManager& PrefabManager::Instance() {
 	static PrefabManager instance;
 	return instance;
@@ -325,7 +314,7 @@ std::unique_ptr<GameObject> PrefabManager::createTempPrefabObj(const std::string
 	if (doc.HasMember("layer") && doc["layer"].IsInt()) {
 		int layerID = doc["layer"].GetInt();
 		// store the layer value, do not register!!!
-		tempGO->setLayer(layerID); 
+		tempGO->setLayer(layerID);
 	}
 
 	// apply prefab changes on the obj
@@ -440,7 +429,7 @@ int PrefabManager::applyToAllInstances(const std::string& prefabID, GameObjectMa
 		DebugLog::addMessage("No cached state found for prefab.");
 		return applyAllInstancesFallback(prefabID, manager);
 	}
-	
+
 	auto* oldComps = JsonIO::GetObj(oldI->second, "components");
 	auto* newComps = JsonIO::GetObj(newI->second, "components");
 	if (!oldComps || !newComps) return 0;
@@ -581,7 +570,7 @@ bool PrefabManager::createPrefabFromGameObj(GameObject* go, const std::string& n
 	doc.AddMember("name", rapidjson::Value(prefabName.c_str(), a), a);
 
 	int layerID = go->getLayer();
-	if (layerID != -1 && layerID != 1) { 
+	if (layerID != -1 && layerID != 1) {
 		doc.AddMember("layer", layerID, a);
 	}
 
@@ -600,7 +589,7 @@ bool PrefabManager::createPrefabFromGameObj(GameObject* go, const std::string& n
 	savePrefabRegistry();
 
 	// set this game object to be reference to the created prefab
-	if(makeRef) go->getObjectPrefabID() = prefabID;
+	if (makeRef) go->getObjectPrefabID() = prefabID;
 
 	// update cache
 	m_prefabCache[prefabID].CopyFrom(doc, m_prefabCache[prefabID].GetAllocator());
@@ -737,7 +726,7 @@ void PrefabManager::applyPrefabComponents(GameObject* go, const rapidjson::Value
 			c->colliderSize.y = jc["colliderSize"][1].GetFloat();
 		}
 	}
-	
+
 	// ---- State Machine ----
 	if (comps.HasMember("StateMachine") && comps["StateMachine"].IsObject()) {
 		const auto& smj = comps["StateMachine"];
@@ -773,7 +762,7 @@ void PrefabManager::applyPrefabComponents(GameObject* go, const rapidjson::Value
 				state.frameTime = static_cast<float>(animJson["frameTime"].GetDouble());
 
 			if (animJson.HasMember("initialFramCol") && animJson["initialFramCol"].IsNumber())
-					state.initialFrame.x = static_cast<float>(animJson["initialFramCol"].GetDouble());
+				state.initialFrame.x = static_cast<float>(animJson["initialFramCol"].GetDouble());
 
 			if (animJson.HasMember("initialFramRow") && animJson["initialFramRow"].IsNumber())
 				state.initialFrame.y = static_cast<float>(animJson["initialFramRow"].GetDouble());

@@ -32,7 +32,7 @@ Technology is prohibited.
 // at least it works!!!
 namespace JsonIO {
     // for the indexing in animation vector
-    inline std::vector<std::string> stateNames = { "Idle", "Walking", "Jumping", "Falling", "Shooting", "Dead"};
+    inline std::vector<std::string> stateNames = { "Idle", "Walking", "Jumping", "Falling", "Shooting", "Dead" };
 }
 
 // basic component class
@@ -42,19 +42,20 @@ public:
     // these functions
     virtual ~Component() = default;
 
-	virtual std::unique_ptr<Component> clone() const = 0;
+    virtual std::unique_ptr<Component> clone() const = 0;
 };
 
 // Transform component to store position, rotation, and scale
 struct Transform : public Component {
 public:
-	Transform() = default;
-    Transform(float px, float py, float pz, float rot, float sx, float sy, float sz) 
-        : x(px), y(py), z(pz), rotation(rot), scaleX(sx), scaleY(sy), scaleZ(sz), mdlWorld(1) {}
+    Transform() = default;
+    Transform(float px, float py, float pz, float rot, float sx, float sy, float sz)
+        : x(px), y(py), z(pz), rotation(rot), scaleX(sx), scaleY(sy), scaleZ(sz), mdlWorld(1) {
+    }
 
     std::unique_ptr<Component> clone() const override {
         return std::make_unique<Transform>(*this);
-	}
+    }
 
     float x{ 0.f }, y{ 0.f }, z{ 0.f };
     float rotation = 0.0f;
@@ -101,7 +102,7 @@ struct FontComponent : public Component {
     glm::vec3 clr{ 0.f,0.f,0.f };
     int fontType = 1;
 
-    std::string fontPath = "assets/ARIAL.TTF"; 
+    std::string fontPath = "assets/ARIAL.TTF";
 };
 
 // animation for different state
@@ -131,10 +132,10 @@ struct Animation : public Component
 // Physics component to store velocity and other physics-related properties
 struct Physics : public Component {
 public:
-   
+
     std::unique_ptr<Component> clone() const override {
         return std::make_unique<Physics>(*this);
-	}
+    }
 
     bool physicsFlag = true;
     float moveSpeed = 1.0f;
@@ -142,21 +143,21 @@ public:
     Dynamics dynamics;
 
     bool canMove = true;  // Add this flag
-    
-  
+
+
     float velX = 0.0f;
     float velY = 0.0f;
     float gravity = -9.8f;
 
     //Jump 
     float damping = 0.98f;
-    float jumpForce =100.0f;  
+    float jumpForce = 100.0f;
     float floorY = -7.5f;
-    bool onGround = false;  
+    bool onGround = false;
 
     //water bullet
     bool alive = false;
-    float lifeTimer = 0.0f;     
+    float lifeTimer = 0.0f;
     float maxLifetime = 3.0f;
     Vector2D originalPos{ 0, 0 };
     Vector2D originalVel{ 0, 0 };
@@ -174,7 +175,7 @@ public:
 // Input component to store input-related properties
 struct Input : public Component {
 public:
-	//Input(float speed = 0.0f) : moveSpeed(speed) {}
+    //Input(float speed = 0.0f) : moveSpeed(speed) {}
 
     std::unique_ptr<Component> clone() const override {
         return std::make_unique<Input>(*this);
@@ -195,7 +196,7 @@ enum class CollisionResponseMode {
 // CollisionInfo component to store collision-related information
 struct CollisionInfo : public Component {
 public:
-                           
+
     std::unique_ptr<Component> clone() const override {
         return std::make_unique<CollisionInfo>(*this);
     }

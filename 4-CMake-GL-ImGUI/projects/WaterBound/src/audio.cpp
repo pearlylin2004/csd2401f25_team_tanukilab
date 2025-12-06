@@ -268,60 +268,6 @@ void AudioHandler::resumeSound(AudioChannel* audio) {
 //	}
 //}
 
-void AudioHandler::resumeAll(GameObjectManager& manager) {
-	std::vector<GameObject*> gameObjects;
-	manager.getAllGameObjects(gameObjects);
-
-	for (GameObject* obj : gameObjects) {
-		if (!obj->hasComponent<AudioComponent>()) continue;
-		AudioComponent* ac = obj->getComponent<AudioComponent>();
-
-		if (ac->state == AudioState::Paused && ac->channel) {
-			resumeSound(ac);
-			ac->state = AudioState::Playing;
-		}
-	}
-}
-
-// PAUSE / RESUME a particular sound
-//void AudioHandler::toggleSoundPause(AudioComponent* audio) {
-//	//size_t pos = static_cast<size_t>(id);
-//	bool isPaused = false;
-//
-//	/*if (channels[pos]) {*/
-//	if(audio->channel){
-//		FMODErrorCheck(audio->channel->getPaused(&isPaused));
-//		// if paused, resume playing, if playing, pause
-//		FMODErrorCheck(audio->channel->setPaused(!isPaused));
-//	}
-//}
-
-// PAUSE sound
-void AudioHandler::pauseSound(AudioComponent* audio) {
-	if (audio->channel) {
-		FMODErrorCheck(audio->channel->setPaused(true));
-	}
-}
-
-// RESUME sound
-void AudioHandler::resumeSound(AudioComponent* audio) {
-	if (audio->channel) {
-		FMODErrorCheck(audio->channel->setPaused(false));
-	}
-}
-
-
-// pause / resume all sounds
-//void AudioHandler::toggleAllSoundPause() {
-//	for (size_t i = 0; i < channels.size(); ++i) {
-//		if (channels[i]) {
-//			bool isPaused = false;
-//			FMODErrorCheck(channels[i]->getPaused(&isPaused));
-//			FMODErrorCheck(channels[i]->setPaused(!isPaused));
-//		}
-//	}
-//}
-
 // check whether sound is paused
 bool AudioHandler::isSoundPaused(AudioChannel* audio) {
 	//size_t pos = static_cast<size_t>(id);
