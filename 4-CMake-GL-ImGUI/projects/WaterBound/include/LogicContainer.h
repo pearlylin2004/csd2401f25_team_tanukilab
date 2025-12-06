@@ -50,7 +50,7 @@ public:
      * \param manager  Reference to the GameObjectManager used for spawning
      *                 or retrieving other objects (e.g., bullets).
      */
-    void update(GameObject& obj, float dt, GameObjectManager& manager);
+    void update(GameObject& obj, float dt /*, GameObjectManager& manager */);
 
 private:
 
@@ -63,7 +63,7 @@ private:
      * \param obj   The object to transition.
      * \param next  The PlayerState to move into.
      */
-    static void enter(GameObject& obj, PlayerState next, GameObject* vfx = nullptr);
+    static void enter(GameObject& obj, PlayerState next);
 
     /*!
      * \brief Behavior function executed when the object is in Idle state.
@@ -107,7 +107,7 @@ private:
      * \param obj The object in Falling state.
      * \param dt  Time elapsed for the frame.
      */
-    static void tickFalling(GameObject& obj, float dt, /* temp setting */ GameObject* vfx);
+    static void tickFalling(GameObject& obj, float dt);
 
     /*!
      * \brief Spawns a bullet near the object and initializes its velocity.

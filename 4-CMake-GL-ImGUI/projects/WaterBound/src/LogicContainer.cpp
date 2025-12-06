@@ -65,7 +65,7 @@ static inline bool anyMoveHeld() {
  * \param obj Reference to the GameObject owning the FSM.
  * \param next The next PlayerState to enter.
  */
-void LogicContainer::enter(GameObject& obj, PlayerState next, GameObject* vfx)
+void LogicContainer::enter(GameObject& obj, PlayerState next)
 {
     if (auto* fsm = obj.getComponent<StateMachine>())
     {
@@ -126,23 +126,6 @@ void LogicContainer::enter(GameObject& obj, PlayerState next, GameObject* vfx)
                 landing->loop = false;
                 landing->volume = 1.0f;
                 landing->isPendingPlay = true;
-
-                /* temp setting */
-                if (vfx && vfx->getObjectPrefabID() == "25591e7c-7d8f-47e1-a686-f950e77e91a1") {
-                    if (Transform* t = vfx->getComponent<Transform>()) {
-						Transform playerT = *obj.getComponent<Transform>();
-
-						t->y = playerT.y - (playerT.scaleY / 2) + (t->scaleY / 2.2f);
-						t->x = playerT.x;
-
-                        if (Animation* a = vfx->getComponent<Animation>()) {
-                            int stateIndex = static_cast<int>(fsm->state);
-                            a->animState[stateIndex].currentFrameColumn = static_cast<int>(a->animState[stateIndex].initialFrame.x);
-                            a->animState[stateIndex].currentFrameRow = static_cast<int>(a->animState[stateIndex].initialFrame.y);
-                        }
-                    }
-                }
-                /* end temp setting */
             }
 
             //play a sound depending on next state
@@ -303,13 +286,13 @@ void LogicContainer::tickJumping(GameObject& obj, float /*dt*/) {
  * \param obj The player GameObject.
  * \param dt Delta time (unused).
  */
-void LogicContainer::tickFalling(GameObject& obj, float /*dt*/, /* temp setting */GameObject* vfx) {
+void LogicContainer::tickFalling(GameObject& obj, float /*dt*/) {
     auto* physics = obj.getComponent<Physics>();
     if (!physics) return;
 
     if (physics->onGround) {
-        if (anyMoveHeld()) enter(obj, PlayerState::Walking, vfx);
-        else               enter(obj, PlayerState::Idle, vfx);
+        if (anyMoveHeld()) enter(obj, PlayerState::Walking);
+        else               enter(obj, PlayerState::Idle);
     }
 }
 
@@ -394,38 +377,11 @@ void LogicContainer::tickDead(GameObject& obj, float /*dt*/) {
  * \param dt Delta time in seconds.
  * \param manager GameObjectManager used for spawning bullets.
  */
-void LogicContainer::update(GameObject& obj, float dt, GameObjectManager& manager) {
+void LogicContainer::update(GameObject& obj, float dt /*, GameObjectManager& manager*/) {
     auto* fsm = obj.getComponent<StateMachine>();
     if (!fsm) return;
 
     fsm->stateTime += dt;
-
-    /* -------- temp setting -------- */
-    if (fsm->fixState && fsm->stateTime >= 6.5f && obj.getObjectPrefabID() != "f04819ff-270c-41b4-8387-73382eb85103") {
-        obj.getComponent<Transform>()->x = 1500.f;
-    }
-
-    // set landing vfx for player only
-    GameObject* vfx = nullptr;
-    if (obj.getObjectPrefabID() == "dd60e1e1-641c-4ed5-b69d-ffadfa02fb7a") {
-        std::vector<GameObject*> objs;
-        manager.getAllGameObjects(objs);
-
-        for (GameObject* v : objs) {
-            if (v->getObjectPrefabID() == "25591e7c-7d8f-47e1-a686-f950e77e91a1") {
-                vfx = v;
-                break;
-            }
-        }
-
-        if (vfx) {
-            if (fsm->stateTime > 0.45f) {
-                if (Transform* t = vfx->getComponent<Transform>())
-                    t->y = 1000.f; // hide vfx after some time
-            }
-        }
-    }
-    /* -------- temp setting -------- */
 
     // Immediate action: shooting
     /*if (InputHandler::isKeyTriggered(GLFW_KEY_SPACE)) {
@@ -436,7 +392,7 @@ void LogicContainer::update(GameObject& obj, float dt, GameObjectManager& manage
     case PlayerState::Idle:     tickIdle(obj, dt);     break;
     case PlayerState::Walking:  tickWalking(obj, dt);  break;
     case PlayerState::Jumping:  tickJumping(obj, dt);  break;
-    case PlayerState::Falling:  tickFalling(obj, dt, vfx);  break;
+    case PlayerState::Falling:  tickFalling(obj, dt);  break;
     case PlayerState::Dead:     tickDead(obj, dt);     break;
     default: break;
     }
