@@ -55,13 +55,13 @@ private:
 
 /*!***********************************************************************
 \brief
-	render component
+	render system
 
 *************************************************************************/
 class RenderSystem {
-	GLuint fbo;
-	GLuint texture;
-	GLuint depthBuffer;
+	GLuint fbo{};
+	GLuint texture{};
+	GLuint depthBuffer{};
 
 	int fboWidth = 0;
 	int fboHeight = 0;
@@ -94,16 +94,56 @@ public:
 	void resizeFBO(int width, int height);
 	GLuint getTexture() const { return texture; }
 
-	void renderCollision(Collision::AABB const& box, glm::vec3 const& clr);
+	//not implemented yet, hopefully tri break can do
+	//void renderCollision(Collision::AABB const& box, glm::vec3 const& clr);
 	//GLuint getTexture() const { return texture; }
 	void batchingSetUp(GameObjectManager& manager, float const& deltaTime);
 
 	void fboAspectRatio(int& width, int& height) const;
 	~RenderSystem();
 	//bool batchRebuild = true;
+	static std::unordered_map<BatchKey, std::vector<renderer::InstanceData>, BatchKeyHash> objectWithTex2;
 private:
 	std::unordered_map<BatchKey, std::vector<renderer::InstanceData>, BatchKeyHash> objectWithTex;
 	std::unordered_map<shape, std::vector<renderer::InstanceData>> objectWithoutTex;
+};
+
+/*!***********************************************************************
+\brief
+	Tile Map system
+
+*************************************************************************/
+class TileMapSystem
+{
+public:
+	/*!***********************************************************************
+	\brief
+		update cycle to push the data in tiles to objectWithTex2 to be rendered in render system
+
+	\param[in] manager
+		array of all objects
+
+	*************************************************************************/
+	void update(GameObjectManager& manager);
+
+	/*!***********************************************************************
+	\brief
+		update the tiles for the object selected with the texture selected
+
+	\param[in] obj
+		object with TileMap component
+
+	*************************************************************************/
+	void tileUpdate(GameObject* obj);
+	//std::unordered_map<BatchKey, std::vector<renderer::InstanceData>, BatchKeyHash> objectWithTex2{};
+
+	/*!***********************************************************************
+	\brief
+		to store the filename and filepath of the asset that the mouse has clicked
+		and use it to paint the tile map
+
+	*************************************************************************/
+	static std::string filename;
 };
 
 class FontSystem {
@@ -118,7 +158,7 @@ public:
 
 /*!***********************************************************************
 \brief
-	transform component
+	transform system
 
 *************************************************************************/
 class TransformSystem {
@@ -134,7 +174,7 @@ public:
 		tracking of the world time
 
 	*************************************************************************/
-	void update(GameObjectManager& manager, const float& deltaTime);
+	//void update(GameObjectManager& manager, const float& deltaTime);
 };
 
 // Collision system - detects and resolves collisions between game objects
@@ -185,6 +225,8 @@ public:
 	void update(GameObjectManager& manager, float deltaTime);
 	void cleanup(GameObjectManager& manager);
 
+	static void initializeSceneAudio(GameObjectManager& manager);
+
 private:
-	void processAudioComponent(GameObject* obj, AudioComponent* audio, float deltaTime);
+	void processAudio(GameObject* obj, AudioChannel* audio, float deltaTime);
 };

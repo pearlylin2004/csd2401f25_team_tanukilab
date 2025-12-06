@@ -26,7 +26,7 @@ Technology is prohibited.
 #include "Systems.h"
 #include "Physics.h"
 
-
+std::string TileMapSystem::filename{};
 //here we go buddies
 
 //all the systems need to get all game objects
@@ -195,6 +195,7 @@ void RenderSystem::update(GameObjectManager& manager, float const& deltaTime)
 							if (as.texChanged && !as.texFile.empty()) {
 								TextureData textureData = ResourceManager::getInstance().getTexture(as.texFile);
 								as.texHDL = textureData.id;
+								as.texChanged = false;
 							}
 						}
 					}
@@ -205,105 +206,45 @@ void RenderSystem::update(GameObjectManager& manager, float const& deltaTime)
 
 
 	}
-
-	//rendering objects without texture, just color
-	//glUseProgram(renderer::shdr_pgm[1]);
-	//GLint vTransformView = glGetUniformLocation(renderer::shdr_pgm[1], "V");
-	//glUniformMatrix4fv(vTransformView, 1, GL_FALSE, glm::value_ptr(camView));
-	//GLint vTransformProj = glGetUniformLocation(renderer::shdr_pgm[1], "P");
-	//glUniformMatrix4fv(vTransformProj, 1, GL_FALSE, glm::value_ptr(camProj));
-	//for (GameObject* object : objectWithoutTex)
-	//	renderNoTex(object);
-
-	////rendering objects with textures
-	//glUseProgram(renderer::shdr_pgm[0]);
-	//vTransformView = glGetUniformLocation(renderer::shdr_pgm[0], "V");
-	//glUniformMatrix4fv(vTransformView, 1, GL_FALSE, glm::value_ptr(camView));
-	//vTransformProj = glGetUniformLocation(renderer::shdr_pgm[0], "P");
-	//glUniformMatrix4fv(vTransformProj, 1, GL_FALSE, glm::value_ptr(camProj));
-	//for (GameObject* object : objectWithTex)
-	//	renderTex(object, deltaTime);
-
-	//std::vector<renderer::InstanceData> batch;
-
-	//for (GameObject* obj : objectWithTex) {
-	//	Transform* t = obj->getComponent<Transform>();
-	//	Render* r = obj->getComponent<Render>();
-	//	Animation* animation = obj->getComponent<Animation>();
-
-	//	renderer::InstanceData i;
-	//	i.model = t->mdlWorld;
-	//	i.color = glm::vec4(r->clr, 1); // or r->color
-	//	i.texParams = glm::vec4(animation->currentFrameColumn, animation->currentFrameRow, texScale.x, texScale.y);
-	//	batch.push_back(i);
-	//}
-
-	//renderer::drawInstances(renderer::models[(int)shape::square], batch);
-
-	
-
 	//drawing models without texture
-	// glUseProgram(renderer::shdr_pgm[1]);
-	// GLint uView = glGetUniformLocation(renderer::shdr_pgm[1], "V");
-	// GLint uProj = glGetUniformLocation(renderer::shdr_pgm[1], "P");
-	// glUniformMatrix4fv(uView, 1, GL_FALSE, glm::value_ptr(camView));
-	// glUniformMatrix4fv(uProj, 1, GL_FALSE, glm::value_ptr(camProj));
-	// for (std::pair<const shape, std::vector<renderer::InstanceData>>& pair : objectWithoutTex)
-	// {
-	// 	shape meshType = pair.first;
-	// 	renderer::drawInstances(renderer::models[(int)meshType], pair.second);
-	// }
-	// //drawing models with texture
-	// glUseProgram(renderer::shdr_pgm[0]); // hasTex shader
-	// uView = glGetUniformLocation(renderer::shdr_pgm[0], "V");
-	// uProj = glGetUniformLocation(renderer::shdr_pgm[0], "P");
-	// glUniformMatrix4fv(uView, 1, GL_FALSE, glm::value_ptr(camView));
-	// glUniformMatrix4fv(uProj, 1, GL_FALSE, glm::value_ptr(camProj));
-	// for (std::pair<const BatchKey, std::vector<renderer::InstanceData>>& pair : objectWithTex)
-	// {
-	// 	const BatchKey& key = pair.first;
-	// 	std::vector<renderer::InstanceData>& instances = pair.second;
-	// 	glBindTextureUnit(0, key.texID);
-	// 	GLint uTexLoc = glGetUniformLocation(renderer::shdr_pgm[0], "uTex2d");
-	// 	if (uTexLoc != -1) 
-	// 		glUniform1i(uTexLoc, 0);
-	// 	renderer::model& mdl = renderer::models[(int)key.meshType];
-	// 	renderer::drawInstances(mdl, pair.second);
-	// }
-	// //if (UISystem::isShowUI()) glBindFramebuffer(GL_FRAMEBUFFER, 0);
-	//glBindFramebuffer(GL_FRAMEBUFFER, 0);
-	//all rendering must be done per layer noww
-	//cooked
-
-
-		//drawing models without texture
-		glUseProgram(renderer::shdr_pgm[1]);
-		GLint uView = glGetUniformLocation(renderer::shdr_pgm[1], "V");
-		GLint uProj = glGetUniformLocation(renderer::shdr_pgm[1], "P");
-		glUniformMatrix4fv(uView, 1, GL_FALSE, glm::value_ptr(camView));
-		glUniformMatrix4fv(uProj, 1, GL_FALSE, glm::value_ptr(camProj));
-		for (std::pair<const shape, std::vector<renderer::InstanceData>>& pair : objectWithoutTex)
-		{
-			shape meshType = pair.first;
-			renderer::drawInstances(renderer::models[(int)meshType], pair.second);
-		}
-		//drawing models with texture
-		glUseProgram(renderer::shdr_pgm[0]); // hasTex shader
-		uView = glGetUniformLocation(renderer::shdr_pgm[0], "V");
-		uProj = glGetUniformLocation(renderer::shdr_pgm[0], "P");
-		glUniformMatrix4fv(uView, 1, GL_FALSE, glm::value_ptr(camView));
-		glUniformMatrix4fv(uProj, 1, GL_FALSE, glm::value_ptr(camProj));
-		for (std::pair<const BatchKey, std::vector<renderer::InstanceData>>& pair : objectWithTex)
-		{
-			const BatchKey& key = pair.first;
-			//std::vector<renderer::InstanceData>& instances = pair.second;
-			glBindTextureUnit(0, key.texID);
-			GLint uTexLoc = glGetUniformLocation(renderer::shdr_pgm[0], "uTex2d");
-			if (uTexLoc != -1) 
-				glUniform1i(uTexLoc, 0);
-			renderer::model& mdl = renderer::models[(int)key.meshType];
-			renderer::drawInstances(mdl, pair.second);
-		}
+	glUseProgram(renderer::shdr_pgm[1]);
+	GLint uView = glGetUniformLocation(renderer::shdr_pgm[1], "V");
+	GLint uProj = glGetUniformLocation(renderer::shdr_pgm[1], "P");
+	glUniformMatrix4fv(uView, 1, GL_FALSE, glm::value_ptr(camView));
+	glUniformMatrix4fv(uProj, 1, GL_FALSE, glm::value_ptr(camProj));
+	for (std::pair<const shape, std::vector<renderer::InstanceData>>& pair : objectWithoutTex)
+	{
+		shape meshType = pair.first;
+		renderer::drawInstances(renderer::models[(int)meshType], pair.second);
+	}
+	//drawing models with texture
+	glUseProgram(renderer::shdr_pgm[0]); // hasTex shader
+	uView = glGetUniformLocation(renderer::shdr_pgm[0], "V");
+	uProj = glGetUniformLocation(renderer::shdr_pgm[0], "P");
+	glUniformMatrix4fv(uView, 1, GL_FALSE, glm::value_ptr(camView));
+	glUniformMatrix4fv(uProj, 1, GL_FALSE, glm::value_ptr(camProj));
+	for (std::pair<const BatchKey, std::vector<renderer::InstanceData>>& pair : objectWithTex)
+	{
+		const BatchKey& key = pair.first;
+		//std::vector<renderer::InstanceData>& instances = pair.second;
+		glBindTextureUnit(0, key.texID);
+		GLint uTexLoc = glGetUniformLocation(renderer::shdr_pgm[0], "uTex2d");
+		if (uTexLoc != -1) 
+			glUniform1i(uTexLoc, 0);
+		renderer::model& mdl = renderer::models[(int)key.meshType];
+		renderer::drawInstances(mdl, pair.second);
+	}
+	for (std::pair<const BatchKey, std::vector<renderer::InstanceData>>& pair : objectWithTex2)
+	{
+		const BatchKey& key = pair.first;
+		//std::vector<renderer::InstanceData>& instances = pair.second;
+		glBindTextureUnit(0, key.texID);
+		GLint uTexLoc = glGetUniformLocation(renderer::shdr_pgm[0], "uTex2d");
+		if (uTexLoc != -1)
+			glUniform1i(uTexLoc, 0);
+		renderer::model& mdl = renderer::models[(int)key.meshType];
+		renderer::drawInstances(mdl, pair.second);
+	}
 
 	/*if (UISystem::isShowUI()) glBindFramebuffer(GL_FRAMEBUFFER, 0);*/
 
@@ -965,7 +906,8 @@ void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime, M
 
 					if (bullet->hasComponent<AudioComponent>()) {
 						AudioComponent* audio = bullet->getComponent<AudioComponent>();
-						audio->isPendingPlay = true;
+						AudioChannel* ch = audio->getDefaultChannel();
+						ch->isPendingPlay = true;
 					}
 
 					DebugLog::addMessage("Bullet fired from pool!", DebugMode::PlaySimul);
@@ -1210,114 +1152,6 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 						//checking if collided
 						if (info.collided) {
 
-							/* ---------- temp setting ---------- */
-							// skip bullet & player collision
-							if ((obj1->getObjectPrefabID() == "b1a12273-a692-4ce0-8072-156da2c70842" && obj2->getObjectPrefabID() == "dd60e1e1-641c-4ed5-b69d-ffadfa02fb7a") || (obj1->getObjectPrefabID() == "dd60e1e1-641c-4ed5-b69d-ffadfa02fb7a" && obj2->getObjectPrefabID() == "b1a12273-a692-4ce0-8072-156da2c70842")) return;
-
-							// bullet shoot fire -> fire become smoke and disappear aft that (in logic container)
-							GameObject* bulletObj = nullptr;
-							if (obj1->getObjectPrefabID() == "b1a12273-a692-4ce0-8072-156da2c70842") {
-								bulletObj = obj1;
-							}
-							if (obj2->getObjectPrefabID() == "b1a12273-a692-4ce0-8072-156da2c70842") {
-								bulletObj = obj2;
-							}
-
-							GameObject* fireObj = nullptr;
-							if (obj1->getObjectPrefabID() == "eaa2ba42-971a-413b-b8c4-99b2f5ab674d") {
-								fireObj = obj1;
-							}
-							if (obj2->getObjectPrefabID() == "eaa2ba42-971a-413b-b8c4-99b2f5ab674d") {
-								fireObj = obj2;
-							}
-
-							if (bulletObj && fireObj) {
-								if (StateMachine* sm = fireObj->getComponent<StateMachine>()) {
-									sm->state = PlayerState::Walking;
-									sm->fixState = true;
-									sm->stateTime = 0.f;
-
-									if (AudioComponent* a = fireObj->getComponent<AudioComponent>()) {
-										/*a->playOnStart = false;
-										AudioHandler::getInstance().playSound(a);*/
-										if (a->state != AudioState::Playing && !a->isPendingPlay) {
-											a->loop = false;
-											a->playOnStart = false;
-											a->isPendingPlay = true;
-										}
-									}
-
-									if (bulletObj->hasComponent<Physics>()) {
-										PhysicsForces::deactivateBullet(bulletObj);
-										bulletObj->getComponent<Transform>()->x = 1000.f;
-									}
-									continue;
-								}
-							}
-
-							// player go up when collide with fire
-							GameObject* playerObj = nullptr;
-							if (obj1->getObjectPrefabID() == "dd60e1e1-641c-4ed5-b69d-ffadfa02fb7a") {
-								playerObj = obj1;
-							}
-							if (obj2->getObjectPrefabID() == "dd60e1e1-641c-4ed5-b69d-ffadfa02fb7a") {
-								playerObj = obj2;
-							}
-
-							if (playerObj && fireObj) {
-								if (StateMachine* sm = fireObj->getComponent<StateMachine>()) {
-									if (sm->state == PlayerState::Walking) {
-										if (Physics* p = playerObj->getComponent<Physics>()) {
-											// Launch player upward
-											p->dynamics.velocity.y = 12.0f;  // Upward velocity
-											p->velY = 10.0f;
-											p->onGround = false;
-
-											continue;
-										}
-									}
-								}
-							}
-
-							GameObject* tileObj = nullptr;
-							if (obj1->getObjectPrefabID() == "94d018f7-a766-4ee6-95be-f39272697938") {
-								tileObj = obj1;
-							}
-							if (obj2->getObjectPrefabID() == "94d018f7-a766-4ee6-95be-f39272697938") {
-								tileObj = obj2;
-							}
-							if (bulletObj && tileObj) {
-								continue;
-							}
-							
-							GameObject* toWin = nullptr;
-							if (obj1->getObjectPrefabID() == "98416fa9-2ae1-4432-bcf4-0d4352a9b29a") {
-								toWin = obj1;
-							}
-							if (obj2->getObjectPrefabID() == "98416fa9-2ae1-4432-bcf4-0d4352a9b29a") {
-								toWin = obj2;
-							}
-
-							if (toWin && playerObj) {
-								
-								GameObject* winScreen = nullptr;
-								for (auto* go : layerObjects) {
-									if (go->getObjectPrefabID() == "887d25cd-bd8d-481f-9f64-f371300a2cf0")
-									{
-										winScreen = go;
-										continue;
-									}
-								}
-
-								if (winScreen) {
-									winScreen->getComponent<Transform>()->x = 0;
-								}
-								//continue;
-							}
-
-
-							/* ---------- temp setting ---------- */
-
 							// c1 is the moving obj (player), c2 is the obj it collide with
 							// CASE 1: collided obj is pushable
 							if (c2->collisionRes == CollisionResponseMode::MoveWhenCollide) {
@@ -1557,7 +1391,7 @@ void LogicSystem::update(GameObjectManager& manager, float const& dt) {
 		if (!go->hasComponent<StateMachine>()) continue;
 		if (!go->hasComponent<Transform>() || !go->hasComponent<Physics>()) continue;
 
-		container.update(*go, dt, manager); 
+		container.update(*go, dt /*, manager */);
 	}
 }
 
@@ -1574,25 +1408,27 @@ void AudioSystem::init(GameObjectManager& manager) {
 
 		AudioComponent* audio = obj->getComponent<AudioComponent>();
 
+		AudioChannel* ch = audio->getDefaultChannel();
+
 		// Play on start 
-		if (audio->playOnStart) {
-			audio->channel = audioHandler.playSound(audio);
-			if (audio->channel) {
-				audio->state = AudioState::Playing;
+		if (ch->playOnStart) {
+			ch->channel = audioHandler.playSound(ch);
+			if (ch->channel) {
+				ch->state = AudioState::Playing;
 
 				// Apply fade in
-				if (audio->fadeInOnStart) {
-					audioHandler.fadeIn(audio, audio->volume, audio->fadeInDuration);
+				if (ch->fadeInOnStart) {
+					audioHandler.fadeIn(ch, ch->volume, ch->fadeInDuration);
 				}
 
 				// Apply pitch
-				if (audio->pitch != 1.0f) {
-					audioHandler.setSoundpitch(audio, audio->pitch);
+				if (ch->pitch != 1.0f) {
+					audioHandler.setSoundpitch(ch, ch->pitch);
 				}
 
 				// Apply mute state
-				if (audio->muted) {
-					audioHandler.muteSound(audio);
+				if (ch->muted) {
+					audioHandler.muteSound(ch);
 				}
 			}
 		}
@@ -1612,37 +1448,71 @@ void AudioSystem::update(GameObjectManager& manager, float deltaTime) {
 	AudioHandler& audioHandler = AudioHandler::getInstance();
 
 	for (GameObject* obj : gameObjects) {
+		// CRITICAL CHECK #1: Verify GameObject pointer is valid
+		if (!obj) {
+			std::cerr << "[AudioSystem] Null GameObject encountered in update loop!\n";
+			continue;
+		}
+
+		// CRITICAL CHECK #2: Verify GameObject has AudioComponent before accessing
 		if (!obj->hasComponent<AudioComponent>()) continue;
 
+		// CRITICAL CHECK #3: Verify AudioComponent pointer is valid
 		AudioComponent* audio = obj->getComponent<AudioComponent>();
+		if (!audio) {
+			std::cerr << "[AudioSystem] getComponent<AudioComponent>() returned nullptr for object: "
+				<< obj->getObjectName() << std::endl;
+			continue;
+		}
 
-		audio->updateFades(deltaTime);
+		// CRITICAL CHECK #4: Verify audioChannels map is accessible
+		// (Attempt to access the map - if audio pointer is invalid, this will crash)
+		try {
+			// Safe to call updateFades now
+			audio->updateFades(deltaTime);
 
-		if (/*audio->soundId == soundID::bg && */ audio->playOnStart && audio->loop) {
-			if (!audio->channel || !audioHandler.isSoundPlaying(audio)) {
-				// Restart background music if  not playing
-				std::cout << "[AudioSystem] Auto-restarting: " << obj->getObjectName() << std::endl;
-				audio->channel = audioHandler.playSound(audio);
-				if (audio->channel) {
-					audio->state = AudioState::Playing;
-					audioHandler.setSoundpitch(audio, audio->pitch);
-					if (audio->muted) {
-						audioHandler.muteSound(audio);
+			for (auto& pair : audio->audioChannels) {
+				AudioChannel& ch = pair.second;
+
+				// Background music restart logic
+				if (ch.playOnStart) {
+					if (!ch.channel || !audioHandler.isSoundPlaying(&ch)) {
+						// Restart background music if not playing
+						ch.channel = audioHandler.playSound(&ch);
+						if (ch.channel) {
+							ch.state = AudioState::Playing;
+							audioHandler.setSoundpitch(&ch, ch.pitch);
+							if (ch.muted) {
+								audioHandler.muteSound(&ch);
+							}
+						}
+					}
+				}
+
+				// Process audio (isPendingPlay, isPendingStop, etc.)
+				processAudio(obj, &ch, deltaTime);
+
+				// Check if channel is still playing
+				if (ch.channel) {
+					bool isPlaying = false;
+					ch.channel->isPlaying(&isPlaying);
+					if (!isPlaying) {
+						ch.channel = nullptr;
+						ch.fadeInfo.isFading = false;
 					}
 				}
 			}
 		}
-
-		if (audio->channel) {
-			bool isPlaying = false;
-			audio->channel->isPlaying(&isPlaying); 
-			if (!isPlaying) {
-				std::cout << "[AudioSystem] Channel finished for: " << obj->getObjectName() << std::endl;
-				audio->channel = nullptr;
-				audio->fadeInfo.isFading = false;
-			}
+		catch (const std::exception& e) {
+			std::cerr << "[AudioSystem] Exception processing audio for object: "
+				<< obj->getObjectName() << " - " << e.what() << std::endl;
+			continue;
 		}
-		processAudioComponent(obj, audio, deltaTime);
+		catch (...) {
+			std::cerr << "[AudioSystem] Unknown exception processing audio for object: "
+				<< obj->getObjectName() << std::endl;
+			continue;
+		}
 	}
 
 	auto end = std::chrono::high_resolution_clock::now();
@@ -1650,18 +1520,56 @@ void AudioSystem::update(GameObjectManager& manager, float deltaTime) {
 	g_SystemTimers.push_back({ "Audio", ms });
 }
 
-void AudioSystem::processAudioComponent(GameObject* obj, AudioComponent* audio, float deltaTime) {
+/*
+ * ADDITIONAL FIX: Add null check in processAudio
+ */
+void AudioSystem::processAudio(GameObject* obj, AudioChannel* audio, float deltaTime) {
 	(void)deltaTime;
+	(void)obj;
 	AudioHandler& audioHandler = AudioHandler::getInstance();
 
+
+	// CRITICAL CHECK: Verify audio pointer is valid
+	if (!audio) {
+		std::cerr << "[AudioSystem::processAudio] Null AudioChannel pointer!\n";
+		return;
+	}
+
+	//AudioHandler& audioHandler = AudioHandler::getInstance();
+
+	if (audio->isPendingStop) {
+		audio->isPendingStop = false;
+
+		if (audio->fadeOutOnStop && audio->state == AudioState::Playing) {
+			audioHandler.fadeOut(audio, audio->fadeOutDuration);
+		}
+		else {
+			audioHandler.stopSound(audio);
+			audio->channel = nullptr;
+			audio->state = AudioState::Stopped;
+		}
+	}
 
 	if (audio->isPendingPlay) {
 		audio->isPendingPlay = false;
 
+		// CRITICAL CHECK: Verify audioFile is set
+		if (audio->audioFile.empty()) {
+			std::cerr << "[AudioSystem] Cannot play audio: audioFile is empty for object: "
+				<< (obj ? obj->getObjectName() : "unknown") << std::endl;
+			audio->state = AudioState::Stopped;
+			return;
+		}
+
+		if (audio->channel != nullptr) {
+			audioHandler.stopSound(audio);
+			audio->channel = nullptr;
+		}
+		audio->state = AudioState::Stopped;
+
 		audio->channel = audioHandler.playSound(audio);
 		if (audio->channel) {
 			audio->state = AudioState::Playing;
-
 
 			if (audio->fadeInOnStart) {
 				audioHandler.fadeIn(audio, audio->volume, audio->fadeInDuration);
@@ -1675,17 +1583,7 @@ void AudioSystem::processAudioComponent(GameObject* obj, AudioComponent* audio, 
 				audioHandler.muteSound(audio);
 			}
 		}
-	}
-
-	if (audio->isPendingStop) {
-		audio->isPendingStop = false;
-
-		if (audio->fadeOutOnStop && audio->state == AudioState::Playing) {
-			audioHandler.fadeOut(audio, audio->fadeOutDuration);
-		}
 		else {
-			audioHandler.stopSound(audio);
-			audio->channel = nullptr;
 			audio->state = AudioState::Stopped;
 		}
 	}
@@ -1711,16 +1609,57 @@ void AudioSystem::cleanup(GameObjectManager& manager) {
 	manager.getAllGameObjects(gameObjects);
 
 	AudioHandler& audioHandler = AudioHandler::getInstance();
+	
+	for (GameObject* obj : gameObjects) {
+		if (!obj->hasComponent<AudioComponent>()) continue;
+
+		AudioComponent* audio = obj->getComponent<AudioComponent>();
+
+		for (auto& pair : audio->audioChannels) {
+			AudioChannel& ch = pair.second;
+
+			if (ch.state == AudioState::Playing || ch.state == AudioState::Paused) {
+				audioHandler.stopSound(&ch);
+				ch.channel = nullptr;
+				ch.state = AudioState::Stopped;
+			}
+		}
+
+	}
+}
+
+void AudioSystem::initializeSceneAudio(GameObjectManager& manager) {
+	auto start = std::chrono::high_resolution_clock::now();
+
+	std::vector<GameObject*> gameObjects;
+	manager.getAllGameObjects(gameObjects);
 
 	for (GameObject* obj : gameObjects) {
 		if (!obj->hasComponent<AudioComponent>()) continue;
 
 		AudioComponent* audio = obj->getComponent<AudioComponent>();
 
-		if (audio->state == AudioState::Playing || audio->state == AudioState::Paused) {
-			audioHandler.stopSound(audio);
-			audio->channel = nullptr;
-			audio->state = AudioState::Stopped;
+		// Pre-load all sounds for all channels
+		for (auto& [channelName, channel] : audio->audioChannels) {
+			if (!channel.audioFile.empty()) {
+				// Pre-load the sound via ResourceManager
+				FMOD::Sound* sound = ResourceManager::getInstance().getSound(channel.audioFile);
+
+				if (!sound) {
+					std::cerr << "[AudioSystem] Failed to preload: "
+						<< channel.audioFile << " for channel: "
+						<< channelName << std::endl;
+				}
+				else {
+					std::cout << "[AudioSystem] Preloaded: "
+						<< channel.audioFile << " for channel: "
+						<< channelName << std::endl;
+				}
+			}
 		}
 	}
+
+	auto end = std::chrono::high_resolution_clock::now();
+	double ms = std::chrono::duration<double, std::milli>(end - start).count();
+	g_SystemTimers.push_back({ "Audio Scene Init", ms });
 }

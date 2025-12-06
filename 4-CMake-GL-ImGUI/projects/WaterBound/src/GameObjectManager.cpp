@@ -488,7 +488,7 @@ void GameObjectManager::loadSceneFromJson(const std::string& filename) {
 				sm = go->addComponent<StateMachine>();
 
 			if (smj.HasMember("state") && smj["state"].IsString())
-				sm->state = parsePlayerState(smj["state"].GetString());
+				sm->state = PlayerState::Idle;/*parsePlayerState(smj["state"].GetString());*/
 
 			if (smj.HasMember("facingRight")) {
 				if (smj["facingRight"].IsBool())       sm->facingRight = smj["facingRight"].GetBool();
@@ -607,62 +607,95 @@ void GameObjectManager::loadSceneFromJson(const std::string& filename) {
 				// Create with default sound ID
 				audio = go->addComponent<AudioComponent>();
 			}
-
+			AudioChannel* ch = audio->getDefaultChannel();
 			// Load sound ID from string
 			if (ja.HasMember("audioFile") && ja["audioFile"].IsString()) {
-				audio->audioFile = ja["audioFile"].GetString();
+				ch->audioFile = ja["audioFile"].GetString();
 			}
 
 			// Volume
 			if (ja.HasMember("volume") && ja["volume"].IsNumber()) {
-				audio->volume = ja["volume"].GetFloat();
+				ch->volume = ja["volume"].GetFloat();
 			}
 
 			// Pitch
 			if (ja.HasMember("pitch") && ja["pitch"].IsNumber()) {
-				audio->pitch = ja["pitch"].GetFloat();
+				ch->pitch = ja["pitch"].GetFloat();
 			}
 
 			// Loop
 			if (ja.HasMember("loop")) {
-				audio->loop = ja["loop"].IsBool()
+				ch->loop = ja["loop"].IsBool()
 					? ja["loop"].GetBool()
 					: (ja["loop"].GetInt() != 0);
 			}
 
 			// Play on start
 			if (ja.HasMember("playOnStart")) {
-				audio->playOnStart = ja["playOnStart"].IsBool()
+				ch->playOnStart = ja["playOnStart"].IsBool()
 					? ja["playOnStart"].GetBool()
 					: (ja["playOnStart"].GetInt() != 0);
 			}
 
 			// Muted
 			if (ja.HasMember("muted")) {
-				audio->muted = ja["muted"].IsBool()
+				ch->muted = ja["muted"].IsBool()
 					? ja["muted"].GetBool()
 					: (ja["muted"].GetInt() != 0);
 			}
 
 			// Fade settings
 			if (ja.HasMember("fadeInOnStart")) {
-				audio->fadeInOnStart = ja["fadeInOnStart"].IsBool()
+				ch->fadeInOnStart = ja["fadeInOnStart"].IsBool()
 					? ja["fadeInOnStart"].GetBool()
 					: (ja["fadeInOnStart"].GetInt() != 0);
 			}
 
 			if (ja.HasMember("fadeInDuration") && ja["fadeInDuration"].IsNumber()) {
-				audio->fadeInDuration = ja["fadeInDuration"].GetFloat();
+				ch->fadeInDuration = ja["fadeInDuration"].GetFloat();
 			}
 
 			if (ja.HasMember("fadeOutOnStop")) {
-				audio->fadeOutOnStop = ja["fadeOutOnStop"].IsBool()
+				ch->fadeOutOnStop = ja["fadeOutOnStop"].IsBool()
 					? ja["fadeOutOnStop"].GetBool()
 					: (ja["fadeOutOnStop"].GetInt() != 0);
 			}
 
 			if (ja.HasMember("fadeOutDuration") && ja["fadeOutDuration"].IsNumber()) {
-				audio->fadeOutDuration = ja["fadeOutDuration"].GetFloat();
+				ch->fadeOutDuration = ja["fadeOutDuration"].GetFloat();
+			}
+		}
+
+		// ---- TileMap ----
+		if (comps.HasMember("TileMap") && comps["TileMap"].IsObject()) {
+			const auto& tmj = comps["TileMap"];
+			TileMap* tm = go->getComponent<TileMap>();
+			if (!tm) tm = go->addComponent<TileMap>();
+
+			if (tmj.HasMember("tileW") && tmj["tileW"].IsNumber())
+				tm->tileW = tmj["tileW"].GetFloat();
+
+			if (tmj.HasMember("tileH") && tmj["tileH"].IsNumber())
+				tm->tileH = tmj["tileH"].GetFloat();
+
+			if (tmj.HasMember("columns") && tmj["columns"].IsInt())
+				tm->columns = tmj["columns"].GetInt();
+
+			if (tmj.HasMember("rows") && tmj["rows"].IsInt())
+				tm->rows = tmj["rows"].GetInt();
+
+			tm->tiles.clear();
+
+			if (tmj.HasMember("tiles") && tmj["tiles"].IsArray()) {
+				for (const auto& t : tmj["tiles"].GetArray()) {
+					if (!t.IsObject()) continue;
+
+					int x = t["x"].GetInt();
+					int y = t["y"].GetInt();
+					std::string id = t["id"].GetString();
+
+					tm->setTile(x, y, id);
+				}
 			}
 		}
 		
@@ -1043,20 +1076,74 @@ void GameObjectManager::saveSceneToJson(const std::string& filename, bool isNew)
 					}
 				};
 
-				pushIfDiffStr("audioFile", ac->audioFile.c_str());
-				pushIfDiffFloat("volume", ac->volume);
-				pushIfDiffFloat("pitch", ac->pitch);
-				pushIfDiffBool("loop", ac->loop);
-				pushIfDiffBool("playOnStart", ac->playOnStart);
-				pushIfDiffBool("muted", ac->muted);
-				pushIfDiffBool("fadeInOnStart", ac->fadeInOnStart);
-				pushIfDiffFloat("fadeInDuration", ac->fadeInDuration);
-				pushIfDiffBool("fadeOutOnStop", ac->fadeOutOnStop);
-				pushIfDiffFloat("fadeOutDuration", ac->fadeOutDuration);
+				const AudioChannel* ch = ac->getChannel("default");
 
-				if (!jac.ObjectEmpty()) {
-					comps.AddMember("AudioComponent", jac, a);
+				if (ch) {
+
+					pushIfDiffStr("audioFile", ch->audioFile.c_str());
+					pushIfDiffFloat("volume", ch->volume);
+					pushIfDiffFloat("pitch", ch->pitch);
+					pushIfDiffBool("loop", ch->loop);
+					pushIfDiffBool("playOnStart", ch->playOnStart);
+					pushIfDiffBool("muted", ch->muted);
+					pushIfDiffBool("fadeInOnStart", ch->fadeInOnStart);
+					pushIfDiffFloat("fadeInDuration", ch->fadeInDuration);
+					pushIfDiffBool("fadeOutOnStop", ch->fadeOutOnStop);
+					pushIfDiffFloat("fadeOutDuration", ch->fadeOutDuration);
+
+					if (!jac.ObjectEmpty()) {
+						comps.AddMember("AudioComponent", jac, a);
+					}
 				}
+
+				
+			}
+
+			// ---- TileMap ----
+			if (auto tm = obj->getComponent<TileMap>()) {
+				rapidjson::Value jt(rapidjson::kObjectType);
+				const rapidjson::Value* prefabTM = PM.getPrefabJsonComp(prefabDoc, "TileMap");
+
+				// compare helper
+				auto diffFloat = [&](const char* key, float val) {
+					return (!prefabTM || !prefabTM->HasMember(key) ||
+						std::fabs(prefabTM->FindMember(key)->value.GetFloat() - val) > 1e-6f);
+					};
+
+				auto diffInt = [&](const char* key, int val) {
+					return (!prefabTM || !prefabTM->HasMember(key) ||
+						prefabTM->FindMember(key)->value.GetInt() != val);
+					};
+
+				if (diffFloat("tileW", tm->tileW))
+					jt.AddMember("tileW", tm->tileW, a);
+
+				if (diffFloat("tileH", tm->tileH))
+					jt.AddMember("tileH", tm->tileH, a);
+
+				if (diffInt("columns", tm->columns))
+					jt.AddMember("columns", tm->columns, a);
+
+				if (diffInt("rows", tm->rows))
+					jt.AddMember("rows", tm->rows, a);
+
+				// Tiles array
+				{
+					rapidjson::Value tilesArr(rapidjson::kArrayType);
+
+					for (const auto& [key, id] : tm->tiles) {
+						rapidjson::Value t(rapidjson::kObjectType);
+						t.AddMember("x", key.x, a);
+						t.AddMember("y", key.y, a);
+						t.AddMember("id", rapidjson::Value(id.c_str(), a), a);
+						tilesArr.PushBack(t, a);
+					}
+
+					jt.AddMember("tiles", tilesArr, a);
+				}
+
+				if (!jt.ObjectEmpty())
+					comps.AddMember("TileMap", jt, a);
 			}
 
 			if (!comps.ObjectEmpty()) jObj.AddMember("components", comps, a);
@@ -1206,7 +1293,7 @@ void GameObjectManager::createBulletPool(const std::string& templateBulletName, 
 			continue;
 		}
 
-		GameObject* clonedBullet = CloneGameObject(templateBulletName, bulletName);
+		/*GameObject* clonedBullet = */CloneGameObject(templateBulletName, bulletName);
 		//incase of bullets not cloned properly
 		//if (clonedBullet) {
 		//	if (clonedBullet->hasComponent<Transform>()) {
@@ -1227,4 +1314,44 @@ void GameObjectManager::createBulletPool(const std::string& templateBulletName, 
 		//}
 	}
 	std::cout << "Bullet pool creation completed.\n";
+}
+
+void GameObjectManager::initializeSimulationResources() {
+	// Initialize audio for all objects
+	for (auto& pair : m_gameObjects) {
+		GameObject* obj = pair.second.get();
+		if (obj->hasComponent<AudioComponent>()) {
+			AudioComponent* audio = obj->getComponent<AudioComponent>();
+
+			// Pre-load all sounds
+			for (auto& [channelName, channel] : audio->audioChannels) {
+				if (!channel.audioFile.empty()) {
+					FMOD::Sound* sound = ResourceManager::getInstance().getSound(channel.audioFile);
+					if (!sound) {
+						std::cerr << "[GameObjectManager] Failed to preload audio: "
+							<< channel.audioFile << std::endl;
+					}
+				}
+			}
+		}
+	}
+}
+
+void GameObjectManager::cleanupSimulationResources() {
+	// Stop all playing audio
+	for (auto& pair : m_gameObjects) {
+		GameObject* obj = pair.second.get();
+		if (obj->hasComponent<AudioComponent>()) {
+			AudioComponent* audio = obj->getComponent<AudioComponent>();
+			
+
+			for (auto& [channelName, channel] : audio->audioChannels) {
+				if (channel.channel) {
+					//channel.state = AudioState::Stopped;
+					channel.isPendingStop = true;
+					channel.channel = nullptr;
+				}
+			}
+		}
+	}
 }

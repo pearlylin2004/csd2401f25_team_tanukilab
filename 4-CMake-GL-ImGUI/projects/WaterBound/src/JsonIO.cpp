@@ -609,20 +609,25 @@ namespace JsonIO {
         }
 
         // Audio
-        if (AudioComponent* ac = obj->getComponent<AudioComponent>()) {
+        if (AudioComponent* audio = obj->getComponent<AudioComponent>()) {
             Value ja(kObjectType);
 
-            ja.AddMember("audioFile", Value(ac->audioFile.c_str(), a), a);
-            ja.AddMember("loop", ac->loop, a);
-            ja.AddMember("playOnStart", ac->playOnStart, a);
-            ja.AddMember("volume", ac->volume, a);
-            ja.AddMember("pitch", ac->pitch, a);
-            ja.AddMember("fadeInOnStart", ac->fadeInOnStart, a);
-            ja.AddMember("fadeInDuration", ac->fadeInDuration, a);
-            ja.AddMember("fadeOutOnStop", ac->fadeOutOnStop, a);
-            ja.AddMember("fadeOutDuration", ac->fadeOutDuration, a);
+            AudioChannel* ac = audio->getDefaultChannel();
 
-            doc.AddMember("Audio", ja, a);
+            // CRITICAL FIX: Only serialize if "default" channel exists
+            if (ac) {
+                ja.AddMember("audioFile", Value(ac->audioFile.c_str(), a), a);
+                ja.AddMember("loop", ac->loop, a);
+                ja.AddMember("playOnStart", ac->playOnStart, a);
+                ja.AddMember("volume", ac->volume, a);
+                ja.AddMember("pitch", ac->pitch, a);
+                ja.AddMember("fadeInOnStart", ac->fadeInOnStart, a);
+                ja.AddMember("fadeInDuration", ac->fadeInDuration, a);
+                ja.AddMember("fadeOutOnStop", ac->fadeOutOnStop, a);
+                ja.AddMember("fadeOutDuration", ac->fadeOutDuration, a);
+
+                doc.AddMember("Audio", ja, a);
+            }
         }
 
         if (StateMachine* sm = obj->getComponent<StateMachine>()) {
@@ -651,6 +656,29 @@ namespace JsonIO {
 
                 doc.AddMember("StateMachine", js, a);
             }
+        }
+
+        // TileMap
+        if (TileMap* tm = obj->getComponent<TileMap>()) {
+            Value jt(kObjectType);
+
+            jt.AddMember("tileW", tm->tileW, a);
+            jt.AddMember("tileH", tm->tileH, a);
+            jt.AddMember("columns", tm->columns, a);
+            jt.AddMember("rows", tm->rows, a);
+
+            // Serialize tiles array
+            Value tileArray(kArrayType);
+            for (const auto& [key, id] : tm->tiles) {
+                Value t(kObjectType);
+                t.AddMember("x", key.x, a);
+                t.AddMember("y", key.y, a);
+                t.AddMember("id", rapidjson::Value(id.c_str(), a), a);
+                tileArray.PushBack(t, a);
+            }
+            jt.AddMember("Tiles", tileArray, a);
+
+            doc.AddMember("TileMap", jt, a);
         }
 
         // convert to string
@@ -780,7 +808,8 @@ namespace JsonIO {
             // Audio
             if (doc.HasMember("Audio")) {
                 const Value& ja = doc["Audio"];
-                AudioComponent* a = obj->addComponent<AudioComponent>();
+                AudioComponent* ac = obj->addComponent<AudioComponent>();
+                AudioChannel* a = ac->getDefaultChannel();
 
                 a->audioFile = ja["audioFile"].GetString();
                 a->loop = ja["loop"].GetBool();
@@ -816,13 +845,36 @@ namespace JsonIO {
                                 animState.totalColumn = animStateObj["totalColumn"].GetInt();
                                 animState.totalRow = animStateObj["totalRow"].GetInt();
                                 animState.frameTime = animStateObj["frameTime"].GetFloat();
-                                animState.initialFrame.x = animStateObj["initialFrameCol"].GetInt();
-                                animState.initialFrame.y = animStateObj["initialFrameRow"].GetInt();
-                                animState.lastFrame.x = animStateObj["lastFrameCol"].GetInt();
-                                animState.lastFrame.y = animStateObj["lastFrameRow"].GetInt();
+                                animState.initialFrame.x = (float)animStateObj["initialFrameCol"].GetInt();
+                                animState.initialFrame.y = (float)animStateObj["initialFrameRow"].GetInt();
+                                animState.lastFrame.x = (float)animStateObj["lastFrameCol"].GetInt();
+                                animState.lastFrame.y = (float)animStateObj["lastFrameRow"].GetInt();
                                 animState.texChanged = true; // magic boolean!!
                             }
                         }
+                    }
+                }
+            }
+
+            // TileMap
+            if (doc.HasMember("TileMap"))
+            {
+                const Value& tmj = doc["TileMap"];
+                TileMap* tm = obj->addComponent<TileMap>();
+
+                if (tmj.HasMember("tileW"))    tm->tileW = tmj["tileW"].GetFloat();
+                if (tmj.HasMember("tileH"))    tm->tileH = tmj["tileH"].GetFloat();
+                if (tmj.HasMember("columns"))  tm->columns = tmj["columns"].GetInt();
+                if (tmj.HasMember("rows"))     tm->rows = tmj["rows"].GetInt();
+
+                tm->tiles.clear();
+
+                if (tmj.HasMember("tiles") && tmj["tiles"].IsArray()) {
+                    for (const auto& t : tmj["tiles"].GetArray()) {
+                        int x = t["x"].GetInt();
+                        int y = t["y"].GetInt();
+                        std::string id = t["id"].GetString();
+                        tm->setTile(x, y, id);
                     }
                 }
             }

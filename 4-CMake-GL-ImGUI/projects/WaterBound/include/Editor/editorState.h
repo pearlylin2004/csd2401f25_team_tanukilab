@@ -254,6 +254,13 @@ namespace Editor {
 			DebugLog::addMessage("Added Audio component for " + obj->getObjectName());
 			},
 			[](const GameObject* obj) { return obj->hasComponent<AudioComponent>(); }
+		},
+		{"Tile Map",
+			[](GameObject* obj) {
+			obj->addComponent<TileMap>();
+			DebugLog::addMessage("Added Tile Map component for " + obj->getObjectName());
+			},
+			[](const GameObject* obj) { return obj->hasComponent<TileMap>(); }
 		}
 	};
 	/* ----------------- Component End ---------------- */

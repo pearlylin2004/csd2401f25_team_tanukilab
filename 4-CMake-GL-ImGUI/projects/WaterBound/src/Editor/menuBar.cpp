@@ -154,15 +154,18 @@ void MenuBar::playSimulation(GameObjectManager& manager) {
     // save current state to a temp scene file
     manager.saveScene(JsonIO::runtimeScenePath(m_sceneState.tempSceneName));
 
+    manager.initializeSimulationResources();
+
     DebugLog::addMessage("Simulation started.\n");
 }
 
 void MenuBar::stopSimulation(GameObjectManager& manager) {
     EditorManager::toggleEditing(true);
-
+    manager.cleanupSimulationResources();
 
     // load back the temp scene file to restore state
     manager.loadScene(JsonIO::runtimeScenePath(m_sceneState.tempSceneName));
+
     manager.initializeSceneResources();
 
     // clear all undo/redo

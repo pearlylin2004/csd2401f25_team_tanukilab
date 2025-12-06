@@ -13,54 +13,33 @@
           ]
         },
         "Render": {
-          "shape": "square",
           "texture": "assets/Texture\\water_texture.png",
           "hasTex": 1
-        },
-        "CollisionInfo": {
-          "colliderSize": [
-            0.5,
-            0.5
-          ],
-          "colliderType": "square"
         }
       }
     },
     {
-      "prefabid": "dd60e1e1-641c-4ed5-b69d-ffadfa02fb7a",
-      "name": "player",
+      "name": "background5",
       "components": {
         "Transform": {
           "pos": [
-            -2.908515214920044,
-            -7.5,
-            0.9990000128746033
+            0.0,
+            0.0,
+            -0.07999999821186066
           ],
+          "rotation": 0.0,
           "scale": [
-            5.0,
-            5.0,
+            45.0,
+            22.0,
             0.0
           ]
         },
-        "Physics": {
-          "jumpForce": 90.0
-        },
-        "StateMachine": {
-          "state": "Walking",
-          "facingRight": 0,
-          "Dead": {
-            "animState": {
-              "texture": "",
-              "loop": 1,
-              "totalColumn": 1,
-              "totalRow": 1,
-              "frameTime": 0.10000000149011612,
-              "initialFramCol": 0.0,
-              "initialFramRow": 0.0,
-              "lastFramCol": 0.0,
-              "lastFramRow": 0.0
-            }
-          }
+        "Render": {
+          "shape": "square",
+          "hasTex": 1,
+          "texture": "assets/Texture\\game_bg_layer_5.png",
+          "hasTex": 1,
+          "hasAnimation": 0
         }
       }
     },
@@ -93,6 +72,59 @@
       }
     },
     {
+      "prefabid": "dd60e1e1-641c-4ed5-b69d-ffadfa02fb7a",
+      "name": "player",
+      "components": {
+        "Transform": {
+          "pos": [
+            0.0,
+            -7.5,
+            0.9980000257492065
+          ],
+          "scale": [
+            5.0,
+            5.0,
+            0.0
+          ]
+        },
+        "Physics": {
+          "jumpForce": 90.0
+        },
+        "StateMachine": {
+          "state": "Walking",
+          "Dead": {
+            "animState": {
+              "texture": "",
+              "loop": 1,
+              "totalColumn": 1,
+              "totalRow": 1,
+              "frameTime": 0.10000000149011612,
+              "initialFramCol": 0.0,
+              "initialFramRow": 0.0,
+              "lastFramCol": 0.0,
+              "lastFramRow": 0.0
+            }
+          }
+        }
+      }
+    },
+    {
+      "prefabid": "f04819ff-270c-41b4-8387-73382eb85103",
+      "name": "water_source",
+      "components": {
+        "Transform": {
+          "pos": [
+            -6.120626926422119,
+            -8.350801467895508,
+            0.0
+          ]
+        },
+        "StateMachine": {
+          "stateTime": 252.32286071777344
+        }
+      }
+    },
+    {
       "prefabid": "f7665aa3-619e-49a1-892a-31fbc8b377a2",
       "name": "platform",
       "layer": 0,
@@ -113,7 +145,7 @@
           "pos": [
             -14.0,
             8.5,
-            1.0
+            0.9990000128746033
           ],
           "rotation": 0.0,
           "scale": [
@@ -126,31 +158,6 @@
           "shape": "square",
           "hasTex": 1,
           "texture": "assets/button.png",
-          "hasTex": 1,
-          "hasAnimation": 0
-        }
-      }
-    },
-    {
-      "name": "background5",
-      "components": {
-        "Transform": {
-          "pos": [
-            0.0,
-            0.0,
-            -0.07999999821186066
-          ],
-          "rotation": 0.0,
-          "scale": [
-            45.0,
-            22.0,
-            0.0
-          ]
-        },
-        "Render": {
-          "shape": "square",
-          "hasTex": 1,
-          "texture": "assets/Texture\\game_bg_layer_5.png",
           "hasTex": 1,
           "hasAnimation": 0
         }
@@ -243,7 +250,7 @@
           "rotation": 0.0,
           "scale": [
             45.0,
-            22.0,
+            45.0,
             0.0
           ]
         },
@@ -257,113 +264,49 @@
       }
     },
     {
-      "prefabid": "94d018f7-a766-4ee6-95be-f39272697938",
-      "name": "tile_platform(21)",
-      "components": {
-        "Transform": {
-          "pos": [
-            14.71738052368164,
-            -3.1975739002227783,
-            0.0
-          ],
-          "scale": [
-            6.699999809265137,
-            1.7000000476837158,
-            0.0
-          ]
-        },
-        "CollisionInfo": {
-          "colliderSize": [
-            4.900000095367432,
-            3.0
-          ]
-        }
-      }
+      "prefabid": "887d25cd-bd8d-481f-9f64-f371300a2cf0",
+      "name": "win screen"
     },
     {
-      "prefabid": "eaa2ba42-971a-413b-b8c4-99b2f5ab674d",
-      "name": "fire(23)24",
+      "prefabid": "98416fa9-2ae1-4432-bcf4-0d4352a9b29a",
+      "name": "to win",
       "components": {
         "Transform": {
           "pos": [
-            -9.77126693725586,
-            -8.752089500427246,
-            0.019999999552965164
-          ],
-          "scale": [
-            3.0,
-            3.0,
-            0.0
+            -13.494965553283691,
+            3.2525298595428467,
+            0.5
           ]
-        },
-        "CollisionInfo": {
-          "colliderSize": [
-            3.0,
-            3.0
-          ]
-        },
-        "StateMachine": {
-          "stateTime": 1557.8946533203125,
-          "Dead": {
-            "animState": {
-              "texture": "",
-              "loop": 1,
-              "totalColumn": 1,
-              "totalRow": 1,
-              "frameTime": 0.10000000149011612,
-              "initialFramCol": 0.0,
-              "initialFramRow": 0.0,
-              "lastFramCol": 0.0,
-              "lastFramRow": 0.0
-            }
-          }
-        }
-      }
-    },
-    {
-      "prefabid": "eaa2ba42-971a-413b-b8c4-99b2f5ab674d",
-      "name": "fire(23)",
-      "components": {
-        "Transform": {
-          "pos": [
-            1000.0,
-            -14.64688491821289,
-            0.019999999552965164
-          ],
-          "scale": [
-            3.0,
-            3.0,
-            0.0
-          ]
-        },
-        "CollisionInfo": {
-          "colliderSize": [
-            3.0,
-            3.0
-          ]
-        },
-        "StateMachine": {
-          "facingRight": 0,
-          "stateTime": 252.4510955810547,
-          "Dead": {
-            "animState": {
-              "texture": "",
-              "loop": 1,
-              "totalColumn": 1,
-              "totalRow": 1,
-              "frameTime": 0.10000000149011612,
-              "initialFramCol": 0.0,
-              "initialFramRow": 0.0,
-              "lastFramCol": 0.0,
-              "lastFramRow": 0.0
-            }
-          }
         }
       }
     },
     {
       "prefabid": "94d018f7-a766-4ee6-95be-f39272697938",
-      "name": "tile_platform(21)2224",
+      "name": "platform_right29",
+      "components": {
+        "Transform": {
+          "pos": [
+            16.42242431640625,
+            -3.197999954223633,
+            0.0
+          ],
+          "scale": [
+            10.0,
+            1.7000001668930054,
+            0.0
+          ]
+        },
+        "CollisionInfo": {
+          "colliderSize": [
+            7.5,
+            3.0
+          ]
+        }
+      }
+    },
+    {
+      "prefabid": "94d018f7-a766-4ee6-95be-f39272697938",
+      "name": "platform_left",
       "components": {
         "Transform": {
           "pos": [
@@ -386,155 +329,32 @@
       }
     },
     {
-      "prefabid": "eaa2ba42-971a-413b-b8c4-99b2f5ab674d",
-      "name": "fire(23)2425",
-      "components": {
-        "Transform": {
-          "pos": [
-            1000.0,
-            -11.64688491821289,
-            0.019999999552965164
-          ],
-          "scale": [
-            3.0,
-            3.0,
-            0.0
-          ]
-        },
-        "CollisionInfo": {
-          "colliderSize": [
-            3.0,
-            3.0
-          ]
-        },
-        "StateMachine": {
-          "facingRight": 0,
-          "stateTime": 132.78794860839844,
-          "Dead": {
-            "animState": {
-              "texture": "",
-              "loop": 1,
-              "totalColumn": 1,
-              "totalRow": 1,
-              "frameTime": 0.10000000149011612,
-              "initialFramCol": 0.0,
-              "initialFramRow": 0.0,
-              "lastFramCol": 0.0,
-              "lastFramRow": 0.0
-            }
-          }
-        }
-      }
-    },
-    {
       "prefabid": "94d018f7-a766-4ee6-95be-f39272697938",
-      "name": "tile_platform(21)222425",
+      "name": "platform_right",
       "components": {
         "Transform": {
           "pos": [
-            4.826148509979248,
-            -0.902999997138977,
+            15.375301361083984,
+            -6.703665733337402,
             0.0
           ],
           "scale": [
-            3.6999998092651367,
-            1.5,
-            0.0
-          ]
-        }
-      }
-    },
-    {
-      "prefabid": "887d25cd-bd8d-481f-9f64-f371300a2cf0",
-      "name": "win screen"
-    },
-    {
-      "prefabid": "eaa2ba42-971a-413b-b8c4-99b2f5ab674d",
-      "name": "fire(23)2428",
-      "components": {
-        "Transform": {
-          "pos": [
-            1000.0,
-            -5.646884918212891,
-            0.019999999552965164
-          ],
-          "scale": [
-            3.0,
-            3.0,
+            10.0,
+            1.7000000476837158,
             0.0
           ]
         },
         "CollisionInfo": {
           "colliderSize": [
-            3.0,
+            9.5,
             3.0
           ]
-        },
-        "StateMachine": {
-          "stateTime": 78.63792419433594,
-          "Dead": {
-            "animState": {
-              "texture": "",
-              "loop": 1,
-              "totalColumn": 1,
-              "totalRow": 1,
-              "frameTime": 0.10000000149011612,
-              "initialFramCol": 0.0,
-              "initialFramRow": 0.0,
-              "lastFramCol": 0.0,
-              "lastFramRow": 0.0
-            }
-          }
-        }
-      }
-    },
-    {
-      "prefabid": "98416fa9-2ae1-4432-bcf4-0d4352a9b29a",
-      "name": "to win"
-    },
-    {
-      "prefabid": "eaa2ba42-971a-413b-b8c4-99b2f5ab674d",
-      "name": "fire(23)2429",
-      "components": {
-        "Transform": {
-          "pos": [
-            1000.0,
-            -8.64688491821289,
-            0.019999999552965164
-          ],
-          "scale": [
-            3.0,
-            3.0,
-            0.0
-          ]
-        },
-        "CollisionInfo": {
-          "colliderSize": [
-            3.0,
-            3.0
-          ]
-        },
-        "StateMachine": {
-          "stateTime": 78.63792419433594,
-          "Dead": {
-            "animState": {
-              "texture": "",
-              "loop": 1,
-              "totalColumn": 1,
-              "totalRow": 1,
-              "frameTime": 0.10000000149011612,
-              "initialFramCol": 0.0,
-              "initialFramRow": 0.0,
-              "lastFramCol": 0.0,
-              "lastFramRow": 0.0
-            }
-          }
         }
       }
     },
     {
       "prefabid": "eaa2ba42-971a-413b-b8c4-99b2f5ab674d",
-      "name": "fire(23)2430",
+      "name": "fire_right",
       "components": {
         "Transform": {
           "pos": [
@@ -555,22 +375,58 @@
           ]
         },
         "StateMachine": {
-          "stateTime": 1557.8946533203125,
-          "Dead": {
-            "animState": {
-              "texture": "",
-              "loop": 1,
-              "totalColumn": 1,
-              "totalRow": 1,
-              "frameTime": 0.10000000149011612,
-              "initialFramCol": 0.0,
-              "initialFramRow": 0.0,
-              "lastFramCol": 0.0,
-              "lastFramRow": 0.0
-            }
-          }
+          "stateTime": 2300.66357421875
         }
       }
+    },
+    {
+      "prefabid": "94d018f7-a766-4ee6-95be-f39272697938",
+      "name": "platform_mid",
+      "components": {
+        "Transform": {
+          "pos": [
+            4.826148509979248,
+            -0.902999997138977,
+            0.0
+          ],
+          "scale": [
+            3.6999998092651367,
+            1.5,
+            0.0
+          ]
+        }
+      }
+    },
+    {
+      "prefabid": "eaa2ba42-971a-413b-b8c4-99b2f5ab674d",
+      "name": "fire_left",
+      "components": {
+        "Transform": {
+          "pos": [
+            -12.014848709106445,
+            -8.531487464904785,
+            0.019999999552965164
+          ],
+          "scale": [
+            3.0,
+            3.0,
+            0.0
+          ]
+        },
+        "CollisionInfo": {
+          "colliderSize": [
+            3.0,
+            3.0
+          ]
+        },
+        "StateMachine": {
+          "stateTime": 2300.66357421875
+        }
+      }
+    },
+    {
+      "prefabid": "25591e7c-7d8f-47e1-a686-f950e77e91a1",
+      "name": "land_vfx(28)"
     }
   ]
 }

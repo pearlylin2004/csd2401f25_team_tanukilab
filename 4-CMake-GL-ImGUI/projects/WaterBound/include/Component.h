@@ -110,8 +110,8 @@ struct AnimateState {
     Vector2D initialFrame{}, lastFrame{};
     int currentFrameColumn{}, currentFrameRow{}, totalColumn{ 1 }, totalRow{ 1 };
     float frameTime = 0.1f, frameTimer{};
-    GLuint texHDL;
-    std::string texFile;
+    GLuint texHDL{};
+    std::string texFile{};
 
     // do not serialize this
     bool texChanged = false;
@@ -275,90 +275,205 @@ enum class AudioState {
     Paused
 };
 
-//enum class soundID : int;
-//enum class AudioState;
-class FMOD::Channel;
-struct AudioComponent : public Component {
-public:
-    AudioComponent() = default;
-
-    AudioComponent(const std::string& file, float vol = 1.0f, bool shouldLoop = false, bool playStart = false)
-        : audioFile(file)
-        , volume(vol)
-        , loop(shouldLoop)
-        , playOnStart(playStart)
-    {}
-
-    std::unique_ptr<Component> clone() const override {
-        return std::make_unique<AudioComponent>(*this);
-    }
-
-    // Audio ID - which sound to play
-    std::string audioFile;
-    //soundID soundId = static_cast<soundID>(0);
-
-    // IMPORTANT: Each AudioComponent gets its own channel now
-    // This is NOT managed by AudioHandler's channels vector
+//AudioChannel serves as the real storage for sounds and their data.
+struct AudioChannel {
     FMOD::Channel* channel = nullptr;
+    std::string audioFile;
+    AudioState state = AudioState::Stopped;
 
-    // Audio Settings
     float volume = 1.0f;
     float pitch = 1.0f;
     bool loop = false;
-    bool playOnStart = false;
     bool muted = false;
 
-    // Fade Settings (per-component)
     bool fadeInOnStart = false;
     float fadeInDuration = 1.0f;
     bool fadeOutOnStop = false;
     float fadeOutDuration = 1.0f;
-
-    // Per-component fade state
     FadeInfo fadeInfo;
-    /*bool isFading = false;
-    bool isFadingIn = false;
-    float fadeStartVolume = 0.0f;
-    float fadeTargetVolume = 0.0f;
-    float fadeDuration = 0.0f;
-    float fadeTimer = 0.0f;*/
 
-    // State Tracking
-    AudioState state = AudioState::Stopped;
     bool isPendingPlay = false;
     bool isPendingStop = false;
+    bool playOnStart = false;
+};
 
-    // Helper Methods
-    bool isPlaying() const { return state == AudioState::Playing; }
-    bool isPaused() const { return state == AudioState::Paused; }
-    bool isStopped() const { return state == AudioState::Stopped; }
+//enum class soundID : int;
+//enum class AudioState;
+class FMOD::Channel;
+
+//Audio component stores multiple Audio channels
+//sort of acts as a manager of AudioChannels
+struct AudioComponent : public Component {
+public:
+    AudioComponent() = default;
+
+    /*AudioComponent(const std::string& file, float vol = 1.0f, bool shouldLoop = false, bool playStart = false)
+        : audioFile(file)
+        , volume(vol)
+        , loop(shouldLoop)
+        , playOnStart(playStart)
+    {}*/
+    //need to change this to make it work with multiple sounds
+
+    AudioComponent(const std::string& file, float vol = 1.0f,
+        bool shouldLoop = false, bool playStart = false)
+    {
+        // Create "default" channel with these parameters
+        AudioChannel& ch = audioChannels["default"];
+        ch.audioFile = file;
+        ch.volume = vol;
+        ch.loop = shouldLoop;
+        ch.playOnStart = playStart;
+    }
+
+    std::unique_ptr<Component> clone() const override {
+        auto cloned = std::make_unique<AudioComponent>();
+
+        for (const auto& pair : audioChannels) {
+            cloned->audioChannels[pair.first] = pair.second;
+            cloned->audioChannels[pair.first].channel = nullptr;
+            cloned->audioChannels[pair.first].state = AudioState::Stopped;
+            cloned->audioChannels[pair.first].fadeInfo.isFading = false;
+        }
+
+        return cloned;
+    }
+
+    // Audio ID - which sound to play
+    //std::string audioFile;
+
+    //prolly need a map for 1 component to multiple sounds
+    std::map<std::string, AudioChannel> audioChannels;
+
+    //soundID soundId = static_cast<soundID>(0);
+
+    AudioChannel* getChannel(const std::string& channelName) {
+        auto it = audioChannels.find(channelName);
+        if (it != audioChannels.end()) {
+            return &(it->second);
+        }
+        return nullptr;
+    }
+
+    const AudioChannel* getChannel(const std::string& channelName) const {
+        auto it = audioChannels.find(channelName);
+        if (it != audioChannels.end()) {
+            return &(it->second);
+        }
+        return nullptr;
+    }
+
+    //get or create channel
+    AudioChannel* getOrCreateChannel(const std::string& name) {
+        return &audioChannels[name];
+    }
+
+    //check if channel exists
+    bool hasChannel(const std::string& name) const {
+        return audioChannels.find(name) != audioChannels.end();
+    }
+
+    //remove a channel
+    void removeChannel(const std::string& name) {
+        auto it = audioChannels.find(name);
+        if (it != audioChannels.end()) {
+            //stop the channel if playing
+            if (it->second.channel) {
+                it->second.isPendingStop = true;
+            }
+            audioChannels.erase(it);
+        }
+    }
+
+    //idk if we need this
+    AudioChannel* getDefaultChannel() {
+        return getOrCreateChannel("default");
+    }
 
     void updateFades(float deltaTime) {
-        if (!fadeInfo.isFading || !channel) return;
+        for (auto& pair : audioChannels) {
+            AudioChannel& ch = pair.second;
 
-        fadeInfo.fadeTimer += deltaTime;
+            if (!ch.fadeInfo.isFading || !ch.channel) return;
 
-        float progress = fadeInfo.fadeTimer / fadeInfo.fadeDuration;
-        if (progress > 1.0f) progress = 1.0f;
+            ch.fadeInfo.fadeTimer += deltaTime;
 
-        float currentVolume;
-        if (fadeInfo.isFadingIn) {
-            currentVolume = fadeInfo.startVolume + (fadeInfo.targetVolume - fadeInfo.startVolume) * progress;
-            std::cerr << "sound fading" << currentVolume << std::endl;
-        }
-        else {
-            currentVolume = fadeInfo.startVolume + (fadeInfo.targetVolume - fadeInfo.startVolume) * progress;
-        }
+            float progress = ch.fadeInfo.fadeTimer / ch.fadeInfo.fadeDuration;
+            if (progress > 1.0f) progress = 1.0f;
 
-        FMODErrorCheck(channel->setVolume(currentVolume));
-
-        if (progress >= 1.0f) {
-            fadeInfo.isFading = false;
-
-            if (!fadeInfo.isFadingIn && fadeInfo.targetVolume == 0.0f) {
-                channel->stop();
-                channel = nullptr;
+            float currentVolume;
+            if (ch.fadeInfo.isFadingIn) {
+                currentVolume = ch.fadeInfo.startVolume + (ch.fadeInfo.targetVolume - ch.fadeInfo.startVolume) * progress;
+                std::cerr << "sound fading" << currentVolume << std::endl;
             }
+            else {
+                currentVolume = ch.fadeInfo.startVolume + (ch.fadeInfo.targetVolume - ch.fadeInfo.startVolume) * progress;
+            }
+
+            FMODErrorCheck(ch.channel->setVolume(currentVolume));
+
+            if (progress >= 1.0f) {
+                ch.fadeInfo.isFading = false;
+
+                if (!ch.fadeInfo.isFadingIn && ch.fadeInfo.targetVolume == 0.0f) {
+                    ch.channel->stop();
+                    ch.channel = nullptr;
+                }
+            }
+
         }
+
+    }
+};
+
+// tile map component
+struct TileMap : public Component
+{
+    std::unique_ptr<Component> clone() const override {
+        return std::make_unique<TileMap>(*this);
+    }
+
+    //std::string filename{};
+    size_t tilesetTexID = 0;
+
+    //how big is the tile
+    float tileW = 3.0f;
+    float tileH = 3.0f;
+
+    int rows = 50;
+    int columns = 50;
+
+    //size_t tilesetRows = 1, tilesetCols = 1;
+
+    struct TileKey {
+        int x;
+        int y;
+
+        bool operator==(const TileKey& other) const {
+            return x == other.x && y == other.y;
+        }
+    };
+
+    struct TileKeyHash {
+        std::size_t operator()(const TileKey& k) const noexcept {
+            return (std::hash<int>()(k.x) << 1) ^ std::hash<int>()(k.y);
+        }
+    };
+    std::unordered_map<TileKey, std::string, TileKeyHash> tiles;
+
+    std::string getTile(int x, int y) const {
+        TileKey key{ x, y };
+        auto it = tiles.find(key);
+        return (it != tiles.end()) ? it->second : ""; // -1 = empty
+    }
+
+    void setTile(int x, int y, std::string tileID) {
+        if (x >= -columns && x < columns && y >= -rows && y < rows) {
+            tiles[{x, y}] = tileID;
+        }
+    }
+
+    void clearTile(int x, int y) {
+        tiles.erase({ x, y });
     }
 };

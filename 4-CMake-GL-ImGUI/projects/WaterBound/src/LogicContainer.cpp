@@ -57,7 +57,7 @@ static inline bool anyMoveHeld() {
 // FSM Transition Helper
 // ============================================================================
 /*!
- * \brief Applies a state transition to the object’s StateMachine component.
+ * \brief Applies a state transition to the objectï¿½s StateMachine component.
  *
  * Resets state timer, logs the transition to ImGui & console,
  * and performs any enter-state side effects.
@@ -88,6 +88,78 @@ void LogicContainer::enter(GameObject& obj, PlayerState next)
                 + obj.getObjectName() + " -> " + ToString(next);
             DebugLog::addMessage(msg, DebugMode::PlaySimul);
             std::cout << msg << std::endl;
+
+
+            //get or add AudioComponent
+            AudioComponent* audio = obj.getComponent<AudioComponent>();
+            if (!audio) {
+                audio = obj.addComponent<AudioComponent>();
+            }
+
+            if (!audio) {
+                std::cerr << "[LogicContainer] Failed to get/create AudioComponent for "
+                    << obj.getObjectName() << std::endl;
+                fsm->state = next;
+                fsm->stateTime = 0.0f;
+                return;  // Early return if audio component is invalid
+            }
+
+            //if prev state was walking
+            if (fsm->state == PlayerState::Walking) {
+
+                //stop footsteps when leaving walking state
+
+                AudioChannel* footsteps = audio->getChannel("footsteps");
+                if (footsteps && footsteps->state == AudioState::Playing) {
+                    footsteps->isPendingStop = true;
+                    footsteps->fadeOutOnStop = true;
+                    footsteps->fadeOutDuration = 0.15f;
+                }
+            }
+
+            //if prev state was falling, means exiting falling state(just landed prolly)
+            if (fsm->state == PlayerState::Falling) {
+                AudioChannel* landing = audio->getOrCreateChannel("landing");
+                
+                //play sound when exiting falling state
+                landing->audioFile = "assets/audio/landing.wav";
+                landing->loop = false;
+                landing->volume = 1.0f;
+                landing->isPendingPlay = true;
+            }
+
+            //play a sound depending on next state
+            switch (next) {
+            case PlayerState::Walking : {//jump jump
+                AudioChannel* footsteps = audio->getOrCreateChannel("footsteps");
+                footsteps->audioFile = "assets/audio/footsteps.wav";
+                footsteps->loop = true;
+                footsteps->volume = 0.5f;
+                footsteps->isPendingPlay = true;
+                break;
+            }
+            case PlayerState::Jumping: {
+                AudioChannel* jump = audio->getOrCreateChannel("jump");
+                jump->audioFile = "assets/audio/jump.wav";
+                jump->loop = false;
+                jump->volume = 0.7f;
+                jump->isPendingPlay = true;
+                break;
+            }
+            case PlayerState::Falling: {
+                //play falling sound
+                break;
+            }
+            case PlayerState::Idle: {
+                //play some idle sound if needed
+                break;
+            }
+            default:
+                //prolly nothing happens
+                break;   
+            }
+
+
         }
 
         fsm->state = next;
@@ -120,7 +192,7 @@ void LogicContainer::tickIdle(GameObject& obj, float /*dt*/) {
         DebugLog::addMessage("FSM: Jump", DebugMode::PlaySimul);
     }
     // walk
-    else if (anyMoveHeld() && obj.getObjectPrefabID() != "eaa2ba42-971a-413b-b8c4-99b2f5ab674d") {
+    else if (anyMoveHeld() && obj.getObjectPrefabID() != "eaa2ba42-971a-413b-b8c4-99b2f5ab674d" && obj.getObjectPrefabID() != "f04819ff-270c-41b4-8387-73382eb85103") {
         enter(obj, PlayerState::Walking);
     }
 }
@@ -148,6 +220,22 @@ void LogicContainer::tickWalking(GameObject& obj, float /*dt*/) {
     if (InputHandler::isKeyHeld(GLFW_KEY_A)) fsm->facingRight = false;
     if (InputHandler::isKeyHeld(GLFW_KEY_D)) fsm->facingRight = true;
 
+    // if its water source, play the sound once
+    if (obj.getObjectPrefabID() == "f04819ff-270c-41b4-8387-73382eb85103" && fsm->state == PlayerState::Walking) {
+        AudioComponent* audio = obj.getComponent<AudioComponent>();
+        if (audio) {
+            AudioChannel* getWater = audio->getDefaultChannel();
+
+            if (getWater && getWater->state != AudioState::Playing && !getWater->isPendingPlay) {
+                getWater->loop = false;
+                getWater->volume = 0.5f;
+                getWater->isPendingPlay = true;
+
+				fsm->state = PlayerState::Falling;
+            }
+        }
+    }
+        
     if (!anyMoveHeld() && !(fsm->fixState)) {
         enter(obj, PlayerState::Idle);
         return;
@@ -289,17 +377,11 @@ void LogicContainer::tickDead(GameObject& obj, float /*dt*/) {
  * \param dt Delta time in seconds.
  * \param manager GameObjectManager used for spawning bullets.
  */
-void LogicContainer::update(GameObject& obj, float dt, GameObjectManager& /*manager*/) {
+void LogicContainer::update(GameObject& obj, float dt /*, GameObjectManager& manager*/) {
     auto* fsm = obj.getComponent<StateMachine>();
     if (!fsm) return;
 
     fsm->stateTime += dt;
-
-    /* -------- temp setting -------- */
-    if (fsm->fixState && fsm->stateTime >= 6.5f) {
-        obj.getComponent<Transform>()->x = 1000.f;
-    }
-    /* -------- temp setting -------- */
 
     // Immediate action: shooting
     /*if (InputHandler::isKeyTriggered(GLFW_KEY_SPACE)) {

@@ -72,6 +72,15 @@ private:
     bool m_forceWindowed = false;
 	bool m_isPaused; //for alt-tab pause
 
+    //hardcoded bgm player
+    FMOD::Channel* m_bgmChannel = nullptr;
+    std::string m_bgmFilePath = "assets/audio/bg.wav";
+
+    void startBGM();
+    void stopBGM();
+    void pauseBGM();
+    void resumeBGM();
+    
     void toggleFullscreen();
 
     std::unique_ptr<GUISystem> m_guiSystem;
@@ -92,4 +101,5 @@ private:
     std::unique_ptr<MessageBus> m_messageBus;
     std::unique_ptr<PlayerControllerSystem> m_playerController;
     std::unique_ptr<AudioSystem> m_audioSystem;
+    std::unique_ptr<TileMapSystem> m_tileMapSystem;
 };

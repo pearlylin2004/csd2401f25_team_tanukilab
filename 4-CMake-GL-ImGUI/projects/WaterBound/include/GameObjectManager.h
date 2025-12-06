@@ -71,6 +71,9 @@ public:
 
 	std::vector<GameObject*> getObjectsInLayer(int layerID);
 	void initializeSceneResources();
+	void initializeSimulationResources();  
+	void cleanupSimulationResources();     
+
 	
 private:
 	//map of all game objects

@@ -24,7 +24,7 @@ Technology is prohibited.
 //for advance messaging
 struct KeyEvent {
     std::string key;
-    bool pressed; // true = pressed, false = released
+    bool pressed{ false }; // true = pressed, false = released
     //for lua
     float x = 0.0f;
     float y = 0.0f;

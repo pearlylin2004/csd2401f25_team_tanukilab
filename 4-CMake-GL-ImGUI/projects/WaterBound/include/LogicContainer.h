@@ -42,7 +42,7 @@ public:
     /*!
      * \brief Main per-frame state update function for a GameObject.
      *
-     * Evaluates input, updates the object’s state machine, performs state
+     * Evaluates input, updates the objectï¿½s state machine, performs state
      * transitions, and triggers gameplay actions such as jumping or firing.
      *
      * \param obj      Reference to the GameObject whose logic is being updated.
@@ -50,12 +50,12 @@ public:
      * \param manager  Reference to the GameObjectManager used for spawning
      *                 or retrieving other objects (e.g., bullets).
      */
-    void update(GameObject& obj, float dt, GameObjectManager& manager);
+    void update(GameObject& obj, float dt /*, GameObjectManager& manager */);
 
 private:
 
     /*!
-     * \brief Performs a state transition on a GameObject’s StateMachine.
+     * \brief Performs a state transition on a GameObjectï¿½s StateMachine.
      *
      * Resets the state timer, updates the current state, and logs the transition
      * to both console and UI for debugging.
@@ -112,7 +112,7 @@ private:
     /*!
      * \brief Spawns a bullet near the object and initializes its velocity.
      *
-     * Uses the object’s facing direction and transform to position the bullet.
+     * Uses the objectï¿½s facing direction and transform to position the bullet.
      * Only works if a GameObject named "bullet" exists in the manager.
      *
      * \param obj      The object performing the action (typically the player).

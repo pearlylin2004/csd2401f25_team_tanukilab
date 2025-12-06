@@ -1,9 +1,9 @@
 /* Start Header ************************************************************************/
 /*!
 \file       undoRedo.cpp
-\author     Tan Chee Qing, cheeqing.tan, 2401486
+\author     Hugo Low Ren Hao, low.h, 2402272
             - 100%
-\par		cheeqing.tan@digipen.edu
+\par		low.h@digipen.edu
 \date       November, 10th, 2025
 \brief      Definitions of all the functions and ctor needed for undo and redo in editor.
             Mostly is to take snapshots of the transform of the objects and creation/
