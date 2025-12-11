@@ -141,9 +141,6 @@ DeleteObjCmd::DeleteObjCmd(GameObjectManager& manager, GameObject* obj) : m_mana
 
         // save the final state before delete
         m_serializedData = JsonIO::serializeGameObj(obj);
-
-        // refresh cached object vector
-        CachedGameObjects::Instance().refresh();
     }
 }
 
