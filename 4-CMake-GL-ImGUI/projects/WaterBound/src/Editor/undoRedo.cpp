@@ -18,6 +18,7 @@ Technology is prohibited.
 #ifdef _DEBUG
 #include "JsonIO.h"
 #include "Editor/undoRedo.h"
+#include "Editor/editorManager.h"
 
 TransformSnapshot captureTransform(GameObject* obj) {
     TransformSnapshot snap;
@@ -95,12 +96,16 @@ void CreateObjectCmd::execute() {
             GameObject* obj = JsonIO::deserializeGameObj(m_manager, m_serializedData);
 
             if (obj) obj->getObjectName() = m_objectName;
+
+            // refresh cached object vector
+            CachedGameObjects::Instance().refresh();
         }
     }
 }
 
 void CreateObjectCmd::undo() {
     GameObject* obj = m_manager.getGameObject(m_objectName);
+    std::cout << "\nfuck" << m_objectName << "\n\n";
     if (obj) {
         m_serializedData = JsonIO::serializeGameObj(obj);
 
@@ -113,6 +118,8 @@ void CreateObjectCmd::undo() {
 
         // delete the obj (to undo create)
         m_manager.deleteGameObject(obj);
+        // refresh cached object vector
+        CachedGameObjects::Instance().refresh();
     }
 }
 
@@ -134,6 +141,9 @@ DeleteObjCmd::DeleteObjCmd(GameObjectManager& manager, GameObject* obj) : m_mana
 
         // save the final state before delete
         m_serializedData = JsonIO::serializeGameObj(obj);
+
+        // refresh cached object vector
+        CachedGameObjects::Instance().refresh();
     }
 }
 
@@ -143,8 +153,17 @@ void DeleteObjCmd::execute() {
         // serialize the obj to store its component data
         m_serializedData = JsonIO::serializeGameObj(obj);
 
+        // reset selection if deleting the obj (to undo creation)
+        if (Editor::objSelectionState.selectedObject == obj) {
+            Editor::objSelectionState.selectedObject = nullptr;
+            Editor::objSelectionState.draggedObject = nullptr;
+            Editor::objSelectionState.selectedIndex = -1;
+        }
+
         // remove the obj
         m_manager.deleteGameObject(obj);
+        // refresh cached object vector
+        CachedGameObjects::Instance().refresh();
     }
 }
 
@@ -155,6 +174,9 @@ void DeleteObjCmd::undo() {
         if (ori) {
             ori->getObjectName() = m_objectName;
             m_manager.assignObjectToLayer(ori, m_layer);
+
+            // refresh cached object vector
+            CachedGameObjects::Instance().refresh();
         }
     }
 }

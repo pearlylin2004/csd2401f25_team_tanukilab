@@ -23,8 +23,7 @@ HierarchyWindow::HierarchyWindow(Editor::ObjSelectionState& Ostate) : m_objSelec
 void HierarchyWindow::render(GameObjectManager& manager) {
     ImGui::Begin("Hierarchy");
 
-    std::vector<GameObject*> gameObjects;
-    manager.getAllGameObjects(gameObjects);
+    std::vector<GameObject*> gameObjects = CachedGameObjects::Instance().getCachedObjects();
 
     // by default just set to no children
     ImGuiTreeNodeFlags baseFlags = ImGuiTreeNodeFlags_Leaf;
@@ -105,6 +104,9 @@ void HierarchyWindow::handlePrefabDragDrop(GameObjectManager& manager) {
                     PrefabManager::Instance().instantiate(prefabObj, manager);
                     Render* render = prefabObj->getComponent<Render>();
                     if (render) render->texChanged = true;
+
+                    // refresh cached object vector
+                    CachedGameObjects::Instance().refresh();
 
                     DebugLog::addMessage("Added game obj from prefab\n");
                 }
@@ -212,11 +214,18 @@ void HierarchyWindow::objDeletePopup(GameObjectManager& manager) {
         if (ImGui::Button("Delete") || InputHandler::isKeyTriggered(GLFW_KEY_ENTER)) {
             std::string name = m_objSelectionState.selectedObject->getObjectName();
 
-            //manager.deleteGameObject(m_objSelectionState.selectedObject); -> CREATE DELETE CMD will handle the deletion
-
             // call CREATE DELETE CMD to settle the deletion, and save in a stack (for undo)
-            auto cmd = std::make_unique<DeleteObjCmd>(manager, m_objSelectionState.selectedObject);
-            UndoRedoManager::Instance().executeCmd(std::move(cmd));
+            if (m_objSelectionState.selectedObject->getObjectPrefabID().empty()) {
+                auto cmd = std::make_unique<DeleteObjCmd>(manager, m_objSelectionState.selectedObject);
+                UndoRedoManager::Instance().executeCmd(std::move(cmd));
+			}
+			else {
+				// if prefab instance, just delete without undo/redo
+				manager.deleteGameObject(m_objSelectionState.selectedObject);
+			}
+
+            // refresh cached object vector
+            CachedGameObjects::Instance().refresh();
 
             m_objSelectionState.selectedObject = nullptr;
             m_objSelectionState.draggedObject = nullptr;

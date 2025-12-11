@@ -69,6 +69,10 @@ void InputSystem::update(GameObjectManager& manager, const float& deltaTime, Mes
 #ifdef _DEBUG
 	if (InputHandler::isComboKeyTriggered(GLFW_KEY_0)) {
 		UISystem::toggleUI();
+
+		// refresh cached object vector
+		CachedGameObjects::Instance().refresh();
+
 		messageBus.publish(Message("KeyPressed", nullptr, KeyEvent{ "0", true }));
 
 		//AudioHandler::getInstance().toggleSoundPause(soundID::bg);
@@ -1228,7 +1232,7 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 //UI system - handles ImGui rendering and interaction
 bool UISystem::showUI = false;
 
-void UISystem::init(GLFWwindow* window, RenderSystem* renderer) {
+void UISystem::init(GLFWwindow* window, RenderSystem* renderer, GameObjectManager& manager) {
 	// --- ImGui Setup ---
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
@@ -1247,6 +1251,8 @@ void UISystem::init(GLFWwindow* window, RenderSystem* renderer) {
 	io.ConfigViewportsNoTaskBarIcon = true;
 
 	m_renderer = renderer;
+
+	m_UI = std::make_unique<EditorManager>(manager);
 }
 
 UISystem::~UISystem() {
@@ -1257,14 +1263,14 @@ UISystem::~UISystem() {
 }
 
 //for imgui
-void UISystem::update(GameObjectManager& manager) {
+void UISystem::update() {
 	if (!showUI) return; // skip UI rendering if disabled
 
 	//record current time for performance tracking
 	auto start = std::chrono::high_resolution_clock::now();
 
-	std::vector<GameObject*> gameObjects;
-	manager.getAllGameObjects(gameObjects);
+	/*std::vector<GameObject*> gameObjects;
+	manager.getAllGameObjects(gameObjects);*/
 
 	ImGui_ImplOpenGL3_NewFrame();
 	ImGui_ImplGlfw_NewFrame();
@@ -1277,8 +1283,8 @@ void UISystem::update(GameObjectManager& manager) {
 	m_renderer->fboAspectRatio(fboWidth, fboHeight);
 
 	// all ImGui windows
-	m_UI.update(manager);
-	m_UI.renderScene(m_renderer->getTexture(), static_cast<float>(fboWidth) / static_cast<float>(fboHeight), manager);
+	m_UI->update();
+	m_UI->renderScene(m_renderer->getTexture(), static_cast<float>(fboWidth) / static_cast<float>(fboHeight));
 
 	ImGui::Render();
 	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());

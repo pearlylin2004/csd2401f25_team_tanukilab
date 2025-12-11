@@ -169,6 +169,21 @@ void AddObjWindow::createEmpty(GameObjectManager& manager, float x, float y, flo
     auto cmd = std::make_unique<CreateObjectCmd>(manager, name);
     UndoRedoManager::Instance().executeCmd(std::move(cmd));
 
+    // refresh cached object vector
+    CachedGameObjects::Instance().refresh();
+
+    /* ---- set selected obj to newly added object ---- */
+    std::vector<GameObject*> gameObjects = CachedGameObjects::Instance().getCachedObjects();
+
+    Editor::objSelectionState.selectedObject = obj;
+    for (size_t i = 0; i < gameObjects.size(); i++) {
+        if (gameObjects[i] == obj) {
+            Editor::objSelectionState.selectedIndex = static_cast<int>(i);
+            break;
+        }
+    }
+    /* -------- END -------- */
+
     DebugLog::addMessage("Empty created at (" + std::to_string(x) + ", " + std::to_string(y) + ", " + std::to_string(z) + ")\n");
 }
 
@@ -198,9 +213,23 @@ void AddObjWindow::createRec(GameObjectManager& manager, float x, float y, float
     auto cmd = std::make_unique<CreateObjectCmd>(manager, name);
     UndoRedoManager::Instance().executeCmd(std::move(cmd));
 
+    // refresh cached object vector
+    CachedGameObjects::Instance().refresh();
+
+    /* ---- set selected obj to newly added object ---- */
+    std::vector<GameObject*> gameObjects = CachedGameObjects::Instance().getCachedObjects();
+
+    Editor::objSelectionState.selectedObject = recobj;
+    for (size_t i = 0; i < gameObjects.size(); i++) {
+        if (gameObjects[i] == recobj) {
+            Editor::objSelectionState.selectedIndex = static_cast<int>(i);
+            break;
+        }
+    }
+    /* -------- END -------- */
+
     DebugLog::addMessage("Rectangle created at (" + std::to_string(x) + ", " + std::to_string(y) + ", " + std::to_string(z) + ")\n");
 }
-
 
 void AddObjWindow::createCir(GameObjectManager& manager, float x, float y, float z) {
     std::string name = "Circle_" + std::to_string(manager.getGameObjectCount());
@@ -223,6 +252,21 @@ void AddObjWindow::createCir(GameObjectManager& manager, float x, float y, float
     auto cmd = std::make_unique<CreateObjectCmd>(manager, name);
     UndoRedoManager::Instance().executeCmd(std::move(cmd));
 
+    // refresh cached object vector
+    CachedGameObjects::Instance().refresh();
+
+    /* ---- set selected obj to newly added object ---- */
+    std::vector<GameObject*> gameObjects = CachedGameObjects::Instance().getCachedObjects();
+
+    Editor::objSelectionState.selectedObject = circleObj;
+    for (size_t i = 0; i < gameObjects.size(); i++) {
+        if (gameObjects[i] == circleObj) {
+            Editor::objSelectionState.selectedIndex = static_cast<int>(i);
+            break;
+        }
+    }
+    /* -------- END -------- */
+
     DebugLog::addMessage("Circle created at (" + std::to_string(x) + ", " + std::to_string(y) + ", " + std::to_string(z) + ")\n");
 }
 
@@ -242,7 +286,21 @@ void AddObjWindow::dupObj(GameObjectManager& manager, GameObject* oriObj) {
     auto cmd = std::make_unique<CreateObjectCmd>(manager, name);
     UndoRedoManager::Instance().executeCmd(std::move(cmd));
 
+    // refresh cached object vector
+    CachedGameObjects::Instance().refresh();
+
+    /* ---- set selected obj to newly added object ---- */
+    std::vector<GameObject*> gameObjects = CachedGameObjects::Instance().getCachedObjects();
+
     Editor::objSelectionState.selectedObject = dupObj;
+    for (size_t i = 0; i < gameObjects.size(); i++) {
+        if (gameObjects[i] == dupObj) {
+            Editor::objSelectionState.selectedIndex = static_cast<int>(i);
+            break;
+        }
+    }
+    /* -------- END -------- */
+
 
     DebugLog::addMessage("Object duplicated!");
 }

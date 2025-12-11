@@ -156,6 +156,9 @@ void MenuBar::playSimulation(GameObjectManager& manager) {
 
     manager.initializeSimulationResources();
 
+    // refresh cached object vector
+    CachedGameObjects::Instance().refresh();
+
     DebugLog::addMessage("Simulation started.\n");
 }
 
@@ -167,6 +170,9 @@ void MenuBar::stopSimulation(GameObjectManager& manager) {
     manager.loadScene(JsonIO::runtimeScenePath(m_sceneState.tempSceneName));
 
     manager.initializeSceneResources();
+
+    // refresh cached object vector
+    CachedGameObjects::Instance().refresh();
 
     // clear all undo/redo
     UndoRedoManager::Instance().clear();

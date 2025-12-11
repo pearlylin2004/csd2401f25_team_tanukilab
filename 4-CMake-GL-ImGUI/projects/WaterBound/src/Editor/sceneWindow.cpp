@@ -234,8 +234,7 @@ void SceneWindow::renderGizmo(GameObjectManager& manager) {
 
 void SceneWindow::drawGrid(const glm::mat4& view, const glm::mat4& proj, GameObjectManager& manager) {
     ImDrawList* drawList = ImGui::GetWindowDrawList();
-    std::vector<GameObject*> gameObjects;
-    manager.getAllGameObjects(gameObjects);
+    std::vector<GameObject*> gameObjects = CachedGameObjects::Instance().getCachedObjects();
 
     for (GameObject* obj : gameObjects)
     {
@@ -420,6 +419,9 @@ void SceneWindow::loadScene(GameObjectManager& manager) {
     manager.loadScene(JsonIO::runtimeScenePath(m_menuBarState.sceneToLoad));
     manager.initializeSceneResources();
 
+    // refresh cached object vector
+    CachedGameObjects::Instance().refresh();
+
     m_sceneState.currentSceneName = std::move(m_menuBarState.sceneToLoad); 
 
     DebugLog::addMessage("Loaded scene: " + m_sceneState.currentSceneName + "\n");
@@ -584,8 +586,7 @@ Future implementation (jic i forget)
 void SceneWindow::objPicking(GameObjectManager& manager) {
     Vector2D mousePos = InputHandler::getMousePositionInImGuiViewport(m_sceneWindowState.scenePos, m_sceneWindowState.sceneSize);
 
-    std::vector<GameObject*> gameObjects;
-    manager.getAllGameObjects(gameObjects);
+    std::vector<GameObject*> gameObjects = CachedGameObjects::Instance().getCachedObjects();
 
     GameObject* selected = nullptr;
     GameObject* topmost = nullptr;

@@ -146,7 +146,7 @@ void CoreEngine::Init(bool forceWindowed) {
     m_luaSystem->init();
     m_renderSystem->init(*m_manager, winWidth, winHeight);
     #ifdef _DEBUG
-	    m_uiSystem->init(m_window, m_renderSystem.get());
+	    m_uiSystem->init(m_window, m_renderSystem.get(), *m_manager);
     #endif
     m_fontSystem->init(*m_manager);
     m_audioSystem->init(*m_manager);
@@ -259,7 +259,7 @@ void CoreEngine::Update(float deltaTime) {
     m_fontSystem->update(*m_manager, m_fps);    
     m_audioSystem->update(*m_manager, deltaTime);
     #ifdef _DEBUG
-        m_uiSystem->update(*m_manager);
+        m_uiSystem->update();
     #endif
 
     //performance update
