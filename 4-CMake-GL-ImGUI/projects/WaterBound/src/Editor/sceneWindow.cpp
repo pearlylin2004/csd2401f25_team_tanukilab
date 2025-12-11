@@ -99,7 +99,10 @@ void SceneWindow::render(GLuint texture, float aspectRatio, GameObjectManager& m
     ImGuizmo::BeginFrame();
     // show grid
     if (m_gizmoState.showGrid) {
-        drawGrid(renderer::editorCam.view, renderer::editorCam.proj, manager);
+		if (EditorManager::isEditingMode())
+            drawGrid(renderer::editorCam.view, renderer::editorCam.proj, manager);
+        else
+			drawGrid(renderer::cam.view, renderer::cam.proj, manager);
     }
 
 	// highlight selected object
@@ -329,7 +332,12 @@ void SceneWindow::renderObjectHighlight() {
     // convert world coordinates to screen coordinates
     auto worldToScreen = [&](float x, float y) -> ImVec2 {
         glm::vec4 worldPos(x, y, transform->z, 1.0f);
-        glm::vec4 clipPos = renderer::editorCam.proj * renderer::editorCam.view * worldPos;
+
+        glm::vec4 clipPos;
+        if (EditorManager::isEditingMode())
+            clipPos = renderer::editorCam.proj * renderer::editorCam.view * worldPos;
+        else
+            clipPos = renderer::cam.proj * renderer::cam.view * worldPos;
 
         if (clipPos.w != 0.0f) {
             clipPos /= clipPos.w;
@@ -391,7 +399,12 @@ void SceneWindow::renderObjCollider(GameObject* obj) {
     // convert world coordinates to screen coordinates
     auto worldToScreen = [&](float x, float y) -> ImVec2 {
         glm::vec4 worldPos(x, y, transform->z, 1.0f);
-        glm::vec4 clipPos = renderer::editorCam.proj * renderer::editorCam.view * worldPos;
+
+        glm::vec4 clipPos;
+		if (EditorManager::isEditingMode())
+            clipPos = renderer::editorCam.proj * renderer::editorCam.view * worldPos;
+        else
+			clipPos = renderer::cam.proj * renderer::cam.view * worldPos;
 
         if (clipPos.w != 0.f) {
             clipPos /= clipPos.w;
