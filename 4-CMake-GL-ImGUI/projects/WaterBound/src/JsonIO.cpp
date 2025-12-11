@@ -834,23 +834,54 @@ namespace JsonIO {
                         if (smObj.HasMember(stateNames[i].c_str())) {
                             const Value& stateObj = smObj[stateNames[i].c_str()];
 
-                            if (stateObj.HasMember("animState")) {
-                                const Value& animStateObj = stateObj["animState"];
-                                AnimateState& animState = anim->animState[i];
+                            if (!stateObj.IsObject()) continue;
+                            if (!stateObj.HasMember("animState")) continue;
 
-                                animState.texFile = animStateObj["texture"].GetString();
-                                animState.loop = animStateObj["loop"].IsBool() ? animStateObj["loop"].GetBool() : (animStateObj["loop"].GetInt() != 0);
-                                animState.currentFrameColumn = animStateObj["currentFrameColumn"].GetInt();
-                                animState.currentFrameRow = animStateObj["currentFrameRow"].GetInt();
-                                animState.totalColumn = animStateObj["totalColumn"].GetInt();
-                                animState.totalRow = animStateObj["totalRow"].GetInt();
-                                animState.frameTime = animStateObj["frameTime"].GetFloat();
-                                animState.initialFrame.x = (float)animStateObj["initialFrameCol"].GetInt();
-                                animState.initialFrame.y = (float)animStateObj["initialFrameRow"].GetInt();
-                                animState.lastFrame.x = (float)animStateObj["lastFrameCol"].GetInt();
-                                animState.lastFrame.y = (float)animStateObj["lastFrameRow"].GetInt();
-                                animState.texChanged = true; // magic boolean!!
+                            const Value& animStateObj = stateObj["animState"];
+                            if (!animStateObj.IsObject()) continue;
+
+                            AnimateState& st = anim->animState[i];
+
+                            // --- texture ---
+                            if (animStateObj.HasMember("texture") && animStateObj["texture"].IsString()) {
+                                st.texFile = animStateObj["texture"].GetString();
+                                st.texChanged = true;
                             }
+                            else {
+                                st.texFile.clear();
+                                st.texChanged = false;
+                            }
+
+                            // --- loop (int or bool) ---
+                            if (animStateObj.HasMember("loop")) {
+                                const auto& v = animStateObj["loop"];
+                                if (v.IsBool()) st.loop = v.GetBool();
+                                else if (v.IsInt()) st.loop = (v.GetInt() != 0);
+                            }
+
+                            // --- numeric fields ---
+                            if (animStateObj.HasMember("totalColumn") && animStateObj["totalColumn"].IsInt())
+                                st.totalColumn = animStateObj["totalColumn"].GetInt();
+
+                            if (animStateObj.HasMember("totalRow") && animStateObj["totalRow"].IsInt())
+                                st.totalRow = animStateObj["totalRow"].GetInt();
+
+                            if (animStateObj.HasMember("frameTime") &&
+                                (animStateObj["frameTime"].IsFloat() || animStateObj["frameTime"].IsDouble()))
+                                st.frameTime = animStateObj["frameTime"].GetFloat();
+
+                            // --- frame indices ---
+                            if (animStateObj.HasMember("initialFrameCol") && animStateObj["initialFrameCol"].IsInt())
+                                st.initialFrame.x = (float)animStateObj["initialFrameCol"].GetInt();
+
+                            if (animStateObj.HasMember("initialFrameRow") && animStateObj["initialFrameRow"].IsInt())
+                                st.initialFrame.y = (float)animStateObj["initialFrameRow"].GetInt();
+
+                            if (animStateObj.HasMember("lastFrameCol") && animStateObj["lastFrameCol"].IsInt())
+                                st.lastFrame.x = (float)animStateObj["lastFrameCol"].GetInt();
+
+                            if (animStateObj.HasMember("lastFrameRow") && animStateObj["lastFrameRow"].IsInt())
+                                st.lastFrame.y = (float)animStateObj["lastFrameRow"].GetInt();
                         }
                     }
                 }

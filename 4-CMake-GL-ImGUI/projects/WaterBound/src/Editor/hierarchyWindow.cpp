@@ -96,14 +96,17 @@ void HierarchyWindow::handlePrefabDragDrop(GameObjectManager& manager) {
             if (folder == "Prefab") {
                 std::string prefabID = PrefabManager::Instance().findPrefabIDByFilename(prefabPath);
 
-                std::string objName = PrefabManager::Instance().getPrefabName(prefabID);
-                GameObject* prefabObj = manager.createGameObject(objName + "(" + std::to_string(manager.getGameObjectCount()) + ")");
+                std::string objName = PrefabManager::Instance().getPrefabName(prefabID) + "(" + std::to_string(manager.getGameObjectCount()) + ")";
+                GameObject* prefabObj = manager.createGameObject(objName);
                 prefabObj->getObjectPrefabID() = prefabID;
 
                 if (prefabObj) {
                     PrefabManager::Instance().instantiate(prefabObj, manager);
                     Render* render = prefabObj->getComponent<Render>();
                     if (render) render->texChanged = true;
+
+                    auto cmd = std::make_unique<CreateObjectCmd>(manager, objName);
+                    UndoRedoManager::Instance().executeCmd(std::move(cmd));
 
                     // refresh cached object vector
                     CachedGameObjects::Instance().refresh();
@@ -214,15 +217,8 @@ void HierarchyWindow::objDeletePopup(GameObjectManager& manager) {
         if (ImGui::Button("Delete") || InputHandler::isKeyTriggered(GLFW_KEY_ENTER)) {
             std::string name = m_objSelectionState.selectedObject->getObjectName();
 
-            // call CREATE DELETE CMD to settle the deletion, and save in a stack (for undo)
-            if (m_objSelectionState.selectedObject->getObjectPrefabID().empty()) {
-                auto cmd = std::make_unique<DeleteObjCmd>(manager, m_objSelectionState.selectedObject);
-                UndoRedoManager::Instance().executeCmd(std::move(cmd));
-			}
-			else {
-				// if prefab instance, just delete without undo/redo
-				manager.deleteGameObject(m_objSelectionState.selectedObject);
-			}
+            auto cmd = std::make_unique<DeleteObjCmd>(manager, m_objSelectionState.selectedObject);
+            UndoRedoManager::Instance().executeCmd(std::move(cmd));
 
             // refresh cached object vector
             CachedGameObjects::Instance().refresh();
