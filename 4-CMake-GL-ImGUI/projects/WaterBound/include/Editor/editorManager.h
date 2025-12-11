@@ -117,7 +117,7 @@ public:
 private:
 	void addComponent(GameObject* selected);
 	void renderGizmoCtrl();
-	void renderTransform(GameObject* selected);
+	void renderTransform(GameObject* selected, GameObjectManager& manager);
 	void renderRender(GameObject* selected);
 	void renderStateMachine(GameObject* selected);
 	void renderCollision(GameObject* selected, GameObjectManager& manager);
@@ -131,6 +131,11 @@ private:
 
 	Editor::ObjSelectionState& m_objSelectionState;
 	Editor::GizmoState& m_gizmoState;
+
+	bool m_isEditingPos = false;
+	bool m_isEditingRot = false;
+	bool m_isEditingScale = false;
+	GameObject* m_transformEditObject = nullptr;
 };
 
 // Top menu bar
