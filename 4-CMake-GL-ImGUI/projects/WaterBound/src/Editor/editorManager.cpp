@@ -70,11 +70,13 @@ void EditorManager::handleShortcutKeys(GameObjectManager& manager) {
     }
     /* --------------- END --------------- */
 
+
     /* --------------- "Y" -> Toggle Grid --------------- */
     if (InputHandler::isKeyTriggered(GLFW_KEY_U)) {
         Editor::gizmoState.showGrid = !Editor::gizmoState.showGrid;
     }
     /* --------------- END --------------- */
+
 
     /* --------------- GIZMO CONTROL --------------- */
     if (Editor::objSelectionState.selectedObject && !ImGuizmo::IsUsing()) {
@@ -132,6 +134,13 @@ void EditorManager::handleShortcutKeys(GameObjectManager& manager) {
     }
     /* --------------- END --------------- */
 
+
+    /* ------------- "F3" -> Show All Colliders ------------- */
+    if (InputHandler::isKeyTriggered(GLFW_KEY_F3)) {
+        Editor::sceneWindowState.showAllColliders = !Editor::sceneWindowState.showAllColliders;
+    }
+    /* --------------- END --------------- */
+    
 
     /* --------------- "CTRL" + "S" -> Save Scene --------------- */
     if (InputHandler::isComboKeyTriggered(GLFW_KEY_S) ||

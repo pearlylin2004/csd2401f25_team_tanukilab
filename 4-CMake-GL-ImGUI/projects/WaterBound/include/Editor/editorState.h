@@ -56,17 +56,22 @@ namespace Editor {
 	/* ----------------- Game Object Selection End -----------------*/
 
 
+	/* ----------------- Shape Control -----------------*/
 	struct ShapeControlState {
 		float inputX = 0.0f;
 		float inputY = 0.0f;
 		float inputZ = 0.0f;
 	};
+	/* ----------------- Shape Control End -----------------*/
 
 
 	/* ----------------- Scene Viewport -----------------*/
 	struct SceneWindowState {
 		ImVec2 scenePos;  // top left corner of viewport
 		ImVec2 sceneSize; // size of viewport
+
+		bool showSingleCollider = false;
+		bool showAllColliders = false;
 	};
 	/* ----------------- Scene Viewport End -----------------*/
 

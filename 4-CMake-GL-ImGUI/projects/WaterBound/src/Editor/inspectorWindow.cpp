@@ -775,61 +775,64 @@ void InspectorWindow::renderCollision( GameObject* selected, GameObjectManager& 
         ImGui::Spacing();
         ImGui::Separator();
 
-        {
-            if (ImGui::TreeNode("Collider")) {
-                // cannot edit if obj cannot collide
-                ImGui::BeginDisabled(!collision->collisionFlag);
-                if (ImGui::Checkbox("Auto-fit Scale", &collision->autoFitScale)) {
-                    if (collision->autoFitScale && transform) {
-                        collision->colliderSize.x = transform->scaleX;
-                        collision->colliderSize.y = transform->scaleY;
-                    }
+        if (ImGui::TreeNode("Collider")) {
+            if (collision->collisionFlag) Editor::sceneWindowState.showSingleCollider = true;
 
-                    if (collision->autoFitScale && render) {
-                        collision->colliderType = render->modelRef.shape;
-                    }
+            // cannot edit if obj cannot collide
+            ImGui::BeginDisabled(!collision->collisionFlag);
+            if (ImGui::Checkbox("Auto-fit Scale", &collision->autoFitScale)) {
+                if (collision->autoFitScale && transform) {
+                    collision->colliderSize.x = transform->scaleX;
+                    collision->colliderSize.y = transform->scaleY;
                 }
 
-                CollisionResponseMode mode = collision->collisionRes;
-                const char* modes[] = { "Static", "Pushable" };
-                int current = static_cast<int>(mode);
-
-                if (ImGui::Combo("Collision Response", &current, modes, IM_ARRAYSIZE(modes))) {
-                    collision->collisionRes = static_cast<CollisionResponseMode>(current);
+                if (collision->autoFitScale && render) {
+                    collision->colliderType = render->modelRef.shape;
                 }
-
-                ImGui::EndDisabled();
-
-                // cannot edit if obj cannot collide or auto-fit collider size with obj size is on
-                bool editable = collision->collisionFlag && !collision->autoFitScale;
-                ImGui::BeginDisabled(!editable);
-
-                shape colliderShape = collision->colliderType;
-                const char* shapes[] = { "Box", "Circle" };
-                current = static_cast<int>(colliderShape);
-
-                if (ImGui::Combo("Shape", &current, shapes, IM_ARRAYSIZE(shapes))) {
-                    collision->colliderType = static_cast<shape>(current);
-                }
-                                
-                if (collision->colliderType == shape::circle) {
-                    if (ImGui::InputFloat("Diamater", &collision->colliderSize.x, 1.f)) {
-                        collision->colliderSize.x = std::max(collision->colliderSize.x, 0.f);
-                        collision->colliderSize.y = collision->colliderSize.y;
-                    }
-                }
-                else {
-                    if (ImGui::InputFloat("Width", &collision->colliderSize.x, 1.f))
-                        collision->colliderSize.x = std::max(collision->colliderSize.x, 0.f);
-
-                    if (ImGui::InputFloat("Height", &collision->colliderSize.y, 1.f))
-                        collision->colliderSize.y = std::max(collision->colliderSize.y, 0.f);
-                }
-
-                ImGui::EndDisabled();
-
-                ImGui::TreePop();
             }
+
+            CollisionResponseMode mode = collision->collisionRes;
+            const char* modes[] = { "Static", "Pushable" };
+            int current = static_cast<int>(mode);
+
+            if (ImGui::Combo("Collision Response", &current, modes, IM_ARRAYSIZE(modes))) {
+                collision->collisionRes = static_cast<CollisionResponseMode>(current);
+            }
+
+            ImGui::EndDisabled();
+
+            // cannot edit if obj cannot collide or auto-fit collider size with obj size is on
+            bool editable = collision->collisionFlag && !collision->autoFitScale;
+            ImGui::BeginDisabled(!editable);
+
+            shape colliderShape = collision->colliderType;
+            const char* shapes[] = { "Box", "Circle" };
+            current = static_cast<int>(colliderShape);
+
+            if (ImGui::Combo("Shape", &current, shapes, IM_ARRAYSIZE(shapes))) {
+                collision->colliderType = static_cast<shape>(current);
+            }
+                                
+            if (collision->colliderType == shape::circle) {
+                if (ImGui::InputFloat("Diamater", &collision->colliderSize.x, 1.f)) {
+                    collision->colliderSize.x = std::max(collision->colliderSize.x, 0.f);
+                    collision->colliderSize.y = collision->colliderSize.y;
+                }
+            }
+            else {
+                if (ImGui::InputFloat("Width", &collision->colliderSize.x, 1.f))
+                    collision->colliderSize.x = std::max(collision->colliderSize.x, 0.f);
+
+                if (ImGui::InputFloat("Height", &collision->colliderSize.y, 1.f))
+                    collision->colliderSize.y = std::max(collision->colliderSize.y, 0.f);
+            }
+
+            ImGui::EndDisabled();
+
+            ImGui::TreePop();
+        }
+        else {
+            if (collision->collisionFlag) Editor::sceneWindowState.showSingleCollider = false;
         }
 
         if (ImGui::Button("Remove Collision", ImVec2(-1, 0))) {
@@ -837,6 +840,9 @@ void InspectorWindow::renderCollision( GameObject* selected, GameObjectManager& 
             selected->removeComponent<CollisionInfo>();
             DebugLog::addMessage("Removed Collision Component");
         }
+    }
+    else {
+        if (collision->collisionFlag) Editor::sceneWindowState.showSingleCollider = false;
     }
 }
 

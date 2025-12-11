@@ -95,18 +95,31 @@ void SceneWindow::render(GLuint texture, float aspectRatio, GameObjectManager& m
 
     }
     
-    /* ---------- ImGuizmo --------- */
+    /* ---------- Additional Rendering --------- */
     ImGuizmo::BeginFrame();
     // show grid
     if (m_gizmoState.showGrid) {
         drawGrid(renderer::editorCam.view, renderer::editorCam.proj, manager);
     }
 
+	// highlight selected object
     renderObjectHighlight();
+
+	// render collider
+    if (m_sceneWindowState.showAllColliders) {
+        // draw all obj colliders
+        std::vector<GameObject*> gameObjects = CachedGameObjects::Instance().getCachedObjects();
+        for (GameObject* obj : gameObjects)
+            renderObjCollider(obj);
+    }
+    else if (m_sceneWindowState.showSingleCollider)
+        // draw selected obj collider only
+        renderObjCollider(m_objSelectionState.selectedObject);
 
     // render gizmo
     renderGizmo(manager);
     /* ---------- END --------- */
+
 
     ImGui::EndChild();
 
@@ -344,11 +357,11 @@ void SceneWindow::renderObjectHighlight() {
         highlightColor = IM_COL32(255, 255, 0, 200); // yellow while dragging
     }
     else {
-        highlightColor = IM_COL32(0, 255, 255, 150); // cyan when selected
+        highlightColor = IM_COL32(255, 255, 255, 150); // white when selected
     }
 
     // box outline
-    float thickness = 2.0f;
+    float thickness = 2.f;
     drawList->AddLine(topLeft, topRight, highlightColor, thickness);
     drawList->AddLine(topRight, bottomRight, highlightColor, thickness);
     drawList->AddLine(bottomRight, bottomLeft, highlightColor, thickness);
@@ -364,6 +377,114 @@ void SceneWindow::renderObjectHighlight() {
     // semi-transparent fill
     ImU32 fillColor = IM_COL32(255, 255, 0, 20); // yellow
     drawList->AddQuadFilled(topLeft, topRight, bottomRight, bottomLeft, fillColor);
+}
+
+void SceneWindow::renderObjCollider(GameObject* obj) {
+    if (!obj) return;
+
+    Transform* transform = obj->getComponent<Transform>();
+    if (!transform) return;
+    CollisionInfo* collision = obj->getComponent<CollisionInfo>();
+    if (!collision) return;
+	if (!collision->collisionFlag) return;
+
+    // convert world coordinates to screen coordinates
+    auto worldToScreen = [&](float x, float y) -> ImVec2 {
+        glm::vec4 worldPos(x, y, transform->z, 1.0f);
+        glm::vec4 clipPos = renderer::editorCam.proj * renderer::editorCam.view * worldPos;
+
+        if (clipPos.w != 0.f) {
+            clipPos /= clipPos.w;
+        }
+
+        float screenX = m_sceneWindowState.scenePos.x +
+            (clipPos.x * 0.5f + 0.5f) * m_sceneWindowState.sceneSize.x;
+        float screenY = m_sceneWindowState.scenePos.y +
+            (1.0f - (clipPos.y * 0.5f + 0.5f)) * m_sceneWindowState.sceneSize.y;
+
+        return ImVec2(screenX, screenY);
+        };
+
+	// collider outline
+    ImDrawList* drawList = ImGui::GetWindowDrawList();
+    ImU32 outlineColor, fillColor;
+
+    if (collision->collisionRes == CollisionResponseMode::MoveWhenCollide) {
+        // pushable
+        outlineColor = IM_COL32(255, 80, 80, 230); // red
+        fillColor = IM_COL32(255, 100, 100, 15); // light red
+    }
+    else {
+        // static
+        outlineColor = IM_COL32(90, 100, 255, 220); // blue
+        fillColor = IM_COL32(100, 150, 255, 15); // light blue
+    }
+    float thickness = 1.5f;
+
+    if (collision->colliderType == shape::circle) {
+        ImVec2 center = worldToScreen(transform->x, transform->y);
+
+        // use collider size as diameter
+        float worldRadius = collision->colliderSize.x * 0.5f;
+        ImVec2 radiusPoint = worldToScreen(transform->x + worldRadius, transform->y);
+        float screenRadius = std::abs(radiusPoint.x - center.x);
+
+        // circle outline
+        drawList->AddCircle(center, screenRadius, outlineColor, 32, thickness);
+
+        // semi-transparent fill
+        drawList->AddCircleFilled(center, screenRadius, fillColor, 32);
+
+        // center marker
+        float markerSize = 3.0f;
+        drawList->AddCircleFilled(center, markerSize, outlineColor);
+
+        // center cross
+        float crossSize = 5.0f;
+        drawList->AddLine(
+            ImVec2(center.x - crossSize, center.y),
+            ImVec2(center.x + crossSize, center.y),
+            outlineColor, 1.5f
+        );
+        drawList->AddLine(
+            ImVec2(center.x, center.y - crossSize),
+            ImVec2(center.x, center.y + crossSize),
+            outlineColor, 1.5f
+        );
+
+    }
+    else {
+        // get the object aabb for highlighting
+        Collision::AABB aabb = Collision::getObjectAABBbyCollider(transform, collision->colliderSize);
+
+        // get corners of the AABB
+        ImVec2 topLeft = worldToScreen(aabb.getMin().x, aabb.getMax().y);
+        ImVec2 topRight = worldToScreen(aabb.getMax().x, aabb.getMax().y);
+        ImVec2 bottomLeft = worldToScreen(aabb.getMin().x, aabb.getMin().y);
+        ImVec2 bottomRight = worldToScreen(aabb.getMax().x, aabb.getMin().y);
+
+        // box outline
+        drawList->AddLine(topLeft, topRight, outlineColor, thickness);
+        drawList->AddLine(topRight, bottomRight, outlineColor, thickness);
+        drawList->AddLine(bottomRight, bottomLeft, outlineColor, thickness);
+        drawList->AddLine(bottomLeft, topLeft, outlineColor, thickness);
+
+        // corner markers
+        float markerSize = 2.f;
+        drawList->AddCircleFilled(topLeft, markerSize, outlineColor);
+        drawList->AddCircleFilled(topRight, markerSize, outlineColor);
+        drawList->AddCircleFilled(bottomLeft, markerSize, outlineColor);
+        drawList->AddCircleFilled(bottomRight, markerSize, outlineColor);
+
+        // semi-transparent fill
+        drawList->AddQuadFilled(topLeft, topRight, bottomRight, bottomLeft, fillColor);
+
+        // center cross
+        ImVec2 center = worldToScreen(transform->x, transform->y);
+        float crossSize = 5.0f;
+        drawList->AddLine(ImVec2(center.x - crossSize, center.y), ImVec2(center.x + crossSize, center.y), outlineColor, 1.5f);
+        drawList->AddLine(ImVec2(center.x, center.y - crossSize), ImVec2(center.x, center.y + crossSize),outlineColor, 1.5f);
+    }
 }
 
 void SceneWindow::editorCameraControls() {
