@@ -551,15 +551,7 @@ void SceneWindow::loadScenePopup(GameObjectManager& manager) {
             JsonIO::syncSceneToRuntime(m_sceneState.currentSceneName);
 
             loadScene(manager);
-            /*std::vector<GameObject*> gameObjects;
-            manager.getAllGameObjects(gameObjects);
 
-            for (GameObject* object : gameObjects) {
-                Render* r = object->getComponent<Render>();
-                if (r) {
-                    r->texChanged = true;
-                }
-            }*/
             ImGui::CloseCurrentPopup();
         }
 
@@ -568,15 +560,6 @@ void SceneWindow::loadScenePopup(GameObjectManager& manager) {
         if (ImGui::Button("Discard Changes") || InputHandler::isKeyTriggered(GLFW_KEY_2)) {
             loadScene(manager);
 
-            /*std::vector<GameObject*> gameObjects;
-            manager.getAllGameObjects(gameObjects);
-
-            for (GameObject* object : gameObjects) {
-                Render* r = object->getComponent<Render>();
-                if (r) {
-                    r->texChanged = true;
-                }
-            }*/
             ImGui::CloseCurrentPopup();
         }
 
