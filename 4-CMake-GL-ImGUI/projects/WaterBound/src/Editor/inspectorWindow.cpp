@@ -298,7 +298,7 @@ void InspectorWindow::renderGizmoCtrl() {
         }
 
         // grid
-        if (ImGui::TreeNode("Grid")) {
+        /*if (ImGui::TreeNode("Grid")) {
             ImGui::Checkbox("Enable", &m_gizmoState.showGrid);
             if (m_gizmoState.showGrid) {
                 ImGui::Indent();
@@ -307,7 +307,7 @@ void InspectorWindow::renderGizmoCtrl() {
                 ImGui::Unindent();
             }
             ImGui::TreePop();
-        }
+        }*/
 
         ImGui::TreePop();
     }
@@ -1088,17 +1088,18 @@ void InspectorWindow::renderTileMap(GameObject* selected)
     TileMap* tm = selected->getComponent<TileMap>();
 
     if (ImGui::CollapsingHeader("Tile Map")) {
-        {
-            ImGui::InputInt("Grid Columns", &tm->columns);
-            ImGui::InputInt("Grid rows", &tm->rows);
+        ImGui::Checkbox("Enable", &m_gizmoState.showGrid);
 
-            ImGui::Spacing();
-            ImGui::Separator();
-            ImGui::Spacing();
+        ImGui::InputInt("Grid Columns", &tm->columns);
+        ImGui::InputInt("Grid rows", &tm->rows);
 
-            ImGui::InputFloat("Tile Width", &tm->tileW, 1.f);
-            ImGui::InputFloat("Tile Height", &tm->tileH, 1.f);
-        }
+        ImGui::Spacing();
+        ImGui::Separator();
+        ImGui::Spacing();
+
+        ImGui::InputFloat("Tile Width", &tm->tileW, 1.f);
+        ImGui::InputFloat("Tile Height", &tm->tileH, 1.f);
+
 
         if (ImGui::Button("Remove TileMap", ImVec2(-1, 0))) {
             // add a delete component func here

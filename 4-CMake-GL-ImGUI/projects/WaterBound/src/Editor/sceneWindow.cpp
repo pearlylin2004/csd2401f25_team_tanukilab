@@ -289,12 +289,12 @@ void SceneWindow::drawGrid(const glm::mat4& view, const glm::mat4& proj, GameObj
             return ImVec2(screenX, screenY);
             };
 
-        float extentX = (float)(gridLineX * m_gizmoState.gridSpacing);
-        float extentY = (float)(gridLineY * m_gizmoState.gridSpacing);
+        float extentX = (float)(gridLineX/* * m_gizmoState.gridSpacing*/);
+        float extentY = (float)(gridLineY/* * m_gizmoState.gridSpacing*/);
 
         // draw vertical lines
         for (int i = -gridLineX; i <= gridLineX; ++i) {
-            float x = (float)(i * m_gizmoState.gridSpacing);
+            float x = (float)(i/* * m_gizmoState.gridSpacing*/);
             ImVec2 start = worldToScreen(x, -extentY, transform->z);
             ImVec2 end = worldToScreen(x, extentY, transform->z);
 
@@ -306,7 +306,7 @@ void SceneWindow::drawGrid(const glm::mat4& view, const glm::mat4& proj, GameObj
 
         // draw horizontal lines
         for (int i = -gridLineY; i <= gridLineY; ++i) {
-            float y = (float)(i * m_gizmoState.gridSpacing);
+            float y = (float)(i/* * m_gizmoState.gridSpacing*/);
             ImVec2 start = worldToScreen(-extentX, y, transform->z);
             ImVec2 end = worldToScreen(extentX, y, transform->z);
 
