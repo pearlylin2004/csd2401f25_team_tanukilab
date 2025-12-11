@@ -101,6 +101,9 @@ void SceneWindow::render(GLuint texture, float aspectRatio, GameObjectManager& m
     if (m_gizmoState.showGrid) {
         drawGrid(renderer::editorCam.view, renderer::editorCam.proj, manager);
     }
+
+    renderObjectHighlight();
+
     // render gizmo
     renderGizmo(manager);
     /* ---------- END --------- */
@@ -170,6 +173,7 @@ void SceneWindow::renderGizmo(GameObjectManager& manager) {
             snapValue[0] = snapValue[1] = snapValue[2] = m_gizmoState.snapAngle;
         }
         else {
+            // translation
             snapValue[0] = m_gizmoState.snapValues[0];
             snapValue[1] = m_gizmoState.snapValues[1];
             snapValue[2] = m_gizmoState.snapValues[2];
@@ -297,6 +301,69 @@ void SceneWindow::drawGrid(const glm::mat4& view, const glm::mat4& proj, GameObj
         }
     }
 
+}
+
+void SceneWindow::renderObjectHighlight() {
+	GameObject* obj = m_objSelectionState.selectedObject;
+    if (!obj) return;
+
+    Transform* transform = obj->getComponent<Transform>();
+    if (!transform) return;
+
+    // get the object aabb for highlighting
+    Collision::AABB aabb = Collision::getObjectAABB(transform);
+
+    // convert world coordinates to screen coordinates
+    auto worldToScreen = [&](float x, float y) -> ImVec2 {
+        glm::vec4 worldPos(x, y, transform->z, 1.0f);
+        glm::vec4 clipPos = renderer::editorCam.proj * renderer::editorCam.view * worldPos;
+
+        if (clipPos.w != 0.0f) {
+            clipPos /= clipPos.w;
+        }
+
+        float screenX = m_sceneWindowState.scenePos.x +
+            (clipPos.x * 0.5f + 0.5f) * m_sceneWindowState.sceneSize.x;
+        float screenY = m_sceneWindowState.scenePos.y +
+            (1.0f - (clipPos.y * 0.5f + 0.5f)) * m_sceneWindowState.sceneSize.y;
+
+        return ImVec2(screenX, screenY);
+        };
+
+    // get corners of the AABB
+    ImVec2 topLeft = worldToScreen(aabb.getMin().x, aabb.getMax().y);
+    ImVec2 topRight = worldToScreen(aabb.getMax().x, aabb.getMax().y);
+    ImVec2 bottomLeft = worldToScreen(aabb.getMin().x, aabb.getMin().y);
+    ImVec2 bottomRight = worldToScreen(aabb.getMax().x, aabb.getMin().y);
+
+    // draw highlight box
+    ImDrawList* drawList = ImGui::GetWindowDrawList();
+
+    ImU32 highlightColor;
+    if (m_objSelectionState.draggedObject == obj && InputHandler::isMouseDragging()) {
+        highlightColor = IM_COL32(255, 255, 0, 200); // yellow while dragging
+    }
+    else {
+        highlightColor = IM_COL32(0, 255, 255, 150); // cyan when selected
+    }
+
+    // box outline
+    float thickness = 2.0f;
+    drawList->AddLine(topLeft, topRight, highlightColor, thickness);
+    drawList->AddLine(topRight, bottomRight, highlightColor, thickness);
+    drawList->AddLine(bottomRight, bottomLeft, highlightColor, thickness);
+    drawList->AddLine(bottomLeft, topLeft, highlightColor, thickness);
+
+    // corner markers
+    float markerSize = 2.5f;
+    drawList->AddCircleFilled(topLeft, markerSize, highlightColor);
+    drawList->AddCircleFilled(topRight, markerSize, highlightColor);
+    drawList->AddCircleFilled(bottomLeft, markerSize, highlightColor);
+    drawList->AddCircleFilled(bottomRight, markerSize, highlightColor);
+
+    // semi-transparent fill
+    ImU32 fillColor = IM_COL32(255, 255, 0, 20); // yellow
+    drawList->AddQuadFilled(topLeft, topRight, bottomRight, bottomLeft, fillColor);
 }
 
 void SceneWindow::editorCameraControls() {

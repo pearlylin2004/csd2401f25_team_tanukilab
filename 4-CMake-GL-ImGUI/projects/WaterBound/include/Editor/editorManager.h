@@ -214,6 +214,7 @@ private:
 	/* --------- Render -------- */
 	void renderGizmo(GameObjectManager& manager);
 	void drawGrid(const glm::mat4& view, const glm::mat4& proj, GameObjectManager& manager);
+	void renderObjectHighlight();
 	void editorCameraControls();
 	/* -------- END -------- */
 
