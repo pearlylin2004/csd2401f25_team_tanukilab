@@ -17,7 +17,7 @@ Technology is prohibited.
 #ifdef _DEBUG
 #include "Editor/editorManager.h"
 
-EditorManager::EditorManager() :
+EditorManager::EditorManager(GameObjectManager& manager) :
     addObjWindow(Editor::circleInput, Editor::rectangleInput),
     assetBrowser(Editor::assetBrowserState, Editor::objSelectionState, Editor::menuBarState),
     editorDebugWindow(DebugMode::Editor),
@@ -26,30 +26,34 @@ EditorManager::EditorManager() :
     inspectorWindow(Editor::objSelectionState, Editor::gizmoState),
     menuBar(assetBrowser, Editor::assetBrowserState, Editor::menuBarState, Editor::objSelectionState, Editor::sceneState),
     performanceWindow(),
-    sceneWindow(assetBrowser, Editor::objSelectionState, Editor::menuBarState, Editor::sceneWindowState, Editor::sceneState, Editor::gizmoState) {}
+    sceneWindow(assetBrowser, Editor::objSelectionState, Editor::menuBarState, Editor::sceneWindowState, Editor::sceneState, Editor::gizmoState),
+    m_manager(manager) {
 
-void EditorManager::update(GameObjectManager& manager) {
+	CachedGameObjects::Instance().initialize(manager);
+}
+
+void EditorManager::update() {
     if (assetsChangedFlag) {
         assetBrowser.loadAssetsFromDirectory();
         assetsChangedFlag = false;
     }
 
-    handleShortcutKeys(manager);
+    handleShortcutKeys(m_manager);
 
-    addObjWindow.render(manager);
+    addObjWindow.render(m_manager);
     assetBrowser.render();
     editorDebugWindow.render();
-    hierarchyWindow.render(manager);
-    inspectorWindow.render(manager);
-    menuBar.render(manager);
+    hierarchyWindow.render(m_manager);
+    inspectorWindow.render(m_manager);
+    menuBar.render(m_manager);
     performanceWindow.render();
 
     // only show play info when not editing
     if (!isEditing) playDebugWindow.render();
 }
 
-void EditorManager::renderScene(GLuint texture, float aspectRatio, GameObjectManager& manager) {
-    sceneWindow.render(texture, aspectRatio, manager);
+void EditorManager::renderScene(GLuint texture, float aspectRatio) {
+    sceneWindow.render(texture, aspectRatio, m_manager);
 }
 
 void EditorManager::handleShortcutKeys(GameObjectManager& manager) {
@@ -66,11 +70,13 @@ void EditorManager::handleShortcutKeys(GameObjectManager& manager) {
     }
     /* --------------- END --------------- */
 
+
     /* --------------- "Y" -> Toggle Grid --------------- */
     if (InputHandler::isKeyTriggered(GLFW_KEY_U)) {
         Editor::gizmoState.showGrid = !Editor::gizmoState.showGrid;
     }
     /* --------------- END --------------- */
+
 
     /* --------------- GIZMO CONTROL --------------- */
     if (Editor::objSelectionState.selectedObject && !ImGuizmo::IsUsing()) {
@@ -128,6 +134,13 @@ void EditorManager::handleShortcutKeys(GameObjectManager& manager) {
     }
     /* --------------- END --------------- */
 
+
+    /* ------------- "F3" -> Show All Colliders ------------- */
+    if (InputHandler::isKeyTriggered(GLFW_KEY_F3)) {
+        Editor::sceneWindowState.showAllColliders = !Editor::sceneWindowState.showAllColliders;
+    }
+    /* --------------- END --------------- */
+    
 
     /* --------------- "CTRL" + "S" -> Save Scene --------------- */
     if (InputHandler::isComboKeyTriggered(GLFW_KEY_S) ||

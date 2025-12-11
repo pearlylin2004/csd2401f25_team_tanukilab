@@ -188,9 +188,9 @@ public:
 // UI system - handles UI rendering and interactions using ImGui
 class UISystem {
 public:
-	void init(GLFWwindow* window, RenderSystem* renderer);
+	void init(GLFWwindow* window, RenderSystem* renderer, GameObjectManager& manager);
 	~UISystem();
-	void update(GameObjectManager& manager);
+	void update();
 
 	static void toggleUI() { showUI = !showUI; } // temp toggle function
 	static bool isShowUI() { return showUI; }
@@ -198,8 +198,7 @@ public:
 private:
 	void dockingSetUp();
 	void renderMultipleViewPorts();
-	//UI m_UI;
-	EditorManager m_UI;
+	std::unique_ptr<EditorManager> m_UI;
 	static bool showUI;
 	bool m_firstTime = true;
 	RenderSystem* m_renderer = nullptr;

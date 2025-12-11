@@ -104,7 +104,7 @@ void InspectorWindow::render(GameObjectManager& manager) {
             ImGui::Separator();
             ImGui::Spacing();
 
-            renderTransform(selected);
+            renderTransform(selected, manager);
         }
         /* ------------------- END ------------------- */
 
@@ -298,7 +298,7 @@ void InspectorWindow::renderGizmoCtrl() {
         }
 
         // grid
-        if (ImGui::TreeNode("Grid")) {
+        /*if (ImGui::TreeNode("Grid")) {
             ImGui::Checkbox("Enable", &m_gizmoState.showGrid);
             if (m_gizmoState.showGrid) {
                 ImGui::Indent();
@@ -307,13 +307,13 @@ void InspectorWindow::renderGizmoCtrl() {
                 ImGui::Unindent();
             }
             ImGui::TreePop();
-        }
+        }*/
 
         ImGui::TreePop();
     }
 }
 
-void InspectorWindow::renderTransform(GameObject* selected) {
+void InspectorWindow::renderTransform(GameObject* selected, GameObjectManager& manager) {
     //Transform* transform, CollisionInfo* collision
     Transform* transform = selected->getComponent<Transform>();
     CollisionInfo* collision = selected->getComponent<CollisionInfo>();
@@ -321,8 +321,25 @@ void InspectorWindow::renderTransform(GameObject* selected) {
     if (ImGui::CollapsingHeader("Transform")) {
 
         if (ImGui::TreeNode("Position")) {
-            ImGui::DragFloat("X", &transform->x, 0.1f);
-            ImGui::DragFloat("Y", &transform->y, 0.1f);
+			bool posActive = false;
+
+            if (ImGui::DragFloat("X", &transform->x, 0.1f)) {
+                if (!m_isEditingPos) {
+                    UndoRedoManager::Instance().beginTransformEdit(selected);
+                    m_isEditingPos = true;
+                    m_transformEditObject = selected;
+                }
+            }
+			posActive |= ImGui::IsItemActive();
+
+            if (ImGui::DragFloat("Y", &transform->y, 0.1f)) {
+                if (!m_isEditingPos) {
+                    UndoRedoManager::Instance().beginTransformEdit(selected);
+                    m_isEditingPos = true;
+                    m_transformEditObject = selected;
+                }
+            }
+            posActive |= ImGui::IsItemActive();
 
             // set z to stay within the editor camera (-1.f <= z < 1.f)
             glm::mat4& proj = renderer::editorCam.proj;
@@ -330,20 +347,50 @@ void InspectorWindow::renderTransform(GameObject* selected) {
             float m32 = proj[3][2];
             float near1 = (m32 - 1.f) / m22;
             float far1 = (m32 + 1.f) / m22;
-            ImGui::DragFloat("Z", &transform->z, 0.1f, far1, near1);
+
+            if (ImGui::DragFloat("Z", &transform->z, 0.1f, far1, near1)) {
+                if (!m_isEditingPos) {
+                    UndoRedoManager::Instance().beginTransformEdit(selected);
+                    m_isEditingPos = true;
+                    m_transformEditObject = selected;
+                }
+            }
+            posActive |= ImGui::IsItemActive();
+
+            if (m_isEditingPos && !posActive) {
+                UndoRedoManager::Instance().endTransformEdit(manager, m_transformEditObject);
+                m_isEditingPos = false;
+            }
 
             ImGui::TreePop();
         }
 
         /* ------------------- Object Rotation ------------------- */
         if (ImGui::TreeNode("Rotation")) {
-            if (ImGui::DragFloat("Angle", &transform->rotation)) transform->rotation = std::clamp(transform->rotation, 0.f, 360.f);
+            if (ImGui::DragFloat("Angle", &transform->rotation)) {
+                transform->rotation = std::clamp(transform->rotation, 0.f, 360.f);
+
+                if (!m_isEditingRot) {
+                    UndoRedoManager::Instance().beginTransformEdit(selected);
+                    m_isEditingRot = true;
+                    m_transformEditObject = selected;
+                }
+            }
+
+            bool rotationActive = ImGui::IsItemActive();
+
+            if (m_isEditingRot && !rotationActive) {
+                UndoRedoManager::Instance().endTransformEdit(manager, m_transformEditObject);
+                m_isEditingRot = false;
+            }
 
             ImGui::TreePop();
         }
 
         /* ------------------- Object Scale ------------------- */
         if (ImGui::TreeNode("Scale")) {
+            bool scaleActive = false;
+
             ImGui::Checkbox("Aspect Ratio", &m_objSelectionState.aspectRatioLock);
 
             if (m_objSelectionState.aspectRatioLock && !m_objSelectionState.ratioSet) {
@@ -355,11 +402,41 @@ void InspectorWindow::renderTransform(GameObject* selected) {
             if (!m_objSelectionState.aspectRatioLock) m_objSelectionState.ratioSet = false;
 
             // clamp scale to be non-negative
-            if (ImGui::DragFloat("X1", &transform->scaleX, 0.1f, 0.f)) transform->scaleX = std::max(transform->scaleX, 0.f);
+            if (ImGui::DragFloat("X1", &transform->scaleX, 0.1f, 0.f)) {
+                transform->scaleX = std::max(transform->scaleX, 0.f);
+
+                if (!m_isEditingScale) {
+                    UndoRedoManager::Instance().beginTransformEdit(selected);
+                    m_isEditingScale = true;
+                    m_transformEditObject = selected;
+                }
+            }
+			scaleActive |= ImGui::IsItemActive();
 
             ImGui::BeginDisabled(m_objSelectionState.aspectRatioLock);
-            if (ImGui::DragFloat("Y1", &transform->scaleY, 0.1f, 0.f)) transform->scaleY = std::max(transform->scaleY, 0.f);
-            if (ImGui::DragFloat("Z1", &transform->scaleZ, 0.1f, 0.f)) transform->scaleZ = std::max(transform->scaleZ, 0.f);
+            if (ImGui::DragFloat("Y1", &transform->scaleY, 0.1f, 0.f)) {
+                transform->scaleY = std::max(transform->scaleY, 0.f);
+
+                if (!m_isEditingScale) {
+                    UndoRedoManager::Instance().beginTransformEdit(selected);
+                    m_isEditingScale = true;
+                    m_transformEditObject = selected;
+                }
+            }
+			scaleActive |= ImGui::IsItemActive();
+
+            if (ImGui::DragFloat("Z1", &transform->scaleZ, 0.1f, 0.f)) {
+                transform->scaleZ = std::max(transform->scaleZ, 0.f);
+
+
+                if (!m_isEditingScale) {
+                    UndoRedoManager::Instance().beginTransformEdit(selected);
+                    m_isEditingScale = true;
+                    m_transformEditObject = selected;
+                }
+            }
+			scaleActive |= ImGui::IsItemActive();
+
             ImGui::EndDisabled();
 
             if (m_objSelectionState.aspectRatioLock && transform->scaleX != 0.0f) {
@@ -380,6 +457,11 @@ void InspectorWindow::renderTransform(GameObject* selected) {
                     collision->colliderSize.x = transform->scaleX;
                     collision->colliderSize.y = transform->scaleY;
                 }
+            }
+
+            if (m_isEditingScale && !scaleActive) {
+                UndoRedoManager::Instance().endTransformEdit(manager, m_transformEditObject);
+                m_isEditingScale = false;
             }
 
             ImGui::TreePop();
@@ -693,61 +775,64 @@ void InspectorWindow::renderCollision( GameObject* selected, GameObjectManager& 
         ImGui::Spacing();
         ImGui::Separator();
 
-        {
-            if (ImGui::TreeNode("Collider")) {
-                // cannot edit if obj cannot collide
-                ImGui::BeginDisabled(!collision->collisionFlag);
-                if (ImGui::Checkbox("Auto-fit Scale", &collision->autoFitScale)) {
-                    if (collision->autoFitScale && transform) {
-                        collision->colliderSize.x = transform->scaleX;
-                        collision->colliderSize.y = transform->scaleY;
-                    }
+        if (ImGui::TreeNode("Collider")) {
+            if (collision->collisionFlag) Editor::sceneWindowState.showSingleCollider = true;
 
-                    if (collision->autoFitScale && render) {
-                        collision->colliderType = render->modelRef.shape;
-                    }
+            // cannot edit if obj cannot collide
+            ImGui::BeginDisabled(!collision->collisionFlag);
+            if (ImGui::Checkbox("Auto-fit Scale", &collision->autoFitScale)) {
+                if (collision->autoFitScale && transform) {
+                    collision->colliderSize.x = transform->scaleX;
+                    collision->colliderSize.y = transform->scaleY;
                 }
 
-                CollisionResponseMode mode = collision->collisionRes;
-                const char* modes[] = { "Static", "Pushable" };
-                int current = static_cast<int>(mode);
-
-                if (ImGui::Combo("Collision Response", &current, modes, IM_ARRAYSIZE(modes))) {
-                    collision->collisionRes = static_cast<CollisionResponseMode>(current);
+                if (collision->autoFitScale && render) {
+                    collision->colliderType = render->modelRef.shape;
                 }
-
-                ImGui::EndDisabled();
-
-                // cannot edit if obj cannot collide or auto-fit collider size with obj size is on
-                bool editable = collision->collisionFlag && !collision->autoFitScale;
-                ImGui::BeginDisabled(!editable);
-
-                shape colliderShape = collision->colliderType;
-                const char* shapes[] = { "Box", "Circle" };
-                current = static_cast<int>(colliderShape);
-
-                if (ImGui::Combo("Shape", &current, shapes, IM_ARRAYSIZE(shapes))) {
-                    collision->colliderType = static_cast<shape>(current);
-                }
-                                
-                if (collision->colliderType == shape::circle) {
-                    if (ImGui::InputFloat("Diamater", &collision->colliderSize.x, 1.f)) {
-                        collision->colliderSize.x = std::max(collision->colliderSize.x, 0.f);
-                        collision->colliderSize.y = collision->colliderSize.y;
-                    }
-                }
-                else {
-                    if (ImGui::InputFloat("Width", &collision->colliderSize.x, 1.f))
-                        collision->colliderSize.x = std::max(collision->colliderSize.x, 0.f);
-
-                    if (ImGui::InputFloat("Height", &collision->colliderSize.y, 1.f))
-                        collision->colliderSize.y = std::max(collision->colliderSize.y, 0.f);
-                }
-
-                ImGui::EndDisabled();
-
-                ImGui::TreePop();
             }
+
+            CollisionResponseMode mode = collision->collisionRes;
+            const char* modes[] = { "Static", "Pushable" };
+            int current = static_cast<int>(mode);
+
+            if (ImGui::Combo("Collision Response", &current, modes, IM_ARRAYSIZE(modes))) {
+                collision->collisionRes = static_cast<CollisionResponseMode>(current);
+            }
+
+            ImGui::EndDisabled();
+
+            // cannot edit if obj cannot collide or auto-fit collider size with obj size is on
+            bool editable = collision->collisionFlag && !collision->autoFitScale;
+            ImGui::BeginDisabled(!editable);
+
+            shape colliderShape = collision->colliderType;
+            const char* shapes[] = { "Box", "Circle" };
+            current = static_cast<int>(colliderShape);
+
+            if (ImGui::Combo("Shape", &current, shapes, IM_ARRAYSIZE(shapes))) {
+                collision->colliderType = static_cast<shape>(current);
+            }
+                                
+            if (collision->colliderType == shape::circle) {
+                if (ImGui::InputFloat("Diamater", &collision->colliderSize.x, 1.f)) {
+                    collision->colliderSize.x = std::max(collision->colliderSize.x, 0.f);
+                    collision->colliderSize.y = collision->colliderSize.y;
+                }
+            }
+            else {
+                if (ImGui::InputFloat("Width", &collision->colliderSize.x, 1.f))
+                    collision->colliderSize.x = std::max(collision->colliderSize.x, 0.f);
+
+                if (ImGui::InputFloat("Height", &collision->colliderSize.y, 1.f))
+                    collision->colliderSize.y = std::max(collision->colliderSize.y, 0.f);
+            }
+
+            ImGui::EndDisabled();
+
+            ImGui::TreePop();
+        }
+        else {
+            if (collision->collisionFlag) Editor::sceneWindowState.showSingleCollider = false;
         }
 
         if (ImGui::Button("Remove Collision", ImVec2(-1, 0))) {
@@ -755,6 +840,9 @@ void InspectorWindow::renderCollision( GameObject* selected, GameObjectManager& 
             selected->removeComponent<CollisionInfo>();
             DebugLog::addMessage("Removed Collision Component");
         }
+    }
+    else {
+        if (collision->collisionFlag) Editor::sceneWindowState.showSingleCollider = false;
     }
 }
 
@@ -1000,17 +1088,18 @@ void InspectorWindow::renderTileMap(GameObject* selected)
     TileMap* tm = selected->getComponent<TileMap>();
 
     if (ImGui::CollapsingHeader("Tile Map")) {
-        {
-            ImGui::InputInt("Grid Columns", &tm->columns);
-            ImGui::InputInt("Grid rows", &tm->rows);
+        ImGui::Checkbox("Enable", &m_gizmoState.showGrid);
 
-            ImGui::Spacing();
-            ImGui::Separator();
-            ImGui::Spacing();
+        ImGui::InputInt("Grid Columns", &tm->columns);
+        ImGui::InputInt("Grid rows", &tm->rows);
 
-            ImGui::InputFloat("Tile Width", &tm->tileW, 1.f);
-            ImGui::InputFloat("Tile Height", &tm->tileH, 1.f);
-        }
+        ImGui::Spacing();
+        ImGui::Separator();
+        ImGui::Spacing();
+
+        ImGui::InputFloat("Tile Width", &tm->tileW, 1.f);
+        ImGui::InputFloat("Tile Height", &tm->tileH, 1.f);
+
 
         if (ImGui::Button("Remove TileMap", ImVec2(-1, 0))) {
             // add a delete component func here

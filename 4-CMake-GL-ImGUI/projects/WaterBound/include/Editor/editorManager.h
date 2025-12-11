@@ -117,7 +117,7 @@ public:
 private:
 	void addComponent(GameObject* selected);
 	void renderGizmoCtrl();
-	void renderTransform(GameObject* selected);
+	void renderTransform(GameObject* selected, GameObjectManager& manager);
 	void renderRender(GameObject* selected);
 	void renderStateMachine(GameObject* selected);
 	void renderCollision(GameObject* selected, GameObjectManager& manager);
@@ -131,6 +131,11 @@ private:
 
 	Editor::ObjSelectionState& m_objSelectionState;
 	Editor::GizmoState& m_gizmoState;
+
+	bool m_isEditingPos = false;
+	bool m_isEditingRot = false;
+	bool m_isEditingScale = false;
+	GameObject* m_transformEditObject = nullptr;
 };
 
 // Top menu bar
@@ -163,6 +168,28 @@ private:
 	Editor::SceneState& m_sceneState;
 };
 
+// Cache game objects from manager
+class CachedGameObjects {
+public:
+	static CachedGameObjects& Instance() {
+		static CachedGameObjects instance;
+		return instance;
+	}
+
+	// initialize with manager
+	void initialize(GameObjectManager& manager);
+	// get cached objects
+	const std::vector<GameObject*>& getCachedObjects() const { return m_cachedObjects; }
+	// refresh cache if dirty
+	void refresh();
+
+private:
+	CachedGameObjects() = default;
+
+	GameObjectManager* m_manager = nullptr;
+	std::vector<GameObject*> m_cachedObjects;
+};
+
 // Performance
 class PerformanceWindow {
 public:
@@ -187,6 +214,8 @@ private:
 	/* --------- Render -------- */
 	void renderGizmo(GameObjectManager& manager);
 	void drawGrid(const glm::mat4& view, const glm::mat4& proj, GameObjectManager& manager);
+	void renderObjectHighlight();
+	void renderObjCollider(GameObject* obj);
 	void editorCameraControls();
 	/* -------- END -------- */
 
@@ -229,11 +258,11 @@ private:
 // the big laoban for ALL editor viewports
 class EditorManager {
 public:
-	EditorManager();
+	EditorManager(GameObjectManager& manager);
 
 	/* -------- Render all editor viewports ------- */
-	void update(GameObjectManager& manager);
-	void renderScene(GLuint texture, float aspectRatio, GameObjectManager& manager);
+	void update();
+	void renderScene(GLuint texture, float aspectRatio);
 	/* -------- END -------- */
 
 	static void assetChanged() { assetsChangedFlag = true; } // set to true to reload assets in UI
@@ -255,6 +284,8 @@ private:
 	MenuBar menuBar;
 	PerformanceWindow performanceWindow;
 	SceneWindow sceneWindow;
+
+	GameObjectManager& m_manager;
 
 	static inline bool isEditing = false;
 	static inline bool pausedSimul = false;

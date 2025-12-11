@@ -38,31 +38,38 @@ void AssetBrowser::render() {
 
 
     /* ------------------ Auto update if changes in project directory ---------------------*/
-    // TEMPORARY
     // Check top-level folder got any updates (the asset folder)
-    std::filesystem::file_time_type currentTopLevel = std::filesystem::last_write_time(m_AssetBrowserState.currentFolder);
-    bool needsRefresh = false;
+    static float timeSinceLastCheck = 0.0f;
+    timeSinceLastCheck += ImGui::GetIO().DeltaTime;
 
-    if (currentTopLevel != m_AssetBrowserState.lastTopLevelRefresh) {
-        m_AssetBrowserState.lastTopLevelRefresh = currentTopLevel;
-        needsRefresh = true;
-    }
+	// check every 3 seconds
+    if (timeSinceLastCheck >= 3.0f) {
+        timeSinceLastCheck = 0.0f;
+        std::filesystem::file_time_type currentTopLevel = std::filesystem::last_write_time(m_AssetBrowserState.currentFolder);
+        bool needsRefresh = false;
 
-    // Now check subfolders recursively (cheap guard: only if assetsChangedFlag is false)
-    std::filesystem::file_time_type newestTime = m_AssetBrowserState.lastRefresh;
-
-    for (const auto& entry : std::filesystem::recursive_directory_iterator(m_AssetBrowserState.currentFolder)) {
-        auto t = std::filesystem::last_write_time(entry);
-        if (t > newestTime) {
-            newestTime = t;
+        if (currentTopLevel != m_AssetBrowserState.lastTopLevelRefresh) {
+            m_AssetBrowserState.lastTopLevelRefresh = currentTopLevel;
             needsRefresh = true;
         }
-    }
 
-    // update and reload if necessary
-    if (needsRefresh) {
-        m_AssetBrowserState.lastRefresh = newestTime;
-        EditorManager::assetChanged();
+        // Now check subfolders recursively (cheap guard: only if assetsChangedFlag is false)
+        std::filesystem::file_time_type newestTime = m_AssetBrowserState.lastRefresh;
+
+        for (const auto& entry : std::filesystem::recursive_directory_iterator(m_AssetBrowserState.currentFolder)) {
+            auto t = std::filesystem::last_write_time(entry);
+            if (t > newestTime) {
+                newestTime = t;
+                needsRefresh = true;
+                break;
+            }
+        }
+
+        // update and reload if necessary
+        if (needsRefresh) {
+            m_AssetBrowserState.lastRefresh = newestTime;
+            EditorManager::assetChanged();
+        }
     }
     /* ------------------ End ---------------------*/
 
