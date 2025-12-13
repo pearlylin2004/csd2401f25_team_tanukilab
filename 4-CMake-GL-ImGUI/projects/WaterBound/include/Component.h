@@ -392,10 +392,10 @@ public:
     }
 
     void updateFades(float deltaTime) {
-        for (auto& pair : audioChannels) {
+		for (auto& pair : audioChannels) {//updated for channel map
             AudioChannel& ch = pair.second;
 
-            if (!ch.fadeInfo.isFading || !ch.channel) return;
+            if (!ch.fadeInfo.isFading || !ch.channel) continue;//bugfix
 
             ch.fadeInfo.fadeTimer += deltaTime;
 

@@ -1414,27 +1414,30 @@ void AudioSystem::init(GameObjectManager& manager) {
 
 		AudioComponent* audio = obj->getComponent<AudioComponent>();
 
-		AudioChannel* ch = audio->getDefaultChannel();
+		//old thing
+		//AudioChannel* ch = audio->getDefaultChannel();
 
 		// Play on start 
-		if (ch->playOnStart) {
-			ch->channel = audioHandler.playSound(ch);
-			if (ch->channel) {
-				ch->state = AudioState::Playing;
+		for (auto& [channelName, ch] : audio->audioChannels) {
+			if (ch.playOnStart) {
+				ch.channel = audioHandler.playSound(&ch);
+				if (ch.channel) {
+					ch.state = AudioState::Playing;
 
-				// Apply fade in
-				if (ch->fadeInOnStart) {
-					audioHandler.fadeIn(ch, ch->volume, ch->fadeInDuration);
-				}
+					// Apply fade in
+					if (ch.fadeInOnStart) {
+						audioHandler.fadeIn(&ch, ch.volume, ch.fadeInDuration);
+					}
 
-				// Apply pitch
-				if (ch->pitch != 1.0f) {
-					audioHandler.setSoundpitch(ch, ch->pitch);
-				}
+					// Apply pitch
+					if (ch.pitch != 1.0f) {
+						audioHandler.setSoundpitch(&ch, ch.pitch);
+					}
 
-				// Apply mute state
-				if (ch->muted) {
-					audioHandler.muteSound(ch);
+					// Apply mute state
+					if (ch.muted) {
+						audioHandler.muteSound(&ch);
+					}
 				}
 			}
 		}
