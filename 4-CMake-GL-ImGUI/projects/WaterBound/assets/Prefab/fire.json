@@ -125,16 +125,20 @@
       }
     },
     "AudioComponent": {
-      "audioFile": "assets/Audio\\steam.wav",
-      "volume": 1.0,
-      "pitch": 1.0,
-      "loop": 0,
-      "playOnStart": 0,
-      "muted": 0,
-      "fadeInOnStart": 0,
-      "fadeInDuration": 1.0,
-      "fadeOutOnStop": 0,
-      "fadeOutDuration": 1.0
+      "channels": {
+        "default": {
+          "audioFile": "assets/Audio\\steam.wav",
+          "volume": 1.0,
+          "pitch": 1.0,
+          "loop": 0,
+          "playOnStart": 0,
+          "muted": 0,
+          "fadeInOnStart": 0,
+          "fadeInDuration": 1.0,
+          "fadeOutOnStop": 0,
+          "fadeOutDuration": 1.0
+        }
+      }
     }
   }
 }

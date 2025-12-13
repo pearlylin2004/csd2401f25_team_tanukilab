@@ -847,23 +847,49 @@ void PrefabManager::applyPrefabComponents(GameObject* go, const rapidjson::Value
 		}
 	}
 
-	// ---- AudioComponent ----
+	// ---- AudioComponent - Multi-Channel with Backwards Compatibility ----
 	if (comps.HasMember("AudioComponent") && comps["AudioComponent"].IsObject()) {
 		const auto& ja = comps["AudioComponent"];
 		auto* audio = go->addComponent<AudioComponent>();
 
-		AudioChannel* ac = audio->getDefaultChannel();
+		// NEW FORMAT: Multi-channel
+		if (ja.HasMember("channels") && ja["channels"].IsObject()) {
+			const auto& channels = ja["channels"];
 
-		JsonIO::GetString(ja, "audioFile", ac->audioFile);
-		ac->volume = JsonIO::GetFloatOr(ja, "volume", 1.f);
-		ac->pitch = JsonIO::GetFloatOr(ja, "pitch", 1.f);
-		ac->loop = JsonIO::GetBoolOr(ja, "loop", false);
-		ac->playOnStart = JsonIO::GetBoolOr(ja, "playOnStart", false);
-		ac->muted = JsonIO::GetBoolOr(ja, "muted", false);
-		ac->fadeInOnStart = JsonIO::GetBoolOr(ja, "fadeInOnStart", false);
-		ac->fadeInDuration = JsonIO::GetFloatOr(ja, "fadeInDuration", 0.f);
-		ac->fadeOutOnStop = JsonIO::GetBoolOr(ja, "fadeOutOnStop", false);
-		ac->fadeOutDuration = JsonIO::GetFloatOr(ja, "fadeOutDuration", 0.f);
+			// Load ALL channels
+			for (auto it = channels.MemberBegin(); it != channels.MemberEnd(); ++it) {
+				std::string channelName = it->name.GetString();
+				const auto& channelObj = it->value;
+
+				AudioChannel* ch = audio->getOrCreateChannel(channelName);
+
+				JsonIO::GetString(channelObj, "audioFile", ch->audioFile);
+				ch->volume = JsonIO::GetFloatOr(channelObj, "volume", 1.f);
+				ch->pitch = JsonIO::GetFloatOr(channelObj, "pitch", 1.f);
+				ch->loop = JsonIO::GetBoolOr(channelObj, "loop", false);
+				ch->playOnStart = JsonIO::GetBoolOr(channelObj, "playOnStart", false);
+				ch->muted = JsonIO::GetBoolOr(channelObj, "muted", false);
+				ch->fadeInOnStart = JsonIO::GetBoolOr(channelObj, "fadeInOnStart", false);
+				ch->fadeInDuration = JsonIO::GetFloatOr(channelObj, "fadeInDuration", 0.f);
+				ch->fadeOutOnStop = JsonIO::GetBoolOr(channelObj, "fadeOutOnStop", false);
+				ch->fadeOutDuration = JsonIO::GetFloatOr(channelObj, "fadeOutDuration", 0.f);
+			}
+		}
+		// OLD FORMAT: Single channel (backwards compatibility)
+		else {
+			AudioChannel* ac = audio->getDefaultChannel();
+
+			JsonIO::GetString(ja, "audioFile", ac->audioFile);
+			ac->volume = JsonIO::GetFloatOr(ja, "volume", 1.f);
+			ac->pitch = JsonIO::GetFloatOr(ja, "pitch", 1.f);
+			ac->loop = JsonIO::GetBoolOr(ja, "loop", false);
+			ac->playOnStart = JsonIO::GetBoolOr(ja, "playOnStart", false);
+			ac->muted = JsonIO::GetBoolOr(ja, "muted", false);
+			ac->fadeInOnStart = JsonIO::GetBoolOr(ja, "fadeInOnStart", false);
+			ac->fadeInDuration = JsonIO::GetFloatOr(ja, "fadeInDuration", 0.f);
+			ac->fadeOutOnStop = JsonIO::GetBoolOr(ja, "fadeOutOnStop", false);
+			ac->fadeOutDuration = JsonIO::GetFloatOr(ja, "fadeOutDuration", 0.f);
+		}
 	}
 
 	// ---- FontComponent ----
@@ -979,27 +1005,31 @@ void PrefabManager::serializeComponents(const GameObject* obj, rapidjson::Value&
 		comps.AddMember("StateMachine", js, a);
 	}
 
-	// AudioComponent
+	// AudioComponent - Multi-Channel Serialization
 	if (auto audio = obj->getComponent<AudioComponent>()) {
 		rapidjson::Value ja(rapidjson::kObjectType);
+		rapidjson::Value channels(rapidjson::kObjectType);
 
-		const AudioChannel* ac = audio->getChannel("default");
+		// Serialize ALL channels
+		for (const auto& [channelName, channel] : audio->audioChannels) {
+			rapidjson::Value channelObj(rapidjson::kObjectType);
 
-		// CRITICAL FIX: Only serialize if "default" channel exists
-		if (ac) {
-			ja.AddMember("audioFile", rapidjson::Value(ac->audioFile.c_str(), a), a);
-			ja.AddMember("volume", ac->volume, a);
-			ja.AddMember("pitch", ac->pitch, a);
-			ja.AddMember("loop", ac->loop ? 1 : 0, a);
-			ja.AddMember("playOnStart", ac->playOnStart ? 1 : 0, a);
-			ja.AddMember("muted", ac->muted ? 1 : 0, a);
-			ja.AddMember("fadeInOnStart", ac->fadeInOnStart ? 1 : 0, a);
-			ja.AddMember("fadeInDuration", ac->fadeInDuration, a);
-			ja.AddMember("fadeOutOnStop", ac->fadeOutOnStop ? 1 : 0, a);
-			ja.AddMember("fadeOutDuration", ac->fadeOutDuration, a);
+			channelObj.AddMember("audioFile", rapidjson::Value(channel.audioFile.c_str(), a), a);
+			channelObj.AddMember("volume", channel.volume, a);
+			channelObj.AddMember("pitch", channel.pitch, a);
+			channelObj.AddMember("loop", channel.loop ? 1 : 0, a);
+			channelObj.AddMember("playOnStart", channel.playOnStart ? 1 : 0, a);
+			channelObj.AddMember("muted", channel.muted ? 1 : 0, a);
+			channelObj.AddMember("fadeInOnStart", channel.fadeInOnStart ? 1 : 0, a);
+			channelObj.AddMember("fadeInDuration", channel.fadeInDuration, a);
+			channelObj.AddMember("fadeOutOnStop", channel.fadeOutOnStop ? 1 : 0, a);
+			channelObj.AddMember("fadeOutDuration", channel.fadeOutDuration, a);
 
-			comps.AddMember("AudioComponent", ja, a);
+			channels.AddMember(rapidjson::Value(channelName.c_str(), a), channelObj, a);
 		}
+
+		ja.AddMember("channels", channels, a);
+		comps.AddMember("AudioComponent", ja, a);
 	}
 
 	// FontComponent

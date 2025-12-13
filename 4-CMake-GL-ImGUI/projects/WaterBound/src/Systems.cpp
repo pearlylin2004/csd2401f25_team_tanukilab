@@ -1414,10 +1414,7 @@ void AudioSystem::init(GameObjectManager& manager) {
 
 		AudioComponent* audio = obj->getComponent<AudioComponent>();
 
-		//old thing
-		//AudioChannel* ch = audio->getDefaultChannel();
-
-		// Play on start 
+		// Process ALL channels with playOnStart=true
 		for (auto& [channelName, ch] : audio->audioChannels) {
 			if (ch.playOnStart) {
 				ch.channel = audioHandler.playSound(&ch);

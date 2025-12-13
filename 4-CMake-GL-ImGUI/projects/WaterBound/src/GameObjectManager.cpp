@@ -1047,56 +1047,81 @@ void GameObjectManager::saveSceneToJson(const std::string& filename, bool isNew)
 				comps.AddMember("FontComponent", jf, a);
 			}
 
+			//audio
 			if (auto ac = obj->getComponent<AudioComponent>()) {
 				rapidjson::Value jac(rapidjson::kObjectType);
+				rapidjson::Value channelsOverride(rapidjson::kObjectType);
 				const rapidjson::Value* prefabAC = PM.getPrefabJsonComp(prefabDoc, "AudioComponent");
 
-				auto pushIfDiffStr = [&](const char* key, const char* val) {
-					if (!prefabAC || !prefabAC->HasMember(key) ||
-						std::strcmp((*prefabAC)[key].GetString(), val) != 0) {
-						jac.AddMember(rapidjson::Value(key, a),
-							rapidjson::Value(val, a), a);
+				// Get prefab channels for comparison (if exists)
+				const rapidjson::Value* prefabChannels = nullptr;
+				if (prefabAC && prefabAC->HasMember("channels") && (*prefabAC)["channels"].IsObject()) {
+					prefabChannels = &(*prefabAC)["channels"];
+				}
+
+				// Check ALL channels for overrides
+				for (const auto& [channelName, channel] : ac->audioChannels) {
+					rapidjson::Value channelOverride(rapidjson::kObjectType);
+
+					// Get prefab version of this channel (if exists)
+					const rapidjson::Value* prefabChannel = nullptr;
+					if (prefabChannels && prefabChannels->HasMember(channelName.c_str())) {
+						prefabChannel = &(*prefabChannels)[channelName.c_str()];
 					}
-				};
 
-				auto pushIfDiffFloat = [&](const char* key, float val) {
-					if (!prefabAC || !prefabAC->HasMember(key) ||
-						differsFloat((*prefabAC)[key].GetFloat(), val)) {
-						jac.AddMember(rapidjson::Value(key, a),
-							rapidjson::Value(val), a);
-					}
-				};
+					// Helper lambdas for this channel
+					auto pushIfDiffStr = [&](const char* key, const char* val) {
+						if (!prefabChannel || !prefabChannel->HasMember(key) ||
+							std::strcmp((*prefabChannel)[key].GetString(), val) != 0) {
+							channelOverride.AddMember(rapidjson::Value(key, a),
+								rapidjson::Value(val, a), a);
+						}
+					};
 
-				auto pushIfDiffBool = [&](const char* key, bool val) {
-					if (!prefabAC || !prefabAC->HasMember(key) ||
-						((*prefabAC)[key].IsBool() && differsBool((*prefabAC)[key].GetBool(), val)) ||
-						((*prefabAC)[key].IsInt() && differsBool((*prefabAC)[key].GetInt() != 0, val))) {
-						jac.AddMember(rapidjson::Value(key, a),
-							rapidjson::Value(val ? 1 : 0), a);
-					}
-				};
+					auto pushIfDiffFloat = [&](const char* key, float val) {
+						if (!prefabChannel || !prefabChannel->HasMember(key) ||
+							differsFloat((*prefabChannel)[key].GetFloat(), val)) {
+							channelOverride.AddMember(rapidjson::Value(key, a),
+								rapidjson::Value(val), a);
+						}
+					};
 
-				const AudioChannel* ch = ac->getChannel("default");
+					auto pushIfDiffBool = [&](const char* key, bool val) {
+						if (!prefabChannel || !prefabChannel->HasMember(key) ||
+							((*prefabChannel)[key].IsBool() && differsBool((*prefabChannel)[key].GetBool(), val)) ||
+							((*prefabChannel)[key].IsInt() && differsBool((*prefabChannel)[key].GetInt() != 0, val))) {
+							channelOverride.AddMember(rapidjson::Value(key, a),
+								rapidjson::Value(val ? 1 : 0), a);
+						}
+					};
 
-				if (ch) {
+					// Check each property for differences
+					pushIfDiffStr("audioFile", channel.audioFile.c_str());
+					pushIfDiffFloat("volume", channel.volume);
+					pushIfDiffFloat("pitch", channel.pitch);
+					pushIfDiffBool("loop", channel.loop);
+					pushIfDiffBool("playOnStart", channel.playOnStart);
+					pushIfDiffBool("muted", channel.muted);
+					pushIfDiffBool("fadeInOnStart", channel.fadeInOnStart);
+					pushIfDiffFloat("fadeInDuration", channel.fadeInDuration);
+					pushIfDiffBool("fadeOutOnStop", channel.fadeOutOnStop);
+					pushIfDiffFloat("fadeOutDuration", channel.fadeOutDuration);
 
-					pushIfDiffStr("audioFile", ch->audioFile.c_str());
-					pushIfDiffFloat("volume", ch->volume);
-					pushIfDiffFloat("pitch", ch->pitch);
-					pushIfDiffBool("loop", ch->loop);
-					pushIfDiffBool("playOnStart", ch->playOnStart);
-					pushIfDiffBool("muted", ch->muted);
-					pushIfDiffBool("fadeInOnStart", ch->fadeInOnStart);
-					pushIfDiffFloat("fadeInDuration", ch->fadeInDuration);
-					pushIfDiffBool("fadeOutOnStop", ch->fadeOutOnStop);
-					pushIfDiffFloat("fadeOutDuration", ch->fadeOutDuration);
-
-					if (!jac.ObjectEmpty()) {
-						comps.AddMember("AudioComponent", jac, a);
+					// If this channel has overrides OR doesn't exist in prefab, save it
+					if (!channelOverride.ObjectEmpty() || !prefabChannel) {
+						channelsOverride.AddMember(
+							rapidjson::Value(channelName.c_str(), a),
+							channelOverride,
+							a
+						);
 					}
 				}
 
-				
+				// Only save AudioComponent if there are channel overrides
+				if (!channelsOverride.ObjectEmpty()) {
+					jac.AddMember("channels", channelsOverride, a);
+					comps.AddMember("AudioComponent", jac, a);
+				}
 			}
 
 			// ---- TileMap ----

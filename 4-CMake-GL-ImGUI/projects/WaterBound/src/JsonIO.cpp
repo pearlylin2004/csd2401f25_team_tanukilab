@@ -611,23 +611,28 @@ namespace JsonIO {
         // Audio
         if (AudioComponent* audio = obj->getComponent<AudioComponent>()) {
             Value ja(kObjectType);
+            Value channels(kObjectType);
 
-            AudioChannel* ac = audio->getDefaultChannel();
+            // Serialize ALL channels
+            for (const auto& [channelName, channel] : audio->audioChannels) {
+                Value channelObj(kObjectType);
 
-            // CRITICAL FIX: Only serialize if "default" channel exists
-            if (ac) {
-                ja.AddMember("audioFile", Value(ac->audioFile.c_str(), a), a);
-                ja.AddMember("loop", ac->loop, a);
-                ja.AddMember("playOnStart", ac->playOnStart, a);
-                ja.AddMember("volume", ac->volume, a);
-                ja.AddMember("pitch", ac->pitch, a);
-                ja.AddMember("fadeInOnStart", ac->fadeInOnStart, a);
-                ja.AddMember("fadeInDuration", ac->fadeInDuration, a);
-                ja.AddMember("fadeOutOnStop", ac->fadeOutOnStop, a);
-                ja.AddMember("fadeOutDuration", ac->fadeOutDuration, a);
+                channelObj.AddMember("audioFile", Value(channel.audioFile.c_str(), a), a);
+                channelObj.AddMember("volume", channel.volume, a);
+                channelObj.AddMember("pitch", channel.pitch, a);
+                channelObj.AddMember("loop", channel.loop, a);
+                channelObj.AddMember("muted", channel.muted, a);
+                channelObj.AddMember("playOnStart", channel.playOnStart, a);
+                channelObj.AddMember("fadeInOnStart", channel.fadeInOnStart, a);
+                channelObj.AddMember("fadeInDuration", channel.fadeInDuration, a);
+                channelObj.AddMember("fadeOutOnStop", channel.fadeOutOnStop, a);
+                channelObj.AddMember("fadeOutDuration", channel.fadeOutDuration, a);
 
-                doc.AddMember("Audio", ja, a);
+                channels.AddMember(Value(channelName.c_str(), a), channelObj, a);
             }
+
+            ja.AddMember("channels", channels, a);
+            doc.AddMember("AudioComponent", ja, a);
         }
 
         if (StateMachine* sm = obj->getComponent<StateMachine>()) {
@@ -806,20 +811,57 @@ namespace JsonIO {
             }
 
             // Audio
-            if (doc.HasMember("Audio")) {
-                const Value& ja = doc["Audio"];
+            if (doc.HasMember("AudioComponent")) {
+                const Value& ja = doc["AudioComponent"];
                 AudioComponent* ac = obj->addComponent<AudioComponent>();
-                AudioChannel* a = ac->getDefaultChannel();
 
-                a->audioFile = ja["audioFile"].GetString();
-                a->loop = ja["loop"].GetBool();
-                a->playOnStart = ja["playOnStart"].GetBool();
-                a->volume = ja["volume"].GetFloat();
-                a->pitch = ja["pitch"].GetFloat();
-                a->fadeInOnStart = ja["fadeInOnStart"].GetBool();
-                a->fadeInDuration = ja["fadeInDuration"].GetFloat();
-                a->fadeOutOnStop = ja["fadeOutOnStop"].GetBool();
-                a->fadeOutDuration = ja["fadeOutDuration"].GetFloat();
+                if (ja.HasMember("channels") && ja["channels"].IsObject()) {
+                    const Value& channels = ja["channels"];
+
+                    // Load ALL channels
+                    for (auto it = channels.MemberBegin(); it != channels.MemberEnd(); ++it) {
+                        std::string channelName = it->name.GetString();
+                        const Value& channelObj = it->value;
+
+                        AudioChannel* ch = ac->getOrCreateChannel(channelName);
+
+                        if (channelObj.HasMember("audioFile"))
+                            ch->audioFile = channelObj["audioFile"].GetString();
+                        if (channelObj.HasMember("volume"))
+                            ch->volume = channelObj["volume"].GetFloat();
+                        if (channelObj.HasMember("pitch"))
+                            ch->pitch = channelObj["pitch"].GetFloat();
+                        if (channelObj.HasMember("loop"))
+                            ch->loop = channelObj["loop"].GetBool();
+                        if (channelObj.HasMember("muted"))
+                            ch->muted = channelObj["muted"].GetBool();
+                        if (channelObj.HasMember("playOnStart"))
+                            ch->playOnStart = channelObj["playOnStart"].GetBool();
+                        if (channelObj.HasMember("fadeInOnStart"))
+                            ch->fadeInOnStart = channelObj["fadeInOnStart"].GetBool();
+                        if (channelObj.HasMember("fadeInDuration"))
+                            ch->fadeInDuration = channelObj["fadeInDuration"].GetFloat();
+                        if (channelObj.HasMember("fadeOutOnStop"))
+                            ch->fadeOutOnStop = channelObj["fadeOutOnStop"].GetBool();
+                        if (channelObj.HasMember("fadeOutDuration"))
+                            ch->fadeOutDuration = channelObj["fadeOutDuration"].GetFloat();
+                    }
+                }
+                else {
+                    // BACKWARDS COMPATIBILITY: Old single-channel format
+                    AudioChannel* ch = ac->getDefaultChannel();
+                    AudioChannel* a = ac->getDefaultChannel();
+
+                    a->audioFile = ja["audioFile"].GetString();
+                    a->loop = ja["loop"].GetBool();
+                    a->playOnStart = ja["playOnStart"].GetBool();
+                    a->volume = ja["volume"].GetFloat();
+                    a->pitch = ja["pitch"].GetFloat();
+                    a->fadeInOnStart = ja["fadeInOnStart"].GetBool();
+                    a->fadeInDuration = ja["fadeInDuration"].GetFloat();
+                    a->fadeOutOnStop = ja["fadeOutOnStop"].GetBool();
+                    a->fadeOutDuration = ja["fadeOutDuration"].GetFloat();
+                }
             }
 
             // State Machine with Animation
