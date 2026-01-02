@@ -83,12 +83,19 @@ struct renderer
 	\brief
 		Data layout for one instance (transform, color, texture offset/scale)
 	*************************************************************************/
-	struct InstanceData
-	{
-		glm::mat4 model;      
-		glm::vec4 color;      
-		glm::vec4 texParams;  
+	struct alignas(16) InstanceData {
+		glm::mat4 model;
+		glm::vec4 color;
+		glm::vec4 texParams;
+
 	};
+
+	struct InstanceSystem {
+		GLuint ssbo_id = 0;
+		std::vector<InstanceData> transformation_buffer;
+	};
+	static InstanceSystem instance_system;
+
 	/*!***********************************************************************
 	\brief
 		initializes the setups for the meshes and shader programs
@@ -122,7 +129,7 @@ struct renderer
 		GLuint primitive_cnt;
 
 		GLuint instanceVBO = 0;
-		GLsizei maxInstances = 5000; 
+		GLsizei maxInstances = 65536;
 
 		model() : shape(shape::square), primitive_type(GL_TRIANGLES), vaoid(0), vbo(0), ebo(0), elem_cnt(0), draw_cnt(0), primitive_cnt(0) {}
 	};
