@@ -98,6 +98,8 @@ public:
 	//void renderCollision(Collision::AABB const& box, glm::vec3 const& clr);
 	//GLuint getTexture() const { return texture; }
 	void batchingSetUp(GameObjectManager& manager, float const& deltaTime);
+	void instancePerBatch(std::unordered_map<BatchKey, std::vector<renderer::InstanceData>, BatchKeyHash> &batch);
+	void reinstancePerBatch(std::unordered_map<BatchKey, std::vector<renderer::InstanceData>, BatchKeyHash>& batch);
 
 	void fboAspectRatio(int& width, int& height) const;
 	~RenderSystem();

@@ -51,6 +51,7 @@ enum class cameraMode {
 struct BatchKey {
 	shape meshType;
 	GLuint texID;
+	mutable GLuint ssboID = 0;
 
 	bool operator==(const BatchKey& other) const noexcept {
 		return meshType == other.meshType && texID == other.texID;
@@ -87,14 +88,8 @@ struct renderer
 		glm::mat4 model;
 		glm::vec4 color;
 		glm::vec4 texParams;
-
+		GLuint ssboID = 0;
 	};
-
-	struct InstanceSystem {
-		GLuint ssbo_id = 0;
-		std::vector<InstanceData> transformation_buffer;
-	};
-	static InstanceSystem instance_system;
 
 	/*!***********************************************************************
 	\brief
@@ -129,7 +124,8 @@ struct renderer
 		GLuint primitive_cnt;
 
 		GLuint instanceVBO = 0;
-		GLsizei maxInstances = 65536;
+		static GLsizei maxInstances;
+		static GLsizeiptr translationBufferSize;
 
 		model() : shape(shape::square), primitive_type(GL_TRIANGLES), vaoid(0), vbo(0), ebo(0), elem_cnt(0), draw_cnt(0), primitive_cnt(0) {}
 	};

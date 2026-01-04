@@ -19,6 +19,8 @@ std::vector<renderer::model> renderer::models;
 std::vector<GLuint> renderer::shdr_pgm;
 renderer::camera renderer::cam;
 renderer::camera renderer::editorCam;
+GLsizei renderer::model::maxInstances = 65536;
+GLsizeiptr renderer::model::translationBufferSize = maxInstances * (sizeof(renderer::InstanceData));
 
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/string_cast.hpp>

@@ -135,39 +135,6 @@ void RenderSystem::update(GameObjectManager& manager, float const& deltaTime)
 		camProj = renderer::cam.proj;
 	}
 
-	//std::vector<GameObject*> objectWithTex;
-	//std::vector<GameObject*> objectWithoutTex;
-
-	// Update textures if they have changed (in level editor)
-	//for (GameObject* object : gameObjects)
-	//{
-	//	if (object->hasComponent<Render>())
-	//	{
-	//		Render* render = object->getComponent<Render>();
-
-	//		if (render->texChanged) {
-	//			if (render->hasTex) {
-
-	//				//glDeleteTextures(1, &render->texHDL); // to avoid leak
-	//				//render->texHDL = 0;
-	//				//no more deleting textures here, handled in ResourceManager cus we have a cache now
-
-	//				//the below code is for future use
-	//				TextureData texData = ResourceManager::getInstance().getTexture(render->texFile);
-	//				render->texHDL = texData.id;
-	//				render->isTransparent = texData.isTransparent;
-	//				render->texChanged = false;
-	//			}
-	//			//render->texHDL = uploadtex(render->texFile, render->isTransparent);
-	//			TextureData texData = ResourceManager::getInstance().getTexture(render->texFile);
-	//			render->texHDL = texData.id;
-	//			render->isTransparent = texData.isTransparent;
-
-	//			render->texChanged = false;
-	//		}
-	//	}
-	//}
-
 	for (Layer* layer : layers) {
 		if (!layer) continue;
 		
@@ -449,157 +416,37 @@ void RenderSystem::batchingSetUp(GameObjectManager& manager, float const& deltaT
 	//Font::init();
 }
 
-//this moved to ResourceManager.cpp
-// Upload a texture from file and return its OpenGL handle
-//GLuint RenderSystem::uploadtex(std::string const& filename, bool& isTransparent)
-//{
-//	int width, height, channels;
-//	unsigned char* data = stbi_load(filename.c_str(), &width, &height, &channels, STBI_rgb_alpha);
-//	if (!data) {
-//		std::cerr << "Failed to load image: " << filename << std::endl;
-//		return 0;
-//	}
-//
-//	std::cout << "Loaded " << filename
-//		<< " (" << width << "x" << height << "), "
-//		<< channels << " channels" << std::endl;
-//
-//	isTransparent = (channels == 4);
-//
-//	GLuint texobj_hdl;
-//	glCreateTextures(GL_TEXTURE_2D, 1, &texobj_hdl);
-//	glTextureStorage2D(texobj_hdl, 1, GL_RGBA8, static_cast<GLuint>(width), static_cast<GLuint>(height));
-//	glTextureSubImage2D(texobj_hdl, 0, 0, 0, static_cast<GLuint>(width), static_cast<GLuint>(height), GL_RGBA, GL_UNSIGNED_BYTE, data);
-//
-//	glTextureParameteri(texobj_hdl, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-//	glTextureParameteri(texobj_hdl, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-//	glTextureParameteri(texobj_hdl, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-//	glTextureParameteri(texobj_hdl, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-//	stbi_image_free(data);
-//	return texobj_hdl;
-//}
-
-void RenderSystem::renderTex(GameObject* object, float const& deltaTime)
+void RenderSystem::instancePerBatch(std::unordered_map<BatchKey, std::vector<renderer::InstanceData>, BatchKeyHash> &batch)
 {
-	if (object->hasComponent<Render>() && object->hasComponent<Transform>())
+	for (std::pair<const BatchKey, std::vector<renderer::InstanceData>>& objs : batch)
 	{
-		Transform* transform = object->getComponent<Transform>();
-		Render* render = object->getComponent<Render>();
-
-		//position and orientation of mesh
-		float angle = glm::radians(transform->rotation);
-		transform->mdlWorld = glm::mat4{ 1 };
-		transform->mdlWorld = glm::translate(transform->mdlWorld, glm::vec3(transform->x, transform->y, transform->z));
-		transform->mdlWorld = glm::rotate(transform->mdlWorld, angle, glm::vec3(0, 0, 1.f));
-		transform->mdlWorld = glm::scale(transform->mdlWorld, glm::vec3(transform->scaleX, transform->scaleY, transform->scaleZ));
-
-		glBindTextureUnit(0, render->texHDL);
-		//std::cerr << "Binding Texture ID: " << render->texHDL << " for object: " << object->getObjectName() << std::endl;
-
-		glm::mat4 texRot{ 1 };
-		texRot = glm::rotate(texRot, angle, glm::vec3(0, 0, 1.f));
-		glm::vec2 rotationCenter{ 0,0 }; //if needed in the future it can be a member variable, now just for sanity
-
-		//binding model to world matrix
-		glBindVertexArray(render->modelRef.vaoid);
-		GLint vTransformLoc = glGetUniformLocation(renderer::shdr_pgm[0], "M");
-		glUniformMatrix4fv(vTransformLoc, 1, GL_FALSE, glm::value_ptr(transform->mdlWorld));
-
-		glm::vec2 texpos, texscale;
-		if (render->hasAnimation)
+		GLuint ssboID = objs.first.ssboID;
+		if (objs.first.ssboID == 0)
 		{
-			Animation* animation = object->getComponent<Animation>();
-			if (StateMachine* sm = object->getComponent<StateMachine>()) {
-				AnimateState& as = animation->animState[static_cast<int>(sm->state)];
-				if (!as.texFile.empty()) {
-					texpos = glm::vec2{ as.currentFrameColumn / static_cast<float>(as.totalColumn), as.currentFrameRow / static_cast<float>(as.totalRow) };
-					texscale = glm::vec2{ 1.f / as.totalColumn, 1.f / as.totalRow };
-					if (as.loop)
-					{
-						as.frameTimer += deltaTime;
-						//std::cout << "\n-------Frame Timer---------\n" << animation->frameTimer << "\n\n";
-						if (as.frameTimer >= as.frameTime && !EditorManager::isEditingMode() && !EditorManager::isPaused())
-						{
-							as.frameTimer -= as.frameTime;
-							/*if (animation->runItBack && animation->currentFrameColumn == 0)
-							{
-								animation->runItBack = false;
-							}
-							else
-							{
-								animation->currentFrameColumn = (animation->currentFrameColumn + 1) % animation->totalColumn;
-								animation->currentFrameRow = (animation->currentFrameRow + 1) % animation->totalRow;
-								animation->runItBack = true;
-							}*/
-							as.currentFrameColumn = (as.currentFrameColumn + 1) % as.totalColumn;
-							as.currentFrameRow = (as.currentFrameRow + 1) % as.totalRow;
-							animation->runItBack = true;
+			glCreateBuffers(1, &objs.first.ssboID);
+			ssboID = objs.first.ssboID;
+			glNamedBufferStorage(
+				ssboID,
+				renderer::model::translationBufferSize, // Total byte size
+				nullptr, // No initial data yet
+				GL_DYNAMIC_STORAGE_BIT // Allows future updates
+			);
+			GLuint bindingIndex = 0;
+			glBindBufferBase(GL_SHADER_STORAGE_BUFFER, bindingIndex, ssboID);
+		}
 
-						}
-					}
-				}
-			}
-		}
-		else
-		{
-			texpos = glm::vec2{ 0,0 };
-			texscale = glm::vec2{ 1,1 };
-		}
-		//binding texture rotation and id
-		GLint texid = glGetUniformLocation(renderer::shdr_pgm[0], "uTex2d");
-		GLint rotmat = glGetUniformLocation(renderer::shdr_pgm[0], "uRotMtx");
-		GLint rotcenter = glGetUniformLocation(renderer::shdr_pgm[0], "uMcn");
-		GLint offset = glGetUniformLocation(renderer::shdr_pgm[0], "uTexOffSet");
-		GLint tscale = glGetUniformLocation(renderer::shdr_pgm[0], "uTexScale");
-		glUniform1i(texid, 0);
-		glUniformMatrix2fv(rotmat, 1, GL_FALSE, glm::value_ptr(texRot));
-		glUniform2fv(rotcenter, 1, glm::value_ptr(rotationCenter));
-		glUniform2fv(offset, 1, glm::value_ptr(texpos));
-		glUniform2fv(tscale, 1, glm::value_ptr(texscale));
-
-		if (render->modelRef.shape == shape::square)
-		{
-			// --- Pass 1: textured fill ---
-			glBindVertexArray(render->modelRef.vaoid);
-			glDrawElements(GL_TRIANGLES, render->modelRef.elem_cnt, GL_UNSIGNED_SHORT, nullptr);
-		}
-		//glDrawElements(GL_TRIANGLES, render->modelRef.elem_cnt, GL_UNSIGNED_SHORT, nullptr);
-		else if (render->modelRef.shape == shape::circle)
-			glDrawArrays(render->modelRef.primitive_type, 0, render->modelRef.draw_cnt);
-		glBindVertexArray(0);
+		glNamedBufferSubData(
+			ssboID,
+			0, // Offset
+			objs.second.size() * sizeof(renderer::InstanceData), // Total size
+			objs.second.data() // Source data
+		);
 	}
 }
 
-void RenderSystem::renderNoTex(GameObject* object)
+void RenderSystem::reinstancePerBatch(std::unordered_map<BatchKey, std::vector<renderer::InstanceData>, BatchKeyHash>& batch)
 {
-	if (object->hasComponent<Render>() && object->hasComponent<Transform>())
-	{
-		Transform* transform = object->getComponent<Transform>();
-		Render* render = object->getComponent<Render>();
 
-		//position and orientation of mesh
-		float angle = glm::radians(transform->rotation);
-		transform->mdlWorld = glm::mat4{ 1 };
-		transform->mdlWorld = glm::translate(transform->mdlWorld, glm::vec3(transform->x, transform->y, transform->z));
-		transform->mdlWorld = glm::rotate(transform->mdlWorld, angle, glm::vec3(0, 0, 1.f));
-		transform->mdlWorld = glm::scale(transform->mdlWorld, glm::vec3(transform->scaleX, transform->scaleY, transform->scaleZ));
-		glBindTextureUnit(0, 0);
-
-		glm::mat4 texRot{ 1 };
-		texRot = glm::rotate(texRot, angle, glm::vec3(0, 0, 1.f));
-		glm::vec2 rotationCenter{ 0,0 }; //if needed in the future it can be a member variable, now just for sanity
-
-		//binding model to world matrix
-		glBindVertexArray(render->modelRef.vaoid);
-		GLint vTransformLoc = glGetUniformLocation(renderer::shdr_pgm[1], "M");
-		glUniformMatrix4fv(vTransformLoc, 1, GL_FALSE, glm::value_ptr(transform->mdlWorld));
-
-		if (render->modelRef.shape == shape::square)
-			glDrawElements(GL_TRIANGLES, render->modelRef.elem_cnt, GL_UNSIGNED_SHORT, nullptr);
-		else if (render->modelRef.shape == shape::circle)
-			glDrawArrays(render->modelRef.primitive_type, 0, render->modelRef.draw_cnt);
-		glBindVertexArray(0);
-	}
 }
 
 void RenderSystem::fboAspectRatio(int& width, int& height) const {
