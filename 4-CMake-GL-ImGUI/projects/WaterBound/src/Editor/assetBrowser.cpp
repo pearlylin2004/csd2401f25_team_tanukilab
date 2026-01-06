@@ -153,28 +153,73 @@ void AssetBrowser::render() {
             ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.1f, 0.4f, 0.7f, 1.0f));*/
         }
 
-        // display button and the name of the file
+        //// display button and the name of the file
+        //ImGui::BeginGroup();
+
+        //ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(100, 40));
+
+        //// can consider changing to image in the future
+        //if(ImGui::Button(asset.name.c_str(), ImVec2(m_AssetBrowserState.iconSize, m_AssetBrowserState.iconSize))) {
+        //    std::string extension;
+        //    std::filesystem::path a = asset.name;      // or asset.path if you want full path
+        //    std::string ext = a.extension().string();
+        //    size_t dotPos = asset.name.find_last_of('.');
+        //    if (dotPos != std::string::npos) extension = asset.name.substr(dotPos + 1);
+        //    std::cout << asset.name << " button clicked!!!!!" << std::endl;
+        //    if (extension == "png" || extension == "jpg" || extension == "jpeg")
+        //    {
+        //        TileMapSystem::filename = asset.path;
+        //        /*std::cout << asset.name << std::endl;
+        //        std::cout << asset.path << std::endl;*/
+        //    }
+        //}
+
+        //ImGui::PopStyleVar();
         ImGui::BeginGroup();
 
-        ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(100, 40));
+        // check if its image
+        std::string extension;
+        size_t dotPos = asset.name.find_last_of('.');
+        if (dotPos != std::string::npos) extension = asset.name.substr(dotPos + 1);
 
-        // can consider changing to image in the future
-        if(ImGui::Button(asset.name.c_str(), ImVec2(m_AssetBrowserState.iconSize, m_AssetBrowserState.iconSize))) {
-            std::string extension;
-            std::filesystem::path a = asset.name;      // or asset.path if you want full path
-            std::string ext = a.extension().string();
-            size_t dotPos = asset.name.find_last_of('.');
-            if (dotPos != std::string::npos) extension = asset.name.substr(dotPos + 1);
-            std::cout << asset.name << " button clicked!!!!!" << std::endl;
-            if (extension == "png" || extension == "jpg" || extension == "jpeg")
-            {
-                TileMapSystem::filename = asset.path;
-                /*std::cout << asset.name << std::endl;
-                std::cout << asset.path << std::endl;*/
+        bool isImage = (extension == "png" || extension == "jpg" || extension == "jpeg");
+
+        if (isImage) {
+            // load texture to show image preview
+            TextureData texData = ResourceManager::getInstance().getTexture(asset.path);
+
+            if (texData.id != 0) {
+                ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.15f, 0.15f, 0.15f, 1.0f));
+                ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(4, 4));
+
+                if (ImGui::ImageButton(("##img" + asset.name).c_str(),
+                    (ImTextureID)(intptr_t)texData.id,
+                    ImVec2(m_AssetBrowserState.iconSize, m_AssetBrowserState.iconSize),
+                    ImVec2(0, 1), ImVec2(1, 0))) {
+                    TileMapSystem::filename = asset.path;
+                    std::cout << asset.name << " image clicked!" << std::endl;
+                }
+
+                ImGui::PopStyleVar();
+                ImGui::PopStyleColor();
+            }
+            else {
+                // fallback to button if texture fails
+                ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(100, 40));
+                if (ImGui::Button(asset.name.c_str(), ImVec2(m_AssetBrowserState.iconSize, m_AssetBrowserState.iconSize))) {
+                    TileMapSystem::filename = asset.path;
+                }
+                ImGui::PopStyleVar();
             }
         }
-
-        ImGui::PopStyleVar();
+        else {
+            // if not image then use button
+            ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(100, 40));
+            if (ImGui::Button(asset.name.c_str(), ImVec2(m_AssetBrowserState.iconSize, m_AssetBrowserState.iconSize))) {
+                std::cout << asset.name << " button clicked!" << std::endl;
+            }
+            ImGui::PopStyleVar();
+        }
 
         // pop style for the highlight current scene
         if (asset.name == Editor::sceneState.currentSceneName) {
