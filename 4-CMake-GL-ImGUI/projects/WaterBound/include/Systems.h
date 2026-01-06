@@ -86,10 +86,6 @@ public:
 
 	*************************************************************************/
 	void update(GameObjectManager& manager, float const& deltaTime);
-	//moved to ResourceManager
-	//GLuint uploadtex(std::string const& filename, bool& isTransparent);
-	void renderTex(GameObject* object, float const& deltaTime);
-	void renderNoTex(GameObject* object);
 	void renderFBO();
 	void resizeFBO(int width, int height);
 	GLuint getTexture() const { return texture; }
@@ -99,7 +95,6 @@ public:
 	//GLuint getTexture() const { return texture; }
 	void batchingSetUp(GameObjectManager& manager, float const& deltaTime);
 	void instancePerBatch(std::unordered_map<BatchKey, std::vector<renderer::InstanceData>, BatchKeyHash> &batch);
-	void reinstancePerBatch(std::unordered_map<BatchKey, std::vector<renderer::InstanceData>, BatchKeyHash>& batch);
 
 	void fboAspectRatio(int& width, int& height) const;
 	~RenderSystem();
@@ -107,7 +102,7 @@ public:
 	static std::unordered_map<BatchKey, std::vector<renderer::InstanceData>, BatchKeyHash> objectWithTex2;
 private:
 	std::unordered_map<BatchKey, std::vector<renderer::InstanceData>, BatchKeyHash> objectWithTex;
-	std::unordered_map<shape, std::vector<renderer::InstanceData>> objectWithoutTex;
+	std::unordered_map<BatchKey, std::vector<renderer::InstanceData>, BatchKeyHash> objectWithoutTex;
 };
 
 /*!***********************************************************************

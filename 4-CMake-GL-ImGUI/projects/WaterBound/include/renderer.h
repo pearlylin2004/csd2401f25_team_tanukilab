@@ -88,7 +88,6 @@ struct renderer
 		glm::mat4 model;
 		glm::vec4 color;
 		glm::vec4 texParams;
-		GLuint ssboID = 0;
 	};
 
 	/*!***********************************************************************
@@ -122,8 +121,6 @@ struct renderer
 		GLuint elem_cnt;
 		GLuint draw_cnt;
 		GLuint primitive_cnt;
-
-		GLuint instanceVBO = 0;
 		static GLsizei maxInstances;
 		static GLsizeiptr translationBufferSize;
 
@@ -148,7 +145,7 @@ struct renderer
 	\param[in] instances
 		relevent data to show how i should draw my mesh
 	*************************************************************************/
-	static void drawInstances(model& mdl, const std::vector<InstanceData>& instances);
+	static void drawInstances(std::pair<BatchKey, std::vector<renderer::InstanceData>>const& batch);
 	/*!***********************************************************************
 	\brief
 		storing of shader program

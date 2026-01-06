@@ -108,9 +108,9 @@ renderer::model renderer::setup_square(glm::vec3 clr)
 	//idk what im looking at, but hopefully gpt dun screw me over, to be refactored
 	//---------------------------------------------------------------------------------
 	// --- Setup instance buffer for per-instance attributes ---
-	glGenBuffers(1, &mdl.instanceVBO);
+	/*glGenBuffers(1, &mdl.instanceVBO);
 	glBindBuffer(GL_ARRAY_BUFFER, mdl.instanceVBO);
-	glBufferData(GL_ARRAY_BUFFER, mdl.maxInstances * sizeof(InstanceData), nullptr, GL_DYNAMIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, mdl.maxInstances * sizeof(InstanceData), nullptr, GL_DYNAMIC_DRAW);*/
 
 	// Setup layout in VAO
 	setup_instance_attributes(mdl);
@@ -174,9 +174,9 @@ renderer::model renderer::setup_circle(glm::vec3 clr, int slices)
 	glVertexArrayAttribFormat(mdl.vaoid, 1, 3, GL_FLOAT, GL_FALSE, 0);
 	glVertexArrayAttribBinding(mdl.vaoid, 1, 1);
 
-	glGenBuffers(1, &mdl.instanceVBO);
+	/*glGenBuffers(1, &mdl.instanceVBO);
 	glBindBuffer(GL_ARRAY_BUFFER, mdl.instanceVBO);
-	glBufferData(GL_ARRAY_BUFFER, mdl.maxInstances * sizeof(InstanceData), nullptr, GL_DYNAMIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, mdl.maxInstances * sizeof(InstanceData), nullptr, GL_DYNAMIC_DRAW);*/
 	glBindVertexArray(0);
 	// and then set up the rest of object mdl ...
 	mdl.primitive_type = GL_TRIANGLE_FAN;
@@ -208,49 +208,47 @@ renderer::model renderer::setup_circle(glm::vec3 clr, int slices)
 //---------------------------------------------------------------------------------
 //idk what im looking at, but hopefully gpt dun screw me over, to be refactored
 //---------------------------------------------------------------------------------
-void renderer::setup_instance_attributes(model& mdl)
-{
-	glBindVertexArray(mdl.vaoid);
-	glBindBuffer(GL_ARRAY_BUFFER, mdl.instanceVBO);
-
-	GLsizei stride = sizeof(InstanceData);
-	std::size_t offset = 0;
-
-	// mat4 model: locations 3,4,5,6 (each is a vec4)
-	for (int i = 0; i < 4; ++i) {
-		glEnableVertexAttribArray(3 + i);
-		glVertexAttribPointer(3 + i, 4, GL_FLOAT, GL_FALSE, stride, (void*)(offset + i * sizeof(glm::vec4)));
-		glVertexAttribDivisor(3 + i, 1);
-	}
-	offset += sizeof(glm::mat4);
-
-	// color: location 7
-	glEnableVertexAttribArray(7);
-	glVertexAttribPointer(7, 4, GL_FLOAT, GL_FALSE, stride, (void*)offset);
-	glVertexAttribDivisor(7, 1);
-	offset += sizeof(glm::vec4);
-
-	// texParams: location 8 (still present for untextured; harmless)
-	glEnableVertexAttribArray(8);
-	glVertexAttribPointer(8, 4, GL_FLOAT, GL_FALSE, stride, (void*)offset);
-	glVertexAttribDivisor(8, 1);
-
-	glBindVertexArray(0);
-}
+//void renderer::setup_instance_attributes(model& mdl)
+//{
+//	glBindVertexArray(mdl.vaoid);
+//	glBindBuffer(GL_ARRAY_BUFFER, mdl.instanceVBO);
+//
+//	GLsizei stride = sizeof(InstanceData);
+//	std::size_t offset = 0;
+//
+//	// mat4 model: locations 3,4,5,6 (each is a vec4)
+//	for (int i = 0; i < 4; ++i) {
+//		glEnableVertexAttribArray(3 + i);
+//		glVertexAttribPointer(3 + i, 4, GL_FLOAT, GL_FALSE, stride, (void*)(offset + i * sizeof(glm::vec4)));
+//		glVertexAttribDivisor(3 + i, 1);
+//	}
+//	offset += sizeof(glm::mat4);
+//
+//	// color: location 7
+//	glEnableVertexAttribArray(7);
+//	glVertexAttribPointer(7, 4, GL_FLOAT, GL_FALSE, stride, (void*)offset);
+//	glVertexAttribDivisor(7, 1);
+//	offset += sizeof(glm::vec4);
+//
+//	// texParams: location 8 (still present for untextured; harmless)
+//	glEnableVertexAttribArray(8);
+//	glVertexAttribPointer(8, 4, GL_FLOAT, GL_FALSE, stride, (void*)offset);
+//	glVertexAttribDivisor(8, 1);
+//
+//	glBindVertexArray(0);
+//}
 
 //---------------------------------------------------------------------------------
 //idk what im looking at, but hopefully gpt dun screw me over, to be refactored
 //---------------------------------------------------------------------------------
-void renderer::drawInstances(model& mdl, const std::vector<InstanceData>& instances)
+void renderer::drawInstances(std::pair<BatchKey, std::vector<renderer::InstanceData>>const& batch)
 {
-	if (instances.empty())
+	if (batch.second.empty())
 		return;
 
-	glBindBuffer(GL_ARRAY_BUFFER, mdl.instanceVBO);
-	glBufferSubData(GL_ARRAY_BUFFER, 0,
-		instances.size() * sizeof(InstanceData),
-		instances.data());
-
+	GLuint bindingIndex = 0;
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, bindingIndex, batch.first.ssboID);
+	model const& mdl = models[(int)batch.first.meshType];
 	glBindVertexArray(mdl.vaoid);
 
 	if (mdl.elem_cnt > 0) {
@@ -259,14 +257,14 @@ void renderer::drawInstances(model& mdl, const std::vector<InstanceData>& instan
 			mdl.elem_cnt,
 			GL_UNSIGNED_SHORT,
 			nullptr,
-			static_cast<GLsizei>(instances.size()));
+			static_cast<GLsizei>(batch.second.size()));
 	}
 	else {
 		// Non-indexed path (circle)
 		glDrawArraysInstanced(mdl.primitive_type,
 			0,
 			mdl.draw_cnt,
-			static_cast<GLsizei>(instances.size()));
+			static_cast<GLsizei>(batch.second.size()));
 	}
 
 	glBindVertexArray(0);
@@ -333,7 +331,7 @@ void renderer::cleanup() {
 		if (model.vaoid) glDeleteVertexArrays(1, &model.vaoid);
 		if (model.vbo) glDeleteBuffers(1, &model.vbo);
 		if (model.ebo) glDeleteBuffers(1, &model.ebo);
-		if (model.instanceVBO) glDeleteBuffers(1, &model.instanceVBO);
+		/*if (model.instanceVBO) glDeleteBuffers(1, &model.instanceVBO);*/
 	}
 	models.clear();
 

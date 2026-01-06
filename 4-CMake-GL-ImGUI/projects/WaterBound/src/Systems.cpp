@@ -183,10 +183,10 @@ void RenderSystem::update(GameObjectManager& manager, float const& deltaTime)
 	GLint uProj = glGetUniformLocation(renderer::shdr_pgm[1], "P");
 	glUniformMatrix4fv(uView, 1, GL_FALSE, glm::value_ptr(camView));
 	glUniformMatrix4fv(uProj, 1, GL_FALSE, glm::value_ptr(camProj));
-	for (std::pair<const shape, std::vector<renderer::InstanceData>>& pair : objectWithoutTex)
+	instancePerBatch(objectWithoutTex);
+	for (std::pair<const BatchKey, std::vector<renderer::InstanceData>>& pair : objectWithoutTex)
 	{
-		shape meshType = pair.first;
-		renderer::drawInstances(renderer::models[(int)meshType], pair.second);
+		renderer::drawInstances(pair);
 	}
 	//drawing models with texture
 	glUseProgram(renderer::shdr_pgm[0]); // hasTex shader
@@ -194,6 +194,7 @@ void RenderSystem::update(GameObjectManager& manager, float const& deltaTime)
 	uProj = glGetUniformLocation(renderer::shdr_pgm[0], "P");
 	glUniformMatrix4fv(uView, 1, GL_FALSE, glm::value_ptr(camView));
 	glUniformMatrix4fv(uProj, 1, GL_FALSE, glm::value_ptr(camProj));
+	instancePerBatch(objectWithTex);
 	for (std::pair<const BatchKey, std::vector<renderer::InstanceData>>& pair : objectWithTex)
 	{
 		const BatchKey& key = pair.first;
@@ -202,8 +203,8 @@ void RenderSystem::update(GameObjectManager& manager, float const& deltaTime)
 		GLint uTexLoc = glGetUniformLocation(renderer::shdr_pgm[0], "uTex2d");
 		if (uTexLoc != -1) 
 			glUniform1i(uTexLoc, 0);
-		renderer::model& mdl = renderer::models[(int)key.meshType];
-		renderer::drawInstances(mdl, pair.second);
+		//renderer::model& mdl = renderer::models[(int)key.meshType];
+		renderer::drawInstances(pair);
 	}
 	for (std::pair<const BatchKey, std::vector<renderer::InstanceData>>& pair : objectWithTex2)
 	{
@@ -213,8 +214,8 @@ void RenderSystem::update(GameObjectManager& manager, float const& deltaTime)
 		GLint uTexLoc = glGetUniformLocation(renderer::shdr_pgm[0], "uTex2d");
 		if (uTexLoc != -1)
 			glUniform1i(uTexLoc, 0);
-		renderer::model& mdl = renderer::models[(int)key.meshType];
-		renderer::drawInstances(mdl, pair.second);
+		//renderer::model& mdl = renderer::models[(int)key.meshType];
+		renderer::drawInstances(pair);
 	}
 
 	/*if (UISystem::isShowUI()) glBindFramebuffer(GL_FRAMEBUFFER, 0);*/
@@ -326,7 +327,7 @@ void RenderSystem::batchingSetUp(GameObjectManager& manager, float const& deltaT
 	std::vector<GameObject*> gameObjects;
 	manager.getAllGameObjects(gameObjects);
 	for (std::pair < const BatchKey, std::vector<renderer::InstanceData>>& pair : objectWithTex) pair.second.clear();
-	for (std::pair < const shape, std::vector<renderer::InstanceData>>& pair : objectWithoutTex) pair.second.clear();
+	for (std::pair < const BatchKey, std::vector<renderer::InstanceData>>& pair : objectWithoutTex) pair.second.clear();
 
 	for (GameObject* obj : gameObjects)
 	{
@@ -398,7 +399,8 @@ void RenderSystem::batchingSetUp(GameObjectManager& manager, float const& deltaT
 			}
 			// draw shape if obj texture file is empty
 			else {
-				objectWithoutTex[render->modelRef.shape].push_back(data);
+				BatchKey key{ render->modelRef.shape, 0 };
+				objectWithoutTex[key].push_back(data);
 			}
 		}
 		else if (render->hasTex)
@@ -408,7 +410,8 @@ void RenderSystem::batchingSetUp(GameObjectManager& manager, float const& deltaT
 		}
 		else
 		{
-			objectWithoutTex[render->modelRef.shape].push_back(data);
+			BatchKey key{ render->modelRef.shape, 0 };
+			objectWithoutTex[key].push_back(data);
 		}
 	}
 
@@ -442,11 +445,6 @@ void RenderSystem::instancePerBatch(std::unordered_map<BatchKey, std::vector<ren
 			objs.second.data() // Source data
 		);
 	}
-}
-
-void RenderSystem::reinstancePerBatch(std::unordered_map<BatchKey, std::vector<renderer::InstanceData>, BatchKeyHash>& batch)
-{
-
 }
 
 void RenderSystem::fboAspectRatio(int& width, int& height) const {
