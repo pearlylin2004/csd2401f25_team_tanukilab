@@ -113,7 +113,7 @@ renderer::model renderer::setup_square(glm::vec3 clr)
 	glBufferData(GL_ARRAY_BUFFER, mdl.maxInstances * sizeof(InstanceData), nullptr, GL_DYNAMIC_DRAW);*/
 
 	// Setup layout in VAO
-	setup_instance_attributes(mdl);
+	//setup_instance_attributes(mdl);
 
 	mdl.primitive_type = GL_TRIANGLES;
 	std::array<GLushort, 6> idx_vtx{ 0, 1, 2, 2, 3, 0 };
@@ -127,7 +127,7 @@ renderer::model renderer::setup_square(glm::vec3 clr)
 	mdl.draw_cnt = static_cast<GLsizei>(pos_vtx.size());
 	mdl.primitive_cnt = mdl.elem_cnt;
 	mdl.shape = shape::square;
-	setup_instance_attributes(mdl);
+	//setup_instance_attributes(mdl);
 	return mdl;
 }
 
@@ -185,7 +185,7 @@ renderer::model renderer::setup_circle(glm::vec3 clr, int slices)
 	mdl.ebo = 0;
 	mdl.primitive_cnt = slices; // number of primitives
 	mdl.shape = shape::circle;
-	setup_instance_attributes(mdl);
+	//setup_instance_attributes(mdl);
 	return mdl;
 }
 /*
@@ -248,6 +248,7 @@ void renderer::drawInstances(std::pair<BatchKey, std::vector<renderer::InstanceD
 
 	GLuint bindingIndex = 0;
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, bindingIndex, batch.first.ssboID);
+	std::cout << "SSBO ID: " << batch.first.ssboID << std::endl;
 	model const& mdl = models[(int)batch.first.meshType];
 	glBindVertexArray(mdl.vaoid);
 

@@ -447,6 +447,23 @@ void RenderSystem::instancePerBatch(std::unordered_map<BatchKey, std::vector<ren
 	}
 }
 
+void RenderSystem::clearBatches() {
+	// Delete all SSBOs
+	for (auto& [key, instances] : objectWithTex) {
+		if (key.ssboID != 0) {
+			glDeleteBuffers(1, &key.ssboID);
+		}
+	}
+	for (auto& [key, instances] : objectWithoutTex) {
+		if (key.ssboID != 0) {
+			glDeleteBuffers(1, &key.ssboID);
+		}
+	}
+
+	objectWithTex.clear();
+	objectWithoutTex.clear();
+}
+
 void RenderSystem::fboAspectRatio(int& width, int& height) const {
 	width = fboWidth;
 	height = fboHeight;

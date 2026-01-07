@@ -95,6 +95,7 @@ public:
 	//GLuint getTexture() const { return texture; }
 	void batchingSetUp(GameObjectManager& manager, float const& deltaTime);
 	void instancePerBatch(std::unordered_map<BatchKey, std::vector<renderer::InstanceData>, BatchKeyHash> &batch);
+	void clearBatches();
 
 	void fboAspectRatio(int& width, int& height) const;
 	~RenderSystem();

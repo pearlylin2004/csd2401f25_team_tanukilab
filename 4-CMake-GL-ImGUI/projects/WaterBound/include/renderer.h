@@ -133,7 +133,7 @@ struct renderer
 	\param[in] mdl
 		the mesh/model that is being drawn
 	*************************************************************************/
-	static void setup_instance_attributes(model& mdl);
+	//static void setup_instance_attributes(model& mdl);
 
 	/*!***********************************************************************
 	\brief
