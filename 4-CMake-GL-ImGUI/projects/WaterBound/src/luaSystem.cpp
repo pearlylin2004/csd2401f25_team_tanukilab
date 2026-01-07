@@ -212,7 +212,16 @@ void LuaSystem::update(GameObjectManager& manager, float deltaTime) {
     for (GameObject* obj : gameObjects) {
         if (obj->hasComponent<LuaScript>()) {
             LuaScript* scriptComp = obj->getComponent<LuaScript>();
-            updateObjectScript(scriptComp->scriptName, obj, deltaTime);
+
+            if (!scriptComp->scriptName.empty() && !scriptComp->filename.empty()) {
+				
+                if (scriptComp->scriptChanged) {
+                    loadScriptForObject(scriptComp->filename, scriptComp->scriptName);
+                    scriptComp->scriptChanged = false;
+                }
+
+                updateObjectScript(scriptComp->scriptName, obj, deltaTime);
+            }
         }
     }
 }

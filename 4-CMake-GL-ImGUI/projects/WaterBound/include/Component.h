@@ -226,6 +226,7 @@ struct UIComponent : public Component {
 //to know which object to run
 struct LuaScript : public Component {
 public:
+	LuaScript() = default;
     LuaScript(const std::string& file)
         : filename(file) {
         // Extract just the filename without extension to use as scriptName
@@ -237,11 +238,14 @@ public:
     }
 
     std::unique_ptr<Component> clone() const override {
-        return std::make_unique<LuaScript>(*this);
+        auto cloned = std::make_unique<LuaScript>(*this);
+        cloned->scriptChanged = true; // Always reload for cloned components
+        return cloned;
     }
 
     std::string filename;   // Full path to the Lua file
     std::string scriptName; // Just the object name (e.g., "bullet", "player")
+	bool scriptChanged = true; // To track if the script file has changed
 };
 
 // Logic Container (FSM)

@@ -120,6 +120,14 @@ namespace Editor {
 	/* ----------------- Scene End -----------------*/
 
 
+	/* ----------------- Lua Script State -----------------*/
+	struct ScriptState {
+		std::vector<std::string> availScripts;
+		std::string scriptDir = "assets/scripting/";
+	};
+	/* ----------------- Script End -----------------*/
+
+
 	/* ----------------- Popup End -----------------*/
 	struct PopupState {
 		bool audioFileTypePopup = false;
@@ -169,6 +177,7 @@ namespace Editor {
 	inline ShapeControlState circleInput;
 	inline ShapeControlState rectangleInput;
 	inline SceneWindowState sceneWindowState;
+	inline ScriptState scriptState;
 	inline AssetBrowserState assetBrowserState;
 	inline SceneState sceneState;
 	inline PopupState popupState;
@@ -266,6 +275,13 @@ namespace Editor {
 			DebugLog::addMessage("Added Tile Map component for " + obj->getObjectName());
 			},
 			[](const GameObject* obj) { return obj->hasComponent<TileMap>(); }
+		},
+		{"Lua Script",
+			[](GameObject* obj) {
+			obj->addComponent<LuaScript>();
+			DebugLog::addMessage("Added Lua Script component for " + obj->getObjectName());
+			},
+			[](const GameObject* obj) { return obj->hasComponent<LuaScript>(); }
 		}
 	};
 	/* ----------------- Component End ---------------- */

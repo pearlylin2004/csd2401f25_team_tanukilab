@@ -203,6 +203,17 @@ void InspectorWindow::render(GameObjectManager& manager) {
         }
         /* ------------------- END ------------------- */
 
+        /* ------------------- Font ------------------- */
+        if (selected->hasComponent<LuaScript>()) {
+            //Transform* transform = selected->getComponent<Transform>();
+            renderLua(selected);
+
+            ImGui::Spacing();
+            ImGui::Separator();
+            ImGui::Spacing();
+        }
+        /* ------------------- END ------------------- */
+
 
         /* ------------------- Add Component ------------------- */
         addComponent(selected);
@@ -230,7 +241,7 @@ void InspectorWindow::render(GameObjectManager& manager) {
 void InspectorWindow::addComponent(GameObject* selected) {
     //if (!ImGui::CollapsingHeader("Add Component")) return;
 
-    ImGui::BeginChild("AddComponentSection", ImVec2(0, 300), true, ImGuiWindowFlags_NoScrollbar);
+    ImGui::BeginChild("AddComponentSection", ImVec2(0, 400), true, ImGuiWindowFlags_NoScrollbar);
     ImGui::TextDisabled("Add Component");
     ImGui::Separator();
 
@@ -1107,6 +1118,87 @@ void InspectorWindow::renderTileMap(GameObject* selected)
             DebugLog::addMessage("Removed Tile Map Component");
         }
     }
+}
+
+void InspectorWindow::renderLua(GameObject* selected) {
+	LuaScript* script = selected->getComponent<LuaScript>();
+
+    if (ImGui::CollapsingHeader("Lua Script")) {
+
+        /* ---------- reload script list button ---------- */
+        if (ImGui::Button("Refresh Script List") || Editor::scriptState.availScripts.empty()) {
+            Editor::scriptState.availScripts.clear();
+			
+            if (std::filesystem::exists(Editor::scriptState.scriptDir)) {
+				for (const auto& entry : std::filesystem::directory_iterator(Editor::scriptState.scriptDir)) {
+					if (entry.is_regular_file() && entry.path().extension() == ".lua") {
+                        Editor::scriptState.availScripts.push_back(entry.path().filename().string());
+					}
+				}
+            }
+        }
+        /* ---------- END ---------- */
+
+
+        ImGui::Spacing();
+        ImGui::Separator();
+        ImGui::Spacing();
+
+
+        /* ---------- Dropdown to Select Script ---------- */
+        ImGui::Text("Select Script:");
+        std::string displayName = script->scriptName.empty() ? "None" : script->scriptName;
+
+        if (ImGui::BeginCombo("##ScriptSelector", displayName.c_str())) {
+            // clear script
+            if (ImGui::Selectable("None", script->scriptName.empty())) {
+                script->scriptName = "";
+				script->filename = "";
+                //script->scriptChanged = true;
+
+				DebugLog::addMessage("Cleared script from " + selected->getObjectName() + "\n");
+            }
+
+            // list all scripts
+            for (const std::string& scriptFile : Editor::scriptState.availScripts) {
+                bool isSelected = (script->scriptName == scriptFile);
+                if (ImGui::Selectable(scriptFile.c_str(), isSelected)) {
+                    script->scriptName = scriptFile;
+                    script->filename = Editor::scriptState.scriptDir + scriptFile;
+                    script->scriptChanged = true;
+                    
+                    // rempve file extension for script name
+                    size_t lastDot = script->scriptName.find_last_of('.');
+                    if (lastDot != std::string::npos) {
+                        script->scriptName = script->scriptName.substr(0, lastDot);
+                    }
+                    					
+                    DebugLog::addMessage("Assigned script " + scriptFile + " to " + selected->getObjectName() + "\n");
+                }
+                if (isSelected) {
+                    ImGui::SetItemDefaultFocus();
+                }
+            }
+            ImGui::EndCombo();
+        }
+
+        /* ---------- END ---------- */
+
+
+        ImGui::Spacing();
+        ImGui::Separator();
+        ImGui::Spacing();
+
+        // Remove component button
+        if (ImGui::Button("Remove Lua Script", ImVec2(-1, 0))) {
+            selected->removeComponent<LuaScript>();
+            DebugLog::addMessage("Removed Lua Script Component");
+        }
+    }
+
+    ImGui::Spacing();
+    ImGui::Separator();
+    ImGui::Spacing();
 }
 
 void InspectorWindow::wrongFileTypePopup(const std::string& filename) {
