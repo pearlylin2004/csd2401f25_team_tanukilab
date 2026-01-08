@@ -126,6 +126,7 @@ private:
 	void renderFont(GameObject* selected);
 	void renderAudio(GameObject* selected);
 	void renderTileMap(GameObject* selected);
+	void renderLua(GameObject* selected);
 
 	void wrongFileTypePopup(const std::string& filename);
 
@@ -213,7 +214,7 @@ public:
 private:
 	/* --------- Render -------- */
 	void renderGizmo(GameObjectManager& manager);
-	void drawGrid(const glm::mat4& view, const glm::mat4& proj, GameObjectManager& manager);
+	void drawGrid(const glm::mat4& view, const glm::mat4& proj);
 	void renderObjectHighlight();
 	void renderObjCollider(GameObject* obj);
 	void editorCameraControls();
@@ -237,7 +238,7 @@ private:
 
 	/* -------- Object Click and Drag -------- */
 	// handle click and select logic and collision
-	void objPicking(GameObjectManager& manager);
+	void objPicking();
 	// handle dragging of the obj (obj will follow cursor)
 	void objDragging() const;
 	/* -------- END -------- */

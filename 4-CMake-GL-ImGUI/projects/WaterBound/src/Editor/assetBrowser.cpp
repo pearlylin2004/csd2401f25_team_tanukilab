@@ -38,13 +38,13 @@ void AssetBrowser::render() {
 
 
     /* ------------------ Auto update if changes in project directory ---------------------*/
-    // Check top-level folder got any updates (the asset folder)
-    static float timeSinceLastCheck = 0.0f;
+    // check top-level folder got any updates (the asset folder)
+    static float timeSinceLastCheck = 0.f;
     timeSinceLastCheck += ImGui::GetIO().DeltaTime;
 
-	// check every 3 seconds
-    if (timeSinceLastCheck >= 3.0f) {
-        timeSinceLastCheck = 0.0f;
+	// check every 5 seconds
+    if (timeSinceLastCheck >= 5.f) {
+        timeSinceLastCheck = 0.f;
         std::filesystem::file_time_type currentTopLevel = std::filesystem::last_write_time(m_AssetBrowserState.currentFolder);
         bool needsRefresh = false;
 
@@ -53,7 +53,7 @@ void AssetBrowser::render() {
             needsRefresh = true;
         }
 
-        // Now check subfolders recursively (cheap guard: only if assetsChangedFlag is false)
+        // check subfolders recursively (only if assetsChangedFlag is false)
         std::filesystem::file_time_type newestTime = m_AssetBrowserState.lastRefresh;
 
         for (const auto& entry : std::filesystem::recursive_directory_iterator(m_AssetBrowserState.currentFolder)) {
@@ -384,7 +384,7 @@ void AssetBrowser::loadAssetsFromDirectory() {
         }
     }
 
-    DebugLog::addMessage("Assets loaded from " + m_AssetBrowserState.currentFolder);
+    //DebugLog::addMessage("Assets loaded from " + m_AssetBrowserState.currentFolder);
 }
 
 void AssetBrowser::assetDeletePopup() {

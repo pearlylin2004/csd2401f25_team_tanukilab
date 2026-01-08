@@ -79,7 +79,7 @@ void SceneWindow::render(GLuint texture, float aspectRatio, GameObjectManager& m
 
         // left click to select obj
         if (InputHandler::isMouseLeftClicked() && !ImGuizmo::IsUsing()) {
-            objPicking(manager);
+            objPicking();
         }
 
         // drag to reposition obj
@@ -100,9 +100,9 @@ void SceneWindow::render(GLuint texture, float aspectRatio, GameObjectManager& m
     // show grid
     if (m_gizmoState.showGrid) {
 		if (EditorManager::isEditingMode())
-            drawGrid(renderer::editorCam.view, renderer::editorCam.proj, manager);
+            drawGrid(renderer::editorCam.view, renderer::editorCam.proj);
         else
-			drawGrid(renderer::cam.view, renderer::cam.proj, manager);
+			drawGrid(renderer::cam.view, renderer::cam.proj);
     }
 
 	// highlight selected object
@@ -252,7 +252,7 @@ void SceneWindow::renderGizmo(GameObjectManager& manager) {
     );*/
 }
 
-void SceneWindow::drawGrid(const glm::mat4& view, const glm::mat4& proj, GameObjectManager& manager) {
+void SceneWindow::drawGrid(const glm::mat4& view, const glm::mat4& proj) {
     ImDrawList* drawList = ImGui::GetWindowDrawList();
     std::vector<GameObject*> gameObjects = CachedGameObjects::Instance().getCachedObjects();
 
@@ -784,7 +784,7 @@ Future implementation (jic i forget)
 
 - Undo/redo
 */
-void SceneWindow::objPicking(GameObjectManager& manager) {
+void SceneWindow::objPicking() {
     Vector2D mousePos = InputHandler::getMousePositionInImGuiViewport(m_sceneWindowState.scenePos, m_sceneWindowState.sceneSize);
 
     std::vector<GameObject*> gameObjects = CachedGameObjects::Instance().getCachedObjects();
