@@ -248,7 +248,7 @@ void renderer::drawInstances(std::pair<BatchKey, std::vector<renderer::InstanceD
 
 	GLuint bindingIndex = 0;
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, bindingIndex, batch.first.ssboID);
-	std::cout << "SSBO ID: " << batch.first.ssboID << std::endl;
+	//std::cout << "SSBO ID: " << batch.first.ssboID << std::endl;
 	model const& mdl = models[(int)batch.first.meshType];
 	glBindVertexArray(mdl.vaoid);
 
