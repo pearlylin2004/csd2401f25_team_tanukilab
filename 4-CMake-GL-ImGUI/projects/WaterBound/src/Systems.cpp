@@ -206,6 +206,7 @@ void RenderSystem::update(GameObjectManager& manager, float const& deltaTime)
 		//renderer::model& mdl = renderer::models[(int)key.meshType];
 		renderer::drawInstances(pair);
 	}
+	instancePerBatch(objectWithTex2);
 	for (std::pair<const BatchKey, std::vector<renderer::InstanceData>>& pair : objectWithTex2)
 	{
 		const BatchKey& key = pair.first;
