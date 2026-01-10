@@ -1182,6 +1182,25 @@ void InspectorWindow::renderLua(GameObject* selected) {
             ImGui::EndCombo();
         }
 
+		// Open script in VSC
+        if (!script->filename.empty()) {
+            ImGui::SameLine();
+            if (ImGui::Button("Edit Script")) {
+
+                std::string command;
+            #ifdef _WIN32
+                command = "code \"" + script->filename + "\"";   script->filename + "\"";
+            #elif __APPLE__
+                command = "open -a 'Visual Studio Code' \"" + script->filename + "\"";
+            #else  // Linux
+                command = "code \"" + script->filename + "\"";
+            #endif
+
+                system(command.c_str());
+                DebugLog::addMessage("Opening script: " + script->filename + "\n");
+            }
+        }
+
         /* ---------- END ---------- */
 
 
