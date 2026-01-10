@@ -227,25 +227,45 @@ struct UIComponent : public Component {
 struct LuaScript : public Component {
 public:
 	LuaScript() = default;
-    LuaScript(const std::string& file)
-        : filename(file) {
-        // Extract just the filename without extension to use as scriptName
-        size_t lastSlash = file.find_last_of("/\\");
-        std::string fname = (lastSlash != std::string::npos) ? file.substr(lastSlash + 1) : file;
-
-        size_t lastDot = fname.find_last_of('.');
-        scriptName = (lastDot != std::string::npos) ? fname.substr(0, lastDot) : fname;
+    LuaScript(const std::string& file) {
+        scripts.push_back(ScriptEntry(file));
     }
+    //LuaScript(const std::string& file)
+    //    : filename(file) {
+    //    // Extract just the filename without extension to use as scriptName
+    //    size_t lastSlash = file.find_last_of("/\\");
+    //    std::string fname = (lastSlash != std::string::npos) ? file.substr(lastSlash + 1) : file;
+
+    //    size_t lastDot = fname.find_last_of('.');
+    //    scriptName = (lastDot != std::string::npos) ? fname.substr(0, lastDot) : fname;
+    //}
 
     std::unique_ptr<Component> clone() const override {
         auto cloned = std::make_unique<LuaScript>(*this);
-        cloned->scriptChanged = true; // Always reload for cloned components
+        cloned->scriptsChanged = true; // Always reload for cloned components
         return cloned;
     }
 
-    std::string filename;   // Full path to the Lua file
-    std::string scriptName; // Just the object name (e.g., "bullet", "player")
-	bool scriptChanged = true; // To track if the script file has changed
+    struct ScriptEntry {
+        std::string filename = "";   // Full path to the Lua file
+        std::string scriptName = ""; // Just the object name (e.g., "bullet", "player")
+        bool changed = true;
+
+        ScriptEntry() = default;
+		ScriptEntry(const std::string& file)
+			: filename(file) {
+			// Extract just the filename without extension to use as scriptName
+			size_t lastSlash = file.find_last_of("/\\");
+			std::string fname = (lastSlash != std::string::npos) ? file.substr(lastSlash + 1) : file;
+			size_t lastDot = fname.find_last_of('.');
+			scriptName = (lastDot != std::string::npos) ? fname.substr(0, lastDot) : fname;
+		}
+    };
+
+    //std::string filename;   // Full path to the Lua file
+    //std::string scriptName; // Just the object name (e.g., "bullet", "player")
+	std::vector<ScriptEntry> scripts;
+	bool scriptsChanged = true; // To track if the script file has changed
 };
 
 // Logic Container (FSM)
