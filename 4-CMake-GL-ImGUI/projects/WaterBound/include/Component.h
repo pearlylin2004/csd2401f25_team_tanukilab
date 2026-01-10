@@ -226,7 +226,10 @@ struct UIComponent : public Component {
 //to know which object to run
 struct LuaScript : public Component {
 public:
-	LuaScript() = default;
+    LuaScript() {
+        scripts.push_back(ScriptEntry());
+    }
+
     LuaScript(const std::string& file) {
         scripts.push_back(ScriptEntry(file));
     }

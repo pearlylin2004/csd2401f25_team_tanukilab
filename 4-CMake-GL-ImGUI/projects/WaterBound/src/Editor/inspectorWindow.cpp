@@ -1164,9 +1164,9 @@ void InspectorWindow::renderLua(GameObject* selected) {
                     DebugLog::addMessage("Cleared script " + displayName + " for " + selected->getObjectName());
                 }
 
-                // List all scripts
+                // list all scripts
                 for (const std::string& scriptFile : Editor::scriptState.availScripts) {
-                    // Check if this script is selected (compare with scriptName)
+                    // check if this script is selected (compare with scriptName)
                     std::string nameWithoutExt = scriptFile.substr(0, scriptFile.find_last_of('.'));
                     bool isSelected = (scriptEntry.scriptName == nameWithoutExt);
 
@@ -1200,19 +1200,21 @@ void InspectorWindow::renderLua(GameObject* selected) {
                     DebugLog::addMessage("Opening script: " + scriptEntry.filename + "\n");
                 }
 
-                // Tooltip on hover
+                // tooltip on hover
                 if (ImGui::IsItemHovered()) {
                     ImGui::SetTooltip("Open in VS Code");
                 }
             }
 
-            // Remove this script slot
+            // remove this script
             ImGui::SameLine();
-            if (ImGui::Button("X")) {
-                scriptIndex = i;
-            }
-            if (ImGui::IsItemHovered()) {
-                ImGui::SetTooltip("Remove script");
+            if (script->scripts.size() > 1) {
+                if (ImGui::Button("X")) {
+                    scriptIndex = i;
+                }
+                if (ImGui::IsItemHovered()) {
+                    ImGui::SetTooltip("Remove script");
+                }
             }
 
             ImGui::Spacing();
@@ -1232,70 +1234,14 @@ void InspectorWindow::renderLua(GameObject* selected) {
             DebugLog::addMessage("Added new script slot\n");
         }
 
-        ImGui::Spacing();
-        ImGui::Separator();
-        ImGui::Spacing();
-        
-
-        /* ---------- Dropdown to Select Script ---------- */
-  //      ImGui::Text("Select Script:");
-  //      std::string displayName = script->scriptName.empty() ? "None" : script->scriptName;
-
-  //      if (ImGui::BeginCombo("##ScriptSelector", displayName.c_str())) {
-  //          // clear script
-  //          if (ImGui::Selectable("None", script->scriptName.empty())) {
-  //              script->scriptName = "";
-		//		script->filename = "";
-  //              //script->scriptChanged = true;
-
-		//		DebugLog::addMessage("Cleared script from " + selected->getObjectName() + "\n");
-  //          }
-
-  //          // list all scripts
-  //          for (const std::string& scriptFile : Editor::scriptState.availScripts) {
-  //              bool isSelected = (script->scriptName == scriptFile);
-  //              if (ImGui::Selectable(scriptFile.c_str(), isSelected)) {
-  //                  script->scriptName = scriptFile;
-  //                  script->filename = Editor::scriptState.scriptDir + scriptFile;
-  //                  script->scriptChanged = true;
-  //                  
-  //                  // rempve file extension for script name
-  //                  size_t lastDot = script->scriptName.find_last_of('.');
-  //                  if (lastDot != std::string::npos) {
-  //                      script->scriptName = script->scriptName.substr(0, lastDot);
-  //                  }
-  //                  					
-  //                  DebugLog::addMessage("Assigned script " + scriptFile + " to " + selected->getObjectName() + "\n");
-  //              }
-  //              if (isSelected) {
-  //                  ImGui::SetItemDefaultFocus();
-  //              }
-  //          }
-  //          ImGui::EndCombo();
-  //      }
-
-		//// Open script in VSC
-  //      if (!script->filename.empty()) {
-  //          ImGui::SameLine();
-  //          if (ImGui::Button("Edit Script")) {
-
-  //              std::string command;
-  //          #ifdef _WIN32
-  //              command = "code \"" + script->filename + "\"";   script->filename + "\"";
-  //          #elif __APPLE__
-  //              command = "open -a 'Visual Studio Code' \"" + script->filename + "\"";
-  //          #else  // Linux
-  //              command = "code \"" + script->filename + "\"";
-  //          #endif
-
-  //              system(command.c_str());
-  //              DebugLog::addMessage("Opening script: " + script->filename + "\n");
-  //          }
-  //      }
-
         /* ---------- END ---------- */
 
 
+        ImGui::Spacing();
+        ImGui::Separator();
+        ImGui::Spacing();
+
+   
         // Remove component button
         if (ImGui::Button("Remove Lua Script", ImVec2(-1, 0))) {
             selected->removeComponent<LuaScript>();
