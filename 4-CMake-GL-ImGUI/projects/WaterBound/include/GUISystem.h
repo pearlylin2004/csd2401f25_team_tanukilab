@@ -36,6 +36,24 @@ enum class GameState {
 	LEVELS //maybe for future use
 };
 
+enum class GameAction {
+    NONE,
+    PLAY,
+    OPEN_CONTROL,
+    PAUSE_GAME,
+    RESUME_GAME,
+    RETURN_TO_MENU,
+    EXIT_GAME,
+    CONFIRM_EXIT,
+	CANCEL_EXIT,
+	BACK_TO_PREVIOUS,
+    QUIT
+};
+
+struct ButtonComponent {
+    GameAction action = GameAction::NONE;
+};
+
 class GUISystem {
 public:
     GUISystem();
@@ -55,6 +73,7 @@ public:
 	void setStateBeforePause(GameState state) { m_stateBeforePause = state; } //set state before pause
 
 private:
+	void handleAction(GameAction action, GameObjectManager& manager); //handle button action
     void createButtons(GameObjectManager& manager); //create menu buttons
     void removeButtons(GameObjectManager& manager); //remove menu buttons
 	void startGame(GameObjectManager& manager); //start game

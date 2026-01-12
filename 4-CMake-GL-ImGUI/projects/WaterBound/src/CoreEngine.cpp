@@ -230,22 +230,7 @@ void CoreEngine::Update(float deltaTime) {
         toggleFullscreen();
     }
     //menu checking
-    GameState state = m_guiSystem->getCurrentState();
-    if (state == GameState::MENU) {
-        m_guiSystem->update(*m_manager);
-    }
-    //control menu checking
-    else if (state == GameState::CONTROL) {
-        m_guiSystem->controlUpdate(*m_manager);
-    }
-    //exit confirmation checking
-    else if (state == GameState::EXITCONFIRMATION) {
-        m_guiSystem->exitUpdate(*m_manager);
-	}
-	//pause menu checking
-    else if(state == GameState::PAUSED) {
-        m_guiSystem->pauseUpdate(*m_manager);
-	}
+	m_guiSystem->update(*m_manager);
 
     if(!EditorManager::isEditingMode() && !EditorManager::isPaused()) m_luaSystem->update(*m_manager, deltaTime);
 
