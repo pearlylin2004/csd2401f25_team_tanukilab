@@ -27,6 +27,7 @@ Technology is prohibited.
 #include "mathlib.h"
 #include "font.h"
 #include "dynamics.h"
+#include "queue"
 
 
 // at least it works!!!
@@ -104,6 +105,7 @@ public:
         int grpNo = 0;
         bool isActive = false;
     };
+    std::queue<GroupData> particles;
 };
 
 struct FontComponent : public Component {
