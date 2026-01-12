@@ -167,6 +167,17 @@ public:
 
     //bool inWaterTriggered; // true only when W is pressed
 
+    //Shooting parameters
+    float fireRate = 0.15f;        // Time between shots (lower is  faster)
+    float shootTimer = 0.0f;       // Internal time for shooting
+    bool canShoot = true;
+    bool autoFire = true;         
+    // Arc parameters
+    float arcHeightFactor = 0.4f;
+    bool useArcTrajectory = true;
+    float minArcHeight = 2.0f;
+
+
     bool inWater = false;
     bool buoancy = false;
 
