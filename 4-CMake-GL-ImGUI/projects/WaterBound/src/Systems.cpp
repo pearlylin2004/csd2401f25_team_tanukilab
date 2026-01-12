@@ -877,24 +877,22 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 	LayerManager& layerManager = manager.getLayerManager();
 	std::vector<Layer*> layers = layerManager.getAllLayers();
 
+	//initialize spatial grid
+	const float CELL_SIZE = 4.0f; //changed grid size
+	const int GRID_WIDTH = 20;
+	const int GRID_HEIGHT = 20;
+
+	//persistant grid for this layer
+	static std::vector<std::vector<Collision::Cell>> grid(GRID_WIDTH, std::vector<Collision::Cell>(GRID_HEIGHT));
+
 	//process each layer separately
 	//right now only layer 1 should have any sort of collision
 	for (Layer* layer : layers) {
 		//skip missing layer
 		if (!layer) {
 			std::cerr << "CollisionSystem::update() - Layer " << layer->getLayerID() << " not found!\n";
-			return;
+			continue;
 		}
-
-		const std::vector<GameObject*>& layerObjects = layer->getObjects();
-
-		//initialize spatial grid
-		const float CELL_SIZE = 2.0f;
-		const int GRID_WIDTH = 20;
-		const int GRID_HEIGHT = 20;
-
-		//persistant grid for this layer
-		static std::vector<std::vector<Collision::Cell>> grid(GRID_WIDTH, std::vector<Collision::Cell>(GRID_HEIGHT));
 
 		//clear grid instead of reallocating every frame
 		for (auto& column : grid) {
@@ -903,14 +901,16 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 			}
 		}
 
+		const std::vector<GameObject*>& layerObjects = layer->getObjects(); //get layer object
+
 		//insert object into grid 
 		for (GameObject* obj : layerObjects) {
-			if (!obj->getComponent<CollisionInfo>() || !obj->hasComponent<Transform>() || !obj->hasComponent<Render>()) continue;
-			CollisionInfo* c = obj->getComponent<CollisionInfo>();
-			if (!c->collisionFlag) continue; // skip if obj not supposed to collide
-
 			Transform* objT = obj->getComponent<Transform>();
+			CollisionInfo* c = obj->getComponent<CollisionInfo>();
+			if (!c || !objT || !c->collisionFlag) continue; //skip if object not suppose to collide, no transform and no collision
+
 			int minCellX, maxCellX, minCellY, maxCellY;
+			//square
 			if (c->colliderType == shape::square){
 				Collision::AABB box = Collision::getObjectAABBbyCollider(objT, c->colliderSize); // use custom collider instead of scale
 				minCellX = static_cast<int>(box.getMin().x / CELL_SIZE);
@@ -918,6 +918,7 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 				minCellY = static_cast<int>(box.getMin().y / CELL_SIZE);
 				maxCellY = static_cast<int>(box.getMax().y / CELL_SIZE);
 			}
+			//circle
 			else if (c->colliderType == shape::circle) {
 				//need one for circle
 				Collision::Circle circle = Collision::getObjectCirclebyCollider(objT, c->colliderSize);
@@ -949,7 +950,7 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 
 		//temporary container to track checked objects for this frame
 		//to advoid duplicate checks
-		std::unordered_map<GameObject*, std::vector<GameObject*>> checked;
+		//std::unordered_map<GameObject*, std::vector<GameObject*>> checked;
 
 		//checking collision 
 		//record current time for performance tracking
@@ -962,41 +963,31 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 				for (size_t n = 0; n < cellObject.size(); n++) {
 					//object 1
 					GameObject* obj1 = cellObject[n];
-					if (!obj1->hasComponent<Physics>()) continue;
-					
 					Transform* t1 = obj1->getComponent<Transform>();
-					//to get obj1 shape
-					//Render* render1 = obj1->getComponent<Render>();
 					CollisionInfo* c1 = obj1->getComponent<CollisionInfo>();
 					Physics* p1 = obj1->getComponent<Physics>();
+					if (!p1 || !c1 || !t1) continue;
+					
 					Vector2D vel1{ p1->dynamics.velocity.x, p1->dynamics.velocity.y };
 					//object 2 looping
 					for (size_t m = n + 1; m < cellObject.size(); m++) {
+						GameObject* obj2 = cellObject[m]; //get obj2
+
+						//check if it have been check already
+						if (obj1 >= obj2)
+							continue;
+
 						//object 2
-						GameObject* obj2 = cellObject[m];
-						if (!obj2->hasComponent<Physics>()) continue;
-
-						//skip if already checked
-						auto it = std::find(checked[obj1].begin(), checked[obj1].end(), obj2);
-						if (it != checked[obj1].end()) continue;
-						//mark as checked both ways
-						checked[obj1].push_back(obj2);
-						checked[obj2].push_back(obj1);
 						Transform* t2 = obj2->getComponent<Transform>();
-						//to get obj1 shape
 						CollisionInfo* c2 = obj2->getComponent<CollisionInfo>();
-						//Render* render2 = obj2->getComponent<Render>();
 						Physics* p2 = obj2->getComponent<Physics>();
-						Vector2D vel2{ p2->dynamics.velocity.x, p2->dynamics.velocity.y };
+						if (!p2 || !t2 || !c2) continue;
 
-						//check collision based on shape
-						//check obj1 shape 
-						if (!c1 || !t1) return;
-						//check obj2 shape 
-						if (!c2 || !t2) return;
+						Vector2D vel2{ p2->dynamics.velocity.x, p2->dynamics.velocity.y };
 
 						//collision info
 						CollisionInfo info;
+
 						//if both square
 						if (c1->colliderType == shape::square && c2->colliderType == shape::square) {
 							Collision::AABB aabb1 = Collision::getObjectAABBbyCollider(t1, c1->colliderSize);
