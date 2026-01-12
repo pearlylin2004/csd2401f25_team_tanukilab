@@ -1006,6 +1006,9 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 							Collision::Circle circle2 = Collision::getObjectCirclebyCollider(t2, c2->colliderSize);
 							info = Collision::CollisionIntersection_CircleAABB_Dynamic_Info(circle2, vel2, aabb1, vel1);
 						}		
+						else {
+							continue; //current dont have other shapes of collision 
+						}
 
 						//checking if collided
 						if (info.collided) {
