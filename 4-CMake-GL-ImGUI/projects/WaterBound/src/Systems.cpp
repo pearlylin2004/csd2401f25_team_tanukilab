@@ -986,6 +986,13 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 						Physics* p2 = obj2->getComponent<Physics>();
 						Vector2D vel2{ p2->dynamics.velocity.x, p2->dynamics.velocity.y };
 
+
+						// Skip if these collision tags shouldn't collide
+						if (!c1->shouldCollideWith(c2->collisionTag) ||
+							!c2->shouldCollideWith(c1->collisionTag)) {
+							continue;
+						}
+
 						//check collision based on shape
 						//check obj1 shape 
 						if (!c1 || !t1) return;

@@ -27,6 +27,8 @@ Technology is prohibited.
 #include "mathlib.h"
 #include "font.h"
 #include "dynamics.h"
+#include <unordered_set>
+
 
 
 // at least it works!!!
@@ -207,6 +209,14 @@ public:
     Vector2D colliderSize{ 0,0 }; // size of the bounding box, if collider is circle then x will be diamater
     bool autoFitScale = true; // auto-fit the collider with the size of the mesh (i.e. obj bigger -> collider bigger)
     CollisionResponseMode collisionRes = CollisionResponseMode::StopWhenCollide;
+
+    std::string collisionTag = "default";  // Tag for object
+    std::unordered_set<std::string> ignoreCollisionsWith;  // Tags to ignore collision with
+
+    // Helper method to check if should collide with another tag
+    bool shouldCollideWith(const std::string& otherTag) const {
+        return ignoreCollisionsWith.find(otherTag) == ignoreCollisionsWith.end();
+    }
 
     // run-time calculation, do not de/serialize
     bool collided = false; // check whether obj alr collided
