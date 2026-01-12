@@ -868,8 +868,6 @@ void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime, M
 	g_SystemTimers.push_back({ "Physics", ms });
 }
 
-
-
 // Collision system - detects and resolves collisions between game objects
 void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime) {
 	(void)deltaTime;
@@ -884,30 +882,34 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 	for (Layer* layer : layers) {
 		//skip missing layer
 		if (!layer) {
-			/*auto end = std::chrono::high_resolution_clock::now();
-			double ms = std::chrono::duration<double, std::milli>(end - start).count();
-			g_SystemTimers.push_back({ "Collisions", ms })*/
 			std::cerr << "CollisionSystem::update() - Layer " << layer->getLayerID() << " not found!\n";
 			return;
 		}
 
 		const std::vector<GameObject*>& layerObjects = layer->getObjects();
 
-		//create grid
+		//initialize spatial grid
 		const float CELL_SIZE = 2.0f;
 		const int GRID_WIDTH = 20;
 		const int GRID_HEIGHT = 20;
-		std::vector<std::vector<Collision::Cell>> grid(GRID_WIDTH, std::vector<Collision::Cell>(GRID_HEIGHT));
 
+		//persistant grid for this layer
+		static std::vector<std::vector<Collision::Cell>> grid(GRID_WIDTH, std::vector<Collision::Cell>(GRID_HEIGHT));
 
+		//clear grid instead of reallocating every frame
+		for (auto& column : grid) {
+			for (auto& cell : column) {
+				cell.objects.clear();
+			}
+		}
+
+		//insert object into grid 
 		for (GameObject* obj : layerObjects) {
 			if (!obj->getComponent<CollisionInfo>() || !obj->hasComponent<Transform>() || !obj->hasComponent<Render>()) continue;
 			CollisionInfo* c = obj->getComponent<CollisionInfo>();
 			if (!c->collisionFlag) continue; // skip if obj not supposed to collide
 
 			Transform* objT = obj->getComponent<Transform>();
-			//Render* renderS = obj->getComponent<Render>();
-			//Collision::AABB box = Collision::getObjectAABB(objT);
 			int minCellX, maxCellX, minCellY, maxCellY;
 			if (c->colliderType == shape::square){
 				Collision::AABB box = Collision::getObjectAABBbyCollider(objT, c->colliderSize); // use custom collider instead of scale
@@ -952,6 +954,7 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 		//checking collision 
 		//record current time for performance tracking
 		auto start = std::chrono::high_resolution_clock::now();
+
 		for (int i = 0; i < GRID_WIDTH; i++) {
 			for (int j = 0; j < GRID_HEIGHT; j++) {
 				auto& cellObject = grid[i][j].objects; //get objects in the cell
@@ -996,9 +999,7 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 						CollisionInfo info;
 						//if both square
 						if (c1->colliderType == shape::square && c2->colliderType == shape::square) {
-							//Collision::AABB aabb1 = Collision::getObjectAABB(t1);
 							Collision::AABB aabb1 = Collision::getObjectAABBbyCollider(t1, c1->colliderSize);
-							//Collision::AABB aabb2 = Collision::getObjectAABB(t2);
 							Collision::AABB aabb2 = Collision::getObjectAABBbyCollider(t2, c2->colliderSize);
 							info = Collision::CollisionIntersection_RectRect_Dynamic_Info(aabb1, vel1, aabb2, vel2);
 						}
@@ -1013,12 +1014,10 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 							Collision::AABB aabb1 = Collision::getObjectAABBbyCollider(t1, c1->colliderSize);
 							Collision::Circle circle2 = Collision::getObjectCirclebyCollider(t2, c2->colliderSize);
 							info = Collision::CollisionIntersection_CircleAABB_Dynamic_Info(circle2, vel2, aabb1, vel1);
-						}
-									
+						}		
 
 						//checking if collided
 						if (info.collided) {
-
 							// c1 is the moving obj (player), c2 is the obj it collide with
 							// CASE 1: collided obj is pushable
 							if (c2->collisionRes == CollisionResponseMode::MoveWhenCollide) {

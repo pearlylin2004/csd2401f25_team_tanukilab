@@ -208,6 +208,10 @@ void GUISystem::pauseUpdate(GameObjectManager& manager) {
                         m_currentState = GameState::MENU;
                         loadScreen(manager, "menu_scene.json");
                     }
+                    else if (m_stateBeforePause == GameState::CONTROL) {
+						m_currentState = GameState::CONTROL;
+						loadScreen(manager, "control_scene.json");
+                    }
                     //can have more?
                     return; //stop checking after a click
                 }
