@@ -88,6 +88,24 @@ public:
     renderer::model modelRef;
 };
 
+struct Particle : public Component {
+public:
+    std::unique_ptr<Component> clone() const override {
+        return std::make_unique<Particle>(*this);
+    }
+
+public:
+    struct GroupData 
+    {
+        glm::vec4 clr{ 1,1,1,1 };
+        glm::vec3 offset;
+        float timer = 0;
+        int particleAmt = 0;
+        int grpNo = 0;
+        bool isActive = false;
+    };
+};
+
 struct FontComponent : public Component {
     FontComponent() = default;
 
