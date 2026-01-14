@@ -731,6 +731,7 @@ void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime, M
 	if (m_stepReq)
 		m_stepReq = false;*/
 
+
 	std::vector<GameObject*> gameObjects;
 	manager.getAllGameObjects(gameObjects);
 
@@ -754,7 +755,6 @@ void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime, M
 		Physics* physics = object->getComponent<Physics>();
 		if (object->getObjectName() == "bullet") continue;
 		if (!physics->physicsFlag) continue;
-		//if (physics->isStatic) continue;
 		Transform* transform = object->getComponent<Transform>();
 
 		// Handle player input
@@ -764,44 +764,85 @@ void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime, M
 				PhysicsForces::updatePosition(transform, physics, deltaTime);
 			}
 
-			if (InputHandler::isKeyTriggered(GLFW_KEY_SPACE)) {
-				GameObject* bullet = PhysicsForces::findAvailableBullet(manager);
-				//debugBullets(manager);
-				if (bullet != nullptr) {
-					PhysicsForces::shoot(bullet, transform);
-					messageBus.publish(Message("KeyPressed", nullptr, KeyEvent{ "SPACE", true }));
+			// Continuous shooting system
+			if (physics->canShoot) {
+				// Update shoot timer
+				physics->shootTimer += deltaTime;
 
-					if (bullet->hasComponent<AudioComponent>()) {
-						AudioComponent* audio = bullet->getComponent<AudioComponent>();
-						AudioChannel* ch = audio->getDefaultChannel();
-						ch->isPendingPlay = true;
+				// Check if mouse button is being held down
+				if (InputHandler::isMouseLeftHeld()) {
+					
+					if (physics->shootTimer >= physics->fireRate) {
+						GameObject* bullet = PhysicsForces::findAvailableBullet(manager);
+
+						if (bullet != nullptr) {
+							// Get mouse position in world coordinates
+							Vector2D mouseWorldPos = InputHandler::getWorldMousePosition();
+
+							// Shoot bullet toward mouse position
+							PhysicsForces::shoot(bullet, transform, mouseWorldPos);
+							messageBus.publish(Message("KeyPressed", nullptr, KeyEvent{ "LEFT_CLICK", true }));
+
+							if (bullet->hasComponent<AudioComponent>()) {
+								AudioComponent* audio = bullet->getComponent<AudioComponent>();
+								AudioChannel* ch = audio->getDefaultChannel();
+								ch->isPendingPlay = true;
+							}
+
+							DebugLog::addMessage("Bullet fired!", DebugMode::PlaySimul);
+							physics->shootTimer = 0.0f;
+						}
+						else {
+							physics->shootTimer = physics->fireRate * 0.5f;
+							DebugLog::addMessage("No bullets available!", DebugMode::PlaySimul);
+						}
 					}
-
-					DebugLog::addMessage("Bullet fired from pool!", DebugMode::PlaySimul);
 				}
+				//else if (InputHandler::isMouseLeftClicked()) { /// to shoot only one bullet at a time
+				//	// Single shot mode: Only fire once on click (if autoFire is disabled)
+				//	if (!physics->autoFire && physics->shootTimer >= physics->fireRate) {
+				//		GameObject* bullet = PhysicsForces::findAvailableBullet(manager);
+
+				//		if (bullet != nullptr) {
+				//			Vector2D mouseWorldPos = InputHandler::getWorldMousePosition();
+				//			PhysicsForces::shoot(bullet, transform, mouseWorldPos);
+				//			messageBus.publish(Message("KeyPressed", nullptr, KeyEvent{ "LEFT_CLICK", true }));
+
+				//			if (bullet->hasComponent<AudioComponent>()) {
+				//				AudioComponent* audio = bullet->getComponent<AudioComponent>();
+				//				AudioChannel* ch = audio->getDefaultChannel();
+				//				ch->isPendingPlay = true;
+				//			}
+
+				//			physics->shootTimer = 0.0f;
+				//		}
+				//	}
+				//}
 				else {
-					DebugLog::addMessage("No bullets available! Wait for reload.", DebugMode::PlaySimul);
+					physics->shootTimer = physics->fireRate;
 				}
 			}
+
+			// Movement controls (A/D keys)
 			float targetVelX = 0.0f;
 			if (InputHandler::isKeyHeld(GLFW_KEY_A)) {
 				physics->canMove = true;
 				targetVelX = -physics->moveSpeed;
-				transform->flipX = true; // flip to face left
+				transform->flipX = true;
 				messageBus.publish(Message("KeyPressed", nullptr, KeyEvent{ "A", true }));
 			}
 			else if (InputHandler::isKeyHeld(GLFW_KEY_D) && physics->canMove) {
 				targetVelX = physics->moveSpeed;
-				transform->flipX = false; // flip to face right
+				transform->flipX = false;
 				messageBus.publish(Message("KeyPressed", nullptr, KeyEvent{ "D", true }));
 			}
 			physics->dynamics.velocity.x = targetVelX;
 
-			// Jump
-			if (InputHandler::isKeyTriggered(GLFW_KEY_B)) {
+			// Jump (SPACE key)
+			if (InputHandler::isKeyTriggered(GLFW_KEY_SPACE)) {
 				if (previousOnGround[object]) {
 					PhysicsForces::jump(object);
-					messageBus.publish(Message("KeyPressed", nullptr, KeyEvent{ "B", true }));
+					messageBus.publish(Message("KeyPressed", nullptr, KeyEvent{ "SPACE", true }));
 				}
 			}
 
@@ -811,9 +852,7 @@ void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime, M
 				physics->dynamics.position.y = physics->floorY;
 				physics->dynamics.velocity.y = 0.0f;
 				physics->velY = 0.0f;
-				//physics->velY = 0.0f;
 				physics->onGround = true;
-				//physics->velX = 0.0f;
 			}
 			transform->x += physics->velX * deltaTime;
 		}
@@ -825,13 +864,13 @@ void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime, M
 		}
 	}
 
-	for (GameObject* obj : gameObjects) { 
+	// Bullet physics
+	for (GameObject* obj : gameObjects) {
 		std::string name = obj->getObjectName();
-
 		// Skip if not a numbered bullet
-		if (name.find("bullet") != 0 || name.length() <= 6) continue;
+		//if (name.find("bullet") != 0 || name.length() <= 6) continue;
+		if (name.find("bullet") != 0) continue;
 
-		// Check if it's a numbered bullet (bullet1, bullet2, etc.)
 		bool isNumberedBullet = true;
 		for (size_t i = 6; i < name.length(); i++) {
 			if (!std::isdigit(name[i])) {
@@ -849,19 +888,21 @@ void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime, M
 
 		if (p->alive) {
 			// Update bullet physics
-			DynamicsSystem::Integrate(p->dynamics, deltaTime, 0.0f, false);
+			Vector3D gravityForce = { 0.0f, p->gravity * p->dynamics.mass, 0.0f };
+
+			DynamicsSystem::UpdateForces(p->dynamics, deltaTime);
+			DynamicsSystem::Integrate(p->dynamics, deltaTime, p->gravity, false);
+
 			t->x = p->dynamics.position.x;
 			t->y = p->dynamics.position.y;
-
 			// Update life timer
 			p->lifeTimer += deltaTime;
-
 			// Deactivate if lifetime exceeded
-			if (p->lifeTimer >= p->maxLifetime) {
+			if (p->lifeTimer >= p->maxLifetime || p->dynamics.position.y < -20.0f) {
 				PhysicsForces::deactivateBullet(obj);
 			}
 		}
-	} 
+	}
 
 	auto end = std::chrono::high_resolution_clock::now();
 	double ms = std::chrono::duration<double, std::milli>(end - start).count();
@@ -984,6 +1025,18 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 						if (!p2 || !t2 || !c2) continue;
 
 						Vector2D vel2{ p2->dynamics.velocity.x, p2->dynamics.velocity.y };
+
+						// Skip if these collision tags shouldn't collide
+						if (!c1->shouldCollideWith(c2->collisionTag) ||
+							!c2->shouldCollideWith(c1->collisionTag)) {
+							continue;
+						}
+
+						//check collision based on shape
+						//check obj1 shape 
+						if (!c1 || !t1) return;
+						//check obj2 shape 
+						if (!c2 || !t2) return;
 
 						//collision info
 						CollisionInfo info;

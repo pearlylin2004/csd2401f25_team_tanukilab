@@ -15,6 +15,10 @@
         "Render": {
           "texture": "assets/Texture\\water_texture.png",
           "hasTex": 1
+        },
+        "CollisionInfo": {
+          "collisionTag": "bullet",
+          "ignoreCollisionsWith": [ "player"]
         }
       }
     },
@@ -89,6 +93,10 @@
         },
         "Physics": {
           "jumpForce": 90.0
+        },
+        "CollisionInfo": {
+          "collisionTag": "player",
+          "ignoreCollisionsWith": [ "bullet" ]
         },
         "StateMachine": {
           "state": "Walking",

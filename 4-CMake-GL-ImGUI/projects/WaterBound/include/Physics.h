@@ -51,7 +51,7 @@ struct PhysicsForces {
     /**
      * @brief shoots a bullet from  origin (player)
      */
-    static void shoot(GameObject* bullet, const Transform* origin);  // Shoot bullet from origin
+    static void shoot(GameObject* bullet, const Transform* origin, const Vector2D& targetPos);// Shoot bullet from origin
 
     /*static void applyDynamics(Physics* physics, float deltaTime);*/
     /**
