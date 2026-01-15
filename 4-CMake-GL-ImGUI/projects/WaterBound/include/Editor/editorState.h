@@ -23,6 +23,7 @@ Technology is prohibited.
 #include <imgui.h>
 #include <ImGuizmo.h>
 #include "GameObjectManager.h"
+#include "prefabManager.h"
 
 namespace Editor {
 	/* ----------------- Menu Bar -----------------*/
@@ -89,6 +90,7 @@ namespace Editor {
 		std::filesystem::file_time_type lastRefresh;
 		std::string currentViewFolder;
 		std::vector<std::string> subFolders;
+		std::vector<PrefabUsageInfo> prefabUsageInfo; // for tracking prefab usage info in delete popup
 
 		// for dropping of files from file explorer
 		std::string hoverFolder;

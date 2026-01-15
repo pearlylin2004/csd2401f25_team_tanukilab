@@ -22,16 +22,17 @@ Technology is prohibited.
 #include <iomanip>
 #include "GameObjectManager.h"
 
-//struct PrefabData {
-//	std::string name;
-//	std::string id;
-//};
-
 /*
 HOW TO USE THIS
 - PrefabManager::Instance() -> to access the singleton instance
 e.g. PrefabManager::Instance().instantiate("player1"); -> to instantiate a prefab with id "player1"
 */
+
+
+struct PrefabUsageInfo {
+	std::string sceneName;
+	std::vector<std::string> objectNames;
+};
 
 class PrefabManager {
 public:
@@ -94,8 +95,10 @@ public:
 	/* -------- END -------- */
 
 
-	// DO NOT USE THIS, INCOMPLETE
+	/* -------- Prefab Deletion -------- */
+	bool isPrefabUsedInAnyScene(const std::string& prefabID, std::vector<PrefabUsageInfo>& usageInfo) const;
 	bool deletePrefab(const std::string prefabID);
+	/* -------- END -------- */
 
 private:
 	struct PrefabInfo {

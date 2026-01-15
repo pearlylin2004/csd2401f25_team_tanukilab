@@ -602,7 +602,7 @@ bool PrefabManager::createPrefabFromGameObj(GameObject* go, const std::string& n
 bool PrefabManager::deletePrefab(const std::string prefabID) {
 	auto iterator = m_prefabRegistry.find(prefabID);
 	if (iterator == m_prefabRegistry.end()) {
-		DebugLog::addMessage("PrefabManager::deleteprefab: failed � prefab ID not found: " + prefabID);
+		DebugLog::addMessage("Could not delete prefab: prefab ID not found: " + prefabID);
 		return false;
 	}
 
@@ -614,6 +614,63 @@ bool PrefabManager::deletePrefab(const std::string prefabID) {
 	savePrefabRegistry();
 
 	return true;
+}
+
+bool PrefabManager::isPrefabUsedInAnyScene(const std::string& prefabID, std::vector<PrefabUsageInfo>& usageInfo) const {
+	usageInfo.clear();
+
+	std::string scenePath = std::string(SOURCE_DIR_R) + "/Scene";
+	if (!std::filesystem::exists(scenePath)) {
+		return false;
+	}
+
+	for (const auto& entry : std::filesystem::directory_iterator(scenePath)) {
+		if (!entry.is_regular_file() || entry.path().extension() != ".json") continue;
+
+		std::string sceneFile = entry.path().string();
+		std::string sceneName = entry.path().filename().string();
+
+		// skip temp scene (for play simulation in editor)
+		if (sceneName == "temp_scene.json") continue;
+
+		// read scene json
+		rapidjson::Document doc;
+		std::string err;
+		if (!JsonIO::ReadFileToDocument(sceneFile, doc, &err)) {
+			continue;
+		}
+
+		if (!doc.HasMember("objects") || !doc["objects"].IsArray()) {
+			continue;
+		}
+
+		PrefabUsageInfo sceneUsage;
+		sceneUsage.sceneName = sceneName;
+
+		for (auto& jObj : doc["objects"].GetArray()) {
+			if (!jObj.IsObject()) continue;
+
+			// check if object uses this prefab
+			if (jObj.HasMember("prefabid") && jObj["prefabid"].IsString()) {
+				std::string objPrefabID = jObj["prefabid"].GetString();
+
+				// if prefab ID matches, record object name
+				if (objPrefabID == prefabID) {
+					std::string objName = jObj.HasMember("name") && jObj["name"].IsString()
+						? jObj["name"].GetString() : "Unnamed";
+
+					sceneUsage.objectNames.push_back(objName);
+				}
+			}
+		}
+
+		// if this scene uses the prefab, add to results
+		if (!sceneUsage.objectNames.empty()) {
+			usageInfo.push_back(sceneUsage);
+		}
+	}
+
+	return !usageInfo.empty();
 }
 
 std::string PrefabManager::generateUUID() {
