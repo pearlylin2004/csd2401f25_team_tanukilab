@@ -27,9 +27,9 @@ Technology is prohibited.
 #include "GUISystem.h"  // Add this include
 
 CoreEngine::CoreEngine()
-    : m_window(nullptr), 
-    m_fps(0.0), 
-    m_delta(0.0), 
+    : m_window(nullptr),
+    m_fps(0.0),
+    m_delta(0.0),
     m_isRunning(false),
     m_isFullscreen(false),
     m_windowedWidth(0),
@@ -37,7 +37,7 @@ CoreEngine::CoreEngine()
     m_windowPosX(100),
     m_windowPosY(100),
     m_forceWindowed(false),
-	m_isPaused(false) //for pause
+    m_isPaused(false) //for pause
 {
 }
 
@@ -53,7 +53,7 @@ void CoreEngine::Init(bool forceWindowed) {
     }
 
     m_title = cfg.title;
-    
+
     m_forceWindowed = forceWindowed;
 
     bool wantFullscreen = cfg.fullscreen && !m_forceWindowed;
@@ -124,14 +124,14 @@ void CoreEngine::Init(bool forceWindowed) {
     renderer::init(winWidth, winHeight);
 
     m_manager = std::make_unique<GameObjectManager>();
-	m_logicSystem = std::make_unique<LogicSystem>();
+    m_logicSystem = std::make_unique<LogicSystem>();
     m_inputSystem = std::make_unique<InputSystem>();
     m_collisionSystem = std::make_unique<CollisionSystem>();
     m_physicsSystem = std::make_unique<PhysicsSystem>();
     m_renderSystem = std::make_unique<RenderSystem>();
-    #ifdef _DEBUG
+#ifdef _DEBUG
     m_uiSystem = std::make_unique<UISystem>();
-    #endif
+#endif
     m_luaSystem = std::make_unique<LuaSystem>();
     m_fontSystem = std::make_unique<FontSystem>();
     m_guiSystem = std::make_unique<GUISystem>();
@@ -145,9 +145,9 @@ void CoreEngine::Init(bool forceWindowed) {
     m_guiSystem->init(*m_manager, *m_luaSystem);
     m_luaSystem->init();
     m_renderSystem->init(*m_manager, winWidth, winHeight);
-    #ifdef _DEBUG
-	    m_uiSystem->init(m_window, m_renderSystem.get(), *m_manager);
-    #endif
+#ifdef _DEBUG
+    m_uiSystem->init(m_window, m_renderSystem.get(), *m_manager);
+#endif
     m_fontSystem->init(*m_manager);
     m_audioSystem->init(*m_manager);
 
@@ -172,20 +172,20 @@ void CoreEngine::Run() {
 void CoreEngine::GameLoop() {
     //change to fn because Q will affect the editor
     if (glfwWindowShouldClose(m_window) || InputHandler::isKeyTriggered(GLFW_KEY_F1)) { m_isRunning = false; return; }
-	//pause checking, and set it to paused state if escape is held
-    if (InputHandler::isKeyTriggered(GLFW_KEY_ESCAPE)) { 
-		//if already at paused state do nothing
-		GameState current = m_guiSystem->getCurrentState(); //get current state
-		GameState previous = m_guiSystem->getPreviousState(); //get previous state
+    //pause checking, and set it to paused state if escape is held
+    if (InputHandler::isKeyTriggered(GLFW_KEY_ESCAPE)) {
+        //if already at paused state do nothing
+        GameState current = m_guiSystem->getCurrentState(); //get current state
+        GameState previous = m_guiSystem->getPreviousState(); //get previous state
         if (current != GameState::PAUSED && previous != GameState::PAUSED) {
-            if(m_guiSystem->getPreviousState() != GameState::PAUSED) m_guiSystem->setPreviousState(current); //store previous state and prevent overwriting previous state if already paused
-			m_guiSystem->setStateBeforePause(current); //store state before pausing
-			m_guiSystem->setPreviousState(current); //store previous state
-			m_guiSystem->setCurrentState(GameState::PAUSED); //set current state
-			m_guiSystem->loadScreen(*m_manager, "pause_scene.json"); //load pause screen
+            if (m_guiSystem->getPreviousState() != GameState::PAUSED) m_guiSystem->setPreviousState(current); //store previous state and prevent overwriting previous state if already paused
+            m_guiSystem->setStateBeforePause(current); //store state before pausing
+            m_guiSystem->setPreviousState(current); //store previous state
+            m_guiSystem->setCurrentState(GameState::PAUSED); //set current state
+            m_guiSystem->loadScreen(*m_manager, "pause_scene.json"); //load pause screen
         }
     }
-   
+
     //use glfwGetWindowAttrib to check the GLFW_ICONIFIED status for efficient waiting
     int status = glfwGetWindowAttrib(m_window, GLFW_ICONIFIED);
 
@@ -197,29 +197,30 @@ void CoreEngine::GameLoop() {
     }
 
     //--- Update Timing --- 
-     Perf::UpdateTime(m_delta, m_fps, 0.5);
+    Perf::UpdateTime(m_delta, m_fps, 0.5);
 #if defined(_DEBUG) || defined(DEBUG)
-     // Show FPS only in debug builds
-     Perf::UpdateWindowTitle(m_window, m_title, m_fps, true);
+    // Show FPS only in debug builds
+    Perf::UpdateWindowTitle(m_window, m_title, m_fps, true);
 #else
-     // Release build never show FPS
-     Perf::UpdateWindowTitle(m_window, m_title, 0.0f, false);
+    // Release build never show FPS
+    Perf::UpdateWindowTitle(m_window, m_title, 0.0f, false);
 #endif
-     AudioHandler::getInstance().update(static_cast<float>(m_delta));
+    AudioHandler::getInstance().update(static_cast<float>(m_delta));
 
-     //to skip physics logic lua and input when paused
-     if (m_isPaused) {
-         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-         glfwSwapBuffers(m_window);
-         glfwPollEvents();
-         return; //to skip
-     }
+    //to skip physics logic lua and input when paused
+    if (m_isPaused) {
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        glfwSwapBuffers(m_window);
+        glfwPollEvents();
+        return; //to skip
+    }
 
-     // --- Main Update --- glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
-     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-     Update(static_cast<float>(m_delta));
-     // --- Swapping Buffers --- 
-     glfwSwapBuffers(m_window); }
+    // --- Main Update --- glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    Update(static_cast<float>(m_delta));
+    // --- Swapping Buffers --- 
+    glfwSwapBuffers(m_window);
+}
 
 void CoreEngine::Update(float deltaTime) {
     //for pausing
@@ -230,9 +231,24 @@ void CoreEngine::Update(float deltaTime) {
         toggleFullscreen();
     }
     //menu checking
-	m_guiSystem->update(*m_manager);
+    GameState state = m_guiSystem->getCurrentState();
+    if (state == GameState::MENU) {
+        m_guiSystem->update(*m_manager);
+    }
+    //control menu checking
+    else if (state == GameState::CONTROL) {
+        m_guiSystem->controlUpdate(*m_manager);
+    }
+    //exit confirmation checking
+    else if (state == GameState::EXITCONFIRMATION) {
+        m_guiSystem->exitUpdate(*m_manager);
+    }
+    //pause menu checking
+    else if (state == GameState::PAUSED) {
+        m_guiSystem->pauseUpdate(*m_manager);
+    }
 
-    if(!EditorManager::isEditingMode() && !EditorManager::isPaused()) m_luaSystem->update(*m_manager, deltaTime);
+    if (!EditorManager::isEditingMode() && !EditorManager::isPaused()) m_luaSystem->update(*m_manager, deltaTime);
 
     // Update all systems in order
     m_inputSystem->update(*m_manager, deltaTime, *m_messageBus);
@@ -241,14 +257,14 @@ void CoreEngine::Update(float deltaTime) {
     m_logicSystem->update(*m_manager, deltaTime);
     m_tileMapSystem->update(*m_manager);
     m_renderSystem->update(*m_manager, deltaTime);
-    m_fontSystem->update(*m_manager, m_fps);    
+    m_fontSystem->update(*m_manager, m_fps);
     m_audioSystem->update(*m_manager, deltaTime);
-    #ifdef _DEBUG
-        m_uiSystem->update();
-    #endif
+#ifdef _DEBUG
+    m_uiSystem->update();
+#endif
 
     //performance update
-    LogSystemTimersEveryInterval(deltaTime,15.0);
+    LogSystemTimersEveryInterval(deltaTime, 15.0);
 
 #ifdef _DEBUG
     static bool wasEditingMode = true;
@@ -383,7 +399,7 @@ void CoreEngine::toggleFullscreen()
 
 
 void CoreEngine::Shutdown() {
-	ResourceManager::getInstance().shutdown();
+    ResourceManager::getInstance().shutdown();
     renderer::cleanup();
     Font::freeFonts();
     if (m_luaSystem) m_luaSystem->cleanup();
@@ -399,7 +415,7 @@ void CoreEngine::windowIconifyCallback(GLFWwindow* window, int iconified) {
             //window was minimized
             //engine->audio.pauseAll();
             AudioHandler::getInstance().pauseAll(*engine->m_manager);
-			engine->m_isPaused = true; //set paused flag
+            engine->m_isPaused = true; //set paused flag
             //engine->pauseBGM();//pause bgm
         }
         else {
@@ -407,7 +423,7 @@ void CoreEngine::windowIconifyCallback(GLFWwindow* window, int iconified) {
             //resume the background music or other necessary sounds
             //engine->audio.playSound(soundID::bg, 0.2f);
             AudioHandler::getInstance().resumeAll(*engine->m_manager);
-			engine->m_isPaused = false; //clear paused flag
+            engine->m_isPaused = false; //clear paused flag
             //engine->resumeBGM();
         }
     }
