@@ -27,6 +27,7 @@ EditorManager::EditorManager(GameObjectManager& manager) :
     menuBar(assetBrowser, Editor::assetBrowserState, Editor::menuBarState, Editor::objSelectionState, Editor::sceneState),
     performanceWindow(),
     sceneWindow(assetBrowser, Editor::objSelectionState, Editor::menuBarState, Editor::sceneWindowState, Editor::sceneState, Editor::gizmoState),
+    visualLogicEditor(),
     m_manager(manager) {
 
 	CachedGameObjects::Instance().initialize(manager);
@@ -47,6 +48,7 @@ void EditorManager::update() {
     inspectorWindow.render(m_manager);
     menuBar.render(m_manager);
     performanceWindow.render();
+	visualLogicEditor.render();
 
     // only show play info when not editing
     if (!isEditing) playDebugWindow.render();

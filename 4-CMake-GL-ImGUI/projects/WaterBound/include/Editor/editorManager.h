@@ -253,6 +253,33 @@ private:
 	static bool s_isSceneHovered;
 };
 
+// for Visual Logic Container
+class VisualLogicEditor {
+public:
+	VisualLogicEditor();
+	void render();
+
+private:
+	std::vector<Editor::LogicNode> m_nodes;
+	int m_nextNodeId;
+	int m_selectedNodeId;
+
+	// Dragging state
+	bool m_isDragging;
+	int m_draggingNodeId;
+	ImVec2 m_dragOffset;
+
+	// Canvas state
+	ImVec2 m_canvasOffset;
+	float m_zoom;
+
+	// UI helpers
+	void renderNode(ImDrawList* drawList, Editor::LogicNode& node, ImVec2 canvasPos, bool isCanvasHovered);
+	void addEventNode(ImVec2 position);
+	void addActionNode(ImVec2 position);
+	ImU32 getNodeColor(Editor::NodeType type);
+};
+
 
 
 
@@ -285,6 +312,7 @@ private:
 	MenuBar menuBar;
 	PerformanceWindow performanceWindow;
 	SceneWindow sceneWindow;
+	VisualLogicEditor visualLogicEditor;
 
 	GameObjectManager& m_manager;
 

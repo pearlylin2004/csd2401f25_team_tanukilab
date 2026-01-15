@@ -166,6 +166,23 @@ namespace Editor {
 	/* ----------------- Gizmo End -----------------*/
 
 
+	/* ----------------- Visual Logic Editor ---------------- */
+	enum class NodeType {
+		EVENT,
+		ACTION
+	};
+
+	struct LogicNode {
+		int id;
+		NodeType type;
+		std::string name;
+		ImVec2 position;
+		bool hasInput;
+		bool hasOutput;
+	};
+	/* ----------------- Logic End ---------------- */
+
+
 	/* ----------------- Component Entry ---------------- */
 	struct ComponentEntry {
 		std::string name;

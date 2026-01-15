@@ -1220,6 +1220,7 @@ void UISystem::dockingSetUp() {
 
 		// center: Scene viewport
 		ImGui::DockBuilderDockWindow("Scene", dockMain);
+		ImGui::DockBuilderDockWindow("Visual Logic Editor", dockMain);
 
 		// right top: Inspector
 		ImGui::DockBuilderDockWindow("Inspector", dockRight);
