@@ -61,9 +61,6 @@ public:
 
     void init(GameObjectManager& manager, LuaSystem& luaSystem);
 	void update(GameObjectManager& manager); //update menu system
-	void controlUpdate(GameObjectManager& manager); //update control screen
-	void exitUpdate(GameObjectManager& manager); //update exit confirmation screen
-	void pauseUpdate(GameObjectManager& manager); //update pause screen
     void loadScreen(GameObjectManager& manager, const std::string& sceneName); //load a screen
 
     GameState getCurrentState() const { return m_currentState; } //check current state
