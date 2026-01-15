@@ -686,6 +686,27 @@ namespace JsonIO {
             doc.AddMember("TileMap", jt, a);
         }
 
+        // LuaScript
+        if (LuaScript* ls = obj->getComponent<LuaScript>()) {
+            Value jl(kObjectType);
+            Value scriptsArray(kArrayType);
+
+            for (const auto& scriptEntry : ls->scripts) {
+                if (scriptEntry.filename.empty() && scriptEntry.scriptName.empty()) continue;
+
+                Value entry(kObjectType);
+                entry.AddMember("filename", Value(scriptEntry.filename.c_str(), a), a);
+                entry.AddMember("scriptName", Value(scriptEntry.scriptName.c_str(), a), a);
+
+                scriptsArray.PushBack(entry, a);
+            }
+
+            if (!scriptsArray.Empty()) {
+                jl.AddMember("scripts", scriptsArray, a);
+                doc.AddMember("LuaScript", jl, a);
+            }
+        }
+
         // convert to string
         StringBuffer buffer;
         Writer<StringBuffer> writer(buffer);
@@ -950,6 +971,35 @@ namespace JsonIO {
                         tm->setTile(x, y, id);
                     }
                 }
+            }
+
+            // LuaScript
+            if (doc.HasMember("LuaScript")) {
+                const Value& jl = doc["LuaScript"];
+                LuaScript* ls = obj->addComponent<LuaScript>();
+
+                ls->scripts.clear();
+
+                if (jl.HasMember("scripts") && jl["scripts"].IsArray()) {
+                    for (const auto& scriptEntry : jl["scripts"].GetArray()) {
+                        if (!scriptEntry.IsObject()) continue;
+
+                        LuaScript::ScriptEntry entry;
+
+                        if (scriptEntry.HasMember("filename") && scriptEntry["filename"].IsString()) {
+                            entry.filename = scriptEntry["filename"].GetString();
+                        }
+
+                        if (scriptEntry.HasMember("scriptName") && scriptEntry["scriptName"].IsString()) {
+                            entry.scriptName = scriptEntry["scriptName"].GetString();
+                        }
+
+                        entry.changed = true;
+                        ls->scripts.push_back(entry);
+                    }
+                }
+
+                ls->scriptsChanged = true;
             }
 
             return obj;

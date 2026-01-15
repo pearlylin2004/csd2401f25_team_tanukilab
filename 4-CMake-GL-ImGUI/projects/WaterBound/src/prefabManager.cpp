@@ -39,6 +39,7 @@ namespace {
 		else if (compName == "AudioComponent") obj->removeComponent<AudioComponent>();
 		else if (compName == "FontComponent") obj->removeComponent<FontComponent>();
 		else if (compName == "TileMap") obj->removeComponent<TileMap>();
+		else if (compName == "LuaScript") obj->removeComponent<LuaScript>();
 	}
 
 	void removeAllComponents(GameObject* obj) {
@@ -52,6 +53,7 @@ namespace {
 		obj->removeComponent<AudioComponent>();
 		obj->removeComponent<FontComponent>();
 		obj->removeComponent<TileMap>();
+		obj->removeComponent<LuaScript>();
 	}
 
 	void applyComponentFromJson(GameObject* obj, const char* compName, const rapidjson::Value& compData, rapidjson::Document::AllocatorType& allocator, const std::function<void(GameObject*, const rapidjson::Value&)>& func) {
@@ -902,6 +904,35 @@ void PrefabManager::applyPrefabComponents(GameObject* go, const rapidjson::Value
 		fc->fontType = JsonIO::GetIntOr(jf, "fontType", 0);
 		JsonIO::ReadVec3(jf, "color", fc->clr.r, fc->clr.g, fc->clr.b);
 	}
+
+	// ---- LuaScript ----
+	if (comps.HasMember("LuaScript") && comps["LuaScript"].IsObject()) {
+		const auto& jl = comps["LuaScript"];
+		auto* ls = go->addComponent<LuaScript>();
+
+		ls->scripts.clear();
+
+		if (jl.HasMember("scripts") && jl["scripts"].IsArray()) {
+			for (const auto& scriptEntry : jl["scripts"].GetArray()) {
+				if (!scriptEntry.IsObject()) continue;
+
+				LuaScript::ScriptEntry entry;
+
+				if (scriptEntry.HasMember("filename") && scriptEntry["filename"].IsString()) {
+					entry.filename = scriptEntry["filename"].GetString();
+				}
+
+				if (scriptEntry.HasMember("scriptName") && scriptEntry["scriptName"].IsString()) {
+					entry.scriptName = scriptEntry["scriptName"].GetString();
+				}
+
+				entry.changed = true;
+				ls->scripts.push_back(entry);
+			}
+		}
+
+		ls->scriptsChanged = true;
+	}
 }
 
 void PrefabManager::serializeComponents(const GameObject* obj, rapidjson::Value& comps, rapidjson::Document::AllocatorType& a) {
@@ -1071,6 +1102,27 @@ void PrefabManager::serializeComponents(const GameObject* obj, rapidjson::Value&
 
 		// IMPORTANT: Add TileMap to components JSON
 		comps.AddMember("TileMap", jt, a);
+	}
+
+	// ---- LuaScript ----
+	if (auto ls = obj->getComponent<LuaScript>()) {
+		rapidjson::Value jl(rapidjson::kObjectType);
+		rapidjson::Value scriptsArray(rapidjson::kArrayType);
+
+		for (const auto& scriptEntry : ls->scripts) {
+			if (scriptEntry.filename.empty() && scriptEntry.scriptName.empty()) continue;
+
+			rapidjson::Value entry(rapidjson::kObjectType);
+			entry.AddMember("filename", rapidjson::Value(scriptEntry.filename.c_str(), a), a);
+			entry.AddMember("scriptName", rapidjson::Value(scriptEntry.scriptName.c_str(), a), a);
+
+			scriptsArray.PushBack(entry, a);
+		}
+
+		if (!scriptsArray.Empty()) {
+			jl.AddMember("scripts", scriptsArray, a);
+			comps.AddMember("LuaScript", jl, a);
+		}
 	}
 }
 

@@ -698,6 +698,37 @@ void GameObjectManager::loadSceneFromJson(const std::string& filename) {
 				}
 			}
 		}
+
+		// ---- Lua Script ----
+		if (comps.HasMember("LuaScript") && comps["LuaScript"].IsObject()) {
+			const auto& jl = comps["LuaScript"];
+
+			auto* ls = go->getComponent<LuaScript>();
+			if (!ls) ls = go->addComponent<LuaScript>();
+
+			ls->scripts.clear();
+
+			if (jl.HasMember("scripts") && jl["scripts"].IsArray()) {
+				for (const auto& scriptEntry : jl["scripts"].GetArray()) {
+					if (!scriptEntry.IsObject()) continue;
+
+					LuaScript::ScriptEntry entry;
+
+					if (scriptEntry.HasMember("filename") && scriptEntry["filename"].IsString()) {
+						entry.filename = scriptEntry["filename"].GetString();
+					}
+
+					if (scriptEntry.HasMember("scriptName") && scriptEntry["scriptName"].IsString()) {
+						entry.scriptName = scriptEntry["scriptName"].GetString();
+					}
+
+					entry.changed = true;
+					ls->scripts.push_back(entry);
+				}
+			}
+
+			ls->scriptsChanged = true;
+		}
 		
 	}
 
@@ -1169,6 +1200,29 @@ void GameObjectManager::saveSceneToJson(const std::string& filename, bool isNew)
 
 				if (!jt.ObjectEmpty())
 					comps.AddMember("TileMap", jt, a);
+			}
+
+			// ---- LuaScript ----
+			if (auto ls = obj->getComponent<LuaScript>()) {
+				rapidjson::Value jl(rapidjson::kObjectType);
+				const rapidjson::Value* prefabLS = PM.getPrefabJsonComp(prefabDoc, "LuaScript");
+
+				rapidjson::Value scriptsArray(rapidjson::kArrayType);
+
+				for (const auto& scriptEntry : ls->scripts) {
+					if (scriptEntry.filename.empty() && scriptEntry.scriptName.empty()) continue;
+
+					rapidjson::Value entry(rapidjson::kObjectType);
+					entry.AddMember("filename", rapidjson::Value(scriptEntry.filename.c_str(), a), a);
+					entry.AddMember("scriptName", rapidjson::Value(scriptEntry.scriptName.c_str(), a), a);
+
+					scriptsArray.PushBack(entry, a);
+				}
+
+				if (!scriptsArray.Empty()) {
+					jl.AddMember("scripts", scriptsArray, a);
+					comps.AddMember("LuaScript", jl, a);
+				}
 			}
 
 			if (!comps.ObjectEmpty()) jObj.AddMember("components", comps, a);
