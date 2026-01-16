@@ -1277,6 +1277,8 @@ void InspectorWindow::renderVisualLogic(GameObject* selected) {
                 Editor::visualLogicState.nodes.clear();
                 Editor::visualLogicState.connections.clear();
 
+                logic->filename = "";
+
 				DebugLog::addMessage("Creating new Visual Logic Graph for " + selected->getObjectName());
 			}
 

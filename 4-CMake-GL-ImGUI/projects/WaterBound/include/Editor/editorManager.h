@@ -178,6 +178,7 @@ private:
 	void renderNode(ImDrawList* drawList, LogicNode& node, ImVec2 canvasPos, bool isCanvasHovered);
 	void renderConnections(ImDrawList* drawList, ImVec2 canvasPos);
 	void renderNodeProperties();
+	void renderSavePopup();
 
 	// create node
 	void addEventNode(ImVec2 position);
