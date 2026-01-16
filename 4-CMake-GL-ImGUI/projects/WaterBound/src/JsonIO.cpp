@@ -1014,6 +1014,12 @@ namespace JsonIO {
 
     /* ---------- Visual Logic for editor ---------- */
     bool saveVisualLogic(const std::string& filepath, const std::vector<LogicNode>& nodes, const std::vector<LogicConnection>& connections, std::string* err) {
+        std::cout << "saveVisualLogic called with filepath: " << filepath << std::endl;
+        std::cout << "RUNTIME_DIR_R: " << RUNTIME_DIR_R << std::endl;
+        std::cout << "SOURCE_DIR_R: " << SOURCE_DIR_R << std::endl;
+        std::cout << "Full runtime path: " << RUNTIME_DIR_R + filepath << std::endl;
+        std::cout << "Full source path: " << SOURCE_DIR_R + filepath << std::endl;
+
         rapidjson::Document doc;
         doc.SetObject();
         auto& a = doc.GetAllocator();
@@ -1069,9 +1075,12 @@ namespace JsonIO {
             connectionsArray.PushBack(connObj, a);
         }
         doc.AddMember("connections", connectionsArray, a);
-
+        
         // Write to file
-        return WriteDocumentToFile(filepath, doc, true, err);
+        bool runtime = WriteDocumentToFile(RUNTIME_DIR_R+filepath, doc, true, err);
+        bool proj = WriteDocumentToFile(SOURCE_DIR_R+filepath, doc, true, err);
+
+		return (runtime && proj);
     }
 
     bool loadVisualLogic(const std::string& filepath, std::vector<LogicNode>& nodes, std::vector<LogicConnection>& connections, std::string* err) {

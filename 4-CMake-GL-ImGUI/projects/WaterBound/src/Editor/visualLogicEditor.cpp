@@ -37,7 +37,6 @@ void VisualLogicEditor::render() {
 	if (ImGui::BeginMenuBar()) {
 		if (ImGui::BeginMenu("File")) {
 			if (ImGui::MenuItem("Save")) {
-				std::cout << "save svae...\n\n";
 				saveLogic();
 			}
 
@@ -236,8 +235,6 @@ void VisualLogicEditor::clear() {
 }
 
 void VisualLogicEditor::saveLogic() {
-	std::string filepath = "assets/Logic/" + std::string(m_saveFilename);
-
 	if (!Editor::visualLogicState.targetObj) return;
 	VisualLC* logic = Editor::visualLogicState.targetObj->getComponent<VisualLC>();
 	if (!logic) return;
@@ -246,6 +243,8 @@ void VisualLogicEditor::saveLogic() {
 		Editor::visualLogicState.showSavePopup = true;
 		return;
 	}
+
+	std::string filepath = "/Logic/" + logic->filename;
 
 	logic->nodes = Editor::visualLogicState.nodes;
 	logic->connections = Editor::visualLogicState.connections;
@@ -504,6 +503,11 @@ void VisualLogicEditor::renderNodeProperties() {
 }
 
 void VisualLogicEditor::renderSavePopup() {
+	if (Editor::visualLogicState.showSavePopup) {
+		ImGui::OpenPopup("Save Visual Logic");
+		Editor::visualLogicState.showSavePopup = false;
+	}
+
 	static char filename[128] = "";
 
 	ImVec2 center = ImGui::GetMainViewport()->GetCenter();
@@ -525,7 +529,7 @@ void VisualLogicEditor::renderSavePopup() {
 		ImGui::Spacing();
 
 		// check if file already exists
-		std::string fullPath = "assets/Logic/" + std::string(filename) + ".json";
+		std::string fullPath = "/Logic/" + std::string(filename) + ".json";
 		bool fileExists = std::filesystem::exists(fullPath);
 
 		if (fileExists) {
@@ -547,10 +551,20 @@ void VisualLogicEditor::renderSavePopup() {
 					logic->nodes = Editor::visualLogicState.nodes;
 					logic->connections = Editor::visualLogicState.connections;
 
-					DebugLog::addMessage("Visual Logic saved as: " + finalFilename + "\n");
-					DebugLog::addMessage("Saved " + std::to_string(Editor::visualLogicState.nodes.size()) + " nodes\n");
+					std::string filepath = "/Logic/" + finalFilename;
+					std::string err;
+					if (JsonIO::saveVisualLogic(filepath,
+						Editor::visualLogicState.nodes,
+						Editor::visualLogicState.connections,
+						&err)) {
+						DebugLog::addMessage("Visual Logic saved as: " + finalFilename + "\n");
+						DebugLog::addMessage("Saved " + std::to_string(Editor::visualLogicState.nodes.size()) + " nodes\n");
+					}
+					else {
+						DebugLog::addMessage("Failed to save file: " + err);
+					}
 
-					// Clear filename buffer for next time
+					// clear filename buffer
 					filename[0] = '\0';
 
 					ImGui::CloseCurrentPopup();
