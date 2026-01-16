@@ -542,8 +542,16 @@ public:
         return std::make_unique<VisualLC>(*this);
     }
 
-    std::string filename;
+    std::string filename; // name of the logic asset
 
+    // editor data
 	std::vector<LogicNode> nodes;
 	std::vector<LogicConnection> connections;
+
+	// runtime data
+    bool isExecuting = false;
+    int currentExecutingNodeId = -1;
+    std::map<std::string, float> floatVariables;
+    std::map<std::string, std::string> stringVariables;
+    std::map<std::string, bool> boolVariables;
 };

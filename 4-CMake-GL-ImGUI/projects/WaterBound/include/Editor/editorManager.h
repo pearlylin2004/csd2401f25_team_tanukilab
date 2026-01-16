@@ -140,10 +140,60 @@ private:
 	GameObject* m_transformEditObject = nullptr;
 };
 
+// for Visual Logic Container
+class VisualLogicEditor {
+public:
+	VisualLogicEditor();
+	void render();
+
+	void clear();
+
+private:
+	int m_nextNodeId;
+	int m_selectedNodeId;
+
+	// dragging state
+	bool m_isDragging;
+	int m_draggingNodeId;
+	ImVec2 m_dragOffset;
+
+	// canvas state
+	ImVec2 m_canvasOffset;
+	float m_zoom;
+
+	// create connection
+	bool m_isConnecting;
+	int m_connectingFromNodeId;
+	std::string m_connectingFromPin;
+	ImVec2 m_connectionStartPos;
+
+	// save/load logic
+	void saveLogic();
+	void loadLogic(const std::string& filename);
+
+	// save popup state
+	char m_saveFilename[128];
+
+	// rendering
+	void renderNode(ImDrawList* drawList, LogicNode& node, ImVec2 canvasPos, bool isCanvasHovered);
+	void renderConnections(ImDrawList* drawList, ImVec2 canvasPos);
+	void renderNodeProperties();
+
+	// create node
+	void addEventNode(ImVec2 position);
+	void addActionNode(ImVec2 position);
+	void addConditionNode(ImVec2 position);
+
+	// helper func
+	ImU32 getNodeColor(NodeType type);
+	bool isPinHovered(ImVec2 pinPos, ImVec2 mousePos);
+	void createConnection(int fromNodeID, std::string fromPin, int toNodeID, std::string toPin);
+};
+
 // Top menu bar
 class MenuBar {
 public:
-	MenuBar(AssetBrowser& aBrowser, Editor::AssetBrowserState& Astate, Editor::MenuBarState& Mstate, Editor::ObjSelectionState& Ostate, Editor::SceneState& sceneState);
+	MenuBar(AssetBrowser& aBrowser, VisualLogicEditor& vEditor, Editor::AssetBrowserState& Astate, Editor::MenuBarState& Mstate, Editor::ObjSelectionState& Ostate, Editor::SceneState& sceneState);
 	void render(GameObjectManager& manager);
 	void toggleSimulation(GameObjectManager& manager); // play/stop simulation
 	void pauseResumeSimul();
@@ -164,6 +214,7 @@ private:
 	void themeForest();
 
 	AssetBrowser& m_assetBrowser;
+	VisualLogicEditor& m_visualLogicEditor;
 	Editor::AssetBrowserState& m_AssetBrowserState;
 	Editor::MenuBarState& m_menuBarState;
 	Editor::ObjSelectionState& m_objSelectionState;
@@ -254,51 +305,7 @@ private:
 	static bool s_isSceneHovered;
 };
 
-// for Visual Logic Container
-class VisualLogicEditor {
-public:
-	VisualLogicEditor();
-	void render();
 
-	void saveGraph();
-	void loadLogicGraph();
-
-private:
-	std::vector<LogicNode> m_nodes;
-	std::vector<LogicConnection> m_connections;
-	int m_nextNodeId;
-	int m_selectedNodeId;
-
-	// dragging state
-	bool m_isDragging;
-	int m_draggingNodeId;
-	ImVec2 m_dragOffset;
-
-	// canvas state
-	ImVec2 m_canvasOffset;
-	float m_zoom;
-
-	// create connection
-	bool m_isConnecting;
-	int m_connectingFromNodeId;
-	std::string m_connectingFromPin;
-	ImVec2 m_connectionStartPos;
-
-	// rendering
-	void renderNode(ImDrawList* drawList, LogicNode& node, ImVec2 canvasPos, bool isCanvasHovered);
-	void renderConnections(ImDrawList* drawList, ImVec2 canvasPos);
-	void renderNodeProperties();
-
-	// create node
-	void addEventNode(ImVec2 position);
-	void addActionNode(ImVec2 position);
-	void addConditionNode(ImVec2 position);
-
-	// helper func
-	ImU32 getNodeColor(NodeType type);
-	bool isPinHovered(ImVec2 pinPos, ImVec2 mousePos);
-	void createConnection(int fromNodeID, std::string fromPin, int toNodeID, std::string toPin);
-};
 
 
 

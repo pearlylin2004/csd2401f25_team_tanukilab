@@ -170,6 +170,12 @@ namespace Editor {
 	struct VisualLogicState {
 		bool showEditor = false;
 		std::string currentGraphName = "";
+		GameObject* targetObj = nullptr;
+
+		bool showSavePopup = false;
+
+		std::vector<LogicNode> nodes;
+		std::vector<LogicConnection> connections;
 	};
 	/* ----------------- Logic End ---------------- */
 

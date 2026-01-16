@@ -24,7 +24,7 @@ EditorManager::EditorManager(GameObjectManager& manager) :
     playDebugWindow(DebugMode::PlaySimul),
     hierarchyWindow(Editor::objSelectionState),
     inspectorWindow(Editor::objSelectionState, Editor::gizmoState),
-    menuBar(assetBrowser, Editor::assetBrowserState, Editor::menuBarState, Editor::objSelectionState, Editor::sceneState),
+    menuBar(assetBrowser, visualLogicEditor, Editor::assetBrowserState, Editor::menuBarState, Editor::objSelectionState, Editor::sceneState),
     performanceWindow(),
     sceneWindow(assetBrowser, Editor::objSelectionState, Editor::menuBarState, Editor::sceneWindowState, Editor::sceneState, Editor::gizmoState),
     visualLogicEditor(),

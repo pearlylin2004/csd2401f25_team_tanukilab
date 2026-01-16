@@ -1270,9 +1270,12 @@ void InspectorWindow::renderVisualLogic(GameObject* selected) {
         if (ImGui::BeginCombo("Logic Graph", displayName.c_str())) {
             // create new logic asset
 			if (ImGui::Selectable("<Create New>", logic->filename.empty())) {
-				logic->filename = "";
                 Editor::visualLogicState.showEditor = true;
-                Editor::visualLogicState.currentGraphName = logic->filename;
+                Editor::visualLogicState.currentGraphName = "";
+				Editor::visualLogicState.targetObj = selected;
+
+                Editor::visualLogicState.nodes.clear();
+                Editor::visualLogicState.connections.clear();
 
 				DebugLog::addMessage("Creating new Visual Logic Graph for " + selected->getObjectName());
 			}
@@ -1282,17 +1285,19 @@ void InspectorWindow::renderVisualLogic(GameObject* selected) {
                 for (const auto& entry : std::filesystem::directory_iterator("assets/Logic")) {
                     if (entry.is_regular_file() && entry.path().extension() != ".json") {
                         continue;
-                        std::string assetName = entry.path().filename().string();
-                        bool isSelected = (logic->filename == assetName);
+                    }
 
-                        if (ImGui::Selectable(assetName.c_str(), isSelected)) {
-                            logic->filename = assetName;
-                            DebugLog::addMessage("Assigned Visual Logic Graph " + assetName + " to " + selected->getObjectName());
-                        }
+                    std::string assetName = entry.path().filename().string();
+                    bool isSelected = (logic->filename == assetName);
 
-                        if (isSelected) {
-                            ImGui::SetItemDefaultFocus();
-                        }
+                    if (ImGui::Selectable(assetName.c_str(), isSelected)) {
+                        logic->filename = assetName;
+
+                        DebugLog::addMessage("Assigned Visual Logic Graph " + assetName + " to " + selected->getObjectName());
+                    }
+
+                    if (isSelected) {
+                        ImGui::SetItemDefaultFocus();
                     }
                 }
             }
@@ -1311,6 +1316,10 @@ void InspectorWindow::renderVisualLogic(GameObject* selected) {
         if (!logic->filename.empty() && ImGui::Button("Edit Logic Graph", ImVec2(-1, 0))) {
             Editor::visualLogicState.showEditor = true;
 			Editor::visualLogicState.currentGraphName = logic->filename;
+            Editor::visualLogicState.targetObj = selected;
+
+            Editor::visualLogicState.nodes = logic->nodes;
+            Editor::visualLogicState.connections = logic->connections;
 
             DebugLog::addMessage("Opening Visual Logic Editor for " + selected->getObjectName() + "\n");
         }

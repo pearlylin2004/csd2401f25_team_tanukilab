@@ -18,8 +18,9 @@ Technology is prohibited.
 #ifdef _DEBUG
 #include "Editor/editorManager.h"
 
-MenuBar::MenuBar(AssetBrowser& aBrowser, Editor::AssetBrowserState& Astate, Editor::MenuBarState& Mstate, Editor::ObjSelectionState& Ostate, Editor::SceneState& sceneState):
+MenuBar::MenuBar(AssetBrowser& aBrowser, VisualLogicEditor& vEditor, Editor::AssetBrowserState& Astate, Editor::MenuBarState& Mstate, Editor::ObjSelectionState& Ostate, Editor::SceneState& sceneState):
     m_assetBrowser(aBrowser),
+    m_visualLogicEditor(vEditor),
     m_AssetBrowserState(Astate),
     m_menuBarState(Mstate),
     m_objSelectionState(Ostate),
@@ -165,6 +166,7 @@ void MenuBar::playSimulation(GameObjectManager& manager) {
 void MenuBar::stopSimulation(GameObjectManager& manager) {
     EditorManager::toggleEditing(true);
     manager.cleanupSimulationResources();
+	m_visualLogicEditor.clear();
 
     // load back the temp scene file to restore state
     manager.loadScene(JsonIO::runtimeScenePath(m_sceneState.tempSceneName));

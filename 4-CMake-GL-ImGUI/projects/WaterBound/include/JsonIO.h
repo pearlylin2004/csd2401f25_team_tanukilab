@@ -24,6 +24,7 @@ Technology is prohibited.
 #include <filesystem>
 #include <iostream>
 #include <array>
+#include <vector>
 #include <glm/vec3.hpp> 
 #include <glm/vec4.hpp>
 
@@ -140,6 +141,10 @@ namespace JsonIO {
 	// ---- for undo/redo in editor ----
 	std::string serializeGameObj(GameObject* obj);
 	GameObject* deserializeGameObj(GameObjectManager& manager, const std::string& jsonStr);
+
+	// ---- visual logic in editor ----
+	bool saveVisualLogic(const std::string& filepath, const std::vector<LogicNode>& nodes, const std::vector<LogicConnection>& connections, std::string* err = nullptr);
+	bool loadVisualLogic(const std::string& filepath, std::vector<LogicNode>& nodes, std::vector<LogicConnection>& connections, std::string* err = nullptr);
 	// ---- END ----
 
 	/* ------ moved to components.h ------ */

@@ -1011,6 +1011,145 @@ namespace JsonIO {
     }
     /* ---------- END ---------- */
 
+
+    /* ---------- Visual Logic for editor ---------- */
+    bool saveVisualLogic(const std::string& filepath, const std::vector<LogicNode>& nodes, const std::vector<LogicConnection>& connections, std::string* err) {
+        rapidjson::Document doc;
+        doc.SetObject();
+        auto& a = doc.GetAllocator();
+
+        // Version
+        doc.AddMember("version", 1, a);
+
+        // Serialize nodes
+        rapidjson::Value nodesArray(rapidjson::kArrayType);
+        for (const auto& node : nodes) {
+            rapidjson::Value nodeObj(rapidjson::kObjectType);
+
+            nodeObj.AddMember("id", node.id, a);
+            nodeObj.AddMember("name", rapidjson::Value(node.name.c_str(), a), a);
+            nodeObj.AddMember("type", static_cast<int>(node.type), a);
+
+            // Position
+            rapidjson::Value posArray(rapidjson::kArrayType);
+            posArray.PushBack(node.position.x, a);
+            posArray.PushBack(node.position.y, a);
+            nodeObj.AddMember("position", posArray, a);
+
+            nodeObj.AddMember("hasInput", node.hasInput, a);
+            nodeObj.AddMember("hasOutput", node.hasOutput, a);
+
+            // Parameters
+            if (!node.parameters.empty()) {
+                rapidjson::Value paramsObj(rapidjson::kObjectType);
+                for (const auto& [key, value] : node.parameters) {
+                    paramsObj.AddMember(
+                        rapidjson::Value(key.c_str(), a),
+                        rapidjson::Value(value.c_str(), a),
+                        a
+                    );
+                }
+                nodeObj.AddMember("parameters", paramsObj, a);
+            }
+
+            nodesArray.PushBack(nodeObj, a);
+        }
+        doc.AddMember("nodes", nodesArray, a);
+
+        // Serialize connections
+        rapidjson::Value connectionsArray(rapidjson::kArrayType);
+        for (const auto& conn : connections) {
+            rapidjson::Value connObj(rapidjson::kObjectType);
+
+            connObj.AddMember("fromNodeId", conn.fromNodeId, a);
+            connObj.AddMember("outputPin", rapidjson::Value(conn.outputPin.c_str(), a), a);
+            connObj.AddMember("toNodeId", conn.toNodeId, a);
+            connObj.AddMember("inputPin", rapidjson::Value(conn.inputPin.c_str(), a), a);
+
+            connectionsArray.PushBack(connObj, a);
+        }
+        doc.AddMember("connections", connectionsArray, a);
+
+        // Write to file
+        return WriteDocumentToFile(filepath, doc, true, err);
+    }
+
+    bool loadVisualLogic(const std::string& filepath, std::vector<LogicNode>& nodes, std::vector<LogicConnection>& connections, std::string* err) {
+        rapidjson::Document doc;
+        if (!ReadFileToDocument(filepath, doc, err)) {
+            return false;
+        }
+
+        // Clear existing data
+        nodes.clear();
+        connections.clear();
+
+        // Load nodes
+        if (doc.HasMember("nodes") && doc["nodes"].IsArray()) {
+            for (const auto& nodeVal : doc["nodes"].GetArray()) {
+                if (!nodeVal.IsObject()) continue;
+
+                LogicNode node;
+                node.id = GetIntOr(nodeVal, "id", 0);
+
+                std::string name;
+                if (GetString(nodeVal, "name", name)) {
+                    node.name = name;
+                }
+
+                node.type = static_cast<NodeType>(GetIntOr(nodeVal, "type", 0));
+
+                // Position
+                if (nodeVal.HasMember("position") && nodeVal["position"].IsArray()) {
+                    const auto& posArray = nodeVal["position"].GetArray();
+                    if (posArray.Size() >= 2) {
+                        node.position.x = posArray[0].GetFloat();
+                        node.position.y = posArray[1].GetFloat();
+                    }
+                }
+
+                GetBool(nodeVal, "hasInput", node.hasInput);
+                GetBool(nodeVal, "hasOutput", node.hasOutput);
+
+                // Parameters
+                if (nodeVal.HasMember("parameters") && nodeVal["parameters"].IsObject()) {
+                    const auto& paramsObj = nodeVal["parameters"];
+                    for (auto it = paramsObj.MemberBegin(); it != paramsObj.MemberEnd(); ++it) {
+                        if (it->value.IsString()) {
+                            node.parameters[it->name.GetString()] = it->value.GetString();
+                        }
+                    }
+                }
+
+                nodes.push_back(node);
+            }
+        }
+
+        // Load connections
+        if (doc.HasMember("connections") && doc["connections"].IsArray()) {
+            for (const auto& connVal : doc["connections"].GetArray()) {
+                if (!connVal.IsObject()) continue;
+
+                LogicConnection conn;
+                conn.fromNodeId = GetIntOr(connVal, "fromNodeId", 0);
+                conn.toNodeId = GetIntOr(connVal, "toNodeId", 0);
+
+                std::string outputPin, inputPin;
+                if (GetString(connVal, "outputPin", outputPin)) {
+                    conn.outputPin = outputPin;
+                }
+                if (GetString(connVal, "inputPin", inputPin)) {
+                    conn.inputPin = inputPin;
+                }
+
+                connections.push_back(conn);
+            }
+        }
+
+        return true;
+    }
+	/* ---------- END ---------- */
+
 } // namespace JsonIO
 
 
