@@ -127,6 +127,7 @@ private:
 	void renderAudio(GameObject* selected);
 	void renderTileMap(GameObject* selected);
 	void renderLua(GameObject* selected);
+	void renderVisualLogic(GameObject* selected);
 
 	void wrongFileTypePopup(const std::string& filename);
 
@@ -259,25 +260,44 @@ public:
 	VisualLogicEditor();
 	void render();
 
+	void saveGraph();
+	void loadLogicGraph();
+
 private:
-	std::vector<Editor::LogicNode> m_nodes;
+	std::vector<LogicNode> m_nodes;
+	std::vector<LogicConnection> m_connections;
 	int m_nextNodeId;
 	int m_selectedNodeId;
 
-	// Dragging state
+	// dragging state
 	bool m_isDragging;
 	int m_draggingNodeId;
 	ImVec2 m_dragOffset;
 
-	// Canvas state
+	// canvas state
 	ImVec2 m_canvasOffset;
 	float m_zoom;
 
-	// UI helpers
-	void renderNode(ImDrawList* drawList, Editor::LogicNode& node, ImVec2 canvasPos, bool isCanvasHovered);
+	// create connection
+	bool m_isConnecting;
+	int m_connectingFromNodeId;
+	std::string m_connectingFromPin;
+	ImVec2 m_connectionStartPos;
+
+	// rendering
+	void renderNode(ImDrawList* drawList, LogicNode& node, ImVec2 canvasPos, bool isCanvasHovered);
+	void renderConnections(ImDrawList* drawList, ImVec2 canvasPos);
+	void renderNodeProperties();
+
+	// create node
 	void addEventNode(ImVec2 position);
 	void addActionNode(ImVec2 position);
-	ImU32 getNodeColor(Editor::NodeType type);
+	void addConditionNode(ImVec2 position);
+
+	// helper func
+	ImU32 getNodeColor(NodeType type);
+	bool isPinHovered(ImVec2 pinPos, ImVec2 mousePos);
+	void createConnection(int fromNodeID, std::string fromPin, int toNodeID, std::string toPin);
 };
 
 

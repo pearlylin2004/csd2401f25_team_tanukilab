@@ -167,18 +167,9 @@ namespace Editor {
 
 
 	/* ----------------- Visual Logic Editor ---------------- */
-	enum class NodeType {
-		EVENT,
-		ACTION
-	};
-
-	struct LogicNode {
-		int id;
-		NodeType type;
-		std::string name;
-		ImVec2 position;
-		bool hasInput;
-		bool hasOutput;
+	struct VisualLogicState {
+		bool showEditor = false;
+		std::string currentGraphName = "";
 	};
 	/* ----------------- Logic End ---------------- */
 
@@ -201,6 +192,7 @@ namespace Editor {
 	inline SceneState sceneState;
 	inline PopupState popupState;
 	inline GizmoState gizmoState;
+	inline VisualLogicState visualLogicState;
 
 
 	/* ----------------- Component Registry ---------------- */
@@ -301,6 +293,13 @@ namespace Editor {
 			DebugLog::addMessage("Added Lua Script component for " + obj->getObjectName());
 			},
 			[](const GameObject* obj) { return obj->hasComponent<LuaScript>(); }
+		},
+		{"Visual Logic",
+			[](GameObject* obj) {
+			obj->addComponent<VisualLC>();
+			DebugLog::addMessage("Added Virtual Logic component for " + obj->getObjectName());
+			},
+			[](const GameObject* obj) { return obj->hasComponent<VisualLC>(); }
 		}
 	};
 	/* ----------------- Component End ---------------- */

@@ -505,3 +505,45 @@ struct TileMap : public Component
         tiles.erase({ x, y });
     }
 };
+
+struct LogicConnection {
+	int fromNodeId;
+	int toNodeId;
+
+    std::string outputPin; // OUT, TRUE, FALSE
+    std::string inputPin; // IN
+};
+
+enum class NodeType {
+    EVENT,
+    ACTION,
+    CONDITION
+};
+
+struct LogicNode {
+    int id;
+    NodeType type;
+    std::string name;
+    ImVec2 position;
+    bool hasInput;
+    bool hasOutput;
+
+    bool hasTrueOutput = false;
+    bool hasFalseOutput = false;
+
+    // Parameters for node configuration
+    std::map<std::string, std::string> parameters;
+};
+
+// virtual logic container (editor)
+struct VisualLC : public Component {
+public:
+    std::unique_ptr<Component> clone() const override {
+        return std::make_unique<VisualLC>(*this);
+    }
+
+    std::string filename;
+
+	std::vector<LogicNode> nodes;
+	std::vector<LogicConnection> connections;
+};
