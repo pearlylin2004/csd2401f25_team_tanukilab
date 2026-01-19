@@ -114,7 +114,8 @@ class ParticleSystem
 	void activateParticle(GameObjectManager& manager);
 	void update(GameObjectManager& manager, float const& deltaTime);
 	int IDGenerator(GameObjectManager& manager);
-	glm::vec2 numberGenerator(float offset);
+	Vector2D positionGenerator(float offset);
+	Vector2D velocityGenerator(Vector2D direction);
 	std::vector<size_t> usedID;
 };
 

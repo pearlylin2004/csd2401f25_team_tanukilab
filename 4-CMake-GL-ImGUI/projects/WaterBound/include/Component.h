@@ -85,7 +85,7 @@ public:
     bool texChanged = false;
     GLuint texHDL;
     std::string texFile;
-    glm::vec3 clr{ 1,1,1 };
+    glm::vec4 clr{ 1,1,1,1 };
     renderer::model modelRef;
 };
 
@@ -99,17 +99,15 @@ public:
     struct GroupData 
     {
         glm::vec4 clr{ 1,1,1,1 };
-        glm::vec3 offset{ 0,0,0 };
-        glm::vec2 velocity{ 0,0 };
-        float dropoff = 0;
+        Vector2D velocity{ 0,0 };
         float timer = 0;
+        float offset = 0;
         size_t particleAmt = 0;
         bool isActive = false;
     };
     struct individualData
     {
-        glm::vec3 offset{ 0,0,0 };
-        glm::vec2 velocity{ 0,0 };
+        Vector2D velocity{ 0,0 };
         float timer = 0;
         size_t grpNo = 0;
     };

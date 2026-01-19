@@ -27,7 +27,6 @@ Technology is prohibited.
 #include "Physics.h"
 
 std::string TileMapSystem::filename{};
-size_t ParticleSystem::ID = 0;
 //here we go buddies
 
 //all the systems need to get all game objects
@@ -347,7 +346,7 @@ void RenderSystem::batchingSetUp(GameObjectManager& manager, float const& deltaT
 		transform->mdlWorld = glm::rotate(transform->mdlWorld, angle, glm::vec3(0, 0, 1.f));
 		transform->mdlWorld = glm::scale(transform->mdlWorld, glm::vec3(scaleX, transform->scaleY, transform->scaleZ));
 		data.model = transform->mdlWorld;
-		data.color = glm::vec4(render->clr, 1);
+		data.color = render->clr;
 		data.texParams = glm::vec4(0, 0, 1, 1); // default, no texture frame
 
 		// if obj has animation & state machine component
@@ -502,7 +501,7 @@ int ParticleSystem::IDGenerator(GameObjectManager& manager)
 	return ID;
 }
 
-glm::vec2 ParticleSystem::numberGenerator(float offset)
+Vector2D ParticleSystem::positionGenerator(float offset)
 {
 	std::random_device rd;
 	std::mt19937 gen(rd());
@@ -511,11 +510,26 @@ glm::vec2 ParticleSystem::numberGenerator(float offset)
 	float pi = std::numbers::pi_v<float>;
 	float angle = dis(gen) * 2.0f * pi;
 
-	glm::vec2 randomOffset;
+	Vector2D randomOffset;
 	randomOffset.x = offset * cos(angle);
 	randomOffset.y = offset * sin(angle);
 
 	return randomOffset;
+}
+
+Vector2D ParticleSystem::velocityGenerator(Vector2D direction)
+{
+	std::random_device rd;
+	std::mt19937 gen(rd());
+	std::uniform_real_distribution<float> dis(0.001f, 1.0f);
+	float speed = 3.f * dis(gen);
+
+	//normalize direction
+	float magnitute = Math_Sqrt(direction.x * direction.x + direction.y * direction.y);
+
+	if (magnitute == 0.f)
+		return Vector2D{ 0,0 };
+	return Vector2D{ direction.x / magnitute * speed, direction.y / magnitute * speed };
 }
 
 void ParticleSystem::activateParticle(GameObjectManager& manager)
@@ -524,7 +538,7 @@ void ParticleSystem::activateParticle(GameObjectManager& manager)
 	manager.getAllGameObjects(gameObjects);
 	for (GameObject* object : gameObjects)
 	{
-		if (object->hasComponent<ParticleSystem>() )
+		if (object->hasComponent<Particle>())
 		{
 			Particle* particleData = object->getComponent<Particle>();
 			Transform* masterTransform = object->addComponent<Transform>();
@@ -540,8 +554,16 @@ void ParticleSystem::activateParticle(GameObjectManager& manager)
 					Transform* transform = newObj->addComponent<Transform>();
 					Render* render = newObj->addComponent<Render>();
 					Particle* indivData = newObj->addComponent<Particle>();
-
-
+					Vector2D spawnPos = positionGenerator(particleData->master.offset);
+					transform->x = masterTransform->x + spawnPos.x;
+					transform->y = masterTransform->y + spawnPos.y;
+					transform->z = masterTransform->z;
+					transform->scaleX = 0.5f;
+					transform->scaleY = 0.5f;
+					indivData->childData.velocity = velocityGenerator(spawnPos);
+					indivData->childData.grpNo = particleData->grpNo;
+					indivData->childData.timer = particleData->master.timer;
+					render->clr = particleData->master.clr;
 				}
 			}
 		}
@@ -550,7 +572,12 @@ void ParticleSystem::activateParticle(GameObjectManager& manager)
 
 void ParticleSystem::update(GameObjectManager& manager, float const& deltaTime)
 {
-
+	std::vector<GameObject*> gameObjects;
+	manager.getAllGameObjects(gameObjects);
+	for (GameObject* object : gameObjects)
+	{
+		//lets see if anybody got a transform system
+	}
 }
 //void RenderSystem::renderCollision(Collision::AABB const& box, glm::vec3 const& clr)
 //{
