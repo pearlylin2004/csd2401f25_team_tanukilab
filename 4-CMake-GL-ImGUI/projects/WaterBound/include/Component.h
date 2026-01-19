@@ -344,6 +344,11 @@ struct AudioChannel {
     bool isPendingPlay = false;
     bool isPendingStop = false;
     bool playOnStart = false;
+
+    //new stuff for spatial audio
+	bool isSpatial = false;
+	float minDistance = 1.0f;
+	float maxDistance = 100.0f;
 };
 
 //enum class soundID : int;

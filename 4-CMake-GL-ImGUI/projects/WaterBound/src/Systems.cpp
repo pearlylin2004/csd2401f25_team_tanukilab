@@ -1561,8 +1561,12 @@ void AudioSystem::initializeSceneAudio(GameObjectManager& manager) {
 		// Pre-load all sounds for all channels
 		for (auto& [channelName, channel] : audio->audioChannels) {
 			if (!channel.audioFile.empty()) {
-				// Pre-load the sound via ResourceManager
-				FMOD::Sound* sound = ResourceManager::getInstance().getSound(channel.audioFile);
+				// Pass isSpatial flag during preload
+				FMOD::Sound* sound = ResourceManager::getInstance().getSound(
+					channel.audioFile,
+					channel.loop,
+					channel.isSpatial
+				);
 
 				if (!sound) {
 					std::cerr << "[AudioSystem] Failed to preload: "
@@ -1572,7 +1576,13 @@ void AudioSystem::initializeSceneAudio(GameObjectManager& manager) {
 				else {
 					std::cout << "[AudioSystem] Preloaded: "
 						<< channel.audioFile << " for channel: "
-						<< channelName << std::endl;
+						<< channelName
+						<< (channel.isSpatial ? " (3D)" : " (2D)") << std::endl;
+				}
+
+				// ✅ NEW: Set channel-specific min/max distance if 3D
+				if (channel.isSpatial && sound) {
+					sound->set3DMinMaxDistance(channel.minDistance, channel.maxDistance);
 				}
 			}
 		}
