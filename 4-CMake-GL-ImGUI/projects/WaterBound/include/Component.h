@@ -99,13 +99,25 @@ public:
     struct GroupData 
     {
         glm::vec4 clr{ 1,1,1,1 };
-        glm::vec3 offset;
+        glm::vec3 offset{ 0,0,0 };
+        glm::vec2 velocity{ 0,0 };
+        float dropoff = 0;
         float timer = 0;
-        int particleAmt = 0;
-        int grpNo = 0;
+        size_t particleAmt = 0;
         bool isActive = false;
     };
-    std::queue<GroupData> particles;
+    struct individualData
+    {
+        glm::vec3 offset{ 0,0,0 };
+        glm::vec2 velocity{ 0,0 };
+        float timer = 0;
+        size_t grpNo = 0;
+    };
+    size_t grpNo = 0;
+    bool activate = false;
+    bool isMaster = true;
+    individualData childData;
+    GroupData master;
 };
 
 struct FontComponent : public Component {

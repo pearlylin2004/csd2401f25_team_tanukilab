@@ -27,6 +27,7 @@ Technology is prohibited.
 #include "Physics.h"
 
 std::string TileMapSystem::filename{};
+size_t ParticleSystem::ID = 0;
 //here we go buddies
 
 //all the systems need to get all game objects
@@ -468,6 +469,88 @@ void RenderSystem::clearBatches() {
 void RenderSystem::fboAspectRatio(int& width, int& height) const {
 	width = fboWidth;
 	height = fboHeight;
+}
+
+int ParticleSystem::IDGenerator(GameObjectManager& manager)
+{
+	size_t ID = 0;
+	bool empty = false;
+	usedID.clear();
+	std::vector<GameObject*> gameObjects;
+	manager.getAllGameObjects(gameObjects);
+	for (GameObject* object : gameObjects)
+	{
+		if (object->hasComponent<Particle>())
+		{
+			Particle* particleData = object->getComponent<Particle>();
+			if (particleData->isMaster && particleData->grpNo != 0)
+				usedID.push_back(particleData->grpNo);
+		}
+	}
+	std::sort(usedID.begin(), usedID.end());
+	for (int i = 0; i < usedID.size(); ++i)
+	{
+		++ID;
+		if (ID != usedID[i])
+		{
+			empty = true;
+			break;
+		}
+	}
+	if (!empty)
+		++ID;
+	return ID;
+}
+
+glm::vec2 ParticleSystem::numberGenerator(float offset)
+{
+	std::random_device rd;
+	std::mt19937 gen(rd());
+	std::uniform_real_distribution<float> dis(0.0f, 1.0f);
+
+	float pi = std::numbers::pi_v<float>;
+	float angle = dis(gen) * 2.0f * pi;
+
+	glm::vec2 randomOffset;
+	randomOffset.x = offset * cos(angle);
+	randomOffset.y = offset * sin(angle);
+
+	return randomOffset;
+}
+
+void ParticleSystem::activateParticle(GameObjectManager& manager)
+{
+	std::vector<GameObject*> gameObjects;
+	manager.getAllGameObjects(gameObjects);
+	for (GameObject* object : gameObjects)
+	{
+		if (object->hasComponent<ParticleSystem>() )
+		{
+			Particle* particleData = object->getComponent<Particle>();
+			Transform* masterTransform = object->addComponent<Transform>();
+			if (particleData->activate && particleData->isMaster)
+			{
+				if (particleData->grpNo == 0)
+					particleData->grpNo = IDGenerator(manager);
+				for (size_t i = 0; i < particleData->master.particleAmt; ++i)
+				{
+					std::string name = "Particle_" + std::to_string(particleData->grpNo) + "_" + std::to_string(i);
+					GameObject* newObj = manager.createGameObject(name);
+
+					Transform* transform = newObj->addComponent<Transform>();
+					Render* render = newObj->addComponent<Render>();
+					Particle* indivData = newObj->addComponent<Particle>();
+
+
+				}
+			}
+		}
+	}
+}
+
+void ParticleSystem::update(GameObjectManager& manager, float const& deltaTime)
+{
+
 }
 //void RenderSystem::renderCollision(Collision::AABB const& box, glm::vec3 const& clr)
 //{

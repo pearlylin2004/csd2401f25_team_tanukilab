@@ -31,6 +31,9 @@ Technology is prohibited.
 #include "controllerSystem.h"
 #include <LogicContainer.h>
 #include "audio.h"
+#include <algorithm>
+#include <random>
+#include <numbers>
 
 //forward declaration
 struct renderer;
@@ -104,6 +107,15 @@ public:
 private:
 	std::unordered_map<BatchKey, std::vector<renderer::InstanceData>, BatchKeyHash> objectWithTex;
 	std::unordered_map<BatchKey, std::vector<renderer::InstanceData>, BatchKeyHash> objectWithoutTex;
+};
+
+class ParticleSystem
+{
+	void activateParticle(GameObjectManager& manager);
+	void update(GameObjectManager& manager, float const& deltaTime);
+	int IDGenerator(GameObjectManager& manager);
+	glm::vec2 numberGenerator(float offset);
+	std::vector<size_t> usedID;
 };
 
 /*!***********************************************************************
