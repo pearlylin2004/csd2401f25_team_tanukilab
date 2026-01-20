@@ -143,12 +143,23 @@ private:
 // for Visual Logic Container
 class VisualLogicEditor {
 public:
-	VisualLogicEditor();
+	//VisualLogicEditor();
+	static VisualLogicEditor& Instance() {
+		static VisualLogicEditor instance;
+		return instance;
+	}
+
+	// Delete copy constructor and assignment operator
+	VisualLogicEditor(const VisualLogicEditor&) = delete;
+	VisualLogicEditor& operator=(const VisualLogicEditor&) = delete;
 	void render();
 
 	void clear();
+	void updateNextNodeId();
 
 private:
+	VisualLogicEditor();
+
 	int m_nextNodeId;
 	int m_selectedNodeId;
 
@@ -194,7 +205,7 @@ private:
 // Top menu bar
 class MenuBar {
 public:
-	MenuBar(AssetBrowser& aBrowser, VisualLogicEditor& vEditor, Editor::AssetBrowserState& Astate, Editor::MenuBarState& Mstate, Editor::ObjSelectionState& Ostate, Editor::SceneState& sceneState);
+	MenuBar(AssetBrowser& aBrowser, Editor::AssetBrowserState& Astate, Editor::MenuBarState& Mstate, Editor::ObjSelectionState& Ostate, Editor::SceneState& sceneState);
 	void render(GameObjectManager& manager);
 	void toggleSimulation(GameObjectManager& manager); // play/stop simulation
 	void pauseResumeSimul();
@@ -215,7 +226,6 @@ private:
 	void themeForest();
 
 	AssetBrowser& m_assetBrowser;
-	VisualLogicEditor& m_visualLogicEditor;
 	Editor::AssetBrowserState& m_AssetBrowserState;
 	Editor::MenuBarState& m_menuBarState;
 	Editor::ObjSelectionState& m_objSelectionState;
@@ -340,7 +350,6 @@ private:
 	MenuBar menuBar;
 	PerformanceWindow performanceWindow;
 	SceneWindow sceneWindow;
-	VisualLogicEditor visualLogicEditor;
 
 	GameObjectManager& m_manager;
 

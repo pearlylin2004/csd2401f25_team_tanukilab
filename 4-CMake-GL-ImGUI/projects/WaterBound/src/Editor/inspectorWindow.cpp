@@ -1279,6 +1279,8 @@ void InspectorWindow::renderVisualLogic(GameObject* selected) {
                 Editor::visualLogicState.connections.clear();
                 logic->filename = "";
 
+                VisualLogicEditor::Instance().updateNextNodeId();
+
 				DebugLog::addMessage("Creating new Visual Logic Graph for " + selected->getObjectName());
 			}
 
@@ -1330,9 +1332,12 @@ void InspectorWindow::renderVisualLogic(GameObject* selected) {
             
             // loading logic
             if (!logic->filename.empty()) {
+
                 std::string filepath = "/Logic/" + logic->filename;
                 std::string err;
                 if (JsonIO::loadVisualLogic(filepath, Editor::visualLogicState.nodes, Editor::visualLogicState.connections, &err)) {
+                    VisualLogicEditor::Instance().updateNextNodeId();
+
                     DebugLog::addMessage("Loaded Visual Logic: " + logic->filename + "\n");
                 }
                 else {
