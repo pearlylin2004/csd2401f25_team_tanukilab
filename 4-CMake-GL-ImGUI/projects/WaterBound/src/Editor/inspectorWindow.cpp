@@ -1274,9 +1274,9 @@ void InspectorWindow::renderVisualLogic(GameObject* selected) {
                 Editor::visualLogicState.currentGraphName = "";
 				Editor::visualLogicState.targetObj = selected;
 
+                // create new empty graph
                 Editor::visualLogicState.nodes.clear();
                 Editor::visualLogicState.connections.clear();
-
                 logic->filename = "";
 
 				DebugLog::addMessage("Creating new Visual Logic Graph for " + selected->getObjectName());
@@ -1295,7 +1295,15 @@ void InspectorWindow::renderVisualLogic(GameObject* selected) {
                     if (ImGui::Selectable(assetName.c_str(), isSelected)) {
                         logic->filename = assetName;
 
-                        DebugLog::addMessage("Assigned Visual Logic Graph " + assetName + " to " + selected->getObjectName());
+                        std::string filepath = "/Logic/" + assetName;
+                        std::string err;
+                        if (JsonIO::loadVisualLogic(filepath, logic->nodes, logic->connections, &err)) {
+                            DebugLog::addMessage("Loaded Visual Logic Graph: " + assetName + "\n");
+                            DebugLog::addMessage("Loaded " + std::to_string(logic->nodes.size()) + " nodes\n");
+                        }
+                        else {
+                            DebugLog::addMessage("ERROR loading Visual Logic: " + err + "\n");
+                        }
                     }
 
                     if (isSelected) {
@@ -1319,9 +1327,26 @@ void InspectorWindow::renderVisualLogic(GameObject* selected) {
             Editor::visualLogicState.showEditor = true;
 			Editor::visualLogicState.currentGraphName = logic->filename;
             Editor::visualLogicState.targetObj = selected;
-
-            Editor::visualLogicState.nodes = logic->nodes;
-            Editor::visualLogicState.connections = logic->connections;
+            
+            // loading logic
+            if (!logic->filename.empty()) {
+                std::string filepath = "/Logic/" + logic->filename;
+                std::string err;
+                if (JsonIO::loadVisualLogic(filepath, Editor::visualLogicState.nodes, Editor::visualLogicState.connections, &err)) {
+                    DebugLog::addMessage("Loaded Visual Logic: " + logic->filename + "\n");
+                }
+                else {
+                    DebugLog::addMessage("ERROR loading Visual Logic: " + err + "\n");
+                    // if file doesn't exist, try loading from component
+                    Editor::visualLogicState.nodes = logic->nodes;
+                    Editor::visualLogicState.connections = logic->connections;
+                }
+            }
+            else {
+                // no filename, load from component (new logic)
+                Editor::visualLogicState.nodes = logic->nodes;
+                Editor::visualLogicState.connections = logic->connections;
+            }
 
             DebugLog::addMessage("Opening Visual Logic Editor for " + selected->getObjectName() + "\n");
         }

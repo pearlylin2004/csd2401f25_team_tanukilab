@@ -1019,10 +1019,9 @@ namespace JsonIO {
         doc.SetObject();
         auto& a = doc.GetAllocator();
 
-        // Version
         doc.AddMember("version", 1, a);
 
-        // Serialize nodes
+        // serialize nodes
         rapidjson::Value nodesArray(rapidjson::kArrayType);
         for (const auto& node : nodes) {
             rapidjson::Value nodeObj(rapidjson::kObjectType);
@@ -1031,7 +1030,6 @@ namespace JsonIO {
             nodeObj.AddMember("name", rapidjson::Value(node.name.c_str(), a), a);
             nodeObj.AddMember("type", static_cast<int>(node.type), a);
 
-            // Position
             rapidjson::Value posArray(rapidjson::kArrayType);
             posArray.PushBack(node.position.x, a);
             posArray.PushBack(node.position.y, a);
@@ -1040,7 +1038,6 @@ namespace JsonIO {
             nodeObj.AddMember("hasInput", node.hasInput, a);
             nodeObj.AddMember("hasOutput", node.hasOutput, a);
 
-            // Parameters
             if (!node.parameters.empty()) {
                 rapidjson::Value paramsObj(rapidjson::kObjectType);
                 for (const auto& [key, value] : node.parameters) {
@@ -1057,7 +1054,7 @@ namespace JsonIO {
         }
         doc.AddMember("nodes", nodesArray, a);
 
-        // Serialize connections
+        // serialize connections
         rapidjson::Value connectionsArray(rapidjson::kArrayType);
         for (const auto& conn : connections) {
             rapidjson::Value connObj(rapidjson::kObjectType);
@@ -1071,7 +1068,7 @@ namespace JsonIO {
         }
         doc.AddMember("connections", connectionsArray, a);
         
-        // Write to file
+        // write to file
         bool runtime = WriteDocumentToFile(RUNTIME_DIR_R+filepath, doc, true, err);
         bool proj = WriteDocumentToFile(SOURCE_ASSETS_DIR_R +filepath, doc, true, err);
 

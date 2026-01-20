@@ -40,7 +40,7 @@ void VisualLogicEditor::render() {
 				saveLogic();
 			}
 
-			if (ImGui::MenuItem("Close")) {
+			if (ImGui::MenuItem("Save and Close")) {
 				saveLogic();
 				Editor::visualLogicState.showEditor = false;
 				m_selectedNodeId = -1;
@@ -258,17 +258,17 @@ void VisualLogicEditor::saveLogic() {
 	}
 }
 
-void VisualLogicEditor::loadLogic(const std::string& filename) {
-	std::string filepath = "assets/Logic/" + filename;
-
-	std::string err;
-	if (JsonIO::loadVisualLogic(filepath, Editor::visualLogicState.nodes, Editor::visualLogicState.connections, &err)) {
-		DebugLog::addMessage("Loaded Visual Logic: " + filepath);
-	}
-	else {
-		DebugLog::addMessage("Failed to load: " + err);
-	}
-}
+//void VisualLogicEditor::loadLogic(const std::string& filename) {
+//	std::string filepath = "/Logic/" + filename;
+//
+//	std::string err;
+//	if (JsonIO::loadVisualLogic(filepath, Editor::visualLogicState.nodes, Editor::visualLogicState.connections, &err)) {
+//		DebugLog::addMessage("Loaded Visual Logic: " + filepath);
+//	}
+//	else {
+//		DebugLog::addMessage("Failed to load: " + err);
+//	}
+//}
 
 void VisualLogicEditor::renderNode(ImDrawList* drawList, LogicNode& node, ImVec2 canvasPos, bool isCanvasHovered) {
 	// calc screen position

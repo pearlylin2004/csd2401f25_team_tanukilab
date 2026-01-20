@@ -169,7 +169,7 @@ private:
 
 	// save/load logic
 	void saveLogic();
-	void loadLogic(const std::string& filename);
+	//void loadLogic(const std::string& filename);
 
 	// save popup state
 	char m_saveFilename[128];

@@ -249,7 +249,10 @@ void CoreEngine::Update(float deltaTime) {
         m_guiSystem->pauseUpdate(*m_manager);
 	}
 
-    if(!EditorManager::isEditingMode() && !EditorManager::isPaused()) m_luaSystem->update(*m_manager, deltaTime);
+    if (!EditorManager::isEditingMode() && !EditorManager::isPaused()) {
+        m_luaSystem->update(*m_manager, deltaTime);
+        m_visualLCSystem->updateAll(*m_manager, deltaTime);
+    }
 
     // Update all systems in order
     m_inputSystem->update(*m_manager, deltaTime, *m_messageBus);
@@ -260,7 +263,6 @@ void CoreEngine::Update(float deltaTime) {
     m_renderSystem->update(*m_manager, deltaTime);
     m_fontSystem->update(*m_manager, m_fps);    
     m_audioSystem->update(*m_manager, deltaTime);
-	m_visualLCSystem->updateAll(*m_manager, deltaTime);
     #ifdef _DEBUG
         m_uiSystem->update();
     #endif

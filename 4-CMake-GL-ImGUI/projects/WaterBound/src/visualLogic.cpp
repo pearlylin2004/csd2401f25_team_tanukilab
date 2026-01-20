@@ -114,7 +114,7 @@ void VisualLogicSystem::executeNode(GameObject* obj, VisualLC* logic, int nodeId
 	}
 
 	// execute next connected node (NOT for condition)
-	int nextNodeId = findNextNode(logic, node->id, "OUT");
+	int nextNodeId = findNextNode(logic, node->id, "Out");
 	if (nextNodeId != -1) {
 		executeNode(obj, logic, nextNodeId);
 	}
@@ -132,8 +132,8 @@ void VisualLogicSystem::executeActionNode(GameObject* obj, VisualLC* logic, Logi
 	if (node.name == "Print Message") {
 		std::string msg = node.parameters.count("message") ? node.parameters["message"] : "I love GAM";
 
-		DebugLog::addMessage("Visual Logic Print: " + msg, DebugMode::PlaySimul);
-		std::cout << "[Visual Logic Print]: " << msg << std::endl;
+		DebugLog::addMessage(msg, DebugMode::PlaySimul);
+		std::cout << msg << std::endl;
 	}
 	else if (node.name == "Move Object") {
 		Transform* transform = obj->getComponent<Transform>();
