@@ -1014,11 +1014,6 @@ namespace JsonIO {
 
     /* ---------- Visual Logic for editor ---------- */
     bool saveVisualLogic(const std::string& filepath, const std::vector<LogicNode>& nodes, const std::vector<LogicConnection>& connections, std::string* err) {
-        std::cout << "saveVisualLogic called with filepath: " << filepath << std::endl;
-        std::cout << "RUNTIME_DIR_R: " << RUNTIME_DIR_R << std::endl;
-        std::cout << "SOURCE_DIR_R: " << SOURCE_DIR_R << std::endl;
-        std::cout << "Full runtime path: " << RUNTIME_DIR_R + filepath << std::endl;
-        std::cout << "Full source path: " << SOURCE_DIR_R + filepath << std::endl;
 
         rapidjson::Document doc;
         doc.SetObject();
@@ -1078,22 +1073,23 @@ namespace JsonIO {
         
         // Write to file
         bool runtime = WriteDocumentToFile(RUNTIME_DIR_R+filepath, doc, true, err);
-        bool proj = WriteDocumentToFile(SOURCE_DIR_R+filepath, doc, true, err);
+        bool proj = WriteDocumentToFile(SOURCE_ASSETS_DIR_R +filepath, doc, true, err);
 
 		return (runtime && proj);
     }
 
     bool loadVisualLogic(const std::string& filepath, std::vector<LogicNode>& nodes, std::vector<LogicConnection>& connections, std::string* err) {
         rapidjson::Document doc;
-        if (!ReadFileToDocument(filepath, doc, err)) {
+        if (!ReadFileToDocument(RUNTIME_DIR_R+filepath, doc, err)) {
+			std::cout << "Failed to load visual logic from " << filepath << ": " << (err ? *err : "unknown error") << std::endl;
             return false;
         }
 
-        // Clear existing data
+        // clear existing data
         nodes.clear();
         connections.clear();
 
-        // Load nodes
+        // load nodes
         if (doc.HasMember("nodes") && doc["nodes"].IsArray()) {
             for (const auto& nodeVal : doc["nodes"].GetArray()) {
                 if (!nodeVal.IsObject()) continue;
@@ -1108,7 +1104,6 @@ namespace JsonIO {
 
                 node.type = static_cast<NodeType>(GetIntOr(nodeVal, "type", 0));
 
-                // Position
                 if (nodeVal.HasMember("position") && nodeVal["position"].IsArray()) {
                     const auto& posArray = nodeVal["position"].GetArray();
                     if (posArray.Size() >= 2) {
@@ -1120,7 +1115,6 @@ namespace JsonIO {
                 GetBool(nodeVal, "hasInput", node.hasInput);
                 GetBool(nodeVal, "hasOutput", node.hasOutput);
 
-                // Parameters
                 if (nodeVal.HasMember("parameters") && nodeVal["parameters"].IsObject()) {
                     const auto& paramsObj = nodeVal["parameters"];
                     for (auto it = paramsObj.MemberBegin(); it != paramsObj.MemberEnd(); ++it) {
@@ -1134,7 +1128,7 @@ namespace JsonIO {
             }
         }
 
-        // Load connections
+        // load connections
         if (doc.HasMember("connections") && doc["connections"].IsArray()) {
             for (const auto& connVal : doc["connections"].GetArray()) {
                 if (!connVal.IsObject()) continue;
