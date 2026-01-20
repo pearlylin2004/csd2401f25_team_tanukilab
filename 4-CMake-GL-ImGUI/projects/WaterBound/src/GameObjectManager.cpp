@@ -477,6 +477,21 @@ void GameObjectManager::loadSceneFromJson(const std::string& filename) {
 				c->colliderSize.x = jc["colliderSize"][0].GetFloat();
 				c->colliderSize.y = jc["colliderSize"][1].GetFloat();
 			}
+
+			// Load Collision Tag
+			if (jc.HasMember("collisionTag") && jc["collisionTag"].IsString()) {
+				c->collisionTag = jc["collisionTag"].GetString();
+			}
+
+			// Load ignore the collision
+			if (jc.HasMember("ignoreCollisionsWith") && jc["ignoreCollisionsWith"].IsArray()) {
+				c->ignoreCollisionsWith.clear();
+				for (const auto& tag : jc["ignoreCollisionsWith"].GetArray()) {
+					if (tag.IsString()) {
+						c->ignoreCollisionsWith.insert(tag.GetString());
+					}
+				}
+			}
 		}
 
 		// ---- State Machine ----
@@ -990,6 +1005,21 @@ void GameObjectManager::saveSceneToJson(const std::string& filename, bool isNew)
 					jc.AddMember("collisionRes", rapidjson::Value(collisionResStr.c_str(), a), a);
 				}
 
+				if (c->collisionTag != "default") {
+					if (!prefabC || !prefabC->HasMember("collisionTag") ||
+						c->collisionTag != (*prefabC)["collisionTag"].GetString()) {
+						jc.AddMember("collisionTag", rapidjson::Value(c->collisionTag.c_str(), a), a);
+					}
+				}
+
+				if (!c->ignoreCollisionsWith.empty()) {
+					rapidjson::Value ignoreArray(rapidjson::kArrayType);
+					for (const std::string& tag : c->ignoreCollisionsWith) {
+						ignoreArray.PushBack(rapidjson::Value(tag.c_str(), a), a);
+					}
+					jc.AddMember("ignoreCollisionsWith", ignoreArray, a);
+				}
+
 				if (!jc.ObjectEmpty()) {
 					comps.AddMember("CollisionInfo", jc, a);
 				}
@@ -1401,7 +1431,12 @@ void GameObjectManager::createBulletPool(const std::string& templateBulletName, 
 
 	// ensure only 11 bullets (1+10 clone)
 	if (templateBullet->getObjectName() != "bullet") renameGameObject(templateBullet, "bullet");
-
+	
+	if (CollisionInfo* c = templateBullet->getComponent<CollisionInfo>()) {
+		c->collisionTag = "bullet";
+		c->ignoreCollisionsWith.insert("player");
+		c->ignoreCollisionsWith.insert("bullet");
+	}
 	std::cout << "Creating bullet pool with " << poolSize << " bullets...\n";
 
 	for (int i = 1; i <= poolSize; ++i) {
@@ -1429,6 +1464,13 @@ void GameObjectManager::createBulletPool(const std::string& templateBulletName, 
 		//		p->dynamics.velocity.y = 0.0f;
 		//		p->dynamics.velocity.z = 0.0f;*/
 		//	}
+		// if (clonedBullet) {
+		/*		if (CollisionInfo* c = clonedBullet->getComponent<CollisionInfo>()) {
+					c->collisionTag = "bullet";
+					c->ignoreCollisionsWith.insert("player");
+					c->ignoreCollisionsWith.insert("bullet");
+			}
+		}*/
 		//	std::cout << "  Created: " << bulletName << "\n";
 		//}
 	}
