@@ -174,6 +174,13 @@ void VisualLogicEditor::render() {
 		drawList->AddLine(m_connectionStartPos, mousePos, IM_COL32(255, 255, 0, 255), 3.f);
 	}
 
+	// cancel connection with right click
+	if (m_isConnecting && InputHandler::isMouseButtonClicked(GLFW_MOUSE_BUTTON_RIGHT)) {
+		m_isConnecting = false;
+		m_connectingFromNodeId = -1;
+		m_connectingFromPin = "";
+	}
+
 	// pan with middle mouse
 	if (isCanvasHovered && InputHandler::isMouseDragging(GLFW_MOUSE_BUTTON_MIDDLE)) {
 		Vector2D delta = InputHandler::getMouseDelta();
@@ -219,6 +226,15 @@ void VisualLogicEditor::render() {
 
 	// popup
 	renderSavePopup();
+}
+
+void VisualLogicEditor::updateNextNodeId() {
+	m_nextNodeId = 1;
+	for (const auto& node : Editor::visualLogicState.nodes) {
+		if (node.id >= m_nextNodeId) {
+			m_nextNodeId = node.id + 1;
+		}
+	}
 }
 
 // In VisualLogicEditor class
