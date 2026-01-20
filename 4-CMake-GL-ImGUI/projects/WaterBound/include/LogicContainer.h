@@ -24,7 +24,7 @@ class GameObjectManager;
 
 #include "Component.h"
 #include "input.h"
-
+#include "StateMachineRuntime.h"
 /*!
  * \class LogicContainer
  * \brief A lightweight gameplay logic system for handling finite-state
