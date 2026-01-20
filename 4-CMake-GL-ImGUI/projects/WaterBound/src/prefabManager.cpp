@@ -40,6 +40,7 @@ namespace {
 		else if (compName == "FontComponent") obj->removeComponent<FontComponent>();
 		else if (compName == "TileMap") obj->removeComponent<TileMap>();
 		else if (compName == "LuaScript") obj->removeComponent<LuaScript>();
+		else if (compName == "VisualLC") obj->removeComponent<VisualLC>();
 	}
 
 	void removeAllComponents(GameObject* obj) {
@@ -54,6 +55,7 @@ namespace {
 		obj->removeComponent<FontComponent>();
 		obj->removeComponent<TileMap>();
 		obj->removeComponent<LuaScript>();
+		obj->removeComponent<VisualLC>();
 	}
 
 	void applyComponentFromJson(GameObject* obj, const char* compName, const rapidjson::Value& compData, rapidjson::Document::AllocatorType& allocator, const std::function<void(GameObject*, const rapidjson::Value&)>& func) {
@@ -990,6 +992,26 @@ void PrefabManager::applyPrefabComponents(GameObject* go, const rapidjson::Value
 
 		ls->scriptsChanged = true;
 	}
+
+	// ---- Visual Logic Component ----
+	if (comps.HasMember("VisualLC") && comps["VisualLC"].IsObject()) {
+		const auto& jvl = comps["VisualLC"];
+		auto* vl = go->addComponent<VisualLC>();
+
+		// load filename
+		if (jvl.HasMember("filename") && jvl["filename"].IsString()) {
+			vl->filename = jvl["filename"].GetString();
+
+			// load the visual logic graph from file
+			if (!vl->filename.empty()) {
+				std::string filepath = "/Logic/" + vl->filename;
+				std::string err;
+				if (!JsonIO::loadVisualLogic(filepath, vl->nodes, vl->connections, &err)) {
+					DebugLog::addMessage("Failed to load Visual Logic file: " + err);
+				}
+			}
+		}
+	}
 }
 
 void PrefabManager::serializeComponents(const GameObject* obj, rapidjson::Value& comps, rapidjson::Document::AllocatorType& a) {
@@ -1180,6 +1202,18 @@ void PrefabManager::serializeComponents(const GameObject* obj, rapidjson::Value&
 			jl.AddMember("scripts", scriptsArray, a);
 			comps.AddMember("LuaScript", jl, a);
 		}
+	}
+
+	// ---- Visual Logic Component ----
+	if (auto vl = obj->getComponent<VisualLC>()) {
+		rapidjson::Value jvl(rapidjson::kObjectType);
+
+		// Only save the filename reference
+		if (!vl->filename.empty()) {
+			jvl.AddMember("filename", rapidjson::Value(vl->filename.c_str(), a), a);
+		}
+
+		comps.AddMember("VisualLC", jvl, a);
 	}
 }
 

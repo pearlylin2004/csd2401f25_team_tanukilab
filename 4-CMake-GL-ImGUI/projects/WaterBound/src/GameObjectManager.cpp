@@ -729,6 +729,28 @@ void GameObjectManager::loadSceneFromJson(const std::string& filename) {
 
 			ls->scriptsChanged = true;
 		}
+
+		// ---- Visual Logic Component ----
+		if (comps.HasMember("VisualLC") && comps["VisualLC"].IsObject()) {
+			const auto& jvl = comps["VisualLC"];
+
+			auto* vl = go->getComponent<VisualLC>();
+			if (!vl) vl = go->addComponent<VisualLC>();
+
+			// load filename
+			if (jvl.HasMember("filename") && jvl["filename"].IsString()) {
+				vl->filename = jvl["filename"].GetString();
+
+				// load visual logic from file
+				if (!vl->filename.empty()) {
+					std::string filepath = "/Logic/" + vl->filename;
+					std::string err;
+					if (!JsonIO::loadVisualLogic(filepath, vl->nodes, vl->connections, &err)) {
+						DebugLog::addMessage("Failed to load Visual Logic file: " + err);
+					}
+				}
+			}
+		}
 		
 	}
 
@@ -1222,6 +1244,24 @@ void GameObjectManager::saveSceneToJson(const std::string& filename, bool isNew)
 				if (!scriptsArray.Empty()) {
 					jl.AddMember("scripts", scriptsArray, a);
 					comps.AddMember("LuaScript", jl, a);
+				}
+			}
+
+			// ---- Visual Logic ----
+			if (auto vl = obj->getComponent<VisualLC>()) {
+				rapidjson::Value jvl(rapidjson::kObjectType);
+				const rapidjson::Value* prefabVL = PM.getPrefabJsonComp(prefabDoc, "VisualLC");
+
+				// save only if filename dff from prefab or prefab no have
+				if (!vl->filename.empty()) {
+					if (!prefabVL || !prefabVL->HasMember("filename") ||
+						vl->filename != (*prefabVL)["filename"].GetString()) {
+						jvl.AddMember("filename", rapidjson::Value(vl->filename.c_str(), a), a);
+					}
+				}
+
+				if (!jvl.ObjectEmpty()) {
+					comps.AddMember("VisualLC", jvl, a);
 				}
 			}
 

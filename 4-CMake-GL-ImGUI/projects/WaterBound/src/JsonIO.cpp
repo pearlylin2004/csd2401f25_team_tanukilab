@@ -707,6 +707,17 @@ namespace JsonIO {
             }
         }
 
+        // Visual Logic
+        if (VisualLC* vl = obj->getComponent<VisualLC>()) {
+            Value jvl(kObjectType);
+
+            if (!vl->filename.empty()) {
+                jvl.AddMember("filename", Value(vl->filename.c_str(), a), a);
+            }
+
+            doc.AddMember("VisualLC", jvl, a);
+        }
+
         // convert to string
         StringBuffer buffer;
         Writer<StringBuffer> writer(buffer);
@@ -1000,6 +1011,25 @@ namespace JsonIO {
                 }
 
                 ls->scriptsChanged = true;
+            }
+
+            // Visual Logic
+            if (doc.HasMember("VisualLC")) {
+                const Value& jvl = doc["VisualLC"];
+                VisualLC* vl = obj->addComponent<VisualLC>();
+
+                if (jvl.HasMember("filename") && jvl["filename"].IsString()) {
+                    vl->filename = jvl["filename"].GetString();
+
+                    // Load the visual logic graph from file
+                    if (!vl->filename.empty()) {
+                        std::string filepath = "/Logic/" + vl->filename;
+                        std::string err;
+                        if (!JsonIO::loadVisualLogic(filepath, vl->nodes, vl->connections, &err)) {
+                            DebugLog::addMessage("Failed to load Visual Logic file: " + err);
+                        }
+                    }
+                }
             }
 
             return obj;
