@@ -639,7 +639,7 @@ ImU32 VisualLogicEditor::getNodeColor(NodeType type) {
 }
 
 bool VisualLogicEditor::isPinHovered(ImVec2 pinPos, ImVec2 mousePos) {
-	float distance = sqrt(pow(mousePos.x - pinPos.x, 2) + pow(mousePos.y - pinPos.y, 2));
+	double distance = sqrt(pow(mousePos.x - pinPos.x, 2) + pow(mousePos.y - pinPos.y, 2));
 	return distance < 10.0f;
 }
 

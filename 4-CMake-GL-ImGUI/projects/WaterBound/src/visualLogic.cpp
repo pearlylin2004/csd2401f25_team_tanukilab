@@ -52,6 +52,7 @@ void VisualLogicSystem::init(GameObject* obj, VisualLC* logic) {
 }
 
 void VisualLogicSystem::update(GameObject* obj, VisualLC* logic, float dt) {
+	(void)dt; // to use in the future
 	if (!obj || !logic) return;
 
 	// find and execute all ON UPDATE nodes
@@ -121,13 +122,16 @@ void VisualLogicSystem::executeNode(GameObject* obj, VisualLC* logic, int nodeId
 }
 
 void VisualLogicSystem::executeEventNode(GameObject* obj, VisualLC* logic, LogicNode& node) {
+	(void)obj; // to use in future
+	(void)node; // to use in future
+
 	logic->isExecuting = true;
 	logic->currentExecutingNodeId = node.id;
-
-	DebugLog::addMessage("Executing Event Node: " + node.name + " (ID: " + std::to_string(node.id) + ")", DebugMode::PlaySimul);
 }
 
 void VisualLogicSystem::executeActionNode(GameObject* obj, VisualLC* logic, LogicNode& node) {
+	(void)logic; // to use in future
+
 	// print message
 	if (node.name == "Print Message") {
 		std::string msg = node.parameters.count("message") ? node.parameters["message"] : "I love GAM";
@@ -153,6 +157,9 @@ void VisualLogicSystem::executeActionNode(GameObject* obj, VisualLC* logic, Logi
 
 bool VisualLogicSystem::executeConditionNode(GameObject* obj, VisualLC* logic, LogicNode& node) {
 	// check key pressed/mouse clicked/compare numbers
+	(void)obj; // to use in future
+	(void)logic; // to use in future
+	(void)node; // to use in future
 
 	return true;
 }

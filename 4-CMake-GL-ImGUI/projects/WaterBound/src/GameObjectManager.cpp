@@ -759,9 +759,9 @@ void GameObjectManager::loadSceneFromJson(const std::string& filename) {
 				// load visual logic from file
 				if (!vl->filename.empty()) {
 					std::string filepath = "/Logic/" + vl->filename;
-					std::string err;
-					if (!JsonIO::loadVisualLogic(filepath, vl->nodes, vl->connections, &err)) {
-						DebugLog::addMessage("Failed to load Visual Logic file: " + err);
+					std::string e;
+					if (!JsonIO::loadVisualLogic(filepath, vl->nodes, vl->connections, &e)) {
+						DebugLog::addMessage("Failed to load Visual Logic file: " + e);
 					}
 				}
 			}
@@ -1257,7 +1257,7 @@ void GameObjectManager::saveSceneToJson(const std::string& filename, bool isNew)
 			// ---- LuaScript ----
 			if (auto ls = obj->getComponent<LuaScript>()) {
 				rapidjson::Value jl(rapidjson::kObjectType);
-				const rapidjson::Value* prefabLS = PM.getPrefabJsonComp(prefabDoc, "LuaScript");
+				PM.getPrefabJsonComp(prefabDoc, "LuaScript");
 
 				rapidjson::Value scriptsArray(rapidjson::kArrayType);
 
