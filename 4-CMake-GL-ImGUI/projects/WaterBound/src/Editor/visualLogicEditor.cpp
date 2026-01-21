@@ -55,41 +55,14 @@ void VisualLogicEditor::render() {
 			if (ImGui::BeginMenu("Events")) {
 				if (ImGui::MenuItem("On Start")) {
 					addNode(Vector2D(100, 100), NodeType::EVENT, NodeImplementation::ON_START);
-					//LogicNode node;
-					//node.id = m_nextNodeId++;
-					////node.name = "On Start";
-					//node.type = NodeType::EVENT;
-					//node.imp = NodeImplementation::ON_START;
-					//node.position = ImVec2(100, 100);
-					//node.hasInput = false;
-					//node.hasOutput = true;
-					//Editor::visualLogicState.nodes.push_back(node);
 				}
 
 				if (ImGui::MenuItem("On Update")) {
 					addNode(Vector2D(100, 200), NodeType::EVENT, NodeImplementation::ON_UPDATE);
-					//LogicNode node;
-					//node.id = m_nextNodeId++;
-					////node.name = "On Update";
-					//node.type = NodeType::EVENT;
-					//node.imp = NodeImplementation::ON_UPDATE;
-					//node.position = ImVec2(100, 150);
-					//node.hasInput = false;
-					//node.hasOutput = true;
-					//Editor::visualLogicState.nodes.push_back(node);
 				}
 
 				if (ImGui::MenuItem("On Collision (WIP)")) {
 					addNode(Vector2D(100, 300), NodeType::EVENT, NodeImplementation::ON_COLLISION);
-					//LogicNode node;
-					//node.id = m_nextNodeId++;
-					////node.name = "On Collision";
-					//node.type = NodeType::EVENT;
-					//node.imp = NodeImplementation::ON_COLLISION;
-					//node.position = ImVec2(100, 200);
-					//node.hasInput = false;
-					//node.hasOutput = true;
-					//Editor::visualLogicState.nodes.push_back(node);
 				}
 
 				ImGui::EndMenu();
@@ -98,31 +71,10 @@ void VisualLogicEditor::render() {
 			if (ImGui::BeginMenu("Actions")) {
 				if (ImGui::MenuItem("Print Message")) {
 					addNode(Vector2D(400, 100), NodeType::ACTION, NodeImplementation::PRINT_MESSAGE);
-					//LogicNode node;
-					//node.id = m_nextNodeId++;
-					////node.name = "Print Message";
-					//node.type = NodeType::ACTION;
-					//node.imp = NodeImplementation::PRINT_MESSAGE;
-					//node.position = ImVec2(400, 100);
-					//node.hasInput = true;
-					//node.hasOutput = true;
-					//node.parameters["message"] = "I love GAM";
-					//Editor::visualLogicState.nodes.push_back(node);
 				}
 
 				if (ImGui::MenuItem("Move Object")) {
 					addNode(Vector2D(400, 200), NodeType::ACTION, NodeImplementation::MOVE_OBJECT);
-					//LogicNode node;
-					//node.id = m_nextNodeId++;
-					////node.name = "Move Object";
-					//node.type = NodeType::ACTION;
-					//node.imp = NodeImplementation::MOVE_OBJECT;
-					//node.position = ImVec2(400, 200);
-					//node.hasInput = true;
-					//node.hasOutput = true;
-					//node.parameters["x"] = "0";
-					//node.parameters["y"] = "0";
-					//Editor::visualLogicState.nodes.push_back(node);
 				}
 
 				ImGui::EndMenu();
