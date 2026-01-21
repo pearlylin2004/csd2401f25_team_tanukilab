@@ -240,19 +240,53 @@ namespace JsonIO {
     NodeImplementation stringToNodeImpl(const std::string& str) {
         if (str == "On Start") return NodeImplementation::ON_START;
         if (str == "On Update") return NodeImplementation::ON_UPDATE;
+
         if (str == "Print Message") return NodeImplementation::PRINT_MESSAGE;
+        if (str == "Rotate Object") return NodeImplementation::ROTATE_OBJECT;
         if (str == "Move Object") return NodeImplementation::MOVE_OBJECT;
+
+		if (str == "Check Key Held") return NodeImplementation::CHECK_KEY_HELD;
+
         return NodeImplementation::DEFAULT;
     }
 
     std::string nodeImplToString(NodeImplementation impl) {
         switch (impl) {
-        case NodeImplementation::ON_START: return "On Start";
-        case NodeImplementation::ON_UPDATE: return "On Update";
-        case NodeImplementation::PRINT_MESSAGE: return "Print Message";
-        case NodeImplementation::MOVE_OBJECT: return "Move Object";
-        default: return "Default";
+            case NodeImplementation::ON_START: return "On Start";
+            case NodeImplementation::ON_UPDATE: return "On Update";
+
+            case NodeImplementation::PRINT_MESSAGE: return "Print Message";
+            case NodeImplementation::MOVE_OBJECT: return "Move Object";
+		    case NodeImplementation::ROTATE_OBJECT: return "Rotate Object";
+
+            case NodeImplementation::CHECK_KEY_HELD: return "Check Key Held";
+            default: return "Default";
         }
+    }
+
+    // Add this helper function in JsonIO.cpp or create a utilities file
+    int stringToGLFWKey(const std::string& keyStr) {
+        // Movement keys
+        if (keyStr == "W") return GLFW_KEY_W;
+        if (keyStr == "A") return GLFW_KEY_A;
+        if (keyStr == "S") return GLFW_KEY_S;
+        if (keyStr == "D") return GLFW_KEY_D;
+
+        // Arrow keys
+        if (keyStr == "UP") return GLFW_KEY_UP;
+        if (keyStr == "DOWN") return GLFW_KEY_DOWN;
+        if (keyStr == "LEFT") return GLFW_KEY_LEFT;
+        if (keyStr == "RIGHT") return GLFW_KEY_RIGHT;
+
+        // Special keys
+        if (keyStr == "SPACE") return GLFW_KEY_SPACE;
+        if (keyStr == "SHIFT") return GLFW_KEY_LEFT_SHIFT;
+        if (keyStr == "CTRL") return GLFW_KEY_LEFT_CONTROL;
+        if (keyStr == "ALT") return GLFW_KEY_LEFT_ALT;
+        if (keyStr == "ENTER") return GLFW_KEY_ENTER;
+        if (keyStr == "ESC") return GLFW_KEY_ESCAPE;
+
+        return GLFW_KEY_UNKNOWN;
     }
 
 

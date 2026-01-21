@@ -547,15 +547,16 @@ enum class NodeImplementation {
     ON_UPDATE,
     ON_COLLISION,
 
+    // CONDITION
+    CHECK_KEY_HELD,
+
     // ACTION
     PRINT_MESSAGE,
     MOVE_OBJECT,
-
-    // CONDITION (FUTURE)
-    CHECK_KEY_PRESSED,
+    ROTATE_OBJECT,
 
     // DEFAULT
-    DEFAULT // nothing happen
+    DEFAULT // nothing happen :)
 };
 
 struct LogicNode {

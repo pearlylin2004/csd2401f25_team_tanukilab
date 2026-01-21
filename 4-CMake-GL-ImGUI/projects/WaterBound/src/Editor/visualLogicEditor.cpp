@@ -37,6 +37,7 @@ void VisualLogicEditor::render() {
 	Editor::visualLogicState.isFocus = ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows);
 
 	if (ImGui::BeginMenuBar()) {
+		/* -------- File -------- */
 		if (ImGui::BeginMenu("File")) {
 			if (ImGui::MenuItem("Save")) {
 				saveLogic();
@@ -50,39 +51,65 @@ void VisualLogicEditor::render() {
 
 			ImGui::EndMenu();
 		}
+		/* -------- END -------- */
 
+
+		/* -------- Nodes -------- */
 		if (ImGui::BeginMenu("Add Node")) {
+			/* -------- Events -------- */
 			if (ImGui::BeginMenu("Events")) {
 				if (ImGui::MenuItem("On Start")) {
 					addNode(Vector2D(100, 100), NodeType::EVENT, NodeImplementation::ON_START);
 				}
 
 				if (ImGui::MenuItem("On Update")) {
-					addNode(Vector2D(100, 200), NodeType::EVENT, NodeImplementation::ON_UPDATE);
+					addNode(Vector2D(150, 200), NodeType::EVENT, NodeImplementation::ON_UPDATE);
 				}
 
 				if (ImGui::MenuItem("On Collision (WIP)")) {
-					addNode(Vector2D(100, 300), NodeType::EVENT, NodeImplementation::ON_COLLISION);
+					addNode(Vector2D(200, 300), NodeType::EVENT, NodeImplementation::ON_COLLISION);
 				}
 
 				ImGui::EndMenu();
 			}
+			/* -------- END -------- */
+
+
+			/* -------- Conditions -------- */
+			if (ImGui::BeginMenu("Conditions")) {
+				if (ImGui::MenuItem("Is Key Held")) {
+					addNode(Vector2D(350, 100), NodeType::CONDITION, NodeImplementation::CHECK_KEY_HELD);
+				}
+
+				ImGui::EndMenu();
+			}
+			/* -------- END -------- */
 			
+
+			/* -------- Actions -------- */
 			if (ImGui::BeginMenu("Actions")) {
 				if (ImGui::MenuItem("Print Message")) {
-					addNode(Vector2D(400, 100), NodeType::ACTION, NodeImplementation::PRINT_MESSAGE);
+					addNode(Vector2D(250, 100), NodeType::ACTION, NodeImplementation::PRINT_MESSAGE);
 				}
 
 				if (ImGui::MenuItem("Move Object")) {
-					addNode(Vector2D(400, 200), NodeType::ACTION, NodeImplementation::MOVE_OBJECT);
+					addNode(Vector2D(300, 200), NodeType::ACTION, NodeImplementation::MOVE_OBJECT);
+				}
+
+				if (ImGui::MenuItem("Rotate Object")) {
+					addNode(Vector2D(350, 200), NodeType::ACTION, NodeImplementation::ROTATE_OBJECT);
 				}
 
 				ImGui::EndMenu();
 			}
+			/* -------- END -------- */
 
 			ImGui::EndMenu();
 		}
+		/* -------- END -------- */
 
+
+		/* -------- View -------- */
 		if (ImGui::BeginMenu("View")) {
 			if (ImGui::MenuItem("Reset View")) {
 				m_canvasOffset = ImVec2(50, 50);
@@ -91,6 +118,7 @@ void VisualLogicEditor::render() {
 
 			ImGui::EndMenu();
 		}
+		/* -------- END -------- */
 
 		ImGui::EndMenuBar();
 	}
@@ -263,10 +291,10 @@ void VisualLogicEditor::render() {
 	ImGui::Text("Nodes: %d", (int)Editor::visualLogicState.nodes.size());
 
 	if (m_selectedNodeId != -1) {
-		ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "Node selected");
+		ImGui::TextColored(ImVec4(1.f, 1.f, 0.f, 1.f), "Node selected");
 	}
 	else if (m_selectedConIndex != -1) {
-		ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "Connection selected");
+		ImGui::TextColored(ImVec4(1.f, 1.f, 0.f, 1.f), "Connection selected");
 	}
 
 	ImGui::EndChild();
@@ -534,10 +562,10 @@ void VisualLogicEditor::renderConnections(ImDrawList* drawList, ImVec2 canvasPos
 		// if connection selected
 		bool isSelected = (m_selectedConIndex == static_cast<int>(i));
 
-		float lineWidth = 2.0f;
+		float lineWidth = 2.f;
 		if (isSelected) {
 			lineColor = IM_COL32(255, 255, 0, 255); // yellow when selected
-			lineWidth = 4.0f;
+			lineWidth = 4.f;
 		}
 		else if (isHovered) {
 			lineWidth = 3.5f; // slightly thicker when hovered
@@ -568,6 +596,8 @@ void VisualLogicEditor::renderNodeProperties() {
 	ImGui::Text("Node: %s", JsonIO::nodeImplToString(node.imp).c_str());
 	ImGui::Separator();
 
+	/* ---------- ACTION ---------- */
+	// print msg
 	if (node.imp == NodeImplementation::PRINT_MESSAGE) {
 		char buffer[256];
 		strncpy(buffer, node.parameters["message"].c_str(), 255);
@@ -576,9 +606,10 @@ void VisualLogicEditor::renderNodeProperties() {
 			node.parameters["message"] = buffer;
 		}
 	}
+	// move obj
 	else  if (node.imp == NodeImplementation::MOVE_OBJECT) {
-		float x = node.parameters.count("x") ? std::stof(node.parameters["x"]) : 0.0f;
-		float y = node.parameters.count("y") ? std::stof(node.parameters["y"]) : 0.0f;
+		float x = node.parameters.count("x") ? std::stof(node.parameters["x"]) : 0.f;
+		float y = node.parameters.count("y") ? std::stof(node.parameters["y"]) : 0.f;
 
 		if (ImGui::DragFloat("X Offset", &x, 0.1f)) {
 			node.parameters["x"] = std::to_string(x);
@@ -587,6 +618,50 @@ void VisualLogicEditor::renderNodeProperties() {
 			node.parameters["y"] = std::to_string(y);
 		}
 	}
+	else if (node.imp == NodeImplementation::ROTATE_OBJECT) {
+		float angle = node.parameters.count("angle") ? std::stof(node.parameters["angle"]) : 0.f;
+
+		if (ImGui::DragFloat("Angle (degrees)", &angle, 1.f)) {
+			node.parameters["angle"] = std::to_string(angle);
+
+			ImGui::Spacing();
+			ImGui::TextDisabled("Positive = counter-clockwise");
+		}
+	}
+	/* ---------- END ---------- */
+
+	/* ---------- CONDITION ---------- */
+	// check key held
+	else if (node.imp == NodeImplementation::CHECK_KEY_HELD) {
+		std::string currentKey = node.parameters.count("key") ?
+			node.parameters["key"] : "W";
+
+		// Dropdown for common keys
+		if (ImGui::BeginCombo("Key", currentKey.c_str())) {
+			const char* keys[] = {
+				"W", "A", "S", "D",
+				"UP", "DOWN", "LEFT", "RIGHT",
+				"SPACE", "SHIFT", "CTRL", "ALT",
+				"ENTER", "ESC"
+			};
+
+			for (int i = 0; i < IM_ARRAYSIZE(keys); ++i) {
+				bool isSelected = (currentKey == keys[i]);
+
+				if (ImGui::Selectable(keys[i], isSelected))
+					node.parameters["key"] = keys[i];
+
+				if (isSelected)
+					ImGui::SetItemDefaultFocus();
+			}
+
+			ImGui::EndCombo();
+		}
+
+		ImGui::Spacing();
+		ImGui::TextDisabled("Key to check if held");
+	}
+	/* ---------- END ---------- */
 }
 
 void VisualLogicEditor::renderSavePopup() {
@@ -620,7 +695,7 @@ void VisualLogicEditor::renderSavePopup() {
 		bool fileExists = std::filesystem::exists(fullPath);
 
 		if (fileExists) {
-			ImGui::TextColored(ImVec4(1.0f, 0.5f, 0.0f, 1.0f), "Warning: File already exists!");
+			ImGui::TextColored(ImVec4(1.f, 0.5f, 0.f, 1.f), "Warning: File already exists!");
 		}
 
 		ImGui::Separator();
@@ -678,13 +753,23 @@ void VisualLogicEditor::addNode(Vector2D pos, NodeType type, NodeImplementation 
 	node.imp = imp;
 	node.position = pos;
 	node.hasInput = (type == NodeType::EVENT) ? false : true; // EVENT no input
-	node.hasOutput = true;
+	node.hasOutput = (type == NodeType::CONDITION) ? false : true; // CONDITION no output
 
+	// ACTION nodes
 	if(imp == NodeImplementation::PRINT_MESSAGE)
 		node.parameters["message"] = "I love GAM";
 	else if (imp == NodeImplementation::MOVE_OBJECT) {
 		node.parameters["x"] = "0";
 		node.parameters["y"] = "0";
+	}
+	else if (imp == NodeImplementation::ROTATE_OBJECT) {
+		node.parameters["angle"] = "0"; // in degree 
+	}
+	// CONDITION nodes
+	else if (imp == NodeImplementation::CHECK_KEY_HELD) {
+		node.hasTrueOutput = true;
+		node.hasFalseOutput = true;
+		node.parameters["key"] = "SPACE";
 	}
 
 	Editor::visualLogicState.nodes.push_back(node);
@@ -705,7 +790,7 @@ ImU32 VisualLogicEditor::getNodeColor(NodeType type) {
 
 bool VisualLogicEditor::isPinHovered(ImVec2 pinPos, ImVec2 mousePos) {
 	double distance = sqrt(pow(mousePos.x - pinPos.x, 2) + pow(mousePos.y - pinPos.y, 2));
-	return distance < 10.0f;
+	return distance < 10.f;
 }
 
 void VisualLogicEditor::createConnection(int fromNodeId, std::string fromPin, int toNodeId, std::string toPin) {
@@ -818,7 +903,7 @@ void VisualLogicEditor::selectNextNode(bool forward) {
 }
 
 ImVec2 VisualLogicEditor::getBezierPoint(ImVec2 p0, ImVec2 p1, ImVec2 p2, ImVec2 p3, float t) {
-	float u = 1.0f - t;
+	float u = 1.f - t;
 	float tt = t * t;
 	float uu = u * u;
 	float uuu = uu * u;

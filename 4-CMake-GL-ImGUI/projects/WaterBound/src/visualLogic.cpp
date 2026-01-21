@@ -105,7 +105,7 @@ void VisualLogicSystem::executeNode(GameObject* obj, VisualLC* logic, int nodeId
 			bool result = executeConditionNode(obj, logic, *node);
 
 			// find next node based on TRUE/FALSE
-			std::string pin = result ? "TRUE" : "FALSE";
+			std::string pin = result ? "True" : "False";
 			int nextNodeId = findNextNode(logic, node->id, pin);
 			if (nextNodeId != -1) {
 				executeNode(obj, logic, nextNodeId);
@@ -143,14 +143,26 @@ void VisualLogicSystem::executeActionNode(GameObject* obj, VisualLC* logic, Logi
 		Transform* transform = obj->getComponent<Transform>();
 
 		if (transform) {
-			float x = node.parameters.count("x") ? std::stof(node.parameters["x"]) : 0.0f;
-			float y = node.parameters.count("y") ? std::stof(node.parameters["y"]) : 0.0f;
+			float x = node.parameters.count("x") ? std::stof(node.parameters["x"]) : 0.f;
+			float y = node.parameters.count("y") ? std::stof(node.parameters["y"]) : 0.f;
 			
 			transform->x += x;
 			transform->y += y;
 
 			DebugLog::addMessage("Moved object by (" +
-				std::to_string(x) + ", " + std::to_string(y) + ")\n");
+				std::to_string(x) + ", " + std::to_string(y) + ")\n", DebugMode::PlaySimul);
+		}
+	}
+	else if (node.imp == NodeImplementation::ROTATE_OBJECT) {
+		Transform* transform = obj->getComponent<Transform>();
+
+		if (transform) {
+			float angle = node.parameters.count("angle") ? std::stof(node.parameters["angle"]) : 0.f;
+
+			transform->rotation += angle;
+
+			DebugLog::addMessage("Rotated object by " +
+				std::to_string(angle) + " degrees\n", DebugMode::PlaySimul);
 		}
 	}
 }
@@ -159,7 +171,18 @@ bool VisualLogicSystem::executeConditionNode(GameObject* obj, VisualLC* logic, L
 	// check key pressed/mouse clicked/compare numbers
 	(void)obj; // to use in future
 	(void)logic; // to use in future
-	(void)node; // to use in future
+
+	if (node.imp == NodeImplementation::CHECK_KEY_HELD) {
+		std::string keyStr = node.parameters.count("key") ?
+			node.parameters["key"] : "W";
+
+		int key = JsonIO::stringToGLFWKey(keyStr);
+
+		if (key != GLFW_KEY_UNKNOWN)
+			return InputHandler::isKeyHeld(key);
+
+		return false;
+	}
 
 	return true;
 }
