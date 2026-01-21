@@ -541,18 +541,40 @@ enum class NodeType {
     CONDITION
 };
 
+enum class NodeImplementation {
+    // EVENT
+    ON_START,
+    ON_UPDATE,
+    ON_COLLISION,
+
+    // CONDITION
+    CHECK_KEY_HELD,
+    COMPARE_VALUE,
+    COMPARE_VAR,
+
+    // ACTION
+    PRINT_MESSAGE,
+    MOVE_OBJECT,
+    ROTATE_OBJECT,
+    SET_FLOAT,
+
+    // DEFAULT
+    DEFAULT // nothing happen :)
+};
+
 struct LogicNode {
     int id;
     NodeType type;
-    std::string name;
-    ImVec2 position;
+    //std::string name;
+    NodeImplementation imp;
+    Vector2D position;
     bool hasInput;
     bool hasOutput;
 
     bool hasTrueOutput = false;
     bool hasFalseOutput = false;
 
-    // Parameters for node configuration
+    // for node configuration
     std::map<std::string, std::string> parameters;
 };
 
@@ -572,7 +594,7 @@ public:
 	// runtime data
     bool isExecuting = false;
     int currentExecutingNodeId = -1;
-    std::map<std::string, float> floatVariables;
-    std::map<std::string, std::string> stringVariables;
-    std::map<std::string, bool> boolVariables;
+    std::map<std::string, float> floatVar;
+    std::map<std::string, std::string> stringVar;
+    std::map<std::string, bool> boolVar;
 };

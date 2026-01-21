@@ -169,6 +169,7 @@ namespace Editor {
 	/* ----------------- Visual Logic Editor ---------------- */
 	struct VisualLogicState {
 		bool showEditor = false;
+		bool isFocus = false; // whether the window is focused
 		std::string currentGraphName = "";
 		GameObject* targetObj = nullptr;
 

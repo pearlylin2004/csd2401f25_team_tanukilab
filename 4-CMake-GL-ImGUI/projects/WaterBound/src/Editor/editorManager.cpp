@@ -58,8 +58,8 @@ void EditorManager::renderScene(GLuint texture, float aspectRatio) {
 }
 
 void EditorManager::handleShortcutKeys(GameObjectManager& manager) {
-    // block shortcut if typing
-    if (ImGui::GetIO().WantTextInput) {
+	// block shortcut if typing / visual logic viewport focused
+    if (ImGui::GetIO().WantTextInput || Editor::visualLogicState.isFocus) {
         return;
     }
 
