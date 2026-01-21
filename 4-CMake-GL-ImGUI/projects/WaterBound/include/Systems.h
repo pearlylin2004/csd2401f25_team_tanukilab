@@ -222,6 +222,9 @@ public:
 	void update(GameObjectManager& manager, float deltaTime);
 	void cleanup(GameObjectManager& manager);
 
+	// Update 3D positions for all spatial sounds
+	void updateSpatialAudio(GameObjectManager& manager);
+
 	static void initializeSceneAudio(GameObjectManager& manager);
 
 private:

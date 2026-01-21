@@ -181,7 +181,7 @@ FMOD::Sound* ResourceManager::getSound(const std::string& path, bool loop, bool 
     return newSound;
 }
 
-FMOD::Sound* ResourceManager::loadSoundFromFile(const std::string& path, bool loop, bool is3D) {
+FMOD::Sound* ResourceManager::loadSoundFromFile(const std::string& path, bool loop, bool isSpatial) {
     FMOD::Sound* sound = nullptr;
     FMOD_MODE mode = FMOD_DEFAULT;
 
@@ -193,7 +193,7 @@ FMOD::Sound* ResourceManager::loadSoundFromFile(const std::string& path, bool lo
     }
 
     // Add spatial dimension flag
-    if (is3D) {
+    if (isSpatial) {
         mode |= FMOD_3D;
         mode |= FMOD_3D_LINEARROLLOFF;
     }else {
@@ -209,7 +209,7 @@ FMOD::Sound* ResourceManager::loadSoundFromFile(const std::string& path, bool lo
     }
 
     // Set default min/max distance for 3D sounds
-    if (is3D && sound) {
+    if (isSpatial && sound) {
         FMOD_RESULT distResult = sound->set3DMinMaxDistance(5.0f, 50.0f);
         if (distResult != FMOD_OK) {
             std::cerr << "ResourceManager Warning: Failed to set 3D distance for: " << path << std::endl;

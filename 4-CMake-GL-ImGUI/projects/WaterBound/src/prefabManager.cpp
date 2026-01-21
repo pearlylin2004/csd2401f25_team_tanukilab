@@ -873,6 +873,11 @@ void PrefabManager::applyPrefabComponents(GameObject* go, const rapidjson::Value
 				ch->fadeInDuration = JsonIO::GetFloatOr(channelObj, "fadeInDuration", 0.f);
 				ch->fadeOutOnStop = JsonIO::GetBoolOr(channelObj, "fadeOutOnStop", false);
 				ch->fadeOutDuration = JsonIO::GetFloatOr(channelObj, "fadeOutDuration", 0.f);
+
+				// Load 3D audio settings
+				ch->isSpatial = JsonIO::GetBoolOr(channelObj, "isSpatial", false);
+				ch->minDistance = JsonIO::GetFloatOr(channelObj, "minDistance", 5.0f);
+				ch->maxDistance = JsonIO::GetFloatOr(channelObj, "maxDistance", 50.0f);
 			}
 		}
 		// OLD FORMAT: Single channel (backwards compatibility)
@@ -1024,6 +1029,11 @@ void PrefabManager::serializeComponents(const GameObject* obj, rapidjson::Value&
 			channelObj.AddMember("fadeInDuration", channel.fadeInDuration, a);
 			channelObj.AddMember("fadeOutOnStop", channel.fadeOutOnStop ? 1 : 0, a);
 			channelObj.AddMember("fadeOutDuration", channel.fadeOutDuration, a);
+
+			// Save 3D audio settings
+			channelObj.AddMember("isSpatial", channel.isSpatial ? 1 : 0, a);
+			channelObj.AddMember("minDistance", channel.minDistance, a);
+			channelObj.AddMember("maxDistance", channel.maxDistance, a);
 
 			channels.AddMember(rapidjson::Value(channelName.c_str(), a), channelObj, a);
 		}

@@ -610,3 +610,26 @@ bool AudioHandler::isFadingOut(AudioChannel* audio) const {
 	//size_t pos = static_cast<size_t>(id);
 	return audio->fadeInfo.isFading && !audio->fadeInfo.isFadingIn;
 }
+
+void AudioHandler::updateListener(float listenerX, float listenerY, float listenerZ) {
+	if (!system) return;
+
+	// Set listener position
+	FMOD_VECTOR position = { listenerX, listenerY, listenerZ };
+
+	// Set listener velocity (velocity = 0 means no doppler effect)
+	FMOD_VECTOR velocity = { 0.0f, 0.0f, 0.0f };
+
+	// Set listener orientation
+	FMOD_VECTOR forward = { 0.0f, 0.0f, -1.0f };  // Looking into screen (negative Z)
+	FMOD_VECTOR up = { 0.0f, 1.0f, 0.0f };         // Y-axis is up
+
+	// Tell FMOD about the listener
+	FMODErrorCheck(system->set3DListenerAttributes(
+		0,           // Listener index (0 = first/only listener)
+		&position,
+		&velocity,
+		&forward,
+		&up
+	));
+}
