@@ -21,6 +21,11 @@ Technology is prohibited.
 #include <iostream>
 
 namespace Collision {
+	//hash function for grid cell
+    static int HashCell(int x, int y){
+        return (x * 73856093) ^ (y * 19349663);
+    }
+
     //all can change to fit our game later
     f64 g_dt = 0.016;
     const float EPSILON = 1e-5f;
