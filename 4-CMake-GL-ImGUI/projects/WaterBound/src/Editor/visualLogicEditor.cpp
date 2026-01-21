@@ -81,6 +81,14 @@ void VisualLogicEditor::render() {
 					addNode(Vector2D(350, 100), NodeType::CONDITION, NodeImplementation::CHECK_KEY_HELD);
 				}
 
+				if (ImGui::MenuItem("Compare Value")) {
+					addNode(Vector2D(400, 100), NodeType::CONDITION, NodeImplementation::COMPARE_VALUE);
+				}
+
+				if (ImGui::MenuItem("Compare Variable")) {
+					addNode(Vector2D(460, 100), NodeType::CONDITION, NodeImplementation::COMPARE_VAR);
+				}
+
 				ImGui::EndMenu();
 			}
 			/* -------- END -------- */
@@ -98,6 +106,10 @@ void VisualLogicEditor::render() {
 
 				if (ImGui::MenuItem("Rotate Object")) {
 					addNode(Vector2D(350, 200), NodeType::ACTION, NodeImplementation::ROTATE_OBJECT);
+				}
+
+				if (ImGui::MenuItem("Set Float")) {
+					addNode(Vector2D(400, 200), NodeType::ACTION, NodeImplementation::SET_FLOAT);
 				}
 
 				ImGui::EndMenu();
@@ -618,6 +630,7 @@ void VisualLogicEditor::renderNodeProperties() {
 			node.parameters["y"] = std::to_string(y);
 		}
 	}
+	// rotate obj
 	else if (node.imp == NodeImplementation::ROTATE_OBJECT) {
 		float angle = node.parameters.count("angle") ? std::stof(node.parameters["angle"]) : 0.f;
 
@@ -627,6 +640,26 @@ void VisualLogicEditor::renderNodeProperties() {
 			ImGui::Spacing();
 			ImGui::TextDisabled("Positive = counter-clockwise");
 		}
+	}
+	// set float variable
+	else if (node.imp == NodeImplementation::SET_FLOAT) {
+		char varBuffer[128];
+		strncpy(varBuffer, node.parameters["variable"].c_str(), 127);
+		varBuffer[127] = '\0';
+
+		if (ImGui::InputText("Variable Name", varBuffer, 128)) {
+			node.parameters["variable"] = varBuffer;
+		}
+
+		float value = node.parameters.count("value") ?
+			std::stof(node.parameters["value"]) : 0.f;
+
+		if (ImGui::DragFloat("Value", &value, 0.1f)) {
+			node.parameters["value"] = std::to_string(value);
+		}
+
+		ImGui::Spacing();
+		ImGui::TextDisabled("Stores a float in a variable");
 	}
 	/* ---------- END ---------- */
 
@@ -657,10 +690,120 @@ void VisualLogicEditor::renderNodeProperties() {
 
 			ImGui::EndCombo();
 		}
+	}
+	// compare 2 values
+	else if (node.imp == NodeImplementation::COMPARE_VALUE) {
+		std::string property = node.parameters.count("property") ?
+			node.parameters["property"] : "rotation";
+
+		std::string comparison = node.parameters.count("comparison") ?
+			node.parameters["comparison"] : "greater";
+
+		float threshold = node.parameters.count("threshold") ?
+			std::stof(node.parameters["threshold"]) : 0.f;
+
+		// Property dropdown
+		ImGui::Text("Property to check:");
+		if (ImGui::BeginCombo("##property", property.c_str())) {
+			const char* properties[] = {
+				"rotation",
+				"x", "y", "z", // position
+				"scaleX", "scaleY", "scaleZ",
+				"velX", "velY"
+			};
+
+			const char* labels[] = {
+				"Rotation", "Position X", "Position Y", "Position Z",
+				"Scale X", "Scale Y", "Scale Z",
+				"Velocity X", "Velocity Y"
+			};
+
+			for (int i = 0; i < IM_ARRAYSIZE(properties); ++i) {
+				bool isSelected = (property == properties[i]);
+
+				if (ImGui::Selectable(labels[i], isSelected))
+					node.parameters["property"] = properties[i];
+
+				if (isSelected)
+					ImGui::SetItemDefaultFocus();
+			}
+
+			ImGui::EndCombo();
+		}
 
 		ImGui::Spacing();
-		ImGui::TextDisabled("Key to check if held");
+
+		// comparison dropdown
+		ImGui::Text("Comparison:");
+		if (ImGui::BeginCombo("##comparison", comparison.c_str())) {
+			const char* comparisons[] = { "greater", "less", "equal" };
+			const char* labels[] = { "Greater Than (>)", "Less Than (<)", "Equal To (=)" };
+
+			for (int i = 0; i < 3; ++i) {
+				bool isSelected = (comparison == comparisons[i]);
+
+				if (ImGui::Selectable(labels[i], isSelected))
+					node.parameters["comparison"] = comparisons[i];
+
+				if (isSelected)
+					ImGui::SetItemDefaultFocus();
+			}
+
+			ImGui::EndCombo();
+		}
+
+		ImGui::Spacing();
+
+		// threshold input
+		if (ImGui::DragFloat("Threshold Value", &threshold, 0.1f)) {
+			node.parameters["threshold"] = std::to_string(threshold);
+		}
 	}
+	// compare with anothe variable
+	else if (node.imp == NodeImplementation::COMPARE_VAR) {
+		char varBuffer[128];
+		strncpy(varBuffer, node.parameters["variable"].c_str(), 127);
+		varBuffer[127] = '\0';
+
+		ImGui::Text("Variable Name:");
+		if (ImGui::InputText("##variable", varBuffer, 128)) {
+			node.parameters["variable"] = varBuffer;
+		}
+
+		std::string comparison = node.parameters.count("comparison") ?
+			node.parameters["comparison"] : "greater";
+
+		float threshold = node.parameters.count("threshold") ?
+			std::stof(node.parameters["threshold"]) : 0.f;
+
+		// dropdown
+		ImGui::Text("Comparison:");
+		if (ImGui::BeginCombo("##comparison", comparison.c_str())) {
+			const char* comparisons[] = { "greater", "less", "equal" };
+			const char* labels[] = { "Greater Than (>)", "Less Than (<)", "Equal To (=)" };
+
+			for (int i = 0; i < 3; ++i) {
+				bool isSelected = (comparison == comparisons[i]);
+
+				if (ImGui::Selectable(labels[i], isSelected))
+					node.parameters["comparison"] = comparisons[i];
+
+				if (isSelected)
+					ImGui::SetItemDefaultFocus();
+			}
+
+			ImGui::EndCombo();
+		}
+
+		ImGui::Spacing();
+
+		if (ImGui::DragFloat("Threshold Value", &threshold, 0.1f)) {
+			node.parameters["threshold"] = std::to_string(threshold);
+		}
+
+		ImGui::Spacing();
+		ImGui::TextDisabled("Compares with a variable");
+		}
 	/* ---------- END ---------- */
 }
 
@@ -754,6 +897,8 @@ void VisualLogicEditor::addNode(Vector2D pos, NodeType type, NodeImplementation 
 	node.position = pos;
 	node.hasInput = (type == NodeType::EVENT) ? false : true; // EVENT no input
 	node.hasOutput = (type == NodeType::CONDITION) ? false : true; // CONDITION no output
+	node.hasTrueOutput = (type == NodeType::CONDITION) ? true : false; // only for CONDITION
+	node.hasFalseOutput = (type == NodeType::CONDITION) ? true : false; // only for CONDITION
 
 	// ACTION nodes
 	if(imp == NodeImplementation::PRINT_MESSAGE)
@@ -765,11 +910,23 @@ void VisualLogicEditor::addNode(Vector2D pos, NodeType type, NodeImplementation 
 	else if (imp == NodeImplementation::ROTATE_OBJECT) {
 		node.parameters["angle"] = "0"; // in degree 
 	}
+	else if (imp == NodeImplementation::SET_FLOAT) {
+		node.parameters["variable"] = "shakeDir";
+		node.parameters["value"] = "1";
+	}
 	// CONDITION nodes
 	else if (imp == NodeImplementation::CHECK_KEY_HELD) {
-		node.hasTrueOutput = true;
-		node.hasFalseOutput = true;
 		node.parameters["key"] = "SPACE";
+	}
+	else if (imp == NodeImplementation::COMPARE_VALUE) {
+		node.parameters["property"] = "rotation";
+		node.parameters["comparison"] = "greater";
+		node.parameters["threshold"] = "0";
+	}
+	else if (imp == NodeImplementation::COMPARE_VAR) {
+		node.parameters["variable"] = "shakeDir";
+		node.parameters["comparison"] = "greater";
+		node.parameters["threshold"] = "0";
 	}
 
 	Editor::visualLogicState.nodes.push_back(node);

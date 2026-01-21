@@ -244,8 +244,11 @@ namespace JsonIO {
         if (str == "Print Message") return NodeImplementation::PRINT_MESSAGE;
         if (str == "Rotate Object") return NodeImplementation::ROTATE_OBJECT;
         if (str == "Move Object") return NodeImplementation::MOVE_OBJECT;
+		if (str == "Set Float") return NodeImplementation::SET_FLOAT;
 
 		if (str == "Check Key Held") return NodeImplementation::CHECK_KEY_HELD;
+		if (str == "Compare Value") return NodeImplementation::COMPARE_VALUE;
+		if (str == "Compare Variable") return NodeImplementation::COMPARE_VAR;
 
         return NodeImplementation::DEFAULT;
     }
@@ -258,8 +261,11 @@ namespace JsonIO {
             case NodeImplementation::PRINT_MESSAGE: return "Print Message";
             case NodeImplementation::MOVE_OBJECT: return "Move Object";
 		    case NodeImplementation::ROTATE_OBJECT: return "Rotate Object";
+            case NodeImplementation::SET_FLOAT: return "Set Float";
 
             case NodeImplementation::CHECK_KEY_HELD: return "Check Key Held";
+            case NodeImplementation::COMPARE_VALUE: return "Compare Value";
+            case NodeImplementation::COMPARE_VAR: return "Compare Variable";
             default: return "Default";
         }
     }
