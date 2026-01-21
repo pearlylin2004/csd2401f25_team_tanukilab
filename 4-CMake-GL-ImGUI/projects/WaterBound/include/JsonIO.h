@@ -82,6 +82,10 @@ namespace JsonIO {
 	const char* CollisionResponseModeToStr(CollisionResponseMode mode);
 	CollisionResponseMode StrToCollisionResponseMode(const std::string& s);
 
+	// ---- Node Implementation helpers ----
+	NodeImplementation stringToNodeImpl(const std::string& str);
+	std::string nodeImplToString(NodeImplementation impl);
+
 	// ---- JSON file IO helpers ----
 	bool syncSceneToRuntime(const std::string& name);
 	bool AtomicMove(const std::string& tmp, const std::string& dst, std::string* err = nullptr);

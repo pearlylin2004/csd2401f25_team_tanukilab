@@ -45,7 +45,7 @@ void VisualLogicSystem::init(GameObject* obj, VisualLC* logic) {
 
 	// find and execute all ON START nodes
 	for (LogicNode& node : logic->nodes) {
-		if (node.name == "On Start") {
+		if (node.imp == NodeImplementation::ON_START) {
 			executeNode(obj, logic, node.id);
 		}
 	}
@@ -57,7 +57,7 @@ void VisualLogicSystem::update(GameObject* obj, VisualLC* logic, float dt) {
 
 	// find and execute all ON UPDATE nodes
 	for (LogicNode& node : logic->nodes) {
-		if (node.name == "On Update") {
+		if (node.imp == NodeImplementation::ON_UPDATE) {
 			executeNode(obj, logic, node.id);
 		}
 	}
@@ -68,24 +68,24 @@ void VisualLogicSystem::onCollisionEnter(GameObject* obj, VisualLC* logic, GameO
 
 	// execute ON COLLISION ENTER nodes
 	for (LogicNode& node : logic->nodes) {
-		if (node.name == "On Collision") {
+		if (node.imp == NodeImplementation::ON_COLLISION) {
 			logic->stringVariables["_collidedWith"] = other->getObjectName();
 			executeNode(obj, logic, node.id);
 		}
 	}
 }
 
-void VisualLogicSystem::onCollisionExit(GameObject* obj, VisualLC* logic, GameObject* other) {
-	if (!obj || !logic || !other) return;
-
-	// execute ON COLLISION EXIT nodes
-	for (auto& node : logic->nodes) {
-		if (node.name == "On Collision Exit") {
-			logic->stringVariables["_collidedWith"] = other->getObjectName();
-			executeNode(obj, logic, node.id);
-		}
-	}
-}
+//void VisualLogicSystem::onCollisionExit(GameObject* obj, VisualLC* logic, GameObject* other) {
+//	if (!obj || !logic || !other) return;
+//
+//	// execute ON COLLISION EXIT nodes
+//	for (auto& node : logic->nodes) {
+//		if (node.imp == NodeImplementation::ON_COLLISION) {
+//			logic->stringVariables["_collidedWith"] = other->getObjectName();
+//			executeNode(obj, logic, node.id);
+//		}
+//	}
+//}
 
 void VisualLogicSystem::executeNode(GameObject* obj, VisualLC* logic, int nodeId) {
 	if (!obj || !logic) return;
@@ -133,13 +133,13 @@ void VisualLogicSystem::executeActionNode(GameObject* obj, VisualLC* logic, Logi
 	(void)logic; // to use in future
 
 	// print message
-	if (node.name == "Print Message") {
+	if (node.imp == NodeImplementation::PRINT_MESSAGE) {
 		std::string msg = node.parameters.count("message") ? node.parameters["message"] : "I love GAM";
 
 		DebugLog::addMessage(msg, DebugMode::PlaySimul);
 		std::cout << msg << std::endl;
 	}
-	else if (node.name == "Move Object") {
+	else if (node.imp == NodeImplementation::MOVE_OBJECT) {
 		Transform* transform = obj->getComponent<Transform>();
 
 		if (transform) {

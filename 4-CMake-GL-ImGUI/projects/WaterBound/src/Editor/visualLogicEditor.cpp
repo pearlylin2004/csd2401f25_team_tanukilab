@@ -34,6 +34,8 @@ void VisualLogicEditor::render() {
 
 	ImGui::Begin("Visual Logic Editor", &Editor::visualLogicState.showEditor, ImGuiWindowFlags_MenuBar);
 
+	Editor::visualLogicState.isFocus = ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows);
+
 	if (ImGui::BeginMenuBar()) {
 		if (ImGui::BeginMenu("File")) {
 			if (ImGui::MenuItem("Save")) {
@@ -52,36 +54,42 @@ void VisualLogicEditor::render() {
 		if (ImGui::BeginMenu("Add Node")) {
 			if (ImGui::BeginMenu("Events")) {
 				if (ImGui::MenuItem("On Start")) {
-					LogicNode node;
-					node.id = m_nextNodeId++;
-					node.name = "On Start";
-					node.type = NodeType::EVENT;
-					node.position = ImVec2(100, 100);
-					node.hasInput = false;
-					node.hasOutput = true;
-					Editor::visualLogicState.nodes.push_back(node);
+					addNode(Vector2D(100, 100), NodeType::EVENT, NodeImplementation::ON_START);
+					//LogicNode node;
+					//node.id = m_nextNodeId++;
+					////node.name = "On Start";
+					//node.type = NodeType::EVENT;
+					//node.imp = NodeImplementation::ON_START;
+					//node.position = ImVec2(100, 100);
+					//node.hasInput = false;
+					//node.hasOutput = true;
+					//Editor::visualLogicState.nodes.push_back(node);
 				}
 
 				if (ImGui::MenuItem("On Update")) {
-					LogicNode node;
-					node.id = m_nextNodeId++;
-					node.name = "On Update";
-					node.type = NodeType::EVENT;
-					node.position = ImVec2(100, 150);
-					node.hasInput = false;
-					node.hasOutput = true;
-					Editor::visualLogicState.nodes.push_back(node);
+					addNode(Vector2D(100, 200), NodeType::EVENT, NodeImplementation::ON_UPDATE);
+					//LogicNode node;
+					//node.id = m_nextNodeId++;
+					////node.name = "On Update";
+					//node.type = NodeType::EVENT;
+					//node.imp = NodeImplementation::ON_UPDATE;
+					//node.position = ImVec2(100, 150);
+					//node.hasInput = false;
+					//node.hasOutput = true;
+					//Editor::visualLogicState.nodes.push_back(node);
 				}
 
 				if (ImGui::MenuItem("On Collision (WIP)")) {
-					LogicNode node;
-					node.id = m_nextNodeId++;
-					node.name = "On Collision";
-					node.type = NodeType::EVENT;
-					node.position = ImVec2(100, 200);
-					node.hasInput = false;
-					node.hasOutput = true;
-					Editor::visualLogicState.nodes.push_back(node);
+					addNode(Vector2D(100, 300), NodeType::EVENT, NodeImplementation::ON_COLLISION);
+					//LogicNode node;
+					//node.id = m_nextNodeId++;
+					////node.name = "On Collision";
+					//node.type = NodeType::EVENT;
+					//node.imp = NodeImplementation::ON_COLLISION;
+					//node.position = ImVec2(100, 200);
+					//node.hasInput = false;
+					//node.hasOutput = true;
+					//Editor::visualLogicState.nodes.push_back(node);
 				}
 
 				ImGui::EndMenu();
@@ -89,28 +97,32 @@ void VisualLogicEditor::render() {
 			
 			if (ImGui::BeginMenu("Actions")) {
 				if (ImGui::MenuItem("Print Message")) {
-					LogicNode node;
-					node.id = m_nextNodeId++;
-					node.name = "Print Message";
-					node.type = NodeType::ACTION;
-					node.position = ImVec2(400, 100);
-					node.hasInput = true;
-					node.hasOutput = true;
-					node.parameters["message"] = "I love GAM";
-					Editor::visualLogicState.nodes.push_back(node);
+					addNode(Vector2D(400, 100), NodeType::ACTION, NodeImplementation::PRINT_MESSAGE);
+					//LogicNode node;
+					//node.id = m_nextNodeId++;
+					////node.name = "Print Message";
+					//node.type = NodeType::ACTION;
+					//node.imp = NodeImplementation::PRINT_MESSAGE;
+					//node.position = ImVec2(400, 100);
+					//node.hasInput = true;
+					//node.hasOutput = true;
+					//node.parameters["message"] = "I love GAM";
+					//Editor::visualLogicState.nodes.push_back(node);
 				}
 
 				if (ImGui::MenuItem("Move Object")) {
-					LogicNode node;
-					node.id = m_nextNodeId++;
-					node.name = "Move Object";
-					node.type = NodeType::ACTION;
-					node.position = ImVec2(400, 200);
-					node.hasInput = true;
-					node.hasOutput = true;
-					node.parameters["x"] = "0";
-					node.parameters["y"] = "0";
-					Editor::visualLogicState.nodes.push_back(node);
+					addNode(Vector2D(400, 200), NodeType::ACTION, NodeImplementation::MOVE_OBJECT);
+					//LogicNode node;
+					//node.id = m_nextNodeId++;
+					////node.name = "Move Object";
+					//node.type = NodeType::ACTION;
+					//node.imp = NodeImplementation::MOVE_OBJECT;
+					//node.position = ImVec2(400, 200);
+					//node.hasInput = true;
+					//node.hasOutput = true;
+					//node.parameters["x"] = "0";
+					//node.parameters["y"] = "0";
+					//Editor::visualLogicState.nodes.push_back(node);
 				}
 
 				ImGui::EndMenu();
@@ -181,6 +193,30 @@ void VisualLogicEditor::render() {
 		m_connectingFromPin = "";
 	}
 
+	// click empty space to deselect
+	if (isCanvasHovered && InputHandler::isMouseLeftClicked() && !m_isConnecting) {
+		bool clickedOnNode = false;
+		ImVec2 mousePos = ImGui::GetMousePos();
+
+		for (auto& node : Editor::visualLogicState.nodes) {
+			ImVec2 nodePos = ImVec2(canvasPos.x + node.position.x + m_canvasOffset.x,
+				canvasPos.y + node.position.y + m_canvasOffset.y);
+			ImVec2 nodeSize(250.f, 80.f);
+
+			// if click on any nodes
+			if (mousePos.x >= nodePos.x && mousePos.x <= nodePos.x + nodeSize.x &&
+				mousePos.y >= nodePos.y && mousePos.y <= nodePos.y + nodeSize.y) {
+				clickedOnNode = true;
+				break;
+			}
+		}
+
+		// deselect if click on empty space
+		if (!clickedOnNode) {
+			m_selectedNodeId = -1;
+		}
+	}
+
 	// pan with middle mouse
 	if (isCanvasHovered && InputHandler::isMouseDragging(GLFW_MOUSE_BUTTON_MIDDLE)) {
 		Vector2D delta = InputHandler::getMouseDelta();
@@ -198,6 +234,27 @@ void VisualLogicEditor::render() {
 		float scroll = InputHandler::getMouseScroll();
 		m_zoom += scroll * 0.1f;
 		m_zoom = glm::clamp(m_zoom, 0.5f, 2.f);
+	}
+
+	if (Editor::visualLogicState.isFocus) {
+		// Delete selected node with Delete or Backspace
+		if ((InputHandler::isKeyTriggered(GLFW_KEY_DELETE) ||
+			InputHandler::isKeyTriggered(GLFW_KEY_BACKSPACE)) &&
+			m_selectedNodeId != -1) {
+			deleteSelectedNode();
+		}
+
+		// Duplicate node with Ctrl+D
+		if (InputHandler::isComboKeyTriggered(GLFW_KEY_D) &&
+			m_selectedNodeId != -1) {
+			duplicateSelectedNode();
+		}
+
+		// Select next node with Tab, previous with Shift+Tab
+		if (InputHandler::isKeyTriggered(GLFW_KEY_TAB)) {
+			bool forward = !InputHandler::isKeyHeld(GLFW_KEY_LEFT_SHIFT);
+			selectNextNode(forward);
+		}
 	}
 
 	drawList->PopClipRect();
@@ -333,7 +390,7 @@ void VisualLogicEditor::renderNode(ImDrawList* drawList, LogicNode& node, ImVec2
 
 	// node name
 	drawList->AddText(ImVec2(nodePos.x + 10, nodePos.y + 10),
-		IM_COL32(255, 255, 255, 255), node.name.c_str());
+		IM_COL32(255, 255, 255, 255), JsonIO::nodeImplToString(node.imp).c_str());
 	/* ---------- END ---------- */
 
 
@@ -426,25 +483,9 @@ void VisualLogicEditor::renderNode(ImDrawList* drawList, LogicNode& node, ImVec2
 			IM_COL32(255, 255, 255, 255), "X");
 
 
-		// delete
+		// delete node
 		if (deleteHovered && InputHandler::isMouseLeftClicked()) {
-			// remove connection
-			Editor::visualLogicState.connections.erase(
-				std::remove_if(Editor::visualLogicState.connections.begin(), Editor::visualLogicState.connections.end(),
-					[&node](const LogicConnection& conn) {
-						return conn.fromNodeId == node.id || conn.toNodeId == node.id;
-					}),
-				Editor::visualLogicState.connections.end()
-			);
-
-			// remove node
-			Editor::visualLogicState.nodes.erase(std::remove_if(Editor::visualLogicState.nodes.begin(), Editor::visualLogicState.nodes.end(),
-				[&node](const LogicNode& n) { return n.id == node.id; }),
-				Editor::visualLogicState.nodes.end());
-
-			if (m_selectedNodeId == node.id) {
-				m_selectedNodeId = -1;
-			}
+			deleteSelectedNode();
 		}
 	}
 	/* ---------- END ---------- */
@@ -494,10 +535,10 @@ void VisualLogicEditor::renderNodeProperties() {
 
 	LogicNode& node = *it;
 
-	ImGui::Text("Node: %s", node.name.c_str());
+	ImGui::Text("Node: %s", JsonIO::nodeImplToString(node.imp).c_str());
 	ImGui::Separator();
 
-	if (node.name == "Print Message") {
+	if (node.imp == NodeImplementation::PRINT_MESSAGE) {
 		char buffer[256];
 		strncpy(buffer, node.parameters["message"].c_str(), 255);
 
@@ -505,7 +546,7 @@ void VisualLogicEditor::renderNodeProperties() {
 			node.parameters["message"] = buffer;
 		}
 	}
-	else  if (node.name == "Move Object") {
+	else  if (node.imp == NodeImplementation::MOVE_OBJECT) {
 		float x = node.parameters.count("x") ? std::stof(node.parameters["x"]) : 0.0f;
 		float y = node.parameters.count("y") ? std::stof(node.parameters["y"]) : 0.0f;
 
@@ -600,30 +641,24 @@ void VisualLogicEditor::renderSavePopup() {
 	}
 }
 
-//void VisualLogicEditor::addEventNode(ImVec2 position) {
-//	LogicNode node;
-//	node.id = m_nextNodeId++;
-//	node.name = "On Start";
-//	node.type = NodeType::EVENT;
-//	node.position = position;
-//	node.hasInput = false;
-//	node.hasOutput = true;
-//
-//	m_nodes.push_back(node);
-//
-//}
-//
-//void VisualLogicEditor::addActionNode(ImVec2 position) {
-//	LogicNode node;
-//	node.id = m_nextNodeId++;
-//	node.name = "Print Message";
-//	node.type = NodeType::ACTION;
-//	node.position = position;
-//	node.hasInput = true;
-//	node.hasOutput = true;
-//
-//	m_nodes.push_back(node);
-//}
+void VisualLogicEditor::addNode(Vector2D pos, NodeType type, NodeImplementation imp) {
+	LogicNode node;
+	node.id = m_nextNodeId++;
+	node.type = type;
+	node.imp = imp;
+	node.position = pos;
+	node.hasInput = (type == NodeType::EVENT) ? false : true; // EVENT no input
+	node.hasOutput = true;
+
+	if(imp == NodeImplementation::PRINT_MESSAGE)
+		node.parameters["message"] = "I love GAM";
+	else if (imp == NodeImplementation::MOVE_OBJECT) {
+		node.parameters["x"] = "0";
+		node.parameters["y"] = "0";
+	}
+
+	Editor::visualLogicState.nodes.push_back(node);
+}
 
 ImU32 VisualLogicEditor::getNodeColor(NodeType type) {
 	switch (type) {
@@ -661,6 +696,95 @@ void VisualLogicEditor::createConnection(int fromNodeId, std::string fromPin, in
 
 	DebugLog::addMessage("Created connection from node " + std::to_string(fromNodeId) +
 		" to node " + std::to_string(toNodeId) + "\n");
+}
+
+void VisualLogicEditor::deleteSelectedNode() {
+	if (m_selectedNodeId == -1) return;
+
+	// remove connections
+	Editor::visualLogicState.connections.erase(
+		std::remove_if(Editor::visualLogicState.connections.begin(),
+			Editor::visualLogicState.connections.end(),
+			[this](const LogicConnection& conn) {
+				return conn.fromNodeId == m_selectedNodeId ||
+					conn.toNodeId == m_selectedNodeId;
+			}),
+		Editor::visualLogicState.connections.end()
+	);
+
+	// Remove node
+	Editor::visualLogicState.nodes.erase(
+		std::remove_if(Editor::visualLogicState.nodes.begin(),
+			Editor::visualLogicState.nodes.end(),
+			[this](const LogicNode& n) {
+				return n.id == m_selectedNodeId;
+			}),
+		Editor::visualLogicState.nodes.end()
+	);
+
+	DebugLog::addMessage("Deleted node ID: " + std::to_string(m_selectedNodeId));
+	m_selectedNodeId = -1;
+}
+
+void VisualLogicEditor::duplicateSelectedNode() {
+	if (m_selectedNodeId == -1) return;
+
+	// find selected node
+	auto it = std::find_if(Editor::visualLogicState.nodes.begin(),
+		Editor::visualLogicState.nodes.end(),
+		[this](const LogicNode& n) {
+			return n.id == m_selectedNodeId;
+		});
+
+	if (it == Editor::visualLogicState.nodes.end()) return;
+
+	// create duplicate
+	LogicNode duplicate = *it;
+	duplicate.id = m_nextNodeId++;
+	duplicate.position.x += 50.f; // offset x
+	duplicate.position.y += 50.f; // offset y
+
+	Editor::visualLogicState.nodes.push_back(duplicate);
+
+	// select the new node
+	m_selectedNodeId = duplicate.id;
+
+	DebugLog::addMessage("Duplicated node to ID: " + std::to_string(duplicate.id));
+}
+
+void VisualLogicEditor::selectNextNode(bool forward) {
+	if (Editor::visualLogicState.nodes.empty()) return;
+
+	if (m_selectedNodeId == -1) {
+		// no selection, select first node
+		m_selectedNodeId = Editor::visualLogicState.nodes[0].id;
+		return;
+	}
+
+	// find current node index
+	int currentIndex = -1;
+	for (size_t i = 0; i < Editor::visualLogicState.nodes.size(); ++i) {
+		if (Editor::visualLogicState.nodes[i].id == m_selectedNodeId) {
+			currentIndex = static_cast<int>(i);
+			break;
+		}
+	}
+
+	if (currentIndex == -1) {
+		m_selectedNodeId = Editor::visualLogicState.nodes[0].id;
+		return;
+	}
+
+	// move to next/previous
+	if (forward) {
+		currentIndex = (currentIndex + 1) % Editor::visualLogicState.nodes.size();
+	}
+	else {
+		currentIndex = (currentIndex - 1 + Editor::visualLogicState.nodes.size()) %
+			Editor::visualLogicState.nodes.size();
+	}
+
+	m_selectedNodeId = Editor::visualLogicState.nodes[currentIndex].id;
 }
 
 #endif

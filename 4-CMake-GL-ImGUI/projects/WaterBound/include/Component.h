@@ -541,11 +541,29 @@ enum class NodeType {
     CONDITION
 };
 
+enum class NodeImplementation {
+    // EVENT
+    ON_START,
+    ON_UPDATE,
+    ON_COLLISION,
+
+    // ACTION
+    PRINT_MESSAGE,
+    MOVE_OBJECT,
+
+    // CONDITION (FUTURE)
+    CHECK_KEY_PRESSED,
+
+    // DEFAULT
+    DEFAULT // nothing happen
+};
+
 struct LogicNode {
     int id;
     NodeType type;
-    std::string name;
-    ImVec2 position;
+    //std::string name;
+    NodeImplementation imp;
+    Vector2D position;
     bool hasInput;
     bool hasOutput;
 

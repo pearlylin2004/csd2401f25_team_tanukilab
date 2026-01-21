@@ -192,14 +192,17 @@ private:
 	void renderSavePopup();
 
 	// create node
-	void addEventNode(ImVec2 position);
-	void addActionNode(ImVec2 position);
-	void addConditionNode(ImVec2 position);
+	void addNode(Vector2D position, NodeType type, NodeImplementation imp);
 
 	// helper func
 	ImU32 getNodeColor(NodeType type);
 	bool isPinHovered(ImVec2 pinPos, ImVec2 mousePos);
 	void createConnection(int fromNodeID, std::string fromPin, int toNodeID, std::string toPin);
+
+	// helper func for keyboard shortcuts
+	void deleteSelectedNode();
+	void duplicateSelectedNode();
+	void selectNextNode(bool forward);
 };
 
 // Top menu bar

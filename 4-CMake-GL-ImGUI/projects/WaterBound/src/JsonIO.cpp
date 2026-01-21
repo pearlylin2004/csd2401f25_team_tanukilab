@@ -237,6 +237,25 @@ namespace JsonIO {
     }
 
 
+    NodeImplementation stringToNodeImpl(const std::string& str) {
+        if (str == "On Start") return NodeImplementation::ON_START;
+        if (str == "On Update") return NodeImplementation::ON_UPDATE;
+        if (str == "Print Message") return NodeImplementation::PRINT_MESSAGE;
+        if (str == "Move Object") return NodeImplementation::MOVE_OBJECT;
+        return NodeImplementation::DEFAULT;
+    }
+
+    std::string nodeImplToString(NodeImplementation impl) {
+        switch (impl) {
+        case NodeImplementation::ON_START: return "On Start";
+        case NodeImplementation::ON_UPDATE: return "On Update";
+        case NodeImplementation::PRINT_MESSAGE: return "Print Message";
+        case NodeImplementation::MOVE_OBJECT: return "Move Object";
+        default: return "Default";
+        }
+    }
+
+
     /**
      * \brief Atomically replaces a target file with a temporary file.
      * \param tmp Path to the temporary file (already fully written and flushed).
@@ -1057,7 +1076,7 @@ namespace JsonIO {
             rapidjson::Value nodeObj(rapidjson::kObjectType);
 
             nodeObj.AddMember("id", node.id, a);
-            nodeObj.AddMember("name", rapidjson::Value(node.name.c_str(), a), a);
+            nodeObj.AddMember("implementation", rapidjson::Value(JsonIO::nodeImplToString(node.imp).c_str(), a), a);
             nodeObj.AddMember("type", static_cast<int>(node.type), a);
 
             rapidjson::Value posArray(rapidjson::kArrayType);
@@ -1125,8 +1144,8 @@ namespace JsonIO {
                 node.id = GetIntOr(nodeVal, "id", 0);
 
                 std::string name;
-                if (GetString(nodeVal, "name", name)) {
-                    node.name = name;
+                if (GetString(nodeVal, "implementation", name)) {
+                    node.imp = stringToNodeImpl(name);
                 }
 
                 node.type = static_cast<NodeType>(GetIntOr(nodeVal, "type", 0));
