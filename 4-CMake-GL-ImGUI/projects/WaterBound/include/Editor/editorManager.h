@@ -127,6 +127,7 @@ private:
 	void renderAudio(GameObject* selected);
 	void renderTileMap(GameObject* selected);
 	void renderLua(GameObject* selected);
+	void renderVisualLogic(GameObject* selected);
 
 	void wrongFileTypePopup(const std::string& filename);
 
@@ -137,6 +138,68 @@ private:
 	bool m_isEditingRot = false;
 	bool m_isEditingScale = false;
 	GameObject* m_transformEditObject = nullptr;
+};
+
+// for Visual Logic Container
+class VisualLogicEditor {
+public:
+	//VisualLogicEditor();
+	static VisualLogicEditor& Instance() {
+		static VisualLogicEditor instance;
+		return instance;
+	}
+
+	// Delete copy constructor and assignment operator
+	VisualLogicEditor(const VisualLogicEditor&) = delete;
+	VisualLogicEditor& operator=(const VisualLogicEditor&) = delete;
+	void render();
+
+	void clear();
+	void updateNextNodeId();
+
+private:
+	VisualLogicEditor();
+
+	int m_nextNodeId;
+	int m_selectedNodeId;
+
+	// dragging state
+	bool m_isDragging;
+	int m_draggingNodeId;
+	ImVec2 m_dragOffset;
+
+	// canvas state
+	ImVec2 m_canvasOffset;
+	float m_zoom;
+
+	// create connection
+	bool m_isConnecting;
+	int m_connectingFromNodeId;
+	std::string m_connectingFromPin;
+	ImVec2 m_connectionStartPos;
+
+	// save/load logic
+	void saveLogic();
+	//void loadLogic(const std::string& filename);
+
+	// save popup state
+	char m_saveFilename[128];
+
+	// rendering
+	void renderNode(ImDrawList* drawList, LogicNode& node, ImVec2 canvasPos, bool isCanvasHovered);
+	void renderConnections(ImDrawList* drawList, ImVec2 canvasPos);
+	void renderNodeProperties();
+	void renderSavePopup();
+
+	// create node
+	void addEventNode(ImVec2 position);
+	void addActionNode(ImVec2 position);
+	void addConditionNode(ImVec2 position);
+
+	// helper func
+	ImU32 getNodeColor(NodeType type);
+	bool isPinHovered(ImVec2 pinPos, ImVec2 mousePos);
+	void createConnection(int fromNodeID, std::string fromPin, int toNodeID, std::string toPin);
 };
 
 // Top menu bar
@@ -252,6 +315,8 @@ private:
 
 	static bool s_isSceneHovered;
 };
+
+
 
 
 

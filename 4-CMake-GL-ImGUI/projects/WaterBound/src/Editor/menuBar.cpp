@@ -165,6 +165,7 @@ void MenuBar::playSimulation(GameObjectManager& manager) {
 void MenuBar::stopSimulation(GameObjectManager& manager) {
     EditorManager::toggleEditing(true);
     manager.cleanupSimulationResources();
+	VisualLogicEditor::Instance().clear();
 
     // load back the temp scene file to restore state
     manager.loadScene(JsonIO::runtimeScenePath(m_sceneState.tempSceneName));

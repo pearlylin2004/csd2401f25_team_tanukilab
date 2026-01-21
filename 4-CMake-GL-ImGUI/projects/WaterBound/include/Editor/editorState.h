@@ -23,6 +23,7 @@ Technology is prohibited.
 #include <imgui.h>
 #include <ImGuizmo.h>
 #include "GameObjectManager.h"
+#include "prefabManager.h"
 
 namespace Editor {
 	/* ----------------- Menu Bar -----------------*/
@@ -89,6 +90,7 @@ namespace Editor {
 		std::filesystem::file_time_type lastRefresh;
 		std::string currentViewFolder;
 		std::vector<std::string> subFolders;
+		std::vector<PrefabUsageInfo> prefabUsageInfo; // for tracking prefab usage info in delete popup
 
 		// for dropping of files from file explorer
 		std::string hoverFolder;
@@ -164,6 +166,20 @@ namespace Editor {
 	/* ----------------- Gizmo End -----------------*/
 
 
+	/* ----------------- Visual Logic Editor ---------------- */
+	struct VisualLogicState {
+		bool showEditor = false;
+		std::string currentGraphName = "";
+		GameObject* targetObj = nullptr;
+
+		bool showSavePopup = false;
+
+		std::vector<LogicNode> nodes;
+		std::vector<LogicConnection> connections;
+	};
+	/* ----------------- Logic End ---------------- */
+
+
 	/* ----------------- Component Entry ---------------- */
 	struct ComponentEntry {
 		std::string name;
@@ -182,6 +198,7 @@ namespace Editor {
 	inline SceneState sceneState;
 	inline PopupState popupState;
 	inline GizmoState gizmoState;
+	inline VisualLogicState visualLogicState;
 
 
 	/* ----------------- Component Registry ---------------- */
@@ -282,6 +299,13 @@ namespace Editor {
 			DebugLog::addMessage("Added Lua Script component for " + obj->getObjectName());
 			},
 			[](const GameObject* obj) { return obj->hasComponent<LuaScript>(); }
+		},
+		{"Visual Logic",
+			[](GameObject* obj) {
+			obj->addComponent<VisualLC>();
+			DebugLog::addMessage("Added Virtual Logic component for " + obj->getObjectName());
+			},
+			[](const GameObject* obj) { return obj->hasComponent<VisualLC>(); }
 		}
 	};
 	/* ----------------- Component End ---------------- */

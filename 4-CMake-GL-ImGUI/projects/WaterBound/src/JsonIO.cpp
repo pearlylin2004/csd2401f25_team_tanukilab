@@ -686,6 +686,38 @@ namespace JsonIO {
             doc.AddMember("TileMap", jt, a);
         }
 
+        // LuaScript
+        if (LuaScript* ls = obj->getComponent<LuaScript>()) {
+            Value jl(kObjectType);
+            Value scriptsArray(kArrayType);
+
+            for (const auto& scriptEntry : ls->scripts) {
+                if (scriptEntry.filename.empty() && scriptEntry.scriptName.empty()) continue;
+
+                Value entry(kObjectType);
+                entry.AddMember("filename", Value(scriptEntry.filename.c_str(), a), a);
+                entry.AddMember("scriptName", Value(scriptEntry.scriptName.c_str(), a), a);
+
+                scriptsArray.PushBack(entry, a);
+            }
+
+            if (!scriptsArray.Empty()) {
+                jl.AddMember("scripts", scriptsArray, a);
+                doc.AddMember("LuaScript", jl, a);
+            }
+        }
+
+        // Visual Logic
+        if (VisualLC* vl = obj->getComponent<VisualLC>()) {
+            Value jvl(kObjectType);
+
+            if (!vl->filename.empty()) {
+                jvl.AddMember("filename", Value(vl->filename.c_str(), a), a);
+            }
+
+            doc.AddMember("VisualLC", jvl, a);
+        }
+
         // convert to string
         StringBuffer buffer;
         Writer<StringBuffer> writer(buffer);
@@ -952,6 +984,54 @@ namespace JsonIO {
                 }
             }
 
+            // LuaScript
+            if (doc.HasMember("LuaScript")) {
+                const Value& jl = doc["LuaScript"];
+                LuaScript* ls = obj->addComponent<LuaScript>();
+
+                ls->scripts.clear();
+
+                if (jl.HasMember("scripts") && jl["scripts"].IsArray()) {
+                    for (const auto& scriptEntry : jl["scripts"].GetArray()) {
+                        if (!scriptEntry.IsObject()) continue;
+
+                        LuaScript::ScriptEntry entry;
+
+                        if (scriptEntry.HasMember("filename") && scriptEntry["filename"].IsString()) {
+                            entry.filename = scriptEntry["filename"].GetString();
+                        }
+
+                        if (scriptEntry.HasMember("scriptName") && scriptEntry["scriptName"].IsString()) {
+                            entry.scriptName = scriptEntry["scriptName"].GetString();
+                        }
+
+                        entry.changed = true;
+                        ls->scripts.push_back(entry);
+                    }
+                }
+
+                ls->scriptsChanged = true;
+            }
+
+            // Visual Logic
+            if (doc.HasMember("VisualLC")) {
+                const Value& jvl = doc["VisualLC"];
+                VisualLC* vl = obj->addComponent<VisualLC>();
+
+                if (jvl.HasMember("filename") && jvl["filename"].IsString()) {
+                    vl->filename = jvl["filename"].GetString();
+
+                    // Load the visual logic graph from file
+                    if (!vl->filename.empty()) {
+                        std::string filepath = "/Logic/" + vl->filename;
+                        std::string err;
+                        if (!JsonIO::loadVisualLogic(filepath, vl->nodes, vl->connections, &err)) {
+                            DebugLog::addMessage("Failed to load Visual Logic file: " + err);
+                        }
+                    }
+                }
+            }
+
             return obj;
         }
         catch (...) {
@@ -960,6 +1040,145 @@ namespace JsonIO {
         }
     }
     /* ---------- END ---------- */
+
+
+    /* ---------- Visual Logic for editor ---------- */
+    bool saveVisualLogic(const std::string& filepath, const std::vector<LogicNode>& nodes, const std::vector<LogicConnection>& connections, std::string* err) {
+
+        rapidjson::Document doc;
+        doc.SetObject();
+        auto& a = doc.GetAllocator();
+
+        doc.AddMember("version", 1, a);
+
+        // serialize nodes
+        rapidjson::Value nodesArray(rapidjson::kArrayType);
+        for (const auto& node : nodes) {
+            rapidjson::Value nodeObj(rapidjson::kObjectType);
+
+            nodeObj.AddMember("id", node.id, a);
+            nodeObj.AddMember("name", rapidjson::Value(node.name.c_str(), a), a);
+            nodeObj.AddMember("type", static_cast<int>(node.type), a);
+
+            rapidjson::Value posArray(rapidjson::kArrayType);
+            posArray.PushBack(node.position.x, a);
+            posArray.PushBack(node.position.y, a);
+            nodeObj.AddMember("position", posArray, a);
+
+            nodeObj.AddMember("hasInput", node.hasInput, a);
+            nodeObj.AddMember("hasOutput", node.hasOutput, a);
+
+            if (!node.parameters.empty()) {
+                rapidjson::Value paramsObj(rapidjson::kObjectType);
+                for (const auto& [key, value] : node.parameters) {
+                    paramsObj.AddMember(
+                        rapidjson::Value(key.c_str(), a),
+                        rapidjson::Value(value.c_str(), a),
+                        a
+                    );
+                }
+                nodeObj.AddMember("parameters", paramsObj, a);
+            }
+
+            nodesArray.PushBack(nodeObj, a);
+        }
+        doc.AddMember("nodes", nodesArray, a);
+
+        // serialize connections
+        rapidjson::Value connectionsArray(rapidjson::kArrayType);
+        for (const auto& conn : connections) {
+            rapidjson::Value connObj(rapidjson::kObjectType);
+
+            connObj.AddMember("fromNodeId", conn.fromNodeId, a);
+            connObj.AddMember("outputPin", rapidjson::Value(conn.outputPin.c_str(), a), a);
+            connObj.AddMember("toNodeId", conn.toNodeId, a);
+            connObj.AddMember("inputPin", rapidjson::Value(conn.inputPin.c_str(), a), a);
+
+            connectionsArray.PushBack(connObj, a);
+        }
+        doc.AddMember("connections", connectionsArray, a);
+        
+        // write to file
+        bool runtime = WriteDocumentToFile(RUNTIME_DIR_R+filepath, doc, true, err);
+        bool proj = WriteDocumentToFile(SOURCE_ASSETS_DIR_R +filepath, doc, true, err);
+
+		return (runtime && proj);
+    }
+
+    bool loadVisualLogic(const std::string& filepath, std::vector<LogicNode>& nodes, std::vector<LogicConnection>& connections, std::string* err) {
+        rapidjson::Document doc;
+        if (!ReadFileToDocument(RUNTIME_DIR_R+filepath, doc, err)) {
+			std::cout << "Failed to load visual logic from " << filepath << ": " << (err ? *err : "unknown error") << std::endl;
+            return false;
+        }
+
+        // clear existing data
+        nodes.clear();
+        connections.clear();
+
+        // load nodes
+        if (doc.HasMember("nodes") && doc["nodes"].IsArray()) {
+            for (const auto& nodeVal : doc["nodes"].GetArray()) {
+                if (!nodeVal.IsObject()) continue;
+
+                LogicNode node;
+                node.id = GetIntOr(nodeVal, "id", 0);
+
+                std::string name;
+                if (GetString(nodeVal, "name", name)) {
+                    node.name = name;
+                }
+
+                node.type = static_cast<NodeType>(GetIntOr(nodeVal, "type", 0));
+
+                if (nodeVal.HasMember("position") && nodeVal["position"].IsArray()) {
+                    const auto& posArray = nodeVal["position"].GetArray();
+                    if (posArray.Size() >= 2) {
+                        node.position.x = posArray[0].GetFloat();
+                        node.position.y = posArray[1].GetFloat();
+                    }
+                }
+
+                GetBool(nodeVal, "hasInput", node.hasInput);
+                GetBool(nodeVal, "hasOutput", node.hasOutput);
+
+                if (nodeVal.HasMember("parameters") && nodeVal["parameters"].IsObject()) {
+                    const auto& paramsObj = nodeVal["parameters"];
+                    for (auto it = paramsObj.MemberBegin(); it != paramsObj.MemberEnd(); ++it) {
+                        if (it->value.IsString()) {
+                            node.parameters[it->name.GetString()] = it->value.GetString();
+                        }
+                    }
+                }
+
+                nodes.push_back(node);
+            }
+        }
+
+        // load connections
+        if (doc.HasMember("connections") && doc["connections"].IsArray()) {
+            for (const auto& connVal : doc["connections"].GetArray()) {
+                if (!connVal.IsObject()) continue;
+
+                LogicConnection conn;
+                conn.fromNodeId = GetIntOr(connVal, "fromNodeId", 0);
+                conn.toNodeId = GetIntOr(connVal, "toNodeId", 0);
+
+                std::string outputPin, inputPin;
+                if (GetString(connVal, "outputPin", outputPin)) {
+                    conn.outputPin = outputPin;
+                }
+                if (GetString(connVal, "inputPin", inputPin)) {
+                    conn.inputPin = inputPin;
+                }
+
+                connections.push_back(conn);
+            }
+        }
+
+        return true;
+    }
+	/* ---------- END ---------- */
 
 } // namespace JsonIO
 

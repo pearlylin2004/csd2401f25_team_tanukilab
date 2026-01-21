@@ -47,6 +47,7 @@ void EditorManager::update() {
     inspectorWindow.render(m_manager);
     menuBar.render(m_manager);
     performanceWindow.render();
+    VisualLogicEditor::Instance().render();
 
     // only show play info when not editing
     if (!isEditing) playDebugWindow.render();

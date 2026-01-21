@@ -139,6 +139,7 @@ void CoreEngine::Init(bool forceWindowed) {
     m_playerController = std::make_unique<PlayerControllerSystem>();
     m_audioSystem = std::make_unique<AudioSystem>();
     m_tileMapSystem = std::make_unique<TileMapSystem>();
+	m_visualLCSystem = std::make_unique<VisualLogicSystem>();
 
 
     PrefabManager::Instance().loadPrefabRegistry();
@@ -150,6 +151,7 @@ void CoreEngine::Init(bool forceWindowed) {
 #endif
     m_fontSystem->init(*m_manager);
     m_audioSystem->init(*m_manager);
+    m_visualLCSystem->initAll(*m_manager);
 
     //advance messaging 
     m_messageBus->subscribe("KeyPressed", m_playerController.get());
@@ -248,7 +250,10 @@ void CoreEngine::Update(float deltaTime) {
         m_guiSystem->pauseUpdate(*m_manager);
     }
 
-    if (!EditorManager::isEditingMode() && !EditorManager::isPaused()) m_luaSystem->update(*m_manager, deltaTime);
+    if (!EditorManager::isEditingMode() && !EditorManager::isPaused()) {
+        m_luaSystem->update(*m_manager, deltaTime);
+        m_visualLCSystem->updateAll(*m_manager, deltaTime);
+    }
 
     // Update all systems in order
     m_inputSystem->update(*m_manager, deltaTime, *m_messageBus);
