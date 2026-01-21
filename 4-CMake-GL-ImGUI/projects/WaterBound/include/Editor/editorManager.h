@@ -126,6 +126,7 @@ private:
 	void renderFont(GameObject* selected);
 	void renderAudio(GameObject* selected);
 	void renderTileMap(GameObject* selected);
+	void renderParticles(GameObject* selected);
 	void renderLua(GameObject* selected);
 
 	void wrongFileTypePopup(const std::string& filename);

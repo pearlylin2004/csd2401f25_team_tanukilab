@@ -102,7 +102,7 @@ public:
         Vector2D velocity{ 0,0 };
         float timer = 0;
         float offset = 0;
-        size_t particleAmt = 0;
+        int particleAmt = 0;
         bool isActive = false;
     };
     struct individualData

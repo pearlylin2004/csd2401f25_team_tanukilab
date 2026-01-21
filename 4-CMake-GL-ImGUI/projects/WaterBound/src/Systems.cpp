@@ -544,6 +544,7 @@ void ParticleSystem::activateParticle(GameObjectManager& manager)
 			Transform* masterTransform = object->addComponent<Transform>();
 			if (particleData->activate && particleData->isMaster)
 			{
+				particleData->activate = false;
 				if (particleData->grpNo == 0)
 					particleData->grpNo = IDGenerator(manager);
 				for (size_t i = 0; i < particleData->master.particleAmt; ++i)
@@ -564,6 +565,7 @@ void ParticleSystem::activateParticle(GameObjectManager& manager)
 					indivData->childData.grpNo = particleData->grpNo;
 					indivData->childData.timer = particleData->master.timer;
 					render->clr = particleData->master.clr;
+					indivData->isMaster = false;
 				}
 			}
 		}
@@ -572,11 +574,21 @@ void ParticleSystem::activateParticle(GameObjectManager& manager)
 
 void ParticleSystem::update(GameObjectManager& manager, float const& deltaTime)
 {
+	activateParticle(manager);
 	std::vector<GameObject*> gameObjects;
 	manager.getAllGameObjects(gameObjects);
+	//for testing purposes only
 	for (GameObject* object : gameObjects)
 	{
-		//lets see if anybody got a transform system
+		if (object->hasComponent<Particle>())
+		{
+			Particle* particle = object->getComponent<Particle>();
+			if (particle->isMaster)
+			{
+				if (InputHandler::isKeyTriggered(GLFW_KEY_P))
+					particle->activate = true;
+			}
+		}
 	}
 }
 //void RenderSystem::renderCollision(Collision::AABB const& box, glm::vec3 const& clr)
@@ -849,6 +861,22 @@ void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime, M
 		if (!object->hasComponent<Physics>()) continue;
 		Physics* physics = object->getComponent<Physics>();
 		previousOnGround[object] = physics->onGround;
+		if(object->hasComponent<Particle>()) 
+		{
+			Particle* particle = object->getComponent<Particle>();
+			if (!particle->isMaster)
+			{
+				Transform* transform = object->getComponent<Transform>();
+				particle->childData.timer -= deltaTime;
+				if (particle->childData.timer <= 0.f)
+				{
+					manager.deleteGameObject(object);
+					continue;
+				}
+				transform->x += particle->childData.velocity.x * deltaTime;
+				transform->y += particle->childData.velocity.y * deltaTime;
+			}
+		}
 	}
 
 	for (auto object : gameObjects) {
