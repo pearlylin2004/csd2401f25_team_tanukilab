@@ -128,7 +128,7 @@ void VisualLogicEditor::render() {
 	renderConnections(drawList, canvasPos);
 
 	// render all nodes
-	for (auto& node : Editor::visualLogicState.nodes) {
+	for (LogicNode& node : Editor::visualLogicState.nodes) {
 		renderNode(drawList, node, canvasPos, isCanvasHovered);
 	}
 
@@ -148,9 +148,12 @@ void VisualLogicEditor::render() {
 	// click empty space to deselect
 	if (isCanvasHovered && InputHandler::isMouseLeftClicked() && !m_isConnecting) {
 		bool clickedOnNode = false;
+		bool clickedOnCon = false;
+
 		ImVec2 mousePos = ImGui::GetMousePos();
 
-		for (auto& node : Editor::visualLogicState.nodes) {
+		/* -------- Check for Nodes -------- */
+		for (LogicNode& node : Editor::visualLogicState.nodes) {
 			ImVec2 nodePos = ImVec2(canvasPos.x + node.position.x + m_canvasOffset.x,
 				canvasPos.y + node.position.y + m_canvasOffset.y);
 			ImVec2 nodeSize(250.f, 80.f);
@@ -162,10 +165,47 @@ void VisualLogicEditor::render() {
 				break;
 			}
 		}
+		/* -------- END -------- */
+
+		/* -------- Check for Connections -------- */
+		if (!clickedOnNode) {
+			for (size_t i = 0; i < Editor::visualLogicState.connections.size(); ++i) {
+				const LogicConnection& conn = Editor::visualLogicState.connections[i];
+
+				LogicNode* fromNode = nullptr;
+				LogicNode* toNode = nullptr;
+
+				for (LogicNode& node : Editor::visualLogicState.nodes) {
+					if (node.id == conn.fromNodeId) fromNode = &node;
+					if (node.id == conn.toNodeId) toNode = &node;
+				}
+
+				if (!fromNode || !toNode) continue;
+
+				ImVec2 fromPos = ImVec2(canvasPos.x + fromNode->position.x + m_canvasOffset.x + 250.f,
+					canvasPos.y + fromNode->position.y + m_canvasOffset.y + 40.f);
+
+				if (conn.outputPin == "True") fromPos.y -= 10.f;
+				if (conn.outputPin == "False") fromPos.y += 10.f;
+
+				ImVec2 toPos = ImVec2(canvasPos.x + toNode->position.x + m_canvasOffset.x,
+					canvasPos.y + toNode->position.y + m_canvasOffset.y + 40.f);
+
+				ImVec2 cp1(fromPos.x + 50, fromPos.y);
+				ImVec2 cp2(toPos.x - 50, toPos.y);
+
+				if (isMouseNearBezier(fromPos, cp1, cp2, toPos, mousePos, 10.f)) {
+					clickedOnCon = true;
+					break;
+				}
+			}
+		}
+		/* -------- Check for Nodes -------- */
 
 		// deselect if click on empty space
-		if (!clickedOnNode) {
+		if (!clickedOnNode && !clickedOnCon) {
 			m_selectedNodeId = -1;
+			m_selectedConIndex = -1;
 		}
 	}
 
@@ -188,21 +228,26 @@ void VisualLogicEditor::render() {
 		m_zoom = glm::clamp(m_zoom, 0.5f, 2.f);
 	}
 
+	// shortcut
 	if (Editor::visualLogicState.isFocus) {
-		// Delete selected node with Delete or Backspace
+		// delete node/con with DEL / Backspace
 		if ((InputHandler::isKeyTriggered(GLFW_KEY_DELETE) ||
-			InputHandler::isKeyTriggered(GLFW_KEY_BACKSPACE)) &&
-			m_selectedNodeId != -1) {
-			deleteSelectedNode();
+			InputHandler::isKeyTriggered(GLFW_KEY_BACKSPACE))) {
+			if (m_selectedNodeId != -1) {
+				deleteSelectedNode();
+			}
+			else if (m_selectedConIndex != -1) {
+				deleteSelectedConnection();
+			}
 		}
 
-		// Duplicate node with Ctrl+D
+		// duplicate node with Ctrl+D
 		if (InputHandler::isComboKeyTriggered(GLFW_KEY_D) &&
 			m_selectedNodeId != -1) {
 			duplicateSelectedNode();
 		}
 
-		// Select next node with Tab, previous with Shift+Tab
+		// select next node with Tab, previous with Shift+Tab
 		if (InputHandler::isKeyTriggered(GLFW_KEY_TAB)) {
 			bool forward = !InputHandler::isKeyHeld(GLFW_KEY_LEFT_SHIFT);
 			selectNextNode(forward);
@@ -216,6 +261,13 @@ void VisualLogicEditor::render() {
 		ImGui::Text("Selected Object: %s", Editor::visualLogicState.targetObj->getObjectName().c_str());
 	}
 	ImGui::Text("Nodes: %d", (int)Editor::visualLogicState.nodes.size());
+
+	if (m_selectedNodeId != -1) {
+		ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "Node selected");
+	}
+	else if (m_selectedConIndex != -1) {
+		ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "Connection selected");
+	}
 
 	ImGui::EndChild();
 
@@ -239,7 +291,7 @@ void VisualLogicEditor::render() {
 
 void VisualLogicEditor::updateNextNodeId() {
 	m_nextNodeId = 1;
-	for (const auto& node : Editor::visualLogicState.nodes) {
+	for (const LogicNode& node : Editor::visualLogicState.nodes) {
 		if (node.id >= m_nextNodeId) {
 			m_nextNodeId = node.id + 1;
 		}
@@ -252,6 +304,7 @@ void VisualLogicEditor::clear() {
 	Editor::visualLogicState.connections.clear();
 	Editor::visualLogicState.targetObj = nullptr;
 	m_selectedNodeId = -1;
+	m_selectedConIndex = -1;
 	m_isDragging = false;
 	m_draggingNodeId = -1;
 	m_isConnecting = false;
@@ -313,6 +366,7 @@ void VisualLogicEditor::renderNode(ImDrawList* drawList, LogicNode& node, ImVec2
 	// handle selection and dragging
 	if (isHovered && InputHandler::isMouseLeftClicked() && !m_isConnecting) {
 		m_selectedNodeId = node.id;
+		m_selectedConIndex = -1; // deselect connection
 		m_isDragging = true;
 		m_draggingNodeId = node.id;
 		m_dragOffset = ImVec2(mousePos.x - nodePos.x, mousePos.y - nodePos.y);
@@ -444,11 +498,15 @@ void VisualLogicEditor::renderNode(ImDrawList* drawList, LogicNode& node, ImVec2
 }
 
 void VisualLogicEditor::renderConnections(ImDrawList* drawList, ImVec2 canvasPos) {
-	for (const auto& conn : Editor::visualLogicState.connections) {
+	ImVec2 mousePos = ImGui::GetMousePos();
+
+	for (size_t i = 0; i < Editor::visualLogicState.connections.size(); ++i) {
+		const LogicConnection& conn = Editor::visualLogicState.connections[i];
+
 		LogicNode* fromNode = nullptr;
 		LogicNode* toNode = nullptr;
 
-		for (auto& node : Editor::visualLogicState.nodes) {
+		for (LogicNode& node : Editor::visualLogicState.nodes) {
 			if (node.id == conn.fromNodeId) fromNode = &node;
 			if (node.id == conn.toNodeId) toNode = &node;
 		}
@@ -462,7 +520,7 @@ void VisualLogicEditor::renderConnections(ImDrawList* drawList, ImVec2 canvasPos
 
 		ImVec2 toPos = ImVec2(canvasPos.x + toNode->position.x + m_canvasOffset.x, canvasPos.y + toNode->position.y + m_canvasOffset.y + 40.f);
 
-		// draw bezier curve
+		// draw curve
 		ImVec2 cp1(fromPos.x + 50, fromPos.y);
 		ImVec2 cp2(toPos.x - 50, toPos.y);
 
@@ -470,7 +528,27 @@ void VisualLogicEditor::renderConnections(ImDrawList* drawList, ImVec2 canvasPos
 		if (conn.outputPin == "True") lineColor = IM_COL32(100, 255, 100, 255);
 		if (conn.outputPin == "False") lineColor = IM_COL32(255, 100, 100, 255);
 
-		drawList->AddBezierCubic(fromPos, cp1, cp2, toPos, lineColor, 2.0f);
+		// if mouse is near curve
+		bool isHovered = isMouseNearBezier(fromPos, cp1, cp2, toPos, mousePos, 10.f);
+
+		// if connection selected
+		bool isSelected = (m_selectedConIndex == static_cast<int>(i));
+
+		float lineWidth = 2.0f;
+		if (isSelected) {
+			lineColor = IM_COL32(255, 255, 0, 255); // yellow when selected
+			lineWidth = 4.0f;
+		}
+		else if (isHovered) {
+			lineWidth = 3.5f; // slightly thicker when hovered
+		}
+
+		drawList->AddBezierCubic(fromPos, cp1, cp2, toPos, lineColor, lineWidth);
+
+		if (isHovered && InputHandler::isMouseLeftClicked() && !m_isConnecting) {
+			m_selectedConIndex = static_cast<int>(i);
+			m_selectedNodeId = -1; // deselect node when connection selected
+		}
 	}
 }
 
@@ -632,7 +710,7 @@ bool VisualLogicEditor::isPinHovered(ImVec2 pinPos, ImVec2 mousePos) {
 
 void VisualLogicEditor::createConnection(int fromNodeId, std::string fromPin, int toNodeId, std::string toPin) {
 	// Check if connection already exists
-	for (const auto& conn : Editor::visualLogicState.connections) {
+	for (const LogicConnection& conn : Editor::visualLogicState.connections) {
 		if (conn.fromNodeId == fromNodeId && conn.toNodeId == toNodeId) {
 			return; // Connection already exists
 		}
@@ -682,7 +760,7 @@ void VisualLogicEditor::duplicateSelectedNode() {
 	if (m_selectedNodeId == -1) return;
 
 	// find selected node
-	auto it = std::find_if(Editor::visualLogicState.nodes.begin(),
+	std::vector<LogicNode>::iterator it = std::find_if(Editor::visualLogicState.nodes.begin(),
 		Editor::visualLogicState.nodes.end(),
 		[this](const LogicNode& n) {
 			return n.id == m_selectedNodeId;
@@ -737,6 +815,57 @@ void VisualLogicEditor::selectNextNode(bool forward) {
 	}
 
 	m_selectedNodeId = Editor::visualLogicState.nodes[currentIndex].id;
+}
+
+ImVec2 VisualLogicEditor::getBezierPoint(ImVec2 p0, ImVec2 p1, ImVec2 p2, ImVec2 p3, float t) {
+	float u = 1.0f - t;
+	float tt = t * t;
+	float uu = u * u;
+	float uuu = uu * u;
+	float ttt = tt * t;
+
+	ImVec2 p;
+	p.x = (uuu * p0.x) + (3 * uu * t * p1.x) + (3 * u * tt * p2.x) + (ttt * p3.x);
+	p.y = (uuu * p0.y) + (3 * uu * t * p1.y) + (3 * u * tt * p2.y) + (ttt * p3.y);
+
+	return p;
+}
+
+bool VisualLogicEditor::isMouseNearBezier(ImVec2 p0, ImVec2 p1, ImVec2 p2, ImVec2 p3,
+	ImVec2 mousePos, float threshold) {
+	
+	// sample points along the curve and check distance
+	const int samples = 20;
+	for (int i = 0; i < samples; ++i) {
+		float t = (float)i / (float)(samples - 1);
+		ImVec2 point = getBezierPoint(p0, p1, p2, p3, t);
+
+		float dx = mousePos.x - point.x;
+		float dy = mousePos.y - point.y;
+		float distance = sqrt(dx * dx + dy * dy);
+
+		if (distance < threshold) {
+			return true;
+		}
+	}
+	return false;
+}
+
+void VisualLogicEditor::deleteSelectedConnection() {
+	if (m_selectedConIndex == -1 ||
+		m_selectedConIndex >= static_cast<int>(Editor::visualLogicState.connections.size())) {
+		return;
+	}
+
+	const LogicConnection& conn = Editor::visualLogicState.connections[m_selectedConIndex];
+	DebugLog::addMessage("Deleted connection from node " +
+		std::to_string(conn.fromNodeId) + " to " +
+		std::to_string(conn.toNodeId));
+
+	Editor::visualLogicState.connections.erase(
+		Editor::visualLogicState.connections.begin() + m_selectedConIndex);
+
+	m_selectedConIndex = -1;
 }
 
 #endif

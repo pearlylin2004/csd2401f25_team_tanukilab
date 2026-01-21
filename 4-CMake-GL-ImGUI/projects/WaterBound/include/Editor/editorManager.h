@@ -162,6 +162,7 @@ private:
 
 	int m_nextNodeId;
 	int m_selectedNodeId;
+	int m_selectedConIndex;
 
 	// dragging state
 	bool m_isDragging;
@@ -199,10 +200,17 @@ private:
 	bool isPinHovered(ImVec2 pinPos, ImVec2 mousePos);
 	void createConnection(int fromNodeID, std::string fromPin, int toNodeID, std::string toPin);
 
-	// helper func for keyboard shortcuts
+	// helper func for nodes (keyboard shortcut)
 	void deleteSelectedNode();
 	void duplicateSelectedNode();
 	void selectNextNode(bool forward);
+
+	// helper func for connections
+	ImVec2 getBezierPoint(ImVec2 p0, ImVec2 p1, ImVec2 p2, ImVec2 p3, float t);
+	bool isMouseNearBezier(ImVec2 p0, ImVec2 p1, ImVec2 p2, ImVec2 p3,
+		ImVec2 mousePos, float threshold);
+	void deleteSelectedConnection();
+
 };
 
 // Top menu bar
