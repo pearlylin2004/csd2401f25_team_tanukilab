@@ -147,7 +147,10 @@ FMOD::Sound* ResourceManager::getSound(const std::string& path, bool loop, bool 
         return nullptr;
     }
 
-    auto it = m_audioCache.find(path);
+    // Create cache key that includes spatial mode
+    std::string cacheKey = path + (isSpatial ? "|3D" : "|2D");
+
+    auto it = m_audioCache.find(cacheKey);
     if (it != m_audioCache.end()) {
         // Verify mode consistency
         FMOD_MODE existingMode;
@@ -173,7 +176,7 @@ FMOD::Sound* ResourceManager::getSound(const std::string& path, bool loop, bool 
     FMOD::Sound* newSound = loadSoundFromFile(path, loop, isSpatial);
 
     if (newSound) {
-        m_audioCache[path] = newSound;
+        m_audioCache[cacheKey] = newSound;
     }else {
         std::cout << "ResourceManager Error: Failed to load sound: " << path << std::endl;
     }
