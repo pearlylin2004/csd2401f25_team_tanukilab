@@ -44,7 +44,10 @@ void AudioHandler::init() {
 
 	FMODErrorCheck(system->init(36, FMOD_INIT_NORMAL, nullptr));
 
+	FMODErrorCheck(system->set3DSettings(0.0f, 1.0f, 1.0f));
+
 	ResourceManager::getInstance().init(system); // initialize resource manager with fmod system
+
 
 	//sounds.resize(static_cast<size_t>(soundID::count), nullptr);
 	//channels.resize(static_cast<size_t>(soundID::count), nullptr);
@@ -150,17 +153,18 @@ FMOD::Channel* AudioHandler::playSound(AudioChannel* audio) {
 		return nullptr;
 	}
 
-	//std::string path = soundIDToFilePath(id);
 	if (audio->audioFile.empty()) {
 		std::cerr << "Error! Sound file path is empty..." << std::endl;
 		return nullptr;
 	}
-	/*if (sounds[pos] == nullptr) {
-		std::cerr << "Error! Sound not loaded..." << std::endl;
-		return nullptr;
-	}*/
-	//bool loop = (id == soundID::bg);
-	FMOD::Sound* sound = ResourceManager::getInstance().getSound(audio->audioFile);
+
+	// Pass isSpatial flag from AudioChannel to ResourceManager
+	FMOD::Sound* sound = ResourceManager::getInstance().getSound(
+		audio->audioFile,
+		audio->loop,
+		audio->isSpatial  // ← This is the key change!
+	);
+
 	if (!sound) {
 		std::cerr << "Error! Sound could not be loaded: " << audio->audioFile << std::endl;
 		return nullptr;
@@ -168,18 +172,26 @@ FMOD::Channel* AudioHandler::playSound(AudioChannel* audio) {
 
 	FMODErrorCheck(sound->setMode(audio->loop ? FMOD_LOOP_NORMAL : FMOD_LOOP_OFF));
 
+	// For 3D sounds, override default min/max distance with channel-specific values
+	if (audio->isSpatial) {
+		FMOD_RESULT distResult = sound->set3DMinMaxDistance(
+			audio->minDistance,
+			audio->maxDistance
+		);
+		if (distResult != FMOD_OK) {
+			std::cerr << "Warning: Failed to set 3D distance for: " << audio->audioFile << std::endl;
+		}
+	}
+
 	FMOD::Channel* channel = nullptr;
-	//FMODErrorCheck(system->playSound(sounds[pos], nullptr, false, &channel));
 	FMODErrorCheck(system->playSound(sound, nullptr, false, &channel));
 	if (channel) {
 		channel->setVolume(audio->volume);
 		channel->setPitch(audio->pitch);
-		//channels[pos] = channel; // store this for controlling ltr
-		/*channels[static_cast<size_t>(id)] = channel;
-		fadeInfo[static_cast<size_t>(id)].isFading = false;*/
 		audio->channel = channel;
 		audio->fadeInfo.isFading = false;
-		std::cout << "[AUDIO] Playing: " << audio->audioFile << std::endl;
+		std::cout << "[AUDIO] Playing: " << audio->audioFile
+			<< (audio->isSpatial ? " (3D)" : " (2D)") << std::endl;
 	}
 
 	return channel;
@@ -597,4 +609,27 @@ bool AudioHandler::isFadingIn(AudioChannel* audio) const {
 bool AudioHandler::isFadingOut(AudioChannel* audio) const {
 	//size_t pos = static_cast<size_t>(id);
 	return audio->fadeInfo.isFading && !audio->fadeInfo.isFadingIn;
+}
+
+void AudioHandler::updateListener(float listenerX, float listenerY, float listenerZ) {
+	if (!system) return;
+
+	// Set listener position
+	FMOD_VECTOR position = { listenerX, listenerY, listenerZ };
+
+	// Set listener velocity (velocity = 0 means no doppler effect)
+	FMOD_VECTOR velocity = { 0.0f, 0.0f, 0.0f };
+
+	// Set listener orientation
+	FMOD_VECTOR forward = { 0.0f, 0.0f, 1.0f };  // Looking into screen
+	FMOD_VECTOR up = { 0.0f, 1.0f, 0.0f };         // Y-axis is up
+
+	// Tell FMOD about the listener
+	FMODErrorCheck(system->set3DListenerAttributes(
+		0,           // Listener index (0 = first/only listener)
+		&position,
+		&velocity,
+		&forward,
+		&up
+	));
 }

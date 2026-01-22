@@ -142,42 +142,83 @@ TextureData ResourceManager::loadTextureFromFile(const std::string& filename) {
     return textureData;
 }
 
-FMOD::Sound* ResourceManager::getSound(const std::string& path, bool loop) {
+FMOD::Sound* ResourceManager::getSound(const std::string& path, bool loop, bool isSpatial) {
     if (path.empty() || !m_fmodSystem) {
         return nullptr;
     }
 
-    auto it = m_audioCache.find(path);
+    // Create cache key that includes spatial mode
+    std::string cacheKey = path + (isSpatial ? "|3D" : "|2D");
+
+    auto it = m_audioCache.find(cacheKey);
     if (it != m_audioCache.end()) {
+        // Verify mode consistency
+        FMOD_MODE existingMode;
+        it->second->getMode(&existingMode);
+        bool isExisting3D = (existingMode & FMOD_3D) != 0;
+
+		// Warn if there's a mismatch
+        if (isExisting3D != isSpatial) {
+            std::cerr << "ResourceManager WARNING: Sound '" << path
+                << "' was previously loaded as " << (isExisting3D ? "3D" : "2D")
+                << " but is now being requested as " << (isSpatial ? "3D" : "2D")
+                << ". Using cached " << (isExisting3D ? "3D" : "2D") << " version."
+                << std::endl;
+        }
+
         return it->second;
     }
 
     // Not in cache, load it
-    std::cout << "ResourceManager: Loading sound: " << path << std::endl;
-    FMOD::Sound* newSound = loadSoundFromFile(path, loop);
+    std::cout << "ResourceManager: Loading sound: " << path
+        << (isSpatial ? " (3D mode)" : " (2D mode)") << std::endl;
+
+    FMOD::Sound* newSound = loadSoundFromFile(path, loop, isSpatial);
 
     if (newSound) {
-        m_audioCache[path] = newSound;
-    }else{
-		std::cout << "ResourceManager Error: Failed to load sound: " << path << std::endl;
+        m_audioCache[cacheKey] = newSound;
+    }else {
+        std::cout << "ResourceManager Error: Failed to load sound: " << path << std::endl;
     }
 
     return newSound;
 }
 
-FMOD::Sound* ResourceManager::loadSoundFromFile(const std::string& path, bool loop) {
-    //Taken from AudioHandler::loadSound
+FMOD::Sound* ResourceManager::loadSoundFromFile(const std::string& path, bool loop, bool isSpatial) {
     FMOD::Sound* sound = nullptr;
-    FMOD_MODE mode = loop ? FMOD_LOOP_NORMAL : FMOD_DEFAULT;
+    FMOD_MODE mode = FMOD_DEFAULT;
+
+    // Add looping flag
+    if (loop) {
+        mode |= FMOD_LOOP_NORMAL;
+    }else {
+        mode |= FMOD_LOOP_OFF;
+    }
+
+    // Add spatial dimension flag
+    if (isSpatial) {
+        mode |= FMOD_3D;
+        mode |= FMOD_3D_LINEARROLLOFF;
+    }else {
+        mode |= FMOD_2D;
+    }
 
     FMOD_RESULT result = m_fmodSystem->createSound(path.c_str(), mode, nullptr, &sound);
-    FMODErrorCheck(result); 
+    FMODErrorCheck(result);
 
     if (result != FMOD_OK) {
         std::cerr << "ResourceManager Error: Failed to create sound: " << path << std::endl;
         return nullptr;
     }
-        
+
+    // Set default min/max distance for 3D sounds
+    if (isSpatial && sound) {
+        FMOD_RESULT distResult = sound->set3DMinMaxDistance(5.0f, 50.0f);
+        if (distResult != FMOD_OK) {
+            std::cerr << "ResourceManager Warning: Failed to set 3D distance for: " << path << std::endl;
+        }
+    }
+
     return sound;
 }
 

@@ -4,8 +4,8 @@
 \author     Varick, v.teo, 2403417
 \par        v.teo@digipen.edu
 \date		November, 5th, 2025
-\brief		Implements the LogicContainer class. Handles player logic transitions
-            such as Idle, Walking, and Jumping based on input and state.
+\brief		Implements the LogicContainer using class-based FSM and trigger-action system.
+            This replaces the old switch-case implementation.
 
 Copyright (C) 2025 DigiPen Institute of Technology.
 Reproduction or disclosure of this file or its contents
@@ -15,385 +15,248 @@ Technology is prohibited.
 /* End Header **************************************************************************/
 
 #include "LogicContainer.h"
+#include "PlayerStates.h"
 #include "GameObject.h"
 #include "input.h"
 #include "Systems.h"
 #include "Component.h"
 #include "GameObjectManager.h"
+#include <iostream>
 
 // ============================================================================
-// Helper: convert PlayerState enum to readable string
+// Helper Functions
 // ============================================================================
-/*!
- * \brief Converts a PlayerState enum into a human-readable C-string.
- * \param s The PlayerState to convert.
- * \return A string literal representing the state.
- */
-static const char* ToString(PlayerState s)
-{
-    switch (s)
-    {
-    case PlayerState::Idle:    return "Idle";
-    case PlayerState::Walking: return "Walking";
-    case PlayerState::Jumping: return "Jumping";
-    case PlayerState::Falling: return "Falling";
-    case PlayerState::Shooting:return "Shooting";
-    default:                   return "Unknown";
-    }
-}
 
 /*!
- * \brief Checks if any movement key (W/A/S/D) is currently held.
- * \return True if one or more movement keys are held.
+ * \brief Checks if any movement key (A/D) is currently held.
+ * \return True if movement input detected.
  */
 static inline bool anyMoveHeld() {
-    return InputHandler::isKeyHeld(GLFW_KEY_W) ||
-        InputHandler::isKeyHeld(GLFW_KEY_A) ||
-        InputHandler::isKeyHeld(GLFW_KEY_S) ||
+    return InputHandler::isKeyHeld(GLFW_KEY_A) ||
         InputHandler::isKeyHeld(GLFW_KEY_D);
 }
 
-// ============================================================================
-// FSM Transition Helper
-// ============================================================================
 /*!
- * \brief Applies a state transition to the object�s StateMachine component.
- *
- * Resets state timer, logs the transition to ImGui & console,
- * and performs any enter-state side effects.
- *
- * \param obj Reference to the GameObject owning the FSM.
- * \param next The next PlayerState to enter.
+ * \brief Checks if this GameObject is a special prefab that shouldn't walk.
+ * \param obj The GameObject to check.
+ * \return True if it's a blocked prefab.
  */
-void LogicContainer::enter(GameObject& obj, PlayerState next)
-{
-    if (auto* fsm = obj.getComponent<StateMachine>())
-    {
-        if (fsm->state != next)
-        {
-            // reset animation frame
-            if (Animation* a = obj.getComponent<Animation>()) {
+static inline bool isBlockedPrefab(GameObject& obj) {
+    std::string prefabID = obj.getObjectPrefabID();
+    return prefabID == "eaa2ba42-971a-413b-b8c4-99b2f5ab674d" ||
+        prefabID == "f04819ff-270c-41b4-8387-73382eb85103";
+}
 
-                //a->animState[static_cast<int>(fsm->state)].currentFrameColumn = a->animState[static_cast<int>(fsm->state)].initialFrame.x;
-                //a->animState[static_cast<int>(fsm->state)].currentFrameRow = a->animState[static_cast<int>(fsm->state)].initialFrame.y;
-                int stateIndex = static_cast<int>(fsm->state);
+// ============================================================================
+// GET OR CREATE RUNTIME FSM
+// ============================================================================
 
-                a->animState[stateIndex].currentFrameColumn =
-                    static_cast<int>(a->animState[stateIndex].initialFrame.x);
+RuntimeStateMachine* LogicContainer::getOrCreateMachine(GameObject& obj) {
+    // Check if machine already exists
+    auto it = m_machines.find(&obj);
+    if (it != m_machines.end()) {
+        return it->second.get();
+    }
 
-                a->animState[stateIndex].currentFrameRow =
-                    static_cast<int>(a->animState[stateIndex].initialFrame.y);
+    // Create new machine
+    auto machine = std::make_unique<RuntimeStateMachine>();
+
+    // ===== ADD ALL STATES =====
+    machine->addState(std::make_unique<IdleState>());
+    machine->addState(std::make_unique<WalkingState>());
+    machine->addState(std::make_unique<JumpingState>());
+    machine->addState(std::make_unique<FallingState>());
+    machine->addState(std::make_unique<DeadState>());
+
+    // ===== TRANSITIONS FROM IDLE =====
+
+    // Idle → Walking (when movement keys pressed)
+    machine->addTransition("Idle", RuntimeTransition(
+        "Walking",
+        [](GameObject& o) {
+            return anyMoveHeld() && !isBlockedPrefab(o);
+        }
+    ));
+
+    // Idle → Jumping (B key + grounded)
+    machine->addTransition("Idle", RuntimeTransition(
+        "Jumping",
+        [](GameObject& o) {
+            Physics* p = o.getComponent<Physics>();
+            return p && InputHandler::isKeyTriggered(GLFW_KEY_B) && p->onGround;
+        },
+        [](GameObject& o) { // Transition action: apply jump impulse
+            Physics* p = o.getComponent<Physics>();
+            if (p) {
+                p->velY = p->jumpForce;
+                p->onGround = false;
             }
-            std::string msg = "[LogicContainer] "
-                + obj.getObjectName() + " -> " + ToString(next);
-            DebugLog::addMessage(msg, DebugMode::PlaySimul);
-            std::cout << msg << std::endl;
+        }
+    ));
 
+    // ===== TRANSITIONS FROM WALKING =====
 
-            //get or add AudioComponent
-            AudioComponent* audio = obj.getComponent<AudioComponent>();
-            if (!audio) {
-                audio = obj.addComponent<AudioComponent>();
+    // Walking → Idle (no movement keys + not fixState)
+    machine->addTransition("Walking", RuntimeTransition(
+        "Idle",
+        [](GameObject& o) {
+            StateMachine* fsm = o.getComponent<StateMachine>();
+            return !anyMoveHeld() && (!fsm || !fsm->fixState);
+        }
+    ));
+
+    // Walking → Falling (left ground)
+    machine->addTransition("Walking", RuntimeTransition(
+        "Falling",
+        [](GameObject& o) {
+            Physics* p = o.getComponent<Physics>();
+            return p && !p->onGround && p->velY < 0.0f;
+        }
+    ));
+
+    // Walking → Jumping (B key + grounded)
+    machine->addTransition("Walking", RuntimeTransition(
+        "Jumping",
+        [](GameObject& o) {
+            Physics* p = o.getComponent<Physics>();
+            return p && InputHandler::isKeyTriggered(GLFW_KEY_B) && p->onGround;
+        },
+        [](GameObject& o) {
+            Physics* p = o.getComponent<Physics>();
+            if (p) {
+                p->velY = p->jumpForce;
+                p->onGround = false;
             }
+        }
+    ));
 
-            if (!audio) {
-                std::cerr << "[LogicContainer] Failed to get/create AudioComponent for "
-                    << obj.getObjectName() << std::endl;
-                fsm->state = next;
-                fsm->stateTime = 0.0f;
-                return;  // Early return if audio component is invalid
-            }
+    // ===== TRANSITIONS FROM JUMPING =====
 
-            //if prev state was walking
-            if (fsm->state == PlayerState::Walking) {
+    // Jumping → Falling (velocity goes negative)
+    machine->addTransition("Jumping", RuntimeTransition(
+        "Falling",
+        [](GameObject& o) {
+            Physics* p = o.getComponent<Physics>();
+            return p && p->velY <= 0.0f;
+        }
+    ));
 
-                //stop footsteps when leaving walking state
+    // ===== TRANSITIONS FROM FALLING =====
 
-                AudioChannel* footsteps = audio->getChannel("footsteps");
-                if (footsteps && footsteps->state == AudioState::Playing) {
-                    footsteps->isPendingStop = true;
-                    footsteps->fadeOutOnStop = true;
-                    footsteps->fadeOutDuration = 0.15f;
+    // Falling → Walking (landed + moving)
+    machine->addTransition("Falling", RuntimeTransition(
+        "Walking",
+        [](GameObject& o) {
+            Physics* p = o.getComponent<Physics>();
+            return p && p->onGround && anyMoveHeld();
+        },
+        [](GameObject& o) { // Play landing sound
+            if (AudioComponent* audio = o.getComponent<AudioComponent>()) {
+                AudioChannel* landing = audio->getOrCreateChannel("landing");
+                if (landing) {
+                    landing->audioFile = "assets/audio/landing.wav";
+                    landing->loop = false;
+                    landing->volume = 1.0f;
+                    landing->isPendingPlay = true;
                 }
             }
+        }
+    ));
 
-            //if prev state was falling, means exiting falling state(just landed prolly)
-            if (fsm->state == PlayerState::Falling) {
+    // Falling → Idle (landed + not moving)
+    machine->addTransition("Falling", RuntimeTransition(
+        "Idle",
+        [](GameObject& o) {
+            Physics* p = o.getComponent<Physics>();
+            return p && p->onGround && !anyMoveHeld();
+        },
+        [](GameObject& o) { // Play landing sound
+            if (AudioComponent* audio = o.getComponent<AudioComponent>()) {
                 AudioChannel* landing = audio->getOrCreateChannel("landing");
-                
-                //play sound when exiting falling state
-                landing->audioFile = "assets/audio/landing.wav";
-                landing->loop = false;
-                landing->volume = 1.0f;
-                landing->isPendingPlay = true;
-            }
-
-            //play a sound depending on next state
-            switch (next) {
-            case PlayerState::Walking : {//jump jump
-                AudioChannel* footsteps = audio->getOrCreateChannel("footsteps");
-                footsteps->audioFile = "assets/audio/footsteps.wav";
-                footsteps->loop = true;
-                footsteps->volume = 0.5f;
-                footsteps->isPendingPlay = true;
-                break;
-            }
-            case PlayerState::Jumping: {
-                AudioChannel* jump = audio->getOrCreateChannel("jump");
-                jump->audioFile = "assets/audio/jump.wav";
-                jump->loop = false;
-                jump->volume = 0.7f;
-                jump->isPendingPlay = true;
-                break;
-            }
-            case PlayerState::Falling: {
-                //play falling sound
-                break;
-            }
-            case PlayerState::Idle: {
-                //play some idle sound if needed
-                break;
-            }
-            default:
-                //prolly nothing happens
-                break;   
-            }
-
-
-        }
-
-        fsm->state = next;
-        fsm->stateTime = 0.0f;
-    }
-}
-
-// ============================================================================
-// State: Idle
-// ============================================================================
-/*!
- * \brief Per-frame update for Idle state.
- *
- * Handles:
- * - Jumping (B key)
- * - Transition to Walking when movement keys are held
- *
- * \param obj Player GameObject.
- * \param dt Delta time (unused).
- */
-void LogicContainer::tickIdle(GameObject& obj, float /*dt*/) {
-    auto* physics = obj.getComponent<Physics>();
-    if (!physics) return;
-
-    // jump
-    if (InputHandler::isKeyTriggered(GLFW_KEY_B) && physics->onGround) {
-        physics->velY = physics->jumpForce;
-        physics->onGround = false;
-        enter(obj, PlayerState::Jumping);
-        DebugLog::addMessage("FSM: Jump", DebugMode::PlaySimul);
-    }
-    // walk
-    else if (anyMoveHeld() && obj.getObjectPrefabID() != "eaa2ba42-971a-413b-b8c4-99b2f5ab674d" && obj.getObjectPrefabID() != "f04819ff-270c-41b4-8387-73382eb85103") {
-        enter(obj, PlayerState::Walking);
-    }
-}
-
-// ============================================================================
-// State: Walking
-// ============================================================================
-/*!
- * \brief Per-frame update for Walking state.
- *
- * Handles:
- * - Facing direction based on A/D keys
- * - Returning to Idle when no movement keys are held
- * - Transition to Falling when leaving ground
- * - Jumping (B key)
- *
- * \param obj The player GameObject.
- * \param dt Delta time (unused).
- */
-void LogicContainer::tickWalking(GameObject& obj, float /*dt*/) {
-    auto* physics = obj.getComponent<Physics>();
-    auto* fsm = obj.getComponent<StateMachine>();
-    if (!physics || !fsm) return;
-
-    if (InputHandler::isKeyHeld(GLFW_KEY_A)) fsm->facingRight = false;
-    if (InputHandler::isKeyHeld(GLFW_KEY_D)) fsm->facingRight = true;
-
-    // if its water source, play the sound once
-    if (obj.getObjectPrefabID() == "f04819ff-270c-41b4-8387-73382eb85103" && fsm->state == PlayerState::Walking) {
-        AudioComponent* audio = obj.getComponent<AudioComponent>();
-        if (audio) {
-            AudioChannel* getWater = audio->getDefaultChannel();
-
-            if (getWater && getWater->state != AudioState::Playing && !getWater->isPendingPlay) {
-                getWater->loop = false;
-                getWater->volume = 0.5f;
-                getWater->isPendingPlay = true;
-
-				fsm->state = PlayerState::Falling;
+                if (landing) {
+                    landing->audioFile = "assets/audio/landing.wav";
+                    landing->loop = false;
+                    landing->volume = 1.0f;
+                    landing->isPendingPlay = true;
+                }
             }
         }
-    }
-        
-    if (!anyMoveHeld() && !(fsm->fixState)) {
-        enter(obj, PlayerState::Idle);
-        return;
-    }
-    if (!physics->onGround && physics->velY < 0.0f) {
-        enter(obj, PlayerState::Falling);
-        return;
-    }
-    if (InputHandler::isKeyTriggered(GLFW_KEY_B) && physics->onGround) {
-        physics->velY = physics->jumpForce;
-        physics->onGround = false;
-        enter(obj, PlayerState::Jumping);
-        DebugLog::addMessage("FSM: Jump", DebugMode::PlaySimul);
-        return;
-    }
+    ));
+
+    // ===== SPECIAL CASE: Water Source Prefab =====
+    // Walking → Falling for water source (play sound once)
+    machine->addTransition("Walking", RuntimeTransition(
+        "Falling",
+        [](GameObject& o) {
+            return o.getObjectPrefabID() == "f04819ff-270c-41b4-8387-73382eb85103";
+        },
+        [](GameObject& o) { // Play water collection sound
+            if (AudioComponent* audio = o.getComponent<AudioComponent>()) {
+                AudioChannel* getWater = audio->getDefaultChannel();
+                if (getWater && getWater->state != AudioState::Playing && !getWater->isPendingPlay) {
+                    getWater->loop = false;
+                    getWater->volume = 0.5f;
+                    getWater->isPendingPlay = true;
+                }
+            }
+        }
+    ));
+
+    // ===== SET INITIAL STATE =====
+    machine->setInitial("Idle", obj);
+
+    // Store and return
+    RuntimeStateMachine* ptr = machine.get();
+    m_machines[&obj] = std::move(machine);
+    return ptr;
 }
 
 // ============================================================================
-// State: Jumping
+// SYNC STATE TO COMPONENT
 // ============================================================================
-/*!
- * \brief Per-frame update for Jumping state.
- *
- * Switches to Falling once vertical velocity becomes negative.
- *
- * \param obj The player GameObject.
- * \param dt Delta time (unused).
- */
-void LogicContainer::tickJumping(GameObject& obj, float /*dt*/) {
-    auto* physics = obj.getComponent<Physics>();
-    if (!physics) return;
 
-    if (physics->velY <= 0.0f) {
-        enter(obj, PlayerState::Falling);
+void LogicContainer::syncStateToComponent(GameObject& obj) {
+    RuntimeStateMachine* machine = getOrCreateMachine(obj);
+    StateMachine* component = obj.getComponent<StateMachine>();
+
+    if (!machine || !component) return;
+
+    // Sync runtime state → component for editor/debug/animation
+    std::string current = machine->currentStateName();
+
+    if (current == "Idle") {
+        component->state = PlayerState::Idle;
     }
+    else if (current == "Walking") {
+        component->state = PlayerState::Walking;
+    }
+    else if (current == "Jumping") {
+        component->state = PlayerState::Jumping;
+    }
+    else if (current == "Falling") {
+        component->state = PlayerState::Falling;
+    }
+    else if (current == "Dead") {
+        component->state = PlayerState::Dead;
+    }
+
+    component->stateTime = machine->stateTime();
 }
 
 // ============================================================================
-// State: Falling
+// MAIN UPDATE
 // ============================================================================
-/*!
- * \brief Per-frame update for Falling state.
- *
- * When the player lands:
- * - enters Walking if movement keys held
- * - otherwise enters Idle
- *
- * \param obj The player GameObject.
- * \param dt Delta time (unused).
- */
-void LogicContainer::tickFalling(GameObject& obj, float /*dt*/) {
-    auto* physics = obj.getComponent<Physics>();
-    if (!physics) return;
 
-    if (physics->onGround) {
-        if (anyMoveHeld()) enter(obj, PlayerState::Walking);
-        else               enter(obj, PlayerState::Idle);
-    }
-}
+void LogicContainer::update(GameObject& obj, float dt) {
+    // Update the runtime FSM
+    RuntimeStateMachine* machine = getOrCreateMachine(obj);
+    if (!machine) return;
 
-// ============================================================================
-// State: Dead
-// ============================================================================
-/*!
- * \brief Per-frame update for Dead state.
- *
- * Disables movement and handles respawn logic after a delay.
- *
- * \param obj The player GameObject.
- * \param dt Delta time (unused).
- */
-void LogicContainer::tickDead(GameObject& obj, float /*dt*/) {
-    auto* physics = obj.getComponent<Physics>();
-    auto* fsm = obj.getComponent<StateMachine>();
-    if (!fsm) return;
-    // 1) Disable player movement
-    if (physics) {
-        physics->velX = 0.0f;
-        
-        physics->velY = 0.0f;
-		physics->onGround = true;
+    machine->update(obj, dt);
 
-    }
-    // 2) After some delay, respawn or reload level
-    //const float respawnDelay = 1.5f; // seconds
-    //if (fsm->stateTime > respawnDelay) {
-    //    // respawn logic here
-    //    
-    //}
-}
-// ============================================================================
-// Shooting Logic
-// ============================================================================
-/*!
- * \brief Spawns a bullet near the player and gives it initial velocity.
- *
- * Uses the player's Transform and facing direction to position the bullet.
- *
- * \param obj The player.
- * \param manager Reference to GameObjectManager for accessing existing bullet object.
- */
-//void LogicContainer::trySpawnBulletNear(GameObject& obj, GameObjectManager& manager) {
-//    auto* playerT = obj.getComponent<Transform>();
-//    auto* fsm = obj.getComponent<StateMachine>();
-//    if (!playerT || !fsm) return;
-//
-//    GameObject* bullet = manager.getGameObject("bullet");
-//    if (!bullet) return;
-//
-//    Transform* t = bullet->getComponent<Transform>();
-//    Physics* p = bullet->getComponent<Physics>();
-//    if (!t || !p) return;
-//
-//    const bool right = fsm->facingRight;
-//    t->x = playerT->x + (right ? 0.8f : -0.8f);
-//    t->y = playerT->y + 0.3f;
-//    t->z = 0.02f;
-//    t->scaleX = t->scaleY = t->scaleZ = 0.5f;
-//
-//    p->velX = right ? 6.0f : -6.0f;
-//    p->velY = 5.0f;
-//    p->onGround = false;
-//
-//    DebugLog::addMessage("[LogicContainer] player fired bullet", DebugMode::PlaySimul);
-//    std::cout << "[LogicContainer] player fired bullet\n";
-//}
+    // Sync to component for editor/animation
+    syncStateToComponent(obj);
 
-// ============================================================================
-// Main Update
-// ============================================================================
-/*!
- * \brief Main per-frame update for the LogicContainer.
- *
- * Responsibilities:
- * - Increase state time
- * - Handle shooting (SPACE key)
- * - Run per-state tick function (Idle/Walking/Jumping/Falling)
- * \param obj The player GameObject being updated.
- * \param dt Delta time in seconds.
- * \param manager GameObjectManager used for spawning bullets.
- */
-void LogicContainer::update(GameObject& obj, float dt /*, GameObjectManager& manager*/) {
-    auto* fsm = obj.getComponent<StateMachine>();
-    if (!fsm) return;
-
-    fsm->stateTime += dt;
-
-    // Immediate action: shooting
-    /*if (InputHandler::isKeyTriggered(GLFW_KEY_SPACE)) {
-        trySpawnBulletNear(obj, manager);
-    }*/
-
-    switch (fsm->state) {
-    case PlayerState::Idle:     tickIdle(obj, dt);     break;
-    case PlayerState::Walking:  tickWalking(obj, dt);  break;
-    case PlayerState::Jumping:  tickJumping(obj, dt);  break;
-    case PlayerState::Falling:  tickFalling(obj, dt);  break;
-    case PlayerState::Dead:     tickDead(obj, dt);     break;
-    default: break;
-    }
+    // Update trigger-action rules
+    m_triggerActionSystem.update(obj);
 }

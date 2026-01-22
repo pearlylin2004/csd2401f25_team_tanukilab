@@ -235,7 +235,6 @@ namespace JsonIO {
         return CollisionResponseMode::StopWhenCollide;
     }
 
-
     //for button
     const char* ButtonActionToStr(ButtonAction action) {
         switch (action) {
@@ -251,6 +250,7 @@ namespace JsonIO {
         }
 	}
 
+    //for button
     ButtonAction StrToButtonAction(const std::string& s) {
         if (s == "start_game") return ButtonAction::START_GAME;
         if (s == "open_control") return ButtonAction::OPEN_CONTROL;
@@ -262,6 +262,65 @@ namespace JsonIO {
         if (s == "menu") return ButtonAction::MENU;
         return ButtonAction::NONE;
 	}
+
+    NodeImplementation stringToNodeImpl(const std::string& str) {
+        if (str == "On Start") return NodeImplementation::ON_START;
+        if (str == "On Update") return NodeImplementation::ON_UPDATE;
+
+        if (str == "Print Message") return NodeImplementation::PRINT_MESSAGE;
+        if (str == "Rotate Object") return NodeImplementation::ROTATE_OBJECT;
+        if (str == "Move Object") return NodeImplementation::MOVE_OBJECT;
+		if (str == "Set Float") return NodeImplementation::SET_FLOAT;
+
+		if (str == "Check Key Held") return NodeImplementation::CHECK_KEY_HELD;
+		if (str == "Compare Value") return NodeImplementation::COMPARE_VALUE;
+		if (str == "Compare Variable") return NodeImplementation::COMPARE_VAR;
+
+        return NodeImplementation::DEFAULT;
+    }
+
+    std::string nodeImplToString(NodeImplementation impl) {
+        switch (impl) {
+            case NodeImplementation::ON_START: return "On Start";
+            case NodeImplementation::ON_UPDATE: return "On Update";
+
+            case NodeImplementation::PRINT_MESSAGE: return "Print Message";
+            case NodeImplementation::MOVE_OBJECT: return "Move Object";
+		    case NodeImplementation::ROTATE_OBJECT: return "Rotate Object";
+            case NodeImplementation::SET_FLOAT: return "Set Float";
+
+            case NodeImplementation::CHECK_KEY_HELD: return "Check Key Held";
+            case NodeImplementation::COMPARE_VALUE: return "Compare Value";
+            case NodeImplementation::COMPARE_VAR: return "Compare Variable";
+            default: return "Default";
+        }
+    }
+
+    // Add this helper function in JsonIO.cpp or create a utilities file
+    int stringToGLFWKey(const std::string& keyStr) {
+        // Movement keys
+        if (keyStr == "W") return GLFW_KEY_W;
+        if (keyStr == "A") return GLFW_KEY_A;
+        if (keyStr == "S") return GLFW_KEY_S;
+        if (keyStr == "D") return GLFW_KEY_D;
+
+        // Arrow keys
+        if (keyStr == "UP") return GLFW_KEY_UP;
+        if (keyStr == "DOWN") return GLFW_KEY_DOWN;
+        if (keyStr == "LEFT") return GLFW_KEY_LEFT;
+        if (keyStr == "RIGHT") return GLFW_KEY_RIGHT;
+
+        // Special keys
+        if (keyStr == "SPACE") return GLFW_KEY_SPACE;
+        if (keyStr == "SHIFT") return GLFW_KEY_LEFT_SHIFT;
+        if (keyStr == "CTRL") return GLFW_KEY_LEFT_CONTROL;
+        if (keyStr == "ALT") return GLFW_KEY_LEFT_ALT;
+        if (keyStr == "ENTER") return GLFW_KEY_ENTER;
+        if (keyStr == "ESC") return GLFW_KEY_ESCAPE;
+
+        return GLFW_KEY_UNKNOWN;
+    }
+
 
     /**
      * \brief Atomically replaces a target file with a temporary file.
@@ -664,6 +723,11 @@ namespace JsonIO {
                 channelObj.AddMember("fadeOutOnStop", channel.fadeOutOnStop, a);
                 channelObj.AddMember("fadeOutDuration", channel.fadeOutDuration, a);
 
+                // Save 3D audio settings
+                channelObj.AddMember("isSpatial", channel.isSpatial, a);
+                channelObj.AddMember("minDistance", channel.minDistance, a);
+                channelObj.AddMember("maxDistance", channel.maxDistance, a);
+
                 channels.AddMember(Value(channelName.c_str(), a), channelObj, a);
             }
 
@@ -913,6 +977,14 @@ namespace JsonIO {
                             ch->fadeOutOnStop = channelObj["fadeOutOnStop"].GetBool();
                         if (channelObj.HasMember("fadeOutDuration"))
                             ch->fadeOutDuration = channelObj["fadeOutDuration"].GetFloat();
+
+                        // Load 3D audio settings
+                        if (channelObj.HasMember("isSpatial"))
+                            ch->isSpatial = channelObj["isSpatial"].GetBool();
+                        if (channelObj.HasMember("minDistance"))
+                            ch->minDistance = channelObj["minDistance"].GetFloat();
+                        if (channelObj.HasMember("maxDistance"))
+                            ch->maxDistance = channelObj["maxDistance"].GetFloat();
                     }
                 }
                 else {
@@ -955,7 +1027,6 @@ namespace JsonIO {
                             // --- texture ---
                             if (animStateObj.HasMember("texture") && animStateObj["texture"].IsString()) {
                                 st.texFile = animStateObj["texture"].GetString();
-                                st.texChanged = true;
                             }
                             else {
                                 st.texFile.clear();
@@ -1093,7 +1164,7 @@ namespace JsonIO {
             rapidjson::Value nodeObj(rapidjson::kObjectType);
 
             nodeObj.AddMember("id", node.id, a);
-            nodeObj.AddMember("name", rapidjson::Value(node.name.c_str(), a), a);
+            nodeObj.AddMember("implementation", rapidjson::Value(JsonIO::nodeImplToString(node.imp).c_str(), a), a);
             nodeObj.AddMember("type", static_cast<int>(node.type), a);
 
             rapidjson::Value posArray(rapidjson::kArrayType);
@@ -1161,8 +1232,8 @@ namespace JsonIO {
                 node.id = GetIntOr(nodeVal, "id", 0);
 
                 std::string name;
-                if (GetString(nodeVal, "name", name)) {
-                    node.name = name;
+                if (GetString(nodeVal, "implementation", name)) {
+                    node.imp = stringToNodeImpl(name);
                 }
 
                 node.type = static_cast<NodeType>(GetIntOr(nodeVal, "type", 0));

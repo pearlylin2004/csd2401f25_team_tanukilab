@@ -34,7 +34,10 @@ void VisualLogicEditor::render() {
 
 	ImGui::Begin("Visual Logic Editor", &Editor::visualLogicState.showEditor, ImGuiWindowFlags_MenuBar);
 
+	Editor::visualLogicState.isFocus = ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows);
+
 	if (ImGui::BeginMenuBar()) {
+		/* -------- File -------- */
 		if (ImGui::BeginMenu("File")) {
 			if (ImGui::MenuItem("Save")) {
 				saveLogic();
@@ -48,77 +51,77 @@ void VisualLogicEditor::render() {
 
 			ImGui::EndMenu();
 		}
+		/* -------- END -------- */
 
+
+		/* -------- Nodes -------- */
 		if (ImGui::BeginMenu("Add Node")) {
+			/* -------- Events -------- */
 			if (ImGui::BeginMenu("Events")) {
 				if (ImGui::MenuItem("On Start")) {
-					LogicNode node;
-					node.id = m_nextNodeId++;
-					node.name = "On Start";
-					node.type = NodeType::EVENT;
-					node.position = ImVec2(100, 100);
-					node.hasInput = false;
-					node.hasOutput = true;
-					Editor::visualLogicState.nodes.push_back(node);
+					addNode(Vector2D(100, 100), NodeType::EVENT, NodeImplementation::ON_START);
 				}
 
 				if (ImGui::MenuItem("On Update")) {
-					LogicNode node;
-					node.id = m_nextNodeId++;
-					node.name = "On Update";
-					node.type = NodeType::EVENT;
-					node.position = ImVec2(100, 150);
-					node.hasInput = false;
-					node.hasOutput = true;
-					Editor::visualLogicState.nodes.push_back(node);
+					addNode(Vector2D(150, 200), NodeType::EVENT, NodeImplementation::ON_UPDATE);
 				}
 
 				if (ImGui::MenuItem("On Collision (WIP)")) {
-					LogicNode node;
-					node.id = m_nextNodeId++;
-					node.name = "On Collision";
-					node.type = NodeType::EVENT;
-					node.position = ImVec2(100, 200);
-					node.hasInput = false;
-					node.hasOutput = true;
-					Editor::visualLogicState.nodes.push_back(node);
+					addNode(Vector2D(200, 300), NodeType::EVENT, NodeImplementation::ON_COLLISION);
 				}
 
 				ImGui::EndMenu();
 			}
+			/* -------- END -------- */
+
+
+			/* -------- Conditions -------- */
+			if (ImGui::BeginMenu("Conditions")) {
+				if (ImGui::MenuItem("Is Key Held")) {
+					addNode(Vector2D(350, 100), NodeType::CONDITION, NodeImplementation::CHECK_KEY_HELD);
+				}
+
+				if (ImGui::MenuItem("Compare Value")) {
+					addNode(Vector2D(400, 100), NodeType::CONDITION, NodeImplementation::COMPARE_VALUE);
+				}
+
+				if (ImGui::MenuItem("Compare Variable")) {
+					addNode(Vector2D(460, 100), NodeType::CONDITION, NodeImplementation::COMPARE_VAR);
+				}
+
+				ImGui::EndMenu();
+			}
+			/* -------- END -------- */
 			
+
+			/* -------- Actions -------- */
 			if (ImGui::BeginMenu("Actions")) {
 				if (ImGui::MenuItem("Print Message")) {
-					LogicNode node;
-					node.id = m_nextNodeId++;
-					node.name = "Print Message";
-					node.type = NodeType::ACTION;
-					node.position = ImVec2(400, 100);
-					node.hasInput = true;
-					node.hasOutput = true;
-					node.parameters["message"] = "I love GAM";
-					Editor::visualLogicState.nodes.push_back(node);
+					addNode(Vector2D(250, 100), NodeType::ACTION, NodeImplementation::PRINT_MESSAGE);
 				}
 
 				if (ImGui::MenuItem("Move Object")) {
-					LogicNode node;
-					node.id = m_nextNodeId++;
-					node.name = "Move Object";
-					node.type = NodeType::ACTION;
-					node.position = ImVec2(400, 200);
-					node.hasInput = true;
-					node.hasOutput = true;
-					node.parameters["x"] = "0";
-					node.parameters["y"] = "0";
-					Editor::visualLogicState.nodes.push_back(node);
+					addNode(Vector2D(300, 200), NodeType::ACTION, NodeImplementation::MOVE_OBJECT);
+				}
+
+				if (ImGui::MenuItem("Rotate Object")) {
+					addNode(Vector2D(350, 200), NodeType::ACTION, NodeImplementation::ROTATE_OBJECT);
+				}
+
+				if (ImGui::MenuItem("Set Float")) {
+					addNode(Vector2D(400, 200), NodeType::ACTION, NodeImplementation::SET_FLOAT);
 				}
 
 				ImGui::EndMenu();
 			}
+			/* -------- END -------- */
 
 			ImGui::EndMenu();
 		}
+		/* -------- END -------- */
 
+
+		/* -------- View -------- */
 		if (ImGui::BeginMenu("View")) {
 			if (ImGui::MenuItem("Reset View")) {
 				m_canvasOffset = ImVec2(50, 50);
@@ -127,6 +130,7 @@ void VisualLogicEditor::render() {
 
 			ImGui::EndMenu();
 		}
+		/* -------- END -------- */
 
 		ImGui::EndMenuBar();
 	}
@@ -164,7 +168,7 @@ void VisualLogicEditor::render() {
 	renderConnections(drawList, canvasPos);
 
 	// render all nodes
-	for (auto& node : Editor::visualLogicState.nodes) {
+	for (LogicNode& node : Editor::visualLogicState.nodes) {
 		renderNode(drawList, node, canvasPos, isCanvasHovered);
 	}
 
@@ -179,6 +183,70 @@ void VisualLogicEditor::render() {
 		m_isConnecting = false;
 		m_connectingFromNodeId = -1;
 		m_connectingFromPin = "";
+	}
+
+	// click empty space to deselect
+	if (isCanvasHovered && InputHandler::isMouseLeftClicked() && !m_isConnecting) {
+		bool clickedOnNode = false;
+		bool clickedOnCon = false;
+
+		ImVec2 mousePos = ImGui::GetMousePos();
+
+		/* -------- Check for Nodes -------- */
+		for (LogicNode& node : Editor::visualLogicState.nodes) {
+			ImVec2 nodePos = ImVec2(canvasPos.x + node.position.x + m_canvasOffset.x,
+				canvasPos.y + node.position.y + m_canvasOffset.y);
+			ImVec2 nodeSize(250.f, 80.f);
+
+			// if click on any nodes
+			if (mousePos.x >= nodePos.x && mousePos.x <= nodePos.x + nodeSize.x &&
+				mousePos.y >= nodePos.y && mousePos.y <= nodePos.y + nodeSize.y) {
+				clickedOnNode = true;
+				break;
+			}
+		}
+		/* -------- END -------- */
+
+		/* -------- Check for Connections -------- */
+		if (!clickedOnNode) {
+			for (size_t i = 0; i < Editor::visualLogicState.connections.size(); ++i) {
+				const LogicConnection& conn = Editor::visualLogicState.connections[i];
+
+				LogicNode* fromNode = nullptr;
+				LogicNode* toNode = nullptr;
+
+				for (LogicNode& node : Editor::visualLogicState.nodes) {
+					if (node.id == conn.fromNodeId) fromNode = &node;
+					if (node.id == conn.toNodeId) toNode = &node;
+				}
+
+				if (!fromNode || !toNode) continue;
+
+				ImVec2 fromPos = ImVec2(canvasPos.x + fromNode->position.x + m_canvasOffset.x + 250.f,
+					canvasPos.y + fromNode->position.y + m_canvasOffset.y + 40.f);
+
+				if (conn.outputPin == "True") fromPos.y -= 10.f;
+				if (conn.outputPin == "False") fromPos.y += 10.f;
+
+				ImVec2 toPos = ImVec2(canvasPos.x + toNode->position.x + m_canvasOffset.x,
+					canvasPos.y + toNode->position.y + m_canvasOffset.y + 40.f);
+
+				ImVec2 cp1(fromPos.x + 50, fromPos.y);
+				ImVec2 cp2(toPos.x - 50, toPos.y);
+
+				if (isMouseNearBezier(fromPos, cp1, cp2, toPos, mousePos, 10.f)) {
+					clickedOnCon = true;
+					break;
+				}
+			}
+		}
+		/* -------- Check for Nodes -------- */
+
+		// deselect if click on empty space
+		if (!clickedOnNode && !clickedOnCon) {
+			m_selectedNodeId = -1;
+			m_selectedConIndex = -1;
+		}
 	}
 
 	// pan with middle mouse
@@ -200,6 +268,32 @@ void VisualLogicEditor::render() {
 		m_zoom = glm::clamp(m_zoom, 0.5f, 2.f);
 	}
 
+	// shortcut
+	if (Editor::visualLogicState.isFocus) {
+		// delete node/con with DEL / Backspace
+		if ((InputHandler::isKeyTriggered(GLFW_KEY_DELETE) ||
+			InputHandler::isKeyTriggered(GLFW_KEY_BACKSPACE))) {
+			if (m_selectedNodeId != -1) {
+				deleteSelectedNode();
+			}
+			else if (m_selectedConIndex != -1) {
+				deleteSelectedConnection();
+			}
+		}
+
+		// duplicate node with Ctrl+D
+		if (InputHandler::isComboKeyTriggered(GLFW_KEY_D) &&
+			m_selectedNodeId != -1) {
+			duplicateSelectedNode();
+		}
+
+		// select next node with Tab, previous with Shift+Tab
+		if (InputHandler::isKeyTriggered(GLFW_KEY_TAB)) {
+			bool forward = !InputHandler::isKeyHeld(GLFW_KEY_LEFT_SHIFT);
+			selectNextNode(forward);
+		}
+	}
+
 	drawList->PopClipRect();
 
 	// Info panel
@@ -207,6 +301,13 @@ void VisualLogicEditor::render() {
 		ImGui::Text("Selected Object: %s", Editor::visualLogicState.targetObj->getObjectName().c_str());
 	}
 	ImGui::Text("Nodes: %d", (int)Editor::visualLogicState.nodes.size());
+
+	if (m_selectedNodeId != -1) {
+		ImGui::TextColored(ImVec4(1.f, 1.f, 0.f, 1.f), "Node selected");
+	}
+	else if (m_selectedConIndex != -1) {
+		ImGui::TextColored(ImVec4(1.f, 1.f, 0.f, 1.f), "Connection selected");
+	}
 
 	ImGui::EndChild();
 
@@ -230,7 +331,7 @@ void VisualLogicEditor::render() {
 
 void VisualLogicEditor::updateNextNodeId() {
 	m_nextNodeId = 1;
-	for (const auto& node : Editor::visualLogicState.nodes) {
+	for (const LogicNode& node : Editor::visualLogicState.nodes) {
 		if (node.id >= m_nextNodeId) {
 			m_nextNodeId = node.id + 1;
 		}
@@ -243,6 +344,7 @@ void VisualLogicEditor::clear() {
 	Editor::visualLogicState.connections.clear();
 	Editor::visualLogicState.targetObj = nullptr;
 	m_selectedNodeId = -1;
+	m_selectedConIndex = -1;
 	m_isDragging = false;
 	m_draggingNodeId = -1;
 	m_isConnecting = false;
@@ -304,6 +406,7 @@ void VisualLogicEditor::renderNode(ImDrawList* drawList, LogicNode& node, ImVec2
 	// handle selection and dragging
 	if (isHovered && InputHandler::isMouseLeftClicked() && !m_isConnecting) {
 		m_selectedNodeId = node.id;
+		m_selectedConIndex = -1; // deselect connection
 		m_isDragging = true;
 		m_draggingNodeId = node.id;
 		m_dragOffset = ImVec2(mousePos.x - nodePos.x, mousePos.y - nodePos.y);
@@ -333,7 +436,7 @@ void VisualLogicEditor::renderNode(ImDrawList* drawList, LogicNode& node, ImVec2
 
 	// node name
 	drawList->AddText(ImVec2(nodePos.x + 10, nodePos.y + 10),
-		IM_COL32(255, 255, 255, 255), node.name.c_str());
+		IM_COL32(255, 255, 255, 255), JsonIO::nodeImplToString(node.imp).c_str());
 	/* ---------- END ---------- */
 
 
@@ -426,36 +529,24 @@ void VisualLogicEditor::renderNode(ImDrawList* drawList, LogicNode& node, ImVec2
 			IM_COL32(255, 255, 255, 255), "X");
 
 
-		// delete
+		// delete node
 		if (deleteHovered && InputHandler::isMouseLeftClicked()) {
-			// remove connection
-			Editor::visualLogicState.connections.erase(
-				std::remove_if(Editor::visualLogicState.connections.begin(), Editor::visualLogicState.connections.end(),
-					[&node](const LogicConnection& conn) {
-						return conn.fromNodeId == node.id || conn.toNodeId == node.id;
-					}),
-				Editor::visualLogicState.connections.end()
-			);
-
-			// remove node
-			Editor::visualLogicState.nodes.erase(std::remove_if(Editor::visualLogicState.nodes.begin(), Editor::visualLogicState.nodes.end(),
-				[&node](const LogicNode& n) { return n.id == node.id; }),
-				Editor::visualLogicState.nodes.end());
-
-			if (m_selectedNodeId == node.id) {
-				m_selectedNodeId = -1;
-			}
+			deleteSelectedNode();
 		}
 	}
 	/* ---------- END ---------- */
 }
 
 void VisualLogicEditor::renderConnections(ImDrawList* drawList, ImVec2 canvasPos) {
-	for (const auto& conn : Editor::visualLogicState.connections) {
+	ImVec2 mousePos = ImGui::GetMousePos();
+
+	for (size_t i = 0; i < Editor::visualLogicState.connections.size(); ++i) {
+		const LogicConnection& conn = Editor::visualLogicState.connections[i];
+
 		LogicNode* fromNode = nullptr;
 		LogicNode* toNode = nullptr;
 
-		for (auto& node : Editor::visualLogicState.nodes) {
+		for (LogicNode& node : Editor::visualLogicState.nodes) {
 			if (node.id == conn.fromNodeId) fromNode = &node;
 			if (node.id == conn.toNodeId) toNode = &node;
 		}
@@ -469,7 +560,7 @@ void VisualLogicEditor::renderConnections(ImDrawList* drawList, ImVec2 canvasPos
 
 		ImVec2 toPos = ImVec2(canvasPos.x + toNode->position.x + m_canvasOffset.x, canvasPos.y + toNode->position.y + m_canvasOffset.y + 40.f);
 
-		// draw bezier curve
+		// draw curve
 		ImVec2 cp1(fromPos.x + 50, fromPos.y);
 		ImVec2 cp2(toPos.x - 50, toPos.y);
 
@@ -477,7 +568,27 @@ void VisualLogicEditor::renderConnections(ImDrawList* drawList, ImVec2 canvasPos
 		if (conn.outputPin == "True") lineColor = IM_COL32(100, 255, 100, 255);
 		if (conn.outputPin == "False") lineColor = IM_COL32(255, 100, 100, 255);
 
-		drawList->AddBezierCubic(fromPos, cp1, cp2, toPos, lineColor, 2.0f);
+		// if mouse is near curve
+		bool isHovered = isMouseNearBezier(fromPos, cp1, cp2, toPos, mousePos, 10.f);
+
+		// if connection selected
+		bool isSelected = (m_selectedConIndex == static_cast<int>(i));
+
+		float lineWidth = 2.f;
+		if (isSelected) {
+			lineColor = IM_COL32(255, 255, 0, 255); // yellow when selected
+			lineWidth = 4.f;
+		}
+		else if (isHovered) {
+			lineWidth = 3.5f; // slightly thicker when hovered
+		}
+
+		drawList->AddBezierCubic(fromPos, cp1, cp2, toPos, lineColor, lineWidth);
+
+		if (isHovered && InputHandler::isMouseLeftClicked() && !m_isConnecting) {
+			m_selectedConIndex = static_cast<int>(i);
+			m_selectedNodeId = -1; // deselect node when connection selected
+		}
 	}
 }
 
@@ -494,10 +605,12 @@ void VisualLogicEditor::renderNodeProperties() {
 
 	LogicNode& node = *it;
 
-	ImGui::Text("Node: %s", node.name.c_str());
+	ImGui::Text("Node: %s", JsonIO::nodeImplToString(node.imp).c_str());
 	ImGui::Separator();
 
-	if (node.name == "Print Message") {
+	/* ---------- ACTION ---------- */
+	// print msg
+	if (node.imp == NodeImplementation::PRINT_MESSAGE) {
 		char buffer[256];
 		strncpy(buffer, node.parameters["message"].c_str(), 255);
 
@@ -505,9 +618,10 @@ void VisualLogicEditor::renderNodeProperties() {
 			node.parameters["message"] = buffer;
 		}
 	}
-	else  if (node.name == "Move Object") {
-		float x = node.parameters.count("x") ? std::stof(node.parameters["x"]) : 0.0f;
-		float y = node.parameters.count("y") ? std::stof(node.parameters["y"]) : 0.0f;
+	// move obj
+	else  if (node.imp == NodeImplementation::MOVE_OBJECT) {
+		float x = node.parameters.count("x") ? std::stof(node.parameters["x"]) : 0.f;
+		float y = node.parameters.count("y") ? std::stof(node.parameters["y"]) : 0.f;
 
 		if (ImGui::DragFloat("X Offset", &x, 0.1f)) {
 			node.parameters["x"] = std::to_string(x);
@@ -516,6 +630,181 @@ void VisualLogicEditor::renderNodeProperties() {
 			node.parameters["y"] = std::to_string(y);
 		}
 	}
+	// rotate obj
+	else if (node.imp == NodeImplementation::ROTATE_OBJECT) {
+		float angle = node.parameters.count("angle") ? std::stof(node.parameters["angle"]) : 0.f;
+
+		if (ImGui::DragFloat("Angle (degrees)", &angle, 1.f)) {
+			node.parameters["angle"] = std::to_string(angle);
+
+			ImGui::Spacing();
+			ImGui::TextDisabled("Positive = counter-clockwise");
+		}
+	}
+	// set float variable
+	else if (node.imp == NodeImplementation::SET_FLOAT) {
+		char varBuffer[128];
+		strncpy(varBuffer, node.parameters["variable"].c_str(), 127);
+		varBuffer[127] = '\0';
+
+		if (ImGui::InputText("Variable Name", varBuffer, 128)) {
+			node.parameters["variable"] = varBuffer;
+		}
+
+		float value = node.parameters.count("value") ?
+			std::stof(node.parameters["value"]) : 0.f;
+
+		if (ImGui::DragFloat("Value", &value, 0.1f)) {
+			node.parameters["value"] = std::to_string(value);
+		}
+
+		ImGui::Spacing();
+		ImGui::TextDisabled("Stores a float in a variable");
+	}
+	/* ---------- END ---------- */
+
+	/* ---------- CONDITION ---------- */
+	// check key held
+	else if (node.imp == NodeImplementation::CHECK_KEY_HELD) {
+		std::string currentKey = node.parameters.count("key") ?
+			node.parameters["key"] : "W";
+
+		// Dropdown for common keys
+		if (ImGui::BeginCombo("Key", currentKey.c_str())) {
+			const char* keys[] = {
+				"W", "A", "S", "D",
+				"UP", "DOWN", "LEFT", "RIGHT",
+				"SPACE", "SHIFT", "CTRL", "ALT",
+				"ENTER", "ESC"
+			};
+
+			for (int i = 0; i < IM_ARRAYSIZE(keys); ++i) {
+				bool isSelected = (currentKey == keys[i]);
+
+				if (ImGui::Selectable(keys[i], isSelected))
+					node.parameters["key"] = keys[i];
+
+				if (isSelected)
+					ImGui::SetItemDefaultFocus();
+			}
+
+			ImGui::EndCombo();
+		}
+	}
+	// compare 2 values
+	else if (node.imp == NodeImplementation::COMPARE_VALUE) {
+		std::string property = node.parameters.count("property") ?
+			node.parameters["property"] : "rotation";
+
+		std::string comparison = node.parameters.count("comparison") ?
+			node.parameters["comparison"] : "greater";
+
+		float threshold = node.parameters.count("threshold") ?
+			std::stof(node.parameters["threshold"]) : 0.f;
+
+		// Property dropdown
+		ImGui::Text("Property to check:");
+		if (ImGui::BeginCombo("##property", property.c_str())) {
+			const char* properties[] = {
+				"rotation",
+				"x", "y", "z", // position
+				"scaleX", "scaleY", "scaleZ",
+				"velX", "velY"
+			};
+
+			const char* labels[] = {
+				"Rotation", "Position X", "Position Y", "Position Z",
+				"Scale X", "Scale Y", "Scale Z",
+				"Velocity X", "Velocity Y"
+			};
+
+			for (int i = 0; i < IM_ARRAYSIZE(properties); ++i) {
+				bool isSelected = (property == properties[i]);
+
+				if (ImGui::Selectable(labels[i], isSelected))
+					node.parameters["property"] = properties[i];
+
+				if (isSelected)
+					ImGui::SetItemDefaultFocus();
+			}
+
+			ImGui::EndCombo();
+		}
+
+		ImGui::Spacing();
+
+		// comparison dropdown
+		ImGui::Text("Comparison:");
+		if (ImGui::BeginCombo("##comparison", comparison.c_str())) {
+			const char* comparisons[] = { "greater", "less", "equal" };
+			const char* labels[] = { "Greater Than (>)", "Less Than (<)", "Equal To (=)" };
+
+			for (int i = 0; i < 3; ++i) {
+				bool isSelected = (comparison == comparisons[i]);
+
+				if (ImGui::Selectable(labels[i], isSelected))
+					node.parameters["comparison"] = comparisons[i];
+
+				if (isSelected)
+					ImGui::SetItemDefaultFocus();
+			}
+
+			ImGui::EndCombo();
+		}
+
+		ImGui::Spacing();
+
+		// threshold input
+		if (ImGui::DragFloat("Threshold Value", &threshold, 0.1f)) {
+			node.parameters["threshold"] = std::to_string(threshold);
+		}
+	}
+	// compare with anothe variable
+	else if (node.imp == NodeImplementation::COMPARE_VAR) {
+		char varBuffer[128];
+		strncpy(varBuffer, node.parameters["variable"].c_str(), 127);
+		varBuffer[127] = '\0';
+
+		ImGui::Text("Variable Name:");
+		if (ImGui::InputText("##variable", varBuffer, 128)) {
+			node.parameters["variable"] = varBuffer;
+		}
+
+		std::string comparison = node.parameters.count("comparison") ?
+			node.parameters["comparison"] : "greater";
+
+		float threshold = node.parameters.count("threshold") ?
+			std::stof(node.parameters["threshold"]) : 0.f;
+
+		// dropdown
+		ImGui::Text("Comparison:");
+		if (ImGui::BeginCombo("##comparison", comparison.c_str())) {
+			const char* comparisons[] = { "greater", "less", "equal" };
+			const char* labels[] = { "Greater Than (>)", "Less Than (<)", "Equal To (=)" };
+
+			for (int i = 0; i < 3; ++i) {
+				bool isSelected = (comparison == comparisons[i]);
+
+				if (ImGui::Selectable(labels[i], isSelected))
+					node.parameters["comparison"] = comparisons[i];
+
+				if (isSelected)
+					ImGui::SetItemDefaultFocus();
+			}
+
+			ImGui::EndCombo();
+		}
+
+		ImGui::Spacing();
+
+		if (ImGui::DragFloat("Threshold Value", &threshold, 0.1f)) {
+			node.parameters["threshold"] = std::to_string(threshold);
+		}
+
+		ImGui::Spacing();
+		ImGui::TextDisabled("Compares with a variable");
+		}
+	/* ---------- END ---------- */
 }
 
 void VisualLogicEditor::renderSavePopup() {
@@ -549,7 +838,7 @@ void VisualLogicEditor::renderSavePopup() {
 		bool fileExists = std::filesystem::exists(fullPath);
 
 		if (fileExists) {
-			ImGui::TextColored(ImVec4(1.0f, 0.5f, 0.0f, 1.0f), "Warning: File already exists!");
+			ImGui::TextColored(ImVec4(1.f, 0.5f, 0.f, 1.f), "Warning: File already exists!");
 		}
 
 		ImGui::Separator();
@@ -600,30 +889,48 @@ void VisualLogicEditor::renderSavePopup() {
 	}
 }
 
-//void VisualLogicEditor::addEventNode(ImVec2 position) {
-//	LogicNode node;
-//	node.id = m_nextNodeId++;
-//	node.name = "On Start";
-//	node.type = NodeType::EVENT;
-//	node.position = position;
-//	node.hasInput = false;
-//	node.hasOutput = true;
-//
-//	m_nodes.push_back(node);
-//
-//}
-//
-//void VisualLogicEditor::addActionNode(ImVec2 position) {
-//	LogicNode node;
-//	node.id = m_nextNodeId++;
-//	node.name = "Print Message";
-//	node.type = NodeType::ACTION;
-//	node.position = position;
-//	node.hasInput = true;
-//	node.hasOutput = true;
-//
-//	m_nodes.push_back(node);
-//}
+void VisualLogicEditor::addNode(Vector2D pos, NodeType type, NodeImplementation imp) {
+	LogicNode node;
+	node.id = m_nextNodeId++;
+	node.type = type;
+	node.imp = imp;
+	node.position = pos;
+	node.hasInput = (type == NodeType::EVENT) ? false : true; // EVENT no input
+	node.hasOutput = (type == NodeType::CONDITION) ? false : true; // CONDITION no output
+	node.hasTrueOutput = (type == NodeType::CONDITION) ? true : false; // only for CONDITION
+	node.hasFalseOutput = (type == NodeType::CONDITION) ? true : false; // only for CONDITION
+
+	// ACTION nodes
+	if(imp == NodeImplementation::PRINT_MESSAGE)
+		node.parameters["message"] = "I love GAM";
+	else if (imp == NodeImplementation::MOVE_OBJECT) {
+		node.parameters["x"] = "0";
+		node.parameters["y"] = "0";
+	}
+	else if (imp == NodeImplementation::ROTATE_OBJECT) {
+		node.parameters["angle"] = "0"; // in degree 
+	}
+	else if (imp == NodeImplementation::SET_FLOAT) {
+		node.parameters["variable"] = "shakeDir";
+		node.parameters["value"] = "1";
+	}
+	// CONDITION nodes
+	else if (imp == NodeImplementation::CHECK_KEY_HELD) {
+		node.parameters["key"] = "SPACE";
+	}
+	else if (imp == NodeImplementation::COMPARE_VALUE) {
+		node.parameters["property"] = "rotation";
+		node.parameters["comparison"] = "greater";
+		node.parameters["threshold"] = "0";
+	}
+	else if (imp == NodeImplementation::COMPARE_VAR) {
+		node.parameters["variable"] = "shakeDir";
+		node.parameters["comparison"] = "greater";
+		node.parameters["threshold"] = "0";
+	}
+
+	Editor::visualLogicState.nodes.push_back(node);
+}
 
 ImU32 VisualLogicEditor::getNodeColor(NodeType type) {
 	switch (type) {
@@ -640,12 +947,12 @@ ImU32 VisualLogicEditor::getNodeColor(NodeType type) {
 
 bool VisualLogicEditor::isPinHovered(ImVec2 pinPos, ImVec2 mousePos) {
 	double distance = sqrt(pow(mousePos.x - pinPos.x, 2) + pow(mousePos.y - pinPos.y, 2));
-	return distance < 10.0f;
+	return distance < 10.f;
 }
 
 void VisualLogicEditor::createConnection(int fromNodeId, std::string fromPin, int toNodeId, std::string toPin) {
 	// Check if connection already exists
-	for (const auto& conn : Editor::visualLogicState.connections) {
+	for (const LogicConnection& conn : Editor::visualLogicState.connections) {
 		if (conn.fromNodeId == fromNodeId && conn.toNodeId == toNodeId) {
 			return; // Connection already exists
 		}
@@ -661,6 +968,146 @@ void VisualLogicEditor::createConnection(int fromNodeId, std::string fromPin, in
 
 	DebugLog::addMessage("Created connection from node " + std::to_string(fromNodeId) +
 		" to node " + std::to_string(toNodeId) + "\n");
+}
+
+void VisualLogicEditor::deleteSelectedNode() {
+	if (m_selectedNodeId == -1) return;
+
+	// remove connections
+	Editor::visualLogicState.connections.erase(
+		std::remove_if(Editor::visualLogicState.connections.begin(),
+			Editor::visualLogicState.connections.end(),
+			[this](const LogicConnection& conn) {
+				return conn.fromNodeId == m_selectedNodeId ||
+					conn.toNodeId == m_selectedNodeId;
+			}),
+		Editor::visualLogicState.connections.end()
+	);
+
+	// Remove node
+	Editor::visualLogicState.nodes.erase(
+		std::remove_if(Editor::visualLogicState.nodes.begin(),
+			Editor::visualLogicState.nodes.end(),
+			[this](const LogicNode& n) {
+				return n.id == m_selectedNodeId;
+			}),
+		Editor::visualLogicState.nodes.end()
+	);
+
+	DebugLog::addMessage("Deleted node ID: " + std::to_string(m_selectedNodeId));
+	m_selectedNodeId = -1;
+}
+
+void VisualLogicEditor::duplicateSelectedNode() {
+	if (m_selectedNodeId == -1) return;
+
+	// find selected node
+	std::vector<LogicNode>::iterator it = std::find_if(Editor::visualLogicState.nodes.begin(),
+		Editor::visualLogicState.nodes.end(),
+		[this](const LogicNode& n) {
+			return n.id == m_selectedNodeId;
+		});
+
+	if (it == Editor::visualLogicState.nodes.end()) return;
+
+	// create duplicate
+	LogicNode duplicate = *it;
+	duplicate.id = m_nextNodeId++;
+	duplicate.position.x += 50.f; // offset x
+	duplicate.position.y += 50.f; // offset y
+
+	Editor::visualLogicState.nodes.push_back(duplicate);
+
+	// select the new node
+	m_selectedNodeId = duplicate.id;
+
+	DebugLog::addMessage("Duplicated node to ID: " + std::to_string(duplicate.id));
+}
+
+void VisualLogicEditor::selectNextNode(bool forward) {
+	if (Editor::visualLogicState.nodes.empty()) return;
+
+	if (m_selectedNodeId == -1) {
+		// no selection, select first node
+		m_selectedNodeId = Editor::visualLogicState.nodes[0].id;
+		return;
+	}
+
+	// find current node index
+	int currentIndex = -1;
+	for (size_t i = 0; i < Editor::visualLogicState.nodes.size(); ++i) {
+		if (Editor::visualLogicState.nodes[i].id == m_selectedNodeId) {
+			currentIndex = static_cast<int>(i);
+			break;
+		}
+	}
+
+	if (currentIndex == -1) {
+		m_selectedNodeId = Editor::visualLogicState.nodes[0].id;
+		return;
+	}
+
+	// move to next/previous
+	if (forward) {
+		currentIndex = (currentIndex + 1) % Editor::visualLogicState.nodes.size();
+	}
+	else {
+		currentIndex = (currentIndex - 1 + Editor::visualLogicState.nodes.size()) %
+			Editor::visualLogicState.nodes.size();
+	}
+
+	m_selectedNodeId = Editor::visualLogicState.nodes[currentIndex].id;
+}
+
+ImVec2 VisualLogicEditor::getBezierPoint(ImVec2 p0, ImVec2 p1, ImVec2 p2, ImVec2 p3, float t) {
+	float u = 1.f - t;
+	float tt = t * t;
+	float uu = u * u;
+	float uuu = uu * u;
+	float ttt = tt * t;
+
+	ImVec2 p;
+	p.x = (uuu * p0.x) + (3 * uu * t * p1.x) + (3 * u * tt * p2.x) + (ttt * p3.x);
+	p.y = (uuu * p0.y) + (3 * uu * t * p1.y) + (3 * u * tt * p2.y) + (ttt * p3.y);
+
+	return p;
+}
+
+bool VisualLogicEditor::isMouseNearBezier(ImVec2 p0, ImVec2 p1, ImVec2 p2, ImVec2 p3,
+	ImVec2 mousePos, float threshold) {
+	
+	// sample points along the curve and check distance
+	const int samples = 20;
+	for (int i = 0; i < samples; ++i) {
+		float t = (float)i / (float)(samples - 1);
+		ImVec2 point = getBezierPoint(p0, p1, p2, p3, t);
+
+		float dx = mousePos.x - point.x;
+		float dy = mousePos.y - point.y;
+		float distance = sqrt(dx * dx + dy * dy);
+
+		if (distance < threshold) {
+			return true;
+		}
+	}
+	return false;
+}
+
+void VisualLogicEditor::deleteSelectedConnection() {
+	if (m_selectedConIndex == -1 ||
+		m_selectedConIndex >= static_cast<int>(Editor::visualLogicState.connections.size())) {
+		return;
+	}
+
+	const LogicConnection& conn = Editor::visualLogicState.connections[m_selectedConIndex];
+	DebugLog::addMessage("Deleted connection from node " +
+		std::to_string(conn.fromNodeId) + " to " +
+		std::to_string(conn.toNodeId));
+
+	Editor::visualLogicState.connections.erase(
+		Editor::visualLogicState.connections.begin() + m_selectedConIndex);
+
+	m_selectedConIndex = -1;
 }
 
 #endif
