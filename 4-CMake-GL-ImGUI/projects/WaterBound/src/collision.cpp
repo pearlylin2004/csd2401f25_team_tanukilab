@@ -22,7 +22,7 @@ Technology is prohibited.
 
 namespace Collision {
 	//hash function for grid cell
-    static int HashCell(int x, int y){
+    int HashCell(int x, int y){
         return (x * 73856093) ^ (y * 19349663);
     }
 

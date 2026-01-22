@@ -957,7 +957,7 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 			CollisionInfo* c = obj->getComponent<CollisionInfo>();
 			if (!c || !objT || !c->collisionFlag) continue; //skip if object not suppose to collide, no transform and no collision
 
-			int minCellX, maxCellX, minCellY, maxCellY;
+			int minCellX = 0, maxCellX = 0, minCellY = 0, maxCellY = 0;
 			//square
 			if (c->colliderType == shape::square){
 				Collision::AABB box = Collision::getObjectAABBbyCollider(objT, c->colliderSize); // use custom collider instead of scale

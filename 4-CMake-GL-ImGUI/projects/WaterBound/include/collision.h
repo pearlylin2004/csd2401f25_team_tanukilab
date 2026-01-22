@@ -30,7 +30,7 @@ namespace Collision {
     extern f64 g_dt;
 
     //Hash
-    static int HashCell(int x, int y);
+    int HashCell(int, int);
 
     //AABB
     class AABB
