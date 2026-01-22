@@ -44,9 +44,8 @@ void VisualLogicEditor::render() {
 			}
 
 			if (ImGui::MenuItem("Save and Close")) {
+				Editor::visualLogicState.wantCloseEditor = true;
 				saveLogic();
-				Editor::visualLogicState.showEditor = false;
-				m_selectedNodeId = -1;
 			}
 
 			ImGui::EndMenu();
@@ -269,10 +268,9 @@ void VisualLogicEditor::render() {
 	}
 
 	// shortcut
-	if (Editor::visualLogicState.isFocus) {
-		// delete node/con with DEL / Backspace
-		if ((InputHandler::isKeyTriggered(GLFW_KEY_DELETE) ||
-			InputHandler::isKeyTriggered(GLFW_KEY_BACKSPACE))) {
+	if (Editor::visualLogicState.isFocus && !ImGui::GetIO().WantTextInput) {
+		// delete node/con with DEL
+		if ((InputHandler::isKeyTriggered(GLFW_KEY_DELETE))) {
 			if (m_selectedNodeId != -1) {
 				deleteSelectedNode();
 			}
@@ -369,6 +367,15 @@ void VisualLogicEditor::saveLogic() {
 
 	std::string err;
 	if (JsonIO::saveVisualLogic(filepath, Editor::visualLogicState.nodes, Editor::visualLogicState.connections, &err)) {
+		if (Editor::visualLogicState.wantCloseEditor) {
+			Editor::visualLogicState.showEditor = false;
+			Editor::visualLogicState.isFocus = false;
+			Editor::visualLogicState.wantCloseEditor = false;
+			m_selectedNodeId = -1;
+
+			DebugLog::addMessage("saved and closed " + filepath);
+		}
+
 		DebugLog::addMessage("Saved Visual Logic: " + filepath);
 	}
 	else {
@@ -862,8 +869,17 @@ void VisualLogicEditor::renderSavePopup() {
 						Editor::visualLogicState.nodes,
 						Editor::visualLogicState.connections,
 						&err)) {
+
+						if (Editor::visualLogicState.wantCloseEditor) {
+							Editor::visualLogicState.showEditor = false;
+							Editor::visualLogicState.isFocus = false;
+							m_selectedNodeId = -1;
+							Editor::visualLogicState.wantCloseEditor = false;
+
+							DebugLog::addMessage("saved and closed " + filepath);
+						}
+
 						DebugLog::addMessage("Visual Logic saved as: " + finalFilename + "\n");
-						DebugLog::addMessage("Saved " + std::to_string(Editor::visualLogicState.nodes.size()) + " nodes\n");
 					}
 					else {
 						DebugLog::addMessage("Failed to save file: " + err);
@@ -1053,7 +1069,7 @@ void VisualLogicEditor::selectNextNode(bool forward) {
 	}
 	else {
 		currentIndex = (currentIndex - 1 + Editor::visualLogicState.nodes.size()) %
-			Editor::visualLogicState.nodes.size();
+			static_cast<int>(Editor::visualLogicState.nodes.size());
 	}
 
 	m_selectedNodeId = Editor::visualLogicState.nodes[currentIndex].id;

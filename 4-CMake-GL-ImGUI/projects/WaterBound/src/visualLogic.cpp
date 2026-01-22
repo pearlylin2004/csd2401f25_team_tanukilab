@@ -149,8 +149,8 @@ void VisualLogicSystem::executeActionNode(GameObject* obj, VisualLC* logic, Logi
 			transform->x += x;
 			transform->y += y;
 
-			DebugLog::addMessage("Moved object by (" +
-				std::to_string(x) + ", " + std::to_string(y) + ")\n", DebugMode::PlaySimul);
+			/*DebugLog::addMessage("Moved object by (" +
+				std::to_string(x) + ", " + std::to_string(y) + ")\n", DebugMode::PlaySimul);*/
 		}
 	}
 	else if (node.imp == NodeImplementation::ROTATE_OBJECT) {
@@ -161,8 +161,8 @@ void VisualLogicSystem::executeActionNode(GameObject* obj, VisualLC* logic, Logi
 
 			transform->rotation += angle;
 
-			DebugLog::addMessage("Rotated object by " +
-				std::to_string(angle) + " degrees\n", DebugMode::PlaySimul);
+			/*DebugLog::addMessage("Rotated object by " +
+				std::to_string(angle) + " degrees\n", DebugMode::PlaySimul);*/
 		}
 	}
 	else if (node.imp == NodeImplementation::SET_FLOAT) {

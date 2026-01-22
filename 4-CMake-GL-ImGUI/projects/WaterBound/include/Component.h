@@ -528,8 +528,8 @@ struct TileMap : public Component
 };
 
 struct LogicConnection {
-	int fromNodeId;
-	int toNodeId;
+	int fromNodeId = 0;
+	int toNodeId = 0;
 
     std::string outputPin; // OUT, TRUE, FALSE
     std::string inputPin; // IN
@@ -538,7 +538,8 @@ struct LogicConnection {
 enum class NodeType {
     EVENT,
     ACTION,
-    CONDITION
+    CONDITION,
+    DEFAULT // nothing happen
 };
 
 enum class NodeImplementation {
@@ -563,13 +564,13 @@ enum class NodeImplementation {
 };
 
 struct LogicNode {
-    int id;
-    NodeType type;
+    int id = 0;
+    NodeType type = NodeType::DEFAULT;
     //std::string name;
-    NodeImplementation imp;
-    Vector2D position;
-    bool hasInput;
-    bool hasOutput;
+    NodeImplementation imp = NodeImplementation::DEFAULT;
+    Vector2D position = Vector2D(0,0);
+    bool hasInput = true;
+    bool hasOutput = true;
 
     bool hasTrueOutput = false;
     bool hasFalseOutput = false;
