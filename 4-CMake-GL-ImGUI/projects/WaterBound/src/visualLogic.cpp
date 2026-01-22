@@ -43,8 +43,19 @@ void VisualLogicSystem::updateAll(GameObjectManager& manager, float dt) {
 void VisualLogicSystem::init(GameObject* obj, VisualLC* logic) {
 	if (!obj || !logic) return;
 
-	// find and execute all ON START nodes
 	for (LogicNode& node : logic->nodes) {
+		// cache whether obj has hover nodes
+		logic->hasHoverNodes = false;
+
+		if (node.imp == NodeImplementation::ON_HOVER_ENTER ||
+			node.imp == NodeImplementation::WHILE_HOVERING ||
+			node.imp == NodeImplementation::ON_HOVER_EXIT) {
+			logic->hasHoverNodes = true;
+		}
+
+		logic->hoverNodesChecked = true;
+
+		// find and execute all ON START nodes
 		if (node.imp == NodeImplementation::ON_START) {
 			executeNode(obj, logic, node.id);
 		}
@@ -55,8 +66,82 @@ void VisualLogicSystem::update(GameObject* obj, VisualLC* logic, float dt) {
 	(void)dt; // to use in the future
 	if (!obj || !logic) return;
 
-	// find and execute all ON UPDATE nodes
+	/* -------- Safety Check jic haven check -------- */
+	if (!logic->hoverNodesChecked) {
+		// Cache it now if not done yet (safety check)
+		logic->hasHoverNodes = false;
+		for (const LogicNode& node : logic->nodes) {
+			if (node.imp == NodeImplementation::ON_HOVER_ENTER ||
+				node.imp == NodeImplementation::WHILE_HOVERING ||
+				node.imp == NodeImplementation::ON_HOVER_EXIT) {
+				logic->hasHoverNodes = true;
+				break;
+			}
+		}
+		logic->hoverNodesChecked = true;
+	}
+	/* -------- END -------- */
+
+
+	/* -------- Check hover -------- */
+	if (logic->hasHoverNodes) {
+		Transform* transform = obj->getComponent<Transform>();
+
+		if (transform) {
+			Vector2D mouseWorldPos = InputHandler::getWorldMousePosition();
+
+#ifdef _DEBUG
+			// if playing in editor then use ImGui viewport mouse pos
+			if (UISystem::isShowUI()) {
+				ImVec2 scenePos; ImVec2 sceneSize;
+				EditorManager::getScenePosNSize(scenePos, sceneSize);
+
+				mouseWorldPos = InputHandler::getMousePositionInImGuiViewport(scenePos, sceneSize);
+			}
+#endif
+
+			float halfW = transform->scaleX / 2.f;
+			float halfH = transform->scaleY / 2.f;
+
+			bool isHoveringNow = (mouseWorldPos.x >= transform->x - halfW &&
+				mouseWorldPos.x <= transform->x + halfW &&
+				mouseWorldPos.y >= transform->y - halfH &&
+				mouseWorldPos.y <= transform->y + halfH);
+
+			// ON HOVER ENTER
+			if (isHoveringNow && !logic->wasHoveredLastFrame) {
+				for (LogicNode& node : logic->nodes) {
+					if (node.imp == NodeImplementation::ON_HOVER_ENTER) {
+						executeNode(obj, logic, node.id);
+					}
+				}
+			}
+
+			// WHILE HOVERING
+			if (isHoveringNow) {
+				for (LogicNode& node : logic->nodes) {
+					if (node.imp == NodeImplementation::WHILE_HOVERING) {
+						executeNode(obj, logic, node.id);
+					}
+				}
+			}
+
+			// ON HOVER EXIT
+			if (!isHoveringNow && logic->wasHoveredLastFrame) {
+				for (LogicNode& node : logic->nodes) {
+					if (node.imp == NodeImplementation::ON_HOVER_EXIT) {
+						executeNode(obj, logic, node.id);
+					}
+				}
+			}
+
+			logic->wasHoveredLastFrame = isHoveringNow;
+		}
+	}
+	/* -------- END -------- */
+
 	for (LogicNode& node : logic->nodes) {
+		// find and execute all ON UPDATE nodes
 		if (node.imp == NodeImplementation::ON_UPDATE) {
 			executeNode(obj, logic, node.id);
 		}
@@ -134,10 +219,11 @@ void VisualLogicSystem::executeActionNode(GameObject* obj, VisualLC* logic, Logi
 
 	// print message
 	if (node.imp == NodeImplementation::PRINT_MESSAGE) {
+		static int count{};
 		std::string msg = node.parameters.count("message") ? node.parameters["message"] : "I love GAM";
 
 		DebugLog::addMessage(msg, DebugMode::PlaySimul);
-		std::cout << msg << std::endl;
+		std::cout << msg << count++ << std::endl;
 	}
 	else if (node.imp == NodeImplementation::MOVE_OBJECT) {
 		Transform* transform = obj->getComponent<Transform>();

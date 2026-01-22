@@ -527,6 +527,7 @@ struct TileMap : public Component
     }
 };
 
+// virtual logic container (editor)
 struct LogicConnection {
 	int fromNodeId = 0;
 	int toNodeId = 0;
@@ -547,6 +548,9 @@ enum class NodeImplementation {
     ON_START,
     ON_UPDATE,
     ON_COLLISION,
+    ON_HOVER_ENTER,
+    WHILE_HOVERING,
+	ON_HOVER_EXIT,
 
     // CONDITION
     CHECK_KEY_HELD,
@@ -579,7 +583,6 @@ struct LogicNode {
     std::map<std::string, std::string> parameters;
 };
 
-// virtual logic container (editor)
 struct VisualLC : public Component {
 public:
     std::unique_ptr<Component> clone() const override {
@@ -598,4 +601,11 @@ public:
     std::map<std::string, float> floatVar;
     std::map<std::string, std::string> stringVar;
     std::map<std::string, bool> boolVar;
+
+	bool wasHoveredLastFrame = false; // for hover event detection
+
+    // for caching
+    bool hasHoverNodes = false;
+	bool hoverNodesChecked = false;
+
 };

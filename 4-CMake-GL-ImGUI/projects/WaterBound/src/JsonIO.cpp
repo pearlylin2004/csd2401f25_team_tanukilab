@@ -240,6 +240,9 @@ namespace JsonIO {
     NodeImplementation stringToNodeImpl(const std::string& str) {
         if (str == "On Start") return NodeImplementation::ON_START;
         if (str == "On Update") return NodeImplementation::ON_UPDATE;
+		if (str == "On Hover Enter") return NodeImplementation::ON_HOVER_ENTER;
+		if (str == "While Hovering") return NodeImplementation::WHILE_HOVERING;
+		if (str == "On Hover Exit") return NodeImplementation::ON_HOVER_EXIT;
 
         if (str == "Print Message") return NodeImplementation::PRINT_MESSAGE;
         if (str == "Rotate Object") return NodeImplementation::ROTATE_OBJECT;
@@ -257,6 +260,9 @@ namespace JsonIO {
         switch (impl) {
             case NodeImplementation::ON_START: return "On Start";
             case NodeImplementation::ON_UPDATE: return "On Update";
+            case NodeImplementation::ON_HOVER_ENTER: return "On Hover Enter";
+            case NodeImplementation::WHILE_HOVERING: return "While Hovering";
+            case NodeImplementation::ON_HOVER_EXIT: return "On Hover Exit";
 
             case NodeImplementation::PRINT_MESSAGE: return "Print Message";
             case NodeImplementation::MOVE_OBJECT: return "Move Object";

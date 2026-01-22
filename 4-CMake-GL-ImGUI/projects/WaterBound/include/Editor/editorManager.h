@@ -193,7 +193,7 @@ private:
 	void renderSavePopup();
 
 	// create node
-	void addNode(Vector2D position, NodeType type, NodeImplementation imp);
+	void addNode(NodeType type, NodeImplementation imp);
 
 	// helper func
 	ImU32 getNodeColor(NodeType type);
@@ -345,6 +345,11 @@ public:
 	static void assetChanged() { assetsChangedFlag = true; } // set to true to reload assets in UI
 	static bool isEditingMode() { return isEditing; }
 	static void toggleEditing(bool e) { isEditing = e; } // if true then editing mode, dun play animation, obj dun move
+
+	static void getScenePosNSize(ImVec2& scenePos, ImVec2& sceneSize) {
+		scenePos = Editor::sceneWindowState.scenePos;
+		sceneSize = Editor::sceneWindowState.sceneSize;
+	}
 
 	static bool isPaused() { return pausedSimul; }
 	static void togglePause(bool e) { pausedSimul = e; }
