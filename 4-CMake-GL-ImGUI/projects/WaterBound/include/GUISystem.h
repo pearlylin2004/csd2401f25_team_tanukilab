@@ -28,6 +28,16 @@ Technology is prohibited.
 
 class LuaSystem;
 
+//enum for button actions
+namespace std {
+    template <>
+    struct hash<ButtonAction> {
+        size_t operator()(const ButtonAction& b) const noexcept {
+            return std::hash<int>()(static_cast<int>(b));
+        }
+    };
+}
+
 enum class GameState {
     MENU,
     PLAYING,
@@ -65,8 +75,8 @@ private:
     bool isPointInButton(const Vector2D& point, GameObject* button);
     void createButtonActions(GameObjectManager& manager); //create button actions
 
-    std::unordered_map<std::string, GameObject*> m_buttons; //for storing buttons 
-    std::unordered_map<std::string, std::function<void()>> m_buttonActions; //map of button actions
+    std::unordered_map<ButtonAction, GameObject*> m_buttons; //for storing buttons 
+	std::unordered_map<ButtonAction, std::function<void()>> m_buttonActions; //map of button actions
 
     GameState m_currentState;
     GameState m_previousState;

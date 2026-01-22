@@ -45,7 +45,10 @@
           "texture": "assets/button.png",
           "clr": [ 1.0, 1.0, 1.0 ]
         }
-      }
+      },
+        "Button" : {
+          "action" : "back"
+        }
     }
   ]
 }

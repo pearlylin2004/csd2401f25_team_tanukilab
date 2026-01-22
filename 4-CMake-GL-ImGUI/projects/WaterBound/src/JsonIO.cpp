@@ -149,7 +149,6 @@ namespace JsonIO {
 
     /// @}
 
-
     /**
      * \brief Copies a scene from the project source folder into the runtime folder.
      * \param name Scene filename (e.g., \c level01.json ).
@@ -235,6 +234,30 @@ namespace JsonIO {
         if (s == "MoveWhenCollide") return CollisionResponseMode::MoveWhenCollide;
         return CollisionResponseMode::StopWhenCollide;
     }
+
+
+    //for button
+    const char* ButtonActionToStr(ButtonAction action) {
+        switch (action) {
+        case ButtonAction::START_GAME:    return "start_game";
+        case ButtonAction::OPEN_CONTROL:   return "open_control";
+        case ButtonAction::EXIT_GAME:      return "exit_game";
+        case ButtonAction::RESUME_GAME:    return "resume_game";
+        default:                           return "none";
+        }
+	}
+
+    ButtonAction StrToButtonAction(const std::string& s) {
+        if (s == "start_game") return ButtonAction::START_GAME;
+        if (s == "open_control") return ButtonAction::OPEN_CONTROL;
+        if (s == "exit_game") return ButtonAction::EXIT_GAME;
+        if (s == "resume_game") return ButtonAction::RESUME_GAME;
+        if (s == "yes_exit") return ButtonAction::YES_EXIT;
+        if (s == "no_exit") return ButtonAction::NO_EXIT;
+        if (s == "back") return ButtonAction::BACK;
+        if (s == "menu") return ButtonAction::MENU;
+        return ButtonAction::NONE;
+	}
 
 
     /**
@@ -590,6 +613,16 @@ namespace JsonIO {
 
             doc.AddMember("Collision", jc, a);
         }
+
+        // Button
+        if(Button* b = obj->getComponent<Button>()) {
+            Value jb(kObjectType);
+            Value actionStr(ButtonActionToStr(b->actionName), a);
+            jb.AddMember("action", actionStr, a);
+            jb.AddMember("isHovered", b->isHovered, a);
+            jb.AddMember("isPressed", b->isPressed, a);
+            doc.AddMember("Button", jb, a);
+		}
 
         // Input
         if (obj->hasComponent<Input>()) {
@@ -1309,6 +1342,20 @@ void GameObjectManager::saveToJson(const std::string& filename, bool isNew) cons
                 comps.AddMember("Animation", ja, a);
             }*/
 
+            // ---- Button ----
+            if (auto b = obj->getComponent<Button>()) {
+                rapidjson::Value jb(rapidjson::kObjectType);
+
+                jb.AddMember("action", rapidjson::Value(static_cast<int>(b->actionName)), a);
+
+                //add boolean states
+                jb.AddMember("isHovered", b->isHovered ? 1 : 0, a);
+                jb.AddMember("isPressed", b->isPressed ? 1 : 0, a);
+
+                //add the Button object to your main JSON
+                comps.AddMember("Button", jb, a);
+			}
+
             jObj.AddMember("components", comps, a);
             objects.PushBack(jObj, a);
         }
@@ -1458,6 +1505,17 @@ void GameObjectManager::loadFromJson(const std::string& filename) {
         // ---- CollisionInfo (presence only) ----
         if (comps.HasMember("CollisionInfo") && comps["CollisionInfo"].IsObject()) {
             go->addComponent<CollisionInfo>();
+        }
+
+		// ---- Button ----
+        if (comps.HasMember("Button") && comps["Button"].IsObject()) {
+			const auto& jb = comps["Button"];
+			auto* b = go->addComponent<Button>();
+
+            if (jb.HasMember("action") && jb["action"].IsString()) {
+                std::string actionStr = jb["action"].GetString();
+                b->actionName = JsonIO::StrToButtonAction(actionStr);
+            }
         }
 
         // ---- Animation ----

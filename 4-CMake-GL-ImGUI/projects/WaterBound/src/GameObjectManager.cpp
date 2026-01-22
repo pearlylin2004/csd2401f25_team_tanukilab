@@ -766,7 +766,25 @@ void GameObjectManager::loadSceneFromJson(const std::string& filename) {
 				}
 			}
 		}
-		
+
+		// ---- Button ----
+		if (comps.HasMember("Button") && comps["Button"].IsObject()) {
+			const auto& jb = comps["Button"];
+
+			//add Button component if it doesn't exist
+			auto* b = go->getComponent<Button>();
+			if (!b)
+				b = go->addComponent<Button>();
+
+			//default to NONE
+			b->actionName = ButtonAction::NONE;
+
+			//parse action string
+			if (jb.HasMember("action") && jb["action"].IsString()) {
+				std::string actionStr = jb["action"].GetString();
+				b->actionName = JsonIO::StrToButtonAction(actionStr);
+			}
+		}
 	}
 
 	//create bullet pool
@@ -782,6 +800,7 @@ void GameObjectManager::loadSceneFromJson(const std::string& filename) {
 
 	//std::cout << "Scene loaded (JSON): " << filename << "\n";
 }
+
 /*!
 \brief Saves all current game objects and component data to a JSON file.
 

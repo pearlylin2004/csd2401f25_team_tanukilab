@@ -203,18 +203,33 @@ enum class CollisionResponseMode {
     MoveWhenCollide // if collide by another obj, apply "fake" force and kena push
 };
 
+//button action 
+enum class ButtonAction {
+    NONE,
+    START_GAME,
+    OPEN_CONTROL,
+    EXIT_GAME,
+    RESUME_GAME,
+	YES_EXIT,
+	NO_EXIT,
+    BACK,
+    MENU
+};
+
 //Button component
 struct Button : public Component {
-    std::string actionName;   //action this button triggers
+    ButtonAction actionName = ButtonAction::NONE;   //action this button triggers
     bool isHovered = false;   //hover state
     bool isPressed = false;   //pressed state
 
-    Button(const std::string& action = "") : actionName(action) {}
+    Button() = default;
+    Button(ButtonAction action) : actionName(action) {} 
 
     std::unique_ptr<Component> clone() const override {
         return std::make_unique<Button>(*this);
     }
 };
+
 
 // CollisionInfo component to store collision-related information
 struct CollisionInfo : public Component {
