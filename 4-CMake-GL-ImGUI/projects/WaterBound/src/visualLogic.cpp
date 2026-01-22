@@ -173,9 +173,6 @@ void VisualLogicSystem::executeActionNode(GameObject* obj, VisualLC* logic, Logi
 			std::stof(node.parameters["value"]) : 0.f;
 
 		logic->floatVar[varName] = value;
-
-		DebugLog::addMessage("Set variable '" + varName + "' to " +
-			std::to_string(value) + "\n", DebugMode::PlaySimul);
 	}
 }
 
