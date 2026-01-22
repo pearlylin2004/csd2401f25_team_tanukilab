@@ -566,6 +566,7 @@ enum class NodeImplementation {
     PRINT_MESSAGE,
     MOVE_OBJECT,
     ROTATE_OBJECT,
+    SET_ROTATION,
     SET_FLOAT,
 
     // DEFAULT

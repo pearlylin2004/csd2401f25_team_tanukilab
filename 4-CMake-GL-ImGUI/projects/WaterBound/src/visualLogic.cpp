@@ -251,6 +251,13 @@ void VisualLogicSystem::executeActionNode(GameObject* obj, VisualLC* logic, Logi
 				std::to_string(angle) + " degrees\n", DebugMode::PlaySimul);*/
 		}
 	}
+	else if (node.imp == NodeImplementation::SET_ROTATION) {
+		Transform* transform = obj->getComponent<Transform>();
+		if (transform) {
+			float angle = node.parameters.count("angle") ? std::stof(node.parameters["angle"]) : 0.f;
+			transform->rotation = angle;
+		}
+	}
 	else if (node.imp == NodeImplementation::SET_FLOAT) {
 		std::string varName = node.parameters.count("variable") ?
 			node.parameters["variable"] : "var";

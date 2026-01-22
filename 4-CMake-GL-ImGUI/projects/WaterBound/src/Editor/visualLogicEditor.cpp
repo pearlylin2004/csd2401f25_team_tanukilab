@@ -119,6 +119,10 @@ void VisualLogicEditor::render() {
 					addNode(NodeType::ACTION, NodeImplementation::ROTATE_OBJECT);
 				}
 
+				if (ImGui::MenuItem("Set Rotation")) {
+					addNode(NodeType::ACTION, NodeImplementation::SET_ROTATION);
+				}
+
 				if (ImGui::MenuItem("Set Float")) {
 					addNode(NodeType::ACTION, NodeImplementation::SET_FLOAT);
 				}
@@ -658,6 +662,14 @@ void VisualLogicEditor::renderNodeProperties() {
 			ImGui::TextDisabled("Positive = counter-clockwise");
 		}
 	}
+	// set obj rotation to x degree
+	else if (node.imp == NodeImplementation::SET_ROTATION) {
+		float angle = node.parameters.count("angle") ? std::stof(node.parameters["angle"]) : 0.f;
+
+		if (ImGui::DragFloat("Rotation (degrees)", &angle, 1.f)) {
+			node.parameters["angle"] = std::to_string(angle);
+		}
+	}
 	// set float variable
 	else if (node.imp == NodeImplementation::SET_FLOAT) {
 		char varBuffer[128];
@@ -952,6 +964,9 @@ void VisualLogicEditor::addNode(NodeType type, NodeImplementation imp) {
 	}
 	else if (imp == NodeImplementation::ROTATE_OBJECT) {
 		node.parameters["angle"] = "0"; // in degree 
+	}
+	else if (imp == NodeImplementation::SET_ROTATION) {
+		node.parameters["angle"] = "0";
 	}
 	else if (imp == NodeImplementation::SET_FLOAT) {
 		node.parameters["variable"] = "shakeDir";
