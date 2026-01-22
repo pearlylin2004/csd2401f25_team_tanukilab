@@ -178,9 +178,9 @@ void CoreEngine::GameLoop() {
     if (InputHandler::isKeyTriggered(GLFW_KEY_ESCAPE)) {
         //if already at paused state do nothing
         GameState current = m_guiSystem->getCurrentState(); //get current state
-        GameState previous = m_guiSystem->getPreviousState(); //get previous state
-        if (current != GameState::PAUSED && previous != GameState::PAUSED) {
-            if (m_guiSystem->getPreviousState() != GameState::PAUSED) m_guiSystem->setPreviousState(current); //store previous state and prevent overwriting previous state if already paused
+        //GameState previous = m_guiSystem->getPreviousState(); //get previous state
+        if (current != GameState::PAUSED) {
+            //if (m_guiSystem->getPreviousState() != GameState::PAUSED) m_guiSystem->setPreviousState(current); //store previous state and prevent overwriting previous state if already paused
             m_guiSystem->setStateBeforePause(current); //store state before pausing
             m_guiSystem->setPreviousState(current); //store previous state
             m_guiSystem->setCurrentState(GameState::PAUSED); //set current state
@@ -234,26 +234,15 @@ void CoreEngine::Update(float deltaTime) {
     }
     //menu checking
     GameState state = m_guiSystem->getCurrentState();
-    if (state == GameState::MENU) {
+    if (state != GameState::EXIT) {
         m_guiSystem->update(*m_manager);
     }
-    //control menu checking
-    else if (state == GameState::CONTROL) {
-        m_guiSystem->controlUpdate(*m_manager);
-    }
-    //exit confirmation checking
-    else if (state == GameState::EXITCONFIRMATION) {
-        m_guiSystem->exitUpdate(*m_manager);
-    }
-    //pause menu checking
-    else if (state == GameState::PAUSED) {
-        m_guiSystem->pauseUpdate(*m_manager);
-    }
 
-    if (!EditorManager::isEditingMode() && !EditorManager::isPaused()) {
+	//for other systems to update even in editor mode
+    /*if (!EditorManager::isEditingMode() && !EditorManager::isPaused()) {
         m_luaSystem->update(*m_manager, deltaTime);
         m_visualLCSystem->updateAll(*m_manager, deltaTime);
-    }
+    }*/
 
     // Update all systems in order
     m_inputSystem->update(*m_manager, deltaTime, *m_messageBus);
