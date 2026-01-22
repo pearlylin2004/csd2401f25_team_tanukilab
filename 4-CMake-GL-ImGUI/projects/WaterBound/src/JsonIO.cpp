@@ -243,6 +243,10 @@ namespace JsonIO {
         case ButtonAction::OPEN_CONTROL:   return "open_control";
         case ButtonAction::EXIT_GAME:      return "exit_game";
         case ButtonAction::RESUME_GAME:    return "resume_game";
+		case ButtonAction::YES_EXIT:       return "yes_exit";
+		case ButtonAction::NO_EXIT:        return "no_exit";
+		case ButtonAction::BACK:         return "back";
+		case ButtonAction::MENU:          return "menu";
         default:                           return "none";
         }
 	}
@@ -258,7 +262,6 @@ namespace JsonIO {
         if (s == "menu") return ButtonAction::MENU;
         return ButtonAction::NONE;
 	}
-
 
     /**
      * \brief Atomically replaces a target file with a temporary file.
