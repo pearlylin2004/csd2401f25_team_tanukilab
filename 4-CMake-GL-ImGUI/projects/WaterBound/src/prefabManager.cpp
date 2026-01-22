@@ -39,6 +39,8 @@ namespace {
 		else if (compName == "AudioComponent") obj->removeComponent<AudioComponent>();
 		else if (compName == "FontComponent") obj->removeComponent<FontComponent>();
 		else if (compName == "TileMap") obj->removeComponent<TileMap>();
+		else if (compName == "LuaScript") obj->removeComponent<LuaScript>();
+		else if (compName == "VisualLC") obj->removeComponent<VisualLC>();
 	}
 
 	void removeAllComponents(GameObject* obj) {
@@ -52,6 +54,8 @@ namespace {
 		obj->removeComponent<AudioComponent>();
 		obj->removeComponent<FontComponent>();
 		obj->removeComponent<TileMap>();
+		obj->removeComponent<LuaScript>();
+		obj->removeComponent<VisualLC>();
 	}
 
 	void applyComponentFromJson(GameObject* obj, const char* compName, const rapidjson::Value& compData, rapidjson::Document::AllocatorType& allocator, const std::function<void(GameObject*, const rapidjson::Value&)>& func) {
@@ -600,7 +604,7 @@ bool PrefabManager::createPrefabFromGameObj(GameObject* go, const std::string& n
 bool PrefabManager::deletePrefab(const std::string prefabID) {
 	auto iterator = m_prefabRegistry.find(prefabID);
 	if (iterator == m_prefabRegistry.end()) {
-		DebugLog::addMessage("PrefabManager::deleteprefab: failed � prefab ID not found: " + prefabID);
+		DebugLog::addMessage("Could not delete prefab: prefab ID not found: " + prefabID);
 		return false;
 	}
 
@@ -612,6 +616,63 @@ bool PrefabManager::deletePrefab(const std::string prefabID) {
 	savePrefabRegistry();
 
 	return true;
+}
+
+bool PrefabManager::isPrefabUsedInAnyScene(const std::string& prefabID, std::vector<PrefabUsageInfo>& usageInfo) const {
+	usageInfo.clear();
+
+	std::string scenePath = std::string(SOURCE_DIR_R) + "/Scene";
+	if (!std::filesystem::exists(scenePath)) {
+		return false;
+	}
+
+	for (const auto& entry : std::filesystem::directory_iterator(scenePath)) {
+		if (!entry.is_regular_file() || entry.path().extension() != ".json") continue;
+
+		std::string sceneFile = entry.path().string();
+		std::string sceneName = entry.path().filename().string();
+
+		// skip temp scene (for play simulation in editor)
+		if (sceneName == "temp_scene.json") continue;
+
+		// read scene json
+		rapidjson::Document doc;
+		std::string err;
+		if (!JsonIO::ReadFileToDocument(sceneFile, doc, &err)) {
+			continue;
+		}
+
+		if (!doc.HasMember("objects") || !doc["objects"].IsArray()) {
+			continue;
+		}
+
+		PrefabUsageInfo sceneUsage;
+		sceneUsage.sceneName = sceneName;
+
+		for (auto& jObj : doc["objects"].GetArray()) {
+			if (!jObj.IsObject()) continue;
+
+			// check if object uses this prefab
+			if (jObj.HasMember("prefabid") && jObj["prefabid"].IsString()) {
+				std::string objPrefabID = jObj["prefabid"].GetString();
+
+				// if prefab ID matches, record object name
+				if (objPrefabID == prefabID) {
+					std::string objName = jObj.HasMember("name") && jObj["name"].IsString()
+						? jObj["name"].GetString() : "Unnamed";
+
+					sceneUsage.objectNames.push_back(objName);
+				}
+			}
+		}
+
+		// if this scene uses the prefab, add to results
+		if (!sceneUsage.objectNames.empty()) {
+			usageInfo.push_back(sceneUsage);
+		}
+	}
+
+	return !usageInfo.empty();
 }
 
 std::string PrefabManager::generateUUID() {
@@ -907,6 +968,55 @@ void PrefabManager::applyPrefabComponents(GameObject* go, const rapidjson::Value
 		fc->fontType = JsonIO::GetIntOr(jf, "fontType", 0);
 		JsonIO::ReadVec3(jf, "color", fc->clr.r, fc->clr.g, fc->clr.b);
 	}
+
+	// ---- LuaScript ----
+	if (comps.HasMember("LuaScript") && comps["LuaScript"].IsObject()) {
+		const auto& jl = comps["LuaScript"];
+		auto* ls = go->addComponent<LuaScript>();
+
+		ls->scripts.clear();
+
+		if (jl.HasMember("scripts") && jl["scripts"].IsArray()) {
+			for (const auto& scriptEntry : jl["scripts"].GetArray()) {
+				if (!scriptEntry.IsObject()) continue;
+
+				LuaScript::ScriptEntry entry;
+
+				if (scriptEntry.HasMember("filename") && scriptEntry["filename"].IsString()) {
+					entry.filename = scriptEntry["filename"].GetString();
+				}
+
+				if (scriptEntry.HasMember("scriptName") && scriptEntry["scriptName"].IsString()) {
+					entry.scriptName = scriptEntry["scriptName"].GetString();
+				}
+
+				entry.changed = true;
+				ls->scripts.push_back(entry);
+			}
+		}
+
+		ls->scriptsChanged = true;
+	}
+
+	// ---- Visual Logic Component ----
+	if (comps.HasMember("VisualLC") && comps["VisualLC"].IsObject()) {
+		const auto& jvl = comps["VisualLC"];
+		auto* vl = go->addComponent<VisualLC>();
+
+		// load filename
+		if (jvl.HasMember("filename") && jvl["filename"].IsString()) {
+			vl->filename = jvl["filename"].GetString();
+
+			// load the visual logic graph from file
+			if (!vl->filename.empty()) {
+				std::string filepath = "/Logic/" + vl->filename;
+				std::string err;
+				if (!JsonIO::loadVisualLogic(filepath, vl->nodes, vl->connections, &err)) {
+					DebugLog::addMessage("Failed to load Visual Logic file: " + err);
+				}
+			}
+		}
+	}
 }
 
 void PrefabManager::serializeComponents(const GameObject* obj, rapidjson::Value& comps, rapidjson::Document::AllocatorType& a) {
@@ -1081,6 +1191,39 @@ void PrefabManager::serializeComponents(const GameObject* obj, rapidjson::Value&
 
 		// IMPORTANT: Add TileMap to components JSON
 		comps.AddMember("TileMap", jt, a);
+	}
+
+	// ---- LuaScript ----
+	if (auto ls = obj->getComponent<LuaScript>()) {
+		rapidjson::Value jl(rapidjson::kObjectType);
+		rapidjson::Value scriptsArray(rapidjson::kArrayType);
+
+		for (const auto& scriptEntry : ls->scripts) {
+			if (scriptEntry.filename.empty() && scriptEntry.scriptName.empty()) continue;
+
+			rapidjson::Value entry(rapidjson::kObjectType);
+			entry.AddMember("filename", rapidjson::Value(scriptEntry.filename.c_str(), a), a);
+			entry.AddMember("scriptName", rapidjson::Value(scriptEntry.scriptName.c_str(), a), a);
+
+			scriptsArray.PushBack(entry, a);
+		}
+
+		if (!scriptsArray.Empty()) {
+			jl.AddMember("scripts", scriptsArray, a);
+			comps.AddMember("LuaScript", jl, a);
+		}
+	}
+
+	// ---- Visual Logic Component ----
+	if (auto vl = obj->getComponent<VisualLC>()) {
+		rapidjson::Value jvl(rapidjson::kObjectType);
+
+		// Only save the filename reference
+		if (!vl->filename.empty()) {
+			jvl.AddMember("filename", rapidjson::Value(vl->filename.c_str(), a), a);
+		}
+
+		comps.AddMember("VisualLC", jvl, a);
 	}
 }
 

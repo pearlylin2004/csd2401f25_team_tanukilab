@@ -30,7 +30,7 @@ static std::string runtimeScenePath(std::string const& name) {
 }
 
 GUISystem::GUISystem() :
-    m_currentState(GameState::MENU), 
+    m_currentState(GameState::MENU),
     m_previousState(GameState::MENU),
     m_stateBeforePause(GameState::MENU),
     g_manager(nullptr),
@@ -62,7 +62,7 @@ void GUISystem::update(GameObjectManager& manager) {
     if (UISystem::isShowUI()) return; //skip if UI is shown
 
     if (!InputHandler::isMouseButtonClicked(GLFW_MOUSE_BUTTON_LEFT)) {
-		//when hover over button we can add hover effect here
+        //when hover over button we can add hover effect here
     }
 
     else {
@@ -77,7 +77,7 @@ void GUISystem::update(GameObjectManager& manager) {
                 //handle button action dynamically based on name
                 if (name == "play_button") {
                     m_currentState = GameState::PLAYING;
-					startGame(manager); //start game
+                    startGame(manager); //start game
                     return; //stop checking after a click
                 }
                 else if (name == "exit_button") {
@@ -99,7 +99,7 @@ void GUISystem::update(GameObjectManager& manager) {
 
 //updating the control screen 
 void GUISystem::controlUpdate(GameObjectManager& manager) {
-	//get mouse position
+    //get mouse position
     Vector2D worldMousePos = InputHandler::getWorldMousePosition();
     Vector2D worldPos = Vec_Set(worldMousePos.x, worldMousePos.y);
 
@@ -121,12 +121,12 @@ void GUISystem::controlUpdate(GameObjectManager& manager) {
                 if (name == "back_button") {
                     if (m_previousState == GameState::PAUSED) {
                         loadScreen(manager, "pause_scene.json");
-						m_currentState = GameState::PAUSED;
+                        m_currentState = GameState::PAUSED;
                     }
                     else {
                         m_currentState = GameState::MENU;
                         loadScreen(manager, "menu_scene.json");
-                    }                    
+                    }
                     return; //stop checking after a click
                 }
                 //idk if we need more buttons
@@ -161,11 +161,11 @@ void GUISystem::exitUpdate(GameObjectManager& manager) {
                     stopGame();
                     return; //stop checking after a click
                 }
-                else if(name == "no_button") {
+                else if (name == "no_button") {
                     m_currentState = GameState::MENU;
                     loadScreen(manager, "menu_scene.json");
                     return; //stop checking after a click
-				}
+                }
                 //idk if we need more buttons
             }
         }
@@ -194,7 +194,7 @@ void GUISystem::pauseUpdate(GameObjectManager& manager) {
             if (isPointInButton(worldPos, btn)) {
                 //handle button action dynamically based on name
                 if (name == "control_button") {
-					m_previousState = m_currentState; //set to pause state before going to control
+                    m_previousState = m_currentState; //set to pause state before going to control
                     m_currentState = GameState::CONTROL;
                     loadScreen(manager, "control_scene.json");
                     return; //stop checking after a click
@@ -202,9 +202,9 @@ void GUISystem::pauseUpdate(GameObjectManager& manager) {
                 else if (name == "resume_button") {
                     if (m_stateBeforePause == GameState::PLAYING) {
                         m_currentState = GameState::PLAYING;
-						//idk as of now we dont have a resume screen to load back to playing
+                        //idk as of now we dont have a resume screen to load back to playing
                     }
-                    else if (m_stateBeforePause == GameState::MENU){
+                    else if (m_stateBeforePause == GameState::MENU) {
                         m_currentState = GameState::MENU;
                         loadScreen(manager, "menu_scene.json");
                     }
@@ -228,15 +228,15 @@ void GUISystem::createButtons(GameObjectManager& manager) {
     //clear previous references
     m_buttons.clear();
 
-	//get all game objects from manager
+    //get all game objects from manager
     std::vector<GameObject*> allObjs;
     manager.getAllGameObjects(allObjs);
 
     if (allObjs.empty()) return; //check if its empty
 
-	//loop through all objects to find buttons
-    for (GameObject* obj : allObjs){
-		//get object name
+    //loop through all objects to find buttons
+    for (GameObject* obj : allObjs) {
+        //get object name
         const std::string name = obj->getObjectName();
         //only consider objects that have both transform and render
         if (!obj->hasComponent<Transform>()) continue;
@@ -265,9 +265,9 @@ void GUISystem::createButtons(GameObjectManager& manager) {
 void GUISystem::removeButtons(GameObjectManager& manager) {
     //delete button objects
     for (auto& pair : m_buttons) {
-		GameObject* btn = pair.second; //get button object
+        GameObject* btn = pair.second; //get button object
         if (btn) {
-			manager.deleteGameObject(btn); //delete from manager
+            manager.deleteGameObject(btn); //delete from manager
         }
     }
     m_buttons.clear(); //clear map
@@ -275,7 +275,7 @@ void GUISystem::removeButtons(GameObjectManager& manager) {
 
 void GUISystem::startGame(GameObjectManager& manager) {
     std::cout << "[GUI] Play button clicked - starting game" << std::endl;
-    
+
     // Remove menu buttons
     removeButtons(manager);
 

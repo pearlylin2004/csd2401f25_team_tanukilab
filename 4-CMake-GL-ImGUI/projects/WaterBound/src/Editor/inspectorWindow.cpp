@@ -126,8 +126,8 @@ void InspectorWindow::render(GameObjectManager& manager) {
 
         /* ------------------- State Machine ------------------- */
         if (selected->hasComponent<StateMachine>()) {
-            // for animation/audio(maybe)
             renderStateMachine(selected);
+            // for animation/audio(maybe)
 
             ImGui::Spacing();
             ImGui::Separator();
@@ -160,7 +160,6 @@ void InspectorWindow::render(GameObjectManager& manager) {
 
         /* ------------------- Physics ------------------- */
         if (selected->hasComponent<Physics>()) {
-            //Transform* transform = selected->getComponent<Transform>();
             renderPhysics(selected, selected->hasComponent<Input>());
 
             ImGui::Spacing();
@@ -172,7 +171,6 @@ void InspectorWindow::render(GameObjectManager& manager) {
 
         /* ------------------- Font ------------------- */
         if (selected->hasComponent<FontComponent>()) {
-            //Transform* transform = selected->getComponent<Transform>();
             renderFont(selected);
 
             ImGui::Spacing();
@@ -183,7 +181,6 @@ void InspectorWindow::render(GameObjectManager& manager) {
 
         /* ------------------- Font ------------------- */
         if (selected->hasComponent<AudioComponent>()) {
-            //Transform* transform = selected->getComponent<Transform>();
             renderAudio(selected);
 
             ImGui::Spacing();
@@ -194,7 +191,6 @@ void InspectorWindow::render(GameObjectManager& manager) {
 
         /* ------------------- Font ------------------- */
         if (selected->hasComponent<TileMap>()) {
-            //Transform* transform = selected->getComponent<Transform>();
             renderTileMap(selected);
 
             ImGui::Spacing();
@@ -203,10 +199,19 @@ void InspectorWindow::render(GameObjectManager& manager) {
         }
         /* ------------------- END ------------------- */
 
-        /* ------------------- Font ------------------- */
+        /* ------------------- Lua ------------------- */
         if (selected->hasComponent<LuaScript>()) {
-            //Transform* transform = selected->getComponent<Transform>();
             renderLua(selected);
+
+            ImGui::Spacing();
+            ImGui::Separator();
+            ImGui::Spacing();
+        }
+        /* ------------------- END ------------------- */
+
+        /* ------------------- Visual LC ------------------- */
+        if (selected->hasComponent<VisualLC>()) {
+            renderVisualLogic(selected);
 
             ImGui::Spacing();
             ImGui::Separator();
@@ -1354,6 +1359,117 @@ void InspectorWindow::renderLua(GameObject* selected) {
     ImGui::Spacing();
     ImGui::Separator();
     ImGui::Spacing();
+}
+
+void InspectorWindow::renderVisualLogic(GameObject* selected) {
+    VisualLC* logic = selected->getComponent<VisualLC>();
+
+	if (ImGui::CollapsingHeader("Visual Logic")) {
+        std::string displayName = logic->filename.empty() ? "<Create New>" : logic->filename;
+
+
+		/* ---------- Dropdown to Select Logic Graph ---------- */
+        if (ImGui::BeginCombo("Logic Graph", displayName.c_str())) {
+            // create new logic asset
+			if (ImGui::Selectable("<Create New>", logic->filename.empty())) {
+                Editor::visualLogicState.showEditor = true;
+                Editor::visualLogicState.currentGraphName = "";
+				Editor::visualLogicState.targetObj = selected;
+
+                // create new empty graph
+                Editor::visualLogicState.nodes.clear();
+                Editor::visualLogicState.connections.clear();
+                logic->filename = "";
+
+                VisualLogicEditor::Instance().updateNextNodeId();
+
+				DebugLog::addMessage("Creating new Visual Logic Graph for " + selected->getObjectName());
+			}
+
+            // list existing logic assets
+            if (std::filesystem::exists("assets/Logic")) {
+                for (const auto& entry : std::filesystem::directory_iterator("assets/Logic")) {
+                    if (entry.is_regular_file() && entry.path().extension() != ".json") {
+                        continue;
+                    }
+
+                    std::string assetName = entry.path().filename().string();
+                    bool isSelected = (logic->filename == assetName);
+
+                    if (ImGui::Selectable(assetName.c_str(), isSelected)) {
+                        logic->filename = assetName;
+
+                        std::string filepath = "/Logic/" + assetName;
+                        std::string err;
+                        if (JsonIO::loadVisualLogic(filepath, logic->nodes, logic->connections, &err)) {
+                            DebugLog::addMessage("Loaded Visual Logic Graph: " + assetName + "\n");
+                            DebugLog::addMessage("Loaded " + std::to_string(logic->nodes.size()) + " nodes\n");
+                        }
+                        else {
+                            DebugLog::addMessage("ERROR loading Visual Logic: " + err + "\n");
+                        }
+                    }
+
+                    if (isSelected) {
+                        ImGui::SetItemDefaultFocus();
+                    }
+                }
+            }
+
+			ImGui::EndCombo();
+        }
+        /* ---------- END ---------- */
+
+
+        ImGui::Spacing();
+        ImGui::Separator();
+        ImGui::Spacing();
+
+
+        /* ---------- Edit Logic Graph ---------- */
+        if (!logic->filename.empty() && ImGui::Button("Edit Logic Graph", ImVec2(-1, 0))) {
+            Editor::visualLogicState.showEditor = true;
+			Editor::visualLogicState.currentGraphName = logic->filename;
+            Editor::visualLogicState.targetObj = selected;
+            
+            // loading logic
+            if (!logic->filename.empty()) {
+
+                std::string filepath = "/Logic/" + logic->filename;
+                std::string err;
+                if (JsonIO::loadVisualLogic(filepath, Editor::visualLogicState.nodes, Editor::visualLogicState.connections, &err)) {
+                    VisualLogicEditor::Instance().updateNextNodeId();
+
+                    DebugLog::addMessage("Loaded Visual Logic: " + logic->filename + "\n");
+                }
+                else {
+                    DebugLog::addMessage("ERROR loading Visual Logic: " + err + "\n");
+                    // if file doesn't exist, try loading from component
+                    Editor::visualLogicState.nodes = logic->nodes;
+                    Editor::visualLogicState.connections = logic->connections;
+                }
+            }
+            else {
+                // no filename, load from component (new logic)
+                Editor::visualLogicState.nodes = logic->nodes;
+                Editor::visualLogicState.connections = logic->connections;
+            }
+
+            DebugLog::addMessage("Opening Visual Logic Editor for " + selected->getObjectName() + "\n");
+        }
+        /* ---------- END ---------- */
+
+
+        ImGui::Spacing();
+        ImGui::Separator();
+        ImGui::Spacing();
+
+
+		if (ImGui::Button("Remove Virtual Logic", ImVec2(-1, 0))) {
+			selected->removeComponent<VisualLC>();
+			DebugLog::addMessage("Removed Virtual Logic Controller");
+		}
+	}
 }
 
 void InspectorWindow::wrongFileTypePopup(const std::string& filename) {

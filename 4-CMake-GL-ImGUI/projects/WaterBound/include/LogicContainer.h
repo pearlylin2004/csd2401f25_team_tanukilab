@@ -4,11 +4,9 @@
 \author     Varick, v.teo, 2403417
 \par        v.teo@digipen.edu
 \date		November, 5th, 2025
-\brief      Declares the LogicContainer system responsible for managing simple
-            per-object finite state machines. This includes handling transitions
-            between Idle, Walking, Jumping, and Falling states based on input,
-            physics state, and gameplay events. The LogicContainer also supports
-            player actions such as spawning bullets.
+\brief      Declares the LogicContainer system responsible for managing class-based
+            finite state machines and trigger-action rules. This replaces the old
+            switch-case FSM implementation with proper OOP design.
 
 Copyright (C) 2025 DigiPen Institute of Technology.
 Reproduction or disclosure of this file or its contents
@@ -19,107 +17,69 @@ Technology is prohibited.
 
 #pragma once
 
+#include "Component.h"
+#include "input.h"
+#include "StateMachineRuntime.h"
+#include "TriggerActionRuntime.h"
+#include <unordered_map>
+#include <memory>
+
 class GameObject;
 class GameObjectManager;
 
-#include "Component.h"
-#include "input.h"
-
 /*!
  * \class LogicContainer
- * \brief A lightweight gameplay logic system for handling finite-state
- *        behaviors of game objects.
+ * \brief Manages class-based FSMs and trigger-action rules for gameplay logic.
  *
- * This class bridges the Input system, Physics, Transform, and StateMachine
- * components. It evaluates per-object state transitions (Idle, Walking,
- * Jumping, Falling) and applies context-specific behavior each frame.
- *
- * The LogicContainer also handles special actions such as firing bullets.
+ * This system:
+ * - Creates and updates RuntimeStateMachine instances per GameObject
+ * - Syncs runtime FSM state back to StateMachine component for editor/animation
+ * - Manages trigger-action rules for environmental interactions
  */
 class LogicContainer {
 public:
 
     /*!
-     * \brief Main per-frame state update function for a GameObject.
+     * \brief Main per-frame update function for a GameObject.
      *
-     * Evaluates input, updates the object�s state machine, performs state
-     * transitions, and triggers gameplay actions such as jumping or firing.
+     * Updates the runtime FSM, syncs state to component, and processes
+     * trigger-action rules.
      *
      * \param obj      Reference to the GameObject whose logic is being updated.
      * \param dt       Delta time for the current frame.
-     * \param manager  Reference to the GameObjectManager used for spawning
-     *                 or retrieving other objects (e.g., bullets).
      */
-    void update(GameObject& obj, float dt /*, GameObjectManager& manager */);
+    void update(GameObject& obj, float dt);
+
+    /*!
+     * \brief Get or create the RuntimeStateMachine for this GameObject.
+     *
+     * If the machine doesn't exist, builds a new one with all states and transitions.
+     *
+     * \param obj The GameObject to get/create machine for.
+     * \return Pointer to the RuntimeStateMachine (never null after call).
+     */
+    RuntimeStateMachine* getOrCreateMachine(GameObject& obj);
+
+    /*!
+     * \brief Get the TriggerActionSystem for managing rules.
+     * \return Reference to the trigger-action system.
+     */
+    TriggerActionSystem& getTriggerActionSystem() { return m_triggerActionSystem; }
 
 private:
 
     /*!
-     * \brief Performs a state transition on a GameObject�s StateMachine.
+     * \brief Syncs the runtime FSM state back to the StateMachine component.
      *
-     * Resets the state timer, updates the current state, and logs the transition
-     * to both console and UI for debugging.
+     * This allows the editor and animation system to see the current state.
      *
-     * \param obj   The object to transition.
-     * \param next  The PlayerState to move into.
+     * \param obj The GameObject to sync.
      */
-    static void enter(GameObject& obj, PlayerState next);
+    void syncStateToComponent(GameObject& obj);
 
-    /*!
-     * \brief Behavior function executed when the object is in Idle state.
-     *
-     * Handles transitions to Walking when movement keys are pressed,
-     * and Jumping when the player triggers a jump.
-     *
-     * \param obj The object in Idle state.
-     * \param dt  Time elapsed for the frame.
-     */
-    static void tickIdle(GameObject& obj, float dt);
+    // Storage for runtime FSMs (one per GameObject)
+    std::unordered_map<GameObject*, std::unique_ptr<RuntimeStateMachine>> m_machines;
 
-    /*!
-     * \brief Behavior function executed when the object is in Walking state.
-     *
-     * Handles movement-based transitions, orientation updates, jumping,
-     * and detecting transitions into Falling when the object leaves the ground.
-     *
-     * \param obj The object in Walking state.
-     * \param dt  Time elapsed for the frame.
-     */
-    static void tickWalking(GameObject& obj, float dt);
-
-    /*!
-     * \brief Behavior function executed when the object is in Jumping state.
-     *
-     * Monitors vertical velocity and transitions to Falling once the upward
-     * movement ends.
-     *
-     * \param obj The object in Jumping state.
-     * \param dt  Time elapsed for the frame.
-     */
-    static void tickJumping(GameObject& obj, float dt);
-
-    /*!
-     * \brief Behavior function executed when the object is in Falling state.
-     *
-     * Detects landing and transitions into either Walking or Idle depending
-     * on which movement keys are currently held.
-     *
-     * \param obj The object in Falling state.
-     * \param dt  Time elapsed for the frame.
-     */
-    static void tickFalling(GameObject& obj, float dt);
-
-    /*!
-     * \brief Spawns a bullet near the object and initializes its velocity.
-     *
-     * Uses the object�s facing direction and transform to position the bullet.
-     * Only works if a GameObject named "bullet" exists in the manager.
-     *
-     * \param obj      The object performing the action (typically the player).
-     * \param manager  The GameObjectManager used to retrieve the bullet object.
-     */
-    //static void trySpawnBulletNear(GameObject& obj, GameObjectManager& manager);\
-
-	static void tickDead(GameObject& obj, float dt);
+    // Trigger-action system for environmental logic
+    TriggerActionSystem m_triggerActionSystem;
 };
-

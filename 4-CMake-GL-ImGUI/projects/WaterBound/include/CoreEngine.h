@@ -102,4 +102,5 @@ private:
     std::unique_ptr<PlayerControllerSystem> m_playerController;
     std::unique_ptr<AudioSystem> m_audioSystem;
     std::unique_ptr<TileMapSystem> m_tileMapSystem;
+    std::unique_ptr<VisualLogicSystem> m_visualLCSystem;
 };

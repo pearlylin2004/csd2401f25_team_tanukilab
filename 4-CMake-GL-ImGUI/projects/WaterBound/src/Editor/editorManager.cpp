@@ -47,6 +47,7 @@ void EditorManager::update() {
     inspectorWindow.render(m_manager);
     menuBar.render(m_manager);
     performanceWindow.render();
+    VisualLogicEditor::Instance().render();
 
     // only show play info when not editing
     if (!isEditing) playDebugWindow.render();
@@ -57,8 +58,8 @@ void EditorManager::renderScene(GLuint texture, float aspectRatio) {
 }
 
 void EditorManager::handleShortcutKeys(GameObjectManager& manager) {
-    // block shortcut if typing
-    if (ImGui::GetIO().WantTextInput) {
+	// block shortcut if typing / visual logic viewport focused
+    if (ImGui::GetIO().WantTextInput || Editor::visualLogicState.isFocus) {
         return;
     }
 

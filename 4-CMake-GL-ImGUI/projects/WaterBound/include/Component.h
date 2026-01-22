@@ -531,3 +531,75 @@ struct TileMap : public Component
         tiles.erase({ x, y });
     }
 };
+
+struct LogicConnection {
+	int fromNodeId;
+	int toNodeId;
+
+    std::string outputPin; // OUT, TRUE, FALSE
+    std::string inputPin; // IN
+};
+
+enum class NodeType {
+    EVENT,
+    ACTION,
+    CONDITION
+};
+
+enum class NodeImplementation {
+    // EVENT
+    ON_START,
+    ON_UPDATE,
+    ON_COLLISION,
+
+    // CONDITION
+    CHECK_KEY_HELD,
+    COMPARE_VALUE,
+    COMPARE_VAR,
+
+    // ACTION
+    PRINT_MESSAGE,
+    MOVE_OBJECT,
+    ROTATE_OBJECT,
+    SET_FLOAT,
+
+    // DEFAULT
+    DEFAULT // nothing happen :)
+};
+
+struct LogicNode {
+    int id;
+    NodeType type;
+    //std::string name;
+    NodeImplementation imp;
+    Vector2D position;
+    bool hasInput;
+    bool hasOutput;
+
+    bool hasTrueOutput = false;
+    bool hasFalseOutput = false;
+
+    // for node configuration
+    std::map<std::string, std::string> parameters;
+};
+
+// virtual logic container (editor)
+struct VisualLC : public Component {
+public:
+    std::unique_ptr<Component> clone() const override {
+        return std::make_unique<VisualLC>(*this);
+    }
+
+    std::string filename; // name of the logic asset
+
+    // editor data
+	std::vector<LogicNode> nodes;
+	std::vector<LogicConnection> connections;
+
+	// runtime data
+    bool isExecuting = false;
+    int currentExecutingNodeId = -1;
+    std::map<std::string, float> floatVar;
+    std::map<std::string, std::string> stringVar;
+    std::map<std::string, bool> boolVar;
+};
