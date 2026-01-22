@@ -1625,7 +1625,7 @@ void AudioSystem::updateSpatialAudio(GameObjectManager& manager) {
 
 			// Set the 3D position for this sound
 			FMOD_VECTOR soundPos = {
-				-transform->x,
+				transform->x,
 				transform->y,
 				transform->z
 			};

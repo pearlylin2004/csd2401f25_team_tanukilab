@@ -621,7 +621,7 @@ void AudioHandler::updateListener(float listenerX, float listenerY, float listen
 	FMOD_VECTOR velocity = { 0.0f, 0.0f, 0.0f };
 
 	// Set listener orientation
-	FMOD_VECTOR forward = { 0.0f, 0.0f, -1.0f };  // Looking into screen (negative Z)
+	FMOD_VECTOR forward = { 0.0f, 0.0f, 1.0f };  // Looking into screen
 	FMOD_VECTOR up = { 0.0f, 1.0f, 0.0f };         // Y-axis is up
 
 	// Tell FMOD about the listener
