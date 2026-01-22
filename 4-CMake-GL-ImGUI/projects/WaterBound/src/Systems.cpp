@@ -1295,22 +1295,43 @@ void UISystem::renderMultipleViewPorts() {
 }
 #endif
 
+//void LogicSystem::update(GameObjectManager& manager, float const& dt) {
+//
+//	std::vector<GameObject*> objs;
+//	manager.getAllGameObjects(objs);
+//
+//	static LogicContainer container; // stateless helper
+//
+//	for (auto* go : objs) {
+//		if (!go) continue;
+//		if (!go->hasComponent<StateMachine>()) continue;
+//		if (!go->hasComponent<Transform>() || !go->hasComponent<Physics>()) continue;
+//
+//		container.update(*go, dt /*, manager */);
+//	}
+//}
+
 void LogicSystem::update(GameObjectManager& manager, float const& dt) {
+	auto start = std::chrono::high_resolution_clock::now();
 
 	std::vector<GameObject*> objs;
 	manager.getAllGameObjects(objs);
 
-	static LogicContainer container; // stateless helper
+	static LogicContainer container; // Single container instance
 
 	for (auto* go : objs) {
 		if (!go) continue;
 		if (!go->hasComponent<StateMachine>()) continue;
 		if (!go->hasComponent<Transform>() || !go->hasComponent<Physics>()) continue;
 
-		container.update(*go, dt /*, manager */);
+		// Update class-based FSM + trigger-action rules
+		container.update(*go, dt);
 	}
-}
 
+	auto end = std::chrono::high_resolution_clock::now();
+	double ms = std::chrono::duration<double, std::milli>(end - start).count();
+	g_SystemTimers.push_back({ "Logic", ms });
+}
 void AudioSystem::init(GameObjectManager& manager) {
 	auto start = std::chrono::high_resolution_clock::now();
 
@@ -1357,6 +1378,20 @@ void AudioSystem::init(GameObjectManager& manager) {
 
 void AudioSystem::update(GameObjectManager& manager, float deltaTime) {
 	auto start = std::chrono::high_resolution_clock::now();
+
+	// Update FMOD listener position
+	GameObject* player = manager.getGameObject("player");
+	if (player && player->hasComponent<Transform>()) {
+		Transform* playerTransform = player->getComponent<Transform>();
+		AudioHandler::getInstance().updateListener(
+			playerTransform->x,
+			playerTransform->y,
+			playerTransform->z
+		);
+	}
+
+	// Update all sound source positions
+	updateSpatialAudio(manager);
 
 	std::vector<GameObject*> gameObjects;
 	manager.getAllGameObjects(gameObjects);
@@ -1558,19 +1593,29 @@ void AudioSystem::initializeSceneAudio(GameObjectManager& manager) {
 		// Pre-load all sounds for all channels
 		for (auto& [channelName, channel] : audio->audioChannels) {
 			if (!channel.audioFile.empty()) {
-				// Pre-load the sound via ResourceManager
-				FMOD::Sound* sound = ResourceManager::getInstance().getSound(channel.audioFile);
+				// Pass isSpatial flag during preload
+				FMOD::Sound* sound = ResourceManager::getInstance().getSound(
+					channel.audioFile,
+					channel.loop,
+					channel.isSpatial
+				);
 
 				if (!sound) {
 					std::cerr << "[AudioSystem] Failed to preload: "
 						<< channel.audioFile << " for channel: "
 						<< channelName << std::endl;
-				}
-				else {
+				}else {
 					std::cout << "[AudioSystem] Preloaded: "
 						<< channel.audioFile << " for channel: "
-						<< channelName << std::endl;
+						<< channelName
+						<< (channel.isSpatial ? " (3D)" : " (2D)") << std::endl;
 				}
+
+				// Set channel-specific min/max distance if 3D
+				if (channel.isSpatial && sound) {
+					sound->set3DMinMaxDistance(channel.minDistance, channel.maxDistance);
+				}
+
 			}
 		}
 	}
@@ -1578,4 +1623,38 @@ void AudioSystem::initializeSceneAudio(GameObjectManager& manager) {
 	auto end = std::chrono::high_resolution_clock::now();
 	double ms = std::chrono::duration<double, std::milli>(end - start).count();
 	g_SystemTimers.push_back({ "Audio Scene Init", ms });
+}
+
+void AudioSystem::updateSpatialAudio(GameObjectManager& manager) {
+	std::vector<GameObject*> gameObjects;
+	manager.getAllGameObjects(gameObjects);
+
+	for (GameObject* obj : gameObjects) {
+		// Skip objects without audio or transform cus they are not spatial
+		if (!obj->hasComponent<AudioComponent>() || !obj->hasComponent<Transform>()) continue;
+
+		Transform* transform = obj->getComponent<Transform>();
+		AudioComponent* audio = obj->getComponent<AudioComponent>();
+
+		// Update position for each 3D audio channel
+		for (auto& [channelName, audio] : audio->audioChannels) {
+			// Only update 3D sounds that are currently playing
+			if (!audio.isSpatial || audio.state != AudioState::Playing || !audio.channel) continue;
+
+			// Set the 3D position for this sound
+			FMOD_VECTOR soundPos = {
+				transform->x,
+				transform->y,
+				transform->z
+			};
+			FMOD_VECTOR soundVel = { 0.0f, 0.0f, 0.0f };  // No doppler effect
+			
+			FMOD_RESULT result = audio.channel->set3DAttributes(&soundPos, &soundVel);
+
+			if (result != FMOD_OK) {
+				std::cerr << "[AudioSystem] Failed to set 3D attributes for: "
+					<< obj->getObjectName() << " channel: " << channelName << std::endl;
+			}
+		}
+	}
 }

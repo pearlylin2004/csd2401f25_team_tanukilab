@@ -1190,6 +1190,11 @@ void GameObjectManager::saveSceneToJson(const std::string& filename, bool isNew)
 					pushIfDiffBool("fadeOutOnStop", channel.fadeOutOnStop);
 					pushIfDiffFloat("fadeOutDuration", channel.fadeOutDuration);
 
+					// Check 3D audio overrides
+					pushIfDiffBool("isSpatial", channel.isSpatial);
+					pushIfDiffFloat("minDistance", channel.minDistance);
+					pushIfDiffFloat("maxDistance", channel.maxDistance);
+
 					// If this channel has overrides OR doesn't exist in prefab, save it
 					if (!channelOverride.ObjectEmpty() || !prefabChannel) {
 						channelsOverride.AddMember(

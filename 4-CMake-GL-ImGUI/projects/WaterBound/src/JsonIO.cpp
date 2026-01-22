@@ -693,6 +693,11 @@ namespace JsonIO {
                 channelObj.AddMember("fadeOutOnStop", channel.fadeOutOnStop, a);
                 channelObj.AddMember("fadeOutDuration", channel.fadeOutDuration, a);
 
+                // Save 3D audio settings
+                channelObj.AddMember("isSpatial", channel.isSpatial, a);
+                channelObj.AddMember("minDistance", channel.minDistance, a);
+                channelObj.AddMember("maxDistance", channel.maxDistance, a);
+
                 channels.AddMember(Value(channelName.c_str(), a), channelObj, a);
             }
 
@@ -942,6 +947,14 @@ namespace JsonIO {
                             ch->fadeOutOnStop = channelObj["fadeOutOnStop"].GetBool();
                         if (channelObj.HasMember("fadeOutDuration"))
                             ch->fadeOutDuration = channelObj["fadeOutDuration"].GetFloat();
+
+                        // Load 3D audio settings
+                        if (channelObj.HasMember("isSpatial"))
+                            ch->isSpatial = channelObj["isSpatial"].GetBool();
+                        if (channelObj.HasMember("minDistance"))
+                            ch->minDistance = channelObj["minDistance"].GetFloat();
+                        if (channelObj.HasMember("maxDistance"))
+                            ch->maxDistance = channelObj["maxDistance"].GetFloat();
                     }
                 }
                 else {
@@ -984,7 +997,6 @@ namespace JsonIO {
                             // --- texture ---
                             if (animStateObj.HasMember("texture") && animStateObj["texture"].IsString()) {
                                 st.texFile = animStateObj["texture"].GetString();
-                                st.texChanged = true;
                             }
                             else {
                                 st.texFile.clear();
