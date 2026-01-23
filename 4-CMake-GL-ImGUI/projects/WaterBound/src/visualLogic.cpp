@@ -531,15 +531,6 @@ bool VisualLogicSystem::shouldTriggerCollision(GameObject* obj, LogicNode& node,
 
 		return false;
 	}
-	/*else if (filterType == "layer") {
-		try {
-			int layer = std::stoi(filterValue);
-			return collided->getLayer() == layer;
-		}
-		catch (...) {
-			return false;
-		}
-	}*/
 
 	return false;
 }

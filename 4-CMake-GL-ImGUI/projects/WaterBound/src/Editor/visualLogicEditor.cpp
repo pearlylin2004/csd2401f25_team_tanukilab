@@ -725,45 +725,6 @@ void VisualLogicEditor::renderNodeProperties() {
 					ImGui::EndCombo();
 				}
 			}
-			//else if (filterType == "layer") {
-			//	std::string layerId = node.parameters.count("colFilterValue") ?
-			//		node.parameters["colFilterValue"] : "1";
-
-			//	ImGui::Text("Layer ID:");
-
-			//	int layerInt{};
-			//	 
-			//	try {
-			//		layerInt = std::stoi(layerId);
-			//		layerId = std::to_string(layerInt);
-			//	}
-			//	catch (...) {
-			//		layerId = "1";
-			//	}
-
-			//	if (ImGui::InputInt("##colFilterValue", &layerInt)) {
-			//		node.parameters["colFilterValue"] = layerId;
-			//	}
-
-			//	if (ImGui::BeginCombo("##quickSelectLayer", "Quick Select")) {
-			//		std::unordered_set<int> uniqueLayers;
-			//		auto& cached = CachedGameObjects::Instance().getCachedObjects();
-
-			//		for (GameObject* obj : cached) {
-			//			uniqueLayers.insert(obj->getLayer());
-			//		}
-
-			//		for (int layer : uniqueLayers) {
-			//			std::string label = std::to_string(layer);
-
-			//			if (ImGui::Selectable(label.c_str())) {
-			//				//node.parameters["colFilterValue"] = std::to_string(layer);
-			//			}
-			//		}
-
-			//		ImGui::EndCombo();
-			//	}
-			//}
 		}
 	}
 	/* ---------- ACTION ---------- */
