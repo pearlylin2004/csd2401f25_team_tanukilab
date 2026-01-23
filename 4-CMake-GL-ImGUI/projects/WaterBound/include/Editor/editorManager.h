@@ -211,6 +211,8 @@ private:
 		ImVec2 mousePos, float threshold);
 	void deleteSelectedConnection();
 
+	// helper func for reload script
+	void reloadAllVisualLogic(const std::string& scriptName);
 };
 
 // Top menu bar

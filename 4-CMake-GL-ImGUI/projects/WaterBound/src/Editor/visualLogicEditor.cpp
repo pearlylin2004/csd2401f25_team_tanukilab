@@ -383,11 +383,10 @@ void VisualLogicEditor::saveLogic() {
 
 	std::string filepath = "/Logic/" + logic->filename;
 
-	logic->nodes = Editor::visualLogicState.nodes;
-	logic->connections = Editor::visualLogicState.connections;
-
 	std::string err;
 	if (JsonIO::saveVisualLogic(filepath, Editor::visualLogicState.nodes, Editor::visualLogicState.connections, &err)) {
+		reloadAllVisualLogic(logic->filename);
+
 		if (Editor::visualLogicState.wantCloseEditor) {
 			Editor::visualLogicState.showEditor = false;
 			Editor::visualLogicState.isFocus = false;
@@ -1352,6 +1351,41 @@ void VisualLogicEditor::deleteSelectedConnection() {
 		Editor::visualLogicState.connections.begin() + m_selectedConIndex);
 
 	m_selectedConIndex = -1;
+}
+
+void VisualLogicEditor::reloadAllVisualLogic(const std::string& scriptName) {
+	if (scriptName.empty()) return;
+
+	std::vector<GameObject*> gameObjects = CachedGameObjects::Instance().getCachedObjects();
+
+	int count{};
+	for (GameObject* obj : gameObjects) {
+		if (obj->hasComponent<VisualLC>()) {
+			VisualLC* logic = obj->getComponent<VisualLC>();
+
+			if (logic->filename == scriptName) {
+				logic->nodes = Editor::visualLogicState.nodes;
+				logic->connections = Editor::visualLogicState.connections;
+
+				// reset runtime state
+				logic->hoverNodesChecked = false;
+				logic->wasHoveredLastFrame = false;
+				logic->currentExePath.clear();
+				logic->curCollision.clear();
+				logic->preCollision.clear();
+
+				++count;
+			}
+		}
+	}
+
+	if (count > 0) {
+		DebugLog::addMessage("Hot-reloaded '" + scriptName + "' for " +
+			std::to_string(count) + " object(s)");
+	}
+	else {
+		DebugLog::addMessage("No objects found using '" + scriptName + "'");
+	}
 }
 
 #endif
