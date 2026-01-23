@@ -28,6 +28,7 @@ Technology is prohibited.
 #include "Editor/editorState.h"
 #include "Editor/gameDebugLog.h"
 #include "Editor/undoRedo.h"
+#include "globalRegistry.h"
 #include "collision.h"
 #include "GameObjectManager.h"
 #include "JsonIO.h"

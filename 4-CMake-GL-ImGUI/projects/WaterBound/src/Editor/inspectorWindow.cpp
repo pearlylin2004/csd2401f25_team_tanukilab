@@ -786,6 +786,49 @@ void InspectorWindow::renderCollision( GameObject* selected, GameObjectManager& 
 
             }
 
+            std::string currentTag = collision->collisionTag.empty() ? "default" : collision->collisionTag;
+
+            if (ImGui::BeginCombo("Collision Tag", currentTag.c_str())) {
+                const std::vector<std::string>& collisionTags = GlobalRegistry::Instance().getCollisionTags();
+
+                for (const std::string& tag : collisionTags) {
+                    bool isSelected = (currentTag == tag);
+
+                    if (ImGui::Selectable(tag.c_str(), isSelected)) {
+                        collision->collisionTag = tag;
+                    }
+
+                    if (isSelected) {
+                        ImGui::SetItemDefaultFocus();
+                    }
+                }
+
+                ImGui::EndCombo();
+            }
+
+            /*if (ImGui::BeginCombo("Collide with", filterType.c_str())) {
+                const char* options[] = { "any", "name", "tag" };
+                const char* filterLabels[] = { "Any Object", "Object Name", "Collision Tag" };
+
+                for (const char* option : options) {
+                    bool isSelected = (filterType == option);
+
+                    if (ImGui::Selectable(option, isSelected)) {
+                        node.parameters["colFilterType"] = option;
+
+                        if (!isSelected) {
+                            node.parameters["colFilterValue"] = "";
+                        }
+                    }
+
+                    if (isSelected) {
+                        ImGui::SetItemDefaultFocus();
+                    }
+                }*/
+
+               /* ImGui::EndCombo();
+            }*/
+
         }
 
         ImGui::Spacing();

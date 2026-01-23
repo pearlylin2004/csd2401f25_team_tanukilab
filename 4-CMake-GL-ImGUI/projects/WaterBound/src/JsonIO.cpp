@@ -605,6 +605,51 @@ namespace JsonIO {
 
     /// @}
 
+    /* ---------- Load/Save collision tags ---------- */
+    bool LoadCollisionTags(const std::string& filepath, std::vector<std::string>& outTags, std::string* err) {
+        rapidjson::Document doc;
+        if (!ReadFileToDocument(RUNTIME_DIR_R + filepath, doc, err)) return false;
+
+        if (!doc.IsObject()) {
+            if (err) *err = "Collision tag file is not a JSON object";
+            return false;
+        }
+
+        if (!doc.HasMember("collisionTags") || !doc["collisionTags"].IsArray()) {
+            if (err) *err = "Missing or invalid 'tags' array";
+            return false;
+        }
+
+        outTags.clear();
+        for (const auto& v : doc["collisionTags"].GetArray()) {
+            if (v.IsString()) {
+                outTags.emplace_back(v.GetString());
+            }
+        }
+
+        return true;
+    }
+
+    bool SaveCollisionTags(const std::string& filepath, const std::vector<std::string>& tags, std::string* err) {
+        rapidjson::Document doc;
+        doc.SetObject();
+        auto& a = doc.GetAllocator();
+
+        doc.AddMember("version", 1, a);
+
+        rapidjson::Value tagArray(rapidjson::kArrayType);
+        for (const auto& tag : tags) {
+            tagArray.PushBack(rapidjson::Value(tag.c_str(), a), a);
+        }
+
+        doc.AddMember("collisionTags", tagArray, a);
+
+        bool runtime = WriteDocumentToFile(RUNTIME_DIR_R + filepath, doc, true, err);
+        bool proj = WriteDocumentToFile(SOURCE_ASSETS_DIR_R + filepath, doc, true, err);
+
+        return (runtime && proj);
+    }
+
     /* ---------- Saving obj state in json for undo/redo ---------- */
     std::string serializeGameObj(GameObject* obj) {
         if (!obj) return "";

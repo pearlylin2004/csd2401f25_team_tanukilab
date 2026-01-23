@@ -147,6 +147,10 @@ namespace JsonIO {
 		const glm::vec4& v,
 		rapidjson::Document::AllocatorType& alloc);
 
+	// ---- Global Registry collision tag helpers ----
+	bool LoadCollisionTags(const std::string& filepath, std::vector<std::string>& outTags, std::string* err = nullptr);
+
+	bool SaveCollisionTags(const std::string& filepath, const std::vector<std::string>& tags, std::string* err = nullptr);
 
 	// ---- for undo/redo in editor ----
 	std::string serializeGameObj(GameObject* obj);
