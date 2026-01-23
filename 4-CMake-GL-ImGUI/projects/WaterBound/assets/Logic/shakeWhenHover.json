@@ -168,6 +168,21 @@
       "parameters": {
         "angle": "0"
       }
+    },
+    {
+      "id": 27,
+      "implementation": "Play Sound",
+      "type": 1,
+      "position": [
+        134.0,
+        80.0
+      ],
+      "hasInput": true,
+      "hasOutput": true,
+      "parameters": {
+        "audioFile": "assets\\Audio\\collect_water.wav",
+        "channel": "default"
+      }
     }
   ],
   "connections": [
@@ -226,15 +241,21 @@
       "inputPin": "In"
     },
     {
-      "fromNodeId": 22,
-      "outputPin": "Out",
-      "toNodeId": 15,
-      "inputPin": "In"
-    },
-    {
       "fromNodeId": 23,
       "outputPin": "Out",
       "toNodeId": 26,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 22,
+      "outputPin": "Out",
+      "toNodeId": 27,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 22,
+      "outputPin": "Out",
+      "toNodeId": 15,
       "inputPin": "In"
     }
   ]

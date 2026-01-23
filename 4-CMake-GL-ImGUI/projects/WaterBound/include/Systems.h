@@ -256,7 +256,7 @@ private:
 	bool executeConditionNode(GameObject* obj, VisualLC* logic, LogicNode& node);
 
 	// helper to find next connected node
-	int findNextNode(VisualLC* logic, int fromNodeId, const std::string& outputPin);
+	std::vector<int> findAllNextNode(VisualLC* logic, int fromNodeId, const std::string& outputPin);
 
 	// helper func to find a node by ID
 	LogicNode* findNode(VisualLC* logic, int nodeId);

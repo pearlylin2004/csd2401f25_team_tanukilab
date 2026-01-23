@@ -568,6 +568,7 @@ enum class NodeImplementation {
     ROTATE_OBJECT,
     SET_ROTATION,
     SET_FLOAT,
+    PLAY_SOUND,
 
     // DEFAULT
     DEFAULT // nothing happen :)
@@ -607,6 +608,7 @@ public:
     std::map<std::string, float> floatVar;
     std::map<std::string, std::string> stringVar;
     std::map<std::string, bool> boolVar;
+    std::unordered_set<int> currentExePath;
 
 	bool wasHoveredLastFrame = false; // for hover event detection
 

@@ -175,8 +175,18 @@ void VisualLogicSystem::onCollisionEnter(GameObject* obj, VisualLC* logic, GameO
 void VisualLogicSystem::executeNode(GameObject* obj, VisualLC* logic, int nodeId) {
 	if (!obj || !logic) return;
 
+	if (logic->currentExePath.count(nodeId)) {
+		// oops executed node, return to avoid infinite loop
+		return;
+	}
+
+	logic->currentExePath.insert(nodeId);
+
 	LogicNode* node = findNode(logic, nodeId);
-	if (!node) return;
+	if (!node) {
+		logic->currentExePath.erase(nodeId);
+		return;
+	}
 
 	// execute based on node type
 	switch (node->type) {
@@ -191,19 +201,23 @@ void VisualLogicSystem::executeNode(GameObject* obj, VisualLC* logic, int nodeId
 
 			// find next node based on TRUE/FALSE
 			std::string pin = result ? "True" : "False";
-			int nextNodeId = findNextNode(logic, node->id, pin);
-			if (nextNodeId != -1) {
-				executeNode(obj, logic, nextNodeId);
+			std::vector<int> nextNodes = findAllNextNode(logic, node->id, pin);
+			for (int nextID : nextNodes) {
+				executeNode(obj, logic, nextID);
 			}
+
+			logic->currentExePath.erase(nodeId);
 			return;
 		}
 	}
 
 	// execute next connected node (NOT for condition)
-	int nextNodeId = findNextNode(logic, node->id, "Out");
-	if (nextNodeId != -1) {
-		executeNode(obj, logic, nextNodeId);
+	std::vector<int> nextNodes = findAllNextNode(logic, node->id, "Out");
+	for (int nextID : nextNodes) {
+		executeNode(obj, logic, nextID);
 	}
+
+	logic->currentExePath.erase(nodeId);
 }
 
 void VisualLogicSystem::executeEventNode(GameObject* obj, VisualLC* logic, LogicNode& node) {
@@ -266,6 +280,36 @@ void VisualLogicSystem::executeActionNode(GameObject* obj, VisualLC* logic, Logi
 			std::stof(node.parameters["value"]) : 0.f;
 
 		logic->floatVar[varName] = value;
+	}
+	else if (node.imp == NodeImplementation::PLAY_SOUND) {
+		AudioComponent* audio = obj->getComponent<AudioComponent>();
+
+		if (audio) {
+			std::string channelName = node.parameters.count("channel") ?
+				node.parameters["channel"] : "default";
+
+			AudioChannel* channel = audio->getChannel(channelName);
+			std::cout << "got audio\n\n";
+
+			if (channel) {
+				if (!channel->audioFile.empty()){
+					std::cout << "got audio file\n\n";
+					channel->isPendingPlay = true;
+
+					DebugLog::addMessage("Playing sound on channel: " + channelName, DebugMode::PlaySimul);
+					
+				}
+				else {
+					std::cerr << "[VisualLogic] No audio file specified!" << std::endl;
+				}
+			}
+			else {
+				std::cerr << "[VisualLogic] Channel " << channelName << " not found" << std::endl;
+			}
+		}
+		else {
+			std::cerr << "[VisualLogic] Object has no AudioComponent!" << std::endl;
+		}
 	}
 }
 
@@ -381,15 +425,17 @@ bool VisualLogicSystem::executeConditionNode(GameObject* obj, VisualLC* logic, L
 	return true;
 }
 
-int VisualLogicSystem::findNextNode(VisualLC* logic, int fromNodeId, const std::string& outputPin) {
+std::vector<int> VisualLogicSystem::findAllNextNode(VisualLC* logic, int fromNodeId, const std::string& outputPin) {
+	std::vector<int> nodes;
+
 	for (const LogicConnection& conn : logic->connections) {
 		if (conn.fromNodeId == fromNodeId && conn.outputPin == outputPin) {
-			return conn.toNodeId;
+			nodes.push_back(conn.toNodeId);
 		}
 	}
 
 	// no connection found
-	return -1;
+	return nodes;
 }
 
 LogicNode* VisualLogicSystem::findNode(VisualLC* logic, int nodeId) {

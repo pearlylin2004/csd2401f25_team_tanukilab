@@ -127,6 +127,10 @@ void VisualLogicEditor::render() {
 					addNode(NodeType::ACTION, NodeImplementation::SET_FLOAT);
 				}
 
+				if (ImGui::MenuItem("Play Sound")) {
+					addNode(NodeType::ACTION, NodeImplementation::PLAY_SOUND);
+				}
+
 				ImGui::EndMenu();
 			}
 			/* -------- END -------- */
@@ -690,6 +694,79 @@ void VisualLogicEditor::renderNodeProperties() {
 		ImGui::Spacing();
 		ImGui::TextDisabled("Stores a float in a variable");
 	}
+	// play Sound
+	else if (node.imp == NodeImplementation::PLAY_SOUND) {
+		AudioComponent* audio = nullptr;
+		if (Editor::visualLogicState.targetObj) {
+			audio = Editor::visualLogicState.targetObj->getComponent<AudioComponent>();
+		}
+
+		ImGui::Text("Audio Channel:");
+
+		if (!audio) {
+			ImGui::TextDisabled("Add a Audio Component in Inspector to play sound");
+		}
+
+		if (audio && !audio->audioChannels.empty()) {
+			// dropdown of channels
+			std::string currentChannel = node.parameters.count("channel") ?
+				node.parameters["channel"] : "default";
+
+			if (ImGui::BeginCombo("##channel", currentChannel.c_str())) {
+				for (const auto& [channelName, ch] : audio->audioChannels) {
+					bool isSelected = (currentChannel == channelName);
+
+					std::string label = channelName;
+					if (!ch.audioFile.empty()) {
+						std::string fileName = std::filesystem::path(ch.audioFile).filename().string();
+						label += " (" + fileName + ")";
+					}
+
+					if (ImGui::Selectable(label.c_str(), isSelected)) {
+						node.parameters["channel"] = channelName;
+					}
+
+					if (isSelected) {
+						ImGui::SetItemDefaultFocus();
+					}
+				}
+				ImGui::EndCombo();
+			}
+
+			ImGui::Spacing();
+
+			if (audio->hasChannel(currentChannel)) {
+				const AudioChannel* ch = audio->getChannel(currentChannel);
+				if (ch && !ch->audioFile.empty()) {
+					ImGui::TextDisabled("Will play: %s",
+						std::filesystem::path(ch->audioFile).filename().string().c_str());
+					ImGui::TextDisabled("Loop: %s | Volume: %.2f",
+						ch->loop ? "Yes" : "No", ch->volume);
+				}
+				else {
+					ImGui::TextColored(ImVec4(1.f, 0.5f, 0.f, 1.f),
+						"Warning: Channel has no audio file!");
+				}
+			}
+		}
+		else {
+			// no audio component or no channels
+			ImGui::TextColored(ImVec4(1.f, 0.3f, 0.3f, 1.f),
+				"No audio channels available!");
+			ImGui::TextDisabled("Add channels in the Audio Component");
+
+			// still show manual input as fallback
+			char channelBuffer[128];
+			std::string currentChannel = node.parameters.count("channel") ?
+				node.parameters["channel"] : "default";
+			strncpy(channelBuffer, currentChannel.c_str(), 127);
+			channelBuffer[127] = '\0';
+
+			if (ImGui::InputText("##channelManual", channelBuffer, 128)) {
+				node.parameters["channel"] = channelBuffer;
+			}
+		}
+	}
 	/* ---------- END ---------- */
 
 	/* ---------- CONDITION ---------- */
@@ -971,6 +1048,9 @@ void VisualLogicEditor::addNode(NodeType type, NodeImplementation imp) {
 	else if (imp == NodeImplementation::SET_FLOAT) {
 		node.parameters["variable"] = "shakeDir";
 		node.parameters["value"] = "1";
+	}
+	else if (imp == NodeImplementation::PLAY_SOUND) {
+		node.parameters["channel"] = "default";
 	}
 	// CONDITION nodes
 	else if (imp == NodeImplementation::CHECK_KEY_HELD) {
