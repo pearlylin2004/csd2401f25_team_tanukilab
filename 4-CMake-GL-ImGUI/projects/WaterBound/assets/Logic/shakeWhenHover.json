@@ -180,7 +180,6 @@
       "hasInput": true,
       "hasOutput": true,
       "parameters": {
-        "audioFile": "assets\\Audio\\collect_water.wav",
         "channel": "default"
       }
     }
