@@ -139,6 +139,10 @@ void VisualLogicEditor::render() {
 					addNode(NodeType::ACTION, NodeImplementation::PLAY_SOUND);
 				}
 
+				if (ImGui::MenuItem("Set State")) {
+					addNode(NodeType::ACTION, NodeImplementation::SET_STATE);
+				}
+
 				ImGui::EndMenu();
 			}
 			/* -------- END -------- */
@@ -643,85 +647,87 @@ void VisualLogicEditor::renderNodeProperties() {
 
 	/* ---------- EVENT ---------- */
 	if (node.type == NodeType::EVENT) {
-		ImGui::Text("Collision Filter");
-		ImGui::Spacing();
+		if (node.imp == NodeImplementation::ON_COLLISION_ENTER || node.imp == NodeImplementation::WHILE_COLLIDING || node.imp == NodeImplementation::ON_COLLISION_EXIT) {
+			ImGui::Text("Collision Filter");
+			ImGui::Spacing();
 
-		std::string filterType = node.parameters.count("colFilterType") ?
-			node.parameters["colFilterType"] : "any";
+			std::string filterType = node.parameters.count("colFilterType") ?
+				node.parameters["colFilterType"] : "any";
 
-		if (ImGui::BeginCombo("Collide with", filterType.c_str())) {
-			const char* options[] = { "any", "name", "tag"};
-			const char* filterLabels[] = {"Any Object", "Object Name", "Collision Tag"};
+			if (ImGui::BeginCombo("Collide with", filterType.c_str())) {
+				const char* options[] = { "any", "name", "tag" };
+				const char* filterLabels[] = { "Any Object", "Object Name", "Collision Tag" };
 
-			for (const char* option : options) {
-				bool isSelected = (filterType == option);
+				for (const char* option : options) {
+					bool isSelected = (filterType == option);
 
-				if (ImGui::Selectable(option, isSelected)) {
-					node.parameters["colFilterType"] = option;
+					if (ImGui::Selectable(option, isSelected)) {
+						node.parameters["colFilterType"] = option;
 
-					if (!isSelected) {
-						node.parameters["colFilterValue"] = "";
-					}
-				}
-
-				if (isSelected) {
-					ImGui::SetItemDefaultFocus();
-				}
-			}
-
-			ImGui::EndCombo();
-		}
-
-		if (filterType != "any") {
-			std::string currentValue = node.parameters.count("colFilterValue") ? node.parameters["colFilterValue"] : "";
-			char valueBuffer[128];
-			strncpy(valueBuffer, node.parameters["colFilterValue"].c_str(), 127);
-			valueBuffer[127] = '\0';
-
-			if (filterType == "name") {
-				ImGui::Text("Object Name:");
-
-				if (ImGui::InputText("##colFilterValue", valueBuffer, 128)) {
-					node.parameters["colFilterValue"] = valueBuffer;
-				}
-
-				if (ImGui::BeginCombo("##quickSelect", "Quick Select")) {
-					auto& cached = CachedGameObjects::Instance().getCachedObjects();
-					for (GameObject* obj : cached) {
-						if (ImGui::Selectable(obj->getObjectName().c_str())) {
-							node.parameters["colFilterValue"] = obj->getObjectName();
+						if (!isSelected) {
+							node.parameters["colFilterValue"] = "";
 						}
 					}
-					ImGui::EndCombo();
+
+					if (isSelected) {
+						ImGui::SetItemDefaultFocus();
+					}
 				}
+
+				ImGui::EndCombo();
 			}
-			else if (filterType == "tag") {
-				ImGui::Text("Collision Tag:");
 
-				if (ImGui::InputText("##colFilterValue", valueBuffer, 128)) {
-					node.parameters["colFilterValue"] = valueBuffer;
-				}
+			if (filterType != "any") {
+				std::string currentValue = node.parameters.count("colFilterValue") ? node.parameters["colFilterValue"] : "";
+				char valueBuffer[128];
+				strncpy(valueBuffer, node.parameters["colFilterValue"].c_str(), 127);
+				valueBuffer[127] = '\0';
 
-				if (ImGui::BeginCombo("##quickSelectTag", "Quick Select")) {
-					std::unordered_set<std::string> uniqueTags;
-					auto& cached = CachedGameObjects::Instance().getCachedObjects();
+				if (filterType == "name") {
+					ImGui::Text("Object Name:");
 
-					for (GameObject* obj : cached) {
-						if (obj->hasComponent<CollisionInfo>()) {
-							CollisionInfo* col = obj->getComponent<CollisionInfo>();
-							if (!col->collisionTag.empty()) {
-								uniqueTags.insert(col->collisionTag);
+					if (ImGui::InputText("##colFilterValue", valueBuffer, 128)) {
+						node.parameters["colFilterValue"] = valueBuffer;
+					}
+
+					if (ImGui::BeginCombo("##quickSelect", "Quick Select")) {
+						auto& cached = CachedGameObjects::Instance().getCachedObjects();
+						for (GameObject* obj : cached) {
+							if (ImGui::Selectable(obj->getObjectName().c_str())) {
+								node.parameters["colFilterValue"] = obj->getObjectName();
 							}
 						}
+						ImGui::EndCombo();
+					}
+				}
+				else if (filterType == "tag") {
+					ImGui::Text("Collision Tag:");
+
+					if (ImGui::InputText("##colFilterValue", valueBuffer, 128)) {
+						node.parameters["colFilterValue"] = valueBuffer;
 					}
 
-					for (const std::string& tag : uniqueTags) {
-						if (ImGui::Selectable(tag.c_str())) {
-							node.parameters["colFilterValue"] = tag;
+					if (ImGui::BeginCombo("##quickSelectTag", "Quick Select")) {
+						std::unordered_set<std::string> uniqueTags;
+						auto& cached = CachedGameObjects::Instance().getCachedObjects();
+
+						for (GameObject* obj : cached) {
+							if (obj->hasComponent<CollisionInfo>()) {
+								CollisionInfo* col = obj->getComponent<CollisionInfo>();
+								if (!col->collisionTag.empty()) {
+									uniqueTags.insert(col->collisionTag);
+								}
+							}
 						}
-					}
 
-					ImGui::EndCombo();
+						for (const std::string& tag : uniqueTags) {
+							if (ImGui::Selectable(tag.c_str())) {
+								node.parameters["colFilterValue"] = tag;
+							}
+						}
+
+						ImGui::EndCombo();
+					}
 				}
 			}
 		}
@@ -854,6 +860,40 @@ void VisualLogicEditor::renderNodeProperties() {
 				ImGui::TextColored(ImVec4(1.f, 0.3f, 0.3f, 1.f),
 					"No audio channels available!");
 				ImGui::TextDisabled("Add channels in the Audio Component first");
+			}
+		}
+		else if (node.imp == NodeImplementation::SET_STATE) {
+			StateMachine* sm = nullptr;
+			if (Editor::visualLogicState.targetObj) {
+				sm = Editor::visualLogicState.targetObj->getComponent<StateMachine>();
+			}
+
+			ImGui::Text("State Machine:");
+
+			if (sm) {
+				std::string currentState = node.parameters.count("state") ?
+					node.parameters["state"] : JsonIO::stateNames[0];
+
+				if (ImGui::BeginCombo("##state", currentState.c_str())) {
+					const std::vector<std::string>& stateNames = JsonIO::stateNames;
+
+					for (const std::string& stateName : stateNames) {
+						bool isSelected = (currentState == stateName);
+
+						if (ImGui::Selectable(stateName.c_str(), isSelected)) {
+							node.parameters["state"] = stateName;
+						}
+
+						if (isSelected) {
+							ImGui::SetItemDefaultFocus();
+						}
+					}
+					ImGui::EndCombo();
+				}
+			}
+			else {
+				ImGui::TextColored(ImVec4(1.f, 0.3f, 0.3f, 1.f), "Add Animation Component first");
+				ImGui::TextDisabled("Add a State Machine component first");
 			}
 		}
 	}
@@ -1149,6 +1189,9 @@ void VisualLogicEditor::addNode(NodeType type, NodeImplementation imp) {
 		else if (imp == NodeImplementation::SET_FLOAT) {
 			node.parameters["variable"] = "shakeDir";
 			node.parameters["value"] = "1";
+		}
+		else if (imp == NodeImplementation::SET_STATE) {
+			node.parameters["state"] = JsonIO::stateNames[0];
 		}
 	}
 	// CONDITION nodes

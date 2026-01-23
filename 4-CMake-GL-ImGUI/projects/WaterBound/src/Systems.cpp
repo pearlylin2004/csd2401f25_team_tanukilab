@@ -1334,7 +1334,7 @@ void LogicSystem::update(GameObjectManager& manager, float const& dt) {
 	for (auto* go : objs) {
 		if (!go) continue;
 		if (!go->hasComponent<StateMachine>()) continue;
-		if (!go->hasComponent<Transform>() || !go->hasComponent<Physics>()) continue;
+		if (!go->hasComponent<Transform>() || !go->hasComponent<Physics>() || !go->hasComponent<Input>()) continue; // skip if obj cant move (no input-based state change)
 
 		// Update class-based FSM + trigger-action rules
 		container.update(*go, dt);

@@ -571,6 +571,7 @@ enum class NodeImplementation {
     SET_ROTATION,
     SET_FLOAT,
     PLAY_SOUND,
+    SET_STATE,
 
     // DEFAULT
     DEFAULT // nothing happen :)

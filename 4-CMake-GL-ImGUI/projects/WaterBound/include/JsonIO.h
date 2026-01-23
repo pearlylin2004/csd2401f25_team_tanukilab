@@ -82,6 +82,9 @@ namespace JsonIO {
 	const char* CollisionResponseModeToStr(CollisionResponseMode mode);
 	CollisionResponseMode StrToCollisionResponseMode(const std::string& s);
 
+	// ---- Player State helpers ----
+	PlayerState parsePlayerState(const std::string& s);
+
 	// ---- Node Implementation helpers ----
 	NodeImplementation stringToNodeImpl(const std::string& str);
 	std::string nodeImplToString(NodeImplementation impl);

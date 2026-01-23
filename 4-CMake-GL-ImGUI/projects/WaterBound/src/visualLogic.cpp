@@ -263,7 +263,7 @@ void VisualLogicSystem::executeEventNode(GameObject* obj, VisualLC* logic, Logic
 }
 
 void VisualLogicSystem::executeActionNode(GameObject* obj, VisualLC* logic, LogicNode& node, float dt) {
-	(void)logic; // to use in future
+	//(void)logic; // to use in future
 
 	// print message
 	if (node.imp == NodeImplementation::PRINT_MESSAGE) {
@@ -346,6 +346,19 @@ void VisualLogicSystem::executeActionNode(GameObject* obj, VisualLC* logic, Logi
 		}
 
 		channel->isPendingPlay = true;
+	}
+	else if (node.imp == NodeImplementation::SET_STATE) {
+		StateMachine* sm = obj->getComponent<StateMachine>();
+
+		if (!sm) {
+			std::cerr << "[VisualLogic] Object has no StateMachine component!" << std::endl;
+			return;
+		}
+
+		std::string stateName = node.parameters.count("state") ? node.parameters["state"] : JsonIO::stateNames[0];
+		
+		sm->state = JsonIO::parsePlayerState(stateName);
+		sm->stateTime = 0.f;
 	}
 }
 

@@ -236,6 +236,15 @@ namespace JsonIO {
         return CollisionResponseMode::StopWhenCollide;
     }
 
+    PlayerState parsePlayerState(const std::string& s) {
+        if (s == "Idle")     return PlayerState::Idle;
+        if (s == "Walking")  return PlayerState::Walking;
+        if (s == "Jumping")  return PlayerState::Jumping;
+        if (s == "Falling")  return PlayerState::Falling;
+        if (s == "Shooting") return PlayerState::Shooting;
+        if (s == "Dead")     return PlayerState::Dead;
+        return PlayerState::Idle; // default/fallback
+    }
 
     NodeImplementation stringToNodeImpl(const std::string& str) {
         if (str == "On Start") return NodeImplementation::ON_START;
@@ -253,6 +262,7 @@ namespace JsonIO {
         if (str == "Set Rotation") return NodeImplementation::SET_ROTATION;
 		if (str == "Set Float") return NodeImplementation::SET_FLOAT;
 		if (str == "Play Sound") return NodeImplementation::PLAY_SOUND;
+		if (str == "Set State") return NodeImplementation::SET_STATE;
 
 		if (str == "Check Key Held") return NodeImplementation::CHECK_KEY_HELD;
 		if (str == "Compare Value") return NodeImplementation::COMPARE_VALUE;
@@ -278,6 +288,7 @@ namespace JsonIO {
 			case NodeImplementation::SET_ROTATION: return "Set Rotation";
             case NodeImplementation::SET_FLOAT: return "Set Float";
 			case NodeImplementation::PLAY_SOUND: return "Play Sound";
+			case NodeImplementation::SET_STATE: return "Set State";
 
             case NodeImplementation::CHECK_KEY_HELD: return "Check Key Held";
             case NodeImplementation::COMPARE_VALUE: return "Compare Value";
