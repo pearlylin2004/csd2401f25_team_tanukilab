@@ -289,11 +289,9 @@ void VisualLogicSystem::executeActionNode(GameObject* obj, VisualLC* logic, Logi
 				node.parameters["channel"] : "default";
 
 			AudioChannel* channel = audio->getChannel(channelName);
-			std::cout << "got audio\n\n";
 
 			if (channel) {
 				if (!channel->audioFile.empty()){
-					std::cout << "got audio file\n\n";
 					channel->isPendingPlay = true;
 
 					DebugLog::addMessage("Playing sound on channel: " + channelName, DebugMode::PlaySimul);
