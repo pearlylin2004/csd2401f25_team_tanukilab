@@ -116,7 +116,7 @@
       "hasInput": true,
       "hasOutput": true,
       "parameters": {
-        "angle": "1.000000"
+        "angle": "20.000000"
       }
     },
     {
@@ -130,7 +130,7 @@
       "hasInput": true,
       "hasOutput": true,
       "parameters": {
-        "angle": "-1.000000"
+        "angle": "-20.000000"
       }
     },
     {

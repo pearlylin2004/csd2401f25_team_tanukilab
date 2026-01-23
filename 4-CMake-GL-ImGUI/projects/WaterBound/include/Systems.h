@@ -248,12 +248,12 @@ public:
 
 private:
 	// execute a specific node
-	void executeNode(GameObject* obj, VisualLC* logic, int nodeId);
+	void executeNode(GameObject* obj, VisualLC* logic, int nodeId, float dt);
 
 	// execute different node types
 	void executeEventNode(GameObject* obj, VisualLC* logic, LogicNode& node);
-	void executeActionNode(GameObject* obj, VisualLC* logic, LogicNode& node);
-	bool executeConditionNode(GameObject* obj, VisualLC* logic, LogicNode& node);
+	void executeActionNode(GameObject* obj, VisualLC* logic, LogicNode& node, float dt);
+	bool executeConditionNode(GameObject* obj, VisualLC* logic, LogicNode& node, float dt);
 
 	// helper to find next connected node
 	std::vector<int> findAllNextNode(VisualLC* logic, int fromNodeId, const std::string& outputPin);

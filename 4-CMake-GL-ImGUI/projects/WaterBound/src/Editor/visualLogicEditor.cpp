@@ -633,6 +633,7 @@ void VisualLogicEditor::renderNodeProperties() {
 	ImGui::Text("Node: %s", JsonIO::nodeImplToString(node.imp).c_str());
 	ImGui::Separator();
 
+
 	/* ---------- ACTION ---------- */
 	// print msg
 	if (node.imp == NodeImplementation::PRINT_MESSAGE) {
@@ -648,10 +649,10 @@ void VisualLogicEditor::renderNodeProperties() {
 		float x = node.parameters.count("x") ? std::stof(node.parameters["x"]) : 0.f;
 		float y = node.parameters.count("y") ? std::stof(node.parameters["y"]) : 0.f;
 
-		if (ImGui::DragFloat("X Offset", &x, 0.1f)) {
+		if (ImGui::DragFloat("X Speed (units/sec)", &x, 0.1f)) {
 			node.parameters["x"] = std::to_string(x);
 		}
-		if (ImGui::DragFloat("Y Offset", &y, 0.1f)) {
+		if (ImGui::DragFloat("Y Speed (units/sec)", &y, 0.1f)) {
 			node.parameters["y"] = std::to_string(y);
 		}
 	}
@@ -659,7 +660,7 @@ void VisualLogicEditor::renderNodeProperties() {
 	else if (node.imp == NodeImplementation::ROTATE_OBJECT) {
 		float angle = node.parameters.count("angle") ? std::stof(node.parameters["angle"]) : 0.f;
 
-		if (ImGui::DragFloat("Angle (degrees)", &angle, 1.f)) {
+		if (ImGui::DragFloat("Angle (degrees/sec)", &angle, 1.f)) {
 			node.parameters["angle"] = std::to_string(angle);
 
 			ImGui::Spacing();
@@ -704,7 +705,6 @@ void VisualLogicEditor::renderNodeProperties() {
 		ImGui::Text("Audio Channel:");
 
 		if (audio && !audio->audioChannels.empty()) {
-			// dropdown of channels
 			std::string currentChannel = (node.parameters.count("channel")) ?
 				node.parameters["channel"] : "(none)";
 
@@ -713,6 +713,7 @@ void VisualLogicEditor::renderNodeProperties() {
 				currentChannel = "(none)";
 			}
 
+			// dropdown of channels
 			if (ImGui::BeginCombo("##channel", currentChannel.c_str())) {
 				for (const auto& [channelName, ch] : audio->audioChannels) {
 					bool isSelected = (currentChannel == channelName);
@@ -736,9 +737,11 @@ void VisualLogicEditor::renderNodeProperties() {
 
 			ImGui::Spacing();
 
+			// channel not selected then ask to select one
 			if (currentChannel == "(none)" || !node.parameters.count("channel")) {
 				ImGui::TextColored(ImVec4(1.f, 0.3f, 0.3f, 1.f), "Select a channel to play sound");
 			}
+			// channel selected then show the info
 			else if (audio->hasChannel(currentChannel)) {
 				const AudioChannel* ch = audio->getChannel(currentChannel);
 				if (ch && !ch->audioFile.empty()) {
@@ -761,6 +764,7 @@ void VisualLogicEditor::renderNodeProperties() {
 		}
 	}
 	/* ---------- END ---------- */
+
 
 	/* ---------- CONDITION ---------- */
 	// check key held

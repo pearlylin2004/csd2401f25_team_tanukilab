@@ -58,7 +58,7 @@ void VisualLogicSystem::init(GameObject* obj, VisualLC* logic) {
 		// find and execute all ON START nodes
 		if (node.imp == NodeImplementation::ON_START) {
 			logic->currentExePath.clear();
-			executeNode(obj, logic, node.id);
+			executeNode(obj, logic, node.id, 1 / 60.f);
 		}
 	}
 }
@@ -115,7 +115,7 @@ void VisualLogicSystem::update(GameObject* obj, VisualLC* logic, float dt) {
 					if (node.imp == NodeImplementation::ON_HOVER_ENTER) {
 						logic->currentExePath.clear();
 
-						executeNode(obj, logic, node.id);
+						executeNode(obj, logic, node.id, dt);
 					}
 				}
 			}
@@ -126,7 +126,7 @@ void VisualLogicSystem::update(GameObject* obj, VisualLC* logic, float dt) {
 					if (node.imp == NodeImplementation::WHILE_HOVERING) {
 						logic->currentExePath.clear();
 
-						executeNode(obj, logic, node.id);
+						executeNode(obj, logic, node.id, dt);
 					}
 				}
 			}
@@ -137,7 +137,7 @@ void VisualLogicSystem::update(GameObject* obj, VisualLC* logic, float dt) {
 					if (node.imp == NodeImplementation::ON_HOVER_EXIT) {
 						logic->currentExePath.clear();
 
-						executeNode(obj, logic, node.id);
+						executeNode(obj, logic, node.id, dt);
 					}
 				}
 			}
@@ -152,7 +152,7 @@ void VisualLogicSystem::update(GameObject* obj, VisualLC* logic, float dt) {
 		if (node.imp == NodeImplementation::ON_UPDATE) {
 			logic->currentExePath.clear();
 
-			executeNode(obj, logic, node.id);
+			executeNode(obj, logic, node.id, dt);
 		}
 	}
 }
@@ -166,7 +166,7 @@ void VisualLogicSystem::onCollisionEnter(GameObject* obj, VisualLC* logic, GameO
 			logic->stringVar["_collidedWith"] = other->getObjectName();
 			logic->currentExePath.clear();
 
-			executeNode(obj, logic, node.id);
+			executeNode(obj, logic, node.id, 1 / 60.f);
 		}
 	}
 }
@@ -183,7 +183,7 @@ void VisualLogicSystem::onCollisionEnter(GameObject* obj, VisualLC* logic, GameO
 //	}
 //}
 
-void VisualLogicSystem::executeNode(GameObject* obj, VisualLC* logic, int nodeId) {
+void VisualLogicSystem::executeNode(GameObject* obj, VisualLC* logic, int nodeId, float dt) {
 	if (!obj || !logic) return;
 
 	if (logic->currentExePath.count(nodeId)) {
@@ -205,16 +205,16 @@ void VisualLogicSystem::executeNode(GameObject* obj, VisualLC* logic, int nodeId
 			executeEventNode(obj, logic, *node);
 			break;
 		case NodeType::ACTION:
-			executeActionNode(obj, logic, *node);
+			executeActionNode(obj, logic, *node, dt);
 			break;
 		case NodeType::CONDITION: {
-			bool result = executeConditionNode(obj, logic, *node);
+			bool result = executeConditionNode(obj, logic, *node, dt);
 
 			// find next node based on TRUE/FALSE
 			std::string pin = result ? "True" : "False";
 			std::vector<int> nextNodes = findAllNextNode(logic, node->id, pin);
 			for (int nextID : nextNodes) {
-				executeNode(obj, logic, nextID);
+				executeNode(obj, logic, nextID, dt);
 			}
 
 			logic->currentExePath.erase(nodeId);
@@ -225,7 +225,7 @@ void VisualLogicSystem::executeNode(GameObject* obj, VisualLC* logic, int nodeId
 	// execute next connected node (NOT for condition)
 	std::vector<int> nextNodes = findAllNextNode(logic, node->id, "Out");
 	for (int nextID : nextNodes) {
-		executeNode(obj, logic, nextID);
+		executeNode(obj, logic, nextID, dt);
 	}
 
 	logic->currentExePath.erase(nodeId);
@@ -239,7 +239,7 @@ void VisualLogicSystem::executeEventNode(GameObject* obj, VisualLC* logic, Logic
 	logic->currentExecutingNodeId = node.id;
 }
 
-void VisualLogicSystem::executeActionNode(GameObject* obj, VisualLC* logic, LogicNode& node) {
+void VisualLogicSystem::executeActionNode(GameObject* obj, VisualLC* logic, LogicNode& node, float dt) {
 	(void)logic; // to use in future
 
 	// print message
@@ -257,8 +257,8 @@ void VisualLogicSystem::executeActionNode(GameObject* obj, VisualLC* logic, Logi
 			float x = node.parameters.count("x") ? std::stof(node.parameters["x"]) : 0.f;
 			float y = node.parameters.count("y") ? std::stof(node.parameters["y"]) : 0.f;
 			
-			transform->x += x;
-			transform->y += y;
+			transform->x += x * dt;
+			transform->y += y * dt;
 
 			/*DebugLog::addMessage("Moved object by (" +
 				std::to_string(x) + ", " + std::to_string(y) + ")\n", DebugMode::PlaySimul);*/
@@ -270,7 +270,7 @@ void VisualLogicSystem::executeActionNode(GameObject* obj, VisualLC* logic, Logi
 		if (transform) {
 			float angle = node.parameters.count("angle") ? std::stof(node.parameters["angle"]) : 0.f;
 
-			transform->rotation += angle;
+			transform->rotation += angle * dt;
 
 			/*DebugLog::addMessage("Rotated object by " +
 				std::to_string(angle) + " degrees\n", DebugMode::PlaySimul);*/
@@ -326,10 +326,11 @@ void VisualLogicSystem::executeActionNode(GameObject* obj, VisualLC* logic, Logi
 	}
 }
 
-bool VisualLogicSystem::executeConditionNode(GameObject* obj, VisualLC* logic, LogicNode& node) {
+bool VisualLogicSystem::executeConditionNode(GameObject* obj, VisualLC* logic, LogicNode& node, float dt) {
 	// check key pressed/mouse clicked/compare numbers
 	(void)obj; // to use in future
 	(void)logic; // to use in future
+	(void)dt; // to use in future
 
 	if (node.imp == NodeImplementation::CHECK_KEY_HELD) {
 		std::string keyStr = node.parameters.count("key") ?
