@@ -67,6 +67,55 @@ void VisualLogicSystem::update(GameObject* obj, VisualLC* logic, float dt) {
 	(void)dt; // to use in the future
 	if (!obj || !logic) return;
 
+
+	/* -------- Check collisions -------- */
+	for (GameObject* collided : logic->curCollision) {
+		// ON COLLISION ENTER
+		if (logic->preCollision.find(collided) == logic->preCollision.end()) {
+			for (LogicNode& node : logic->nodes) {
+				if (node.imp == NodeImplementation::ON_COLLISION_ENTER) {
+					if (shouldTriggerCollision(obj, node, collided)) {
+						logic->stringVar["_collidedWith"] = collided->getObjectName();
+						executeNode(obj, logic, node.id, dt);
+					}
+				}
+			}
+		}
+	}
+
+	for (GameObject* collided : logic->curCollision) {
+		// WHILE COLLIDING
+		for (LogicNode& node : logic->nodes) {
+			if (node.imp == NodeImplementation::WHILE_COLLIDING) {
+				if (shouldTriggerCollision(obj, node, collided)) {
+					logic->stringVar["_collidedWith"] = collided->getObjectName();
+					executeNode(obj, logic, node.id, dt);
+				}
+			}
+		}
+	}
+
+	for (GameObject* collided : logic->preCollision) {
+		// ON COLLISION EXIT
+		if (logic->curCollision.find(collided) == logic->curCollision.end()) {
+			for (LogicNode& node : logic->nodes) {
+				if (node.imp == NodeImplementation::ON_COLLISION_EXIT) {
+					if (shouldTriggerCollision(obj, node, collided)) {
+						logic->stringVar["_collidedWith"] = collided->getObjectName();
+						executeNode(obj, logic, node.id, dt);
+					}
+				}
+			}
+		}
+	}
+
+	// update collision status for next frane
+	logic->preCollision = logic->curCollision;
+	logic->curCollision.clear();
+
+	/* -------- END -------- */
+
+
 	/* -------- Safety Check jic haven check -------- */
 	if (!logic->hoverNodesChecked) {
 		// Cache it now if not done yet (safety check)
@@ -162,7 +211,7 @@ void VisualLogicSystem::onCollisionEnter(GameObject* obj, VisualLC* logic, GameO
 
 	// execute ON COLLISION ENTER nodes
 	for (LogicNode& node : logic->nodes) {
-		if (node.imp == NodeImplementation::ON_COLLISION) {
+		if (node.imp == NodeImplementation::ON_COLLISION_ENTER) {
 			logic->stringVar["_collidedWith"] = other->getObjectName();
 			logic->currentExePath.clear();
 
@@ -460,4 +509,37 @@ LogicNode* VisualLogicSystem::findNode(VisualLC* logic, int nodeId) {
 	}
 
 	return nullptr;
+}
+
+bool VisualLogicSystem::shouldTriggerCollision(GameObject* obj, LogicNode& node, GameObject* collided) {
+	std::string filterType = node.parameters.count("colFilterType") ? node.parameters["colFilterType"] : "any";
+
+	if (filterType == "any") return true;
+
+	std::string filterValue = node.parameters.count("colFilterValue") ? node.parameters["colFilterValue"] : "";
+	if (filterValue.empty()) return false;
+
+	if (filterType == "name") {
+		return collided->getObjectName() == filterValue;
+	}
+	else if (filterType == "tag") {
+		CollisionInfo* col = collided->getComponent<CollisionInfo>();
+
+		if (col) {
+			return col->collisionTag == filterValue;
+		}
+
+		return false;
+	}
+	/*else if (filterType == "layer") {
+		try {
+			int layer = std::stoi(filterValue);
+			return collided->getLayer() == layer;
+		}
+		catch (...) {
+			return false;
+		}
+	}*/
+
+	return false;
 }

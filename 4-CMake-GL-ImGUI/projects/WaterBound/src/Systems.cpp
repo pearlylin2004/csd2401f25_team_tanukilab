@@ -1126,6 +1126,18 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 									else p2->onGround = true;
 								}
 							}
+
+							/* ---------- trigger visual logic collision events ---------- */
+							if (obj1->hasComponent<VisualLC>()) {
+								VisualLC* logic1 = obj1->getComponent<VisualLC>();
+								logic1->curCollision.insert(obj2);
+							}
+
+							if (obj2->hasComponent<VisualLC>()) {
+								VisualLC* logic2 = obj2->getComponent<VisualLC>();
+								logic2->curCollision.insert(obj1);
+							}
+							/* ---------- END ---------- */
 						}
 					}
 				}

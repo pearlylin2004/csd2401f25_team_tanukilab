@@ -240,6 +240,9 @@ namespace JsonIO {
     NodeImplementation stringToNodeImpl(const std::string& str) {
         if (str == "On Start") return NodeImplementation::ON_START;
         if (str == "On Update") return NodeImplementation::ON_UPDATE;
+		if (str == "On Collision Enter") return NodeImplementation::ON_COLLISION_ENTER;
+		if (str == "While Colliding") return NodeImplementation::WHILE_COLLIDING;
+		if (str == "On Collision Exit") return NodeImplementation::ON_COLLISION_EXIT;
 		if (str == "On Hover Enter") return NodeImplementation::ON_HOVER_ENTER;
 		if (str == "While Hovering") return NodeImplementation::WHILE_HOVERING;
 		if (str == "On Hover Exit") return NodeImplementation::ON_HOVER_EXIT;
@@ -262,6 +265,9 @@ namespace JsonIO {
         switch (impl) {
             case NodeImplementation::ON_START: return "On Start";
             case NodeImplementation::ON_UPDATE: return "On Update";
+            case NodeImplementation::ON_COLLISION_ENTER: return "On Collision Enter";
+            case NodeImplementation::WHILE_COLLIDING: return "While Colliding";
+            case NodeImplementation::ON_COLLISION_EXIT: return "On Collision Exit";
             case NodeImplementation::ON_HOVER_ENTER: return "On Hover Enter";
             case NodeImplementation::WHILE_HOVERING: return "While Hovering";
             case NodeImplementation::ON_HOVER_EXIT: return "On Hover Exit";

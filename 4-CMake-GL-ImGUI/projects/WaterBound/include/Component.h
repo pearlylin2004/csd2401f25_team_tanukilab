@@ -552,7 +552,9 @@ enum class NodeImplementation {
     // EVENT
     ON_START,
     ON_UPDATE,
-    ON_COLLISION,
+    ON_COLLISION_ENTER,
+    WHILE_COLLIDING,
+    ON_COLLISION_EXIT,
     ON_HOVER_ENTER,
     WHILE_HOVERING,
 	ON_HOVER_EXIT,
@@ -590,6 +592,8 @@ struct LogicNode {
     std::map<std::string, std::string> parameters;
 };
 
+class GameObject; // annoying forward declaration
+
 struct VisualLC : public Component {
 public:
     std::unique_ptr<Component> clone() const override {
@@ -605,6 +609,7 @@ public:
 	// runtime data
     bool isExecuting = false;
     int currentExecutingNodeId = -1;
+	std::map<std::string, int> intVar;
     std::map<std::string, float> floatVar;
     std::map<std::string, std::string> stringVar;
     std::map<std::string, bool> boolVar;
@@ -616,4 +621,7 @@ public:
     bool hasHoverNodes = false;
 	bool hoverNodesChecked = false;
 
+    // collision 
+    std::unordered_set<GameObject*> curCollision;
+    std::unordered_set<GameObject*> preCollision;
 };

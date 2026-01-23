@@ -260,4 +260,7 @@ private:
 
 	// helper func to find a node by ID
 	LogicNode* findNode(VisualLC* logic, int nodeId);
+
+	// helper func for collision
+	bool shouldTriggerCollision(GameObject* obj, LogicNode& node, GameObject* collided);
 };
