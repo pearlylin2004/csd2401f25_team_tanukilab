@@ -242,10 +242,6 @@ public:
 	// update logic
 	void update(GameObject* obj, VisualLC* logic, float dt);
 
-	// collision events (WIP)
-	void onCollisionEnter(GameObject* obj, VisualLC* logic, GameObject* other);
-	void onCollisionExit(GameObject* obj, VisualLC* logic, GameObject* other);
-
 private:
 	// execute a specific node
 	void executeNode(GameObject* obj, VisualLC* logic, int nodeId, float dt);

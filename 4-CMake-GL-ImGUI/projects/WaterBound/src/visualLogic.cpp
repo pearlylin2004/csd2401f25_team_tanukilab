@@ -206,32 +206,6 @@ void VisualLogicSystem::update(GameObject* obj, VisualLC* logic, float dt) {
 	}
 }
 
-void VisualLogicSystem::onCollisionEnter(GameObject* obj, VisualLC* logic, GameObject* other) {
-	if (!obj || !logic || !other) return;
-
-	// execute ON COLLISION ENTER nodes
-	for (LogicNode& node : logic->nodes) {
-		if (node.imp == NodeImplementation::ON_COLLISION_ENTER) {
-			logic->stringVar["_collidedWith"] = other->getObjectName();
-			logic->currentExePath.clear();
-
-			executeNode(obj, logic, node.id, 1 / 60.f);
-		}
-	}
-}
-
-//void VisualLogicSystem::onCollisionExit(GameObject* obj, VisualLC* logic, GameObject* other) {
-//	if (!obj || !logic || !other) return;
-//
-//	// execute ON COLLISION EXIT nodes
-//	for (auto& node : logic->nodes) {
-//		if (node.imp == NodeImplementation::ON_COLLISION) {
-//			logic->stringVariables["_collidedWith"] = other->getObjectName();
-//			executeNode(obj, logic, node.id);
-//		}
-//	}
-//}
-
 void VisualLogicSystem::executeNode(GameObject* obj, VisualLC* logic, int nodeId, float dt) {
 	if (!obj || !logic) return;
 
