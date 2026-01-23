@@ -43,20 +43,21 @@ void VisualLogicSystem::updateAll(GameObjectManager& manager, float dt) {
 void VisualLogicSystem::init(GameObject* obj, VisualLC* logic) {
 	if (!obj || !logic) return;
 
+	logic->hasHoverNodes = false;
 	for (LogicNode& node : logic->nodes) {
 		// cache whether obj has hover nodes
-		logic->hasHoverNodes = false;
-
 		if (node.imp == NodeImplementation::ON_HOVER_ENTER ||
 			node.imp == NodeImplementation::WHILE_HOVERING ||
 			node.imp == NodeImplementation::ON_HOVER_EXIT) {
 			logic->hasHoverNodes = true;
+			break;
 		}
 
 		logic->hoverNodesChecked = true;
 
 		// find and execute all ON START nodes
 		if (node.imp == NodeImplementation::ON_START) {
+			logic->currentExePath.clear();
 			executeNode(obj, logic, node.id);
 		}
 	}
@@ -112,6 +113,8 @@ void VisualLogicSystem::update(GameObject* obj, VisualLC* logic, float dt) {
 			if (isHoveringNow && !logic->wasHoveredLastFrame) {
 				for (LogicNode& node : logic->nodes) {
 					if (node.imp == NodeImplementation::ON_HOVER_ENTER) {
+						logic->currentExePath.clear();
+
 						executeNode(obj, logic, node.id);
 					}
 				}
@@ -121,6 +124,8 @@ void VisualLogicSystem::update(GameObject* obj, VisualLC* logic, float dt) {
 			if (isHoveringNow) {
 				for (LogicNode& node : logic->nodes) {
 					if (node.imp == NodeImplementation::WHILE_HOVERING) {
+						logic->currentExePath.clear();
+
 						executeNode(obj, logic, node.id);
 					}
 				}
@@ -130,6 +135,8 @@ void VisualLogicSystem::update(GameObject* obj, VisualLC* logic, float dt) {
 			if (!isHoveringNow && logic->wasHoveredLastFrame) {
 				for (LogicNode& node : logic->nodes) {
 					if (node.imp == NodeImplementation::ON_HOVER_EXIT) {
+						logic->currentExePath.clear();
+
 						executeNode(obj, logic, node.id);
 					}
 				}
@@ -143,6 +150,8 @@ void VisualLogicSystem::update(GameObject* obj, VisualLC* logic, float dt) {
 	for (LogicNode& node : logic->nodes) {
 		// find and execute all ON UPDATE nodes
 		if (node.imp == NodeImplementation::ON_UPDATE) {
+			logic->currentExePath.clear();
+
 			executeNode(obj, logic, node.id);
 		}
 	}
@@ -155,6 +164,8 @@ void VisualLogicSystem::onCollisionEnter(GameObject* obj, VisualLC* logic, GameO
 	for (LogicNode& node : logic->nodes) {
 		if (node.imp == NodeImplementation::ON_COLLISION) {
 			logic->stringVar["_collidedWith"] = other->getObjectName();
+			logic->currentExePath.clear();
+
 			executeNode(obj, logic, node.id);
 		}
 	}
@@ -233,11 +244,11 @@ void VisualLogicSystem::executeActionNode(GameObject* obj, VisualLC* logic, Logi
 
 	// print message
 	if (node.imp == NodeImplementation::PRINT_MESSAGE) {
-		static int count{};
+		// static int count{};
 		std::string msg = node.parameters.count("message") ? node.parameters["message"] : "I love GAM";
 
 		DebugLog::addMessage(msg, DebugMode::PlaySimul);
-		std::cout << msg << count++ << std::endl;
+		std::cout << msg << /*count++ <<*/ std::endl;
 	}
 	else if (node.imp == NodeImplementation::MOVE_OBJECT) {
 		Transform* transform = obj->getComponent<Transform>();
@@ -282,32 +293,36 @@ void VisualLogicSystem::executeActionNode(GameObject* obj, VisualLC* logic, Logi
 		logic->floatVar[varName] = value;
 	}
 	else if (node.imp == NodeImplementation::PLAY_SOUND) {
+		// component/audio checking
 		AudioComponent* audio = obj->getComponent<AudioComponent>();
-
-		if (audio) {
-			std::string channelName = node.parameters.count("channel") ?
-				node.parameters["channel"] : "default";
-
-			AudioChannel* channel = audio->getChannel(channelName);
-
-			if (channel) {
-				if (!channel->audioFile.empty()){
-					channel->isPendingPlay = true;
-
-					DebugLog::addMessage("Playing sound on channel: " + channelName, DebugMode::PlaySimul);
-					
-				}
-				else {
-					std::cerr << "[VisualLogic] No audio file specified!" << std::endl;
-				}
-			}
-			else {
-				std::cerr << "[VisualLogic] Channel " << channelName << " not found" << std::endl;
-			}
-		}
-		else {
+		if (!audio) {
 			std::cerr << "[VisualLogic] Object has no AudioComponent!" << std::endl;
+			return;
 		}
+		if (!node.parameters.count("channel")) {
+			std::cerr << "[VisualLogic] No channel specified for Play Sound node!" << std::endl;
+			return;
+		}
+
+		// get channel
+		std::string channelName = node.parameters.at("channel");
+		if (channelName.empty()) {
+			std::cerr << "[VisualLogic] Channel name is empty for Play Sound node!" << std::endl;
+			return;
+		}
+
+		// find channel
+		AudioChannel* channel = audio->getChannel(channelName);
+		if (!channel) {
+			std::cerr << "[VisualLogic] Channel " << channelName << " not found" << std::endl;
+			return;
+		}
+		if (channel->audioFile.empty()) {
+			std::cerr << "[VisualLogic] No audio file specified for channel " << channelName << "!" << std::endl;
+			return;
+		}
+
+		channel->isPendingPlay = true;
 	}
 }
 

@@ -703,14 +703,15 @@ void VisualLogicEditor::renderNodeProperties() {
 
 		ImGui::Text("Audio Channel:");
 
-		if (!audio) {
-			ImGui::TextDisabled("Add a Audio Component in Inspector to play sound");
-		}
-
 		if (audio && !audio->audioChannels.empty()) {
 			// dropdown of channels
-			std::string currentChannel = node.parameters.count("channel") ?
-				node.parameters["channel"] : "default";
+			std::string currentChannel = (node.parameters.count("channel")) ?
+				node.parameters["channel"] : "(none)";
+
+			// in case audio is using the default channel (audio component thingy)
+			if (!audio->getChannel(currentChannel)) {
+				currentChannel = "(none)";
+			}
 
 			if (ImGui::BeginCombo("##channel", currentChannel.c_str())) {
 				for (const auto& [channelName, ch] : audio->audioChannels) {
@@ -735,7 +736,10 @@ void VisualLogicEditor::renderNodeProperties() {
 
 			ImGui::Spacing();
 
-			if (audio->hasChannel(currentChannel)) {
+			if (currentChannel == "(none)" || !node.parameters.count("channel")) {
+				ImGui::TextColored(ImVec4(1.f, 0.3f, 0.3f, 1.f), "Select a channel to play sound");
+			}
+			else if (audio->hasChannel(currentChannel)) {
 				const AudioChannel* ch = audio->getChannel(currentChannel);
 				if (ch && !ch->audioFile.empty()) {
 					ImGui::TextDisabled("Will play: %s",
@@ -753,18 +757,7 @@ void VisualLogicEditor::renderNodeProperties() {
 			// no audio component or no channels
 			ImGui::TextColored(ImVec4(1.f, 0.3f, 0.3f, 1.f),
 				"No audio channels available!");
-			ImGui::TextDisabled("Add channels in the Audio Component");
-
-			// still show manual input as fallback
-			char channelBuffer[128];
-			std::string currentChannel = node.parameters.count("channel") ?
-				node.parameters["channel"] : "default";
-			strncpy(channelBuffer, currentChannel.c_str(), 127);
-			channelBuffer[127] = '\0';
-
-			if (ImGui::InputText("##channelManual", channelBuffer, 128)) {
-				node.parameters["channel"] = channelBuffer;
-			}
+			ImGui::TextDisabled("Add channels in the Audio Component first");
 		}
 	}
 	/* ---------- END ---------- */
@@ -1050,7 +1043,7 @@ void VisualLogicEditor::addNode(NodeType type, NodeImplementation imp) {
 		node.parameters["value"] = "1";
 	}
 	else if (imp == NodeImplementation::PLAY_SOUND) {
-		node.parameters["channel"] = "default";
+		// node.parameters["channel"] = "default";
 	}
 	// CONDITION nodes
 	else if (imp == NodeImplementation::CHECK_KEY_HELD) {
