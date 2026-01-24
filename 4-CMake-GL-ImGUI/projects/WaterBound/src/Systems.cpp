@@ -1158,7 +1158,7 @@ void UISystem::init(GLFWwindow* window, RenderSystem* renderer, GameObjectManage
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
 	ImGuiIO& io = ImGui::GetIO(); //(void)io;
-	io.FontGlobalScale = 2.0f;
+	io.FontGlobalScale = 1.5f;
 	io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard
 			| ImGuiConfigFlags_DockingEnable
 			| ImGuiConfigFlags_ViewportsEnable;
