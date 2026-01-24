@@ -59,7 +59,7 @@ void GUISystem::update(GameObjectManager& manager) {
     Vector2D worldMousePos = InputHandler::getWorldMousePosition();
     Vector2D worldPos = Vec_Set(worldMousePos.x, worldMousePos.y);
 
-    if (UISystem::isShowUI()) return; //skip if UI is shown
+    //if (UISystem::isShowUI()) return; //skip if UI is shown
 
     if (InputHandler::isMouseButtonClicked(GLFW_MOUSE_BUTTON_LEFT)) {
         for (auto& pair : m_buttons) {
@@ -123,30 +123,50 @@ void GUISystem::createButtonActions(GameObjectManager& manager) {
     m_buttonActions[ButtonAction::START_GAME] = [this, &manager]() {
         m_currentState = GameState::PLAYING;
         startGame(manager);
-        };
+     };
 
     // Exit confirmation
     m_buttonActions[ButtonAction::EXIT_GAME] = [this, &manager]() {
         m_currentState = GameState::EXITCONFIRMATION;
         loadScreen(manager, "confirmation_scene.json");
-        };
+     };
 
     // Control screen
     m_buttonActions[ButtonAction::OPEN_CONTROL] = [this, &manager]() {
         m_currentState = GameState::CONTROL;
         loadScreen(manager, "control_scene.json");
-        };
+     };
 
     // Back button
     m_buttonActions[ButtonAction::BACK] = [this, &manager]() {
-        if (m_previousState == GameState::PAUSED) {
-            loadScreen(manager, "pause_scene.json");
-            m_currentState = GameState::PAUSED;
-        }
-        else {
+        switch (m_previousState) {
+        case GameState::MENU:
             m_currentState = GameState::MENU;
             loadScreen(manager, "menu_scene.json");
+            break;
+        case GameState::CONTROL:
+            m_currentState = GameState::CONTROL;
+            loadScreen(manager, "control_scene.json");
+            break;
+        case GameState::PAUSED:
+            m_currentState = GameState::PAUSED;
+            loadScreen(manager, "pause_scene.json");
+            break;
+        case GameState::PLAYING:
+            m_currentState = GameState::PLAYING;
+            //startGame(manager); //reload game if needed
+            break;
+        default:
+            m_currentState = GameState::MENU;
+            loadScreen(manager, "menu_scene.json");
+            break;
         }
+    };
+
+    // Menu button
+    m_buttonActions[ButtonAction::MENU] = [this, &manager]() {
+        m_currentState = GameState::MENU;
+        loadScreen(manager, "menu_scene.json");
     };
 
     // Resume
@@ -155,7 +175,11 @@ void GUISystem::createButtonActions(GameObjectManager& manager) {
             m_currentState = GameState::PLAYING;
         else if (m_stateBeforePause == GameState::MENU)
             loadScreen(manager, "menu_scene.json");
-        };
+        else if (m_stateBeforePause == GameState::CONTROL)
+			loadScreen(manager, "control_scene.json");
+        else if (m_stateBeforePause == GameState::EXITCONFIRMATION)
+			loadScreen(manager, "confirmation_scene.json");
+    };
 
     // Exit confirmation yes/no
     m_buttonActions[ButtonAction::YES_EXIT] = [this]() {

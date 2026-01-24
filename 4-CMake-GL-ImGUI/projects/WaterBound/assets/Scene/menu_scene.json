@@ -81,7 +81,7 @@
           "hasAnimation": 0
         },
         "Button": {
-          "action": "start_game"
+          "action": "open_control"
         }
       }
     },
@@ -109,7 +109,7 @@
           "hasAnimation": 0
         },
         "Button": {
-          "action": "start_game"
+          "action": "exit_game"
         }
       }
     }
