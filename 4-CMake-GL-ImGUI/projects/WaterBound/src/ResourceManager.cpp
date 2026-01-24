@@ -148,7 +148,7 @@ FMOD::Sound* ResourceManager::getSound(const std::string& path, bool loop, bool 
     }
 
     // Create cache key that includes spatial mode
-    std::string cacheKey = path + (isSpatial ? "|3D" : "|2D");
+    std::string cacheKey = path + (isSpatial ? "|3D" : "|2D") + (loop ? "|LOOP" : "|ONCE");
 
     auto it = m_audioCache.find(cacheKey);
     if (it != m_audioCache.end()) {
@@ -209,14 +209,6 @@ FMOD::Sound* ResourceManager::loadSoundFromFile(const std::string& path, bool lo
     if (result != FMOD_OK) {
         std::cerr << "ResourceManager Error: Failed to create sound: " << path << std::endl;
         return nullptr;
-    }
-
-    // Set default min/max distance for 3D sounds
-    if (isSpatial && sound) {
-        FMOD_RESULT distResult = sound->set3DMinMaxDistance(5.0f, 50.0f);
-        if (distResult != FMOD_OK) {
-            std::cerr << "ResourceManager Warning: Failed to set 3D distance for: " << path << std::endl;
-        }
     }
 
     return sound;

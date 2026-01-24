@@ -557,9 +557,10 @@ struct TileMap : public Component
     }
 };
 
+// virtual logic container (editor)
 struct LogicConnection {
-	int fromNodeId;
-	int toNodeId;
+	int fromNodeId = 0;
+	int toNodeId = 0;
 
     std::string outputPin; // OUT, TRUE, FALSE
     std::string inputPin; // IN
@@ -568,14 +569,20 @@ struct LogicConnection {
 enum class NodeType {
     EVENT,
     ACTION,
-    CONDITION
+    CONDITION,
+    DEFAULT // nothing happen
 };
 
 enum class NodeImplementation {
     // EVENT
     ON_START,
     ON_UPDATE,
-    ON_COLLISION,
+    ON_COLLISION_ENTER,
+    WHILE_COLLIDING,
+    ON_COLLISION_EXIT,
+    ON_HOVER_ENTER,
+    WHILE_HOVERING,
+	ON_HOVER_EXIT,
 
     // CONDITION
     CHECK_KEY_HELD,
@@ -586,20 +593,23 @@ enum class NodeImplementation {
     PRINT_MESSAGE,
     MOVE_OBJECT,
     ROTATE_OBJECT,
+    SET_ROTATION,
     SET_FLOAT,
+    PLAY_SOUND,
+    SET_STATE,
 
     // DEFAULT
     DEFAULT // nothing happen :)
 };
 
 struct LogicNode {
-    int id;
-    NodeType type;
+    int id = 0;
+    NodeType type = NodeType::DEFAULT;
     //std::string name;
-    NodeImplementation imp;
-    Vector2D position;
-    bool hasInput;
-    bool hasOutput;
+    NodeImplementation imp = NodeImplementation::DEFAULT;
+    Vector2D position = Vector2D(0,0);
+    bool hasInput = true;
+    bool hasOutput = true;
 
     bool hasTrueOutput = false;
     bool hasFalseOutput = false;
@@ -608,7 +618,8 @@ struct LogicNode {
     std::map<std::string, std::string> parameters;
 };
 
-// virtual logic container (editor)
+class GameObject; // annoying forward declaration
+
 struct VisualLC : public Component {
 public:
     std::unique_ptr<Component> clone() const override {
@@ -624,7 +635,19 @@ public:
 	// runtime data
     bool isExecuting = false;
     int currentExecutingNodeId = -1;
+	std::map<std::string, int> intVar;
     std::map<std::string, float> floatVar;
     std::map<std::string, std::string> stringVar;
     std::map<std::string, bool> boolVar;
+    std::unordered_set<int> currentExePath;
+
+	bool wasHoveredLastFrame = false; // for hover event detection
+
+    // for caching
+    bool hasHoverNodes = false;
+	bool hoverNodesChecked = false;
+
+    // collision 
+    std::unordered_set<GameObject*> curCollision;
+    std::unordered_set<GameObject*> preCollision;
 };

@@ -263,14 +263,35 @@ namespace JsonIO {
         return ButtonAction::NONE;
 	}
 
+    //player state
+    PlayerState parsePlayerState(const std::string& s) {
+        if (s == "Idle")     return PlayerState::Idle;
+        if (s == "Walking")  return PlayerState::Walking;
+        if (s == "Jumping")  return PlayerState::Jumping;
+        if (s == "Falling")  return PlayerState::Falling;
+        if (s == "Shooting") return PlayerState::Shooting;
+        if (s == "Dead")     return PlayerState::Dead;
+        return PlayerState::Idle; // default/fallback
+    }
+
+
     NodeImplementation stringToNodeImpl(const std::string& str) {
         if (str == "On Start") return NodeImplementation::ON_START;
         if (str == "On Update") return NodeImplementation::ON_UPDATE;
+		if (str == "On Collision Enter") return NodeImplementation::ON_COLLISION_ENTER;
+		if (str == "While Colliding") return NodeImplementation::WHILE_COLLIDING;
+		if (str == "On Collision Exit") return NodeImplementation::ON_COLLISION_EXIT;
+		if (str == "On Hover Enter") return NodeImplementation::ON_HOVER_ENTER;
+		if (str == "While Hovering") return NodeImplementation::WHILE_HOVERING;
+		if (str == "On Hover Exit") return NodeImplementation::ON_HOVER_EXIT;
 
         if (str == "Print Message") return NodeImplementation::PRINT_MESSAGE;
-        if (str == "Rotate Object") return NodeImplementation::ROTATE_OBJECT;
         if (str == "Move Object") return NodeImplementation::MOVE_OBJECT;
+        if (str == "Rotate Object") return NodeImplementation::ROTATE_OBJECT;
+        if (str == "Set Rotation") return NodeImplementation::SET_ROTATION;
 		if (str == "Set Float") return NodeImplementation::SET_FLOAT;
+		if (str == "Play Sound") return NodeImplementation::PLAY_SOUND;
+		if (str == "Set State") return NodeImplementation::SET_STATE;
 
 		if (str == "Check Key Held") return NodeImplementation::CHECK_KEY_HELD;
 		if (str == "Compare Value") return NodeImplementation::COMPARE_VALUE;
@@ -283,11 +304,20 @@ namespace JsonIO {
         switch (impl) {
             case NodeImplementation::ON_START: return "On Start";
             case NodeImplementation::ON_UPDATE: return "On Update";
+            case NodeImplementation::ON_COLLISION_ENTER: return "On Collision Enter";
+            case NodeImplementation::WHILE_COLLIDING: return "While Colliding";
+            case NodeImplementation::ON_COLLISION_EXIT: return "On Collision Exit";
+            case NodeImplementation::ON_HOVER_ENTER: return "On Hover Enter";
+            case NodeImplementation::WHILE_HOVERING: return "While Hovering";
+            case NodeImplementation::ON_HOVER_EXIT: return "On Hover Exit";
 
             case NodeImplementation::PRINT_MESSAGE: return "Print Message";
             case NodeImplementation::MOVE_OBJECT: return "Move Object";
 		    case NodeImplementation::ROTATE_OBJECT: return "Rotate Object";
+			case NodeImplementation::SET_ROTATION: return "Set Rotation";
             case NodeImplementation::SET_FLOAT: return "Set Float";
+			case NodeImplementation::PLAY_SOUND: return "Play Sound";
+			case NodeImplementation::SET_STATE: return "Set State";
 
             case NodeImplementation::CHECK_KEY_HELD: return "Check Key Held";
             case NodeImplementation::COMPARE_VALUE: return "Compare Value";
@@ -603,6 +633,51 @@ namespace JsonIO {
     }
 
     /// @}
+
+    /* ---------- Load/Save collision tags ---------- */
+    bool LoadCollisionTags(const std::string& filepath, std::vector<std::string>& outTags, std::string* err) {
+        rapidjson::Document doc;
+        if (!ReadFileToDocument(RUNTIME_DIR_R + filepath, doc, err)) return false;
+
+        if (!doc.IsObject()) {
+            if (err) *err = "Collision tag file is not a JSON object";
+            return false;
+        }
+
+        if (!doc.HasMember("collisionTags") || !doc["collisionTags"].IsArray()) {
+            if (err) *err = "Missing or invalid 'tags' array";
+            return false;
+        }
+
+        outTags.clear();
+        for (const auto& v : doc["collisionTags"].GetArray()) {
+            if (v.IsString()) {
+                outTags.emplace_back(v.GetString());
+            }
+        }
+
+        return true;
+    }
+
+    bool SaveCollisionTags(const std::string& filepath, const std::vector<std::string>& tags, std::string* err) {
+        rapidjson::Document doc;
+        doc.SetObject();
+        auto& a = doc.GetAllocator();
+
+        doc.AddMember("version", 1, a);
+
+        rapidjson::Value tagArray(rapidjson::kArrayType);
+        for (const auto& tag : tags) {
+            tagArray.PushBack(rapidjson::Value(tag.c_str(), a), a);
+        }
+
+        doc.AddMember("collisionTags", tagArray, a);
+
+        bool runtime = WriteDocumentToFile(RUNTIME_DIR_R + filepath, doc, true, err);
+        bool proj = WriteDocumentToFile(SOURCE_ASSETS_DIR_R + filepath, doc, true, err);
+
+        return (runtime && proj);
+    }
 
     /* ---------- Saving obj state in json for undo/redo ---------- */
     std::string serializeGameObj(GameObject* obj) {

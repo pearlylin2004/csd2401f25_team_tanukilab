@@ -157,6 +157,9 @@ void CoreEngine::Init(bool forceWindowed) {
     m_messageBus->subscribe("KeyPressed", m_playerController.get());
     m_messageBus->subscribe("KeyReleased", m_playerController.get());
 
+    // load global settings
+    GlobalRegistry::Instance().init();
+
     glfwPollEvents();
     m_isRunning = true;
 

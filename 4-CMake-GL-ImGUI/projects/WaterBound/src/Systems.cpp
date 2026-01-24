@@ -1126,6 +1126,18 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 								if (info.normal.y > 0) p1->onGround = true;
 								else p2->onGround = true;
 							}
+
+							/* ---------- trigger visual logic collision events ---------- */
+							if (obj1->hasComponent<VisualLC>()) {
+								VisualLC* logic1 = obj1->getComponent<VisualLC>();
+								logic1->curCollision.insert(obj2);
+							}
+
+							if (obj2->hasComponent<VisualLC>()) {
+								VisualLC* logic2 = obj2->getComponent<VisualLC>();
+								logic2->curCollision.insert(obj1);
+							}
+							/* ---------- END ---------- */
 						}
 					}
 				}
@@ -1350,7 +1362,7 @@ void LogicSystem::update(GameObjectManager& manager, float const& dt) {
 	for (auto* go : objs) {
 		if (!go) continue;
 		if (!go->hasComponent<StateMachine>()) continue;
-		if (!go->hasComponent<Transform>() || !go->hasComponent<Physics>()) continue;
+		if (!go->hasComponent<Transform>() || !go->hasComponent<Physics>() || !go->hasComponent<Input>()) continue; // skip if obj cant move (no input-based state change)
 
 		// Update class-based FSM + trigger-action rules
 		container.update(*go, dt);
@@ -1454,7 +1466,7 @@ void AudioSystem::update(GameObjectManager& manager, float deltaTime) {
 				AudioChannel& ch = pair.second;
 
 				// Background music restart logic
-				if (ch.playOnStart) {
+				if (ch.playOnStart && ch.loop) {
 					if (!ch.channel || !audioHandler.isSoundPlaying(&ch)) {
 						// Restart background music if not playing
 						ch.channel = audioHandler.playSound(&ch);
@@ -1478,6 +1490,7 @@ void AudioSystem::update(GameObjectManager& manager, float deltaTime) {
 					if (!isPlaying) {
 						ch.channel = nullptr;
 						ch.fadeInfo.isFading = false;
+						ch.state = AudioState::Stopped;
 					}
 				}
 			}
@@ -1637,11 +1650,6 @@ void AudioSystem::initializeSceneAudio(GameObjectManager& manager) {
 						<< channel.audioFile << " for channel: "
 						<< channelName
 						<< (channel.isSpatial ? " (3D)" : " (2D)") << std::endl;
-				}
-
-				// Set channel-specific min/max distance if 3D
-				if (channel.isSpatial && sound) {
-					sound->set3DMinMaxDistance(channel.minDistance, channel.maxDistance);
 				}
 
 			}

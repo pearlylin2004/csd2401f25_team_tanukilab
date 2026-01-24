@@ -43,10 +43,22 @@ void VisualLogicSystem::updateAll(GameObjectManager& manager, float dt) {
 void VisualLogicSystem::init(GameObject* obj, VisualLC* logic) {
 	if (!obj || !logic) return;
 
-	// find and execute all ON START nodes
+	logic->hasHoverNodes = false;
 	for (LogicNode& node : logic->nodes) {
+		// cache whether obj has hover nodes
+		if (node.imp == NodeImplementation::ON_HOVER_ENTER ||
+			node.imp == NodeImplementation::WHILE_HOVERING ||
+			node.imp == NodeImplementation::ON_HOVER_EXIT) {
+			logic->hasHoverNodes = true;
+			break;
+		}
+
+		logic->hoverNodesChecked = true;
+
+		// find and execute all ON START nodes
 		if (node.imp == NodeImplementation::ON_START) {
-			executeNode(obj, logic, node.id);
+			logic->currentExePath.clear();
+			executeNode(obj, logic, node.id, 1 / 60.f);
 		}
 	}
 }
@@ -55,43 +67,160 @@ void VisualLogicSystem::update(GameObject* obj, VisualLC* logic, float dt) {
 	(void)dt; // to use in the future
 	if (!obj || !logic) return;
 
-	// find and execute all ON UPDATE nodes
+
+	/* -------- Check collisions -------- */
+	for (GameObject* collided : logic->curCollision) {
+		// ON COLLISION ENTER
+		if (logic->preCollision.find(collided) == logic->preCollision.end()) {
+			for (LogicNode& node : logic->nodes) {
+				if (node.imp == NodeImplementation::ON_COLLISION_ENTER) {
+					if (shouldTriggerCollision(obj, node, collided)) {
+						logic->stringVar["_collidedWith"] = collided->getObjectName();
+						executeNode(obj, logic, node.id, dt);
+					}
+				}
+			}
+		}
+	}
+
+	for (GameObject* collided : logic->curCollision) {
+		// WHILE COLLIDING
+		for (LogicNode& node : logic->nodes) {
+			if (node.imp == NodeImplementation::WHILE_COLLIDING) {
+				if (shouldTriggerCollision(obj, node, collided)) {
+					logic->stringVar["_collidedWith"] = collided->getObjectName();
+					executeNode(obj, logic, node.id, dt);
+				}
+			}
+		}
+	}
+
+	for (GameObject* collided : logic->preCollision) {
+		// ON COLLISION EXIT
+		if (logic->curCollision.find(collided) == logic->curCollision.end()) {
+			for (LogicNode& node : logic->nodes) {
+				if (node.imp == NodeImplementation::ON_COLLISION_EXIT) {
+					if (shouldTriggerCollision(obj, node, collided)) {
+						logic->stringVar["_collidedWith"] = collided->getObjectName();
+						executeNode(obj, logic, node.id, dt);
+					}
+				}
+			}
+		}
+	}
+
+	// update collision status for next frane
+	logic->preCollision = logic->curCollision;
+	logic->curCollision.clear();
+
+	/* -------- END -------- */
+
+
+	/* -------- Safety Check jic haven check -------- */
+	if (!logic->hoverNodesChecked) {
+		// Cache it now if not done yet (safety check)
+		logic->hasHoverNodes = false;
+		for (const LogicNode& node : logic->nodes) {
+			if (node.imp == NodeImplementation::ON_HOVER_ENTER ||
+				node.imp == NodeImplementation::WHILE_HOVERING ||
+				node.imp == NodeImplementation::ON_HOVER_EXIT) {
+				logic->hasHoverNodes = true;
+				break;
+			}
+		}
+		logic->hoverNodesChecked = true;
+	}
+	/* -------- END -------- */
+
+
+	/* -------- Check hover -------- */
+	if (logic->hasHoverNodes) {
+		Transform* transform = obj->getComponent<Transform>();
+
+		if (transform) {
+			Vector2D mouseWorldPos = InputHandler::getWorldMousePosition();
+
+#ifdef _DEBUG
+			// if playing in editor then use ImGui viewport mouse pos
+			if (UISystem::isShowUI()) {
+				ImVec2 scenePos; ImVec2 sceneSize;
+				EditorManager::getScenePosNSize(scenePos, sceneSize);
+
+				mouseWorldPos = InputHandler::getMousePositionInImGuiViewport(scenePos, sceneSize);
+			}
+#endif
+
+			float halfW = transform->scaleX / 2.f;
+			float halfH = transform->scaleY / 2.f;
+
+			bool isHoveringNow = (mouseWorldPos.x >= transform->x - halfW &&
+				mouseWorldPos.x <= transform->x + halfW &&
+				mouseWorldPos.y >= transform->y - halfH &&
+				mouseWorldPos.y <= transform->y + halfH);
+
+			// ON HOVER ENTER
+			if (isHoveringNow && !logic->wasHoveredLastFrame) {
+				for (LogicNode& node : logic->nodes) {
+					if (node.imp == NodeImplementation::ON_HOVER_ENTER) {
+						logic->currentExePath.clear();
+
+						executeNode(obj, logic, node.id, dt);
+					}
+				}
+			}
+
+			// WHILE HOVERING
+			if (isHoveringNow) {
+				for (LogicNode& node : logic->nodes) {
+					if (node.imp == NodeImplementation::WHILE_HOVERING) {
+						logic->currentExePath.clear();
+
+						executeNode(obj, logic, node.id, dt);
+					}
+				}
+			}
+
+			// ON HOVER EXIT
+			if (!isHoveringNow && logic->wasHoveredLastFrame) {
+				for (LogicNode& node : logic->nodes) {
+					if (node.imp == NodeImplementation::ON_HOVER_EXIT) {
+						logic->currentExePath.clear();
+
+						executeNode(obj, logic, node.id, dt);
+					}
+				}
+			}
+
+			logic->wasHoveredLastFrame = isHoveringNow;
+		}
+	}
+	/* -------- END -------- */
+
 	for (LogicNode& node : logic->nodes) {
+		// find and execute all ON UPDATE nodes
 		if (node.imp == NodeImplementation::ON_UPDATE) {
-			executeNode(obj, logic, node.id);
+			logic->currentExePath.clear();
+
+			executeNode(obj, logic, node.id, dt);
 		}
 	}
 }
 
-void VisualLogicSystem::onCollisionEnter(GameObject* obj, VisualLC* logic, GameObject* other) {
-	if (!obj || !logic || !other) return;
-
-	// execute ON COLLISION ENTER nodes
-	for (LogicNode& node : logic->nodes) {
-		if (node.imp == NodeImplementation::ON_COLLISION) {
-			logic->stringVar["_collidedWith"] = other->getObjectName();
-			executeNode(obj, logic, node.id);
-		}
-	}
-}
-
-//void VisualLogicSystem::onCollisionExit(GameObject* obj, VisualLC* logic, GameObject* other) {
-//	if (!obj || !logic || !other) return;
-//
-//	// execute ON COLLISION EXIT nodes
-//	for (auto& node : logic->nodes) {
-//		if (node.imp == NodeImplementation::ON_COLLISION) {
-//			logic->stringVariables["_collidedWith"] = other->getObjectName();
-//			executeNode(obj, logic, node.id);
-//		}
-//	}
-//}
-
-void VisualLogicSystem::executeNode(GameObject* obj, VisualLC* logic, int nodeId) {
+void VisualLogicSystem::executeNode(GameObject* obj, VisualLC* logic, int nodeId, float dt) {
 	if (!obj || !logic) return;
 
+	if (logic->currentExePath.count(nodeId)) {
+		// oops executed node, return to avoid infinite loop
+		return;
+	}
+
+	logic->currentExePath.insert(nodeId);
+
 	LogicNode* node = findNode(logic, nodeId);
-	if (!node) return;
+	if (!node) {
+		logic->currentExePath.erase(nodeId);
+		return;
+	}
 
 	// execute based on node type
 	switch (node->type) {
@@ -99,26 +228,30 @@ void VisualLogicSystem::executeNode(GameObject* obj, VisualLC* logic, int nodeId
 			executeEventNode(obj, logic, *node);
 			break;
 		case NodeType::ACTION:
-			executeActionNode(obj, logic, *node);
+			executeActionNode(obj, logic, *node, dt);
 			break;
 		case NodeType::CONDITION: {
-			bool result = executeConditionNode(obj, logic, *node);
+			bool result = executeConditionNode(obj, logic, *node, dt);
 
 			// find next node based on TRUE/FALSE
 			std::string pin = result ? "True" : "False";
-			int nextNodeId = findNextNode(logic, node->id, pin);
-			if (nextNodeId != -1) {
-				executeNode(obj, logic, nextNodeId);
+			std::vector<int> nextNodes = findAllNextNode(logic, node->id, pin);
+			for (int nextID : nextNodes) {
+				executeNode(obj, logic, nextID, dt);
 			}
+
+			logic->currentExePath.erase(nodeId);
 			return;
 		}
 	}
 
 	// execute next connected node (NOT for condition)
-	int nextNodeId = findNextNode(logic, node->id, "Out");
-	if (nextNodeId != -1) {
-		executeNode(obj, logic, nextNodeId);
+	std::vector<int> nextNodes = findAllNextNode(logic, node->id, "Out");
+	for (int nextID : nextNodes) {
+		executeNode(obj, logic, nextID, dt);
 	}
+
+	logic->currentExePath.erase(nodeId);
 }
 
 void VisualLogicSystem::executeEventNode(GameObject* obj, VisualLC* logic, LogicNode& node) {
@@ -129,15 +262,16 @@ void VisualLogicSystem::executeEventNode(GameObject* obj, VisualLC* logic, Logic
 	logic->currentExecutingNodeId = node.id;
 }
 
-void VisualLogicSystem::executeActionNode(GameObject* obj, VisualLC* logic, LogicNode& node) {
-	(void)logic; // to use in future
+void VisualLogicSystem::executeActionNode(GameObject* obj, VisualLC* logic, LogicNode& node, float dt) {
+	//(void)logic; // to use in future
 
 	// print message
 	if (node.imp == NodeImplementation::PRINT_MESSAGE) {
+		// static int count{};
 		std::string msg = node.parameters.count("message") ? node.parameters["message"] : "I love GAM";
 
 		DebugLog::addMessage(msg, DebugMode::PlaySimul);
-		std::cout << msg << std::endl;
+		std::cout << msg << /*count++ <<*/ std::endl;
 	}
 	else if (node.imp == NodeImplementation::MOVE_OBJECT) {
 		Transform* transform = obj->getComponent<Transform>();
@@ -146,11 +280,11 @@ void VisualLogicSystem::executeActionNode(GameObject* obj, VisualLC* logic, Logi
 			float x = node.parameters.count("x") ? std::stof(node.parameters["x"]) : 0.f;
 			float y = node.parameters.count("y") ? std::stof(node.parameters["y"]) : 0.f;
 			
-			transform->x += x;
-			transform->y += y;
+			transform->x += x * dt;
+			transform->y += y * dt;
 
-			DebugLog::addMessage("Moved object by (" +
-				std::to_string(x) + ", " + std::to_string(y) + ")\n", DebugMode::PlaySimul);
+			/*DebugLog::addMessage("Moved object by (" +
+				std::to_string(x) + ", " + std::to_string(y) + ")\n", DebugMode::PlaySimul);*/
 		}
 	}
 	else if (node.imp == NodeImplementation::ROTATE_OBJECT) {
@@ -159,10 +293,17 @@ void VisualLogicSystem::executeActionNode(GameObject* obj, VisualLC* logic, Logi
 		if (transform) {
 			float angle = node.parameters.count("angle") ? std::stof(node.parameters["angle"]) : 0.f;
 
-			transform->rotation += angle;
+			transform->rotation += angle * dt;
 
-			DebugLog::addMessage("Rotated object by " +
-				std::to_string(angle) + " degrees\n", DebugMode::PlaySimul);
+			/*DebugLog::addMessage("Rotated object by " +
+				std::to_string(angle) + " degrees\n", DebugMode::PlaySimul);*/
+		}
+	}
+	else if (node.imp == NodeImplementation::SET_ROTATION) {
+		Transform* transform = obj->getComponent<Transform>();
+		if (transform) {
+			float angle = node.parameters.count("angle") ? std::stof(node.parameters["angle"]) : 0.f;
+			transform->rotation = angle;
 		}
 	}
 	else if (node.imp == NodeImplementation::SET_FLOAT) {
@@ -173,16 +314,59 @@ void VisualLogicSystem::executeActionNode(GameObject* obj, VisualLC* logic, Logi
 			std::stof(node.parameters["value"]) : 0.f;
 
 		logic->floatVar[varName] = value;
+	}
+	else if (node.imp == NodeImplementation::PLAY_SOUND) {
+		// component/audio checking
+		AudioComponent* audio = obj->getComponent<AudioComponent>();
+		if (!audio) {
+			std::cerr << "[VisualLogic] Object has no AudioComponent!" << std::endl;
+			return;
+		}
+		if (!node.parameters.count("channel")) {
+			std::cerr << "[VisualLogic] No channel specified for Play Sound node!" << std::endl;
+			return;
+		}
 
-		DebugLog::addMessage("Set variable '" + varName + "' to " +
-			std::to_string(value) + "\n", DebugMode::PlaySimul);
+		// get channel
+		std::string channelName = node.parameters.at("channel");
+		if (channelName.empty()) {
+			std::cerr << "[VisualLogic] Channel name is empty for Play Sound node!" << std::endl;
+			return;
+		}
+
+		// find channel
+		AudioChannel* channel = audio->getChannel(channelName);
+		if (!channel) {
+			std::cerr << "[VisualLogic] Channel " << channelName << " not found" << std::endl;
+			return;
+		}
+		if (channel->audioFile.empty()) {
+			std::cerr << "[VisualLogic] No audio file specified for channel " << channelName << "!" << std::endl;
+			return;
+		}
+
+		channel->isPendingPlay = true;
+	}
+	else if (node.imp == NodeImplementation::SET_STATE) {
+		StateMachine* sm = obj->getComponent<StateMachine>();
+
+		if (!sm) {
+			std::cerr << "[VisualLogic] Object has no StateMachine component!" << std::endl;
+			return;
+		}
+
+		std::string stateName = node.parameters.count("state") ? node.parameters["state"] : JsonIO::stateNames[0];
+		
+		sm->state = JsonIO::parsePlayerState(stateName);
+		sm->stateTime = 0.f;
 	}
 }
 
-bool VisualLogicSystem::executeConditionNode(GameObject* obj, VisualLC* logic, LogicNode& node) {
+bool VisualLogicSystem::executeConditionNode(GameObject* obj, VisualLC* logic, LogicNode& node, float dt) {
 	// check key pressed/mouse clicked/compare numbers
 	(void)obj; // to use in future
 	(void)logic; // to use in future
+	(void)dt; // to use in future
 
 	if (node.imp == NodeImplementation::CHECK_KEY_HELD) {
 		std::string keyStr = node.parameters.count("key") ?
@@ -291,15 +475,17 @@ bool VisualLogicSystem::executeConditionNode(GameObject* obj, VisualLC* logic, L
 	return true;
 }
 
-int VisualLogicSystem::findNextNode(VisualLC* logic, int fromNodeId, const std::string& outputPin) {
+std::vector<int> VisualLogicSystem::findAllNextNode(VisualLC* logic, int fromNodeId, const std::string& outputPin) {
+	std::vector<int> nodes;
+
 	for (const LogicConnection& conn : logic->connections) {
 		if (conn.fromNodeId == fromNodeId && conn.outputPin == outputPin) {
-			return conn.toNodeId;
+			nodes.push_back(conn.toNodeId);
 		}
 	}
 
 	// no connection found
-	return -1;
+	return nodes;
 }
 
 LogicNode* VisualLogicSystem::findNode(VisualLC* logic, int nodeId) {
@@ -310,4 +496,28 @@ LogicNode* VisualLogicSystem::findNode(VisualLC* logic, int nodeId) {
 	}
 
 	return nullptr;
+}
+
+bool VisualLogicSystem::shouldTriggerCollision(GameObject* obj, LogicNode& node, GameObject* collided) {
+	std::string filterType = node.parameters.count("colFilterType") ? node.parameters["colFilterType"] : "any";
+
+	if (filterType == "any") return true;
+
+	std::string filterValue = node.parameters.count("colFilterValue") ? node.parameters["colFilterValue"] : "";
+	if (filterValue.empty()) return false;
+
+	if (filterType == "name") {
+		return collided->getObjectName() == filterValue;
+	}
+	else if (filterType == "tag") {
+		CollisionInfo* col = collided->getComponent<CollisionInfo>();
+
+		if (col) {
+			return col->collisionTag == filterValue;
+		}
+
+		return false;
+	}
+
+	return false;
 }

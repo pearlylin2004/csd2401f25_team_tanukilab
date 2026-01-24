@@ -786,6 +786,49 @@ void InspectorWindow::renderCollision( GameObject* selected, GameObjectManager& 
 
             }
 
+            std::string currentTag = collision->collisionTag.empty() ? "default" : collision->collisionTag;
+
+            if (ImGui::BeginCombo("Collision Tag", currentTag.c_str())) {
+                const std::vector<std::string>& collisionTags = GlobalRegistry::Instance().getCollisionTags();
+
+                for (const std::string& tag : collisionTags) {
+                    bool isSelected = (currentTag == tag);
+
+                    if (ImGui::Selectable(tag.c_str(), isSelected)) {
+                        collision->collisionTag = tag;
+                    }
+
+                    if (isSelected) {
+                        ImGui::SetItemDefaultFocus();
+                    }
+                }
+
+                ImGui::EndCombo();
+            }
+
+            /*if (ImGui::BeginCombo("Collide with", filterType.c_str())) {
+                const char* options[] = { "any", "name", "tag" };
+                const char* filterLabels[] = { "Any Object", "Object Name", "Collision Tag" };
+
+                for (const char* option : options) {
+                    bool isSelected = (filterType == option);
+
+                    if (ImGui::Selectable(option, isSelected)) {
+                        node.parameters["colFilterType"] = option;
+
+                        if (!isSelected) {
+                            node.parameters["colFilterValue"] = "";
+                        }
+                    }
+
+                    if (isSelected) {
+                        ImGui::SetItemDefaultFocus();
+                    }
+                }*/
+
+               /* ImGui::EndCombo();
+            }*/
+
         }
 
         ImGui::Spacing();
@@ -1095,12 +1138,45 @@ void InspectorWindow::renderAudio(GameObject* selected) {
                     if (!ch.audioFile.empty()) {
                         ImGui::Spacing();
                         
-                        // Basic Controls
-                        ImGui::Checkbox("Loop", &ch.loop);
-                        ImGui::Checkbox("Play On Start", &ch.playOnStart);
-                        ImGui::Checkbox("Muted", &ch.muted);
+                        // Manual Playback Controls
+                        ImGui::Text("Playback Controls");
+
+                        if (ch.channel && ch.state == AudioState::Playing) {
+                            // Currently playing - show Stop button
+                            if (ImGui::Button("Stop", ImVec2(-1, 0))) {
+                                ch.isPendingStop = true;
+                                DebugLog::addMessage("Manually stopped channel: " + channelName + "\n");
+                            }
+                        }
+                        else if (!ch.audioFile.empty()) {
+                            // Not playing but has audio file - show Play button
+                            if (ImGui::Button("Play", ImVec2(-1, 0))) {
+                                ch.isPendingPlay = true;
+                                DebugLog::addMessage("Manually started channel: " + channelName + "\n");
+                            }
+                        }
+                        else {
+                            // No audio file assigned
+                            ImGui::BeginDisabled();
+                            ImGui::Button("Play (No Audio)", ImVec2(-1, 0));
+                            ImGui::EndDisabled();
+                        }
+
+                        ImGui::Spacing();
+                        ImGui::Separator();
+                        ImGui::Spacing();
+
+                        // Basic Controls - detect changes and stop sound if settings change
+                        bool loopChanged = ImGui::Checkbox("Loop", &ch.loop);
+                        bool playOnStartChanged = ImGui::Checkbox("Play On Start", &ch.playOnStart);
+                        bool mutedChanged = ImGui::Checkbox("Muted", &ch.muted);
 						ImGui::Checkbox("Spatial Audio", &ch.isSpatial);
 
+                        // Stop currently playing sound if critical settings changed
+                        if ((loopChanged || playOnStartChanged || mutedChanged) && ch.channel) {
+                            ch.isPendingStop = true;
+                            DebugLog::addMessage("Stopped audio in '" + channelName + "' due to setting change\n");
+                        }
 
                         if (ch.isSpatial) {
                             ImGui::Indent();  // Indent to show hierarchy

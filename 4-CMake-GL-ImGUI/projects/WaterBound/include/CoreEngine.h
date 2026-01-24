@@ -32,6 +32,7 @@ Technology is prohibited.
 #include "GUISystem.h"
 #include "messageBus.h"
 #include "JsonIO.h"
+#include "globalRegistry.h"
 
 
 class CoreEngine {

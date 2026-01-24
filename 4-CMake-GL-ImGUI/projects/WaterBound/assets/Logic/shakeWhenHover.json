@@ -1,0 +1,261 @@
+{
+  "version": 1,
+  "nodes": [
+    {
+      "id": 12,
+      "implementation": "On Start",
+      "type": 0,
+      "position": [
+        -173.0,
+        -190.0
+      ],
+      "hasInput": false,
+      "hasOutput": true
+    },
+    {
+      "id": 13,
+      "implementation": "Set Float",
+      "type": 1,
+      "position": [
+        193.0,
+        -198.0
+      ],
+      "hasInput": true,
+      "hasOutput": true,
+      "parameters": {
+        "value": "1",
+        "variable": "shakeDir"
+      }
+    },
+    {
+      "id": 15,
+      "implementation": "Compare Variable",
+      "type": 2,
+      "position": [
+        137.0,
+        -41.0
+      ],
+      "hasInput": true,
+      "hasOutput": false,
+      "parameters": {
+        "comparison": "greater",
+        "threshold": "0",
+        "variable": "shakeDir"
+      }
+    },
+    {
+      "id": 16,
+      "implementation": "Compare Value",
+      "type": 2,
+      "position": [
+        479.0,
+        -104.0
+      ],
+      "hasInput": true,
+      "hasOutput": false,
+      "parameters": {
+        "comparison": "greater",
+        "property": "rotation",
+        "threshold": "10.000000"
+      }
+    },
+    {
+      "id": 17,
+      "implementation": "Set Float",
+      "type": 1,
+      "position": [
+        785.0,
+        -141.0
+      ],
+      "hasInput": true,
+      "hasOutput": true,
+      "parameters": {
+        "value": "-1.000000",
+        "variable": "shakeDir"
+      }
+    },
+    {
+      "id": 18,
+      "implementation": "Set Float",
+      "type": 1,
+      "position": [
+        785.0,
+        119.0
+      ],
+      "hasInput": true,
+      "hasOutput": true,
+      "parameters": {
+        "value": "1.000000",
+        "variable": "shakeDir"
+      }
+    },
+    {
+      "id": 19,
+      "implementation": "Compare Value",
+      "type": 2,
+      "position": [
+        479.0,
+        160.0
+      ],
+      "hasInput": true,
+      "hasOutput": false,
+      "parameters": {
+        "comparison": "less",
+        "property": "rotation",
+        "threshold": "-10.000000"
+      }
+    },
+    {
+      "id": 20,
+      "implementation": "Rotate Object",
+      "type": 1,
+      "position": [
+        786.0,
+        -21.0
+      ],
+      "hasInput": true,
+      "hasOutput": true,
+      "parameters": {
+        "angle": "20.000000"
+      }
+    },
+    {
+      "id": 21,
+      "implementation": "Rotate Object",
+      "type": 1,
+      "position": [
+        789.0,
+        230.0
+      ],
+      "hasInput": true,
+      "hasOutput": true,
+      "parameters": {
+        "angle": "-20.000000"
+      }
+    },
+    {
+      "id": 22,
+      "implementation": "While Hovering",
+      "type": 0,
+      "position": [
+        -169.0,
+        -42.0
+      ],
+      "hasInput": false,
+      "hasOutput": true
+    },
+    {
+      "id": 23,
+      "implementation": "On Hover Exit",
+      "type": 0,
+      "position": [
+        -162.0,
+        257.0
+      ],
+      "hasInput": false,
+      "hasOutput": true
+    },
+    {
+      "id": 26,
+      "implementation": "Set Rotation",
+      "type": 1,
+      "position": [
+        142.0,
+        254.0
+      ],
+      "hasInput": true,
+      "hasOutput": true,
+      "parameters": {
+        "angle": "0"
+      }
+    },
+    {
+      "id": 27,
+      "implementation": "Play Sound",
+      "type": 1,
+      "position": [
+        134.0,
+        80.0
+      ],
+      "hasInput": true,
+      "hasOutput": true,
+      "parameters": {
+        "channel": "default"
+      }
+    }
+  ],
+  "connections": [
+    {
+      "fromNodeId": 12,
+      "outputPin": "Out",
+      "toNodeId": 13,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 15,
+      "outputPin": "True",
+      "toNodeId": 16,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 16,
+      "outputPin": "True",
+      "toNodeId": 17,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 17,
+      "outputPin": "Out",
+      "toNodeId": 21,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 15,
+      "outputPin": "False",
+      "toNodeId": 19,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 19,
+      "outputPin": "True",
+      "toNodeId": 18,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 18,
+      "outputPin": "Out",
+      "toNodeId": 20,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 16,
+      "outputPin": "False",
+      "toNodeId": 20,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 19,
+      "outputPin": "False",
+      "toNodeId": 21,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 23,
+      "outputPin": "Out",
+      "toNodeId": 26,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 22,
+      "outputPin": "Out",
+      "toNodeId": 27,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 22,
+      "outputPin": "Out",
+      "toNodeId": 15,
+      "inputPin": "In"
+    }
+  ]
+}
