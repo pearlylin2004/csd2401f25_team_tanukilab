@@ -170,24 +170,29 @@ FMOD::Channel* AudioHandler::playSound(AudioChannel* audio) {
 		return nullptr;
 	}
 
-	FMODErrorCheck(sound->setMode(audio->loop ? FMOD_LOOP_NORMAL : FMOD_LOOP_OFF));
+	//apparently dont need this
+	//FMODErrorCheck(channel->setMode(audio->loop ? FMOD_LOOP_NORMAL : FMOD_LOOP_OFF));
 
 	// For 3D sounds, override default min/max distance with channel-specific values
-	if (audio->isSpatial) {
-		FMOD_RESULT distResult = sound->set3DMinMaxDistance(
-			audio->minDistance,
-			audio->maxDistance
-		);
-		if (distResult != FMOD_OK) {
-			std::cerr << "Warning: Failed to set 3D distance for: " << audio->audioFile << std::endl;
-		}
-	}
 
 	FMOD::Channel* channel = nullptr;
 	FMODErrorCheck(system->playSound(sound, nullptr, false, &channel));
+
 	if (channel) {
 		channel->setVolume(audio->volume);
 		channel->setPitch(audio->pitch);
+		//channel->setMode(audio->loop ? FMOD_LOOP_NORMAL : FMOD_LOOP_OFF);
+
+		if (audio->isSpatial) {
+			FMOD_RESULT distResult = channel->set3DMinMaxDistance(
+				audio->minDistance,
+				audio->maxDistance
+			);
+			if (distResult != FMOD_OK) {
+				std::cerr << "Warning: Failed to set 3D distance for: " << audio->audioFile << std::endl;
+			}
+		}
+
 		audio->channel = channel;
 		audio->fadeInfo.isFading = false;
 		std::cout << "[AUDIO] Playing: " << audio->audioFile

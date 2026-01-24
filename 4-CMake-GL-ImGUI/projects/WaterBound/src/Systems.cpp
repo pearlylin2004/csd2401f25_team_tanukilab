@@ -1438,7 +1438,7 @@ void AudioSystem::update(GameObjectManager& manager, float deltaTime) {
 				AudioChannel& ch = pair.second;
 
 				// Background music restart logic
-				if (ch.playOnStart) {
+				if (ch.playOnStart && ch.loop) {
 					if (!ch.channel || !audioHandler.isSoundPlaying(&ch)) {
 						// Restart background music if not playing
 						ch.channel = audioHandler.playSound(&ch);
@@ -1462,6 +1462,7 @@ void AudioSystem::update(GameObjectManager& manager, float deltaTime) {
 					if (!isPlaying) {
 						ch.channel = nullptr;
 						ch.fadeInfo.isFading = false;
+						ch.state = AudioState::Stopped;
 					}
 				}
 			}
@@ -1621,11 +1622,6 @@ void AudioSystem::initializeSceneAudio(GameObjectManager& manager) {
 						<< channel.audioFile << " for channel: "
 						<< channelName
 						<< (channel.isSpatial ? " (3D)" : " (2D)") << std::endl;
-				}
-
-				// Set channel-specific min/max distance if 3D
-				if (channel.isSpatial && sound) {
-					sound->set3DMinMaxDistance(channel.minDistance, channel.maxDistance);
 				}
 
 			}
