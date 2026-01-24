@@ -785,50 +785,6 @@ void InspectorWindow::renderCollision( GameObject* selected, GameObjectManager& 
                 }
 
             }
-
-            std::string currentTag = collision->collisionTag.empty() ? "default" : collision->collisionTag;
-
-            if (ImGui::BeginCombo("Collision Tag", currentTag.c_str())) {
-                const std::vector<std::string>& collisionTags = GlobalRegistry::Instance().getCollisionTags();
-
-                for (const std::string& tag : collisionTags) {
-                    bool isSelected = (currentTag == tag);
-
-                    if (ImGui::Selectable(tag.c_str(), isSelected)) {
-                        collision->collisionTag = tag;
-                    }
-
-                    if (isSelected) {
-                        ImGui::SetItemDefaultFocus();
-                    }
-                }
-
-                ImGui::EndCombo();
-            }
-
-            /*if (ImGui::BeginCombo("Collide with", filterType.c_str())) {
-                const char* options[] = { "any", "name", "tag" };
-                const char* filterLabels[] = { "Any Object", "Object Name", "Collision Tag" };
-
-                for (const char* option : options) {
-                    bool isSelected = (filterType == option);
-
-                    if (ImGui::Selectable(option, isSelected)) {
-                        node.parameters["colFilterType"] = option;
-
-                        if (!isSelected) {
-                            node.parameters["colFilterValue"] = "";
-                        }
-                    }
-
-                    if (isSelected) {
-                        ImGui::SetItemDefaultFocus();
-                    }
-                }*/
-
-               /* ImGui::EndCombo();
-            }*/
-
         }
 
         ImGui::Spacing();
@@ -892,6 +848,74 @@ void InspectorWindow::renderCollision( GameObject* selected, GameObjectManager& 
         }
         else {
             if (collision->collisionFlag) Editor::sceneWindowState.showSingleCollider = false;
+        }
+
+        ImGui::Spacing();
+        ImGui::Separator();
+
+        if (ImGui::TreeNode("Collision Tag")) {
+            std::string currentTag = collision->collisionTag.empty() ? "default" : collision->collisionTag;
+            const std::vector<std::string>& collisionTags = GlobalRegistry::Instance().getCollisionTags();
+
+            ImGui::BeginDisabled(!collision->collisionFlag);
+            if (ImGui::BeginCombo("Object Tag", currentTag.c_str())) {
+                for (const std::string& tag : collisionTags) {
+                    bool isSelected = (currentTag == tag);
+
+                    if (ImGui::Selectable(tag.c_str(), isSelected)) {
+                        collision->collisionTag = tag;
+                    }
+
+                    if (isSelected) {
+                        ImGui::SetItemDefaultFocus();
+                    }
+                }
+
+                ImGui::EndCombo();
+            }
+
+            ImGui::Spacing();
+            ImGui::Separator();
+
+            // Ignore Collisions with Checkboxes
+            ImGui::Text("Ignore Collisions With:");
+            ImGui::Spacing();
+
+            for (const std::string& tag : collisionTags) {
+                bool isIgnored = (collision->ignoreCollisionsWith.find(tag) != collision->ignoreCollisionsWith.end());
+
+                if (ImGui::Checkbox(tag.c_str(), &isIgnored)) {
+                    if (isIgnored) {
+                        collision->ignoreCollisionsWith.insert(tag);
+                    }
+                    else {
+                        collision->ignoreCollisionsWith.erase(tag);
+                    }
+                }
+            }
+
+            ImGui::Spacing();
+
+            if (!collision->ignoreCollisionsWith.empty()) {
+                if (ImGui::Button("Uncheck All", ImVec2(-1, 0))) {
+                    collision->ignoreCollisionsWith.clear();
+                }
+            }
+            
+            if (!collisionTags.empty() && collision->ignoreCollisionsWith.size() != collisionTags.size()) {
+                if (ImGui::Button("Check All", ImVec2(-1, 0))) {
+                    for (const std::string& tag : collisionTags) {
+						collision->ignoreCollisionsWith.insert(tag);
+                    }
+                }
+            }
+            else if (collisionTags.empty()) {
+                ImGui::TextWrapped("No collision tags available. Add collision tags in the Global Registry.");
+            }
+
+            ImGui::EndDisabled();
+
+            ImGui::TreePop();
         }
 
         if (ImGui::Button("Remove Collision", ImVec2(-1, 0))) {
