@@ -103,89 +103,84 @@ void GUISystem::createButtons(GameObjectManager& manager) {
 
 //removing of buttons 
 void GUISystem::removeButtons() {
-    //delete button objects
-    /*for (auto& pair : m_buttons) {
-        GameObject* btn = pair.second; //get button object
-        if (btn) manager.deleteGameObject(btn); //delete from manager
-    }*/
     m_buttons.clear(); //clear map
+}
+
+//to update state
+void GUISystem::changeState(GameState newState, const std::string& sceneName) {
+    m_previousState = m_currentState;  // store previous
+    m_currentState = newState;
+
+    if (!sceneName.empty()) {
+        loadScreen(*g_manager, sceneName);
+    }
 }
 
 //create button actions
 void GUISystem::createButtonActions() {
     m_buttonActions.clear();
 
-    // Play
+    //play
     m_buttonActions[ButtonAction::START_GAME] = [this]() {
-        m_currentState = GameState::PLAYING;
+        changeState(GameState::PLAYING);
         startGame(*g_manager);
      };
 
-    // Exit confirmation
+    //exit confirmation
     m_buttonActions[ButtonAction::EXIT_GAME] = [this]() {
-        m_currentState = GameState::EXITCONFIRMATION;
-        loadScreen(*g_manager, "confirmation_scene.json");
+        changeState(GameState::EXITCONFIRMATION, "confirmation_scene.json");
      };
 
-    // Control screen
+    //control screen
     m_buttonActions[ButtonAction::OPEN_CONTROL] = [this]() {
-        m_currentState = GameState::CONTROL;
-        loadScreen(*g_manager, "control_scene.json");
+        changeState(GameState::CONTROL, "control_scene.json");
      };
 
-    // Back button
+    //back button
     m_buttonActions[ButtonAction::BACK] = [this]() {
         switch (m_previousState) {
         case GameState::MENU:
-            m_currentState = GameState::MENU;
-            loadScreen(*g_manager, "menu_scene.json");
+            changeState(GameState::MENU, "menu_scene.json");
             break;
         case GameState::CONTROL:
-            m_currentState = GameState::CONTROL;
-            loadScreen(*g_manager, "control_scene.json");
+            changeState(GameState::CONTROL, "control_scene.json");
             break;
         case GameState::PAUSED:
-            m_currentState = GameState::PAUSED;
-            loadScreen(*g_manager, "pause_scene.json");
+            changeState(GameState::PAUSED, "pause_scene.json");
             break;
         case GameState::PLAYING:
-            m_currentState = GameState::PLAYING;
-            //startGame(manager); //reload game if needed
+            startGame(*g_manager); // resume the game
+            break;
+        case GameState::EXITCONFIRMATION:
+            changeState(GameState::EXITCONFIRMATION, "confirmation_scene.json");
             break;
         default:
-            m_currentState = GameState::MENU;
-            loadScreen(*g_manager, "menu_scene.json");
+            changeState(GameState::MENU, "menu_scene.json");
             break;
         }
     };
 
-    // Menu button
+    //menu button
     m_buttonActions[ButtonAction::MENU] = [this]() {
-        m_currentState = GameState::MENU;
-        loadScreen(*g_manager, "menu_scene.json");
+        changeState(GameState::MENU, "menu_scene.json");
     };
 
-    // Resume
+    //resume
     m_buttonActions[ButtonAction::RESUME_GAME] = [this]() {
-        if (m_stateBeforePause == GameState::PLAYING)
-            m_currentState = GameState::PLAYING;
-        else if (m_stateBeforePause == GameState::MENU)
-            loadScreen(*g_manager, "menu_scene.json");
-        else if (m_stateBeforePause == GameState::CONTROL)
-			loadScreen(*g_manager, "control_scene.json");
-        else if (m_stateBeforePause == GameState::EXITCONFIRMATION)
-			loadScreen(*g_manager, "confirmation_scene.json");
+        m_buttonActions[ButtonAction::BACK](); //uses logic from back
     };
 
-    // Exit confirmation yes/no
+    //exit confirmation screen yes/no
     m_buttonActions[ButtonAction::YES_EXIT] = [this]() {
         m_currentState = GameState::EXIT;
         stopGame();
-        };
+    };
     m_buttonActions[ButtonAction::NO_EXIT] = [this]() {
         m_currentState = GameState::MENU;
         loadScreen(*g_manager, "menu_scene.json");
-        };
+    };
+
+    std::cout << "[GUI] Menu buttons created successfully" << std::endl;
 }
 
 void GUISystem::startGame(GameObjectManager& manager) {

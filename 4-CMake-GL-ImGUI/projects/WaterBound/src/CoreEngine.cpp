@@ -185,9 +185,7 @@ void CoreEngine::GameLoop() {
         if (current != GameState::PAUSED) {
             //if (m_guiSystem->getPreviousState() != GameState::PAUSED) m_guiSystem->setPreviousState(current); //store previous state and prevent overwriting previous state if already paused
             m_guiSystem->setStateBeforePause(current); //store state before pausing
-            m_guiSystem->setPreviousState(current); //store previous state
-            m_guiSystem->setCurrentState(GameState::PAUSED); //set current state
-            m_guiSystem->loadScreen(*m_manager, "pause_scene.json"); //load pause screen
+            m_guiSystem->changeState(GameState::PAUSED, "pause_scene.json");
         }
     }
 
