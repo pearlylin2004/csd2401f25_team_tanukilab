@@ -1540,3 +1540,9 @@ void GameObjectManager::cleanupSimulationResources() {
 		}
 	}
 }
+
+//clears all game objects from the scene
+void GameObjectManager::clearScene() {
+	m_gameObjects.clear();     //deletes all GameObjects
+	//m_layerManager.clear(); 
+}

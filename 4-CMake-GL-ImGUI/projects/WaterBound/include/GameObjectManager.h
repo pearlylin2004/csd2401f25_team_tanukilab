@@ -64,6 +64,9 @@ public:
 
 	void createBulletPool(const std::string& templateBulletName, int poolSize = 10);
 
+	//memory manager ...
+	void clearScene(); 
+
 	//layering manager stuff
 	LayerManager& getLayerManager();
 
