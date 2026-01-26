@@ -48,34 +48,6 @@
       }
     },
     {
-      "name": "back_text",
-      "components": {
-        "Transform": {
-          "pos": [
-            -16.1,
-            8.1,
-            0.0
-          ],
-          "rotation": 0.0,
-          "scale": [
-            3.799999952316284,
-            6.0,
-            0.0
-          ]
-        },
-        "FontComponent": {
-          "word": "BACK",
-          "color": [
-            0.0,
-            0.0,
-            0.0
-          ],
-          "scale": 1.0,
-          "fontType": 1
-        }
-      }
-    },
-    {
       "prefabid": "dd60e1e1-641c-4ed5-b69d-ffadfa02fb7a",
       "name": "player",
       "components": {
@@ -143,34 +115,6 @@
             0.0,
             -0.10000000149011612
           ]
-        }
-      }
-    },
-    {
-      "name": "back_button",
-      "components": {
-        "Transform": {
-          "pos": [
-            -17,
-            8.5,
-            0.9990000128746033
-          ],
-          "rotation": 0.0,
-          "scale": [
-            3,
-            2.0,
-            0.0
-          ]
-        },
-        "Render": {
-          "shape": "square",
-          "hasTex": 1,
-          "texture": "assets/button.png",
-          "hasTex": 1,
-          "hasAnimation": 0
-        },
-        "Button" : {
-          "action" : "back"
         }
       }
     },
