@@ -4,8 +4,7 @@
 \author     Varick, v.teo, 2403417
 \par        v.teo@digipen.edu
 \date		November, 5th, 2025
-\brief      Declares a rubric-compliant, class-based Finite State Machine (FSM)
-            runtime for the engine. This module provides:
+\brief      class-based Finite State Machine (FSM), runtime for the engine. This module provides:
             - class StateMachine: owns states and transitions, updates logic per frame
             - class State: abstract base class for per-state behaviour
             - class Transition: condition/action-based links between states

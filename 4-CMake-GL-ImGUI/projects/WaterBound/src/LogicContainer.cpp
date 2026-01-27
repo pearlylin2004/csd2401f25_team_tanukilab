@@ -5,7 +5,7 @@
 \par        v.teo@digipen.edu
 \date		November, 5th, 2025
 \brief		Implements the LogicContainer using class-based FSM and trigger-action system.
-            This replaces the old switch-case implementation.
+            
 
 Copyright (C) 2025 DigiPen Institute of Technology.
 Reproduction or disclosure of this file or its contents
@@ -83,7 +83,7 @@ RuntimeStateMachine* LogicContainer::getOrCreateMachine(GameObject& obj) {
         "Jumping",
         [](GameObject& o) {
             Physics* p = o.getComponent<Physics>();
-            return p && InputHandler::isKeyTriggered(GLFW_KEY_B) && p->onGround;
+            return p && InputHandler::isKeyTriggered(GLFW_KEY_SPACE) && p->onGround;
         },
         [](GameObject& o) { // Transition action: apply jump impulse
             Physics* p = o.getComponent<Physics>();
@@ -119,7 +119,7 @@ RuntimeStateMachine* LogicContainer::getOrCreateMachine(GameObject& obj) {
         "Jumping",
         [](GameObject& o) {
             Physics* p = o.getComponent<Physics>();
-            return p && InputHandler::isKeyTriggered(GLFW_KEY_B) && p->onGround;
+            return p && InputHandler::isKeyTriggered(GLFW_KEY_SPACE) && p->onGround;
         },
         [](GameObject& o) {
             Physics* p = o.getComponent<Physics>();

@@ -4,7 +4,7 @@
 \author     Varick, v.teo, 2403417
 \par        v.teo@digipen.edu
 \date		November, 5th, 2025
-\brief		Implements the rubric-compliant, class-based FSM runtime declared in
+\brief		Implements the class-based FSM runtime declared in
             StateMachineRuntime.h.
 
 Copyright (C) 2025 DigiPen Institute of Technology.
