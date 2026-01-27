@@ -52,8 +52,8 @@
       "components": {
         "Transform": {
           "pos": [
-            -15.795217514038086,
-            7.992824554443359,
+            -16.1,
+            8.1,
             0.0
           ],
           "rotation": 0.0,
@@ -151,7 +151,7 @@
       "components": {
         "Transform": {
           "pos": [
-            -14.0,
+            -15.5,
             8.5,
             0.9990000128746033
           ],
@@ -168,6 +168,9 @@
           "texture": "assets/button.png",
           "hasTex": 1,
           "hasAnimation": 0
+        },
+        "Button" : {
+          "action" : "back"
         }
       }
     },

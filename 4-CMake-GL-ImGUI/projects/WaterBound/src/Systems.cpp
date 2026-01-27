@@ -909,6 +909,13 @@ void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime, M
 	g_SystemTimers.push_back({ "Physics", ms });
 }
 
+//helper function for collision detection
+static uint64_t MakePairKey(GameObject* a, GameObject* b)
+{
+	if (a > b) std::swap(a, b);   //enforce order
+	return (uint64_t(a) << 32) | uint64_t(b); //combine into single key
+}
+
 // Collision system - detects and resolves collisions between game objects
 void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime) {
 	(void)deltaTime;
@@ -919,12 +926,15 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 	std::vector<Layer*> layers = layerManager.getAllLayers();
 
 	//initialize spatial grid
-	const float CELL_SIZE = 4.0f; //changed grid size
-	const int GRID_WIDTH = 20;
-	const int GRID_HEIGHT = 20;
+	const float CELL_SIZE = 4.0f; //can change cell size for optimization
+	//const int GRID_WIDTH = 20;
+	//const int GRID_HEIGHT = 20;
+
+	//spatial hash grid no fixed size
+	std::unordered_map<int, Collision::Cell> grid;
 
 	//persistant grid for this layer
-	static std::vector<std::vector<Collision::Cell>> grid(GRID_WIDTH, std::vector<Collision::Cell>(GRID_HEIGHT));
+	//static std::vector<std::vector<Collision::Cell>> grid(GRID_WIDTH, std::vector<Collision::Cell>(GRID_HEIGHT));
 
 	//process each layer separately
 	//right now only layer 1 should have any sort of collision
@@ -935,13 +945,10 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 			continue;
 		}
 
-		//clear grid instead of reallocating every frame
-		for (auto& column : grid) {
-			for (auto& cell : column) {
-				cell.objects.clear();
-			}
-		}
+		std::unordered_set<uint64_t> checkedPairs; //to avoid duplicate checks
 
+		grid.clear(); //clear grid for new layer
+		
 		const std::vector<GameObject*>& layerObjects = layer->getObjects(); //get layer object
 
 		//insert object into grid 
@@ -950,7 +957,7 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 			CollisionInfo* c = obj->getComponent<CollisionInfo>();
 			if (!c || !objT || !c->collisionFlag) continue; //skip if object not suppose to collide, no transform and no collision
 
-			int minCellX, maxCellX, minCellY, maxCellY;
+			int minCellX = 0, maxCellX = 0, minCellY = 0, maxCellY = 0;
 			//square
 			if (c->colliderType == shape::square){
 				Collision::AABB box = Collision::getObjectAABBbyCollider(objT, c->colliderSize); // use custom collider instead of scale
@@ -976,155 +983,148 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 			}
 
 			//clamp to grid boundaries so it dont go out the valid range of grid
-			minCellX = std::max(0, std::min(minCellX, GRID_WIDTH - 1));
-			maxCellX = std::max(0, std::min(maxCellX, GRID_WIDTH - 1));
-			minCellY = std::max(0, std::min(minCellY, GRID_HEIGHT - 1));
-			maxCellY = std::max(0, std::min(maxCellY, GRID_HEIGHT - 1));
+			//minCellX = std::max(0, std::min(minCellX, GRID_WIDTH - 1));
+			//maxCellX = std::max(0, std::min(maxCellX, GRID_WIDTH - 1));
+			//minCellY = std::max(0, std::min(minCellY, GRID_HEIGHT - 1));
+			//maxCellY = std::max(0, std::min(maxCellY, GRID_HEIGHT - 1));
 
 			//putting the object into the grid cells it occupies
 			for (int x = minCellX; x <= maxCellX; ++x) {
 				for (int y = minCellY; y <= maxCellY; ++y) {
-					grid[x][y].objects.push_back(obj);
+					int key = Collision::HashCell(x, y);
+					grid[key].objects.push_back(obj);
 				}
 			}
 		}
-
-		//temporary container to track checked objects for this frame
-		//to advoid duplicate checks
-		//std::unordered_map<GameObject*, std::vector<GameObject*>> checked;
 
 		//checking collision 
 		//record current time for performance tracking
 		auto start = std::chrono::high_resolution_clock::now();
 
-		for (int i = 0; i < GRID_WIDTH; i++) {
-			for (int j = 0; j < GRID_HEIGHT; j++) {
-				auto& cellObject = grid[i][j].objects; //get objects in the cell
-				//loop through objects in the cell to check for collision
-				for (size_t n = 0; n < cellObject.size(); n++) {
-					//object 1
-					GameObject* obj1 = cellObject[n];
-					Transform* t1 = obj1->getComponent<Transform>();
-					CollisionInfo* c1 = obj1->getComponent<CollisionInfo>();
-					Physics* p1 = obj1->getComponent<Physics>();
-					if (!p1 || !c1 || !t1) continue;
-					
-					Vector2D vel1{ p1->dynamics.velocity.x, p1->dynamics.velocity.y };
-					//object 2 looping
-					for (size_t m = n + 1; m < cellObject.size(); m++) {
-						GameObject* obj2 = cellObject[m]; //get obj2
+		for (auto& [key, cell] : grid) {
+			auto& cellObject = cell.objects; //get objects in the cell
+			if (cellObject.size() < 2) continue; //skip if less than 2 objects because cant collide
 
-						//check if it have been check already
-						if (obj1 >= obj2)
-							continue;
+			//loop through objects in the cell to check for collision
+			for (size_t n = 0; n < cellObject.size(); n++) {
+				//object 1
+				GameObject* obj1 = cellObject[n];
+				Transform* t1 = obj1->getComponent<Transform>();
+				CollisionInfo* c1 = obj1->getComponent<CollisionInfo>();
+				Physics* p1 = obj1->getComponent<Physics>();
+				if (!p1 || !c1 || !t1) continue;
 
-						//object 2
-						Transform* t2 = obj2->getComponent<Transform>();
-						CollisionInfo* c2 = obj2->getComponent<CollisionInfo>();
-						Physics* p2 = obj2->getComponent<Physics>();
-						if (!p2 || !t2 || !c2) continue;
+				Vector2D vel1{ p1->dynamics.velocity.x, p1->dynamics.velocity.y };
+				//object 2 looping
+				for (size_t m = n + 1; m < cellObject.size(); m++) {
+					GameObject* obj2 = cellObject[m]; //get obj2
 
-						Vector2D vel2{ p2->dynamics.velocity.x, p2->dynamics.velocity.y };
+					//object 2
+					Transform* t2 = obj2->getComponent<Transform>();
+					CollisionInfo* c2 = obj2->getComponent<CollisionInfo>();
+					Physics* p2 = obj2->getComponent<Physics>();
+					if (!p2 || !t2 || !c2) continue;
 
-						// Skip if these collision tags shouldn't collide
-						if (!c1->shouldCollideWith(c2->collisionTag) ||
-							!c2->shouldCollideWith(c1->collisionTag)) {
-							continue;
+					uint64_t pairKey = MakePairKey(obj1, obj2); //make unique key for the pair
+
+					//skip if this pair was already checked in another cell
+					if (checkedPairs.count(pairKey)) continue;
+					checkedPairs.insert(pairKey);
+
+					// Skip if these collision tags shouldn't collide
+					if (!c1->shouldCollideWith(c2->collisionTag) ||
+						!c2->shouldCollideWith(c1->collisionTag)) {
+						continue;
+					}
+
+					Vector2D vel2{ p2->dynamics.velocity.x, p2->dynamics.velocity.y };
+
+					//collision info
+					CollisionInfo info;
+
+					//if both square
+					if (c1->colliderType == shape::square && c2->colliderType == shape::square) {
+						Collision::AABB aabb1 = Collision::getObjectAABBbyCollider(t1, c1->colliderSize);
+						Collision::AABB aabb2 = Collision::getObjectAABBbyCollider(t2, c2->colliderSize);
+						info = Collision::CollisionIntersection_RectRect_Dynamic_Info(aabb1, vel1, aabb2, vel2);
+					}
+					//if both circle
+					else if (c1->colliderType == shape::circle && c2->colliderType == shape::circle) {
+						Collision::Circle circle1 = Collision::getObjectCirclebyCollider(t1, c1->colliderSize);
+						Collision::Circle circle2 = Collision::getObjectCirclebyCollider(t2, c2->colliderSize);
+						info = Collision::CollisionIntersection_CircleCircle_Dynamic_Info(circle1, vel1, circle2, vel2);
+					}
+					// if one is square one is circle
+					else if (c1->colliderType == shape::square && c2->colliderType == shape::circle) {
+						Collision::AABB aabb1 = Collision::getObjectAABBbyCollider(t1, c1->colliderSize);
+						Collision::Circle circle2 = Collision::getObjectCirclebyCollider(t2, c2->colliderSize);
+						info = Collision::CollisionIntersection_CircleAABB_Dynamic_Info(circle2, vel2, aabb1, vel1);
+					}
+					else {
+						continue; //current dont have other shapes of collision 
+					}
+
+					//checking if collided
+					if (info.collided) {
+						// c1 is the moving obj (player), c2 is the obj it collide with
+						// CASE 1: collided obj is pushable
+						if (c2->collisionRes == CollisionResponseMode::MoveWhenCollide) {
+							if (info.normal.x != 0) {
+								// move both obj away from each other (to simulate push)
+								t1->x += info.normal.x * info.penetration * 0.5f;
+								t2->x -= info.normal.x * info.penetration * 0.5f;
+
+								p1->dynamics.position.x = t1->x;
+								p2->dynamics.position.x = t2->x;
+							}
+
+							if (info.normal.y != 0) {
+								t1->y += info.normal.y * info.penetration * 0.5f;
+								t2->y -= info.normal.y * info.penetration * 0.5f;
+
+								// Update physics positions to match transforms
+								p1->dynamics.position.y = t1->y;
+								p2->dynamics.position.y = t2->y;
+
+								p1->dynamics.velocity.y = 0.f;
+								p2->dynamics.velocity.y = 0.f;
+
+								if (info.normal.y > 0) p1->onGround = true;
+								else p2->onGround = true;
+							}
 						}
+						// CASE 2: collided obj is static
+						else if (c2->collisionRes == CollisionResponseMode::StopWhenCollide) {
+							// Resolve penetration
+							if (info.normal.x != 0) {
+								// push moving obj out of collided obj
+								t1->x += info.normal.x * info.penetration;
+								p1->dynamics.position.x = t1->x;
 
-						//check collision based on shape
-						//check obj1 shape 
-						if (!c1 || !t1) return;
-						//check obj2 shape 
-						if (!c2 || !t2) return;
+								p1->dynamics.velocity.x = 0.f;
+								p1->velX = 0.f;
 
-						//collision info
-						CollisionInfo info;
+							}
 
-						//if both square
-						if (c1->colliderType == shape::square && c2->colliderType == shape::square) {
-							Collision::AABB aabb1 = Collision::getObjectAABBbyCollider(t1, c1->colliderSize);
-							Collision::AABB aabb2 = Collision::getObjectAABBbyCollider(t2, c2->colliderSize);
-							info = Collision::CollisionIntersection_RectRect_Dynamic_Info(aabb1, vel1, aabb2, vel2);
+							if (info.normal.y != 0) {
+								t1->y += info.normal.y * info.penetration;
+								p1->dynamics.position.y = t1->y;
+
+								p1->dynamics.velocity.y = 0.0f;
+
+								if (info.normal.y > 0) p1->onGround = true;
+							}
+
+							DebugLog::addMessage("Collision detected between Object.\n", DebugMode::PlaySimul);
 						}
-						//if both circle
-						else if (c1->colliderType == shape::circle && c2->colliderType == shape::circle) {
-							Collision::Circle circle1 = Collision::getObjectCirclebyCollider(t1, c1->colliderSize);
-							Collision::Circle circle2 = Collision::getObjectCirclebyCollider(t2, c2->colliderSize);
-							info = Collision::CollisionIntersection_CircleCircle_Dynamic_Info(circle1, vel1, circle2, vel2);
-						}
-						// if one is square one is circle
-						else if (c1->colliderType == shape::square && c2->colliderType == shape::circle) {
-							Collision::AABB aabb1 = Collision::getObjectAABBbyCollider(t1, c1->colliderSize);
-							Collision::Circle circle2 = Collision::getObjectCirclebyCollider(t2, c2->colliderSize);
-							info = Collision::CollisionIntersection_CircleAABB_Dynamic_Info(circle2, vel2, aabb1, vel1);
-						}		
+						// CASE 3: anything else
 						else {
-							continue; //current dont have other shapes of collision 
-						}
+							if (info.normal.y != 0) {
+								p1->dynamics.velocity.y = 0.0f;
+								p2->dynamics.velocity.y = 0.0f;
 
-						//checking if collided
-						if (info.collided) {
-							// c1 is the moving obj (player), c2 is the obj it collide with
-							// CASE 1: collided obj is pushable
-							if (c2->collisionRes == CollisionResponseMode::MoveWhenCollide) {
-								if (info.normal.x != 0) {
-									// move both obj away from each other (to simulate push)
-									t1->x += info.normal.x * info.penetration * 0.5f;
-									t2->x -= info.normal.x * info.penetration * 0.5f;
-
-									p1->dynamics.position.x = t1->x;
-									p2->dynamics.position.x = t2->x;
-								}
-
-								if (info.normal.y != 0) {
-									t1->y += info.normal.y * info.penetration * 0.5f;
-									t2->y -= info.normal.y * info.penetration * 0.5f;
-
-									// Update physics positions to match transforms
-									p1->dynamics.position.y = t1->y;
-									p2->dynamics.position.y = t2->y;
-
-									p1->dynamics.velocity.y = 0.f;
-									p2->dynamics.velocity.y = 0.f;
-
-									if (info.normal.y > 0) p1->onGround = true;
-									else p2->onGround = true;
-								}
-							}
-							// CASE 2: collided obj is static
-							else if (c2->collisionRes == CollisionResponseMode::StopWhenCollide) {
-								// Resolve penetration
-								if (info.normal.x != 0) {
-									// push moving obj out of collided obj
-									t1->x += info.normal.x * info.penetration;
-									p1->dynamics.position.x = t1->x;
-
-									p1->dynamics.velocity.x = 0.f;
-									p1->velX = 0.f;
-
-								}
-
-								if (info.normal.y != 0) {
-									t1->y += info.normal.y * info.penetration;
-									p1->dynamics.position.y = t1->y;
-
-									p1->dynamics.velocity.y = 0.0f;
-
-									if (info.normal.y > 0) p1->onGround = true;
-								}
-
-								DebugLog::addMessage("Collision detected between Object.\n", DebugMode::PlaySimul);
-							}
-							// CASE 3: anything else
-							else {
-								if (info.normal.y != 0) {
-									p1->dynamics.velocity.y = 0.0f;
-									p2->dynamics.velocity.y = 0.0f;
-
-									if (info.normal.y > 0) p1->onGround = true;
-									else p2->onGround = true;
-								}
+								if (info.normal.y > 0) p1->onGround = true;
+								else p2->onGround = true;
 							}
 
 							/* ---------- trigger visual logic collision events ---------- */
@@ -1148,6 +1148,34 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 	}
 	g_SystemTimers.push_back({ "Collisions", ms }); //saving timing for UI output
 }
+
+//tilemap collision detection
+bool CollisionSystem::CheckTileCollision(GameObject* obj, TileMap& map){
+	Transform* t = obj->getComponent<Transform>();
+	CollisionInfo* c = obj->getComponent<CollisionInfo>();
+	if (!t || !c) return false;
+
+	Collision::AABB box = Collision::getObjectAABBbyCollider(t, c->colliderSize);
+
+	int minTileX = static_cast<int>(box.getMin().x / map.tileW);
+	int maxTileX = static_cast<int>(box.getMax().x / map.tileW);
+	int minTileY = static_cast<int>(box.getMin().y / map.tileH);
+	int maxTileY = static_cast<int>(box.getMax().y / map.tileH);
+
+	for (int x = minTileX; x <= maxTileX; ++x)
+	{
+		for (int y = minTileY; y <= maxTileY; ++y)
+		{
+			if (!map.getTile(x, y).empty())
+			{
+				return true; // collision detected
+			}
+		}
+	}
+
+	return false;
+}
+
 
 #ifdef _DEBUG
 //UI system - handles ImGui rendering and interaction
@@ -1438,7 +1466,7 @@ void AudioSystem::update(GameObjectManager& manager, float deltaTime) {
 				AudioChannel& ch = pair.second;
 
 				// Background music restart logic
-				if (ch.playOnStart) {
+				if (ch.playOnStart && ch.loop) {
 					if (!ch.channel || !audioHandler.isSoundPlaying(&ch)) {
 						// Restart background music if not playing
 						ch.channel = audioHandler.playSound(&ch);
@@ -1462,6 +1490,7 @@ void AudioSystem::update(GameObjectManager& manager, float deltaTime) {
 					if (!isPlaying) {
 						ch.channel = nullptr;
 						ch.fadeInfo.isFading = false;
+						ch.state = AudioState::Stopped;
 					}
 				}
 			}
@@ -1621,11 +1650,6 @@ void AudioSystem::initializeSceneAudio(GameObjectManager& manager) {
 						<< channel.audioFile << " for channel: "
 						<< channelName
 						<< (channel.isSpatial ? " (3D)" : " (2D)") << std::endl;
-				}
-
-				// Set channel-specific min/max distance if 3D
-				if (channel.isSpatial && sound) {
-					sound->set3DMinMaxDistance(channel.minDistance, channel.maxDistance);
 				}
 
 			}

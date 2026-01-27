@@ -188,6 +188,7 @@ public:
 class CollisionSystem {
 public:
 	void update(GameObjectManager& manager, const float& deltaTime);
+	bool CheckTileCollision(GameObject* obj, TileMap& map); //for tile map collision
 };
 
 // only allow editor in debug mode

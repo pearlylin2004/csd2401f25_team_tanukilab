@@ -26,6 +26,9 @@
           "hasTex": 1,
           "texture": "assets/button.png",
           "clr": [ 1.0, 1.0, 1.0 ]
+        },
+        "Button" : {
+          "action" : "yes_exit"
         }
       }
     },
@@ -73,6 +76,9 @@
           "hasTex": 1,
           "texture": "assets/button.png",
           "clr": [ 1.0, 1.0, 1.0 ]
+        },
+        "Button" : {
+          "action" : "no_exit"
         }
       }
     },

@@ -29,6 +29,9 @@ namespace Collision {
     using f64 = double;
     extern f64 g_dt;
 
+    //Hash
+    int HashCell(int, int);
+
     //AABB
     class AABB
     {
