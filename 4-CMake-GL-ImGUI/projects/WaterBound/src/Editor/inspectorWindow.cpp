@@ -1486,10 +1486,6 @@ void InspectorWindow::renderLua(GameObject* selected) {
             DebugLog::addMessage("Removed Lua Script Component");
         }
     }
-
-    ImGui::Spacing();
-    ImGui::Separator();
-    ImGui::Spacing();
 }
 
 void InspectorWindow::renderVisualLogic(GameObject* selected) {
