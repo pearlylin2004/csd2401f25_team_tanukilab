@@ -43,13 +43,20 @@ void TileMapSystem::tileUpdate(GameObject* obj)
 
 					if (eraseMode) {
 						// clear only if tile is not empty
-						if (!currentTile.empty())
+						if (!currentTile.empty()) {
 							tm->clearTile(col, row);
+
+							// undo/redo (old -> empty)
+							UndoRedoManager::Instance().recordTileChange(col, row, currentTile, "");
+						}
 					}
 					else {
 						// reassign only if tile is dff
 						if (currentTile != filename) {
 							tm->setTile(col, row, filename);
+
+							// undo/redo (old -> new)
+							UndoRedoManager::Instance().recordTileChange(col, row, currentTile, filename);
 						}
 					}
 
@@ -71,6 +78,20 @@ void TileMapSystem::update(GameObjectManager& manager)
 		if (!obj->hasComponent<TileMap>() || !obj->hasComponent<Transform>())
 			continue;
 
+#ifdef _DEBUG
+		if (InputHandler::isMouseLeftClicked())
+		{
+			if (!TileMapSystem::filename.empty() && Editor::objSelectionState.selectedObject == obj) {
+				UndoRedoManager::Instance().beginTilemapEdit(obj);
+			}
+		}
+
+		if (InputHandler::isMouseLeftReleased()) {
+			if (!TileMapSystem::filename.empty() && Editor::objSelectionState.selectedObject == obj) {
+				UndoRedoManager::Instance().endTilemapEdit(manager, obj);
+			}
+		}
+#endif
 
 		if (InputHandler::isMouseLeftHeld())
 		{
@@ -100,10 +121,10 @@ void TileMapSystem::update(GameObjectManager& manager)
 		}
 	}
 
-#ifdef _DEBUG
-	std::cout << "Batches this frame: " << RenderSystem::objectWithTex2.size() << std::endl;
-	for (const auto& [key, instances] : RenderSystem::objectWithTex2) {
-		std::cout << "  Texture ID " << key.texID << ": " << instances.size() << " instances" << std::endl;
-	}
-#endif
+//#ifdef _DEBUG
+//	std::cout << "Batches this frame: " << RenderSystem::objectWithTex2.size() << std::endl;
+//	for (const auto& [key, instances] : RenderSystem::objectWithTex2) {
+//		std::cout << "  Texture ID " << key.texID << ": " << instances.size() << " instances" << std::endl;
+//	}
+//#endif
 }

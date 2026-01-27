@@ -32,6 +32,13 @@ struct TransformSnapshot {
 	float scaleX{}, scaleY{}, scaleZ{};
 };
 
+// single tile change
+struct TileChange {
+	int x, y;
+	std::string oldTile;
+	std::string newTile;
+};
+
 // base class
 class CmdInterface {
 public:
@@ -112,6 +119,25 @@ private:
 	int m_layer = 0;
 };
 
+class TileMapCmd : public CmdInterface {
+public:
+	TileMapCmd(GameObjectManager& manager, const std::string& objName, const std::vector<TileChange>& changes);
+
+	// apply new texture
+	void execute() override;
+
+	// restore old texture
+	void undo() override;
+
+	// if renamed, save the old name and new name (so undo/redo still work)
+	void updateObjName(const std::string& oldName, const std::string& newName);
+
+private:
+	GameObjectManager& m_manager;
+	std::string m_objectName;
+	std::vector<TileChange> m_changes;
+};
+
 // big boss for undo/redo operation (singleton)
 class UndoRedoManager {
 public:
@@ -139,15 +165,32 @@ public:
 	// clear all history (i.e. load scene, stop simulation)
 	void clear();
 
+	/* ---- TRANSFORM ---- */
 	// start tracking transform changes
 	void beginTransformEdit(GameObject* obj);
 
-	// ebd tracking and create command if changed detected
+	// end tracking and create command if changed detected
 	void endTransformEdit(GameObjectManager& manager, GameObject* obj);
 
 	// check if currently editing transform
 	bool isEditingTransform() const { return m_isEditingTransform; }
+	/* ---- END ---- */
 
+
+	/* ---- TILEMAP ---- */
+	// start tracking tilemap changes
+	void beginTilemapEdit(GameObject* obj);
+
+	// end tilemap tracking and create command if changes detected
+	void endTilemapEdit(GameObjectManager& manager, GameObject* obj);
+
+	// record a single tile change
+	void recordTileChange(int x, int y, const std::string& oldTile, const std::string& newTile);
+
+	bool isEditingTilemap() const { return m_isEditingTilemap; }
+	/* ---- END ---- */
+
+	// max steps to undo/redo
 	static constexpr size_t MAX_UNDO_STEPS{ 20 };
 
 private:
@@ -160,6 +203,11 @@ private:
 	bool m_isEditingTransform = false;
 	std::string m_editingObjName;
 	TransformSnapshot m_transformBefore;
+
+	// for tilemap
+	bool m_isEditingTilemap = false;
+	std::string m_editingTilemapObjName;
+	std::vector<TileChange> m_tileChanges;
 };
 
 // take a snapshot of an object's transform state

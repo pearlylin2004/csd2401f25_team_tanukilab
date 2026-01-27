@@ -184,6 +184,51 @@ void DeleteObjCmd::updateObjName(const std::string& oldName, const std::string& 
     }
 }
 
+TileMapCmd::TileMapCmd(GameObjectManager& manager, const std::string& objName, const std::vector<TileChange>& changes) :
+    m_manager(manager),
+    m_objectName(objName),
+    m_changes(changes)
+{ }
+
+void TileMapCmd::execute() {
+	GameObject* obj = m_manager.getGameObject(m_objectName);
+	if (!obj) return;
+
+	TileMap* tm = obj->getComponent<TileMap>();
+	if (!tm) return;
+
+	for (const TileChange& change : m_changes) {
+		if (change.newTile.empty()) {
+			tm->clearTile(change.x, change.y);
+		}
+		else {
+			tm->setTile(change.x, change.y, change.newTile);
+		}
+	}
+}
+
+void TileMapCmd::undo() {
+    GameObject* obj = m_manager.getGameObject(m_objectName);
+    if (!obj) return;
+
+    TileMap* tm = obj->getComponent<TileMap>();
+    if (!tm) return;
+
+    for (const TileChange& change : m_changes) {
+        if (change.oldTile.empty()) {
+            tm->clearTile(change.x, change.y);
+        }
+        else {
+            tm->setTile(change.x, change.y, change.oldTile);
+        }
+    }
+}
+
+void TileMapCmd::updateObjName(const std::string& oldName, const std::string& newName) {
+	if (m_objectName == oldName)
+		m_objectName = newName;
+}
+
 void UndoRedoManager::executeCmd(std::unique_ptr<CmdInterface> cmd) {
     // execute the command (transform/create/delete)
     cmd->execute();
@@ -285,6 +330,59 @@ void UndoRedoManager::endTransformEdit(GameObjectManager& manager, GameObject* o
     }
 
     m_isEditingTransform = false;
+}
+
+void UndoRedoManager::beginTilemapEdit(GameObject* obj) {
+	if (!obj || m_isEditingTilemap) return;
+
+	m_isEditingTilemap = true;
+	m_editingTilemapObjName = obj->getObjectName();
+    m_tileChanges.clear();
+}
+
+void UndoRedoManager::endTilemapEdit(GameObjectManager& manager, GameObject* obj) {
+    if (!obj || !m_isEditingTilemap) {
+        m_isEditingTilemap = false;
+		m_tileChanges.clear();
+        return;
+    }
+
+    if (obj->getObjectName() != m_editingTilemapObjName) {
+        m_isEditingTilemap = false;
+        m_tileChanges.clear();
+        return;
+    }
+
+    if (!m_tileChanges.empty()) {
+        auto cmd = std::make_unique<TileMapCmd>(manager, m_editingTilemapObjName, m_tileChanges);
+        
+        // add to undo deque
+        m_undoDeque.push_back(std::move(cmd));
+
+        // clear redo
+        m_redoDeque.clear();
+
+        // trim oldest step if more than MAX steps saved
+        if (m_undoDeque.size() > MAX_UNDO_STEPS)
+            m_undoDeque.pop_front();
+    }
+
+	m_isEditingTilemap = false;
+    m_tileChanges.clear();
+}
+
+void UndoRedoManager::recordTileChange(int x, int y, const std::string& oldTile, const std::string& newTile) {
+	if (!m_isEditingTilemap) return;
+
+    // check if alr record this tile in this edit session
+	for (TileChange& change : m_tileChanges) {
+		if (change.x == x && change.y == y) {
+			change.newTile = newTile;
+			return;
+		}
+	}
+
+	m_tileChanges.push_back({ x, y, oldTile, newTile });
 }
 
 #endif
