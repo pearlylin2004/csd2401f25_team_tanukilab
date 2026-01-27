@@ -817,7 +817,7 @@ namespace JsonIO {
                 t.AddMember("id", rapidjson::Value(id.c_str(), a), a);
                 tileArray.PushBack(t, a);
             }
-            jt.AddMember("Tiles", tileArray, a);
+            jt.AddMember("tiles", tileArray, a);
 
             doc.AddMember("TileMap", jt, a);
         }
