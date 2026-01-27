@@ -196,8 +196,7 @@ void AssetBrowser::render() {
                     (ImTextureID)(intptr_t)texData.id,
                     ImVec2(m_AssetBrowserState.iconSize, m_AssetBrowserState.iconSize),
                     ImVec2(0, 1), ImVec2(1, 0))) {
-                    TileMapSystem::filename = asset.path;
-                    std::cout << asset.name << " image clicked!" << std::endl;
+                    //TileMapSystem::filename = asset.path;
                 }
 
                 ImGui::PopStyleVar();
@@ -207,7 +206,7 @@ void AssetBrowser::render() {
                 // fallback to button if texture fails
                 ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(100, 40));
                 if (ImGui::Button(asset.name.c_str(), ImVec2(m_AssetBrowserState.iconSize, m_AssetBrowserState.iconSize))) {
-                    TileMapSystem::filename = asset.path;
+                    //TileMapSystem::filename = asset.path;
                 }
                 ImGui::PopStyleVar();
             }

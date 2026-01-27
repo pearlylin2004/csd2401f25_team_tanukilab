@@ -17,6 +17,7 @@ Technology is prohibited.
 /* End Header **************************************************************************/
 #ifdef _DEBUG
 #include "Editor/editorManager.h"
+#include "Systems.h"
 
 InspectorWindow::InspectorWindow(Editor::ObjSelectionState& Ostate, Editor::GizmoState& gState) : 
     m_objSelectionState(Ostate),
@@ -1273,18 +1274,81 @@ void InspectorWindow::renderTileMap(GameObject* selected)
     TileMap* tm = selected->getComponent<TileMap>();
 
     if (ImGui::CollapsingHeader("Tile Map")) {
-        ImGui::Checkbox("Enable", &m_gizmoState.showGrid);
 
-        ImGui::InputInt("Grid Columns", &tm->columns);
-        ImGui::InputInt("Grid rows", &tm->rows);
+        if (ImGui::TreeNode("Brush")) {
+            std::string displayText = TileMapSystem::filename.empty() ? "No Brush Selected (Drag texture here)" : std::filesystem::path(TileMapSystem::filename).filename().string();
 
-        ImGui::Spacing();
-        ImGui::Separator();
-        ImGui::Spacing();
+            ImGui::BeginChild("BrushDropZone", ImVec2(-1, 80), true, ImGuiWindowFlags_NoScrollWithMouse);
 
-        ImGui::InputFloat("Tile Width", &tm->tileW, 1.f);
-        ImGui::InputFloat("Tile Height", &tm->tileH, 1.f);
+            if (!TileMapSystem::filename.empty()) {
+                TextureData texData = ResourceManager::getInstance().getTexture(TileMapSystem::filename);
 
+                if (texData.id != 0) {
+                    ImGui::Image((ImTextureID)(intptr_t)texData.id, ImVec2(64, 64), ImVec2(0, 1), ImVec2(1, 0));
+                    ImGui::SameLine();
+                }
+            }
+
+            ImGui::TextWrapped("%s", displayText.c_str());
+
+			// drag and drop from asset browser
+            if (ImGui::BeginDragDropTarget()) {
+				if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("ASSET")) {
+					const char* droppedPath = (const char*)payload->Data;
+					std::string path = droppedPath;
+
+                    std::string ext;
+					std::filesystem::path fsPath(path);
+					ext = fsPath.extension().string();
+					
+					// only accept if dropped file is a png/jpg/jpeg
+					if (ext == ".png" || ext == ".jpg" || ext == ".jpeg") {
+						TileMapSystem::filename = path;
+
+						DebugLog::addMessage("Selected brush texture: " + TileMapSystem::filename + "\n");
+					}
+					else {
+						// texture file type error pop up
+						Editor::popupState.textureFileTypePopup = true;
+						Editor::popupState.filename = fsPath.filename().string();
+						// invalid texture format -> don't change anything
+						DebugLog::addMessage("Invalid texture format : " + path + "\n");
+					}
+				}
+
+                ImGui::EndDragDropTarget();
+            }
+
+            ImGui::EndChild();
+
+
+            // clear texture from brush
+			if (!TileMapSystem::filename.empty()) {
+				ImGui::Spacing();
+				if (ImGui::Button("Clear Brush", ImVec2(-1, 0))) {
+					TileMapSystem::filename.clear();
+					DebugLog::addMessage("Cleared brush texture\n");
+				}
+			}
+
+            ImGui::TreePop();
+        }
+
+        if (ImGui::TreeNode("Grid")) {
+            ImGui::Checkbox("Enable", &m_gizmoState.showGrid);
+
+            ImGui::InputInt("Grid Columns", &tm->columns);
+            ImGui::InputInt("Grid rows", &tm->rows);
+
+            ImGui::Spacing();
+            ImGui::Separator();
+            ImGui::Spacing();
+
+            ImGui::InputFloat("Tile Width", &tm->tileW, 1.f);
+            ImGui::InputFloat("Tile Height", &tm->tileH, 1.f);
+
+            ImGui::TreePop();
+        }
 
         if (ImGui::Button("Remove TileMap", ImVec2(-1, 0))) {
             // add a delete component func here

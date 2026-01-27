@@ -17,6 +17,7 @@ Technology is prohibited.
 /* End Header **************************************************************************/
 #ifdef _DEBUG
 #include "Editor/editorManager.h"
+#include "Systems.h"
 
 HierarchyWindow::HierarchyWindow(Editor::ObjSelectionState& Ostate) : m_objSelectionState(Ostate) {}
 
@@ -43,6 +44,13 @@ void HierarchyWindow::render(GameObjectManager& manager) {
         // draw tree node for each object
         if (ImGui::TreeNodeEx(gameObjects[i]->getObjectName().c_str(), baseFlags)) {
             if (ImGui::IsItemClicked() && !ImGui::IsItemToggledOpen()) {
+
+                // clear brush when select another obj
+				GameObject* prevSelected = m_objSelectionState.selectedObject;
+				if (prevSelected && prevSelected != gameObjects[i] && prevSelected->hasComponent<TileMap>()) {
+                    TileMapSystem::filename.clear();
+				}
+
                 m_objSelectionState.selectedIndex = static_cast<int>(i);
                 m_objSelectionState.selectedObject = gameObjects[i];
             }
