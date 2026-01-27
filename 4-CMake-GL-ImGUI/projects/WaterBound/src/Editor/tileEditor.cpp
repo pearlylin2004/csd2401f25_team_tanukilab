@@ -28,30 +28,35 @@ void TileMapSystem::tileUpdate(GameObject* obj)
 	int centerCol = (int)floor((world.x - transform->x) / tm->tileW);
 	int centerRow = (int)floor((world.y - transform->y) / tm->tileH);
 
-	if(SceneWindow::isSceneHovered())
-		if (!TileMapSystem::filename.empty()) {
-			int halfSize = brushSize / 2;
+	if (SceneWindow::isSceneHovered()) {
+		int halfSize = brushSize / 2;
 
-			for (int dy = -halfSize; dy <= halfSize; ++dy) {
-				for (int dx = -halfSize; dx <= halfSize; ++dx) {
-					int col = centerCol + dx;
-					int row = centerRow + dy;
+		for (int dy = -halfSize; dy <= halfSize; ++dy) {
+			for (int dx = -halfSize; dx <= halfSize; ++dx) {
+				int col = centerCol + dx;
+				int row = centerRow + dy;
 
-					if (col >= -tm->columns && col < tm->columns &&
-						row >= -tm->rows && row < tm->rows)
-					{
-						if (eraseMode)
+				if (col >= -tm->columns && col < tm->columns &&
+					row >= -tm->rows && row < tm->rows)
+				{
+					std::string currentTile = tm->getTile(col, row);
+
+					if (eraseMode) {
+						// clear only if tile is not empty
+						if (!currentTile.empty())
 							tm->clearTile(col, row);
-						else {
-							// apply selected tile
-							if(tm->getTile(col, row) != filename)
-								tm->setTile(col, row, filename);
-						}
-
 					}
+					else {
+						// reassign only if tile is dff
+						if (currentTile != filename) {
+							tm->setTile(col, row, filename);
+						}
+					}
+
 				}
 			}
 		}
+	}
 #endif
 }
 
@@ -60,8 +65,7 @@ void TileMapSystem::update(GameObjectManager& manager)
 	std::vector<GameObject*> objects;
 	manager.getAllGameObjects(objects);
 	RenderSystem::objectWithTex2.clear();
-	
-	
+
 	for (GameObject* obj : objects)
 	{
 		if (!obj->hasComponent<TileMap>() || !obj->hasComponent<Transform>())
@@ -73,7 +77,9 @@ void TileMapSystem::update(GameObjectManager& manager)
 			//Vector2D world = InputHandler::getMousePositionInImGuiViewport(Editor::sceneWindowState.scenePos, Editor::sceneWindowState.sceneSize);
 			//std::cout << world.x << " | " << world.y << std::endl;
 			//DebugLog::addMessage("mouse pos: " + std::to_string(world.x) + " | " + std::to_string(world.y) + "\n");
-			tileUpdate(obj);
+			if (!TileMapSystem::filename.empty() && Editor::objSelectionState.selectedObject == obj) {
+				tileUpdate(obj);
+			}
 		}
 
 		TileMap* tm = obj->getComponent<TileMap>();
@@ -93,4 +99,11 @@ void TileMapSystem::update(GameObjectManager& manager)
 			RenderSystem::objectWithTex2[BatchKey{ shape::square, texID.id }].push_back(data);
 		}
 	}
+
+#ifdef _DEBUG
+	std::cout << "Batches this frame: " << RenderSystem::objectWithTex2.size() << std::endl;
+	for (const auto& [key, instances] : RenderSystem::objectWithTex2) {
+		std::cout << "  Texture ID " << key.texID << ": " << instances.size() << " instances" << std::endl;
+	}
+#endif
 }
