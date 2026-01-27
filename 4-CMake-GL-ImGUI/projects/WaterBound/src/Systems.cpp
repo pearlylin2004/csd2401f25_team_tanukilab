@@ -46,26 +46,6 @@ void InputSystem::update(GameObjectManager& manager, const float& deltaTime, Mes
 	std::vector<GameObject*> gameObjects;
 	manager.getAllGameObjects(gameObjects);
 
-	//for (GameObject* iterator : gameObjects) {
-	//	//check for objects that have input 
-	//	if (iterator->hasComponent<Input>()) {
-	//		Input* input = iterator->getComponent<Input>();
-	//		if (iterator->hasComponent<Physics>()) {//player got that velocity in him
-	//			Physics* velocity = iterator->getComponent<Physics>();
-
-
-	//			if (InputHandler::isKeyHeld(GLFW_KEY_W)) {
-	//				velocity->velY = input->moveSpeed;
-	//			}
-	//			if (InputHandler::isKeyHeld(GLFW_KEY_S)) {
-	//				velocity->velY = -input->moveSpeed;
-	//			}
-	//			if (InputHandler::isKeyHeld(GLFW_KEY_A)) {
-	//				velocity->velX = -input->moveSpeed;
-	//			}
-	//			if (InputHandler::isKeyHeld(GLFW_KEY_D)) {
-	//				velocity->velX = input->moveSpeed;
-	//			}
 #ifdef _DEBUG
 	if (InputHandler::isComboKeyTriggered(GLFW_KEY_0)) {
 		UISystem::toggleUI();
