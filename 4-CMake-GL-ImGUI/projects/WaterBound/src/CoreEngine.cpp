@@ -71,14 +71,14 @@ void CoreEngine::Init(bool forceWindowed) {
     int winHeight = cfg.height;
 
     if (wantFullscreen) {
-        monitor = glfwGetPrimaryMonitor();
-        const GLFWvidmode* mode = glfwGetVideoMode(monitor);
-        winWidth = mode->width;
-        winHeight = mode->height;
+        //monitor = glfwGetPrimaryMonitor();
+        //const GLFWvidmode* mode = glfwGetVideoMode(monitor);
+        //winWidth = mode->width;
+        //winHeight = mode->height;
 
-        //// remember windowed size for when we toggle back
-        m_windowedWidth = cfg.width;
-        m_windowedHeight = cfg.height;
+        ////// remember windowed size for when we toggle back
+        //m_windowedWidth = cfg.width;
+        //m_windowedHeight = cfg.height;
     }
     else {
         m_windowedWidth = cfg.width;
@@ -139,6 +139,7 @@ void CoreEngine::Init(bool forceWindowed) {
     m_playerController = std::make_unique<PlayerControllerSystem>();
     m_audioSystem = std::make_unique<AudioSystem>();
     m_tileMapSystem = std::make_unique<TileMapSystem>();
+	m_particleSystem = std::make_unique<ParticleSystem>();
 
 
     PrefabManager::Instance().loadPrefabRegistry();
@@ -255,6 +256,7 @@ void CoreEngine::Update(float deltaTime) {
     m_collisionSystem->update(*m_manager, deltaTime);
     m_logicSystem->update(*m_manager, deltaTime);
     m_tileMapSystem->update(*m_manager);
+    m_particleSystem->update(*m_manager, deltaTime);;
     m_renderSystem->update(*m_manager, deltaTime);
     m_fontSystem->update(*m_manager, m_fps);    
     m_audioSystem->update(*m_manager, deltaTime);

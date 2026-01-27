@@ -529,7 +529,7 @@ Vector2D ParticleSystem::velocityGenerator(Vector2D direction)
 
 	if (magnitute == 0.f)
 		return Vector2D{ 0,0 };
-	return Vector2D{ direction.x / magnitute * speed, direction.y / magnitute * speed };
+	return Vector2D{ (direction.x / magnitute) * speed, (direction.y / magnitute) * speed };
 }
 
 void ParticleSystem::activateParticle(GameObjectManager& manager)
@@ -541,20 +541,23 @@ void ParticleSystem::activateParticle(GameObjectManager& manager)
 		if (object->hasComponent<Particle>())
 		{
 			Particle* particleData = object->getComponent<Particle>();
-			Transform* masterTransform = object->addComponent<Transform>();
+			Transform* masterTransform = object->getComponent<Transform>();
 			if (particleData->activate && particleData->isMaster)
 			{
+				std::cout << "Particle Group being activated is: " << particleData->grpNo << std::endl;
 				particleData->activate = false;
 				if (particleData->grpNo == 0)
 					particleData->grpNo = IDGenerator(manager);
+				static int pid = 0;
 				for (size_t i = 0; i < particleData->master.particleAmt; ++i)
 				{
-					std::string name = "Particle_" + std::to_string(particleData->grpNo) + "_" + std::to_string(i);
+					std::string name = "Particle_" + std::to_string(particleData->grpNo) + "_" + std::to_string(++pid);
 					GameObject* newObj = manager.createGameObject(name);
 
 					Transform* transform = newObj->addComponent<Transform>();
 					Render* render = newObj->addComponent<Render>();
 					Particle* indivData = newObj->addComponent<Particle>();
+					Physics* physics = newObj->addComponent<Physics>();
 					Vector2D spawnPos = positionGenerator(particleData->master.offset);
 					transform->x = masterTransform->x + spawnPos.x;
 					transform->y = masterTransform->y + spawnPos.y;
@@ -878,6 +881,7 @@ void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime, M
 			}
 		}
 	}
+	manager.getAllGameObjects(gameObjects);
 
 	for (auto object : gameObjects) {
 		if (!object->hasComponent<Physics>()) continue;

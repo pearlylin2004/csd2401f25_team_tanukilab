@@ -1136,7 +1136,7 @@ void InspectorWindow::renderParticles(GameObject* selected)
         ImGui::InputFloat("Particle Lifetime", &ps->master.timer, 0.1f);
         ImGui::InputFloat("Offset", &ps->master.offset);
         ImGui::InputFloat("Velocity X", &ps->master.velocity.x);
-        ImGui::InputFloat("Velocity X", &ps->master.velocity.y);
+        ImGui::InputFloat("Velocity Y", &ps->master.velocity.y);
 
         ImGui::ColorEdit3("Start Colour", &ps->master.clr.x);
         

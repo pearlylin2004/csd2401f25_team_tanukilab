@@ -111,6 +111,7 @@ private:
 
 class ParticleSystem
 {
+public:
 	void activateParticle(GameObjectManager& manager);
 	void update(GameObjectManager& manager, float const& deltaTime);
 	int IDGenerator(GameObjectManager& manager);
