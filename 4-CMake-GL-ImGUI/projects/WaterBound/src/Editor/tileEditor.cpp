@@ -44,7 +44,8 @@ void TileMapSystem::tileUpdate(GameObject* obj)
 							tm->clearTile(col, row);
 						else {
 							// apply selected tile
-							tm->setTile(col, row, filename);
+							if(tm->getTile(col, row) != filename)
+								tm->setTile(col, row, filename);
 						}
 
 					}
@@ -67,7 +68,7 @@ void TileMapSystem::update(GameObjectManager& manager)
 			continue;
 
 
-		if (InputHandler::isMouseLeftClicked())
+		if (InputHandler::isMouseLeftHeld())
 		{
 			//Vector2D world = InputHandler::getMousePositionInImGuiViewport(Editor::sceneWindowState.scenePos, Editor::sceneWindowState.sceneSize);
 			//std::cout << world.x << " | " << world.y << std::endl;
