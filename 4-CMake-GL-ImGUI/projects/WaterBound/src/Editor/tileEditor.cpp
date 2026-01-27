@@ -29,12 +29,13 @@ void TileMapSystem::tileUpdate(GameObject* obj)
 	int centerRow = (int)floor((world.y - transform->y) / tm->tileH);
 
 	if (SceneWindow::isSceneHovered()) {
-		int halfSize = brushSize / 2;
+		int startX = centerCol - (brushSize - 1) / 2;
+		int startY = centerRow - (brushSize - 1) / 2;
 
-		for (int dy = -halfSize; dy <= halfSize; ++dy) {
-			for (int dx = -halfSize; dx <= halfSize; ++dx) {
-				int col = centerCol + dx;
-				int row = centerRow + dy;
+		for (int dy = 0; dy < brushSize; ++dy) {
+			for (int dx = 0; dx < brushSize; ++dx) {
+				int col = startX + dx;
+				int row = startY + dy;
 
 				if (col >= -tm->columns && col < tm->columns &&
 					row >= -tm->rows && row < tm->rows)
