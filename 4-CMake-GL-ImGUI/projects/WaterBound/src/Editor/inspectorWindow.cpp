@@ -1325,8 +1325,13 @@ void InspectorWindow::renderTileMap(GameObject* selected)
             // clear texture from brush
 			if (!TileMapSystem::filename.empty()) {
 				ImGui::Spacing();
+
+                ImGui::Checkbox("Eraser Mode", &TileMapSystem::eraseMode);
+                ImGui::Spacing();
+
 				if (ImGui::Button("Clear Brush", ImVec2(-1, 0))) {
 					TileMapSystem::filename.clear();
+                    TileMapSystem::eraseMode = false;
 					DebugLog::addMessage("Cleared brush texture\n");
 				}
 			}

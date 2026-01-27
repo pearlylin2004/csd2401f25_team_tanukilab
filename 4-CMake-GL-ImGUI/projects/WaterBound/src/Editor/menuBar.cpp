@@ -184,6 +184,7 @@ void MenuBar::stopSimulation(GameObjectManager& manager) {
     m_objSelectionState.selectedPrefab = nullptr;
     m_objSelectionState.selectedIndex = -1;
     TileMapSystem::filename.clear();
+    TileMapSystem::eraseMode = false;
 
     Editor::visualLogicState.targetObj = nullptr;
 

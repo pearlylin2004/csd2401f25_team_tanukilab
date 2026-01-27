@@ -16,6 +16,7 @@ Technology is prohibited.
 
 #include "Systems.h"
 std::unordered_map<BatchKey, std::vector<renderer::InstanceData>, BatchKeyHash> RenderSystem::objectWithTex2{};
+bool TileMapSystem::eraseMode = false;
 
 void TileMapSystem::tileUpdate(GameObject* obj)
 {
@@ -31,11 +32,15 @@ void TileMapSystem::tileUpdate(GameObject* obj)
 			if (col >= -tm->columns && col < tm->columns &&
 				row >= -tm->rows && row < tm->rows)
 			{
-				// apply selected tile
-				if (tm->getTile(col, row) != filename)
-					tm->setTile(col, row, filename);
-				else
+				if (eraseMode)
 					tm->clearTile(col, row);
+				else {
+					// apply selected tile
+					if (tm->getTile(col, row) != filename)
+						tm->setTile(col, row, filename);
+					else
+						tm->clearTile(col, row);
+				}
 
 			}
 #endif

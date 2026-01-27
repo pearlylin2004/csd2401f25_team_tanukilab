@@ -49,6 +49,7 @@ void HierarchyWindow::render(GameObjectManager& manager) {
 				GameObject* prevSelected = m_objSelectionState.selectedObject;
 				if (prevSelected && prevSelected != gameObjects[i] && prevSelected->hasComponent<TileMap>()) {
                     TileMapSystem::filename.clear();
+                    TileMapSystem::eraseMode = false;
 				}
 
                 m_objSelectionState.selectedIndex = static_cast<int>(i);
