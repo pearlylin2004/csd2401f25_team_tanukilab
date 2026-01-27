@@ -131,8 +131,7 @@ int GameObjectManager::getGameObjectCount() {
 	return static_cast<int>(m_gameObjects.size());
 }
 
-void GameObjectManager::init()
-{
+void GameObjectManager::init(){
 
 	loadScene(JsonIO::runtimeScenePath("level01.json"));
 }
@@ -234,6 +233,7 @@ If the JSON is missing or malformed, the function prints an error and stops.
 */
 
 void GameObjectManager::loadSceneFromJson(const std::string& filename) {
+	auto t1 = std::chrono::high_resolution_clock::now();
 
 	rapidjson::Document doc;
 	std::string err;
@@ -799,6 +799,11 @@ void GameObjectManager::loadSceneFromJson(const std::string& filename) {
 	std::cout << "Total game objects loaded: " << m_gameObjects.size() << std::endl;
 
 	//std::cout << "Scene loaded (JSON): " << filename << "\n";
+
+	auto t2 = std::chrono::high_resolution_clock::now();
+	std::cout << "[Timing] GUISystem update / level load took "
+		<< std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1).count()
+		<< " ms\n";
 }
 
 /*!

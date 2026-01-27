@@ -179,11 +179,8 @@ void CoreEngine::GameLoop() {
     if (glfwWindowShouldClose(m_window) || InputHandler::isKeyTriggered(GLFW_KEY_F1)) { m_isRunning = false; return; }
     //pause checking, and set it to paused state if escape is held
     if (InputHandler::isKeyTriggered(GLFW_KEY_ESCAPE)) {
-        //if already at paused state do nothing
         GameState current = m_guiSystem->getCurrentState(); //get current state
-        //GameState previous = m_guiSystem->getPreviousState(); //get previous state
         if (current != GameState::PAUSED) {
-            //if (m_guiSystem->getPreviousState() != GameState::PAUSED) m_guiSystem->setPreviousState(current); //store previous state and prevent overwriting previous state if already paused
             m_guiSystem->setStateBeforePause(current); //store state before pausing
             m_guiSystem->changeState(GameState::PAUSED, "pause_scene.json");
         }

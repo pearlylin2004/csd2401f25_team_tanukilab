@@ -57,7 +57,6 @@ void GUISystem::init(GameObjectManager& manager, LuaSystem& luaSystem) {
 void GUISystem::update(GameObjectManager& manager) {
     //get mouse position
     Vector2D worldMousePos = InputHandler::getWorldMousePosition();
-    //Vector2D worldPos = Vec_Set(worldMousePos.x, worldMousePos.y);
 
     if (InputHandler::isMouseButtonClicked(GLFW_MOUSE_BUTTON_LEFT)) {
         for (auto& pair : m_buttons) {
