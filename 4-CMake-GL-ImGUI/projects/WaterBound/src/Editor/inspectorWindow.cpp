@@ -1278,6 +1278,9 @@ void InspectorWindow::renderTileMap(GameObject* selected)
         if (ImGui::TreeNode("Brush")) {
             std::string displayText = TileMapSystem::filename.empty() ? "No Brush Selected (Drag texture here)" : std::filesystem::path(TileMapSystem::filename).filename().string();
 
+            ImGui::SliderInt("Brush Size", &TileMapSystem::brushSize, 1, 5);
+            ImGui::Text("(%dx%d tiles)", TileMapSystem::brushSize, TileMapSystem::brushSize);
+
             ImGui::BeginChild("BrushDropZone", ImVec2(-1, 80), true, ImGuiWindowFlags_NoScrollWithMouse);
 
             if (!TileMapSystem::filename.empty()) {

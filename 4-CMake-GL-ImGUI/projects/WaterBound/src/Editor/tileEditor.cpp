@@ -17,6 +17,7 @@ Technology is prohibited.
 #include "Systems.h"
 std::unordered_map<BatchKey, std::vector<renderer::InstanceData>, BatchKeyHash> RenderSystem::objectWithTex2{};
 bool TileMapSystem::eraseMode = false;
+int TileMapSystem::brushSize = 1;
 
 void TileMapSystem::tileUpdate(GameObject* obj)
 {
@@ -24,25 +25,32 @@ void TileMapSystem::tileUpdate(GameObject* obj)
 	TileMap* tm = obj->getComponent<TileMap>();
 	Transform* transform = obj->getComponent<Transform>();
 	Vector2D world = InputHandler::getMousePositionInImGuiViewport(Editor::sceneWindowState.scenePos, Editor::sceneWindowState.sceneSize);
-	int col = (int)floor((world.x - transform->x) / tm->tileW);
-	int row = (int)floor((world.y - transform->y) / tm->tileH);
+	int centerCol = (int)floor((world.x - transform->x) / tm->tileW);
+	int centerRow = (int)floor((world.y - transform->y) / tm->tileH);
 
 	if(SceneWindow::isSceneHovered())
-		if (!TileMapSystem::filename.empty())
-			if (col >= -tm->columns && col < tm->columns &&
-				row >= -tm->rows && row < tm->rows)
-			{
-				if (eraseMode)
-					tm->clearTile(col, row);
-				else {
-					// apply selected tile
-					if (tm->getTile(col, row) != filename)
-						tm->setTile(col, row, filename);
-					else
-						tm->clearTile(col, row);
-				}
+		if (!TileMapSystem::filename.empty()) {
+			int halfSize = brushSize / 2;
 
+			for (int dy = -halfSize; dy <= halfSize; ++dy) {
+				for (int dx = -halfSize; dx <= halfSize; ++dx) {
+					int col = centerCol + dx;
+					int row = centerRow + dy;
+
+					if (col >= -tm->columns && col < tm->columns &&
+						row >= -tm->rows && row < tm->rows)
+					{
+						if (eraseMode)
+							tm->clearTile(col, row);
+						else {
+							// apply selected tile
+							tm->setTile(col, row, filename);
+						}
+
+					}
+				}
 			}
+		}
 #endif
 }
 

@@ -149,6 +149,8 @@ public:
 
 	*************************************************************************/
 	static bool eraseMode;
+
+	static int brushSize;
 };
 
 class FontSystem {
