@@ -82,6 +82,13 @@ namespace JsonIO {
 	const char* CollisionResponseModeToStr(CollisionResponseMode mode);
 	CollisionResponseMode StrToCollisionResponseMode(const std::string& s);
 
+	// ---- Button helper
+	const char* ButtonActionToStr(ButtonAction action);
+	ButtonAction StrToButtonAction(const std::string& s);
+
+	// ---- Player State helpers ----
+	PlayerState parsePlayerState(const std::string& s);
+
 	// ---- Node Implementation helpers ----
 	NodeImplementation stringToNodeImpl(const std::string& str);
 	std::string nodeImplToString(NodeImplementation impl);
@@ -144,6 +151,10 @@ namespace JsonIO {
 		const glm::vec4& v,
 		rapidjson::Document::AllocatorType& alloc);
 
+	// ---- Global Registry collision tag helpers ----
+	bool LoadCollisionTags(const std::string& filepath, std::vector<std::string>& outTags, std::string* err = nullptr);
+
+	bool SaveCollisionTags(const std::string& filepath, const std::vector<std::string>& tags, std::string* err = nullptr);
 
 	// ---- for undo/redo in editor ----
 	std::string serializeGameObj(GameObject* obj);

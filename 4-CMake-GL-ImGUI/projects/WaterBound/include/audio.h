@@ -138,6 +138,9 @@ public:
 	bool isFadingIn(AudioChannel* audio) const;
 	bool isFadingOut(AudioChannel* audio) const;
 
+	// Spatial audio
+	void updateListener(float listenerX, float listenerY, float listenerZ);
+
 	// perform error check for FMOD functions
 	// moved to AudioUtility.h
 	//static void FMODErrorCheck(FMOD_RESULT result);

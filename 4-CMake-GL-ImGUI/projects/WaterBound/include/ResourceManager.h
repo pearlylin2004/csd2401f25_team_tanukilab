@@ -72,9 +72,10 @@ public:
      * @brief Gets a sound. Loads it from file if not in cache.
      * @param path The filepath to the sound.
      * @param loop Whether the sound should loop (FMOD_LOOP_NORMAL).
+     * @param isSpatial Whether the sound should use spatial positioning.
      * @return A pointer to the FMOD::Sound object.
      */
-    FMOD::Sound* getSound(const std::string& path, bool loop = false);
+    FMOD::Sound* getSound(const std::string& path, bool loop = false, bool isSpatial = false);
 
     /**
      * @brief Gets a shader program. Loads and links it if not in cache.
@@ -102,7 +103,7 @@ private:
     // Private helper functions to load from disk
     TextureData loadTextureFromFile(const std::string& path);
     FontData loadFontFromFile(const std::string& path);
-    FMOD::Sound* loadSoundFromFile(const std::string& path, bool loop);
+    FMOD::Sound* loadSoundFromFile(const std::string& path, bool loop, bool isSpatial);
 
     // FMOD system instance (required for sound creation)
     FMOD::System* m_fmodSystem = nullptr;

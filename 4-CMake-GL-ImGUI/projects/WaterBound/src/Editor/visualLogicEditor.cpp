@@ -44,9 +44,8 @@ void VisualLogicEditor::render() {
 			}
 
 			if (ImGui::MenuItem("Save and Close")) {
+				Editor::visualLogicState.wantCloseEditor = true;
 				saveLogic();
-				Editor::visualLogicState.showEditor = false;
-				m_selectedNodeId = -1;
 			}
 
 			ImGui::EndMenu();
@@ -59,15 +58,35 @@ void VisualLogicEditor::render() {
 			/* -------- Events -------- */
 			if (ImGui::BeginMenu("Events")) {
 				if (ImGui::MenuItem("On Start")) {
-					addNode(Vector2D(100, 100), NodeType::EVENT, NodeImplementation::ON_START);
+					addNode(NodeType::EVENT, NodeImplementation::ON_START);
 				}
 
 				if (ImGui::MenuItem("On Update")) {
-					addNode(Vector2D(150, 200), NodeType::EVENT, NodeImplementation::ON_UPDATE);
+					addNode(NodeType::EVENT, NodeImplementation::ON_UPDATE);
 				}
 
-				if (ImGui::MenuItem("On Collision (WIP)")) {
-					addNode(Vector2D(200, 300), NodeType::EVENT, NodeImplementation::ON_COLLISION);
+				if (ImGui::MenuItem("On Collision Enter")) {
+					addNode(NodeType::EVENT, NodeImplementation::ON_COLLISION_ENTER);
+				}
+
+				if (ImGui::MenuItem("While Collision")) {
+					addNode(NodeType::EVENT, NodeImplementation::WHILE_COLLIDING);
+				}
+
+				if (ImGui::MenuItem("On Collision Exit")) {
+					addNode(NodeType::EVENT, NodeImplementation::ON_COLLISION_EXIT);
+				}
+
+				if (ImGui::MenuItem("On Hover Enter")) {
+					addNode(NodeType::EVENT, NodeImplementation::ON_HOVER_ENTER);
+				}
+
+				if (ImGui::MenuItem("While Hovering")) {
+					addNode(NodeType::EVENT, NodeImplementation::WHILE_HOVERING);
+				}
+
+				if (ImGui::MenuItem("On Hover Exit")) {
+					addNode(NodeType::EVENT, NodeImplementation::ON_HOVER_EXIT);
 				}
 
 				ImGui::EndMenu();
@@ -78,15 +97,15 @@ void VisualLogicEditor::render() {
 			/* -------- Conditions -------- */
 			if (ImGui::BeginMenu("Conditions")) {
 				if (ImGui::MenuItem("Is Key Held")) {
-					addNode(Vector2D(350, 100), NodeType::CONDITION, NodeImplementation::CHECK_KEY_HELD);
+					addNode(NodeType::CONDITION, NodeImplementation::CHECK_KEY_HELD);
 				}
 
 				if (ImGui::MenuItem("Compare Value")) {
-					addNode(Vector2D(400, 100), NodeType::CONDITION, NodeImplementation::COMPARE_VALUE);
+					addNode(NodeType::CONDITION, NodeImplementation::COMPARE_VALUE);
 				}
 
 				if (ImGui::MenuItem("Compare Variable")) {
-					addNode(Vector2D(460, 100), NodeType::CONDITION, NodeImplementation::COMPARE_VAR);
+					addNode(NodeType::CONDITION, NodeImplementation::COMPARE_VAR);
 				}
 
 				ImGui::EndMenu();
@@ -97,19 +116,31 @@ void VisualLogicEditor::render() {
 			/* -------- Actions -------- */
 			if (ImGui::BeginMenu("Actions")) {
 				if (ImGui::MenuItem("Print Message")) {
-					addNode(Vector2D(250, 100), NodeType::ACTION, NodeImplementation::PRINT_MESSAGE);
+					addNode(NodeType::ACTION, NodeImplementation::PRINT_MESSAGE);
 				}
 
 				if (ImGui::MenuItem("Move Object")) {
-					addNode(Vector2D(300, 200), NodeType::ACTION, NodeImplementation::MOVE_OBJECT);
+					addNode(NodeType::ACTION, NodeImplementation::MOVE_OBJECT);
 				}
 
 				if (ImGui::MenuItem("Rotate Object")) {
-					addNode(Vector2D(350, 200), NodeType::ACTION, NodeImplementation::ROTATE_OBJECT);
+					addNode(NodeType::ACTION, NodeImplementation::ROTATE_OBJECT);
+				}
+
+				if (ImGui::MenuItem("Set Rotation")) {
+					addNode(NodeType::ACTION, NodeImplementation::SET_ROTATION);
 				}
 
 				if (ImGui::MenuItem("Set Float")) {
-					addNode(Vector2D(400, 200), NodeType::ACTION, NodeImplementation::SET_FLOAT);
+					addNode(NodeType::ACTION, NodeImplementation::SET_FLOAT);
+				}
+
+				if (ImGui::MenuItem("Play Sound")) {
+					addNode(NodeType::ACTION, NodeImplementation::PLAY_SOUND);
+				}
+
+				if (ImGui::MenuItem("Set State")) {
+					addNode(NodeType::ACTION, NodeImplementation::SET_STATE);
 				}
 
 				ImGui::EndMenu();
@@ -269,10 +300,9 @@ void VisualLogicEditor::render() {
 	}
 
 	// shortcut
-	if (Editor::visualLogicState.isFocus) {
-		// delete node/con with DEL / Backspace
-		if ((InputHandler::isKeyTriggered(GLFW_KEY_DELETE) ||
-			InputHandler::isKeyTriggered(GLFW_KEY_BACKSPACE))) {
+	if (Editor::visualLogicState.isFocus && !ImGui::GetIO().WantTextInput) {
+		// delete node/con with DEL
+		if ((InputHandler::isKeyTriggered(GLFW_KEY_DELETE))) {
 			if (m_selectedNodeId != -1) {
 				deleteSelectedNode();
 			}
@@ -301,13 +331,6 @@ void VisualLogicEditor::render() {
 		ImGui::Text("Selected Object: %s", Editor::visualLogicState.targetObj->getObjectName().c_str());
 	}
 	ImGui::Text("Nodes: %d", (int)Editor::visualLogicState.nodes.size());
-
-	if (m_selectedNodeId != -1) {
-		ImGui::TextColored(ImVec4(1.f, 1.f, 0.f, 1.f), "Node selected");
-	}
-	else if (m_selectedConIndex != -1) {
-		ImGui::TextColored(ImVec4(1.f, 1.f, 0.f, 1.f), "Connection selected");
-	}
 
 	ImGui::EndChild();
 
@@ -364,11 +387,24 @@ void VisualLogicEditor::saveLogic() {
 
 	std::string filepath = "/Logic/" + logic->filename;
 
-	logic->nodes = Editor::visualLogicState.nodes;
-	logic->connections = Editor::visualLogicState.connections;
-
 	std::string err;
 	if (JsonIO::saveVisualLogic(filepath, Editor::visualLogicState.nodes, Editor::visualLogicState.connections, &err)) {
+		reloadAllVisualLogic(logic->filename);
+
+		if (Editor::visualLogicState.wantCloseEditor) {
+			Editor::visualLogicState.showEditor = false;
+			Editor::visualLogicState.isFocus = false;
+			Editor::visualLogicState.wantCloseEditor = false;
+			m_selectedNodeId = -1;
+		}
+
+		// reset hover check cache
+		if (Editor::visualLogicState.targetObj) {
+			if (logic) {
+				logic->hoverNodesChecked = false;
+			}
+		}
+
 		DebugLog::addMessage("Saved Visual Logic: " + filepath);
 	}
 	else {
@@ -608,202 +644,405 @@ void VisualLogicEditor::renderNodeProperties() {
 	ImGui::Text("Node: %s", JsonIO::nodeImplToString(node.imp).c_str());
 	ImGui::Separator();
 
+
+	/* ---------- EVENT ---------- */
+	if (node.type == NodeType::EVENT) {
+		if (node.imp == NodeImplementation::ON_COLLISION_ENTER || node.imp == NodeImplementation::WHILE_COLLIDING || node.imp == NodeImplementation::ON_COLLISION_EXIT) {
+			ImGui::Text("Collision Filter");
+			ImGui::Spacing();
+
+			std::string filterType = node.parameters.count("colFilterType") ?
+				node.parameters["colFilterType"] : "any";
+
+			if (ImGui::BeginCombo("Collide with", filterType.c_str())) {
+				const char* options[] = { "any", "name", "tag" };
+				const char* filterLabels[] = { "Any Object", "Object Name", "Collision Tag" };
+
+				for (const char* option : options) {
+					bool isSelected = (filterType == option);
+
+					if (ImGui::Selectable(option, isSelected)) {
+						node.parameters["colFilterType"] = option;
+
+						if (!isSelected) {
+							node.parameters["colFilterValue"] = "";
+						}
+					}
+
+					if (isSelected) {
+						ImGui::SetItemDefaultFocus();
+					}
+				}
+
+				ImGui::EndCombo();
+			}
+
+			if (filterType != "any") {
+				std::string currentValue = node.parameters.count("colFilterValue") ? node.parameters["colFilterValue"] : "";
+				char valueBuffer[128];
+				strncpy(valueBuffer, node.parameters["colFilterValue"].c_str(), 127);
+				valueBuffer[127] = '\0';
+
+				if (filterType == "name") {
+					ImGui::Text("Object Name:");
+
+					if (ImGui::InputText("##colFilterValue", valueBuffer, 128)) {
+						node.parameters["colFilterValue"] = valueBuffer;
+					}
+
+					if (ImGui::BeginCombo("##quickSelect", "Quick Select")) {
+						auto& cached = CachedGameObjects::Instance().getCachedObjects();
+						for (GameObject* obj : cached) {
+							if (ImGui::Selectable(obj->getObjectName().c_str())) {
+								node.parameters["colFilterValue"] = obj->getObjectName();
+							}
+						}
+						ImGui::EndCombo();
+					}
+				}
+				else if (filterType == "tag") {
+					ImGui::Text("Collision Tag:");
+
+					if (ImGui::InputText("##colFilterValue", valueBuffer, 128)) {
+						node.parameters["colFilterValue"] = valueBuffer;
+					}
+
+					if (ImGui::BeginCombo("##quickSelectTag", "Quick Select")) {
+						std::unordered_set<std::string> uniqueTags;
+						auto& cached = CachedGameObjects::Instance().getCachedObjects();
+
+						for (GameObject* obj : cached) {
+							if (obj->hasComponent<CollisionInfo>()) {
+								CollisionInfo* col = obj->getComponent<CollisionInfo>();
+								if (!col->collisionTag.empty()) {
+									uniqueTags.insert(col->collisionTag);
+								}
+							}
+						}
+
+						for (const std::string& tag : uniqueTags) {
+							if (ImGui::Selectable(tag.c_str())) {
+								node.parameters["colFilterValue"] = tag;
+							}
+						}
+
+						ImGui::EndCombo();
+					}
+				}
+			}
+		}
+	}
 	/* ---------- ACTION ---------- */
-	// print msg
-	if (node.imp == NodeImplementation::PRINT_MESSAGE) {
-		char buffer[256];
-		strncpy(buffer, node.parameters["message"].c_str(), 255);
+	else if (node.type == NodeType::ACTION) {
+		// print msg
+		if (node.imp == NodeImplementation::PRINT_MESSAGE) {
+			char buffer[256];
+			strncpy(buffer, node.parameters["message"].c_str(), 255);
 
-		if (ImGui::InputText("Message", buffer, 256)) {
-			node.parameters["message"] = buffer;
+			if (ImGui::InputText("Message", buffer, 256)) {
+				node.parameters["message"] = buffer;
+			}
 		}
-	}
-	// move obj
-	else  if (node.imp == NodeImplementation::MOVE_OBJECT) {
-		float x = node.parameters.count("x") ? std::stof(node.parameters["x"]) : 0.f;
-		float y = node.parameters.count("y") ? std::stof(node.parameters["y"]) : 0.f;
+		// move obj
+		else  if (node.imp == NodeImplementation::MOVE_OBJECT) {
+			float x = node.parameters.count("x") ? std::stof(node.parameters["x"]) : 0.f;
+			float y = node.parameters.count("y") ? std::stof(node.parameters["y"]) : 0.f;
 
-		if (ImGui::DragFloat("X Offset", &x, 0.1f)) {
-			node.parameters["x"] = std::to_string(x);
+			if (ImGui::DragFloat("X Speed (units/sec)", &x, 0.1f)) {
+				node.parameters["x"] = std::to_string(x);
+			}
+			if (ImGui::DragFloat("Y Speed (units/sec)", &y, 0.1f)) {
+				node.parameters["y"] = std::to_string(y);
+			}
 		}
-		if (ImGui::DragFloat("Y Offset", &y, 0.1f)) {
-			node.parameters["y"] = std::to_string(y);
-		}
-	}
-	// rotate obj
-	else if (node.imp == NodeImplementation::ROTATE_OBJECT) {
-		float angle = node.parameters.count("angle") ? std::stof(node.parameters["angle"]) : 0.f;
+		// rotate obj
+		else if (node.imp == NodeImplementation::ROTATE_OBJECT) {
+			float angle = node.parameters.count("angle") ? std::stof(node.parameters["angle"]) : 0.f;
 
-		if (ImGui::DragFloat("Angle (degrees)", &angle, 1.f)) {
-			node.parameters["angle"] = std::to_string(angle);
+			if (ImGui::DragFloat("Angle (degrees/sec)", &angle, 1.f)) {
+				node.parameters["angle"] = std::to_string(angle);
+
+				ImGui::Spacing();
+				ImGui::TextDisabled("Positive = counter-clockwise");
+			}
+		}
+		// set obj rotation to x degree
+		else if (node.imp == NodeImplementation::SET_ROTATION) {
+			float angle = node.parameters.count("angle") ? std::stof(node.parameters["angle"]) : 0.f;
+
+			if (ImGui::DragFloat("Rotation (degrees)", &angle, 1.f)) {
+				node.parameters["angle"] = std::to_string(angle);
+			}
+		}
+		// set float variable
+		else if (node.imp == NodeImplementation::SET_FLOAT) {
+			char varBuffer[128];
+			strncpy(varBuffer, node.parameters["variable"].c_str(), 127);
+			varBuffer[127] = '\0';
+
+			if (ImGui::InputText("Variable Name", varBuffer, 128)) {
+				node.parameters["variable"] = varBuffer;
+			}
+
+			float value = node.parameters.count("value") ?
+				std::stof(node.parameters["value"]) : 0.f;
+
+			if (ImGui::DragFloat("Value", &value, 0.1f)) {
+				node.parameters["value"] = std::to_string(value);
+			}
 
 			ImGui::Spacing();
-			ImGui::TextDisabled("Positive = counter-clockwise");
+			ImGui::TextDisabled("Stores a float in a variable");
 		}
-	}
-	// set float variable
-	else if (node.imp == NodeImplementation::SET_FLOAT) {
-		char varBuffer[128];
-		strncpy(varBuffer, node.parameters["variable"].c_str(), 127);
-		varBuffer[127] = '\0';
+		// play Sound
+		else if (node.imp == NodeImplementation::PLAY_SOUND) {
+			AudioComponent* audio = nullptr;
+			if (Editor::visualLogicState.targetObj) {
+				audio = Editor::visualLogicState.targetObj->getComponent<AudioComponent>();
+			}
 
-		if (ImGui::InputText("Variable Name", varBuffer, 128)) {
-			node.parameters["variable"] = varBuffer;
+			ImGui::Text("Audio Channel:");
+
+			if (audio && !audio->audioChannels.empty()) {
+				std::string currentChannel = (node.parameters.count("channel")) ?
+					node.parameters["channel"] : "(none)";
+
+				// in case audio is using the default channel (audio component thingy)
+				if (!audio->getChannel(currentChannel)) {
+					currentChannel = "(none)";
+				}
+
+				// dropdown of channels
+				if (ImGui::BeginCombo("##channel", currentChannel.c_str())) {
+					for (const auto& [channelName, ch] : audio->audioChannels) {
+						bool isSelected = (currentChannel == channelName);
+
+						std::string label = channelName;
+						if (!ch.audioFile.empty()) {
+							std::string fileName = std::filesystem::path(ch.audioFile).filename().string();
+							label += " (" + fileName + ")";
+						}
+
+						if (ImGui::Selectable(label.c_str(), isSelected)) {
+							node.parameters["channel"] = channelName;
+						}
+
+						if (isSelected) {
+							ImGui::SetItemDefaultFocus();
+						}
+					}
+					ImGui::EndCombo();
+				}
+
+				ImGui::Spacing();
+
+				// channel not selected then ask to select one
+				if (currentChannel == "(none)" || !node.parameters.count("channel")) {
+					ImGui::TextColored(ImVec4(1.f, 0.3f, 0.3f, 1.f), "Select a channel to play sound");
+				}
+				// channel selected then show the info
+				else if (audio->hasChannel(currentChannel)) {
+					const AudioChannel* ch = audio->getChannel(currentChannel);
+					if (ch && !ch->audioFile.empty()) {
+						ImGui::TextDisabled("Will play: %s",
+							std::filesystem::path(ch->audioFile).filename().string().c_str());
+						ImGui::TextDisabled("Loop: %s | Volume: %.2f",
+							ch->loop ? "Yes" : "No", ch->volume);
+					}
+					else {
+						ImGui::TextColored(ImVec4(1.f, 0.5f, 0.f, 1.f),
+							"Warning: Channel has no audio file!");
+					}
+				}
+			}
+			else {
+				// no audio component or no channels
+				ImGui::TextColored(ImVec4(1.f, 0.3f, 0.3f, 1.f),
+					"No audio channels available!");
+				ImGui::TextDisabled("Add channels in the Audio Component first");
+			}
 		}
+		else if (node.imp == NodeImplementation::SET_STATE) {
+			StateMachine* sm = nullptr;
+			if (Editor::visualLogicState.targetObj) {
+				sm = Editor::visualLogicState.targetObj->getComponent<StateMachine>();
+			}
 
-		float value = node.parameters.count("value") ?
-			std::stof(node.parameters["value"]) : 0.f;
+			ImGui::Text("State Machine:");
 
-		if (ImGui::DragFloat("Value", &value, 0.1f)) {
-			node.parameters["value"] = std::to_string(value);
+			if (sm) {
+				std::string currentState = node.parameters.count("state") ?
+					node.parameters["state"] : JsonIO::stateNames[0];
+
+				if (ImGui::BeginCombo("##state", currentState.c_str())) {
+					const std::vector<std::string>& stateNames = JsonIO::stateNames;
+
+					for (const std::string& stateName : stateNames) {
+						bool isSelected = (currentState == stateName);
+
+						if (ImGui::Selectable(stateName.c_str(), isSelected)) {
+							node.parameters["state"] = stateName;
+						}
+
+						if (isSelected) {
+							ImGui::SetItemDefaultFocus();
+						}
+					}
+					ImGui::EndCombo();
+				}
+			}
+			else {
+				ImGui::TextColored(ImVec4(1.f, 0.3f, 0.3f, 1.f), "Add Animation Component first");
+				ImGui::TextDisabled("Add a State Machine component first");
+			}
 		}
-
-		ImGui::Spacing();
-		ImGui::TextDisabled("Stores a float in a variable");
 	}
 	/* ---------- END ---------- */
 
+
 	/* ---------- CONDITION ---------- */
 	// check key held
-	else if (node.imp == NodeImplementation::CHECK_KEY_HELD) {
-		std::string currentKey = node.parameters.count("key") ?
-			node.parameters["key"] : "W";
+	else if (node.type == NodeType::CONDITION) {
+		if (node.imp == NodeImplementation::CHECK_KEY_HELD) {
+			std::string currentKey = node.parameters.count("key") ?
+				node.parameters["key"] : "W";
 
-		// Dropdown for common keys
-		if (ImGui::BeginCombo("Key", currentKey.c_str())) {
-			const char* keys[] = {
-				"W", "A", "S", "D",
-				"UP", "DOWN", "LEFT", "RIGHT",
-				"SPACE", "SHIFT", "CTRL", "ALT",
-				"ENTER", "ESC"
-			};
+			// Dropdown for common keys
+			if (ImGui::BeginCombo("Key", currentKey.c_str())) {
+				const char* keys[] = {
+					"W", "A", "S", "D",
+					"UP", "DOWN", "LEFT", "RIGHT",
+					"SPACE", "SHIFT", "CTRL", "ALT",
+					"ENTER", "ESC"
+				};
 
-			for (int i = 0; i < IM_ARRAYSIZE(keys); ++i) {
-				bool isSelected = (currentKey == keys[i]);
+				for (int i = 0; i < IM_ARRAYSIZE(keys); ++i) {
+					bool isSelected = (currentKey == keys[i]);
 
-				if (ImGui::Selectable(keys[i], isSelected))
-					node.parameters["key"] = keys[i];
+					if (ImGui::Selectable(keys[i], isSelected))
+						node.parameters["key"] = keys[i];
 
-				if (isSelected)
-					ImGui::SetItemDefaultFocus();
+					if (isSelected)
+						ImGui::SetItemDefaultFocus();
+				}
+
+				ImGui::EndCombo();
+			}
+		}
+		// compare 2 values
+		else if (node.imp == NodeImplementation::COMPARE_VALUE) {
+			std::string property = node.parameters.count("property") ?
+				node.parameters["property"] : "rotation";
+
+			std::string comparison = node.parameters.count("comparison") ?
+				node.parameters["comparison"] : "greater";
+
+			float threshold = node.parameters.count("threshold") ?
+				std::stof(node.parameters["threshold"]) : 0.f;
+
+			// Property dropdown
+			ImGui::Text("Property to check:");
+			if (ImGui::BeginCombo("##property", property.c_str())) {
+				const char* properties[] = {
+					"rotation",
+					"x", "y", "z", // position
+					"scaleX", "scaleY", "scaleZ",
+					"velX", "velY"
+				};
+
+				const char* labels[] = {
+					"Rotation", "Position X", "Position Y", "Position Z",
+					"Scale X", "Scale Y", "Scale Z",
+					"Velocity X", "Velocity Y"
+				};
+
+				for (int i = 0; i < IM_ARRAYSIZE(properties); ++i) {
+					bool isSelected = (property == properties[i]);
+
+					if (ImGui::Selectable(labels[i], isSelected))
+						node.parameters["property"] = properties[i];
+
+					if (isSelected)
+						ImGui::SetItemDefaultFocus();
+				}
+
+				ImGui::EndCombo();
 			}
 
-			ImGui::EndCombo();
+			ImGui::Spacing();
+
+			// comparison dropdown
+			ImGui::Text("Comparison:");
+			if (ImGui::BeginCombo("##comparison", comparison.c_str())) {
+				const char* comparisons[] = { "greater", "less", "equal" };
+				const char* labels[] = { "Greater Than (>)", "Less Than (<)", "Equal To (=)" };
+
+				for (int i = 0; i < 3; ++i) {
+					bool isSelected = (comparison == comparisons[i]);
+
+					if (ImGui::Selectable(labels[i], isSelected))
+						node.parameters["comparison"] = comparisons[i];
+
+					if (isSelected)
+						ImGui::SetItemDefaultFocus();
+				}
+
+				ImGui::EndCombo();
+			}
+
+			ImGui::Spacing();
+
+			// threshold input
+			if (ImGui::DragFloat("Threshold Value", &threshold, 0.1f)) {
+				node.parameters["threshold"] = std::to_string(threshold);
+			}
+		}
+		// compare with anothe variable
+		else if (node.imp == NodeImplementation::COMPARE_VAR) {
+			char varBuffer[128];
+			strncpy(varBuffer, node.parameters["variable"].c_str(), 127);
+			varBuffer[127] = '\0';
+
+			ImGui::Text("Variable Name:");
+			if (ImGui::InputText("##variable", varBuffer, 128)) {
+				node.parameters["variable"] = varBuffer;
+			}
+
+			std::string comparison = node.parameters.count("comparison") ?
+				node.parameters["comparison"] : "greater";
+
+			float threshold = node.parameters.count("threshold") ?
+				std::stof(node.parameters["threshold"]) : 0.f;
+
+			// dropdown
+			ImGui::Text("Comparison:");
+			if (ImGui::BeginCombo("##comparison", comparison.c_str())) {
+				const char* comparisons[] = { "greater", "less", "equal" };
+				const char* labels[] = { "Greater Than (>)", "Less Than (<)", "Equal To (=)" };
+
+				for (int i = 0; i < 3; ++i) {
+					bool isSelected = (comparison == comparisons[i]);
+
+					if (ImGui::Selectable(labels[i], isSelected))
+						node.parameters["comparison"] = comparisons[i];
+
+					if (isSelected)
+						ImGui::SetItemDefaultFocus();
+				}
+
+				ImGui::EndCombo();
+			}
+
+			ImGui::Spacing();
+
+			if (ImGui::DragFloat("Threshold Value", &threshold, 0.1f)) {
+				node.parameters["threshold"] = std::to_string(threshold);
+			}
+
+			ImGui::Spacing();
+			ImGui::TextDisabled("Compares with a variable");
 		}
 	}
-	// compare 2 values
-	else if (node.imp == NodeImplementation::COMPARE_VALUE) {
-		std::string property = node.parameters.count("property") ?
-			node.parameters["property"] : "rotation";
-
-		std::string comparison = node.parameters.count("comparison") ?
-			node.parameters["comparison"] : "greater";
-
-		float threshold = node.parameters.count("threshold") ?
-			std::stof(node.parameters["threshold"]) : 0.f;
-
-		// Property dropdown
-		ImGui::Text("Property to check:");
-		if (ImGui::BeginCombo("##property", property.c_str())) {
-			const char* properties[] = {
-				"rotation",
-				"x", "y", "z", // position
-				"scaleX", "scaleY", "scaleZ",
-				"velX", "velY"
-			};
-
-			const char* labels[] = {
-				"Rotation", "Position X", "Position Y", "Position Z",
-				"Scale X", "Scale Y", "Scale Z",
-				"Velocity X", "Velocity Y"
-			};
-
-			for (int i = 0; i < IM_ARRAYSIZE(properties); ++i) {
-				bool isSelected = (property == properties[i]);
-
-				if (ImGui::Selectable(labels[i], isSelected))
-					node.parameters["property"] = properties[i];
-
-				if (isSelected)
-					ImGui::SetItemDefaultFocus();
-			}
-
-			ImGui::EndCombo();
-		}
-
-		ImGui::Spacing();
-
-		// comparison dropdown
-		ImGui::Text("Comparison:");
-		if (ImGui::BeginCombo("##comparison", comparison.c_str())) {
-			const char* comparisons[] = { "greater", "less", "equal" };
-			const char* labels[] = { "Greater Than (>)", "Less Than (<)", "Equal To (=)" };
-
-			for (int i = 0; i < 3; ++i) {
-				bool isSelected = (comparison == comparisons[i]);
-
-				if (ImGui::Selectable(labels[i], isSelected))
-					node.parameters["comparison"] = comparisons[i];
-
-				if (isSelected)
-					ImGui::SetItemDefaultFocus();
-			}
-
-			ImGui::EndCombo();
-		}
-
-		ImGui::Spacing();
-
-		// threshold input
-		if (ImGui::DragFloat("Threshold Value", &threshold, 0.1f)) {
-			node.parameters["threshold"] = std::to_string(threshold);
-		}
-	}
-	// compare with anothe variable
-	else if (node.imp == NodeImplementation::COMPARE_VAR) {
-		char varBuffer[128];
-		strncpy(varBuffer, node.parameters["variable"].c_str(), 127);
-		varBuffer[127] = '\0';
-
-		ImGui::Text("Variable Name:");
-		if (ImGui::InputText("##variable", varBuffer, 128)) {
-			node.parameters["variable"] = varBuffer;
-		}
-
-		std::string comparison = node.parameters.count("comparison") ?
-			node.parameters["comparison"] : "greater";
-
-		float threshold = node.parameters.count("threshold") ?
-			std::stof(node.parameters["threshold"]) : 0.f;
-
-		// dropdown
-		ImGui::Text("Comparison:");
-		if (ImGui::BeginCombo("##comparison", comparison.c_str())) {
-			const char* comparisons[] = { "greater", "less", "equal" };
-			const char* labels[] = { "Greater Than (>)", "Less Than (<)", "Equal To (=)" };
-
-			for (int i = 0; i < 3; ++i) {
-				bool isSelected = (comparison == comparisons[i]);
-
-				if (ImGui::Selectable(labels[i], isSelected))
-					node.parameters["comparison"] = comparisons[i];
-
-				if (isSelected)
-					ImGui::SetItemDefaultFocus();
-			}
-
-			ImGui::EndCombo();
-		}
-
-		ImGui::Spacing();
-
-		if (ImGui::DragFloat("Threshold Value", &threshold, 0.1f)) {
-			node.parameters["threshold"] = std::to_string(threshold);
-		}
-
-		ImGui::Spacing();
-		ImGui::TextDisabled("Compares with a variable");
-		}
 	/* ---------- END ---------- */
 }
 
@@ -862,8 +1101,17 @@ void VisualLogicEditor::renderSavePopup() {
 						Editor::visualLogicState.nodes,
 						Editor::visualLogicState.connections,
 						&err)) {
+
+						if (Editor::visualLogicState.wantCloseEditor) {
+							Editor::visualLogicState.showEditor = false;
+							Editor::visualLogicState.isFocus = false;
+							m_selectedNodeId = -1;
+							Editor::visualLogicState.wantCloseEditor = false;
+
+							DebugLog::addMessage("saved and closed " + filepath);
+						}
+
 						DebugLog::addMessage("Visual Logic saved as: " + finalFilename + "\n");
-						DebugLog::addMessage("Saved " + std::to_string(Editor::visualLogicState.nodes.size()) + " nodes\n");
 					}
 					else {
 						DebugLog::addMessage("Failed to save file: " + err);
@@ -889,47 +1137,85 @@ void VisualLogicEditor::renderSavePopup() {
 	}
 }
 
-void VisualLogicEditor::addNode(Vector2D pos, NodeType type, NodeImplementation imp) {
+void VisualLogicEditor::addNode(NodeType type, NodeImplementation imp) {
 	LogicNode node;
+	if (m_selectedNodeId != -1) {
+		// Find the selected node
+		auto it = std::find_if(Editor::visualLogicState.nodes.begin(),
+			Editor::visualLogicState.nodes.end(),
+			[this](const LogicNode& n) { return n.id == m_selectedNodeId; });
+
+		if (it != Editor::visualLogicState.nodes.end()) {
+			node.position.x = it->position.x + 150.f; // offset to the right
+			node.position.y = it->position.y + 20.f; // same y position
+		}
+		else {
+			node.position = Vector2D(100, 100);
+		}
+	}
+	else {
+		node.position = Vector2D(100, 100);
+	}
+
 	node.id = m_nextNodeId++;
 	node.type = type;
 	node.imp = imp;
-	node.position = pos;
 	node.hasInput = (type == NodeType::EVENT) ? false : true; // EVENT no input
 	node.hasOutput = (type == NodeType::CONDITION) ? false : true; // CONDITION no output
 	node.hasTrueOutput = (type == NodeType::CONDITION) ? true : false; // only for CONDITION
 	node.hasFalseOutput = (type == NodeType::CONDITION) ? true : false; // only for CONDITION
 
+	// EVENT nodes
+	if (type == NodeType::EVENT) {
+		if (imp == NodeImplementation::ON_COLLISION_ENTER || imp == NodeImplementation::WHILE_COLLIDING || imp == NodeImplementation::ON_COLLISION_EXIT) {
+			node.parameters["colFilterType"] = "any"; // any/tag/name
+			node.parameters["colFilterValue"] = "";
+		}
+	}
 	// ACTION nodes
-	if(imp == NodeImplementation::PRINT_MESSAGE)
-		node.parameters["message"] = "I love GAM";
-	else if (imp == NodeImplementation::MOVE_OBJECT) {
-		node.parameters["x"] = "0";
-		node.parameters["y"] = "0";
-	}
-	else if (imp == NodeImplementation::ROTATE_OBJECT) {
-		node.parameters["angle"] = "0"; // in degree 
-	}
-	else if (imp == NodeImplementation::SET_FLOAT) {
-		node.parameters["variable"] = "shakeDir";
-		node.parameters["value"] = "1";
+	else if (type == NodeType::ACTION) {
+		if (imp == NodeImplementation::PRINT_MESSAGE)
+			node.parameters["message"] = "I love GAM";
+		else if (imp == NodeImplementation::MOVE_OBJECT) {
+			node.parameters["x"] = "0";
+			node.parameters["y"] = "0";
+		}
+		else if (imp == NodeImplementation::ROTATE_OBJECT) {
+			node.parameters["angle"] = "0"; // in degree 
+		}
+		else if (imp == NodeImplementation::SET_ROTATION) {
+			node.parameters["angle"] = "0";
+		}
+		else if (imp == NodeImplementation::SET_FLOAT) {
+			node.parameters["variable"] = "shakeDir";
+			node.parameters["value"] = "1";
+		}
+		else if (imp == NodeImplementation::SET_STATE) {
+			node.parameters["state"] = JsonIO::stateNames[0];
+		}
 	}
 	// CONDITION nodes
-	else if (imp == NodeImplementation::CHECK_KEY_HELD) {
-		node.parameters["key"] = "SPACE";
-	}
-	else if (imp == NodeImplementation::COMPARE_VALUE) {
-		node.parameters["property"] = "rotation";
-		node.parameters["comparison"] = "greater";
-		node.parameters["threshold"] = "0";
-	}
-	else if (imp == NodeImplementation::COMPARE_VAR) {
-		node.parameters["variable"] = "shakeDir";
-		node.parameters["comparison"] = "greater";
-		node.parameters["threshold"] = "0";
+	else if (type == NodeType::CONDITION) {
+		if (imp == NodeImplementation::CHECK_KEY_HELD) {
+			node.parameters["key"] = "SPACE";
+		}
+		else if (imp == NodeImplementation::COMPARE_VALUE) {
+			node.parameters["property"] = "rotation";
+			node.parameters["comparison"] = "greater";
+			node.parameters["threshold"] = "0";
+		}
+		else if (imp == NodeImplementation::COMPARE_VAR) {
+			node.parameters["variable"] = "shakeDir";
+			node.parameters["comparison"] = "greater";
+			node.parameters["threshold"] = "0";
+		}
 	}
 
 	Editor::visualLogicState.nodes.push_back(node);
+
+	// select newly created node
+	m_selectedNodeId = node.id;
+	m_selectedConIndex = -1;
 }
 
 ImU32 VisualLogicEditor::getNodeColor(NodeType type) {
@@ -1053,7 +1339,7 @@ void VisualLogicEditor::selectNextNode(bool forward) {
 	}
 	else {
 		currentIndex = (currentIndex - 1 + Editor::visualLogicState.nodes.size()) %
-			Editor::visualLogicState.nodes.size();
+			static_cast<int>(Editor::visualLogicState.nodes.size());
 	}
 
 	m_selectedNodeId = Editor::visualLogicState.nodes[currentIndex].id;
@@ -1108,6 +1394,41 @@ void VisualLogicEditor::deleteSelectedConnection() {
 		Editor::visualLogicState.connections.begin() + m_selectedConIndex);
 
 	m_selectedConIndex = -1;
+}
+
+void VisualLogicEditor::reloadAllVisualLogic(const std::string& scriptName) {
+	if (scriptName.empty()) return;
+
+	std::vector<GameObject*> gameObjects = CachedGameObjects::Instance().getCachedObjects();
+
+	int count{};
+	for (GameObject* obj : gameObjects) {
+		if (obj->hasComponent<VisualLC>()) {
+			VisualLC* logic = obj->getComponent<VisualLC>();
+
+			if (logic->filename == scriptName) {
+				logic->nodes = Editor::visualLogicState.nodes;
+				logic->connections = Editor::visualLogicState.connections;
+
+				// reset runtime state
+				logic->hoverNodesChecked = false;
+				logic->wasHoveredLastFrame = false;
+				logic->currentExePath.clear();
+				logic->curCollision.clear();
+				logic->preCollision.clear();
+
+				++count;
+			}
+		}
+	}
+
+	if (count > 0) {
+		DebugLog::addMessage("Hot-reloaded '" + scriptName + "' for " +
+			std::to_string(count) + " object(s)");
+	}
+	else {
+		DebugLog::addMessage("No objects found using '" + scriptName + "'");
+	}
 }
 
 #endif

@@ -786,6 +786,49 @@ void InspectorWindow::renderCollision( GameObject* selected, GameObjectManager& 
 
             }
 
+            std::string currentTag = collision->collisionTag.empty() ? "default" : collision->collisionTag;
+
+            if (ImGui::BeginCombo("Collision Tag", currentTag.c_str())) {
+                const std::vector<std::string>& collisionTags = GlobalRegistry::Instance().getCollisionTags();
+
+                for (const std::string& tag : collisionTags) {
+                    bool isSelected = (currentTag == tag);
+
+                    if (ImGui::Selectable(tag.c_str(), isSelected)) {
+                        collision->collisionTag = tag;
+                    }
+
+                    if (isSelected) {
+                        ImGui::SetItemDefaultFocus();
+                    }
+                }
+
+                ImGui::EndCombo();
+            }
+
+            /*if (ImGui::BeginCombo("Collide with", filterType.c_str())) {
+                const char* options[] = { "any", "name", "tag" };
+                const char* filterLabels[] = { "Any Object", "Object Name", "Collision Tag" };
+
+                for (const char* option : options) {
+                    bool isSelected = (filterType == option);
+
+                    if (ImGui::Selectable(option, isSelected)) {
+                        node.parameters["colFilterType"] = option;
+
+                        if (!isSelected) {
+                            node.parameters["colFilterValue"] = "";
+                        }
+                    }
+
+                    if (isSelected) {
+                        ImGui::SetItemDefaultFocus();
+                    }
+                }*/
+
+               /* ImGui::EndCombo();
+            }*/
+
         }
 
         ImGui::Spacing();
@@ -1000,99 +1043,234 @@ void InspectorWindow::renderAudio(GameObject* selected) {
 
     if (ImGui::CollapsingHeader("Audio")) {
 
-        AudioChannel* ch = audio->getDefaultChannel();
-
-        std::string audioName = ch->audioFile.empty() ? "(Drop new audio here)" : ch->audioFile;
-        ImGui::Button(audioName.c_str());
-
-        /* -------------- Drag and Drop From Asset Browser to Change Audio ------------- */
-        if (ImGui::BeginDragDropTarget()) {
-            if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("ASSET")) {
-                const char* droppedPath = (const char*)payload->Data;
-                std::string path = droppedPath;
-
-                const std::string debugPrefix = "Debug/";
-                std::filesystem::path fsPath(path);
-                if (fsPath.string().find(debugPrefix) == 0) {
-                    fsPath = fsPath.string().substr(debugPrefix.size());
-                }
-
-                // extract file extension
-                std::string ext = fsPath.extension().string(); // includes the dot, e.g. ".wav"
-                std::transform(ext.begin(), ext.end(), ext.begin(), ::tolower);
-
-                // only accept if dropped file is a wav/ogg/mp3
-                if (ext == ".wav" || ext == ".ogg" || ext == ".mp3") {
-                    ch->audioFile = path;
-                    DebugLog::addMessage("Changed audio of " + selected->getObjectName() + " to " + ch->audioFile + "\n");
+        // Add New Channel Section
+        ImGui::Text("Add New Audio Channel");
+        static char newChannelName[64] = "";
+        ImGui::InputTextWithHint("##NewChannelName", "Channel name (e.g., footsteps)", newChannelName, sizeof(newChannelName));
+        ImGui::SameLine();
+        if (ImGui::Button("Add Channel")) {
+            if (strlen(newChannelName) > 0) {
+                std::string channelName = newChannelName;
+                if (!audio->hasChannel(channelName)) {
+                    audio->getOrCreateChannel(channelName);
+                    DebugLog::addMessage("Added audio channel: " + channelName + "\n");
+                    newChannelName[0] = '\0'; // Clear input
                 }
                 else {
-                    // audio file type error pop up
-                    Editor::popupState.audioFileTypePopup = true;
-                    Editor::popupState.filename = fsPath.filename().string();
-
-                    // invalid audio format -> don't change anything
-                    DebugLog::addMessage("Unsupported audio format : " + path + "\n");
+                    DebugLog::addMessage("Channel '" + channelName + "' already exists!\n");
                 }
-
-            }
-            ImGui::EndDragDropTarget();
-        }
-
-        if (!ch->audioFile.empty()) {
-            ImGui::Spacing();
-            ImGui::Separator();
-            ImGui::Spacing();
-
-            if (ImGui::Button("Remove Sound")) {
-                ch->audioFile = "";
-
-                // move this to audio in the future
-                if (ch->channel) {
-                    ch->channel->stop();
-                    ch->channel = nullptr;
-                }
-            }
-
-            ImGui::Separator();
-            ImGui::Spacing();
-
-            ImGui::Checkbox("Loop (WIP.)", &ch->loop);
-
-            ImGui::Checkbox("Play On Start", &ch->playOnStart);
-
-            if (ImGui::TreeNode("Control")) {
-                if (ImGui::DragFloat("Volume", &ch->volume, 0.01f)) {
-                    ch->volume = std::clamp(ch->volume, 0.f, 1.f);
-                }
-
-
-                if (ImGui::DragFloat("Pitch", &ch->pitch, 0.01f)) {
-                    ch->pitch = std::clamp(ch->pitch, 0.f, 2.f);
-                }
-
-                ImGui::TreePop();
-            }
-
-            if (ImGui::TreeNode("Fade In/Out")) {
-                ImGui::Checkbox("Fade In On Start", &ch->fadeInOnStart);
-                if (ch->fadeInOnStart) {
-                    ImGui::DragFloat("Fade In Duration", &ch->fadeInDuration, 0.01f);
-                    ch->fadeInDuration = std::clamp(ch->fadeInDuration, 0.f, 10.f);
-                }
-
-                ImGui::Checkbox("Fade Out On Stop", &ch->fadeOutOnStop);
-                if (ch->fadeOutOnStop) {
-                    ImGui::DragFloat("Fade Out Duration", &ch->fadeOutDuration, 0.01f);
-                    ch->fadeOutDuration = std::clamp(ch->fadeOutDuration, 0.f, 10.f);
-                }
-
-                ImGui::TreePop();
             }
         }
 
-        if (ImGui::Button("Remove Audio", ImVec2(-1, 0))) {
-            // add a delete component func here
+        ImGui::Spacing();
+        ImGui::Separator();
+        ImGui::Spacing();
+
+        // Display All Channels
+        if (audio->audioChannels.empty()) {
+            ImGui::Text("No audio channels. Add one above.");
+        }
+        else {
+            ImGui::Text("Audio Channels (%d)", (int)audio->audioChannels.size());
+
+            // Track channels to remove (can't remove during iteration)
+            static std::string channelToRemove;
+            channelToRemove.clear();
+
+            for (auto& [channelName, ch] : audio->audioChannels) {
+                ImGui::PushID(channelName.c_str());
+
+                // Channel header with status indicator
+                std::string headerLabel = channelName;
+                if (ch.state == AudioState::Playing) {
+                    headerLabel += " [PLAYING]";
+                }
+                else if (ch.state == AudioState::Paused) {
+                    headerLabel += " [PAUSED]";
+                }
+
+                bool channelOpen = ImGui::CollapsingHeader(headerLabel.c_str());
+
+                // Show audio file button even when collapsed (for quick reference)
+                if (!channelOpen) {
+                    std::string fileName = ch.audioFile.empty() ? "(No audio)" : std::filesystem::path(ch.audioFile).filename().string();
+                    ImGui::SameLine();
+                    ImGui::Text("- %s", fileName.c_str());
+                }
+
+                if (channelOpen) {
+                    ImGui::Indent();
+
+                    // Audio File Selector
+                    std::string audioName = ch.audioFile.empty() ? "(Drop audio here)" : ch.audioFile;
+                    ImGui::Button(audioName.c_str(), ImVec2(-1, 0));
+
+                    /* -------------- Drag and Drop From Asset Browser ------------- */
+                    if (ImGui::BeginDragDropTarget()) {
+                        if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("ASSET")) {
+                            const char* droppedPath = (const char*)payload->Data;
+                            std::string path = droppedPath;
+
+                            const std::string debugPrefix = "Debug/";
+                            std::filesystem::path fsPath(path);
+                            if (fsPath.string().find(debugPrefix) == 0) {
+                                fsPath = fsPath.string().substr(debugPrefix.size());
+                            }
+
+                            // Extract file extension
+                            std::string ext = fsPath.extension().string();
+                            std::transform(ext.begin(), ext.end(), ext.begin(), ::tolower);
+
+                            // Only accept audio files
+                            if (ext == ".wav" || ext == ".ogg" || ext == ".mp3") {
+                                ch.audioFile = path;
+                                DebugLog::addMessage("Changed audio of channel '" + channelName + "' to " + ch.audioFile + "\n");
+                            }
+                            else {
+                                Editor::popupState.audioFileTypePopup = true;
+                                Editor::popupState.filename = fsPath.filename().string();
+                                DebugLog::addMessage("Unsupported audio format: " + path + "\n");
+                            }
+                        }
+                        ImGui::EndDragDropTarget();
+                    }
+
+                    if (!ch.audioFile.empty()) {
+                        ImGui::Spacing();
+                        
+                        // Manual Playback Controls
+                        ImGui::Text("Playback Controls");
+
+                        if (ch.channel && ch.state == AudioState::Playing) {
+                            // Currently playing - show Stop button
+                            if (ImGui::Button("Stop", ImVec2(-1, 0))) {
+                                ch.isPendingStop = true;
+                                DebugLog::addMessage("Manually stopped channel: " + channelName + "\n");
+                            }
+                        }
+                        else if (!ch.audioFile.empty()) {
+                            // Not playing but has audio file - show Play button
+                            if (ImGui::Button("Play", ImVec2(-1, 0))) {
+                                ch.isPendingPlay = true;
+                                DebugLog::addMessage("Manually started channel: " + channelName + "\n");
+                            }
+                        }
+                        else {
+                            // No audio file assigned
+                            ImGui::BeginDisabled();
+                            ImGui::Button("Play (No Audio)", ImVec2(-1, 0));
+                            ImGui::EndDisabled();
+                        }
+
+                        ImGui::Spacing();
+                        ImGui::Separator();
+                        ImGui::Spacing();
+
+                        // Basic Controls - detect changes and stop sound if settings change
+                        bool loopChanged = ImGui::Checkbox("Loop", &ch.loop);
+                        bool playOnStartChanged = ImGui::Checkbox("Play On Start", &ch.playOnStart);
+                        bool mutedChanged = ImGui::Checkbox("Muted", &ch.muted);
+						ImGui::Checkbox("Spatial Audio", &ch.isSpatial);
+
+                        // Stop currently playing sound if critical settings changed
+                        if ((loopChanged || playOnStartChanged || mutedChanged) && ch.channel) {
+                            ch.isPendingStop = true;
+                            DebugLog::addMessage("Stopped audio in '" + channelName + "' due to setting change\n");
+                        }
+
+                        if (ch.isSpatial) {
+                            ImGui::Indent();  // Indent to show hierarchy
+
+                            if (ImGui::DragFloat("Min Distance", &ch.minDistance, 0.1f, 0.1f, 1000.0f)) {
+                                ch.minDistance = std::clamp(ch.minDistance, 0.1f, 1000.0f);
+                            }
+
+                            if (ImGui::DragFloat("Max Distance", &ch.maxDistance, 1.0f, 1.0f, 10000.0f)) {
+                                ch.maxDistance = std::clamp(ch.maxDistance, 1.0f, 10000.0f);
+                            }
+
+                            ImGui::Unindent();
+                        }
+
+                        ImGui::Spacing();
+
+                        // Volume & Pitch Controls
+                        if (ImGui::TreeNode("Volume & Pitch")) {
+                            if (ImGui::DragFloat("Volume", &ch.volume, 0.01f, 0.0f, 1.0f)) {
+                                ch.volume = std::clamp(ch.volume, 0.f, 1.f);
+                            }
+
+                            if (ImGui::DragFloat("Pitch", &ch.pitch, 0.01f, 0.1f, 2.0f)) {
+                                ch.pitch = std::clamp(ch.pitch, 0.1f, 2.f);
+                            }
+
+                            ImGui::TreePop();
+                        }
+
+                        // Fade Controls
+                        if (ImGui::TreeNode("Fade In/Out")) {
+                            ImGui::Checkbox("Fade In On Start", &ch.fadeInOnStart);
+                            if (ch.fadeInOnStart) {
+                                ImGui::Indent();
+                                if (ImGui::DragFloat("Fade In Duration", &ch.fadeInDuration, 0.01f, 0.0f, 10.0f)) {
+                                    ch.fadeInDuration = std::clamp(ch.fadeInDuration, 0.f, 10.f);
+                                }
+                                ImGui::Unindent();
+                            }
+
+                            ImGui::Checkbox("Fade Out On Stop", &ch.fadeOutOnStop);
+                            if (ch.fadeOutOnStop) {
+                                ImGui::Indent();
+                                if (ImGui::DragFloat("Fade Out Duration", &ch.fadeOutDuration, 0.01f, 0.0f, 10.0f)) {
+                                    ch.fadeOutDuration = std::clamp(ch.fadeOutDuration, 0.f, 10.f);
+                                }
+                                ImGui::Unindent();
+                            }
+
+                            ImGui::TreePop();
+                        }
+
+                        ImGui::Spacing();
+                        ImGui::Separator();
+                        ImGui::Spacing();
+
+                        // Remove Sound (clears file but keeps channel)
+                        if (ImGui::Button("Clear Audio File", ImVec2(-1, 0))) {
+                            ch.audioFile = "";
+                            if (ch.channel) {
+                                ch.channel->stop();
+                                ch.channel = nullptr;
+                            }
+                            DebugLog::addMessage("Cleared audio from channel: " + channelName + "\n");
+                        }
+                    }
+
+                    ImGui::Spacing();
+
+                    // Remove Channel Button
+                    if (ImGui::Button(("Remove Channel: " + channelName).c_str(), ImVec2(-1, 0))) {
+                        channelToRemove = channelName;
+                    }
+
+                    ImGui::Unindent();
+                }
+
+                ImGui::PopID();
+            }
+
+            // Remove channel if marked for removal
+            if (!channelToRemove.empty()) {
+                audio->removeChannel(channelToRemove);
+                DebugLog::addMessage("Removed audio channel: " + channelToRemove + "\n");
+            }
+        }
+
+        ImGui::Spacing();
+        ImGui::Separator();
+        ImGui::Spacing();
+
+        // Remove Entire Component
+        if (ImGui::Button("Remove Audio Component", ImVec2(-1, 0))) {
             selected->removeComponent<AudioComponent>();
             DebugLog::addMessage("Removed Audio Component");
         }

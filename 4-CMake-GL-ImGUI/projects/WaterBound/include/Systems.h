@@ -179,6 +179,7 @@ public:
 class CollisionSystem {
 public:
 	void update(GameObjectManager& manager, const float& deltaTime);
+	bool CheckTileCollision(GameObject* obj, TileMap& map); //for tile map collision
 };
 
 // only allow editor in debug mode
@@ -222,6 +223,9 @@ public:
 	void update(GameObjectManager& manager, float deltaTime);
 	void cleanup(GameObjectManager& manager);
 
+	// Update 3D positions for all spatial sounds
+	void updateSpatialAudio(GameObjectManager& manager);
+
 	static void initializeSceneAudio(GameObjectManager& manager);
 
 private:
@@ -239,22 +243,21 @@ public:
 	// update logic
 	void update(GameObject* obj, VisualLC* logic, float dt);
 
-	// collision events (WIP)
-	void onCollisionEnter(GameObject* obj, VisualLC* logic, GameObject* other);
-	void onCollisionExit(GameObject* obj, VisualLC* logic, GameObject* other);
-
 private:
 	// execute a specific node
-	void executeNode(GameObject* obj, VisualLC* logic, int nodeId);
+	void executeNode(GameObject* obj, VisualLC* logic, int nodeId, float dt);
 
 	// execute different node types
 	void executeEventNode(GameObject* obj, VisualLC* logic, LogicNode& node);
-	void executeActionNode(GameObject* obj, VisualLC* logic, LogicNode& node);
-	bool executeConditionNode(GameObject* obj, VisualLC* logic, LogicNode& node);
+	void executeActionNode(GameObject* obj, VisualLC* logic, LogicNode& node, float dt);
+	bool executeConditionNode(GameObject* obj, VisualLC* logic, LogicNode& node, float dt);
 
 	// helper to find next connected node
-	int findNextNode(VisualLC* logic, int fromNodeId, const std::string& outputPin);
+	std::vector<int> findAllNextNode(VisualLC* logic, int fromNodeId, const std::string& outputPin);
 
 	// helper func to find a node by ID
 	LogicNode* findNode(VisualLC* logic, int nodeId);
+
+	// helper func for collision
+	bool shouldTriggerCollision(GameObject* obj, LogicNode& node, GameObject* collided);
 };

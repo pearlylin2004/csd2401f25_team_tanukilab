@@ -29,8 +29,6 @@ Technology is prohibited.
 #include "dynamics.h"
 #include <unordered_set>
 
-
-
 // at least it works!!!
 namespace JsonIO {
     // for the indexing in animation vector
@@ -204,7 +202,34 @@ enum class CollisionResponseMode {
     StopWhenCollide, // if collide by another obj, just stop
     MoveWhenCollide // if collide by another obj, apply "fake" force and kena push
 };
-//
+
+//button action 
+enum class ButtonAction {
+    NONE,
+    START_GAME,
+    OPEN_CONTROL,
+    EXIT_GAME,
+    RESUME_GAME,
+	YES_EXIT,
+	NO_EXIT,
+    BACK,
+    MENU
+};
+
+//Button component
+struct Button : public Component {
+    ButtonAction actionName = ButtonAction::NONE;   //action this button triggers
+    bool isHovered = false;   //hover state
+    bool isPressed = false;   //pressed state
+
+    Button() = default;
+    Button(ButtonAction action) : actionName(action) {} 
+
+    std::unique_ptr<Component> clone() const override {
+        return std::make_unique<Button>(*this);
+    }
+};
+
 
 // CollisionInfo component to store collision-related information
 struct CollisionInfo : public Component {
@@ -344,6 +369,11 @@ struct AudioChannel {
     bool isPendingPlay = false;
     bool isPendingStop = false;
     bool playOnStart = false;
+
+    //new stuff for spatial audio
+	bool isSpatial = false;
+	float minDistance = 1.0f;
+	float maxDistance = 100.0f;
 };
 
 //enum class soundID : int;
@@ -527,9 +557,10 @@ struct TileMap : public Component
     }
 };
 
+// virtual logic container (editor)
 struct LogicConnection {
-	int fromNodeId;
-	int toNodeId;
+	int fromNodeId = 0;
+	int toNodeId = 0;
 
     std::string outputPin; // OUT, TRUE, FALSE
     std::string inputPin; // IN
@@ -538,14 +569,20 @@ struct LogicConnection {
 enum class NodeType {
     EVENT,
     ACTION,
-    CONDITION
+    CONDITION,
+    DEFAULT // nothing happen
 };
 
 enum class NodeImplementation {
     // EVENT
     ON_START,
     ON_UPDATE,
-    ON_COLLISION,
+    ON_COLLISION_ENTER,
+    WHILE_COLLIDING,
+    ON_COLLISION_EXIT,
+    ON_HOVER_ENTER,
+    WHILE_HOVERING,
+	ON_HOVER_EXIT,
 
     // CONDITION
     CHECK_KEY_HELD,
@@ -556,20 +593,23 @@ enum class NodeImplementation {
     PRINT_MESSAGE,
     MOVE_OBJECT,
     ROTATE_OBJECT,
+    SET_ROTATION,
     SET_FLOAT,
+    PLAY_SOUND,
+    SET_STATE,
 
     // DEFAULT
     DEFAULT // nothing happen :)
 };
 
 struct LogicNode {
-    int id;
-    NodeType type;
+    int id = 0;
+    NodeType type = NodeType::DEFAULT;
     //std::string name;
-    NodeImplementation imp;
-    Vector2D position;
-    bool hasInput;
-    bool hasOutput;
+    NodeImplementation imp = NodeImplementation::DEFAULT;
+    Vector2D position = Vector2D(0,0);
+    bool hasInput = true;
+    bool hasOutput = true;
 
     bool hasTrueOutput = false;
     bool hasFalseOutput = false;
@@ -578,7 +618,8 @@ struct LogicNode {
     std::map<std::string, std::string> parameters;
 };
 
-// virtual logic container (editor)
+class GameObject; // annoying forward declaration
+
 struct VisualLC : public Component {
 public:
     std::unique_ptr<Component> clone() const override {
@@ -594,7 +635,19 @@ public:
 	// runtime data
     bool isExecuting = false;
     int currentExecutingNodeId = -1;
+	std::map<std::string, int> intVar;
     std::map<std::string, float> floatVar;
     std::map<std::string, std::string> stringVar;
     std::map<std::string, bool> boolVar;
+    std::unordered_set<int> currentExePath;
+
+	bool wasHoveredLastFrame = false; // for hover event detection
+
+    // for caching
+    bool hasHoverNodes = false;
+	bool hoverNodesChecked = false;
+
+    // collision 
+    std::unordered_set<GameObject*> curCollision;
+    std::unordered_set<GameObject*> preCollision;
 };

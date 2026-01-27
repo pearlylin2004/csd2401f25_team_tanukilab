@@ -825,8 +825,6 @@ void SceneWindow::objPicking() {
         if (iterator != gameObjects.end()) {
             m_objSelectionState.selectedIndex = static_cast<int>(std::distance(gameObjects.begin(), iterator));
         }
-
-        DebugLog::addMessage(selected->getObjectName() + " selected");
     }
     else {
         // if mouse click somewhere else, deselect current dragged object
@@ -859,5 +857,7 @@ void SceneWindow::resetSelection() {
     m_objSelectionState.draggedObject = nullptr;
     m_objSelectionState.selectedPrefab = nullptr;
     m_objSelectionState.selectedIndex = -1;
+
+	Editor::visualLogicState.targetObj = nullptr;
 }
 #endif

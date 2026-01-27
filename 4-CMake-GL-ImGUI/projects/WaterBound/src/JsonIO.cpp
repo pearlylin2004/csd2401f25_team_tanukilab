@@ -149,7 +149,6 @@ namespace JsonIO {
 
     /// @}
 
-
     /**
      * \brief Copies a scene from the project source folder into the runtime folder.
      * \param name Scene filename (e.g., \c level01.json ).
@@ -236,15 +235,63 @@ namespace JsonIO {
         return CollisionResponseMode::StopWhenCollide;
     }
 
+    //for button
+    const char* ButtonActionToStr(ButtonAction action) {
+        switch (action) {
+        case ButtonAction::START_GAME:    return "start_game";
+        case ButtonAction::OPEN_CONTROL:   return "open_control";
+        case ButtonAction::EXIT_GAME:      return "exit_game";
+        case ButtonAction::RESUME_GAME:    return "resume_game";
+		case ButtonAction::YES_EXIT:       return "yes_exit";
+		case ButtonAction::NO_EXIT:        return "no_exit";
+		case ButtonAction::BACK:         return "back";
+		case ButtonAction::MENU:          return "menu";
+        default:                           return "none";
+        }
+	}
+
+    //for button
+    ButtonAction StrToButtonAction(const std::string& s) {
+        if (s == "start_game") return ButtonAction::START_GAME;
+        if (s == "open_control") return ButtonAction::OPEN_CONTROL;
+        if (s == "exit_game") return ButtonAction::EXIT_GAME;
+        if (s == "resume_game") return ButtonAction::RESUME_GAME;
+        if (s == "yes_exit") return ButtonAction::YES_EXIT;
+        if (s == "no_exit") return ButtonAction::NO_EXIT;
+        if (s == "back") return ButtonAction::BACK;
+        if (s == "menu") return ButtonAction::MENU;
+        return ButtonAction::NONE;
+	}
+
+    //player state
+    PlayerState parsePlayerState(const std::string& s) {
+        if (s == "Idle")     return PlayerState::Idle;
+        if (s == "Walking")  return PlayerState::Walking;
+        if (s == "Jumping")  return PlayerState::Jumping;
+        if (s == "Falling")  return PlayerState::Falling;
+        if (s == "Shooting") return PlayerState::Shooting;
+        if (s == "Dead")     return PlayerState::Dead;
+        return PlayerState::Idle; // default/fallback
+    }
+
 
     NodeImplementation stringToNodeImpl(const std::string& str) {
         if (str == "On Start") return NodeImplementation::ON_START;
         if (str == "On Update") return NodeImplementation::ON_UPDATE;
+		if (str == "On Collision Enter") return NodeImplementation::ON_COLLISION_ENTER;
+		if (str == "While Colliding") return NodeImplementation::WHILE_COLLIDING;
+		if (str == "On Collision Exit") return NodeImplementation::ON_COLLISION_EXIT;
+		if (str == "On Hover Enter") return NodeImplementation::ON_HOVER_ENTER;
+		if (str == "While Hovering") return NodeImplementation::WHILE_HOVERING;
+		if (str == "On Hover Exit") return NodeImplementation::ON_HOVER_EXIT;
 
         if (str == "Print Message") return NodeImplementation::PRINT_MESSAGE;
-        if (str == "Rotate Object") return NodeImplementation::ROTATE_OBJECT;
         if (str == "Move Object") return NodeImplementation::MOVE_OBJECT;
+        if (str == "Rotate Object") return NodeImplementation::ROTATE_OBJECT;
+        if (str == "Set Rotation") return NodeImplementation::SET_ROTATION;
 		if (str == "Set Float") return NodeImplementation::SET_FLOAT;
+		if (str == "Play Sound") return NodeImplementation::PLAY_SOUND;
+		if (str == "Set State") return NodeImplementation::SET_STATE;
 
 		if (str == "Check Key Held") return NodeImplementation::CHECK_KEY_HELD;
 		if (str == "Compare Value") return NodeImplementation::COMPARE_VALUE;
@@ -257,11 +304,20 @@ namespace JsonIO {
         switch (impl) {
             case NodeImplementation::ON_START: return "On Start";
             case NodeImplementation::ON_UPDATE: return "On Update";
+            case NodeImplementation::ON_COLLISION_ENTER: return "On Collision Enter";
+            case NodeImplementation::WHILE_COLLIDING: return "While Colliding";
+            case NodeImplementation::ON_COLLISION_EXIT: return "On Collision Exit";
+            case NodeImplementation::ON_HOVER_ENTER: return "On Hover Enter";
+            case NodeImplementation::WHILE_HOVERING: return "While Hovering";
+            case NodeImplementation::ON_HOVER_EXIT: return "On Hover Exit";
 
             case NodeImplementation::PRINT_MESSAGE: return "Print Message";
             case NodeImplementation::MOVE_OBJECT: return "Move Object";
 		    case NodeImplementation::ROTATE_OBJECT: return "Rotate Object";
+			case NodeImplementation::SET_ROTATION: return "Set Rotation";
             case NodeImplementation::SET_FLOAT: return "Set Float";
+			case NodeImplementation::PLAY_SOUND: return "Play Sound";
+			case NodeImplementation::SET_STATE: return "Set State";
 
             case NodeImplementation::CHECK_KEY_HELD: return "Check Key Held";
             case NodeImplementation::COMPARE_VALUE: return "Compare Value";
@@ -578,6 +634,51 @@ namespace JsonIO {
 
     /// @}
 
+    /* ---------- Load/Save collision tags ---------- */
+    bool LoadCollisionTags(const std::string& filepath, std::vector<std::string>& outTags, std::string* err) {
+        rapidjson::Document doc;
+        if (!ReadFileToDocument(RUNTIME_DIR_R + filepath, doc, err)) return false;
+
+        if (!doc.IsObject()) {
+            if (err) *err = "Collision tag file is not a JSON object";
+            return false;
+        }
+
+        if (!doc.HasMember("collisionTags") || !doc["collisionTags"].IsArray()) {
+            if (err) *err = "Missing or invalid 'tags' array";
+            return false;
+        }
+
+        outTags.clear();
+        for (const auto& v : doc["collisionTags"].GetArray()) {
+            if (v.IsString()) {
+                outTags.emplace_back(v.GetString());
+            }
+        }
+
+        return true;
+    }
+
+    bool SaveCollisionTags(const std::string& filepath, const std::vector<std::string>& tags, std::string* err) {
+        rapidjson::Document doc;
+        doc.SetObject();
+        auto& a = doc.GetAllocator();
+
+        doc.AddMember("version", 1, a);
+
+        rapidjson::Value tagArray(rapidjson::kArrayType);
+        for (const auto& tag : tags) {
+            tagArray.PushBack(rapidjson::Value(tag.c_str(), a), a);
+        }
+
+        doc.AddMember("collisionTags", tagArray, a);
+
+        bool runtime = WriteDocumentToFile(RUNTIME_DIR_R + filepath, doc, true, err);
+        bool proj = WriteDocumentToFile(SOURCE_ASSETS_DIR_R + filepath, doc, true, err);
+
+        return (runtime && proj);
+    }
+
     /* ---------- Saving obj state in json for undo/redo ---------- */
     std::string serializeGameObj(GameObject* obj) {
         if (!obj) return "";
@@ -650,6 +751,16 @@ namespace JsonIO {
             doc.AddMember("Collision", jc, a);
         }
 
+        // Button
+        if(Button* b = obj->getComponent<Button>()) {
+            Value jb(kObjectType);
+            Value actionStr(ButtonActionToStr(b->actionName), a);
+            jb.AddMember("action", actionStr, a);
+            jb.AddMember("isHovered", b->isHovered, a);
+            jb.AddMember("isPressed", b->isPressed, a);
+            doc.AddMember("Button", jb, a);
+		}
+
         // Input
         if (obj->hasComponent<Input>()) {
             doc.AddMember("Input", true, a);
@@ -686,6 +797,11 @@ namespace JsonIO {
                 channelObj.AddMember("fadeInDuration", channel.fadeInDuration, a);
                 channelObj.AddMember("fadeOutOnStop", channel.fadeOutOnStop, a);
                 channelObj.AddMember("fadeOutDuration", channel.fadeOutDuration, a);
+
+                // Save 3D audio settings
+                channelObj.AddMember("isSpatial", channel.isSpatial, a);
+                channelObj.AddMember("minDistance", channel.minDistance, a);
+                channelObj.AddMember("maxDistance", channel.maxDistance, a);
 
                 channels.AddMember(Value(channelName.c_str(), a), channelObj, a);
             }
@@ -936,6 +1052,14 @@ namespace JsonIO {
                             ch->fadeOutOnStop = channelObj["fadeOutOnStop"].GetBool();
                         if (channelObj.HasMember("fadeOutDuration"))
                             ch->fadeOutDuration = channelObj["fadeOutDuration"].GetFloat();
+
+                        // Load 3D audio settings
+                        if (channelObj.HasMember("isSpatial"))
+                            ch->isSpatial = channelObj["isSpatial"].GetBool();
+                        if (channelObj.HasMember("minDistance"))
+                            ch->minDistance = channelObj["minDistance"].GetFloat();
+                        if (channelObj.HasMember("maxDistance"))
+                            ch->maxDistance = channelObj["maxDistance"].GetFloat();
                     }
                 }
                 else {
@@ -978,7 +1102,6 @@ namespace JsonIO {
                             // --- texture ---
                             if (animStateObj.HasMember("texture") && animStateObj["texture"].IsString()) {
                                 st.texFile = animStateObj["texture"].GetString();
-                                st.texChanged = true;
                             }
                             else {
                                 st.texFile.clear();
@@ -1368,6 +1491,20 @@ void GameObjectManager::saveToJson(const std::string& filename, bool isNew) cons
                 comps.AddMember("Animation", ja, a);
             }*/
 
+            // ---- Button ----
+            if (auto b = obj->getComponent<Button>()) {
+                rapidjson::Value jb(rapidjson::kObjectType);
+
+                jb.AddMember("action", rapidjson::Value(static_cast<int>(b->actionName)), a);
+
+                //add boolean states
+                jb.AddMember("isHovered", b->isHovered ? 1 : 0, a);
+                jb.AddMember("isPressed", b->isPressed ? 1 : 0, a);
+
+                //add the Button object to your main JSON
+                comps.AddMember("Button", jb, a);
+			}
+
             jObj.AddMember("components", comps, a);
             objects.PushBack(jObj, a);
         }
@@ -1517,6 +1654,17 @@ void GameObjectManager::loadFromJson(const std::string& filename) {
         // ---- CollisionInfo (presence only) ----
         if (comps.HasMember("CollisionInfo") && comps["CollisionInfo"].IsObject()) {
             go->addComponent<CollisionInfo>();
+        }
+
+		// ---- Button ----
+        if (comps.HasMember("Button") && comps["Button"].IsObject()) {
+			const auto& jb = comps["Button"];
+			auto* b = go->addComponent<Button>();
+
+            if (jb.HasMember("action") && jb["action"].IsString()) {
+                std::string actionStr = jb["action"].GetString();
+                b->actionName = JsonIO::StrToButtonAction(actionStr);
+            }
         }
 
         // ---- Animation ----
