@@ -499,7 +499,7 @@ LogicNode* VisualLogicSystem::findNode(VisualLC* logic, int nodeId) {
 	return nullptr;
 }
 
-bool VisualLogicSystem::shouldTriggerCollision(GameObject* obj, LogicNode& node, GameObject* collided) {
+bool VisualLogicSystem::shouldTriggerCollision(LogicNode& node, GameObject* collided) {
 	std::string filterType = node.parameters.count("colFilterType") ? node.parameters["colFilterType"] : "any";
 
 	if (filterType == "any") return true;
