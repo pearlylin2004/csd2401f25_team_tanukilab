@@ -845,10 +845,10 @@ void SceneWindow::objDragging() const {
     transform->y += mousePos.y;
 
     // if obj has physics, do not follow gravity while dragging
-    Physics* physics = obj->getComponent<Physics>();
+    /*Physics* physics = obj->getComponent<Physics>();
     if (!physics) return;
 
-    physics->velY = 0.0f;
+    physics->velY = 0.0f;*/
 }
 
 void SceneWindow::resetSelection() {
