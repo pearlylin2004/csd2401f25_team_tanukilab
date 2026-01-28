@@ -75,7 +75,7 @@ void VisualLogicSystem::update(GameObject* obj, VisualLC* logic, float dt) {
 		if (logic->preCollision.find(collided) == logic->preCollision.end()) {
 			for (LogicNode& node : logic->nodes) {
 				if (node.imp == NodeImplementation::ON_COLLISION_ENTER) {
-					if (shouldTriggerCollision(obj, node, collided)) {
+					if (shouldTriggerCollision(node, collided)) {
 						logic->stringVar["_collidedWith"] = collided->getObjectName();
 						executeNode(obj, logic, node.id, dt);
 					}
@@ -88,7 +88,7 @@ void VisualLogicSystem::update(GameObject* obj, VisualLC* logic, float dt) {
 		// WHILE COLLIDING
 		for (LogicNode& node : logic->nodes) {
 			if (node.imp == NodeImplementation::WHILE_COLLIDING) {
-				if (shouldTriggerCollision(obj, node, collided)) {
+				if (shouldTriggerCollision(node, collided)) {
 					logic->stringVar["_collidedWith"] = collided->getObjectName();
 					executeNode(obj, logic, node.id, dt);
 				}
@@ -101,7 +101,7 @@ void VisualLogicSystem::update(GameObject* obj, VisualLC* logic, float dt) {
 		if (logic->curCollision.find(collided) == logic->curCollision.end()) {
 			for (LogicNode& node : logic->nodes) {
 				if (node.imp == NodeImplementation::ON_COLLISION_EXIT) {
-					if (shouldTriggerCollision(obj, node, collided)) {
+					if (shouldTriggerCollision(node, collided)) {
 						logic->stringVar["_collidedWith"] = collided->getObjectName();
 						executeNode(obj, logic, node.id, dt);
 					}

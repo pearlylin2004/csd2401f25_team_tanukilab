@@ -601,6 +601,7 @@ enum class NodeImplementation {
     CHECK_KEY_HELD,
     COMPARE_VALUE,
     COMPARE_VAR,
+    CHECK_STATE,
 
     // ACTION
     PRINT_MESSAGE,
