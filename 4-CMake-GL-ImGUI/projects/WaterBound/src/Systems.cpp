@@ -931,6 +931,20 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 		
 		const std::vector<GameObject*>& layerObjects = layer->getObjects(); //get layer object
 
+		std::vector<std::pair<TileMap*, Transform*>> activeTilemaps; //store tilemaps for later use
+		for (GameObject* obj : layerObjects) {
+			TileMap* tm = obj->getComponent<TileMap>();
+			Transform* tmTransform = obj->getComponent<Transform>();
+
+			if (!tm || !tmTransform) continue;
+
+			if (tm->enableCol && tm->colChanged)
+				Collision::buildTileCollisionBox(tm, tmTransform);
+
+			if (!tm->collisionBoxs.empty()) // Only add if has collision boxes
+				activeTilemaps.push_back({ tm, tmTransform });
+		}
+
 		//insert object into grid 
 		for (GameObject* obj : layerObjects) {
 			Transform* objT = obj->getComponent<Transform>();
@@ -1123,32 +1137,65 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 				}
 			}
 		}
+
+		// obj vs tilemap collision
+		if (!activeTilemaps.empty()) HandleTilemapCollisions(grid, activeTilemaps);
+
 		auto end = std::chrono::high_resolution_clock::now();
 		ms += std::chrono::duration<double, std::milli>(end - start).count(); //get elapse time in ms
 	}
 	g_SystemTimers.push_back({ "Collisions", ms }); //saving timing for UI output
 }
 
-//tilemap collision detection
-bool CollisionSystem::CheckTileCollision(GameObject* obj, TileMap& map){
-	Transform* t = obj->getComponent<Transform>();
-	CollisionInfo* c = obj->getComponent<CollisionInfo>();
-	if (!t || !c) return false;
+void CollisionSystem::HandleTilemapCollisions(const std::unordered_map<int, Collision::Cell>& grid, const std::vector<std::pair<TileMap*, Transform*>>& tilemaps) {
+	for (const auto& [key, cell] : grid) {
+		for (GameObject* obj : cell.objects) {
+			Transform* t = obj->getComponent<Transform>();
+			CollisionInfo* c = obj->getComponent<CollisionInfo>();
+			Physics* p = obj->getComponent<Physics>();
 
-	Collision::AABB box = Collision::getObjectAABBbyCollider(t, c->colliderSize);
+			if (!t || !c || !p) continue;
 
-	int minTileX = static_cast<int>(box.getMin().x / map.tileW);
-	int maxTileX = static_cast<int>(box.getMax().x / map.tileW);
-	int minTileY = static_cast<int>(box.getMin().y / map.tileH);
-	int maxTileY = static_cast<int>(box.getMax().y / map.tileH);
+			Collision::AABB objAABB = Collision::getObjectAABBbyCollider(t, c->colliderSize);
+			Vector2D vel{ p->dynamics.velocity.x, p->dynamics.velocity.y };
 
-	for (int x = minTileX; x <= maxTileX; ++x)
-	{
-		for (int y = minTileY; y <= maxTileY; ++y)
-		{
-			if (!map.getTile(x, y).empty())
-			{
-				return true; // collision detected
+			// check against all active tilemaps
+			for (const auto& [tm, tmtransform] : tilemaps) {
+				bool collisionResolved = false;
+
+				for (const auto& box : tm->collisionBoxs) {
+					Collision::AABB boxAABB(box.minAABB, box.maxAABB);
+
+					if (!Collision::CollisionIntersection_RectRect_Static(objAABB, boxAABB))
+						continue;
+
+					CollisionInfo info = Collision::CollisionIntersection_RectRect_Dynamic_Info(
+						objAABB, vel, boxAABB, Vector2D(0, 0));
+
+					if (info.collided) {
+						if (info.normal.x != 0) {
+							t->x += info.normal.x * info.penetration;
+							p->dynamics.position.x = t->x;
+							p->dynamics.velocity.x = 0.f;
+							p->velX = 0.f;
+						}
+
+						if (info.normal.y != 0) {
+							t->y += info.normal.y * info.penetration;
+							p->dynamics.position.y = t->y;
+							p->dynamics.velocity.y = 0.0f;
+
+							if (info.normal.y > 0) {
+								p->onGround = true;
+							}
+						}
+
+						collisionResolved = true;
+						break;
+					}
+				}
+
+				if (collisionResolved) break;
 			}
 		}
 	}
