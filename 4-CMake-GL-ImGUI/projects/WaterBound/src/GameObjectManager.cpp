@@ -801,9 +801,9 @@ void GameObjectManager::loadSceneFromJson(const std::string& filename) {
 	//std::cout << "Scene loaded (JSON): " << filename << "\n";
 
 	auto t2 = std::chrono::high_resolution_clock::now();
-	std::cout << "[Timing] GUISystem update / level load took "
+	std::cout << "[Timing] Loading json took "
 		<< std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1).count()
-		<< " ms\n";
+		<< " ms" << std::endl;
 }
 
 /*!
@@ -1476,7 +1476,29 @@ void GameObjectManager::createBulletPool(const std::string& templateBulletName, 
 			continue;
 		}
 
-		/*GameObject* clonedBullet = */CloneGameObject(templateBulletName, bulletName);
+		GameObject* clonedBullet = CloneGameObject(templateBulletName, bulletName);
+		if (!clonedBullet) continue;
+
+		clonedBullet->active = false;
+
+		if (Transform* t = clonedBullet->getComponent<Transform>()) {
+            t->x = -1000.0f;
+            t->y = -1000.0f;
+            t->z = 0.0f;
+        }
+		templateBullet->active = false; //deactivate the template bullet as well
+
+        if (Physics* p = clonedBullet->getComponent<Physics>()) {
+            p->alive = false;
+			p->dynamics.velocity = Vector3D{ 0.0f, 0.0f, 0.0f };
+        }
+
+        if (CollisionInfo* c = clonedBullet->getComponent<CollisionInfo>()) {
+            c->collisionTag = "bullet";
+            c->ignoreCollisionsWith.insert("player");
+            c->ignoreCollisionsWith.insert("bullet");
+        }
+		/*GameObject* clonedBullet = *///CloneGameObject(templateBulletName, bulletName);
 		//incase of bullets not cloned properly
 		//if (clonedBullet) {
 		//	if (clonedBullet->hasComponent<Transform>()) {

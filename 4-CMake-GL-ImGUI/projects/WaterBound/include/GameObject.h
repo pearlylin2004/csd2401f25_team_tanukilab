@@ -113,6 +113,9 @@ public:
         return false;//component not found
     }
 
+    //active flag
+    bool active;
+
 private:
     std::string m_name;//name of object
     std::string m_prefabID; // optional, empty if created without prefab
