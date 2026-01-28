@@ -15,6 +15,7 @@ Technology is prohibited.
 /* End Header **************************************************************************/
 
 #include "Systems.h"
+#include "JsonIO.h"
 
 void VisualLogicSystem::initAll(GameObjectManager& manager) {
 	std::vector<GameObject*> gameObjects;

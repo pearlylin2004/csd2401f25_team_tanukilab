@@ -99,9 +99,16 @@ void TileMapSystem::update(GameObjectManager& manager)
 			//Vector2D world = InputHandler::getMousePositionInImGuiViewport(Editor::sceneWindowState.scenePos, Editor::sceneWindowState.sceneSize);
 			//std::cout << world.x << " | " << world.y << std::endl;
 			//DebugLog::addMessage("mouse pos: " + std::to_string(world.x) + " | " + std::to_string(world.y) + "\n");
+#ifdef _DEBUG
 			if (!TileMapSystem::filename.empty() && Editor::objSelectionState.selectedObject == obj) {
 				tileUpdate(obj);
 			}
+
+#else
+			if (!TileMapSystem::filename.empty()) {
+				tileUpdate(obj);
+			}
+#endif
 		}
 
 		TileMap* tm = obj->getComponent<TileMap>();
