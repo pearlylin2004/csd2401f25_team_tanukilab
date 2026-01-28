@@ -192,12 +192,10 @@ void AssetBrowser::render() {
                 ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.15f, 0.15f, 0.15f, 1.0f));
                 ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(4, 4));
 
-                if (ImGui::ImageButton(("##img" + asset.name).c_str(),
+                ImGui::ImageButton(("##img" + asset.name).c_str(),
                     (ImTextureID)(intptr_t)texData.id,
                     ImVec2(m_AssetBrowserState.iconSize, m_AssetBrowserState.iconSize),
-                    ImVec2(0, 1), ImVec2(1, 0))) {
-                    //TileMapSystem::filename = asset.path;
-                }
+                    ImVec2(0, 1), ImVec2(1, 0));
 
                 ImGui::PopStyleVar();
                 ImGui::PopStyleColor();
@@ -205,18 +203,14 @@ void AssetBrowser::render() {
             else {
                 // fallback to button if texture fails
                 ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(100, 40));
-                if (ImGui::Button(asset.name.c_str(), ImVec2(m_AssetBrowserState.iconSize, m_AssetBrowserState.iconSize))) {
-                    //TileMapSystem::filename = asset.path;
-                }
+                ImGui::Button(asset.name.c_str(), ImVec2(m_AssetBrowserState.iconSize, m_AssetBrowserState.iconSize));
                 ImGui::PopStyleVar();
             }
         }
         else {
             // if not image then use button
             ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(100, 40));
-            if (ImGui::Button(asset.name.c_str(), ImVec2(m_AssetBrowserState.iconSize, m_AssetBrowserState.iconSize))) {
-                std::cout << asset.name << " button clicked!" << std::endl;
-            }
+            ImGui::Button(asset.name.c_str(), ImVec2(m_AssetBrowserState.iconSize, m_AssetBrowserState.iconSize));
             ImGui::PopStyleVar();
         }
 
