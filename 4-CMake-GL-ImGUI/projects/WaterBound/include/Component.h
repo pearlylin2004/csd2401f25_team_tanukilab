@@ -117,7 +117,7 @@ public:
         size_t particleAmt = 0;
     };
     //size_t grpNo = 0;
-    bool activate = false;
+    //bool activate = false;
     bool isMaster = true;
     individualData childData;
     GroupData master;

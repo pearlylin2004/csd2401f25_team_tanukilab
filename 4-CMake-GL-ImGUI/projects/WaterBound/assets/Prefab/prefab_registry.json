@@ -27,14 +27,14 @@
       "path": "/Prefab/fire.json"
     },
     {
+      "id": "9f0f3e8d-8d60-445e-aeeb-a90697e34426",
+      "name": "player",
+      "path": "/Prefab/player_1.json"
+    },
+    {
       "id": "f04819ff-270c-41b4-8387-73382eb85103",
       "name": "water_source",
       "path": "/Prefab/water_source.json"
-    },
-    {
-      "id": "887d25cd-bd8d-481f-9f64-f371300a2cf0",
-      "name": "win screen",
-      "path": "/Prefab/win screen.json"
     },
     {
       "id": "94d018f7-a766-4ee6-95be-f39272697938",
@@ -42,9 +42,34 @@
       "path": "/Prefab/tile_platform.json"
     },
     {
+      "id": "887d25cd-bd8d-481f-9f64-f371300a2cf0",
+      "name": "win screen",
+      "path": "/Prefab/win screen.json"
+    },
+    {
       "id": "25591e7c-7d8f-47e1-a686-f950e77e91a1",
       "name": "land_vfx",
       "path": "/Prefab/land_vfx.json"
+    },
+    {
+      "id": "4715fbb7-b7e3-463e-a596-be3ce6711e35",
+      "name": "player",
+      "path": "/Prefab/player_2.json"
+    },
+    {
+      "id": "d4ab199c-2def-48b9-add0-ef7bd20d2a2d",
+      "name": "player",
+      "path": "/Prefab/player_3.json"
+    },
+    {
+      "id": "0f6ed177-b62e-4ca3-9c8c-2a7814fe0304",
+      "name": "player",
+      "path": "/Prefab/player_4.json"
+    },
+    {
+      "id": "276147a8-c487-4300-bfec-bb6bdb1dca89",
+      "name": "player",
+      "path": "/Prefab/player_5.json"
     }
   ]
 }

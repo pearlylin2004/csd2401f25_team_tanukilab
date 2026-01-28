@@ -554,10 +554,10 @@ void ParticleSystem::activateParticle(GameObjectManager& manager)
 		{
 			Particle* particleData = object->getComponent<Particle>();
 			Transform* masterTransform = object->getComponent<Transform>();
-			if (particleData->activate && particleData->isMaster)
+			if (particleData->master.isActive && particleData->isMaster)
 			{
 				//std::cout << "Particle Group being activated is: " << particleData->grpNo << std::endl;
-				particleData->activate = false;
+				particleData->master.isActive = false;
 				/*if (particleData->grpNo == 0)
 					particleData->grpNo = IDGenerator(manager);*/
 				//static int pid = 0;
@@ -605,7 +605,7 @@ void ParticleSystem::update(GameObjectManager& manager, float const& deltaTime)
 			if (particle->isMaster)
 			{
 				if (InputHandler::isKeyTriggered(GLFW_KEY_P))
-					particle->activate = true;
+					particle->master.isActive = true;
 			}
 		}
 	}

@@ -400,6 +400,40 @@ void GameObjectManager::loadSceneFromJson(const std::string& filename) {
 //          if (jr.HasMember("wireframe")   && jr["wireframe"].IsBool())   r->wireframe     = jr["wireframe"].GetBool();
 		}
 
+		if (comps.HasMember("Particle") && comps["Particle"].IsObject()) {
+			const auto& jp = comps["Particle"];
+
+			auto* p = go->getComponent<Particle>();
+			if (!p) p = go->addComponent<Particle>();
+
+			// isMaster (accept bool or 0/1)
+			if (jp.HasMember("isMaster")) {
+				p->isMaster = jp["isMaster"].IsBool()
+					? jp["isMaster"].GetBool()
+					: (jp["isMaster"].GetInt() != 0);
+			}
+			else {
+				p->isMaster = true;
+			}
+
+			// Master GroupData - color
+			if (jp.HasMember("clr_r")) p->master.clr.r = jp["clr_r"].GetFloat();
+			if (jp.HasMember("clr_g")) p->master.clr.g = jp["clr_g"].GetFloat();
+			if (jp.HasMember("clr_b")) p->master.clr.b = jp["clr_b"].GetFloat();
+			if (jp.HasMember("clr_a")) p->master.clr.a = jp["clr_a"].GetFloat();
+
+			// Master GroupData - velocity
+			if (jp.HasMember("velocity_x")) p->master.velocity.x = jp["velocity_x"].GetFloat();
+			if (jp.HasMember("velocity_y")) p->master.velocity.y = jp["velocity_y"].GetFloat();
+
+			// Master GroupData - other fields
+			if (jp.HasMember("timer")) p->master.timer = jp["timer"].GetFloat();
+			if (jp.HasMember("offset")) p->master.offset = jp["offset"].GetFloat();
+			if (jp.HasMember("particleAmt")) p->master.particleAmt = jp["particleAmt"].GetInt();
+
+			// Note: isActive is not deserialized as requested
+		}
+
 		// ---- Input (presence only) ----
 		if (comps.HasMember("Input") && comps["Input"].IsObject()) {
 			auto* i = go->getComponent<Input>();
@@ -860,6 +894,57 @@ void GameObjectManager::saveSceneToJson(const std::string& filename, bool isNew)
 				pushIfDiffBool("hasAnimation", r->hasAnimation);
 
 				if (!jr.ObjectEmpty()) comps.AddMember("Render", jr, a);
+			}
+
+			// ---- Particle ----
+			if (auto p = obj->getComponent<Particle>()) {
+				// Only serialize if this is a master particle
+				if (p->isMaster) {
+					rapidjson::Value jp(rapidjson::kObjectType);
+					const rapidjson::Value* prefabP = PM.getPrefabJsonComp(prefabDoc, "Particle");
+
+					auto pushIfDiffBool = [&](const char* key, bool val) {
+						if (!prefabP || !prefabP->HasMember(key) ||
+							((*prefabP)[key].IsBool() && differsBool((*prefabP)[key].GetBool(), val)) ||
+							((*prefabP)[key].IsInt() && differsBool((*prefabP)[key].GetInt() != 0, val))) {
+							jp.AddMember(rapidjson::Value(key, a), rapidjson::Value(val ? 1 : 0), a);
+						}
+						};
+
+					auto pushIfDiffFloat = [&](const char* key, float val) {
+						if (!prefabP || !prefabP->HasMember(key) ||
+							!(*prefabP)[key].IsNumber() ||
+							((*prefabP)[key].GetFloat() != val))
+						{
+							jp.AddMember(rapidjson::Value(key, a), rapidjson::Value(val), a);
+						}
+						};
+
+					auto pushIfDiffInt = [&](const char* key, int val) {
+						if (!prefabP || !prefabP->HasMember(key) ||
+							!(*prefabP)[key].IsNumber() ||
+							((*prefabP)[key].GetInt() != val))
+						{
+							jp.AddMember(rapidjson::Value(key, a), rapidjson::Value(val), a);
+						}
+						};
+
+					// Serialize master data
+					pushIfDiffBool("isMaster", p->isMaster);
+
+					// Master GroupData
+					pushIfDiffFloat("clr_r", p->master.clr.r);
+					pushIfDiffFloat("clr_g", p->master.clr.g);
+					pushIfDiffFloat("clr_b", p->master.clr.b);
+					pushIfDiffFloat("clr_a", p->master.clr.a);
+					pushIfDiffFloat("velocity_x", p->master.velocity.x);
+					pushIfDiffFloat("velocity_y", p->master.velocity.y);
+					pushIfDiffFloat("timer", p->master.timer);
+					pushIfDiffFloat("offset", p->master.offset);
+					pushIfDiffInt("particleAmt", p->master.particleAmt);
+
+					if (!jp.ObjectEmpty()) comps.AddMember("Particle", jp, a);
+				}
 			}
 
 			// ---- Physics ----

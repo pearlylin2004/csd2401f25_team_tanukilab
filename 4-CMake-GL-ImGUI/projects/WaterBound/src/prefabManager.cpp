@@ -39,6 +39,7 @@ namespace {
 		else if (compName == "AudioComponent") obj->removeComponent<AudioComponent>();
 		else if (compName == "FontComponent") obj->removeComponent<FontComponent>();
 		else if (compName == "TileMap") obj->removeComponent<TileMap>();
+		else if (compName == "Particle") obj->removeComponent<Particle>();
 	}
 
 	void removeAllComponents(GameObject* obj) {
@@ -52,6 +53,7 @@ namespace {
 		obj->removeComponent<AudioComponent>();
 		obj->removeComponent<FontComponent>();
 		obj->removeComponent<TileMap>();
+		obj->removeComponent<Particle>();
 	}
 
 	void applyComponentFromJson(GameObject* obj, const char* compName, const rapidjson::Value& compData, rapidjson::Document::AllocatorType& allocator, const std::function<void(GameObject*, const rapidjson::Value&)>& func) {
@@ -691,6 +693,26 @@ void PrefabManager::applyPrefabComponents(GameObject* go, const rapidjson::Value
 		std::cout << r->hasAnimation << " has animation\n\n";*/
 	}
 
+	// ---- Particle ----
+	if (comps.HasMember("Particle") && comps["Particle"].IsObject()) {
+		const auto& jp = comps["Particle"];
+		auto* p = go->addComponent<Particle>();
+
+		// isMaster
+		p->isMaster = JsonIO::GetBoolOr(jp, "isMaster", true);
+
+		// Master GroupData - color
+		JsonIO::ReadVec4(jp, "clr", p->master.clr.r, p->master.clr.g, p->master.clr.b, p->master.clr.a);
+
+		// Master GroupData - velocity
+		JsonIO::ReadVec2(jp, "velocity", p->master.velocity.x, p->master.velocity.y);
+
+		// Master GroupData - other fields
+		p->master.timer = JsonIO::GetFloatOr(jp, "timer", 0.f);
+		p->master.offset = JsonIO::GetFloatOr(jp, "offset", 0.f);
+		p->master.particleAmt = JsonIO::GetIntOr(jp, "particleAmt", 0);
+	}
+
 	// ---- Input (presence only) ----
 	if (comps.HasMember("Input") && comps["Input"].IsObject()) {
 		go->addComponent<Input>();
@@ -930,6 +952,31 @@ void PrefabManager::serializeComponents(const GameObject* obj, rapidjson::Value&
 		}
 
 		comps.AddMember("Render", jr, a);
+	}
+
+	//// ---- Particle ----
+	if (auto p = obj->getComponent<Particle>()) {
+		// Only serialize if this is a master particle
+		if (p->isMaster) {
+			rapidjson::Value jp(rapidjson::kObjectType);
+			jp.AddMember("isMaster", p->isMaster ? 1 : 0, a);
+
+			// Master GroupData - color (only if not default white)
+			if (p->master.clr.r != 1.f || p->master.clr.g != 1.f ||
+				p->master.clr.b != 1.f || p->master.clr.a != 1.f) {
+				JsonIO::WriteVec4(jp, "clr", p->master.clr.r, p->master.clr.g,
+					p->master.clr.b, p->master.clr.a, a);
+			}
+
+			JsonIO::WriteVec2(jp, "velocity", p->master.velocity.x, p->master.velocity.y, a);
+
+			// Master GroupData - other fields
+			jp.AddMember("timer", p->master.timer, a);
+			jp.AddMember("offset", p->master.offset, a);
+			jp.AddMember("particleAmt", p->master.particleAmt, a);
+
+			comps.AddMember("Particle", jp, a);
+		}
 	}
 
 	if (auto i = obj->getComponent<Input>()) {
