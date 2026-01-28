@@ -269,5 +269,5 @@ private:
 	LogicNode* findNode(VisualLC* logic, int nodeId);
 
 	// helper func for collision
-	bool shouldTriggerCollision(GameObject* obj, LogicNode& node, GameObject* collided);
+	bool shouldTriggerCollision(LogicNode& node, GameObject* collided);
 };
