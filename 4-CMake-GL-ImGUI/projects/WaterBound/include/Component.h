@@ -111,11 +111,17 @@ public:
         float timer = 0;
         size_t grpNo = 0;
     };
-    size_t grpNo = 0;
+    struct UID
+    {
+        size_t uid = 0;
+        size_t particleAmt = 0;
+    };
+    //size_t grpNo = 0;
     bool activate = false;
     bool isMaster = true;
     individualData childData;
     GroupData master;
+    static std::vector<UID>UIDs;
 };
 
 struct FontComponent : public Component {

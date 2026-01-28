@@ -27,6 +27,7 @@ Technology is prohibited.
 #include "Physics.h"
 
 std::string TileMapSystem::filename{};
+std::vector<Particle::UID> Particle::UIDs;
 //here we go buddies
 
 //all the systems need to get all game objects
@@ -470,27 +471,38 @@ void RenderSystem::fboAspectRatio(int& width, int& height) const {
 	height = fboHeight;
 }
 
-int ParticleSystem::IDGenerator(GameObjectManager& manager)
+void ParticleSystem::clearUsedID(int ID)
+{
+	for(int i = 0; i < Particle::UIDs.size(); ++i)
+	{
+		if (Particle::UIDs[i].uid == ID)
+		{
+			--Particle::UIDs[i].particleAmt;
+			if (Particle::UIDs[i].particleAmt == 0)
+			{
+				Particle::UIDs.erase(Particle::UIDs.begin() + i);
+				break;
+			}
+		}
+	}
+}
+
+int ParticleSystem::IDGenerator()
 {
 	size_t ID = 0;
 	bool empty = false;
-	usedID.clear();
-	std::vector<GameObject*> gameObjects;
-	manager.getAllGameObjects(gameObjects);
-	for (GameObject* object : gameObjects)
-	{
-		if (object->hasComponent<Particle>())
-		{
-			Particle* particleData = object->getComponent<Particle>();
-			if (particleData->isMaster && particleData->grpNo != 0)
-				usedID.push_back(particleData->grpNo);
-		}
-	}
-	std::sort(usedID.begin(), usedID.end());
-	for (int i = 0; i < usedID.size(); ++i)
+	/*usedID.clear();
+	if (Particle::UIDs.size() != 0)
+		for(int i = 0; i < Particle::UIDs.size(); ++i)
+			usedID.push_back(Particle::UIDs[i]);
+	std::sort(usedID.begin(), usedID.end());*/
+	std::sort(Particle::UIDs.begin(), Particle::UIDs.end(), [](const Particle::UID& a, const Particle::UID& b) {
+		return a.uid < b.uid;
+		});
+	for (int i = 0; i < Particle::UIDs.size(); ++i)
 	{
 		++ID;
-		if (ID != usedID[i])
+		if (ID != Particle::UIDs[i].uid)
 		{
 			empty = true;
 			break;
@@ -544,15 +556,19 @@ void ParticleSystem::activateParticle(GameObjectManager& manager)
 			Transform* masterTransform = object->getComponent<Transform>();
 			if (particleData->activate && particleData->isMaster)
 			{
-				std::cout << "Particle Group being activated is: " << particleData->grpNo << std::endl;
+				//std::cout << "Particle Group being activated is: " << particleData->grpNo << std::endl;
 				particleData->activate = false;
-				if (particleData->grpNo == 0)
-					particleData->grpNo = IDGenerator(manager);
-				static int pid = 0;
+				/*if (particleData->grpNo == 0)
+					particleData->grpNo = IDGenerator(manager);*/
+				//static int pid = 0;
+				int UID = IDGenerator();
+				Particle::UIDs.push_back(Particle::UID(UID, particleData->master.particleAmt));
+				std::cout << "UID made is: " << UID << std::endl;
 				for (size_t i = 0; i < particleData->master.particleAmt; ++i)
 				{
-					std::string name = "Particle_" + std::to_string(particleData->grpNo) + "_" + std::to_string(++pid);
+					std::string name = "Particle_" + std::to_string(UID) + "_" + std::to_string(i);
 					GameObject* newObj = manager.createGameObject(name);
+					std::cout << "Created Particle Object: " << name << std::endl;
 
 					Transform* transform = newObj->addComponent<Transform>();
 					Render* render = newObj->addComponent<Render>();
@@ -565,7 +581,7 @@ void ParticleSystem::activateParticle(GameObjectManager& manager)
 					transform->scaleX = 0.5f;
 					transform->scaleY = 0.5f;
 					indivData->childData.velocity = velocityGenerator(spawnPos);
-					indivData->childData.grpNo = particleData->grpNo;
+					indivData->childData.grpNo = UID;
 					indivData->childData.timer = particleData->master.timer;
 					render->clr = particleData->master.clr;
 					indivData->isMaster = false;
@@ -873,6 +889,7 @@ void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime, M
 				particle->childData.timer -= deltaTime;
 				if (particle->childData.timer <= 0.f)
 				{
+					ParticleSystem::clearUsedID(particle->childData.grpNo);
 					manager.deleteGameObject(object);
 					continue;
 				}
