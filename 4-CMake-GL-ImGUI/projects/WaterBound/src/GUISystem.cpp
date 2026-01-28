@@ -59,7 +59,7 @@ void GUISystem::update(GameObjectManager& manager) {
     Vector2D worldMousePos = InputHandler::getWorldMousePosition();
     Vector2D worldPos = Vec_Set(worldMousePos.x, worldMousePos.y);
 
-    //if (UISystem::isShowUI()) return; //skip if UI is shown
+    if (UISystem::isShowUI()) return; //skip if UI is shown
 
     if (InputHandler::isMouseButtonClicked(GLFW_MOUSE_BUTTON_LEFT)) {
         for (auto& pair : m_buttons) {
