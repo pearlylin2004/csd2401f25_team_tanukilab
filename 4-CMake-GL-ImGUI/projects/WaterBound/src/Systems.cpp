@@ -1199,8 +1199,6 @@ void CollisionSystem::HandleTilemapCollisions(const std::unordered_map<int, Coll
 			}
 		}
 	}
-
-	return false;
 }
 
 
