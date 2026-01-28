@@ -242,10 +242,10 @@ void CoreEngine::Update(float deltaTime) {
     }
 
 	//for other systems to update even in editor mode
-    /*if (!EditorManager::isEditingMode() && !EditorManager::isPaused()) {
+    if (!EditorManager::isEditingMode() && !EditorManager::isPaused()) {
         m_luaSystem->update(*m_manager, deltaTime);
         m_visualLCSystem->updateAll(*m_manager, deltaTime);
-    }*/
+    }
 
    
     // Update all systems in order
