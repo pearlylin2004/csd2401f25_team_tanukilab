@@ -472,6 +472,14 @@ bool VisualLogicSystem::executeConditionNode(GameObject* obj, VisualLC* logic, L
 
 		return false;
 	}
+	else if (node.imp == NodeImplementation::CHECK_STATE) { 
+		std::string target = node.parameters.count("state") ? node.parameters["state"] : JsonIO::stateNames[0];
+		
+		StateMachine* sm = obj->getComponent<StateMachine>();
+		if (!sm) return false;
+
+		return JsonIO::parsePlayerState(target) == sm->state;
+	}
 
 	return true;
 }

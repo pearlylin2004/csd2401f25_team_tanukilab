@@ -296,6 +296,7 @@ namespace JsonIO {
 		if (str == "Check Key Held") return NodeImplementation::CHECK_KEY_HELD;
 		if (str == "Compare Value") return NodeImplementation::COMPARE_VALUE;
 		if (str == "Compare Variable") return NodeImplementation::COMPARE_VAR;
+		if (str == "Check State") return NodeImplementation::CHECK_STATE;
 
         return NodeImplementation::DEFAULT;
     }
@@ -322,6 +323,8 @@ namespace JsonIO {
             case NodeImplementation::CHECK_KEY_HELD: return "Check Key Held";
             case NodeImplementation::COMPARE_VALUE: return "Compare Value";
             case NodeImplementation::COMPARE_VAR: return "Compare Variable";
+			case NodeImplementation::CHECK_STATE: return "Check State";
+
             default: return "Default";
         }
     }
@@ -1257,6 +1260,9 @@ namespace JsonIO {
             nodeObj.AddMember("hasInput", node.hasInput, a);
             nodeObj.AddMember("hasOutput", node.hasOutput, a);
 
+            nodeObj.AddMember("hasTrueOutput", node.hasTrueOutput, a);
+            nodeObj.AddMember("hasFalseOutput", node.hasFalseOutput, a);
+
             if (!node.parameters.empty()) {
                 rapidjson::Value paramsObj(rapidjson::kObjectType);
                 for (const auto& [key, value] : node.parameters) {
@@ -1330,6 +1336,9 @@ namespace JsonIO {
 
                 GetBool(nodeVal, "hasInput", node.hasInput);
                 GetBool(nodeVal, "hasOutput", node.hasOutput);
+
+                GetBool(nodeVal, "hasTrueOutput", node.hasTrueOutput);
+                GetBool(nodeVal, "hasFalseOutput", node.hasFalseOutput);
 
                 if (nodeVal.HasMember("parameters") && nodeVal["parameters"].IsObject()) {
                     const auto& paramsObj = nodeVal["parameters"];
