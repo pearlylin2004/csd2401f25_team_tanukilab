@@ -296,6 +296,7 @@ namespace JsonIO {
 		if (str == "Check Key Held") return NodeImplementation::CHECK_KEY_HELD;
 		if (str == "Compare Value") return NodeImplementation::COMPARE_VALUE;
 		if (str == "Compare Variable") return NodeImplementation::COMPARE_VAR;
+		if (str == "Check State") return NodeImplementation::CHECK_STATE;
 
         return NodeImplementation::DEFAULT;
     }
@@ -322,6 +323,8 @@ namespace JsonIO {
             case NodeImplementation::CHECK_KEY_HELD: return "Check Key Held";
             case NodeImplementation::COMPARE_VALUE: return "Compare Value";
             case NodeImplementation::COMPARE_VAR: return "Compare Variable";
+			case NodeImplementation::CHECK_STATE: return "Check State";
+
             default: return "Default";
         }
     }
@@ -846,6 +849,8 @@ namespace JsonIO {
             jt.AddMember("tileH", tm->tileH, a);
             jt.AddMember("columns", tm->columns, a);
             jt.AddMember("rows", tm->rows, a);
+            jt.AddMember("enableCol", Value(tm->enableCol ? 1 : 0), a);
+
 
             // Serialize tiles array
             Value tileArray(kArrayType);
@@ -856,7 +861,7 @@ namespace JsonIO {
                 t.AddMember("id", rapidjson::Value(id.c_str(), a), a);
                 tileArray.PushBack(t, a);
             }
-            jt.AddMember("Tiles", tileArray, a);
+            jt.AddMember("tiles", tileArray, a);
 
             doc.AddMember("TileMap", jt, a);
         }
@@ -1153,6 +1158,11 @@ namespace JsonIO {
                 if (tmj.HasMember("tileH"))    tm->tileH = tmj["tileH"].GetFloat();
                 if (tmj.HasMember("columns"))  tm->columns = tmj["columns"].GetInt();
                 if (tmj.HasMember("rows"))     tm->rows = tmj["rows"].GetInt();
+                if (tmj.HasMember("enableCol")) {
+                    tm->enableCol = tmj["enableCol"].IsBool()
+                        ? tmj["enableCol"].GetBool()
+                        : (tmj["enableCol"].GetInt() != 0);
+                }
 
                 tm->tiles.clear();
 
@@ -1250,6 +1260,9 @@ namespace JsonIO {
             nodeObj.AddMember("hasInput", node.hasInput, a);
             nodeObj.AddMember("hasOutput", node.hasOutput, a);
 
+            nodeObj.AddMember("hasTrueOutput", node.hasTrueOutput, a);
+            nodeObj.AddMember("hasFalseOutput", node.hasFalseOutput, a);
+
             if (!node.parameters.empty()) {
                 rapidjson::Value paramsObj(rapidjson::kObjectType);
                 for (const auto& [key, value] : node.parameters) {
@@ -1323,6 +1336,9 @@ namespace JsonIO {
 
                 GetBool(nodeVal, "hasInput", node.hasInput);
                 GetBool(nodeVal, "hasOutput", node.hasOutput);
+
+                GetBool(nodeVal, "hasTrueOutput", node.hasTrueOutput);
+                GetBool(nodeVal, "hasFalseOutput", node.hasFalseOutput);
 
                 if (nodeVal.HasMember("parameters") && nodeVal["parameters"].IsObject()) {
                     const auto& paramsObj = nodeVal["parameters"];

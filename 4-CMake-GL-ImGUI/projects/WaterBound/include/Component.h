@@ -23,11 +23,12 @@ Technology is prohibited.
 #pragma once
 #include <string>
 #include <memory> //for unique_ptr
+#include <unordered_set>
 #include "renderer.h"
 #include "mathlib.h"
 #include "font.h"
 #include "dynamics.h"
-#include <unordered_set>
+
 
 // at least it works!!!
 namespace JsonIO {
@@ -522,6 +523,9 @@ struct TileMap : public Component
     int rows = 50;
     int columns = 50;
 
+    bool enableCol = false;
+	bool colChanged = true; // flag to rebuild collision box
+
     //size_t tilesetRows = 1, tilesetCols = 1;
 
     struct TileKey {
@@ -540,6 +544,13 @@ struct TileMap : public Component
     };
     std::unordered_map<TileKey, std::string, TileKeyHash> tiles;
 
+    struct TileCollisionBox {
+        int x = 0, y = 0, width = 0, height = 0; // tile coordinates and size
+        Vector2D minAABB = Vector2D(0.f, 0.f);
+        Vector2D maxAABB = Vector2D(0.f, 0.f);
+    };
+    std::vector<TileCollisionBox> collisionBoxs; // merged collision box
+
     std::string getTile(int x, int y) const {
         TileKey key{ x, y };
         auto it = tiles.find(key);
@@ -549,11 +560,13 @@ struct TileMap : public Component
     void setTile(int x, int y, std::string tileID) {
         if (x >= -columns && x < columns && y >= -rows && y < rows) {
             tiles[{x, y}] = tileID;
+            colChanged = true;
         }
     }
 
     void clearTile(int x, int y) {
         tiles.erase({ x, y });
+        colChanged = true;
     }
 };
 
@@ -588,6 +601,7 @@ enum class NodeImplementation {
     CHECK_KEY_HELD,
     COMPARE_VALUE,
     COMPARE_VAR,
+    CHECK_STATE,
 
     // ACTION
     PRINT_MESSAGE,

@@ -699,6 +699,12 @@ void GameObjectManager::loadSceneFromJson(const std::string& filename) {
 			if (tmj.HasMember("rows") && tmj["rows"].IsInt())
 				tm->rows = tmj["rows"].GetInt();
 
+			if (tmj.HasMember("enableCol")) {
+				tm->enableCol = tmj["enableCol"].IsBool()
+					? tmj["enableCol"].GetBool()
+					: (tmj["enableCol"].GetInt() != 0);
+			}
+
 			tm->tiles.clear();
 
 			if (tmj.HasMember("tiles") && tmj["tiles"].IsArray()) {
@@ -1252,6 +1258,13 @@ void GameObjectManager::saveSceneToJson(const std::string& filename, bool isNew)
 						prefabTM->FindMember(key)->value.GetInt() != val);
 					};
 
+				auto diffBool = [&](const char* key, bool val) {
+					if (!prefabTM || !prefabTM->HasMember(key)) return true;
+					const auto& v = prefabTM->FindMember(key)->value;
+					return (v.IsBool() && v.GetBool() != val) ||
+						(v.IsInt() && (v.GetInt() != 0) != val);
+					};
+
 				if (diffFloat("tileW", tm->tileW))
 					jt.AddMember("tileW", tm->tileW, a);
 
@@ -1263,6 +1276,9 @@ void GameObjectManager::saveSceneToJson(const std::string& filename, bool isNew)
 
 				if (diffInt("rows", tm->rows))
 					jt.AddMember("rows", tm->rows, a);
+
+				if (diffBool("enableCol", tm->enableCol))
+					jt.AddMember("enableCol", rapidjson::Value(tm->enableCol ? 1 : 0), a);
 
 				// Tiles array
 				{

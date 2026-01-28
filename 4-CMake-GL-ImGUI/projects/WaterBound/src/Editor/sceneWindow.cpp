@@ -18,6 +18,7 @@ Technology is prohibited.
 
 #ifdef _DEBUG
 #include "Editor/editorManager.h"
+#include "Systems.h"
 
 bool SceneWindow::s_isSceneHovered = false;
 
@@ -78,12 +79,12 @@ void SceneWindow::render(GLuint texture, float aspectRatio, GameObjectManager& m
         }
 
         // left click to select obj
-        if (InputHandler::isMouseLeftClicked() && !ImGuizmo::IsUsing()) {
+        if (InputHandler::isMouseLeftClicked() && !ImGuizmo::IsUsing() && TileMapSystem::filename.empty()) {
             objPicking();
         }
 
         // drag to reposition obj
-        if (InputHandler::isMouseDragging() && !ImGuizmo::IsUsing()) {
+        if (InputHandler::isMouseDragging() && !ImGuizmo::IsUsing() && TileMapSystem::filename.empty()) {
             objDragging();
         }
 
@@ -794,8 +795,6 @@ void SceneWindow::objPicking() {
     float highestZ = -INFINITY;
 
     for (auto* obj : gameObjects) {
-        // dont let user click and select platform
-        if (obj->getObjectName() == "platform") continue;
 
         Transform* transform = obj->getComponent<Transform>();
         if (!transform) continue;
@@ -846,10 +845,10 @@ void SceneWindow::objDragging() const {
     transform->y += mousePos.y;
 
     // if obj has physics, do not follow gravity while dragging
-    Physics* physics = obj->getComponent<Physics>();
+    /*Physics* physics = obj->getComponent<Physics>();
     if (!physics) return;
 
-    physics->velY = 0.0f;
+    physics->velY = 0.0f;*/
 }
 
 void SceneWindow::resetSelection() {
@@ -857,6 +856,8 @@ void SceneWindow::resetSelection() {
     m_objSelectionState.draggedObject = nullptr;
     m_objSelectionState.selectedPrefab = nullptr;
     m_objSelectionState.selectedIndex = -1;
+    TileMapSystem::filename.clear();
+    TileMapSystem::eraseMode = false;
 
 	Editor::visualLogicState.targetObj = nullptr;
 }

@@ -142,6 +142,15 @@ public:
 
 	*************************************************************************/
 	static std::string filename;
+
+	/*!***********************************************************************
+	\brief
+		mode to erase tiles instead of painting
+
+	*************************************************************************/
+	static bool eraseMode;
+
+	static int brushSize;
 };
 
 class FontSystem {
@@ -180,6 +189,7 @@ class CollisionSystem {
 public:
 	void update(GameObjectManager& manager, const float& deltaTime);
 	bool CheckTileCollision(GameObject* obj, TileMap& map); //for tile map collision
+	void HandleTilemapCollisions(const std::unordered_map<int, Collision::Cell>& grid, const std::vector<std::pair<TileMap*, Transform*>>& tilemaps);
 };
 
 // only allow editor in debug mode
@@ -259,5 +269,5 @@ private:
 	LogicNode* findNode(VisualLC* logic, int nodeId);
 
 	// helper func for collision
-	bool shouldTriggerCollision(GameObject* obj, LogicNode& node, GameObject* collided);
+	bool shouldTriggerCollision(LogicNode& node, GameObject* collided);
 };

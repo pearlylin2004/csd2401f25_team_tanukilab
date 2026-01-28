@@ -108,6 +108,10 @@ void VisualLogicEditor::render() {
 					addNode(NodeType::CONDITION, NodeImplementation::COMPARE_VAR);
 				}
 
+				if (ImGui::MenuItem("Check State")) {
+					addNode(NodeType::CONDITION, NodeImplementation::CHECK_STATE);
+				}
+
 				ImGui::EndMenu();
 			}
 			/* -------- END -------- */
@@ -1042,6 +1046,34 @@ void VisualLogicEditor::renderNodeProperties() {
 			ImGui::Spacing();
 			ImGui::TextDisabled("Compares with a variable");
 		}
+		else if (node.imp == NodeImplementation::CHECK_STATE) {
+			StateMachine* sm = Editor::visualLogicState.targetObj->getComponent<StateMachine>();
+
+			if (sm) {
+				std::string target = node.parameters.count("state") ?
+					node.parameters["state"] : JsonIO::stateNames[0];
+
+				if (ImGui::BeginCombo("##checkState", target.c_str())) {
+					const std::vector<std::string>& stateNames = JsonIO::stateNames;
+
+					for (const std::string& stateName : stateNames) {
+						bool isSelected = (target == stateName);
+
+						if (ImGui::Selectable(stateName.c_str(), isSelected)) {
+							node.parameters["state"] = stateName;
+						}
+
+						if (isSelected) {
+							ImGui::SetItemDefaultFocus();
+						}
+					}
+					ImGui::EndCombo();
+				}
+			}
+			else {
+				ImGui::TextColored(ImVec4(1.f, 0.3f, 0.3f, 1.f), "Add StateMachine Component first");
+			}
+		}
 	}
 	/* ---------- END ---------- */
 }
@@ -1208,6 +1240,9 @@ void VisualLogicEditor::addNode(NodeType type, NodeImplementation imp) {
 			node.parameters["variable"] = "shakeDir";
 			node.parameters["comparison"] = "greater";
 			node.parameters["threshold"] = "0";
+		}
+		else if (imp == NodeImplementation::CHECK_STATE) {
+			node.parameters["state"] = JsonIO::stateNames[0];
 		}
 	}
 
