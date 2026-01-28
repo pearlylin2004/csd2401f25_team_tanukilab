@@ -846,6 +846,8 @@ namespace JsonIO {
             jt.AddMember("tileH", tm->tileH, a);
             jt.AddMember("columns", tm->columns, a);
             jt.AddMember("rows", tm->rows, a);
+            jt.AddMember("enableCol", Value(tm->enableCol ? 1 : 0), a);
+
 
             // Serialize tiles array
             Value tileArray(kArrayType);
@@ -1153,6 +1155,11 @@ namespace JsonIO {
                 if (tmj.HasMember("tileH"))    tm->tileH = tmj["tileH"].GetFloat();
                 if (tmj.HasMember("columns"))  tm->columns = tmj["columns"].GetInt();
                 if (tmj.HasMember("rows"))     tm->rows = tmj["rows"].GetInt();
+                if (tmj.HasMember("enableCol")) {
+                    tm->enableCol = tmj["enableCol"].IsBool()
+                        ? tmj["enableCol"].GetBool()
+                        : (tmj["enableCol"].GetInt() != 0);
+                }
 
                 tm->tiles.clear();
 

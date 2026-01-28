@@ -890,6 +890,12 @@ void PrefabManager::applyPrefabComponents(GameObject* go, const rapidjson::Value
 		if (tmj.HasMember("rows") && tmj["rows"].IsNumber())
 			tm->rows = tmj["rows"].GetInt();
 
+		if (tmj.HasMember("enableCol")) {
+			tm->enableCol = tmj["enableCol"].IsBool()
+				? tmj["enableCol"].GetBool()
+				: (tmj["enableCol"].GetInt() != 0);
+		}
+
 		// --- IMPORTANT: Deserialize actual tile data ---
 		tm->tiles.clear();  // wipe previous tile data
 
@@ -1172,6 +1178,7 @@ void PrefabManager::serializeComponents(const GameObject* obj, rapidjson::Value&
 		jt.AddMember("tileH", tm->tileH, a);
 		jt.AddMember("columns", tm->columns, a);
 		jt.AddMember("rows", tm->rows, a);
+		jt.AddMember("enableCol", rapidjson::Value(tm->enableCol ? 1 : 0), a);
 
 		// Create tiles array
 		rapidjson::Value tileArray(rapidjson::kArrayType);

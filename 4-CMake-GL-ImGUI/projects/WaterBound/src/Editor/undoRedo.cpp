@@ -67,6 +67,10 @@ void TransformCmd::applySnapshot(const TransformSnapshot& snap) {
         t->scaleX = snap.scaleX;
         t->scaleY = snap.scaleY;
         t->scaleZ = snap.scaleZ;
+
+		// recalculate tilemap collision
+        if (TileMap* tm = obj->getComponent<TileMap>())
+            tm->colChanged = true;
     }
 }
 
@@ -315,6 +319,10 @@ void UndoRedoManager::endTransformEdit(GameObjectManager& manager, GameObject* o
         m_transformBefore.scaleZ != after.scaleZ);
 
     if (changed) {
+        if (TileMap* tm = obj->getComponent<TileMap>()) {
+            tm->colChanged = true;
+        }
+
         auto cmd = std::make_unique<TransformCmd>(manager, m_editingObjName, m_transformBefore, after);
 
         // add to undo deque

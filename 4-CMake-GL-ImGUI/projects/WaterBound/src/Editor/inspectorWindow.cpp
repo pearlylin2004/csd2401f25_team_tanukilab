@@ -1307,6 +1307,7 @@ void InspectorWindow::renderTileMap(GameObject* selected)
     TileMap* tm = selected->getComponent<TileMap>();
 
     if (ImGui::CollapsingHeader("Tile Map")) {
+        ImGui::Checkbox("Enable Collision", &tm->enableCol);
 
         if (ImGui::TreeNode("Brush")) {
             std::string displayText = TileMapSystem::filename.empty() ? "No Brush Selected (Drag texture here)" : std::filesystem::path(TileMapSystem::filename).filename().string();
