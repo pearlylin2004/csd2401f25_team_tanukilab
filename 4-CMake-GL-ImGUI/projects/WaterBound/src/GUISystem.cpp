@@ -54,7 +54,7 @@ void GUISystem::init(GameObjectManager& manager, LuaSystem& luaSystem) {
 }
 
 //update function to check for button clicking
-void GUISystem::update(GameObjectManager& manager) {
+void GUISystem::update() {
     //get mouse position
     Vector2D worldMousePos = InputHandler::getWorldMousePosition();
 

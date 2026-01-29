@@ -20,6 +20,7 @@ Technology is prohibited.
 /* End Header **************************************************************************/
 #pragma once
 #include "GameObjectManager.h"
+#include "GameState.h"
 #include "input.h"
 #include "Component.h"
 #include <string>
@@ -38,23 +39,13 @@ namespace std {
     };
 }
 
-enum class GameState {
-    MENU,
-    PLAYING,
-    CONTROL,
-    PAUSED,
-    EXIT,
-    EXITCONFIRMATION,
-    LEVELS //maybe for future use
-};
-
 class GUISystem {
 public:
     GUISystem();
     ~GUISystem();
 
     void init(GameObjectManager& manager, LuaSystem& luaSystem);
-    void update(GameObjectManager& manager); //update menu system
+    void update(); //update menu system
     void loadScreen(GameObjectManager& manager, const std::string& sceneName); //load a screen
     void changeState(GameState newState, const std::string& sceneName = ""); //update of state
 

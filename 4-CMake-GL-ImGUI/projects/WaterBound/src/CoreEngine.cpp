@@ -233,7 +233,7 @@ void CoreEngine::Update(float deltaTime) {
     //menu checking
     GameState state = m_guiSystem->getCurrentState();
     if (state != GameState::EXIT) {
-        m_guiSystem->update(*m_manager);
+        m_guiSystem->update();
     }
 
 	//for other systems to update even in editor mode

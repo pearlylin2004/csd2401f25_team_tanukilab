@@ -21,6 +21,7 @@ Technology is prohibited.
 #include "GameObject.h"
 #include "layerManager.h"
 #include "mathlib.h"
+#include "GameState.h"
 
 // This class is responsible for creating, storing, and providing access to game objects.
 class GameObjectManager {
@@ -67,7 +68,7 @@ public:
 
 	//memory manager ...
 	void clearScene(); 
-	void unloadScene();
+	//void unloadScene();
 
 	//layering manager stuff
 	LayerManager& getLayerManager();
