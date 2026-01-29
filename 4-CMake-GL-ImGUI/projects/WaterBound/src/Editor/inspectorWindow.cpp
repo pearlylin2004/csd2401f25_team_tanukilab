@@ -17,6 +17,7 @@ Technology is prohibited.
 /* End Header **************************************************************************/
 #ifdef _DEBUG
 #include "Editor/editorManager.h"
+#include "Systems.h"
 
 InspectorWindow::InspectorWindow(Editor::ObjSelectionState& Ostate, Editor::GizmoState& gState) : 
     m_objSelectionState(Ostate),
@@ -126,8 +127,8 @@ void InspectorWindow::render(GameObjectManager& manager) {
 
         /* ------------------- State Machine ------------------- */
         if (selected->hasComponent<StateMachine>()) {
-            // for animation/audio(maybe)
             renderStateMachine(selected);
+            // for animation/audio(maybe)
 
             ImGui::Spacing();
             ImGui::Separator();
@@ -160,7 +161,6 @@ void InspectorWindow::render(GameObjectManager& manager) {
 
         /* ------------------- Physics ------------------- */
         if (selected->hasComponent<Physics>()) {
-            //Transform* transform = selected->getComponent<Transform>();
             renderPhysics(selected, selected->hasComponent<Input>());
 
             ImGui::Spacing();
@@ -172,7 +172,6 @@ void InspectorWindow::render(GameObjectManager& manager) {
 
         /* ------------------- Font ------------------- */
         if (selected->hasComponent<FontComponent>()) {
-            //Transform* transform = selected->getComponent<Transform>();
             renderFont(selected);
 
             ImGui::Spacing();
@@ -183,7 +182,6 @@ void InspectorWindow::render(GameObjectManager& manager) {
 
         /* ------------------- Font ------------------- */
         if (selected->hasComponent<AudioComponent>()) {
-            //Transform* transform = selected->getComponent<Transform>();
             renderAudio(selected);
 
             ImGui::Spacing();
@@ -194,7 +192,6 @@ void InspectorWindow::render(GameObjectManager& manager) {
 
         /* ------------------- TILE MAP ------------------- */
         if (selected->hasComponent<TileMap>()) {
-            //Transform* transform = selected->getComponent<Transform>();
             renderTileMap(selected);
 
             ImGui::Spacing();
@@ -203,9 +200,8 @@ void InspectorWindow::render(GameObjectManager& manager) {
         }
         /* ------------------- END ------------------- */
 
-        /* ------------------- Font ------------------- */
+        /* ------------------- Lua ------------------- */
         if (selected->hasComponent<LuaScript>()) {
-            //Transform* transform = selected->getComponent<Transform>();
             renderLua(selected);
 
             ImGui::Spacing();
@@ -221,7 +217,19 @@ void InspectorWindow::render(GameObjectManager& manager) {
             ImGui::Spacing();
             ImGui::Separator();
             ImGui::Spacing();
-		}
+        }
+        /* ------------------- END ------------------- */
+
+        /* ------------------- Visual LC ------------------- */
+        if (selected->hasComponent<VisualLC>()) {
+            renderVisualLogic(selected);
+        
+            ImGui::Spacing();
+            ImGui::Separator();
+            ImGui::Spacing();
+        }
+        /* ------------------- END ------------------- */
+
 
         /* ------------------- Add Component ------------------- */
         addComponent(selected);
@@ -788,7 +796,6 @@ void InspectorWindow::renderCollision( GameObject* selected, GameObjectManager& 
                 }
 
             }
-
         }
 
         ImGui::Spacing();
@@ -852,6 +859,74 @@ void InspectorWindow::renderCollision( GameObject* selected, GameObjectManager& 
         }
         else {
             if (collision->collisionFlag) Editor::sceneWindowState.showSingleCollider = false;
+        }
+
+        ImGui::Spacing();
+        ImGui::Separator();
+
+        if (ImGui::TreeNode("Collision Tag")) {
+            std::string currentTag = collision->collisionTag.empty() ? "default" : collision->collisionTag;
+            const std::vector<std::string>& collisionTags = GlobalRegistry::Instance().getCollisionTags();
+
+            ImGui::BeginDisabled(!collision->collisionFlag);
+            if (ImGui::BeginCombo("Object Tag", currentTag.c_str())) {
+                for (const std::string& tag : collisionTags) {
+                    bool isSelected = (currentTag == tag);
+
+                    if (ImGui::Selectable(tag.c_str(), isSelected)) {
+                        collision->collisionTag = tag;
+                    }
+
+                    if (isSelected) {
+                        ImGui::SetItemDefaultFocus();
+                    }
+                }
+
+                ImGui::EndCombo();
+            }
+
+            ImGui::Spacing();
+            ImGui::Separator();
+
+            // Ignore Collisions with Checkboxes
+            ImGui::Text("Ignore Collisions With:");
+            ImGui::Spacing();
+
+            for (const std::string& tag : collisionTags) {
+                bool isIgnored = (collision->ignoreCollisionsWith.find(tag) != collision->ignoreCollisionsWith.end());
+
+                if (ImGui::Checkbox(tag.c_str(), &isIgnored)) {
+                    if (isIgnored) {
+                        collision->ignoreCollisionsWith.insert(tag);
+                    }
+                    else {
+                        collision->ignoreCollisionsWith.erase(tag);
+                    }
+                }
+            }
+
+            ImGui::Spacing();
+
+            if (!collision->ignoreCollisionsWith.empty()) {
+                if (ImGui::Button("Uncheck All", ImVec2(-1, 0))) {
+                    collision->ignoreCollisionsWith.clear();
+                }
+            }
+            
+            if (!collisionTags.empty() && collision->ignoreCollisionsWith.size() != collisionTags.size()) {
+                if (ImGui::Button("Check All", ImVec2(-1, 0))) {
+                    for (const std::string& tag : collisionTags) {
+						collision->ignoreCollisionsWith.insert(tag);
+                    }
+                }
+            }
+            else if (collisionTags.empty()) {
+                ImGui::TextWrapped("No collision tags available. Add collision tags in the Global Registry.");
+            }
+
+            ImGui::EndDisabled();
+
+            ImGui::TreePop();
         }
 
         if (ImGui::Button("Remove Collision", ImVec2(-1, 0))) {
@@ -1003,99 +1078,234 @@ void InspectorWindow::renderAudio(GameObject* selected) {
 
     if (ImGui::CollapsingHeader("Audio")) {
 
-        AudioChannel* ch = audio->getDefaultChannel();
-
-        std::string audioName = ch->audioFile.empty() ? "(Drop new audio here)" : ch->audioFile;
-        ImGui::Button(audioName.c_str());
-
-        /* -------------- Drag and Drop From Asset Browser to Change Audio ------------- */
-        if (ImGui::BeginDragDropTarget()) {
-            if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("ASSET")) {
-                const char* droppedPath = (const char*)payload->Data;
-                std::string path = droppedPath;
-
-                const std::string debugPrefix = "Debug/";
-                std::filesystem::path fsPath(path);
-                if (fsPath.string().find(debugPrefix) == 0) {
-                    fsPath = fsPath.string().substr(debugPrefix.size());
-                }
-
-                // extract file extension
-                std::string ext = fsPath.extension().string(); // includes the dot, e.g. ".wav"
-                std::transform(ext.begin(), ext.end(), ext.begin(), ::tolower);
-
-                // only accept if dropped file is a wav/ogg/mp3
-                if (ext == ".wav" || ext == ".ogg" || ext == ".mp3") {
-                    ch->audioFile = path;
-                    DebugLog::addMessage("Changed audio of " + selected->getObjectName() + " to " + ch->audioFile + "\n");
+        // Add New Channel Section
+        ImGui::Text("Add New Audio Channel");
+        static char newChannelName[64] = "";
+        ImGui::InputTextWithHint("##NewChannelName", "Channel name (e.g., footsteps)", newChannelName, sizeof(newChannelName));
+        ImGui::SameLine();
+        if (ImGui::Button("Add Channel")) {
+            if (strlen(newChannelName) > 0) {
+                std::string channelName = newChannelName;
+                if (!audio->hasChannel(channelName)) {
+                    audio->getOrCreateChannel(channelName);
+                    DebugLog::addMessage("Added audio channel: " + channelName + "\n");
+                    newChannelName[0] = '\0'; // Clear input
                 }
                 else {
-                    // audio file type error pop up
-                    Editor::popupState.audioFileTypePopup = true;
-                    Editor::popupState.filename = fsPath.filename().string();
-
-                    // invalid audio format -> don't change anything
-                    DebugLog::addMessage("Unsupported audio format : " + path + "\n");
+                    DebugLog::addMessage("Channel '" + channelName + "' already exists!\n");
                 }
-
-            }
-            ImGui::EndDragDropTarget();
-        }
-
-        if (!ch->audioFile.empty()) {
-            ImGui::Spacing();
-            ImGui::Separator();
-            ImGui::Spacing();
-
-            if (ImGui::Button("Remove Sound")) {
-                ch->audioFile = "";
-
-                // move this to audio in the future
-                if (ch->channel) {
-                    ch->channel->stop();
-                    ch->channel = nullptr;
-                }
-            }
-
-            ImGui::Separator();
-            ImGui::Spacing();
-
-            ImGui::Checkbox("Loop (WIP.)", &ch->loop);
-
-            ImGui::Checkbox("Play On Start", &ch->playOnStart);
-
-            if (ImGui::TreeNode("Control")) {
-                if (ImGui::DragFloat("Volume", &ch->volume, 0.01f)) {
-                    ch->volume = std::clamp(ch->volume, 0.f, 1.f);
-                }
-
-
-                if (ImGui::DragFloat("Pitch", &ch->pitch, 0.01f)) {
-                    ch->pitch = std::clamp(ch->pitch, 0.f, 2.f);
-                }
-
-                ImGui::TreePop();
-            }
-
-            if (ImGui::TreeNode("Fade In/Out")) {
-                ImGui::Checkbox("Fade In On Start", &ch->fadeInOnStart);
-                if (ch->fadeInOnStart) {
-                    ImGui::DragFloat("Fade In Duration", &ch->fadeInDuration, 0.01f);
-                    ch->fadeInDuration = std::clamp(ch->fadeInDuration, 0.f, 10.f);
-                }
-
-                ImGui::Checkbox("Fade Out On Stop", &ch->fadeOutOnStop);
-                if (ch->fadeOutOnStop) {
-                    ImGui::DragFloat("Fade Out Duration", &ch->fadeOutDuration, 0.01f);
-                    ch->fadeOutDuration = std::clamp(ch->fadeOutDuration, 0.f, 10.f);
-                }
-
-                ImGui::TreePop();
             }
         }
 
-        if (ImGui::Button("Remove Audio", ImVec2(-1, 0))) {
-            // add a delete component func here
+        ImGui::Spacing();
+        ImGui::Separator();
+        ImGui::Spacing();
+
+        // Display All Channels
+        if (audio->audioChannels.empty()) {
+            ImGui::Text("No audio channels. Add one above.");
+        }
+        else {
+            ImGui::Text("Audio Channels (%d)", (int)audio->audioChannels.size());
+
+            // Track channels to remove (can't remove during iteration)
+            static std::string channelToRemove;
+            channelToRemove.clear();
+
+            for (auto& [channelName, ch] : audio->audioChannels) {
+                ImGui::PushID(channelName.c_str());
+
+                // Channel header with status indicator
+                std::string headerLabel = channelName;
+                if (ch.state == AudioState::Playing) {
+                    headerLabel += " [PLAYING]";
+                }
+                else if (ch.state == AudioState::Paused) {
+                    headerLabel += " [PAUSED]";
+                }
+
+                bool channelOpen = ImGui::CollapsingHeader(headerLabel.c_str());
+
+                // Show audio file button even when collapsed (for quick reference)
+                if (!channelOpen) {
+                    std::string fileName = ch.audioFile.empty() ? "(No audio)" : std::filesystem::path(ch.audioFile).filename().string();
+                    ImGui::SameLine();
+                    ImGui::Text("- %s", fileName.c_str());
+                }
+
+                if (channelOpen) {
+                    ImGui::Indent();
+
+                    // Audio File Selector
+                    std::string audioName = ch.audioFile.empty() ? "(Drop audio here)" : ch.audioFile;
+                    ImGui::Button(audioName.c_str(), ImVec2(-1, 0));
+
+                    /* -------------- Drag and Drop From Asset Browser ------------- */
+                    if (ImGui::BeginDragDropTarget()) {
+                        if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("ASSET")) {
+                            const char* droppedPath = (const char*)payload->Data;
+                            std::string path = droppedPath;
+
+                            const std::string debugPrefix = "Debug/";
+                            std::filesystem::path fsPath(path);
+                            if (fsPath.string().find(debugPrefix) == 0) {
+                                fsPath = fsPath.string().substr(debugPrefix.size());
+                            }
+
+                            // Extract file extension
+                            std::string ext = fsPath.extension().string();
+                            std::transform(ext.begin(), ext.end(), ext.begin(), ::tolower);
+
+                            // Only accept audio files
+                            if (ext == ".wav" || ext == ".ogg" || ext == ".mp3") {
+                                ch.audioFile = path;
+                                DebugLog::addMessage("Changed audio of channel '" + channelName + "' to " + ch.audioFile + "\n");
+                            }
+                            else {
+                                Editor::popupState.audioFileTypePopup = true;
+                                Editor::popupState.filename = fsPath.filename().string();
+                                DebugLog::addMessage("Unsupported audio format: " + path + "\n");
+                            }
+                        }
+                        ImGui::EndDragDropTarget();
+                    }
+
+                    if (!ch.audioFile.empty()) {
+                        ImGui::Spacing();
+                        
+                        // Manual Playback Controls
+                        ImGui::Text("Playback Controls");
+
+                        if (ch.channel && ch.state == AudioState::Playing) {
+                            // Currently playing - show Stop button
+                            if (ImGui::Button("Stop", ImVec2(-1, 0))) {
+                                ch.isPendingStop = true;
+                                DebugLog::addMessage("Manually stopped channel: " + channelName + "\n");
+                            }
+                        }
+                        else if (!ch.audioFile.empty()) {
+                            // Not playing but has audio file - show Play button
+                            if (ImGui::Button("Play", ImVec2(-1, 0))) {
+                                ch.isPendingPlay = true;
+                                DebugLog::addMessage("Manually started channel: " + channelName + "\n");
+                            }
+                        }
+                        else {
+                            // No audio file assigned
+                            ImGui::BeginDisabled();
+                            ImGui::Button("Play (No Audio)", ImVec2(-1, 0));
+                            ImGui::EndDisabled();
+                        }
+
+                        ImGui::Spacing();
+                        ImGui::Separator();
+                        ImGui::Spacing();
+
+                        // Basic Controls - detect changes and stop sound if settings change
+                        bool loopChanged = ImGui::Checkbox("Loop", &ch.loop);
+                        bool playOnStartChanged = ImGui::Checkbox("Play On Start", &ch.playOnStart);
+                        bool mutedChanged = ImGui::Checkbox("Muted", &ch.muted);
+						ImGui::Checkbox("Spatial Audio", &ch.isSpatial);
+
+                        // Stop currently playing sound if critical settings changed
+                        if ((loopChanged || playOnStartChanged || mutedChanged) && ch.channel) {
+                            ch.isPendingStop = true;
+                            DebugLog::addMessage("Stopped audio in '" + channelName + "' due to setting change\n");
+                        }
+
+                        if (ch.isSpatial) {
+                            ImGui::Indent();  // Indent to show hierarchy
+
+                            if (ImGui::DragFloat("Min Distance", &ch.minDistance, 0.1f, 0.1f, 1000.0f)) {
+                                ch.minDistance = std::clamp(ch.minDistance, 0.1f, 1000.0f);
+                            }
+
+                            if (ImGui::DragFloat("Max Distance", &ch.maxDistance, 1.0f, 1.0f, 10000.0f)) {
+                                ch.maxDistance = std::clamp(ch.maxDistance, 1.0f, 10000.0f);
+                            }
+
+                            ImGui::Unindent();
+                        }
+
+                        ImGui::Spacing();
+
+                        // Volume & Pitch Controls
+                        if (ImGui::TreeNode("Volume & Pitch")) {
+                            if (ImGui::DragFloat("Volume", &ch.volume, 0.01f, 0.0f, 1.0f)) {
+                                ch.volume = std::clamp(ch.volume, 0.f, 1.f);
+                            }
+
+                            if (ImGui::DragFloat("Pitch", &ch.pitch, 0.01f, 0.1f, 2.0f)) {
+                                ch.pitch = std::clamp(ch.pitch, 0.1f, 2.f);
+                            }
+
+                            ImGui::TreePop();
+                        }
+
+                        // Fade Controls
+                        if (ImGui::TreeNode("Fade In/Out")) {
+                            ImGui::Checkbox("Fade In On Start", &ch.fadeInOnStart);
+                            if (ch.fadeInOnStart) {
+                                ImGui::Indent();
+                                if (ImGui::DragFloat("Fade In Duration", &ch.fadeInDuration, 0.01f, 0.0f, 10.0f)) {
+                                    ch.fadeInDuration = std::clamp(ch.fadeInDuration, 0.f, 10.f);
+                                }
+                                ImGui::Unindent();
+                            }
+
+                            ImGui::Checkbox("Fade Out On Stop", &ch.fadeOutOnStop);
+                            if (ch.fadeOutOnStop) {
+                                ImGui::Indent();
+                                if (ImGui::DragFloat("Fade Out Duration", &ch.fadeOutDuration, 0.01f, 0.0f, 10.0f)) {
+                                    ch.fadeOutDuration = std::clamp(ch.fadeOutDuration, 0.f, 10.f);
+                                }
+                                ImGui::Unindent();
+                            }
+
+                            ImGui::TreePop();
+                        }
+
+                        ImGui::Spacing();
+                        ImGui::Separator();
+                        ImGui::Spacing();
+
+                        // Remove Sound (clears file but keeps channel)
+                        if (ImGui::Button("Clear Audio File", ImVec2(-1, 0))) {
+                            ch.audioFile = "";
+                            if (ch.channel) {
+                                ch.channel->stop();
+                                ch.channel = nullptr;
+                            }
+                            DebugLog::addMessage("Cleared audio from channel: " + channelName + "\n");
+                        }
+                    }
+
+                    ImGui::Spacing();
+
+                    // Remove Channel Button
+                    if (ImGui::Button(("Remove Channel: " + channelName).c_str(), ImVec2(-1, 0))) {
+                        channelToRemove = channelName;
+                    }
+
+                    ImGui::Unindent();
+                }
+
+                ImGui::PopID();
+            }
+
+            // Remove channel if marked for removal
+            if (!channelToRemove.empty()) {
+                audio->removeChannel(channelToRemove);
+                DebugLog::addMessage("Removed audio channel: " + channelToRemove + "\n");
+            }
+        }
+
+        ImGui::Spacing();
+        ImGui::Separator();
+        ImGui::Spacing();
+
+        // Remove Entire Component
+        if (ImGui::Button("Remove Audio Component", ImVec2(-1, 0))) {
             selected->removeComponent<AudioComponent>();
             DebugLog::addMessage("Removed Audio Component");
         }
@@ -1107,18 +1317,90 @@ void InspectorWindow::renderTileMap(GameObject* selected)
     TileMap* tm = selected->getComponent<TileMap>();
 
     if (ImGui::CollapsingHeader("Tile Map")) {
-        ImGui::Checkbox("Enable", &m_gizmoState.showGrid);
+        ImGui::Checkbox("Enable Collision", &tm->enableCol);
 
-        ImGui::InputInt("Grid Columns", &tm->columns);
-        ImGui::InputInt("Grid rows", &tm->rows);
+        if (ImGui::TreeNode("Brush")) {
+            std::string displayText = TileMapSystem::filename.empty() ? "No Brush Selected (Drag texture here)" : std::filesystem::path(TileMapSystem::filename).filename().string();
 
-        ImGui::Spacing();
-        ImGui::Separator();
-        ImGui::Spacing();
+            ImGui::SliderInt("Brush Size", &TileMapSystem::brushSize, 1, 5);
+            ImGui::Text("(%dx%d tiles)", TileMapSystem::brushSize, TileMapSystem::brushSize);
 
-        ImGui::InputFloat("Tile Width", &tm->tileW, 1.f);
-        ImGui::InputFloat("Tile Height", &tm->tileH, 1.f);
+            ImGui::BeginChild("BrushDropZone", ImVec2(-1, 80), true, ImGuiWindowFlags_NoScrollWithMouse);
 
+            if (!TileMapSystem::filename.empty()) {
+                TextureData texData = ResourceManager::getInstance().getTexture(TileMapSystem::filename);
+
+                if (texData.id != 0) {
+                    ImGui::Image((ImTextureID)(intptr_t)texData.id, ImVec2(64, 64), ImVec2(0, 1), ImVec2(1, 0));
+                    ImGui::SameLine();
+                }
+            }
+
+            ImGui::TextWrapped("%s", displayText.c_str());
+
+			// drag and drop from asset browser
+            if (ImGui::BeginDragDropTarget()) {
+				if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("ASSET")) {
+					const char* droppedPath = (const char*)payload->Data;
+					std::string path = droppedPath;
+
+                    std::string ext;
+					std::filesystem::path fsPath(path);
+					ext = fsPath.extension().string();
+					
+					// only accept if dropped file is a png/jpg/jpeg
+					if (ext == ".png" || ext == ".jpg" || ext == ".jpeg") {
+						TileMapSystem::filename = path;
+
+						DebugLog::addMessage("Selected brush texture: " + TileMapSystem::filename + "\n");
+					}
+					else {
+						// texture file type error pop up
+						Editor::popupState.textureFileTypePopup = true;
+						Editor::popupState.filename = fsPath.filename().string();
+						// invalid texture format -> don't change anything
+						DebugLog::addMessage("Invalid texture format : " + path + "\n");
+					}
+				}
+
+                ImGui::EndDragDropTarget();
+            }
+
+            ImGui::EndChild();
+
+
+            // clear texture from brush
+			if (!TileMapSystem::filename.empty()) {
+				ImGui::Spacing();
+
+                ImGui::Checkbox("Eraser Mode", &TileMapSystem::eraseMode);
+                ImGui::Spacing();
+
+				if (ImGui::Button("Clear Brush", ImVec2(-1, 0))) {
+					TileMapSystem::filename.clear();
+                    TileMapSystem::eraseMode = false;
+					DebugLog::addMessage("Cleared brush texture\n");
+				}
+			}
+
+            ImGui::TreePop();
+        }
+
+        if (ImGui::TreeNode("Grid")) {
+            ImGui::Checkbox("Enable", &m_gizmoState.showGrid);
+
+            ImGui::InputInt("Grid Columns", &tm->columns);
+            ImGui::InputInt("Grid rows", &tm->rows);
+
+            ImGui::Spacing();
+            ImGui::Separator();
+            ImGui::Spacing();
+
+            ImGui::InputFloat("Tile Width", &tm->tileW, 1.f);
+            ImGui::InputFloat("Tile Height", &tm->tileH, 1.f);
+
+            ImGui::TreePop();
+        }
 
         if (ImGui::Button("Remove TileMap", ImVec2(-1, 0))) {
             // add a delete component func here
@@ -1279,10 +1561,117 @@ void InspectorWindow::renderLua(GameObject* selected) {
             DebugLog::addMessage("Removed Lua Script Component");
         }
     }
+}
 
-    ImGui::Spacing();
-    ImGui::Separator();
-    ImGui::Spacing();
+void InspectorWindow::renderVisualLogic(GameObject* selected) {
+    VisualLC* logic = selected->getComponent<VisualLC>();
+
+	if (ImGui::CollapsingHeader("Visual Logic")) {
+        std::string displayName = logic->filename.empty() ? "<Create New>" : logic->filename;
+
+
+		/* ---------- Dropdown to Select Logic Graph ---------- */
+        if (ImGui::BeginCombo("Logic Graph", displayName.c_str())) {
+            // create new logic asset
+			if (ImGui::Selectable("<Create New>", logic->filename.empty())) {
+                Editor::visualLogicState.showEditor = true;
+                Editor::visualLogicState.currentGraphName = "";
+				Editor::visualLogicState.targetObj = selected;
+
+                // create new empty graph
+                Editor::visualLogicState.nodes.clear();
+                Editor::visualLogicState.connections.clear();
+                logic->filename = "";
+
+                VisualLogicEditor::Instance().updateNextNodeId();
+
+				DebugLog::addMessage("Creating new Visual Logic Graph for " + selected->getObjectName());
+			}
+
+            // list existing logic assets
+            if (std::filesystem::exists("assets/Logic")) {
+                for (const auto& entry : std::filesystem::directory_iterator("assets/Logic")) {
+                    if (entry.is_regular_file() && entry.path().extension() != ".json") {
+                        continue;
+                    }
+
+                    std::string assetName = entry.path().filename().string();
+                    bool isSelected = (logic->filename == assetName);
+
+                    if (ImGui::Selectable(assetName.c_str(), isSelected)) {
+                        logic->filename = assetName;
+
+                        std::string filepath = "/Logic/" + assetName;
+                        std::string err;
+                        if (JsonIO::loadVisualLogic(filepath, logic->nodes, logic->connections, &err)) {
+                            DebugLog::addMessage("Loaded Visual Logic Graph: " + assetName + "\n");
+                            DebugLog::addMessage("Loaded " + std::to_string(logic->nodes.size()) + " nodes\n");
+                        }
+                        else {
+                            DebugLog::addMessage("ERROR loading Visual Logic: " + err + "\n");
+                        }
+                    }
+
+                    if (isSelected) {
+                        ImGui::SetItemDefaultFocus();
+                    }
+                }
+            }
+
+			ImGui::EndCombo();
+        }
+        /* ---------- END ---------- */
+
+
+        ImGui::Spacing();
+        ImGui::Separator();
+        ImGui::Spacing();
+
+
+        /* ---------- Edit Logic Graph ---------- */
+        if (!logic->filename.empty() && ImGui::Button("Edit Logic Graph", ImVec2(-1, 0))) {
+            Editor::visualLogicState.showEditor = true;
+			Editor::visualLogicState.currentGraphName = logic->filename;
+            Editor::visualLogicState.targetObj = selected;
+            
+            // loading logic
+            if (!logic->filename.empty()) {
+
+                std::string filepath = "/Logic/" + logic->filename;
+                std::string err;
+                if (JsonIO::loadVisualLogic(filepath, Editor::visualLogicState.nodes, Editor::visualLogicState.connections, &err)) {
+                    VisualLogicEditor::Instance().updateNextNodeId();
+
+                    DebugLog::addMessage("Loaded Visual Logic: " + logic->filename + "\n");
+                }
+                else {
+                    DebugLog::addMessage("ERROR loading Visual Logic: " + err + "\n");
+                    // if file doesn't exist, try loading from component
+                    Editor::visualLogicState.nodes = logic->nodes;
+                    Editor::visualLogicState.connections = logic->connections;
+                }
+            }
+            else {
+                // no filename, load from component (new logic)
+                Editor::visualLogicState.nodes = logic->nodes;
+                Editor::visualLogicState.connections = logic->connections;
+            }
+
+            DebugLog::addMessage("Opening Visual Logic Editor for " + selected->getObjectName() + "\n");
+        }
+        /* ---------- END ---------- */
+
+
+        ImGui::Spacing();
+        ImGui::Separator();
+        ImGui::Spacing();
+
+
+		if (ImGui::Button("Remove Virtual Logic", ImVec2(-1, 0))) {
+			selected->removeComponent<VisualLC>();
+			DebugLog::addMessage("Removed Virtual Logic Controller");
+		}
+	}
 }
 
 void InspectorWindow::wrongFileTypePopup(const std::string& filename) {

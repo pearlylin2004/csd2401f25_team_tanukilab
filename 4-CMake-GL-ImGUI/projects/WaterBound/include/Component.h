@@ -23,6 +23,7 @@ Technology is prohibited.
 #pragma once
 #include <string>
 #include <memory> //for unique_ptr
+#include <unordered_set>
 #include "renderer.h"
 #include "mathlib.h"
 #include "font.h"
@@ -201,6 +202,17 @@ public:
 
     //bool inWaterTriggered; // true only when W is pressed
 
+    //Shooting parameters
+    float fireRate = 0.15f;        // Time between shots (lower is  faster)
+    float shootTimer = 0.0f;       // Internal time for shooting
+    bool canShoot = true;
+    bool autoFire = true;         
+    // Arc parameters
+    float arcHeightFactor = 0.4f;
+    bool useArcTrajectory = true;
+    float minArcHeight = 2.0f;
+
+
     bool inWater = false;
     bool buoancy = false;
 
@@ -227,7 +239,34 @@ enum class CollisionResponseMode {
     StopWhenCollide, // if collide by another obj, just stop
     MoveWhenCollide // if collide by another obj, apply "fake" force and kena push
 };
-//
+
+//button action 
+enum class ButtonAction {
+    NONE,
+    START_GAME,
+    OPEN_CONTROL,
+    EXIT_GAME,
+    RESUME_GAME,
+	YES_EXIT,
+	NO_EXIT,
+    BACK,
+    MENU
+};
+
+//Button component
+struct Button : public Component {
+    ButtonAction actionName = ButtonAction::NONE;   //action this button triggers
+    bool isHovered = false;   //hover state
+    bool isPressed = false;   //pressed state
+
+    Button() = default;
+    Button(ButtonAction action) : actionName(action) {} 
+
+    std::unique_ptr<Component> clone() const override {
+        return std::make_unique<Button>(*this);
+    }
+};
+
 
 // CollisionInfo component to store collision-related information
 struct CollisionInfo : public Component {
@@ -243,6 +282,14 @@ public:
     Vector2D colliderSize{ 0,0 }; // size of the bounding box, if collider is circle then x will be diamater
     bool autoFitScale = true; // auto-fit the collider with the size of the mesh (i.e. obj bigger -> collider bigger)
     CollisionResponseMode collisionRes = CollisionResponseMode::StopWhenCollide;
+
+    std::string collisionTag = "default";  // Tag for object
+    std::unordered_set<std::string> ignoreCollisionsWith;  // Tags to ignore collision with
+
+    // Helper method to check if should collide with another tag
+    bool shouldCollideWith(const std::string& otherTag) const {
+        return ignoreCollisionsWith.find(otherTag) == ignoreCollisionsWith.end();
+    }
 
     // run-time calculation, do not de/serialize
     bool collided = false; // check whether obj alr collided
@@ -359,6 +406,11 @@ struct AudioChannel {
     bool isPendingPlay = false;
     bool isPendingStop = false;
     bool playOnStart = false;
+
+    //new stuff for spatial audio
+	bool isSpatial = false;
+	float minDistance = 1.0f;
+	float maxDistance = 100.0f;
 };
 
 //enum class soundID : int;
@@ -507,6 +559,9 @@ struct TileMap : public Component
     int rows = 50;
     int columns = 50;
 
+    bool enableCol = false;
+	bool colChanged = true; // flag to rebuild collision box
+
     //size_t tilesetRows = 1, tilesetCols = 1;
 
     struct TileKey {
@@ -525,6 +580,13 @@ struct TileMap : public Component
     };
     std::unordered_map<TileKey, std::string, TileKeyHash> tiles;
 
+    struct TileCollisionBox {
+        int x = 0, y = 0, width = 0, height = 0; // tile coordinates and size
+        Vector2D minAABB = Vector2D(0.f, 0.f);
+        Vector2D maxAABB = Vector2D(0.f, 0.f);
+    };
+    std::vector<TileCollisionBox> collisionBoxs; // merged collision box
+
     std::string getTile(int x, int y) const {
         TileKey key{ x, y };
         auto it = tiles.find(key);
@@ -534,10 +596,108 @@ struct TileMap : public Component
     void setTile(int x, int y, std::string tileID) {
         if (x >= -columns && x < columns && y >= -rows && y < rows) {
             tiles[{x, y}] = tileID;
+            colChanged = true;
         }
     }
 
     void clearTile(int x, int y) {
         tiles.erase({ x, y });
+        colChanged = true;
     }
+};
+
+// virtual logic container (editor)
+struct LogicConnection {
+	int fromNodeId = 0;
+	int toNodeId = 0;
+
+    std::string outputPin; // OUT, TRUE, FALSE
+    std::string inputPin; // IN
+};
+
+enum class NodeType {
+    EVENT,
+    ACTION,
+    CONDITION,
+    DEFAULT // nothing happen
+};
+
+enum class NodeImplementation {
+    // EVENT
+    ON_START,
+    ON_UPDATE,
+    ON_COLLISION_ENTER,
+    WHILE_COLLIDING,
+    ON_COLLISION_EXIT,
+    ON_HOVER_ENTER,
+    WHILE_HOVERING,
+	ON_HOVER_EXIT,
+
+    // CONDITION
+    CHECK_KEY_HELD,
+    COMPARE_VALUE,
+    COMPARE_VAR,
+    CHECK_STATE,
+
+    // ACTION
+    PRINT_MESSAGE,
+    MOVE_OBJECT,
+    ROTATE_OBJECT,
+    SET_ROTATION,
+    SET_FLOAT,
+    PLAY_SOUND,
+    SET_STATE,
+
+    // DEFAULT
+    DEFAULT // nothing happen :)
+};
+
+struct LogicNode {
+    int id = 0;
+    NodeType type = NodeType::DEFAULT;
+    //std::string name;
+    NodeImplementation imp = NodeImplementation::DEFAULT;
+    Vector2D position = Vector2D(0,0);
+    bool hasInput = true;
+    bool hasOutput = true;
+
+    bool hasTrueOutput = false;
+    bool hasFalseOutput = false;
+
+    // for node configuration
+    std::map<std::string, std::string> parameters;
+};
+
+class GameObject; // annoying forward declaration
+
+struct VisualLC : public Component {
+public:
+    std::unique_ptr<Component> clone() const override {
+        return std::make_unique<VisualLC>(*this);
+    }
+
+    std::string filename; // name of the logic asset
+
+    // editor data
+	std::vector<LogicNode> nodes;
+	std::vector<LogicConnection> connections;
+
+	// runtime data
+    bool isExecuting = false;
+    int currentExecutingNodeId = -1;
+	std::map<std::string, int> intVar;
+    std::map<std::string, float> floatVar;
+    std::map<std::string, std::string> stringVar;
+    std::map<std::string, bool> boolVar;
+    std::unordered_set<int> currentExePath;
+
+	bool wasHoveredLastFrame = false; // for hover event detection
+
+    // for caching
+    bool hasHoverNodes = false;
+	bool hoverNodesChecked = false;
+
+    // collision 
+    std::unordered_set<GameObject*> curCollision;
+    std::unordered_set<GameObject*> preCollision;
 };

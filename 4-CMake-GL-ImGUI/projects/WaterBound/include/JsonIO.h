@@ -24,6 +24,7 @@ Technology is prohibited.
 #include <filesystem>
 #include <iostream>
 #include <array>
+#include <vector>
 #include <glm/vec3.hpp> 
 #include <glm/vec4.hpp>
 
@@ -80,6 +81,20 @@ namespace JsonIO {
 	// ---- Collision Response Mode helper
 	const char* CollisionResponseModeToStr(CollisionResponseMode mode);
 	CollisionResponseMode StrToCollisionResponseMode(const std::string& s);
+
+	// ---- Button helper
+	const char* ButtonActionToStr(ButtonAction action);
+	ButtonAction StrToButtonAction(const std::string& s);
+
+	// ---- Player State helpers ----
+	PlayerState parsePlayerState(const std::string& s);
+
+	// ---- Node Implementation helpers ----
+	NodeImplementation stringToNodeImpl(const std::string& str);
+	std::string nodeImplToString(NodeImplementation impl);
+
+	// ---- GLFW key helpers ----
+	int stringToGLFWKey(const std::string& keyStr);
 
 	// ---- JSON file IO helpers ----
 	bool syncSceneToRuntime(const std::string& name);
@@ -147,10 +162,18 @@ namespace JsonIO {
 		const glm::vec4& v,
 		rapidjson::Document::AllocatorType& alloc);
 
+	// ---- Global Registry collision tag helpers ----
+	bool LoadCollisionTags(const std::string& filepath, std::vector<std::string>& outTags, std::string* err = nullptr);
+
+	bool SaveCollisionTags(const std::string& filepath, const std::vector<std::string>& tags, std::string* err = nullptr);
 
 	// ---- for undo/redo in editor ----
 	std::string serializeGameObj(GameObject* obj);
 	GameObject* deserializeGameObj(GameObjectManager& manager, const std::string& jsonStr);
+
+	// ---- visual logic in editor ----
+	bool saveVisualLogic(const std::string& filepath, const std::vector<LogicNode>& nodes, const std::vector<LogicConnection>& connections, std::string* err = nullptr);
+	bool loadVisualLogic(const std::string& filepath, std::vector<LogicNode>& nodes, std::vector<LogicConnection>& connections, std::string* err = nullptr);
 	// ---- END ----
 
 	/* ------ moved to components.h ------ */

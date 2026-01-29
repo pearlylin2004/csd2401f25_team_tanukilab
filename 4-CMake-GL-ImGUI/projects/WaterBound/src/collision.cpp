@@ -21,6 +21,11 @@ Technology is prohibited.
 #include <iostream>
 
 namespace Collision {
+	//hash function for grid cell
+    int HashCell(int x, int y){
+        return (x * 73856093) ^ (y * 19349663);
+    }
+
     //all can change to fit our game later
     f64 g_dt = 0.016;
     const float EPSILON = 1e-5f;
@@ -456,5 +461,80 @@ namespace Collision {
         float d = Vec_Dot(&v, &n);
         Vector2D scaledN = Vec_Scale(&n, d);
         return Vec_Sub(&v, &scaledN);
+    }
+
+	// build tile collision box
+    void buildTileCollisionBox(TileMap* tm, Transform* transform) {
+		if (!tm || !transform || !tm->colChanged) return;
+
+		tm->collisionBoxs.clear();
+
+		// track visited tiles
+		std::unordered_set<int64_t> visitedTiles;
+        auto makeKey = [](int x, int y) -> int64_t {
+			return (static_cast<int64_t>(x) << 32) | static_cast<uint32_t>(y);
+			};
+
+        // sort by pos to merge easily (y then x)
+		std::vector<std::pair<TileMap::TileKey, std::string>> sorted(tm->tiles.begin(), tm->tiles.end());
+        std::sort(sorted.begin(), sorted.end(), [](const auto& a, const auto& b) {
+            if (a.first.y == b.first.y) return a.first.x < b.first.x;
+            return a.first.y < b.first.y;
+            });
+
+        // merge tiles into big big rectangle
+        for (const auto& [tileKey, tileID] : sorted) {
+            int64_t key = makeKey(tileKey.x, tileKey.y);
+            if (visitedTiles.count(key)) continue;
+
+            int startX = tileKey.x;
+            int startY = tileKey.y;
+
+            int width = 1;
+            int height = 1;
+
+            // extend width
+            while (!tm->getTile(startX + width, startY).empty() && !visitedTiles.count(makeKey(startX + width, startY))) {
+                ++width;
+            }
+
+            // extend height
+            bool extendable = true;
+            while (extendable) {
+				// check if the next row is fully filled
+				for (int x = startX; x < startX + width; ++x) {
+					if (tm->getTile(x, startY + height).empty() || visitedTiles.count(makeKey(x, startY + height))) {
+						extendable = false;
+						break;
+					}
+				}
+
+                if (extendable) ++height;
+            }
+
+			// mark tiles as visited
+			for (int y = startY; y < startY + height; ++y)
+				for (int x = startX; x < startX + width; ++x)
+					visitedTiles.insert(makeKey(x, y));
+
+			// create collision box
+			TileMap::TileCollisionBox box;
+			box.x = startX;
+			box.y = startY;
+			box.width = width;
+			box.height = height;
+
+            float worldMinX = transform->x + startX * tm->tileW;
+            float worldMinY = transform->y + startY * tm->tileH;
+            float worldMaxX = worldMinX + width * tm->tileW;
+            float worldMaxY = worldMinY + height * tm->tileH;
+
+            box.minAABB = Vector2D(worldMinX, worldMinY);
+            box.maxAABB = Vector2D(worldMaxX, worldMaxY);
+
+			tm->collisionBoxs.push_back(box);
+        }
+
+        tm->colChanged = false;
     }
 }

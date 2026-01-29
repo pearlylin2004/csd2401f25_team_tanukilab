@@ -32,6 +32,7 @@ Technology is prohibited.
 #include "GUISystem.h"
 #include "messageBus.h"
 #include "JsonIO.h"
+#include "globalRegistry.h"
 
 
 class CoreEngine {
@@ -103,4 +104,5 @@ private:
     std::unique_ptr<AudioSystem> m_audioSystem;
     std::unique_ptr<TileMapSystem> m_tileMapSystem;
     std::unique_ptr<ParticleSystem> m_particleSystem;
+    std::unique_ptr<VisualLogicSystem> m_visualLCSystem;
 };

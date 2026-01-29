@@ -29,6 +29,9 @@ namespace Collision {
     using f64 = double;
     extern f64 g_dt;
 
+    //Hash
+    int HashCell(int, int);
+
     //AABB
     class AABB
     {
@@ -103,5 +106,8 @@ namespace Collision {
     //cirlce and line
 	bool CollisionIntersection_CircleLine_Static(const Circle& c, const Vector2D& lineStart, const Vector2D& lineEnd);
 	CollisionInfo CollisionIntersection_CircleLine_Dynamic_Info(const Circle& c, const Vector2D& velC, const Vector2D& lineStart, const Vector2D& lineEnd);
+
+    // tilemap (merged tiles)
+    void buildTileCollisionBox(TileMap* tm, Transform* transform);
 }
 #endif

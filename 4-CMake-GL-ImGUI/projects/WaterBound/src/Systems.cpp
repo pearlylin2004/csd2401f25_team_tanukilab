@@ -47,26 +47,6 @@ void InputSystem::update(GameObjectManager& manager, const float& deltaTime, Mes
 	std::vector<GameObject*> gameObjects;
 	manager.getAllGameObjects(gameObjects);
 
-	//for (GameObject* iterator : gameObjects) {
-	//	//check for objects that have input 
-	//	if (iterator->hasComponent<Input>()) {
-	//		Input* input = iterator->getComponent<Input>();
-	//		if (iterator->hasComponent<Physics>()) {//player got that velocity in him
-	//			Physics* velocity = iterator->getComponent<Physics>();
-
-
-	//			if (InputHandler::isKeyHeld(GLFW_KEY_W)) {
-	//				velocity->velY = input->moveSpeed;
-	//			}
-	//			if (InputHandler::isKeyHeld(GLFW_KEY_S)) {
-	//				velocity->velY = -input->moveSpeed;
-	//			}
-	//			if (InputHandler::isKeyHeld(GLFW_KEY_A)) {
-	//				velocity->velX = -input->moveSpeed;
-	//			}
-	//			if (InputHandler::isKeyHeld(GLFW_KEY_D)) {
-	//				velocity->velX = input->moveSpeed;
-	//			}
 #ifdef _DEBUG
 	if (InputHandler::isComboKeyTriggered(GLFW_KEY_0)) {
 		UISystem::toggleUI();
@@ -872,6 +852,7 @@ void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime, M
 	if (m_stepReq)
 		m_stepReq = false;*/
 
+
 	std::vector<GameObject*> gameObjects;
 	manager.getAllGameObjects(gameObjects);
 
@@ -913,7 +894,6 @@ void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime, M
 		Physics* physics = object->getComponent<Physics>();
 		if (object->getObjectName() == "bullet") continue;
 		if (!physics->physicsFlag) continue;
-		//if (physics->isStatic) continue;
 		Transform* transform = object->getComponent<Transform>();
 
 		// Handle player input
@@ -923,44 +903,85 @@ void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime, M
 				PhysicsForces::updatePosition(transform, physics, deltaTime);
 			}
 
-			if (InputHandler::isKeyTriggered(GLFW_KEY_SPACE)) {
-				GameObject* bullet = PhysicsForces::findAvailableBullet(manager);
-				//debugBullets(manager);
-				if (bullet != nullptr) {
-					PhysicsForces::shoot(bullet, transform);
-					messageBus.publish(Message("KeyPressed", nullptr, KeyEvent{ "SPACE", true }));
+			// Continuous shooting system
+			if (physics->canShoot) {
+				// Update shoot timer
+				physics->shootTimer += deltaTime;
 
-					if (bullet->hasComponent<AudioComponent>()) {
-						AudioComponent* audio = bullet->getComponent<AudioComponent>();
-						AudioChannel* ch = audio->getDefaultChannel();
-						ch->isPendingPlay = true;
+				// Check if mouse button is being held down
+				if (InputHandler::isMouseLeftHeld()) {
+					
+					if (physics->shootTimer >= physics->fireRate) {
+						GameObject* bullet = PhysicsForces::findAvailableBullet(manager);
+
+						if (bullet != nullptr) {
+							// Get mouse position in world coordinates
+							Vector2D mouseWorldPos = InputHandler::getWorldMousePosition();
+
+							// Shoot bullet toward mouse position
+							PhysicsForces::shoot(bullet, transform, mouseWorldPos);
+							messageBus.publish(Message("KeyPressed", nullptr, KeyEvent{ "LEFT_CLICK", true }));
+
+							if (bullet->hasComponent<AudioComponent>()) {
+								AudioComponent* audio = bullet->getComponent<AudioComponent>();
+								AudioChannel* ch = audio->getDefaultChannel();
+								ch->isPendingPlay = true;
+							}
+
+							DebugLog::addMessage("Bullet fired!", DebugMode::PlaySimul);
+							physics->shootTimer = 0.0f;
+						}
+						else {
+							physics->shootTimer = physics->fireRate * 0.5f;
+							DebugLog::addMessage("No bullets available!", DebugMode::PlaySimul);
+						}
 					}
-
-					DebugLog::addMessage("Bullet fired from pool!", DebugMode::PlaySimul);
 				}
+				//else if (InputHandler::isMouseLeftClicked()) { /// to shoot only one bullet at a time
+				//	// Single shot mode: Only fire once on click (if autoFire is disabled)
+				//	if (!physics->autoFire && physics->shootTimer >= physics->fireRate) {
+				//		GameObject* bullet = PhysicsForces::findAvailableBullet(manager);
+
+				//		if (bullet != nullptr) {
+				//			Vector2D mouseWorldPos = InputHandler::getWorldMousePosition();
+				//			PhysicsForces::shoot(bullet, transform, mouseWorldPos);
+				//			messageBus.publish(Message("KeyPressed", nullptr, KeyEvent{ "LEFT_CLICK", true }));
+
+				//			if (bullet->hasComponent<AudioComponent>()) {
+				//				AudioComponent* audio = bullet->getComponent<AudioComponent>();
+				//				AudioChannel* ch = audio->getDefaultChannel();
+				//				ch->isPendingPlay = true;
+				//			}
+
+				//			physics->shootTimer = 0.0f;
+				//		}
+				//	}
+				//}
 				else {
-					DebugLog::addMessage("No bullets available! Wait for reload.", DebugMode::PlaySimul);
+					physics->shootTimer = physics->fireRate;
 				}
 			}
+
+			// Movement controls (A/D keys)
 			float targetVelX = 0.0f;
 			if (InputHandler::isKeyHeld(GLFW_KEY_A)) {
 				physics->canMove = true;
 				targetVelX = -physics->moveSpeed;
-				transform->flipX = true; // flip to face left
+				transform->flipX = true;
 				messageBus.publish(Message("KeyPressed", nullptr, KeyEvent{ "A", true }));
 			}
 			else if (InputHandler::isKeyHeld(GLFW_KEY_D) && physics->canMove) {
 				targetVelX = physics->moveSpeed;
-				transform->flipX = false; // flip to face right
+				transform->flipX = false;
 				messageBus.publish(Message("KeyPressed", nullptr, KeyEvent{ "D", true }));
 			}
 			physics->dynamics.velocity.x = targetVelX;
 
-			// Jump
-			if (InputHandler::isKeyTriggered(GLFW_KEY_B)) {
+			// Jump (SPACE key)
+			if (InputHandler::isKeyTriggered(GLFW_KEY_SPACE)) {
 				if (previousOnGround[object]) {
 					PhysicsForces::jump(object);
-					messageBus.publish(Message("KeyPressed", nullptr, KeyEvent{ "B", true }));
+					messageBus.publish(Message("KeyPressed", nullptr, KeyEvent{ "SPACE", true }));
 				}
 			}
 
@@ -970,9 +991,7 @@ void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime, M
 				physics->dynamics.position.y = physics->floorY;
 				physics->dynamics.velocity.y = 0.0f;
 				physics->velY = 0.0f;
-				//physics->velY = 0.0f;
 				physics->onGround = true;
-				//physics->velX = 0.0f;
 			}
 			transform->x += physics->velX * deltaTime;
 		}
@@ -984,13 +1003,13 @@ void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime, M
 		}
 	}
 
-	for (GameObject* obj : gameObjects) { 
+	// Bullet physics
+	for (GameObject* obj : gameObjects) {
 		std::string name = obj->getObjectName();
-
 		// Skip if not a numbered bullet
-		if (name.find("bullet") != 0 || name.length() <= 6) continue;
+		//if (name.find("bullet") != 0 || name.length() <= 6) continue;
+		if (name.find("bullet") != 0) continue;
 
-		// Check if it's a numbered bullet (bullet1, bullet2, etc.)
 		bool isNumberedBullet = true;
 		for (size_t i = 6; i < name.length(); i++) {
 			if (!std::isdigit(name[i])) {
@@ -1008,26 +1027,33 @@ void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime, M
 
 		if (p->alive) {
 			// Update bullet physics
-			DynamicsSystem::Integrate(p->dynamics, deltaTime, 0.0f, false);
+			Vector3D gravityForce = { 0.0f, p->gravity * p->dynamics.mass, 0.0f };
+
+			DynamicsSystem::UpdateForces(p->dynamics, deltaTime);
+			DynamicsSystem::Integrate(p->dynamics, deltaTime, p->gravity, false);
+
 			t->x = p->dynamics.position.x;
 			t->y = p->dynamics.position.y;
-
 			// Update life timer
 			p->lifeTimer += deltaTime;
-
 			// Deactivate if lifetime exceeded
-			if (p->lifeTimer >= p->maxLifetime) {
+			if (p->lifeTimer >= p->maxLifetime || p->dynamics.position.y < -20.0f) {
 				PhysicsForces::deactivateBullet(obj);
 			}
 		}
-	} 
+	}
 
 	auto end = std::chrono::high_resolution_clock::now();
 	double ms = std::chrono::duration<double, std::milli>(end - start).count();
 	g_SystemTimers.push_back({ "Physics", ms });
 }
 
-
+//helper function for collision detection
+static uint64_t MakePairKey(GameObject* a, GameObject* b)
+{
+	if (a > b) std::swap(a, b);   //enforce order
+	return (uint64_t(a) << 32) | uint64_t(b); //combine into single key
+}
 
 // Collision system - detects and resolves collisions between game objects
 void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime) {
@@ -1038,36 +1064,54 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 	LayerManager& layerManager = manager.getLayerManager();
 	std::vector<Layer*> layers = layerManager.getAllLayers();
 
+	//initialize spatial grid
+	const float CELL_SIZE = 4.0f; //can change cell size for optimization
+	//const int GRID_WIDTH = 20;
+	//const int GRID_HEIGHT = 20;
+
+	//spatial hash grid no fixed size
+	std::unordered_map<int, Collision::Cell> grid;
+
+	//persistant grid for this layer
+	//static std::vector<std::vector<Collision::Cell>> grid(GRID_WIDTH, std::vector<Collision::Cell>(GRID_HEIGHT));
+
 	//process each layer separately
 	//right now only layer 1 should have any sort of collision
 	for (Layer* layer : layers) {
 		//skip missing layer
 		if (!layer) {
-			/*auto end = std::chrono::high_resolution_clock::now();
-			double ms = std::chrono::duration<double, std::milli>(end - start).count();
-			g_SystemTimers.push_back({ "Collisions", ms })*/
 			std::cerr << "CollisionSystem::update() - Layer " << layer->getLayerID() << " not found!\n";
-			return;
+			continue;
 		}
 
-		const std::vector<GameObject*>& layerObjects = layer->getObjects();
+		std::unordered_set<uint64_t> checkedPairs; //to avoid duplicate checks
 
-		//create grid
-		const float CELL_SIZE = 2.0f;
-		const int GRID_WIDTH = 20;
-		const int GRID_HEIGHT = 20;
-		std::vector<std::vector<Collision::Cell>> grid(GRID_WIDTH, std::vector<Collision::Cell>(GRID_HEIGHT));
+		grid.clear(); //clear grid for new layer
+		
+		const std::vector<GameObject*>& layerObjects = layer->getObjects(); //get layer object
 
-
+		std::vector<std::pair<TileMap*, Transform*>> activeTilemaps; //store tilemaps for later use
 		for (GameObject* obj : layerObjects) {
-			if (!obj->getComponent<CollisionInfo>() || !obj->hasComponent<Transform>() || !obj->hasComponent<Render>()) continue;
-			CollisionInfo* c = obj->getComponent<CollisionInfo>();
-			if (!c->collisionFlag) continue; // skip if obj not supposed to collide
+			TileMap* tm = obj->getComponent<TileMap>();
+			Transform* tmTransform = obj->getComponent<Transform>();
 
+			if (!tm || !tmTransform) continue;
+
+			if (tm->enableCol && tm->colChanged)
+				Collision::buildTileCollisionBox(tm, tmTransform);
+
+			if (!tm->collisionBoxs.empty()) // Only add if has collision boxes
+				activeTilemaps.push_back({ tm, tmTransform });
+		}
+
+		//insert object into grid 
+		for (GameObject* obj : layerObjects) {
 			Transform* objT = obj->getComponent<Transform>();
-			//Render* renderS = obj->getComponent<Render>();
-			//Collision::AABB box = Collision::getObjectAABB(objT);
-			int minCellX, maxCellX, minCellY, maxCellY;
+			CollisionInfo* c = obj->getComponent<CollisionInfo>();
+			if (!c || !objT || !c->collisionFlag) continue; //skip if object not suppose to collide, no transform and no collision
+
+			int minCellX = 0, maxCellX = 0, minCellY = 0, maxCellY = 0;
+			//square
 			if (c->colliderType == shape::square){
 				Collision::AABB box = Collision::getObjectAABBbyCollider(objT, c->colliderSize); // use custom collider instead of scale
 				minCellX = static_cast<int>(box.getMin().x / CELL_SIZE);
@@ -1075,6 +1119,7 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 				minCellY = static_cast<int>(box.getMin().y / CELL_SIZE);
 				maxCellY = static_cast<int>(box.getMax().y / CELL_SIZE);
 			}
+			//circle
 			else if (c->colliderType == shape::circle) {
 				//need one for circle
 				Collision::Circle circle = Collision::getObjectCirclebyCollider(objT, c->colliderSize);
@@ -1091,164 +1136,230 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 			}
 
 			//clamp to grid boundaries so it dont go out the valid range of grid
-			minCellX = std::max(0, std::min(minCellX, GRID_WIDTH - 1));
-			maxCellX = std::max(0, std::min(maxCellX, GRID_WIDTH - 1));
-			minCellY = std::max(0, std::min(minCellY, GRID_HEIGHT - 1));
-			maxCellY = std::max(0, std::min(maxCellY, GRID_HEIGHT - 1));
+			//minCellX = std::max(0, std::min(minCellX, GRID_WIDTH - 1));
+			//maxCellX = std::max(0, std::min(maxCellX, GRID_WIDTH - 1));
+			//minCellY = std::max(0, std::min(minCellY, GRID_HEIGHT - 1));
+			//maxCellY = std::max(0, std::min(maxCellY, GRID_HEIGHT - 1));
 
 			//putting the object into the grid cells it occupies
 			for (int x = minCellX; x <= maxCellX; ++x) {
 				for (int y = minCellY; y <= maxCellY; ++y) {
-					grid[x][y].objects.push_back(obj);
+					int key = Collision::HashCell(x, y);
+					grid[key].objects.push_back(obj);
 				}
 			}
 		}
 
-		//temporary container to track checked objects for this frame
-		//to advoid duplicate checks
-		std::unordered_map<GameObject*, std::vector<GameObject*>> checked;
-
 		//checking collision 
 		//record current time for performance tracking
 		auto start = std::chrono::high_resolution_clock::now();
-		for (int i = 0; i < GRID_WIDTH; i++) {
-			for (int j = 0; j < GRID_HEIGHT; j++) {
-				auto& cellObject = grid[i][j].objects; //get objects in the cell
-				//loop through objects in the cell to check for collision
-				for (size_t n = 0; n < cellObject.size(); n++) {
-					//object 1
-					GameObject* obj1 = cellObject[n];
-					if (!obj1->hasComponent<Physics>()) continue;
-					
-					Transform* t1 = obj1->getComponent<Transform>();
-					//to get obj1 shape
-					//Render* render1 = obj1->getComponent<Render>();
-					CollisionInfo* c1 = obj1->getComponent<CollisionInfo>();
-					Physics* p1 = obj1->getComponent<Physics>();
-					Vector2D vel1{ p1->dynamics.velocity.x, p1->dynamics.velocity.y };
-					//object 2 looping
-					for (size_t m = n + 1; m < cellObject.size(); m++) {
-						//object 2
-						GameObject* obj2 = cellObject[m];
-						if (!obj2->hasComponent<Physics>()) continue;
 
-						//skip if already checked
-						auto it = std::find(checked[obj1].begin(), checked[obj1].end(), obj2);
-						if (it != checked[obj1].end()) continue;
-						//mark as checked both ways
-						checked[obj1].push_back(obj2);
-						checked[obj2].push_back(obj1);
-						Transform* t2 = obj2->getComponent<Transform>();
-						//to get obj1 shape
-						CollisionInfo* c2 = obj2->getComponent<CollisionInfo>();
-						//Render* render2 = obj2->getComponent<Render>();
-						Physics* p2 = obj2->getComponent<Physics>();
-						Vector2D vel2{ p2->dynamics.velocity.x, p2->dynamics.velocity.y };
+		for (auto& [key, cell] : grid) {
+			auto& cellObject = cell.objects; //get objects in the cell
+			if (cellObject.size() < 2) continue; //skip if less than 2 objects because cant collide
 
-						//check collision based on shape
-						//check obj1 shape 
-						if (!c1 || !t1) return;
-						//check obj2 shape 
-						if (!c2 || !t2) return;
+			//loop through objects in the cell to check for collision
+			for (size_t n = 0; n < cellObject.size(); n++) {
+				//object 1
+				GameObject* obj1 = cellObject[n];
+				Transform* t1 = obj1->getComponent<Transform>();
+				CollisionInfo* c1 = obj1->getComponent<CollisionInfo>();
+				Physics* p1 = obj1->getComponent<Physics>();
+				if (!p1 || !c1 || !t1) continue;
 
-						//collision info
-						CollisionInfo info;
-						//if both square
-						if (c1->colliderType == shape::square && c2->colliderType == shape::square) {
-							//Collision::AABB aabb1 = Collision::getObjectAABB(t1);
-							Collision::AABB aabb1 = Collision::getObjectAABBbyCollider(t1, c1->colliderSize);
-							//Collision::AABB aabb2 = Collision::getObjectAABB(t2);
-							Collision::AABB aabb2 = Collision::getObjectAABBbyCollider(t2, c2->colliderSize);
-							info = Collision::CollisionIntersection_RectRect_Dynamic_Info(aabb1, vel1, aabb2, vel2);
-						}
-						//if both circle
-						else if (c1->colliderType == shape::circle && c2->colliderType == shape::circle) {
-							Collision::Circle circle1 = Collision::getObjectCirclebyCollider(t1, c1->colliderSize);
-							Collision::Circle circle2 = Collision::getObjectCirclebyCollider(t2, c2->colliderSize);
-							info = Collision::CollisionIntersection_CircleCircle_Dynamic_Info(circle1, vel1, circle2, vel2);
-						}
-						// if one is square one is circle
-						else if (c1->colliderType == shape::square && c2->colliderType == shape::circle) {
-							Collision::AABB aabb1 = Collision::getObjectAABBbyCollider(t1, c1->colliderSize);
-							Collision::Circle circle2 = Collision::getObjectCirclebyCollider(t2, c2->colliderSize);
-							info = Collision::CollisionIntersection_CircleAABB_Dynamic_Info(circle2, vel2, aabb1, vel1);
-						}
-									
+				Vector2D vel1{ p1->dynamics.velocity.x, p1->dynamics.velocity.y };
+				//object 2 looping
+				for (size_t m = n + 1; m < cellObject.size(); m++) {
+					GameObject* obj2 = cellObject[m]; //get obj2
 
-						//checking if collided
-						if (info.collided) {
+					//object 2
+					Transform* t2 = obj2->getComponent<Transform>();
+					CollisionInfo* c2 = obj2->getComponent<CollisionInfo>();
+					Physics* p2 = obj2->getComponent<Physics>();
+					if (!p2 || !t2 || !c2) continue;
 
-							// c1 is the moving obj (player), c2 is the obj it collide with
-							// CASE 1: collided obj is pushable
-							if (c2->collisionRes == CollisionResponseMode::MoveWhenCollide) {
-								if (info.normal.x != 0) {
-									// move both obj away from each other (to simulate push)
-									t1->x += info.normal.x * info.penetration * 0.5f;
-									t2->x -= info.normal.x * info.penetration * 0.5f;
+					uint64_t pairKey = MakePairKey(obj1, obj2); //make unique key for the pair
 
-									p1->dynamics.position.x = t1->x;
-									p2->dynamics.position.x = t2->x;
-								}
+					//skip if this pair was already checked in another cell
+					if (checkedPairs.count(pairKey)) continue;
+					checkedPairs.insert(pairKey);
 
-								if (info.normal.y != 0) {
-									t1->y += info.normal.y * info.penetration * 0.5f;
-									t2->y -= info.normal.y * info.penetration * 0.5f;
+					// Skip if these collision tags shouldn't collide
+					if (!c1->shouldCollideWith(c2->collisionTag) ||
+						!c2->shouldCollideWith(c1->collisionTag)) {
+						continue;
+					}
 
-									// Update physics positions to match transforms
-									p1->dynamics.position.y = t1->y;
-									p2->dynamics.position.y = t2->y;
+					Vector2D vel2{ p2->dynamics.velocity.x, p2->dynamics.velocity.y };
 
-									p1->dynamics.velocity.y = 0.f;
-									p2->dynamics.velocity.y = 0.f;
+					//collision info
+					CollisionInfo info;
 
-									if (info.normal.y > 0) p1->onGround = true;
-									else p2->onGround = true;
-								}
+					//if both square
+					if (c1->colliderType == shape::square && c2->colliderType == shape::square) {
+						Collision::AABB aabb1 = Collision::getObjectAABBbyCollider(t1, c1->colliderSize);
+						Collision::AABB aabb2 = Collision::getObjectAABBbyCollider(t2, c2->colliderSize);
+						info = Collision::CollisionIntersection_RectRect_Dynamic_Info(aabb1, vel1, aabb2, vel2);
+					}
+					//if both circle
+					else if (c1->colliderType == shape::circle && c2->colliderType == shape::circle) {
+						Collision::Circle circle1 = Collision::getObjectCirclebyCollider(t1, c1->colliderSize);
+						Collision::Circle circle2 = Collision::getObjectCirclebyCollider(t2, c2->colliderSize);
+						info = Collision::CollisionIntersection_CircleCircle_Dynamic_Info(circle1, vel1, circle2, vel2);
+					}
+					// if one is square one is circle
+					else if (c1->colliderType == shape::square && c2->colliderType == shape::circle) {
+						Collision::AABB aabb1 = Collision::getObjectAABBbyCollider(t1, c1->colliderSize);
+						Collision::Circle circle2 = Collision::getObjectCirclebyCollider(t2, c2->colliderSize);
+						info = Collision::CollisionIntersection_CircleAABB_Dynamic_Info(circle2, vel2, aabb1, vel1);
+					}
+					else {
+						continue; //current dont have other shapes of collision 
+					}
+
+					//checking if collided
+					if (info.collided) {
+						// c1 is the moving obj (player), c2 is the obj it collide with
+						// CASE 1: collided obj is pushable
+						if (c2->collisionRes == CollisionResponseMode::MoveWhenCollide) {
+							if (info.normal.x != 0) {
+								// move both obj away from each other (to simulate push)
+								t1->x += info.normal.x * info.penetration * 0.5f;
+								t2->x -= info.normal.x * info.penetration * 0.5f;
+
+								p1->dynamics.position.x = t1->x;
+								p2->dynamics.position.x = t2->x;
 							}
-							// CASE 2: collided obj is static
-							else if (c2->collisionRes == CollisionResponseMode::StopWhenCollide) {
-								// Resolve penetration
-								if (info.normal.x != 0) {
-									// push moving obj out of collided obj
-									t1->x += info.normal.x * info.penetration;
-									p1->dynamics.position.x = t1->x;
 
-									p1->dynamics.velocity.x = 0.f;
-									p1->velX = 0.f;
+							if (info.normal.y != 0) {
+								t1->y += info.normal.y * info.penetration * 0.5f;
+								t2->y -= info.normal.y * info.penetration * 0.5f;
 
-								}
+								// Update physics positions to match transforms
+								p1->dynamics.position.y = t1->y;
+								p2->dynamics.position.y = t2->y;
 
-								if (info.normal.y != 0) {
-									t1->y += info.normal.y * info.penetration;
-									p1->dynamics.position.y = t1->y;
+								p1->dynamics.velocity.y = 0.f;
+								p2->dynamics.velocity.y = 0.f;
 
-									p1->dynamics.velocity.y = 0.0f;
-
-									if (info.normal.y > 0) p1->onGround = true;
-								}
-
-								DebugLog::addMessage("Collision detected between Object.\n", DebugMode::PlaySimul);
+								if (info.normal.y > 0) p1->onGround = true;
+								else p2->onGround = true;
 							}
-							// CASE 3: anything else
-							else {
-								if (info.normal.y != 0) {
-									p1->dynamics.velocity.y = 0.0f;
-									p2->dynamics.velocity.y = 0.0f;
+						}
+						// CASE 2: collided obj is static
+						else if (c2->collisionRes == CollisionResponseMode::StopWhenCollide) {
+							// Resolve penetration
+							if (info.normal.x != 0) {
+								// push moving obj out of collided obj
+								t1->x += info.normal.x * info.penetration;
+								p1->dynamics.position.x = t1->x;
 
-									if (info.normal.y > 0) p1->onGround = true;
-									else p2->onGround = true;
-								}
+								p1->dynamics.velocity.x = 0.f;
+								p1->velX = 0.f;
+
 							}
+
+							if (info.normal.y != 0) {
+								t1->y += info.normal.y * info.penetration;
+								p1->dynamics.position.y = t1->y;
+
+								p1->dynamics.velocity.y = 0.0f;
+
+								if (info.normal.y > 0) p1->onGround = true;
+							}
+
+							DebugLog::addMessage("Collision detected between Object.\n", DebugMode::PlaySimul);
+						}
+						// CASE 3: anything else
+						else {
+							if (info.normal.y != 0) {
+								p1->dynamics.velocity.y = 0.0f;
+								p2->dynamics.velocity.y = 0.0f;
+
+								if (info.normal.y > 0) p1->onGround = true;
+								else p2->onGround = true;
+							}
+
+							/* ---------- trigger visual logic collision events ---------- */
+							if (obj1->hasComponent<VisualLC>()) {
+								VisualLC* logic1 = obj1->getComponent<VisualLC>();
+								logic1->curCollision.insert(obj2);
+							}
+
+							if (obj2->hasComponent<VisualLC>()) {
+								VisualLC* logic2 = obj2->getComponent<VisualLC>();
+								logic2->curCollision.insert(obj1);
+							}
+							/* ---------- END ---------- */
 						}
 					}
 				}
 			}
 		}
+
+		// obj vs tilemap collision
+		if (!activeTilemaps.empty()) HandleTilemapCollisions(grid, activeTilemaps);
+
 		auto end = std::chrono::high_resolution_clock::now();
 		ms += std::chrono::duration<double, std::milli>(end - start).count(); //get elapse time in ms
 	}
 	g_SystemTimers.push_back({ "Collisions", ms }); //saving timing for UI output
 }
+
+void CollisionSystem::HandleTilemapCollisions(const std::unordered_map<int, Collision::Cell>& grid, const std::vector<std::pair<TileMap*, Transform*>>& tilemaps) {
+	for (const auto& [key, cell] : grid) {
+		for (GameObject* obj : cell.objects) {
+			Transform* t = obj->getComponent<Transform>();
+			CollisionInfo* c = obj->getComponent<CollisionInfo>();
+			Physics* p = obj->getComponent<Physics>();
+
+			if (!t || !c || !p) continue;
+
+			Collision::AABB objAABB = Collision::getObjectAABBbyCollider(t, c->colliderSize);
+			Vector2D vel{ p->dynamics.velocity.x, p->dynamics.velocity.y };
+
+			// check against all active tilemaps
+			for (const auto& [tm, tmtransform] : tilemaps) {
+				bool collisionResolved = false;
+
+				for (const auto& box : tm->collisionBoxs) {
+					Collision::AABB boxAABB(box.minAABB, box.maxAABB);
+
+					if (!Collision::CollisionIntersection_RectRect_Static(objAABB, boxAABB))
+						continue;
+
+					CollisionInfo info = Collision::CollisionIntersection_RectRect_Dynamic_Info(
+						objAABB, vel, boxAABB, Vector2D(0, 0));
+
+					if (info.collided) {
+						if (info.normal.x != 0) {
+							t->x += info.normal.x * info.penetration;
+							p->dynamics.position.x = t->x;
+							p->dynamics.velocity.x = 0.f;
+							p->velX = 0.f;
+						}
+
+						if (info.normal.y != 0) {
+							t->y += info.normal.y * info.penetration;
+							p->dynamics.position.y = t->y;
+							p->dynamics.velocity.y = 0.0f;
+
+							if (info.normal.y > 0) {
+								p->onGround = true;
+							}
+						}
+
+						collisionResolved = true;
+						break;
+					}
+				}
+
+				if (collisionResolved) break;
+			}
+		}
+	}
+}
+
 
 #ifdef _DEBUG
 //UI system - handles ImGui rendering and interaction
@@ -1259,7 +1370,7 @@ void UISystem::init(GLFWwindow* window, RenderSystem* renderer, GameObjectManage
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
 	ImGuiIO& io = ImGui::GetIO(); //(void)io;
-	io.FontGlobalScale = 2.0f;
+	io.FontGlobalScale = 1.5f;
 	io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard
 			| ImGuiConfigFlags_DockingEnable
 			| ImGuiConfigFlags_ViewportsEnable;
@@ -1379,6 +1490,7 @@ void UISystem::dockingSetUp() {
 
 		// center: Scene viewport
 		ImGui::DockBuilderDockWindow("Scene", dockMain);
+		ImGui::DockBuilderDockWindow("Visual Logic Editor", dockMain);
 
 		// right top: Inspector
 		ImGui::DockBuilderDockWindow("Inspector", dockRight);
@@ -1407,22 +1519,43 @@ void UISystem::renderMultipleViewPorts() {
 }
 #endif
 
+//void LogicSystem::update(GameObjectManager& manager, float const& dt) {
+//
+//	std::vector<GameObject*> objs;
+//	manager.getAllGameObjects(objs);
+//
+//	static LogicContainer container; // stateless helper
+//
+//	for (auto* go : objs) {
+//		if (!go) continue;
+//		if (!go->hasComponent<StateMachine>()) continue;
+//		if (!go->hasComponent<Transform>() || !go->hasComponent<Physics>()) continue;
+//
+//		container.update(*go, dt /*, manager */);
+//	}
+//}
+
 void LogicSystem::update(GameObjectManager& manager, float const& dt) {
+	auto start = std::chrono::high_resolution_clock::now();
 
 	std::vector<GameObject*> objs;
 	manager.getAllGameObjects(objs);
 
-	static LogicContainer container; // stateless helper
+	static LogicContainer container; // Single container instance
 
 	for (auto* go : objs) {
 		if (!go) continue;
 		if (!go->hasComponent<StateMachine>()) continue;
-		if (!go->hasComponent<Transform>() || !go->hasComponent<Physics>()) continue;
+		if (!go->hasComponent<Transform>() || !go->hasComponent<Physics>() || !go->hasComponent<Input>()) continue; // skip if obj cant move (no input-based state change)
 
-		container.update(*go, dt /*, manager */);
+		// Update class-based FSM + trigger-action rules
+		container.update(*go, dt);
 	}
-}
 
+	auto end = std::chrono::high_resolution_clock::now();
+	double ms = std::chrono::duration<double, std::milli>(end - start).count();
+	g_SystemTimers.push_back({ "Logic", ms });
+}
 void AudioSystem::init(GameObjectManager& manager) {
 	auto start = std::chrono::high_resolution_clock::now();
 
@@ -1470,6 +1603,20 @@ void AudioSystem::init(GameObjectManager& manager) {
 void AudioSystem::update(GameObjectManager& manager, float deltaTime) {
 	auto start = std::chrono::high_resolution_clock::now();
 
+	// Update FMOD listener position
+	GameObject* player = manager.getGameObject("player");
+	if (player && player->hasComponent<Transform>()) {
+		Transform* playerTransform = player->getComponent<Transform>();
+		AudioHandler::getInstance().updateListener(
+			playerTransform->x,
+			playerTransform->y,
+			playerTransform->z
+		);
+	}
+
+	// Update all sound source positions
+	updateSpatialAudio(manager);
+
 	std::vector<GameObject*> gameObjects;
 	manager.getAllGameObjects(gameObjects);
 
@@ -1503,7 +1650,7 @@ void AudioSystem::update(GameObjectManager& manager, float deltaTime) {
 				AudioChannel& ch = pair.second;
 
 				// Background music restart logic
-				if (ch.playOnStart) {
+				if (ch.playOnStart && ch.loop) {
 					if (!ch.channel || !audioHandler.isSoundPlaying(&ch)) {
 						// Restart background music if not playing
 						ch.channel = audioHandler.playSound(&ch);
@@ -1527,6 +1674,7 @@ void AudioSystem::update(GameObjectManager& manager, float deltaTime) {
 					if (!isPlaying) {
 						ch.channel = nullptr;
 						ch.fadeInfo.isFading = false;
+						ch.state = AudioState::Stopped;
 					}
 				}
 			}
@@ -1670,19 +1818,24 @@ void AudioSystem::initializeSceneAudio(GameObjectManager& manager) {
 		// Pre-load all sounds for all channels
 		for (auto& [channelName, channel] : audio->audioChannels) {
 			if (!channel.audioFile.empty()) {
-				// Pre-load the sound via ResourceManager
-				FMOD::Sound* sound = ResourceManager::getInstance().getSound(channel.audioFile);
+				// Pass isSpatial flag during preload
+				FMOD::Sound* sound = ResourceManager::getInstance().getSound(
+					channel.audioFile,
+					channel.loop,
+					channel.isSpatial
+				);
 
 				if (!sound) {
 					std::cerr << "[AudioSystem] Failed to preload: "
 						<< channel.audioFile << " for channel: "
 						<< channelName << std::endl;
-				}
-				else {
+				}else {
 					std::cout << "[AudioSystem] Preloaded: "
 						<< channel.audioFile << " for channel: "
-						<< channelName << std::endl;
+						<< channelName
+						<< (channel.isSpatial ? " (3D)" : " (2D)") << std::endl;
 				}
+
 			}
 		}
 	}
@@ -1690,4 +1843,38 @@ void AudioSystem::initializeSceneAudio(GameObjectManager& manager) {
 	auto end = std::chrono::high_resolution_clock::now();
 	double ms = std::chrono::duration<double, std::milli>(end - start).count();
 	g_SystemTimers.push_back({ "Audio Scene Init", ms });
+}
+
+void AudioSystem::updateSpatialAudio(GameObjectManager& manager) {
+	std::vector<GameObject*> gameObjects;
+	manager.getAllGameObjects(gameObjects);
+
+	for (GameObject* obj : gameObjects) {
+		// Skip objects without audio or transform cus they are not spatial
+		if (!obj->hasComponent<AudioComponent>() || !obj->hasComponent<Transform>()) continue;
+
+		Transform* transform = obj->getComponent<Transform>();
+		AudioComponent* audio = obj->getComponent<AudioComponent>();
+
+		// Update position for each 3D audio channel
+		for (auto& [channelName, audio] : audio->audioChannels) {
+			// Only update 3D sounds that are currently playing
+			if (!audio.isSpatial || audio.state != AudioState::Playing || !audio.channel) continue;
+
+			// Set the 3D position for this sound
+			FMOD_VECTOR soundPos = {
+				transform->x,
+				transform->y,
+				transform->z
+			};
+			FMOD_VECTOR soundVel = { 0.0f, 0.0f, 0.0f };  // No doppler effect
+			
+			FMOD_RESULT result = audio.channel->set3DAttributes(&soundPos, &soundVel);
+
+			if (result != FMOD_OK) {
+				std::cerr << "[AudioSystem] Failed to set 3D attributes for: "
+					<< obj->getObjectName() << " channel: " << channelName << std::endl;
+			}
+		}
+	}
 }

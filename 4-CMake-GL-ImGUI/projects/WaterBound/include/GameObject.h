@@ -56,7 +56,10 @@ public:
         auto iterator = m_components.find(std::type_index(typeid(T)));//look through map
         if (iterator != m_components.end()) {//if component was found
             //get that thang
-            return static_cast<T*>(iterator->second.get());
+            //return static_cast<T*>(iterator->second.get());
+            
+			//checks the object's actual type at runtime
+			return dynamic_cast<T*>(iterator->second.get()); //use dynamic cast for safety
         }
 
         return nullptr;

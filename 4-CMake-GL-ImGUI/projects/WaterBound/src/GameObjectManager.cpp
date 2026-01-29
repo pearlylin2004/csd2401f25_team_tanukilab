@@ -511,6 +511,21 @@ void GameObjectManager::loadSceneFromJson(const std::string& filename) {
 				c->colliderSize.x = jc["colliderSize"][0].GetFloat();
 				c->colliderSize.y = jc["colliderSize"][1].GetFloat();
 			}
+
+			// Load Collision Tag
+			if (jc.HasMember("collisionTag") && jc["collisionTag"].IsString()) {
+				c->collisionTag = jc["collisionTag"].GetString();
+			}
+
+			// Load ignore the collision
+			if (jc.HasMember("ignoreCollisionsWith") && jc["ignoreCollisionsWith"].IsArray()) {
+				c->ignoreCollisionsWith.clear();
+				for (const auto& tag : jc["ignoreCollisionsWith"].GetArray()) {
+					if (tag.IsString()) {
+						c->ignoreCollisionsWith.insert(tag.GetString());
+					}
+				}
+			}
 		}
 
 		// ---- State Machine ----
@@ -718,6 +733,12 @@ void GameObjectManager::loadSceneFromJson(const std::string& filename) {
 			if (tmj.HasMember("rows") && tmj["rows"].IsInt())
 				tm->rows = tmj["rows"].GetInt();
 
+			if (tmj.HasMember("enableCol")) {
+				tm->enableCol = tmj["enableCol"].IsBool()
+					? tmj["enableCol"].GetBool()
+					: (tmj["enableCol"].GetInt() != 0);
+			}
+
 			tm->tiles.clear();
 
 			if (tmj.HasMember("tiles") && tmj["tiles"].IsArray()) {
@@ -732,7 +753,78 @@ void GameObjectManager::loadSceneFromJson(const std::string& filename) {
 				}
 			}
 		}
-		
+
+		// ---- Lua Script ----
+		if (comps.HasMember("LuaScript") && comps["LuaScript"].IsObject()) {
+			const auto& jl = comps["LuaScript"];
+
+			auto* ls = go->getComponent<LuaScript>();
+			if (!ls) ls = go->addComponent<LuaScript>();
+
+			ls->scripts.clear();
+
+			if (jl.HasMember("scripts") && jl["scripts"].IsArray()) {
+				for (const auto& scriptEntry : jl["scripts"].GetArray()) {
+					if (!scriptEntry.IsObject()) continue;
+
+					LuaScript::ScriptEntry entry;
+
+					if (scriptEntry.HasMember("filename") && scriptEntry["filename"].IsString()) {
+						entry.filename = scriptEntry["filename"].GetString();
+					}
+
+					if (scriptEntry.HasMember("scriptName") && scriptEntry["scriptName"].IsString()) {
+						entry.scriptName = scriptEntry["scriptName"].GetString();
+					}
+
+					entry.changed = true;
+					ls->scripts.push_back(entry);
+				}
+			}
+
+			ls->scriptsChanged = true;
+		}
+
+		// ---- Visual Logic Component ----
+		if (comps.HasMember("VisualLC") && comps["VisualLC"].IsObject()) {
+			const auto& jvl = comps["VisualLC"];
+
+			auto* vl = go->getComponent<VisualLC>();
+			if (!vl) vl = go->addComponent<VisualLC>();
+
+			// load filename
+			if (jvl.HasMember("filename") && jvl["filename"].IsString()) {
+				vl->filename = jvl["filename"].GetString();
+
+				// load visual logic from file
+				if (!vl->filename.empty()) {
+					std::string filepath = "/Logic/" + vl->filename;
+					std::string e;
+					if (!JsonIO::loadVisualLogic(filepath, vl->nodes, vl->connections, &e)) {
+						DebugLog::addMessage("Failed to load Visual Logic file: " + e);
+					}
+				}
+			}
+		}
+
+		// ---- Button ----
+		if (comps.HasMember("Button") && comps["Button"].IsObject()) {
+			const auto& jb = comps["Button"];
+
+			//add Button component if it doesn't exist
+			auto* b = go->getComponent<Button>();
+			if (!b)
+				b = go->addComponent<Button>();
+
+			//default to NONE
+			b->actionName = ButtonAction::NONE;
+
+			//parse action string
+			if (jb.HasMember("action") && jb["action"].IsString()) {
+				std::string actionStr = jb["action"].GetString();
+				b->actionName = JsonIO::StrToButtonAction(actionStr);
+			}
+		}
 	}
 
 	//create bullet pool
@@ -748,6 +840,7 @@ void GameObjectManager::loadSceneFromJson(const std::string& filename) {
 
 	//std::cout << "Scene loaded (JSON): " << filename << "\n";
 }
+
 /*!
 \brief Saves all current game objects and component data to a JSON file.
 
@@ -1022,6 +1115,21 @@ void GameObjectManager::saveSceneToJson(const std::string& filename, bool isNew)
 					jc.AddMember("collisionRes", rapidjson::Value(collisionResStr.c_str(), a), a);
 				}
 
+				if (c->collisionTag != "default") {
+					if (!prefabC || !prefabC->HasMember("collisionTag") ||
+						c->collisionTag != (*prefabC)["collisionTag"].GetString()) {
+						jc.AddMember("collisionTag", rapidjson::Value(c->collisionTag.c_str(), a), a);
+					}
+				}
+
+				if (!c->ignoreCollisionsWith.empty()) {
+					rapidjson::Value ignoreArray(rapidjson::kArrayType);
+					for (const std::string& tag : c->ignoreCollisionsWith) {
+						ignoreArray.PushBack(rapidjson::Value(tag.c_str(), a), a);
+					}
+					jc.AddMember("ignoreCollisionsWith", ignoreArray, a);
+				}
+
 				if (!jc.ObjectEmpty()) {
 					comps.AddMember("CollisionInfo", jc, a);
 				}
@@ -1192,6 +1300,11 @@ void GameObjectManager::saveSceneToJson(const std::string& filename, bool isNew)
 					pushIfDiffBool("fadeOutOnStop", channel.fadeOutOnStop);
 					pushIfDiffFloat("fadeOutDuration", channel.fadeOutDuration);
 
+					// Check 3D audio overrides
+					pushIfDiffBool("isSpatial", channel.isSpatial);
+					pushIfDiffFloat("minDistance", channel.minDistance);
+					pushIfDiffFloat("maxDistance", channel.maxDistance);
+
 					// If this channel has overrides OR doesn't exist in prefab, save it
 					if (!channelOverride.ObjectEmpty() || !prefabChannel) {
 						channelsOverride.AddMember(
@@ -1225,6 +1338,13 @@ void GameObjectManager::saveSceneToJson(const std::string& filename, bool isNew)
 						prefabTM->FindMember(key)->value.GetInt() != val);
 					};
 
+				auto diffBool = [&](const char* key, bool val) {
+					if (!prefabTM || !prefabTM->HasMember(key)) return true;
+					const auto& v = prefabTM->FindMember(key)->value;
+					return (v.IsBool() && v.GetBool() != val) ||
+						(v.IsInt() && (v.GetInt() != 0) != val);
+					};
+
 				if (diffFloat("tileW", tm->tileW))
 					jt.AddMember("tileW", tm->tileW, a);
 
@@ -1236,6 +1356,9 @@ void GameObjectManager::saveSceneToJson(const std::string& filename, bool isNew)
 
 				if (diffInt("rows", tm->rows))
 					jt.AddMember("rows", tm->rows, a);
+
+				if (diffBool("enableCol", tm->enableCol))
+					jt.AddMember("enableCol", rapidjson::Value(tm->enableCol ? 1 : 0), a);
 
 				// Tiles array
 				{
@@ -1254,6 +1377,47 @@ void GameObjectManager::saveSceneToJson(const std::string& filename, bool isNew)
 
 				if (!jt.ObjectEmpty())
 					comps.AddMember("TileMap", jt, a);
+			}
+
+			// ---- LuaScript ----
+			if (auto ls = obj->getComponent<LuaScript>()) {
+				rapidjson::Value jl(rapidjson::kObjectType);
+				PM.getPrefabJsonComp(prefabDoc, "LuaScript");
+
+				rapidjson::Value scriptsArray(rapidjson::kArrayType);
+
+				for (const auto& scriptEntry : ls->scripts) {
+					if (scriptEntry.filename.empty() && scriptEntry.scriptName.empty()) continue;
+
+					rapidjson::Value entry(rapidjson::kObjectType);
+					entry.AddMember("filename", rapidjson::Value(scriptEntry.filename.c_str(), a), a);
+					entry.AddMember("scriptName", rapidjson::Value(scriptEntry.scriptName.c_str(), a), a);
+
+					scriptsArray.PushBack(entry, a);
+				}
+
+				if (!scriptsArray.Empty()) {
+					jl.AddMember("scripts", scriptsArray, a);
+					comps.AddMember("LuaScript", jl, a);
+				}
+			}
+
+			// ---- Visual Logic ----
+			if (auto vl = obj->getComponent<VisualLC>()) {
+				rapidjson::Value jvl(rapidjson::kObjectType);
+				const rapidjson::Value* prefabVL = PM.getPrefabJsonComp(prefabDoc, "VisualLC");
+
+				// save only if filename dff from prefab or prefab no have
+				if (!vl->filename.empty()) {
+					if (!prefabVL || !prefabVL->HasMember("filename") ||
+						vl->filename != (*prefabVL)["filename"].GetString()) {
+						jvl.AddMember("filename", rapidjson::Value(vl->filename.c_str(), a), a);
+					}
+				}
+
+				if (!jvl.ObjectEmpty()) {
+					comps.AddMember("VisualLC", jvl, a);
+				}
 			}
 
 			if (!comps.ObjectEmpty()) jObj.AddMember("components", comps, a);
@@ -1392,7 +1556,12 @@ void GameObjectManager::createBulletPool(const std::string& templateBulletName, 
 
 	// ensure only 11 bullets (1+10 clone)
 	if (templateBullet->getObjectName() != "bullet") renameGameObject(templateBullet, "bullet");
-
+	
+	if (CollisionInfo* c = templateBullet->getComponent<CollisionInfo>()) {
+		c->collisionTag = "bullet";
+		c->ignoreCollisionsWith.insert("player");
+		c->ignoreCollisionsWith.insert("bullet");
+	}
 	std::cout << "Creating bullet pool with " << poolSize << " bullets...\n";
 
 	for (int i = 1; i <= poolSize; ++i) {
@@ -1420,6 +1589,13 @@ void GameObjectManager::createBulletPool(const std::string& templateBulletName, 
 		//		p->dynamics.velocity.y = 0.0f;
 		//		p->dynamics.velocity.z = 0.0f;*/
 		//	}
+		// if (clonedBullet) {
+		/*		if (CollisionInfo* c = clonedBullet->getComponent<CollisionInfo>()) {
+					c->collisionTag = "bullet";
+					c->ignoreCollisionsWith.insert("player");
+					c->ignoreCollisionsWith.insert("bullet");
+			}
+		}*/
 		//	std::cout << "  Created: " << bulletName << "\n";
 		//}
 	}

@@ -192,13 +192,10 @@ void AssetBrowser::render() {
                 ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.15f, 0.15f, 0.15f, 1.0f));
                 ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(4, 4));
 
-                if (ImGui::ImageButton(("##img" + asset.name).c_str(),
+                ImGui::ImageButton(("##img" + asset.name).c_str(),
                     (ImTextureID)(intptr_t)texData.id,
                     ImVec2(m_AssetBrowserState.iconSize, m_AssetBrowserState.iconSize),
-                    ImVec2(0, 1), ImVec2(1, 0))) {
-                    TileMapSystem::filename = asset.path;
-                    std::cout << asset.name << " image clicked!" << std::endl;
-                }
+                    ImVec2(0, 1), ImVec2(1, 0));
 
                 ImGui::PopStyleVar();
                 ImGui::PopStyleColor();
@@ -206,18 +203,14 @@ void AssetBrowser::render() {
             else {
                 // fallback to button if texture fails
                 ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(100, 40));
-                if (ImGui::Button(asset.name.c_str(), ImVec2(m_AssetBrowserState.iconSize, m_AssetBrowserState.iconSize))) {
-                    TileMapSystem::filename = asset.path;
-                }
+                ImGui::Button(asset.name.c_str(), ImVec2(m_AssetBrowserState.iconSize, m_AssetBrowserState.iconSize));
                 ImGui::PopStyleVar();
             }
         }
         else {
             // if not image then use button
             ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(100, 40));
-            if (ImGui::Button(asset.name.c_str(), ImVec2(m_AssetBrowserState.iconSize, m_AssetBrowserState.iconSize))) {
-                std::cout << asset.name << " button clicked!" << std::endl;
-            }
+            ImGui::Button(asset.name.c_str(), ImVec2(m_AssetBrowserState.iconSize, m_AssetBrowserState.iconSize));
             ImGui::PopStyleVar();
         }
 
@@ -242,12 +235,12 @@ void AssetBrowser::render() {
             }
 
             // open popup window and ask whether to delete this current asset (delete not for prefab YET)
-            if (assetFolderName != "Prefab") {
+            //if (assetFolderName != "Prefab") {
                 if (ImGui::MenuItem("Delete Asset")) {
                     m_AssetBrowserState.fullPathToDelete = fullPath;
                     m_AssetBrowserState.showDeletePopup = true;
                 }
-            }
+            //}
 
             // open popup window and rename this current asset
             if (ImGui::MenuItem("Rename Asset")) {
@@ -390,6 +383,28 @@ void AssetBrowser::loadAssetsFromDirectory() {
 void AssetBrowser::assetDeletePopup() {
     // open popup if flagged
     if (m_AssetBrowserState.showDeletePopup) {
+        // Check if it's a prefab being deleted
+        std::filesystem::path pathToDelete(m_AssetBrowserState.fullPathToDelete);
+        std::string folder = pathToDelete.parent_path().filename().string();
+
+        if (folder == "Prefab") {
+            std::string prefabID = PrefabManager::Instance().findPrefabIDByFilename(pathToDelete.filename().string());
+
+            if (!prefabID.empty()) {
+                std::vector<PrefabUsageInfo> usageInfo;
+
+                if (PrefabManager::Instance().isPrefabUsedInAnyScene(prefabID, usageInfo)) {
+                    // store usage info for the popup
+                    m_AssetBrowserState.prefabUsageInfo = usageInfo;
+
+
+                    ImGui::OpenPopup("Cannot Delete Prefab");
+                    m_AssetBrowserState.showDeletePopup = false;
+                    return;
+                }
+            }
+        }
+
         ImGui::OpenPopup("Confirm Delete Asset");
         m_AssetBrowserState.showDeletePopup = false;
     }
@@ -406,37 +421,52 @@ void AssetBrowser::assetDeletePopup() {
 
             if (!m_AssetBrowserState.fullPathToDelete.empty() &&
                 std::filesystem::exists(m_AssetBrowserState.fullPathToDelete)) {
-               /* std::cout << "\n\nfirst fullpath: " << m_AssetBrowserState.fullPathToDelete << "\n\n";*/
-                std::filesystem::remove(m_AssetBrowserState.fullPathToDelete);
-                EditorManager::assetChanged(); // to reload assets
 
-                // delete from the project folder as well
-                std::filesystem::path fullPath(m_AssetBrowserState.fullPathToDelete);
-                std::string filename = fullPath.filename().string();
+                bool deletionSuccess = true;
 
-                // split the "assets/" part to get relative path
+                // extract relative path first
                 std::string relativePath;
                 size_t pos = m_AssetBrowserState.fullPathToDelete.find("assets/");
                 if (pos != std::string::npos) {
                     relativePath = m_AssetBrowserState.fullPathToDelete.substr(pos + strlen("assets/"));
                 }
 
-                // combine relative path to delete
-                std::filesystem::path projectPath = std::string(SOURCE_DIR_R) + "/" + relativePath;
-                
-                if (std::filesystem::exists(projectPath)) {
-                    std::filesystem::remove(projectPath);
-                    /*std::cout << "\n\nDeleted asset (Project): " << projectPath.string() << "\n\n";*/
-                }
-
-                /* -------- Prefab Delete (WIP) -------- */
+                // delete from prefab registry FIRST (before files) if its prefab
                 std::string prefabID = PrefabManager::Instance().findPrefabIDByFilename(relativePath);
                 if (!prefabID.empty()) {
-                    PrefabManager::Instance().deletePrefab(prefabID);
+                    if (!PrefabManager::Instance().deletePrefab(prefabID)) {
+                        DebugLog::addMessage("Failed to delete prefab from registry: " + prefabID);
+                        deletionSuccess = false;
+                    }
                 }
-                /* -------- END --------- */
 
-                DebugLog::addMessage("Deleted asset: " + m_AssetBrowserState.fullPathToDelete + "\n");
+                // delete files only if registry deletion succeeded
+                if (deletionSuccess) {
+                    try {
+                        // delete from assets folder
+                        if (!std::filesystem::remove(m_AssetBrowserState.fullPathToDelete)) {
+                            DebugLog::addMessage("Failed to delete asset file");
+                            deletionSuccess = false;
+                        }
+
+                        // delete from project folder
+                        if (!relativePath.empty()) {
+                            std::filesystem::path projectPath = std::string(SOURCE_DIR_R) + "/" + relativePath;
+                            if (std::filesystem::exists(projectPath)) {
+                                std::filesystem::remove(projectPath);
+                            }
+                        }
+
+                        if (deletionSuccess) {
+                            EditorManager::assetChanged();
+                            DebugLog::addMessage("Deleted asset: " + m_AssetBrowserState.fullPathToDelete);
+                        }
+                    }
+                    catch (const std::filesystem::filesystem_error& e) {
+                        DebugLog::addMessage("Filesystem error during deletion: " + std::string(e.what()));
+                        deletionSuccess = false;
+                    }
+                }
             }
 
             m_AssetBrowserState.fullPathToDelete.clear();
@@ -447,6 +477,38 @@ void AssetBrowser::assetDeletePopup() {
 
         if (ImGui::Button("No")) {
             m_AssetBrowserState.fullPathToDelete.clear();
+            ImGui::CloseCurrentPopup();
+        }
+
+        ImGui::EndPopup();
+    }
+    /*-------------------- END -------------------*/
+
+    /*---------------- Cannot Delete Prefab In Use ----------------*/
+   /* ImGui::SetNextWindowPos(ImGui::GetMainViewport()->GetCenter(), ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));*/
+
+    if (ImGui::BeginPopupModal("Cannot Delete Prefab", NULL, ImGuiWindowFlags_AlwaysAutoResize)) {
+        ImGui::Text("Cannot delete prefab!");
+        ImGui::Text("This prefab is being used in the following scenes:");
+        ImGui::Separator();
+
+        // Show usage grouped by scene
+        for (const auto& sceneInfo : m_AssetBrowserState.prefabUsageInfo) {
+            ImGui::TextColored(ImVec4(1.0f, 0.8f, 0.2f, 1.0f), "%s", sceneInfo.sceneName.c_str());
+
+            for (const auto& objName : sceneInfo.objectNames) {
+                ImGui::BulletText("%s", objName.c_str());
+            }
+
+            ImGui::Spacing();
+        }
+
+        ImGui::Separator();
+        ImGui::TextWrapped("Please remove these objects or unpack prefab before deleting.");
+
+        if (ImGui::Button("OK", ImVec2(120, 0)) || InputHandler::isKeyTriggered(GLFW_KEY_ENTER)) {
+            m_AssetBrowserState.fullPathToDelete.clear();
+            m_AssetBrowserState.prefabUsageInfo.clear();
             ImGui::CloseCurrentPopup();
         }
 

@@ -149,7 +149,6 @@ namespace JsonIO {
 
     /// @}
 
-
     /**
      * \brief Copies a scene from the project source folder into the runtime folder.
      * \param name Scene filename (e.g., \c level01.json ).
@@ -234,6 +233,125 @@ namespace JsonIO {
     CollisionResponseMode StrToCollisionResponseMode(const std::string& s) {
         if (s == "MoveWhenCollide") return CollisionResponseMode::MoveWhenCollide;
         return CollisionResponseMode::StopWhenCollide;
+    }
+
+    //for button
+    const char* ButtonActionToStr(ButtonAction action) {
+        switch (action) {
+        case ButtonAction::START_GAME:    return "start_game";
+        case ButtonAction::OPEN_CONTROL:   return "open_control";
+        case ButtonAction::EXIT_GAME:      return "exit_game";
+        case ButtonAction::RESUME_GAME:    return "resume_game";
+		case ButtonAction::YES_EXIT:       return "yes_exit";
+		case ButtonAction::NO_EXIT:        return "no_exit";
+		case ButtonAction::BACK:         return "back";
+		case ButtonAction::MENU:          return "menu";
+        default:                           return "none";
+        }
+	}
+
+    //for button
+    ButtonAction StrToButtonAction(const std::string& s) {
+        if (s == "start_game") return ButtonAction::START_GAME;
+        if (s == "open_control") return ButtonAction::OPEN_CONTROL;
+        if (s == "exit_game") return ButtonAction::EXIT_GAME;
+        if (s == "resume_game") return ButtonAction::RESUME_GAME;
+        if (s == "yes_exit") return ButtonAction::YES_EXIT;
+        if (s == "no_exit") return ButtonAction::NO_EXIT;
+        if (s == "back") return ButtonAction::BACK;
+        if (s == "menu") return ButtonAction::MENU;
+        return ButtonAction::NONE;
+	}
+
+    //player state
+    PlayerState parsePlayerState(const std::string& s) {
+        if (s == "Idle")     return PlayerState::Idle;
+        if (s == "Walking")  return PlayerState::Walking;
+        if (s == "Jumping")  return PlayerState::Jumping;
+        if (s == "Falling")  return PlayerState::Falling;
+        if (s == "Shooting") return PlayerState::Shooting;
+        if (s == "Dead")     return PlayerState::Dead;
+        return PlayerState::Idle; // default/fallback
+    }
+
+
+    NodeImplementation stringToNodeImpl(const std::string& str) {
+        if (str == "On Start") return NodeImplementation::ON_START;
+        if (str == "On Update") return NodeImplementation::ON_UPDATE;
+		if (str == "On Collision Enter") return NodeImplementation::ON_COLLISION_ENTER;
+		if (str == "While Colliding") return NodeImplementation::WHILE_COLLIDING;
+		if (str == "On Collision Exit") return NodeImplementation::ON_COLLISION_EXIT;
+		if (str == "On Hover Enter") return NodeImplementation::ON_HOVER_ENTER;
+		if (str == "While Hovering") return NodeImplementation::WHILE_HOVERING;
+		if (str == "On Hover Exit") return NodeImplementation::ON_HOVER_EXIT;
+
+        if (str == "Print Message") return NodeImplementation::PRINT_MESSAGE;
+        if (str == "Move Object") return NodeImplementation::MOVE_OBJECT;
+        if (str == "Rotate Object") return NodeImplementation::ROTATE_OBJECT;
+        if (str == "Set Rotation") return NodeImplementation::SET_ROTATION;
+		if (str == "Set Float") return NodeImplementation::SET_FLOAT;
+		if (str == "Play Sound") return NodeImplementation::PLAY_SOUND;
+		if (str == "Set State") return NodeImplementation::SET_STATE;
+
+		if (str == "Check Key Held") return NodeImplementation::CHECK_KEY_HELD;
+		if (str == "Compare Value") return NodeImplementation::COMPARE_VALUE;
+		if (str == "Compare Variable") return NodeImplementation::COMPARE_VAR;
+		if (str == "Check State") return NodeImplementation::CHECK_STATE;
+
+        return NodeImplementation::DEFAULT;
+    }
+
+    std::string nodeImplToString(NodeImplementation impl) {
+        switch (impl) {
+            case NodeImplementation::ON_START: return "On Start";
+            case NodeImplementation::ON_UPDATE: return "On Update";
+            case NodeImplementation::ON_COLLISION_ENTER: return "On Collision Enter";
+            case NodeImplementation::WHILE_COLLIDING: return "While Colliding";
+            case NodeImplementation::ON_COLLISION_EXIT: return "On Collision Exit";
+            case NodeImplementation::ON_HOVER_ENTER: return "On Hover Enter";
+            case NodeImplementation::WHILE_HOVERING: return "While Hovering";
+            case NodeImplementation::ON_HOVER_EXIT: return "On Hover Exit";
+
+            case NodeImplementation::PRINT_MESSAGE: return "Print Message";
+            case NodeImplementation::MOVE_OBJECT: return "Move Object";
+		    case NodeImplementation::ROTATE_OBJECT: return "Rotate Object";
+			case NodeImplementation::SET_ROTATION: return "Set Rotation";
+            case NodeImplementation::SET_FLOAT: return "Set Float";
+			case NodeImplementation::PLAY_SOUND: return "Play Sound";
+			case NodeImplementation::SET_STATE: return "Set State";
+
+            case NodeImplementation::CHECK_KEY_HELD: return "Check Key Held";
+            case NodeImplementation::COMPARE_VALUE: return "Compare Value";
+            case NodeImplementation::COMPARE_VAR: return "Compare Variable";
+			case NodeImplementation::CHECK_STATE: return "Check State";
+
+            default: return "Default";
+        }
+    }
+
+    // Add this helper function in JsonIO.cpp or create a utilities file
+    int stringToGLFWKey(const std::string& keyStr) {
+        // Movement keys
+        if (keyStr == "W") return GLFW_KEY_W;
+        if (keyStr == "A") return GLFW_KEY_A;
+        if (keyStr == "S") return GLFW_KEY_S;
+        if (keyStr == "D") return GLFW_KEY_D;
+
+        // Arrow keys
+        if (keyStr == "UP") return GLFW_KEY_UP;
+        if (keyStr == "DOWN") return GLFW_KEY_DOWN;
+        if (keyStr == "LEFT") return GLFW_KEY_LEFT;
+        if (keyStr == "RIGHT") return GLFW_KEY_RIGHT;
+
+        // Special keys
+        if (keyStr == "SPACE") return GLFW_KEY_SPACE;
+        if (keyStr == "SHIFT") return GLFW_KEY_LEFT_SHIFT;
+        if (keyStr == "CTRL") return GLFW_KEY_LEFT_CONTROL;
+        if (keyStr == "ALT") return GLFW_KEY_LEFT_ALT;
+        if (keyStr == "ENTER") return GLFW_KEY_ENTER;
+        if (keyStr == "ESC") return GLFW_KEY_ESCAPE;
+
+        return GLFW_KEY_UNKNOWN;
     }
 
 
@@ -635,6 +753,51 @@ namespace JsonIO {
 
     /// @}
 
+    /* ---------- Load/Save collision tags ---------- */
+    bool LoadCollisionTags(const std::string& filepath, std::vector<std::string>& outTags, std::string* err) {
+        rapidjson::Document doc;
+        if (!ReadFileToDocument(RUNTIME_DIR_R + filepath, doc, err)) return false;
+
+        if (!doc.IsObject()) {
+            if (err) *err = "Collision tag file is not a JSON object";
+            return false;
+        }
+
+        if (!doc.HasMember("collisionTags") || !doc["collisionTags"].IsArray()) {
+            if (err) *err = "Missing or invalid 'tags' array";
+            return false;
+        }
+
+        outTags.clear();
+        for (const auto& v : doc["collisionTags"].GetArray()) {
+            if (v.IsString()) {
+                outTags.emplace_back(v.GetString());
+            }
+        }
+
+        return true;
+    }
+
+    bool SaveCollisionTags(const std::string& filepath, const std::vector<std::string>& tags, std::string* err) {
+        rapidjson::Document doc;
+        doc.SetObject();
+        auto& a = doc.GetAllocator();
+
+        doc.AddMember("version", 1, a);
+
+        rapidjson::Value tagArray(rapidjson::kArrayType);
+        for (const auto& tag : tags) {
+            tagArray.PushBack(rapidjson::Value(tag.c_str(), a), a);
+        }
+
+        doc.AddMember("collisionTags", tagArray, a);
+
+        bool runtime = WriteDocumentToFile(RUNTIME_DIR_R + filepath, doc, true, err);
+        bool proj = WriteDocumentToFile(SOURCE_ASSETS_DIR_R + filepath, doc, true, err);
+
+        return (runtime && proj);
+    }
+
     /* ---------- Saving obj state in json for undo/redo ---------- */
     std::string serializeGameObj(GameObject* obj) {
         if (!obj) return "";
@@ -731,6 +894,16 @@ namespace JsonIO {
             doc.AddMember("Collision", jc, a);
         }
 
+        // Button
+        if(Button* b = obj->getComponent<Button>()) {
+            Value jb(kObjectType);
+            Value actionStr(ButtonActionToStr(b->actionName), a);
+            jb.AddMember("action", actionStr, a);
+            jb.AddMember("isHovered", b->isHovered, a);
+            jb.AddMember("isPressed", b->isPressed, a);
+            doc.AddMember("Button", jb, a);
+		}
+
         // Input
         if (obj->hasComponent<Input>()) {
             doc.AddMember("Input", true, a);
@@ -767,6 +940,11 @@ namespace JsonIO {
                 channelObj.AddMember("fadeInDuration", channel.fadeInDuration, a);
                 channelObj.AddMember("fadeOutOnStop", channel.fadeOutOnStop, a);
                 channelObj.AddMember("fadeOutDuration", channel.fadeOutDuration, a);
+
+                // Save 3D audio settings
+                channelObj.AddMember("isSpatial", channel.isSpatial, a);
+                channelObj.AddMember("minDistance", channel.minDistance, a);
+                channelObj.AddMember("maxDistance", channel.maxDistance, a);
 
                 channels.AddMember(Value(channelName.c_str(), a), channelObj, a);
             }
@@ -811,6 +989,8 @@ namespace JsonIO {
             jt.AddMember("tileH", tm->tileH, a);
             jt.AddMember("columns", tm->columns, a);
             jt.AddMember("rows", tm->rows, a);
+            jt.AddMember("enableCol", Value(tm->enableCol ? 1 : 0), a);
+
 
             // Serialize tiles array
             Value tileArray(kArrayType);
@@ -821,9 +1001,41 @@ namespace JsonIO {
                 t.AddMember("id", rapidjson::Value(id.c_str(), a), a);
                 tileArray.PushBack(t, a);
             }
-            jt.AddMember("Tiles", tileArray, a);
+            jt.AddMember("tiles", tileArray, a);
 
             doc.AddMember("TileMap", jt, a);
+        }
+
+        // LuaScript
+        if (LuaScript* ls = obj->getComponent<LuaScript>()) {
+            Value jl(kObjectType);
+            Value scriptsArray(kArrayType);
+
+            for (const auto& scriptEntry : ls->scripts) {
+                if (scriptEntry.filename.empty() && scriptEntry.scriptName.empty()) continue;
+
+                Value entry(kObjectType);
+                entry.AddMember("filename", Value(scriptEntry.filename.c_str(), a), a);
+                entry.AddMember("scriptName", Value(scriptEntry.scriptName.c_str(), a), a);
+
+                scriptsArray.PushBack(entry, a);
+            }
+
+            if (!scriptsArray.Empty()) {
+                jl.AddMember("scripts", scriptsArray, a);
+                doc.AddMember("LuaScript", jl, a);
+            }
+        }
+
+        // Visual Logic
+        if (VisualLC* vl = obj->getComponent<VisualLC>()) {
+            Value jvl(kObjectType);
+
+            if (!vl->filename.empty()) {
+                jvl.AddMember("filename", Value(vl->filename.c_str(), a), a);
+            }
+
+            doc.AddMember("VisualLC", jvl, a);
         }
 
         // convert to string
@@ -1018,6 +1230,14 @@ namespace JsonIO {
                             ch->fadeOutOnStop = channelObj["fadeOutOnStop"].GetBool();
                         if (channelObj.HasMember("fadeOutDuration"))
                             ch->fadeOutDuration = channelObj["fadeOutDuration"].GetFloat();
+
+                        // Load 3D audio settings
+                        if (channelObj.HasMember("isSpatial"))
+                            ch->isSpatial = channelObj["isSpatial"].GetBool();
+                        if (channelObj.HasMember("minDistance"))
+                            ch->minDistance = channelObj["minDistance"].GetFloat();
+                        if (channelObj.HasMember("maxDistance"))
+                            ch->maxDistance = channelObj["maxDistance"].GetFloat();
                     }
                 }
                 else {
@@ -1060,7 +1280,6 @@ namespace JsonIO {
                             // --- texture ---
                             if (animStateObj.HasMember("texture") && animStateObj["texture"].IsString()) {
                                 st.texFile = animStateObj["texture"].GetString();
-                                st.texChanged = true;
                             }
                             else {
                                 st.texFile.clear();
@@ -1112,6 +1331,11 @@ namespace JsonIO {
                 if (tmj.HasMember("tileH"))    tm->tileH = tmj["tileH"].GetFloat();
                 if (tmj.HasMember("columns"))  tm->columns = tmj["columns"].GetInt();
                 if (tmj.HasMember("rows"))     tm->rows = tmj["rows"].GetInt();
+                if (tmj.HasMember("enableCol")) {
+                    tm->enableCol = tmj["enableCol"].IsBool()
+                        ? tmj["enableCol"].GetBool()
+                        : (tmj["enableCol"].GetInt() != 0);
+                }
 
                 tm->tiles.clear();
 
@@ -1125,6 +1349,54 @@ namespace JsonIO {
                 }
             }
 
+            // LuaScript
+            if (doc.HasMember("LuaScript")) {
+                const Value& jl = doc["LuaScript"];
+                LuaScript* ls = obj->addComponent<LuaScript>();
+
+                ls->scripts.clear();
+
+                if (jl.HasMember("scripts") && jl["scripts"].IsArray()) {
+                    for (const auto& scriptEntry : jl["scripts"].GetArray()) {
+                        if (!scriptEntry.IsObject()) continue;
+
+                        LuaScript::ScriptEntry entry;
+
+                        if (scriptEntry.HasMember("filename") && scriptEntry["filename"].IsString()) {
+                            entry.filename = scriptEntry["filename"].GetString();
+                        }
+
+                        if (scriptEntry.HasMember("scriptName") && scriptEntry["scriptName"].IsString()) {
+                            entry.scriptName = scriptEntry["scriptName"].GetString();
+                        }
+
+                        entry.changed = true;
+                        ls->scripts.push_back(entry);
+                    }
+                }
+
+                ls->scriptsChanged = true;
+            }
+
+            // Visual Logic
+            if (doc.HasMember("VisualLC")) {
+                const Value& jvl = doc["VisualLC"];
+                VisualLC* vl = obj->addComponent<VisualLC>();
+
+                if (jvl.HasMember("filename") && jvl["filename"].IsString()) {
+                    vl->filename = jvl["filename"].GetString();
+
+                    // Load the visual logic graph from file
+                    if (!vl->filename.empty()) {
+                        std::string filepath = "/Logic/" + vl->filename;
+                        std::string err;
+                        if (!JsonIO::loadVisualLogic(filepath, vl->nodes, vl->connections, &err)) {
+                            DebugLog::addMessage("Failed to load Visual Logic file: " + err);
+                        }
+                    }
+                }
+            }
+
             return obj;
         }
         catch (...) {
@@ -1133,6 +1405,151 @@ namespace JsonIO {
         }
     }
     /* ---------- END ---------- */
+
+
+    /* ---------- Visual Logic for editor ---------- */
+    bool saveVisualLogic(const std::string& filepath, const std::vector<LogicNode>& nodes, const std::vector<LogicConnection>& connections, std::string* err) {
+
+        rapidjson::Document doc;
+        doc.SetObject();
+        auto& a = doc.GetAllocator();
+
+        doc.AddMember("version", 1, a);
+
+        // serialize nodes
+        rapidjson::Value nodesArray(rapidjson::kArrayType);
+        for (const auto& node : nodes) {
+            rapidjson::Value nodeObj(rapidjson::kObjectType);
+
+            nodeObj.AddMember("id", node.id, a);
+            nodeObj.AddMember("implementation", rapidjson::Value(JsonIO::nodeImplToString(node.imp).c_str(), a), a);
+            nodeObj.AddMember("type", static_cast<int>(node.type), a);
+
+            rapidjson::Value posArray(rapidjson::kArrayType);
+            posArray.PushBack(node.position.x, a);
+            posArray.PushBack(node.position.y, a);
+            nodeObj.AddMember("position", posArray, a);
+
+            nodeObj.AddMember("hasInput", node.hasInput, a);
+            nodeObj.AddMember("hasOutput", node.hasOutput, a);
+
+            nodeObj.AddMember("hasTrueOutput", node.hasTrueOutput, a);
+            nodeObj.AddMember("hasFalseOutput", node.hasFalseOutput, a);
+
+            if (!node.parameters.empty()) {
+                rapidjson::Value paramsObj(rapidjson::kObjectType);
+                for (const auto& [key, value] : node.parameters) {
+                    paramsObj.AddMember(
+                        rapidjson::Value(key.c_str(), a),
+                        rapidjson::Value(value.c_str(), a),
+                        a
+                    );
+                }
+                nodeObj.AddMember("parameters", paramsObj, a);
+            }
+
+            nodesArray.PushBack(nodeObj, a);
+        }
+        doc.AddMember("nodes", nodesArray, a);
+
+        // serialize connections
+        rapidjson::Value connectionsArray(rapidjson::kArrayType);
+        for (const auto& conn : connections) {
+            rapidjson::Value connObj(rapidjson::kObjectType);
+
+            connObj.AddMember("fromNodeId", conn.fromNodeId, a);
+            connObj.AddMember("outputPin", rapidjson::Value(conn.outputPin.c_str(), a), a);
+            connObj.AddMember("toNodeId", conn.toNodeId, a);
+            connObj.AddMember("inputPin", rapidjson::Value(conn.inputPin.c_str(), a), a);
+
+            connectionsArray.PushBack(connObj, a);
+        }
+        doc.AddMember("connections", connectionsArray, a);
+        
+        // write to file
+        bool runtime = WriteDocumentToFile(RUNTIME_DIR_R+filepath, doc, true, err);
+        bool proj = WriteDocumentToFile(SOURCE_ASSETS_DIR_R +filepath, doc, true, err);
+
+		return (runtime && proj);
+    }
+
+    bool loadVisualLogic(const std::string& filepath, std::vector<LogicNode>& nodes, std::vector<LogicConnection>& connections, std::string* err) {
+        rapidjson::Document doc;
+        if (!ReadFileToDocument(RUNTIME_DIR_R+filepath, doc, err)) {
+			std::cout << "Failed to load visual logic from " << filepath << ": " << (err ? *err : "unknown error") << std::endl;
+            return false;
+        }
+
+        // clear existing data
+        nodes.clear();
+        connections.clear();
+
+        // load nodes
+        if (doc.HasMember("nodes") && doc["nodes"].IsArray()) {
+            for (const auto& nodeVal : doc["nodes"].GetArray()) {
+                if (!nodeVal.IsObject()) continue;
+
+                LogicNode node;
+                node.id = GetIntOr(nodeVal, "id", 0);
+
+                std::string name;
+                if (GetString(nodeVal, "implementation", name)) {
+                    node.imp = stringToNodeImpl(name);
+                }
+
+                node.type = static_cast<NodeType>(GetIntOr(nodeVal, "type", 0));
+
+                if (nodeVal.HasMember("position") && nodeVal["position"].IsArray()) {
+                    const auto& posArray = nodeVal["position"].GetArray();
+                    if (posArray.Size() >= 2) {
+                        node.position.x = posArray[0].GetFloat();
+                        node.position.y = posArray[1].GetFloat();
+                    }
+                }
+
+                GetBool(nodeVal, "hasInput", node.hasInput);
+                GetBool(nodeVal, "hasOutput", node.hasOutput);
+
+                GetBool(nodeVal, "hasTrueOutput", node.hasTrueOutput);
+                GetBool(nodeVal, "hasFalseOutput", node.hasFalseOutput);
+
+                if (nodeVal.HasMember("parameters") && nodeVal["parameters"].IsObject()) {
+                    const auto& paramsObj = nodeVal["parameters"];
+                    for (auto it = paramsObj.MemberBegin(); it != paramsObj.MemberEnd(); ++it) {
+                        if (it->value.IsString()) {
+                            node.parameters[it->name.GetString()] = it->value.GetString();
+                        }
+                    }
+                }
+
+                nodes.push_back(node);
+            }
+        }
+
+        // load connections
+        if (doc.HasMember("connections") && doc["connections"].IsArray()) {
+            for (const auto& connVal : doc["connections"].GetArray()) {
+                if (!connVal.IsObject()) continue;
+
+                LogicConnection conn;
+                conn.fromNodeId = GetIntOr(connVal, "fromNodeId", 0);
+                conn.toNodeId = GetIntOr(connVal, "toNodeId", 0);
+
+                std::string outputPin, inputPin;
+                if (GetString(connVal, "outputPin", outputPin)) {
+                    conn.outputPin = outputPin;
+                }
+                if (GetString(connVal, "inputPin", inputPin)) {
+                    conn.inputPin = inputPin;
+                }
+
+                connections.push_back(conn);
+            }
+        }
+
+        return true;
+    }
+	/* ---------- END ---------- */
 
 } // namespace JsonIO
 
@@ -1262,6 +1679,20 @@ void GameObjectManager::saveToJson(const std::string& filename, bool isNew) cons
                 ja.AddMember("frameTime", rapidjson::Value().SetFloat(an->frameTime), a);
                 comps.AddMember("Animation", ja, a);
             }*/
+
+            // ---- Button ----
+            if (auto b = obj->getComponent<Button>()) {
+                rapidjson::Value jb(rapidjson::kObjectType);
+
+                jb.AddMember("action", rapidjson::Value(static_cast<int>(b->actionName)), a);
+
+                //add boolean states
+                jb.AddMember("isHovered", b->isHovered ? 1 : 0, a);
+                jb.AddMember("isPressed", b->isPressed ? 1 : 0, a);
+
+                //add the Button object to your main JSON
+                comps.AddMember("Button", jb, a);
+			}
 
             jObj.AddMember("components", comps, a);
             objects.PushBack(jObj, a);
@@ -1412,6 +1843,17 @@ void GameObjectManager::loadFromJson(const std::string& filename) {
         // ---- CollisionInfo (presence only) ----
         if (comps.HasMember("CollisionInfo") && comps["CollisionInfo"].IsObject()) {
             go->addComponent<CollisionInfo>();
+        }
+
+		// ---- Button ----
+        if (comps.HasMember("Button") && comps["Button"].IsObject()) {
+			const auto& jb = comps["Button"];
+			auto* b = go->addComponent<Button>();
+
+            if (jb.HasMember("action") && jb["action"].IsString()) {
+                std::string actionStr = jb["action"].GetString();
+                b->actionName = JsonIO::StrToButtonAction(actionStr);
+            }
         }
 
         // ---- Animation ----

@@ -26,6 +26,9 @@
           "hasTex": 1,
           "texture": "assets/button.png",
           "clr": [ 1.0, 1.0, 1.0 ]
+        },
+        "Button" : {
+          "action" : "open_control"
         }
       }
     },
@@ -69,6 +72,9 @@
           "hasTex": 1,
           "texture": "assets/button.png",
           "clr": [ 1.0, 1.0, 1.0 ]
+        },
+        "Button" : {
+          "action" : "resume_game"
         }
       }
     },
@@ -98,6 +104,9 @@
           "hasTex": 1,
           "texture": "assets/button.png",
           "clr": [ 1.0, 1.0, 1.0 ]
+        },
+        "Button" : {
+          "action" : "menu"
         }
       }
     }

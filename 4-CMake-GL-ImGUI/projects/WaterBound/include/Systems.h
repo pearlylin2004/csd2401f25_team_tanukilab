@@ -157,6 +157,15 @@ public:
 
 	*************************************************************************/
 	static std::string filename;
+
+	/*!***********************************************************************
+	\brief
+		mode to erase tiles instead of painting
+
+	*************************************************************************/
+	static bool eraseMode;
+
+	static int brushSize;
 };
 
 class FontSystem {
@@ -194,6 +203,8 @@ public:
 class CollisionSystem {
 public:
 	void update(GameObjectManager& manager, const float& deltaTime);
+	bool CheckTileCollision(GameObject* obj, TileMap& map); //for tile map collision
+	void HandleTilemapCollisions(const std::unordered_map<int, Collision::Cell>& grid, const std::vector<std::pair<TileMap*, Transform*>>& tilemaps);
 };
 
 // only allow editor in debug mode
@@ -237,8 +248,41 @@ public:
 	void update(GameObjectManager& manager, float deltaTime);
 	void cleanup(GameObjectManager& manager);
 
+	// Update 3D positions for all spatial sounds
+	void updateSpatialAudio(GameObjectManager& manager);
+
 	static void initializeSceneAudio(GameObjectManager& manager);
 
 private:
 	void processAudio(GameObject* obj, AudioChannel* audio, float deltaTime);
+};
+
+class VisualLogicSystem {
+public:
+	void initAll(GameObjectManager& manager);
+	void updateAll(GameObjectManager& manager, float dt);
+
+	// init logic component (called once when object is created)
+	void init(GameObject* obj, VisualLC* logic);
+
+	// update logic
+	void update(GameObject* obj, VisualLC* logic, float dt);
+
+private:
+	// execute a specific node
+	void executeNode(GameObject* obj, VisualLC* logic, int nodeId, float dt);
+
+	// execute different node types
+	void executeEventNode(GameObject* obj, VisualLC* logic, LogicNode& node);
+	void executeActionNode(GameObject* obj, VisualLC* logic, LogicNode& node, float dt);
+	bool executeConditionNode(GameObject* obj, VisualLC* logic, LogicNode& node, float dt);
+
+	// helper to find next connected node
+	std::vector<int> findAllNextNode(VisualLC* logic, int fromNodeId, const std::string& outputPin);
+
+	// helper func to find a node by ID
+	LogicNode* findNode(VisualLC* logic, int nodeId);
+
+	// helper func for collision
+	bool shouldTriggerCollision(LogicNode& node, GameObject* collided);
 };

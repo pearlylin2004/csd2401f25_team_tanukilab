@@ -17,6 +17,7 @@ Technology is prohibited.
 
 #ifdef _DEBUG
 #include "Editor/editorManager.h"
+#include "Systems.h"
 
 MenuBar::MenuBar(AssetBrowser& aBrowser, Editor::AssetBrowserState& Astate, Editor::MenuBarState& Mstate, Editor::ObjSelectionState& Ostate, Editor::SceneState& sceneState):
     m_assetBrowser(aBrowser),
@@ -165,6 +166,7 @@ void MenuBar::playSimulation(GameObjectManager& manager) {
 void MenuBar::stopSimulation(GameObjectManager& manager) {
     EditorManager::toggleEditing(true);
     manager.cleanupSimulationResources();
+	VisualLogicEditor::Instance().clear();
 
     // load back the temp scene file to restore state
     manager.loadScene(JsonIO::runtimeScenePath(m_sceneState.tempSceneName));
@@ -177,11 +179,14 @@ void MenuBar::stopSimulation(GameObjectManager& manager) {
     // clear all undo/redo
     UndoRedoManager::Instance().clear();
 
-
     m_objSelectionState.selectedObject = nullptr;
     m_objSelectionState.draggedObject = nullptr;
     m_objSelectionState.selectedPrefab = nullptr;
     m_objSelectionState.selectedIndex = -1;
+    TileMapSystem::filename.clear();
+    TileMapSystem::eraseMode = false;
+
+    Editor::visualLogicState.targetObj = nullptr;
 
     DebugLog::clearPlaySimulMsg();
 
