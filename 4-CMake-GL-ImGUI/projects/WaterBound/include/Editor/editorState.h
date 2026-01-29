@@ -302,6 +302,13 @@ namespace Editor {
 			},
 			[](const GameObject* obj) { return obj->hasComponent<LuaScript>(); }
 		},
+		{"Particle",
+			[](GameObject* obj) {
+			obj->addComponent<Particle>();
+			DebugLog::addMessage("Added Particle component for " + obj->getObjectName());
+			},
+			[](const GameObject* obj) { return obj->hasComponent<Particle>(); }
+		},
 		{"Visual Logic",
 			[](GameObject* obj) {
 			obj->addComponent<VisualLC>();

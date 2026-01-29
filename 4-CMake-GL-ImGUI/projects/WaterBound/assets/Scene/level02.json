@@ -1,0 +1,73 @@
+{
+  "version": 1,
+  "objects": [
+    {
+      "prefabid": "f7665aa3-619e-49a1-892a-31fbc8b377a2",
+      "name": "platform",
+      "layer": 0,
+      "components": {
+        "Transform": {
+          "pos": [
+            -14.455445289611816,
+            15.1815185546875,
+            -0.0010000000474974513
+          ]
+        }
+      }
+    },
+    {
+      "prefabid": "dd60e1e1-641c-4ed5-b69d-ffadfa02fb7a",
+      "name": "player",
+      "components": {
+        "Particle": {
+          "isMaster": 1,
+          "clr_r": 1.0,
+          "clr_g": 1.0,
+          "clr_b": 1.0,
+          "clr_a": 1.0,
+          "velocity_x": 1.0,
+          "velocity_y": 1.0,
+          "timer": 1.0,
+          "offset": 1.0,
+          "particleAmt": 5
+        },
+        "StateMachine": {
+          "state": "Walking",
+          "Dead": {
+            "animState": {
+              "texture": "",
+              "loop": 1,
+              "totalColumn": 1,
+              "totalRow": 1,
+              "frameTime": 0.10000000149011612,
+              "initialFramCol": 0.0,
+              "initialFramRow": 0.0,
+              "lastFramCol": 0.0,
+              "lastFramRow": 0.0
+            }
+          }
+        },
+        "AudioComponent": {
+          "channels": {
+            "footsteps": {
+              "audioFile": "assets/audio/footsteps.wav",
+              "volume": 0.5,
+              "pitch": 1.0,
+              "loop": 1,
+              "playOnStart": 0,
+              "muted": 0,
+              "fadeInOnStart": 0,
+              "fadeInDuration": 1.0,
+              "fadeOutOnStop": 1,
+              "fadeOutDuration": 0.15000000596046448
+            }
+          }
+        }
+      }
+    },
+    {
+      "prefabid": "4828c393-9fcf-42f8-8b05-ddc8d75096be",
+      "name": "player1"
+    }
+  ]
+}

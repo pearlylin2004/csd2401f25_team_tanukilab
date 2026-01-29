@@ -28,6 +28,7 @@ Technology is prohibited.
 #include "mathlib.h"
 #include "font.h"
 #include "dynamics.h"
+#include "queue"
 
 
 // at least it works!!!
@@ -85,8 +86,43 @@ public:
     bool texChanged = false;
     GLuint texHDL;
     std::string texFile;
-    glm::vec3 clr{ 1,1,1 };
+    glm::vec4 clr{ 1,1,1,1 };
     renderer::model modelRef;
+};
+
+struct Particle : public Component {
+public:
+    std::unique_ptr<Component> clone() const override {
+        return std::make_unique<Particle>(*this);
+    }
+
+public:
+    struct GroupData 
+    {
+        glm::vec4 clr{ 1,1,1,1 };
+        Vector2D velocity{ 0,0 };
+        float timer = 0;
+        float offset = 0;
+        int particleAmt = 0;
+        bool isActive = false;
+    };
+    struct individualData
+    {
+        Vector2D velocity{ 0,0 };
+        float timer = 0;
+        size_t grpNo = 0;
+    };
+    struct UID
+    {
+        size_t uid = 0;
+        size_t particleAmt = 0;
+    };
+    //size_t grpNo = 0;
+    //bool activate = false;
+    bool isMaster = true;
+    individualData childData;
+    GroupData master;
+    static std::vector<UID>UIDs;
 };
 
 struct FontComponent : public Component {
@@ -178,7 +214,7 @@ public:
 
 
     bool inWater = false;
-    bool buoancy = false;
+    bool buoancy = true;
 
     //const float waterBounce = 60.0f;   // upward velocity when entering water
 
@@ -664,4 +700,41 @@ public:
     // collision 
     std::unordered_set<GameObject*> curCollision;
     std::unordered_set<GameObject*> preCollision;
+};
+
+// WaterBody component for creating animated water surfaces     
+struct WaterBody : public Component {
+public:
+    WaterBody() = default;
+
+    std::unique_ptr<Component> clone() const override {
+        return std::make_unique<WaterBody>(*this);
+    }
+
+    // Wave animation parameters
+    float waveAmplitude = 0.2f;      
+    float waveFrequency = 2.0f;       
+    float waveSpeed = 1.0f;           
+    float waveTime = 0.0f;            
+
+    // Water visual properties
+    glm::vec4 waterColor = glm::vec4(0.2f, 0.5f, 0.8f, 0.7f); 
+    float waterAlpha = 0.7f;          
+
+    // Subdivision for wave mesh
+    int subdivisions = 20;            // segments waves
+
+    // Water body dimensions
+    float width = 10.0f;
+    float height = 5.0f;
+
+    // Physics properties
+    bool isTrigger = true;            // If objects can pass through
+    float buoyancyForce = 50.0f;      // Upward force applied to objects in water
+    float waterDrag = 0.95f;          // Velocity damping when in water
+
+    // Rendering flags
+    bool renderWaves = true;
+    bool useTexture = false;          
+    GLuint waterTexture = 0;          
 };

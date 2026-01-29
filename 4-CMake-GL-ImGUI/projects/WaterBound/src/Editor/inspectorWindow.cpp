@@ -190,7 +190,7 @@ void InspectorWindow::render(GameObjectManager& manager) {
         }
         /* ------------------- END ------------------- */
 
-        /* ------------------- Font ------------------- */
+        /* ------------------- TILE MAP ------------------- */
         if (selected->hasComponent<TileMap>()) {
             renderTileMap(selected);
 
@@ -210,10 +210,20 @@ void InspectorWindow::render(GameObjectManager& manager) {
         }
         /* ------------------- END ------------------- */
 
+		/* ------------------- Particle System ------------------- */
+        if (selected->hasComponent<Particle>()) {
+            renderParticles(selected);
+
+            ImGui::Spacing();
+            ImGui::Separator();
+            ImGui::Spacing();
+        }
+        /* ------------------- END ------------------- */
+
         /* ------------------- Visual LC ------------------- */
         if (selected->hasComponent<VisualLC>()) {
             renderVisualLogic(selected);
-
+        
             ImGui::Spacing();
             ImGui::Separator();
             ImGui::Spacing();
@@ -1398,6 +1408,29 @@ void InspectorWindow::renderTileMap(GameObject* selected)
             DebugLog::addMessage("Removed Tile Map Component");
         }
     }
+}
+
+void InspectorWindow::renderParticles(GameObject* selected)
+{
+    Particle* ps = selected->getComponent<Particle>();
+    if (ImGui::CollapsingHeader("Particle System")) {
+        ImGui::InputInt("Max Particles", &ps->master.particleAmt);
+        ImGui::InputFloat("Particle Lifetime", &ps->master.timer, 0.1f);
+        ImGui::InputFloat("Offset", &ps->master.offset);
+        ImGui::InputFloat("Velocity X", &ps->master.velocity.x);
+        ImGui::InputFloat("Velocity Y", &ps->master.velocity.y);
+
+        ImGui::ColorEdit3("Start Colour", &ps->master.clr.x);
+        
+        ImGui::Spacing();
+        ImGui::Separator();
+        ImGui::Spacing();
+        if (ImGui::Button("Remove Particle System", ImVec2(-1, 0))) {
+            // add a delete component func here
+            selected->removeComponent<Particle>();
+            DebugLog::addMessage("Removed Particle System Component");
+        }
+	}
 }
 
 void InspectorWindow::renderLua(GameObject* selected) {

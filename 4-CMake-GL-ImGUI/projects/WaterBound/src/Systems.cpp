@@ -27,6 +27,7 @@ Technology is prohibited.
 #include "Physics.h"
 
 std::string TileMapSystem::filename{};
+std::vector<Particle::UID> Particle::UIDs;
 //here we go buddies
 
 //all the systems need to get all game objects
@@ -326,7 +327,7 @@ void RenderSystem::batchingSetUp(GameObjectManager& manager, float const& deltaT
 		transform->mdlWorld = glm::rotate(transform->mdlWorld, angle, glm::vec3(0, 0, 1.f));
 		transform->mdlWorld = glm::scale(transform->mdlWorld, glm::vec3(scaleX, transform->scaleY, transform->scaleZ));
 		data.model = transform->mdlWorld;
-		data.color = glm::vec4(render->clr, 1);
+		data.color = render->clr;
 		data.texParams = glm::vec4(0, 0, 1, 1); // default, no texture frame
 
 		// if obj has animation & state machine component
@@ -448,6 +449,146 @@ void RenderSystem::clearBatches() {
 void RenderSystem::fboAspectRatio(int& width, int& height) const {
 	width = fboWidth;
 	height = fboHeight;
+}
+
+void ParticleSystem::clearUsedID(int ID)
+{
+	for(int i = 0; i < Particle::UIDs.size(); ++i)
+	{
+		if (Particle::UIDs[i].uid == ID)
+		{
+			--Particle::UIDs[i].particleAmt;
+			if (Particle::UIDs[i].particleAmt == 0)
+			{
+				Particle::UIDs.erase(Particle::UIDs.begin() + i);
+				break;
+			}
+		}
+	}
+}
+
+int ParticleSystem::IDGenerator()
+{
+	size_t ID = 0;
+	bool empty = false;
+	/*usedID.clear();
+	if (Particle::UIDs.size() != 0)
+		for(int i = 0; i < Particle::UIDs.size(); ++i)
+			usedID.push_back(Particle::UIDs[i]);
+	std::sort(usedID.begin(), usedID.end());*/
+	std::sort(Particle::UIDs.begin(), Particle::UIDs.end(), [](const Particle::UID& a, const Particle::UID& b) {
+		return a.uid < b.uid;
+		});
+	for (int i = 0; i < Particle::UIDs.size(); ++i)
+	{
+		++ID;
+		if (ID != Particle::UIDs[i].uid)
+		{
+			empty = true;
+			break;
+		}
+	}
+	if (!empty)
+		++ID;
+	return ID;
+}
+
+Vector2D ParticleSystem::positionGenerator(float offset)
+{
+	std::random_device rd;
+	std::mt19937 gen(rd());
+	std::uniform_real_distribution<float> dis(0.0f, 1.0f);
+
+	float pi = std::numbers::pi_v<float>;
+	float angle = dis(gen) * 2.0f * pi;
+
+	Vector2D randomOffset;
+	randomOffset.x = offset * cos(angle);
+	randomOffset.y = offset * sin(angle);
+
+	return randomOffset;
+}
+
+Vector2D ParticleSystem::velocityGenerator(Vector2D direction)
+{
+	std::random_device rd;
+	std::mt19937 gen(rd());
+	std::uniform_real_distribution<float> dis(0.001f, 1.0f);
+	float speed = 3.f * dis(gen);
+
+	//normalize direction
+	float magnitute = Math_Sqrt(direction.x * direction.x + direction.y * direction.y);
+
+	if (magnitute == 0.f)
+		return Vector2D{ 0,0 };
+	return Vector2D{ (direction.x / magnitute) * speed, (direction.y / magnitute) * speed };
+}
+
+void ParticleSystem::activateParticle(GameObjectManager& manager)
+{
+	std::vector<GameObject*> gameObjects;
+	manager.getAllGameObjects(gameObjects);
+	for (GameObject* object : gameObjects)
+	{
+		if (object->hasComponent<Particle>())
+		{
+			Particle* particleData = object->getComponent<Particle>();
+			Transform* masterTransform = object->getComponent<Transform>();
+			if (particleData->master.isActive && particleData->isMaster)
+			{
+				//std::cout << "Particle Group being activated is: " << particleData->grpNo << std::endl;
+				particleData->master.isActive = false;
+				/*if (particleData->grpNo == 0)
+					particleData->grpNo = IDGenerator(manager);*/
+				//static int pid = 0;
+				int UID = IDGenerator();
+				Particle::UIDs.push_back(Particle::UID(UID, particleData->master.particleAmt));
+				std::cout << "UID made is: " << UID << std::endl;
+				for (size_t i = 0; i < particleData->master.particleAmt; ++i)
+				{
+					std::string name = "Particle_" + std::to_string(UID) + "_" + std::to_string(i);
+					GameObject* newObj = manager.createGameObject(name);
+					std::cout << "Created Particle Object: " << name << std::endl;
+
+					Transform* transform = newObj->addComponent<Transform>();
+					Render* render = newObj->addComponent<Render>();
+					Particle* indivData = newObj->addComponent<Particle>();
+					Physics* physics = newObj->addComponent<Physics>();
+					Vector2D spawnPos = positionGenerator(particleData->master.offset);
+					transform->x = masterTransform->x + spawnPos.x;
+					transform->y = masterTransform->y + spawnPos.y;
+					transform->z = masterTransform->z;
+					transform->scaleX = 0.5f;
+					transform->scaleY = 0.5f;
+					indivData->childData.velocity = velocityGenerator(spawnPos);
+					indivData->childData.grpNo = UID;
+					indivData->childData.timer = particleData->master.timer;
+					render->clr = particleData->master.clr;
+					indivData->isMaster = false;
+				}
+			}
+		}
+	}
+}
+
+void ParticleSystem::update(GameObjectManager& manager, float const& deltaTime)
+{
+	activateParticle(manager);
+	std::vector<GameObject*> gameObjects;
+	manager.getAllGameObjects(gameObjects);
+	//for testing purposes only
+	for (GameObject* object : gameObjects)
+	{
+		if (object->hasComponent<Particle>())
+		{
+			Particle* particle = object->getComponent<Particle>();
+			if (particle->isMaster)
+			{
+				if (InputHandler::isKeyTriggered(GLFW_KEY_P))
+					particle->master.isActive = true;
+			}
+		}
+	}
 }
 //void RenderSystem::renderCollision(Collision::AABB const& box, glm::vec3 const& clr)
 //{
@@ -720,7 +861,25 @@ void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime, M
 		if (!object->hasComponent<Physics>()) continue;
 		Physics* physics = object->getComponent<Physics>();
 		previousOnGround[object] = physics->onGround;
+		if(object->hasComponent<Particle>()) 
+		{
+			Particle* particle = object->getComponent<Particle>();
+			if (!particle->isMaster)
+			{
+				Transform* transform = object->getComponent<Transform>();
+				particle->childData.timer -= deltaTime;
+				if (particle->childData.timer <= 0.f)
+				{
+					ParticleSystem::clearUsedID(particle->childData.grpNo);
+					manager.deleteGameObject(object);
+					continue;
+				}
+				transform->x += particle->childData.velocity.x * deltaTime;
+				transform->y += particle->childData.velocity.y * deltaTime;
+			}
+		}
 	}
+	manager.getAllGameObjects(gameObjects);
 
 	for (auto object : gameObjects) {
 		if (!object->hasComponent<Physics>()) continue;

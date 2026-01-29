@@ -519,6 +519,16 @@ namespace JsonIO {
     /// \name Vec3 helpers
     /// @{
 
+    bool GetArray2f(const rapidjson::Value& obj, const char* key, std::array<float, 2>& out) {
+        auto* v = GetObj(obj, key);
+        if (!v || !v->IsArray() || v->Size() != 2) return false;
+        for (rapidjson::SizeType i = 0; i < 2; ++i) {
+            if (!(*v)[i].IsNumber()) return false;
+            out[i] = static_cast<float>((*v)[i].GetDouble());
+        }
+        return true;
+    }
+
     /**
      * \brief Reads an array of exactly 3 numeric values into \c out .
      * \param obj JSON object.
@@ -537,6 +547,33 @@ namespace JsonIO {
     }
 
     /**
+     * \brief Reads an array of exactly 4 numeric values into \c out .
+     * \param obj JSON object.
+     * \param key Field name.
+     * \param out Output array \c {x,y,z,w} .
+     * \return \c true on success; \c false if shape/type mismatch.
+	 */
+    bool GetArray4f(const rapidjson::Value& obj, const char* key, std::array<float, 4>& out) {
+        auto* v = GetObj(obj, key);
+        if (!v || !v->IsArray() || v->Size() != 4) return false;
+        for (rapidjson::SizeType i = 0; i < 4; ++i) {
+            if (!(*v)[i].IsNumber()) return false;
+            out[i] = static_cast<float>((*v)[i].GetDouble());
+        }
+        return true;
+    }
+
+    /**
+     * \brief Writes a 2-float array field under \c key into \c obj .
+	 */
+    void PutArray2f(rapidjson::Value& obj, const char* key, const std::array<float, 2>& v, rapidjson::Document::AllocatorType& a) {
+        rapidjson::Value arr(rapidjson::kArrayType);
+        arr.PushBack(rapidjson::Value().SetFloat(v[0]), a);
+        arr.PushBack(rapidjson::Value().SetFloat(v[1]), a);
+        obj.AddMember(rapidjson::Value(key, a), arr, a);
+    }
+
+    /**
      * \brief Writes a 3-float array field under \c key into \c obj .
      */
     void PutArray3f(rapidjson::Value& obj, const char* key, const std::array<float, 3>& v, rapidjson::Document::AllocatorType& a) {
@@ -545,6 +582,27 @@ namespace JsonIO {
         arr.PushBack(rapidjson::Value().SetFloat(v[1]), a);
         arr.PushBack(rapidjson::Value().SetFloat(v[2]), a);
         obj.AddMember(rapidjson::Value(key, a), arr, a);
+    }
+    /**
+     * \brief Writes a 4-float array field under \c key into \c obj .
+	 */
+    void PutArray4f(rapidjson::Value& obj, const char* key, const std::array<float, 4>& v, rapidjson::Document::AllocatorType& a) {
+        rapidjson::Value arr(rapidjson::kArrayType);
+        arr.PushBack(rapidjson::Value().SetFloat(v[0]), a);
+        arr.PushBack(rapidjson::Value().SetFloat(v[1]), a);
+        arr.PushBack(rapidjson::Value().SetFloat(v[2]), a);
+        arr.PushBack(rapidjson::Value().SetFloat(v[3]), a);
+        obj.AddMember(rapidjson::Value(key, a), arr, a);
+    }
+
+    /**
+     * \brief Reads a 2-float array field into a \c glm::vec2 .
+	 */
+    bool ReadVec2(const rapidjson::Value& obj, const char* key, glm::vec2& out) {
+        std::array<float, 2> tmp{};
+        if (!GetArray2f(obj, key, tmp)) return false;
+        out = glm::vec2(tmp[0], tmp[1]);
+        return true;
     }
 
     /**
@@ -558,10 +616,44 @@ namespace JsonIO {
     }
 
     /**
+     * \brief Reads a 4-float array field into a \c glm::vec4 .
+	 */
+    bool ReadVec4(const rapidjson::Value& obj, const char* key, glm::vec4& out) {
+        std::array<float, 4> tmp{};
+        if (!GetArray4f(obj, key, tmp)) return false;
+        out = glm::vec4(tmp[0], tmp[1], tmp[2], tmp[3]);
+        return true;
+    }
+
+    /**
+     * \brief Writes a \c glm::vec2 to JSON as a 2-float array.
+	 */
+    void WriteVec2(rapidjson::Value& obj, const char* key, const glm::vec2& v, rapidjson::Document::AllocatorType& a) {
+        PutArray2f(obj, key, { v.x, v.y }, a);
+    }
+
+    /**
      * \brief Writes a \c glm::vec3 to JSON as a 3-float array.
      */
     void WriteVec3(rapidjson::Value& obj, const char* key, const glm::vec3& v, rapidjson::Document::AllocatorType& a) {
         PutArray3f(obj, key, { v.x, v.y, v.z }, a);
+    }
+
+    /**
+     * \brief Writes a \c glm::vec4 to JSON as a 4-float array.
+	 */
+    void WriteVec4(rapidjson::Value& obj, const char* key, const glm::vec4& v, rapidjson::Document::AllocatorType& a) {
+        PutArray4f(obj, key, { v.x, v.y, v.z, v.w }, a);
+    }
+
+    /**
+     * \brief Reads a 2-float array field into two separate floats.
+	 */
+    bool ReadVec2(const rapidjson::Value& obj, const char* key, float& x, float& y) {
+        std::array<float, 2> tmp{};
+        if (!GetArray2f(obj, key, tmp)) return false;
+        x = tmp[0]; y = tmp[1];
+        return true;
     }
 
     /**
@@ -575,10 +667,34 @@ namespace JsonIO {
     }
 
     /**
+     * \brief Reads a 4-float array field into four separate floats.
+	 */
+    bool ReadVec4(const rapidjson::Value& obj, const char* key, float& x, float& y, float& z, float& w) {
+        std::array<float, 4> tmp{};
+        if (!GetArray4f(obj, key, tmp)) return false;
+		x = tmp[0]; y = tmp[1]; z = tmp[2]; w = tmp[3];
+        return true;
+    }
+
+    /**
+	 * \brief Writes two floats as a 2-float array field.
+     * */
+    void WriteVec2(rapidjson::Value& obj, const char* key, float x, float y, rapidjson::Document::AllocatorType& a) {
+        PutArray2f(obj, key, { x, y }, a);
+    }
+
+    /**
      * \brief Writes three floats as a 3-float array field.
      */
     void WriteVec3(rapidjson::Value& obj, const char* key, float x, float y, float z, rapidjson::Document::AllocatorType& a) {
         PutArray3f(obj, key, { x, y, z }, a);
+    }
+
+    /**
+	 * \brief Writes four floats as a 4-float array field.
+     * */
+    void WriteVec4(rapidjson::Value& obj, const char* key, float x, float y, float z, float w, rapidjson::Document::AllocatorType& a) {
+        PutArray4f(obj, key, { x, y, z, w }, a);
     }
 
     /// @}
@@ -721,6 +837,30 @@ namespace JsonIO {
             JsonIO::WriteVec3(jr, "clr", r->clr.x, r->clr.y, r->clr.z, a);
 
             doc.AddMember("Render", jr, a);
+        }
+
+        // Particle
+        if (Particle* p = obj->getComponent<Particle>()) {
+            // Only serialize if this is a master particle
+            if (p->isMaster) {
+                Value jp(kObjectType);
+
+                // isMaster (0/1 to mirror prior text formats)
+                jp.AddMember("isMaster", Value(p->isMaster ? 1 : 0), a);
+
+                // Master GroupData - color (as vec4)
+                JsonIO::WriteVec4(jp, "clr", p->master.clr.r, p->master.clr.g, p->master.clr.b, p->master.clr.a, a);
+
+                // Master GroupData - velocity (as vec2)
+                JsonIO::WriteVec2(jp, "velocity", p->master.velocity.x, p->master.velocity.y, a);
+
+                // Master GroupData - other fields
+                jp.AddMember("timer", Value(p->master.timer), a);
+                jp.AddMember("offset", Value(p->master.offset), a);
+                jp.AddMember("particleAmt", Value(p->master.particleAmt), a);
+
+                doc.AddMember("Particle", jp, a);
+            }
         }
 
         // Physics
@@ -975,6 +1115,39 @@ namespace JsonIO {
                 }
 
                 ReadVec3(jr, "clr", r->clr.x, r->clr.y, r->clr.z);
+            }
+
+            // Particle
+            if (doc.HasMember("Particle")) {
+                const Value& jp = doc["Particle"];
+                Particle* p = obj->addComponent<Particle>();
+
+                // isMaster (accept bool or 0/1)
+                if (jp.HasMember("isMaster")) {
+                    p->isMaster = jp["isMaster"].IsBool()
+                        ? jp["isMaster"].GetBool()
+                        : (jp["isMaster"].GetInt() != 0);
+                }
+                else {
+                    p->isMaster = true;
+                }
+
+                // Master GroupData - color
+                ReadVec4(jp, "clr", p->master.clr.r, p->master.clr.g, p->master.clr.b, p->master.clr.a);
+
+                // Master GroupData - velocity
+                ReadVec2(jp, "velocity", p->master.velocity.x, p->master.velocity.y);
+
+                // Master GroupData - other fields
+                if (jp.HasMember("timer") && jp["timer"].IsNumber()) {
+                    p->master.timer = jp["timer"].GetFloat();
+                }
+                if (jp.HasMember("offset") && jp["offset"].IsNumber()) {
+                    p->master.offset = jp["offset"].GetFloat();
+                }
+                if (jp.HasMember("particleAmt") && jp["particleAmt"].IsInt()) {
+                    p->master.particleAmt = jp["particleAmt"].GetInt();
+                }
             }
 
             // Physics

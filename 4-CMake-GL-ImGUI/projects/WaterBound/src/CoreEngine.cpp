@@ -129,6 +129,7 @@ void CoreEngine::Init(bool forceWindowed) {
     m_collisionSystem = std::make_unique<CollisionSystem>();
     m_physicsSystem = std::make_unique<PhysicsSystem>();
     m_renderSystem = std::make_unique<RenderSystem>();
+    m_waterSystem = std::make_unique<WaterSystem>();
 #ifdef _DEBUG
     m_uiSystem = std::make_unique<UISystem>();
 #endif
@@ -139,6 +140,7 @@ void CoreEngine::Init(bool forceWindowed) {
     m_playerController = std::make_unique<PlayerControllerSystem>();
     m_audioSystem = std::make_unique<AudioSystem>();
     m_tileMapSystem = std::make_unique<TileMapSystem>();
+	m_particleSystem = std::make_unique<ParticleSystem>();
 	m_visualLCSystem = std::make_unique<VisualLogicSystem>();
 
 
@@ -146,6 +148,7 @@ void CoreEngine::Init(bool forceWindowed) {
     m_guiSystem->init(*m_manager, *m_luaSystem);
     m_luaSystem->init();
     m_renderSystem->init(*m_manager, winWidth, winHeight);
+    m_waterSystem->init();
 #ifdef _DEBUG
     m_uiSystem->init(m_window, m_renderSystem.get(), *m_manager);
 #endif
@@ -249,9 +252,11 @@ void CoreEngine::Update(float deltaTime) {
     m_collisionSystem->update(*m_manager, deltaTime);
     m_logicSystem->update(*m_manager, deltaTime);
     m_tileMapSystem->update(*m_manager);
+    m_particleSystem->update(*m_manager, deltaTime);;
     m_renderSystem->update(*m_manager, deltaTime);
     m_fontSystem->update(*m_manager, m_fps);
     m_audioSystem->update(*m_manager, deltaTime);
+    m_waterSystem->render(*m_manager);
 #ifdef _DEBUG
     m_uiSystem->update();
 #endif
@@ -395,6 +400,7 @@ void CoreEngine::Shutdown() {
     ResourceManager::getInstance().shutdown();
     renderer::cleanup();
     Font::freeFonts();
+    m_waterSystem->cleanup();
     if (m_luaSystem) m_luaSystem->cleanup();
     glfwDestroyWindow(m_window);
     glfwTerminate();

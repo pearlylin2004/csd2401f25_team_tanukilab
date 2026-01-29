@@ -31,6 +31,9 @@ Technology is prohibited.
 #include "controllerSystem.h"
 #include <LogicContainer.h>
 #include "audio.h"
+#include <algorithm>
+#include <random>
+#include <numbers>
 
 //forward declaration
 struct renderer;
@@ -104,6 +107,18 @@ public:
 private:
 	std::unordered_map<BatchKey, std::vector<renderer::InstanceData>, BatchKeyHash> objectWithTex;
 	std::unordered_map<BatchKey, std::vector<renderer::InstanceData>, BatchKeyHash> objectWithoutTex;
+};
+
+class ParticleSystem
+{
+public:
+	void activateParticle(GameObjectManager& manager);
+	void update(GameObjectManager& manager, float const& deltaTime);
+	int IDGenerator();
+	Vector2D positionGenerator(float offset);
+	Vector2D velocityGenerator(Vector2D direction);
+	static void clearUsedID(int ID);
+	//std::vector<size_t> usedID;
 };
 
 /*!***********************************************************************
@@ -270,4 +285,43 @@ private:
 
 	// helper func for collision
 	bool shouldTriggerCollision(LogicNode& node, GameObject* collided);
+};
+
+class WaterSystem {
+public:
+	WaterSystem();
+	~WaterSystem();
+
+	void init();
+	void update(GameObjectManager& manager, float deltaTime);
+	void render(GameObjectManager& manager);
+	bool isPointInWater(GameObject* waterObj, const Vector2D& point);
+	void applyWaterPhysics(GameObjectManager& manager);
+	void cleanup();
+
+private:
+	void setupWaterMesh(GameObject* waterObj);
+	void renderWaterBody(GameObject* waterObj);
+
+	GLuint m_waterShaderProgram;
+	GLint m_timeLocation;
+	GLint m_waveAmplitudeLocation;
+	GLint m_waveFrequencyLocation;
+	GLint m_waveSpeedLocation;
+	GLint m_waterAlphaLocation;
+	GLint m_waterColorLocation;
+	GLint m_useTextureLocation;
+	GLint m_viewMatrixLocation;
+	GLint m_projMatrixLocation;
+
+	struct WaterMesh {
+		GLuint vao;
+		GLuint vbo;
+		GLuint ebo;
+		GLuint ssbo;
+		int elementCount;
+		int subdivisions;
+	};
+
+	std::unordered_map<GameObject*, WaterMesh> m_waterMeshes;
 };
