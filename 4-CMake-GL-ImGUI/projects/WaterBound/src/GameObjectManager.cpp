@@ -825,6 +825,78 @@ void GameObjectManager::loadSceneFromJson(const std::string& filename) {
 				b->actionName = JsonIO::StrToButtonAction(actionStr);
 			}
 		}
+		// ---- WaterBody ----
+		if (comps.HasMember("WaterBody") && comps["WaterBody"].IsObject()) {
+			const auto& jw = comps["WaterBody"];
+
+			auto* wb = go->getComponent<WaterBody>();
+			if (!wb)
+				wb = go->addComponent<WaterBody>();
+
+			// Wave animation parameters
+			if (jw.HasMember("waveAmplitude") && jw["waveAmplitude"].IsNumber())
+				wb->waveAmplitude = jw["waveAmplitude"].GetFloat();
+
+			if (jw.HasMember("waveFrequency") && jw["waveFrequency"].IsNumber())
+				wb->waveFrequency = jw["waveFrequency"].GetFloat();
+
+			if (jw.HasMember("waveSpeed") && jw["waveSpeed"].IsNumber())
+				wb->waveSpeed = jw["waveSpeed"].GetFloat();
+
+			// Water visual properties
+			if (jw.HasMember("waterColor") && jw["waterColor"].IsArray() && jw["waterColor"].Size() == 4) {
+				wb->waterColor.r = jw["waterColor"][0].GetFloat();
+				wb->waterColor.g = jw["waterColor"][1].GetFloat();
+				wb->waterColor.b = jw["waterColor"][2].GetFloat();
+				wb->waterColor.a = jw["waterColor"][3].GetFloat();
+			}
+
+			if (jw.HasMember("waterAlpha") && jw["waterAlpha"].IsNumber())
+				wb->waterAlpha = jw["waterAlpha"].GetFloat();
+
+			// Subdivision for wave mesh
+			if (jw.HasMember("subdivisions") && jw["subdivisions"].IsInt())
+				wb->subdivisions = jw["subdivisions"].GetInt();
+
+			// Water body dimensions
+			if (jw.HasMember("width") && jw["width"].IsNumber())
+				wb->width = jw["width"].GetFloat();
+
+			if (jw.HasMember("height") && jw["height"].IsNumber())
+				wb->height = jw["height"].GetFloat();
+
+			// Physics properties
+			if (jw.HasMember("isTrigger")) {
+				wb->isTrigger = jw["isTrigger"].IsBool()
+					? jw["isTrigger"].GetBool()
+					: (jw["isTrigger"].GetInt() != 0);
+			}
+
+			if (jw.HasMember("buoyancyForce") && jw["buoyancyForce"].IsNumber())
+				wb->buoyancyForce = jw["buoyancyForce"].GetFloat();
+
+			if (jw.HasMember("waterDrag") && jw["waterDrag"].IsNumber())
+				wb->waterDrag = jw["waterDrag"].GetFloat();
+
+			// Rendering flags
+			if (jw.HasMember("renderWaves")) {
+				wb->renderWaves = jw["renderWaves"].IsBool()
+					? jw["renderWaves"].GetBool()
+					: (jw["renderWaves"].GetInt() != 0);
+			}
+
+			if (jw.HasMember("useTexture")) {
+				wb->useTexture = jw["useTexture"].IsBool()
+					? jw["useTexture"].GetBool()
+					: (jw["useTexture"].GetInt() != 0);
+			}
+			/*if (wb->useTexture && jw.HasMember("waterTextureFile") && jw["waterTextureFile"].IsString()) {
+				std::string texFile = jw["waterTextureFile"].GetString();
+				TextureData texData = ResourceManager::getInstance().getTexture(texFile);
+				wb->waterTexture = texData.id;
+			}*/
+
+		}
 	}
 
 	//create bullet pool
@@ -1417,6 +1489,70 @@ void GameObjectManager::saveSceneToJson(const std::string& filename, bool isNew)
 
 				if (!jvl.ObjectEmpty()) {
 					comps.AddMember("VisualLC", jvl, a);
+				}
+			}
+			// ---- WaterBody ---- 
+			if (auto wb = obj->getComponent<WaterBody>()) {
+				rapidjson::Value jw(rapidjson::kObjectType);
+				const rapidjson::Value* prefabWB = PM.getPrefabJsonComp(prefabDoc, "WaterBody");
+
+				// Helper lambda for comparing floats
+				auto pushIfDiffFloat = [&](const char* key, float val) {
+					if (!prefabWB || !prefabWB->HasMember(key) ||
+						!(*prefabWB)[key].IsNumber() ||
+						differsFloat((*prefabWB)[key].GetFloat(), val)) {
+						jw.AddMember(rapidjson::Value(key, a), rapidjson::Value(val), a);
+					}
+					};
+
+				auto pushIfDiffInt = [&](const char* key, int val) {
+					if (!prefabWB || !prefabWB->HasMember(key) ||
+						!(*prefabWB)[key].IsInt() ||
+						differsInt((*prefabWB)[key].GetInt(), val)) {
+						jw.AddMember(rapidjson::Value(key, a), rapidjson::Value(val), a);
+					}
+					};
+
+				auto pushIfDiffBool = [&](const char* key, bool val) {
+					if (!prefabWB || !prefabWB->HasMember(key) ||
+						((*prefabWB)[key].IsBool() && differsBool((*prefabWB)[key].GetBool(), val)) ||
+						((*prefabWB)[key].IsInt() && differsBool((*prefabWB)[key].GetInt() != 0, val))) {
+						jw.AddMember(rapidjson::Value(key, a), rapidjson::Value(val ? 1 : 0), a);
+					}
+					};
+
+				// Save wave parameters
+				pushIfDiffFloat("waveAmplitude", wb->waveAmplitude);
+				pushIfDiffFloat("waveFrequency", wb->waveFrequency);
+				pushIfDiffFloat("waveSpeed", wb->waveSpeed);
+
+				// Save water color if different from prefab
+				if (!prefabWB || !prefabWB->HasMember("waterColor") ||
+					differsFloat((*prefabWB)["waterColor"][0].GetFloat(), wb->waterColor.r) ||
+					differsFloat((*prefabWB)["waterColor"][1].GetFloat(), wb->waterColor.g) ||
+					differsFloat((*prefabWB)["waterColor"][2].GetFloat(), wb->waterColor.b) ||
+					differsFloat((*prefabWB)["waterColor"][3].GetFloat(), wb->waterColor.a)) {
+
+					rapidjson::Value colorArray(rapidjson::kArrayType);
+					colorArray.PushBack(wb->waterColor.r, a);
+					colorArray.PushBack(wb->waterColor.g, a);
+					colorArray.PushBack(wb->waterColor.b, a);
+					colorArray.PushBack(wb->waterColor.a, a);
+					jw.AddMember("waterColor", colorArray, a);
+				}
+
+				pushIfDiffFloat("waterAlpha", wb->waterAlpha);
+				pushIfDiffInt("subdivisions", wb->subdivisions);
+				pushIfDiffFloat("width", wb->width);
+				pushIfDiffFloat("height", wb->height);
+				pushIfDiffBool("isTrigger", wb->isTrigger);
+				pushIfDiffFloat("buoyancyForce", wb->buoyancyForce);
+				pushIfDiffFloat("waterDrag", wb->waterDrag);
+				pushIfDiffBool("renderWaves", wb->renderWaves);
+				pushIfDiffBool("useTexture", wb->useTexture);
+
+				if (!jw.ObjectEmpty()) {
+					comps.AddMember("WaterBody", jw, a);
 				}
 			}
 
