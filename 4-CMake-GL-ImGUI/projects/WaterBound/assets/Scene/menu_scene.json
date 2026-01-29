@@ -80,6 +80,9 @@
           "hasTex": 1,
           "hasAnimation": 0
         },
+        "VisualLC": {
+          "filename": "shakeWhenHover.json"
+        },
         "Button": {
           "action": "open_control"
         }
@@ -107,6 +110,9 @@
           "texture": "assets/quit_button.png",
           "hasTex": 1,
           "hasAnimation": 0
+        },
+        "VisualLC": {
+          "filename": "shakeWhenHover.json"
         },
         "Button": {
           "action": "exit_game"

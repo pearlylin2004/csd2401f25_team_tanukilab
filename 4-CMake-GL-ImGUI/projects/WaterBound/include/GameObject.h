@@ -25,6 +25,8 @@ Technology is prohibited.
 
 class GameObject {
 public:
+    bool active;
+
 	//constructor
     GameObject(const std::string& name, const std::string& prefabID = "");
 
@@ -112,9 +114,6 @@ public:
         }
         return false;//component not found
     }
-
-    //active flag
-    bool active;
 
 private:
     std::string m_name;//name of object
