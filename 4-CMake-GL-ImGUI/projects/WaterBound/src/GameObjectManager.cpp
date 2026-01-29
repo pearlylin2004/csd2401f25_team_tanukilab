@@ -1545,7 +1545,8 @@ void GameObjectManager::createBulletPool(const std::string& templateBulletName, 
 }
 
 void GameObjectManager::initializeSimulationResources() {
-	// Initialize audio for all objects
+	// Initialize 
+	// for all objects
 	for (auto& pair : m_gameObjects) {
 		GameObject* obj = pair.second.get();
 		if (obj->hasComponent<AudioComponent>()) {

@@ -54,6 +54,13 @@
         },
         "Button": {
           "action": "start_game"
+        },
+        "AudioComponent" :{
+          "channels": {
+            "hover": {
+              "audioFile": "assets/audio/footsteps.wav"
+            }
+          }
         }
       }
     },

@@ -60,7 +60,21 @@ void GUISystem::update() {
 
     if (UISystem::isShowUI()) return; //skip if UI is shown
 
-    if (InputHandler::isMouseButtonClicked(GLFW_MOUSE_BUTTON_LEFT)) {
+    //check for hover over
+    if (!InputHandler::isMouseButtonClicked(GLFW_MOUSE_BUTTON_LEFT)) {
+        for (auto& pair : m_buttons) {
+            GameObject* btn = pair.second; //get button object
+            if (!btn) continue; //safety check if button is valid
+
+            //when hover over button we can add hover effect here
+            if (isPointInButton(worldMousePos, btn)) {
+				onHover(btn); //play hover sound
+                return; //stop checking after a click
+            }
+        }
+    }
+
+    else {
         for (auto& pair : m_buttons) {
             GameObject* btn = pair.second; //get button object
             if (!btn) continue; //safety check if button is valid
@@ -76,6 +90,19 @@ void GUISystem::update() {
             }
         }
     }
+}
+
+void GUISystem::onHover(GameObject* obj) {
+    AudioComponent* audioComp = obj->getComponent<AudioComponent>();
+    if (!audioComp) return;
+
+    AudioChannel* hoverChannel = audioComp->getChannel("hover");
+    if (!hoverChannel) return;
+
+    // Play the sound
+    m_bgmChannel = AudioHandler::getInstance().playSound(hoverChannel);
+
+	std::cout << "[GUI] Hover sound played" << std::endl;
 }
 
 //creation of buttons

@@ -60,6 +60,11 @@ private:
     void startGame(GameObjectManager& manager); //start game
     void stopGame(); //stop game	
 
+    //for button audio
+    void onHover(GameObject* obj);
+	void onClick(GameObject* obj);
+    FMOD::Channel* m_bgmChannel = nullptr;
+
     bool isPointInButton(const Vector2D& point, GameObject* button);
     void createButtonActions(); //create button actions
 
