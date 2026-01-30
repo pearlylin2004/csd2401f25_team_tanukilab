@@ -5,7 +5,7 @@
             - 100%
 \par		cheeqing.tan@digipen.edu
 \date       January, 15th, 2026
-\brief      s
+\brief      A visual logic editor for creating, connecting, and managing event, condition, and action				nodes with drag-and-drop, zoom, pan, and property editing. Supports saving/loading logic,			node duplication/deletion, and interactive connections for game object behavior scripting
 
 Copyright (C) 2026 DigiPen Institute of Technology.
 Reproduction or disclosure of this file or its contents

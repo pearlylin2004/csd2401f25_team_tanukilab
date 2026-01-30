@@ -5,7 +5,7 @@
             - 100% of the file
 \par        cheeqing.tan@digipen.edu
 \date       January, 16th, 2026
-\brief      T
+\brief      This source file implements the Visual Logic System, which manages visual scripting for game			objects. It handles the execution of nodes in a visual logic component (VisualLC) attached			to game objects, following an Event-Condition-Action (ECA) paradigm.
 
 Copyright (C) 2026 DigiPen Institute of Technology.
 Reproduction or disclosure of this file or its contents
