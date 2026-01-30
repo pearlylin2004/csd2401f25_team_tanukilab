@@ -909,7 +909,7 @@ void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime, M
 				physics->shootTimer += deltaTime;
 
 				// Check if mouse button is being held down
-				if (InputHandler::isMouseLeftHeld() && (SceneWindow::isSceneHovered() && !EditorManager::isEditingMode())) {
+				if (InputHandler::isMouseLeftHeld() && (!UISystem::isShowUI() ||(SceneWindow::isSceneHovered() && !EditorManager::isEditingMode()))) {
 					
 					if (physics->shootTimer >= physics->fireRate) {
 						GameObject* bullet = PhysicsForces::findAvailableBullet(manager);

@@ -39,7 +39,9 @@
         0.0
       ],
       "colliderType": "square",
-      "collisionRes": "StopWhenCollide"
+      "collisionRes": "StopWhenCollide",
+      "collisionTag": "fire",
+      "ignoreCollisionsWith": []
     },
     "StateMachine": {
       "state": "Idle",
