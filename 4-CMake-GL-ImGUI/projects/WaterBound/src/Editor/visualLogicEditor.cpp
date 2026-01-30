@@ -130,6 +130,10 @@ void VisualLogicEditor::render() {
 				if (ImGui::MenuItem("Move Object")) {
 					addNode(NodeType::ACTION, NodeImplementation::MOVE_OBJECT);
 				}
+				
+				if (ImGui::MenuItem("Set Position")) {
+					addNode(NodeType::ACTION, NodeImplementation::SET_POSITION);
+				}
 
 				if (ImGui::MenuItem("Rotate Object")) {
 					addNode(NodeType::ACTION, NodeImplementation::ROTATE_OBJECT);
@@ -137,6 +141,14 @@ void VisualLogicEditor::render() {
 
 				if (ImGui::MenuItem("Set Rotation")) {
 					addNode(NodeType::ACTION, NodeImplementation::SET_ROTATION);
+				}
+
+				if (ImGui::MenuItem("Set Scale")) {
+					addNode(NodeType::ACTION, NodeImplementation::SET_SCALE);
+				}
+
+				if (ImGui::MenuItem("Scale Proportional")) {
+					addNode(NodeType::ACTION, NodeImplementation::SCALE_PROPORTIONAL);
 				}
 
 				if (ImGui::MenuItem("Set Float")) {
@@ -786,6 +798,70 @@ void VisualLogicEditor::renderNodeProperties() {
 				node.parameters["angle"] = std::to_string(angle);
 			}
 		}
+		// set obj position to x,y
+		else if (node.imp == NodeImplementation::SET_POSITION) {
+			ImGui::Text("Set Position");
+			ImGui::Separator();
+
+			static char xBuffer[64];
+			static char yBuffer[64];
+
+			std::string currentX = node.parameters.count("x") ?
+				node.parameters["x"] : "0";
+			std::string currentY = node.parameters.count("y") ?
+				node.parameters["y"] : "0";
+
+			strncpy_s(xBuffer, currentX.c_str(), sizeof(xBuffer) - 1);
+			strncpy_s(yBuffer, currentY.c_str(), sizeof(yBuffer) - 1);
+
+			ImGui::Text("X Position:");
+			if (ImGui::InputText("##x", xBuffer, sizeof(xBuffer))) {
+				node.parameters["x"] = xBuffer;
+			}
+
+			ImGui::Text("Y Position:");
+			if (ImGui::InputText("##y", yBuffer, sizeof(yBuffer))) {
+				node.parameters["y"] = yBuffer;
+			}
+
+			ImGui::TextWrapped("Sets the object's position to the specified coordinates.");
+		}
+		// set obj scale to x,y
+		else if (node.imp == NodeImplementation::SET_SCALE) {
+			ImGui::Text("Set Scale");
+			ImGui::Separator();
+
+			static char scaleXBuffer[64];
+			static char scaleYBuffer[64];
+
+			std::string currentScaleX = node.parameters.count("scaleX") ?
+				node.parameters["scaleX"] : "1";
+			std::string currentScaleY = node.parameters.count("scaleY") ?
+				node.parameters["scaleY"] : "1";
+
+			strncpy_s(scaleXBuffer, currentScaleX.c_str(), sizeof(scaleXBuffer) - 1);
+			strncpy_s(scaleYBuffer, currentScaleY.c_str(), sizeof(scaleYBuffer) - 1);
+
+			ImGui::Text("Scale X:");
+			if (ImGui::InputText("##scaleX", scaleXBuffer, sizeof(scaleXBuffer))) {
+				node.parameters["scaleX"] = scaleXBuffer;
+			}
+
+			ImGui::Text("Scale Y:");
+			if (ImGui::InputText("##scaleY", scaleYBuffer, sizeof(scaleYBuffer))) {
+				node.parameters["scaleY"] = scaleYBuffer;
+			}
+		}
+		// scale obj proportionally
+		else if (node.imp == NodeImplementation::SCALE_PROPORTIONAL) {
+			ImGui::Text("Scale Proportional");
+
+			float scale = node.parameters.count("scale") ? std::stof(node.parameters["scale"]) : 2.f;
+
+			if (ImGui::DragFloat("Scale Factor", &scale, 0.1f)) {
+				node.parameters["scale"] = std::to_string(scale);
+			}
+		}
 		// set float variable
 		else if (node.imp == NodeImplementation::SET_FLOAT) {
 			char varBuffer[128];
@@ -1309,6 +1385,17 @@ void VisualLogicEditor::addNode(NodeType type, NodeImplementation imp) {
 		}
 		else if (imp == NodeImplementation::SET_ROTATION) {
 			node.parameters["angle"] = "0";
+		}
+		else if (imp == NodeImplementation::SET_POSITION) {
+			node.parameters["x"] = "0";
+			node.parameters["y"] = "0";
+		}
+		else if (imp == NodeImplementation::SET_SCALE) {
+			node.parameters["scaleX"] = "1";
+			node.parameters["scaleY"] = "1";
+		}
+		else if (imp == NodeImplementation::SCALE_PROPORTIONAL) {
+			node.parameters["scale"] = "2";
 		}
 		else if (imp == NodeImplementation::SET_FLOAT) {
 			node.parameters["variable"] = "shakeDir";

@@ -87,15 +87,15 @@
       "implementation": "Check Timer",
       "type": 2,
       "position": [
-        508.0,
-        93.0
+        826.0,
+        91.0
       ],
       "hasInput": true,
       "hasOutput": false,
       "hasTrueOutput": true,
       "hasFalseOutput": true,
       "parameters": {
-        "threshold": "2.0",
+        "threshold": "5.0",
         "timerName": "timer_3"
       }
     },
@@ -104,8 +104,8 @@
       "implementation": "Set State",
       "type": 1,
       "position": [
-        813.0,
-        84.0
+        510.0,
+        94.0
       ],
       "hasInput": true,
       "hasOutput": true,
@@ -120,8 +120,8 @@
       "implementation": "Set Float",
       "type": 1,
       "position": [
-        1118.0,
-        82.0
+        1425.0,
+        84.0
       ],
       "hasInput": true,
       "hasOutput": true,
@@ -130,6 +130,39 @@
       "parameters": {
         "value": "0",
         "variable": "bulletHit"
+      }
+    },
+    {
+      "id": 12,
+      "implementation": "Set Position",
+      "type": 1,
+      "position": [
+        1127.0,
+        93.0
+      ],
+      "hasInput": true,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false,
+      "parameters": {
+        "x": "1000",
+        "y": "0"
+      }
+    },
+    {
+      "id": 14,
+      "implementation": "Scale Proportional",
+      "type": 1,
+      "position": [
+        833.0,
+        -58.0
+      ],
+      "hasInput": true,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false,
+      "parameters": {
+        "scale": "2.500000"
       }
     }
   ],
@@ -153,19 +186,31 @@
       "inputPin": "In"
     },
     {
-      "fromNodeId": 10,
-      "outputPin": "True",
-      "toNodeId": 3,
+      "fromNodeId": 9,
+      "outputPin": "Out",
+      "toNodeId": 14,
       "inputPin": "In"
     },
     {
-      "fromNodeId": 3,
+      "fromNodeId": 10,
       "outputPin": "True",
       "toNodeId": 2,
       "inputPin": "In"
     },
     {
       "fromNodeId": 2,
+      "outputPin": "Out",
+      "toNodeId": 3,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 3,
+      "outputPin": "True",
+      "toNodeId": 12,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 12,
       "outputPin": "Out",
       "toNodeId": 11,
       "inputPin": "In"

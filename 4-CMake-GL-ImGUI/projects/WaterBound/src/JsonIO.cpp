@@ -290,6 +290,9 @@ namespace JsonIO {
         if (str == "Move Object") return NodeImplementation::MOVE_OBJECT;
         if (str == "Rotate Object") return NodeImplementation::ROTATE_OBJECT;
         if (str == "Set Rotation") return NodeImplementation::SET_ROTATION;
+        if (str == "Set Position") return NodeImplementation::SET_POSITION;
+        if (str == "Set Scale") return NodeImplementation::SET_SCALE;
+        if (str == "Scale Proportional") return NodeImplementation::SCALE_PROPORTIONAL;
 		if (str == "Set Float") return NodeImplementation::SET_FLOAT;
 		if (str == "Play Sound") return NodeImplementation::PLAY_SOUND;
 		if (str == "Set State") return NodeImplementation::SET_STATE;
@@ -319,6 +322,9 @@ namespace JsonIO {
             case NodeImplementation::MOVE_OBJECT: return "Move Object";
 		    case NodeImplementation::ROTATE_OBJECT: return "Rotate Object";
 			case NodeImplementation::SET_ROTATION: return "Set Rotation";
+            case NodeImplementation::SET_POSITION: return "Set Position";
+            case NodeImplementation::SET_SCALE: return "Set Scale";
+            case NodeImplementation::SCALE_PROPORTIONAL: return "Scale Proportional";
             case NodeImplementation::SET_FLOAT: return "Set Float";
 			case NodeImplementation::PLAY_SOUND: return "Play Sound";
 			case NodeImplementation::SET_STATE: return "Set State";
