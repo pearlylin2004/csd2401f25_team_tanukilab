@@ -60,16 +60,12 @@ private:
     void startGame(GameObjectManager& manager); //start game
     void stopGame(); //stop game	
 
-    //for button audio
-    void onHover(GameObject* obj);
-	void onClick(GameObject* obj);
-    FMOD::Channel* m_bgmChannel = nullptr;
-
     bool isPointInButton(const Vector2D& point, GameObject* button);
     void createButtonActions(); //create button actions
 
     std::unordered_map<ButtonAction, GameObject*> m_buttons; //for storing buttons 
 	std::unordered_map<ButtonAction, std::function<void()>> m_buttonActions; //map of button actions
+	std::vector<GameObject*> allObjs; //to store all game objects
 
     GameState m_currentState;
     GameState m_previousState;

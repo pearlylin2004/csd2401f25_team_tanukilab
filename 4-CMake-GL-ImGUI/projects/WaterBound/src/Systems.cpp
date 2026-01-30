@@ -922,6 +922,7 @@ void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime, M
 							PhysicsForces::shoot(bullet, transform, mouseWorldPos);
 							messageBus.publish(Message("KeyPressed", nullptr, KeyEvent{ "LEFT_CLICK", true }));
 
+							//set a flay saying channel is pending to play sound
 							if (bullet->hasComponent<AudioComponent>()) {
 								AudioComponent* audio = bullet->getComponent<AudioComponent>();
 								AudioChannel* ch = audio->getDefaultChannel();
@@ -1657,6 +1658,10 @@ void LogicSystem::update(GameObjectManager& manager, float const& dt) {
 	double ms = std::chrono::duration<double, std::milli>(end - start).count();
 	g_SystemTimers.push_back({ "Logic", ms });
 }
+
+/*
+This function runs once when scene load and system starts
+*/
 void AudioSystem::init(GameObjectManager& manager) {
 	auto start = std::chrono::high_resolution_clock::now();
 
@@ -1919,7 +1924,7 @@ void AudioSystem::initializeSceneAudio(GameObjectManager& manager) {
 		// Pre-load all sounds for all channels
 		for (auto& [channelName, channel] : audio->audioChannels) {
 			if (!channel.audioFile.empty()) {
-				// Pass isSpatial flag during preload
+				// Pass isSpatial flag during preload, true source of the sound
 				FMOD::Sound* sound = ResourceManager::getInstance().getSound(
 					channel.audioFile,
 					channel.loop,
