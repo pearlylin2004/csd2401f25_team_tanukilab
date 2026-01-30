@@ -297,6 +297,9 @@ namespace JsonIO {
 		if (str == "Play Sound") return NodeImplementation::PLAY_SOUND;
 		if (str == "Set State") return NodeImplementation::SET_STATE;
 		if (str == "Reset Timer") return NodeImplementation::RESET_TIMER;
+		if (str == "Set Position On Collided") return NodeImplementation::SET_POSITION_ON_COLLIDED;
+		if (str == "Set State On Collided") return NodeImplementation::SET_STATE_ON_COLLIDED;
+		if (str == "Apply Force On Collided") return NodeImplementation::APPLY_FORCE_ON_COLLIDED;
 
 		if (str == "Check Key Held") return NodeImplementation::CHECK_KEY_HELD;
 		if (str == "Compare Value") return NodeImplementation::COMPARE_VALUE;
@@ -329,6 +332,9 @@ namespace JsonIO {
 			case NodeImplementation::PLAY_SOUND: return "Play Sound";
 			case NodeImplementation::SET_STATE: return "Set State";
 			case NodeImplementation::RESET_TIMER: return "Reset Timer";
+			case NodeImplementation::SET_POSITION_ON_COLLIDED: return "Set Position On Collided";
+			case NodeImplementation::SET_STATE_ON_COLLIDED: return "Set State On Collided";
+			case NodeImplementation::APPLY_FORCE_ON_COLLIDED: return "Apply Force On Collided";
 
             case NodeImplementation::CHECK_KEY_HELD: return "Check Key Held";
             case NodeImplementation::COMPARE_VALUE: return "Compare Value";

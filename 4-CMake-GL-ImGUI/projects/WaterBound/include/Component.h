@@ -653,6 +653,9 @@ enum class NodeImplementation {
     PLAY_SOUND,
     SET_STATE,
     RESET_TIMER,
+	SET_POSITION_ON_COLLIDED, // might not work on those object that has input
+    SET_STATE_ON_COLLIDED,
+    APPLY_FORCE_ON_COLLIDED,
 
     // DEFAULT
     DEFAULT // nothing happen :)
@@ -707,6 +710,7 @@ public:
     // collision 
     std::unordered_set<GameObject*> curCollision;
     std::unordered_set<GameObject*> preCollision;
+	GameObject* lastCollidedObj = nullptr;
 };
 
 // WaterBody component for creating animated water surfaces     

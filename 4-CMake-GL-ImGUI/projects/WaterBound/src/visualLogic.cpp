@@ -80,7 +80,8 @@ void VisualLogicSystem::update(GameObject* obj, VisualLC* logic, float dt) {
 			for (LogicNode& node : logic->nodes) {
 				if (node.imp == NodeImplementation::ON_COLLISION_ENTER) {
 					if (shouldTriggerCollision(node, collided)) {
-						logic->stringVar["_collidedWith"] = collided->getObjectName();
+						//logic->stringVar["_collidedWith"] = collided->getObjectName();
+						logic->lastCollidedObj = collided;
 						executeNode(obj, logic, node.id, dt);
 					}
 				}
@@ -93,7 +94,8 @@ void VisualLogicSystem::update(GameObject* obj, VisualLC* logic, float dt) {
 		for (LogicNode& node : logic->nodes) {
 			if (node.imp == NodeImplementation::WHILE_COLLIDING) {
 				if (shouldTriggerCollision(node, collided)) {
-					logic->stringVar["_collidedWith"] = collided->getObjectName();
+					//logic->stringVar["_collidedWith"] = collided->getObjectName();
+					logic->lastCollidedObj = collided;
 					executeNode(obj, logic, node.id, dt);
 				}
 			}
@@ -106,7 +108,8 @@ void VisualLogicSystem::update(GameObject* obj, VisualLC* logic, float dt) {
 			for (LogicNode& node : logic->nodes) {
 				if (node.imp == NodeImplementation::ON_COLLISION_EXIT) {
 					if (shouldTriggerCollision(node, collided)) {
-						logic->stringVar["_collidedWith"] = collided->getObjectName();
+						//logic->stringVar["_collidedWith"] = collided->getObjectName();
+						logic->lastCollidedObj = collided;
 						executeNode(obj, logic, node.id, dt);
 					}
 				}
@@ -406,6 +409,51 @@ void VisualLogicSystem::executeActionNode(GameObject* obj, VisualLC* logic, Logi
 		logic->timers[timerName] = 0.f;
 
 		std::cout << "after reset: " << logic->timers[timerName] << std::endl;
+	}
+	else if (node.imp == NodeImplementation::SET_POSITION_ON_COLLIDED) {
+		GameObject* collidedObj = logic->lastCollidedObj;
+		if (!collidedObj) return;
+
+		Transform* collidedTransform = collidedObj->getComponent<Transform>();
+		if (!collidedTransform) return;
+
+		float deltaX = node.parameters.count("deltaXCollided") ? std::stof(node.parameters["deltaXCollided"]) : 0.f;
+		float deltaY = node.parameters.count("deltaYCollided") ? std::stof(node.parameters["deltaXCollided"]) : 0.f;
+
+		collidedTransform->x += deltaX;
+		collidedTransform->y += deltaY;
+
+		std::cout << "Set collided object's position to (" << collidedTransform->x << ", " << collidedTransform->y << ")\n";
+	}
+	else if (node.imp == NodeImplementation::SET_STATE_ON_COLLIDED) {
+		GameObject* collidedObj = logic->lastCollidedObj;
+		if (!collidedObj) return;
+
+		StateMachine* collidedSM = collidedObj->getComponent<StateMachine>();
+		if (!collidedSM) return;
+
+		std::string stateName = node.parameters.count("targetStateCollided") ? node.parameters["targetStateCollided"] : JsonIO::stateNames[0];
+
+		collidedSM->state = JsonIO::parsePlayerState(stateName);
+		collidedSM->stateTime = 0.f;
+		collidedSM->fixState = true;
+
+		//std::cout << "Set collided object's state to " << stateName << "\n";
+	}
+	else if (node.imp == NodeImplementation::APPLY_FORCE_ON_COLLIDED) {
+		GameObject* collidedObj = logic->lastCollidedObj;
+		if (!collidedObj) return;
+
+		Physics* collidedPhysic = collidedObj->getComponent<Physics>();
+		if (!collidedPhysic) return;
+
+		float forceX = node.parameters.count("forceX") ? std::stof(node.parameters["forceX"]) : 0.f;
+		float forceY = node.parameters.count("forceY") ? std::stof(node.parameters["forceY"]) : 0.f;
+
+		collidedPhysic->dynamics.velocity.x += forceX;
+		collidedPhysic->dynamics.velocity.y += forceY;
+
+		//std::cout << "Put force on collided object to (" << collidedPhysic->dynamics.velocity.x << ", " << collidedPhysic->dynamics.velocity.y << ")\n";
 	}
 }
 
