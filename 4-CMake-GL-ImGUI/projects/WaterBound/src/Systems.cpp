@@ -1216,7 +1216,7 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 					else if (c1->colliderType == shape::circle && c2->colliderType == shape::square) {
 						Collision::AABB aabb2 = Collision::getObjectAABBbyCollider(t2, c2->colliderSize);
 						Collision::Circle circle1 = Collision::getObjectCirclebyCollider(t1, c1->colliderSize);
-						info = Collision::CollisionIntersection_CircleAABB_Dynamic_Info(circle1, vel2, aabb2, vel1);
+						info = Collision::CollisionIntersection_CircleAABB_Dynamic_Info(circle1, vel1, aabb2, vel2);
 					}
 					else {
 						continue; //current dont have other shapes of collision 
@@ -1240,15 +1240,21 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 							if (info.normal.y != 0) {
 								t1->y += info.normal.y * info.penetration * 0.5f;
 								t2->y -= info.normal.y * info.penetration * 0.5f;
-
 								p1->dynamics.position.y = t1->y;
 								p2->dynamics.position.y = t2->y;
 
-								p1->dynamics.velocity.y = 0.f;
-								p2->dynamics.velocity.y = 0.f;
-
-								if (info.normal.y < 0) p1->onGround = true;
-								else p2->onGround = true;
+								if (info.normal.y > 0) {
+									// obj1 lands on obj2 from above
+									p1->dynamics.velocity.y = 0.f;
+									p1->velY = 0.f;
+									p1->onGround = true;
+								}
+								else if (info.normal.y < 0) {
+									// obj2 lands on obj1 from above
+									p2->dynamics.velocity.y = 0.f;
+									p2->velY = 0.f;
+									p2->onGround = true;
+								}
 							}
 						}
 						// CASE 2: obj1 is pushable, obj2 is static
@@ -1265,7 +1271,7 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 								p1->dynamics.position.y = t1->y;
 								p1->dynamics.velocity.y = 0.f;
 
-								if (info.normal.y < 0) p1->onGround = true;
+								if (info.normal.y > 0) p1->onGround = true;
 							}
 						}
 						// CASE 3: obj1 is static, obj2 is pushable
@@ -1283,7 +1289,7 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 								p2->dynamics.position.y = t2->y;
 								p2->dynamics.velocity.y = 0.f;
 
-								if (info.normal.y > 0) p2->onGround = true;
+								if (info.normal.y < 0) p2->onGround = true;
 							}
 						}
 						// CASE 4: Both are static (shouldnt happen?)

@@ -15,10 +15,6 @@
         "Render": {
           "texture": "assets/Texture\\water_texture.png",
           "hasTex": 1
-        },
-        "CollisionInfo": {
-          "collisionTag": "bullet",
-          "ignoreCollisionsWith": [ "player"]
         }
       }
     },

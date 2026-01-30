@@ -40,7 +40,9 @@
         0.0
       ],
       "colliderType": "square",
-      "collisionRes": "StopWhenCollide"
+      "collisionRes": "StopWhenCollide",
+      "collisionTag": "bullet",
+      "ignoreCollisionsWith": [ "player"]
     },
     "AudioComponent": {
       "channels": {
