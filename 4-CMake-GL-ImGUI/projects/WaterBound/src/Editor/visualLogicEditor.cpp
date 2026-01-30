@@ -233,7 +233,8 @@ void VisualLogicEditor::render() {
 		m_draggingNodeId = -1;
 	}
 
-	if (ImGui::IsWindowHovered() && InputHandler::getMouseScroll() != 0.f) {
+	// why not working???
+	if (isCanvasHovered && InputHandler::getMouseScroll() != 0.f) {
 		float scroll = InputHandler::getMouseScroll();
 		m_zoom += scroll * 0.1f;
 		m_zoom = glm::clamp(m_zoom, 0.5f, 2.f);
