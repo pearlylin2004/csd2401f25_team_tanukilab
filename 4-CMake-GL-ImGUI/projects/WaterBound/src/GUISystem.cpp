@@ -70,11 +70,10 @@ void GUISystem::update() {
             if (isPointInButton(worldMousePos, btn)) {
                 if (btn->hasComponent<AudioComponent>()) {
                     AudioComponent* audio = btn->getComponent<AudioComponent>();
-                    AudioChannel* ch = audio->getDefaultChannel();
-                    std::cout << "[AUDIO] Playing: " << ch->audioFile << std::endl;
+                    AudioChannel* ch = audio->getChannel("button_hover");
                     ch->isPendingPlay = true;
+                    return; //stop checking after a click
                 }
-                return; //stop checking after a click
             }
         }
     }
