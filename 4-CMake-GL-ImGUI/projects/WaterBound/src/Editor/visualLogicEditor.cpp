@@ -1406,23 +1406,32 @@ void VisualLogicEditor::renderSavePopup() {
 
 void VisualLogicEditor::addNode(NodeType type, NodeImplementation imp) {
 	LogicNode node;
-	if (m_selectedNodeId != -1) {
-		// Find the selected node
-		auto it = std::find_if(Editor::visualLogicState.nodes.begin(),
-			Editor::visualLogicState.nodes.end(),
-			[this](const LogicNode& n) { return n.id == m_selectedNodeId; });
+	// get viewport center
+	ImVec2 viewportSize = ImGui::GetContentRegionAvail();
 
-		if (it != Editor::visualLogicState.nodes.end()) {
-			node.position.x = it->position.x + 150.f; // offset to the right
-			node.position.y = it->position.y + 20.f; // same y position
-		}
-		else {
-			node.position = Vector2D(100, 100);
-		}
-	}
-	else {
-		node.position = Vector2D(100, 100);
-	}
+	Vector2D viewportCenter;
+	viewportCenter.x = (viewportSize.x / 2.f - m_canvasOffset.x) / m_zoom;
+	viewportCenter.y = (viewportSize.y / 2.f - m_canvasOffset.y) / m_zoom;
+
+	node.position = viewportCenter;
+
+	//if (m_selectedNodeId != -1) {
+	//	// Find the selected node
+	//	auto it = std::find_if(Editor::visualLogicState.nodes.begin(),
+	//		Editor::visualLogicState.nodes.end(),
+	//		[this](const LogicNode& n) { return n.id == m_selectedNodeId; });
+
+	//	if (it != Editor::visualLogicState.nodes.end()) {
+	//		node.position.x = it->position.x + 150.f; // offset to the right
+	//		node.position.y = it->position.y + 20.f; // same y position
+	//	}
+	//	else {
+	//		node.position = Vector2D(100, 100);
+	//	}
+	//}
+	//else {
+	//	node.position = Vector2D(100, 100);
+	//}
 
 	node.id = m_nextNodeId++;
 	node.type = type;
