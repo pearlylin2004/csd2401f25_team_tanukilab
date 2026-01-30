@@ -65,7 +65,6 @@ void VisualLogicSystem::init(GameObject* obj, VisualLC* logic) {
 }
 
 void VisualLogicSystem::update(GameObject* obj, VisualLC* logic, float dt) {
-	(void)dt; // to use in the future
 	if (!obj || !logic) return;
 
 
