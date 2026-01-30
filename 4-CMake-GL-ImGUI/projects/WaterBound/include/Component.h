@@ -237,7 +237,8 @@ public:
 // enum class used for CollisionSystem, to determine to stop/push by force (currently not force ig)
 enum class CollisionResponseMode {
     StopWhenCollide, // if collide by another obj, just stop
-    MoveWhenCollide // if collide by another obj, apply "fake" force and kena push
+    MoveWhenCollide, // if collide by another obj, apply "fake" force and kena push
+    NoResponse
 };
 
 //button action 

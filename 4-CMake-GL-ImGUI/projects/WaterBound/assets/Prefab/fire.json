@@ -144,6 +144,9 @@
           "maxDistance": 50.0
         }
       }
+    },
+    "VisualLC": {
+      "filename": "fire-smoke.json"
     }
   }
 }

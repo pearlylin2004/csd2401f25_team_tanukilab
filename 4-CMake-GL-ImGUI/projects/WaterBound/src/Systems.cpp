@@ -1224,6 +1224,17 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 
 					//checking if collided
 					if (info.collided) {
+						// Visual logic events (if needed)
+						if (obj1->hasComponent<VisualLC>()) {
+							VisualLC* logic1 = obj1->getComponent<VisualLC>();
+							logic1->curCollision.insert(obj2);
+						}
+
+						if (obj2->hasComponent<VisualLC>()) {
+							VisualLC* logic2 = obj2->getComponent<VisualLC>();
+							logic2->curCollision.insert(obj1);
+						}
+
 						if (c1->collisionRes == CollisionResponseMode::NoResponse || c2->collisionRes == CollisionResponseMode::NoResponse) continue;
 
 						bool obj1IsStatic = (c1->collisionRes == CollisionResponseMode::StopWhenCollide);
@@ -1305,18 +1316,7 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 								t1->y += info.normal.y * info.penetration;
 								p1->dynamics.position.y = t1->y;
 							}
-						}
-
-						// Visual logic events (if needed)
-						if (obj1->hasComponent<VisualLC>()) {
-							VisualLC* logic1 = obj1->getComponent<VisualLC>();
-							logic1->curCollision.insert(obj2);
-						}
-
-						if (obj2->hasComponent<VisualLC>()) {
-							VisualLC* logic2 = obj2->getComponent<VisualLC>();
-							logic2->curCollision.insert(obj1);
-						}
+						}					
 					}
 					//if (info.collided) {
 					//	// c1 is the moving obj (player), c2 is the obj it collide with
