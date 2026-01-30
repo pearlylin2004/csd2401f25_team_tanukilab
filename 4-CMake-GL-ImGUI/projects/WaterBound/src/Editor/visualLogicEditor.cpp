@@ -167,6 +167,18 @@ void VisualLogicEditor::render() {
 					addNode(NodeType::ACTION, NodeImplementation::RESET_TIMER);
 				}
 
+				if (ImGui::MenuItem("Set Position on Collider")) {
+					addNode(NodeType::ACTION, NodeImplementation::SET_POSITION_ON_COLLIDED);
+				}
+
+				if (ImGui::MenuItem("Set State on Collider")) {
+					addNode(NodeType::ACTION, NodeImplementation::SET_STATE_ON_COLLIDED);
+				}
+
+				if (ImGui::MenuItem("Set Force on Collider")) {
+					addNode(NodeType::ACTION, NodeImplementation::APPLY_FORCE_ON_COLLIDED);
+				}
+
 				ImGui::EndMenu();
 			}
 			/* -------- END -------- */
@@ -1024,6 +1036,61 @@ void VisualLogicEditor::renderNodeProperties() {
 			ImGui::Separator();
 			ImGui::TextWrapped("Resets the selected timer to 0 seconds.");
 }
+		else  if (node.imp == NodeImplementation::SET_POSITION_ON_COLLIDED) {
+			ImGui::Text("Set Position on Object Collided:");
+
+			float deltaXCollided = node.parameters.count("deltaXCollided") ? std::stof(node.parameters["deltaXCollided"]) : 0.f;
+			float deltaYCollided = node.parameters.count("deltaYCollided") ? std::stof(node.parameters["deltaYCollided"]) : 0.f;
+
+			if (ImGui::DragFloat("Delta X", &deltaXCollided, 0.1f)) {
+				node.parameters["deltaXCollided"] = std::to_string(deltaXCollided);
+			}
+			if (ImGui::DragFloat("Delta Y", &deltaYCollided, 0.1f)) {
+				node.parameters["deltaYCollided"] = std::to_string(deltaYCollided);
+			}
+
+			ImGui::TextDisabled("P/s: can't change position of object that has input component");
+		}
+		else if (node.imp == NodeImplementation::SET_STATE_ON_COLLIDED) {
+
+			ImGui::Text("Set State on Object Collided:");
+
+			std::string currentState = node.parameters.count("targetStateCollided") ?
+				node.parameters["targetStateCollided"] : JsonIO::stateNames[0];
+
+			if (ImGui::BeginCombo("##targetStateCollided", currentState.c_str())) {
+				const std::vector<std::string>& stateNames = JsonIO::stateNames;
+
+				for (const std::string& stateName : stateNames) {
+					bool isSelected = (currentState == stateName);
+
+					if (ImGui::Selectable(stateName.c_str(), isSelected)) {
+						node.parameters["targetStateCollided"] = stateName;
+					}
+
+					if (isSelected) {
+						ImGui::SetItemDefaultFocus();
+					}
+				}
+				ImGui::EndCombo();
+			}
+
+			ImGui::TextDisabled("Remember to add Animation to Collided Object");
+		}
+		else if (node.imp == NodeImplementation::APPLY_FORCE_ON_COLLIDED) {
+
+			ImGui::Text("Apply Force on Object Collided:");
+
+			float forceX = node.parameters.count("forceX") ? std::stof(node.parameters["forceX"]) : 0.f;
+			float forceY = node.parameters.count("forceY") ? std::stof(node.parameters["forceY"]) : 0.f;
+
+			if (ImGui::DragFloat("Force X", &forceX, 0.1f)) {
+				node.parameters["forceX"] = std::to_string(forceX);
+			}
+			if (ImGui::DragFloat("Force Y", &forceY, 0.1f)) {
+				node.parameters["forceY"] = std::to_string(forceY);
+			}
+		}
 	}
 	/* ---------- END ---------- */
 
@@ -1406,6 +1473,13 @@ void VisualLogicEditor::addNode(NodeType type, NodeImplementation imp) {
 		}
 		else if (imp == NodeImplementation::RESET_TIMER) {
 			node.parameters["timerName"] = node.parameters.count("timerName") ? node.parameters["timerName"] : "timer_0";
+		}
+		else if (imp == NodeImplementation::SET_STATE_ON_COLLIDED) {
+			node.parameters["targetStateCollided"] = JsonIO::stateNames[0];
+		}
+		else if (imp == NodeImplementation::SET_POSITION_ON_COLLIDED) {
+			node.parameters["deltaXCollided"] = "1";
+			node.parameters["deltaYCollided"] = "1";
 		}
 	}
 	// CONDITION nodes
