@@ -1242,7 +1242,7 @@ namespace JsonIO {
                 }
                 else {
                     // BACKWARDS COMPATIBILITY: Old single-channel format
-                    AudioChannel* ch = ac->getDefaultChannel();
+                    /*AudioChannel* ch = */ac->getDefaultChannel();
                     AudioChannel* a = ac->getDefaultChannel();
 
                     a->audioFile = ja["audioFile"].GetString();

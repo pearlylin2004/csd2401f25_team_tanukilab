@@ -909,7 +909,7 @@ void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime, M
 				physics->shootTimer += deltaTime;
 
 				// Check if mouse button is being held down
-				if (InputHandler::isMouseLeftHeld()) {
+				if (InputHandler::isMouseLeftHeld() && (SceneWindow::isSceneHovered() && !EditorManager::isEditingMode())) {
 					
 					if (physics->shootTimer >= physics->fireRate) {
 						GameObject* bullet = PhysicsForces::findAvailableBullet(manager);
@@ -1213,17 +1213,23 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 						Collision::Circle circle2 = Collision::getObjectCirclebyCollider(t2, c2->colliderSize);
 						info = Collision::CollisionIntersection_CircleAABB_Dynamic_Info(circle2, vel2, aabb1, vel1);
 					}
+					else if (c1->colliderType == shape::circle && c2->colliderType == shape::square) {
+						Collision::AABB aabb2 = Collision::getObjectAABBbyCollider(t2, c2->colliderSize);
+						Collision::Circle circle1 = Collision::getObjectCirclebyCollider(t1, c1->colliderSize);
+						info = Collision::CollisionIntersection_CircleAABB_Dynamic_Info(circle1, vel2, aabb2, vel1);
+					}
 					else {
 						continue; //current dont have other shapes of collision 
 					}
 
 					//checking if collided
 					if (info.collided) {
-						// c1 is the moving obj (player), c2 is the obj it collide with
-						// CASE 1: collided obj is pushable
-						if (c2->collisionRes == CollisionResponseMode::MoveWhenCollide) {
+						bool obj1IsStatic = (c1->collisionRes == CollisionResponseMode::StopWhenCollide);
+						bool obj2IsStatic = (c2->collisionRes == CollisionResponseMode::StopWhenCollide);
+
+						// CASE 1: Both pushable
+						if (!obj1IsStatic && !obj2IsStatic) {
 							if (info.normal.x != 0) {
-								// move both obj away from each other (to simulate push)
 								t1->x += info.normal.x * info.penetration * 0.5f;
 								t2->x -= info.normal.x * info.penetration * 0.5f;
 
@@ -1235,64 +1241,150 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 								t1->y += info.normal.y * info.penetration * 0.5f;
 								t2->y -= info.normal.y * info.penetration * 0.5f;
 
-								// Update physics positions to match transforms
 								p1->dynamics.position.y = t1->y;
 								p2->dynamics.position.y = t2->y;
 
 								p1->dynamics.velocity.y = 0.f;
 								p2->dynamics.velocity.y = 0.f;
 
-								if (info.normal.y > 0) p1->onGround = true;
+								if (info.normal.y < 0) p1->onGround = true;
 								else p2->onGround = true;
 							}
 						}
-						// CASE 2: collided obj is static
-						else if (c2->collisionRes == CollisionResponseMode::StopWhenCollide) {
-							// Resolve penetration
+						// CASE 2: obj1 is pushable, obj2 is static
+						else if (!obj1IsStatic && obj2IsStatic) {
 							if (info.normal.x != 0) {
-								// push moving obj out of collided obj
 								t1->x += info.normal.x * info.penetration;
 								p1->dynamics.position.x = t1->x;
-
 								p1->dynamics.velocity.x = 0.f;
 								p1->velX = 0.f;
-
 							}
 
 							if (info.normal.y != 0) {
 								t1->y += info.normal.y * info.penetration;
 								p1->dynamics.position.y = t1->y;
+								p1->dynamics.velocity.y = 0.f;
 
-								p1->dynamics.velocity.y = 0.0f;
-
-								if (info.normal.y > 0) p1->onGround = true;
+								if (info.normal.y < 0) p1->onGround = true;
 							}
-
-							DebugLog::addMessage("Collision detected between Object.\n", DebugMode::PlaySimul);
 						}
-						// CASE 3: anything else
-						else {
+						// CASE 3: obj1 is static, obj2 is pushable
+						else if (obj1IsStatic && !obj2IsStatic) {
+							if (info.normal.x != 0) {
+								// push obj2 in OPPOSITE direction
+								t2->x -= info.normal.x * info.penetration;
+								p2->dynamics.position.x = t2->x;
+								p2->dynamics.velocity.x = 0.f;
+								p2->velX = 0.f;
+							}
+
 							if (info.normal.y != 0) {
-								p1->dynamics.velocity.y = 0.0f;
-								p2->dynamics.velocity.y = 0.0f;
+								t2->y -= info.normal.y * info.penetration;
+								p2->dynamics.position.y = t2->y;
+								p2->dynamics.velocity.y = 0.f;
 
-								if (info.normal.y > 0) p1->onGround = true;
-								else p2->onGround = true;
+								if (info.normal.y > 0) p2->onGround = true;
+							}
+						}
+						// CASE 4: Both are static (shouldnt happen?)
+						else {
+							if (info.normal.x != 0) {
+								t2->x -= info.normal.x * info.penetration;
+								p2->dynamics.position.x = t2->x;
 							}
 
-							/* ---------- trigger visual logic collision events ---------- */
-							if (obj1->hasComponent<VisualLC>()) {
-								VisualLC* logic1 = obj1->getComponent<VisualLC>();
-								logic1->curCollision.insert(obj2);
+							if (info.normal.y != 0) {
+								t1->y += info.normal.y * info.penetration;
+								p1->dynamics.position.y = t1->y;
 							}
+						}
 
-							if (obj2->hasComponent<VisualLC>()) {
-								VisualLC* logic2 = obj2->getComponent<VisualLC>();
-								logic2->curCollision.insert(obj1);
-							}
-							/* ---------- END ---------- */
+						// Visual logic events (if needed)
+						if (obj1->hasComponent<VisualLC>()) {
+							VisualLC* logic1 = obj1->getComponent<VisualLC>();
+							logic1->curCollision.insert(obj2);
+						}
+
+						if (obj2->hasComponent<VisualLC>()) {
+							VisualLC* logic2 = obj2->getComponent<VisualLC>();
+							logic2->curCollision.insert(obj1);
 						}
 					}
+					//if (info.collided) {
+					//	// c1 is the moving obj (player), c2 is the obj it collide with
+					//	// CASE 1: collided obj is pushable
+					//	if (c2->collisionRes == CollisionResponseMode::MoveWhenCollide) {
+					//		if (info.normal.x != 0) {
+					//			// move both obj away from each other (to simulate push)
+					//			t1->x += info.normal.x * info.penetration * 0.5f;
+					//			t2->x -= info.normal.x * info.penetration * 0.5f;
+
+					//			p1->dynamics.position.x = t1->x;
+					//			p2->dynamics.position.x = t2->x;
+					//		}
+
+					//		if (info.normal.y != 0) {
+					//			t1->y += info.normal.y * info.penetration * 0.5f;
+					//			t2->y -= info.normal.y * info.penetration * 0.5f;
+
+					//			// Update physics positions to match transforms
+					//			p1->dynamics.position.y = t1->y;
+					//			p2->dynamics.position.y = t2->y;
+
+					//			p1->dynamics.velocity.y = 0.f;
+					//			p2->dynamics.velocity.y = 0.f;
+
+					//			if (info.normal.y > 0) p1->onGround = true;
+					//			else p2->onGround = true;
+					//		}
+					//	}
+					//	// CASE 2: collided obj is static
+					//	else if (c2->collisionRes == CollisionResponseMode::StopWhenCollide) {
+					//		// Resolve penetration
+					//		if (info.normal.x != 0) {
+					//			// push moving obj out of collided obj
+					//			t1->x += info.normal.x * info.penetration;
+					//			p1->dynamics.position.x = t1->x;
+
+					//			p1->dynamics.velocity.x = 0.f;
+					//			p1->velX = 0.f;
+
+					//		}
+
+					//		if (info.normal.y != 0) {
+					//			t1->y += info.normal.y * info.penetration;
+					//			p1->dynamics.position.y = t1->y;
+
+					//			p1->dynamics.velocity.y = 0.0f;
+
+					//			if (info.normal.y > 0) p1->onGround = true;
+					//		}
+
+					//		DebugLog::addMessage("Collision detected between Object.\n", DebugMode::PlaySimul);
+					//	}
+					//	// CASE 3: anything else
+					//	else {
+					//		if (info.normal.y != 0) {
+					//			p1->dynamics.velocity.y = 0.0f;
+					//			p2->dynamics.velocity.y = 0.0f;
+
+					//			if (info.normal.y > 0) p1->onGround = true;
+					//			else p2->onGround = true;
+					//		}
+
+					//		/* ---------- trigger visual logic collision events ---------- */
+					//		if (obj1->hasComponent<VisualLC>()) {
+					//			VisualLC* logic1 = obj1->getComponent<VisualLC>();
+					//			logic1->curCollision.insert(obj2);
+					//		}
+
+					//		if (obj2->hasComponent<VisualLC>()) {
+					//			VisualLC* logic2 = obj2->getComponent<VisualLC>();
+					//			logic2->curCollision.insert(obj1);
+					//		}
+					//		/* ---------- END ---------- */
+					//	}
+					//}
 				}
 			}
 		}
