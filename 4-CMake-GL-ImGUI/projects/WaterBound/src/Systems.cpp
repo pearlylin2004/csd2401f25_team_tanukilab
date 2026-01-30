@@ -1224,6 +1224,8 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 
 					//checking if collided
 					if (info.collided) {
+						if (c1->collisionRes == CollisionResponseMode::NoResponse || c2->collisionRes == CollisionResponseMode::NoResponse) continue;
+
 						bool obj1IsStatic = (c1->collisionRes == CollisionResponseMode::StopWhenCollide);
 						bool obj2IsStatic = (c2->collisionRes == CollisionResponseMode::StopWhenCollide);
 
