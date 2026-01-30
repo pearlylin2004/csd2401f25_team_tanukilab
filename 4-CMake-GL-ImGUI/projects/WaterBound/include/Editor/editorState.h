@@ -178,6 +178,50 @@ namespace Editor {
 
 		std::vector<LogicNode> nodes;
 		std::vector<LogicConnection> connections;
+
+		float nodePaletteWidth = 200.f;
+		float propertiesWidth = 250.f;
+	};
+
+	struct NodeDef {
+		const char* name;
+		NodeType type;
+		NodeImplementation impl;
+	};
+
+	static const NodeDef allNodes[] = {
+		// EVENTS
+		{"On Start", NodeType::EVENT, NodeImplementation::ON_START},
+		{"On Update", NodeType::EVENT, NodeImplementation::ON_UPDATE},
+		{"On Collision Enter", NodeType::EVENT, NodeImplementation::ON_COLLISION_ENTER},
+		{"While Collision", NodeType::EVENT, NodeImplementation::WHILE_COLLIDING},
+		{"On Collision Exit", NodeType::EVENT, NodeImplementation::ON_COLLISION_EXIT},
+		{"On Hover Enter", NodeType::EVENT, NodeImplementation::ON_HOVER_ENTER},
+		{"While Hovering", NodeType::EVENT, NodeImplementation::WHILE_HOVERING},
+		{"On Hover Exit", NodeType::EVENT, NodeImplementation::ON_HOVER_EXIT},
+
+		// CONDITIONS
+		{"Is Key Held", NodeType::CONDITION, NodeImplementation::CHECK_KEY_HELD},
+		{"Compare Value", NodeType::CONDITION, NodeImplementation::COMPARE_VALUE},
+		{"Compare Variable", NodeType::CONDITION, NodeImplementation::COMPARE_VAR},
+		{"Check State", NodeType::CONDITION, NodeImplementation::CHECK_STATE},
+		{"Check Timer", NodeType::CONDITION, NodeImplementation::CHECK_TIMER},
+		
+		// ACTIONS
+		{"Print Message", NodeType::ACTION, NodeImplementation::PRINT_MESSAGE},
+		{"Move Object", NodeType::ACTION, NodeImplementation::MOVE_OBJECT},
+		{"Set Position", NodeType::ACTION, NodeImplementation::SET_POSITION},
+		{"Rotate Object", NodeType::ACTION, NodeImplementation::ROTATE_OBJECT},
+		{"Set Rotation", NodeType::ACTION, NodeImplementation::SET_ROTATION},
+		{"Set Scale", NodeType::ACTION, NodeImplementation::SET_SCALE},
+		{"Scale Proportional", NodeType::ACTION, NodeImplementation::SCALE_PROPORTIONAL},
+		{"Set Float", NodeType::ACTION, NodeImplementation::SET_FLOAT},
+		{"Play Sound", NodeType::ACTION, NodeImplementation::PLAY_SOUND},
+		{"Set State", NodeType::ACTION, NodeImplementation::SET_STATE},
+		{"Reset Timer", NodeType::ACTION, NodeImplementation::RESET_TIMER},
+		{"Set Position on Collider", NodeType::ACTION, NodeImplementation::SET_POSITION_ON_COLLIDED},
+		{"Set State on Collider", NodeType::ACTION, NodeImplementation::SET_STATE_ON_COLLIDED},
+		{"Set Force on Collider", NodeType::ACTION, NodeImplementation::APPLY_FORCE_ON_COLLIDED},
 	};
 	/* ----------------- Logic End ---------------- */
 

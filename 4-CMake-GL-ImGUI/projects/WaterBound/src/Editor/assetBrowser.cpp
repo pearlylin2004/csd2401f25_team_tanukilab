@@ -270,9 +270,20 @@ void AssetBrowser::render() {
                 m_menuBarState.sceneToLoad = asset.name;
                 m_menuBarState.showLoadScenePopup = true;
             }
+            // if its a logic, open :)
+            else if (assetFolderName == "Logic") {
+				Editor::visualLogicState.showEditor = true;
+				Editor::visualLogicState.currentGraphName = asset.name;
 
+                std::string err;
+                if (JsonIO::loadVisualLogic("/Logic/" + asset.name, Editor::visualLogicState.nodes, Editor::visualLogicState.connections, &err)) {
+                    VisualLogicEditor::Instance().updateNextNodeId();
+
+                    DebugLog::addMessage("Loaded Visual Logic: " + asset.name + "\n");
+                }
+            }
             // if its a prefab, convert to temp game obj for editing in inspector
-            if (assetFolderName == "Prefab") {
+            else if (assetFolderName == "Prefab") {
                 // get ID of the double clicked prefab by its filename
                 std::string prefabID = PrefabManager::Instance().findPrefabIDByFilename(asset.name);
                 if (prefabID.empty()) {

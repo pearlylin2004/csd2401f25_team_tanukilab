@@ -190,6 +190,8 @@ void VisualLogicEditor::render() {
 
 		/* -------- View -------- */
 		if (ImGui::BeginMenu("View")) {
+			ImGui::MenuItem("Node Palette", nullptr, &m_showNodePalette);
+
 			if (ImGui::MenuItem("Reset View")) {
 				m_canvasOffset = ImVec2(50, 50);
 				m_zoom = 1.f;
@@ -202,8 +204,45 @@ void VisualLogicEditor::render() {
 		ImGui::EndMenuBar();
 	}
 
+
+	/* ------ Node Palette ------ */
+	if (m_showNodePalette) {
+		ImGui::BeginChild("Node Palette", ImVec2(Editor::visualLogicState.nodePaletteWidth, 0), true, ImGuiWindowFlags_HorizontalScrollbar);
+		renderNodePalette();
+		ImGui::EndChild();
+
+		verticalSplitter(&Editor::visualLogicState.nodePaletteWidth);
+		ImGui::SameLine();
+	}
+	/* ------ END ------ */
+
+
+	float canvasWidth = m_showNodePalette ? ImGui::GetContentRegionAvail().x * 0.7f : ImGui::GetContentRegionAvail().x * 0.75f;
+
+
 	/* ------ Canvas ------ */
-	ImGui::BeginChild("Canvas", ImVec2(ImGui::GetContentRegionAvail().x * 0.7f, 0), true);
+	ImGui::BeginChild("Canvas", ImVec2(-Editor::visualLogicState.propertiesWidth - 8, 0), true);
+
+	if (InputHandler::isMouseButtonClicked(GLFW_MOUSE_BUTTON_RIGHT) && ImGui::IsWindowHovered() && !m_isDragging && !m_isConnecting) {
+		ImVec2 mouseScreenPos = ImGui::GetMousePos();
+		ImVec2 canvasPos = ImGui::GetCursorScreenPos();
+
+		m_menuSpawnPos.x = (mouseScreenPos.x - canvasPos.x - m_canvasOffset.x) / m_zoom;
+		m_menuSpawnPos.y = (mouseScreenPos.y - canvasPos.y - m_canvasOffset.y) / m_zoom;
+
+		m_showNodeMenu = true;
+		m_nodeSearchBuffer[0] = '\0';
+		ImGui::OpenPopup("AddNodeContextMenu");
+	}
+
+	// render context menu
+	if (ImGui::BeginPopup("AddNodeContextMenu")) {
+		renderNodeSearchMenu();
+		ImGui::EndPopup();
+	}
+	else {
+		m_showNodeMenu = false;
+	}
 
 	// canvas area
 	ImVec2 canvasPos = ImGui::GetCursorScreenPos();
@@ -329,7 +368,7 @@ void VisualLogicEditor::render() {
 		m_draggingNodeId = -1;
 	}
 
-	if (isCanvasHovered && InputHandler::getMouseScroll() != 0.f) {
+	if (ImGui::IsWindowHovered() && InputHandler::getMouseScroll() != 0.f) {
 		float scroll = InputHandler::getMouseScroll();
 		m_zoom += scroll * 0.1f;
 		m_zoom = glm::clamp(m_zoom, 0.5f, 2.f);
@@ -373,9 +412,12 @@ void VisualLogicEditor::render() {
 	/* ------ END ------ */
 
 
-	/* ------ Properties Panel ------ */
 	ImGui::SameLine();
-	ImGui::BeginChild("Properties", ImVec2(0, 0), true);
+
+	/* ------ Properties Panel ------ */
+	verticalSplitter(&Editor::visualLogicState.propertiesWidth, true);
+
+	ImGui::BeginChild("Properties", ImVec2(Editor::visualLogicState.propertiesWidth, 0), true);
 	renderNodeProperties();
 	ImGui::EndChild();
 	/* ------ END ------ */
@@ -386,6 +428,7 @@ void VisualLogicEditor::render() {
 
 	// popup
 	renderSavePopup();
+	//renderNodePalette();
 }
 
 void VisualLogicEditor::updateNextNodeId() {
@@ -412,7 +455,32 @@ void VisualLogicEditor::clear() {
 }
 
 void VisualLogicEditor::saveLogic() {
-	if (!Editor::visualLogicState.targetObj) return;
+	// if open from asset browser
+	if (!Editor::visualLogicState.targetObj) {
+		std::string filename = "/Logic/" + Editor::visualLogicState.currentGraphName;
+		std::string err;
+
+		if (JsonIO::saveVisualLogic(filename, Editor::visualLogicState.nodes, Editor::visualLogicState.connections, &err)) {
+
+			reloadAllVisualLogic(filename);
+
+			if (Editor::visualLogicState.wantCloseEditor) {
+				Editor::visualLogicState.showEditor = false;
+				Editor::visualLogicState.isFocus = false;
+				Editor::visualLogicState.wantCloseEditor = false;
+				Editor::visualLogicState.currentGraphName.clear();
+				m_selectedNodeId = -1;
+			}
+
+			DebugLog::addMessage("Saved Visual Logic: " + filename);
+		}
+		else {
+			DebugLog::addMessage("Failed to save: " + err);
+		}
+
+		return;
+	}
+
 	VisualLC* logic = Editor::visualLogicState.targetObj->getComponent<VisualLC>();
 	if (!logic) return;
 
@@ -1406,14 +1474,19 @@ void VisualLogicEditor::renderSavePopup() {
 
 void VisualLogicEditor::addNode(NodeType type, NodeImplementation imp) {
 	LogicNode node;
-	// get viewport center
-	ImVec2 viewportSize = ImGui::GetContentRegionAvail();
+	
+	if (m_showNodeMenu) {
+		node.position = m_menuSpawnPos;
+	}
+	else {
+		// get viewport center
+		ImVec2 viewportSize = ImGui::GetContentRegionAvail();
+		Vector2D viewportCenter;
+		viewportCenter.x = (viewportSize.x / 2.f - m_canvasOffset.x) / m_zoom;
+		viewportCenter.y = (viewportSize.y / 2.f - m_canvasOffset.y) / m_zoom;
 
-	Vector2D viewportCenter;
-	viewportCenter.x = (viewportSize.x / 2.f - m_canvasOffset.x) / m_zoom;
-	viewportCenter.y = (viewportSize.y / 2.f - m_canvasOffset.y) / m_zoom;
-
-	node.position = viewportCenter;
+		node.position = viewportCenter;
+	}
 
 	//if (m_selectedNodeId != -1) {
 	//	// Find the selected node
@@ -1733,6 +1806,149 @@ void VisualLogicEditor::reloadAllVisualLogic(const std::string& scriptName) {
 	else {
 		DebugLog::addMessage("No objects found using '" + scriptName + "'");
 	}
+}
+
+void VisualLogicEditor::renderNodeSearchMenu() {
+	ImGui::Text("Add Node Here");
+	ImGui::Separator();
+
+	// search bar (auto-focus on open)
+	if (m_showNodeMenu && ImGui::IsWindowAppearing()) {
+		ImGui::SetKeyboardFocusHere();
+	}
+
+	bool searchChanged = ImGui::InputTextWithHint("##search", "Search nodes...", m_nodeSearchBuffer, 128);
+	ImGui::Separator();
+
+	std::string search = m_nodeSearchBuffer;
+	std::transform(search.begin(), search.end(), search.begin(), ::tolower);
+
+	bool hasResults = false;
+
+	if (!search.empty()) {
+		// flat list when searching
+		for (const auto& node : Editor::allNodes) {
+			if (matchesSearch(node.name, search)) {
+				if (ImGui::MenuItem(node.name)) {
+					addNode(node.type, node.impl);
+					ImGui::CloseCurrentPopup();
+				}
+				hasResults = true;
+			}
+		}
+	}
+	else {
+		// split by c
+		if (ImGui::BeginMenu("Events")) {
+			for (const auto& node : Editor::allNodes) {
+				if (node.type == NodeType::EVENT) {
+					if (ImGui::MenuItem(node.name)) {
+						addNode(node.type, node.impl);
+						ImGui::CloseCurrentPopup();
+					}
+				}
+			}
+			ImGui::EndMenu();
+		}
+		if (ImGui::BeginMenu("Conditions")) {
+			for (const auto& node : Editor::allNodes) {
+				if (node.type == NodeType::CONDITION) {
+					if (ImGui::MenuItem(node.name)) {
+						addNode(node.type, node.impl);
+						ImGui::CloseCurrentPopup();
+					}
+				}
+			}
+			ImGui::EndMenu();
+		}
+		if (ImGui::BeginMenu("Actions")) {
+			for (const auto& node : Editor::allNodes) {
+				if (node.type == NodeType::ACTION) {
+					if (ImGui::MenuItem(node.name)) {
+						addNode(node.type, node.impl);
+						ImGui::CloseCurrentPopup();
+					}
+				}
+			}
+			ImGui::EndMenu();
+		}
+	}
+
+	if (!search.empty() && !hasResults) {
+		ImGui::TextDisabled("No nodes found :(");
+	}
+}
+
+
+bool VisualLogicEditor::matchesSearch(const std::string& nodeName, const std::string& search) {
+	if (search.empty()) return true;
+
+	std::string lowerName = nodeName;
+	std::transform(lowerName.begin(), lowerName.end(), lowerName.begin(), ::tolower);
+
+	return lowerName.find(search) != std::string::npos;
+}
+
+void VisualLogicEditor::renderNodePalette() {
+	// EVENTS
+	if (ImGui::CollapsingHeader("Events", ImGuiTreeNodeFlags_DefaultOpen)) {
+		for (const auto& node : Editor::allNodes) {
+			if (node.type == NodeType::EVENT) {
+				if (ImGui::Selectable(("  " + std::string(node.name)).c_str())) {
+					addNode(node.type, node.impl);
+				}
+			}
+		}
+	}
+
+	// CONDITIONS
+	if (ImGui::CollapsingHeader("Conditions", ImGuiTreeNodeFlags_DefaultOpen)) {
+		for (const auto& node : Editor::allNodes) {
+			if (node.type == NodeType::CONDITION) {
+				if (ImGui::Selectable(("  " + std::string(node.name)).c_str())) {
+					addNode(node.type, node.impl);
+				}
+			}
+		}
+	}
+
+	// ACTIONS
+	if (ImGui::CollapsingHeader("Actions", ImGuiTreeNodeFlags_DefaultOpen)) {
+		for (const auto& node : Editor::allNodes) {
+			if (node.type == NodeType::ACTION) {
+				if (ImGui::Selectable(("  " + std::string(node.name)).c_str())) {
+					addNode(node.type, node.impl);
+				}
+			}
+		}
+	}
+}
+
+void VisualLogicEditor::verticalSplitter(float* width, bool reverseDir, float minWidth) {
+	ImGui::SameLine();
+	ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.3f, 0.3f, 0.3f, 1.0f));
+	ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.4f, 0.4f, 0.4f, 1.0f));
+	ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.5f, 0.5f, 0.5f, 1.0f));
+
+	std::string id = "##splitter_" + std::to_string(reinterpret_cast<uintptr_t>(width));
+	ImGui::Button(id.c_str(), ImVec2(4.0f, -1));
+
+	ImGui::PopStyleColor(3);
+
+	if (ImGui::IsItemActive()) {
+		float delta = ImGui::GetIO().MouseDelta.x;
+
+		if (reverseDir) delta = -delta;
+		*width += delta;
+
+		if (*width < minWidth) *width = minWidth;
+	}
+
+	if (ImGui::IsItemHovered()) {
+		ImGui::SetMouseCursor(ImGuiMouseCursor_ResizeEW);
+	}
+
+	ImGui::SameLine();
 }
 
 #endif

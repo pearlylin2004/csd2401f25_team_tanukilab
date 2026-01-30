@@ -181,6 +181,12 @@ private:
 	std::string m_connectingFromPin;
 	ImVec2 m_connectionStartPos;
 
+	// for right click menu + palette
+	bool m_showNodePalette;
+	bool m_showNodeMenu;
+	Vector2D m_menuSpawnPos;
+	char m_nodeSearchBuffer[128];
+
 	// save/load logic
 	void saveLogic();
 	//void loadLogic(const std::string& filename);
@@ -215,6 +221,12 @@ private:
 
 	// helper func for reload script
 	void reloadAllVisualLogic(const std::string& scriptName);
+
+	// for right click menu + palette
+	void renderNodeSearchMenu();
+	bool matchesSearch(const std::string& nodeName, const std::string& search);
+	void renderNodePalette();
+	void verticalSplitter(float* width, bool reverseDir = false, float minWidth = 100.0f);
 };
 
 // Top menu bar
