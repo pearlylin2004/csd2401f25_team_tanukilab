@@ -1,11 +1,13 @@
 /* Start Header ************************************************************************/
 /*!
 \file       tileEditor.cpp
-\author     Seow Sin Le, s.sinle, 2401084
-			- 100%
-\par		cheeqing.tan@digipen.edu
+\author     Seow Sin Le, s.sinle, 2401084 - 70%
+			Tan Chee Qing, cheeqing.tan, 2401486 - 30%
+\par		s.sinle@digipen.edu
+			cheeqing.tan@digipen.edu
 \date       November, 26th, 2025
-\brief      Definitions of the functions for loading textures onto a tilemap
+\brief      Definitions of the functions for loading textures onto a tilemap + undo/redo
+			tracking for editor
 
 Copyright (C) 2025 DigiPen Institute of Technology.
 Reproduction or disclosure of this file or its contents

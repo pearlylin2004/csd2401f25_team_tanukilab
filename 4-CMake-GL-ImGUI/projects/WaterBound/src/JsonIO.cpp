@@ -1,8 +1,10 @@
 /* Start Header ************************************************************************/
 /*!
 \file		JsonIO.cpp
-\author     Varick, v.teo, 2403417
+\author     Varick, v.teo, 2403417 - 70%
+			Tan Chee Qing, cheeqing.tan, 2401486 - 30%
 \par        v.teo@digipen.edu
+\par        cheeqing.tan@digipen.edu
 \date		November, 5th, 2025
 \brief      Implementation of JSON helpers and scene serialization for the WaterBound engine.
 

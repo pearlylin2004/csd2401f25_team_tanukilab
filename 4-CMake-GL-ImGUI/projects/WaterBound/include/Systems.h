@@ -1,12 +1,14 @@
 /* Start Header ************************************************************************/
 /*!
 \file        Systems.h
-\author      Seow Sin Le, s.sinle, 2401084, 40%
-\author 	 Hugo Low Ren Hao, low.h, 2402272, 45%
+\author      Seow Sin Le, s.sinle, 2401084, 35%
+\author 	 Hugo Low Ren Hao, low.h, 2402272, 40%
 \author 	 Pearly Lin Lee Ying, p.lin, 2401591, 15%
+\author 	 Tan Chee Qing, cheeqing.tan, 2401486, 10%
 \par         s.sinle@digipen.edu
 \par		 low.h@digipen.edu
 \par		 p.lin@digipen.edu
+\par         cheeqing.tan@digipen.edu
 \date        October, 1st, 2025
 \brief       System functions to run the logic for the components
 

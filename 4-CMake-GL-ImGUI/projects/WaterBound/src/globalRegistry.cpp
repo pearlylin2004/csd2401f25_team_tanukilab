@@ -1,11 +1,13 @@
 ﻿/* Start Header ************************************************************************/
 /*!
-\file       collisionTag.cpp
+\file       globalRegistry.cpp
 \author     Tan Chee Qing, cheeqing.tan, 2401486
 			- 100% of the file
 \par        cheeqing.tan@digipen.edu
 \date       January, 24th, 2026
-\brief
+\brief		Handles initialization, validation, and persistence of global
+			collision tags using JSON serialization. Provides centralized,
+			engine-wide access to shared configuration data.
 
 Copyright (C) 2026 DigiPen Institute of Technology.
 Reproduction or disclosure of this file or its contents
