@@ -1307,15 +1307,15 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 						}
 						// CASE 4: Both are static (shouldnt happen?)
 						else {
-							if (info.normal.x != 0) {
-								t2->x -= info.normal.x * info.penetration;
-								p2->dynamics.position.x = t2->x;
+							/*if (info.normal.x != 0) {
+								t1->x -= info.normal.x * info.penetration;
+								p1->dynamics.position.x = t1->x;
 							}
 
 							if (info.normal.y != 0) {
 								t1->y += info.normal.y * info.penetration;
 								p1->dynamics.position.y = t1->y;
-							}
+							}*/
 						}					
 					}
 					//if (info.collided) {
@@ -1645,7 +1645,8 @@ void LogicSystem::update(GameObjectManager& manager, float const& dt) {
 
 	for (auto* go : objs) {
 		if (!go) continue;
-		if (!go->hasComponent<StateMachine>()) continue;
+		// skip if no sm/fixed state 
+		if (!go->hasComponent<StateMachine>() || go->getComponent<StateMachine>()->fixState) continue;
 		if (!go->hasComponent<Transform>() || !go->hasComponent<Physics>() || !go->hasComponent<Input>()) continue; // skip if obj cant move (no input-based state change)
 
 		// Update class-based FSM + trigger-action rules
