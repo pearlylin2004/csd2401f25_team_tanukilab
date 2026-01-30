@@ -1001,12 +1001,12 @@ void VisualLogicEditor::renderNodeProperties() {
 			ImGui::Separator();
 
 			std::vector<std::string> availableTimers;
-			for (const LogicNode& node : Editor::visualLogicState.nodes) {
-				if ((node.imp == NodeImplementation::CHECK_TIMER ||
-					node.imp == NodeImplementation::RESET_TIMER) &&
-					node.parameters.count("timerName")) {
+			for (const LogicNode& node1 : Editor::visualLogicState.nodes) {
+				if ((node1.imp == NodeImplementation::CHECK_TIMER ||
+					node1.imp == NodeImplementation::RESET_TIMER) &&
+					node1.parameters.count("timerName")) {
 
-					std::string timer = node.parameters.at("timerName");
+					std::string timer = node1.parameters.at("timerName");
 
 					if (std::find(availableTimers.begin(), availableTimers.end(), timer) == availableTimers.end()) {
 						availableTimers.push_back(timer);
@@ -1270,12 +1270,12 @@ void VisualLogicEditor::renderNodeProperties() {
 			ImGui::Separator();
 
 			std::vector<std::string> availableTimers;
-			for (const LogicNode& node : Editor::visualLogicState.nodes) {
-				if ((node.imp == NodeImplementation::CHECK_TIMER ||
-					node.imp == NodeImplementation::RESET_TIMER) &&
-					node.parameters.count("timerName")) {
+			for (const LogicNode& node2 : Editor::visualLogicState.nodes) {
+				if ((node2.imp == NodeImplementation::CHECK_TIMER ||
+					node2.imp == NodeImplementation::RESET_TIMER) &&
+					node2.parameters.count("timerName")) {
 
-					std::string timer = node.parameters.at("timerName");
+					std::string timer = node2.parameters.at("timerName");
 
 					if (std::find(availableTimers.begin(), availableTimers.end(), timer) == availableTimers.end()) {
 						availableTimers.push_back(timer);
