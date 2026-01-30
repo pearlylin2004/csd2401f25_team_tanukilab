@@ -55,10 +55,19 @@
         "Button": {
           "action": "start_game"
         },
-        "AudioComponent" :{
+        "AudioComponent": {
           "channels": {
-            "hover": {
-              "audioFile": "assets/audio/footsteps.wav"
+            "button_hover": {
+              "audioFile": "assets/Audio/underwater.wav", 
+              "volume": 0.800000011920929,
+              "pitch": 1.0,
+              "loop": 0,
+              "playOnStart": 0,
+              "muted": 0,
+              "fadeInOnStart": 1,
+              "fadeInDuration": 0.20000000298023224,
+              "fadeOutOnStop": 1,
+              "fadeOutDuration": 0.5
             }
           }
         }
@@ -92,6 +101,22 @@
         },
         "Button": {
           "action": "open_control"
+        },
+        "AudioComponent": {
+          "channels": {
+            "button_hover": {
+              "audioFile": "assets/Audio/underwater.wav", 
+              "volume": 0.800000011920929,
+              "pitch": 1.0,
+              "loop": 0,
+              "playOnStart": 0,
+              "muted": 0,
+              "fadeInOnStart": 1,
+              "fadeInDuration": 0.20000000298023224,
+              "fadeOutOnStop": 1,
+              "fadeOutDuration": 0.5
+            }
+          }
         }
       }
     },
@@ -123,6 +148,22 @@
         },
         "Button": {
           "action": "exit_game"
+        },
+        "AudioComponent": {
+          "channels": {
+            "button_hover": {
+              "audioFile": "assets/Audio/underwater.wav", 
+              "volume": 0.800000011920929,
+              "pitch": 1.0,
+              "loop": 0,
+              "playOnStart": 0,
+              "muted": 0,
+              "fadeInOnStart": 1,
+              "fadeInDuration": 0.20000000298023224,
+              "fadeOutOnStop": 1,
+              "fadeOutDuration": 0.5
+            }
+          }
         }
       }
     }

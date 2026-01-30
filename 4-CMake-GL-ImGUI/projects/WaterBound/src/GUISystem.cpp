@@ -68,8 +68,12 @@ void GUISystem::update() {
 
             //when hover over button we can add hover effect here
             if (isPointInButton(worldMousePos, btn)) {
-				onHover(btn); //play hover sound
-                return; //stop checking after a click
+                if (btn->hasComponent<AudioComponent>()) {
+                    AudioComponent* audio = btn->getComponent<AudioComponent>();
+                    AudioChannel* ch = audio->getChannel("button_hover");
+                    ch->isPendingPlay = true;
+                    return; //stop checking after a click
+                }
             }
         }
     }
@@ -79,7 +83,6 @@ void GUISystem::update() {
             GameObject* btn = pair.second; //get button object
             if (!btn) continue; //safety check if button is valid
 
-            //when hover over button we can add hover effect here
             if (isPointInButton(worldMousePos, btn)) {
                 Button* btnComp = btn->getComponent<Button>(); //get button component
                 if (btnComp) {
@@ -92,26 +95,12 @@ void GUISystem::update() {
     }
 }
 
-void GUISystem::onHover(GameObject* obj) {
-    AudioComponent* audioComp = obj->getComponent<AudioComponent>();
-    if (!audioComp) return;
-
-    AudioChannel* hoverChannel = audioComp->getChannel("hover");
-    if (!hoverChannel) return;
-
-    // Play the sound
-    m_bgmChannel = AudioHandler::getInstance().playSound(hoverChannel);
-
-	std::cout << "[GUI] Hover sound played" << std::endl;
-}
-
 //creation of buttons
 void GUISystem::createButtons(GameObjectManager& manager) {
     //clear previous references
     m_buttons.clear();
 
     //get all game objects from manager
-    std::vector<GameObject*> allObjs;
     manager.getAllGameObjects(allObjs);
 
     if (allObjs.empty()) return; //check if its empty
