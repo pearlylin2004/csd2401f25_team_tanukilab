@@ -65,6 +65,7 @@ private:
 
     std::unordered_map<ButtonAction, GameObject*> m_buttons; //for storing buttons 
 	std::unordered_map<ButtonAction, std::function<void()>> m_buttonActions; //map of button actions
+	std::vector<GameObject*> allObjs; //to store all game objects
 
     GameState m_currentState;
     GameState m_previousState;

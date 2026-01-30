@@ -55,10 +55,19 @@
         "Button": {
           "action": "start_game"
         },
-        "AudioComponent" :{
+        "AudioComponent": {
           "channels": {
-            "hover": {
-              "audioFile": "assets/audio/footsteps.wav"
+            "play_button": {
+              "audioFile": "underwater.wav",
+              "volume": 0.800000011920929,
+              "pitch": 1.0,
+              "loop": 0,
+              "playOnStart": 0,
+              "muted": 0,
+              "fadeInOnStart": 1,
+              "fadeInDuration": 0.20000000298023224,
+              "fadeOutOnStop": 1,
+              "fadeOutDuration": 0.5
             }
           }
         }
