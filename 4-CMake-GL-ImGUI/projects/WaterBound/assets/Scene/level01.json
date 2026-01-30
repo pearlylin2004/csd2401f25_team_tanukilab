@@ -17,11 +17,11 @@
           "hasTex": 1
         },
         "CollisionInfo": {
+          "collisionRes": "MoveWhenCollide",
           "ignoreCollisionsWith": [
             "player",
             "bullet",
-            "hazards",
-            "platform"
+            "hazards"
           ]
         },
         "LuaScript": {
@@ -31,6 +31,31 @@
               "scriptName": "bullet"
             }
           ]
+        }
+      }
+    },
+    {
+      "name": "background5",
+      "components": {
+        "Transform": {
+          "pos": [
+            0.0,
+            0.0,
+            -0.07999999821186066
+          ],
+          "rotation": 0.0,
+          "scale": [
+            45.0,
+            22.0,
+            0.0
+          ]
+        },
+        "Render": {
+          "shape": "square",
+          "hasTex": 1,
+          "texture": "assets/Texture\\game_bg_layer_5.png",
+          "hasTex": 1,
+          "hasAnimation": 0
         }
       }
     },
@@ -60,7 +85,7 @@
           ]
         },
         "StateMachine": {
-          "stateTime": 11.628634452819824,
+          "stateTime": 3.72672963142395,
           "Dead": {
             "animState": {
               "texture": "",
@@ -96,45 +121,8 @@
             0.0
           ]
         },
-        "CollisionInfo": {
-          "collisionTag": "water"
-        },
         "StateMachine": {
           "stateTime": 252.32286071777344
-        },
-        "AudioComponent": {
-          "channels": {
-            "default": {
-              "isSpatial": 0,
-              "minDistance": 5.0,
-              "maxDistance": 50.0
-            }
-          }
-        }
-      }
-    },
-    {
-      "name": "background5",
-      "components": {
-        "Transform": {
-          "pos": [
-            0.0,
-            0.0,
-            -0.07999999821186066
-          ],
-          "rotation": 0.0,
-          "scale": [
-            45.0,
-            22.0,
-            0.0
-          ]
-        },
-        "Render": {
-          "shape": "square",
-          "hasTex": 1,
-          "texture": "assets/Texture\\game_bg_layer_5.png",
-          "hasTex": 1,
-          "hasAnimation": 0
         }
       }
     },
@@ -283,31 +271,6 @@
     },
     {
       "prefabid": "94d018f7-a766-4ee6-95be-f39272697938",
-      "name": "platform_left",
-      "components": {
-        "Transform": {
-          "pos": [
-            -7.859457492828369,
-            1.051439642906189,
-            0.0
-          ],
-          "scale": [
-            20.399999618530273,
-            1.5,
-            0.0
-          ]
-        },
-        "CollisionInfo": {
-          "colliderSize": [
-            20.0,
-            3.200000047683716
-          ],
-          "collisionTag": "platform"
-        }
-      }
-    },
-    {
-      "prefabid": "94d018f7-a766-4ee6-95be-f39272697938",
       "name": "platform_right29",
       "components": {
         "Transform": {
@@ -325,9 +288,32 @@
         "CollisionInfo": {
           "colliderSize": [
             7.5,
-            3.0
+            2.0
+          ]
+        }
+      }
+    },
+    {
+      "prefabid": "94d018f7-a766-4ee6-95be-f39272697938",
+      "name": "platform_left",
+      "components": {
+        "Transform": {
+          "pos": [
+            -7.859457492828369,
+            1.051439642906189,
+            0.0
           ],
-          "collisionTag": "platform"
+          "scale": [
+            20.399999618530273,
+            1.5,
+            0.0
+          ]
+        },
+        "CollisionInfo": {
+          "colliderSize": [
+            20.0,
+            1.2000000476837158
+          ]
         }
       }
     },
@@ -350,9 +336,8 @@
         "CollisionInfo": {
           "colliderSize": [
             9.5,
-            3.0
-          ],
-          "collisionTag": "platform"
+            2.0
+          ]
         }
       }
     },
@@ -380,15 +365,6 @@
         },
         "StateMachine": {
           "stateTime": 2300.66357421875
-        },
-        "AudioComponent": {
-          "channels": {
-            "default": {
-              "isSpatial": 0,
-              "minDistance": 5.0,
-              "maxDistance": 50.0
-            }
-          }
         }
       }
     },
@@ -409,7 +385,10 @@
           ]
         },
         "CollisionInfo": {
-          "collisionTag": "platform"
+          "colliderSize": [
+            2.6999998092651367,
+            1.2000000476837158
+          ]
         }
       }
     },
@@ -437,15 +416,6 @@
         },
         "StateMachine": {
           "stateTime": 2300.66357421875
-        },
-        "AudioComponent": {
-          "channels": {
-            "default": {
-              "isSpatial": 0,
-              "minDistance": 5.0,
-              "maxDistance": 50.0
-            }
-          }
         }
       }
     },

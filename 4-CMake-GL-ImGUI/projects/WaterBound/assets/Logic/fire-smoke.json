@@ -23,8 +23,8 @@
       "implementation": "Reset Timer",
       "type": 1,
       "position": [
-        207.0,
-        -61.0
+        519.0,
+        -53.0
       ],
       "hasInput": true,
       "hasOutput": true,
@@ -39,8 +39,8 @@
       "implementation": "Set Float",
       "type": 1,
       "position": [
-        513.0,
-        -61.0
+        814.0,
+        -52.0
       ],
       "hasInput": true,
       "hasOutput": true,
@@ -69,8 +69,8 @@
       "implementation": "Compare Variable",
       "type": 2,
       "position": [
-        199.0,
-        100.0
+        203.0,
+        105.0
       ],
       "hasInput": true,
       "hasOutput": false,
@@ -95,7 +95,7 @@
       "hasTrueOutput": true,
       "hasFalseOutput": true,
       "parameters": {
-        "threshold": "5.0",
+        "threshold": "7.0",
         "timerName": "timer_3"
       }
     },
@@ -154,8 +154,8 @@
       "implementation": "Scale Proportional",
       "type": 1,
       "position": [
-        833.0,
-        -58.0
+        1130.0,
+        -46.0
       ],
       "hasInput": true,
       "hasOutput": true,
@@ -164,15 +164,92 @@
       "parameters": {
         "scale": "2.500000"
       }
+    },
+    {
+      "id": 15,
+      "implementation": "Compare Variable",
+      "type": 2,
+      "position": [
+        220.0,
+        -59.0
+      ],
+      "hasInput": true,
+      "hasOutput": false,
+      "hasTrueOutput": true,
+      "hasFalseOutput": true,
+      "parameters": {
+        "comparison": "equal",
+        "threshold": "1",
+        "variable": "bulletHit"
+      }
+    },
+    {
+      "id": 16,
+      "implementation": "On Collision Enter",
+      "type": 0,
+      "position": [
+        -95.0,
+        336.0
+      ],
+      "hasInput": false,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false,
+      "parameters": {
+        "colFilterType": "tag",
+        "colFilterValue": "player"
+      }
+    },
+    {
+      "id": 17,
+      "implementation": "Check State",
+      "type": 2,
+      "position": [
+        194.0,
+        335.0
+      ],
+      "hasInput": true,
+      "hasOutput": false,
+      "hasTrueOutput": true,
+      "hasFalseOutput": true,
+      "parameters": {
+        "state": "Idle"
+      }
+    },
+    {
+      "id": 18,
+      "implementation": "Set State On Collided",
+      "type": 1,
+      "position": [
+        518.0,
+        240.0
+      ],
+      "hasInput": true,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false,
+      "parameters": {
+        "targetStateCollided": "Dead"
+      }
+    },
+    {
+      "id": 20,
+      "implementation": "Apply Force On Collided",
+      "type": 1,
+      "position": [
+        521.0,
+        370.0
+      ],
+      "hasInput": true,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false,
+      "parameters": {
+        "forceY": "10.000000"
+      }
     }
   ],
   "connections": [
-    {
-      "fromNodeId": 6,
-      "outputPin": "Out",
-      "toNodeId": 7,
-      "inputPin": "In"
-    },
     {
       "fromNodeId": 7,
       "outputPin": "Out",
@@ -213,6 +290,36 @@
       "fromNodeId": 12,
       "outputPin": "Out",
       "toNodeId": 11,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 6,
+      "outputPin": "Out",
+      "toNodeId": 15,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 15,
+      "outputPin": "False",
+      "toNodeId": 7,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 17,
+      "outputPin": "True",
+      "toNodeId": 18,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 16,
+      "outputPin": "Out",
+      "toNodeId": 17,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 17,
+      "outputPin": "False",
+      "toNodeId": 20,
       "inputPin": "In"
     }
   ]

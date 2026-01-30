@@ -39,13 +39,13 @@
         0.0
       ],
       "colliderType": "square",
-      "collisionRes": "StopWhenCollide",
+      "collisionRes": "MoveWhenCollide",
       "collisionTag": "bullet",
       "ignoreCollisionsWith": [
         "player",
         "bullet",
-        "environment",
-        "platform"
+        "platform",
+        "environment"
       ]
     },
     "AudioComponent": {
