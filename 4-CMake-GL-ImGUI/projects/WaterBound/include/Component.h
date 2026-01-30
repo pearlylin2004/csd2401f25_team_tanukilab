@@ -639,15 +639,20 @@ enum class NodeImplementation {
     COMPARE_VALUE,
     COMPARE_VAR,
     CHECK_STATE,
+    CHECK_TIMER,
 
     // ACTION
     PRINT_MESSAGE,
     MOVE_OBJECT,
     ROTATE_OBJECT,
     SET_ROTATION,
+    SET_POSITION,
+    SET_SCALE,
+	SCALE_PROPORTIONAL,
     SET_FLOAT,
     PLAY_SOUND,
     SET_STATE,
+    RESET_TIMER,
 
     // DEFAULT
     DEFAULT // nothing happen :)
@@ -690,6 +695,7 @@ public:
     std::map<std::string, float> floatVar;
     std::map<std::string, std::string> stringVar;
     std::map<std::string, bool> boolVar;
+    std::map<std::string, float> timers;
     std::unordered_set<int> currentExePath;
 
 	bool wasHoveredLastFrame = false; // for hover event detection

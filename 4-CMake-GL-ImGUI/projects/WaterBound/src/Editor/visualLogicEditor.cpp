@@ -112,6 +112,10 @@ void VisualLogicEditor::render() {
 					addNode(NodeType::CONDITION, NodeImplementation::CHECK_STATE);
 				}
 
+				if (ImGui::MenuItem("Check Timer")) {
+					addNode(NodeType::CONDITION, NodeImplementation::CHECK_TIMER);
+				}
+
 				ImGui::EndMenu();
 			}
 			/* -------- END -------- */
@@ -145,6 +149,10 @@ void VisualLogicEditor::render() {
 
 				if (ImGui::MenuItem("Set State")) {
 					addNode(NodeType::ACTION, NodeImplementation::SET_STATE);
+				}
+
+				if (ImGui::MenuItem("Reset Timer")) {
+					addNode(NodeType::ACTION, NodeImplementation::RESET_TIMER);
 				}
 
 				ImGui::EndMenu();
@@ -900,6 +908,46 @@ void VisualLogicEditor::renderNodeProperties() {
 				ImGui::TextDisabled("Add a State Machine component first");
 			}
 		}
+		else if (node.imp == NodeImplementation::RESET_TIMER) {
+			ImGui::Text("Reset Timer");
+			ImGui::Separator();
+
+			std::vector<std::string> availableTimers;
+			for (const LogicNode& node : Editor::visualLogicState.nodes) {
+				if ((node.imp == NodeImplementation::CHECK_TIMER ||
+					node.imp == NodeImplementation::RESET_TIMER) &&
+					node.parameters.count("timerName")) {
+
+					std::string timer = node.parameters.at("timerName");
+
+					if (std::find(availableTimers.begin(), availableTimers.end(), timer) == availableTimers.end()) {
+						availableTimers.push_back(timer);
+
+					}
+				}
+			}
+
+			std::string currentTimer = node.parameters.count("timerName") ?
+				node.parameters["timerName"] : "timer_0";
+
+			ImGui::Text("Timer ID:");
+			if (ImGui::BeginCombo("##timerName", currentTimer.c_str())) {
+				for (const std::string& timer : availableTimers) {
+					bool isSelected = (currentTimer == timer);
+					if (ImGui::Selectable(timer.c_str(), isSelected)) {
+						node.parameters["timerName"] = timer;
+					}
+
+					if (isSelected) {
+						ImGui::SetItemDefaultFocus();
+					}
+				}
+				ImGui::EndCombo();
+			}
+
+			ImGui::Separator();
+			ImGui::TextWrapped("Resets the selected timer to 0 seconds.");
+}
 	}
 	/* ---------- END ---------- */
 
@@ -1074,6 +1122,50 @@ void VisualLogicEditor::renderNodeProperties() {
 				ImGui::TextColored(ImVec4(1.f, 0.3f, 0.3f, 1.f), "Add StateMachine Component first");
 			}
 		}
+		else if (node.imp == NodeImplementation::CHECK_TIMER) {
+			ImGui::Text("Check Timer");
+			ImGui::Separator();
+
+			std::vector<std::string> availableTimers;
+			for (const LogicNode& node : Editor::visualLogicState.nodes) {
+				if ((node.imp == NodeImplementation::CHECK_TIMER ||
+					node.imp == NodeImplementation::RESET_TIMER) &&
+					node.parameters.count("timerName")) {
+
+					std::string timer = node.parameters.at("timerName");
+
+					if (std::find(availableTimers.begin(), availableTimers.end(), timer) == availableTimers.end()) {
+						availableTimers.push_back(timer);
+					}
+				}
+			}
+
+			std::string currentTimer = node.parameters.count("timerName") ? node.parameters["timerName"] : "timer_0";
+
+			ImGui::Text("Timer ID:");
+			if (ImGui::BeginCombo("##timerName", currentTimer.c_str())) {
+				for (const std::string& timer : availableTimers) {
+					bool isSelected = (currentTimer == timer);
+					if (ImGui::Selectable(timer.c_str(), isSelected)) {
+						node.parameters["timerName"] = timer;
+					}
+					if (isSelected) {
+						ImGui::SetItemDefaultFocus();
+					}
+				}
+				ImGui::EndCombo();
+			}
+
+			static char thresholdBuffer[64];
+			std::string currentThreshold = node.parameters.count("threshold") ?
+				node.parameters["threshold"] : "5.0";
+			strncpy_s(thresholdBuffer, currentThreshold.c_str(), sizeof(thresholdBuffer) - 1);
+
+			ImGui::Text("Threshold (seconds):");
+			if (ImGui::InputText("##threshold", thresholdBuffer, sizeof(thresholdBuffer))) {
+				node.parameters["threshold"] = thresholdBuffer;
+			}
+		}
 	}
 	/* ---------- END ---------- */
 }
@@ -1225,6 +1317,9 @@ void VisualLogicEditor::addNode(NodeType type, NodeImplementation imp) {
 		else if (imp == NodeImplementation::SET_STATE) {
 			node.parameters["state"] = JsonIO::stateNames[0];
 		}
+		else if (imp == NodeImplementation::RESET_TIMER) {
+			node.parameters["timerName"] = node.parameters.count("timerName") ? node.parameters["timerName"] : "timer_0";
+		}
 	}
 	// CONDITION nodes
 	else if (type == NodeType::CONDITION) {
@@ -1243,6 +1338,10 @@ void VisualLogicEditor::addNode(NodeType type, NodeImplementation imp) {
 		}
 		else if (imp == NodeImplementation::CHECK_STATE) {
 			node.parameters["state"] = JsonIO::stateNames[0];
+		}
+		else if (imp == NodeImplementation::CHECK_TIMER) {
+			node.parameters["timerName"] = node.parameters.count("timerName") ? node.parameters["timerName"] : "timer_0";
+			node.parameters["threshold"] = "1.0";
 		}
 	}
 

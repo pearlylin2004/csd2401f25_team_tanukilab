@@ -2,12 +2,12 @@
   "version": 1,
   "nodes": [
     {
-      "id": 1,
+      "id": 6,
       "implementation": "On Collision Enter",
       "type": 0,
       "position": [
-        -51.0,
-        88.0
+        -84.0,
+        -59.0
       ],
       "hasInput": false,
       "hasOutput": true,
@@ -19,11 +19,92 @@
       }
     },
     {
+      "id": 7,
+      "implementation": "Reset Timer",
+      "type": 1,
+      "position": [
+        207.0,
+        -61.0
+      ],
+      "hasInput": true,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false,
+      "parameters": {
+        "timerName": "timer_3"
+      }
+    },
+    {
+      "id": 9,
+      "implementation": "Set Float",
+      "type": 1,
+      "position": [
+        513.0,
+        -61.0
+      ],
+      "hasInput": true,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false,
+      "parameters": {
+        "value": "1",
+        "variable": "bulletHit"
+      }
+    },
+    {
+      "id": 8,
+      "implementation": "On Update",
+      "type": 0,
+      "position": [
+        -92.0,
+        100.0
+      ],
+      "hasInput": false,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false
+    },
+    {
+      "id": 10,
+      "implementation": "Compare Variable",
+      "type": 2,
+      "position": [
+        199.0,
+        100.0
+      ],
+      "hasInput": true,
+      "hasOutput": false,
+      "hasTrueOutput": true,
+      "hasFalseOutput": true,
+      "parameters": {
+        "comparison": "equal",
+        "threshold": "1",
+        "variable": "bulletHit"
+      }
+    },
+    {
+      "id": 3,
+      "implementation": "Check Timer",
+      "type": 2,
+      "position": [
+        508.0,
+        93.0
+      ],
+      "hasInput": true,
+      "hasOutput": false,
+      "hasTrueOutput": true,
+      "hasFalseOutput": true,
+      "parameters": {
+        "threshold": "2.0",
+        "timerName": "timer_3"
+      }
+    },
+    {
       "id": 2,
       "implementation": "Set State",
       "type": 1,
       "position": [
-        277.0,
+        813.0,
         84.0
       ],
       "hasInput": true,
@@ -33,13 +114,60 @@
       "parameters": {
         "state": "Walking"
       }
+    },
+    {
+      "id": 11,
+      "implementation": "Set Float",
+      "type": 1,
+      "position": [
+        1118.0,
+        82.0
+      ],
+      "hasInput": true,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false,
+      "parameters": {
+        "value": "0",
+        "variable": "bulletHit"
+      }
     }
   ],
   "connections": [
     {
-      "fromNodeId": 1,
+      "fromNodeId": 6,
       "outputPin": "Out",
+      "toNodeId": 7,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 7,
+      "outputPin": "Out",
+      "toNodeId": 9,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 8,
+      "outputPin": "Out",
+      "toNodeId": 10,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 10,
+      "outputPin": "True",
+      "toNodeId": 3,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 3,
+      "outputPin": "True",
       "toNodeId": 2,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 2,
+      "outputPin": "Out",
+      "toNodeId": 11,
       "inputPin": "In"
     }
   ]

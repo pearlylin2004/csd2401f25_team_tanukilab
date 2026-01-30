@@ -69,6 +69,11 @@ void VisualLogicSystem::update(GameObject* obj, VisualLC* logic, float dt) {
 	if (!obj || !logic) return;
 
 
+	/* -------- Accumulate timer -------- */
+	for (auto& [timerName, elapsedTime] : logic->timers) elapsedTime += dt;
+	/* -------- END -------- */
+
+
 	/* -------- Check collisions -------- */
 	for (GameObject* collided : logic->curCollision) {
 		// ON COLLISION ENTER
@@ -307,6 +312,38 @@ void VisualLogicSystem::executeActionNode(GameObject* obj, VisualLC* logic, Logi
 			transform->rotation = angle;
 		}
 	}
+	else if (node.imp == NodeImplementation::SET_POSITION) {
+		Transform* transform = obj->getComponent<Transform>();
+
+		if (transform) {
+			float x = node.parameters.count("x") ? std::stof(node.parameters["x"]) : 0.f;
+			float y = node.parameters.count("y") ? std::stof(node.parameters["y"]) : 0.f;
+
+			transform->x = x;
+			transform->y = y;
+		}
+	}
+	else if (node.imp == NodeImplementation::SET_SCALE) {
+		Transform* transform = obj->getComponent<Transform>();
+
+		if (transform) {
+			float scaleX = node.parameters.count("scaleX") ? std::stof(node.parameters["scaleX"]) : 1.f;
+			float scaleY = node.parameters.count("scaleY") ? std::stof(node.parameters["scaleY"]) : 1.f;
+
+			transform->scaleX = scaleX;
+			transform->scaleY = scaleY;
+		}
+	}
+	else if (node.imp == NodeImplementation::SCALE_PROPORTIONAL) {
+		Transform* transform = obj->getComponent<Transform>();
+
+		if (transform) {
+			float scale = node.parameters.count("scale") ? std::stof(node.parameters["scale"]) : 2.f;
+
+			transform->scaleX *= scale;
+			transform->scaleY *= scale;
+		}
+	}
 	else if (node.imp == NodeImplementation::SET_FLOAT) {
 		std::string varName = node.parameters.count("variable") ?
 			node.parameters["variable"] : "var";
@@ -360,6 +397,16 @@ void VisualLogicSystem::executeActionNode(GameObject* obj, VisualLC* logic, Logi
 		
 		sm->state = JsonIO::parsePlayerState(stateName);
 		sm->stateTime = 0.f;
+	}
+	else if (node.imp == NodeImplementation::RESET_TIMER) {
+		// Generate timer name from node's timerGroup parameter
+		std::string timerName = node.parameters.count("timerName") ?
+			node.parameters["timerName"] : "timer_0";
+
+		// Reset timer to 0
+		logic->timers[timerName] = 0.f;
+
+		std::cout << "after reset: " << logic->timers[timerName] << std::endl;
 	}
 }
 
@@ -480,6 +527,18 @@ bool VisualLogicSystem::executeConditionNode(GameObject* obj, VisualLC* logic, L
 
 		return JsonIO::parsePlayerState(target) == sm->state;
 	}
+	else if (node.imp == NodeImplementation::CHECK_TIMER) {
+		float threshold = node.parameters.count("threshold") ? std::stof(node.parameters["threshold"]) : 1.f;
+
+		// generate timer name so one obj can have multiple timers
+		std::string timerName = node.parameters.count("timerName") ? node.parameters["timerName"] : "timer_0";
+
+		if (!logic->timers.count(timerName)) logic->timers[timerName] = 0.f;
+
+		std::cout << "checking timer " << timerName << ": " << logic->timers[timerName] << " vs " << threshold << std::endl;
+
+		return logic->timers[timerName] > threshold;
+	}
 
 	return true;
 }
@@ -521,9 +580,7 @@ bool VisualLogicSystem::shouldTriggerCollision(LogicNode& node, GameObject* coll
 	else if (filterType == "tag") {
 		CollisionInfo* col = collided->getComponent<CollisionInfo>();
 
-		if (col) {
-			return col->collisionTag == filterValue;
-		}
+		if (col) return col->collisionTag == filterValue;
 
 		return false;
 	}

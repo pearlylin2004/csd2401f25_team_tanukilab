@@ -293,11 +293,13 @@ namespace JsonIO {
 		if (str == "Set Float") return NodeImplementation::SET_FLOAT;
 		if (str == "Play Sound") return NodeImplementation::PLAY_SOUND;
 		if (str == "Set State") return NodeImplementation::SET_STATE;
+		if (str == "Reset Timer") return NodeImplementation::RESET_TIMER;
 
 		if (str == "Check Key Held") return NodeImplementation::CHECK_KEY_HELD;
 		if (str == "Compare Value") return NodeImplementation::COMPARE_VALUE;
 		if (str == "Compare Variable") return NodeImplementation::COMPARE_VAR;
 		if (str == "Check State") return NodeImplementation::CHECK_STATE;
+		if (str == "Check Timer") return NodeImplementation::CHECK_TIMER;
 
         return NodeImplementation::DEFAULT;
     }
@@ -320,11 +322,13 @@ namespace JsonIO {
             case NodeImplementation::SET_FLOAT: return "Set Float";
 			case NodeImplementation::PLAY_SOUND: return "Play Sound";
 			case NodeImplementation::SET_STATE: return "Set State";
+			case NodeImplementation::RESET_TIMER: return "Reset Timer";
 
             case NodeImplementation::CHECK_KEY_HELD: return "Check Key Held";
             case NodeImplementation::COMPARE_VALUE: return "Compare Value";
             case NodeImplementation::COMPARE_VAR: return "Compare Variable";
 			case NodeImplementation::CHECK_STATE: return "Check State";
+			case NodeImplementation::CHECK_TIMER: return "Check Timer";
 
             default: return "Default";
         }
