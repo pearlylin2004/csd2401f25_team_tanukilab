@@ -436,7 +436,7 @@ void VisualLogicSystem::executeActionNode(GameObject* obj, VisualLC* logic, Logi
 
 		collidedSM->state = JsonIO::parsePlayerState(stateName);
 		collidedSM->stateTime = 0.f;
-		collidedSM->fixState = true;
+		collidedSM->fixState = true; // avoid getting overridden by statemachine 
 
 		//std::cout << "Set collided object's state to " << stateName << "\n";
 	}
