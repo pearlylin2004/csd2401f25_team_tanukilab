@@ -221,7 +221,7 @@ namespace JsonIO {
         switch (mode) {
         case CollisionResponseMode::StopWhenCollide: return "StopWhenCollide";
         case CollisionResponseMode::MoveWhenCollide: return "MoveWhenCollide";
-        default:                                    return "StopWhenCollide";
+        default:                                    return "NoResponse";
         }
     }
 
@@ -232,7 +232,8 @@ namespace JsonIO {
      */
     CollisionResponseMode StrToCollisionResponseMode(const std::string& s) {
         if (s == "MoveWhenCollide") return CollisionResponseMode::MoveWhenCollide;
-        return CollisionResponseMode::StopWhenCollide;
+        if (s == "StopWhenCollide") return CollisionResponseMode::StopWhenCollide;
+        return CollisionResponseMode::NoResponse;
     }
 
     //for button
@@ -891,6 +892,16 @@ namespace JsonIO {
             Value collisionResStr(CollisionResponseModeToStr(c->collisionRes), a);
             jc.AddMember("collisionRes", collisionResStr, a);
 
+            rapidjson::Value tagVal(c->collisionTag.c_str(), a);
+            jc.AddMember(rapidjson::Value("collisionTag", a), tagVal, a);
+
+            // Ignore collisions array
+            rapidjson::Value ignoreArray(rapidjson::kArrayType);
+            for (const std::string& tag : c->ignoreCollisionsWith) {
+                ignoreArray.PushBack(rapidjson::Value(tag.c_str(), a), a);
+            }
+            jc.AddMember(rapidjson::Value("ignoreCollisionsWith", a), ignoreArray, a);
+
             doc.AddMember("Collision", jc, a);
         }
 
@@ -1176,6 +1187,18 @@ namespace JsonIO {
 
                 if (jc.HasMember("collisionRes")) {
                     c->collisionRes = StrToCollisionResponseMode(jc["collisionRes"].GetString());
+                }
+
+                if (jc.HasMember("collisionTag")) {
+                    c->collisionTag = jc["collisionTag"].GetString();
+                }
+
+                if (jc.HasMember("ignoreCollisionsWith")) {
+                    const rapidjson::Value& ignoreArray = jc["ignoreCollisionsWith"];
+                    c->ignoreCollisionsWith.clear();
+                    for (rapidjson::SizeType i = 0; i < ignoreArray.Size(); ++i) {
+                        c->ignoreCollisionsWith.insert(ignoreArray[i].GetString());
+                    }
                 }
             }
 

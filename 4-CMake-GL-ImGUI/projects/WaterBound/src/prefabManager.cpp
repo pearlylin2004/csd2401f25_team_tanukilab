@@ -808,6 +808,21 @@ void PrefabManager::applyPrefabComponents(GameObject* go, const rapidjson::Value
 			c->colliderSize.x = jc["colliderSize"][0].GetFloat();
 			c->colliderSize.y = jc["colliderSize"][1].GetFloat();
 		}
+
+		// Load Collision Tag
+		if (jc.HasMember("collisionTag") && jc["collisionTag"].IsString()) {
+			c->collisionTag = jc["collisionTag"].GetString();
+		}
+
+		// Load ignore the collision
+		if (jc.HasMember("ignoreCollisionsWith") && jc["ignoreCollisionsWith"].IsArray()) {
+			c->ignoreCollisionsWith.clear();
+			for (const auto& tag : jc["ignoreCollisionsWith"].GetArray()) {
+				if (tag.IsString()) {
+					c->ignoreCollisionsWith.insert(tag.GetString());
+				}
+			}
+		}
 	}
 
 	// ---- State Machine ----
@@ -1133,6 +1148,14 @@ void PrefabManager::serializeComponents(const GameObject* obj, rapidjson::Value&
 		jc.AddMember("colliderType", rapidjson::Value(JsonIO::ShapeToStr(c->colliderType), a), a);
 
 		jc.AddMember("collisionRes", rapidjson::Value(JsonIO::CollisionResponseModeToStr(c->collisionRes), a), a);
+
+		jc.AddMember("collisionTag", rapidjson::Value(c->collisionTag.c_str(), a), a);
+
+		rapidjson::Value ignoreArray(rapidjson::kArrayType);
+		for (const std::string& tag : c->ignoreCollisionsWith) {
+			ignoreArray.PushBack(rapidjson::Value(tag.c_str(), a), a);
+		}
+		jc.AddMember("ignoreCollisionsWith", ignoreArray, a);
 
 		comps.AddMember("CollisionInfo", jc, a);
 	}

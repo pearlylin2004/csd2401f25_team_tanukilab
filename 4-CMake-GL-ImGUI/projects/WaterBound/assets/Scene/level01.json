@@ -15,6 +15,101 @@
         "Render": {
           "texture": "assets/Texture\\water_texture.png",
           "hasTex": 1
+        },
+        "CollisionInfo": {
+          "ignoreCollisionsWith": [
+            "player",
+            "bullet",
+            "hazards",
+            "platform"
+          ]
+        },
+        "LuaScript": {
+          "scripts": [
+            {
+              "filename": "./assets/scripting\\bullet.lua",
+              "scriptName": "bullet"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "prefabid": "dd60e1e1-641c-4ed5-b69d-ffadfa02fb7a",
+      "name": "player",
+      "components": {
+        "Transform": {
+          "pos": [
+            0.0,
+            -7.5,
+            0.9980000257492065
+          ],
+          "scale": [
+            5.0,
+            5.0,
+            0.0
+          ]
+        },
+        "Physics": {
+          "jumpForce": 90.0
+        },
+        "CollisionInfo": {
+          "collisionTag": "player",
+          "ignoreCollisionsWith": [
+            "bullet"
+          ]
+        },
+        "StateMachine": {
+          "stateTime": 11.628634452819824,
+          "Dead": {
+            "animState": {
+              "texture": "",
+              "loop": 1,
+              "totalColumn": 1,
+              "totalRow": 1,
+              "frameTime": 0.10000000149011612,
+              "initialFramCol": 0.0,
+              "initialFramRow": 0.0,
+              "lastFramCol": 0.0,
+              "lastFramRow": 0.0
+            }
+          }
+        },
+        "LuaScript": {
+          "scripts": [
+            {
+              "filename": "./assets/scripting\\player.lua",
+              "scriptName": "player"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "prefabid": "f04819ff-270c-41b4-8387-73382eb85103",
+      "name": "water_source",
+      "components": {
+        "Transform": {
+          "pos": [
+            -6.120626926422119,
+            -8.350801467895508,
+            0.0
+          ]
+        },
+        "CollisionInfo": {
+          "collisionTag": "water"
+        },
+        "StateMachine": {
+          "stateTime": 252.32286071777344
+        },
+        "AudioComponent": {
+          "channels": {
+            "default": {
+              "isSpatial": 0,
+              "minDistance": 5.0,
+              "maxDistance": 50.0
+            }
+          }
         }
       }
     },
@@ -40,63 +135,6 @@
           "texture": "assets/Texture\\game_bg_layer_5.png",
           "hasTex": 1,
           "hasAnimation": 0
-        }
-      }
-    },
-    {
-      "prefabid": "dd60e1e1-641c-4ed5-b69d-ffadfa02fb7a",
-      "name": "player",
-      "components": {
-        "Transform": {
-          "pos": [
-            0.0,
-            -7.5,
-            0.9980000257492065
-          ],
-          "scale": [
-            5.0,
-            5.0,
-            0.0
-          ]
-        },
-        "Physics": {
-          "jumpForce": 90.0
-        },
-        "CollisionInfo": {
-          "collisionTag": "player",
-          "ignoreCollisionsWith": [ "bullet" ]
-        },
-        "StateMachine": {
-          "state": "Walking",
-          "Dead": {
-            "animState": {
-              "texture": "",
-              "loop": 1,
-              "totalColumn": 1,
-              "totalRow": 1,
-              "frameTime": 0.10000000149011612,
-              "initialFramCol": 0.0,
-              "initialFramRow": 0.0,
-              "lastFramCol": 0.0,
-              "lastFramRow": 0.0
-            }
-          }
-        }
-      }
-    },
-    {
-      "prefabid": "f04819ff-270c-41b4-8387-73382eb85103",
-      "name": "water_source",
-      "components": {
-        "Transform": {
-          "pos": [
-            -6.120626926422119,
-            -8.350801467895508,
-            0.0
-          ]
-        },
-        "StateMachine": {
-          "stateTime": 252.32286071777344
         }
       }
     },
@@ -228,30 +266,18 @@
             3.2525298595428467,
             0.5
           ]
-        }
-      }
-    },
-    {
-      "prefabid": "94d018f7-a766-4ee6-95be-f39272697938",
-      "name": "platform_right29",
-      "components": {
-        "Transform": {
-          "pos": [
-            16.42242431640625,
-            -3.197999954223633,
-            0.0
-          ],
-          "scale": [
-            10.0,
-            1.7000001668930054,
-            0.0
-          ]
         },
         "CollisionInfo": {
-          "colliderSize": [
-            7.5,
-            3.0
-          ]
+          "collisionTag": "environment"
+        },
+        "AudioComponent": {
+          "channels": {
+            "default": {
+              "isSpatial": 0,
+              "minDistance": 5.0,
+              "maxDistance": 50.0
+            }
+          }
         }
       }
     },
@@ -275,7 +301,33 @@
           "colliderSize": [
             20.0,
             3.200000047683716
+          ],
+          "collisionTag": "platform"
+        }
+      }
+    },
+    {
+      "prefabid": "94d018f7-a766-4ee6-95be-f39272697938",
+      "name": "platform_right29",
+      "components": {
+        "Transform": {
+          "pos": [
+            16.42242431640625,
+            -3.197999954223633,
+            0.0
+          ],
+          "scale": [
+            10.0,
+            1.7000001668930054,
+            0.0
           ]
+        },
+        "CollisionInfo": {
+          "colliderSize": [
+            7.5,
+            3.0
+          ],
+          "collisionTag": "platform"
         }
       }
     },
@@ -299,7 +351,8 @@
           "colliderSize": [
             9.5,
             3.0
-          ]
+          ],
+          "collisionTag": "platform"
         }
       }
     },
@@ -327,6 +380,15 @@
         },
         "StateMachine": {
           "stateTime": 2300.66357421875
+        },
+        "AudioComponent": {
+          "channels": {
+            "default": {
+              "isSpatial": 0,
+              "minDistance": 5.0,
+              "maxDistance": 50.0
+            }
+          }
         }
       }
     },
@@ -345,6 +407,9 @@
             1.5,
             0.0
           ]
+        },
+        "CollisionInfo": {
+          "collisionTag": "platform"
         }
       }
     },
@@ -372,6 +437,15 @@
         },
         "StateMachine": {
           "stateTime": 2300.66357421875
+        },
+        "AudioComponent": {
+          "channels": {
+            "default": {
+              "isSpatial": 0,
+              "minDistance": 5.0,
+              "maxDistance": 50.0
+            }
+          }
         }
       }
     },

@@ -1192,14 +1192,37 @@ void GameObjectManager::saveSceneToJson(const std::string& filename, bool isNew)
 					jc.AddMember("collisionRes", rapidjson::Value(collisionResStr.c_str(), a), a);
 				}
 
-				if (c->collisionTag != "default") {
-					if (!prefabC || !prefabC->HasMember("collisionTag") ||
-						c->collisionTag != (*prefabC)["collisionTag"].GetString()) {
-						jc.AddMember("collisionTag", rapidjson::Value(c->collisionTag.c_str(), a), a);
+				if (!prefabC || !prefabC->HasMember("collisionTag") ||
+					c->collisionTag != (*prefabC)["collisionTag"].GetString()) {
+					jc.AddMember("collisionTag", rapidjson::Value(c->collisionTag.c_str(), a), a);
+				}
+
+				bool shouldSaveIgnoreList = false;
+				if (!prefabC || !prefabC->HasMember("ignoreCollisionsWith")) {
+					shouldSaveIgnoreList = !c->ignoreCollisionsWith.empty();
+				}
+				else {
+					// compare with prefab ignore list
+					const rapidjson::Value& prefabIgnoreList = (*prefabC)["ignoreCollisionsWith"];
+					if (prefabIgnoreList.Size() != c->ignoreCollisionsWith.size()) {
+						shouldSaveIgnoreList = true;
+					}
+					else {
+						// check if all elements match
+						std::set<std::string> prefabSet;
+						for (rapidjson::SizeType i = 0; i < prefabIgnoreList.Size(); ++i) {
+							prefabSet.insert(prefabIgnoreList[i].GetString());
+						}
+						for (const std::string& tag : c->ignoreCollisionsWith) {
+							if (prefabSet.find(tag) == prefabSet.end()) {
+								shouldSaveIgnoreList = true;
+								break;
+							}
+						}
 					}
 				}
 
-				if (!c->ignoreCollisionsWith.empty()) {
+				if (shouldSaveIgnoreList) {
 					rapidjson::Value ignoreArray(rapidjson::kArrayType);
 					for (const std::string& tag : c->ignoreCollisionsWith) {
 						ignoreArray.PushBack(rapidjson::Value(tag.c_str(), a), a);

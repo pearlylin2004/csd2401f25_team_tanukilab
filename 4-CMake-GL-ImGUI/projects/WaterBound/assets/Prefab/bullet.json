@@ -1,7 +1,6 @@
 {
   "id": "b1a12273-a692-4ce0-8072-156da2c70842",
   "name": "bullet",
-  "layer": 2,
   "components": {
     "Transform": {
       "pos": [
@@ -42,7 +41,12 @@
       "colliderType": "square",
       "collisionRes": "StopWhenCollide",
       "collisionTag": "bullet",
-      "ignoreCollisionsWith": [ "player"]
+      "ignoreCollisionsWith": [
+        "player",
+        "bullet",
+        "environment",
+        "platform"
+      ]
     },
     "AudioComponent": {
       "channels": {
@@ -56,7 +60,10 @@
           "fadeInOnStart": 1,
           "fadeInDuration": 0.20000000298023224,
           "fadeOutOnStop": 1,
-          "fadeOutDuration": 0.5
+          "fadeOutDuration": 0.5,
+          "isSpatial": 0,
+          "minDistance": 5.0,
+          "maxDistance": 50.0
         }
       }
     }

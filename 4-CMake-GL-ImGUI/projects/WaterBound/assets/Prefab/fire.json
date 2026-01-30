@@ -39,7 +39,7 @@
         0.0
       ],
       "colliderType": "square",
-      "collisionRes": "StopWhenCollide",
+      "collisionRes": "NoResponse",
       "collisionTag": "fire",
       "ignoreCollisionsWith": []
     },
@@ -138,7 +138,10 @@
           "fadeInOnStart": 0,
           "fadeInDuration": 1.0,
           "fadeOutOnStop": 0,
-          "fadeOutDuration": 1.0
+          "fadeOutDuration": 1.0,
+          "isSpatial": 0,
+          "minDistance": 5.0,
+          "maxDistance": 50.0
         }
       }
     }

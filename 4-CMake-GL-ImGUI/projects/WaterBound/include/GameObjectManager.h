@@ -17,6 +17,7 @@ Technology is prohibited.
 #include <fstream>
 #include <sstream>
 #include <iomanip>
+#include <set>
 
 #include "GameObject.h"
 #include "layerManager.h"
