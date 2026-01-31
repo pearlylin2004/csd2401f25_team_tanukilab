@@ -183,6 +183,44 @@ namespace Editor {
 		float propertiesWidth = 250.f;
 	};
 
+	namespace VLC {
+		// nodes
+		const float NODE_WIDTH = 250.f;
+		const float NODE_HEIGHT = 80.f;
+		const float NODE_PADDING = 10.f;
+
+		// pins
+		const float PIN_RADIUS = 6.f;
+		const float PIN_Y_OFFSET = 30.f;
+		const float PIN_TEXT_OFFSET = 12.f;
+		const float PIN_TEXT_Y_OFFSET = 8.f;
+		const float PIN_TRUE_Y = 30.f;
+		const float PIN_FALSE_Y = 50.f;
+		const float PIN_OFFSET_Y = 10.f;  // for true/false
+
+		// connections
+		const float CONNECTION_Y_CENTER = 40.f;
+		const float CONNECTION_BEZIER_OFFSET = 50.f;
+
+		// border & lines
+		const float BORDER_RADIUS = 4.f;
+		const float BORDER_THIN = 1.f;
+		const float BORDER_THICK = 3.f;
+		const float LINE_NORMAL = 2.f;
+		const float LINE_HOVERED = 3.5f;
+		const float LINE_SELECTED = 4.f;
+
+		// delete button
+		const float DELETE_SIZE = 20.f;
+		const float DELETE_OFFSET_X = 25.f;
+		const float DELETE_OFFSET_Y = 5.f;
+		const float DELETE_TEXT_OFFSET_X = 6.f;
+		const float DELETE_TEXT_OFFSET_Y = 2.f;
+
+		// grid
+		const float GRID_SIZE = 64.f;
+	}
+
 	struct NodeDef {
 		const char* name;
 		NodeType type;

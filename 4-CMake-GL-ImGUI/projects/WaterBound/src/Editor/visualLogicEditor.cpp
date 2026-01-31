@@ -86,7 +86,7 @@ void VisualLogicEditor::render() {
 
 
 	/* ------ Canvas ------ */
-	ImGui::BeginChild("Canvas", ImVec2(-Editor::visualLogicState.propertiesWidth - 8, 0), true);
+	ImGui::BeginChild("Canvas", ImVec2(-Editor::visualLogicState.propertiesWidth - 8, 0), true, ImGuiWindowFlags_NoScrollWithMouse | ImGuiWindowFlags_NoScrollbar);
 
 	if (InputHandler::isMouseButtonClicked(GLFW_MOUSE_BUTTON_RIGHT) && ImGui::IsWindowHovered() && !m_isDragging && !m_isConnecting) {
 		ImVec2 mouseScreenPos = ImGui::GetMousePos();
@@ -120,7 +120,7 @@ void VisualLogicEditor::render() {
 	drawList->PushClipRect(canvasPos, ImVec2(canvasPos.x + canvasSize.x, canvasPos.y + canvasSize.y), true);
 
 	// grid background
-	const float GRIDSIZE = 64.f;
+	const float GRIDSIZE = Editor::VLC::GRID_SIZE * m_zoom;
 	const ImU32 GRIDCOLOUR = IM_COL32(60, 60, 60, 255);
 
 	for (float x = fmodf(m_canvasOffset.x, GRIDSIZE); x < canvasSize.x; x += GRIDSIZE) {
@@ -165,9 +165,9 @@ void VisualLogicEditor::render() {
 
 		/* -------- Check for Nodes -------- */
 		for (LogicNode& node : Editor::visualLogicState.nodes) {
-			ImVec2 nodePos = ImVec2(canvasPos.x + node.position.x + m_canvasOffset.x,
-				canvasPos.y + node.position.y + m_canvasOffset.y);
-			ImVec2 nodeSize(250.f, 80.f);
+			ImVec2 nodePos = ImVec2(canvasPos.x + (node.position.x * m_zoom) + m_canvasOffset.x,
+				canvasPos.y + (node.position.y * m_zoom) + m_canvasOffset.y);
+			ImVec2 nodeSize(Editor::VLC::NODE_WIDTH * m_zoom, Editor::VLC::NODE_HEIGHT * m_zoom);
 
 			// if click on any nodes
 			if (mousePos.x >= nodePos.x && mousePos.x <= nodePos.x + nodeSize.x &&
@@ -193,17 +193,17 @@ void VisualLogicEditor::render() {
 
 				if (!fromNode || !toNode) continue;
 
-				ImVec2 fromPos = ImVec2(canvasPos.x + fromNode->position.x + m_canvasOffset.x + 250.f,
-					canvasPos.y + fromNode->position.y + m_canvasOffset.y + 40.f);
+				ImVec2 fromPos = ImVec2(canvasPos.x + (fromNode->position.x * m_zoom) + m_canvasOffset.x + (250.f * m_zoom),
+					canvasPos.y + (fromNode->position.y * m_zoom) + m_canvasOffset.y + (40.f * m_zoom));
 
-				if (conn.outputPin == "True") fromPos.y -= 10.f;
-				if (conn.outputPin == "False") fromPos.y += 10.f;
+				if (conn.outputPin == "True") fromPos.y -= (Editor::VLC::PIN_OFFSET_Y * m_zoom);
+				if (conn.outputPin == "False") fromPos.y += (Editor::VLC::PIN_OFFSET_Y * m_zoom);
 
-				ImVec2 toPos = ImVec2(canvasPos.x + toNode->position.x + m_canvasOffset.x,
-					canvasPos.y + toNode->position.y + m_canvasOffset.y + 40.f);
+				ImVec2 toPos = ImVec2(canvasPos.x + (toNode->position.x * m_zoom) + m_canvasOffset.x,
+					canvasPos.y + (toNode->position.y * m_zoom) + m_canvasOffset.y + (40.f * m_zoom));
 
-				ImVec2 cp1(fromPos.x + 50, fromPos.y);
-				ImVec2 cp2(toPos.x - 50, toPos.y);
+				ImVec2 cp1(fromPos.x + (Editor::VLC::CONNECTION_BEZIER_OFFSET * m_zoom), fromPos.y);
+				ImVec2 cp2(toPos.x - (Editor::VLC::CONNECTION_BEZIER_OFFSET * m_zoom), toPos.y);
 
 				if (isMouseNearBezier(fromPos, cp1, cp2, toPos, mousePos, 10.f)) {
 					clickedOnCon = true;
@@ -238,6 +238,8 @@ void VisualLogicEditor::render() {
 		float scroll = InputHandler::getMouseScroll();
 		m_zoom += scroll * 0.1f;
 		m_zoom = glm::clamp(m_zoom, 0.5f, 2.f);
+
+		std::cout << "Zoom: " << m_zoom << std::endl;
 	}
 
 	// shortcut
@@ -267,14 +269,7 @@ void VisualLogicEditor::render() {
 
 	drawList->PopClipRect();
 
-	// Info panel
-	if (Editor::visualLogicState.targetObj) {
-		ImGui::Text("Selected Object: %s", Editor::visualLogicState.targetObj->getObjectName().c_str());
-	}
-	ImGui::Text("Nodes: %d", (int)Editor::visualLogicState.nodes.size());
-
 	ImGui::EndChild();
-
 	/* ------ END ------ */
 
 
@@ -287,6 +282,13 @@ void VisualLogicEditor::render() {
 	renderNodeProperties();
 	ImGui::EndChild();
 	/* ------ END ------ */
+
+
+	// Info panel
+	if (Editor::visualLogicState.targetObj) {
+		ImGui::Text("Selected Object: %s", Editor::visualLogicState.targetObj->getObjectName().c_str());
+	}
+	ImGui::Text("Nodes: %d", (int)Editor::visualLogicState.nodes.size());
 
 
 	ImGui::End();
@@ -396,10 +398,10 @@ void VisualLogicEditor::saveLogic() {
 
 void VisualLogicEditor::renderNode(ImDrawList* drawList, LogicNode& node, ImVec2 canvasPos, bool isCanvasHovered) {
 	// calc screen position
-	ImVec2 nodePos = ImVec2(canvasPos.x + node.position.x + m_canvasOffset.x,
-		canvasPos.y + node.position.y + m_canvasOffset.y);
+	ImVec2 nodePos = ImVec2(canvasPos.x + (node.position.x * m_zoom) + m_canvasOffset.x,
+		canvasPos.y + (node.position.y * m_zoom) + m_canvasOffset.y);
 
-	ImVec2 nodeSize(250.f, 80.f);
+	ImVec2 nodeSize(250.f * m_zoom, 80.f * m_zoom);
 
 
 	/* ---------- Mouse Control ---------- */
@@ -420,8 +422,8 @@ void VisualLogicEditor::renderNode(ImDrawList* drawList, LogicNode& node, ImVec2
 
 	// update position if dragging
 	if (m_isDragging && m_draggingNodeId == node.id && InputHandler::isMouseDragging()) {
-		node.position.x = mousePos.x - canvasPos.x - m_canvasOffset.x - m_dragOffset.x;
-		node.position.y = mousePos.y - canvasPos.y - m_canvasOffset.y - m_dragOffset.y;
+		node.position.x = (mousePos.x - canvasPos.x - m_canvasOffset.x - m_dragOffset.x) / m_zoom;
+		node.position.y = (mousePos.y - canvasPos.y - m_canvasOffset.y - m_dragOffset.y) / m_zoom;
 	}
 	/* ---------- END ---------- */
 
@@ -430,27 +432,29 @@ void VisualLogicEditor::renderNode(ImDrawList* drawList, LogicNode& node, ImVec2
 	ImU32 nodeColor = getNodeColor(node.type);
 	ImU32 borderColor = (m_selectedNodeId == node.id) ?
 		IM_COL32(255, 255, 0, 255) : IM_COL32(100, 100, 100, 255);
-	float borderThickness = (m_selectedNodeId == node.id) ? 3.f : 1.f;
+	float borderThickness = (m_selectedNodeId == node.id) ? Editor::VLC::BORDER_THICK : Editor::VLC::BORDER_THIN;
+	borderThickness *= m_zoom;
 
 	drawList->AddRectFilled(nodePos,
 		ImVec2(nodePos.x + nodeSize.x, nodePos.y + nodeSize.y),
-		nodeColor, 4.f);
+		nodeColor, Editor::VLC::BORDER_RADIUS * m_zoom);
 
 	drawList->AddRect(nodePos,
 		ImVec2(nodePos.x + nodeSize.x, nodePos.y + nodeSize.y),
-		borderColor, 4.f, 0, borderThickness);
+		borderColor, 4.f * m_zoom, 0, borderThickness);
 
 	// node name
-	drawList->AddText(ImVec2(nodePos.x + 10, nodePos.y + 10),
+	drawList->AddText(ImVec2(nodePos.x + (Editor::VLC::NODE_PADDING * m_zoom), nodePos.y + (Editor::VLC::NODE_PADDING * m_zoom)),
 		IM_COL32(255, 255, 255, 255), JsonIO::nodeImplToString(node.imp).c_str());
 	/* ---------- END ---------- */
 
 
 	/* ---------- Draw Input Pin ---------- */
 	if (node.hasInput) {
-		ImVec2 pinPos(nodePos.x, nodePos.y + 30);
-		drawList->AddCircleFilled(pinPos, 6.f, IM_COL32(200, 200, 200, 255));
-		drawList->AddText(ImVec2(pinPos.x + 12, pinPos.y - 8),
+		ImVec2 pinPos(nodePos.x, nodePos.y + (Editor::VLC::PIN_Y_OFFSET * m_zoom));
+		drawList->AddCircleFilled(pinPos, Editor::VLC::PIN_RADIUS * m_zoom, IM_COL32(200, 200, 200, 255));
+		
+		drawList->AddText(ImVec2(pinPos.x + (Editor::VLC::PIN_TEXT_OFFSET * m_zoom), pinPos.y - (Editor::VLC::PIN_TEXT_Y_OFFSET * m_zoom)),
 			IM_COL32(255, 255, 255, 255), "In");
 
 		// click input pin for connection
@@ -464,11 +468,11 @@ void VisualLogicEditor::renderNode(ImDrawList* drawList, LogicNode& node, ImVec2
 
 	/* ---------- Draw Output Pin ---------- */
 	if (node.hasOutput) {
-		ImVec2 pinPos(nodePos.x + nodeSize.x, nodePos.y + 30);
-		drawList->AddCircleFilled(pinPos, 6.f, IM_COL32(200, 200, 200, 255));
+		ImVec2 pinPos(nodePos.x + nodeSize.x, nodePos.y + (Editor::VLC::PIN_Y_OFFSET * m_zoom));
+		drawList->AddCircleFilled(pinPos, Editor::VLC::PIN_RADIUS * m_zoom, IM_COL32(200, 200, 200, 255));
 
 		ImVec2 textSize = ImGui::CalcTextSize("Out");
-		drawList->AddText(ImVec2(pinPos.x - textSize.x - 12, pinPos.y - 8),
+		drawList->AddText(ImVec2(pinPos.x - textSize.x - (12 * m_zoom), pinPos.y - (8 * m_zoom)),
 			IM_COL32(255, 255, 255, 255), "Out");
 
 		// click output pin to start connection
@@ -484,11 +488,11 @@ void VisualLogicEditor::renderNode(ImDrawList* drawList, LogicNode& node, ImVec2
 
 	/* ---------- True/False Pin for Connection Nodes ---------- */
 	if (node.hasTrueOutput) {
-		ImVec2 pinPos(nodePos.x + nodeSize.x, nodePos.y + 30);
-		drawList->AddCircleFilled(pinPos, 6.f, IM_COL32(100, 255, 100, 255));
+		ImVec2 pinPos(nodePos.x + nodeSize.x, nodePos.y + (Editor::VLC::PIN_TRUE_Y * m_zoom));
+		drawList->AddCircleFilled(pinPos, 6.f * m_zoom, IM_COL32(100, 255, 100, 255));
 
 		ImVec2 textSize = ImGui::CalcTextSize("True");
-		drawList->AddText(ImVec2(pinPos.x - textSize.x - 12, pinPos.y - 8),
+		drawList->AddText(ImVec2(pinPos.x - textSize.x - (12 * m_zoom), pinPos.y - (8 * m_zoom)),
 			IM_COL32(255, 255, 255, 255), "True");
 
 		if (!m_isConnecting && isPinHovered(pinPos, mousePos) && InputHandler::isMouseLeftClicked()) {
@@ -500,11 +504,11 @@ void VisualLogicEditor::renderNode(ImDrawList* drawList, LogicNode& node, ImVec2
 	}
 
 	if (node.hasFalseOutput) {
-		ImVec2 pinPos(nodePos.x + nodeSize.x, nodePos.y + 50);
-		drawList->AddCircleFilled(pinPos, 6.f, IM_COL32(255, 100, 100, 255));
+		ImVec2 pinPos(nodePos.x + nodeSize.x, nodePos.y + (Editor::VLC::PIN_FALSE_Y * m_zoom));
+		drawList->AddCircleFilled(pinPos, (6.f * m_zoom), IM_COL32(255, 100, 100, 255));
 
 		ImVec2 textSize = ImGui::CalcTextSize("False");
-		drawList->AddText(ImVec2(pinPos.x - textSize.x - 12, pinPos.y - 8),
+		drawList->AddText(ImVec2(pinPos.x - textSize.x - (12 * m_zoom), pinPos.y - (8 * m_zoom)),
 			IM_COL32(255, 255, 255, 255), "False");
 
 		if (!m_isConnecting && isPinHovered(pinPos, mousePos) && InputHandler::isMouseLeftClicked()) {
@@ -519,8 +523,8 @@ void VisualLogicEditor::renderNode(ImDrawList* drawList, LogicNode& node, ImVec2
 
 	/* ---------- Delete Button ---------- */
 	if (isHovered) {
-		ImVec2 deletePos(nodePos.x + nodeSize.x - 25, nodePos.y + 5);
-		ImVec2 deleteSize(20, 20);
+		ImVec2 deletePos(nodePos.x + nodeSize.x - (Editor::VLC::DELETE_OFFSET_X * m_zoom), nodePos.y + (Editor::VLC::DELETE_OFFSET_Y * m_zoom));
+		ImVec2 deleteSize(Editor::VLC::DELETE_SIZE * m_zoom, Editor::VLC::DELETE_SIZE * m_zoom);
 
 		bool deleteHovered = mousePos.x >= deletePos.x && mousePos.x <= deletePos.x + deleteSize.x &&
 			mousePos.y >= deletePos.y && mousePos.y <= deletePos.y + deleteSize.y;
@@ -529,9 +533,9 @@ void VisualLogicEditor::renderNode(ImDrawList* drawList, LogicNode& node, ImVec2
 
 		drawList->AddRectFilled(deletePos,
 			ImVec2(deletePos.x + deleteSize.x, deletePos.y + deleteSize.y),
-			deleteColor, 2.f);
+			deleteColor, Editor::VLC::BORDER_RADIUS * m_zoom);
 
-		drawList->AddText(ImVec2(deletePos.x + 6, deletePos.y + 2),
+		drawList->AddText(ImVec2(deletePos.x + (Editor::VLC::DELETE_TEXT_OFFSET_X * m_zoom), deletePos.y + (Editor::VLC::DELETE_OFFSET_Y * m_zoom)),
 			IM_COL32(255, 255, 255, 255), "X");
 
 
@@ -559,34 +563,34 @@ void VisualLogicEditor::renderConnections(ImDrawList* drawList, ImVec2 canvasPos
 
 		if (!fromNode || !toNode) continue;
 
-		ImVec2 fromPos = ImVec2(canvasPos.x + fromNode->position.x + m_canvasOffset.x + 250.f, canvasPos.y + fromNode->position.y + m_canvasOffset.y + 40.f);
+		ImVec2 fromPos = ImVec2(canvasPos.x + (fromNode->position.x * m_zoom) + m_canvasOffset.x + (250.f * m_zoom), canvasPos.y + (fromNode->position.y * m_zoom) + m_canvasOffset.y + (40.f * m_zoom));
 
-		if (conn.outputPin == "True") fromPos.y -= 10.f;
-		if (conn.outputPin == "False") fromPos.y += 10.f;
+		if (conn.outputPin == "True") fromPos.y -= (10.f * m_zoom);
+		if (conn.outputPin == "False") fromPos.y += (10.f * m_zoom);
 
-		ImVec2 toPos = ImVec2(canvasPos.x + toNode->position.x + m_canvasOffset.x, canvasPos.y + toNode->position.y + m_canvasOffset.y + 40.f);
+		ImVec2 toPos = ImVec2(canvasPos.x + (toNode->position.x * m_zoom) + m_canvasOffset.x, canvasPos.y + (toNode->position.y * m_zoom) + m_canvasOffset.y + (40.f * m_zoom));
 
 		// draw curve
-		ImVec2 cp1(fromPos.x + 50, fromPos.y);
-		ImVec2 cp2(toPos.x - 50, toPos.y);
+		ImVec2 cp1(fromPos.x + (50 * m_zoom), fromPos.y);
+		ImVec2 cp2(toPos.x - (50 * m_zoom), toPos.y);
 
 		ImU32 lineColor = IM_COL32(200, 200, 200, 255);
 		if (conn.outputPin == "True") lineColor = IM_COL32(100, 255, 100, 255);
 		if (conn.outputPin == "False") lineColor = IM_COL32(255, 100, 100, 255);
 
 		// if mouse is near curve
-		bool isHovered = isMouseNearBezier(fromPos, cp1, cp2, toPos, mousePos, 10.f);
+		bool isHovered = isMouseNearBezier(fromPos, cp1, cp2, toPos, mousePos, 10.f * m_zoom);
 
 		// if connection selected
 		bool isSelected = (m_selectedConIndex == static_cast<int>(i));
 
-		float lineWidth = 2.f;
+		float lineWidth = Editor::VLC::LINE_NORMAL * m_zoom;
 		if (isSelected) {
 			lineColor = IM_COL32(255, 255, 0, 255); // yellow when selected
-			lineWidth = 4.f;
+			lineWidth = Editor::VLC::LINE_SELECTED * m_zoom;
 		}
 		else if (isHovered) {
-			lineWidth = 3.5f; // slightly thicker when hovered
+			lineWidth = Editor::VLC::LINE_HOVERED * m_zoom; // slightly thicker when hovered
 		}
 
 		drawList->AddBezierCubic(fromPos, cp1, cp2, toPos, lineColor, lineWidth);
