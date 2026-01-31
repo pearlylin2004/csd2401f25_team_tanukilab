@@ -236,13 +236,11 @@ void VisualLogicEditor::render() {
 		m_draggingNodeId = -1;
 	}
 
-	// why not working???
+	// zoom in/out
 	if (isCanvasHovered && InputHandler::getMouseScroll() != 0.f) {
 		float scroll = InputHandler::getMouseScroll();
 		m_zoom += scroll * 0.1f;
 		m_zoom = glm::clamp(m_zoom, 0.5f, 2.f);
-
-		std::cout << "Zoom: " << m_zoom << std::endl;
 	}
 
 	// shortcut
