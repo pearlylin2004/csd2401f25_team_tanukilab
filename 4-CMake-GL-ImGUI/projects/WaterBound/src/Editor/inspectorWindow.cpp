@@ -396,17 +396,17 @@ void InspectorWindow::renderTransform(GameObject* selected, GameObjectManager& m
         if (ImGui::TreeNode("Rotation")) {
             if (ImGui::DragFloat("Angle", &transform->rotation)) {
                 transform->rotation = std::clamp(transform->rotation, 0.f, 360.f);
-
-                if (!m_isEditingRot) {
-                    UndoRedoManager::Instance().beginTransformEdit(selected);
-                    m_isEditingRot = true;
-                    m_transformEditObject = selected;
-                }
             }
 
-            bool rotationActive = ImGui::IsItemActive();
+            // take snapshot when FIRST activated (before any changes)
+            if (ImGui::IsItemActivated()) {
+                UndoRedoManager::Instance().beginTransformEdit(selected);
+                m_isEditingRot = true;
+                m_transformEditObject = selected;
+            }
 
-            if (m_isEditingRot && !rotationActive) {
+            // end snapshot when deactivated (after all changes)
+            if (ImGui::IsItemDeactivated() && m_isEditingRot) {
                 UndoRedoManager::Instance().endTransformEdit(manager, m_transformEditObject);
                 m_isEditingRot = false;
             }
