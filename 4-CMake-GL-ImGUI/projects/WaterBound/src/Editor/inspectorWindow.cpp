@@ -1573,17 +1573,15 @@ void InspectorWindow::renderVisualLogic(GameObject* selected) {
 		/* ---------- Dropdown to Select Logic Graph ---------- */
         if (ImGui::BeginCombo("Logic Graph", displayName.c_str())) {
             // create new logic asset
-			if (ImGui::Selectable("<Create New>", logic->filename.empty())) {
+			if (ImGui::Selectable("<Create New>", logic->filename.empty())) {                           
+                logic->filename.clear();
+                logic->nodes.clear();
+                logic->connections.clear();
+
+                VisualLogicEditor::Instance().clear();
+
                 Editor::visualLogicState.showEditor = true;
-                Editor::visualLogicState.currentGraphName = "";
-				Editor::visualLogicState.targetObj = selected;
-
-                // create new empty graph
-                Editor::visualLogicState.nodes.clear();
-                Editor::visualLogicState.connections.clear();
-                logic->filename = "";
-
-                VisualLogicEditor::Instance().updateNextNodeId();
+                Editor::visualLogicState.targetObj = selected;
 
 				DebugLog::addMessage("Creating new Visual Logic Graph for " + selected->getObjectName());
 			}
@@ -1599,7 +1597,9 @@ void InspectorWindow::renderVisualLogic(GameObject* selected) {
                     bool isSelected = (logic->filename == assetName);
 
                     if (ImGui::Selectable(assetName.c_str(), isSelected)) {
-                        logic->filename = assetName;
+                        Editor::visualLogicState.targetObj = selected;
+                        VisualLogicEditor::Instance().loadLogic(assetName);
+                        /*logic->filename = assetName;
 
                         std::string filepath = "/Logic/" + assetName;
                         std::string err;
@@ -1609,7 +1609,7 @@ void InspectorWindow::renderVisualLogic(GameObject* selected) {
                         }
                         else {
                             DebugLog::addMessage("ERROR loading Visual Logic: " + err + "\n");
-                        }
+                        }*/
                     }
 
                     if (isSelected) {

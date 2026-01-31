@@ -272,15 +272,8 @@ void AssetBrowser::render() {
             }
             // if its a logic, open :)
             else if (assetFolderName == "Logic") {
-				Editor::visualLogicState.showEditor = true;
-				Editor::visualLogicState.currentGraphName = asset.name;
-
-                std::string err;
-                if (JsonIO::loadVisualLogic("/Logic/" + asset.name, Editor::visualLogicState.nodes, Editor::visualLogicState.connections, &err)) {
-                    VisualLogicEditor::Instance().updateNextNodeId();
-
-                    DebugLog::addMessage("Loaded Visual Logic: " + asset.name + "\n");
-                }
+                Editor::visualLogicState.targetObj = nullptr;
+                VisualLogicEditor::Instance().loadLogic(asset.name);
             }
             // if its a prefab, convert to temp game obj for editing in inspector
             else if (assetFolderName == "Prefab") {
@@ -408,12 +401,18 @@ void AssetBrowser::assetDeletePopup() {
                     // store usage info for the popup
                     m_AssetBrowserState.prefabUsageInfo = usageInfo;
 
-
                     ImGui::OpenPopup("Cannot Delete Prefab");
                     m_AssetBrowserState.showDeletePopup = false;
                     return;
                 }
             }
+        }
+        else if (folder == "Logic") {
+			if (pathToDelete.filename().string() == Editor::visualLogicState.currentGraphName) {
+				ImGui::OpenPopup("Cannot Delete Logic");
+				m_AssetBrowserState.showDeletePopup = false;
+				return;
+			}
         }
 
         ImGui::OpenPopup("Confirm Delete Asset");
@@ -499,7 +498,7 @@ void AssetBrowser::assetDeletePopup() {
    /* ImGui::SetNextWindowPos(ImGui::GetMainViewport()->GetCenter(), ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));*/
 
     if (ImGui::BeginPopupModal("Cannot Delete Prefab", NULL, ImGuiWindowFlags_AlwaysAutoResize)) {
-        ImGui::Text("Cannot delete prefab!");
+        ImGui::Text("Cannot delete Prefab!");
         ImGui::Text("This prefab is being used in the following scenes:");
         ImGui::Separator();
 
@@ -520,6 +519,27 @@ void AssetBrowser::assetDeletePopup() {
         if (ImGui::Button("OK", ImVec2(120, 0)) || InputHandler::isKeyTriggered(GLFW_KEY_ENTER)) {
             m_AssetBrowserState.fullPathToDelete.clear();
             m_AssetBrowserState.prefabUsageInfo.clear();
+            ImGui::CloseCurrentPopup();
+        }
+
+        ImGui::EndPopup();
+    }
+    /*-------------------- END -------------------*/
+
+
+    /*---------------- Cannot Delete Current Logic ----------------*/
+   /* ImGui::SetNextWindowPos(ImGui::GetMainViewport()->GetCenter(), ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));*/
+
+    if (ImGui::BeginPopupModal("Cannot Delete Logic", NULL, ImGuiWindowFlags_AlwaysAutoResize)) {
+        ImGui::Text("Cannot delete Logic!");
+        ImGui::Text("This logic is currently opened in editor.");
+        ImGui::Separator();
+
+        ImGui::Separator();
+        ImGui::TextWrapped("Please close the Visual Logic Editor before proceed to delete.");
+
+        if (ImGui::Button("OK", ImVec2(120, 0)) || InputHandler::isKeyTriggered(GLFW_KEY_ENTER)) {
+            m_AssetBrowserState.fullPathToDelete.clear();
             ImGui::CloseCurrentPopup();
         }
 

@@ -226,6 +226,10 @@ void HierarchyWindow::objDeletePopup(GameObjectManager& manager) {
         if (ImGui::Button("Delete") || InputHandler::isKeyTriggered(GLFW_KEY_ENTER)) {
             std::string name = m_objSelectionState.selectedObject->getObjectName();
 
+            if (Editor::visualLogicState.targetObj == m_objSelectionState.selectedObject) {
+                VisualLogicEditor::Instance().clear();
+            }
+
             auto cmd = std::make_unique<DeleteObjCmd>(manager, m_objSelectionState.selectedObject);
             UndoRedoManager::Instance().executeCmd(std::move(cmd));
 
@@ -236,7 +240,7 @@ void HierarchyWindow::objDeletePopup(GameObjectManager& manager) {
             m_objSelectionState.draggedObject = nullptr;
             m_objSelectionState.selectedIndex = -1;
 
-            DebugLog::addMessage("Object " + name + " deleted\n");
+            DebugLog::addMessage("Object " + name + " deleted");
 
             ImGui::CloseCurrentPopup();
         }

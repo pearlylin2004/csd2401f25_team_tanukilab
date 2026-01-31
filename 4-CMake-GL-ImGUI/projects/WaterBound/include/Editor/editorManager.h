@@ -157,6 +157,7 @@ public:
 	void render();
 
 	void clear();
+	void loadLogic(const std::string& filename);
 	void updateNextNodeId();
 
 private:
@@ -187,9 +188,8 @@ private:
 	Vector2D m_menuSpawnPos;
 	char m_nodeSearchBuffer[128];
 
-	// save/load logic
+	// save logic
 	void saveLogic();
-	//void loadLogic(const std::string& filename);
 
 	// save popup state
 	char m_saveFilename[128];

@@ -312,7 +312,9 @@ void VisualLogicEditor::updateNextNodeId() {
 void VisualLogicEditor::clear() {
 	Editor::visualLogicState.nodes.clear();
 	Editor::visualLogicState.connections.clear();
+	Editor::visualLogicState.currentGraphName.clear();
 	Editor::visualLogicState.targetObj = nullptr;
+
 	m_selectedNodeId = -1;
 	m_selectedConIndex = -1;
 	m_isDragging = false;
@@ -349,6 +351,7 @@ void VisualLogicEditor::saveLogic() {
 		return;
 	}
 
+	// open from inspector
 	VisualLC* logic = Editor::visualLogicState.targetObj->getComponent<VisualLC>();
 	if (!logic) return;
 
@@ -384,17 +387,52 @@ void VisualLogicEditor::saveLogic() {
 	}
 }
 
-//void VisualLogicEditor::loadLogic(const std::string& filename) {
-//	std::string filepath = "/Logic/" + filename;
-//
-//	std::string err;
-//	if (JsonIO::loadVisualLogic(filepath, Editor::visualLogicState.nodes, Editor::visualLogicState.connections, &err)) {
-//		DebugLog::addMessage("Loaded Visual Logic: " + filepath);
-//	}
-//	else {
-//		DebugLog::addMessage("Failed to load: " + err);
-//	}
-//}
+void VisualLogicEditor::loadLogic(const std::string& filename) {
+	std::string filepath = "/Logic/" + filename;
+	std::string err;
+
+	// if open from asset browser
+	if (!Editor::visualLogicState.targetObj) {
+		clear();
+		if (JsonIO::loadVisualLogic(filepath, Editor::visualLogicState.nodes, Editor::visualLogicState.connections, &err)) {
+			updateNextNodeId();
+
+			Editor::visualLogicState.currentGraphName = filename;
+			Editor::visualLogicState.showEditor = true;
+
+			DebugLog::addMessage("Loaded Visual Logic: " + filename);
+		}
+		else {
+			DebugLog::addMessage("Failed to load: " + err);
+		}
+		return;
+	}
+
+	// if open from inspector
+	VisualLC* logic = Editor::visualLogicState.targetObj->getComponent<VisualLC>();
+	if (!logic) {
+		DebugLog::addMessage("ERROR: Target object has no VisualLC component");
+		return;
+	}
+
+	clear();
+	if (JsonIO::loadVisualLogic(filepath, logic->nodes, logic->connections, &err)) {
+		logic->filename = filename;
+
+		// sync to editor state for editing
+		Editor::visualLogicState.nodes = logic->nodes;
+		Editor::visualLogicState.connections = logic->connections;
+		updateNextNodeId();
+
+		Editor::visualLogicState.currentGraphName = filename;
+		Editor::visualLogicState.showEditor = true;
+
+		DebugLog::addMessage("Loaded Visual Logic Graph: " + filename);
+	}
+	else {
+		DebugLog::addMessage("Failed to load: " + err);
+	}
+}
 
 void VisualLogicEditor::renderNode(ImDrawList* drawList, LogicNode& node, ImVec2 canvasPos, bool isCanvasHovered) {
 	// calc screen position
@@ -1307,13 +1345,12 @@ void VisualLogicEditor::renderSavePopup() {
 						Editor::visualLogicState.connections,
 						&err)) {
 
+						// for save & close
 						if (Editor::visualLogicState.wantCloseEditor) {
 							Editor::visualLogicState.showEditor = false;
 							Editor::visualLogicState.isFocus = false;
-							m_selectedNodeId = -1;
+							clear();
 							Editor::visualLogicState.wantCloseEditor = false;
-
-							DebugLog::addMessage("saved and closed " + filepath);
 						}
 
 						DebugLog::addMessage("Visual Logic saved as: " + finalFilename + "\n");
