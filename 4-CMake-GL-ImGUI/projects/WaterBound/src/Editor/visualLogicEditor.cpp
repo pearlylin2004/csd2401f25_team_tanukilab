@@ -314,10 +314,17 @@ void VisualLogicEditor::clear() {
 	Editor::visualLogicState.nodes.clear();
 	Editor::visualLogicState.connections.clear();
 	Editor::visualLogicState.currentGraphName.clear();
+	Editor::visualLogicState.isFocus = false;
+	Editor::visualLogicState.wantCloseEditor = false;
+	Editor::visualLogicState.showSavePopup = false;
 	Editor::visualLogicState.targetObj = nullptr;
 
 	m_selectedNodeId = -1;
 	m_selectedConIndex = -1;
+
+	m_connectingFromPin.clear(); 
+	m_connectionStartPos = ImVec2(0.0f, 0.0f);
+
 	m_isDragging = false;
 	m_draggingNodeId = -1;
 	m_isConnecting = false;
@@ -328,6 +335,11 @@ void VisualLogicEditor::clear() {
 void VisualLogicEditor::saveLogic() {
 	// if open from asset browser
 	if (!Editor::visualLogicState.targetObj) {
+		if (Editor::visualLogicState.currentGraphName.empty()) {
+			DebugLog::addMessage("Cannot save: no target object for unnamed script.");
+			return;
+		}
+
 		std::string filename = "/Logic/" + Editor::visualLogicState.currentGraphName;
 		std::string err;
 
@@ -621,7 +633,8 @@ void VisualLogicEditor::renderConnections(ImDrawList* drawList, ImVec2 canvasPos
 		bool isHovered = isMouseNearBezier(fromPos, cp1, cp2, toPos, mousePos, 10.f * m_zoom);
 
 		// if connection selected
-		bool isSelected = (m_selectedConIndex == static_cast<int>(i));
+		bool isSelected = (m_selectedConIndex >= 0 &&
+			m_selectedConIndex == static_cast<int>(i));
 
 		float lineWidth = Editor::VLC::LINE_NORMAL * m_zoom;
 		if (isSelected) {
@@ -721,8 +734,9 @@ void VisualLogicEditor::renderNodeProperties() {
 					}
 
 					if (ImGui::BeginCombo("##quickSelectTag", "Quick Select")) {
-						std::unordered_set<std::string> uniqueTags;
-						auto& cached = CachedGameObjects::Instance().getCachedObjects();
+						std::vector<std::string> uniqueTags = GlobalRegistry::Instance().getCollisionTags();
+
+						/*auto& cached = CachedGameObjects::Instance().getCachedObjects();
 
 						for (GameObject* obj : cached) {
 							if (obj->hasComponent<CollisionInfo>()) {
@@ -731,7 +745,7 @@ void VisualLogicEditor::renderNodeProperties() {
 									uniqueTags.insert(col->collisionTag);
 								}
 							}
-						}
+						}*/
 
 						for (const std::string& tag : uniqueTags) {
 							if (ImGui::Selectable(tag.c_str())) {
@@ -940,38 +954,41 @@ void VisualLogicEditor::renderNodeProperties() {
 			}
 		}
 		else if (node.imp == NodeImplementation::SET_STATE) {
-			StateMachine* sm = nullptr;
+			/*StateMachine* sm = nullptr;
 			if (Editor::visualLogicState.targetObj) {
 				sm = Editor::visualLogicState.targetObj->getComponent<StateMachine>();
-			}
+			}*/
 
 			ImGui::Text("State Machine:");
 
-			if (sm) {
-				std::string currentState = node.parameters.count("state") ?
-					node.parameters["state"] : JsonIO::stateNames[0];
+			/*if (sm) {*/
+			std::string currentState = node.parameters.count("state") ?
+				node.parameters["state"] : JsonIO::stateNames[0];
 
-				if (ImGui::BeginCombo("##state", currentState.c_str())) {
-					const std::vector<std::string>& stateNames = JsonIO::stateNames;
+			if (ImGui::BeginCombo("##state", currentState.c_str())) {
+				const std::vector<std::string>& stateNames = JsonIO::stateNames;
 
-					for (const std::string& stateName : stateNames) {
-						bool isSelected = (currentState == stateName);
+				for (const std::string& stateName : stateNames) {
+					bool isSelected = (currentState == stateName);
 
-						if (ImGui::Selectable(stateName.c_str(), isSelected)) {
-							node.parameters["state"] = stateName;
-						}
-
-						if (isSelected) {
-							ImGui::SetItemDefaultFocus();
-						}
+					if (ImGui::Selectable(stateName.c_str(), isSelected)) {
+						node.parameters["state"] = stateName;
 					}
-					ImGui::EndCombo();
+
+					if (isSelected) {
+						ImGui::SetItemDefaultFocus();
+					}
 				}
+				ImGui::EndCombo();
 			}
+
+			ImGui::TextDisabled("Remember to add StateMachine to object.");
+
+			/*}
 			else {
 				ImGui::TextColored(ImVec4(1.f, 0.3f, 0.3f, 1.f), "Add Animation Component first");
 				ImGui::TextDisabled("Add a State Machine component first");
-			}
+			}*/
 		}
 		else if (node.imp == NodeImplementation::RESET_TIMER) {
 			ImGui::Text("Reset Timer");
@@ -1215,32 +1232,34 @@ void VisualLogicEditor::renderNodeProperties() {
 			ImGui::TextDisabled("Compares with a variable");
 		}
 		else if (node.imp == NodeImplementation::CHECK_STATE) {
-			StateMachine* sm = Editor::visualLogicState.targetObj->getComponent<StateMachine>();
+			//StateMachine* sm = Editor::visualLogicState.targetObj->getComponent<StateMachine>();
 
-			if (sm) {
-				std::string target = node.parameters.count("state") ?
-					node.parameters["state"] : JsonIO::stateNames[0];
+			/*if (sm) {*/
+			std::string target = node.parameters.count("state") ?
+				node.parameters["state"] : JsonIO::stateNames[0];
 
-				if (ImGui::BeginCombo("##checkState", target.c_str())) {
-					const std::vector<std::string>& stateNames = JsonIO::stateNames;
+			if (ImGui::BeginCombo("##checkState", target.c_str())) {
+				const std::vector<std::string>& stateNames = JsonIO::stateNames;
 
-					for (const std::string& stateName : stateNames) {
-						bool isSelected = (target == stateName);
+				for (const std::string& stateName : stateNames) {
+					bool isSelected = (target == stateName);
 
-						if (ImGui::Selectable(stateName.c_str(), isSelected)) {
-							node.parameters["state"] = stateName;
-						}
-
-						if (isSelected) {
-							ImGui::SetItemDefaultFocus();
-						}
+					if (ImGui::Selectable(stateName.c_str(), isSelected)) {
+						node.parameters["state"] = stateName;
 					}
-					ImGui::EndCombo();
+
+					if (isSelected) {
+						ImGui::SetItemDefaultFocus();
+					}
 				}
+				ImGui::EndCombo();
 			}
+
+			ImGui::TextDisabled("Remember to add StateMachine to object");
+			/*}
 			else {
 				ImGui::TextColored(ImVec4(1.f, 0.3f, 0.3f, 1.f), "Add StateMachine Component first");
-			}
+			}*/
 		}
 		else if (node.imp == NodeImplementation::CHECK_TIMER) {
 			ImGui::Text("Check Timer");
@@ -1292,8 +1311,14 @@ void VisualLogicEditor::renderNodeProperties() {
 
 void VisualLogicEditor::renderSavePopup() {
 	if (Editor::visualLogicState.showSavePopup) {
-		ImGui::OpenPopup("Save Visual Logic");
 		Editor::visualLogicState.showSavePopup = false;
+
+		if (!Editor::visualLogicState.targetObj) {
+			DebugLog::addMessage("No target object to save Visual Logic for.");
+			return;
+		}
+
+		ImGui::OpenPopup("Save Visual Logic");
 	}
 
 	static char filename[128] = "";
