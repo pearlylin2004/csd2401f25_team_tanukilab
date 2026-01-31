@@ -30,7 +30,10 @@ VisualLogicEditor::VisualLogicEditor() :
 { }
 
 void VisualLogicEditor::render() {
-	if (!Editor::visualLogicState.showEditor) return;
+	if (!Editor::visualLogicState.showEditor) {
+		if (!Editor::visualLogicState.currentGraphName.empty()) clear();
+		return;
+	}
 
 	ImGui::Begin("Visual Logic Editor", &Editor::visualLogicState.showEditor, ImGuiWindowFlags_MenuBar);
 
