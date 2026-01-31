@@ -385,10 +385,6 @@ void VisualLogicSystem::executeActionNode(GameObject* obj, VisualLC* logic, Logi
 			return;
 		}
 
-		//if (channel->state != AudioState::Playing && !channel->isPendingPlay) {
-		//	channel->isPendingPlay = true;
-		//}
-		// 
 		// let audio component laoban control the looping or whatever
 		// dont touch if already playing or pending to play
 		if (channel->state == AudioState::Playing || channel->isPendingPlay) return;
