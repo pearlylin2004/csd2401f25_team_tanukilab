@@ -385,7 +385,18 @@ void VisualLogicSystem::executeActionNode(GameObject* obj, VisualLC* logic, Logi
 			return;
 		}
 
-		channel->isPendingPlay = true;
+		//if (channel->state != AudioState::Playing && !channel->isPendingPlay) {
+		//	channel->isPendingPlay = true;
+		//}
+		// 
+		// let audio component laoban control the looping or whatever
+		// dont touch if already playing or pending to play
+		if (channel->state == AudioState::Playing || channel->isPendingPlay) return;
+
+		if (channel->state == AudioState::Stopped) {
+			channel->isPendingPlay = true;
+			std::cout << "[VisualLogic] Triggering play for channel: " << channelName << std::endl;
+		}
 	}
 	else if (node.imp == NodeImplementation::SET_STATE) {
 		StateMachine* sm = obj->getComponent<StateMachine>();
