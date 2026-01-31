@@ -206,7 +206,7 @@
       "hasTrueOutput": false,
       "hasFalseOutput": false,
       "parameters": {
-        "channel": "default"
+        "channel": "button_hover"
       }
     }
   ],
@@ -274,13 +274,13 @@
     {
       "fromNodeId": 22,
       "outputPin": "Out",
-      "toNodeId": 27,
+      "toNodeId": 15,
       "inputPin": "In"
     },
     {
       "fromNodeId": 22,
       "outputPin": "Out",
-      "toNodeId": 15,
+      "toNodeId": 27,
       "inputPin": "In"
     }
   ]
