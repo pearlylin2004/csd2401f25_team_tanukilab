@@ -929,6 +929,8 @@ void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime, M
 								ch->isPendingPlay = true;
 							}
 
+							VisualLogicSystem::broadcastBulletShoot(manager);
+
 							DebugLog::addMessage("Bullet fired!", DebugMode::PlaySimul);
 							physics->shootTimer = 0.0f;
 						}

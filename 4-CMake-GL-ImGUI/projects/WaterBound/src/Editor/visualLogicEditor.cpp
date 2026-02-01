@@ -758,6 +758,9 @@ void VisualLogicEditor::renderNodeProperties() {
 				}
 			}
 		}
+		else if (node.imp == NodeImplementation::ON_BULLET_SHOOT) {
+			ImGui::TextWrapped("This event triggers once bullet is fired.");
+		}
 	}
 	/* ---------- ACTION ---------- */
 	else if (node.type == NodeType::ACTION) {
@@ -884,6 +887,26 @@ void VisualLogicEditor::renderNodeProperties() {
 
 			ImGui::Spacing();
 			ImGui::TextDisabled("Stores a float in a variable");
+		}
+		else if (node.imp == NodeImplementation::MODIFY_FLOAT) {
+			char varBuffer[128];
+			strncpy(varBuffer, node.parameters["variable"].c_str(), 127);
+			varBuffer[127] = '\0';
+
+			if (ImGui::InputText("Variable Name", varBuffer, 128)) {
+				node.parameters["variable"] = varBuffer;
+			}
+
+			ImGui::Text("Modify By (negative to subtract)");
+
+			float value = node.parameters.count("value") ?
+				std::stof(node.parameters["value"]) : 0.f;
+
+			if (ImGui::DragFloat("##value", &value, 0.1f)) {
+				node.parameters["value"] = std::to_string(value);
+			}
+
+			ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "Use -1 to subtract, +1 to add");
 		}
 		// play Sound
 		else if (node.imp == NodeImplementation::PLAY_SOUND) {
@@ -1029,7 +1052,41 @@ void VisualLogicEditor::renderNodeProperties() {
 
 			ImGui::Separator();
 			ImGui::TextWrapped("Resets the selected timer to 0 seconds.");
-}
+		}
+		else if (node.imp == NodeImplementation::SET_TEXTURE) {
+			ImGui::Text("Set Texture");
+			std::string texturePath = node.parameters.count("textureFile") ?
+				node.parameters["textureFile"] : "";
+
+			char pathBuffer[256];
+			strncpy(pathBuffer, texturePath.c_str(), 255);
+			pathBuffer[255] = '\0';
+
+			if (ImGui::InputText("##textureFile", pathBuffer, 256)) {
+				node.parameters["textureFile"] = pathBuffer;
+			}
+
+			if (ImGui::BeginDragDropTarget()) {
+				if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("ASSET")) {
+					const char* droppedPath = (const char*)payload->Data;
+					node.parameters["textureFile"] = droppedPath;
+				}
+				ImGui::EndDragDropTarget();
+			}
+
+			ImGui::Spacing();
+			if (!texturePath.empty()) {
+				ImGui::TextColored(ImVec4(0.5f, 1.0f, 0.5f, 1.0f),
+					"Current: %s", texturePath.c_str());
+			}
+			else {
+				ImGui::TextColored(ImVec4(1.0f, 0.5f, 0.5f, 1.0f),
+					"No texture set");
+			}
+
+			ImGui::Spacing();
+			ImGui::TextWrapped("Drag and drop a texture from the asset browser");
+		}
 		else  if (node.imp == NodeImplementation::SET_POSITION_ON_COLLIDED) {
 			ImGui::Text("Set Position on Object Collided:");
 
