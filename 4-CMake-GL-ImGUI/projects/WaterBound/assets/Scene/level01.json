@@ -17,7 +17,6 @@
           "hasTex": 1
         },
         "CollisionInfo": {
-          "collisionRes": "MoveWhenCollide",
           "ignoreCollisionsWith": [
             "player",
             "bullet",
@@ -85,7 +84,8 @@
           ]
         },
         "StateMachine": {
-          "stateTime": 3.72672963142395,
+          "facingRight": 0,
+          "stateTime": 23.287948608398438,
           "Dead": {
             "animState": {
               "texture": "",
@@ -422,6 +422,34 @@
     {
       "prefabid": "25591e7c-7d8f-47e1-a686-f950e77e91a1",
       "name": "land_vfx(28)"
+    },
+    {
+      "name": "Rectangle_28",
+      "components": {
+        "Transform": {
+          "pos": [
+            -12.97700023651123,
+            -7.301594257354736,
+            1.0
+          ],
+          "rotation": 0.0,
+          "scale": [
+            6.588000774383545,
+            6.588000774383545,
+            0.0
+          ]
+        },
+        "Render": {
+          "shape": "square",
+          "hasTex": 1,
+          "texture": "assets/Texture\\water_texture.png",
+          "hasTex": 1,
+          "hasAnimation": 0
+        },
+        "VisualLC": {
+          "filename": "bullet-inventory.json"
+        }
+      }
     }
   ]
 }

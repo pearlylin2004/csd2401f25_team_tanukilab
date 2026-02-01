@@ -1,0 +1,290 @@
+{
+  "version": 1,
+  "nodes": [
+    {
+      "id": 1,
+      "implementation": "On Start",
+      "type": 0,
+      "position": [
+        -200.0,
+        -100.0
+      ],
+      "hasInput": false,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false
+    },
+    {
+      "id": 2,
+      "implementation": "Set Float",
+      "type": 1,
+      "position": [
+        123.0,
+        -99.0
+      ],
+      "hasInput": true,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false,
+      "parameters": {
+        "value": "5",
+        "variable": "bullets"
+      }
+    },
+    {
+      "id": 3,
+      "implementation": "Set Texture",
+      "type": 1,
+      "position": [
+        447.9998779296875,
+        -101.0
+      ],
+      "hasInput": true,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false,
+      "parameters": {
+        "texture": "assets/Texture\\Water_50.png",
+        "textureFile": "assets/Texture\\Water_50.png"
+      }
+    },
+    {
+      "id": 10,
+      "implementation": "On Bullet Shoot",
+      "type": 0,
+      "position": [
+        -200.0,
+        100.0
+      ],
+      "hasInput": false,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false
+    },
+    {
+      "id": 11,
+      "implementation": "Compare Variable",
+      "type": 2,
+      "position": [
+        128.9999542236328,
+        103.00003814697266
+      ],
+      "hasInput": true,
+      "hasOutput": false,
+      "hasTrueOutput": true,
+      "hasFalseOutput": true,
+      "parameters": {
+        "comparison": "greater",
+        "threshold": "0",
+        "variable": "bullets"
+      }
+    },
+    {
+      "id": 13,
+      "implementation": "Compare Variable",
+      "type": 2,
+      "position": [
+        827.0,
+        111.0
+      ],
+      "hasInput": true,
+      "hasOutput": false,
+      "hasTrueOutput": true,
+      "hasFalseOutput": true,
+      "parameters": {
+        "comparison": "greater",
+        "threshold": "6",
+        "variable": "bullets"
+      }
+    },
+    {
+      "id": 14,
+      "implementation": "Set Texture",
+      "type": 1,
+      "position": [
+        1093.0,
+        -37.0
+      ],
+      "hasInput": true,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false,
+      "parameters": {
+        "texture": "assets/Texture\\Water_100.png",
+        "textureFile": "assets/Texture\\Water_70.png"
+      }
+    },
+    {
+      "id": 15,
+      "implementation": "Compare Variable",
+      "type": 2,
+      "position": [
+        1183.0,
+        103.0
+      ],
+      "hasInput": true,
+      "hasOutput": false,
+      "hasTrueOutput": true,
+      "hasFalseOutput": true,
+      "parameters": {
+        "comparison": "greater",
+        "threshold": "2",
+        "variable": "bullets"
+      }
+    },
+    {
+      "id": 16,
+      "implementation": "Set Texture",
+      "type": 1,
+      "position": [
+        1457.0,
+        -38.0
+      ],
+      "hasInput": true,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false,
+      "parameters": {
+        "texture": "assets/Texture\\Water_50.png",
+        "textureFile": "assets/Texture\\Water_30.png"
+      }
+    },
+    {
+      "id": 17,
+      "implementation": "Compare Variable",
+      "type": 2,
+      "position": [
+        1542.0,
+        107.0
+      ],
+      "hasInput": true,
+      "hasOutput": false,
+      "hasTrueOutput": true,
+      "hasFalseOutput": true,
+      "parameters": {
+        "comparison": "greater",
+        "threshold": "0",
+        "variable": "bullets"
+      }
+    },
+    {
+      "id": 18,
+      "implementation": "Set Texture",
+      "type": 1,
+      "position": [
+        1854.0,
+        -37.0
+      ],
+      "hasInput": true,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false,
+      "parameters": {
+        "texture": "assets/Texture\\Water_20.png",
+        "textureFile": "assets/Texture\\Water_100.png"
+      }
+    },
+    {
+      "id": 19,
+      "implementation": "Set Texture",
+      "type": 1,
+      "position": [
+        1879.0,
+        165.0
+      ],
+      "hasInput": true,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false,
+      "parameters": {
+        "texture": "assets/Texture\\water_10.png",
+        "textureFile": "assets/Texture\\water_10.png"
+      }
+    },
+    {
+      "id": 20,
+      "implementation": "Modify Float Variable",
+      "type": 1,
+      "position": [
+        453.75,
+        101.25
+      ],
+      "hasInput": true,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false,
+      "parameters": {
+        "value": "-1.000000",
+        "variable": "bullets"
+      }
+    }
+  ],
+  "connections": [
+    {
+      "fromNodeId": 1,
+      "outputPin": "Out",
+      "toNodeId": 2,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 2,
+      "outputPin": "Out",
+      "toNodeId": 3,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 10,
+      "outputPin": "Out",
+      "toNodeId": 11,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 13,
+      "outputPin": "True",
+      "toNodeId": 14,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 13,
+      "outputPin": "False",
+      "toNodeId": 15,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 15,
+      "outputPin": "True",
+      "toNodeId": 16,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 15,
+      "outputPin": "False",
+      "toNodeId": 17,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 17,
+      "outputPin": "True",
+      "toNodeId": 18,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 17,
+      "outputPin": "False",
+      "toNodeId": 19,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 11,
+      "outputPin": "True",
+      "toNodeId": 20,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 20,
+      "outputPin": "Out",
+      "toNodeId": 13,
+      "inputPin": "In"
+    }
+  ]
+}
