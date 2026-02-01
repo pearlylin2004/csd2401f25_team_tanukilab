@@ -237,6 +237,7 @@ namespace Editor {
 		{"On Hover Enter", NodeType::EVENT, NodeImplementation::ON_HOVER_ENTER},
 		{"While Hovering", NodeType::EVENT, NodeImplementation::WHILE_HOVERING},
 		{"On Hover Exit", NodeType::EVENT, NodeImplementation::ON_HOVER_EXIT},
+		{"On Bullet Shoot", NodeType::EVENT, NodeImplementation::ON_BULLET_SHOOT},
 
 		// CONDITIONS
 		{"Is Key Held", NodeType::CONDITION, NodeImplementation::CHECK_KEY_HELD},
@@ -254,9 +255,11 @@ namespace Editor {
 		{"Set Scale", NodeType::ACTION, NodeImplementation::SET_SCALE},
 		{"Scale Proportional", NodeType::ACTION, NodeImplementation::SCALE_PROPORTIONAL},
 		{"Set Float", NodeType::ACTION, NodeImplementation::SET_FLOAT},
+		{"Modify Float Variable", NodeType::ACTION, NodeImplementation::MODIFY_FLOAT},
 		{"Play Sound", NodeType::ACTION, NodeImplementation::PLAY_SOUND},
 		{"Set State", NodeType::ACTION, NodeImplementation::SET_STATE},
 		{"Reset Timer", NodeType::ACTION, NodeImplementation::RESET_TIMER},
+		{"Set Sprite", NodeType::ACTION, NodeImplementation::SET_TEXTURE},
 		{"Set Position on Collider", NodeType::ACTION, NodeImplementation::SET_POSITION_ON_COLLIDED},
 		{"Set State on Collider", NodeType::ACTION, NodeImplementation::SET_STATE_ON_COLLIDED},
 		{"Set Force on Collider", NodeType::ACTION, NodeImplementation::APPLY_FORCE_ON_COLLIDED},

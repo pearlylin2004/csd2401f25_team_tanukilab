@@ -24,6 +24,7 @@ void VisualLogicSystem::initAll(GameObjectManager& manager) {
 	for (GameObject* obj : gameObjects) {
 		if (obj->hasComponent<VisualLC>()) {
 			VisualLC* logic = obj->getComponent<VisualLC>();
+			if (!logic->justStarted) return;
 			init(obj, logic);
 		}
 	}
@@ -62,6 +63,8 @@ void VisualLogicSystem::init(GameObject* obj, VisualLC* logic) {
 			executeNode(obj, logic, node.id, 1 / 60.f);
 		}
 	}
+
+	logic->justStarted = false;
 }
 
 void VisualLogicSystem::update(GameObject* obj, VisualLC* logic, float dt) {

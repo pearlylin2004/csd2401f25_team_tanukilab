@@ -270,6 +270,9 @@ public:
 	// update logic
 	void update(GameObject* obj, VisualLC* logic, float dt);
 
+	// broadcast whenever bullet shoot
+	static void broadcastBulletShoot(GameObjectManager& manager);
+
 private:
 	// execute a specific node
 	void executeNode(GameObject* obj, VisualLC* logic, int nodeId, float dt);

@@ -635,6 +635,7 @@ enum class NodeImplementation {
     ON_HOVER_ENTER,
     WHILE_HOVERING,
 	ON_HOVER_EXIT,
+    ON_BULLET_SHOOT,
 
     // CONDITION
     CHECK_KEY_HELD,
@@ -652,9 +653,11 @@ enum class NodeImplementation {
     SET_SCALE,
 	SCALE_PROPORTIONAL,
     SET_FLOAT,
+    MODIFY_FLOAT,
     PLAY_SOUND,
     SET_STATE,
     RESET_TIMER,
+    SET_TEXTURE,
 	SET_POSITION_ON_COLLIDED, // might not work on those object that has input
     SET_STATE_ON_COLLIDED,
     APPLY_FORCE_ON_COLLIDED,
@@ -694,6 +697,7 @@ public:
 	std::vector<LogicConnection> connections;
 
 	// runtime data
+	bool justStarted = true;
     bool isExecuting = false;
     int currentExecutingNodeId = -1;
 	std::map<std::string, int> intVar;
@@ -713,6 +717,9 @@ public:
     std::unordered_set<GameObject*> curCollision;
     std::unordered_set<GameObject*> preCollision;
 	GameObject* lastCollidedObj = nullptr;
+
+    // bullet event
+    bool bulletShot = false;
 };
 
 // WaterBody component for creating animated water surfaces     

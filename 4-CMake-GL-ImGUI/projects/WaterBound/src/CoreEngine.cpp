@@ -154,7 +154,6 @@ void CoreEngine::Init(bool forceWindowed) {
 #endif
     m_fontSystem->init(*m_manager);
     m_audioSystem->init(*m_manager);
-    m_visualLCSystem->initAll(*m_manager);
 
     //advance messaging 
     m_messageBus->subscribe("KeyPressed", m_playerController.get());
@@ -242,6 +241,7 @@ void CoreEngine::Update(float deltaTime) {
 	//for other systems to update even in editor mode
     if (!EditorManager::isEditingMode() && !EditorManager::isPaused()) {
         m_luaSystem->update(*m_manager, deltaTime);
+        m_visualLCSystem->initAll(*m_manager);
         m_visualLCSystem->updateAll(*m_manager, deltaTime);
     }
 

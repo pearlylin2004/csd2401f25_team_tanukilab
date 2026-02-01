@@ -287,6 +287,7 @@ namespace JsonIO {
 		if (str == "On Hover Enter") return NodeImplementation::ON_HOVER_ENTER;
 		if (str == "While Hovering") return NodeImplementation::WHILE_HOVERING;
 		if (str == "On Hover Exit") return NodeImplementation::ON_HOVER_EXIT;
+        if (str == "On Bullet Shoot") return NodeImplementation::ON_BULLET_SHOOT;
 
         if (str == "Print Message") return NodeImplementation::PRINT_MESSAGE;
         if (str == "Move Object") return NodeImplementation::MOVE_OBJECT;
@@ -296,9 +297,11 @@ namespace JsonIO {
         if (str == "Set Scale") return NodeImplementation::SET_SCALE;
         if (str == "Scale Proportional") return NodeImplementation::SCALE_PROPORTIONAL;
 		if (str == "Set Float") return NodeImplementation::SET_FLOAT;
+        if (str == "Modify Float Variable") return NodeImplementation::MODIFY_FLOAT;
 		if (str == "Play Sound") return NodeImplementation::PLAY_SOUND;
 		if (str == "Set State") return NodeImplementation::SET_STATE;
 		if (str == "Reset Timer") return NodeImplementation::RESET_TIMER;
+        if (str == "Set Texture") return NodeImplementation::SET_TEXTURE;
 		if (str == "Set Position On Collided") return NodeImplementation::SET_POSITION_ON_COLLIDED;
 		if (str == "Set State On Collided") return NodeImplementation::SET_STATE_ON_COLLIDED;
 		if (str == "Apply Force On Collided") return NodeImplementation::APPLY_FORCE_ON_COLLIDED;
@@ -322,6 +325,7 @@ namespace JsonIO {
             case NodeImplementation::ON_HOVER_ENTER: return "On Hover Enter";
             case NodeImplementation::WHILE_HOVERING: return "While Hovering";
             case NodeImplementation::ON_HOVER_EXIT: return "On Hover Exit";
+            case NodeImplementation::ON_BULLET_SHOOT: return "On Bullet Shoot";
 
             case NodeImplementation::PRINT_MESSAGE: return "Print Message";
             case NodeImplementation::MOVE_OBJECT: return "Move Object";
@@ -331,10 +335,12 @@ namespace JsonIO {
             case NodeImplementation::SET_SCALE: return "Set Scale";
             case NodeImplementation::SCALE_PROPORTIONAL: return "Scale Proportional";
             case NodeImplementation::SET_FLOAT: return "Set Float";
+            case NodeImplementation::MODIFY_FLOAT: return "Modify Float Variable";
 			case NodeImplementation::PLAY_SOUND: return "Play Sound";
 			case NodeImplementation::SET_STATE: return "Set State";
 			case NodeImplementation::RESET_TIMER: return "Reset Timer";
-			case NodeImplementation::SET_POSITION_ON_COLLIDED: return "Set Position On Collided";
+            case NodeImplementation::SET_TEXTURE: return "Set Texture";
+            case NodeImplementation::SET_POSITION_ON_COLLIDED: return "Set Position On Collided";
 			case NodeImplementation::SET_STATE_ON_COLLIDED: return "Set State On Collided";
 			case NodeImplementation::APPLY_FORCE_ON_COLLIDED: return "Apply Force On Collided";
 
