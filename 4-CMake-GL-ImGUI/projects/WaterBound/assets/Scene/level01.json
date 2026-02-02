@@ -40,7 +40,7 @@
         "Transform": {
           "pos": [
             0.0,
-            -6.521114826202393,
+            -7.5,
             0.9980000257492065
           ],
           "scale": [
@@ -59,7 +59,7 @@
           ]
         },
         "StateMachine": {
-          "stateTime": 16.624637603759766,
+          "stateTime": 1.1757079362869263,
           "Dead": {
             "animState": {
               "texture": "assets/Texture\\Kinuta_Death_SS.png",
@@ -143,6 +143,30 @@
           "texture": "assets/Texture\\game_bg_layer_5.png",
           "hasTex": 1,
           "hasAnimation": 0
+        }
+      }
+    },
+    {
+      "prefabid": "f04819ff-270c-41b4-8387-73382eb85103",
+      "name": "water_source3030",
+      "components": {
+        "Transform": {
+          "pos": [
+            17.59305763244629,
+            -0.14866113662719727,
+            0.0
+          ]
+        },
+        "StateMachine": {
+          "stateTime": 252.32286071777344
+        },
+        "AudioComponent": {
+          "channels": {
+            "default": {
+              "fadeInOnStart": 1,
+              "fadeInDuration": 0.6399999856948853
+            }
+          }
         }
       }
     },
