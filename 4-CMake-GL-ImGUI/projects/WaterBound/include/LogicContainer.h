@@ -5,8 +5,7 @@
 \par        v.teo@digipen.edu
 \date		November, 5th, 2025
 \brief      Declares the LogicContainer system responsible for managing class-based
-            finite state machines and trigger-action rules. This replaces the old
-            switch-case FSM implementation with proper OOP design.
+            finite state machines and trigger-action rules.
 
 Copyright (C) 2025 DigiPen Institute of Technology.
 Reproduction or disclosure of this file or its contents
