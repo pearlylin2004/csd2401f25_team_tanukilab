@@ -736,17 +736,6 @@ void VisualLogicEditor::renderNodeProperties() {
 					if (ImGui::BeginCombo("##quickSelectTag", "Quick Select")) {
 						std::vector<std::string> uniqueTags = GlobalRegistry::Instance().getCollisionTags();
 
-						/*auto& cached = CachedGameObjects::Instance().getCachedObjects();
-
-						for (GameObject* obj : cached) {
-							if (obj->hasComponent<CollisionInfo>()) {
-								CollisionInfo* col = obj->getComponent<CollisionInfo>();
-								if (!col->collisionTag.empty()) {
-									uniqueTags.insert(col->collisionTag);
-								}
-							}
-						}*/
-
 						for (const std::string& tag : uniqueTags) {
 							if (ImGui::Selectable(tag.c_str())) {
 								node.parameters["colFilterValue"] = tag;
