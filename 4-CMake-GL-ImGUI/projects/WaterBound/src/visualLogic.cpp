@@ -212,8 +212,6 @@ void VisualLogicSystem::update(GameObject* obj, VisualLC* logic, float dt) {
 	if (logic->bulletShot) {
 		for (LogicNode& node : logic->nodes) {
 			if (node.imp == NodeImplementation::ON_BULLET_SHOOT) {
-				DebugLog::addMessage("Executing ON BULLET SHOOT node for " +
-					obj->getObjectName(), DebugMode::PlaySimul);
 				logic->currentExePath.clear();
 
 				executeNode(obj, logic, node.id, dt);
@@ -244,9 +242,6 @@ void VisualLogicSystem::broadcastBulletShoot(GameObjectManager& manager) {
 			if (obj->hasComponent<VisualLC>()) {
 				VisualLC* logic = obj->getComponent<VisualLC>();
 				logic->bulletShot = true;
-
-				DebugLog::addMessage("Broadcasted bullet shoot to " +
-					obj->getObjectName(), DebugMode::PlaySimul);
 			}
 		}
 	}
@@ -480,9 +475,6 @@ void VisualLogicSystem::executeActionNode(GameObject* obj, VisualLC* logic, Logi
 	}
 	else if (node.imp == NodeImplementation::SET_TEXTURE) {
 		Render* render = obj->getComponent<Render>();
-
-		DebugLog::addMessage("setting texture to " , DebugMode::PlaySimul);
-
 
 		if (!render) {
 			DebugLog::addMessage("[VisualLogic] Object has no Render component!", DebugMode::PlaySimul);
