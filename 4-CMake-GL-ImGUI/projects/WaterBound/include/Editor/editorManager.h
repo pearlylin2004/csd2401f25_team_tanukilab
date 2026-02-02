@@ -34,6 +34,7 @@ Technology is prohibited.
 #include "JsonIO.h"
 #include "prefabManager.h"
 #include "performance.h"
+#include "GUISystem.h"
 
 #ifndef RUNTIME_DIR_R
 #define RUNTIME_DIR_R "./assets"
@@ -290,7 +291,7 @@ public:
 // Scene Window & Editor Camera Window
 class SceneWindow {
 public:
-	SceneWindow(AssetBrowser& aBrowser, Editor::ObjSelectionState& Ostate, Editor::MenuBarState& Mstate, Editor::SceneWindowState& Sstate, Editor::SceneState& sceneState, Editor::GizmoState& gizmoState);
+	SceneWindow(AssetBrowser& aBrowser, Editor::ObjSelectionState& Ostate, Editor::MenuBarState& Mstate, Editor::SceneWindowState& Sstate, Editor::SceneState& sceneState, Editor::GizmoState& gizmoState, GUISystem* guiSystem);
 
 	void render(GLuint texture, float aspectRatio, GameObjectManager& manager);
 
@@ -339,6 +340,7 @@ private:
 	Editor::SceneWindowState& m_sceneWindowState;
 	Editor::SceneState& m_sceneState;
 	Editor::GizmoState& m_gizmoState;
+	GUISystem* m_guiSystem;
 
 	static bool s_isSceneHovered;
 };
@@ -351,7 +353,7 @@ private:
 // the big laoban for ALL editor viewports
 class EditorManager {
 public:
-	EditorManager(GameObjectManager& manager);
+	EditorManager(GameObjectManager& manager, GUISystem* gui = nullptr);
 
 	/* -------- Render all editor viewports ------- */
 	void update();
@@ -384,6 +386,8 @@ private:
 	SceneWindow sceneWindow;
 
 	GameObjectManager& m_manager;
+
+	GUISystem* m_guiSystem;
 
 	static inline bool isEditing = false;
 	static inline bool pausedSimul = false;
