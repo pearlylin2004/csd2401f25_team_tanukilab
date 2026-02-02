@@ -55,30 +55,15 @@ void GUISystem::init(GameObjectManager& manager, LuaSystem& luaSystem) {
 
 //update function to check for button clicking
 void GUISystem::update() {
+    if (m_currentState == GameState::PLAYING) return;
+    if (UISystem::isShowUI()) return; //skip if UI is shown
+
     //get mouse position
     Vector2D worldMousePos = InputHandler::getWorldMousePosition();
 
-    if (UISystem::isShowUI()) return; //skip if UI is shown
-
     //check for hover over
-    if (!InputHandler::isMouseButtonClicked(GLFW_MOUSE_BUTTON_LEFT)) {
-        for (auto& pair : m_buttons) {
-            GameObject* btn = pair.second; //get button object
-            if (!btn) continue; //safety check if button is valid
-
-            //when hover over button we can add hover effect here
-            //if (isPointInButton(worldMousePos, btn)) {
-                //if (btn->hasComponent<AudioComponent>()) {
-                //    AudioComponent* audio = btn->getComponent<AudioComponent>();
-                //    AudioChannel* ch = audio->getChannel("button_hover");
-                //    ch->isPendingPlay = true;
-                //    return; //stop checking after a click
-                //}
-            //}
-        }
-    }
-
-    else {
+    if (InputHandler::isMouseButtonClicked(GLFW_MOUSE_BUTTON_LEFT)) {
+        if (m_buttons.empty()) return;
         for (auto& pair : m_buttons) {
             GameObject* btn = pair.second; //get button object
             if (!btn) continue; //safety check if button is valid
