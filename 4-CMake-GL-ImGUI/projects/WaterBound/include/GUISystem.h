@@ -54,6 +54,8 @@ public:
     void setPreviousState(GameState state) { m_previousState = state; } //set previous state
     void setStateBeforePause(GameState state) { m_stateBeforePause = state; } //set state before pause
 
+	GameState sceneToState(const std::string& sceneName); //convert scene name to game state
+
 private:
     void createButtons(GameObjectManager& manager); //create menu buttons
     void removeButtons(); //remove menu buttons
@@ -65,7 +67,6 @@ private:
 
     std::unordered_map<ButtonAction, GameObject*> m_buttons; //for storing buttons 
 	std::unordered_map<ButtonAction, std::function<void()>> m_buttonActions; //map of button actions
-	std::vector<GameObject*> allObjs; //to store all game objects
 
     GameState m_currentState;
     GameState m_previousState;

@@ -28,7 +28,7 @@ SceneWindow::SceneWindow(AssetBrowser& aBrowser, Editor::ObjSelectionState& Osta
     m_menuBarState(Mstate),
     m_sceneWindowState(Sstate),
     m_sceneState(sceneState),
-    m_gizmoState(gizmoState) {}
+    m_gizmoState(gizmoState){}
 
 void SceneWindow::render(GLuint texture, float aspectRatio, GameObjectManager& manager) {
     /* ---------- Draw Editor Camera Window --------- */
@@ -628,6 +628,12 @@ void SceneWindow::loadScene(GameObjectManager& manager) {
 
     // refresh cached object vector
     CachedGameObjects::Instance().refresh();
+
+    //if (m_guiSystem) {
+        //GameState state = m_guiSystem->sceneToState(m_menuBarState.sceneToLoad); //translate state
+        //m_guiSystem->setCurrentState(state); //state change 
+    //}
+
 
     m_sceneState.currentSceneName = std::move(m_menuBarState.sceneToLoad); 
 
