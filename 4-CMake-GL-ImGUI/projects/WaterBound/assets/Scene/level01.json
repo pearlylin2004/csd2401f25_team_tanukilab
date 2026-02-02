@@ -34,81 +34,6 @@
       }
     },
     {
-      "prefabid": "dd60e1e1-641c-4ed5-b69d-ffadfa02fb7a",
-      "name": "player",
-      "components": {
-        "Transform": {
-          "pos": [
-            0.0,
-            -7.5,
-            0.9980000257492065
-          ],
-          "scale": [
-            5.0,
-            5.0,
-            0.0
-          ]
-        },
-        "Physics": {
-          "jumpForce": 90.0
-        },
-        "CollisionInfo": {
-          "collisionTag": "player",
-          "ignoreCollisionsWith": [
-            "bullet"
-          ]
-        },
-        "StateMachine": {
-          "stateTime": 7.9686102867126465
-        },
-        "AudioComponent": {
-          "channels": {
-            "footsteps": {
-              "audioFile": "assets/audio/footsteps.wav",
-              "volume": 0.5,
-              "pitch": 1.0,
-              "loop": 1,
-              "playOnStart": 0,
-              "muted": 0,
-              "fadeInOnStart": 0,
-              "fadeInDuration": 1.0,
-              "fadeOutOnStop": 1,
-              "fadeOutDuration": 0.15000000596046448,
-              "isSpatial": 0,
-              "minDistance": 1.0,
-              "maxDistance": 100.0
-            },
-            "refill": {
-              "audioFile": "assets/Audio\\collect_water.wav",
-              "volume": 1.0,
-              "pitch": 1.0,
-              "loop": 0,
-              "playOnStart": 0,
-              "muted": 0,
-              "fadeInOnStart": 1,
-              "fadeInDuration": 0.5400000214576721,
-              "fadeOutOnStop": 1,
-              "fadeOutDuration": 0.7799999713897705,
-              "isSpatial": 0,
-              "minDistance": 1.0,
-              "maxDistance": 100.0
-            }
-          }
-        },
-        "LuaScript": {
-          "scripts": [
-            {
-              "filename": "./assets/scripting\\player.lua",
-              "scriptName": "player"
-            }
-          ]
-        },
-        "VisualLC": {
-          "filename": "player_logic.json"
-        }
-      }
-    },
-    {
       "prefabid": "f04819ff-270c-41b4-8387-73382eb85103",
       "name": "water_source3030",
       "components": {
@@ -242,6 +167,81 @@
       }
     },
     {
+      "prefabid": "dd60e1e1-641c-4ed5-b69d-ffadfa02fb7a",
+      "name": "player",
+      "components": {
+        "Transform": {
+          "pos": [
+            0.0,
+            -7.5,
+            0.9980000257492065
+          ],
+          "scale": [
+            5.0,
+            5.0,
+            0.0
+          ]
+        },
+        "Physics": {
+          "jumpForce": 90.0
+        },
+        "CollisionInfo": {
+          "collisionTag": "player",
+          "ignoreCollisionsWith": [
+            "bullet"
+          ]
+        },
+        "StateMachine": {
+          "stateTime": 8.39919662475586
+        },
+        "AudioComponent": {
+          "channels": {
+            "footsteps": {
+              "audioFile": "assets/audio/footsteps.wav",
+              "volume": 0.5,
+              "pitch": 1.0,
+              "loop": 1,
+              "playOnStart": 0,
+              "muted": 0,
+              "fadeInOnStart": 0,
+              "fadeInDuration": 1.0,
+              "fadeOutOnStop": 1,
+              "fadeOutDuration": 0.15000000596046448,
+              "isSpatial": 0,
+              "minDistance": 1.0,
+              "maxDistance": 100.0
+            },
+            "refill": {
+              "audioFile": "assets/Audio\\collect_water.wav",
+              "volume": 1.0,
+              "pitch": 1.0,
+              "loop": 0,
+              "playOnStart": 0,
+              "muted": 0,
+              "fadeInOnStart": 1,
+              "fadeInDuration": 0.5400000214576721,
+              "fadeOutOnStop": 1,
+              "fadeOutDuration": 0.7799999713897705,
+              "isSpatial": 0,
+              "minDistance": 1.0,
+              "maxDistance": 100.0
+            }
+          }
+        },
+        "LuaScript": {
+          "scripts": [
+            {
+              "filename": "./assets/scripting\\player.lua",
+              "scriptName": "player"
+            }
+          ]
+        },
+        "VisualLC": {
+          "filename": "player_logic.json"
+        }
+      }
+    },
+    {
       "prefabid": "f7665aa3-619e-49a1-892a-31fbc8b377a2",
       "name": "platform",
       "layer": 0,
@@ -302,114 +302,6 @@
           "texture": "assets/Texture\\game_bg_layer_2.png",
           "hasTex": 1,
           "hasAnimation": 0
-        }
-      }
-    },
-    {
-      "prefabid": "f04819ff-270c-41b4-8387-73382eb85103",
-      "name": "water_source3031",
-      "components": {
-        "Transform": {
-          "pos": [
-            14.87504768371582,
-            -0.2993413805961609,
-            0.0
-          ]
-        },
-        "StateMachine": {
-          "stateTime": 252.32286071777344,
-          "Idle": {
-            "animState": {
-              "texture": "assets/Texture\\Water_Source_Full.png",
-              "loop": 1,
-              "play": 0,
-              "totalColumn": 1,
-              "totalRow": 1,
-              "frameTime": 0.10000000149011612,
-              "initialFramCol": 0.0,
-              "initialFramRow": 0.0,
-              "lastFramCol": 0.0,
-              "lastFramRow": 0.0
-            }
-          },
-          "Walking": {
-            "animState": {
-              "texture": "assets/Texture\\Water_Source_Empty.png",
-              "loop": 1,
-              "play": 0,
-              "totalColumn": 1,
-              "totalRow": 1,
-              "frameTime": 0.10000000149011612,
-              "initialFramCol": 0.0,
-              "initialFramRow": 0.0,
-              "lastFramCol": 0.0,
-              "lastFramRow": 0.0
-            }
-          },
-          "Jumping": {
-            "animState": {
-              "texture": "",
-              "loop": 1,
-              "play": 0,
-              "totalColumn": 1,
-              "totalRow": 1,
-              "frameTime": 0.10000000149011612,
-              "initialFramCol": 0.0,
-              "initialFramRow": 0.0,
-              "lastFramCol": 0.0,
-              "lastFramRow": 0.0
-            }
-          },
-          "Falling": {
-            "animState": {
-              "texture": "assets/Texture\\Water_Source_Empty.png",
-              "loop": 1,
-              "play": 0,
-              "totalColumn": 1,
-              "totalRow": 1,
-              "frameTime": 0.10000000149011612,
-              "initialFramCol": 0.0,
-              "initialFramRow": 0.0,
-              "lastFramCol": 0.0,
-              "lastFramRow": 0.0
-            }
-          },
-          "Shooting": {
-            "animState": {
-              "texture": "",
-              "loop": 1,
-              "play": 0,
-              "totalColumn": 1,
-              "totalRow": 1,
-              "frameTime": 0.10000000149011612,
-              "initialFramCol": 0.0,
-              "initialFramRow": 0.0,
-              "lastFramCol": 0.0,
-              "lastFramRow": 0.0
-            }
-          },
-          "Dead": {
-            "animState": {
-              "texture": "",
-              "loop": 1,
-              "play": 0,
-              "totalColumn": 1,
-              "totalRow": 1,
-              "frameTime": 0.10000000149011612,
-              "initialFramCol": 0.0,
-              "initialFramRow": 0.0,
-              "lastFramCol": 0.0,
-              "lastFramRow": 0.0
-            }
-          }
-        },
-        "AudioComponent": {
-          "channels": {
-            "default": {
-              "fadeInOnStart": 1,
-              "fadeInDuration": 0.6399999856948853
-            }
-          }
         }
       }
     },
@@ -494,30 +386,6 @@
     },
     {
       "prefabid": "94d018f7-a766-4ee6-95be-f39272697938",
-      "name": "platform_right29",
-      "components": {
-        "Transform": {
-          "pos": [
-            16.42242431640625,
-            -3.197999954223633,
-            0.0
-          ],
-          "scale": [
-            10.0,
-            1.7000001668930054,
-            0.0
-          ]
-        },
-        "CollisionInfo": {
-          "colliderSize": [
-            7.5,
-            2.0
-          ]
-        }
-      }
-    },
-    {
-      "prefabid": "94d018f7-a766-4ee6-95be-f39272697938",
       "name": "platform_left",
       "components": {
         "Transform": {
@@ -536,6 +404,30 @@
           "colliderSize": [
             20.0,
             1.2000000476837158
+          ]
+        }
+      }
+    },
+    {
+      "prefabid": "94d018f7-a766-4ee6-95be-f39272697938",
+      "name": "platform_right29",
+      "components": {
+        "Transform": {
+          "pos": [
+            16.42242431640625,
+            -3.197999954223633,
+            0.0
+          ],
+          "scale": [
+            10.0,
+            1.7000001668930054,
+            0.0
+          ]
+        },
+        "CollisionInfo": {
+          "colliderSize": [
+            7.5,
+            2.0
           ]
         }
       }
