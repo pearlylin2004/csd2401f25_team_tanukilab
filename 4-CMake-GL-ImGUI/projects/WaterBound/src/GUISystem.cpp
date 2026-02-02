@@ -58,7 +58,7 @@ void GUISystem::update() {
     //get mouse position
     Vector2D worldMousePos = InputHandler::getWorldMousePosition();
 
-    if (UISystem::isShowUI()) return; //skip if UI is shown
+    //if (UISystem::isShowUI()) return; //skip if UI is shown
 
     //check for hover over
     if (!InputHandler::isMouseButtonClicked(GLFW_MOUSE_BUTTON_LEFT)) {

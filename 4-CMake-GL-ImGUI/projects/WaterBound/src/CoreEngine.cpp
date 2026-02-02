@@ -70,7 +70,7 @@ void CoreEngine::Init(bool forceWindowed) {
     int winWidth = cfg.width;
     int winHeight = cfg.height;
 
-    if (wantFullscreen) {
+    /*if (wantFullscreen) {
         monitor = glfwGetPrimaryMonitor();
         const GLFWvidmode* mode = glfwGetVideoMode(monitor);
         winWidth = mode->width;
@@ -83,7 +83,7 @@ void CoreEngine::Init(bool forceWindowed) {
     else {
         m_windowedWidth = cfg.width;
         m_windowedHeight = cfg.height;
-    }
+    }*/
 
     cfg.width = winWidth;
     cfg.height = winHeight;
