@@ -67,14 +67,14 @@ void GUISystem::update() {
             if (!btn) continue; //safety check if button is valid
 
             //when hover over button we can add hover effect here
-            if (isPointInButton(worldMousePos, btn)) {
+            //if (isPointInButton(worldMousePos, btn)) {
                 //if (btn->hasComponent<AudioComponent>()) {
                 //    AudioComponent* audio = btn->getComponent<AudioComponent>();
                 //    AudioChannel* ch = audio->getChannel("button_hover");
                 //    ch->isPendingPlay = true;
                 //    return; //stop checking after a click
                 //}
-            }
+            //}
         }
     }
 
