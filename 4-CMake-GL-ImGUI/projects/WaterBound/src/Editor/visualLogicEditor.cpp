@@ -761,6 +761,9 @@ void VisualLogicEditor::renderNodeProperties() {
 		else if (node.imp == NodeImplementation::ON_BULLET_SHOOT) {
 			ImGui::TextWrapped("This event triggers once bullet is fired.");
 		}
+		else if (node.imp == NodeImplementation::ON_BULLET_REFILL) {
+			ImGui::TextWrapped("This event triggers once bullet is refilled.");
+		}
 	}
 	/* ---------- ACTION ---------- */
 	else if (node.type == NodeType::ACTION) {
@@ -1142,7 +1145,81 @@ void VisualLogicEditor::renderNodeProperties() {
 				node.parameters["forceY"] = std::to_string(forceY);
 			}
 		}
+		else if (node.imp == NodeImplementation::SET_GLOBAL_FLOAT) {
+			ImGui::Text("Set Global Float Variable");
+
+			char varBuffer[128];
+			std::string currentVar = node.parameters.count("variable") ?
+				node.parameters["variable"] : "globalVar";
+			strncpy(varBuffer, currentVar.c_str(), 127);
+			varBuffer[127] = '\0';
+
+			ImGui::Text("Variable Name:");
+			if (ImGui::InputText("##globalVariable", varBuffer, 128)) {
+				node.parameters["variable"] = varBuffer;
+			}
+
+			float value = node.parameters.count("value") ?
+				std::stof(node.parameters["value"]) : 0.f;
+
+			if (ImGui::DragFloat("Value", &value, 0.1f)) {
+				node.parameters["value"] = std::to_string(value);
+			}
+
+			ImGui::Spacing();
+			ImGui::TextColored(ImVec4(0.3f, 1.0f, 0.3f, 1.0f), "Global variables are shared across all objects with Visual Logic Component");
+		}
+		else if (node.imp == NodeImplementation::MODIFY_GLOBAL_FLOAT) {
+			ImGui::Text("Modify Global Float Variable");
+
+			std::vector<std::string> globalVarNames = getGlobalVariableNamesFromNodes();
+
+			if (globalVarNames.empty()) {
+				ImGui::TextColored(ImVec4(1.f, 0.3f, 0.3f, 1.f), "No global float variables exist yet.");
+				ImGui::Spacing();
+				ImGui::TextDisabled("Use 'Set Global Float' node to create one.");
+			}
+			else {
+				std::string currentVar = node.parameters.count("variable") ?
+					node.parameters["variable"] : "";
+
+				if (currentVar.empty() ||
+					std::find(globalVarNames.begin(), globalVarNames.end(), currentVar) == globalVarNames.end()) {
+					currentVar = globalVarNames[0];
+					node.parameters["variable"] = currentVar;
+				}
+
+				ImGui::Text("Variable:");
+				if (ImGui::BeginCombo("##globalVariable", currentVar.c_str())) {
+					for (const std::string& varName : globalVarNames) {
+						bool isSelected = (currentVar == varName);
+						if (ImGui::Selectable(varName.c_str(), isSelected)) {
+							node.parameters["variable"] = varName;
+						}
+						if (isSelected) {
+							ImGui::SetItemDefaultFocus();
+						}
+					}
+					ImGui::EndCombo();
+				}
+
+				ImGui::Text("Modify By:");
+
+				float value = node.parameters.count("value") ?
+					std::stof(node.parameters["value"]) : 0.f;
+
+				if (ImGui::DragFloat("##value", &value, 0.1f)) {
+					node.parameters["value"] = std::to_string(value);
+				}
+
+				ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "Negative to subtract, Positive to add");
+			}
+		}
+		else if (node.imp == NodeImplementation::TRIGGER_BULLET_REFILL_EVENT) {
+			ImGui::TextWrapped("Triggers On Bullet Refill event after this node");
+		}
 	}
+	
 	/* ---------- END ---------- */
 
 
@@ -1362,6 +1439,78 @@ void VisualLogicEditor::renderNodeProperties() {
 				node.parameters["threshold"] = thresholdBuffer;
 			}
 		}
+		else if (node.imp == NodeImplementation::COMPARE_GLOBAL_FLOAT) {
+			ImGui::Text("Compare Global Float Variable");
+
+			std::vector<std::string> globalVarNames = getGlobalVariableNamesFromNodes();
+
+			if (globalVarNames.empty()) {
+				ImGui::TextColored(ImVec4(1.f, 0.3f, 0.3f, 1.f), "No global float variables exist yet.");
+				ImGui::Spacing();
+				ImGui::TextDisabled("Use 'Set Global Float' node to create one.");
+			}
+			else {
+				std::string currentVar = node.parameters.count("variable") ?
+					node.parameters["variable"] : "";
+
+				if (currentVar.empty() ||
+					std::find(globalVarNames.begin(), globalVarNames.end(), currentVar) == globalVarNames.end()) {
+					currentVar = globalVarNames[0];
+					node.parameters["variable"] = currentVar;
+				}
+
+				ImGui::Text("Variable:");
+				if (ImGui::BeginCombo("##globalVariable", currentVar.c_str())) {
+					for (const std::string& varName : globalVarNames) {
+						bool isSelected = (currentVar == varName);
+
+						if (ImGui::Selectable(varName.c_str(), isSelected)) {
+							node.parameters["variable"] = varName;
+						}
+
+						if (isSelected) {
+							ImGui::SetItemDefaultFocus();
+						}
+					}
+					ImGui::EndCombo();
+				}
+
+				ImGui::Spacing();
+
+				std::string comparison = node.parameters.count("comparison") ?
+					node.parameters["comparison"] : "greater";
+
+				ImGui::Text("Comparison:");
+				if (ImGui::BeginCombo("##comparison", comparison.c_str())) {
+					const char* comparisons[] = { "greater", "less", "equal" };
+					const char* labels[] = { "Greater Than (>)", "Less Than (<)", "Equal To (=)" };
+
+					for (int i = 0; i < 3; ++i) {
+						bool isSelected = (comparison == comparisons[i]);
+
+						if (ImGui::Selectable(labels[i], isSelected))
+							node.parameters["comparison"] = comparisons[i];
+
+						if (isSelected)
+							ImGui::SetItemDefaultFocus();
+					}
+
+					ImGui::EndCombo();
+				}
+
+				ImGui::Spacing();
+
+				float threshold = node.parameters.count("threshold") ?
+					std::stof(node.parameters["threshold"]) : 0.f;
+
+				if (ImGui::DragFloat("Threshold Value", &threshold, 0.1f)) {
+					node.parameters["threshold"] = std::to_string(threshold);
+				}
+
+				ImGui::Spacing();
+				ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "Compares with a global variable");
+			}
+		}
 	}
 	/* ---------- END ---------- */
 }
@@ -1553,6 +1702,18 @@ void VisualLogicEditor::addNode(NodeType type, NodeImplementation imp) {
 			node.parameters["deltaXCollided"] = "1";
 			node.parameters["deltaYCollided"] = "1";
 		}
+		else if (imp == NodeImplementation::APPLY_FORCE_ON_COLLIDED) {
+			node.parameters["forceX"] = "0";
+			node.parameters["forceY"] = "0";
+		}
+		else if (imp == NodeImplementation::SET_GLOBAL_FLOAT) {
+			node.parameters["variable"] = "var";
+			node.parameters["value"] = "0";
+		}
+		else if (imp == NodeImplementation::MODIFY_GLOBAL_FLOAT) {
+			node.parameters["variable"] = "var";
+			node.parameters["value"] = "1";
+		}
 	}
 	// CONDITION nodes
 	else if (type == NodeType::CONDITION) {
@@ -1575,6 +1736,11 @@ void VisualLogicEditor::addNode(NodeType type, NodeImplementation imp) {
 		else if (imp == NodeImplementation::CHECK_TIMER) {
 			node.parameters["timerName"] = node.parameters.count("timerName") ? node.parameters["timerName"] : "timer_0";
 			node.parameters["threshold"] = "1.0";
+		}
+		else if (imp == NodeImplementation::COMPARE_GLOBAL_FLOAT) {
+			node.parameters["variable"] = "var";
+			node.parameters["comparison"] = "greater";
+			node.parameters["threshold"] = "0";
 		}
 	}
 
@@ -1939,6 +2105,22 @@ void VisualLogicEditor::verticalSplitter(float* width, bool reverseDir, float mi
 	}
 
 	ImGui::SameLine();
+}
+
+std::vector<std::string> VisualLogicEditor::getGlobalVariableNamesFromNodes() {
+	std::set<std::string> uniqueVars;  // Use set to avoid duplicates
+
+	for (const LogicNode& node : Editor::visualLogicState.nodes) {
+		if (node.imp == NodeImplementation::SET_GLOBAL_FLOAT &&
+			node.parameters.count("variable")) {
+			std::string varName = node.parameters.at("variable");
+			if (!varName.empty()) {
+				uniqueVars.insert(varName);
+			}
+		}
+	}
+
+	return std::vector<std::string>(uniqueVars.begin(), uniqueVars.end());
 }
 
 #endif

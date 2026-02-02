@@ -16,11 +16,11 @@
     },
     {
       "id": 2,
-      "implementation": "Set Float",
+      "implementation": "Set Global Float",
       "type": 1,
       "position": [
-        162.0,
-        -111.0
+        238.0,
+        -104.0
       ],
       "hasInput": true,
       "hasOutput": true,
@@ -36,8 +36,8 @@
       "implementation": "Set Texture",
       "type": 1,
       "position": [
-        589.0,
-        -110.0
+        794.0,
+        -104.0
       ],
       "hasInput": true,
       "hasOutput": true,
@@ -62,11 +62,11 @@
     },
     {
       "id": 20,
-      "implementation": "Modify Float Variable",
+      "implementation": "Modify Global Float",
       "type": 1,
       "position": [
-        111.0,
-        100.0
+        165.9999542236328,
+        99.99999237060547
       ],
       "hasInput": true,
       "hasOutput": true,
@@ -79,11 +79,11 @@
     },
     {
       "id": 11,
-      "implementation": "Compare Variable",
+      "implementation": "Compare Global Float",
       "type": 2,
       "position": [
-        414.0,
-        99.0
+        543.3333129882813,
+        99.99999237060547
       ],
       "hasInput": true,
       "hasOutput": false,
@@ -100,8 +100,8 @@
       "implementation": "Set Texture",
       "type": 1,
       "position": [
-        700.0,
-        0.0
+        851.6666259765625,
+        -3.3333332538604736
       ],
       "hasInput": true,
       "hasOutput": true,
@@ -113,11 +113,11 @@
     },
     {
       "id": 13,
-      "implementation": "Compare Variable",
+      "implementation": "Compare Global Float",
       "type": 2,
       "position": [
-        740.0,
-        100.0
+        828.3333129882813,
+        101.66666412353516
       ],
       "hasInput": true,
       "hasOutput": false,
@@ -134,8 +134,8 @@
       "implementation": "Set Texture",
       "type": 1,
       "position": [
-        1049.0,
-        -13.0
+        1141.6666259765625,
+        3.3333332538604736
       ],
       "hasInput": true,
       "hasOutput": true,
@@ -147,11 +147,11 @@
     },
     {
       "id": 15,
-      "implementation": "Compare Variable",
+      "implementation": "Compare Global Float",
       "type": 2,
       "position": [
-        1060.0,
-        97.0
+        1125.0,
+        108.33332824707031
       ],
       "hasInput": true,
       "hasOutput": false,
@@ -168,8 +168,8 @@
       "implementation": "Set Texture",
       "type": 1,
       "position": [
-        1377.0,
-        -14.5
+        1420.0,
+        -6.666666507720947
       ],
       "hasInput": true,
       "hasOutput": true,
@@ -181,11 +181,11 @@
     },
     {
       "id": 17,
-      "implementation": "Compare Variable",
+      "implementation": "Compare Global Float",
       "type": 2,
       "position": [
-        1375.5,
-        107.0
+        1420.0,
+        109.99999237060547
       ],
       "hasInput": true,
       "hasOutput": false,
@@ -202,8 +202,8 @@
       "implementation": "Set Texture",
       "type": 1,
       "position": [
-        1709.0,
-        -14.0
+        1709.9998779296875,
+        -1.6666666269302368
       ],
       "hasInput": true,
       "hasOutput": true,
@@ -215,11 +215,11 @@
     },
     {
       "id": 19,
-      "implementation": "Compare Variable",
+      "implementation": "Compare Global Float",
       "type": 2,
       "position": [
-        1704.0,
-        107.5
+        1696.6666259765625,
+        108.33332824707031
       ],
       "hasInput": true,
       "hasOutput": false,
@@ -236,8 +236,8 @@
       "implementation": "Set Texture",
       "type": 1,
       "position": [
-        2040.0,
-        -13.8
+        2046.6666259765625,
+        -5.0
       ],
       "hasInput": true,
       "hasOutput": true,
@@ -249,11 +249,11 @@
     },
     {
       "id": 24,
-      "implementation": "Compare Variable",
+      "implementation": "Compare Global Float",
       "type": 2,
       "position": [
-        2040.0,
-        110.0
+        1998.333251953125,
+        128.3333282470703
       ],
       "hasInput": true,
       "hasOutput": false,
@@ -270,8 +270,8 @@
       "implementation": "Set Texture",
       "type": 1,
       "position": [
-        2370.0,
-        -13.0
+        2353.333251953125,
+        -3.3333332538604736
       ],
       "hasInput": true,
       "hasOutput": true,
@@ -283,11 +283,11 @@
     },
     {
       "id": 26,
-      "implementation": "Compare Variable",
+      "implementation": "Compare Global Float",
       "type": 2,
       "position": [
-        2370.0,
-        110.0
+        2313.333251953125,
+        128.3333282470703
       ],
       "hasInput": true,
       "hasOutput": false,
@@ -304,8 +304,8 @@
       "implementation": "Set Texture",
       "type": 1,
       "position": [
-        2700.0,
-        -13.0
+        2706.66650390625,
+        -14.999999046325684
       ],
       "hasInput": true,
       "hasOutput": true,
@@ -317,11 +317,11 @@
     },
     {
       "id": 28,
-      "implementation": "Compare Variable",
+      "implementation": "Compare Global Float",
       "type": 2,
       "position": [
-        2700.0,
-        110.0
+        2690.0,
+        118.33332824707031
       ],
       "hasInput": true,
       "hasOutput": false,
@@ -338,8 +338,8 @@
       "implementation": "Set Texture",
       "type": 1,
       "position": [
-        3030.0,
-        -13.0
+        3018.3330078125,
+        -19.999996185302734
       ],
       "hasInput": true,
       "hasOutput": true,
@@ -351,11 +351,11 @@
     },
     {
       "id": 30,
-      "implementation": "Compare Variable",
+      "implementation": "Compare Global Float",
       "type": 2,
       "position": [
-        3030.0,
-        110.0
+        3013.3330078125,
+        124.9999771118164
       ],
       "hasInput": true,
       "hasOutput": false,
@@ -372,8 +372,8 @@
       "implementation": "Set Texture",
       "type": 1,
       "position": [
-        3360.0,
-        -13.0
+        3361.66650390625,
+        -10.0
       ],
       "hasInput": true,
       "hasOutput": true,
@@ -385,11 +385,11 @@
     },
     {
       "id": 32,
-      "implementation": "Compare Variable",
+      "implementation": "Compare Global Float",
       "type": 2,
       "position": [
-        3360.0,
-        110.0
+        3350.0,
+        123.33334350585938
       ],
       "hasInput": true,
       "hasOutput": false,
@@ -406,8 +406,8 @@
       "implementation": "Set Texture",
       "type": 1,
       "position": [
-        3690.0,
-        -13.0
+        3724.999755859375,
+        19.999996185302734
       ],
       "hasInput": true,
       "hasOutput": true,
@@ -422,8 +422,8 @@
       "implementation": "Set Position",
       "type": 1,
       "position": [
-        3690.0,
-        110.0
+        3761.666259765625,
+        141.6666717529297
       ],
       "hasInput": true,
       "hasOutput": true,
@@ -432,6 +432,52 @@
       "parameters": {
         "x": "1000",
         "y": "0"
+      }
+    },
+    {
+      "id": 100,
+      "implementation": "On Bullet Refill",
+      "type": 0,
+      "position": [
+        -199.99998474121094,
+        399.9999694824219
+      ],
+      "hasInput": false,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false
+    },
+    {
+      "id": 101,
+      "implementation": "Set Texture",
+      "type": 1,
+      "position": [
+        99.99998474121094,
+        399.9999694824219
+      ],
+      "hasInput": true,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false,
+      "parameters": {
+        "textureFile": "assets/Texture\\Water_100.png"
+      }
+    },
+    {
+      "id": 102,
+      "implementation": "Set Position",
+      "type": 1,
+      "position": [
+        413.75482177734375,
+        399.35894775390625
+      ],
+      "hasInput": true,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false,
+      "parameters": {
+        "x": "-12.977",
+        "y": "-7.302"
       }
     }
   ],
@@ -578,6 +624,18 @@
       "fromNodeId": 32,
       "outputPin": "False",
       "toNodeId": 23,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 100,
+      "outputPin": "Out",
+      "toNodeId": 101,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 101,
+      "outputPin": "Out",
+      "toNodeId": 102,
       "inputPin": "In"
     }
   ]

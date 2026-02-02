@@ -636,6 +636,7 @@ enum class NodeImplementation {
     WHILE_HOVERING,
 	ON_HOVER_EXIT,
     ON_BULLET_SHOOT,
+    ON_BULLET_REFILL,
 
     // CONDITION
     CHECK_KEY_HELD,
@@ -643,6 +644,7 @@ enum class NodeImplementation {
     COMPARE_VAR,
     CHECK_STATE,
     CHECK_TIMER,
+    COMPARE_GLOBAL_FLOAT,
 
     // ACTION
     PRINT_MESSAGE,
@@ -661,6 +663,9 @@ enum class NodeImplementation {
 	SET_POSITION_ON_COLLIDED, // might not work on those object that has input
     SET_STATE_ON_COLLIDED,
     APPLY_FORCE_ON_COLLIDED,
+    SET_GLOBAL_FLOAT,
+    MODIFY_GLOBAL_FLOAT,
+    TRIGGER_BULLET_REFILL_EVENT, // whenever bullet is refilled, add this node
 
     // DEFAULT
     DEFAULT // nothing happen :)
@@ -707,6 +712,9 @@ public:
     std::map<std::string, float> timers;
     std::unordered_set<int> currentExePath;
 
+	// global variable that shared across all objects
+	static std::map<std::string, float> globalFloatVar;
+
 	bool wasHoveredLastFrame = false; // for hover event detection
 
     // for caching
@@ -720,6 +728,7 @@ public:
 
     // bullet event
     bool bulletShot = false;
+    static bool bulletRefill;
 };
 
 // WaterBody component for creating animated water surfaces     

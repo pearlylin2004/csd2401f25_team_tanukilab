@@ -17,6 +17,9 @@ Technology is prohibited.
 #include "Systems.h"
 #include "JsonIO.h"
 
+std::map<std::string, float> VisualLC::globalFloatVar;
+bool VisualLC::bulletRefill = false;
+
 void VisualLogicSystem::initAll(GameObjectManager& manager) {
 	std::vector<GameObject*> gameObjects;
 	manager.getAllGameObjects(gameObjects);
@@ -33,6 +36,25 @@ void VisualLogicSystem::initAll(GameObjectManager& manager) {
 void VisualLogicSystem::updateAll(GameObjectManager& manager, float dt) {
 	std::vector<GameObject*> gameObjects;
 	manager.getAllGameObjects(gameObjects);
+
+	// check if bullet refill was triggered this frame
+	if (VisualLC::bulletRefill) {
+		// trigger ON_BULLET_REFILL on ALL objects BEFORE resetting flag
+		for (GameObject* obj : gameObjects) {
+			if (obj->hasComponent<VisualLC>()) {
+				VisualLC* logic = obj->getComponent<VisualLC>();
+
+				for (LogicNode& node : logic->nodes) {
+					if (node.imp == NodeImplementation::ON_BULLET_REFILL) {
+						logic->currentExePath.clear();
+						executeNode(obj, logic, node.id, dt);
+					}
+				}
+			}
+		}
+
+		VisualLC::bulletRefill = false;
+	}
 
 	for (GameObject* obj : gameObjects) {
 		if (obj->hasComponent<VisualLC>()) {
@@ -535,6 +557,27 @@ void VisualLogicSystem::executeActionNode(GameObject* obj, VisualLC* logic, Logi
 
 		//std::cout << "Put force on collided object to (" << collidedPhysic->dynamics.velocity.x << ", " << collidedPhysic->dynamics.velocity.y << ")\n";
 	}
+	else if (node.imp == NodeImplementation::SET_GLOBAL_FLOAT) {
+		std::string varName = node.parameters.count("variable") ?
+			node.parameters["variable"] : "var";
+
+		float value = node.parameters.count("value") ?
+			std::stof(node.parameters["value"]) : 0.f;
+
+		VisualLC::globalFloatVar[varName] = value;
+	}
+	else if (node.imp == NodeImplementation::MODIFY_GLOBAL_FLOAT) {
+		std::string varName = node.parameters.count("variable") ?
+			node.parameters["variable"] : "var";
+
+		float value = node.parameters.count("value") ?
+			std::stof(node.parameters["value"]) : 0.f;
+
+		VisualLC::globalFloatVar[varName] += value;
+	}
+	else if (node.imp == NodeImplementation::TRIGGER_BULLET_REFILL_EVENT) {
+		VisualLC::bulletRefill = true;
+	}
 }
 
 bool VisualLogicSystem::executeConditionNode(GameObject* obj, VisualLC* logic, LogicNode& node, float dt) {
@@ -663,6 +706,36 @@ bool VisualLogicSystem::executeConditionNode(GameObject* obj, VisualLC* logic, L
 		if (!logic->timers.count(timerName)) logic->timers[timerName] = 0.f;
 
 		return logic->timers[timerName] > threshold;
+	}
+	else if (node.imp == NodeImplementation::COMPARE_GLOBAL_FLOAT) {
+		std::string varName = node.parameters.count("variable") ?
+			node.parameters["variable"] : "var";
+
+		std::string comparison = node.parameters.count("comparison") ?
+			node.parameters["comparison"] : "greater";
+
+		float threshold = node.parameters.count("threshold") ?
+			std::stof(node.parameters["threshold"]) : 0.f;
+
+		// get variable value
+		float currentValue = 0.f;
+		if (VisualLC::globalFloatVar.count(varName)) {
+			currentValue = VisualLC::globalFloatVar[varName];
+		}
+
+		// compare
+		if (comparison == "greater") {
+			return currentValue > threshold;
+		}
+		else if (comparison == "less") {
+			return currentValue < threshold;
+		}
+		else if (comparison == "equal") {
+			float epsilon = 0.1f;
+			return std::abs(currentValue - threshold) < epsilon;
+		}
+
+		return false;
 	}
 
 	return true;

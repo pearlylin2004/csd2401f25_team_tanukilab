@@ -59,19 +59,37 @@
           ]
         },
         "StateMachine": {
-          "facingRight": 0,
-          "stateTime": 2.3562264442443848,
+          "stateTime": 13.064399719238281,
           "Dead": {
             "animState": {
-              "texture": "",
+              "texture": "assets/Texture\\Kinuta_Death_SS.png",
               "loop": 1,
-              "totalColumn": 1,
+              "totalColumn": 10,
               "totalRow": 1,
               "frameTime": 0.10000000149011612,
               "initialFramCol": 0.0,
               "initialFramRow": 0.0,
-              "lastFramCol": 0.0,
+              "lastFramCol": 9.0,
               "lastFramRow": 0.0
+            }
+          }
+        },
+        "AudioComponent": {
+          "channels": {
+            "refill": {
+              "audioFile": "assets/Audio\\collect_water.wav",
+              "volume": 1.0,
+              "pitch": 1.0,
+              "loop": 0,
+              "playOnStart": 0,
+              "muted": 0,
+              "fadeInOnStart": 1,
+              "fadeInDuration": 0.5400000214576721,
+              "fadeOutOnStop": 1,
+              "fadeOutDuration": 0.7799999713897705,
+              "isSpatial": 0,
+              "minDistance": 1.0,
+              "maxDistance": 100.0
             }
           }
         },
@@ -82,6 +100,9 @@
               "scriptName": "player"
             }
           ]
+        },
+        "VisualLC": {
+          "filename": "player_logic.json"
         }
       }
     },
@@ -98,6 +119,14 @@
         },
         "StateMachine": {
           "stateTime": 252.32286071777344
+        },
+        "AudioComponent": {
+          "channels": {
+            "default": {
+              "fadeInOnStart": 1,
+              "fadeInDuration": 0.6399999856948853
+            }
+          }
         }
       }
     },
@@ -467,7 +496,7 @@
         "Render": {
           "shape": "square",
           "hasTex": 1,
-          "texture": "assets/Texture\\Water_50.png",
+          "texture": "assets/Texture\\Water_100.png",
           "hasTex": 1,
           "hasAnimation": 0
         },

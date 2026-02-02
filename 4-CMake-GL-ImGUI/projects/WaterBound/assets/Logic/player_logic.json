@@ -1,0 +1,112 @@
+{
+  "version": 1,
+  "nodes": [
+    {
+      "id": 1,
+      "implementation": "On Collision Enter",
+      "type": 0,
+      "position": [
+        -200.0,
+        0.0
+      ],
+      "hasInput": false,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false,
+      "parameters": {
+        "colFilterType": "tag",
+        "colFilterValue": "water"
+      }
+    },
+    {
+      "id": 2,
+      "implementation": "Compare Global Float",
+      "type": 2,
+      "position": [
+        100.0,
+        0.0
+      ],
+      "hasInput": true,
+      "hasOutput": false,
+      "hasTrueOutput": true,
+      "hasFalseOutput": false,
+      "parameters": {
+        "comparison": "less",
+        "threshold": "100",
+        "variable": "bullets"
+      }
+    },
+    {
+      "id": 3,
+      "implementation": "Set Global Float",
+      "type": 1,
+      "position": [
+        400.0,
+        -50.0
+      ],
+      "hasInput": true,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false,
+      "parameters": {
+        "value": "100",
+        "variable": "bullets"
+      }
+    },
+    {
+      "id": 4,
+      "implementation": "Play Sound",
+      "type": 1,
+      "position": [
+        700.0,
+        -50.0
+      ],
+      "hasInput": true,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false,
+      "parameters": {
+        "channel": "refill"
+      }
+    },
+    {
+      "id": 5,
+      "implementation": "Trigger Bullet Refill Event",
+      "type": 1,
+      "position": [
+        995.9999389648438,
+        -49.00000762939453
+      ],
+      "hasInput": true,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false
+    }
+  ],
+  "connections": [
+    {
+      "fromNodeId": 1,
+      "outputPin": "Out",
+      "toNodeId": 2,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 2,
+      "outputPin": "True",
+      "toNodeId": 3,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 3,
+      "outputPin": "Out",
+      "toNodeId": 4,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 4,
+      "outputPin": "Out",
+      "toNodeId": 5,
+      "inputPin": "In"
+    }
+  ]
+}

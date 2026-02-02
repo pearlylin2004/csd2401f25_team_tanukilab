@@ -238,6 +238,7 @@ namespace Editor {
 		{"While Hovering", NodeType::EVENT, NodeImplementation::WHILE_HOVERING},
 		{"On Hover Exit", NodeType::EVENT, NodeImplementation::ON_HOVER_EXIT},
 		{"On Bullet Shoot", NodeType::EVENT, NodeImplementation::ON_BULLET_SHOOT},
+		{"On Bullet Refill", NodeType::EVENT, NodeImplementation::ON_BULLET_REFILL},
 
 		// CONDITIONS
 		{"Is Key Held", NodeType::CONDITION, NodeImplementation::CHECK_KEY_HELD},
@@ -245,6 +246,7 @@ namespace Editor {
 		{"Compare Variable", NodeType::CONDITION, NodeImplementation::COMPARE_VAR},
 		{"Check State", NodeType::CONDITION, NodeImplementation::CHECK_STATE},
 		{"Check Timer", NodeType::CONDITION, NodeImplementation::CHECK_TIMER},
+		{"Compare Global Float", NodeType::CONDITION, NodeImplementation::COMPARE_GLOBAL_FLOAT},
 		
 		// ACTIONS
 		{"Print Message", NodeType::ACTION, NodeImplementation::PRINT_MESSAGE},
@@ -263,6 +265,9 @@ namespace Editor {
 		{"Set Position on Collider", NodeType::ACTION, NodeImplementation::SET_POSITION_ON_COLLIDED},
 		{"Set State on Collider", NodeType::ACTION, NodeImplementation::SET_STATE_ON_COLLIDED},
 		{"Set Force on Collider", NodeType::ACTION, NodeImplementation::APPLY_FORCE_ON_COLLIDED},
+		{"Set Global Float", NodeType::ACTION, NodeImplementation::SET_GLOBAL_FLOAT},
+		{"Modify Global Float", NodeType::ACTION, NodeImplementation::MODIFY_GLOBAL_FLOAT},
+		{"Trigger Bullet Refill Event", NodeType::ACTION, NodeImplementation::TRIGGER_BULLET_REFILL_EVENT}
 	};
 	/* ----------------- Logic End ---------------- */
 
