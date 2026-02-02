@@ -645,6 +645,7 @@ enum class NodeImplementation {
     CHECK_STATE,
     CHECK_TIMER,
     COMPARE_GLOBAL_FLOAT,
+    CHECK_COLLIDED_STATE,
 
     // ACTION
     PRINT_MESSAGE,
@@ -728,7 +729,7 @@ public:
 
     // bullet event
     bool bulletShot = false;
-    static bool bulletRefill;
+    bool bulletRefill = false;
 };
 
 // WaterBody component for creating animated water surfaces     

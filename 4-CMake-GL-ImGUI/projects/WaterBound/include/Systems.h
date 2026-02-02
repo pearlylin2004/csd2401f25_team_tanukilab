@@ -271,8 +271,7 @@ public:
 	void update(GameObject* obj, VisualLC* logic, float dt);
 
 	// broadcast whenever bullet shoot
-	static void broadcastBulletShoot(GameObjectManager& manager);
-
+	static void broadcastBulletShoot();
 private:
 	// execute a specific node
 	void executeNode(GameObject* obj, VisualLC* logic, int nodeId, float dt);
@@ -290,6 +289,8 @@ private:
 
 	// helper func for collision
 	bool shouldTriggerCollision(LogicNode& node, GameObject* collided);
+
+	static GameObjectManager* m_manager;
 };
 
 class WaterSystem {

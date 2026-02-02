@@ -18,7 +18,7 @@ Technology is prohibited.
 #include "JsonIO.h"
 
 std::map<std::string, float> VisualLC::globalFloatVar;
-bool VisualLC::bulletRefill = false;
+GameObjectManager* VisualLogicSystem::m_manager = nullptr;
 
 void VisualLogicSystem::initAll(GameObjectManager& manager) {
 	std::vector<GameObject*> gameObjects;
@@ -31,34 +31,34 @@ void VisualLogicSystem::initAll(GameObjectManager& manager) {
 			init(obj, logic);
 		}
 	}
+
+	m_manager = &manager;
 }
 
 void VisualLogicSystem::updateAll(GameObjectManager& manager, float dt) {
 	std::vector<GameObject*> gameObjects;
 	manager.getAllGameObjects(gameObjects);
 
-	// check if bullet refill was triggered this frame
-	if (VisualLC::bulletRefill) {
-		// trigger ON_BULLET_REFILL on ALL objects BEFORE resetting flag
-		for (GameObject* obj : gameObjects) {
-			if (obj->hasComponent<VisualLC>()) {
-				VisualLC* logic = obj->getComponent<VisualLC>();
-
-				for (LogicNode& node : logic->nodes) {
-					if (node.imp == NodeImplementation::ON_BULLET_REFILL) {
-						logic->currentExePath.clear();
-						executeNode(obj, logic, node.id, dt);
-					}
-				}
-			}
-		}
-
-		VisualLC::bulletRefill = false;
-	}
 
 	for (GameObject* obj : gameObjects) {
 		if (obj->hasComponent<VisualLC>()) {
 			VisualLC* logic = obj->getComponent<VisualLC>();
+
+			/* -------- Check bullet refill event -------- */
+			if (logic->bulletRefill) {
+				for (LogicNode& node : logic->nodes) {
+					if (node.imp == NodeImplementation::ON_BULLET_REFILL) {
+						logic->currentExePath.clear();
+
+						executeNode(obj, logic, node.id, dt);
+					}
+				}
+
+				logic->bulletRefill = false;
+			}
+			/* -------- END -------- */
+
+
 			update(obj, logic, dt);
 		}
 	}
@@ -255,9 +255,9 @@ void VisualLogicSystem::update(GameObject* obj, VisualLC* logic, float dt) {
 	}
 }
 
-void VisualLogicSystem::broadcastBulletShoot(GameObjectManager& manager) {
+void VisualLogicSystem::broadcastBulletShoot() {
 	std::vector<GameObject*> gameObjects;
-	manager.getAllGameObjects(gameObjects);
+	m_manager->getAllGameObjects(gameObjects);
 
 	for (GameObject* obj : gameObjects) {
 		if (obj->hasComponent<VisualLC>()) {
@@ -576,7 +576,61 @@ void VisualLogicSystem::executeActionNode(GameObject* obj, VisualLC* logic, Logi
 		VisualLC::globalFloatVar[varName] += value;
 	}
 	else if (node.imp == NodeImplementation::TRIGGER_BULLET_REFILL_EVENT) {
-		VisualLC::bulletRefill = true;
+		std::string targetType = node.parameters.count("targetType") ?
+			node.parameters["targetType"] : "all";
+
+		std::string targetValue = node.parameters.count("targetValue") ?
+			node.parameters["targetValue"] : "";
+
+		// broadcast to all objects
+		if (targetType == "all") {
+			std::vector<GameObject*> gameObjects;
+			m_manager->getAllGameObjects(gameObjects);
+
+			for (GameObject* targetObj : gameObjects) {
+				if (targetObj->hasComponent<VisualLC>()) {
+					targetObj->getComponent<VisualLC>()->bulletRefill = true;
+				}
+			}
+
+		}
+		// trigger only on collided obj
+		else if (targetType == "collided") {
+			if (!logic->lastCollidedObj) return;
+
+			if (logic->lastCollidedObj->hasComponent<VisualLC>())
+				logic->lastCollidedObj->getComponent<VisualLC>()->bulletRefill = true;
+		}
+		else if (targetType == "tag") {
+			if (targetValue.empty()) return;
+
+			std::vector<GameObject*> gameObjects;
+			m_manager->getAllGameObjects(gameObjects);
+
+			for (GameObject* obj : gameObjects) {
+				if (obj->hasComponent<CollisionInfo>() && obj->hasComponent<VisualLC>()) {
+
+					CollisionInfo* col = obj->getComponent<CollisionInfo>();
+					if (col->collisionTag == targetValue) {
+						obj->getComponent<VisualLC>()->bulletRefill = true;
+					}
+				}
+			}
+		}
+		else if (targetType == "name") {
+			if (targetValue.empty()) return;
+
+			std::vector<GameObject*> gameObjects;
+			m_manager->getAllGameObjects(gameObjects);
+
+			for (GameObject* obj : gameObjects) {
+				if (obj->getObjectName() == targetValue && obj->hasComponent<VisualLC>()) 
+					obj->getComponent<VisualLC>()->bulletRefill = true;
+			}
+		}
+		else if (targetType == "self") {
+			logic->bulletRefill = true;
+		}
 	}
 }
 

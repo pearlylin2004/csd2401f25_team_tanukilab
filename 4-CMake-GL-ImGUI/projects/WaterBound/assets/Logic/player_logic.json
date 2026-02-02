@@ -80,7 +80,11 @@
       "hasInput": true,
       "hasOutput": true,
       "hasTrueOutput": false,
-      "hasFalseOutput": false
+      "hasFalseOutput": false,
+      "parameters": {
+        "targetType": "collided",
+        "targetValue": ""
+      }
     },
     {
       "id": 6,
@@ -96,6 +100,23 @@
       "hasFalseOutput": true,
       "parameters": {
         "state": "Idle"
+      }
+    },
+    {
+      "id": 7,
+      "implementation": "Trigger Bullet Refill Event",
+      "type": 1,
+      "position": [
+        1685.0,
+        -16.0
+      ],
+      "hasInput": true,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false,
+      "parameters": {
+        "targetType": "tag",
+        "targetValue": "inventory"
       }
     }
   ],
@@ -128,6 +149,12 @@
       "fromNodeId": 6,
       "outputPin": "True",
       "toNodeId": 2,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 5,
+      "outputPin": "Out",
+      "toNodeId": 7,
       "inputPin": "In"
     }
   ]

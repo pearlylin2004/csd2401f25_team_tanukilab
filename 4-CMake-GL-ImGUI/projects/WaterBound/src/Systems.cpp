@@ -920,25 +920,33 @@ void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime, M
 								// Get mouse position in world coordinates
 								Vector2D mouseWorldPos = InputHandler::getWorldMousePosition();
 
-								// Shoot bullet toward mouse position
-								PhysicsForces::shoot(bullet, transform, mouseWorldPos);
-								messageBus.publish(Message("KeyPressed", nullptr, KeyEvent{ "LEFT_CLICK", true }));
-
 								//set a flay saying channel is pending to play sound
 								if (bullet->hasComponent<AudioComponent>()) {
 									AudioComponent* audio = bullet->getComponent<AudioComponent>();
 									AudioChannel* ch = audio->getDefaultChannel();
 									ch->isPendingPlay = true;
+
+									// Shoot bullet toward mouse position
+									PhysicsForces::shoot(bullet, transform, mouseWorldPos);
+									messageBus.publish(Message("KeyPressed", nullptr, KeyEvent{ "LEFT_CLICK", true }));
+
+									//set a flay saying channel is pending to play sound
+									if (bullet->hasComponent<AudioComponent>()) {
+										AudioComponent* audio = bullet->getComponent<AudioComponent>();
+										AudioChannel* ch = audio->getDefaultChannel();
+										ch->isPendingPlay = true;
+									}
+
+
+									VisualLogicSystem::broadcastBulletShoot();
+
+									DebugLog::addMessage("Bullet fired!", DebugMode::PlaySimul);
+									physics->shootTimer = 0.0f;
 								}
-
-								VisualLogicSystem::broadcastBulletShoot(manager);
-
-								DebugLog::addMessage("Bullet fired!", DebugMode::PlaySimul);
-								physics->shootTimer = 0.0f;
-							}
-							else {
-								physics->shootTimer = physics->fireRate * 0.5f;
-								DebugLog::addMessage("No bullets available!", DebugMode::PlaySimul);
+								else {
+									physics->shootTimer = physics->fireRate * 0.5f;
+									DebugLog::addMessage("No bullets available!", DebugMode::PlaySimul);
+								}
 							}
 						}
 					}

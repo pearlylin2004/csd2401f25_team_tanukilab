@@ -85,7 +85,7 @@ void VisualLogicEditor::render() {
 	/* ------ END ------ */
 
 
-	float canvasWidth = m_showNodePalette ? ImGui::GetContentRegionAvail().x * 0.7f : ImGui::GetContentRegionAvail().x * 0.75f;
+	//float canvasWidth = m_showNodePalette ? ImGui::GetContentRegionAvail().x * 0.7f : ImGui::GetContentRegionAvail().x * 0.75f;
 
 
 	/* ------ Canvas ------ */
@@ -1205,7 +1205,82 @@ void VisualLogicEditor::renderNodeProperties() {
 			}
 		}
 		else if (node.imp == NodeImplementation::TRIGGER_BULLET_REFILL_EVENT) {
-			ImGui::TextWrapped("Triggers On Bullet Refill event after this node");
+			ImGui::Text("Trigger Bullet Refill Event on Target");
+
+			std::string targetType = node.parameters.count("targetType") ?
+				node.parameters["targetType"] : "all";
+
+			if (ImGui::BeginCombo("Target", targetType.c_str())) {
+				const char* options[] = { "all", "collided", "tag", "name", "self" };
+				const char* labels[] = { "All Objects", "Collided Object", "By Collision Tag", "By Object Name", "Self Only" };
+
+				for (int i = 0; i < 5; i++) {
+					bool isSelected = (targetType == options[i]);
+
+					if (ImGui::Selectable(labels[i], isSelected)) {
+						node.parameters["targetType"] = options[i];
+
+						if (!isSelected) {
+							node.parameters["targetValue"] = "";
+						}
+					}
+
+					if (isSelected) {
+						ImGui::SetItemDefaultFocus();
+					}
+				}
+
+				ImGui::EndCombo();
+			}
+
+			// if tag or name, show input for value
+			if (targetType == "tag" || targetType == "name") {
+				ImGui::Spacing();
+
+				char valueBuffer[128];
+				std::string currentValue = node.parameters.count("targetValue") ?
+					node.parameters["targetValue"] : "";
+				strncpy(valueBuffer, currentValue.c_str(), 127);
+				valueBuffer[127] = '\0';
+
+				if (targetType == "tag") {
+					ImGui::Text("Collision Tag:");
+					if (ImGui::InputText("##targetValue", valueBuffer, 128)) {
+						node.parameters["targetValue"] = valueBuffer;
+					}
+
+					if (ImGui::BeginCombo("##quickSelectTag", "Quick Select")) {
+						std::vector<std::string> uniqueTags = GlobalRegistry::Instance().getCollisionTags();
+
+						for (const std::string& tag : uniqueTags) {
+							if (ImGui::Selectable(tag.c_str())) {
+								node.parameters["targetValue"] = tag;
+							}
+						}
+						ImGui::EndCombo();
+					}
+				}
+				else if (targetType == "name") {
+					ImGui::Text("Object Name:");
+					if (ImGui::InputText("##targetValue", valueBuffer, 128)) {
+						node.parameters["targetValue"] = valueBuffer;
+					}
+
+					if (ImGui::BeginCombo("##quickSelectName", "Quick Select")) {
+						auto& cached = CachedGameObjects::Instance().getCachedObjects();
+
+						for (GameObject* cachedObj : cached) {
+							if (ImGui::Selectable(cachedObj->getObjectName().c_str())) {
+								node.parameters["targetValue"] = cachedObj->getObjectName();
+							}
+						}
+						ImGui::EndCombo();
+					}
+				}
+			}
+			else if (targetType == "collided") {
+				ImGui::TextColored(ImVec4(1.0f, 0.8f, 0.0f, 1.0f), "Note: Only works during collision events");
+			}
 		}
 	}
 	
@@ -1988,7 +2063,8 @@ void VisualLogicEditor::renderNodeSearchMenu() {
 		ImGui::SetKeyboardFocusHere();
 	}
 
-	bool searchChanged = ImGui::InputTextWithHint("##search", "Search nodes...", m_nodeSearchBuffer, 128);
+	//bool searchChanged = 
+	ImGui::InputTextWithHint("##search", "Search nodes...", m_nodeSearchBuffer, 128);
 	ImGui::Separator();
 
 	std::string search = m_nodeSearchBuffer;
