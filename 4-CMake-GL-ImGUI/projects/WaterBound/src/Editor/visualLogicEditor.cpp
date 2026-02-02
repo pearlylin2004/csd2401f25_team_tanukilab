@@ -1511,6 +1511,29 @@ void VisualLogicEditor::renderNodeProperties() {
 				ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "Compares with a global variable");
 			}
 		}
+		else if (node.imp == NodeImplementation::CHECK_COLLIDED_STATE) {
+			std::string target = node.parameters.count("state") ?
+				node.parameters["state"] : JsonIO::stateNames[0];
+
+			if (ImGui::BeginCombo("##checkState", target.c_str())) {
+				const std::vector<std::string>& stateNames = JsonIO::stateNames;
+
+				for (const std::string& stateName : stateNames) {
+					bool isSelected = (target == stateName);
+
+					if (ImGui::Selectable(stateName.c_str(), isSelected)) {
+						node.parameters["state"] = stateName;
+					}
+
+					if (isSelected) {
+						ImGui::SetItemDefaultFocus();
+					}
+				}
+				ImGui::EndCombo();
+			}
+
+			ImGui::TextDisabled("Remember to add StateMachine to target collided object");
+		}
 	}
 	/* ---------- END ---------- */
 }
@@ -1741,6 +1764,9 @@ void VisualLogicEditor::addNode(NodeType type, NodeImplementation imp) {
 			node.parameters["variable"] = "var";
 			node.parameters["comparison"] = "greater";
 			node.parameters["threshold"] = "0";
+		}
+		else if (imp == NodeImplementation::CHECK_COLLIDED_STATE) {
+			node.parameters["state"] = JsonIO::stateNames[0];
 		}
 	}
 

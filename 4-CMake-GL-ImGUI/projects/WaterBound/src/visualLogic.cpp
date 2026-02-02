@@ -737,6 +737,23 @@ bool VisualLogicSystem::executeConditionNode(GameObject* obj, VisualLC* logic, L
 
 		return false;
 	}
+	else if (node.imp == NodeImplementation::CHECK_COLLIDED_STATE) {
+		GameObject* collidedObj = logic->lastCollidedObj;
+		if (!collidedObj) {
+			DebugLog::addMessage("[VisualLogic] No collided object to check state!", DebugMode::PlaySimul);
+			return false;
+		}
+
+		StateMachine* collidedSM = collidedObj->getComponent<StateMachine>();
+		if (!collidedSM) {
+			DebugLog::addMessage("[VisualLogic] Collided object has no StateMachine component!", DebugMode::PlaySimul);
+			return false;
+		}
+
+		std::string target = node.parameters.count("state") ? node.parameters["state"] : JsonIO::stateNames[0];
+
+		return JsonIO::parsePlayerState(target) == collidedSM->state;
+	}
 
 	return true;
 }

@@ -316,6 +316,7 @@ namespace JsonIO {
 		if (str == "Check State") return NodeImplementation::CHECK_STATE;
 		if (str == "Check Timer") return NodeImplementation::CHECK_TIMER;
         if (str == "Compare Global Float") return NodeImplementation::COMPARE_GLOBAL_FLOAT;
+		if (str == "Check Collided State") return NodeImplementation::CHECK_COLLIDED_STATE;
 
         return NodeImplementation::DEFAULT;
     }
@@ -359,6 +360,7 @@ namespace JsonIO {
 			case NodeImplementation::CHECK_STATE: return "Check State";
 			case NodeImplementation::CHECK_TIMER: return "Check Timer";
 			case NodeImplementation::COMPARE_GLOBAL_FLOAT: return "Compare Global Float";
+			case NodeImplementation::CHECK_COLLIDED_STATE: return "Check Collided State";
 
             default: return "Default";
         }

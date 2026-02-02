@@ -23,8 +23,8 @@
       "implementation": "Compare Global Float",
       "type": 2,
       "position": [
-        100.0,
-        0.0
+        401.0,
+        4.0
       ],
       "hasInput": true,
       "hasOutput": false,
@@ -41,8 +41,8 @@
       "implementation": "Set Global Float",
       "type": 1,
       "position": [
-        400.0,
-        -50.0
+        710.0,
+        -7.0
       ],
       "hasInput": true,
       "hasOutput": true,
@@ -58,8 +58,8 @@
       "implementation": "Play Sound",
       "type": 1,
       "position": [
-        700.0,
-        -50.0
+        1006.0,
+        -10.0
       ],
       "hasInput": true,
       "hasOutput": true,
@@ -74,22 +74,32 @@
       "implementation": "Trigger Bullet Refill Event",
       "type": 1,
       "position": [
-        995.9999389648438,
-        -49.00000762939453
+        1319.0,
+        -14.0
       ],
       "hasInput": true,
       "hasOutput": true,
       "hasTrueOutput": false,
       "hasFalseOutput": false
+    },
+    {
+      "id": 6,
+      "implementation": "Check Collided State",
+      "type": 2,
+      "position": [
+        109.0,
+        -2.0
+      ],
+      "hasInput": true,
+      "hasOutput": false,
+      "hasTrueOutput": true,
+      "hasFalseOutput": true,
+      "parameters": {
+        "state": "Idle"
+      }
     }
   ],
   "connections": [
-    {
-      "fromNodeId": 1,
-      "outputPin": "Out",
-      "toNodeId": 2,
-      "inputPin": "In"
-    },
     {
       "fromNodeId": 2,
       "outputPin": "True",
@@ -106,6 +116,18 @@
       "fromNodeId": 4,
       "outputPin": "Out",
       "toNodeId": 5,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 1,
+      "outputPin": "Out",
+      "toNodeId": 6,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 6,
+      "outputPin": "True",
+      "toNodeId": 2,
       "inputPin": "In"
     }
   ]
