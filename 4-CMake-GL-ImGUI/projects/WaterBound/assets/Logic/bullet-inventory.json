@@ -19,15 +19,15 @@
       "implementation": "Set Float",
       "type": 1,
       "position": [
-        123.0,
-        -99.0
+        162.0,
+        -111.0
       ],
       "hasInput": true,
       "hasOutput": true,
       "hasTrueOutput": false,
       "hasFalseOutput": false,
       "parameters": {
-        "value": "5",
+        "value": "100",
         "variable": "bullets"
       }
     },
@@ -36,16 +36,15 @@
       "implementation": "Set Texture",
       "type": 1,
       "position": [
-        447.9998779296875,
-        -101.0
+        589.0,
+        -110.0
       ],
       "hasInput": true,
       "hasOutput": true,
       "hasTrueOutput": false,
       "hasFalseOutput": false,
       "parameters": {
-        "texture": "assets/Texture\\Water_50.png",
-        "textureFile": "assets/Texture\\Water_50.png"
+        "textureFile": "assets/Texture\\Water_100.png"
       }
     },
     {
@@ -62,12 +61,29 @@
       "hasFalseOutput": false
     },
     {
+      "id": 20,
+      "implementation": "Modify Float Variable",
+      "type": 1,
+      "position": [
+        111.0,
+        100.0
+      ],
+      "hasInput": true,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false,
+      "parameters": {
+        "value": "-10.000000",
+        "variable": "bullets"
+      }
+    },
+    {
       "id": 11,
       "implementation": "Compare Variable",
       "type": 2,
       "position": [
-        128.9999542236328,
-        103.00003814697266
+        414.0,
+        99.0
       ],
       "hasInput": true,
       "hasOutput": false,
@@ -75,8 +91,24 @@
       "hasFalseOutput": true,
       "parameters": {
         "comparison": "greater",
-        "threshold": "0",
+        "threshold": "90",
         "variable": "bullets"
+      }
+    },
+    {
+      "id": 12,
+      "implementation": "Set Texture",
+      "type": 1,
+      "position": [
+        700.0,
+        0.0
+      ],
+      "hasInput": true,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false,
+      "parameters": {
+        "textureFile": "assets/Texture\\Water_100.png"
       }
     },
     {
@@ -84,8 +116,8 @@
       "implementation": "Compare Variable",
       "type": 2,
       "position": [
-        827.0,
-        111.0
+        740.0,
+        100.0
       ],
       "hasInput": true,
       "hasOutput": false,
@@ -93,7 +125,7 @@
       "hasFalseOutput": true,
       "parameters": {
         "comparison": "greater",
-        "threshold": "6",
+        "threshold": "80",
         "variable": "bullets"
       }
     },
@@ -102,16 +134,15 @@
       "implementation": "Set Texture",
       "type": 1,
       "position": [
-        1093.0,
-        -37.0
+        1049.0,
+        -13.0
       ],
       "hasInput": true,
       "hasOutput": true,
       "hasTrueOutput": false,
       "hasFalseOutput": false,
       "parameters": {
-        "texture": "assets/Texture\\Water_100.png",
-        "textureFile": "assets/Texture\\Water_70.png"
+        "textureFile": "assets/Texture\\Water_90.png"
       }
     },
     {
@@ -119,8 +150,8 @@
       "implementation": "Compare Variable",
       "type": 2,
       "position": [
-        1183.0,
-        103.0
+        1060.0,
+        97.0
       ],
       "hasInput": true,
       "hasOutput": false,
@@ -128,7 +159,7 @@
       "hasFalseOutput": true,
       "parameters": {
         "comparison": "greater",
-        "threshold": "2",
+        "threshold": "70",
         "variable": "bullets"
       }
     },
@@ -137,16 +168,15 @@
       "implementation": "Set Texture",
       "type": 1,
       "position": [
-        1457.0,
-        -38.0
+        1377.0,
+        -14.5
       ],
       "hasInput": true,
       "hasOutput": true,
       "hasTrueOutput": false,
       "hasFalseOutput": false,
       "parameters": {
-        "texture": "assets/Texture\\Water_50.png",
-        "textureFile": "assets/Texture\\Water_30.png"
+        "textureFile": "assets/Texture\\Water_80.png"
       }
     },
     {
@@ -154,8 +184,212 @@
       "implementation": "Compare Variable",
       "type": 2,
       "position": [
-        1542.0,
+        1375.5,
         107.0
+      ],
+      "hasInput": true,
+      "hasOutput": false,
+      "hasTrueOutput": true,
+      "hasFalseOutput": true,
+      "parameters": {
+        "comparison": "greater",
+        "threshold": "60",
+        "variable": "bullets"
+      }
+    },
+    {
+      "id": 18,
+      "implementation": "Set Texture",
+      "type": 1,
+      "position": [
+        1709.0,
+        -14.0
+      ],
+      "hasInput": true,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false,
+      "parameters": {
+        "textureFile": "assets/Texture\\Water_70.png"
+      }
+    },
+    {
+      "id": 19,
+      "implementation": "Compare Variable",
+      "type": 2,
+      "position": [
+        1704.0,
+        107.5
+      ],
+      "hasInput": true,
+      "hasOutput": false,
+      "hasTrueOutput": true,
+      "hasFalseOutput": true,
+      "parameters": {
+        "comparison": "greater",
+        "threshold": "50",
+        "variable": "bullets"
+      }
+    },
+    {
+      "id": 21,
+      "implementation": "Set Texture",
+      "type": 1,
+      "position": [
+        2040.0,
+        -13.8
+      ],
+      "hasInput": true,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false,
+      "parameters": {
+        "textureFile": "assets/Texture\\Water_60.png"
+      }
+    },
+    {
+      "id": 24,
+      "implementation": "Compare Variable",
+      "type": 2,
+      "position": [
+        2040.0,
+        110.0
+      ],
+      "hasInput": true,
+      "hasOutput": false,
+      "hasTrueOutput": true,
+      "hasFalseOutput": true,
+      "parameters": {
+        "comparison": "greater",
+        "threshold": "40",
+        "variable": "bullets"
+      }
+    },
+    {
+      "id": 25,
+      "implementation": "Set Texture",
+      "type": 1,
+      "position": [
+        2370.0,
+        -13.0
+      ],
+      "hasInput": true,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false,
+      "parameters": {
+        "textureFile": "assets/Texture\\Water_50.png"
+      }
+    },
+    {
+      "id": 26,
+      "implementation": "Compare Variable",
+      "type": 2,
+      "position": [
+        2370.0,
+        110.0
+      ],
+      "hasInput": true,
+      "hasOutput": false,
+      "hasTrueOutput": true,
+      "hasFalseOutput": true,
+      "parameters": {
+        "comparison": "greater",
+        "threshold": "30",
+        "variable": "bullets"
+      }
+    },
+    {
+      "id": 27,
+      "implementation": "Set Texture",
+      "type": 1,
+      "position": [
+        2700.0,
+        -13.0
+      ],
+      "hasInput": true,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false,
+      "parameters": {
+        "textureFile": "assets/Texture\\Water_40.png"
+      }
+    },
+    {
+      "id": 28,
+      "implementation": "Compare Variable",
+      "type": 2,
+      "position": [
+        2700.0,
+        110.0
+      ],
+      "hasInput": true,
+      "hasOutput": false,
+      "hasTrueOutput": true,
+      "hasFalseOutput": true,
+      "parameters": {
+        "comparison": "greater",
+        "threshold": "20",
+        "variable": "bullets"
+      }
+    },
+    {
+      "id": 29,
+      "implementation": "Set Texture",
+      "type": 1,
+      "position": [
+        3030.0,
+        -13.0
+      ],
+      "hasInput": true,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false,
+      "parameters": {
+        "textureFile": "assets/Texture\\Water_30.png"
+      }
+    },
+    {
+      "id": 30,
+      "implementation": "Compare Variable",
+      "type": 2,
+      "position": [
+        3030.0,
+        110.0
+      ],
+      "hasInput": true,
+      "hasOutput": false,
+      "hasTrueOutput": true,
+      "hasFalseOutput": true,
+      "parameters": {
+        "comparison": "greater",
+        "threshold": "10",
+        "variable": "bullets"
+      }
+    },
+    {
+      "id": 31,
+      "implementation": "Set Texture",
+      "type": 1,
+      "position": [
+        3360.0,
+        -13.0
+      ],
+      "hasInput": true,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false,
+      "parameters": {
+        "textureFile": "assets/Texture\\Water_20.png"
+      }
+    },
+    {
+      "id": 32,
+      "implementation": "Compare Variable",
+      "type": 2,
+      "position": [
+        3360.0,
+        110.0
       ],
       "hasInput": true,
       "hasOutput": false,
@@ -168,54 +402,36 @@
       }
     },
     {
-      "id": 18,
+      "id": 33,
       "implementation": "Set Texture",
       "type": 1,
       "position": [
-        1854.0,
-        -37.0
+        3690.0,
+        -13.0
       ],
       "hasInput": true,
       "hasOutput": true,
       "hasTrueOutput": false,
       "hasFalseOutput": false,
       "parameters": {
-        "texture": "assets/Texture\\Water_20.png",
-        "textureFile": "assets/Texture\\Water_100.png"
+        "textureFile": "assets/Texture\\Water_10.png"
       }
     },
     {
-      "id": 19,
-      "implementation": "Set Texture",
+      "id": 23,
+      "implementation": "Set Position",
       "type": 1,
       "position": [
-        1879.0,
-        165.0
+        3690.0,
+        110.0
       ],
       "hasInput": true,
       "hasOutput": true,
       "hasTrueOutput": false,
       "hasFalseOutput": false,
       "parameters": {
-        "texture": "assets/Texture\\water_10.png",
-        "textureFile": "assets/Texture\\water_10.png"
-      }
-    },
-    {
-      "id": 20,
-      "implementation": "Modify Float Variable",
-      "type": 1,
-      "position": [
-        453.75,
-        101.25
-      ],
-      "hasInput": true,
-      "hasOutput": true,
-      "hasTrueOutput": false,
-      "hasFalseOutput": false,
-      "parameters": {
-        "value": "-1.000000",
-        "variable": "bullets"
+        "x": "1000",
+        "y": "0"
       }
     }
   ],
@@ -235,7 +451,25 @@
     {
       "fromNodeId": 10,
       "outputPin": "Out",
+      "toNodeId": 20,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 20,
+      "outputPin": "Out",
       "toNodeId": 11,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 11,
+      "outputPin": "True",
+      "toNodeId": 12,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 11,
+      "outputPin": "False",
+      "toNodeId": 13,
       "inputPin": "In"
     },
     {
@@ -275,15 +509,75 @@
       "inputPin": "In"
     },
     {
-      "fromNodeId": 11,
+      "fromNodeId": 19,
       "outputPin": "True",
-      "toNodeId": 20,
+      "toNodeId": 21,
       "inputPin": "In"
     },
     {
-      "fromNodeId": 20,
-      "outputPin": "Out",
-      "toNodeId": 13,
+      "fromNodeId": 19,
+      "outputPin": "False",
+      "toNodeId": 24,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 24,
+      "outputPin": "True",
+      "toNodeId": 25,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 24,
+      "outputPin": "False",
+      "toNodeId": 26,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 26,
+      "outputPin": "True",
+      "toNodeId": 27,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 26,
+      "outputPin": "False",
+      "toNodeId": 28,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 28,
+      "outputPin": "True",
+      "toNodeId": 29,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 28,
+      "outputPin": "False",
+      "toNodeId": 30,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 30,
+      "outputPin": "True",
+      "toNodeId": 31,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 30,
+      "outputPin": "False",
+      "toNodeId": 32,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 32,
+      "outputPin": "True",
+      "toNodeId": 33,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 32,
+      "outputPin": "False",
+      "toNodeId": 23,
       "inputPin": "In"
     }
   ]

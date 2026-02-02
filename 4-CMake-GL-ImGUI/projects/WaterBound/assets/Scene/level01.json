@@ -34,31 +34,6 @@
       }
     },
     {
-      "name": "background5",
-      "components": {
-        "Transform": {
-          "pos": [
-            0.0,
-            0.0,
-            -0.07999999821186066
-          ],
-          "rotation": 0.0,
-          "scale": [
-            45.0,
-            22.0,
-            0.0
-          ]
-        },
-        "Render": {
-          "shape": "square",
-          "hasTex": 1,
-          "texture": "assets/Texture\\game_bg_layer_5.png",
-          "hasTex": 1,
-          "hasAnimation": 0
-        }
-      }
-    },
-    {
       "prefabid": "dd60e1e1-641c-4ed5-b69d-ffadfa02fb7a",
       "name": "player",
       "components": {
@@ -85,7 +60,7 @@
         },
         "StateMachine": {
           "facingRight": 0,
-          "stateTime": 23.287948608398438,
+          "stateTime": 2.3562264442443848,
           "Dead": {
             "animState": {
               "texture": "",
@@ -123,6 +98,31 @@
         },
         "StateMachine": {
           "stateTime": 252.32286071777344
+        }
+      }
+    },
+    {
+      "name": "background5",
+      "components": {
+        "Transform": {
+          "pos": [
+            0.0,
+            0.0,
+            -0.07999999821186066
+          ],
+          "rotation": 0.0,
+          "scale": [
+            45.0,
+            22.0,
+            0.0
+          ]
+        },
+        "Render": {
+          "shape": "square",
+          "hasTex": 1,
+          "texture": "assets/Texture\\game_bg_layer_5.png",
+          "hasTex": 1,
+          "hasAnimation": 0
         }
       }
     },
@@ -271,30 +271,6 @@
     },
     {
       "prefabid": "94d018f7-a766-4ee6-95be-f39272697938",
-      "name": "platform_right29",
-      "components": {
-        "Transform": {
-          "pos": [
-            16.42242431640625,
-            -3.197999954223633,
-            0.0
-          ],
-          "scale": [
-            10.0,
-            1.7000001668930054,
-            0.0
-          ]
-        },
-        "CollisionInfo": {
-          "colliderSize": [
-            7.5,
-            2.0
-          ]
-        }
-      }
-    },
-    {
-      "prefabid": "94d018f7-a766-4ee6-95be-f39272697938",
       "name": "platform_left",
       "components": {
         "Transform": {
@@ -313,6 +289,30 @@
           "colliderSize": [
             20.0,
             1.2000000476837158
+          ]
+        }
+      }
+    },
+    {
+      "prefabid": "94d018f7-a766-4ee6-95be-f39272697938",
+      "name": "platform_right29",
+      "components": {
+        "Transform": {
+          "pos": [
+            16.42242431640625,
+            -3.197999954223633,
+            0.0
+          ],
+          "scale": [
+            10.0,
+            1.7000001668930054,
+            0.0
+          ]
+        },
+        "CollisionInfo": {
+          "colliderSize": [
+            7.5,
+            2.0
           ]
         }
       }
@@ -424,13 +424,13 @@
       "name": "land_vfx(28)"
     },
     {
-      "name": "Rectangle_28",
+      "name": "water balance back",
       "components": {
         "Transform": {
           "pos": [
-            -12.97700023651123,
-            -7.301594257354736,
-            1.0
+            -13.0702543258667,
+            -7.312854766845703,
+            0.9900000095367432
           ],
           "rotation": 0.0,
           "scale": [
@@ -442,7 +442,32 @@
         "Render": {
           "shape": "square",
           "hasTex": 1,
-          "texture": "assets/Texture\\water_texture.png",
+          "texture": "assets/Texture\\Water_ContainerRim.png",
+          "hasTex": 1,
+          "hasAnimation": 0
+        }
+      }
+    },
+    {
+      "name": "water balance",
+      "components": {
+        "Transform": {
+          "pos": [
+            -12.97700023651123,
+            -7.301594257354736,
+            0.9800000190734863
+          ],
+          "rotation": 0.0,
+          "scale": [
+            6.588000774383545,
+            6.588000774383545,
+            0.0
+          ]
+        },
+        "Render": {
+          "shape": "square",
+          "hasTex": 1,
+          "texture": "assets/Texture\\Water_50.png",
           "hasTex": 1,
           "hasAnimation": 0
         },
