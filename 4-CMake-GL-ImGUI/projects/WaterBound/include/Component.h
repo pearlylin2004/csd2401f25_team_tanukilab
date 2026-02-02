@@ -147,7 +147,7 @@ struct FontComponent : public Component {
 // animation for different state
 struct AnimateState {
     bool loop = true;
-	bool play = true;
+	bool play = false;
     Vector2D initialFrame{}, lastFrame{};
     int currentFrameColumn{}, currentFrameRow{}, totalColumn{ 1 }, totalRow{ 1 };
     float frameTime = 0.1f, frameTimer{};
@@ -524,7 +524,7 @@ public:
             float currentVolume;
             if (ch.fadeInfo.isFadingIn) {
                 currentVolume = ch.fadeInfo.startVolume + (ch.fadeInfo.targetVolume - ch.fadeInfo.startVolume) * progress;
-                std::cerr << "sound fading" << currentVolume << std::endl;
+                //std::cerr << "sound fading" << currentVolume << std::endl;
             }
             else {
                 currentVolume = ch.fadeInfo.startVolume + (ch.fadeInfo.targetVolume - ch.fadeInfo.startVolume) * progress;

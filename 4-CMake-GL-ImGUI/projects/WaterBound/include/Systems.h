@@ -36,6 +36,7 @@ Technology is prohibited.
 #include <algorithm>
 #include <random>
 #include <numbers>
+#include <vector>
 
 //forward declaration
 struct renderer;

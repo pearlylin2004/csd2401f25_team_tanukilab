@@ -850,6 +850,13 @@ void PrefabManager::applyPrefabComponents(GameObject* go, const rapidjson::Value
 					state.loop = (animJson["loop"].GetInt() != 0);
 			}
 
+			if (animJson.HasMember("play")) {
+				if (animJson["play"].IsBool())
+					state.play = animJson["play"].GetBool();
+				else if (animJson["play"].IsInt())
+					state.play = (animJson["play"].GetInt() != 0);
+			}
+
 			if (animJson.HasMember("totalColumn") && animJson["totalColumn"].IsInt())
 				state.totalColumn = animJson["totalColumn"].GetInt();
 
@@ -1179,6 +1186,7 @@ void PrefabManager::serializeComponents(const GameObject* obj, rapidjson::Value&
 
 				animStateObj.AddMember("texture", rapidjson::Value(animState.texFile.c_str(), a), a);
 				animStateObj.AddMember("loop", rapidjson::Value(animState.loop ? 1 : 0), a);
+				animStateObj.AddMember("play", rapidjson::Value(animState.play ? 1 : 0), a);
 				animStateObj.AddMember("totalColumn", rapidjson::Value(animState.totalColumn), a);
 				animStateObj.AddMember("totalRow", rapidjson::Value(animState.totalRow), a);
 				animStateObj.AddMember("frameTime", rapidjson::Value(animState.frameTime), a);

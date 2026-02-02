@@ -1012,6 +1012,7 @@ namespace JsonIO {
 
                     animStateObj.AddMember("texture", rapidjson::Value(animState.texFile.c_str(), a), a);
                     animStateObj.AddMember("loop", rapidjson::Value(animState.loop ? 1 : 0), a);
+                    animStateObj.AddMember("play", rapidjson::Value(animState.play ? 1 : 0), a);
                     animStateObj.AddMember("totalColumn", rapidjson::Value(animState.totalColumn), a);
                     animStateObj.AddMember("totalRow", rapidjson::Value(animState.totalRow), a);
                     animStateObj.AddMember("frameTime", rapidjson::Value(animState.frameTime), a);
@@ -1350,6 +1351,11 @@ namespace JsonIO {
                                 const auto& v = animStateObj["loop"];
                                 if (v.IsBool()) st.loop = v.GetBool();
                                 else if (v.IsInt()) st.loop = (v.GetInt() != 0);
+                            }
+                            if (animStateObj.HasMember("play")) {
+                                const auto& v = animStateObj["play"];
+                                if (v.IsBool()) st.play = v.GetBool();
+                                else if (v.IsInt()) st.play = (v.GetInt() != 0);
                             }
 
                             // --- numeric fields ---

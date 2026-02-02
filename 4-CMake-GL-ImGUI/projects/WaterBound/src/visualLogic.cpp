@@ -21,6 +21,7 @@ std::map<std::string, float> VisualLC::globalFloatVar;
 GameObjectManager* VisualLogicSystem::m_manager = nullptr;
 
 void VisualLogicSystem::initAll(GameObjectManager& manager) {
+
 	std::vector<GameObject*> gameObjects;
 	manager.getAllGameObjects(gameObjects);
 
@@ -36,7 +37,9 @@ void VisualLogicSystem::initAll(GameObjectManager& manager) {
 }
 
 void VisualLogicSystem::updateAll(GameObjectManager& manager, float dt) {
+	auto start = std::chrono::high_resolution_clock::now();
 	std::vector<GameObject*> gameObjects;
+
 	manager.getAllGameObjects(gameObjects);
 
 
@@ -62,6 +65,10 @@ void VisualLogicSystem::updateAll(GameObjectManager& manager, float dt) {
 			update(obj, logic, dt);
 		}
 	}
+
+	auto end = std::chrono::high_resolution_clock::now();
+	double ms = std::chrono::duration<double, std::milli>(end - start).count();
+	g_SystemTimers.push_back({ "Visual Script", ms });
 }
 
 void VisualLogicSystem::init(GameObject* obj, VisualLC* logic) {
