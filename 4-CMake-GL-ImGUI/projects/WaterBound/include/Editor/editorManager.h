@@ -245,6 +245,7 @@ private:
 	void drawEditMenu();
 	void drawSimulationMenu(GameObjectManager& manager);
 	void drawThemeMenu();
+	void drawFontMenu();
 
 	void playSimulation(GameObjectManager& manager);
 	void stopSimulation(GameObjectManager& manager);

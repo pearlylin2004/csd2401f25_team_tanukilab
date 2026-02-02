@@ -222,6 +222,17 @@ public:
 	static void toggleUI() { showUI = !showUI; } // temp toggle function
 	static bool isShowUI() { return showUI; }
 
+
+	enum FontType {
+		FONT_DEFAULT,
+		FONT_ARIAL,
+		FONT_TIMES
+	};
+
+	static void setFont(FontType type);
+	static ImFont* getCurrentFont() { return ImGui::GetIO().FontDefault; }
+	static FontType getCurrentFontType() { return m_currentFontType; }
+
 private:
 	void dockingSetUp();
 	void renderMultipleViewPorts();
@@ -229,6 +240,11 @@ private:
 	static bool showUI;
 	bool m_firstTime = true;
 	RenderSystem* m_renderer = nullptr;
+
+	static ImFont* m_fontDefault;
+	static ImFont* m_fontArial;
+	static ImFont* m_fontTimes;
+	static FontType m_currentFontType;
 };
 #else
 namespace EditorManager {

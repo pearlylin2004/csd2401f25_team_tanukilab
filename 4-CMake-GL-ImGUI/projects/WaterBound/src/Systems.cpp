@@ -1492,12 +1492,27 @@ void CollisionSystem::HandleTilemapCollisions(const std::unordered_map<int, Coll
 #ifdef _DEBUG
 //UI system - handles ImGui rendering and interaction
 bool UISystem::showUI = false;
+ImFont* UISystem::m_fontDefault = nullptr;
+ImFont* UISystem::m_fontArial = nullptr;
+ImFont* UISystem::m_fontTimes = nullptr;
+UISystem::FontType UISystem::m_currentFontType = FONT_ARIAL;
 
 void UISystem::init(GLFWwindow* window, RenderSystem* renderer, GameObjectManager& manager) {
 	// --- ImGui Setup ---
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
 	ImGuiIO& io = ImGui::GetIO(); //(void)io;
+
+	// font settings
+	m_fontArial = io.Fonts->AddFontFromFileTTF("assets/ARIAL.ttf", 25.0f);
+	m_fontTimes = io.Fonts->AddFontFromFileTTF("assets/times.ttf", 25.0f);
+
+	// fallback
+	m_fontDefault = io.Fonts->AddFontDefault();
+
+	io.FontDefault = m_fontDefault;
+
+
 	io.FontGlobalScale = 1.5f;
 	io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard
 			| ImGuiConfigFlags_DockingEnable
@@ -1514,6 +1529,31 @@ void UISystem::init(GLFWwindow* window, RenderSystem* renderer, GameObjectManage
 	m_renderer = renderer;
 
 	m_UI = std::make_unique<EditorManager>(manager);
+}
+
+void UISystem::setFont(FontType type) {
+	ImGuiIO& io = ImGui::GetIO();
+
+	switch (type) {
+	case FONT_ARIAL:
+		if (m_fontArial) {
+			io.FontDefault = m_fontArial;
+			m_currentFontType = FONT_ARIAL;
+		}
+		break;
+	case FONT_TIMES:
+		if (m_fontTimes) {
+			io.FontDefault = m_fontTimes;
+			m_currentFontType = FONT_TIMES;
+		}
+		break;
+	case FONT_DEFAULT:
+		if (m_fontDefault) {
+			io.FontDefault = m_fontDefault;
+			m_currentFontType = FONT_DEFAULT;
+		}
+		break;
+	}
 }
 
 UISystem::~UISystem() {
