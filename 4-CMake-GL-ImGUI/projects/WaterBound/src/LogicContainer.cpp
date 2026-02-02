@@ -83,7 +83,7 @@ RuntimeStateMachine* LogicContainer::getOrCreateMachine(GameObject& obj) {
         "Jumping",
         [](GameObject& o) {
             Physics* p = o.getComponent<Physics>();
-            return p && InputHandler::isKeyTriggered(GLFW_KEY_B) && p->onGround;
+            return p && InputHandler::isKeyTriggered(GLFW_KEY_SPACE) && p->onGround;
         },
         [](GameObject& o) { // Transition action: apply jump impulse
             Physics* p = o.getComponent<Physics>();
@@ -119,7 +119,7 @@ RuntimeStateMachine* LogicContainer::getOrCreateMachine(GameObject& obj) {
         "Jumping",
         [](GameObject& o) {
             Physics* p = o.getComponent<Physics>();
-            return p && InputHandler::isKeyTriggered(GLFW_KEY_B) && p->onGround;
+            return p && InputHandler::isKeyTriggered(GLFW_KEY_SPACE) && p->onGround;
         },
         [](GameObject& o) {
             Physics* p = o.getComponent<Physics>();
