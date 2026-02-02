@@ -27,6 +27,7 @@ void RuntimeStateMachine::addState(std::unique_ptr<RuntimeState> s)
 
 void RuntimeStateMachine::setInitial(const std::string& stateName, GameObject& obj)
 {
+    m_initialName = stateName;
     m_currentName = stateName;
     m_stateTime = 0.0f;
 
@@ -43,7 +44,16 @@ void RuntimeStateMachine::setInitial(const std::string& stateName, GameObject& o
 
 void RuntimeStateMachine::addTransition(const std::string& fromState, RuntimeTransition t)
 {
-    m_transitions[fromState].push_back(std::move(t));
+    // Add transition to the STATE, not to the FSM
+    auto it = m_states.find(fromState);
+    if (it != m_states.end())
+    {
+        it->second->addTransition(std::move(t));
+    }
+    else
+    {
+        std::cerr << "[RuntimeStateMachine] Cannot add transition: state '" << fromState << "' not found.\n";
+    }
 }
 
 void RuntimeStateMachine::changeState(const std::string& toState, GameObject& obj)
@@ -85,17 +95,16 @@ void RuntimeStateMachine::update(GameObject& obj, float dt)
 
     it->second->onUpdate(obj, dt);
 
-    auto trIt = m_transitions.find(m_currentName);
-    if (trIt == m_transitions.end())
-        return;
+    // Get transitions FROM the state
+    const auto& transitions = it->second->getTransitions();
 
-    for (auto& t : trIt->second)
+    for (const auto& t : transitions)
     {
         if (t.cond && t.cond(obj))
         {
             if (t.act) t.act(obj);
             changeState(t.to, obj);
-            break; // only one transition per frame
+            break;
         }
     }
 }
