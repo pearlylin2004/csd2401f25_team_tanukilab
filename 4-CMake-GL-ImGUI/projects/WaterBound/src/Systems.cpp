@@ -342,37 +342,48 @@ void RenderSystem::batchingSetUp(GameObjectManager& manager, float const& deltaT
 				glm::vec2 texOffSet{ as.currentFrameColumn / static_cast<float>(as.totalColumn), 1.f - ((as.currentFrameRow + 1) / static_cast<float>(as.totalRow)) };
 				glm::vec2 texScale{ 1.f / as.totalColumn, 1.f / as.totalRow };
 
-				if (as.loop)
+				if (as.play)
 				{
-					as.frameTimer += deltaTime;
-					if (as.frameTimer >= as.frameTime && !EditorManager::isEditingMode() && !EditorManager::isPaused())
+					if (!EditorManager::isEditingMode() && !EditorManager::isPaused())
 					{
-						as.frameTimer -= as.frameTime;
-						if (as.currentFrameColumn >= as.lastFrame.x && as.currentFrameRow >= as.lastFrame.y)
+						as.frameTimer += deltaTime;
+						if (as.frameTimer >= as.frameTime)
 						{
-							as.currentFrameColumn = (int)as.initialFrame.x;
-							as.currentFrameRow = (int)as.initialFrame.y;
-							as.frameTimer = 0;
-						}
-						else
-						{
-							++as.currentFrameColumn;
+							as.frameTimer -= as.frameTime;
 
-							if (as.currentFrameColumn >= as.totalColumn)
+							// Check if we're at the last frame
+							if (as.currentFrameColumn >= as.lastFrame.x && as.currentFrameRow >= as.lastFrame.y)
 							{
-								as.currentFrameColumn = 0;
-								++as.currentFrameRow;
-
-								if (as.currentFrameRow > as.lastFrame.y)
+								if (as.loop)
 								{
+									// Loop back to the beginning
 									as.currentFrameColumn = (int)as.initialFrame.x;
 									as.currentFrameRow = (int)as.initialFrame.y;
+									as.frameTimer = 0;
+								}
+								else
+								{
+									// Stop playing (stay on last frame)
+									as.play = false;
 								}
 							}
+							else
+							{
+								// Advance to next frame
+								++as.currentFrameColumn;
+								if (as.currentFrameColumn >= as.totalColumn)
+								{
+									as.currentFrameColumn = 0;
+									++as.currentFrameRow;
+									if (as.currentFrameRow > as.lastFrame.y)
+									{
+										as.currentFrameColumn = (int)as.initialFrame.x;
+										as.currentFrameRow = (int)as.initialFrame.y;
+									}
+								}
+							}
+							animation->runItBack = true;
 						}
-						/*as.currentFrameColumn = (as.currentFrameColumn + 1) % as.totalColumn;
-						as.currentFrameRow = (as.currentFrameRow + 1) % as.totalRow;*/
-						animation->runItBack = true;
 					}
 				}
 				data.texParams = { texOffSet,texScale };
