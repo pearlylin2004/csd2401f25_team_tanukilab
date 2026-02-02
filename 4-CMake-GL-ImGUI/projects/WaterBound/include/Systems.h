@@ -36,6 +36,7 @@ Technology is prohibited.
 #include <algorithm>
 #include <random>
 #include <numbers>
+#include <vector>
 
 //forward declaration
 struct renderer;
@@ -270,6 +271,8 @@ public:
 	// update logic
 	void update(GameObject* obj, VisualLC* logic, float dt);
 
+	// broadcast whenever bullet shoot
+	static void broadcastBulletShoot();
 private:
 	// execute a specific node
 	void executeNode(GameObject* obj, VisualLC* logic, int nodeId, float dt);
@@ -287,6 +290,8 @@ private:
 
 	// helper func for collision
 	bool shouldTriggerCollision(LogicNode& node, GameObject* collided);
+
+	static GameObjectManager* m_manager;
 };
 
 class WaterSystem {

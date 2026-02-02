@@ -17,7 +17,6 @@
           "hasTex": 1
         },
         "CollisionInfo": {
-          "collisionRes": "MoveWhenCollide",
           "ignoreCollisionsWith": [
             "player",
             "bullet",
@@ -31,31 +30,6 @@
               "scriptName": "bullet"
             }
           ]
-        }
-      }
-    },
-    {
-      "name": "background5",
-      "components": {
-        "Transform": {
-          "pos": [
-            0.0,
-            0.0,
-            -0.07999999821186066
-          ],
-          "rotation": 0.0,
-          "scale": [
-            45.0,
-            22.0,
-            0.0
-          ]
-        },
-        "Render": {
-          "shape": "square",
-          "hasTex": 1,
-          "texture": "assets/Texture\\game_bg_layer_5.png",
-          "hasTex": 1,
-          "hasAnimation": 0
         }
       }
     },
@@ -85,18 +59,39 @@
           ]
         },
         "StateMachine": {
-          "stateTime": 3.72672963142395,
-          "Dead": {
-            "animState": {
-              "texture": "",
+          "stateTime": 1.1757079362869263
+        },
+        "AudioComponent": {
+          "channels": {
+            "footsteps": {
+              "audioFile": "assets/audio/footsteps.wav",
+              "volume": 0.5,
+              "pitch": 1.0,
               "loop": 1,
-              "totalColumn": 1,
-              "totalRow": 1,
-              "frameTime": 0.10000000149011612,
-              "initialFramCol": 0.0,
-              "initialFramRow": 0.0,
-              "lastFramCol": 0.0,
-              "lastFramRow": 0.0
+              "playOnStart": 0,
+              "muted": 0,
+              "fadeInOnStart": 0,
+              "fadeInDuration": 1.0,
+              "fadeOutOnStop": 1,
+              "fadeOutDuration": 0.15000000596046448,
+              "isSpatial": 0,
+              "minDistance": 1.0,
+              "maxDistance": 100.0
+            },
+            "refill": {
+              "audioFile": "assets/Audio\\collect_water.wav",
+              "volume": 1.0,
+              "pitch": 1.0,
+              "loop": 0,
+              "playOnStart": 0,
+              "muted": 0,
+              "fadeInOnStart": 1,
+              "fadeInDuration": 0.5400000214576721,
+              "fadeOutOnStop": 1,
+              "fadeOutDuration": 0.7799999713897705,
+              "isSpatial": 0,
+              "minDistance": 1.0,
+              "maxDistance": 100.0
             }
           }
         },
@@ -107,22 +102,58 @@
               "scriptName": "player"
             }
           ]
+        },
+        "VisualLC": {
+          "filename": "player_logic.json"
+        }
+      }
+    },
+    {
+      "name": "background5",
+      "components": {
+        "Transform": {
+          "pos": [
+            0.0,
+            0.0,
+            -0.07999999821186066
+          ],
+          "rotation": 0.0,
+          "scale": [
+            45.0,
+            22.0,
+            0.0
+          ]
+        },
+        "Render": {
+          "shape": "square",
+          "hasTex": 1,
+          "texture": "assets/Texture\\game_bg_layer_5.png",
+          "hasTex": 1,
+          "hasAnimation": 0
         }
       }
     },
     {
       "prefabid": "f04819ff-270c-41b4-8387-73382eb85103",
-      "name": "water_source",
+      "name": "water_source3030",
       "components": {
         "Transform": {
           "pos": [
-            -6.120626926422119,
-            -8.350801467895508,
+            17.59305763244629,
+            -0.14866113662719727,
             0.0
           ]
         },
         "StateMachine": {
           "stateTime": 252.32286071777344
+        },
+        "AudioComponent": {
+          "channels": {
+            "default": {
+              "fadeInOnStart": 1,
+              "fadeInDuration": 0.6399999856948853
+            }
+          }
         }
       }
     },
@@ -271,30 +302,6 @@
     },
     {
       "prefabid": "94d018f7-a766-4ee6-95be-f39272697938",
-      "name": "platform_right29",
-      "components": {
-        "Transform": {
-          "pos": [
-            16.42242431640625,
-            -3.197999954223633,
-            0.0
-          ],
-          "scale": [
-            10.0,
-            1.7000001668930054,
-            0.0
-          ]
-        },
-        "CollisionInfo": {
-          "colliderSize": [
-            7.5,
-            2.0
-          ]
-        }
-      }
-    },
-    {
-      "prefabid": "94d018f7-a766-4ee6-95be-f39272697938",
       "name": "platform_left",
       "components": {
         "Transform": {
@@ -313,6 +320,30 @@
           "colliderSize": [
             20.0,
             1.2000000476837158
+          ]
+        }
+      }
+    },
+    {
+      "prefabid": "94d018f7-a766-4ee6-95be-f39272697938",
+      "name": "platform_right29",
+      "components": {
+        "Transform": {
+          "pos": [
+            16.42242431640625,
+            -3.197999954223633,
+            0.0
+          ],
+          "scale": [
+            10.0,
+            1.7000001668930054,
+            0.0
+          ]
+        },
+        "CollisionInfo": {
+          "colliderSize": [
+            7.5,
+            2.0
           ]
         }
       }
@@ -422,6 +453,105 @@
     {
       "prefabid": "25591e7c-7d8f-47e1-a686-f950e77e91a1",
       "name": "land_vfx(28)"
+    },
+    {
+      "name": "water balance back",
+      "components": {
+        "Transform": {
+          "pos": [
+            -13.0702543258667,
+            -7.312854766845703,
+            0.9900000095367432
+          ],
+          "rotation": 0.0,
+          "scale": [
+            6.588000774383545,
+            6.588000774383545,
+            0.0
+          ]
+        },
+        "Render": {
+          "shape": "square",
+          "hasTex": 1,
+          "texture": "assets/Texture\\Water_ContainerRim.png",
+          "hasTex": 1,
+          "hasAnimation": 0
+        },
+        "CollisionInfo": {
+          "collisionFlag": 1,
+          "autoFitScale": 1,
+          "colliderSize": [
+            6.588000774383545,
+            6.588000774383545
+          ],
+          "colliderType": "square",
+          "collisionRes": "StopWhenCollide",
+          "collisionTag": "inventory"
+        }
+      }
+    },
+    {
+      "name": "water balance",
+      "components": {
+        "Transform": {
+          "pos": [
+            -12.97700023651123,
+            -7.301594257354736,
+            0.9800000190734863
+          ],
+          "rotation": 0.0,
+          "scale": [
+            6.588000774383545,
+            6.588000774383545,
+            0.0
+          ]
+        },
+        "Render": {
+          "shape": "square",
+          "hasTex": 1,
+          "texture": "assets/Texture\\Water_100.png",
+          "hasTex": 1,
+          "hasAnimation": 0
+        },
+        "CollisionInfo": {
+          "collisionFlag": 1,
+          "autoFitScale": 1,
+          "colliderSize": [
+            6.588000774383545,
+            6.588000774383545
+          ],
+          "colliderType": "square",
+          "collisionRes": "StopWhenCollide",
+          "collisionTag": "inventory"
+        },
+        "VisualLC": {
+          "filename": "bullet-inventory.json"
+        }
+      }
+    },
+    {
+      "prefabid": "f04819ff-270c-41b4-8387-73382eb85103",
+      "name": "water_source30",
+      "components": {
+        "Transform": {
+          "pos": [
+            -5.438690185546875,
+            -7.751836776733398,
+            0.0
+          ]
+        },
+        "StateMachine": {
+          "stateTime": 252.32286071777344
+        },
+        "AudioComponent": {
+          "channels": {
+            "default": {
+              "fadeInOnStart": 1,
+              "fadeInDuration": 0.6399999856948853
+            }
+          }
+        }
+      }
     }
   ]
 }
