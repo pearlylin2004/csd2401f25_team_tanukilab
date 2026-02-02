@@ -202,6 +202,10 @@ public:
     Vector2D originalVel{ 0, 0 };
     bool isOriginalStateSet = false;
 
+    //bullet gravity thing
+    float gravityDelayTimer = 0.0f;
+    float gravityDelay = 0.2f;
+
     //bool inWaterTriggered; // true only when W is pressed
 
     //Shooting parameters

@@ -91,6 +91,80 @@ void PhysicsForces::jump(GameObject* object) {
  * Positions bullet at origin, sets velocity based on origin direction,
  * and configures bullet properties for horizontal movement
  */
+//void PhysicsForces::shoot(GameObject* bullet, const Transform* origin, const Vector2D& targetPos) {
+//    if (!bullet->hasComponent<Physics>() || !bullet->hasComponent<Transform>())
+//        return;
+//
+//    Transform* t = bullet->getComponent<Transform>();
+//    Physics* p = bullet->getComponent<Physics>();
+//
+//    // Spawn at player position
+//    t->x = origin->x;
+//    t->y = origin->y;
+//    t->z = 0.0f;
+//
+//    p->dynamics.position.x = origin->x;
+//    p->dynamics.position.y = origin->y;
+//
+//    // Calculate displacement to target
+//    float dx = targetPos.x - origin->x;
+//    float dy = targetPos.y - origin->y;
+//    float horizontalDist = fabsf(dx);
+//
+//    // Prevent shooting at self
+//    if (horizontalDist < 0.5f) {
+//        p->dynamics.velocity.x = origin->flipX ? -p->moveSpeed : p->moveSpeed;
+//        p->dynamics.velocity.y = p->moveSpeed * 0.5f;
+//        p->lifeTimer = 0.0f;
+//        p->alive = true;
+//        return;
+//    }
+//
+//    // Gravity 
+//    float g = fabsf(p->gravity);
+//
+//    float arcHeightFactor = 0.4f; // Adjust between 0.2 - 0.8
+//    float desiredPeakHeight = horizontalDist * arcHeightFactor;
+//
+//    // Ensure minimum arc height
+//    desiredPeakHeight = fmaxf(desiredPeakHeight, 2.0f);
+//
+//    float estimatedTime = sqrtf(2.0f * desiredPeakHeight / g) * 2.0f; // time up + time down for symmetric/ better arc
+//
+//    if (dy > 0) {
+//        estimatedTime *= 1.1f; 
+//    }
+//    else if (dy < -desiredPeakHeight) {
+//        estimatedTime *= 0.9f;
+//    }
+//
+//    // Calculate velocities
+//    float initialVelX = dx / estimatedTime;
+//
+//
+//    float initialVelY = (dy + 0.5f * g * estimatedTime * estimatedTime) / estimatedTime;
+//
+//    // Set velocity components
+//    p->dynamics.velocity.x = initialVelX;
+//    p->dynamics.velocity.y = initialVelY;
+//
+//    float maxVel = p->moveSpeed * 3.0f;
+//    if (fabsf(p->dynamics.velocity.x) > maxVel) {
+//        p->dynamics.velocity.x = (p->dynamics.velocity.x > 0) ? maxVel : -maxVel;
+//    }
+//    if (fabsf(p->dynamics.velocity.y) > maxVel) {
+//        p->dynamics.velocity.y = (p->dynamics.velocity.y > 0) ? maxVel : -maxVel;
+//    }
+//
+//    // Update flipX direction
+//    t->flipX = (dx < 0.0f);
+//
+//    p->lifeTimer = 0.0f;
+//    p->alive = true;
+//
+//    DebugLog::addMessage("Bullet fired!", DebugMode::PlaySimul);
+//}
+
 void PhysicsForces::shoot(GameObject* bullet, const Transform* origin, const Vector2D& targetPos) {
     if (!bullet->hasComponent<Physics>() || !bullet->hasComponent<Transform>())
         return;
@@ -106,60 +180,32 @@ void PhysicsForces::shoot(GameObject* bullet, const Transform* origin, const Vec
     p->dynamics.position.x = origin->x;
     p->dynamics.position.y = origin->y;
 
-    // Calculate displacement to target
+    // Calculate direction vector from player to mouse
     float dx = targetPos.x - origin->x;
     float dy = targetPos.y - origin->y;
-    float horizontalDist = fabsf(dx);
+    float magnitude = sqrtf(dx * dx + dy * dy);
 
-    // Prevent shooting at self
-    if (horizontalDist < 0.5f) {
-        p->dynamics.velocity.x = origin->flipX ? -p->moveSpeed : p->moveSpeed;
-        p->dynamics.velocity.y = p->moveSpeed * 0.5f;
-        p->lifeTimer = 0.0f;
-        p->alive = true;
-        return;
+    // Prevent shooting at self (fallback to facing direction)
+    if (magnitude < 0.5f) {
+        dx = origin->flipX ? -1.0f : 1.0f;
+        dy = 0.0f;
+        magnitude = 1.0f;
     }
 
-    // Gravity 
-    float g = fabsf(p->gravity);
+    // Normalize direction and scale by bullet speed
+    float dirX = dx / magnitude;
+    float dirY = dy / magnitude;
 
-    float arcHeightFactor = 0.4f; // Adjust between 0.2 - 0.8
-    float desiredPeakHeight = horizontalDist * arcHeightFactor;
+    float bulletSpeed = p->moveSpeed * 2.0f;  // Adjust multiplier as needed
+    p->dynamics.velocity.x = dirX * bulletSpeed;
+    p->dynamics.velocity.y = dirY * bulletSpeed;
 
-    // Ensure minimum arc height
-    desiredPeakHeight = fmaxf(desiredPeakHeight, 2.0f);
-
-    float estimatedTime = sqrtf(2.0f * desiredPeakHeight / g) * 2.0f; // time up + time down for symmetric/ better arc
-
-    if (dy > 0) {
-        estimatedTime *= 1.1f; 
-    }
-    else if (dy < -desiredPeakHeight) {
-        estimatedTime *= 0.9f;
-    }
-
-    // Calculate velocities
-    float initialVelX = dx / estimatedTime;
-
-
-    float initialVelY = (dy + 0.5f * g * estimatedTime * estimatedTime) / estimatedTime;
-
-    // Set velocity components
-    p->dynamics.velocity.x = initialVelX;
-    p->dynamics.velocity.y = initialVelY;
-
-    float maxVel = p->moveSpeed * 3.0f;
-    if (fabsf(p->dynamics.velocity.x) > maxVel) {
-        p->dynamics.velocity.x = (p->dynamics.velocity.x > 0) ? maxVel : -maxVel;
-    }
-    if (fabsf(p->dynamics.velocity.y) > maxVel) {
-        p->dynamics.velocity.y = (p->dynamics.velocity.y > 0) ? maxVel : -maxVel;
-    }
-
-    // Update flipX direction
+    // Update flipX based on direction
     t->flipX = (dx < 0.0f);
 
+    // Reset timers
     p->lifeTimer = 0.0f;
+    p->gravityDelayTimer = p->gravityDelay;  // Initialize gravity immunity
     p->alive = true;
 
     DebugLog::addMessage("Bullet fired!", DebugMode::PlaySimul);

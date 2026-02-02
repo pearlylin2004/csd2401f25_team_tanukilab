@@ -1027,17 +1027,29 @@ void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime, M
 		Transform* t = obj->getComponent<Transform>();
 
 		if (p->alive) {
-			// Update bullet physics
-			Vector3D gravityForce = { 0.0f, p->gravity * p->dynamics.mass, 0.0f };
-
+			// Update forces (non-gravity forces)
 			DynamicsSystem::UpdateForces(p->dynamics, deltaTime);
-			DynamicsSystem::Integrate(p->dynamics, deltaTime, p->gravity, false);
+
+			// Check gravity delay
+			if (p->gravityDelayTimer > 0.0f) {
+				// No gravity yet - just integrate velocity into position
+				p->gravityDelayTimer -= deltaTime;
+
+				Vector3D deltaPos = Vec3_Scale(&p->dynamics.velocity, deltaTime);
+				p->dynamics.position = Vec3_Add(&p->dynamics.position, &deltaPos);
+			}
+			else {
+				// Gravity delay expired - normal physics with gravity
+				DynamicsSystem::Integrate(p->dynamics, deltaTime, p->gravity, false);
+			}
 
 			t->x = p->dynamics.position.x;
 			t->y = p->dynamics.position.y;
+
 			// Update life timer
 			p->lifeTimer += deltaTime;
-			// Deactivate if lifetime exceeded
+
+			// Deactivate if lifetime exceeded or fell too far
 			if (p->lifeTimer >= p->maxLifetime || p->dynamics.position.y < -20.0f) {
 				PhysicsForces::deactivateBullet(obj);
 			}
