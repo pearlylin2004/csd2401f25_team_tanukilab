@@ -192,13 +192,10 @@ void AssetBrowser::render() {
                 ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.15f, 0.15f, 0.15f, 1.0f));
                 ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(4, 4));
 
-                if (ImGui::ImageButton(("##img" + asset.name).c_str(),
+                ImGui::ImageButton(("##img" + asset.name).c_str(),
                     (ImTextureID)(intptr_t)texData.id,
                     ImVec2(m_AssetBrowserState.iconSize, m_AssetBrowserState.iconSize),
-                    ImVec2(0, 1), ImVec2(1, 0))) {
-                    TileMapSystem::filename = asset.path;
-                    std::cout << asset.name << " image clicked!" << std::endl;
-                }
+                    ImVec2(0, 1), ImVec2(1, 0));
 
                 ImGui::PopStyleVar();
                 ImGui::PopStyleColor();
@@ -206,18 +203,14 @@ void AssetBrowser::render() {
             else {
                 // fallback to button if texture fails
                 ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(100, 40));
-                if (ImGui::Button(asset.name.c_str(), ImVec2(m_AssetBrowserState.iconSize, m_AssetBrowserState.iconSize))) {
-                    TileMapSystem::filename = asset.path;
-                }
+                ImGui::Button(asset.name.c_str(), ImVec2(m_AssetBrowserState.iconSize, m_AssetBrowserState.iconSize));
                 ImGui::PopStyleVar();
             }
         }
         else {
             // if not image then use button
             ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(100, 40));
-            if (ImGui::Button(asset.name.c_str(), ImVec2(m_AssetBrowserState.iconSize, m_AssetBrowserState.iconSize))) {
-                std::cout << asset.name << " button clicked!" << std::endl;
-            }
+            ImGui::Button(asset.name.c_str(), ImVec2(m_AssetBrowserState.iconSize, m_AssetBrowserState.iconSize));
             ImGui::PopStyleVar();
         }
 
@@ -277,9 +270,13 @@ void AssetBrowser::render() {
                 m_menuBarState.sceneToLoad = asset.name;
                 m_menuBarState.showLoadScenePopup = true;
             }
-
+            // if its a logic, open :)
+            else if (assetFolderName == "Logic") {
+                Editor::visualLogicState.targetObj = nullptr;
+                VisualLogicEditor::Instance().loadLogic(asset.name);
+            }
             // if its a prefab, convert to temp game obj for editing in inspector
-            if (assetFolderName == "Prefab") {
+            else if (assetFolderName == "Prefab") {
                 // get ID of the double clicked prefab by its filename
                 std::string prefabID = PrefabManager::Instance().findPrefabIDByFilename(asset.name);
                 if (prefabID.empty()) {
@@ -404,12 +401,18 @@ void AssetBrowser::assetDeletePopup() {
                     // store usage info for the popup
                     m_AssetBrowserState.prefabUsageInfo = usageInfo;
 
-
                     ImGui::OpenPopup("Cannot Delete Prefab");
                     m_AssetBrowserState.showDeletePopup = false;
                     return;
                 }
             }
+        }
+        else if (folder == "Logic") {
+			if (pathToDelete.filename().string() == Editor::visualLogicState.currentGraphName) {
+				ImGui::OpenPopup("Cannot Delete Logic");
+				m_AssetBrowserState.showDeletePopup = false;
+				return;
+			}
         }
 
         ImGui::OpenPopup("Confirm Delete Asset");
@@ -495,7 +498,7 @@ void AssetBrowser::assetDeletePopup() {
    /* ImGui::SetNextWindowPos(ImGui::GetMainViewport()->GetCenter(), ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));*/
 
     if (ImGui::BeginPopupModal("Cannot Delete Prefab", NULL, ImGuiWindowFlags_AlwaysAutoResize)) {
-        ImGui::Text("Cannot delete prefab!");
+        ImGui::Text("Cannot delete Prefab!");
         ImGui::Text("This prefab is being used in the following scenes:");
         ImGui::Separator();
 
@@ -516,6 +519,27 @@ void AssetBrowser::assetDeletePopup() {
         if (ImGui::Button("OK", ImVec2(120, 0)) || InputHandler::isKeyTriggered(GLFW_KEY_ENTER)) {
             m_AssetBrowserState.fullPathToDelete.clear();
             m_AssetBrowserState.prefabUsageInfo.clear();
+            ImGui::CloseCurrentPopup();
+        }
+
+        ImGui::EndPopup();
+    }
+    /*-------------------- END -------------------*/
+
+
+    /*---------------- Cannot Delete Current Logic ----------------*/
+   /* ImGui::SetNextWindowPos(ImGui::GetMainViewport()->GetCenter(), ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));*/
+
+    if (ImGui::BeginPopupModal("Cannot Delete Logic", NULL, ImGuiWindowFlags_AlwaysAutoResize)) {
+        ImGui::Text("Cannot delete Logic!");
+        ImGui::Text("This logic is currently opened in editor.");
+        ImGui::Separator();
+
+        ImGui::Separator();
+        ImGui::TextWrapped("Please close the Visual Logic Editor before proceed to delete.");
+
+        if (ImGui::Button("OK", ImVec2(120, 0)) || InputHandler::isKeyTriggered(GLFW_KEY_ENTER)) {
+            m_AssetBrowserState.fullPathToDelete.clear();
             ImGui::CloseCurrentPopup();
         }
 

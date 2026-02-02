@@ -17,9 +17,12 @@ Technology is prohibited.
 #include <fstream>
 #include <sstream>
 #include <iomanip>
+#include <set>
 
 #include "GameObject.h"
 #include "layerManager.h"
+#include "mathlib.h"
+#include "GameState.h"
 
 // This class is responsible for creating, storing, and providing access to game objects.
 class GameObjectManager {
@@ -63,6 +66,10 @@ public:
 	void saveScene(const std::string& path, bool isNew = false) const;
 
 	void createBulletPool(const std::string& templateBulletName, int poolSize = 10);
+
+	//memory manager ...
+	void clearScene(); 
+	//void unloadScene();
 
 	//layering manager stuff
 	LayerManager& getLayerManager();

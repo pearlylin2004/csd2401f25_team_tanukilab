@@ -1,8 +1,10 @@
 /* Start Header ************************************************************************/
 /*!
 \file		JsonIO.cpp
-\author     Varick, v.teo, 2403417
+\author     Varick, v.teo, 2403417 - 70%
+			Tan Chee Qing, cheeqing.tan, 2401486 - 30%
 \par        v.teo@digipen.edu
+\par        cheeqing.tan@digipen.edu
 \date		November, 5th, 2025
 \brief      Implementation of JSON helpers and scene serialization for the WaterBound engine.
 
@@ -221,7 +223,7 @@ namespace JsonIO {
         switch (mode) {
         case CollisionResponseMode::StopWhenCollide: return "StopWhenCollide";
         case CollisionResponseMode::MoveWhenCollide: return "MoveWhenCollide";
-        default:                                    return "StopWhenCollide";
+        default:                                    return "NoResponse";
         }
     }
 
@@ -232,7 +234,8 @@ namespace JsonIO {
      */
     CollisionResponseMode StrToCollisionResponseMode(const std::string& s) {
         if (s == "MoveWhenCollide") return CollisionResponseMode::MoveWhenCollide;
-        return CollisionResponseMode::StopWhenCollide;
+        if (s == "StopWhenCollide") return CollisionResponseMode::StopWhenCollide;
+        return CollisionResponseMode::NoResponse;
     }
 
     //for button
@@ -284,18 +287,36 @@ namespace JsonIO {
 		if (str == "On Hover Enter") return NodeImplementation::ON_HOVER_ENTER;
 		if (str == "While Hovering") return NodeImplementation::WHILE_HOVERING;
 		if (str == "On Hover Exit") return NodeImplementation::ON_HOVER_EXIT;
+        if (str == "On Bullet Shoot") return NodeImplementation::ON_BULLET_SHOOT;
+		if (str == "On Bullet Refill") return NodeImplementation::ON_BULLET_REFILL;
 
         if (str == "Print Message") return NodeImplementation::PRINT_MESSAGE;
         if (str == "Move Object") return NodeImplementation::MOVE_OBJECT;
         if (str == "Rotate Object") return NodeImplementation::ROTATE_OBJECT;
         if (str == "Set Rotation") return NodeImplementation::SET_ROTATION;
+        if (str == "Set Position") return NodeImplementation::SET_POSITION;
+        if (str == "Set Scale") return NodeImplementation::SET_SCALE;
+        if (str == "Scale Proportional") return NodeImplementation::SCALE_PROPORTIONAL;
 		if (str == "Set Float") return NodeImplementation::SET_FLOAT;
+        if (str == "Modify Float Variable") return NodeImplementation::MODIFY_FLOAT;
 		if (str == "Play Sound") return NodeImplementation::PLAY_SOUND;
 		if (str == "Set State") return NodeImplementation::SET_STATE;
+		if (str == "Reset Timer") return NodeImplementation::RESET_TIMER;
+        if (str == "Set Texture") return NodeImplementation::SET_TEXTURE;
+		if (str == "Set Position On Collided") return NodeImplementation::SET_POSITION_ON_COLLIDED;
+		if (str == "Set State On Collided") return NodeImplementation::SET_STATE_ON_COLLIDED;
+		if (str == "Apply Force On Collided") return NodeImplementation::APPLY_FORCE_ON_COLLIDED;
+        if (str == "Set Global Float") return NodeImplementation::SET_GLOBAL_FLOAT;
+        if (str == "Modify Global Float") return NodeImplementation::MODIFY_GLOBAL_FLOAT;
+		if (str == "Trigger Bullet Refill Event") return NodeImplementation::TRIGGER_BULLET_REFILL_EVENT;
 
 		if (str == "Check Key Held") return NodeImplementation::CHECK_KEY_HELD;
 		if (str == "Compare Value") return NodeImplementation::COMPARE_VALUE;
 		if (str == "Compare Variable") return NodeImplementation::COMPARE_VAR;
+		if (str == "Check State") return NodeImplementation::CHECK_STATE;
+		if (str == "Check Timer") return NodeImplementation::CHECK_TIMER;
+        if (str == "Compare Global Float") return NodeImplementation::COMPARE_GLOBAL_FLOAT;
+		if (str == "Check Collided State") return NodeImplementation::CHECK_COLLIDED_STATE;
 
         return NodeImplementation::DEFAULT;
     }
@@ -310,18 +331,37 @@ namespace JsonIO {
             case NodeImplementation::ON_HOVER_ENTER: return "On Hover Enter";
             case NodeImplementation::WHILE_HOVERING: return "While Hovering";
             case NodeImplementation::ON_HOVER_EXIT: return "On Hover Exit";
+            case NodeImplementation::ON_BULLET_SHOOT: return "On Bullet Shoot";
+			case NodeImplementation::ON_BULLET_REFILL: return "On Bullet Refill";
 
             case NodeImplementation::PRINT_MESSAGE: return "Print Message";
             case NodeImplementation::MOVE_OBJECT: return "Move Object";
 		    case NodeImplementation::ROTATE_OBJECT: return "Rotate Object";
 			case NodeImplementation::SET_ROTATION: return "Set Rotation";
+            case NodeImplementation::SET_POSITION: return "Set Position";
+            case NodeImplementation::SET_SCALE: return "Set Scale";
+            case NodeImplementation::SCALE_PROPORTIONAL: return "Scale Proportional";
             case NodeImplementation::SET_FLOAT: return "Set Float";
+            case NodeImplementation::MODIFY_FLOAT: return "Modify Float Variable";
 			case NodeImplementation::PLAY_SOUND: return "Play Sound";
 			case NodeImplementation::SET_STATE: return "Set State";
+			case NodeImplementation::RESET_TIMER: return "Reset Timer";
+            case NodeImplementation::SET_TEXTURE: return "Set Texture";
+            case NodeImplementation::SET_POSITION_ON_COLLIDED: return "Set Position On Collided";
+			case NodeImplementation::SET_STATE_ON_COLLIDED: return "Set State On Collided";
+			case NodeImplementation::APPLY_FORCE_ON_COLLIDED: return "Apply Force On Collided";
+			case NodeImplementation::SET_GLOBAL_FLOAT: return "Set Global Float";
+			case NodeImplementation::MODIFY_GLOBAL_FLOAT: return "Modify Global Float";
+			case NodeImplementation::TRIGGER_BULLET_REFILL_EVENT: return "Trigger Bullet Refill Event";
 
             case NodeImplementation::CHECK_KEY_HELD: return "Check Key Held";
             case NodeImplementation::COMPARE_VALUE: return "Compare Value";
             case NodeImplementation::COMPARE_VAR: return "Compare Variable";
+			case NodeImplementation::CHECK_STATE: return "Check State";
+			case NodeImplementation::CHECK_TIMER: return "Check Timer";
+			case NodeImplementation::COMPARE_GLOBAL_FLOAT: return "Compare Global Float";
+			case NodeImplementation::CHECK_COLLIDED_STATE: return "Check Collided State";
+
             default: return "Default";
         }
     }
@@ -516,6 +556,16 @@ namespace JsonIO {
     /// \name Vec3 helpers
     /// @{
 
+    bool GetArray2f(const rapidjson::Value& obj, const char* key, std::array<float, 2>& out) {
+        auto* v = GetObj(obj, key);
+        if (!v || !v->IsArray() || v->Size() != 2) return false;
+        for (rapidjson::SizeType i = 0; i < 2; ++i) {
+            if (!(*v)[i].IsNumber()) return false;
+            out[i] = static_cast<float>((*v)[i].GetDouble());
+        }
+        return true;
+    }
+
     /**
      * \brief Reads an array of exactly 3 numeric values into \c out .
      * \param obj JSON object.
@@ -534,6 +584,33 @@ namespace JsonIO {
     }
 
     /**
+     * \brief Reads an array of exactly 4 numeric values into \c out .
+     * \param obj JSON object.
+     * \param key Field name.
+     * \param out Output array \c {x,y,z,w} .
+     * \return \c true on success; \c false if shape/type mismatch.
+	 */
+    bool GetArray4f(const rapidjson::Value& obj, const char* key, std::array<float, 4>& out) {
+        auto* v = GetObj(obj, key);
+        if (!v || !v->IsArray() || v->Size() != 4) return false;
+        for (rapidjson::SizeType i = 0; i < 4; ++i) {
+            if (!(*v)[i].IsNumber()) return false;
+            out[i] = static_cast<float>((*v)[i].GetDouble());
+        }
+        return true;
+    }
+
+    /**
+     * \brief Writes a 2-float array field under \c key into \c obj .
+	 */
+    void PutArray2f(rapidjson::Value& obj, const char* key, const std::array<float, 2>& v, rapidjson::Document::AllocatorType& a) {
+        rapidjson::Value arr(rapidjson::kArrayType);
+        arr.PushBack(rapidjson::Value().SetFloat(v[0]), a);
+        arr.PushBack(rapidjson::Value().SetFloat(v[1]), a);
+        obj.AddMember(rapidjson::Value(key, a), arr, a);
+    }
+
+    /**
      * \brief Writes a 3-float array field under \c key into \c obj .
      */
     void PutArray3f(rapidjson::Value& obj, const char* key, const std::array<float, 3>& v, rapidjson::Document::AllocatorType& a) {
@@ -542,6 +619,27 @@ namespace JsonIO {
         arr.PushBack(rapidjson::Value().SetFloat(v[1]), a);
         arr.PushBack(rapidjson::Value().SetFloat(v[2]), a);
         obj.AddMember(rapidjson::Value(key, a), arr, a);
+    }
+    /**
+     * \brief Writes a 4-float array field under \c key into \c obj .
+	 */
+    void PutArray4f(rapidjson::Value& obj, const char* key, const std::array<float, 4>& v, rapidjson::Document::AllocatorType& a) {
+        rapidjson::Value arr(rapidjson::kArrayType);
+        arr.PushBack(rapidjson::Value().SetFloat(v[0]), a);
+        arr.PushBack(rapidjson::Value().SetFloat(v[1]), a);
+        arr.PushBack(rapidjson::Value().SetFloat(v[2]), a);
+        arr.PushBack(rapidjson::Value().SetFloat(v[3]), a);
+        obj.AddMember(rapidjson::Value(key, a), arr, a);
+    }
+
+    /**
+     * \brief Reads a 2-float array field into a \c glm::vec2 .
+	 */
+    bool ReadVec2(const rapidjson::Value& obj, const char* key, glm::vec2& out) {
+        std::array<float, 2> tmp{};
+        if (!GetArray2f(obj, key, tmp)) return false;
+        out = glm::vec2(tmp[0], tmp[1]);
+        return true;
     }
 
     /**
@@ -555,10 +653,44 @@ namespace JsonIO {
     }
 
     /**
+     * \brief Reads a 4-float array field into a \c glm::vec4 .
+	 */
+    bool ReadVec4(const rapidjson::Value& obj, const char* key, glm::vec4& out) {
+        std::array<float, 4> tmp{};
+        if (!GetArray4f(obj, key, tmp)) return false;
+        out = glm::vec4(tmp[0], tmp[1], tmp[2], tmp[3]);
+        return true;
+    }
+
+    /**
+     * \brief Writes a \c glm::vec2 to JSON as a 2-float array.
+	 */
+    void WriteVec2(rapidjson::Value& obj, const char* key, const glm::vec2& v, rapidjson::Document::AllocatorType& a) {
+        PutArray2f(obj, key, { v.x, v.y }, a);
+    }
+
+    /**
      * \brief Writes a \c glm::vec3 to JSON as a 3-float array.
      */
     void WriteVec3(rapidjson::Value& obj, const char* key, const glm::vec3& v, rapidjson::Document::AllocatorType& a) {
         PutArray3f(obj, key, { v.x, v.y, v.z }, a);
+    }
+
+    /**
+     * \brief Writes a \c glm::vec4 to JSON as a 4-float array.
+	 */
+    void WriteVec4(rapidjson::Value& obj, const char* key, const glm::vec4& v, rapidjson::Document::AllocatorType& a) {
+        PutArray4f(obj, key, { v.x, v.y, v.z, v.w }, a);
+    }
+
+    /**
+     * \brief Reads a 2-float array field into two separate floats.
+	 */
+    bool ReadVec2(const rapidjson::Value& obj, const char* key, float& x, float& y) {
+        std::array<float, 2> tmp{};
+        if (!GetArray2f(obj, key, tmp)) return false;
+        x = tmp[0]; y = tmp[1];
+        return true;
     }
 
     /**
@@ -572,10 +704,34 @@ namespace JsonIO {
     }
 
     /**
+     * \brief Reads a 4-float array field into four separate floats.
+	 */
+    bool ReadVec4(const rapidjson::Value& obj, const char* key, float& x, float& y, float& z, float& w) {
+        std::array<float, 4> tmp{};
+        if (!GetArray4f(obj, key, tmp)) return false;
+		x = tmp[0]; y = tmp[1]; z = tmp[2]; w = tmp[3];
+        return true;
+    }
+
+    /**
+	 * \brief Writes two floats as a 2-float array field.
+     * */
+    void WriteVec2(rapidjson::Value& obj, const char* key, float x, float y, rapidjson::Document::AllocatorType& a) {
+        PutArray2f(obj, key, { x, y }, a);
+    }
+
+    /**
      * \brief Writes three floats as a 3-float array field.
      */
     void WriteVec3(rapidjson::Value& obj, const char* key, float x, float y, float z, rapidjson::Document::AllocatorType& a) {
         PutArray3f(obj, key, { x, y, z }, a);
+    }
+
+    /**
+	 * \brief Writes four floats as a 4-float array field.
+     * */
+    void WriteVec4(rapidjson::Value& obj, const char* key, float x, float y, float z, float w, rapidjson::Document::AllocatorType& a) {
+        PutArray4f(obj, key, { x, y, z, w }, a);
     }
 
     /// @}
@@ -720,6 +876,30 @@ namespace JsonIO {
             doc.AddMember("Render", jr, a);
         }
 
+        // Particle
+        if (Particle* p = obj->getComponent<Particle>()) {
+            // Only serialize if this is a master particle
+            if (p->isMaster) {
+                Value jp(kObjectType);
+
+                // isMaster (0/1 to mirror prior text formats)
+                jp.AddMember("isMaster", Value(p->isMaster ? 1 : 0), a);
+
+                // Master GroupData - color (as vec4)
+                JsonIO::WriteVec4(jp, "clr", p->master.clr.r, p->master.clr.g, p->master.clr.b, p->master.clr.a, a);
+
+                // Master GroupData - velocity (as vec2)
+                JsonIO::WriteVec2(jp, "velocity", p->master.velocity.x, p->master.velocity.y, a);
+
+                // Master GroupData - other fields
+                jp.AddMember("timer", Value(p->master.timer), a);
+                jp.AddMember("offset", Value(p->master.offset), a);
+                jp.AddMember("particleAmt", Value(p->master.particleAmt), a);
+
+                doc.AddMember("Particle", jp, a);
+            }
+        }
+
         // Physics
         if (Physics* p = obj->getComponent<Physics>()) {
             Value jp(kObjectType);
@@ -747,6 +927,16 @@ namespace JsonIO {
 
             Value collisionResStr(CollisionResponseModeToStr(c->collisionRes), a);
             jc.AddMember("collisionRes", collisionResStr, a);
+
+            rapidjson::Value tagVal(c->collisionTag.c_str(), a);
+            jc.AddMember(rapidjson::Value("collisionTag", a), tagVal, a);
+
+            // Ignore collisions array
+            rapidjson::Value ignoreArray(rapidjson::kArrayType);
+            for (const std::string& tag : c->ignoreCollisionsWith) {
+                ignoreArray.PushBack(rapidjson::Value(tag.c_str(), a), a);
+            }
+            jc.AddMember(rapidjson::Value("ignoreCollisionsWith", a), ignoreArray, a);
 
             doc.AddMember("Collision", jc, a);
         }
@@ -822,6 +1012,7 @@ namespace JsonIO {
 
                     animStateObj.AddMember("texture", rapidjson::Value(animState.texFile.c_str(), a), a);
                     animStateObj.AddMember("loop", rapidjson::Value(animState.loop ? 1 : 0), a);
+                    animStateObj.AddMember("play", rapidjson::Value(animState.play ? 1 : 0), a);
                     animStateObj.AddMember("totalColumn", rapidjson::Value(animState.totalColumn), a);
                     animStateObj.AddMember("totalRow", rapidjson::Value(animState.totalRow), a);
                     animStateObj.AddMember("frameTime", rapidjson::Value(animState.frameTime), a);
@@ -846,6 +1037,8 @@ namespace JsonIO {
             jt.AddMember("tileH", tm->tileH, a);
             jt.AddMember("columns", tm->columns, a);
             jt.AddMember("rows", tm->rows, a);
+            jt.AddMember("enableCol", Value(tm->enableCol ? 1 : 0), a);
+
 
             // Serialize tiles array
             Value tileArray(kArrayType);
@@ -856,7 +1049,7 @@ namespace JsonIO {
                 t.AddMember("id", rapidjson::Value(id.c_str(), a), a);
                 tileArray.PushBack(t, a);
             }
-            jt.AddMember("Tiles", tileArray, a);
+            jt.AddMember("tiles", tileArray, a);
 
             doc.AddMember("TileMap", jt, a);
         }
@@ -972,6 +1165,39 @@ namespace JsonIO {
                 ReadVec3(jr, "clr", r->clr.x, r->clr.y, r->clr.z);
             }
 
+            // Particle
+            if (doc.HasMember("Particle")) {
+                const Value& jp = doc["Particle"];
+                Particle* p = obj->addComponent<Particle>();
+
+                // isMaster (accept bool or 0/1)
+                if (jp.HasMember("isMaster")) {
+                    p->isMaster = jp["isMaster"].IsBool()
+                        ? jp["isMaster"].GetBool()
+                        : (jp["isMaster"].GetInt() != 0);
+                }
+                else {
+                    p->isMaster = true;
+                }
+
+                // Master GroupData - color
+                ReadVec4(jp, "clr", p->master.clr.r, p->master.clr.g, p->master.clr.b, p->master.clr.a);
+
+                // Master GroupData - velocity
+                ReadVec2(jp, "velocity", p->master.velocity.x, p->master.velocity.y);
+
+                // Master GroupData - other fields
+                if (jp.HasMember("timer") && jp["timer"].IsNumber()) {
+                    p->master.timer = jp["timer"].GetFloat();
+                }
+                if (jp.HasMember("offset") && jp["offset"].IsNumber()) {
+                    p->master.offset = jp["offset"].GetFloat();
+                }
+                if (jp.HasMember("particleAmt") && jp["particleAmt"].IsInt()) {
+                    p->master.particleAmt = jp["particleAmt"].GetInt();
+                }
+            }
+
             // Physics
             if (doc.HasMember("Physics")) {
                 const Value& jp = doc["Physics"];
@@ -998,6 +1224,18 @@ namespace JsonIO {
 
                 if (jc.HasMember("collisionRes")) {
                     c->collisionRes = StrToCollisionResponseMode(jc["collisionRes"].GetString());
+                }
+
+                if (jc.HasMember("collisionTag")) {
+                    c->collisionTag = jc["collisionTag"].GetString();
+                }
+
+                if (jc.HasMember("ignoreCollisionsWith")) {
+                    const rapidjson::Value& ignoreArray = jc["ignoreCollisionsWith"];
+                    c->ignoreCollisionsWith.clear();
+                    for (rapidjson::SizeType i = 0; i < ignoreArray.Size(); ++i) {
+                        c->ignoreCollisionsWith.insert(ignoreArray[i].GetString());
+                    }
                 }
             }
 
@@ -1064,7 +1302,7 @@ namespace JsonIO {
                 }
                 else {
                     // BACKWARDS COMPATIBILITY: Old single-channel format
-                    AudioChannel* ch = ac->getDefaultChannel();
+                    /*AudioChannel* ch = */ac->getDefaultChannel();
                     AudioChannel* a = ac->getDefaultChannel();
 
                     a->audioFile = ja["audioFile"].GetString();
@@ -1114,6 +1352,11 @@ namespace JsonIO {
                                 if (v.IsBool()) st.loop = v.GetBool();
                                 else if (v.IsInt()) st.loop = (v.GetInt() != 0);
                             }
+                            if (animStateObj.HasMember("play")) {
+                                const auto& v = animStateObj["play"];
+                                if (v.IsBool()) st.play = v.GetBool();
+                                else if (v.IsInt()) st.play = (v.GetInt() != 0);
+                            }
 
                             // --- numeric fields ---
                             if (animStateObj.HasMember("totalColumn") && animStateObj["totalColumn"].IsInt())
@@ -1153,6 +1396,11 @@ namespace JsonIO {
                 if (tmj.HasMember("tileH"))    tm->tileH = tmj["tileH"].GetFloat();
                 if (tmj.HasMember("columns"))  tm->columns = tmj["columns"].GetInt();
                 if (tmj.HasMember("rows"))     tm->rows = tmj["rows"].GetInt();
+                if (tmj.HasMember("enableCol")) {
+                    tm->enableCol = tmj["enableCol"].IsBool()
+                        ? tmj["enableCol"].GetBool()
+                        : (tmj["enableCol"].GetInt() != 0);
+                }
 
                 tm->tiles.clear();
 
@@ -1250,6 +1498,9 @@ namespace JsonIO {
             nodeObj.AddMember("hasInput", node.hasInput, a);
             nodeObj.AddMember("hasOutput", node.hasOutput, a);
 
+            nodeObj.AddMember("hasTrueOutput", node.hasTrueOutput, a);
+            nodeObj.AddMember("hasFalseOutput", node.hasFalseOutput, a);
+
             if (!node.parameters.empty()) {
                 rapidjson::Value paramsObj(rapidjson::kObjectType);
                 for (const auto& [key, value] : node.parameters) {
@@ -1323,6 +1574,9 @@ namespace JsonIO {
 
                 GetBool(nodeVal, "hasInput", node.hasInput);
                 GetBool(nodeVal, "hasOutput", node.hasOutput);
+
+                GetBool(nodeVal, "hasTrueOutput", node.hasTrueOutput);
+                GetBool(nodeVal, "hasFalseOutput", node.hasFalseOutput);
 
                 if (nodeVal.HasMember("parameters") && nodeVal["parameters"].IsObject()) {
                     const auto& paramsObj = nodeVal["parameters"];

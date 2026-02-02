@@ -39,6 +39,7 @@ namespace {
 		else if (compName == "AudioComponent") obj->removeComponent<AudioComponent>();
 		else if (compName == "FontComponent") obj->removeComponent<FontComponent>();
 		else if (compName == "TileMap") obj->removeComponent<TileMap>();
+		else if (compName == "Particle") obj->removeComponent<Particle>();
 		else if (compName == "LuaScript") obj->removeComponent<LuaScript>();
 		else if (compName == "VisualLC") obj->removeComponent<VisualLC>();
 	}
@@ -54,6 +55,7 @@ namespace {
 		obj->removeComponent<AudioComponent>();
 		obj->removeComponent<FontComponent>();
 		obj->removeComponent<TileMap>();
+		obj->removeComponent<Particle>();
 		obj->removeComponent<LuaScript>();
 		obj->removeComponent<VisualLC>();
 	}
@@ -752,6 +754,26 @@ void PrefabManager::applyPrefabComponents(GameObject* go, const rapidjson::Value
 		std::cout << r->hasAnimation << " has animation\n\n";*/
 	}
 
+	// ---- Particle ----
+	if (comps.HasMember("Particle") && comps["Particle"].IsObject()) {
+		const auto& jp = comps["Particle"];
+		auto* p = go->addComponent<Particle>();
+
+		// isMaster
+		p->isMaster = JsonIO::GetBoolOr(jp, "isMaster", true);
+
+		// Master GroupData - color
+		JsonIO::ReadVec4(jp, "clr", p->master.clr.r, p->master.clr.g, p->master.clr.b, p->master.clr.a);
+
+		// Master GroupData - velocity
+		JsonIO::ReadVec2(jp, "velocity", p->master.velocity.x, p->master.velocity.y);
+
+		// Master GroupData - other fields
+		p->master.timer = JsonIO::GetFloatOr(jp, "timer", 0.f);
+		p->master.offset = JsonIO::GetFloatOr(jp, "offset", 0.f);
+		p->master.particleAmt = JsonIO::GetIntOr(jp, "particleAmt", 0);
+	}
+
 	// ---- Input (presence only) ----
 	if (comps.HasMember("Input") && comps["Input"].IsObject()) {
 		go->addComponent<Input>();
@@ -786,6 +808,21 @@ void PrefabManager::applyPrefabComponents(GameObject* go, const rapidjson::Value
 			c->colliderSize.x = jc["colliderSize"][0].GetFloat();
 			c->colliderSize.y = jc["colliderSize"][1].GetFloat();
 		}
+
+		// Load Collision Tag
+		if (jc.HasMember("collisionTag") && jc["collisionTag"].IsString()) {
+			c->collisionTag = jc["collisionTag"].GetString();
+		}
+
+		// Load ignore the collision
+		if (jc.HasMember("ignoreCollisionsWith") && jc["ignoreCollisionsWith"].IsArray()) {
+			c->ignoreCollisionsWith.clear();
+			for (const auto& tag : jc["ignoreCollisionsWith"].GetArray()) {
+				if (tag.IsString()) {
+					c->ignoreCollisionsWith.insert(tag.GetString());
+				}
+			}
+		}
 	}
 
 	// ---- State Machine ----
@@ -811,6 +848,13 @@ void PrefabManager::applyPrefabComponents(GameObject* go, const rapidjson::Value
 					state.loop = animJson["loop"].GetBool();
 				else if (animJson["loop"].IsInt())
 					state.loop = (animJson["loop"].GetInt() != 0);
+			}
+
+			if (animJson.HasMember("play")) {
+				if (animJson["play"].IsBool())
+					state.play = animJson["play"].GetBool();
+				else if (animJson["play"].IsInt())
+					state.play = (animJson["play"].GetInt() != 0);
 			}
 
 			if (animJson.HasMember("totalColumn") && animJson["totalColumn"].IsInt())
@@ -889,6 +933,12 @@ void PrefabManager::applyPrefabComponents(GameObject* go, const rapidjson::Value
 
 		if (tmj.HasMember("rows") && tmj["rows"].IsNumber())
 			tm->rows = tmj["rows"].GetInt();
+
+		if (tmj.HasMember("enableCol")) {
+			tm->enableCol = tmj["enableCol"].IsBool()
+				? tmj["enableCol"].GetBool()
+				: (tmj["enableCol"].GetInt() != 0);
+		}
 
 		// --- IMPORTANT: Deserialize actual tile data ---
 		tm->tiles.clear();  // wipe previous tile data
@@ -1047,6 +1097,31 @@ void PrefabManager::serializeComponents(const GameObject* obj, rapidjson::Value&
 		comps.AddMember("Render", jr, a);
 	}
 
+	//// ---- Particle ----
+	if (auto p = obj->getComponent<Particle>()) {
+		// Only serialize if this is a master particle
+		if (p->isMaster) {
+			rapidjson::Value jp(rapidjson::kObjectType);
+			jp.AddMember("isMaster", p->isMaster ? 1 : 0, a);
+
+			// Master GroupData - color (only if not default white)
+			if (p->master.clr.r != 1.f || p->master.clr.g != 1.f ||
+				p->master.clr.b != 1.f || p->master.clr.a != 1.f) {
+				JsonIO::WriteVec4(jp, "clr", p->master.clr.r, p->master.clr.g,
+					p->master.clr.b, p->master.clr.a, a);
+			}
+
+			JsonIO::WriteVec2(jp, "velocity", p->master.velocity.x, p->master.velocity.y, a);
+
+			// Master GroupData - other fields
+			jp.AddMember("timer", p->master.timer, a);
+			jp.AddMember("offset", p->master.offset, a);
+			jp.AddMember("particleAmt", p->master.particleAmt, a);
+
+			comps.AddMember("Particle", jp, a);
+		}
+	}
+
 	if (auto i = obj->getComponent<Input>()) {
 		comps.AddMember("Input", rapidjson::Value(rapidjson::kObjectType), a);
 	}
@@ -1081,6 +1156,14 @@ void PrefabManager::serializeComponents(const GameObject* obj, rapidjson::Value&
 
 		jc.AddMember("collisionRes", rapidjson::Value(JsonIO::CollisionResponseModeToStr(c->collisionRes), a), a);
 
+		jc.AddMember("collisionTag", rapidjson::Value(c->collisionTag.c_str(), a), a);
+
+		rapidjson::Value ignoreArray(rapidjson::kArrayType);
+		for (const std::string& tag : c->ignoreCollisionsWith) {
+			ignoreArray.PushBack(rapidjson::Value(tag.c_str(), a), a);
+		}
+		jc.AddMember("ignoreCollisionsWith", ignoreArray, a);
+
 		comps.AddMember("CollisionInfo", jc, a);
 	}
 
@@ -1103,6 +1186,7 @@ void PrefabManager::serializeComponents(const GameObject* obj, rapidjson::Value&
 
 				animStateObj.AddMember("texture", rapidjson::Value(animState.texFile.c_str(), a), a);
 				animStateObj.AddMember("loop", rapidjson::Value(animState.loop ? 1 : 0), a);
+				animStateObj.AddMember("play", rapidjson::Value(animState.play ? 1 : 0), a);
 				animStateObj.AddMember("totalColumn", rapidjson::Value(animState.totalColumn), a);
 				animStateObj.AddMember("totalRow", rapidjson::Value(animState.totalRow), a);
 				animStateObj.AddMember("frameTime", rapidjson::Value(animState.frameTime), a);
@@ -1172,6 +1256,7 @@ void PrefabManager::serializeComponents(const GameObject* obj, rapidjson::Value&
 		jt.AddMember("tileH", tm->tileH, a);
 		jt.AddMember("columns", tm->columns, a);
 		jt.AddMember("rows", tm->rows, a);
+		jt.AddMember("enableCol", rapidjson::Value(tm->enableCol ? 1 : 0), a);
 
 		// Create tiles array
 		rapidjson::Value tileArray(rapidjson::kArrayType);

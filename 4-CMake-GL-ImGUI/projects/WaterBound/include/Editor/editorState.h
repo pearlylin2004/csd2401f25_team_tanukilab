@@ -178,6 +178,97 @@ namespace Editor {
 
 		std::vector<LogicNode> nodes;
 		std::vector<LogicConnection> connections;
+
+		float nodePaletteWidth = 200.f;
+		float propertiesWidth = 250.f;
+	};
+
+	namespace VLC {
+		// nodes
+		const float NODE_WIDTH = 250.f;
+		const float NODE_HEIGHT = 80.f;
+		const float NODE_PADDING = 10.f;
+
+		// pins
+		const float PIN_RADIUS = 6.f;
+		const float PIN_Y_OFFSET = 30.f;
+		const float PIN_TEXT_OFFSET = 12.f;
+		const float PIN_TEXT_Y_OFFSET = 8.f;
+		const float PIN_TRUE_Y = 30.f;
+		const float PIN_FALSE_Y = 50.f;
+		const float PIN_OFFSET_Y = 10.f;  // for true/false
+
+		// connections
+		const float CONNECTION_Y_CENTER = 40.f;
+		const float CONNECTION_BEZIER_OFFSET = 50.f;
+
+		// border & lines
+		const float BORDER_RADIUS = 4.f;
+		const float BORDER_THIN = 1.f;
+		const float BORDER_THICK = 3.f;
+		const float LINE_NORMAL = 2.f;
+		const float LINE_HOVERED = 3.5f;
+		const float LINE_SELECTED = 4.f;
+
+		// delete button
+		const float DELETE_SIZE = 20.f;
+		const float DELETE_OFFSET_X = 25.f;
+		const float DELETE_OFFSET_Y = 5.f;
+		const float DELETE_TEXT_OFFSET_X = 6.f;
+		const float DELETE_TEXT_OFFSET_Y = 2.f;
+
+		// grid
+		const float GRID_SIZE = 64.f;
+	}
+
+	struct NodeDef {
+		const char* name;
+		NodeType type;
+		NodeImplementation impl;
+	};
+
+	static const NodeDef allNodes[] = {
+		// EVENTS
+		{"On Start", NodeType::EVENT, NodeImplementation::ON_START},
+		{"On Update", NodeType::EVENT, NodeImplementation::ON_UPDATE},
+		{"On Collision Enter", NodeType::EVENT, NodeImplementation::ON_COLLISION_ENTER},
+		{"While Collision", NodeType::EVENT, NodeImplementation::WHILE_COLLIDING},
+		{"On Collision Exit", NodeType::EVENT, NodeImplementation::ON_COLLISION_EXIT},
+		{"On Hover Enter", NodeType::EVENT, NodeImplementation::ON_HOVER_ENTER},
+		{"While Hovering", NodeType::EVENT, NodeImplementation::WHILE_HOVERING},
+		{"On Hover Exit", NodeType::EVENT, NodeImplementation::ON_HOVER_EXIT},
+		{"On Bullet Shoot", NodeType::EVENT, NodeImplementation::ON_BULLET_SHOOT},
+		{"On Bullet Refill", NodeType::EVENT, NodeImplementation::ON_BULLET_REFILL},
+
+		// CONDITIONS
+		{"Is Key Held", NodeType::CONDITION, NodeImplementation::CHECK_KEY_HELD},
+		{"Compare Value", NodeType::CONDITION, NodeImplementation::COMPARE_VALUE},
+		{"Compare Variable", NodeType::CONDITION, NodeImplementation::COMPARE_VAR},
+		{"Check State", NodeType::CONDITION, NodeImplementation::CHECK_STATE},
+		{"Check Timer", NodeType::CONDITION, NodeImplementation::CHECK_TIMER},
+		{"Compare Global Float", NodeType::CONDITION, NodeImplementation::COMPARE_GLOBAL_FLOAT},
+		{"Check Collided State", NodeType::CONDITION, NodeImplementation::CHECK_COLLIDED_STATE},
+		
+		// ACTIONS
+		{"Print Message", NodeType::ACTION, NodeImplementation::PRINT_MESSAGE},
+		{"Move Object", NodeType::ACTION, NodeImplementation::MOVE_OBJECT},
+		{"Set Position", NodeType::ACTION, NodeImplementation::SET_POSITION},
+		{"Rotate Object", NodeType::ACTION, NodeImplementation::ROTATE_OBJECT},
+		{"Set Rotation", NodeType::ACTION, NodeImplementation::SET_ROTATION},
+		{"Set Scale", NodeType::ACTION, NodeImplementation::SET_SCALE},
+		{"Scale Proportional", NodeType::ACTION, NodeImplementation::SCALE_PROPORTIONAL},
+		{"Set Float", NodeType::ACTION, NodeImplementation::SET_FLOAT},
+		{"Modify Float Variable", NodeType::ACTION, NodeImplementation::MODIFY_FLOAT},
+		{"Play Sound", NodeType::ACTION, NodeImplementation::PLAY_SOUND},
+		{"Set State", NodeType::ACTION, NodeImplementation::SET_STATE},
+		{"Reset Timer", NodeType::ACTION, NodeImplementation::RESET_TIMER},
+		{"Set Sprite", NodeType::ACTION, NodeImplementation::SET_TEXTURE},
+		{"Set Position on Collider", NodeType::ACTION, NodeImplementation::SET_POSITION_ON_COLLIDED},
+		{"Set State on Collider", NodeType::ACTION, NodeImplementation::SET_STATE_ON_COLLIDED},
+		{"Set Force on Collider", NodeType::ACTION, NodeImplementation::APPLY_FORCE_ON_COLLIDED},
+		{"Set Global Float", NodeType::ACTION, NodeImplementation::SET_GLOBAL_FLOAT},
+		{"Modify Global Float", NodeType::ACTION, NodeImplementation::MODIFY_GLOBAL_FLOAT},
+		{"Trigger Bullet Refill Event", NodeType::ACTION, NodeImplementation::TRIGGER_BULLET_REFILL_EVENT}
 	};
 	/* ----------------- Logic End ---------------- */
 
@@ -301,6 +392,13 @@ namespace Editor {
 			DebugLog::addMessage("Added Lua Script component for " + obj->getObjectName());
 			},
 			[](const GameObject* obj) { return obj->hasComponent<LuaScript>(); }
+		},
+		{"Particle",
+			[](GameObject* obj) {
+			obj->addComponent<Particle>();
+			DebugLog::addMessage("Added Particle component for " + obj->getObjectName());
+			},
+			[](const GameObject* obj) { return obj->hasComponent<Particle>(); }
 		},
 		{"Visual Logic",
 			[](GameObject* obj) {

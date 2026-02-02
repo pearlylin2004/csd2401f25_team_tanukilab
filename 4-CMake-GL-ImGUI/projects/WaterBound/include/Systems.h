@@ -1,12 +1,14 @@
 /* Start Header ************************************************************************/
 /*!
 \file        Systems.h
-\author      Seow Sin Le, s.sinle, 2401084, 40%
-\author 	 Hugo Low Ren Hao, low.h, 2402272, 45%
+\author      Seow Sin Le, s.sinle, 2401084, 35%
+\author 	 Hugo Low Ren Hao, low.h, 2402272, 40%
 \author 	 Pearly Lin Lee Ying, p.lin, 2401591, 15%
+\author 	 Tan Chee Qing, cheeqing.tan, 2401486, 10%
 \par         s.sinle@digipen.edu
 \par		 low.h@digipen.edu
 \par		 p.lin@digipen.edu
+\par         cheeqing.tan@digipen.edu
 \date        October, 1st, 2025
 \brief       System functions to run the logic for the components
 
@@ -31,6 +33,10 @@ Technology is prohibited.
 #include "controllerSystem.h"
 #include <LogicContainer.h>
 #include "audio.h"
+#include <algorithm>
+#include <random>
+#include <numbers>
+#include <vector>
 
 //forward declaration
 struct renderer;
@@ -106,6 +112,18 @@ private:
 	std::unordered_map<BatchKey, std::vector<renderer::InstanceData>, BatchKeyHash> objectWithoutTex;
 };
 
+class ParticleSystem
+{
+public:
+	void activateParticle(GameObjectManager& manager);
+	void update(GameObjectManager& manager, float const& deltaTime);
+	int IDGenerator();
+	Vector2D positionGenerator(float offset);
+	Vector2D velocityGenerator(Vector2D direction);
+	static void clearUsedID(int ID);
+	//std::vector<size_t> usedID;
+};
+
 /*!***********************************************************************
 \brief
 	Tile Map system
@@ -142,6 +160,15 @@ public:
 
 	*************************************************************************/
 	static std::string filename;
+
+	/*!***********************************************************************
+	\brief
+		mode to erase tiles instead of painting
+
+	*************************************************************************/
+	static bool eraseMode;
+
+	static int brushSize;
 };
 
 class FontSystem {
@@ -180,6 +207,7 @@ class CollisionSystem {
 public:
 	void update(GameObjectManager& manager, const float& deltaTime);
 	bool CheckTileCollision(GameObject* obj, TileMap& map); //for tile map collision
+	void HandleTilemapCollisions(const std::unordered_map<int, Collision::Cell>& grid, const std::vector<std::pair<TileMap*, Transform*>>& tilemaps);
 };
 
 // only allow editor in debug mode
@@ -243,6 +271,8 @@ public:
 	// update logic
 	void update(GameObject* obj, VisualLC* logic, float dt);
 
+	// broadcast whenever bullet shoot
+	static void broadcastBulletShoot();
 private:
 	// execute a specific node
 	void executeNode(GameObject* obj, VisualLC* logic, int nodeId, float dt);
@@ -259,5 +289,46 @@ private:
 	LogicNode* findNode(VisualLC* logic, int nodeId);
 
 	// helper func for collision
-	bool shouldTriggerCollision(GameObject* obj, LogicNode& node, GameObject* collided);
+	bool shouldTriggerCollision(LogicNode& node, GameObject* collided);
+
+	static GameObjectManager* m_manager;
+};
+
+class WaterSystem {
+public:
+	WaterSystem();
+	~WaterSystem();
+
+	void init();
+	void update(GameObjectManager& manager, float deltaTime);
+	void render(GameObjectManager& manager);
+	bool isPointInWater(GameObject* waterObj, const Vector2D& point);
+	void applyWaterPhysics(GameObjectManager& manager);
+	void cleanup();
+
+private:
+	void setupWaterMesh(GameObject* waterObj);
+	void renderWaterBody(GameObject* waterObj);
+
+	GLuint m_waterShaderProgram;
+	GLint m_timeLocation;
+	GLint m_waveAmplitudeLocation;
+	GLint m_waveFrequencyLocation;
+	GLint m_waveSpeedLocation;
+	GLint m_waterAlphaLocation;
+	GLint m_waterColorLocation;
+	GLint m_useTextureLocation;
+	GLint m_viewMatrixLocation;
+	GLint m_projMatrixLocation;
+
+	struct WaterMesh {
+		GLuint vao;
+		GLuint vbo;
+		GLuint ebo;
+		GLuint ssbo;
+		int elementCount;
+		int subdivisions;
+	};
+
+	std::unordered_map<GameObject*, WaterMesh> m_waterMeshes;
 };

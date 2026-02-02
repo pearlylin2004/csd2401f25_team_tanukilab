@@ -116,16 +116,27 @@ namespace JsonIO {
 	inline bool  GetBoolOr(const rapidjson::Value& obj, const char* key, bool  def) { bool v; return GetBool(obj, key, v) ? v : def; }
 
 	// ---------- Fixed-size array helpers (3 components) ----------
+	bool GetArray2f(const rapidjson::Value& obj, const char* key, std::array<float, 2>& out);
 	bool GetArray3f(const rapidjson::Value& obj, const char* key, std::array<float, 3>& out);
+	bool GetArray4f(const rapidjson::Value& obj, const char* key, std::array<float, 4>& out);
+	void PutArray2f(rapidjson::Value& obj, const char* key, const std::array<float, 2>& v, rapidjson::Document::AllocatorType& a);
 	void PutArray3f(rapidjson::Value& obj, const char* key, const std::array<float, 3>& v, rapidjson::Document::AllocatorType& a);
+	void PutArray4f(rapidjson::Value& obj, const char* key, const std::array<float, 4>& v, rapidjson::Document::AllocatorType& a);
 
 	// ---------- glm::vec3 helpers ----------
+	bool ReadVec2(const rapidjson::Value& obj, const char* key, glm::vec2& out);
 	bool ReadVec3(const rapidjson::Value& obj, const char* key, glm::vec3& out);
+	bool ReadVec4(const rapidjson::Value& obj, const char* key, glm::vec4& out);
+	void WriteVec2(rapidjson::Value& obj, const char* key, const glm::vec2& v, rapidjson::Document::AllocatorType& a);
 	void WriteVec3(rapidjson::Value& obj, const char* key, const glm::vec3& v, rapidjson::Document::AllocatorType& a);
+	void WriteVec4(rapidjson::Value& obj, const char* key, const glm::vec4& v, rapidjson::Document::AllocatorType& a);
 
-
+	bool ReadVec2(const rapidjson::Value& obj, const char* key, float& x, float& y);
 	bool ReadVec3(const rapidjson::Value& obj, const char* key, float& x, float& y, float& z);
+	bool ReadVec4(const rapidjson::Value& obj, const char* key, float& x, float& y, float& z, float& w);
+	void WriteVec2(rapidjson::Value& obj, const char* key, float x, float y, rapidjson::Document::AllocatorType& a);
 	void WriteVec3(rapidjson::Value& obj, const char* key, float x, float y, float z, rapidjson::Document::AllocatorType& a);
+	void WriteVec4(rapidjson::Value& obj, const char* key, float x, float y, float z, float w, rapidjson::Document::AllocatorType& a);
 
 	// ---- RGBA (Color) helpers ----
 

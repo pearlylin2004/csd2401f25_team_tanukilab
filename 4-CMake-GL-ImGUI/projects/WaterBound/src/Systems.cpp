@@ -27,6 +27,7 @@ Technology is prohibited.
 #include "Physics.h"
 
 std::string TileMapSystem::filename{};
+std::vector<Particle::UID> Particle::UIDs;
 //here we go buddies
 
 //all the systems need to get all game objects
@@ -46,26 +47,6 @@ void InputSystem::update(GameObjectManager& manager, const float& deltaTime, Mes
 	std::vector<GameObject*> gameObjects;
 	manager.getAllGameObjects(gameObjects);
 
-	//for (GameObject* iterator : gameObjects) {
-	//	//check for objects that have input 
-	//	if (iterator->hasComponent<Input>()) {
-	//		Input* input = iterator->getComponent<Input>();
-	//		if (iterator->hasComponent<Physics>()) {//player got that velocity in him
-	//			Physics* velocity = iterator->getComponent<Physics>();
-
-
-	//			if (InputHandler::isKeyHeld(GLFW_KEY_W)) {
-	//				velocity->velY = input->moveSpeed;
-	//			}
-	//			if (InputHandler::isKeyHeld(GLFW_KEY_S)) {
-	//				velocity->velY = -input->moveSpeed;
-	//			}
-	//			if (InputHandler::isKeyHeld(GLFW_KEY_A)) {
-	//				velocity->velX = -input->moveSpeed;
-	//			}
-	//			if (InputHandler::isKeyHeld(GLFW_KEY_D)) {
-	//				velocity->velX = input->moveSpeed;
-	//			}
 #ifdef _DEBUG
 	if (InputHandler::isComboKeyTriggered(GLFW_KEY_0)) {
 		UISystem::toggleUI();
@@ -346,7 +327,7 @@ void RenderSystem::batchingSetUp(GameObjectManager& manager, float const& deltaT
 		transform->mdlWorld = glm::rotate(transform->mdlWorld, angle, glm::vec3(0, 0, 1.f));
 		transform->mdlWorld = glm::scale(transform->mdlWorld, glm::vec3(scaleX, transform->scaleY, transform->scaleZ));
 		data.model = transform->mdlWorld;
-		data.color = glm::vec4(render->clr, 1);
+		data.color = render->clr;
 		data.texParams = glm::vec4(0, 0, 1, 1); // default, no texture frame
 
 		// if obj has animation & state machine component
@@ -361,37 +342,48 @@ void RenderSystem::batchingSetUp(GameObjectManager& manager, float const& deltaT
 				glm::vec2 texOffSet{ as.currentFrameColumn / static_cast<float>(as.totalColumn), 1.f - ((as.currentFrameRow + 1) / static_cast<float>(as.totalRow)) };
 				glm::vec2 texScale{ 1.f / as.totalColumn, 1.f / as.totalRow };
 
-				if (as.loop)
+				if (as.play)
 				{
-					as.frameTimer += deltaTime;
-					if (as.frameTimer >= as.frameTime && !EditorManager::isEditingMode() && !EditorManager::isPaused())
+					if (!EditorManager::isEditingMode() && !EditorManager::isPaused())
 					{
-						as.frameTimer -= as.frameTime;
-						if (as.currentFrameColumn >= as.lastFrame.x && as.currentFrameRow >= as.lastFrame.y)
+						as.frameTimer += deltaTime;
+						if (as.frameTimer >= as.frameTime)
 						{
-							as.currentFrameColumn = (int)as.initialFrame.x;
-							as.currentFrameRow = (int)as.initialFrame.y;
-							as.frameTimer = 0;
-						}
-						else
-						{
-							++as.currentFrameColumn;
+							as.frameTimer -= as.frameTime;
 
-							if (as.currentFrameColumn >= as.totalColumn)
+							// Check if we're at the last frame
+							if (as.currentFrameColumn >= as.lastFrame.x && as.currentFrameRow >= as.lastFrame.y)
 							{
-								as.currentFrameColumn = 0;
-								++as.currentFrameRow;
-
-								if (as.currentFrameRow > as.lastFrame.y)
+								if (as.loop)
 								{
+									// Loop back to the beginning
 									as.currentFrameColumn = (int)as.initialFrame.x;
 									as.currentFrameRow = (int)as.initialFrame.y;
+									as.frameTimer = 0;
+								}
+								else
+								{
+									// Stop playing (stay on last frame)
+									as.play = false;
 								}
 							}
+							else
+							{
+								// Advance to next frame
+								++as.currentFrameColumn;
+								if (as.currentFrameColumn >= as.totalColumn)
+								{
+									as.currentFrameColumn = 0;
+									++as.currentFrameRow;
+									if (as.currentFrameRow > as.lastFrame.y)
+									{
+										as.currentFrameColumn = (int)as.initialFrame.x;
+										as.currentFrameRow = (int)as.initialFrame.y;
+									}
+								}
+							}
+							animation->runItBack = true;
 						}
-						/*as.currentFrameColumn = (as.currentFrameColumn + 1) % as.totalColumn;
-						as.currentFrameRow = (as.currentFrameRow + 1) % as.totalRow;*/
-						animation->runItBack = true;
 					}
 				}
 				data.texParams = { texOffSet,texScale };
@@ -468,6 +460,146 @@ void RenderSystem::clearBatches() {
 void RenderSystem::fboAspectRatio(int& width, int& height) const {
 	width = fboWidth;
 	height = fboHeight;
+}
+
+void ParticleSystem::clearUsedID(int ID)
+{
+	for(int i = 0; i < Particle::UIDs.size(); ++i)
+	{
+		if (Particle::UIDs[i].uid == ID)
+		{
+			--Particle::UIDs[i].particleAmt;
+			if (Particle::UIDs[i].particleAmt == 0)
+			{
+				Particle::UIDs.erase(Particle::UIDs.begin() + i);
+				break;
+			}
+		}
+	}
+}
+
+int ParticleSystem::IDGenerator()
+{
+	size_t ID = 0;
+	bool empty = false;
+	/*usedID.clear();
+	if (Particle::UIDs.size() != 0)
+		for(int i = 0; i < Particle::UIDs.size(); ++i)
+			usedID.push_back(Particle::UIDs[i]);
+	std::sort(usedID.begin(), usedID.end());*/
+	std::sort(Particle::UIDs.begin(), Particle::UIDs.end(), [](const Particle::UID& a, const Particle::UID& b) {
+		return a.uid < b.uid;
+		});
+	for (int i = 0; i < Particle::UIDs.size(); ++i)
+	{
+		++ID;
+		if (ID != Particle::UIDs[i].uid)
+		{
+			empty = true;
+			break;
+		}
+	}
+	if (!empty)
+		++ID;
+	return ID;
+}
+
+Vector2D ParticleSystem::positionGenerator(float offset)
+{
+	std::random_device rd;
+	std::mt19937 gen(rd());
+	std::uniform_real_distribution<float> dis(0.0f, 1.0f);
+
+	float pi = std::numbers::pi_v<float>;
+	float angle = dis(gen) * 2.0f * pi;
+
+	Vector2D randomOffset;
+	randomOffset.x = offset * cos(angle);
+	randomOffset.y = offset * sin(angle);
+
+	return randomOffset;
+}
+
+Vector2D ParticleSystem::velocityGenerator(Vector2D direction)
+{
+	std::random_device rd;
+	std::mt19937 gen(rd());
+	std::uniform_real_distribution<float> dis(0.001f, 1.0f);
+	float speed = 3.f * dis(gen);
+
+	//normalize direction
+	float magnitute = Math_Sqrt(direction.x * direction.x + direction.y * direction.y);
+
+	if (magnitute == 0.f)
+		return Vector2D{ 0,0 };
+	return Vector2D{ (direction.x / magnitute) * speed, (direction.y / magnitute) * speed };
+}
+
+void ParticleSystem::activateParticle(GameObjectManager& manager)
+{
+	std::vector<GameObject*> gameObjects;
+	manager.getAllGameObjects(gameObjects);
+	for (GameObject* object : gameObjects)
+	{
+		if (object->hasComponent<Particle>())
+		{
+			Particle* particleData = object->getComponent<Particle>();
+			Transform* masterTransform = object->getComponent<Transform>();
+			if (particleData->master.isActive && particleData->isMaster)
+			{
+				//std::cout << "Particle Group being activated is: " << particleData->grpNo << std::endl;
+				particleData->master.isActive = false;
+				/*if (particleData->grpNo == 0)
+					particleData->grpNo = IDGenerator(manager);*/
+				//static int pid = 0;
+				int UID = IDGenerator();
+				Particle::UIDs.push_back(Particle::UID(UID, particleData->master.particleAmt));
+				std::cout << "UID made is: " << UID << std::endl;
+				for (size_t i = 0; i < particleData->master.particleAmt; ++i)
+				{
+					std::string name = "Particle_" + std::to_string(UID) + "_" + std::to_string(i);
+					GameObject* newObj = manager.createGameObject(name);
+					std::cout << "Created Particle Object: " << name << std::endl;
+
+					Transform* transform = newObj->addComponent<Transform>();
+					Render* render = newObj->addComponent<Render>();
+					Particle* indivData = newObj->addComponent<Particle>();
+					Physics* physics = newObj->addComponent<Physics>();
+					Vector2D spawnPos = positionGenerator(particleData->master.offset);
+					transform->x = masterTransform->x + spawnPos.x;
+					transform->y = masterTransform->y + spawnPos.y;
+					transform->z = masterTransform->z;
+					transform->scaleX = 0.5f;
+					transform->scaleY = 0.5f;
+					indivData->childData.velocity = velocityGenerator(spawnPos);
+					indivData->childData.grpNo = UID;
+					indivData->childData.timer = particleData->master.timer;
+					render->clr = particleData->master.clr;
+					indivData->isMaster = false;
+				}
+			}
+		}
+	}
+}
+
+void ParticleSystem::update(GameObjectManager& manager, float const& deltaTime)
+{
+	activateParticle(manager);
+	std::vector<GameObject*> gameObjects;
+	manager.getAllGameObjects(gameObjects);
+	//for testing purposes only
+	for (GameObject* object : gameObjects)
+	{
+		if (object->hasComponent<Particle>())
+		{
+			Particle* particle = object->getComponent<Particle>();
+			if (particle->isMaster)
+			{
+				if (InputHandler::isKeyTriggered(GLFW_KEY_P))
+					particle->master.isActive = true;
+			}
+		}
+	}
 }
 //void RenderSystem::renderCollision(Collision::AABB const& box, glm::vec3 const& clr)
 //{
@@ -740,7 +872,25 @@ void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime, M
 		if (!object->hasComponent<Physics>()) continue;
 		Physics* physics = object->getComponent<Physics>();
 		previousOnGround[object] = physics->onGround;
+		if(object->hasComponent<Particle>()) 
+		{
+			Particle* particle = object->getComponent<Particle>();
+			if (!particle->isMaster)
+			{
+				Transform* transform = object->getComponent<Transform>();
+				particle->childData.timer -= deltaTime;
+				if (particle->childData.timer <= 0.f)
+				{
+					ParticleSystem::clearUsedID(particle->childData.grpNo);
+					manager.deleteGameObject(object);
+					continue;
+				}
+				transform->x += particle->childData.velocity.x * deltaTime;
+				transform->y += particle->childData.velocity.y * deltaTime;
+			}
+		}
 	}
+	manager.getAllGameObjects(gameObjects);
 
 	for (auto object : gameObjects) {
 		if (!object->hasComponent<Physics>()) continue;
@@ -770,32 +920,49 @@ void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime, M
 				physics->shootTimer += deltaTime;
 
 				// Check if mouse button is being held down
-				if (InputHandler::isMouseLeftHeld()) {
-					
-					if (physics->shootTimer >= physics->fireRate) {
-						GameObject* bullet = PhysicsForces::findAvailableBullet(manager);
+				if (InputHandler::isMouseLeftHeld() && (!UISystem::isShowUI() ||(SceneWindow::isSceneHovered() && !EditorManager::isEditingMode()))) {
 
-						if (bullet != nullptr) {
-							// Get mouse position in world coordinates
-							Vector2D mouseWorldPos = InputHandler::getWorldMousePosition();
+					if (VisualLC::globalFloatVar.count("bullets") &&
+						VisualLC::globalFloatVar["bullets"] > 0) {
+						if (physics->shootTimer >= physics->fireRate) {
+							GameObject* bullet = PhysicsForces::findAvailableBullet(manager);
 
-							// Shoot bullet toward mouse position
-							PhysicsForces::shoot(bullet, transform, mouseWorldPos);
-							messageBus.publish(Message("KeyPressed", nullptr, KeyEvent{ "LEFT_CLICK", true }));
+							if (bullet != nullptr) {
+								// Get mouse position in world coordinates
+								Vector2D mouseWorldPos = InputHandler::getWorldMousePosition();
 
-							if (bullet->hasComponent<AudioComponent>()) {
-								AudioComponent* audio = bullet->getComponent<AudioComponent>();
-								AudioChannel* ch = audio->getDefaultChannel();
-								ch->isPendingPlay = true;
+								//set a flay saying channel is pending to play sound
+								if (bullet->hasComponent<AudioComponent>()) {
+									AudioComponent* audio = bullet->getComponent<AudioComponent>();
+									AudioChannel* ch = audio->getDefaultChannel();
+									ch->isPendingPlay = true;
+
+									// Shoot bullet toward mouse position
+									PhysicsForces::shoot(bullet, transform, mouseWorldPos);
+									messageBus.publish(Message("KeyPressed", nullptr, KeyEvent{ "LEFT_CLICK", true }));
+
+									//set a flay saying channel is pending to play sound
+									if (bullet->hasComponent<AudioComponent>()) {
+										AudioComponent* audio = bullet->getComponent<AudioComponent>();
+										AudioChannel* ch = audio->getDefaultChannel();
+										ch->isPendingPlay = true;
+									}
+
+
+									VisualLogicSystem::broadcastBulletShoot();
+
+									DebugLog::addMessage("Bullet fired!", DebugMode::PlaySimul);
+									physics->shootTimer = 0.0f;
+								}
+								else {
+									physics->shootTimer = physics->fireRate * 0.5f;
+									DebugLog::addMessage("No bullets available!", DebugMode::PlaySimul);
+								}
 							}
-
-							DebugLog::addMessage("Bullet fired!", DebugMode::PlaySimul);
-							physics->shootTimer = 0.0f;
 						}
-						else {
-							physics->shootTimer = physics->fireRate * 0.5f;
-							DebugLog::addMessage("No bullets available!", DebugMode::PlaySimul);
-						}
+					}
+					else {
+						DebugLog::addMessage("Out of bullets!", DebugMode::PlaySimul);
 					}
 				}
 				//else if (InputHandler::isMouseLeftClicked()) { /// to shoot only one bullet at a time
@@ -951,6 +1118,20 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 		
 		const std::vector<GameObject*>& layerObjects = layer->getObjects(); //get layer object
 
+		std::vector<std::pair<TileMap*, Transform*>> activeTilemaps; //store tilemaps for later use
+		for (GameObject* obj : layerObjects) {
+			TileMap* tm = obj->getComponent<TileMap>();
+			Transform* tmTransform = obj->getComponent<Transform>();
+
+			if (!tm || !tmTransform) continue;
+
+			if (tm->enableCol && tm->colChanged)
+				Collision::buildTileCollisionBox(tm, tmTransform);
+
+			if (!tm->collisionBoxs.empty()) // Only add if has collision boxes
+				activeTilemaps.push_back({ tm, tmTransform });
+		}
+
 		//insert object into grid 
 		for (GameObject* obj : layerObjects) {
 			Transform* objT = obj->getComponent<Transform>();
@@ -1060,17 +1241,36 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 						Collision::Circle circle2 = Collision::getObjectCirclebyCollider(t2, c2->colliderSize);
 						info = Collision::CollisionIntersection_CircleAABB_Dynamic_Info(circle2, vel2, aabb1, vel1);
 					}
+					else if (c1->colliderType == shape::circle && c2->colliderType == shape::square) {
+						Collision::AABB aabb2 = Collision::getObjectAABBbyCollider(t2, c2->colliderSize);
+						Collision::Circle circle1 = Collision::getObjectCirclebyCollider(t1, c1->colliderSize);
+						info = Collision::CollisionIntersection_CircleAABB_Dynamic_Info(circle1, vel1, aabb2, vel2);
+					}
 					else {
 						continue; //current dont have other shapes of collision 
 					}
 
 					//checking if collided
 					if (info.collided) {
-						// c1 is the moving obj (player), c2 is the obj it collide with
-						// CASE 1: collided obj is pushable
-						if (c2->collisionRes == CollisionResponseMode::MoveWhenCollide) {
+						// Visual logic events (if needed)
+						if (obj1->hasComponent<VisualLC>()) {
+							VisualLC* logic1 = obj1->getComponent<VisualLC>();
+							logic1->curCollision.insert(obj2);
+						}
+
+						if (obj2->hasComponent<VisualLC>()) {
+							VisualLC* logic2 = obj2->getComponent<VisualLC>();
+							logic2->curCollision.insert(obj1);
+						}
+
+						if (c1->collisionRes == CollisionResponseMode::NoResponse || c2->collisionRes == CollisionResponseMode::NoResponse) continue;
+
+						bool obj1IsStatic = (c1->collisionRes == CollisionResponseMode::StopWhenCollide);
+						bool obj2IsStatic = (c2->collisionRes == CollisionResponseMode::StopWhenCollide);
+
+						// CASE 1: Both pushable
+						if (!obj1IsStatic && !obj2IsStatic) {
 							if (info.normal.x != 0) {
-								// move both obj away from each other (to simulate push)
 								t1->x += info.normal.x * info.penetration * 0.5f;
 								t2->x -= info.normal.x * info.penetration * 0.5f;
 
@@ -1081,99 +1281,211 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 							if (info.normal.y != 0) {
 								t1->y += info.normal.y * info.penetration * 0.5f;
 								t2->y -= info.normal.y * info.penetration * 0.5f;
-
-								// Update physics positions to match transforms
 								p1->dynamics.position.y = t1->y;
 								p2->dynamics.position.y = t2->y;
 
-								p1->dynamics.velocity.y = 0.f;
-								p2->dynamics.velocity.y = 0.f;
-
-								if (info.normal.y > 0) p1->onGround = true;
-								else p2->onGround = true;
+								if (info.normal.y > 0) {
+									// obj1 lands on obj2 from above
+									p1->dynamics.velocity.y = 0.f;
+									p1->velY = 0.f;
+									p1->onGround = true;
+								}
+								else if (info.normal.y < 0) {
+									// obj2 lands on obj1 from above
+									p2->dynamics.velocity.y = 0.f;
+									p2->velY = 0.f;
+									p2->onGround = true;
+								}
 							}
 						}
-						// CASE 2: collided obj is static
-						else if (c2->collisionRes == CollisionResponseMode::StopWhenCollide) {
-							// Resolve penetration
+						// CASE 2: obj1 is pushable, obj2 is static
+						else if (!obj1IsStatic && obj2IsStatic) {
 							if (info.normal.x != 0) {
-								// push moving obj out of collided obj
 								t1->x += info.normal.x * info.penetration;
 								p1->dynamics.position.x = t1->x;
-
 								p1->dynamics.velocity.x = 0.f;
 								p1->velX = 0.f;
-
 							}
 
 							if (info.normal.y != 0) {
 								t1->y += info.normal.y * info.penetration;
 								p1->dynamics.position.y = t1->y;
-
-								p1->dynamics.velocity.y = 0.0f;
+								p1->dynamics.velocity.y = 0.f;
 
 								if (info.normal.y > 0) p1->onGround = true;
 							}
-
-							DebugLog::addMessage("Collision detected between Object.\n", DebugMode::PlaySimul);
 						}
-						// CASE 3: anything else
-						else {
+						// CASE 3: obj1 is static, obj2 is pushable
+						else if (obj1IsStatic && !obj2IsStatic) {
+							if (info.normal.x != 0) {
+								// push obj2 in OPPOSITE direction
+								t2->x -= info.normal.x * info.penetration;
+								p2->dynamics.position.x = t2->x;
+								p2->dynamics.velocity.x = 0.f;
+								p2->velX = 0.f;
+							}
+
 							if (info.normal.y != 0) {
-								p1->dynamics.velocity.y = 0.0f;
-								p2->dynamics.velocity.y = 0.0f;
+								t2->y -= info.normal.y * info.penetration;
+								p2->dynamics.position.y = t2->y;
+								p2->dynamics.velocity.y = 0.f;
 
-								if (info.normal.y > 0) p1->onGround = true;
-								else p2->onGround = true;
+								if (info.normal.y < 0) p2->onGround = true;
 							}
-
-							/* ---------- trigger visual logic collision events ---------- */
-							if (obj1->hasComponent<VisualLC>()) {
-								VisualLC* logic1 = obj1->getComponent<VisualLC>();
-								logic1->curCollision.insert(obj2);
-							}
-
-							if (obj2->hasComponent<VisualLC>()) {
-								VisualLC* logic2 = obj2->getComponent<VisualLC>();
-								logic2->curCollision.insert(obj1);
-							}
-							/* ---------- END ---------- */
 						}
+						// CASE 4: Both are static (shouldnt happen?)
+						else {
+							/*if (info.normal.x != 0) {
+								t1->x -= info.normal.x * info.penetration;
+								p1->dynamics.position.x = t1->x;
+							}
+
+							if (info.normal.y != 0) {
+								t1->y += info.normal.y * info.penetration;
+								p1->dynamics.position.y = t1->y;
+							}*/
+						}					
 					}
+					//if (info.collided) {
+					//	// c1 is the moving obj (player), c2 is the obj it collide with
+					//	// CASE 1: collided obj is pushable
+					//	if (c2->collisionRes == CollisionResponseMode::MoveWhenCollide) {
+					//		if (info.normal.x != 0) {
+					//			// move both obj away from each other (to simulate push)
+					//			t1->x += info.normal.x * info.penetration * 0.5f;
+					//			t2->x -= info.normal.x * info.penetration * 0.5f;
+
+					//			p1->dynamics.position.x = t1->x;
+					//			p2->dynamics.position.x = t2->x;
+					//		}
+
+					//		if (info.normal.y != 0) {
+					//			t1->y += info.normal.y * info.penetration * 0.5f;
+					//			t2->y -= info.normal.y * info.penetration * 0.5f;
+
+					//			// Update physics positions to match transforms
+					//			p1->dynamics.position.y = t1->y;
+					//			p2->dynamics.position.y = t2->y;
+
+					//			p1->dynamics.velocity.y = 0.f;
+					//			p2->dynamics.velocity.y = 0.f;
+
+					//			if (info.normal.y > 0) p1->onGround = true;
+					//			else p2->onGround = true;
+					//		}
+					//	}
+					//	// CASE 2: collided obj is static
+					//	else if (c2->collisionRes == CollisionResponseMode::StopWhenCollide) {
+					//		// Resolve penetration
+					//		if (info.normal.x != 0) {
+					//			// push moving obj out of collided obj
+					//			t1->x += info.normal.x * info.penetration;
+					//			p1->dynamics.position.x = t1->x;
+
+					//			p1->dynamics.velocity.x = 0.f;
+					//			p1->velX = 0.f;
+
+					//		}
+
+					//		if (info.normal.y != 0) {
+					//			t1->y += info.normal.y * info.penetration;
+					//			p1->dynamics.position.y = t1->y;
+
+					//			p1->dynamics.velocity.y = 0.0f;
+
+					//			if (info.normal.y > 0) p1->onGround = true;
+					//		}
+
+					//		DebugLog::addMessage("Collision detected between Object.\n", DebugMode::PlaySimul);
+					//	}
+					//	// CASE 3: anything else
+					//	else {
+					//		if (info.normal.y != 0) {
+					//			p1->dynamics.velocity.y = 0.0f;
+					//			p2->dynamics.velocity.y = 0.0f;
+
+					//			if (info.normal.y > 0) p1->onGround = true;
+					//			else p2->onGround = true;
+					//		}
+
+					//		/* ---------- trigger visual logic collision events ---------- */
+					//		if (obj1->hasComponent<VisualLC>()) {
+					//			VisualLC* logic1 = obj1->getComponent<VisualLC>();
+					//			logic1->curCollision.insert(obj2);
+					//		}
+
+					//		if (obj2->hasComponent<VisualLC>()) {
+					//			VisualLC* logic2 = obj2->getComponent<VisualLC>();
+					//			logic2->curCollision.insert(obj1);
+					//		}
+					//		/* ---------- END ---------- */
+					//	}
+					//}
 				}
 			}
 		}
+
+		// obj vs tilemap collision
+		if (!activeTilemaps.empty()) HandleTilemapCollisions(grid, activeTilemaps);
+
 		auto end = std::chrono::high_resolution_clock::now();
 		ms += std::chrono::duration<double, std::milli>(end - start).count(); //get elapse time in ms
 	}
 	g_SystemTimers.push_back({ "Collisions", ms }); //saving timing for UI output
 }
 
-//tilemap collision detection
-bool CollisionSystem::CheckTileCollision(GameObject* obj, TileMap& map){
-	Transform* t = obj->getComponent<Transform>();
-	CollisionInfo* c = obj->getComponent<CollisionInfo>();
-	if (!t || !c) return false;
+void CollisionSystem::HandleTilemapCollisions(const std::unordered_map<int, Collision::Cell>& grid, const std::vector<std::pair<TileMap*, Transform*>>& tilemaps) {
+	for (const auto& [key, cell] : grid) {
+		for (GameObject* obj : cell.objects) {
+			Transform* t = obj->getComponent<Transform>();
+			CollisionInfo* c = obj->getComponent<CollisionInfo>();
+			Physics* p = obj->getComponent<Physics>();
 
-	Collision::AABB box = Collision::getObjectAABBbyCollider(t, c->colliderSize);
+			if (!t || !c || !p) continue;
 
-	int minTileX = static_cast<int>(box.getMin().x / map.tileW);
-	int maxTileX = static_cast<int>(box.getMax().x / map.tileW);
-	int minTileY = static_cast<int>(box.getMin().y / map.tileH);
-	int maxTileY = static_cast<int>(box.getMax().y / map.tileH);
+			Collision::AABB objAABB = Collision::getObjectAABBbyCollider(t, c->colliderSize);
+			Vector2D vel{ p->dynamics.velocity.x, p->dynamics.velocity.y };
 
-	for (int x = minTileX; x <= maxTileX; ++x)
-	{
-		for (int y = minTileY; y <= maxTileY; ++y)
-		{
-			if (!map.getTile(x, y).empty())
-			{
-				return true; // collision detected
+			// check against all active tilemaps
+			for (const auto& [tm, tmtransform] : tilemaps) {
+				bool collisionResolved = false;
+
+				for (const auto& box : tm->collisionBoxs) {
+					Collision::AABB boxAABB(box.minAABB, box.maxAABB);
+
+					if (!Collision::CollisionIntersection_RectRect_Static(objAABB, boxAABB))
+						continue;
+
+					CollisionInfo info = Collision::CollisionIntersection_RectRect_Dynamic_Info(
+						objAABB, vel, boxAABB, Vector2D(0, 0));
+
+					if (info.collided) {
+						if (info.normal.x != 0) {
+							t->x += info.normal.x * info.penetration;
+							p->dynamics.position.x = t->x;
+							p->dynamics.velocity.x = 0.f;
+							p->velX = 0.f;
+						}
+
+						if (info.normal.y != 0) {
+							t->y += info.normal.y * info.penetration;
+							p->dynamics.position.y = t->y;
+							p->dynamics.velocity.y = 0.0f;
+
+							if (info.normal.y > 0) {
+								p->onGround = true;
+							}
+						}
+
+						collisionResolved = true;
+						break;
+					}
+				}
+
+				if (collisionResolved) break;
 			}
 		}
 	}
-
-	return false;
 }
 
 
@@ -1186,7 +1498,7 @@ void UISystem::init(GLFWwindow* window, RenderSystem* renderer, GameObjectManage
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
 	ImGuiIO& io = ImGui::GetIO(); //(void)io;
-	io.FontGlobalScale = 2.0f;
+	io.FontGlobalScale = 1.5f;
 	io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard
 			| ImGuiConfigFlags_DockingEnable
 			| ImGuiConfigFlags_ViewportsEnable;
@@ -1361,7 +1673,8 @@ void LogicSystem::update(GameObjectManager& manager, float const& dt) {
 
 	for (auto* go : objs) {
 		if (!go) continue;
-		if (!go->hasComponent<StateMachine>()) continue;
+		// skip if no sm/fixed state 
+		if (!go->hasComponent<StateMachine>() || go->getComponent<StateMachine>()->fixState) continue;
 		if (!go->hasComponent<Transform>() || !go->hasComponent<Physics>() || !go->hasComponent<Input>()) continue; // skip if obj cant move (no input-based state change)
 
 		// Update class-based FSM + trigger-action rules
@@ -1372,6 +1685,10 @@ void LogicSystem::update(GameObjectManager& manager, float const& dt) {
 	double ms = std::chrono::duration<double, std::milli>(end - start).count();
 	g_SystemTimers.push_back({ "Logic", ms });
 }
+
+/*
+This function runs once when scene load and system starts
+*/
 void AudioSystem::init(GameObjectManager& manager) {
 	auto start = std::chrono::high_resolution_clock::now();
 
@@ -1634,7 +1951,7 @@ void AudioSystem::initializeSceneAudio(GameObjectManager& manager) {
 		// Pre-load all sounds for all channels
 		for (auto& [channelName, channel] : audio->audioChannels) {
 			if (!channel.audioFile.empty()) {
-				// Pass isSpatial flag during preload
+				// Pass isSpatial flag during preload, true source of the sound
 				FMOD::Sound* sound = ResourceManager::getInstance().getSound(
 					channel.audioFile,
 					channel.loop,

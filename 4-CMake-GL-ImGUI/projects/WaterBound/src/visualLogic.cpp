@@ -5,7 +5,7 @@
             - 100% of the file
 \par        cheeqing.tan@digipen.edu
 \date       January, 16th, 2026
-\brief      T
+\brief      This source file implements the Visual Logic System, which manages visual scripting for game			objects. It handles the execution of nodes in a visual logic component (VisualLC) attached			to game objects, following an Event-Condition-Action (ECA) paradigm.
 
 Copyright (C) 2026 DigiPen Institute of Technology.
 Reproduction or disclosure of this file or its contents
@@ -15,29 +15,60 @@ Technology is prohibited.
 /* End Header **************************************************************************/
 
 #include "Systems.h"
+#include "JsonIO.h"
+
+std::map<std::string, float> VisualLC::globalFloatVar;
+GameObjectManager* VisualLogicSystem::m_manager = nullptr;
 
 void VisualLogicSystem::initAll(GameObjectManager& manager) {
+
 	std::vector<GameObject*> gameObjects;
 	manager.getAllGameObjects(gameObjects);
 
 	for (GameObject* obj : gameObjects) {
 		if (obj->hasComponent<VisualLC>()) {
 			VisualLC* logic = obj->getComponent<VisualLC>();
+			if (!logic->justStarted) return;
 			init(obj, logic);
 		}
 	}
+
+	m_manager = &manager;
 }
 
 void VisualLogicSystem::updateAll(GameObjectManager& manager, float dt) {
+	auto start = std::chrono::high_resolution_clock::now();
 	std::vector<GameObject*> gameObjects;
+
 	manager.getAllGameObjects(gameObjects);
+
 
 	for (GameObject* obj : gameObjects) {
 		if (obj->hasComponent<VisualLC>()) {
 			VisualLC* logic = obj->getComponent<VisualLC>();
+
+			/* -------- Check bullet refill event -------- */
+			if (logic->bulletRefill) {
+				for (LogicNode& node : logic->nodes) {
+					if (node.imp == NodeImplementation::ON_BULLET_REFILL) {
+						logic->currentExePath.clear();
+
+						executeNode(obj, logic, node.id, dt);
+					}
+				}
+
+				logic->bulletRefill = false;
+			}
+			/* -------- END -------- */
+
+
 			update(obj, logic, dt);
 		}
 	}
+
+	auto end = std::chrono::high_resolution_clock::now();
+	double ms = std::chrono::duration<double, std::milli>(end - start).count();
+	g_SystemTimers.push_back({ "Visual Script", ms });
 }
 
 void VisualLogicSystem::init(GameObject* obj, VisualLC* logic) {
@@ -61,11 +92,17 @@ void VisualLogicSystem::init(GameObject* obj, VisualLC* logic) {
 			executeNode(obj, logic, node.id, 1 / 60.f);
 		}
 	}
+
+	logic->justStarted = false;
 }
 
 void VisualLogicSystem::update(GameObject* obj, VisualLC* logic, float dt) {
-	(void)dt; // to use in the future
 	if (!obj || !logic) return;
+
+
+	/* -------- Accumulate timer -------- */
+	for (auto& [timerName, elapsedTime] : logic->timers) elapsedTime += dt;
+	/* -------- END -------- */
 
 
 	/* -------- Check collisions -------- */
@@ -74,8 +111,9 @@ void VisualLogicSystem::update(GameObject* obj, VisualLC* logic, float dt) {
 		if (logic->preCollision.find(collided) == logic->preCollision.end()) {
 			for (LogicNode& node : logic->nodes) {
 				if (node.imp == NodeImplementation::ON_COLLISION_ENTER) {
-					if (shouldTriggerCollision(obj, node, collided)) {
-						logic->stringVar["_collidedWith"] = collided->getObjectName();
+					if (shouldTriggerCollision(node, collided)) {
+						//logic->stringVar["_collidedWith"] = collided->getObjectName();
+						logic->lastCollidedObj = collided;
 						executeNode(obj, logic, node.id, dt);
 					}
 				}
@@ -87,8 +125,9 @@ void VisualLogicSystem::update(GameObject* obj, VisualLC* logic, float dt) {
 		// WHILE COLLIDING
 		for (LogicNode& node : logic->nodes) {
 			if (node.imp == NodeImplementation::WHILE_COLLIDING) {
-				if (shouldTriggerCollision(obj, node, collided)) {
-					logic->stringVar["_collidedWith"] = collided->getObjectName();
+				if (shouldTriggerCollision(node, collided)) {
+					//logic->stringVar["_collidedWith"] = collided->getObjectName();
+					logic->lastCollidedObj = collided;
 					executeNode(obj, logic, node.id, dt);
 				}
 			}
@@ -100,8 +139,9 @@ void VisualLogicSystem::update(GameObject* obj, VisualLC* logic, float dt) {
 		if (logic->curCollision.find(collided) == logic->curCollision.end()) {
 			for (LogicNode& node : logic->nodes) {
 				if (node.imp == NodeImplementation::ON_COLLISION_EXIT) {
-					if (shouldTriggerCollision(obj, node, collided)) {
-						logic->stringVar["_collidedWith"] = collided->getObjectName();
+					if (shouldTriggerCollision(node, collided)) {
+						//logic->stringVar["_collidedWith"] = collided->getObjectName();
+						logic->lastCollidedObj = collided;
 						executeNode(obj, logic, node.id, dt);
 					}
 				}
@@ -196,12 +236,42 @@ void VisualLogicSystem::update(GameObject* obj, VisualLC* logic, float dt) {
 	}
 	/* -------- END -------- */
 
+
+	/* -------- Check bullet shot event -------- */
+	if (logic->bulletShot) {
+		for (LogicNode& node : logic->nodes) {
+			if (node.imp == NodeImplementation::ON_BULLET_SHOOT) {
+				logic->currentExePath.clear();
+
+				executeNode(obj, logic, node.id, dt);
+			}
+		}
+
+		logic->bulletShot = false;
+	}
+	/* -------- END -------- */
+
+
 	for (LogicNode& node : logic->nodes) {
 		// find and execute all ON UPDATE nodes
 		if (node.imp == NodeImplementation::ON_UPDATE) {
 			logic->currentExePath.clear();
 
 			executeNode(obj, logic, node.id, dt);
+		}
+	}
+}
+
+void VisualLogicSystem::broadcastBulletShoot() {
+	std::vector<GameObject*> gameObjects;
+	m_manager->getAllGameObjects(gameObjects);
+
+	for (GameObject* obj : gameObjects) {
+		if (obj->hasComponent<VisualLC>()) {
+			if (obj->hasComponent<VisualLC>()) {
+				VisualLC* logic = obj->getComponent<VisualLC>();
+				logic->bulletShot = true;
+			}
 		}
 	}
 }
@@ -306,6 +376,38 @@ void VisualLogicSystem::executeActionNode(GameObject* obj, VisualLC* logic, Logi
 			transform->rotation = angle;
 		}
 	}
+	else if (node.imp == NodeImplementation::SET_POSITION) {
+		Transform* transform = obj->getComponent<Transform>();
+
+		if (transform) {
+			float x = node.parameters.count("x") ? std::stof(node.parameters["x"]) : 0.f;
+			float y = node.parameters.count("y") ? std::stof(node.parameters["y"]) : 0.f;
+
+			transform->x = x;
+			transform->y = y;
+		}
+	}
+	else if (node.imp == NodeImplementation::SET_SCALE) {
+		Transform* transform = obj->getComponent<Transform>();
+
+		if (transform) {
+			float scaleX = node.parameters.count("scaleX") ? std::stof(node.parameters["scaleX"]) : 1.f;
+			float scaleY = node.parameters.count("scaleY") ? std::stof(node.parameters["scaleY"]) : 1.f;
+
+			transform->scaleX = scaleX;
+			transform->scaleY = scaleY;
+		}
+	}
+	else if (node.imp == NodeImplementation::SCALE_PROPORTIONAL) {
+		Transform* transform = obj->getComponent<Transform>();
+
+		if (transform) {
+			float scale = node.parameters.count("scale") ? std::stof(node.parameters["scale"]) : 2.f;
+
+			transform->scaleX *= scale;
+			transform->scaleY *= scale;
+		}
+	}
 	else if (node.imp == NodeImplementation::SET_FLOAT) {
 		std::string varName = node.parameters.count("variable") ?
 			node.parameters["variable"] : "var";
@@ -313,7 +415,30 @@ void VisualLogicSystem::executeActionNode(GameObject* obj, VisualLC* logic, Logi
 		float value = node.parameters.count("value") ?
 			std::stof(node.parameters["value"]) : 0.f;
 
+		std::cout << "\n\nSET_FLOAT Node ID: " << node.id << std::endl;
+		std::cout << "  Variable: " << varName << std::endl;
+		std::cout << "  Value from params: " << node.parameters["value"] << std::endl;
+		std::cout << "  Parsed value: " << value << std::endl;
+
 		logic->floatVar[varName] = value;
+	}
+	else if (node.imp == NodeImplementation::MODIFY_FLOAT) {
+		std::string varName = node.parameters.count("variable") ?
+			node.parameters["variable"] : "var";
+
+		float value = node.parameters.count("value") ?
+			std::stof(node.parameters["value"]) : 0.f;
+
+		if (!logic->floatVar.count(varName)) {
+			logic->floatVar[varName] = 0.f;
+		}
+
+		std::cout << "\n\nMODIFY_FLOAT Node ID: " << node.id << std::endl;
+		std::cout << "  Variable: " << varName << std::endl;
+		std::cout << "  Current value: " << logic->floatVar[varName] << std::endl;
+		std::cout << "  Modify by: " << value << std::endl;
+
+		logic->floatVar[varName] += value;
 	}
 	else if (node.imp == NodeImplementation::PLAY_SOUND) {
 		// component/audio checking
@@ -345,7 +470,14 @@ void VisualLogicSystem::executeActionNode(GameObject* obj, VisualLC* logic, Logi
 			return;
 		}
 
-		channel->isPendingPlay = true;
+		// let audio component laoban control the looping or whatever
+		// dont touch if already playing or pending to play
+		if (channel->state == AudioState::Playing || channel->isPendingPlay) return;
+
+		if (channel->state == AudioState::Stopped) {
+			channel->isPendingPlay = true;
+			std::cout << "[VisualLogic] Triggering play for channel: " << channelName << std::endl;
+		}
 	}
 	else if (node.imp == NodeImplementation::SET_STATE) {
 		StateMachine* sm = obj->getComponent<StateMachine>();
@@ -359,6 +491,153 @@ void VisualLogicSystem::executeActionNode(GameObject* obj, VisualLC* logic, Logi
 		
 		sm->state = JsonIO::parsePlayerState(stateName);
 		sm->stateTime = 0.f;
+	}
+	else if (node.imp == NodeImplementation::RESET_TIMER) {
+		// Generate timer name from node's timerGroup parameter
+		std::string timerName = node.parameters.count("timerName") ?
+			node.parameters["timerName"] : "timer_0";
+
+		// Reset timer to 0
+		logic->timers[timerName] = 0.f;
+
+		std::cout << "after reset: " << logic->timers[timerName] << std::endl;
+	}
+	else if (node.imp == NodeImplementation::SET_TEXTURE) {
+		Render* render = obj->getComponent<Render>();
+
+		if (!render) {
+			DebugLog::addMessage("[VisualLogic] Object has no Render component!", DebugMode::PlaySimul);
+			return;
+		}
+
+		std::string textureFile = node.parameters.count("textureFile") ?
+			node.parameters["textureFile"] : "";
+
+		if (textureFile == render->texFile) return;
+
+		render->texFile = textureFile;
+		render->hasTex = true;
+		render->texChanged = true;
+	}
+	else if (node.imp == NodeImplementation::SET_POSITION_ON_COLLIDED) {
+		GameObject* collidedObj = logic->lastCollidedObj;
+		if (!collidedObj) return;
+
+		Transform* collidedTransform = collidedObj->getComponent<Transform>();
+		if (!collidedTransform) return;
+
+		float deltaX = node.parameters.count("deltaXCollided") ? std::stof(node.parameters["deltaXCollided"]) : 0.f;
+		float deltaY = node.parameters.count("deltaYCollided") ? std::stof(node.parameters["deltaXCollided"]) : 0.f;
+
+		collidedTransform->x += deltaX;
+		collidedTransform->y += deltaY;
+
+		std::cout << "Set collided object's position to (" << collidedTransform->x << ", " << collidedTransform->y << ")\n";
+	}
+	else if (node.imp == NodeImplementation::SET_STATE_ON_COLLIDED) {
+		GameObject* collidedObj = logic->lastCollidedObj;
+		if (!collidedObj) return;
+
+		StateMachine* collidedSM = collidedObj->getComponent<StateMachine>();
+		if (!collidedSM) return;
+
+		std::string stateName = node.parameters.count("targetStateCollided") ? node.parameters["targetStateCollided"] : JsonIO::stateNames[0];
+
+		collidedSM->state = JsonIO::parsePlayerState(stateName);
+		collidedSM->stateTime = 0.f;
+		collidedSM->fixState = true; // avoid getting overridden by statemachine 
+
+		//std::cout << "Set collided object's state to " << stateName << "\n";
+	}
+	else if (node.imp == NodeImplementation::APPLY_FORCE_ON_COLLIDED) {
+		GameObject* collidedObj = logic->lastCollidedObj;
+		if (!collidedObj) return;
+
+		Physics* collidedPhysic = collidedObj->getComponent<Physics>();
+		if (!collidedPhysic) return;
+
+		float forceX = node.parameters.count("forceX") ? std::stof(node.parameters["forceX"]) : 0.f;
+		float forceY = node.parameters.count("forceY") ? std::stof(node.parameters["forceY"]) : 0.f;
+
+		collidedPhysic->dynamics.velocity.x += forceX;
+		collidedPhysic->dynamics.velocity.y += forceY;
+
+		//std::cout << "Put force on collided object to (" << collidedPhysic->dynamics.velocity.x << ", " << collidedPhysic->dynamics.velocity.y << ")\n";
+	}
+	else if (node.imp == NodeImplementation::SET_GLOBAL_FLOAT) {
+		std::string varName = node.parameters.count("variable") ?
+			node.parameters["variable"] : "var";
+
+		float value = node.parameters.count("value") ?
+			std::stof(node.parameters["value"]) : 0.f;
+
+		VisualLC::globalFloatVar[varName] = value;
+	}
+	else if (node.imp == NodeImplementation::MODIFY_GLOBAL_FLOAT) {
+		std::string varName = node.parameters.count("variable") ?
+			node.parameters["variable"] : "var";
+
+		float value = node.parameters.count("value") ?
+			std::stof(node.parameters["value"]) : 0.f;
+
+		VisualLC::globalFloatVar[varName] += value;
+	}
+	else if (node.imp == NodeImplementation::TRIGGER_BULLET_REFILL_EVENT) {
+		std::string targetType = node.parameters.count("targetType") ?
+			node.parameters["targetType"] : "all";
+
+		std::string targetValue = node.parameters.count("targetValue") ?
+			node.parameters["targetValue"] : "";
+
+		// broadcast to all objects
+		if (targetType == "all") {
+			std::vector<GameObject*> gameObjects;
+			m_manager->getAllGameObjects(gameObjects);
+
+			for (GameObject* targetObj : gameObjects) {
+				if (targetObj->hasComponent<VisualLC>()) {
+					targetObj->getComponent<VisualLC>()->bulletRefill = true;
+				}
+			}
+
+		}
+		// trigger only on collided obj
+		else if (targetType == "collided") {
+			if (!logic->lastCollidedObj) return;
+
+			if (logic->lastCollidedObj->hasComponent<VisualLC>())
+				logic->lastCollidedObj->getComponent<VisualLC>()->bulletRefill = true;
+		}
+		else if (targetType == "tag") {
+			if (targetValue.empty()) return;
+
+			std::vector<GameObject*> gameObjects;
+			m_manager->getAllGameObjects(gameObjects);
+
+			for (GameObject* obj : gameObjects) {
+				if (obj->hasComponent<CollisionInfo>() && obj->hasComponent<VisualLC>()) {
+
+					CollisionInfo* col = obj->getComponent<CollisionInfo>();
+					if (col->collisionTag == targetValue) {
+						obj->getComponent<VisualLC>()->bulletRefill = true;
+					}
+				}
+			}
+		}
+		else if (targetType == "name") {
+			if (targetValue.empty()) return;
+
+			std::vector<GameObject*> gameObjects;
+			m_manager->getAllGameObjects(gameObjects);
+
+			for (GameObject* obj : gameObjects) {
+				if (obj->getObjectName() == targetValue && obj->hasComponent<VisualLC>()) 
+					obj->getComponent<VisualLC>()->bulletRefill = true;
+			}
+		}
+		else if (targetType == "self") {
+			logic->bulletRefill = true;
+		}
 	}
 }
 
@@ -471,6 +750,71 @@ bool VisualLogicSystem::executeConditionNode(GameObject* obj, VisualLC* logic, L
 
 		return false;
 	}
+	else if (node.imp == NodeImplementation::CHECK_STATE) { 
+		std::string target = node.parameters.count("state") ? node.parameters["state"] : JsonIO::stateNames[0];
+		
+		StateMachine* sm = obj->getComponent<StateMachine>();
+		if (!sm) return false;
+
+		return JsonIO::parsePlayerState(target) == sm->state;
+	}
+	else if (node.imp == NodeImplementation::CHECK_TIMER) {
+		float threshold = node.parameters.count("threshold") ? std::stof(node.parameters["threshold"]) : 1.f;
+
+		// generate timer name so one obj can have multiple timers
+		std::string timerName = node.parameters.count("timerName") ? node.parameters["timerName"] : "timer_0";
+
+		if (!logic->timers.count(timerName)) logic->timers[timerName] = 0.f;
+
+		return logic->timers[timerName] > threshold;
+	}
+	else if (node.imp == NodeImplementation::COMPARE_GLOBAL_FLOAT) {
+		std::string varName = node.parameters.count("variable") ?
+			node.parameters["variable"] : "var";
+
+		std::string comparison = node.parameters.count("comparison") ?
+			node.parameters["comparison"] : "greater";
+
+		float threshold = node.parameters.count("threshold") ?
+			std::stof(node.parameters["threshold"]) : 0.f;
+
+		// get variable value
+		float currentValue = 0.f;
+		if (VisualLC::globalFloatVar.count(varName)) {
+			currentValue = VisualLC::globalFloatVar[varName];
+		}
+
+		// compare
+		if (comparison == "greater") {
+			return currentValue > threshold;
+		}
+		else if (comparison == "less") {
+			return currentValue < threshold;
+		}
+		else if (comparison == "equal") {
+			float epsilon = 0.1f;
+			return std::abs(currentValue - threshold) < epsilon;
+		}
+
+		return false;
+	}
+	else if (node.imp == NodeImplementation::CHECK_COLLIDED_STATE) {
+		GameObject* collidedObj = logic->lastCollidedObj;
+		if (!collidedObj) {
+			DebugLog::addMessage("[VisualLogic] No collided object to check state!", DebugMode::PlaySimul);
+			return false;
+		}
+
+		StateMachine* collidedSM = collidedObj->getComponent<StateMachine>();
+		if (!collidedSM) {
+			DebugLog::addMessage("[VisualLogic] Collided object has no StateMachine component!", DebugMode::PlaySimul);
+			return false;
+		}
+
+		std::string target = node.parameters.count("state") ? node.parameters["state"] : JsonIO::stateNames[0];
+
+		return JsonIO::parsePlayerState(target) == collidedSM->state;
+	}
 
 	return true;
 }
@@ -498,7 +842,7 @@ LogicNode* VisualLogicSystem::findNode(VisualLC* logic, int nodeId) {
 	return nullptr;
 }
 
-bool VisualLogicSystem::shouldTriggerCollision(GameObject* obj, LogicNode& node, GameObject* collided) {
+bool VisualLogicSystem::shouldTriggerCollision(LogicNode& node, GameObject* collided) {
 	std::string filterType = node.parameters.count("colFilterType") ? node.parameters["colFilterType"] : "any";
 
 	if (filterType == "any") return true;
@@ -512,9 +856,7 @@ bool VisualLogicSystem::shouldTriggerCollision(GameObject* obj, LogicNode& node,
 	else if (filterType == "tag") {
 		CollisionInfo* col = collided->getComponent<CollisionInfo>();
 
-		if (col) {
-			return col->collisionTag == filterValue;
-		}
+		if (col) return col->collisionTag == filterValue;
 
 		return false;
 	}

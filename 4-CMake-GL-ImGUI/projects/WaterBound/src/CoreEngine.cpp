@@ -70,7 +70,7 @@ void CoreEngine::Init(bool forceWindowed) {
     int winWidth = cfg.width;
     int winHeight = cfg.height;
 
-    /*if (wantFullscreen) {
+    if (wantFullscreen) {
         monitor = glfwGetPrimaryMonitor();
         const GLFWvidmode* mode = glfwGetVideoMode(monitor);
         winWidth = mode->width;
@@ -83,7 +83,7 @@ void CoreEngine::Init(bool forceWindowed) {
     else {
         m_windowedWidth = cfg.width;
         m_windowedHeight = cfg.height;
-    }*/
+    }
 
     cfg.width = winWidth;
     cfg.height = winHeight;
@@ -129,6 +129,7 @@ void CoreEngine::Init(bool forceWindowed) {
     m_collisionSystem = std::make_unique<CollisionSystem>();
     m_physicsSystem = std::make_unique<PhysicsSystem>();
     m_renderSystem = std::make_unique<RenderSystem>();
+    m_waterSystem = std::make_unique<WaterSystem>();
 #ifdef _DEBUG
     m_uiSystem = std::make_unique<UISystem>();
 #endif
@@ -139,6 +140,7 @@ void CoreEngine::Init(bool forceWindowed) {
     m_playerController = std::make_unique<PlayerControllerSystem>();
     m_audioSystem = std::make_unique<AudioSystem>();
     m_tileMapSystem = std::make_unique<TileMapSystem>();
+	m_particleSystem = std::make_unique<ParticleSystem>();
 	m_visualLCSystem = std::make_unique<VisualLogicSystem>();
 
 
@@ -146,12 +148,12 @@ void CoreEngine::Init(bool forceWindowed) {
     m_guiSystem->init(*m_manager, *m_luaSystem);
     m_luaSystem->init();
     m_renderSystem->init(*m_manager, winWidth, winHeight);
+    m_waterSystem->init();
 #ifdef _DEBUG
     m_uiSystem->init(m_window, m_renderSystem.get(), *m_manager);
 #endif
     m_fontSystem->init(*m_manager);
     m_audioSystem->init(*m_manager);
-    m_visualLCSystem->initAll(*m_manager);
 
     //advance messaging 
     m_messageBus->subscribe("KeyPressed", m_playerController.get());
@@ -179,15 +181,10 @@ void CoreEngine::GameLoop() {
     if (glfwWindowShouldClose(m_window) || InputHandler::isKeyTriggered(GLFW_KEY_F1)) { m_isRunning = false; return; }
     //pause checking, and set it to paused state if escape is held
     if (InputHandler::isKeyTriggered(GLFW_KEY_ESCAPE)) {
-        //if already at paused state do nothing
         GameState current = m_guiSystem->getCurrentState(); //get current state
-        //GameState previous = m_guiSystem->getPreviousState(); //get previous state
         if (current != GameState::PAUSED) {
-            //if (m_guiSystem->getPreviousState() != GameState::PAUSED) m_guiSystem->setPreviousState(current); //store previous state and prevent overwriting previous state if already paused
             m_guiSystem->setStateBeforePause(current); //store state before pausing
-            m_guiSystem->setPreviousState(current); //store previous state
-            m_guiSystem->setCurrentState(GameState::PAUSED); //set current state
-            m_guiSystem->loadScreen(*m_manager, "pause_scene.json"); //load pause screen
+            m_guiSystem->changeState(GameState::PAUSED, "pause_scene.json");
         }
     }
 
@@ -238,14 +235,15 @@ void CoreEngine::Update(float deltaTime) {
     //menu checking
     GameState state = m_guiSystem->getCurrentState();
     if (state != GameState::EXIT) {
-        m_guiSystem->update(*m_manager);
+        m_guiSystem->update();
     }
 
 	//for other systems to update even in editor mode
-    /*if (!EditorManager::isEditingMode() && !EditorManager::isPaused()) {
+    if (!EditorManager::isEditingMode() && !EditorManager::isPaused()) {
         m_luaSystem->update(*m_manager, deltaTime);
+        m_visualLCSystem->initAll(*m_manager);
         m_visualLCSystem->updateAll(*m_manager, deltaTime);
-    }*/
+    }
 
    
     // Update all systems in order
@@ -254,9 +252,11 @@ void CoreEngine::Update(float deltaTime) {
     m_collisionSystem->update(*m_manager, deltaTime);
     m_logicSystem->update(*m_manager, deltaTime);
     m_tileMapSystem->update(*m_manager);
+    m_particleSystem->update(*m_manager, deltaTime);;
     m_renderSystem->update(*m_manager, deltaTime);
     m_fontSystem->update(*m_manager, m_fps);
     m_audioSystem->update(*m_manager, deltaTime);
+    m_waterSystem->render(*m_manager);
 #ifdef _DEBUG
     m_uiSystem->update();
 #endif
@@ -400,6 +400,7 @@ void CoreEngine::Shutdown() {
     ResourceManager::getInstance().shutdown();
     renderer::cleanup();
     Font::freeFonts();
+    m_waterSystem->cleanup();
     if (m_luaSystem) m_luaSystem->cleanup();
     glfwDestroyWindow(m_window);
     glfwTerminate();

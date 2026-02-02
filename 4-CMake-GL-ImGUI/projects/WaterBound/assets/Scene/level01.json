@@ -17,8 +17,127 @@
           "hasTex": 1
         },
         "CollisionInfo": {
-          "collisionTag": "bullet",
-          "ignoreCollisionsWith": [ "player"]
+          "ignoreCollisionsWith": [
+            "player",
+            "bullet",
+            "hazards"
+          ]
+        },
+        "LuaScript": {
+          "scripts": [
+            {
+              "filename": "./assets/scripting\\bullet.lua",
+              "scriptName": "bullet"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "prefabid": "f04819ff-270c-41b4-8387-73382eb85103",
+      "name": "water_source3030",
+      "components": {
+        "Transform": {
+          "pos": [
+            17.59305763244629,
+            -0.14866113662719727,
+            0.0
+          ]
+        },
+        "StateMachine": {
+          "stateTime": 252.32286071777344,
+          "Idle": {
+            "animState": {
+              "texture": "assets/Texture\\Water_Source_Full.png",
+              "loop": 1,
+              "play": 0,
+              "totalColumn": 1,
+              "totalRow": 1,
+              "frameTime": 0.10000000149011612,
+              "initialFramCol": 0.0,
+              "initialFramRow": 0.0,
+              "lastFramCol": 0.0,
+              "lastFramRow": 0.0
+            }
+          },
+          "Walking": {
+            "animState": {
+              "texture": "assets/Texture\\Water_Source_Empty.png",
+              "loop": 1,
+              "play": 0,
+              "totalColumn": 1,
+              "totalRow": 1,
+              "frameTime": 0.10000000149011612,
+              "initialFramCol": 0.0,
+              "initialFramRow": 0.0,
+              "lastFramCol": 0.0,
+              "lastFramRow": 0.0
+            }
+          },
+          "Jumping": {
+            "animState": {
+              "texture": "",
+              "loop": 1,
+              "play": 0,
+              "totalColumn": 1,
+              "totalRow": 1,
+              "frameTime": 0.10000000149011612,
+              "initialFramCol": 0.0,
+              "initialFramRow": 0.0,
+              "lastFramCol": 0.0,
+              "lastFramRow": 0.0
+            }
+          },
+          "Falling": {
+            "animState": {
+              "texture": "assets/Texture\\Water_Source_Empty.png",
+              "loop": 1,
+              "play": 0,
+              "totalColumn": 1,
+              "totalRow": 1,
+              "frameTime": 0.10000000149011612,
+              "initialFramCol": 0.0,
+              "initialFramRow": 0.0,
+              "lastFramCol": 0.0,
+              "lastFramRow": 0.0
+            }
+          },
+          "Shooting": {
+            "animState": {
+              "texture": "",
+              "loop": 1,
+              "play": 0,
+              "totalColumn": 1,
+              "totalRow": 1,
+              "frameTime": 0.10000000149011612,
+              "initialFramCol": 0.0,
+              "initialFramRow": 0.0,
+              "lastFramCol": 0.0,
+              "lastFramRow": 0.0
+            }
+          },
+          "Dead": {
+            "animState": {
+              "texture": "",
+              "loop": 1,
+              "play": 0,
+              "totalColumn": 1,
+              "totalRow": 1,
+              "frameTime": 0.10000000149011612,
+              "initialFramCol": 0.0,
+              "initialFramRow": 0.0,
+              "lastFramCol": 0.0,
+              "lastFramRow": 0.0
+            }
+          }
+        },
+        "AudioComponent": {
+          "channels": {
+            "default": {
+              "fadeInOnStart": 1,
+              "fadeInDuration": 0.6399999856948853
+            }
+          }
         }
       }
     },
@@ -48,34 +167,6 @@
       }
     },
     {
-      "name": "back_text",
-      "components": {
-        "Transform": {
-          "pos": [
-            -16.1,
-            8.1,
-            0.0
-          ],
-          "rotation": 0.0,
-          "scale": [
-            3.799999952316284,
-            6.0,
-            0.0
-          ]
-        },
-        "FontComponent": {
-          "word": "BACK",
-          "color": [
-            0.0,
-            0.0,
-            0.0
-          ],
-          "scale": 1.0,
-          "fontType": 1
-        }
-      }
-    },
-    {
       "prefabid": "dd60e1e1-641c-4ed5-b69d-ffadfa02fb7a",
       "name": "player",
       "components": {
@@ -96,39 +187,57 @@
         },
         "CollisionInfo": {
           "collisionTag": "player",
-          "ignoreCollisionsWith": [ "bullet" ]
-        },
-        "StateMachine": {
-          "state": "Walking",
-          "Dead": {
-            "animState": {
-              "texture": "",
-              "loop": 1,
-              "totalColumn": 1,
-              "totalRow": 1,
-              "frameTime": 0.10000000149011612,
-              "initialFramCol": 0.0,
-              "initialFramRow": 0.0,
-              "lastFramCol": 0.0,
-              "lastFramRow": 0.0
-            }
-          }
-        }
-      }
-    },
-    {
-      "prefabid": "f04819ff-270c-41b4-8387-73382eb85103",
-      "name": "water_source",
-      "components": {
-        "Transform": {
-          "pos": [
-            -6.120626926422119,
-            -8.350801467895508,
-            0.0
+          "ignoreCollisionsWith": [
+            "bullet"
           ]
         },
         "StateMachine": {
-          "stateTime": 252.32286071777344
+          "stateTime": 8.39919662475586
+        },
+        "AudioComponent": {
+          "channels": {
+            "footsteps": {
+              "audioFile": "assets/audio/footsteps.wav",
+              "volume": 0.5,
+              "pitch": 1.0,
+              "loop": 1,
+              "playOnStart": 0,
+              "muted": 0,
+              "fadeInOnStart": 0,
+              "fadeInDuration": 1.0,
+              "fadeOutOnStop": 1,
+              "fadeOutDuration": 0.15000000596046448,
+              "isSpatial": 0,
+              "minDistance": 1.0,
+              "maxDistance": 100.0
+            },
+            "refill": {
+              "audioFile": "assets/Audio\\collect_water.wav",
+              "volume": 1.0,
+              "pitch": 1.0,
+              "loop": 0,
+              "playOnStart": 0,
+              "muted": 0,
+              "fadeInOnStart": 1,
+              "fadeInDuration": 0.5400000214576721,
+              "fadeOutOnStop": 1,
+              "fadeOutDuration": 0.7799999713897705,
+              "isSpatial": 0,
+              "minDistance": 1.0,
+              "maxDistance": 100.0
+            }
+          }
+        },
+        "LuaScript": {
+          "scripts": [
+            {
+              "filename": "./assets/scripting\\player.lua",
+              "scriptName": "player"
+            }
+          ]
+        },
+        "VisualLC": {
+          "filename": "player_logic.json"
         }
       }
     },
@@ -143,34 +252,6 @@
             0.0,
             -0.10000000149011612
           ]
-        }
-      }
-    },
-    {
-      "name": "back_button",
-      "components": {
-        "Transform": {
-          "pos": [
-            -15.5,
-            8.5,
-            0.9990000128746033
-          ],
-          "rotation": 0.0,
-          "scale": [
-            5.099999904632568,
-            2.0,
-            0.0
-          ]
-        },
-        "Render": {
-          "shape": "square",
-          "hasTex": 1,
-          "texture": "assets/button.png",
-          "hasTex": 1,
-          "hasAnimation": 0
-        },
-        "Button" : {
-          "action" : "back"
         }
       }
     },
@@ -288,30 +369,18 @@
             3.2525298595428467,
             0.5
           ]
-        }
-      }
-    },
-    {
-      "prefabid": "94d018f7-a766-4ee6-95be-f39272697938",
-      "name": "platform_right29",
-      "components": {
-        "Transform": {
-          "pos": [
-            16.42242431640625,
-            -3.197999954223633,
-            0.0
-          ],
-          "scale": [
-            10.0,
-            1.7000001668930054,
-            0.0
-          ]
         },
         "CollisionInfo": {
-          "colliderSize": [
-            7.5,
-            3.0
-          ]
+          "collisionTag": "environment"
+        },
+        "AudioComponent": {
+          "channels": {
+            "default": {
+              "isSpatial": 0,
+              "minDistance": 5.0,
+              "maxDistance": 50.0
+            }
+          }
         }
       }
     },
@@ -334,7 +403,31 @@
         "CollisionInfo": {
           "colliderSize": [
             20.0,
-            3.200000047683716
+            1.2000000476837158
+          ]
+        }
+      }
+    },
+    {
+      "prefabid": "94d018f7-a766-4ee6-95be-f39272697938",
+      "name": "platform_right29",
+      "components": {
+        "Transform": {
+          "pos": [
+            16.42242431640625,
+            -3.197999954223633,
+            0.0
+          ],
+          "scale": [
+            10.0,
+            1.7000001668930054,
+            0.0
+          ]
+        },
+        "CollisionInfo": {
+          "colliderSize": [
+            7.5,
+            2.0
           ]
         }
       }
@@ -358,7 +451,7 @@
         "CollisionInfo": {
           "colliderSize": [
             9.5,
-            3.0
+            2.0
           ]
         }
       }
@@ -405,6 +498,12 @@
             1.5,
             0.0
           ]
+        },
+        "CollisionInfo": {
+          "colliderSize": [
+            2.6999998092651367,
+            1.2000000476837158
+          ]
         }
       }
     },
@@ -437,7 +536,278 @@
     },
     {
       "prefabid": "25591e7c-7d8f-47e1-a686-f950e77e91a1",
-      "name": "land_vfx(28)"
+      "name": "land_vfx(28)",
+      "components": {
+        "StateMachine": {
+          "Idle": {
+            "animState": {
+              "texture": "assets/Texture\\land-vfx.png",
+              "loop": 1,
+              "play": 0,
+              "totalColumn": 3,
+              "totalRow": 3,
+              "frameTime": 0.1469999998807907,
+              "initialFramCol": 0.0,
+              "initialFramRow": 0.0,
+              "lastFramCol": 1.0,
+              "lastFramRow": 2.0
+            }
+          },
+          "Walking": {
+            "animState": {
+              "texture": "",
+              "loop": 1,
+              "play": 0,
+              "totalColumn": 1,
+              "totalRow": 1,
+              "frameTime": 0.10000000149011612,
+              "initialFramCol": 0.0,
+              "initialFramRow": 0.0,
+              "lastFramCol": 0.0,
+              "lastFramRow": 0.0
+            }
+          },
+          "Jumping": {
+            "animState": {
+              "texture": "",
+              "loop": 1,
+              "play": 0,
+              "totalColumn": 1,
+              "totalRow": 1,
+              "frameTime": 0.10000000149011612,
+              "initialFramCol": 0.0,
+              "initialFramRow": 0.0,
+              "lastFramCol": 0.0,
+              "lastFramRow": 0.0
+            }
+          },
+          "Falling": {
+            "animState": {
+              "texture": "",
+              "loop": 1,
+              "play": 0,
+              "totalColumn": 1,
+              "totalRow": 1,
+              "frameTime": 0.10000000149011612,
+              "initialFramCol": 0.0,
+              "initialFramRow": 0.0,
+              "lastFramCol": 0.0,
+              "lastFramRow": 0.0
+            }
+          },
+          "Shooting": {
+            "animState": {
+              "texture": "",
+              "loop": 1,
+              "play": 0,
+              "totalColumn": 1,
+              "totalRow": 1,
+              "frameTime": 0.10000000149011612,
+              "initialFramCol": 0.0,
+              "initialFramRow": 0.0,
+              "lastFramCol": 0.0,
+              "lastFramRow": 0.0
+            }
+          },
+          "Dead": {
+            "animState": {
+              "texture": "",
+              "loop": 1,
+              "play": 0,
+              "totalColumn": 1,
+              "totalRow": 1,
+              "frameTime": 0.10000000149011612,
+              "initialFramCol": 0.0,
+              "initialFramRow": 0.0,
+              "lastFramCol": 0.0,
+              "lastFramRow": 0.0
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "water balance back",
+      "components": {
+        "Transform": {
+          "pos": [
+            -13.0702543258667,
+            -7.312854766845703,
+            0.9900000095367432
+          ],
+          "rotation": 0.0,
+          "scale": [
+            6.588000774383545,
+            6.588000774383545,
+            0.0
+          ]
+        },
+        "Render": {
+          "shape": "square",
+          "hasTex": 1,
+          "texture": "assets/Texture\\Water_ContainerRim.png",
+          "hasTex": 1,
+          "hasAnimation": 0
+        },
+        "CollisionInfo": {
+          "collisionFlag": 1,
+          "autoFitScale": 1,
+          "colliderSize": [
+            6.588000774383545,
+            6.588000774383545
+          ],
+          "colliderType": "square",
+          "collisionRes": "StopWhenCollide",
+          "collisionTag": "inventory"
+        }
+      }
+    },
+    {
+      "name": "water balance",
+      "components": {
+        "Transform": {
+          "pos": [
+            -12.97700023651123,
+            -7.301594257354736,
+            0.9800000190734863
+          ],
+          "rotation": 0.0,
+          "scale": [
+            6.588000774383545,
+            6.588000774383545,
+            0.0
+          ]
+        },
+        "Render": {
+          "shape": "square",
+          "hasTex": 1,
+          "texture": "assets/Texture\\Water_100.png",
+          "hasTex": 1,
+          "hasAnimation": 0
+        },
+        "CollisionInfo": {
+          "collisionFlag": 1,
+          "autoFitScale": 1,
+          "colliderSize": [
+            6.588000774383545,
+            6.588000774383545
+          ],
+          "colliderType": "square",
+          "collisionRes": "StopWhenCollide",
+          "collisionTag": "inventory"
+        },
+        "VisualLC": {
+          "filename": "bullet-inventory.json"
+        }
+      }
+    },
+    {
+      "prefabid": "f04819ff-270c-41b4-8387-73382eb85103",
+      "name": "water_source30",
+      "components": {
+        "Transform": {
+          "pos": [
+            -5.438690185546875,
+            -7.751836776733398,
+            0.0
+          ]
+        },
+        "StateMachine": {
+          "stateTime": 252.32286071777344,
+          "Idle": {
+            "animState": {
+              "texture": "assets/Texture\\Water_Source_Full.png",
+              "loop": 1,
+              "play": 0,
+              "totalColumn": 1,
+              "totalRow": 1,
+              "frameTime": 0.10000000149011612,
+              "initialFramCol": 0.0,
+              "initialFramRow": 0.0,
+              "lastFramCol": 0.0,
+              "lastFramRow": 0.0
+            }
+          },
+          "Walking": {
+            "animState": {
+              "texture": "assets/Texture\\Water_Source_Empty.png",
+              "loop": 1,
+              "play": 0,
+              "totalColumn": 1,
+              "totalRow": 1,
+              "frameTime": 0.10000000149011612,
+              "initialFramCol": 0.0,
+              "initialFramRow": 0.0,
+              "lastFramCol": 0.0,
+              "lastFramRow": 0.0
+            }
+          },
+          "Jumping": {
+            "animState": {
+              "texture": "",
+              "loop": 1,
+              "play": 0,
+              "totalColumn": 1,
+              "totalRow": 1,
+              "frameTime": 0.10000000149011612,
+              "initialFramCol": 0.0,
+              "initialFramRow": 0.0,
+              "lastFramCol": 0.0,
+              "lastFramRow": 0.0
+            }
+          },
+          "Falling": {
+            "animState": {
+              "texture": "assets/Texture\\Water_Source_Empty.png",
+              "loop": 1,
+              "play": 0,
+              "totalColumn": 1,
+              "totalRow": 1,
+              "frameTime": 0.10000000149011612,
+              "initialFramCol": 0.0,
+              "initialFramRow": 0.0,
+              "lastFramCol": 0.0,
+              "lastFramRow": 0.0
+            }
+          },
+          "Shooting": {
+            "animState": {
+              "texture": "",
+              "loop": 1,
+              "play": 0,
+              "totalColumn": 1,
+              "totalRow": 1,
+              "frameTime": 0.10000000149011612,
+              "initialFramCol": 0.0,
+              "initialFramRow": 0.0,
+              "lastFramCol": 0.0,
+              "lastFramRow": 0.0
+            }
+          },
+          "Dead": {
+            "animState": {
+              "texture": "",
+              "loop": 1,
+              "play": 0,
+              "totalColumn": 1,
+              "totalRow": 1,
+              "frameTime": 0.10000000149011612,
+              "initialFramCol": 0.0,
+              "initialFramRow": 0.0,
+              "lastFramCol": 0.0,
+              "lastFramRow": 0.0
+            }
+          }
+        },
+        "AudioComponent": {
+          "channels": {
+            "default": {
+              "fadeInOnStart": 1,
+              "fadeInDuration": 0.6399999856948853
+            }
+          }
+        }
+      }
     }
   ]
 }

@@ -1,0 +1,42 @@
+{
+  "version": 1,
+  "nodes": [
+    {
+      "id": 3,
+      "implementation": "Set State",
+      "type": 1,
+      "position": [
+        575.0,
+        108.0
+      ],
+      "hasInput": true,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false,
+      "parameters": {
+        "state": "Walking"
+      }
+    },
+    {
+      "id": 5,
+      "implementation": "On Bullet Refill",
+      "type": 0,
+      "position": [
+        155.0,
+        106.0
+      ],
+      "hasInput": false,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false
+    }
+  ],
+  "connections": [
+    {
+      "fromNodeId": 5,
+      "outputPin": "Out",
+      "toNodeId": 3,
+      "inputPin": "In"
+    }
+  ]
+}

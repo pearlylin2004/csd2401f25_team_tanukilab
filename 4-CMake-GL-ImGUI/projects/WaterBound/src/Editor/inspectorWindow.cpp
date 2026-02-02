@@ -17,6 +17,7 @@ Technology is prohibited.
 /* End Header **************************************************************************/
 #ifdef _DEBUG
 #include "Editor/editorManager.h"
+#include "Systems.h"
 
 InspectorWindow::InspectorWindow(Editor::ObjSelectionState& Ostate, Editor::GizmoState& gState) : 
     m_objSelectionState(Ostate),
@@ -189,7 +190,7 @@ void InspectorWindow::render(GameObjectManager& manager) {
         }
         /* ------------------- END ------------------- */
 
-        /* ------------------- Font ------------------- */
+        /* ------------------- TILE MAP ------------------- */
         if (selected->hasComponent<TileMap>()) {
             renderTileMap(selected);
 
@@ -209,10 +210,20 @@ void InspectorWindow::render(GameObjectManager& manager) {
         }
         /* ------------------- END ------------------- */
 
+		/* ------------------- Particle System ------------------- */
+        if (selected->hasComponent<Particle>()) {
+            renderParticles(selected);
+
+            ImGui::Spacing();
+            ImGui::Separator();
+            ImGui::Spacing();
+        }
+        /* ------------------- END ------------------- */
+
         /* ------------------- Visual LC ------------------- */
         if (selected->hasComponent<VisualLC>()) {
             renderVisualLogic(selected);
-
+        
             ImGui::Spacing();
             ImGui::Separator();
             ImGui::Spacing();
@@ -385,17 +396,17 @@ void InspectorWindow::renderTransform(GameObject* selected, GameObjectManager& m
         if (ImGui::TreeNode("Rotation")) {
             if (ImGui::DragFloat("Angle", &transform->rotation)) {
                 transform->rotation = std::clamp(transform->rotation, 0.f, 360.f);
-
-                if (!m_isEditingRot) {
-                    UndoRedoManager::Instance().beginTransformEdit(selected);
-                    m_isEditingRot = true;
-                    m_transformEditObject = selected;
-                }
             }
 
-            bool rotationActive = ImGui::IsItemActive();
+            // take snapshot when FIRST activated (before any changes)
+            if (ImGui::IsItemActivated()) {
+                UndoRedoManager::Instance().beginTransformEdit(selected);
+                m_isEditingRot = true;
+                m_transformEditObject = selected;
+            }
 
-            if (m_isEditingRot && !rotationActive) {
+            // end snapshot when deactivated (after all changes)
+            if (ImGui::IsItemDeactivated() && m_isEditingRot) {
                 UndoRedoManager::Instance().endTransformEdit(manager, m_transformEditObject);
                 m_isEditingRot = false;
             }
@@ -696,7 +707,9 @@ void InspectorWindow::renderStateMachine(GameObject* selected) {
                     ImGui::Separator();
                     ImGui::Spacing();
 
-                    ImGui::Checkbox("Loop (WIP)", &currentState.loop);
+					ImGui::Checkbox("Play Animation", &currentState.play);
+
+                    ImGui::Checkbox("Loop", &currentState.loop);
 
                     if (ImGui::InputInt("Total Columns", &currentState.totalColumn))
                         currentState.totalColumn = std::max(currentState.totalColumn, 1);
@@ -785,50 +798,6 @@ void InspectorWindow::renderCollision( GameObject* selected, GameObjectManager& 
                 }
 
             }
-
-            std::string currentTag = collision->collisionTag.empty() ? "default" : collision->collisionTag;
-
-            if (ImGui::BeginCombo("Collision Tag", currentTag.c_str())) {
-                const std::vector<std::string>& collisionTags = GlobalRegistry::Instance().getCollisionTags();
-
-                for (const std::string& tag : collisionTags) {
-                    bool isSelected = (currentTag == tag);
-
-                    if (ImGui::Selectable(tag.c_str(), isSelected)) {
-                        collision->collisionTag = tag;
-                    }
-
-                    if (isSelected) {
-                        ImGui::SetItemDefaultFocus();
-                    }
-                }
-
-                ImGui::EndCombo();
-            }
-
-            /*if (ImGui::BeginCombo("Collide with", filterType.c_str())) {
-                const char* options[] = { "any", "name", "tag" };
-                const char* filterLabels[] = { "Any Object", "Object Name", "Collision Tag" };
-
-                for (const char* option : options) {
-                    bool isSelected = (filterType == option);
-
-                    if (ImGui::Selectable(option, isSelected)) {
-                        node.parameters["colFilterType"] = option;
-
-                        if (!isSelected) {
-                            node.parameters["colFilterValue"] = "";
-                        }
-                    }
-
-                    if (isSelected) {
-                        ImGui::SetItemDefaultFocus();
-                    }
-                }*/
-
-               /* ImGui::EndCombo();
-            }*/
-
         }
 
         ImGui::Spacing();
@@ -851,7 +820,7 @@ void InspectorWindow::renderCollision( GameObject* selected, GameObjectManager& 
             }
 
             CollisionResponseMode mode = collision->collisionRes;
-            const char* modes[] = { "Static", "Pushable" };
+            const char* modes[] = { "Static", "Pushable", "No Response"};
             int current = static_cast<int>(mode);
 
             if (ImGui::Combo("Collision Response", &current, modes, IM_ARRAYSIZE(modes))) {
@@ -892,6 +861,74 @@ void InspectorWindow::renderCollision( GameObject* selected, GameObjectManager& 
         }
         else {
             if (collision->collisionFlag) Editor::sceneWindowState.showSingleCollider = false;
+        }
+
+        ImGui::Spacing();
+        ImGui::Separator();
+
+        if (ImGui::TreeNode("Collision Tag")) {
+            std::string currentTag = collision->collisionTag.empty() ? "default" : collision->collisionTag;
+            const std::vector<std::string>& collisionTags = GlobalRegistry::Instance().getCollisionTags();
+
+            ImGui::BeginDisabled(!collision->collisionFlag);
+            if (ImGui::BeginCombo("Object Tag", currentTag.c_str())) {
+                for (const std::string& tag : collisionTags) {
+                    bool isSelected = (currentTag == tag);
+
+                    if (ImGui::Selectable(tag.c_str(), isSelected)) {
+                        collision->collisionTag = tag;
+                    }
+
+                    if (isSelected) {
+                        ImGui::SetItemDefaultFocus();
+                    }
+                }
+
+                ImGui::EndCombo();
+            }
+
+            ImGui::Spacing();
+            ImGui::Separator();
+
+            // Ignore Collisions with Checkboxes
+            ImGui::Text("Ignore Collisions With:");
+            ImGui::Spacing();
+
+            for (const std::string& tag : collisionTags) {
+                bool isIgnored = (collision->ignoreCollisionsWith.find(tag) != collision->ignoreCollisionsWith.end());
+
+                if (ImGui::Checkbox(tag.c_str(), &isIgnored)) {
+                    if (isIgnored) {
+                        collision->ignoreCollisionsWith.insert(tag);
+                    }
+                    else {
+                        collision->ignoreCollisionsWith.erase(tag);
+                    }
+                }
+            }
+
+            ImGui::Spacing();
+
+            if (!collision->ignoreCollisionsWith.empty()) {
+                if (ImGui::Button("Uncheck All", ImVec2(-1, 0))) {
+                    collision->ignoreCollisionsWith.clear();
+                }
+            }
+            
+            if (!collisionTags.empty() && collision->ignoreCollisionsWith.size() != collisionTags.size()) {
+                if (ImGui::Button("Check All", ImVec2(-1, 0))) {
+                    for (const std::string& tag : collisionTags) {
+						collision->ignoreCollisionsWith.insert(tag);
+                    }
+                }
+            }
+            else if (collisionTags.empty()) {
+                ImGui::TextWrapped("No collision tags available. Add collision tags in the Global Registry.");
+            }
+
+            ImGui::EndDisabled();
+
+            ImGui::TreePop();
         }
 
         if (ImGui::Button("Remove Collision", ImVec2(-1, 0))) {
@@ -1282,18 +1319,90 @@ void InspectorWindow::renderTileMap(GameObject* selected)
     TileMap* tm = selected->getComponent<TileMap>();
 
     if (ImGui::CollapsingHeader("Tile Map")) {
-        ImGui::Checkbox("Enable", &m_gizmoState.showGrid);
+        ImGui::Checkbox("Enable Collision", &tm->enableCol);
 
-        ImGui::InputInt("Grid Columns", &tm->columns);
-        ImGui::InputInt("Grid rows", &tm->rows);
+        if (ImGui::TreeNode("Brush")) {
+            std::string displayText = TileMapSystem::filename.empty() ? "No Brush Selected (Drag texture here)" : std::filesystem::path(TileMapSystem::filename).filename().string();
 
-        ImGui::Spacing();
-        ImGui::Separator();
-        ImGui::Spacing();
+            ImGui::SliderInt("Brush Size", &TileMapSystem::brushSize, 1, 5);
+            ImGui::Text("(%dx%d tiles)", TileMapSystem::brushSize, TileMapSystem::brushSize);
 
-        ImGui::InputFloat("Tile Width", &tm->tileW, 1.f);
-        ImGui::InputFloat("Tile Height", &tm->tileH, 1.f);
+            ImGui::BeginChild("BrushDropZone", ImVec2(-1, 80), true, ImGuiWindowFlags_NoScrollWithMouse);
 
+            if (!TileMapSystem::filename.empty()) {
+                TextureData texData = ResourceManager::getInstance().getTexture(TileMapSystem::filename);
+
+                if (texData.id != 0) {
+                    ImGui::Image((ImTextureID)(intptr_t)texData.id, ImVec2(64, 64), ImVec2(0, 1), ImVec2(1, 0));
+                    ImGui::SameLine();
+                }
+            }
+
+            ImGui::TextWrapped("%s", displayText.c_str());
+
+			// drag and drop from asset browser
+            if (ImGui::BeginDragDropTarget()) {
+				if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("ASSET")) {
+					const char* droppedPath = (const char*)payload->Data;
+					std::string path = droppedPath;
+
+                    std::string ext;
+					std::filesystem::path fsPath(path);
+					ext = fsPath.extension().string();
+					
+					// only accept if dropped file is a png/jpg/jpeg
+					if (ext == ".png" || ext == ".jpg" || ext == ".jpeg") {
+						TileMapSystem::filename = path;
+
+						DebugLog::addMessage("Selected brush texture: " + TileMapSystem::filename + "\n");
+					}
+					else {
+						// texture file type error pop up
+						Editor::popupState.textureFileTypePopup = true;
+						Editor::popupState.filename = fsPath.filename().string();
+						// invalid texture format -> don't change anything
+						DebugLog::addMessage("Invalid texture format : " + path + "\n");
+					}
+				}
+
+                ImGui::EndDragDropTarget();
+            }
+
+            ImGui::EndChild();
+
+
+            // clear texture from brush
+			if (!TileMapSystem::filename.empty()) {
+				ImGui::Spacing();
+
+                ImGui::Checkbox("Eraser Mode", &TileMapSystem::eraseMode);
+                ImGui::Spacing();
+
+				if (ImGui::Button("Clear Brush", ImVec2(-1, 0))) {
+					TileMapSystem::filename.clear();
+                    TileMapSystem::eraseMode = false;
+					DebugLog::addMessage("Cleared brush texture\n");
+				}
+			}
+
+            ImGui::TreePop();
+        }
+
+        if (ImGui::TreeNode("Grid")) {
+            ImGui::Checkbox("Enable", &m_gizmoState.showGrid);
+
+            ImGui::InputInt("Grid Columns", &tm->columns);
+            ImGui::InputInt("Grid rows", &tm->rows);
+
+            ImGui::Spacing();
+            ImGui::Separator();
+            ImGui::Spacing();
+
+            ImGui::InputFloat("Tile Width", &tm->tileW, 1.f);
+            ImGui::InputFloat("Tile Height", &tm->tileH, 1.f);
+
+            ImGui::TreePop();
+        }
 
         if (ImGui::Button("Remove TileMap", ImVec2(-1, 0))) {
             // add a delete component func here
@@ -1301,6 +1410,29 @@ void InspectorWindow::renderTileMap(GameObject* selected)
             DebugLog::addMessage("Removed Tile Map Component");
         }
     }
+}
+
+void InspectorWindow::renderParticles(GameObject* selected)
+{
+    Particle* ps = selected->getComponent<Particle>();
+    if (ImGui::CollapsingHeader("Particle System")) {
+        ImGui::InputInt("Max Particles", &ps->master.particleAmt);
+        ImGui::InputFloat("Particle Lifetime", &ps->master.timer, 0.1f);
+        ImGui::InputFloat("Offset", &ps->master.offset);
+        ImGui::InputFloat("Velocity X", &ps->master.velocity.x);
+        ImGui::InputFloat("Velocity Y", &ps->master.velocity.y);
+
+        ImGui::ColorEdit3("Start Colour", &ps->master.clr.x);
+        
+        ImGui::Spacing();
+        ImGui::Separator();
+        ImGui::Spacing();
+        if (ImGui::Button("Remove Particle System", ImVec2(-1, 0))) {
+            // add a delete component func here
+            selected->removeComponent<Particle>();
+            DebugLog::addMessage("Removed Particle System Component");
+        }
+	}
 }
 
 void InspectorWindow::renderLua(GameObject* selected) {
@@ -1431,10 +1563,6 @@ void InspectorWindow::renderLua(GameObject* selected) {
             DebugLog::addMessage("Removed Lua Script Component");
         }
     }
-
-    ImGui::Spacing();
-    ImGui::Separator();
-    ImGui::Spacing();
 }
 
 void InspectorWindow::renderVisualLogic(GameObject* selected) {
@@ -1447,17 +1575,15 @@ void InspectorWindow::renderVisualLogic(GameObject* selected) {
 		/* ---------- Dropdown to Select Logic Graph ---------- */
         if (ImGui::BeginCombo("Logic Graph", displayName.c_str())) {
             // create new logic asset
-			if (ImGui::Selectable("<Create New>", logic->filename.empty())) {
+			if (ImGui::Selectable("<Create New>", logic->filename.empty())) {                           
+                logic->filename.clear();
+                logic->nodes.clear();
+                logic->connections.clear();
+
+                VisualLogicEditor::Instance().clear();
+
                 Editor::visualLogicState.showEditor = true;
-                Editor::visualLogicState.currentGraphName = "";
-				Editor::visualLogicState.targetObj = selected;
-
-                // create new empty graph
-                Editor::visualLogicState.nodes.clear();
-                Editor::visualLogicState.connections.clear();
-                logic->filename = "";
-
-                VisualLogicEditor::Instance().updateNextNodeId();
+                Editor::visualLogicState.targetObj = selected;
 
 				DebugLog::addMessage("Creating new Visual Logic Graph for " + selected->getObjectName());
 			}
@@ -1473,7 +1599,9 @@ void InspectorWindow::renderVisualLogic(GameObject* selected) {
                     bool isSelected = (logic->filename == assetName);
 
                     if (ImGui::Selectable(assetName.c_str(), isSelected)) {
-                        logic->filename = assetName;
+                        Editor::visualLogicState.targetObj = selected;
+                        VisualLogicEditor::Instance().loadLogic(assetName);
+                        /*logic->filename = assetName;
 
                         std::string filepath = "/Logic/" + assetName;
                         std::string err;
@@ -1483,7 +1611,7 @@ void InspectorWindow::renderVisualLogic(GameObject* selected) {
                         }
                         else {
                             DebugLog::addMessage("ERROR loading Visual Logic: " + err + "\n");
-                        }
+                        }*/
                     }
 
                     if (isSelected) {

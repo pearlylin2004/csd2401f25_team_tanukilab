@@ -10,7 +10,9 @@
         -190.0
       ],
       "hasInput": false,
-      "hasOutput": true
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false
     },
     {
       "id": 13,
@@ -22,6 +24,8 @@
       ],
       "hasInput": true,
       "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false,
       "parameters": {
         "value": "1",
         "variable": "shakeDir"
@@ -37,6 +41,8 @@
       ],
       "hasInput": true,
       "hasOutput": false,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false,
       "parameters": {
         "comparison": "greater",
         "threshold": "0",
@@ -53,10 +59,12 @@
       ],
       "hasInput": true,
       "hasOutput": false,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false,
       "parameters": {
         "comparison": "greater",
         "property": "rotation",
-        "threshold": "10.000000"
+        "threshold": "2.000000"
       }
     },
     {
@@ -69,6 +77,8 @@
       ],
       "hasInput": true,
       "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false,
       "parameters": {
         "value": "-1.000000",
         "variable": "shakeDir"
@@ -84,6 +94,8 @@
       ],
       "hasInput": true,
       "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false,
       "parameters": {
         "value": "1.000000",
         "variable": "shakeDir"
@@ -95,14 +107,16 @@
       "type": 2,
       "position": [
         479.0,
-        160.0
+        161.0
       ],
       "hasInput": true,
       "hasOutput": false,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false,
       "parameters": {
         "comparison": "less",
         "property": "rotation",
-        "threshold": "-10.000000"
+        "threshold": "-2.000000"
       }
     },
     {
@@ -115,8 +129,10 @@
       ],
       "hasInput": true,
       "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false,
       "parameters": {
-        "angle": "20.000000"
+        "angle": "10.000000"
       }
     },
     {
@@ -129,8 +145,10 @@
       ],
       "hasInput": true,
       "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false,
       "parameters": {
-        "angle": "-20.000000"
+        "angle": "-10.000000"
       }
     },
     {
@@ -142,7 +160,9 @@
         -42.0
       ],
       "hasInput": false,
-      "hasOutput": true
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false
     },
     {
       "id": 23,
@@ -153,7 +173,9 @@
         257.0
       ],
       "hasInput": false,
-      "hasOutput": true
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false
     },
     {
       "id": 26,
@@ -165,6 +187,8 @@
       ],
       "hasInput": true,
       "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false,
       "parameters": {
         "angle": "0"
       }
@@ -179,8 +203,10 @@
       ],
       "hasInput": true,
       "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false,
       "parameters": {
-        "channel": "default"
+        "channel": "button_hover"
       }
     }
   ],
@@ -248,13 +274,13 @@
     {
       "fromNodeId": 22,
       "outputPin": "Out",
-      "toNodeId": 27,
+      "toNodeId": 15,
       "inputPin": "In"
     },
     {
       "fromNodeId": 22,
       "outputPin": "Out",
-      "toNodeId": 15,
+      "toNodeId": 27,
       "inputPin": "In"
     }
   ]
