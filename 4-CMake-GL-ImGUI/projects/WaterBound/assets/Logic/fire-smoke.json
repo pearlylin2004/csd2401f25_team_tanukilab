@@ -247,6 +247,22 @@
       "parameters": {
         "forceY": "10.000000"
       }
+    },
+    {
+      "id": 21,
+      "implementation": "Play Sound",
+      "type": 1,
+      "position": [
+        1522.0,
+        -60.0
+      ],
+      "hasInput": true,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false,
+      "parameters": {
+        "channel": "default"
+      }
     }
   ],
   "connections": [
@@ -320,6 +336,12 @@
       "fromNodeId": 17,
       "outputPin": "False",
       "toNodeId": 20,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 14,
+      "outputPin": "Out",
+      "toNodeId": 21,
       "inputPin": "In"
     }
   ]
