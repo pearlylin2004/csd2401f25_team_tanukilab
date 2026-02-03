@@ -34,6 +34,31 @@
       }
     },
     {
+      "name": "background5",
+      "components": {
+        "Transform": {
+          "pos": [
+            0.0,
+            0.0,
+            -0.07999999821186066
+          ],
+          "rotation": 0.0,
+          "scale": [
+            45.0,
+            22.0,
+            0.0
+          ]
+        },
+        "Render": {
+          "shape": "square",
+          "hasTex": 1,
+          "texture": "assets/Texture\\game_bg_layer_5.png",
+          "hasTex": 1,
+          "hasAnimation": 0
+        }
+      }
+    },
+    {
       "prefabid": "f04819ff-270c-41b4-8387-73382eb85103",
       "name": "water_source3030",
       "components": {
@@ -142,37 +167,12 @@
       }
     },
     {
-      "name": "background5",
-      "components": {
-        "Transform": {
-          "pos": [
-            0.0,
-            0.0,
-            -0.07999999821186066
-          ],
-          "rotation": 0.0,
-          "scale": [
-            45.0,
-            22.0,
-            0.0
-          ]
-        },
-        "Render": {
-          "shape": "square",
-          "hasTex": 1,
-          "texture": "assets/Texture\\game_bg_layer_5.png",
-          "hasTex": 1,
-          "hasAnimation": 0
-        }
-      }
-    },
-    {
       "prefabid": "dd60e1e1-641c-4ed5-b69d-ffadfa02fb7a",
       "name": "player",
       "components": {
         "Transform": {
           "pos": [
-            -11.074295997619629,
+            -9.409934043884277,
             -7.5,
             0.9980000257492065
           ],
@@ -192,7 +192,8 @@
           ]
         },
         "StateMachine": {
-          "stateTime": 15.039608001708984,
+          "facingRight": 0,
+          "stateTime": 19.015810012817383,
           "Falling": {
             "animState": {
               "texture": "assets/Texture/Kinuta_Fall_SS.png",
@@ -360,6 +361,31 @@
       }
     },
     {
+      "name": "background6",
+      "components": {
+        "Transform": {
+          "pos": [
+            0.0,
+            0.0,
+            -0.0010000000474974513
+          ],
+          "rotation": 0.0,
+          "scale": [
+            45.0,
+            45.0,
+            0.0
+          ]
+        },
+        "Render": {
+          "shape": "square",
+          "hasTex": 1,
+          "texture": "assets/Texture\\game_bg_layer_6.png",
+          "hasTex": 1,
+          "hasAnimation": 0
+        }
+      }
+    },
+    {
       "name": "up empty",
       "components": {
         "Transform": {
@@ -398,57 +424,8 @@
       }
     },
     {
-      "name": "background6",
-      "components": {
-        "Transform": {
-          "pos": [
-            0.0,
-            0.0,
-            -0.0010000000474974513
-          ],
-          "rotation": 0.0,
-          "scale": [
-            45.0,
-            45.0,
-            0.0
-          ]
-        },
-        "Render": {
-          "shape": "square",
-          "hasTex": 1,
-          "texture": "assets/Texture\\game_bg_layer_6.png",
-          "hasTex": 1,
-          "hasAnimation": 0
-        }
-      }
-    },
-    {
       "prefabid": "887d25cd-bd8d-481f-9f64-f371300a2cf0",
       "name": "win screen"
-    },
-    {
-      "prefabid": "94d018f7-a766-4ee6-95be-f39272697938",
-      "name": "platform_left",
-      "components": {
-        "Transform": {
-          "pos": [
-            -7.859457492828369,
-            1.051439642906189,
-            0.0
-          ],
-          "scale": [
-            20.399999618530273,
-            1.5,
-            0.0
-          ]
-        },
-        "CollisionInfo": {
-          "colliderSize": [
-            20.0,
-            1.2000000476837158
-          ]
-        }
-      }
     },
     {
       "prefabid": "94d018f7-a766-4ee6-95be-f39272697938",
@@ -470,6 +447,30 @@
           "colliderSize": [
             7.5,
             2.0
+          ]
+        }
+      }
+    },
+    {
+      "prefabid": "94d018f7-a766-4ee6-95be-f39272697938",
+      "name": "platform_left",
+      "components": {
+        "Transform": {
+          "pos": [
+            -7.859457492828369,
+            1.051439642906189,
+            0.0
+          ],
+          "scale": [
+            20.399999618530273,
+            1.5,
+            0.0
+          ]
+        },
+        "CollisionInfo": {
+          "colliderSize": [
+            20.0,
+            1.2000000476837158
           ]
         }
       }
@@ -647,7 +648,7 @@
         "Transform": {
           "pos": [
             -13.0702543258667,
-            -7.312854766845703,
+            -7.249362468719482,
             0.9900000095367432
           ],
           "rotation": 0.0,
@@ -696,7 +697,7 @@
         "Render": {
           "shape": "square",
           "hasTex": 1,
-          "texture": "assets/Texture\\Water_100.png",
+          "texture": "assets/Texture\\Water_80.png",
           "hasTex": 1,
           "hasAnimation": 0
         },
@@ -825,7 +826,7 @@
       }
     },
     {
-      "name": "Rectangle_30",
+      "name": "tree",
       "components": {
         "Transform": {
           "pos": [
@@ -843,7 +844,7 @@
         "Render": {
           "shape": "square",
           "hasTex": 1,
-          "texture": "assets/Texture\\Tree_Base.png",
+          "texture": "assets/Texture\\Tree_Broken.png",
           "hasTex": 1,
           "hasAnimation": 0
         },
@@ -866,27 +867,79 @@
           "colliderType": "square",
           "collisionRes": "NoResponse",
           "collisionTag": "default"
-        },
-        "VisualLC": {
-          "filename": "tree-logic.json"
         }
       }
     },
     {
-      "name": "down empty",
+      "name": "branch",
       "components": {
         "Transform": {
           "pos": [
-            -19.292606353759766,
-            -9.795180320739746,
+            -17.91583251953125,
+            -7.722167015075684,
+            0.30000001192092896
+          ],
+          "rotation": 0.0,
+          "scale": [
+            3.4719998836517334,
+            2.072000026702881,
+            0.949999988079071
+          ]
+        },
+        "Render": {
+          "shape": "square",
+          "hasTex": 1,
+          "texture": "assets/Texture\\Tree_Broken_Branch.png",
+          "hasTex": 1,
+          "hasAnimation": 0
+        },
+        "Physics": {
+          "physicsFlag": 1,
+          "inWater": 0,
+          "buoyancy": 1,
+          "moveSpeed": 1.0,
+          "jumpForce": 100.0,
+          "mass": 1.0,
+          "damping": 0.9800000190734863
+        },
+        "CollisionInfo": {
+          "collisionFlag": 1,
+          "autoFitScale": 0,
+          "colliderSize": [
+            3.4719998836517334,
+            0.0020000000949949026
+          ],
+          "colliderType": "square",
+          "collisionRes": "StopWhenCollide",
+          "collisionTag": "default"
+        },
+        "VisualLC": {
+          "filename": "brokenbranch.json"
+        }
+      }
+    },
+    {
+      "name": "Rectangle_32",
+      "components": {
+        "Transform": {
+          "pos": [
+            -18.914052963256836,
+            -10.239422798156738,
             0.0
           ],
           "rotation": 0.0,
           "scale": [
-            3.4720799922943115,
-            3.4720799922943115,
+            5.900000095367432,
+            0.30000001192092896,
             0.0
           ]
+        },
+        "Render": {
+          "shape": "square",
+          "hasTex": 1,
+          "texture": "assets/Texture\\tile.png",
+          "hasTex": 1,
+          "hasAnimation": 0
         },
         "Physics": {
           "physicsFlag": 1,
@@ -901,12 +954,12 @@
           "collisionFlag": 1,
           "autoFitScale": 1,
           "colliderSize": [
-            3.4720799922943115,
-            3.4720799922943115
+            5.900000095367432,
+            0.30000001192092896
           ],
           "colliderType": "square",
           "collisionRes": "StopWhenCollide",
-          "collisionTag": "default"
+          "collisionTag": "environment"
         }
       }
     }
