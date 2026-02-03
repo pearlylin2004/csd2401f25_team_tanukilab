@@ -54,7 +54,7 @@
       "type": 1,
       "position": [
         237.00006103515625,
-        -21.111112594604492
+        -21.111083984375
       ],
       "hasInput": true,
       "hasOutput": true,
@@ -104,8 +104,8 @@
       "implementation": "Set Texture",
       "type": 1,
       "position": [
-        567.7777709960938,
-        264.4444580078125
+        652.7777709960938,
+        288.1944580078125
       ],
       "hasInput": true,
       "hasOutput": true,
@@ -120,8 +120,8 @@
       "implementation": "On Update",
       "type": 0,
       "position": [
-        -70.0,
-        270.0
+        -243.75001525878906,
+        292.5000305175781
       ],
       "hasInput": false,
       "hasOutput": true,
@@ -133,8 +133,8 @@
       "implementation": "Compare Variable",
       "type": 2,
       "position": [
-        255.55555725097656,
-        268.8888854980469
+        61.0555305480957,
+        299.3888244628906
       ],
       "hasInput": true,
       "hasOutput": false,
@@ -142,8 +142,25 @@
       "hasFalseOutput": true,
       "parameters": {
         "comparison": "greater",
-        "threshold": "3.000000",
+        "threshold": "1.000000",
         "variable": "waterHold"
+      }
+    },
+    {
+      "id": 12,
+      "implementation": "Check Timer",
+      "type": 2,
+      "position": [
+        347.75006103515625,
+        292.0000305175781
+      ],
+      "hasInput": true,
+      "hasOutput": false,
+      "hasTrueOutput": true,
+      "hasFalseOutput": true,
+      "parameters": {
+        "threshold": "1.0",
+        "timerName": "timer_0"
       }
     }
   ],
@@ -174,6 +191,12 @@
     },
     {
       "fromNodeId": 11,
+      "outputPin": "True",
+      "toNodeId": 12,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 12,
       "outputPin": "True",
       "toNodeId": 9,
       "inputPin": "In"
