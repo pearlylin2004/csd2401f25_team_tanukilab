@@ -208,6 +208,8 @@ void PhysicsForces::shoot(GameObject* bullet, const Transform* origin, const Vec
     p->gravityDelayTimer = p->gravityDelay;  // Initialize gravity immunity
     p->alive = true;
 
+	p->bounciness = 0.25f; // set some bounciness when shot
+
     DebugLog::addMessage("Bullet fired!", DebugMode::PlaySimul);
 }
 

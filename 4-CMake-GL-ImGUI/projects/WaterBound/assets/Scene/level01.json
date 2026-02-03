@@ -20,7 +20,6 @@
           "collisionRes": "MoveWhenCollide",
           "ignoreCollisionsWith": [
             "player",
-            "bullet",
             "hazards"
           ]
         },

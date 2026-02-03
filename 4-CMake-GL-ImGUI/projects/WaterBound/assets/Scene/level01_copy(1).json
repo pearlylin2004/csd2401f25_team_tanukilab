@@ -20,7 +20,6 @@
         "CollisionInfo": {
           "ignoreCollisionsWith": [
             "player",
-            "bullet"
           ]
         },
         "AudioComponent": {
