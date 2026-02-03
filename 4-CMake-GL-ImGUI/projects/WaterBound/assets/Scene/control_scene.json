@@ -44,10 +44,10 @@
           "hasTex": 1,
           "texture": "assets/button.png",
           "clr": [ 1.0, 1.0, 1.0 ]
+        },
+        "Button" : {
+          "action" : "back"
         }
-      },
-      "Button" : {
-        "action" : "back"
       }
     }
   ]

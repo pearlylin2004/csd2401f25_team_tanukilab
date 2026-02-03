@@ -4,6 +4,8 @@
     "player",
     "bullet",
     "water",
+    "fire",
+    "hazards",
     "platform",
     "environment"
   ]

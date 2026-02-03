@@ -1,4 +1,4 @@
-/* Start Header ************************************************************************/
+﻿/* Start Header ************************************************************************/
 /*!
 \file       GUISystem.cpp
 \author     Asha Mathyalakan, asha.m, 2402886
@@ -54,19 +54,35 @@ void GUISystem::init(GameObjectManager& manager, LuaSystem& luaSystem) {
 }
 
 //update function to check for button clicking
-void GUISystem::update(GameObjectManager& manager) {
+void GUISystem::update() {
     //get mouse position
     Vector2D worldMousePos = InputHandler::getWorldMousePosition();
-    Vector2D worldPos = Vec_Set(worldMousePos.x, worldMousePos.y);
 
     if (UISystem::isShowUI()) return; //skip if UI is shown
 
-    if (InputHandler::isMouseButtonClicked(GLFW_MOUSE_BUTTON_LEFT)) {
+    //check for hover over
+    if (!InputHandler::isMouseButtonClicked(GLFW_MOUSE_BUTTON_LEFT)) {
         for (auto& pair : m_buttons) {
             GameObject* btn = pair.second; //get button object
             if (!btn) continue; //safety check if button is valid
 
             //when hover over button we can add hover effect here
+            //if (isPointInButton(worldMousePos, btn)) {
+                //if (btn->hasComponent<AudioComponent>()) {
+                //    AudioComponent* audio = btn->getComponent<AudioComponent>();
+                //    AudioChannel* ch = audio->getChannel("button_hover");
+                //    ch->isPendingPlay = true;
+                //    return; //stop checking after a click
+                //}
+            //}
+        }
+    }
+
+    else {
+        for (auto& pair : m_buttons) {
+            GameObject* btn = pair.second; //get button object
+            if (!btn) continue; //safety check if button is valid
+
             if (isPointInButton(worldMousePos, btn)) {
                 Button* btnComp = btn->getComponent<Button>(); //get button component
                 if (btnComp) {
@@ -85,119 +101,110 @@ void GUISystem::createButtons(GameObjectManager& manager) {
     m_buttons.clear();
 
     //get all game objects from manager
-    std::vector<GameObject*> allObjs;
     manager.getAllGameObjects(allObjs);
 
     if (allObjs.empty()) return; //check if its empty
 
     //iterate through all objects to find buttons
-     for (GameObject* obj : allObjs) {
+    for (GameObject* obj : allObjs) {
+        if (!obj) continue; //safety check
         if (!obj->hasComponent<Button>() || !obj->hasComponent<Transform>()) continue; //check if it has button and transform component
 
         Button* btnComp = obj->getComponent<Button>(); //get button component
         m_buttons[btnComp->actionName] = obj; //store button in map with action name as key
     }
-
-	std::cout << "[GUI] Total buttons found: " << m_buttons.size() << std::endl;
-
-    createButtonActions(manager); //create button actions
+    createButtonActions(); //create button actions
 
     std::cout << "[GUI] Menu buttons created successfully" << std::endl;
 }
 
 //removing of buttons 
-void GUISystem::removeButtons(GameObjectManager& manager) {
-    //delete button objects
-    for (auto& pair : m_buttons) {
-        GameObject* btn = pair.second; //get button object
-        if (btn) manager.deleteGameObject(btn); //delete from manager
-    }
+void GUISystem::removeButtons() {
     m_buttons.clear(); //clear map
 }
 
+//to update state
+void GUISystem::changeState(GameState newState, const std::string& sceneName) {
+    m_previousState = m_currentState;  // store previous
+    m_currentState = newState;
+
+    if (!sceneName.empty()) {
+        loadScreen(*g_manager, sceneName);
+    }
+}
+
 //create button actions
-void GUISystem::createButtonActions(GameObjectManager& manager) {
+void GUISystem::createButtonActions() {
     m_buttonActions.clear();
 
-    // Play
-    m_buttonActions[ButtonAction::START_GAME] = [this, &manager]() {
-        m_currentState = GameState::PLAYING;
-        startGame(manager);
+    //play
+    m_buttonActions[ButtonAction::START_GAME] = [this]() {
+        changeState(GameState::PLAYING);
+        startGame(*g_manager);
      };
 
-    // Exit confirmation
-    m_buttonActions[ButtonAction::EXIT_GAME] = [this, &manager]() {
-        m_currentState = GameState::EXITCONFIRMATION;
-        loadScreen(manager, "confirmation_scene.json");
+    //exit confirmation
+    m_buttonActions[ButtonAction::EXIT_GAME] = [this]() {
+        changeState(GameState::EXITCONFIRMATION, "confirmation_scene.json");
      };
 
-    // Control screen
-    m_buttonActions[ButtonAction::OPEN_CONTROL] = [this, &manager]() {
-        m_currentState = GameState::CONTROL;
-        loadScreen(manager, "control_scene.json");
+    //control screen
+    m_buttonActions[ButtonAction::OPEN_CONTROL] = [this]() {
+        changeState(GameState::CONTROL, "control_scene.json");
      };
 
-    // Back button
-    m_buttonActions[ButtonAction::BACK] = [this, &manager]() {
+    //back button
+    m_buttonActions[ButtonAction::BACK] = [this]() {
         switch (m_previousState) {
         case GameState::MENU:
-            m_currentState = GameState::MENU;
-            loadScreen(manager, "menu_scene.json");
+            changeState(GameState::MENU, "menu_scene.json");
             break;
         case GameState::CONTROL:
-            m_currentState = GameState::CONTROL;
-            loadScreen(manager, "control_scene.json");
+            changeState(GameState::CONTROL, "control_scene.json");
             break;
         case GameState::PAUSED:
-            m_currentState = GameState::PAUSED;
-            loadScreen(manager, "pause_scene.json");
+            changeState(GameState::PAUSED, "pause_scene.json");
             break;
         case GameState::PLAYING:
-            m_currentState = GameState::PLAYING;
-            //startGame(manager); //reload game if needed
+            startGame(*g_manager); // resume the game
+            break;
+        case GameState::EXITCONFIRMATION:
+            changeState(GameState::EXITCONFIRMATION, "confirmation_scene.json");
             break;
         default:
-            m_currentState = GameState::MENU;
-            loadScreen(manager, "menu_scene.json");
+            changeState(GameState::MENU, "menu_scene.json");
             break;
         }
     };
 
-    // Menu button
-    m_buttonActions[ButtonAction::MENU] = [this, &manager]() {
-        m_currentState = GameState::MENU;
-        loadScreen(manager, "menu_scene.json");
+    //menu button
+    m_buttonActions[ButtonAction::MENU] = [this]() {
+        changeState(GameState::MENU, "menu_scene.json");
     };
 
-    // Resume
-    m_buttonActions[ButtonAction::RESUME_GAME] = [this, &manager]() {
-        if (m_stateBeforePause == GameState::PLAYING)
-            m_currentState = GameState::PLAYING;
-        else if (m_stateBeforePause == GameState::MENU)
-            loadScreen(manager, "menu_scene.json");
-        else if (m_stateBeforePause == GameState::CONTROL)
-			loadScreen(manager, "control_scene.json");
-        else if (m_stateBeforePause == GameState::EXITCONFIRMATION)
-			loadScreen(manager, "confirmation_scene.json");
+    //resume
+    m_buttonActions[ButtonAction::RESUME_GAME] = [this]() {
+        m_buttonActions[ButtonAction::BACK](); //uses logic from back
     };
 
-    // Exit confirmation yes/no
+    //exit confirmation screen yes/no
     m_buttonActions[ButtonAction::YES_EXIT] = [this]() {
         m_currentState = GameState::EXIT;
         stopGame();
-        };
-    m_buttonActions[ButtonAction::NO_EXIT] = [this, &manager]() {
+    };
+    m_buttonActions[ButtonAction::NO_EXIT] = [this]() {
         m_currentState = GameState::MENU;
-        loadScreen(manager, "menu_scene.json");
-        };
+        loadScreen(*g_manager, "menu_scene.json");
+    };
 
-    //std::cout << "[GUI] Actions: " << m_buttonActions.size() << std::endl;
+    std::cout << "[GUI] Menu buttons created successfully" << std::endl;
 }
 
 void GUISystem::startGame(GameObjectManager& manager) {
     std::cout << "[GUI] Play button clicked - starting game" << std::endl;
 
-    removeButtons(manager); //remove menu buttons
+    removeButtons(); //remove menu buttons
+	manager.clearScene(); //clear current scene
 
     // Load the game scene
     manager.init();
@@ -255,12 +262,14 @@ bool GUISystem::isPointInButton(const Vector2D& point, GameObject* button) {
         point.y <= transform->y + halfHeight);
 }
 
-//load a specific screen using the filename
 void GUISystem::loadScreen(GameObjectManager& manager, const std::string& sceneName) {
-    std::cout << "[GUI] Load Screen: " << sceneName << std::endl;
-    removeButtons(manager);
+    std::cout << "[GUI] Loading screen: " << sceneName << "\n";
+
+    removeButtons(); // clear references
+    manager.clearScene(); //delete al scene object
+
     manager.loadScene(runtimeScenePath(sceneName));
-    manager.initializeSceneResources(); //to get resources loaded
-    createButtons(manager); //loading scene
-    std::cout << "[GUI] Load Screen created successfully!" << std::endl;
+    manager.initializeSceneResources();
+
+    createButtons(manager);
 }

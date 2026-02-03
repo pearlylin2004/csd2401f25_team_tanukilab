@@ -396,17 +396,17 @@ void InspectorWindow::renderTransform(GameObject* selected, GameObjectManager& m
         if (ImGui::TreeNode("Rotation")) {
             if (ImGui::DragFloat("Angle", &transform->rotation)) {
                 transform->rotation = std::clamp(transform->rotation, 0.f, 360.f);
-
-                if (!m_isEditingRot) {
-                    UndoRedoManager::Instance().beginTransformEdit(selected);
-                    m_isEditingRot = true;
-                    m_transformEditObject = selected;
-                }
             }
 
-            bool rotationActive = ImGui::IsItemActive();
+            // take snapshot when FIRST activated (before any changes)
+            if (ImGui::IsItemActivated()) {
+                UndoRedoManager::Instance().beginTransformEdit(selected);
+                m_isEditingRot = true;
+                m_transformEditObject = selected;
+            }
 
-            if (m_isEditingRot && !rotationActive) {
+            // end snapshot when deactivated (after all changes)
+            if (ImGui::IsItemDeactivated() && m_isEditingRot) {
                 UndoRedoManager::Instance().endTransformEdit(manager, m_transformEditObject);
                 m_isEditingRot = false;
             }
@@ -818,7 +818,7 @@ void InspectorWindow::renderCollision( GameObject* selected, GameObjectManager& 
             }
 
             CollisionResponseMode mode = collision->collisionRes;
-            const char* modes[] = { "Static", "Pushable" };
+            const char* modes[] = { "Static", "Pushable", "No Response"};
             int current = static_cast<int>(mode);
 
             if (ImGui::Combo("Collision Response", &current, modes, IM_ARRAYSIZE(modes))) {
@@ -1573,17 +1573,15 @@ void InspectorWindow::renderVisualLogic(GameObject* selected) {
 		/* ---------- Dropdown to Select Logic Graph ---------- */
         if (ImGui::BeginCombo("Logic Graph", displayName.c_str())) {
             // create new logic asset
-			if (ImGui::Selectable("<Create New>", logic->filename.empty())) {
+			if (ImGui::Selectable("<Create New>", logic->filename.empty())) {                           
+                logic->filename.clear();
+                logic->nodes.clear();
+                logic->connections.clear();
+
+                VisualLogicEditor::Instance().clear();
+
                 Editor::visualLogicState.showEditor = true;
-                Editor::visualLogicState.currentGraphName = "";
-				Editor::visualLogicState.targetObj = selected;
-
-                // create new empty graph
-                Editor::visualLogicState.nodes.clear();
-                Editor::visualLogicState.connections.clear();
-                logic->filename = "";
-
-                VisualLogicEditor::Instance().updateNextNodeId();
+                Editor::visualLogicState.targetObj = selected;
 
 				DebugLog::addMessage("Creating new Visual Logic Graph for " + selected->getObjectName());
 			}
@@ -1599,7 +1597,9 @@ void InspectorWindow::renderVisualLogic(GameObject* selected) {
                     bool isSelected = (logic->filename == assetName);
 
                     if (ImGui::Selectable(assetName.c_str(), isSelected)) {
-                        logic->filename = assetName;
+                        Editor::visualLogicState.targetObj = selected;
+                        VisualLogicEditor::Instance().loadLogic(assetName);
+                        /*logic->filename = assetName;
 
                         std::string filepath = "/Logic/" + assetName;
                         std::string err;
@@ -1609,7 +1609,7 @@ void InspectorWindow::renderVisualLogic(GameObject* selected) {
                         }
                         else {
                             DebugLog::addMessage("ERROR loading Visual Logic: " + err + "\n");
-                        }
+                        }*/
                     }
 
                     if (isSelected) {

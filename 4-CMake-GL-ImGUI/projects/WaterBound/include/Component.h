@@ -4,12 +4,14 @@
 \author      Seow Sin Le, s.sinle, 2401084, 20%
 \author 	 Hugo Low Ren Hao, low.h, 2402272, 40%
 \author 	 Pearly Lin Lee Ying, p.lin, 2401591, 15%
-\author      Asha Mathyalakan, asha.m, 2402886, 25%
+\author      Asha Mathyalakan, asha.m, 2402886, 15%
+\author      Tan Chee Qing, cheeqing.tan, 2401486, 10%
              Total - 100%
 \par         s.sinle@digipen.edu
 \par         low.h@digipen.edu
 \par		 p.lin@digipen.edu
 \par         asha.m@digipen.edu
+\par         cheeqing.tan@digipen.edu
 \date        October, 1st, 2025
 \brief       This file contains all the component definitions for the Component-based architecture.
 
@@ -145,6 +147,7 @@ struct FontComponent : public Component {
 // animation for different state
 struct AnimateState {
     bool loop = true;
+	bool play = true;
     Vector2D initialFrame{}, lastFrame{};
     int currentFrameColumn{}, currentFrameRow{}, totalColumn{ 1 }, totalRow{ 1 };
     float frameTime = 0.1f, frameTimer{};
@@ -214,7 +217,7 @@ public:
 
 
     bool inWater = false;
-    bool buoancy = false;
+    bool buoancy = true;
 
     //const float waterBounce = 60.0f;   // upward velocity when entering water
 
@@ -237,7 +240,8 @@ public:
 // enum class used for CollisionSystem, to determine to stop/push by force (currently not force ig)
 enum class CollisionResponseMode {
     StopWhenCollide, // if collide by another obj, just stop
-    MoveWhenCollide // if collide by another obj, apply "fake" force and kena push
+    MoveWhenCollide, // if collide by another obj, apply "fake" force and kena push
+    NoResponse
 };
 
 //button action 
@@ -638,15 +642,23 @@ enum class NodeImplementation {
     COMPARE_VALUE,
     COMPARE_VAR,
     CHECK_STATE,
+    CHECK_TIMER,
 
     // ACTION
     PRINT_MESSAGE,
     MOVE_OBJECT,
     ROTATE_OBJECT,
     SET_ROTATION,
+    SET_POSITION,
+    SET_SCALE,
+	SCALE_PROPORTIONAL,
     SET_FLOAT,
     PLAY_SOUND,
     SET_STATE,
+    RESET_TIMER,
+	SET_POSITION_ON_COLLIDED, // might not work on those object that has input
+    SET_STATE_ON_COLLIDED,
+    APPLY_FORCE_ON_COLLIDED,
 
     // DEFAULT
     DEFAULT // nothing happen :)
@@ -689,6 +701,7 @@ public:
     std::map<std::string, float> floatVar;
     std::map<std::string, std::string> stringVar;
     std::map<std::string, bool> boolVar;
+    std::map<std::string, float> timers;
     std::unordered_set<int> currentExePath;
 
 	bool wasHoveredLastFrame = false; // for hover event detection
@@ -700,4 +713,42 @@ public:
     // collision 
     std::unordered_set<GameObject*> curCollision;
     std::unordered_set<GameObject*> preCollision;
+	GameObject* lastCollidedObj = nullptr;
+};
+
+// WaterBody component for creating animated water surfaces     
+struct WaterBody : public Component {
+public:
+    WaterBody() = default;
+
+    std::unique_ptr<Component> clone() const override {
+        return std::make_unique<WaterBody>(*this);
+    }
+
+    // Wave animation parameters
+    float waveAmplitude = 0.2f;      
+    float waveFrequency = 2.0f;       
+    float waveSpeed = 1.0f;           
+    float waveTime = 0.0f;            
+
+    // Water visual properties
+    glm::vec4 waterColor = glm::vec4(0.2f, 0.5f, 0.8f, 0.7f); 
+    float waterAlpha = 0.7f;          
+
+    // Subdivision for wave mesh
+    int subdivisions = 20;            // segments waves
+
+    // Water body dimensions
+    float width = 10.0f;
+    float height = 5.0f;
+
+    // Physics properties
+    bool isTrigger = true;            // If objects can pass through
+    float buoyancyForce = 50.0f;      // Upward force applied to objects in water
+    float waterDrag = 0.95f;          // Velocity damping when in water
+
+    // Rendering flags
+    bool renderWaves = true;
+    bool useTexture = false;          
+    GLuint waterTexture = 0;          
 };

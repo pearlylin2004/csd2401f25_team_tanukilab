@@ -101,14 +101,14 @@ GameObject* GameObjectManager::CloneGameObject(const std::string& sourceName, co
 		std::cout << "GameObject with name '" << newName << "' already exists.\n";
 		return nullptr;
 	}
-	
+
 	//cloning GameObject
 	std::unique_ptr<GameObject> clonedObject = iterator->second->clone(newName);
 
 	GameObject* ptr = clonedObject.get();//raw pointer
 
 	m_gameObjects[newName] = std::move(clonedObject);//move into map
-	
+
 	//now to do for layer as well
 	assignObjectToLayer(ptr, iterator->second->getLayer());
 
@@ -131,8 +131,7 @@ int GameObjectManager::getGameObjectCount() {
 	return static_cast<int>(m_gameObjects.size());
 }
 
-void GameObjectManager::init()
-{
+void GameObjectManager::init() {
 
 	loadScene(JsonIO::runtimeScenePath("level01.json"));
 }
@@ -234,6 +233,7 @@ If the JSON is missing or malformed, the function prints an error and stops.
 */
 
 void GameObjectManager::loadSceneFromJson(const std::string& filename) {
+	auto t1 = std::chrono::high_resolution_clock::now();
 
 	rapidjson::Document doc;
 	std::string err;
@@ -261,7 +261,7 @@ void GameObjectManager::loadSceneFromJson(const std::string& filename) {
 	}*/
 
 	//std::cerr << "Cleared textures before loading scene.\n";
-	
+
 	m_layerManager.clearAllLayers();
 	m_gameObjects.clear();
 
@@ -347,7 +347,7 @@ void GameObjectManager::loadSceneFromJson(const std::string& filename) {
 		// ---- Render ----
 		if (comps.HasMember("Render") && comps["Render"].IsObject()) {
 			const auto& jr = comps["Render"];
-			
+
 			auto* r = go->getComponent<Render>();
 			if (!r) r = go->addComponent<Render>();
 
@@ -395,9 +395,9 @@ void GameObjectManager::loadSceneFromJson(const std::string& filename) {
 			}
 
 
-//          if (jr.HasMember("visible")     && jr["visible"].IsBool())     r->visible       = jr["visible"].GetBool();
-//          if (jr.HasMember("transparent") && jr["transparent"].IsBool()) r->isTransparent = jr["transparent"].GetBool();
-//          if (jr.HasMember("wireframe")   && jr["wireframe"].IsBool())   r->wireframe     = jr["wireframe"].GetBool();
+			//          if (jr.HasMember("visible")     && jr["visible"].IsBool())     r->visible       = jr["visible"].GetBool();
+			//          if (jr.HasMember("transparent") && jr["transparent"].IsBool()) r->isTransparent = jr["transparent"].GetBool();
+			//          if (jr.HasMember("wireframe")   && jr["wireframe"].IsBool())   r->wireframe     = jr["wireframe"].GetBool();
 		}
 
 		if (comps.HasMember("Particle") && comps["Particle"].IsObject()) {
@@ -443,7 +443,7 @@ void GameObjectManager::loadSceneFromJson(const std::string& filename) {
 		// ---- Physics ----
 		if (comps.HasMember("Physics") && comps["Physics"].IsObject()) {
 			const auto& jp = comps["Physics"];
-			
+
 			auto* p = go->getComponent<Physics>();
 			if (!p) p = go->addComponent<Physics>();
 
@@ -615,7 +615,7 @@ void GameObjectManager::loadSceneFromJson(const std::string& filename) {
 		//font component
 		if (comps.HasMember("FontComponent") && comps["FontComponent"].IsObject()) {
 			const auto& jf = comps["FontComponent"];
-			
+
 			auto* fc = go->getComponent<FontComponent>();
 			if (!fc)
 				fc = go->addComponent<FontComponent>();
@@ -645,73 +645,88 @@ void GameObjectManager::loadSceneFromJson(const std::string& filename) {
 				fc->fontType = 1;  // Default to ARIAL
 			}
 
-			
+
 		}
 
 		if (comps.HasMember("AudioComponent") && comps["AudioComponent"].IsObject()) {
-				const auto & ja = comps["AudioComponent"];
+			const auto& ja = comps["AudioComponent"];
 
 			auto* audio = go->getComponent<AudioComponent>();
 			if (!audio) {
-				// Create with default sound ID
 				audio = go->addComponent<AudioComponent>();
 			}
-			AudioChannel* ch = audio->getDefaultChannel();
-			// Load sound ID from string
-			if (ja.HasMember("audioFile") && ja["audioFile"].IsString()) {
-				ch->audioFile = ja["audioFile"].GetString();
-			}
 
-			// Volume
-			if (ja.HasMember("volume") && ja["volume"].IsNumber()) {
-				ch->volume = ja["volume"].GetFloat();
-			}
+			/*use chJson because ja is the top level of audio component*/
+			//Channels
+			if (ja.HasMember("channels") && ja["channels"].IsObject()) {
+				const auto& channelsJson = ja["channels"];
+				for (auto it = channelsJson.MemberBegin(); it != channelsJson.MemberEnd(); ++it) {
+					std::string channelName = it->name.GetString();
+					const auto& chJson = it->value;
 
-			// Pitch
-			if (ja.HasMember("pitch") && ja["pitch"].IsNumber()) {
-				ch->pitch = ja["pitch"].GetFloat();
-			}
+					AudioChannel* ch = audio->getOrCreateChannel(channelName);
 
-			// Loop
-			if (ja.HasMember("loop")) {
-				ch->loop = ja["loop"].IsBool()
-					? ja["loop"].GetBool()
-					: (ja["loop"].GetInt() != 0);
-			}
+					// Load sound ID from string
+					if (chJson.HasMember("audioFile") && chJson["audioFile"].IsString()) {
+						ch->audioFile = chJson["audioFile"].GetString();
+						std::cout << "Loaded audio file for channel '" << channelName << "': " << ch->audioFile << std::endl;
+					}
 
-			// Play on start
-			if (ja.HasMember("playOnStart")) {
-				ch->playOnStart = ja["playOnStart"].IsBool()
-					? ja["playOnStart"].GetBool()
-					: (ja["playOnStart"].GetInt() != 0);
-			}
+					// Volume
+					if (chJson.HasMember("volume") && chJson["volume"].IsNumber()) {
+						ch->volume = chJson["volume"].GetFloat();
+					}
 
-			// Muted
-			if (ja.HasMember("muted")) {
-				ch->muted = ja["muted"].IsBool()
-					? ja["muted"].GetBool()
-					: (ja["muted"].GetInt() != 0);
-			}
+					// Pitch
+					if (chJson.HasMember("pitch") && chJson["pitch"].IsNumber()) {
+						ch->pitch = chJson["pitch"].GetFloat();
+					}
 
-			// Fade settings
-			if (ja.HasMember("fadeInOnStart")) {
-				ch->fadeInOnStart = ja["fadeInOnStart"].IsBool()
-					? ja["fadeInOnStart"].GetBool()
-					: (ja["fadeInOnStart"].GetInt() != 0);
-			}
+					// Loop
+					if (chJson.HasMember("loop")) {
+						ch->loop = chJson["loop"].IsBool()
+							? chJson["loop"].GetBool()
+							: (chJson["loop"].GetInt() != 0);
+					}
 
-			if (ja.HasMember("fadeInDuration") && ja["fadeInDuration"].IsNumber()) {
-				ch->fadeInDuration = ja["fadeInDuration"].GetFloat();
-			}
+					// Play on start
+					if (chJson.HasMember("playOnStart")) {
+						ch->playOnStart = chJson["playOnStart"].IsBool()
+							? chJson["playOnStart"].GetBool()
+							: (chJson["playOnStart"].GetInt() != 0);
+					}
 
-			if (ja.HasMember("fadeOutOnStop")) {
-				ch->fadeOutOnStop = ja["fadeOutOnStop"].IsBool()
-					? ja["fadeOutOnStop"].GetBool()
-					: (ja["fadeOutOnStop"].GetInt() != 0);
-			}
+					// Muted
+					if (chJson.HasMember("muted")) {
+						ch->muted = chJson["muted"].IsBool()
+							? chJson["muted"].GetBool()
+							: (chJson["muted"].GetInt() != 0);
+					}
 
-			if (ja.HasMember("fadeOutDuration") && ja["fadeOutDuration"].IsNumber()) {
-				ch->fadeOutDuration = ja["fadeOutDuration"].GetFloat();
+					// Fade settings
+					if (chJson.HasMember("fadeInOnStart")) {
+						ch->fadeInOnStart = chJson["fadeInOnStart"].IsBool()
+							? chJson["fadeInOnStart"].GetBool()
+							: (chJson["fadeInOnStart"].GetInt() != 0);
+					}
+
+					//fade in duration 
+					if (chJson.HasMember("fadeInDuration") && chJson["fadeInDuration"].IsNumber()) {
+						ch->fadeInDuration = chJson["fadeInDuration"].GetFloat();
+					}
+
+					//fade out on stop
+					if (chJson.HasMember("fadeOutOnStop")) {
+						ch->fadeOutOnStop = chJson["fadeOutOnStop"].IsBool()
+							? chJson["fadeOutOnStop"].GetBool()
+							: (chJson["fadeOutOnStop"].GetInt() != 0);
+					}
+
+					// fade out duration
+					if (chJson.HasMember("fadeOutDuration") && chJson["fadeOutDuration"].IsNumber()) {
+						ch->fadeOutDuration = chJson["fadeOutDuration"].GetFloat();
+					}
+				}
 			}
 		}
 
@@ -825,6 +840,78 @@ void GameObjectManager::loadSceneFromJson(const std::string& filename) {
 				b->actionName = JsonIO::StrToButtonAction(actionStr);
 			}
 		}
+		// ---- WaterBody ----
+		if (comps.HasMember("WaterBody") && comps["WaterBody"].IsObject()) {
+			const auto& jw = comps["WaterBody"];
+
+			auto* wb = go->getComponent<WaterBody>();
+			if (!wb)
+				wb = go->addComponent<WaterBody>();
+
+			// Wave animation parameters
+			if (jw.HasMember("waveAmplitude") && jw["waveAmplitude"].IsNumber())
+				wb->waveAmplitude = jw["waveAmplitude"].GetFloat();
+
+			if (jw.HasMember("waveFrequency") && jw["waveFrequency"].IsNumber())
+				wb->waveFrequency = jw["waveFrequency"].GetFloat();
+
+			if (jw.HasMember("waveSpeed") && jw["waveSpeed"].IsNumber())
+				wb->waveSpeed = jw["waveSpeed"].GetFloat();
+
+			// Water visual properties
+			if (jw.HasMember("waterColor") && jw["waterColor"].IsArray() && jw["waterColor"].Size() == 4) {
+				wb->waterColor.r = jw["waterColor"][0].GetFloat();
+				wb->waterColor.g = jw["waterColor"][1].GetFloat();
+				wb->waterColor.b = jw["waterColor"][2].GetFloat();
+				wb->waterColor.a = jw["waterColor"][3].GetFloat();
+			}
+
+			if (jw.HasMember("waterAlpha") && jw["waterAlpha"].IsNumber())
+				wb->waterAlpha = jw["waterAlpha"].GetFloat();
+
+			// Subdivision for wave mesh
+			if (jw.HasMember("subdivisions") && jw["subdivisions"].IsInt())
+				wb->subdivisions = jw["subdivisions"].GetInt();
+
+			// Water body dimensions
+			if (jw.HasMember("width") && jw["width"].IsNumber())
+				wb->width = jw["width"].GetFloat();
+
+			if (jw.HasMember("height") && jw["height"].IsNumber())
+				wb->height = jw["height"].GetFloat();
+
+			// Physics properties
+			if (jw.HasMember("isTrigger")) {
+				wb->isTrigger = jw["isTrigger"].IsBool()
+					? jw["isTrigger"].GetBool()
+					: (jw["isTrigger"].GetInt() != 0);
+			}
+
+			if (jw.HasMember("buoyancyForce") && jw["buoyancyForce"].IsNumber())
+				wb->buoyancyForce = jw["buoyancyForce"].GetFloat();
+
+			if (jw.HasMember("waterDrag") && jw["waterDrag"].IsNumber())
+				wb->waterDrag = jw["waterDrag"].GetFloat();
+
+			// Rendering flags
+			if (jw.HasMember("renderWaves")) {
+				wb->renderWaves = jw["renderWaves"].IsBool()
+					? jw["renderWaves"].GetBool()
+					: (jw["renderWaves"].GetInt() != 0);
+			}
+
+			if (jw.HasMember("useTexture")) {
+				wb->useTexture = jw["useTexture"].IsBool()
+					? jw["useTexture"].GetBool()
+					: (jw["useTexture"].GetInt() != 0);
+			}
+			/*if (wb->useTexture && jw.HasMember("waterTextureFile") && jw["waterTextureFile"].IsString()) {
+				std::string texFile = jw["waterTextureFile"].GetString();
+				TextureData texData = ResourceManager::getInstance().getTexture(texFile);
+				wb->waterTexture = texData.id;
+			}*/
+
+		}
 	}
 
 	//create bullet pool
@@ -839,6 +926,11 @@ void GameObjectManager::loadSceneFromJson(const std::string& filename) {
 	std::cout << "Total game objects loaded: " << m_gameObjects.size() << std::endl;
 
 	//std::cout << "Scene loaded (JSON): " << filename << "\n";
+
+	auto t2 = std::chrono::high_resolution_clock::now();
+	std::cout << "[Timing] Loading json took "
+		<< std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1).count()
+		<< " ms" << std::endl;
 }
 
 /*!
@@ -1115,14 +1207,37 @@ void GameObjectManager::saveSceneToJson(const std::string& filename, bool isNew)
 					jc.AddMember("collisionRes", rapidjson::Value(collisionResStr.c_str(), a), a);
 				}
 
-				if (c->collisionTag != "default") {
-					if (!prefabC || !prefabC->HasMember("collisionTag") ||
-						c->collisionTag != (*prefabC)["collisionTag"].GetString()) {
-						jc.AddMember("collisionTag", rapidjson::Value(c->collisionTag.c_str(), a), a);
+				if (!prefabC || !prefabC->HasMember("collisionTag") ||
+					c->collisionTag != (*prefabC)["collisionTag"].GetString()) {
+					jc.AddMember("collisionTag", rapidjson::Value(c->collisionTag.c_str(), a), a);
+				}
+
+				bool shouldSaveIgnoreList = false;
+				if (!prefabC || !prefabC->HasMember("ignoreCollisionsWith")) {
+					shouldSaveIgnoreList = !c->ignoreCollisionsWith.empty();
+				}
+				else {
+					// compare with prefab ignore list
+					const rapidjson::Value& prefabIgnoreList = (*prefabC)["ignoreCollisionsWith"];
+					if (prefabIgnoreList.Size() != c->ignoreCollisionsWith.size()) {
+						shouldSaveIgnoreList = true;
+					}
+					else {
+						// check if all elements match
+						std::set<std::string> prefabSet;
+						for (rapidjson::SizeType i = 0; i < prefabIgnoreList.Size(); ++i) {
+							prefabSet.insert(prefabIgnoreList[i].GetString());
+						}
+						for (const std::string& tag : c->ignoreCollisionsWith) {
+							if (prefabSet.find(tag) == prefabSet.end()) {
+								shouldSaveIgnoreList = true;
+								break;
+							}
+						}
 					}
 				}
 
-				if (!c->ignoreCollisionsWith.empty()) {
+				if (shouldSaveIgnoreList) {
 					rapidjson::Value ignoreArray(rapidjson::kArrayType);
 					for (const std::string& tag : c->ignoreCollisionsWith) {
 						ignoreArray.PushBack(rapidjson::Value(tag.c_str(), a), a);
@@ -1175,10 +1290,10 @@ void GameObjectManager::saveSceneToJson(const std::string& filename, bool isNew)
 									(!prefabAnimState.HasMember("totalColumn") || animState.totalColumn != prefabAnimState["totalColumn"].GetInt()) ||
 									(!prefabAnimState.HasMember("totalRow") || animState.totalRow != prefabAnimState["totalRow"].GetInt()) ||
 									(!prefabAnimState.HasMember("frameTime") || differsFloat(static_cast<float>(prefabAnimState["frameTime"].GetDouble()), animState.frameTime));
-									(!prefabAnimState.HasMember("initialFramCol") || differsFloat(static_cast<float>(prefabAnimState["initialFramCol"].GetDouble()), animState.initialFrame.x));
-									(!prefabAnimState.HasMember("initialFramRow") || differsFloat(static_cast<float>(prefabAnimState["initialFramRow"].GetDouble()), animState.initialFrame.y));
-									(!prefabAnimState.HasMember("lastFrameCol") || differsFloat(static_cast<float>(prefabAnimState["lastFrameCol"].GetDouble()), animState.lastFrame.x));
-									(!prefabAnimState.HasMember("lastFrameRow") || differsFloat(static_cast<float>(prefabAnimState["lastFrameRow"].GetDouble()), animState.lastFrame.y));
+								(!prefabAnimState.HasMember("initialFramCol") || differsFloat(static_cast<float>(prefabAnimState["initialFramCol"].GetDouble()), animState.initialFrame.x));
+								(!prefabAnimState.HasMember("initialFramRow") || differsFloat(static_cast<float>(prefabAnimState["initialFramRow"].GetDouble()), animState.initialFrame.y));
+								(!prefabAnimState.HasMember("lastFrameCol") || differsFloat(static_cast<float>(prefabAnimState["lastFrameCol"].GetDouble()), animState.lastFrame.x));
+								(!prefabAnimState.HasMember("lastFrameRow") || differsFloat(static_cast<float>(prefabAnimState["lastFrameRow"].GetDouble()), animState.lastFrame.y));
 							}
 							else {
 								shouldSerialize = true; // prefab doesn't have animState for this state
@@ -1269,7 +1384,7 @@ void GameObjectManager::saveSceneToJson(const std::string& filename, bool isNew)
 							channelOverride.AddMember(rapidjson::Value(key, a),
 								rapidjson::Value(val, a), a);
 						}
-					};
+						};
 
 					auto pushIfDiffFloat = [&](const char* key, float val) {
 						if (!prefabChannel || !prefabChannel->HasMember(key) ||
@@ -1277,7 +1392,7 @@ void GameObjectManager::saveSceneToJson(const std::string& filename, bool isNew)
 							channelOverride.AddMember(rapidjson::Value(key, a),
 								rapidjson::Value(val), a);
 						}
-					};
+						};
 
 					auto pushIfDiffBool = [&](const char* key, bool val) {
 						if (!prefabChannel || !prefabChannel->HasMember(key) ||
@@ -1286,7 +1401,7 @@ void GameObjectManager::saveSceneToJson(const std::string& filename, bool isNew)
 							channelOverride.AddMember(rapidjson::Value(key, a),
 								rapidjson::Value(val ? 1 : 0), a);
 						}
-					};
+						};
 
 					// Check each property for differences
 					pushIfDiffStr("audioFile", channel.audioFile.c_str());
@@ -1419,6 +1534,70 @@ void GameObjectManager::saveSceneToJson(const std::string& filename, bool isNew)
 					comps.AddMember("VisualLC", jvl, a);
 				}
 			}
+			// ---- WaterBody ---- 
+			if (auto wb = obj->getComponent<WaterBody>()) {
+				rapidjson::Value jw(rapidjson::kObjectType);
+				const rapidjson::Value* prefabWB = PM.getPrefabJsonComp(prefabDoc, "WaterBody");
+
+				// Helper lambda for comparing floats
+				auto pushIfDiffFloat = [&](const char* key, float val) {
+					if (!prefabWB || !prefabWB->HasMember(key) ||
+						!(*prefabWB)[key].IsNumber() ||
+						differsFloat((*prefabWB)[key].GetFloat(), val)) {
+						jw.AddMember(rapidjson::Value(key, a), rapidjson::Value(val), a);
+					}
+					};
+
+				auto pushIfDiffInt = [&](const char* key, int val) {
+					if (!prefabWB || !prefabWB->HasMember(key) ||
+						!(*prefabWB)[key].IsInt() ||
+						differsInt((*prefabWB)[key].GetInt(), val)) {
+						jw.AddMember(rapidjson::Value(key, a), rapidjson::Value(val), a);
+					}
+					};
+
+				auto pushIfDiffBool = [&](const char* key, bool val) {
+					if (!prefabWB || !prefabWB->HasMember(key) ||
+						((*prefabWB)[key].IsBool() && differsBool((*prefabWB)[key].GetBool(), val)) ||
+						((*prefabWB)[key].IsInt() && differsBool((*prefabWB)[key].GetInt() != 0, val))) {
+						jw.AddMember(rapidjson::Value(key, a), rapidjson::Value(val ? 1 : 0), a);
+					}
+					};
+
+				// Save wave parameters
+				pushIfDiffFloat("waveAmplitude", wb->waveAmplitude);
+				pushIfDiffFloat("waveFrequency", wb->waveFrequency);
+				pushIfDiffFloat("waveSpeed", wb->waveSpeed);
+
+				// Save water color if different from prefab
+				if (!prefabWB || !prefabWB->HasMember("waterColor") ||
+					differsFloat((*prefabWB)["waterColor"][0].GetFloat(), wb->waterColor.r) ||
+					differsFloat((*prefabWB)["waterColor"][1].GetFloat(), wb->waterColor.g) ||
+					differsFloat((*prefabWB)["waterColor"][2].GetFloat(), wb->waterColor.b) ||
+					differsFloat((*prefabWB)["waterColor"][3].GetFloat(), wb->waterColor.a)) {
+
+					rapidjson::Value colorArray(rapidjson::kArrayType);
+					colorArray.PushBack(wb->waterColor.r, a);
+					colorArray.PushBack(wb->waterColor.g, a);
+					colorArray.PushBack(wb->waterColor.b, a);
+					colorArray.PushBack(wb->waterColor.a, a);
+					jw.AddMember("waterColor", colorArray, a);
+				}
+
+				pushIfDiffFloat("waterAlpha", wb->waterAlpha);
+				pushIfDiffInt("subdivisions", wb->subdivisions);
+				pushIfDiffFloat("width", wb->width);
+				pushIfDiffFloat("height", wb->height);
+				pushIfDiffBool("isTrigger", wb->isTrigger);
+				pushIfDiffFloat("buoyancyForce", wb->buoyancyForce);
+				pushIfDiffFloat("waterDrag", wb->waterDrag);
+				pushIfDiffBool("renderWaves", wb->renderWaves);
+				pushIfDiffBool("useTexture", wb->useTexture);
+
+				if (!jw.ObjectEmpty()) {
+					comps.AddMember("WaterBody", jw, a);
+				}
+			}
 
 			if (!comps.ObjectEmpty()) jObj.AddMember("components", comps, a);
 			objects.PushBack(jObj, a);
@@ -1456,7 +1635,7 @@ void GameObjectManager::loadScene(const std::string& path) {
 
 	// do not set current scene to the temp scene (during simulation)
 	std::string filename = std::filesystem::path(path).filename().string();
-	if(filename != Editor::sceneState.tempSceneName)
+	if (filename != Editor::sceneState.tempSceneName)
 		Editor::sceneState.currentSceneName = filename;
 #endif
 
@@ -1556,7 +1735,7 @@ void GameObjectManager::createBulletPool(const std::string& templateBulletName, 
 
 	// ensure only 11 bullets (1+10 clone)
 	if (templateBullet->getObjectName() != "bullet") renameGameObject(templateBullet, "bullet");
-	
+
 	if (CollisionInfo* c = templateBullet->getComponent<CollisionInfo>()) {
 		c->collisionTag = "bullet";
 		c->ignoreCollisionsWith.insert("player");
@@ -1572,7 +1751,29 @@ void GameObjectManager::createBulletPool(const std::string& templateBulletName, 
 			continue;
 		}
 
-		/*GameObject* clonedBullet = */CloneGameObject(templateBulletName, bulletName);
+		GameObject* clonedBullet = CloneGameObject(templateBulletName, bulletName);
+		if (!clonedBullet) continue;
+
+		clonedBullet->active = false;
+
+		if (Transform* t = clonedBullet->getComponent<Transform>()) {
+			t->x = -1000.0f;
+			t->y = -1000.0f;
+			t->z = 0.0f;
+		}
+		templateBullet->active = false; //deactivate the template bullet as well
+
+		if (Physics* p = clonedBullet->getComponent<Physics>()) {
+			p->alive = false;
+			p->dynamics.velocity = Vector3D{ 0.0f, 0.0f, 0.0f };
+		}
+
+		if (CollisionInfo* c = clonedBullet->getComponent<CollisionInfo>()) {
+			c->collisionTag = "bullet";
+			c->ignoreCollisionsWith.insert("player");
+			c->ignoreCollisionsWith.insert("bullet");
+		}
+		/*GameObject* clonedBullet = *///CloneGameObject(templateBulletName, bulletName);
 		//incase of bullets not cloned properly
 		//if (clonedBullet) {
 		//	if (clonedBullet->hasComponent<Transform>()) {
@@ -1603,7 +1804,8 @@ void GameObjectManager::createBulletPool(const std::string& templateBulletName, 
 }
 
 void GameObjectManager::initializeSimulationResources() {
-	// Initialize audio for all objects
+	// Initialize 
+	// for all objects
 	for (auto& pair : m_gameObjects) {
 		GameObject* obj = pair.second.get();
 		if (obj->hasComponent<AudioComponent>()) {
@@ -1629,7 +1831,7 @@ void GameObjectManager::cleanupSimulationResources() {
 		GameObject* obj = pair.second.get();
 		if (obj->hasComponent<AudioComponent>()) {
 			AudioComponent* audio = obj->getComponent<AudioComponent>();
-			
+
 
 			for (auto& [channelName, channel] : audio->audioChannels) {
 				if (channel.channel) {
@@ -1640,4 +1842,10 @@ void GameObjectManager::cleanupSimulationResources() {
 			}
 		}
 	}
+}
+
+//clears all game objects from the scene
+void GameObjectManager::clearScene() {
+	m_gameObjects.clear();     //deletes all GameObjects
+	//m_layerManager.clear(); 
 }

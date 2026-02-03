@@ -1,12 +1,14 @@
 /* Start Header ************************************************************************/
 /*!
 \file        Systems.h
-\author      Seow Sin Le, s.sinle, 2401084, 40%
-\author 	 Hugo Low Ren Hao, low.h, 2402272, 45%
+\author      Seow Sin Le, s.sinle, 2401084, 35%
+\author 	 Hugo Low Ren Hao, low.h, 2402272, 40%
 \author 	 Pearly Lin Lee Ying, p.lin, 2401591, 15%
+\author 	 Tan Chee Qing, cheeqing.tan, 2401486, 10%
 \par         s.sinle@digipen.edu
 \par		 low.h@digipen.edu
 \par		 p.lin@digipen.edu
+\par         cheeqing.tan@digipen.edu
 \date        October, 1st, 2025
 \brief       System functions to run the logic for the components
 
@@ -285,4 +287,43 @@ private:
 
 	// helper func for collision
 	bool shouldTriggerCollision(LogicNode& node, GameObject* collided);
+};
+
+class WaterSystem {
+public:
+	WaterSystem();
+	~WaterSystem();
+
+	void init();
+	void update(GameObjectManager& manager, float deltaTime);
+	void render(GameObjectManager& manager);
+	bool isPointInWater(GameObject* waterObj, const Vector2D& point);
+	void applyWaterPhysics(GameObjectManager& manager);
+	void cleanup();
+
+private:
+	void setupWaterMesh(GameObject* waterObj);
+	void renderWaterBody(GameObject* waterObj);
+
+	GLuint m_waterShaderProgram;
+	GLint m_timeLocation;
+	GLint m_waveAmplitudeLocation;
+	GLint m_waveFrequencyLocation;
+	GLint m_waveSpeedLocation;
+	GLint m_waterAlphaLocation;
+	GLint m_waterColorLocation;
+	GLint m_useTextureLocation;
+	GLint m_viewMatrixLocation;
+	GLint m_projMatrixLocation;
+
+	struct WaterMesh {
+		GLuint vao;
+		GLuint vbo;
+		GLuint ebo;
+		GLuint ssbo;
+		int elementCount;
+		int subdivisions;
+	};
+
+	std::unordered_map<GameObject*, WaterMesh> m_waterMeshes;
 };

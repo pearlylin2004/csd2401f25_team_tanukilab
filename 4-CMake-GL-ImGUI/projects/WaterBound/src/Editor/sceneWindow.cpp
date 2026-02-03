@@ -428,6 +428,11 @@ void SceneWindow::renderObjCollider(GameObject* obj) {
         outlineColor = IM_COL32(255, 80, 80, 230); // red
         fillColor = IM_COL32(255, 100, 100, 15); // light red
     }
+    else if (collision->collisionRes == CollisionResponseMode::NoResponse) {
+        // no response
+        outlineColor = IM_COL32(180, 180, 180, 230); // gray
+        fillColor = IM_COL32(200, 200, 200, 15);     // light gray
+    }
     else {
         // static
         outlineColor = IM_COL32(90, 100, 255, 220); // blue

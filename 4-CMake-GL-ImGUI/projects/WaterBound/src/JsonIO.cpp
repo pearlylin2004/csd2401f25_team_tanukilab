@@ -1,8 +1,10 @@
 /* Start Header ************************************************************************/
 /*!
 \file		JsonIO.cpp
-\author     Varick, v.teo, 2403417
+\author     Varick, v.teo, 2403417 - 70%
+			Tan Chee Qing, cheeqing.tan, 2401486 - 30%
 \par        v.teo@digipen.edu
+\par        cheeqing.tan@digipen.edu
 \date		November, 5th, 2025
 \brief      Implementation of JSON helpers and scene serialization for the WaterBound engine.
 
@@ -221,7 +223,7 @@ namespace JsonIO {
         switch (mode) {
         case CollisionResponseMode::StopWhenCollide: return "StopWhenCollide";
         case CollisionResponseMode::MoveWhenCollide: return "MoveWhenCollide";
-        default:                                    return "StopWhenCollide";
+        default:                                    return "NoResponse";
         }
     }
 
@@ -232,7 +234,8 @@ namespace JsonIO {
      */
     CollisionResponseMode StrToCollisionResponseMode(const std::string& s) {
         if (s == "MoveWhenCollide") return CollisionResponseMode::MoveWhenCollide;
-        return CollisionResponseMode::StopWhenCollide;
+        if (s == "StopWhenCollide") return CollisionResponseMode::StopWhenCollide;
+        return CollisionResponseMode::NoResponse;
     }
 
     //for button
@@ -289,14 +292,22 @@ namespace JsonIO {
         if (str == "Move Object") return NodeImplementation::MOVE_OBJECT;
         if (str == "Rotate Object") return NodeImplementation::ROTATE_OBJECT;
         if (str == "Set Rotation") return NodeImplementation::SET_ROTATION;
+        if (str == "Set Position") return NodeImplementation::SET_POSITION;
+        if (str == "Set Scale") return NodeImplementation::SET_SCALE;
+        if (str == "Scale Proportional") return NodeImplementation::SCALE_PROPORTIONAL;
 		if (str == "Set Float") return NodeImplementation::SET_FLOAT;
 		if (str == "Play Sound") return NodeImplementation::PLAY_SOUND;
 		if (str == "Set State") return NodeImplementation::SET_STATE;
+		if (str == "Reset Timer") return NodeImplementation::RESET_TIMER;
+		if (str == "Set Position On Collided") return NodeImplementation::SET_POSITION_ON_COLLIDED;
+		if (str == "Set State On Collided") return NodeImplementation::SET_STATE_ON_COLLIDED;
+		if (str == "Apply Force On Collided") return NodeImplementation::APPLY_FORCE_ON_COLLIDED;
 
 		if (str == "Check Key Held") return NodeImplementation::CHECK_KEY_HELD;
 		if (str == "Compare Value") return NodeImplementation::COMPARE_VALUE;
 		if (str == "Compare Variable") return NodeImplementation::COMPARE_VAR;
 		if (str == "Check State") return NodeImplementation::CHECK_STATE;
+		if (str == "Check Timer") return NodeImplementation::CHECK_TIMER;
 
         return NodeImplementation::DEFAULT;
     }
@@ -316,14 +327,22 @@ namespace JsonIO {
             case NodeImplementation::MOVE_OBJECT: return "Move Object";
 		    case NodeImplementation::ROTATE_OBJECT: return "Rotate Object";
 			case NodeImplementation::SET_ROTATION: return "Set Rotation";
+            case NodeImplementation::SET_POSITION: return "Set Position";
+            case NodeImplementation::SET_SCALE: return "Set Scale";
+            case NodeImplementation::SCALE_PROPORTIONAL: return "Scale Proportional";
             case NodeImplementation::SET_FLOAT: return "Set Float";
 			case NodeImplementation::PLAY_SOUND: return "Play Sound";
 			case NodeImplementation::SET_STATE: return "Set State";
+			case NodeImplementation::RESET_TIMER: return "Reset Timer";
+			case NodeImplementation::SET_POSITION_ON_COLLIDED: return "Set Position On Collided";
+			case NodeImplementation::SET_STATE_ON_COLLIDED: return "Set State On Collided";
+			case NodeImplementation::APPLY_FORCE_ON_COLLIDED: return "Apply Force On Collided";
 
             case NodeImplementation::CHECK_KEY_HELD: return "Check Key Held";
             case NodeImplementation::COMPARE_VALUE: return "Compare Value";
             case NodeImplementation::COMPARE_VAR: return "Compare Variable";
 			case NodeImplementation::CHECK_STATE: return "Check State";
+			case NodeImplementation::CHECK_TIMER: return "Check Timer";
 
             default: return "Default";
         }
@@ -891,6 +910,16 @@ namespace JsonIO {
             Value collisionResStr(CollisionResponseModeToStr(c->collisionRes), a);
             jc.AddMember("collisionRes", collisionResStr, a);
 
+            rapidjson::Value tagVal(c->collisionTag.c_str(), a);
+            jc.AddMember(rapidjson::Value("collisionTag", a), tagVal, a);
+
+            // Ignore collisions array
+            rapidjson::Value ignoreArray(rapidjson::kArrayType);
+            for (const std::string& tag : c->ignoreCollisionsWith) {
+                ignoreArray.PushBack(rapidjson::Value(tag.c_str(), a), a);
+            }
+            jc.AddMember(rapidjson::Value("ignoreCollisionsWith", a), ignoreArray, a);
+
             doc.AddMember("Collision", jc, a);
         }
 
@@ -1177,6 +1206,18 @@ namespace JsonIO {
                 if (jc.HasMember("collisionRes")) {
                     c->collisionRes = StrToCollisionResponseMode(jc["collisionRes"].GetString());
                 }
+
+                if (jc.HasMember("collisionTag")) {
+                    c->collisionTag = jc["collisionTag"].GetString();
+                }
+
+                if (jc.HasMember("ignoreCollisionsWith")) {
+                    const rapidjson::Value& ignoreArray = jc["ignoreCollisionsWith"];
+                    c->ignoreCollisionsWith.clear();
+                    for (rapidjson::SizeType i = 0; i < ignoreArray.Size(); ++i) {
+                        c->ignoreCollisionsWith.insert(ignoreArray[i].GetString());
+                    }
+                }
             }
 
             // Input
@@ -1242,7 +1283,7 @@ namespace JsonIO {
                 }
                 else {
                     // BACKWARDS COMPATIBILITY: Old single-channel format
-                    AudioChannel* ch = ac->getDefaultChannel();
+                    /*AudioChannel* ch = */ac->getDefaultChannel();
                     AudioChannel* a = ac->getDefaultChannel();
 
                     a->audioFile = ja["audioFile"].GetString();

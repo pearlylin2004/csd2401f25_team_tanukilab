@@ -157,6 +157,7 @@ public:
 	void render();
 
 	void clear();
+	void loadLogic(const std::string& filename);
 	void updateNextNodeId();
 
 private:
@@ -181,9 +182,14 @@ private:
 	std::string m_connectingFromPin;
 	ImVec2 m_connectionStartPos;
 
-	// save/load logic
+	// for right click menu + palette
+	bool m_showNodePalette;
+	bool m_showNodeMenu;
+	Vector2D m_menuSpawnPos;
+	char m_nodeSearchBuffer[128];
+
+	// save logic
 	void saveLogic();
-	//void loadLogic(const std::string& filename);
 
 	// save popup state
 	char m_saveFilename[128];
@@ -215,6 +221,12 @@ private:
 
 	// helper func for reload script
 	void reloadAllVisualLogic(const std::string& scriptName);
+
+	// for right click menu + palette
+	void renderNodeSearchMenu();
+	bool matchesSearch(const std::string& nodeName, const std::string& search);
+	void renderNodePalette();
+	void verticalSplitter(float* width, bool reverseDir = false, float minWidth = 100.0f);
 };
 
 // Top menu bar

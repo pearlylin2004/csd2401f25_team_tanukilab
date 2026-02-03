@@ -17,8 +17,20 @@
           "hasTex": 1
         },
         "CollisionInfo": {
-          "collisionTag": "bullet",
-          "ignoreCollisionsWith": [ "player"]
+          "collisionRes": "MoveWhenCollide",
+          "ignoreCollisionsWith": [
+            "player",
+            "bullet",
+            "hazards"
+          ]
+        },
+        "LuaScript": {
+          "scripts": [
+            {
+              "filename": "./assets/scripting\\bullet.lua",
+              "scriptName": "bullet"
+            }
+          ]
         }
       }
     },
@@ -48,34 +60,6 @@
       }
     },
     {
-      "name": "back_text",
-      "components": {
-        "Transform": {
-          "pos": [
-            -16.1,
-            8.1,
-            0.0
-          ],
-          "rotation": 0.0,
-          "scale": [
-            3.799999952316284,
-            6.0,
-            0.0
-          ]
-        },
-        "FontComponent": {
-          "word": "BACK",
-          "color": [
-            0.0,
-            0.0,
-            0.0
-          ],
-          "scale": 1.0,
-          "fontType": 1
-        }
-      }
-    },
-    {
       "prefabid": "dd60e1e1-641c-4ed5-b69d-ffadfa02fb7a",
       "name": "player",
       "components": {
@@ -96,10 +80,12 @@
         },
         "CollisionInfo": {
           "collisionTag": "player",
-          "ignoreCollisionsWith": [ "bullet" ]
+          "ignoreCollisionsWith": [
+            "bullet"
+          ]
         },
         "StateMachine": {
-          "state": "Walking",
+          "stateTime": 3.72672963142395,
           "Dead": {
             "animState": {
               "texture": "",
@@ -113,6 +99,14 @@
               "lastFramRow": 0.0
             }
           }
+        },
+        "LuaScript": {
+          "scripts": [
+            {
+              "filename": "./assets/scripting\\player.lua",
+              "scriptName": "player"
+            }
+          ]
         }
       }
     },
@@ -143,34 +137,6 @@
             0.0,
             -0.10000000149011612
           ]
-        }
-      }
-    },
-    {
-      "name": "back_button",
-      "components": {
-        "Transform": {
-          "pos": [
-            -15.5,
-            8.5,
-            0.9990000128746033
-          ],
-          "rotation": 0.0,
-          "scale": [
-            5.099999904632568,
-            2.0,
-            0.0
-          ]
-        },
-        "Render": {
-          "shape": "square",
-          "hasTex": 1,
-          "texture": "assets/button.png",
-          "hasTex": 1,
-          "hasAnimation": 0
-        },
-        "Button" : {
-          "action" : "back"
         }
       }
     },
@@ -288,6 +254,18 @@
             3.2525298595428467,
             0.5
           ]
+        },
+        "CollisionInfo": {
+          "collisionTag": "environment"
+        },
+        "AudioComponent": {
+          "channels": {
+            "default": {
+              "isSpatial": 0,
+              "minDistance": 5.0,
+              "maxDistance": 50.0
+            }
+          }
         }
       }
     },
@@ -310,7 +288,7 @@
         "CollisionInfo": {
           "colliderSize": [
             7.5,
-            3.0
+            2.0
           ]
         }
       }
@@ -334,7 +312,7 @@
         "CollisionInfo": {
           "colliderSize": [
             20.0,
-            3.200000047683716
+            1.2000000476837158
           ]
         }
       }
@@ -358,7 +336,7 @@
         "CollisionInfo": {
           "colliderSize": [
             9.5,
-            3.0
+            2.0
           ]
         }
       }
@@ -404,6 +382,12 @@
             3.6999998092651367,
             1.5,
             0.0
+          ]
+        },
+        "CollisionInfo": {
+          "colliderSize": [
+            2.6999998092651367,
+            1.2000000476837158
           ]
         }
       }
