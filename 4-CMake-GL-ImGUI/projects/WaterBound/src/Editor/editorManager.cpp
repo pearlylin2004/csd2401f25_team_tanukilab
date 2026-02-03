@@ -17,7 +17,7 @@ Technology is prohibited.
 #ifdef _DEBUG
 #include "Editor/editorManager.h"
 
-EditorManager::EditorManager(GameObjectManager& manager, GUISystem* gui) :
+EditorManager::EditorManager(GameObjectManager& manager) :
     addObjWindow(Editor::circleInput, Editor::rectangleInput),
     assetBrowser(Editor::assetBrowserState, Editor::objSelectionState, Editor::menuBarState),
     editorDebugWindow(DebugMode::Editor),
@@ -26,9 +26,8 @@ EditorManager::EditorManager(GameObjectManager& manager, GUISystem* gui) :
     inspectorWindow(Editor::objSelectionState, Editor::gizmoState),
     menuBar(assetBrowser, Editor::assetBrowserState, Editor::menuBarState, Editor::objSelectionState, Editor::sceneState),
     performanceWindow(),
-    sceneWindow(assetBrowser, Editor::objSelectionState, Editor::menuBarState, Editor::sceneWindowState, Editor::sceneState, Editor::gizmoState, gui),
-    m_manager(manager),
-    m_guiSystem(gui) {
+    sceneWindow(assetBrowser, Editor::objSelectionState, Editor::menuBarState, Editor::sceneWindowState, Editor::sceneState, Editor::gizmoState),
+    m_manager(manager) {
 
 	CachedGameObjects::Instance().initialize(manager);
 }

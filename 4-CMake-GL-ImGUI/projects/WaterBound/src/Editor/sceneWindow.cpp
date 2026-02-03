@@ -22,14 +22,13 @@ Technology is prohibited.
 
 bool SceneWindow::s_isSceneHovered = false;
 
-SceneWindow::SceneWindow(AssetBrowser& aBrowser, Editor::ObjSelectionState& Ostate, Editor::MenuBarState& Mstate, Editor::SceneWindowState& Sstate, Editor::SceneState& sceneState, Editor::GizmoState& gizmoState, GUISystem* guiSystem) :
+SceneWindow::SceneWindow(AssetBrowser& aBrowser, Editor::ObjSelectionState& Ostate, Editor::MenuBarState& Mstate, Editor::SceneWindowState& Sstate, Editor::SceneState& sceneState, Editor::GizmoState& gizmoState) :
     m_assetBrowser(aBrowser), 
     m_objSelectionState(Ostate),
     m_menuBarState(Mstate),
     m_sceneWindowState(Sstate),
     m_sceneState(sceneState),
-    m_gizmoState(gizmoState),
-    m_guiSystem(guiSystem) {}
+    m_gizmoState(gizmoState){}
 
 void SceneWindow::render(GLuint texture, float aspectRatio, GameObjectManager& manager) {
     /* ---------- Draw Editor Camera Window --------- */
@@ -630,15 +629,9 @@ void SceneWindow::loadScene(GameObjectManager& manager) {
     // refresh cached object vector
     CachedGameObjects::Instance().refresh();
 
-    if (!m_guiSystem) {
-        static GUISystem defaultGui;
-        m_guiSystem = &defaultGui;
-    }
-    GameState state = m_guiSystem->sceneToState(m_menuBarState.sceneToLoad); //translate state
-    m_guiSystem->setCurrentState(state); //state change 
-    state = m_guiSystem->getCurrentState();
-
-    m_sceneState.currentSceneName = std::move(m_menuBarState.sceneToLoad); 
+	//set current scene name
+    GameState newState = GUISystem::getInstance().sceneToState(m_menuBarState.sceneToLoad);
+    GUISystem::getInstance().setCurrentState(newState);
 
     DebugLog::addMessage("Loaded scene: " + m_sceneState.currentSceneName + "\n");
 }

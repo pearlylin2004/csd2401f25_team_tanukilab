@@ -135,7 +135,7 @@ void CoreEngine::Init(bool forceWindowed) {
 #endif
     m_luaSystem = std::make_unique<LuaSystem>();
     m_fontSystem = std::make_unique<FontSystem>();
-    m_guiSystem = std::make_unique<GUISystem>();
+    //m_guiSystem = std::make_unique<GUISystem>();
     m_messageBus = std::make_unique<MessageBus>();
     m_playerController = std::make_unique<PlayerControllerSystem>();
     m_audioSystem = std::make_unique<AudioSystem>();
@@ -145,7 +145,8 @@ void CoreEngine::Init(bool forceWindowed) {
 
 
     PrefabManager::Instance().loadPrefabRegistry();
-    m_guiSystem->init(*m_manager, *m_luaSystem);
+    //m_guiSystem->init(*m_manager, *m_luaSystem);
+    GUISystem::getInstance().init(*m_manager, *m_luaSystem);
     m_luaSystem->init();
     m_renderSystem->init(*m_manager, winWidth, winHeight);
     m_waterSystem->init();
@@ -182,10 +183,10 @@ void CoreEngine::GameLoop() {
     if (glfwWindowShouldClose(m_window) || InputHandler::isKeyTriggered(GLFW_KEY_F1)) { m_isRunning = false; return; }
     //pause checking, and set it to paused state if escape is held
     if (InputHandler::isKeyTriggered(GLFW_KEY_ESCAPE)) {
-        GameState current = m_guiSystem->getCurrentState(); //get current state
+        auto current = GUISystem::getInstance().getCurrentState(); //get current state
         if (current != GameState::PAUSED) {
-            m_guiSystem->setStateBeforePause(current); //store state before pausing
-            m_guiSystem->changeState(GameState::PAUSED, "pause_scene.json");
+            GUISystem::getInstance().setStateBeforePause(current); //store state before pausing
+            GUISystem::getInstance().changeState(GameState::PAUSED, "pause_scene.json");
         }
     }
 
@@ -234,9 +235,9 @@ void CoreEngine::Update(float deltaTime) {
         toggleFullscreen();
     }
     //menu checking
-    GameState state = m_guiSystem->getCurrentState();
+    GameState state = GUISystem::getInstance().getCurrentState();
     if (state != GameState::EXIT) {
-        m_guiSystem->update();
+        GUISystem::getInstance().update();
     }
 
 	//for other systems to update even in editor mode

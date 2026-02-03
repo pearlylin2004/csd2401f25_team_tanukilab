@@ -41,8 +41,11 @@ namespace std {
 
 class GUISystem {
 public:
-    GUISystem();
-    ~GUISystem();
+    //singleton accessor
+    static GUISystem& getInstance() {
+        static GUISystem instance; //created on first call, destroyed automatically at program end
+        return instance;
+    }
 
     void init(GameObjectManager& manager, LuaSystem& luaSystem);
     void update(); //update menu system
@@ -57,6 +60,11 @@ public:
 	GameState sceneToState(const std::string& sceneName); //convert scene name to game state
 
 private:
+    GUISystem() = default;
+    ~GUISystem() = default;
+    GUISystem(const GUISystem&) = delete; // prevent copying
+    GUISystem& operator=(const GUISystem&) = delete; // prevent assignment
+
     void createButtons(GameObjectManager& manager); //create menu buttons
     void removeButtons(); //remove menu buttons
     void startGame(GameObjectManager& manager); //start game
@@ -68,9 +76,9 @@ private:
     std::unordered_map<ButtonAction, GameObject*> m_buttons; //for storing buttons 
 	std::unordered_map<ButtonAction, std::function<void()>> m_buttonActions; //map of button actions
 
-    GameState m_currentState;
-    GameState m_previousState;
-    GameState m_stateBeforePause;
+    GameState m_currentState = GameState::NONE;
+    GameState m_previousState = GameState::MENU;
+    GameState m_stateBeforePause = GameState::MENU;
     GameObjectManager* g_manager = nullptr;
     LuaSystem* g_luaSystem = nullptr;
 };
