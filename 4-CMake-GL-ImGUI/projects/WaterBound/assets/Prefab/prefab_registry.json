@@ -2,9 +2,9 @@
   "version": 1,
   "prefabIndex": [
     {
-      "id": "b1a12273-a692-4ce0-8072-156da2c70842",
-      "name": "bullet",
-      "path": "/Prefab/bullet.json"
+      "id": "98416fa9-2ae1-4432-bcf4-0d4352a9b29a",
+      "name": "to win",
+      "path": "/Prefab/to win.json"
     },
     {
       "id": "dd60e1e1-641c-4ed5-b69d-ffadfa02fb7a",
@@ -12,19 +12,14 @@
       "path": "/Prefab/player.json"
     },
     {
-      "id": "98416fa9-2ae1-4432-bcf4-0d4352a9b29a",
-      "name": "to win",
-      "path": "/Prefab/to win.json"
+      "id": "b1a12273-a692-4ce0-8072-156da2c70842",
+      "name": "bullet",
+      "path": "/Prefab/bullet.json"
     },
     {
       "id": "f7665aa3-619e-49a1-892a-31fbc8b377a2",
       "name": "platform",
       "path": "/Prefab/platform.json"
-    },
-    {
-      "id": "eaa2ba42-971a-413b-b8c4-99b2f5ab674d",
-      "name": "fire",
-      "path": "/Prefab/fire.json"
     },
     {
       "id": "9f0f3e8d-8d60-445e-aeeb-a90697e34426",
@@ -35,6 +30,11 @@
       "id": "f04819ff-270c-41b4-8387-73382eb85103",
       "name": "water_source",
       "path": "/Prefab/water_source.json"
+    },
+    {
+      "id": "eaa2ba42-971a-413b-b8c4-99b2f5ab674d",
+      "name": "fire",
+      "path": "/Prefab/fire.json"
     },
     {
       "id": "94d018f7-a766-4ee6-95be-f39272697938",
@@ -70,6 +70,11 @@
       "id": "276147a8-c487-4300-bfec-bb6bdb1dca89",
       "name": "player",
       "path": "/Prefab/player_5.json"
+    },
+    {
+      "id": "8b8d44fa-ed22-4288-98ee-c476958f5b5b",
+      "name": "endgoal",
+      "path": "/Prefab/endgoal.json"
     }
   ]
 }
