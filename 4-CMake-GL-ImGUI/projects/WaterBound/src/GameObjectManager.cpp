@@ -733,20 +733,6 @@ void GameObjectManager::loadSceneFromJson(const std::string& filename) {
 					if (chJson.HasMember("fadeOutDuration") && chJson["fadeOutDuration"].IsNumber()) {
 						ch->fadeOutDuration = chJson["fadeOutDuration"].GetFloat();
 					}
-
-					// Load 3D audio settings
-					if (chJson.HasMember("isSpatial")) {
-						ch->isSpatial = chJson["isSpatial"].IsBool()
-							? chJson["isSpatial"].GetBool()
-							: (chJson["isSpatial"].GetInt() != 0); 
-					}
-					if (chJson.HasMember("minDistance") && chJson["minDistance"].IsNumber()) {
-						ch->minDistance = chJson["minDistance"].GetFloat();
-					}
-					if (chJson.HasMember("maxDistance") && chJson["maxDistance"].IsNumber()) {
-						ch->maxDistance = chJson["maxDistance"].GetFloat();
-					}
-
 				}
 			}
 		}
