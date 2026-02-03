@@ -238,14 +238,14 @@
       "type": 1,
       "position": [
         521.0,
-        370.0
+        370.0000305175781
       ],
       "hasInput": true,
       "hasOutput": true,
       "hasTrueOutput": false,
       "hasFalseOutput": false,
       "parameters": {
-        "forceY": "10.000000"
+        "forceY": "15.000000"
       }
     },
     {
@@ -253,8 +253,8 @@
       "implementation": "Play Sound",
       "type": 1,
       "position": [
-        1522.0,
-        -60.0
+        1224.857177734375,
+        -168.57144165039063
       ],
       "hasInput": true,
       "hasOutput": true,
@@ -276,12 +276,6 @@
       "fromNodeId": 8,
       "outputPin": "Out",
       "toNodeId": 10,
-      "inputPin": "In"
-    },
-    {
-      "fromNodeId": 9,
-      "outputPin": "Out",
-      "toNodeId": 14,
       "inputPin": "In"
     },
     {
@@ -340,6 +334,12 @@
     },
     {
       "fromNodeId": 14,
+      "outputPin": "Out",
+      "toNodeId": 21,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 9,
       "outputPin": "Out",
       "toNodeId": 21,
       "inputPin": "In"
