@@ -56,13 +56,16 @@ void GUISystem::init(GameObjectManager& manager, LuaSystem& luaSystem) {
 //update function to check for button clicking
 void GUISystem::update() {
     if (EditorManager::isEditingMode()) return;
-    if (m_currentState == GameState::PLAYING) return;
     if (UISystem::isShowUI()) return; // skip if UI is shown
-    if (m_buttons.empty()) return;
+    //if (m_buttons.empty()) return;
 
     Vector2D worldMousePos = InputHandler::getWorldMousePosition();
 
-    if (InputHandler::isMouseButtonClicked(GLFW_MOUSE_BUTTON_LEFT)) {
+    if (m_currentState == GameState::PLAYING) {
+
+    }
+
+    else if (InputHandler::isMouseButtonClicked(GLFW_MOUSE_BUTTON_LEFT)) {
         //iterate with iterator to safely remove invalid buttons
         for (auto it = m_buttons.begin(); it != m_buttons.end(); ) {
             GameObject* btn = it->second;
