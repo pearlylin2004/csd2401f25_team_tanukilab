@@ -203,13 +203,18 @@ public:
     Vector2D originalVel{ 0, 0 };
     bool isOriginalStateSet = false;
 
+    //bullet gravity thing
+    float gravityDelayTimer = 0.0f;
+    float gravityDelay = 0.2f;
+
     //bool inWaterTriggered; // true only when W is pressed
 
     //Shooting parameters
     float fireRate = 0.15f;        // Time between shots (lower is  faster)
     float shootTimer = 0.0f;       // Internal time for shooting
     bool canShoot = true;
-    bool autoFire = true;         
+    bool autoFire = true;  
+
     // Arc parameters
     float arcHeightFactor = 0.4f;
     bool useArcTrajectory = true;
@@ -219,6 +224,7 @@ public:
     bool inWater = false;
     bool buoancy = true;
 
+    float bounciness = 0.0f; // bounciness factor (0 = no bounce, 1 = full bounce)
     //const float waterBounce = 60.0f;   // upward velocity when entering water
 
 };
