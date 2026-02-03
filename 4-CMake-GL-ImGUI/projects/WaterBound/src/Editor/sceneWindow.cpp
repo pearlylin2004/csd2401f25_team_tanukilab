@@ -630,11 +630,11 @@ void SceneWindow::loadScene(GameObjectManager& manager) {
     // refresh cached object vector
     CachedGameObjects::Instance().refresh();
 
-    GameState state = m_guiSystem->sceneToState(m_menuBarState.sceneToLoad); //translate state
     if (!m_guiSystem) {
         static GUISystem defaultGui;
         m_guiSystem = &defaultGui;
     }
+    GameState state = m_guiSystem->sceneToState(m_menuBarState.sceneToLoad); //translate state
     m_guiSystem->setCurrentState(state); //state change 
     state = m_guiSystem->getCurrentState();
 

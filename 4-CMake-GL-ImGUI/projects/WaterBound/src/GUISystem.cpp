@@ -30,7 +30,7 @@ static std::string runtimeScenePath(std::string const& name) {
 }
 
 GUISystem::GUISystem() :
-    m_currentState(GameState::MENU),
+    m_currentState(GameState::NONE),
     m_previousState(GameState::MENU),
     m_stateBeforePause(GameState::MENU),
     g_manager(nullptr),
@@ -55,6 +55,7 @@ void GUISystem::init(GameObjectManager& manager, LuaSystem& luaSystem) {
 
 //update function to check for button clicking
 void GUISystem::update() {
+    if (EditorManager::isEditingMode()) return;
     if (m_currentState == GameState::PLAYING) return;
     if (UISystem::isShowUI()) return; // skip if UI is shown
     if (m_buttons.empty()) return;

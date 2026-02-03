@@ -17,6 +17,7 @@ Technology is prohibited.
 #pragma once
 
 enum class GameState {
+    NONE,
     MENU,
     PLAYING,
     CONTROL,
