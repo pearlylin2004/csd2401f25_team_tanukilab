@@ -707,7 +707,9 @@ void InspectorWindow::renderStateMachine(GameObject* selected) {
                     ImGui::Separator();
                     ImGui::Spacing();
 
-                    ImGui::Checkbox("Loop (WIP)", &currentState.loop);
+					ImGui::Checkbox("Play Animation", &currentState.play);
+
+                    ImGui::Checkbox("Loop", &currentState.loop);
 
                     if (ImGui::InputInt("Total Columns", &currentState.totalColumn))
                         currentState.totalColumn = std::max(currentState.totalColumn, 1);

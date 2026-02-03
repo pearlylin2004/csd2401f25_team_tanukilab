@@ -51,6 +51,7 @@
         "animState": {
           "texture": "assets/Texture\\sprite_fire.png",
           "loop": 1,
+          "play": 1,
           "totalColumn": 6,
           "totalRow": 4,
           "frameTime": 0.07000000029802322,
@@ -64,6 +65,7 @@
         "animState": {
           "texture": "assets/Texture\\Smoke_Sprite_Sheet.png",
           "loop": 1,
+          "play": 1,
           "totalColumn": 6,
           "totalRow": 4,
           "frameTime": 0.1469999998807907,
@@ -77,6 +79,7 @@
         "animState": {
           "texture": "",
           "loop": 1,
+          "play": 0,
           "totalColumn": 1,
           "totalRow": 1,
           "frameTime": 0.10000000149011612,
@@ -90,6 +93,7 @@
         "animState": {
           "texture": "",
           "loop": 1,
+          "play": 0,
           "totalColumn": 1,
           "totalRow": 1,
           "frameTime": 0.10000000149011612,
@@ -103,6 +107,7 @@
         "animState": {
           "texture": "",
           "loop": 1,
+          "play": 0,
           "totalColumn": 1,
           "totalRow": 1,
           "frameTime": 0.10000000149011612,
@@ -116,6 +121,7 @@
         "animState": {
           "texture": "",
           "loop": 1,
+          "play": 0,
           "totalColumn": 1,
           "totalRow": 1,
           "frameTime": 0.10000000149011612,

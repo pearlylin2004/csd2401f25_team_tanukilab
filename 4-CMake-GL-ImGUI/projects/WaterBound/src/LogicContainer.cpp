@@ -5,7 +5,7 @@
 \par        v.teo@digipen.edu
 \date		November, 5th, 2025
 \brief		Implements the LogicContainer using class-based FSM and trigger-action system.
-            This replaces the old switch-case implementation.
+            
 
 Copyright (C) 2025 DigiPen Institute of Technology.
 Reproduction or disclosure of this file or its contents
@@ -61,31 +61,28 @@ RuntimeStateMachine* LogicContainer::getOrCreateMachine(GameObject& obj) {
     // Create new machine
     auto machine = std::make_unique<RuntimeStateMachine>();
 
-    // ===== ADD ALL STATES =====
-    machine->addState(std::make_unique<IdleState>());
-    machine->addState(std::make_unique<WalkingState>());
-    machine->addState(std::make_unique<JumpingState>());
-    machine->addState(std::make_unique<FallingState>());
-    machine->addState(std::make_unique<DeadState>());
+    // ===== CREATE STATES =====
+    auto idleState = std::make_unique<IdleState>();
+    auto walkingState = std::make_unique<WalkingState>();
+    auto jumpingState = std::make_unique<JumpingState>();
+    auto fallingState = std::make_unique<FallingState>();
+    auto deadState = std::make_unique<DeadState>();
 
-    // ===== TRANSITIONS FROM IDLE =====
-
-    // Idle → Walking (when movement keys pressed)
-    machine->addTransition("Idle", RuntimeTransition(
+    // ===== TRANSITIONS FROM IDLE (added to IdleState) =====
+    idleState->addTransition(RuntimeTransition(
         "Walking",
         [](GameObject& o) {
             return anyMoveHeld() && !isBlockedPrefab(o);
         }
     ));
 
-    // Idle → Jumping (B key + grounded)
-    machine->addTransition("Idle", RuntimeTransition(
+    idleState->addTransition(RuntimeTransition(
         "Jumping",
         [](GameObject& o) {
             Physics* p = o.getComponent<Physics>();
-            return p && InputHandler::isKeyTriggered(GLFW_KEY_B) && p->onGround;
+            return p && InputHandler::isKeyTriggered(GLFW_KEY_SPACE) && p->onGround;
         },
-        [](GameObject& o) { // Transition action: apply jump impulse
+        [](GameObject& o) {
             Physics* p = o.getComponent<Physics>();
             if (p) {
                 p->velY = p->jumpForce;
@@ -94,10 +91,8 @@ RuntimeStateMachine* LogicContainer::getOrCreateMachine(GameObject& obj) {
         }
     ));
 
-    // ===== TRANSITIONS FROM WALKING =====
-
-    // Walking → Idle (no movement keys + not fixState)
-    machine->addTransition("Walking", RuntimeTransition(
+    // ===== TRANSITIONS FROM WALKING (added to WalkingState) =====
+    walkingState->addTransition(RuntimeTransition(
         "Idle",
         [](GameObject& o) {
             StateMachine* fsm = o.getComponent<StateMachine>();
@@ -105,8 +100,7 @@ RuntimeStateMachine* LogicContainer::getOrCreateMachine(GameObject& obj) {
         }
     ));
 
-    // Walking → Falling (left ground)
-    machine->addTransition("Walking", RuntimeTransition(
+    walkingState->addTransition(RuntimeTransition(
         "Falling",
         [](GameObject& o) {
             Physics* p = o.getComponent<Physics>();
@@ -114,12 +108,11 @@ RuntimeStateMachine* LogicContainer::getOrCreateMachine(GameObject& obj) {
         }
     ));
 
-    // Walking → Jumping (B key + grounded)
-    machine->addTransition("Walking", RuntimeTransition(
+    walkingState->addTransition(RuntimeTransition(
         "Jumping",
         [](GameObject& o) {
             Physics* p = o.getComponent<Physics>();
-            return p && InputHandler::isKeyTriggered(GLFW_KEY_B) && p->onGround;
+            return p && InputHandler::isKeyTriggered(GLFW_KEY_SPACE) && p->onGround;
         },
         [](GameObject& o) {
             Physics* p = o.getComponent<Physics>();
@@ -130,10 +123,8 @@ RuntimeStateMachine* LogicContainer::getOrCreateMachine(GameObject& obj) {
         }
     ));
 
-    // ===== TRANSITIONS FROM JUMPING =====
-
-    // Jumping → Falling (velocity goes negative)
-    machine->addTransition("Jumping", RuntimeTransition(
+    // ===== TRANSITIONS FROM JUMPING (added to JumpingState) =====
+    jumpingState->addTransition(RuntimeTransition(
         "Falling",
         [](GameObject& o) {
             Physics* p = o.getComponent<Physics>();
@@ -141,16 +132,14 @@ RuntimeStateMachine* LogicContainer::getOrCreateMachine(GameObject& obj) {
         }
     ));
 
-    // ===== TRANSITIONS FROM FALLING =====
-
-    // Falling → Walking (landed + moving)
-    machine->addTransition("Falling", RuntimeTransition(
+    // ===== TRANSITIONS FROM FALLING (added to FallingState) =====
+    fallingState->addTransition(RuntimeTransition(
         "Walking",
         [](GameObject& o) {
             Physics* p = o.getComponent<Physics>();
             return p && p->onGround && anyMoveHeld();
         },
-        [](GameObject& o) { // Play landing sound
+        [](GameObject& o) {
             if (AudioComponent* audio = o.getComponent<AudioComponent>()) {
                 AudioChannel* landing = audio->getOrCreateChannel("landing");
                 if (landing) {
@@ -163,14 +152,13 @@ RuntimeStateMachine* LogicContainer::getOrCreateMachine(GameObject& obj) {
         }
     ));
 
-    // Falling → Idle (landed + not moving)
-    machine->addTransition("Falling", RuntimeTransition(
+    fallingState->addTransition(RuntimeTransition(
         "Idle",
         [](GameObject& o) {
             Physics* p = o.getComponent<Physics>();
             return p && p->onGround && !anyMoveHeld();
         },
-        [](GameObject& o) { // Play landing sound
+        [](GameObject& o) {
             if (AudioComponent* audio = o.getComponent<AudioComponent>()) {
                 AudioChannel* landing = audio->getOrCreateChannel("landing");
                 if (landing) {
@@ -183,24 +171,12 @@ RuntimeStateMachine* LogicContainer::getOrCreateMachine(GameObject& obj) {
         }
     ));
 
-    // ===== SPECIAL CASE: Water Source Prefab =====
-    // Walking → Falling for water source (play sound once)
-    machine->addTransition("Walking", RuntimeTransition(
-        "Falling",
-        [](GameObject& o) {
-            return o.getObjectPrefabID() == "f04819ff-270c-41b4-8387-73382eb85103";
-        },
-        [](GameObject& o) { // Play water collection sound
-            if (AudioComponent* audio = o.getComponent<AudioComponent>()) {
-                AudioChannel* getWater = audio->getDefaultChannel();
-                if (getWater && getWater->state != AudioState::Playing && !getWater->isPendingPlay) {
-                    getWater->loop = false;
-                    getWater->volume = 0.5f;
-                    getWater->isPendingPlay = true;
-                }
-            }
-        }
-    ));
+    // ===== ADD STATES TO MACHINE =====
+    machine->addState(std::move(idleState));
+    machine->addState(std::move(walkingState));
+    machine->addState(std::move(jumpingState));
+    machine->addState(std::move(fallingState));
+    machine->addState(std::move(deadState));
 
     // ===== SET INITIAL STATE =====
     machine->setInitial("Idle", obj);

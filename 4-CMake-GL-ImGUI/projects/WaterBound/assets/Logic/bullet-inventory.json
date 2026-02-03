@@ -1,0 +1,642 @@
+{
+  "version": 1,
+  "nodes": [
+    {
+      "id": 1,
+      "implementation": "On Start",
+      "type": 0,
+      "position": [
+        -200.0,
+        -100.0
+      ],
+      "hasInput": false,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false
+    },
+    {
+      "id": 2,
+      "implementation": "Set Global Float",
+      "type": 1,
+      "position": [
+        238.0,
+        -104.0
+      ],
+      "hasInput": true,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false,
+      "parameters": {
+        "value": "100",
+        "variable": "bullets"
+      }
+    },
+    {
+      "id": 3,
+      "implementation": "Set Texture",
+      "type": 1,
+      "position": [
+        794.0,
+        -104.0
+      ],
+      "hasInput": true,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false,
+      "parameters": {
+        "textureFile": "assets/Texture\\Water_100.png"
+      }
+    },
+    {
+      "id": 10,
+      "implementation": "On Bullet Shoot",
+      "type": 0,
+      "position": [
+        -200.0,
+        100.0
+      ],
+      "hasInput": false,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false
+    },
+    {
+      "id": 20,
+      "implementation": "Modify Global Float",
+      "type": 1,
+      "position": [
+        165.9999542236328,
+        99.99999237060547
+      ],
+      "hasInput": true,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false,
+      "parameters": {
+        "value": "-10.000000",
+        "variable": "bullets"
+      }
+    },
+    {
+      "id": 11,
+      "implementation": "Compare Global Float",
+      "type": 2,
+      "position": [
+        543.3333129882813,
+        99.99999237060547
+      ],
+      "hasInput": true,
+      "hasOutput": false,
+      "hasTrueOutput": true,
+      "hasFalseOutput": true,
+      "parameters": {
+        "comparison": "greater",
+        "threshold": "90",
+        "variable": "bullets"
+      }
+    },
+    {
+      "id": 12,
+      "implementation": "Set Texture",
+      "type": 1,
+      "position": [
+        851.6666259765625,
+        -3.3333332538604736
+      ],
+      "hasInput": true,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false,
+      "parameters": {
+        "textureFile": "assets/Texture\\Water_100.png"
+      }
+    },
+    {
+      "id": 13,
+      "implementation": "Compare Global Float",
+      "type": 2,
+      "position": [
+        828.3333129882813,
+        101.66666412353516
+      ],
+      "hasInput": true,
+      "hasOutput": false,
+      "hasTrueOutput": true,
+      "hasFalseOutput": true,
+      "parameters": {
+        "comparison": "greater",
+        "threshold": "80",
+        "variable": "bullets"
+      }
+    },
+    {
+      "id": 14,
+      "implementation": "Set Texture",
+      "type": 1,
+      "position": [
+        1141.6666259765625,
+        3.3333332538604736
+      ],
+      "hasInput": true,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false,
+      "parameters": {
+        "textureFile": "assets/Texture\\Water_90.png"
+      }
+    },
+    {
+      "id": 15,
+      "implementation": "Compare Global Float",
+      "type": 2,
+      "position": [
+        1125.0,
+        108.33332824707031
+      ],
+      "hasInput": true,
+      "hasOutput": false,
+      "hasTrueOutput": true,
+      "hasFalseOutput": true,
+      "parameters": {
+        "comparison": "greater",
+        "threshold": "70",
+        "variable": "bullets"
+      }
+    },
+    {
+      "id": 16,
+      "implementation": "Set Texture",
+      "type": 1,
+      "position": [
+        1420.0,
+        -6.666666507720947
+      ],
+      "hasInput": true,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false,
+      "parameters": {
+        "textureFile": "assets/Texture\\Water_80.png"
+      }
+    },
+    {
+      "id": 17,
+      "implementation": "Compare Global Float",
+      "type": 2,
+      "position": [
+        1420.0,
+        109.99999237060547
+      ],
+      "hasInput": true,
+      "hasOutput": false,
+      "hasTrueOutput": true,
+      "hasFalseOutput": true,
+      "parameters": {
+        "comparison": "greater",
+        "threshold": "60",
+        "variable": "bullets"
+      }
+    },
+    {
+      "id": 18,
+      "implementation": "Set Texture",
+      "type": 1,
+      "position": [
+        1709.9998779296875,
+        -1.6666666269302368
+      ],
+      "hasInput": true,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false,
+      "parameters": {
+        "textureFile": "assets/Texture\\Water_70.png"
+      }
+    },
+    {
+      "id": 19,
+      "implementation": "Compare Global Float",
+      "type": 2,
+      "position": [
+        1696.6666259765625,
+        108.33332824707031
+      ],
+      "hasInput": true,
+      "hasOutput": false,
+      "hasTrueOutput": true,
+      "hasFalseOutput": true,
+      "parameters": {
+        "comparison": "greater",
+        "threshold": "50",
+        "variable": "bullets"
+      }
+    },
+    {
+      "id": 21,
+      "implementation": "Set Texture",
+      "type": 1,
+      "position": [
+        2046.6666259765625,
+        -5.0
+      ],
+      "hasInput": true,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false,
+      "parameters": {
+        "textureFile": "assets/Texture\\Water_60.png"
+      }
+    },
+    {
+      "id": 24,
+      "implementation": "Compare Global Float",
+      "type": 2,
+      "position": [
+        1998.333251953125,
+        128.3333282470703
+      ],
+      "hasInput": true,
+      "hasOutput": false,
+      "hasTrueOutput": true,
+      "hasFalseOutput": true,
+      "parameters": {
+        "comparison": "greater",
+        "threshold": "40",
+        "variable": "bullets"
+      }
+    },
+    {
+      "id": 25,
+      "implementation": "Set Texture",
+      "type": 1,
+      "position": [
+        2353.333251953125,
+        -3.3333332538604736
+      ],
+      "hasInput": true,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false,
+      "parameters": {
+        "textureFile": "assets/Texture\\Water_50.png"
+      }
+    },
+    {
+      "id": 26,
+      "implementation": "Compare Global Float",
+      "type": 2,
+      "position": [
+        2313.333251953125,
+        128.3333282470703
+      ],
+      "hasInput": true,
+      "hasOutput": false,
+      "hasTrueOutput": true,
+      "hasFalseOutput": true,
+      "parameters": {
+        "comparison": "greater",
+        "threshold": "30",
+        "variable": "bullets"
+      }
+    },
+    {
+      "id": 27,
+      "implementation": "Set Texture",
+      "type": 1,
+      "position": [
+        2706.66650390625,
+        -14.999999046325684
+      ],
+      "hasInput": true,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false,
+      "parameters": {
+        "textureFile": "assets/Texture\\Water_40.png"
+      }
+    },
+    {
+      "id": 28,
+      "implementation": "Compare Global Float",
+      "type": 2,
+      "position": [
+        2690.0,
+        118.33332824707031
+      ],
+      "hasInput": true,
+      "hasOutput": false,
+      "hasTrueOutput": true,
+      "hasFalseOutput": true,
+      "parameters": {
+        "comparison": "greater",
+        "threshold": "20",
+        "variable": "bullets"
+      }
+    },
+    {
+      "id": 29,
+      "implementation": "Set Texture",
+      "type": 1,
+      "position": [
+        3018.3330078125,
+        -19.999996185302734
+      ],
+      "hasInput": true,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false,
+      "parameters": {
+        "textureFile": "assets/Texture\\Water_30.png"
+      }
+    },
+    {
+      "id": 30,
+      "implementation": "Compare Global Float",
+      "type": 2,
+      "position": [
+        3013.3330078125,
+        124.9999771118164
+      ],
+      "hasInput": true,
+      "hasOutput": false,
+      "hasTrueOutput": true,
+      "hasFalseOutput": true,
+      "parameters": {
+        "comparison": "greater",
+        "threshold": "10",
+        "variable": "bullets"
+      }
+    },
+    {
+      "id": 31,
+      "implementation": "Set Texture",
+      "type": 1,
+      "position": [
+        3361.66650390625,
+        -10.0
+      ],
+      "hasInput": true,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false,
+      "parameters": {
+        "textureFile": "assets/Texture\\Water_20.png"
+      }
+    },
+    {
+      "id": 32,
+      "implementation": "Compare Global Float",
+      "type": 2,
+      "position": [
+        3350.0,
+        123.33334350585938
+      ],
+      "hasInput": true,
+      "hasOutput": false,
+      "hasTrueOutput": true,
+      "hasFalseOutput": true,
+      "parameters": {
+        "comparison": "greater",
+        "threshold": "0",
+        "variable": "bullets"
+      }
+    },
+    {
+      "id": 33,
+      "implementation": "Set Texture",
+      "type": 1,
+      "position": [
+        3724.999755859375,
+        19.999996185302734
+      ],
+      "hasInput": true,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false,
+      "parameters": {
+        "textureFile": "assets/Texture\\Water_10.png"
+      }
+    },
+    {
+      "id": 23,
+      "implementation": "Set Position",
+      "type": 1,
+      "position": [
+        3761.666259765625,
+        141.6666717529297
+      ],
+      "hasInput": true,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false,
+      "parameters": {
+        "x": "1000",
+        "y": "0"
+      }
+    },
+    {
+      "id": 100,
+      "implementation": "On Bullet Refill",
+      "type": 0,
+      "position": [
+        -199.99998474121094,
+        399.9999694824219
+      ],
+      "hasInput": false,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false
+    },
+    {
+      "id": 101,
+      "implementation": "Set Texture",
+      "type": 1,
+      "position": [
+        99.99998474121094,
+        399.9999694824219
+      ],
+      "hasInput": true,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false,
+      "parameters": {
+        "textureFile": "assets/Texture\\Water_100.png"
+      }
+    },
+    {
+      "id": 102,
+      "implementation": "Set Position",
+      "type": 1,
+      "position": [
+        413.75482177734375,
+        399.35894775390625
+      ],
+      "hasInput": true,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false,
+      "parameters": {
+        "x": "-12.977",
+        "y": "-7.302"
+      }
+    }
+  ],
+  "connections": [
+    {
+      "fromNodeId": 1,
+      "outputPin": "Out",
+      "toNodeId": 2,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 2,
+      "outputPin": "Out",
+      "toNodeId": 3,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 10,
+      "outputPin": "Out",
+      "toNodeId": 20,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 20,
+      "outputPin": "Out",
+      "toNodeId": 11,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 11,
+      "outputPin": "True",
+      "toNodeId": 12,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 11,
+      "outputPin": "False",
+      "toNodeId": 13,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 13,
+      "outputPin": "True",
+      "toNodeId": 14,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 13,
+      "outputPin": "False",
+      "toNodeId": 15,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 15,
+      "outputPin": "True",
+      "toNodeId": 16,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 15,
+      "outputPin": "False",
+      "toNodeId": 17,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 17,
+      "outputPin": "True",
+      "toNodeId": 18,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 17,
+      "outputPin": "False",
+      "toNodeId": 19,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 19,
+      "outputPin": "True",
+      "toNodeId": 21,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 19,
+      "outputPin": "False",
+      "toNodeId": 24,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 24,
+      "outputPin": "True",
+      "toNodeId": 25,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 24,
+      "outputPin": "False",
+      "toNodeId": 26,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 26,
+      "outputPin": "True",
+      "toNodeId": 27,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 26,
+      "outputPin": "False",
+      "toNodeId": 28,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 28,
+      "outputPin": "True",
+      "toNodeId": 29,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 28,
+      "outputPin": "False",
+      "toNodeId": 30,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 30,
+      "outputPin": "True",
+      "toNodeId": 31,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 30,
+      "outputPin": "False",
+      "toNodeId": 32,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 32,
+      "outputPin": "True",
+      "toNodeId": 33,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 32,
+      "outputPin": "False",
+      "toNodeId": 23,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 100,
+      "outputPin": "Out",
+      "toNodeId": 101,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 101,
+      "outputPin": "Out",
+      "toNodeId": 102,
+      "inputPin": "In"
+    }
+  ]
+}

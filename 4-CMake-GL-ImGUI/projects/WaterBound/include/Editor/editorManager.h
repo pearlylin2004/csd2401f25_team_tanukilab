@@ -34,6 +34,7 @@ Technology is prohibited.
 #include "JsonIO.h"
 #include "prefabManager.h"
 #include "performance.h"
+#include "GUISystem.h"
 
 #ifndef RUNTIME_DIR_R
 #define RUNTIME_DIR_R "./assets"
@@ -227,6 +228,9 @@ private:
 	bool matchesSearch(const std::string& nodeName, const std::string& search);
 	void renderNodePalette();
 	void verticalSplitter(float* width, bool reverseDir = false, float minWidth = 100.0f);
+
+	// helper func for global float var
+	std::vector<std::string> getGlobalVariableNamesFromNodes();
 };
 
 // Top menu bar
@@ -242,6 +246,7 @@ private:
 	void drawEditMenu();
 	void drawSimulationMenu(GameObjectManager& manager);
 	void drawThemeMenu();
+	void drawFontMenu();
 
 	void playSimulation(GameObjectManager& manager);
 	void stopSimulation(GameObjectManager& manager);
@@ -339,6 +344,7 @@ private:
 	Editor::SceneWindowState& m_sceneWindowState;
 	Editor::SceneState& m_sceneState;
 	Editor::GizmoState& m_gizmoState;
+	//GUISystem* m_guiSystem;
 
 	static bool s_isSceneHovered;
 };

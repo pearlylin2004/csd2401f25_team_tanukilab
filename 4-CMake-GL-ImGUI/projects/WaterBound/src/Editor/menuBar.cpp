@@ -137,6 +137,12 @@ void MenuBar::drawSimulationMenu(GameObjectManager& manager) {
 
 void MenuBar::drawThemeMenu() {
     if (ImGui::BeginMenu("Theme")) {
+        if (ImGui::BeginMenu("Font")) {
+            drawFontMenu();
+            ImGui::EndMenu();
+        }
+
+        ImGui::Separator();
 
         if (ImGui::MenuItem("Dark")) ImGui::StyleColorsDark();
         if (ImGui::MenuItem("Light")) ImGui::StyleColorsLight();
@@ -146,6 +152,25 @@ void MenuBar::drawThemeMenu() {
         if (ImGui::MenuItem("Forest")) themeForest();
        
         ImGui::EndMenu();
+    }
+}
+
+void MenuBar::drawFontMenu() {
+    ImGuiIO& io = ImGui::GetIO();
+
+    if (ImGui::MenuItem("Arial", nullptr, io.FontDefault == UISystem::getCurrentFont() &&
+        UISystem::getCurrentFontType() == UISystem::FONT_ARIAL)) {
+        UISystem::setFont(UISystem::FONT_ARIAL);
+    }
+
+    if (ImGui::MenuItem("Times New Roman", nullptr, io.FontDefault == UISystem::getCurrentFont() &&
+        UISystem::getCurrentFontType() == UISystem::FONT_TIMES)) {
+        UISystem::setFont(UISystem::FONT_TIMES);
+    }
+
+    if (ImGui::MenuItem("Default ImGui Font", nullptr,
+        UISystem::getCurrentFontType() == UISystem::FONT_DEFAULT)) {
+        UISystem::setFont(UISystem::FONT_DEFAULT);
     }
 }
 
