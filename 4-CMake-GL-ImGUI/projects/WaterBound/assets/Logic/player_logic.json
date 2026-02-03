@@ -1,0 +1,161 @@
+{
+  "version": 1,
+  "nodes": [
+    {
+      "id": 1,
+      "implementation": "On Collision Enter",
+      "type": 0,
+      "position": [
+        -200.0,
+        0.0
+      ],
+      "hasInput": false,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false,
+      "parameters": {
+        "colFilterType": "tag",
+        "colFilterValue": "water"
+      }
+    },
+    {
+      "id": 2,
+      "implementation": "Compare Global Float",
+      "type": 2,
+      "position": [
+        401.0,
+        4.0
+      ],
+      "hasInput": true,
+      "hasOutput": false,
+      "hasTrueOutput": true,
+      "hasFalseOutput": false,
+      "parameters": {
+        "comparison": "less",
+        "threshold": "100",
+        "variable": "bullets"
+      }
+    },
+    {
+      "id": 3,
+      "implementation": "Set Global Float",
+      "type": 1,
+      "position": [
+        710.0,
+        -7.0
+      ],
+      "hasInput": true,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false,
+      "parameters": {
+        "value": "100",
+        "variable": "bullets"
+      }
+    },
+    {
+      "id": 4,
+      "implementation": "Play Sound",
+      "type": 1,
+      "position": [
+        1006.0,
+        -10.0
+      ],
+      "hasInput": true,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false,
+      "parameters": {
+        "channel": "refill"
+      }
+    },
+    {
+      "id": 5,
+      "implementation": "Trigger Bullet Refill Event",
+      "type": 1,
+      "position": [
+        1319.0,
+        -14.0
+      ],
+      "hasInput": true,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false,
+      "parameters": {
+        "targetType": "collided",
+        "targetValue": ""
+      }
+    },
+    {
+      "id": 6,
+      "implementation": "Check Collided State",
+      "type": 2,
+      "position": [
+        109.0,
+        -2.0
+      ],
+      "hasInput": true,
+      "hasOutput": false,
+      "hasTrueOutput": true,
+      "hasFalseOutput": true,
+      "parameters": {
+        "state": "Idle"
+      }
+    },
+    {
+      "id": 7,
+      "implementation": "Trigger Bullet Refill Event",
+      "type": 1,
+      "position": [
+        1685.0,
+        -16.0
+      ],
+      "hasInput": true,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false,
+      "parameters": {
+        "targetType": "tag",
+        "targetValue": "inventory"
+      }
+    }
+  ],
+  "connections": [
+    {
+      "fromNodeId": 2,
+      "outputPin": "True",
+      "toNodeId": 3,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 3,
+      "outputPin": "Out",
+      "toNodeId": 4,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 4,
+      "outputPin": "Out",
+      "toNodeId": 5,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 1,
+      "outputPin": "Out",
+      "toNodeId": 6,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 6,
+      "outputPin": "True",
+      "toNodeId": 2,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 5,
+      "outputPin": "Out",
+      "toNodeId": 7,
+      "inputPin": "In"
+    }
+  ]
+}
