@@ -62,6 +62,11 @@
       "path": "/Prefab/player_3.json"
     },
     {
+      "id": "0d16ad75-981d-4d14-ae8b-90c2d2cb38d5",
+      "name": "branch",
+      "path": "/Prefab/branch.json"
+    },
+    {
       "id": "0f6ed177-b62e-4ca3-9c8c-2a7814fe0304",
       "name": "player",
       "path": "/Prefab/player_4.json"
@@ -70,6 +75,16 @@
       "id": "276147a8-c487-4300-bfec-bb6bdb1dca89",
       "name": "player",
       "path": "/Prefab/player_5.json"
+    },
+    {
+      "id": "8b8d44fa-ed22-4288-98ee-c476958f5b5b",
+      "name": "endgoal",
+      "path": "/Prefab/endgoal.json"
+    },
+    {
+      "id": "979be788-8fb0-42b0-831a-273a92bc89a8",
+      "name": "tree",
+      "path": "/Prefab/tree.json"
     }
   ]
 }
