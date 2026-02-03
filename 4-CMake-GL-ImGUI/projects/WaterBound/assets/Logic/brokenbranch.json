@@ -238,8 +238,8 @@
       "implementation": "Set Float",
       "type": 1,
       "position": [
-        87.67874145507813,
-        77.17851257324219
+        87.67864227294922,
+        77.17855834960938
       ],
       "hasInput": true,
       "hasOutput": true,
@@ -291,14 +291,14 @@
       "type": 2,
       "position": [
         -233.0001220703125,
-        73.00004577636719
+        73.00009155273438
       ],
       "hasInput": true,
       "hasOutput": false,
       "hasTrueOutput": true,
       "hasFalseOutput": true,
       "parameters": {
-        "threshold": "1.0",
+        "threshold": "0.8",
         "timerName": "timer_0"
       }
     },
