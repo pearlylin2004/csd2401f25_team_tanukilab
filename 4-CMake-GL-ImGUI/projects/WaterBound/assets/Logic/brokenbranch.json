@@ -87,8 +87,8 @@
       "implementation": "On Update",
       "type": 0,
       "position": [
-        -586.0,
-        163.75
+        -754.0,
+        200.75
       ],
       "hasInput": false,
       "hasOutput": true,
@@ -100,8 +100,8 @@
       "implementation": "Compare Variable",
       "type": 2,
       "position": [
-        -257.75,
-        78.25
+        -584.46435546875,
+        77.392822265625
       ],
       "hasInput": true,
       "hasOutput": false,
@@ -119,7 +119,7 @@
       "type": 2,
       "position": [
         396.4287109375,
-        115.0
+        115.00000762939453
       ],
       "hasInput": true,
       "hasOutput": false,
@@ -238,8 +238,8 @@
       "implementation": "Set Float",
       "type": 1,
       "position": [
-        87.6787109375,
-        77.178466796875
+        87.67874145507813,
+        77.17851257324219
       ],
       "hasInput": true,
       "hasOutput": true,
@@ -255,8 +255,8 @@
       "implementation": "Compare Variable",
       "type": 2,
       "position": [
-        -20.0,
-        198.0
+        -19.999998092651367,
+        198.0000457763672
       ],
       "hasInput": true,
       "hasOutput": false,
@@ -283,6 +283,39 @@
       "parameters": {
         "value": "0.000000",
         "variable": "broken"
+      }
+    },
+    {
+      "id": 19,
+      "implementation": "Check Timer",
+      "type": 2,
+      "position": [
+        -233.0001220703125,
+        73.00004577636719
+      ],
+      "hasInput": true,
+      "hasOutput": false,
+      "hasTrueOutput": true,
+      "hasFalseOutput": true,
+      "parameters": {
+        "threshold": "1.0",
+        "timerName": "timer_0"
+      }
+    },
+    {
+      "id": 20,
+      "implementation": "Play Sound",
+      "type": 1,
+      "position": [
+        407.5000305175781,
+        1.2500001192092896
+      ],
+      "hasInput": true,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false,
+      "parameters": {
+        "channel": "drop"
       }
     }
   ],
@@ -336,12 +369,6 @@
       "inputPin": "In"
     },
     {
-      "fromNodeId": 7,
-      "outputPin": "True",
-      "toNodeId": 15,
-      "inputPin": "In"
-    },
-    {
       "fromNodeId": 6,
       "outputPin": "Out",
       "toNodeId": 17,
@@ -357,6 +384,24 @@
       "fromNodeId": 11,
       "outputPin": "Out",
       "toNodeId": 18,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 7,
+      "outputPin": "True",
+      "toNodeId": 19,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 19,
+      "outputPin": "True",
+      "toNodeId": 15,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 15,
+      "outputPin": "Out",
+      "toNodeId": 20,
       "inputPin": "In"
     }
   ]
