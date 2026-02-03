@@ -2,29 +2,12 @@
   "version": 1,
   "nodes": [
     {
-      "id": 2,
-      "implementation": "On Collision Enter",
-      "type": 0,
-      "position": [
-        103.0,
-        127.0
-      ],
-      "hasInput": false,
-      "hasOutput": true,
-      "hasTrueOutput": false,
-      "hasFalseOutput": false,
-      "parameters": {
-        "colFilterType": "tag",
-        "colFilterValue": "player"
-      }
-    },
-    {
       "id": 3,
       "implementation": "Set State",
       "type": 1,
       "position": [
-        451.0,
-        121.0
+        575.0,
+        108.0
       ],
       "hasInput": true,
       "hasOutput": true,
@@ -33,11 +16,24 @@
       "parameters": {
         "state": "Walking"
       }
+    },
+    {
+      "id": 5,
+      "implementation": "On Bullet Refill",
+      "type": 0,
+      "position": [
+        155.0,
+        106.0
+      ],
+      "hasInput": false,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false
     }
   ],
   "connections": [
     {
-      "fromNodeId": 2,
+      "fromNodeId": 5,
       "outputPin": "Out",
       "toNodeId": 3,
       "inputPin": "In"

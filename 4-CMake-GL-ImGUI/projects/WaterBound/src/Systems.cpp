@@ -921,32 +921,48 @@ void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime, M
 
 				// Check if mouse button is being held down
 				if (InputHandler::isMouseLeftHeld() && (!UISystem::isShowUI() ||(SceneWindow::isSceneHovered() && !EditorManager::isEditingMode()))) {
-					
-					if (physics->shootTimer >= physics->fireRate) {
-						GameObject* bullet = PhysicsForces::findAvailableBullet(manager);
 
-						if (bullet != nullptr) {
-							// Get mouse position in world coordinates
-							Vector2D mouseWorldPos = InputHandler::getWorldMousePosition();
+					if (VisualLC::globalFloatVar.count("bullets") &&
+						VisualLC::globalFloatVar["bullets"] > 0) {
+						if (physics->shootTimer >= physics->fireRate) {
+							GameObject* bullet = PhysicsForces::findAvailableBullet(manager);
 
-							// Shoot bullet toward mouse position
-							PhysicsForces::shoot(bullet, transform, mouseWorldPos);
-							messageBus.publish(Message("KeyPressed", nullptr, KeyEvent{ "LEFT_CLICK", true }));
+							if (bullet != nullptr) {
+								// Get mouse position in world coordinates
+								Vector2D mouseWorldPos = InputHandler::getWorldMousePosition();
 
-							//set a flay saying channel is pending to play sound
-							if (bullet->hasComponent<AudioComponent>()) {
-								AudioComponent* audio = bullet->getComponent<AudioComponent>();
-								AudioChannel* ch = audio->getDefaultChannel();
-								ch->isPendingPlay = true;
+								//set a flay saying channel is pending to play sound
+								if (bullet->hasComponent<AudioComponent>()) {
+									AudioComponent* audio = bullet->getComponent<AudioComponent>();
+									AudioChannel* ch = audio->getDefaultChannel();
+									ch->isPendingPlay = true;
+
+									// Shoot bullet toward mouse position
+									PhysicsForces::shoot(bullet, transform, mouseWorldPos);
+									messageBus.publish(Message("KeyPressed", nullptr, KeyEvent{ "LEFT_CLICK", true }));
+
+									//set a flay saying channel is pending to play sound
+									if (bullet->hasComponent<AudioComponent>()) {
+										AudioComponent* audio = bullet->getComponent<AudioComponent>();
+										AudioChannel* ch = audio->getDefaultChannel();
+										ch->isPendingPlay = true;
+									}
+
+
+									VisualLogicSystem::broadcastBulletShoot();
+
+									DebugLog::addMessage("Bullet fired!", DebugMode::PlaySimul);
+									physics->shootTimer = 0.0f;
+								}
+								else {
+									physics->shootTimer = physics->fireRate * 0.5f;
+									DebugLog::addMessage("No bullets available!", DebugMode::PlaySimul);
+								}
 							}
-
-							DebugLog::addMessage("Bullet fired!", DebugMode::PlaySimul);
-							physics->shootTimer = 0.0f;
 						}
-						else {
-							physics->shootTimer = physics->fireRate * 0.5f;
-							DebugLog::addMessage("No bullets available!", DebugMode::PlaySimul);
-						}
+					}
+					else {
+						DebugLog::addMessage("Out of bullets!", DebugMode::PlaySimul);
 					}
 				}
 				//else if (InputHandler::isMouseLeftClicked()) { /// to shoot only one bullet at a time
@@ -1476,12 +1492,27 @@ void CollisionSystem::HandleTilemapCollisions(const std::unordered_map<int, Coll
 #ifdef _DEBUG
 //UI system - handles ImGui rendering and interaction
 bool UISystem::showUI = false;
+ImFont* UISystem::m_fontDefault = nullptr;
+ImFont* UISystem::m_fontArial = nullptr;
+ImFont* UISystem::m_fontTimes = nullptr;
+UISystem::FontType UISystem::m_currentFontType = FONT_ARIAL;
 
 void UISystem::init(GLFWwindow* window, RenderSystem* renderer, GameObjectManager& manager) {
 	// --- ImGui Setup ---
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
 	ImGuiIO& io = ImGui::GetIO(); //(void)io;
+
+	// font settings
+	m_fontArial = io.Fonts->AddFontFromFileTTF("assets/ARIAL.ttf", 25.0f);
+	m_fontTimes = io.Fonts->AddFontFromFileTTF("assets/times.ttf", 25.0f);
+
+	// fallback
+	m_fontDefault = io.Fonts->AddFontDefault();
+
+	io.FontDefault = m_fontDefault;
+
+
 	io.FontGlobalScale = 1.5f;
 	io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard
 			| ImGuiConfigFlags_DockingEnable
@@ -1498,6 +1529,31 @@ void UISystem::init(GLFWwindow* window, RenderSystem* renderer, GameObjectManage
 	m_renderer = renderer;
 
 	m_UI = std::make_unique<EditorManager>(manager);
+}
+
+void UISystem::setFont(FontType type) {
+	ImGuiIO& io = ImGui::GetIO();
+
+	switch (type) {
+	case FONT_ARIAL:
+		if (m_fontArial) {
+			io.FontDefault = m_fontArial;
+			m_currentFontType = FONT_ARIAL;
+		}
+		break;
+	case FONT_TIMES:
+		if (m_fontTimes) {
+			io.FontDefault = m_fontTimes;
+			m_currentFontType = FONT_TIMES;
+		}
+		break;
+	case FONT_DEFAULT:
+		if (m_fontDefault) {
+			io.FontDefault = m_fontDefault;
+			m_currentFontType = FONT_DEFAULT;
+		}
+		break;
+	}
 }
 
 UISystem::~UISystem() {

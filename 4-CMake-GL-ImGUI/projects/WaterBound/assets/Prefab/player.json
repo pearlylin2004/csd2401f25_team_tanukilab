@@ -50,6 +50,7 @@
         "animState": {
           "texture": "assets/Texture/Kinuta_Idle_SS.png",
           "loop": 1,
+          "play": 1,
           "totalColumn": 4,
           "totalRow": 4,
           "frameTime": 0.1469999998807907,
@@ -63,6 +64,7 @@
         "animState": {
           "texture": "assets/Texture/Kinuta_Walk_SS.png",
           "loop": 1,
+          "play": 1,
           "totalColumn": 6,
           "totalRow": 1,
           "frameTime": 0.09599997103214264,
@@ -76,6 +78,7 @@
         "animState": {
           "texture": "assets/Texture/Kinuta_Jump_SS.png",
           "loop": 1,
+          "play": 1,
           "totalColumn": 4,
           "totalRow": 1,
           "frameTime": 0.5,
@@ -89,6 +92,7 @@
         "animState": {
           "texture": "assets/Texture/Kinuta_Fall_SS.png",
           "loop": 0,
+          "play": 1,
           "totalColumn": 4,
           "totalRow": 1,
           "frameTime": 0.10000000149011612,
@@ -102,12 +106,27 @@
         "animState": {
           "texture": "assets/Texture/Kinuta_Land_SS.png",
           "loop": 0,
+          "play": 1,
           "totalColumn": 3,
           "totalRow": 1,
           "frameTime": 0.0820000022649765,
           "initialFramCol": 0.0,
           "initialFramRow": 0.0,
           "lastFramCol": 0.0,
+          "lastFramRow": 0.0
+        }
+      },
+      "Dead": {
+        "animState": {
+          "texture": "assets/Texture\\Kinuta_Death_SS.png",
+          "loop": 0,
+          "play": 1,
+          "totalColumn": 10,
+          "totalRow": 1,
+          "frameTime": 0.10000000149011612,
+          "initialFramCol": 0.0,
+          "initialFramRow": 0.0,
+          "lastFramCol": 9.0,
           "lastFramRow": 0.0
         }
       }

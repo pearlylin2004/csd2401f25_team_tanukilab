@@ -36,6 +36,7 @@ Technology is prohibited.
 #include <algorithm>
 #include <random>
 #include <numbers>
+#include <vector>
 
 //forward declaration
 struct renderer;
@@ -221,6 +222,17 @@ public:
 	static void toggleUI() { showUI = !showUI; } // temp toggle function
 	static bool isShowUI() { return showUI; }
 
+
+	enum FontType {
+		FONT_DEFAULT,
+		FONT_ARIAL,
+		FONT_TIMES
+	};
+
+	static void setFont(FontType type);
+	static ImFont* getCurrentFont() { return ImGui::GetIO().FontDefault; }
+	static FontType getCurrentFontType() { return m_currentFontType; }
+
 private:
 	void dockingSetUp();
 	void renderMultipleViewPorts();
@@ -228,6 +240,11 @@ private:
 	static bool showUI;
 	bool m_firstTime = true;
 	RenderSystem* m_renderer = nullptr;
+
+	static ImFont* m_fontDefault;
+	static ImFont* m_fontArial;
+	static ImFont* m_fontTimes;
+	static FontType m_currentFontType;
 };
 #else
 namespace EditorManager {
@@ -270,6 +287,8 @@ public:
 	// update logic
 	void update(GameObject* obj, VisualLC* logic, float dt);
 
+	// broadcast whenever bullet shoot
+	static void broadcastBulletShoot();
 private:
 	// execute a specific node
 	void executeNode(GameObject* obj, VisualLC* logic, int nodeId, float dt);
@@ -287,6 +306,8 @@ private:
 
 	// helper func for collision
 	bool shouldTriggerCollision(LogicNode& node, GameObject* collided);
+
+	static GameObjectManager* m_manager;
 };
 
 class WaterSystem {

@@ -66,13 +66,6 @@ void GUISystem::update() {
         //iterate with iterator to safely remove invalid buttons
         for (auto it = m_buttons.begin(); it != m_buttons.end(); ) {
             GameObject* btn = it->second;
-
-            //remove null buttons from map
-            if (!btn || !btn->hasComponent<Button>()) {
-                it = m_buttons.erase(it);
-                continue;
-            }
-
             if (isPointInButton(worldMousePos, btn)) {
                 Button* btnComp = btn->getComponent<Button>(); //get button component
                 if (btnComp) {

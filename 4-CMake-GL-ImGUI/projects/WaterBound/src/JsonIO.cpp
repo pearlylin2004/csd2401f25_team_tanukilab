@@ -287,6 +287,8 @@ namespace JsonIO {
 		if (str == "On Hover Enter") return NodeImplementation::ON_HOVER_ENTER;
 		if (str == "While Hovering") return NodeImplementation::WHILE_HOVERING;
 		if (str == "On Hover Exit") return NodeImplementation::ON_HOVER_EXIT;
+        if (str == "On Bullet Shoot") return NodeImplementation::ON_BULLET_SHOOT;
+		if (str == "On Bullet Refill") return NodeImplementation::ON_BULLET_REFILL;
 
         if (str == "Print Message") return NodeImplementation::PRINT_MESSAGE;
         if (str == "Move Object") return NodeImplementation::MOVE_OBJECT;
@@ -296,18 +298,25 @@ namespace JsonIO {
         if (str == "Set Scale") return NodeImplementation::SET_SCALE;
         if (str == "Scale Proportional") return NodeImplementation::SCALE_PROPORTIONAL;
 		if (str == "Set Float") return NodeImplementation::SET_FLOAT;
+        if (str == "Modify Float Variable") return NodeImplementation::MODIFY_FLOAT;
 		if (str == "Play Sound") return NodeImplementation::PLAY_SOUND;
 		if (str == "Set State") return NodeImplementation::SET_STATE;
 		if (str == "Reset Timer") return NodeImplementation::RESET_TIMER;
+        if (str == "Set Texture") return NodeImplementation::SET_TEXTURE;
 		if (str == "Set Position On Collided") return NodeImplementation::SET_POSITION_ON_COLLIDED;
 		if (str == "Set State On Collided") return NodeImplementation::SET_STATE_ON_COLLIDED;
 		if (str == "Apply Force On Collided") return NodeImplementation::APPLY_FORCE_ON_COLLIDED;
+        if (str == "Set Global Float") return NodeImplementation::SET_GLOBAL_FLOAT;
+        if (str == "Modify Global Float") return NodeImplementation::MODIFY_GLOBAL_FLOAT;
+		if (str == "Trigger Bullet Refill Event") return NodeImplementation::TRIGGER_BULLET_REFILL_EVENT;
 
 		if (str == "Check Key Held") return NodeImplementation::CHECK_KEY_HELD;
 		if (str == "Compare Value") return NodeImplementation::COMPARE_VALUE;
 		if (str == "Compare Variable") return NodeImplementation::COMPARE_VAR;
 		if (str == "Check State") return NodeImplementation::CHECK_STATE;
 		if (str == "Check Timer") return NodeImplementation::CHECK_TIMER;
+        if (str == "Compare Global Float") return NodeImplementation::COMPARE_GLOBAL_FLOAT;
+		if (str == "Check Collided State") return NodeImplementation::CHECK_COLLIDED_STATE;
 
         return NodeImplementation::DEFAULT;
     }
@@ -322,6 +331,8 @@ namespace JsonIO {
             case NodeImplementation::ON_HOVER_ENTER: return "On Hover Enter";
             case NodeImplementation::WHILE_HOVERING: return "While Hovering";
             case NodeImplementation::ON_HOVER_EXIT: return "On Hover Exit";
+            case NodeImplementation::ON_BULLET_SHOOT: return "On Bullet Shoot";
+			case NodeImplementation::ON_BULLET_REFILL: return "On Bullet Refill";
 
             case NodeImplementation::PRINT_MESSAGE: return "Print Message";
             case NodeImplementation::MOVE_OBJECT: return "Move Object";
@@ -331,18 +342,25 @@ namespace JsonIO {
             case NodeImplementation::SET_SCALE: return "Set Scale";
             case NodeImplementation::SCALE_PROPORTIONAL: return "Scale Proportional";
             case NodeImplementation::SET_FLOAT: return "Set Float";
+            case NodeImplementation::MODIFY_FLOAT: return "Modify Float Variable";
 			case NodeImplementation::PLAY_SOUND: return "Play Sound";
 			case NodeImplementation::SET_STATE: return "Set State";
 			case NodeImplementation::RESET_TIMER: return "Reset Timer";
-			case NodeImplementation::SET_POSITION_ON_COLLIDED: return "Set Position On Collided";
+            case NodeImplementation::SET_TEXTURE: return "Set Texture";
+            case NodeImplementation::SET_POSITION_ON_COLLIDED: return "Set Position On Collided";
 			case NodeImplementation::SET_STATE_ON_COLLIDED: return "Set State On Collided";
 			case NodeImplementation::APPLY_FORCE_ON_COLLIDED: return "Apply Force On Collided";
+			case NodeImplementation::SET_GLOBAL_FLOAT: return "Set Global Float";
+			case NodeImplementation::MODIFY_GLOBAL_FLOAT: return "Modify Global Float";
+			case NodeImplementation::TRIGGER_BULLET_REFILL_EVENT: return "Trigger Bullet Refill Event";
 
             case NodeImplementation::CHECK_KEY_HELD: return "Check Key Held";
             case NodeImplementation::COMPARE_VALUE: return "Compare Value";
             case NodeImplementation::COMPARE_VAR: return "Compare Variable";
 			case NodeImplementation::CHECK_STATE: return "Check State";
 			case NodeImplementation::CHECK_TIMER: return "Check Timer";
+			case NodeImplementation::COMPARE_GLOBAL_FLOAT: return "Compare Global Float";
+			case NodeImplementation::CHECK_COLLIDED_STATE: return "Check Collided State";
 
             default: return "Default";
         }
@@ -994,6 +1012,7 @@ namespace JsonIO {
 
                     animStateObj.AddMember("texture", rapidjson::Value(animState.texFile.c_str(), a), a);
                     animStateObj.AddMember("loop", rapidjson::Value(animState.loop ? 1 : 0), a);
+                    animStateObj.AddMember("play", rapidjson::Value(animState.play ? 1 : 0), a);
                     animStateObj.AddMember("totalColumn", rapidjson::Value(animState.totalColumn), a);
                     animStateObj.AddMember("totalRow", rapidjson::Value(animState.totalRow), a);
                     animStateObj.AddMember("frameTime", rapidjson::Value(animState.frameTime), a);
@@ -1332,6 +1351,11 @@ namespace JsonIO {
                                 const auto& v = animStateObj["loop"];
                                 if (v.IsBool()) st.loop = v.GetBool();
                                 else if (v.IsInt()) st.loop = (v.GetInt() != 0);
+                            }
+                            if (animStateObj.HasMember("play")) {
+                                const auto& v = animStateObj["play"];
+                                if (v.IsBool()) st.play = v.GetBool();
+                                else if (v.IsInt()) st.play = (v.GetInt() != 0);
                             }
 
                             // --- numeric fields ---

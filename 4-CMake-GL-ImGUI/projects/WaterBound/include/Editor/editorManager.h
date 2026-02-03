@@ -228,6 +228,9 @@ private:
 	bool matchesSearch(const std::string& nodeName, const std::string& search);
 	void renderNodePalette();
 	void verticalSplitter(float* width, bool reverseDir = false, float minWidth = 100.0f);
+
+	// helper func for global float var
+	std::vector<std::string> getGlobalVariableNamesFromNodes();
 };
 
 // Top menu bar
@@ -243,6 +246,7 @@ private:
 	void drawEditMenu();
 	void drawSimulationMenu(GameObjectManager& manager);
 	void drawThemeMenu();
+	void drawFontMenu();
 
 	void playSimulation(GameObjectManager& manager);
 	void stopSimulation(GameObjectManager& manager);

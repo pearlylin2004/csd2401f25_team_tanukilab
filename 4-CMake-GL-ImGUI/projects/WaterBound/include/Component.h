@@ -147,7 +147,7 @@ struct FontComponent : public Component {
 // animation for different state
 struct AnimateState {
     bool loop = true;
-	bool play = true;
+	bool play = false;
     Vector2D initialFrame{}, lastFrame{};
     int currentFrameColumn{}, currentFrameRow{}, totalColumn{ 1 }, totalRow{ 1 };
     float frameTime = 0.1f, frameTimer{};
@@ -524,7 +524,7 @@ public:
             float currentVolume;
             if (ch.fadeInfo.isFadingIn) {
                 currentVolume = ch.fadeInfo.startVolume + (ch.fadeInfo.targetVolume - ch.fadeInfo.startVolume) * progress;
-                std::cerr << "sound fading" << currentVolume << std::endl;
+                //std::cerr << "sound fading" << currentVolume << std::endl;
             }
             else {
                 currentVolume = ch.fadeInfo.startVolume + (ch.fadeInfo.targetVolume - ch.fadeInfo.startVolume) * progress;
@@ -636,6 +636,8 @@ enum class NodeImplementation {
     ON_HOVER_ENTER,
     WHILE_HOVERING,
 	ON_HOVER_EXIT,
+    ON_BULLET_SHOOT,
+    ON_BULLET_REFILL,
 
     // CONDITION
     CHECK_KEY_HELD,
@@ -643,6 +645,8 @@ enum class NodeImplementation {
     COMPARE_VAR,
     CHECK_STATE,
     CHECK_TIMER,
+    COMPARE_GLOBAL_FLOAT,
+    CHECK_COLLIDED_STATE,
 
     // ACTION
     PRINT_MESSAGE,
@@ -653,12 +657,17 @@ enum class NodeImplementation {
     SET_SCALE,
 	SCALE_PROPORTIONAL,
     SET_FLOAT,
+    MODIFY_FLOAT,
     PLAY_SOUND,
     SET_STATE,
     RESET_TIMER,
+    SET_TEXTURE,
 	SET_POSITION_ON_COLLIDED, // might not work on those object that has input
     SET_STATE_ON_COLLIDED,
     APPLY_FORCE_ON_COLLIDED,
+    SET_GLOBAL_FLOAT,
+    MODIFY_GLOBAL_FLOAT,
+    TRIGGER_BULLET_REFILL_EVENT, // whenever bullet is refilled, add this node
 
     // DEFAULT
     DEFAULT // nothing happen :)
@@ -695,6 +704,7 @@ public:
 	std::vector<LogicConnection> connections;
 
 	// runtime data
+	bool justStarted = true;
     bool isExecuting = false;
     int currentExecutingNodeId = -1;
 	std::map<std::string, int> intVar;
@@ -703,6 +713,9 @@ public:
     std::map<std::string, bool> boolVar;
     std::map<std::string, float> timers;
     std::unordered_set<int> currentExePath;
+
+	// global variable that shared across all objects
+	static std::map<std::string, float> globalFloatVar;
 
 	bool wasHoveredLastFrame = false; // for hover event detection
 
@@ -714,6 +727,10 @@ public:
     std::unordered_set<GameObject*> curCollision;
     std::unordered_set<GameObject*> preCollision;
 	GameObject* lastCollidedObj = nullptr;
+
+    // bullet event
+    bool bulletShot = false;
+    bool bulletRefill = false;
 };
 
 // WaterBody component for creating animated water surfaces     
