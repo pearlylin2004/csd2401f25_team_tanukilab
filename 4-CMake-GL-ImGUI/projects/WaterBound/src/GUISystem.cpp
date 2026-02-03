@@ -79,7 +79,6 @@ void GUISystem::update() {
     }
 }
 
-
 //creation of buttons
 void GUISystem::createButtons(GameObjectManager& manager) {
     //clear previous references
@@ -136,7 +135,7 @@ void GUISystem::createButtonActions() {
 
     //exit confirmation
     m_buttonActions[ButtonAction::EXIT_GAME] = [this]() {
-        changeState(GameState::EXITCONFIRMATION, "confirmation_scene.json");
+        changeState(GameState::EXITCONFIRMATION, "win_scene.json");
      };
 
     //control screen
