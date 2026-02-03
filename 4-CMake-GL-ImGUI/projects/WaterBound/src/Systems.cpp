@@ -1054,29 +1054,17 @@ void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime, M
 		Transform* t = obj->getComponent<Transform>();
 
 		if (p->alive) {
-			// Update forces (non-gravity forces)
+			// Update bullet physics
+			Vector3D gravityForce = { 0.0f, p->gravity * p->dynamics.mass, 0.0f };
+
 			DynamicsSystem::UpdateForces(p->dynamics, deltaTime);
-
-			// Check gravity delay
-			if (p->gravityDelayTimer > 0.0f) {
-				// No gravity yet - just integrate velocity into position
-				p->gravityDelayTimer -= deltaTime;
-
-				Vector3D deltaPos = Vec3_Scale(&p->dynamics.velocity, deltaTime);
-				p->dynamics.position = Vec3_Add(&p->dynamics.position, &deltaPos);
-			}
-			else {
-				// Gravity delay expired - normal physics with gravity
-				DynamicsSystem::Integrate(p->dynamics, deltaTime, p->gravity, false);
-			}
+			DynamicsSystem::Integrate(p->dynamics, deltaTime, p->gravity, false);
 
 			t->x = p->dynamics.position.x;
 			t->y = p->dynamics.position.y;
-
 			// Update life timer
 			p->lifeTimer += deltaTime;
-
-			// Deactivate if lifetime exceeded or fell too far
+			// Deactivate if lifetime exceeded
 			if (p->lifeTimer >= p->maxLifetime || p->dynamics.position.y < -20.0f) {
 				PhysicsForces::deactivateBullet(obj);
 			}
@@ -1264,7 +1252,6 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 
 					//checking if collided
 					if (info.collided) {
-
 						// Visual logic events (if needed)
 						if (obj1->hasComponent<VisualLC>()) {
 							VisualLC* logic1 = obj1->getComponent<VisualLC>();
@@ -1283,7 +1270,6 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 
 						// CASE 1: Both pushable
 						if (!obj1IsStatic && !obj2IsStatic) {
-							std::cout << "bullet meet bullet\n";
 							if (info.normal.x != 0) {
 								t1->x += info.normal.x * info.penetration * 0.5f;
 								t2->x -= info.normal.x * info.penetration * 0.5f;
@@ -1314,60 +1300,37 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 						}
 						// CASE 2: obj1 is pushable, obj2 is static
 						else if (!obj1IsStatic && obj2IsStatic) {
-							// Push out of collision
 							if (info.normal.x != 0) {
 								t1->x += info.normal.x * info.penetration;
 								p1->dynamics.position.x = t1->x;
+								p1->dynamics.velocity.x = 0.f;
+								p1->velX = 0.f;
 							}
+
 							if (info.normal.y != 0) {
 								t1->y += info.normal.y * info.penetration;
 								p1->dynamics.position.y = t1->y;
-							}
+								p1->dynamics.velocity.y = 0.f;
 
-							// Bounce or stop based on bounciness
-							if (p1->bounciness > 0.0f) {
-								// Reflect: v' = v - 2(v·n)n, then scale by bounciness
-								float dot = p1->dynamics.velocity.x * info.normal.x + p1->dynamics.velocity.y * info.normal.y;
-								p1->dynamics.velocity.x = (p1->dynamics.velocity.x - 2.0f * dot * info.normal.x) * p1->bounciness;
-								p1->dynamics.velocity.y = (p1->dynamics.velocity.y - 2.0f * dot * info.normal.y) * p1->bounciness;
-							}
-							else {
-								// Original stop behavior
-								if (info.normal.x != 0) {
-									p1->dynamics.velocity.x = 0.f;
-									p1->velX = 0.f;
-								}
-								if (info.normal.y != 0) {
-									p1->dynamics.velocity.y = 0.f;
-									if (info.normal.y > 0) p1->onGround = true;
-								}
+								if (info.normal.y > 0) p1->onGround = true;
 							}
 						}
 						// CASE 3: obj1 is static, obj2 is pushable
 						else if (obj1IsStatic && !obj2IsStatic) {
-							std::cout << "BOUNCE! between " << obj1->getObjectName() << " and " << obj2->getObjectName() << std::endl;
 							if (info.normal.x != 0) {
 								// push obj2 in OPPOSITE direction
 								t2->x -= info.normal.x * info.penetration;
 								p2->dynamics.position.x = t2->x;
+								p2->dynamics.velocity.x = 0.f;
 								p2->velX = 0.f;
 							}
 
 							if (info.normal.y != 0) {
 								t2->y -= info.normal.y * info.penetration;
 								p2->dynamics.position.y = t2->y;
+								p2->dynamics.velocity.y = 0.f;
 
 								if (info.normal.y < 0) p2->onGround = true;
-							}
-
-							// Bounce based on bounciness
-							if (p2->bounciness > 0.0f) {
-								std::cout << "bounciness: " << p2->bounciness << std::endl;
-								// Reflect: v' = v - 2(v·n)n, then scale by bounciness
-								float dot = p2->dynamics.velocity.x * info.normal.x + p2->dynamics.velocity.y * info.normal.y;
-								std::cout << dot << std::endl;
-								p2->dynamics.velocity.x *= -p2->bounciness;
-								p2->dynamics.velocity.y = (p2->dynamics.velocity.y - 2.0f * dot * info.normal.y) * p2->bounciness;
 							}
 						}
 						// CASE 4: Both are static (shouldnt happen?)
@@ -1497,31 +1460,20 @@ void CollisionSystem::HandleTilemapCollisions(const std::unordered_map<int, Coll
 						objAABB, vel, boxAABB, Vector2D(0, 0));
 
 					if (info.collided) {
-						// Push out of collision
 						if (info.normal.x != 0) {
 							t->x += info.normal.x * info.penetration;
 							p->dynamics.position.x = t->x;
+							p->dynamics.velocity.x = 0.f;
+							p->velX = 0.f;
 						}
+
 						if (info.normal.y != 0) {
 							t->y += info.normal.y * info.penetration;
 							p->dynamics.position.y = t->y;
-						}
+							p->dynamics.velocity.y = 0.0f;
 
-							std::cout << "BOUNCE on tilemap! \n";
-						// Bounce or stop based on bounciness
-						if (p->bounciness > 0.0f) {
-							float dot = p->dynamics.velocity.x * info.normal.x + p->dynamics.velocity.y * info.normal.y;
-							p->dynamics.velocity.x = (p->dynamics.velocity.x - 2.0f * dot * info.normal.x) * p->bounciness;
-							p->dynamics.velocity.y = (p->dynamics.velocity.y - 2.0f * dot * info.normal.y) * p->bounciness;
-						}
-						else {
-							if (info.normal.x != 0) {
-								p->dynamics.velocity.x = 0.f;
-								p->velX = 0.f;
-							}
-							if (info.normal.y != 0) {
-								p->dynamics.velocity.y = 0.0f;
-								if (info.normal.y > 0) p->onGround = true;
+							if (info.normal.y > 0) {
+								p->onGround = true;
 							}
 						}
 

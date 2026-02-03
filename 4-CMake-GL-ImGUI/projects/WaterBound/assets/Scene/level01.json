@@ -19,6 +19,7 @@
         "CollisionInfo": {
           "ignoreCollisionsWith": [
             "player",
+            "bullet",
             "hazards"
           ]
         },

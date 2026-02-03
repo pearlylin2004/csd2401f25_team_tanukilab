@@ -43,6 +43,7 @@
       "collisionTag": "bullet",
       "ignoreCollisionsWith": [
         "player",
+        "bullet",
         "platform",
         "environment"
       ]
