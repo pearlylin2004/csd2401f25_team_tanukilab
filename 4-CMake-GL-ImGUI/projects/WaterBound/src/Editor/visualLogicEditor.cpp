@@ -1925,6 +1925,11 @@ void VisualLogicEditor::duplicateSelectedNode() {
 	duplicate.position.x += 50.f; // offset x
 	duplicate.position.y += 50.f; // offset y
 
+	duplicate.hasTrueOutput = it->hasTrueOutput;
+	duplicate.hasFalseOutput = it->hasFalseOutput;
+	duplicate.hasInput = it->hasInput;
+	duplicate.hasOutput = it->hasOutput;
+
 	Editor::visualLogicState.nodes.push_back(duplicate);
 
 	// select the new node
