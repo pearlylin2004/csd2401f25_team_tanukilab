@@ -53,6 +53,25 @@ public:
 	//clear all objects from all layers
 	void clearAllLayers();
 
+	//layer enable/disable by ID
+	void setLayerEnabled(int layerID, bool enabled);
+	bool isLayerEnabled(int layerID) const;
+
+	//layer enable/disable by name
+	void setLayerEnabledByName(const std::string& name, bool enabled);
+	bool isLayerEnabledByName(const std::string& name) const;
+
+	//visibility control
+	void setLayerVisible(int layerID, bool visible);
+	bool isLayerVisible(int layerID) const;
+
+	//update control
+	void setLayerUpdatable(int layerID, bool updatable);
+	bool isLayerUpdatable(int layerID) const;
+
+	//get objects only from enabled/visible/updatable layers
+	std::vector<GameObject*> getVisibleObjects() const;
+	std::vector<GameObject*> getUpdatableObjects() const;
 
 private:
 	//map of layerID to Layer object

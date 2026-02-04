@@ -18,7 +18,13 @@ Technology is prohibited.
 #include "GameObject.h"
 #include <algorithm>
 
-Layer::Layer(const std::string& name, const int& layerID) : m_layerName(name), m_layerID(layerID) {}
+Layer::Layer(const std::string& name, const int& layerID) 
+	: m_layerName(name)
+	, m_layerID(layerID)
+	, m_enabled(true)
+	, m_visible(true)
+	, m_updatable(true) 
+{}
 
 void Layer::addGameObject(GameObject* obj) {
 	if (!obj) {
@@ -40,7 +46,6 @@ bool Layer::removeGameObject(GameObject* obj) {
 
 	auto setIt = m_objectSet.find(obj);
 	if (setIt == m_objectSet.end()) {
-		//std::cerr << "Layer Manager Warning: Attempted to remove a GameObject that does not exist in the layer.\n";
 		return false;
 	}
 
@@ -79,4 +84,33 @@ void Layer::clear() {
 
 size_t Layer::getObjectCount() const {
 	return m_objects.size();
+}
+
+//master enable/disable - affects both visibility and updates
+void Layer::setEnabled(bool enabled) {
+	m_enabled = enabled;
+	m_visible = enabled;
+	m_updatable = enabled;
+}
+
+bool Layer::isEnabled() const {
+	return m_enabled;
+}
+
+//visibility only - for rendering
+void Layer::setVisible(bool visible) {
+	m_visible = visible;
+}
+
+bool Layer::isVisible() const {
+	return m_enabled && m_visible;
+}
+
+//updatable only - for physics/logic
+void Layer::setUpdatable(bool updatable) {
+	m_updatable = updatable;
+}
+
+bool Layer::isUpdatable() const {
+	return m_enabled && m_updatable;
 }

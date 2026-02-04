@@ -39,45 +39,106 @@ std::vector<Particle::UID> Particle::UIDs;
 //BulletForce bulletForce;
 // Input system - reads user input and updates velocity accordingly
 void InputSystem::update(GameObjectManager& manager, const float& deltaTime, MessageBus& messageBus) {
-	(void)deltaTime;
-	(void)messageBus;
-	//record current time for performance tracking
-	auto start = std::chrono::high_resolution_clock::now();
+    (void)deltaTime;
+    (void)messageBus;
+    //record current time for performance tracking
+    auto start = std::chrono::high_resolution_clock::now();
 
-	std::vector<GameObject*> gameObjects;
-	manager.getAllGameObjects(gameObjects);
+    std::vector<GameObject*> gameObjects;
+    manager.getAllGameObjects(gameObjects);
 
 #ifdef _DEBUG
-	if (InputHandler::isComboKeyTriggered(GLFW_KEY_0)) {
-		UISystem::toggleUI();
+    if (InputHandler::isComboKeyTriggered(GLFW_KEY_0)) {
+        UISystem::toggleUI();
 
-		// refresh cached object vector
-		CachedGameObjects::Instance().refresh();
+        // refresh cached object vector
+        CachedGameObjects::Instance().refresh();
 
-		messageBus.publish(Message("KeyPressed", nullptr, KeyEvent{ "0", true }));
+        messageBus.publish(Message("KeyPressed", nullptr, KeyEvent{ "0", true }));
 
-		//AudioHandler::getInstance().toggleSoundPause(soundID::bg);
+        if (EditorManager::isEditingMode()) EditorManager::toggleEditing(false);
+        else EditorManager::toggleEditing(true);
+    }
 
-		if (EditorManager::isEditingMode()) EditorManager::toggleEditing(false);
-		else EditorManager::toggleEditing(true);
-	}
+    // ============ LAYER TESTING CODE ============
+    // Press 1 to toggle Background layer (layer 0)
+    if (InputHandler::isKeyTriggered(GLFW_KEY_1)) {
+        LayerManager& lm = manager.getLayerManager();
+        bool currentState = lm.isLayerEnabled(0);
+        lm.setLayerEnabled(0, !currentState);
+        std::cout << "Background layer " << (!currentState ? "ENABLED" : "DISABLED") << std::endl;
+    }
+
+    // Press 2 to toggle Game layer (layer 1)
+    if (InputHandler::isKeyTriggered(GLFW_KEY_2)) {
+        LayerManager& lm = manager.getLayerManager();
+        bool currentState = lm.isLayerEnabled(1);
+        lm.setLayerEnabled(1, !currentState);
+        std::cout << "Game layer " << (!currentState ? "ENABLED" : "DISABLED") << std::endl;
+    }
+
+    // Press 3 to toggle UI layer (layer 2)
+    if (InputHandler::isKeyTriggered(GLFW_KEY_3)) {
+        LayerManager& lm = manager.getLayerManager();
+        bool currentState = lm.isLayerEnabled(2);
+        lm.setLayerEnabled(2, !currentState);
+        std::cout << "UI layer " << (!currentState ? "ENABLED" : "DISABLED") << std::endl;
+    }
+
+    // Press 4 to toggle Game layer visibility only (still updates, just invisible)
+    if (InputHandler::isKeyTriggered(GLFW_KEY_4)) {
+        LayerManager& lm = manager.getLayerManager();
+        Layer* gameLayer = lm.getLayer(1);
+        if (gameLayer) {
+            bool currentVisible = gameLayer->isVisible();
+            gameLayer->setVisible(!currentVisible);
+            std::cout << "Game layer visibility " << (!currentVisible ? "ON" : "OFF") << std::endl;
+        }
+    }
+
+    // Press 5 to toggle Game layer updates only (visible but frozen)
+    if (InputHandler::isKeyTriggered(GLFW_KEY_5)) {
+        LayerManager& lm = manager.getLayerManager();
+        Layer* gameLayer = lm.getLayer(1);
+        if (gameLayer) {
+            bool currentUpdatable = gameLayer->isUpdatable();
+            gameLayer->setUpdatable(!currentUpdatable);
+            std::cout << "Game layer updates " << (!currentUpdatable ? "ON" : "OFF") << std::endl;
+        }
+    }
+
+    // Press 6 to print layer status
+    if (InputHandler::isKeyTriggered(GLFW_KEY_6)) {
+        LayerManager& lm = manager.getLayerManager();
+        std::cout << "\n=== LAYER STATUS ===" << std::endl;
+        for (Layer* layer : lm.getAllLayers()) {
+            if (layer) {
+                std::cout << "Layer " << layer->getLayerID() << " (" << layer->getLayerName() << "): "
+                          << "Enabled=" << (layer->isEnabled() ? "YES" : "NO")
+                          << ", Visible=" << (layer->isVisible() ? "YES" : "NO")
+                          << ", Updatable=" << (layer->isUpdatable() ? "YES" : "NO")
+                          << ", Objects=" << layer->getObjectCount() << std::endl;
+            }
+        }
+        std::cout << "===================\n" << std::endl;
+    }
+    // ============ END LAYER TESTING CODE ============
 #endif
 
-	// Press F9 to simulate a failure (for crash logger)
-	if (InputHandler::isKeyTriggered(GLFW_KEY_F9)) {
-		throw std::runtime_error("F9 test: simulated failure in update()");
-	}
+    // Press F9 to simulate a failure (for crash logger)
+    if (InputHandler::isKeyTriggered(GLFW_KEY_F9)) {
+        throw std::runtime_error("F9 test: simulated failure in update()");
+    }
 
-	/* --- for showing fps scuffed scuffed ---- */
-	if (InputHandler::isKeyTriggered(GLFW_KEY_F8)) {
-		FontSystem::showFPS = !FontSystem::showFPS;
-	}
-	/* ---- END ---- */
+    /* --- for showing fps scuffed scuffed ---- */
+    if (InputHandler::isKeyTriggered(GLFW_KEY_F8)) {
+        FontSystem::showFPS = !FontSystem::showFPS;
+    }
+    /* ---- END ---- */
 
-
-	auto end = std::chrono::high_resolution_clock::now();
-	double ms = std::chrono::duration<double, std::milli>(end - start).count(); //get elapse time in ms
-	g_SystemTimers.push_back({ "Input", ms }); //saving timing for UI output
+    auto end = std::chrono::high_resolution_clock::now();
+    double ms = std::chrono::duration<double, std::milli>(end - start).count();
+    g_SystemTimers.push_back({ "Input", ms });
 }
 
 // Render system - draws all game objects with a Render component
@@ -306,77 +367,69 @@ void RenderSystem::init(GameObjectManager& manager, int fboW, int fboH)
 
 void RenderSystem::batchingSetUp(GameObjectManager& manager, float const& deltaTime)
 {
-	std::vector<GameObject*> gameObjects;
-	manager.getAllGameObjects(gameObjects);
-	for (std::pair < const BatchKey, std::vector<renderer::InstanceData>>& pair : objectWithTex) pair.second.clear();
-	for (std::pair < const BatchKey, std::vector<renderer::InstanceData>>& pair : objectWithoutTex) pair.second.clear();
+	LayerManager& layerManager = manager.getLayerManager();
+	
+	for (std::pair<const BatchKey, std::vector<renderer::InstanceData>>& pair : objectWithTex) pair.second.clear();
+	for (std::pair<const BatchKey, std::vector<renderer::InstanceData>>& pair : objectWithoutTex) pair.second.clear();
 
-	for (GameObject* obj : gameObjects)
-	{
-		if (!obj->hasComponent<Render>() || !obj->hasComponent<Transform>())
-			continue;
-		Render* render = obj->getComponent<Render>();
-		Transform* transform = obj->getComponent<Transform>();
+	// Process objects layer by layer for efficient visibility check
+	for (Layer* layer : layerManager.getAllLayers()) {
+		if (!layer || !layer->isVisible()) continue; // Skip non-visible layers (single flag check)
 
-		float scaleX = transform->flipX ? -transform->scaleX : transform->scaleX;
+		for (GameObject* obj : layer->getObjects()) {
+			if (!obj->hasComponent<Render>() || !obj->hasComponent<Transform>())
+				continue;
+			
+			Render* render = obj->getComponent<Render>();
+			Transform* transform = obj->getComponent<Transform>();
 
-		renderer::InstanceData data;
-		float angle = glm::radians(transform->rotation);
-		transform->mdlWorld = glm::mat4{ 1 };
-		transform->mdlWorld = glm::translate(transform->mdlWorld, glm::vec3(transform->x, transform->y, transform->z));
-		transform->mdlWorld = glm::rotate(transform->mdlWorld, angle, glm::vec3(0, 0, 1.f));
-		transform->mdlWorld = glm::scale(transform->mdlWorld, glm::vec3(scaleX, transform->scaleY, transform->scaleZ));
-		data.model = transform->mdlWorld;
-		data.color = render->clr;
-		data.texParams = glm::vec4(0, 0, 1, 1); // default, no texture frame
+			float scaleX = transform->flipX ? -transform->scaleX : transform->scaleX;
 
-		// if obj has animation & state machine component
-		if (obj->hasComponent<Animation>() && obj->hasComponent<StateMachine>())
-		{
-			Animation* animation = obj->getComponent<Animation>();
-			StateMachine* sm = obj->getComponent<StateMachine>();
+			renderer::InstanceData data;
+			float angle = glm::radians(transform->rotation);
+			transform->mdlWorld = glm::mat4{ 1 };
+			transform->mdlWorld = glm::translate(transform->mdlWorld, glm::vec3(transform->x, transform->y, transform->z));
+			transform->mdlWorld = glm::rotate(transform->mdlWorld, angle, glm::vec3(0, 0, 1.f));
+			transform->mdlWorld = glm::scale(transform->mdlWorld, glm::vec3(scaleX, transform->scaleY, transform->scaleZ));
+			data.model = transform->mdlWorld;
+			data.color = render->clr;
+			data.texParams = glm::vec4(0, 0, 1, 1);
 
-			AnimateState& as = animation->animState[static_cast<int>(sm->state)];
-				
-			if (render->hasAnimation && !as.texFile.empty()) {
-				glm::vec2 texOffSet{ as.currentFrameColumn / static_cast<float>(as.totalColumn), 1.f - ((as.currentFrameRow + 1) / static_cast<float>(as.totalRow)) };
-				glm::vec2 texScale{ 1.f / as.totalColumn, 1.f / as.totalRow };
+			// Animation handling (same as before)
+			if (obj->hasComponent<Animation>() && obj->hasComponent<StateMachine>())
+			{
+				Animation* animation = obj->getComponent<Animation>();
+				StateMachine* sm = obj->getComponent<StateMachine>();
+				AnimateState& as = animation->animState[static_cast<int>(sm->state)];
+					
+				if (render->hasAnimation && !as.texFile.empty()) {
+					glm::vec2 texOffSet{ as.currentFrameColumn / static_cast<float>(as.totalColumn), 1.f - ((as.currentFrameRow + 1) / static_cast<float>(as.totalRow)) };
+					glm::vec2 texScale{ 1.f / as.totalColumn, 1.f / as.totalRow };
 
-				if (as.play)
-				{
-					if (!EditorManager::isEditingMode() && !EditorManager::isPaused())
+					// Only update animation if layer is updatable
+					if (as.play && layer->isUpdatable() && !EditorManager::isEditingMode() && !EditorManager::isPaused())
 					{
 						as.frameTimer += deltaTime;
 						if (as.frameTimer >= as.frameTime)
 						{
 							as.frameTimer -= as.frameTime;
-
-							// Check if we're at the last frame
 							if (as.currentFrameColumn >= as.lastFrame.x && as.currentFrameRow >= as.lastFrame.y)
 							{
-								if (as.loop)
-								{
-									// Loop back to the beginning
+								if (as.loop) {
 									as.currentFrameColumn = (int)as.initialFrame.x;
 									as.currentFrameRow = (int)as.initialFrame.y;
 									as.frameTimer = 0;
 								}
-								else
-								{
-									// Stop playing (stay on last frame)
+								else {
 									as.play = false;
 								}
 							}
-							else
-							{
-								// Advance to next frame
+							else {
 								++as.currentFrameColumn;
-								if (as.currentFrameColumn >= as.totalColumn)
-								{
+								if (as.currentFrameColumn >= as.totalColumn) {
 									as.currentFrameColumn = 0;
 									++as.currentFrameRow;
-									if (as.currentFrameRow > as.lastFrame.y)
-									{
+									if (as.currentFrameRow > as.lastFrame.y) {
 										as.currentFrameColumn = (int)as.initialFrame.x;
 										as.currentFrameRow = (int)as.initialFrame.y;
 									}
@@ -385,31 +438,25 @@ void RenderSystem::batchingSetUp(GameObjectManager& manager, float const& deltaT
 							animation->runItBack = true;
 						}
 					}
+					data.texParams = { texOffSet, texScale };
+					BatchKey key{ render->modelRef.shape, as.texHDL };
+					objectWithTex[key].push_back(data);
 				}
-				data.texParams = { texOffSet,texScale };
-				BatchKey key{ render->modelRef.shape, as.texHDL };
+				else {
+					BatchKey key{ render->modelRef.shape, 0 };
+					objectWithoutTex[key].push_back(data);
+				}
+			}
+			else if (render->hasTex) {
+				BatchKey key{ render->modelRef.shape, render->texHDL };
 				objectWithTex[key].push_back(data);
 			}
-			// draw shape if obj texture file is empty
 			else {
 				BatchKey key{ render->modelRef.shape, 0 };
 				objectWithoutTex[key].push_back(data);
 			}
 		}
-		else if (render->hasTex)
-		{
-			BatchKey key{ render->modelRef.shape, render->texHDL };
-			objectWithTex[key].push_back(data);
-		}
-		else
-		{
-			BatchKey key{ render->modelRef.shape, 0 };
-			objectWithoutTex[key].push_back(data);
-		}
 	}
-
-	
-	//Font::init();
 }
 
 void RenderSystem::instancePerBatch(std::unordered_map<BatchKey, std::vector<renderer::InstanceData>, BatchKeyHash> &batch)
@@ -931,7 +978,7 @@ void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime, M
 								// Get mouse position in world coordinates
 								Vector2D mouseWorldPos = InputHandler::getWorldMousePosition();
 
-								//set a flay saying channel is pending to play sound
+								//set a flag saying channel is pending to play sound
 								if (bullet->hasComponent<AudioComponent>()) {
 									AudioComponent* audio = bullet->getComponent<AudioComponent>();
 									AudioChannel* ch = audio->getDefaultChannel();
@@ -940,14 +987,6 @@ void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime, M
 									// Shoot bullet toward mouse position
 									PhysicsForces::shoot(bullet, transform, mouseWorldPos);
 									messageBus.publish(Message("KeyPressed", nullptr, KeyEvent{ "LEFT_CLICK", true }));
-
-									//set a flay saying channel is pending to play sound
-									if (bullet->hasComponent<AudioComponent>()) {
-										AudioComponent* audio = bullet->getComponent<AudioComponent>();
-										AudioChannel* ch = audio->getDefaultChannel();
-										ch->isPendingPlay = true;
-									}
-
 
 									VisualLogicSystem::broadcastBulletShoot();
 
@@ -965,26 +1004,6 @@ void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime, M
 						DebugLog::addMessage("Out of bullets!", DebugMode::PlaySimul);
 					}
 				}
-				//else if (InputHandler::isMouseLeftClicked()) { /// to shoot only one bullet at a time
-				//	// Single shot mode: Only fire once on click (if autoFire is disabled)
-				//	if (!physics->autoFire && physics->shootTimer >= physics->fireRate) {
-				//		GameObject* bullet = PhysicsForces::findAvailableBullet(manager);
-
-				//		if (bullet != nullptr) {
-				//			Vector2D mouseWorldPos = InputHandler::getWorldMousePosition();
-				//			PhysicsForces::shoot(bullet, transform, mouseWorldPos);
-				//			messageBus.publish(Message("KeyPressed", nullptr, KeyEvent{ "LEFT_CLICK", true }));
-
-				//			if (bullet->hasComponent<AudioComponent>()) {
-				//				AudioComponent* audio = bullet->getComponent<AudioComponent>();
-				//				AudioChannel* ch = audio->getDefaultChannel();
-				//				ch->isPendingPlay = true;
-				//			}
-
-				//			physics->shootTimer = 0.0f;
-				//		}
-				//	}
-				//}
 				else {
 					physics->shootTimer = physics->fireRate;
 				}
@@ -1088,35 +1107,22 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 	(void)deltaTime;
 	double ms = 0.0;
 
-	//get layer manager
 	LayerManager& layerManager = manager.getLayerManager();
 	std::vector<Layer*> layers = layerManager.getAllLayers();
 
-	//initialize spatial grid
-	const float CELL_SIZE = 4.0f; //can change cell size for optimization
-	//const int GRID_WIDTH = 20;
-	//const int GRID_HEIGHT = 20;
-
-	//spatial hash grid no fixed size
+	const float CELL_SIZE = 4.0f;
 	std::unordered_map<int, Collision::Cell> grid;
 
-	//persistant grid for this layer
-	//static std::vector<std::vector<Collision::Cell>> grid(GRID_WIDTH, std::vector<Collision::Cell>(GRID_HEIGHT));
-
-	//process each layer separately
-	//right now only layer 1 should have any sort of collision
 	for (Layer* layer : layers) {
-		//skip missing layer
-		if (!layer) {
-			std::cerr << "CollisionSystem::update() - Layer " << layer->getLayerID() << " not found!\n";
-			continue;
-		}
-
-		std::unordered_set<uint64_t> checkedPairs; //to avoid duplicate checks
-
-		grid.clear(); //clear grid for new layer
+		if (!layer) continue;
 		
-		const std::vector<GameObject*>& layerObjects = layer->getObjects(); //get layer object
+		// Skip collision processing for non-updatable layers
+		if (!layer->isUpdatable()) continue;
+
+		std::unordered_set<uint64_t> checkedPairs;
+		grid.clear();
+		
+		const std::vector<GameObject*>& layerObjects = layer->getObjects();
 
 		std::vector<std::pair<TileMap*, Transform*>> activeTilemaps; //store tilemaps for later use
 		for (GameObject* obj : layerObjects) {
@@ -1420,7 +1426,7 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 					//		}
 					//		/* ---------- END ---------- */
 					//	}
-					//}
+					//
 				}
 			}
 		}

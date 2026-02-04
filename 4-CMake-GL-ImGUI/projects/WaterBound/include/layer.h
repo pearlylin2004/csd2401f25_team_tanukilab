@@ -20,7 +20,7 @@ Technology is prohibited.
 #include <string>
 #include <vector>
 #include <unordered_set>
-
+#include <iostream>
 //forward declaration
 class GameObject;
 
@@ -49,9 +49,25 @@ public:
 	//get number of objects in layer
 	size_t getObjectCount() const;
 
+	//layer enable/disable - controls visibility, physics, and logic updates
+	void setEnabled(bool enabled);
+	bool isEnabled() const;
+
+	//separate flags for finer control (optional)
+	void setVisible(bool visible);
+	bool isVisible() const;
+
+	void setUpdatable(bool updatable);
+	bool isUpdatable() const;
+
 private:
 	std::string m_layerName;
 	int m_layerID;
 	std::vector<GameObject*> m_objects;
 	std::unordered_set<GameObject*> m_objectSet; //for quick lookup
+
+	//layer state flags - single flag check per layer (efficient)
+	bool m_enabled = true;    //master toggle - affects both visibility and updates
+	bool m_visible = true;    //controls rendering only
+	bool m_updatable = true;  //controls physics/logic updates only
 };

@@ -131,3 +131,98 @@ void LayerManager::clearAllLayers() {
 		layer.second->clear();
 	}
 }
+
+//layer enable/disable by ID
+void LayerManager::setLayerEnabled(int layerID, bool enabled) {
+	Layer* layer = getLayer(layerID);
+	if(layer) {
+		layer->setEnabled(enabled);
+	}
+}
+
+bool LayerManager::isLayerEnabled(int layerID) const {
+	auto it = m_layers.find(layerID);
+	if(it != m_layers.end()) {
+		return it->second->isEnabled();
+	}
+	return false;
+}
+
+//layer enable/disable by name
+void LayerManager::setLayerEnabledByName(const std::string& name, bool enabled) {
+	Layer* layer = getLayerByName(name);
+	if(layer) {
+		layer->setEnabled(enabled);
+	}
+}
+
+bool LayerManager::isLayerEnabledByName(const std::string& name) const {
+	auto it = m_layerNameToID.find(name);
+	if(it != m_layerNameToID.end()) {
+		auto layerIt = m_layers.find(it->second);
+		if(layerIt != m_layers.end()) {
+			return layerIt->second->isEnabled();
+		}
+	}
+	return false;
+}
+
+//visibility control
+void LayerManager::setLayerVisible(int layerID, bool visible) {
+	Layer* layer = getLayer(layerID);
+	if(layer) {
+		layer->setVisible(visible);
+	}
+}
+
+bool LayerManager::isLayerVisible(int layerID) const {
+	auto it = m_layers.find(layerID);
+	if(it != m_layers.end()) {
+		return it->second->isVisible();
+	}
+	return false;
+}
+
+//update control
+void LayerManager::setLayerUpdatable(int layerID, bool updatable) {
+	Layer* layer = getLayer(layerID);
+	if(layer) {
+		layer->setUpdatable(updatable);
+	}
+}
+
+bool LayerManager::isLayerUpdatable(int layerID) const {
+	auto it = m_layers.find(layerID);
+	if(it != m_layers.end()) {
+		return it->second->isUpdatable();
+	}
+	return false;
+}
+
+//get objects only from visible layers - use this in render system
+std::vector<GameObject*> LayerManager::getVisibleObjects() const {
+	std::vector<GameObject*> result;
+	
+	for(const auto& layer : m_layers) {
+		if(layer.second->isVisible()) {
+			const auto& objects = layer.second->getObjects();
+			result.insert(result.end(), objects.begin(), objects.end());
+		}
+	}
+	
+	return result;
+}
+
+//get objects only from updatable layers - use this in physics/logic systems
+std::vector<GameObject*> LayerManager::getUpdatableObjects() const {
+	std::vector<GameObject*> result;
+	
+	for(const auto& layer : m_layers) {
+		if(layer.second->isUpdatable()) {
+			const auto& objects = layer.second->getObjects();
+			result.insert(result.end(), objects.begin(), objects.end());
+		}
+	}
+	
+	return result;
+}
