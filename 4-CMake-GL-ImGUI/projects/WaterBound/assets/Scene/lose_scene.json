@@ -1,0 +1,61 @@
+{
+  "version": 1,
+  "objects": [
+    {
+      "name": "background",
+      "components": {
+        "Transform": {
+          "pos": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "rotation": 0.0,
+          "scale": [
+            40.0,
+            25.0,
+            15.0
+          ]
+        },
+        "Render": {
+          "shape": "square",
+          "hasTex": 1,
+          "texture": "assets/Texture/win_screen.jpg",
+          "hasAnimation": 0
+        }
+      }
+    },
+    {
+      "name": "menu_text",
+      "components": {
+        "Transform": {
+          "pos": [-3.4, -2.5, 1.0]
+        },
+        "FontComponent": {
+          "word": "MAIN MENU",
+          "color": [0.0, 0.0, 0.0],
+          "scale": 1,
+          "fontType": 1
+        }
+      }
+    },
+    {
+      "name": "menu_button",
+      "components": {
+        "Transform": {
+          "pos": [0.0, -2.0, 1.0],
+          "scale": [10.0, 3, 0.0]
+        },
+        "Render": {
+          "shape": "square",
+          "hasTex": 1,
+          "texture": "assets/button.png",
+          "clr": [ 1.0, 1.0, 1.0 ]
+        },
+        "Button" : {
+          "action" : "menu"
+        } 
+      }
+    }
+  ]
+}
