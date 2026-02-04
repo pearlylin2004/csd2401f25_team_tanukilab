@@ -125,7 +125,7 @@ void WaterSystem::setupWaterMesh(GameObject* waterObj) {
     std::vector<glm::vec2> texCoords;
     std::vector<GLuint> indices;
     
-    int numVertices = (mesh.subdivisions + 1) * 2; // Top and bottom rows
+    //int numVertices = (mesh.subdivisions + 1) * 2; // Top and bottom rows
     
     // Generate vertices
     for (int i = 0; i <= mesh.subdivisions; ++i) {
@@ -186,11 +186,11 @@ void WaterSystem::setupWaterMesh(GameObject* waterObj) {
     
     // Color attribute
     glEnableVertexAttribArray(1);
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), (void*)(posSize));
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), (void*)(uintptr_t)(posSize));
     
     // TexCoord attribute
     glEnableVertexAttribArray(2);
-    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(glm::vec2), (void*)(posSize + colSize));
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(glm::vec2), (void*)(uintptr_t)(posSize + colSize));
     
     // Create EBO
     glGenBuffers(1, &mesh.ebo);
@@ -309,7 +309,7 @@ void WaterSystem::applyWaterPhysics(GameObjectManager& manager) {
         if (!physics || !transform) continue;
         if (obj->hasComponent<WaterBody>()) continue; 
         
-        bool wasInWater = physics->inWater;
+        //bool wasInWater = physics->inWater;
         physics->inWater = false;
         
         for (GameObject* waterObj : waterBodies) {

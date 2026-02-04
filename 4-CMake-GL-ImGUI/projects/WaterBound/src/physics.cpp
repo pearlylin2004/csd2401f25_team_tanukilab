@@ -241,6 +241,8 @@ void PhysicsForces::deactivateBullet(GameObject* bullet) {
     p->dynamics.velocity.x = p->originalVel.x;
     p->dynamics.velocity.y = p->originalVel.y;
 
+    p->dynamics.forces.clear();
+
     p->lifeTimer = 0.0f;
     p->alive = false;
 
