@@ -91,7 +91,7 @@ void GUISystem::update() {
         std::cout << playerPos.x << " " << playerPos.y << " " << std::endl;
         std::cout << winPos.x << " " << winPos.y << " " << std::endl;
 
-        // AABB collision check
+        //AABB collision check
         bool collided =
             (playerPos.x + playerSize.x / 2 >= winPos.x - winSize.x / 2) &&
             (playerPos.x - playerSize.x / 2 <= winPos.x + winSize.x / 2) &&
@@ -100,9 +100,19 @@ void GUISystem::update() {
 
 
         if (collided) {
-            std::cout << "Player wins!" << std::endl;
-            m_currentState = GameState::WIN;
-            loadScreen(*g_manager, "win_scene.json");
+            //collision check for win condition
+            if (level == max_level) {
+                std::cout << "Player wins!" << std::endl;
+                m_currentState = GameState::WIN;
+                loadScreen(*g_manager, "win_scene.json");
+            }
+			//check collision to load next level
+            else {
+                std::cout << "Level Complete! Loading next level..." << std::endl;
+                level++;
+                m_currentState = GameState::PLAYING;
+                loadScreenNoButton(*g_manager, "level0" + std::to_string(level) + ".json");
+            }
         }
     }
 
@@ -239,13 +249,16 @@ void GUISystem::startGame(GameObjectManager& manager) {
 
     //change state to playing
 	m_currentState = GameState::PLAYING;
+    level = 1;
 
     removeButtons(); //remove menu buttons
-	manager.clearScene(); //clear current scene
+	//manager.clearScene(); //clear current scene
 
     // Load the game scene
-    manager.init();
-    manager.initializeSceneResources();
+    //manager.init();
+    //manager.loadScene(runtimeScenePath("level01.json"));
+    //manager.initializeSceneResources();
+	loadScreenNoButton(manager, "level01.json");
 
     std::vector<GameObject*> gameObjects;
     g_manager->getAllGameObjects(gameObjects);
@@ -299,6 +312,7 @@ bool GUISystem::isPointInButton(const Vector2D& point, GameObject* button) {
         point.y <= transform->y + halfHeight);
 }
 
+//buttons
 void GUISystem::loadScreen(GameObjectManager& manager, const std::string& sceneName) {
     std::cout << "[GUI] Loading screen: " << sceneName << "\n";
 
@@ -309,6 +323,16 @@ void GUISystem::loadScreen(GameObjectManager& manager, const std::string& sceneN
     manager.initializeSceneResources();
 
     createButtons(manager);
+}
+
+//no buttons
+void GUISystem::loadScreenNoButton(GameObjectManager& manager, const std::string& sceneName) {
+    std::cout << "[GUI] Loading screen: " << sceneName << "\n";
+
+    manager.clearScene(); //delete al scene object
+    manager.init();
+    manager.loadScene(runtimeScenePath(sceneName));
+    manager.initializeSceneResources();
 }
 
 
