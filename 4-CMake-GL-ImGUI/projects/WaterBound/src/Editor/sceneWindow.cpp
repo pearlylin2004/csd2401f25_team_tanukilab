@@ -438,7 +438,7 @@ void SceneWindow::renderObjCollider(GameObject* obj) {
         outlineColor = IM_COL32(90, 100, 255, 220); // blue
         fillColor = IM_COL32(100, 150, 255, 15); // light blue
     }
-    float thickness = 1.5f;
+    float thickness = 2.5f;
 
     if (collision->colliderType == shape::circle) {
         ImVec2 center = worldToScreen(transform->x, transform->y);

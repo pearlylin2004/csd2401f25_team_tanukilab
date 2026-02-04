@@ -500,6 +500,79 @@
           ]
         }
       }
+    },
+    {
+      "name": "waterbody",
+      "components": {
+        "Transform": {
+          "pos": [0.0, -10.0, 0.4],
+          "scale": [1.0, 1.0, 1.0],
+          "rotation": 0.0
+        },
+        "Physics": {
+          "physicsFlag": 1,
+          "mass": 1.0,
+          "damping": 1.0,
+          "gravity": 0.0,
+          "inWater": 0,
+          "buoancy": 0
+        },
+        "CollisionInfo": {
+          "collisionFlag": 1,
+          "colliderType": "square",
+          "colliderSize": [50.0, 6.0],   
+          "collisionRes": "NoResponse",     
+          "collisionTag": "water",
+          "ignoreCollisionsWith": []
+        },
+        "WaterBody": {
+          "waveAmplitude": 0.15,
+          "waveFrequency": 1.0,
+          "waveSpeed": 1.0,
+          "waterColor": [0.1, 0.3, 0.6, 1.0],
+          "waterAlpha": 0.7,
+          "subdivisions": 40,
+          "width": 40.0,
+          "height": 8.0,
+          "isTrigger": true,
+          "buoyancyForce": 12.0,
+          "waterDrag": 0.975,
+          "renderWaves": true,
+          "useTexture": false
+        }
+      }
+    },
+    {
+      "name": "floatingBox",
+      "components": {
+        "Transform": {
+          "pos": [-6.0, -8.0, 0.0],
+          "scale": [4, 1.5, 1],
+          "rotation": 0
+        },
+        "Render": {
+          "hasTex": 0,
+          "clr": [0.8, 0.6, 0.4]
+        },
+        "Physics": {
+          "physicsFlag": 1,
+          "autoUpdate": true,
+          "mass": 5,
+          "damping": 0.985,
+          "gravity": -9.8,
+          "inWater": 0,
+          "buoyancy": 1,
+          "moveSpeed": 1.0 
+        },
+        "CollisionInfo": {
+          "collisionFlag": 1,
+          "colliderType": "square",
+          "colliderSize": [2, 2],
+          "collisionRes": "MoveWhenCollide",
+          "collisionTag": "floatingObject",
+          "ignoreCollisionsWith": []
+        }
+      }
     }
   ]
 }

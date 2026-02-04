@@ -429,8 +429,8 @@ void InspectorWindow::renderTransform(GameObject* selected, GameObjectManager& m
             if (!m_objSelectionState.aspectRatioLock) m_objSelectionState.ratioSet = false;
 
             // clamp scale to be non-negative
-            if (ImGui::DragFloat("X1", &transform->scaleX, 0.1f, 0.f)) {
-                transform->scaleX = std::max(transform->scaleX, 0.f);
+            if (ImGui::DragFloat("X1", &transform->scaleX, 0.1f)) {
+                //transform->scaleX = std::max(transform->scaleX, 0);
 
                 if (!m_isEditingScale) {
                     UndoRedoManager::Instance().beginTransformEdit(selected);
@@ -441,8 +441,8 @@ void InspectorWindow::renderTransform(GameObject* selected, GameObjectManager& m
 			scaleActive |= ImGui::IsItemActive();
 
             ImGui::BeginDisabled(m_objSelectionState.aspectRatioLock);
-            if (ImGui::DragFloat("Y1", &transform->scaleY, 0.1f, 0.f)) {
-                transform->scaleY = std::max(transform->scaleY, 0.f);
+            if (ImGui::DragFloat("Y1", &transform->scaleY, 0.1f)) {
+                //transform->scaleY = std::max(transform->scaleY, 0.f);
 
                 if (!m_isEditingScale) {
                     UndoRedoManager::Instance().beginTransformEdit(selected);
@@ -995,7 +995,7 @@ void InspectorWindow::renderPhysics(GameObject* selected, bool canMove) {
         }
 
         if (ImGui::TreeNode("Water")) {
-            ImGui::Checkbox("Buoyancy (we dh)", &physic->buoancy);
+            ImGui::Checkbox("Buoyancy (we dh)", &physic->buoyancy);
 
             ImGui::TreePop();
         }

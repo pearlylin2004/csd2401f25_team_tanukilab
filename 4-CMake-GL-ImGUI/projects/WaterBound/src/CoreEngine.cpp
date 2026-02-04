@@ -88,7 +88,7 @@ void CoreEngine::Init(bool forceWindowed) {
     cfg.width = winWidth;
     cfg.height = winHeight;
 
-    glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
+	glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE); // set this to true to allow resizing (rmb to change back to false!!)
     m_window = glfwCreateWindow(winWidth, winHeight, m_title.c_str(), monitor, nullptr);
 
     if (!m_window) {
@@ -183,7 +183,7 @@ void CoreEngine::GameLoop() {
     //pause checking, and set it to paused state if escape is held
     if (InputHandler::isKeyTriggered(GLFW_KEY_ESCAPE)) {
         auto current = GUISystem::getInstance().getCurrentState(); //get current state
-        if (current != GameState::PAUSED) {
+        if (current != GameState::PAUSED && current != GameState::MENU) {
             GUISystem::getInstance().setStateBeforePause(current); //store state before pausing
             GUISystem::getInstance().changeState(GameState::PAUSED, "pause_scene.json");
         }
@@ -255,6 +255,7 @@ void CoreEngine::Update(float deltaTime) {
     m_tileMapSystem->update(*m_manager);
     m_particleSystem->update(*m_manager, deltaTime);;
     m_renderSystem->update(*m_manager, deltaTime);
+    m_waterSystem->update(*m_manager, deltaTime);
     m_fontSystem->update(*m_manager, m_fps);
     m_audioSystem->update(*m_manager, deltaTime);
     m_waterSystem->render(*m_manager);

@@ -907,6 +907,21 @@ void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime, M
 		if (!physics->physicsFlag) continue;
 		Transform* transform = object->getComponent<Transform>();
 
+		if (physics->autoUpdate) {
+			// Apply gravity when not in water -- future ref
+			if (!physics->inWater) {
+				physics->velY += physics->gravity * deltaTime;
+			}
+
+			transform->y += physics->velY * deltaTime;
+			transform->x += physics->velX * deltaTime;
+
+			physics->dynamics.position.y = transform->y;
+			physics->dynamics.position.x = transform->x;
+			physics->dynamics.velocity.y = physics->velY;
+			physics->dynamics.velocity.x = physics->velX;
+		}
+
 		// Handle player input
 		if (object->hasComponent<Input>() && !EditorManager::isEditingMode() && !EditorManager::isPaused()) {
 			if (!object->checkAutoMove()) {
@@ -1079,6 +1094,17 @@ void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime, M
 			// Deactivate if lifetime exceeded or fell too far
 			if (p->lifeTimer >= p->maxLifetime || p->dynamics.position.y < -20.0f) {
 				PhysicsForces::deactivateBullet(obj);
+			}
+		}
+		else {
+			//Haardcoded way-- need fix in future
+			if (t->y > -100.0f || t->x > -100.0f) {
+				t->x = -1000.0f;
+				t->y = -1000.0f;
+				p->dynamics.position.x = -1000.0f;
+				p->dynamics.position.y = -1000.0f;
+				p->dynamics.velocity.x = 0.0f;
+				p->dynamics.velocity.y = 0.0f;
 			}
 		}
 	}
