@@ -2,9 +2,11 @@
 /*!
 \file        WaterSystem.cpp
 \author     Asha Mathyalakan, asha.m, 2402886
+             -100%
 \par        asha.m@digipen.edu
 \date        January, 28, 2026
-\brief       Implementation of water system for animated water bodies
+\brief       Implementation of water system for animated water bodies, collision, 
+            buoyancy for object
 
 Copyright (C) 2026 DigiPen Institute of Technology.
 Reproduction or disclosure of this file or its contents
@@ -127,7 +129,7 @@ void WaterSystem::setupWaterMesh(GameObject* waterObj) {
     std::vector<glm::vec2> texCoords;
     std::vector<GLuint> indices;
 
-    int numVertices = (mesh.subdivisions + 1) * 2; // Top and bottom rows
+    //int numVertices = (mesh.subdivisions + 1) * 2;
 
     // Generate vertices
     for (int i = 0; i <= mesh.subdivisions; ++i) {
@@ -188,11 +190,11 @@ void WaterSystem::setupWaterMesh(GameObject* waterObj) {
 
     // Color attribute
     glEnableVertexAttribArray(1);
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), (void*)(posSize));
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), (void*)(uintptr_t)(posSize));
 
     // TexCoord attribute
     glEnableVertexAttribArray(2);
-    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(glm::vec2), (void*)(posSize + colSize));
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(glm::vec2), (void*)(uintptr_t)(posSize + colSize));
 
     // Create EBO
     glGenBuffers(1, &mesh.ebo);
@@ -356,8 +358,8 @@ void WaterSystem::applyWaterPhysics(GameObjectManager& manager) {
 
 
                 // Apply water drag
-                float oldVelX = physics->velX;
-                float oldVelY = physics->velY;
+                //float oldVelX = physics->velX;
+                //float oldVelY = physics->velY;
                 physics->velX *= water->waterDrag;
                 physics->velY *= water->waterDrag;
 

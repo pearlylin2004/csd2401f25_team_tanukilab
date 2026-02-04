@@ -669,7 +669,7 @@ void ParticleSystem::activateParticle(GameObjectManager& manager)
 					Transform* transform = newObj->addComponent<Transform>();
 					Render* render = newObj->addComponent<Render>();
 					Particle* indivData = newObj->addComponent<Particle>();
-					Physics* physics = newObj->addComponent<Physics>();
+					/*Physics* physics = */newObj->addComponent<Physics>();
 					Vector2D spawnPos = positionGenerator(particleData->master.offset);
 					transform->x = masterTransform->x + spawnPos.x;
 					transform->y = masterTransform->y + spawnPos.y;
@@ -1161,6 +1161,17 @@ void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime, M
 			// Deactivate if lifetime exceeded
 			if (p->lifeTimer >= p->maxLifetime || p->dynamics.position.y < -20.0f) {
 				PhysicsForces::deactivateBullet(obj);
+			}
+		}
+		else {
+			//Haardcoded way-- need fix in future
+			if (t->y > -100.0f || t->x > -100.0f) {
+				t->x = -1000.0f;
+				t->y = -1000.0f;
+				p->dynamics.position.x = -1000.0f;
+				p->dynamics.position.y = -1000.0f;
+				p->dynamics.velocity.x = 0.0f;
+				p->dynamics.velocity.y = 0.0f;
 			}
 		}
 	}
@@ -2158,10 +2169,10 @@ void AudioSystem::updateSpatialAudio(GameObjectManager& manager) {
 		if (!obj->hasComponent<AudioComponent>() || !obj->hasComponent<Transform>()) continue;
 
 		Transform* transform = obj->getComponent<Transform>();
-		AudioComponent* audio = obj->getComponent<AudioComponent>();
+		AudioComponent* audioC= obj->getComponent<AudioComponent>();
 
 		// Update position for each 3D audio channel
-		for (auto& [channelName, audio] : audio->audioChannels) {
+		for (auto& [channelName, audio] : audioC->audioChannels) {
 			// Only update 3D sounds that are currently playing
 			if (!audio.isSpatial || audio.state != AudioState::Playing || !audio.channel) continue;
 

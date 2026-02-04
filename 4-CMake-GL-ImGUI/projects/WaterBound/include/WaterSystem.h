@@ -1,10 +1,12 @@
 /* Start Header ************************************************************************/
 /*!
 \file        WaterSystem.h
-\author      Asha Mathyalakan, asha.m, 2402886
+\author      Asha Mathyalakan, asha.m, 
+             2402886 , 100%
 \par         asha.m@digipen.edu
 \date        January, 28, 2026
-\brief       Water system for rendering animated water bodies and handling water physics
+\brief       Water system for rendering movement of 
+            water bodies and handling water physics
 
 Copyright (C) 2026 DigiPen Institute of Technology.
 Reproduction or disclosure of this file or its contents

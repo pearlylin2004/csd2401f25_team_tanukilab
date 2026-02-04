@@ -133,7 +133,7 @@ int GameObjectManager::getGameObjectCount() {
 
 void GameObjectManager::init() {
 
-	loadScene(JsonIO::runtimeScenePath("level01.json"));
+	//loadScene(JsonIO::runtimeScenePath("level01.json"));
 }
 
 bool GameObjectManager::renameGameObject(GameObject* obj, const std::string& newName) {
