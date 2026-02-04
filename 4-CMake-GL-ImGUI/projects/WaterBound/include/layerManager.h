@@ -29,6 +29,9 @@ public:
 	//default constructor
 	LayerManager();
 
+	//initialize default layers if none exist
+	void initDefaultLayers();
+
 	//create a new layer
 	Layer* createLayer(const std::string& name, int layerID);
 
@@ -52,6 +55,9 @@ public:
 
 	//clear all objects from all layers
 	void clearAllLayers();
+
+	// Removes all layer structures (not just objects)
+	void clearAllLayerDefinitions();
 
 	//layer enable/disable by ID
 	void setLayerEnabled(int layerID, bool enabled);

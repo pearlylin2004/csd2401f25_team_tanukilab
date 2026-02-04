@@ -265,46 +265,40 @@ void GameObjectManager::loadSceneFromJson(const std::string& filename) {
 	m_layerManager.clearAllLayers();
 	m_gameObjects.clear();
 
-	// ========== ADD: Load layer states ==========
+	// Clear existing layers and recreate from JSON
 	if (doc.HasMember("layers") && doc["layers"].IsArray()) {
-		for (const auto& layerJson : doc["layers"].GetArray()) {
-			if (!layerJson.IsObject()) continue;
-			
-			int layerID = layerJson.HasMember("id") ? layerJson["id"].GetInt() : -1;
-			if (layerID < 0) continue;
-			
-			Layer* layer = m_layerManager.getLayer(layerID);
-			if (!layer) continue;
-			
-			// Load layer name
-			if (layerJson.HasMember("name") && layerJson["name"].IsString()) {
-				m_layerManager.renameLayer(layerID, layerJson["name"].GetString());
-			}
-			
-			// Load enabled state
-			if (layerJson.HasMember("enabled")) {
-				bool enabled = layerJson["enabled"].IsBool() 
-					? layerJson["enabled"].GetBool() 
-					: (layerJson["enabled"].GetInt() != 0);
-				layer->setEnabled(enabled);
-			}
-			
-			// Load visibility (only if different from enabled)
-			if (layerJson.HasMember("visible")) {
-				bool visible = layerJson["visible"].IsBool() 
-					? layerJson["visible"].GetBool() 
-					: (layerJson["visible"].GetInt() != 0);
-				layer->setVisible(visible);
-			}
-			
-			// Load updatable (only if different from enabled)
-			if (layerJson.HasMember("updatable")) {
-				bool updatable = layerJson["updatable"].IsBool() 
-					? layerJson["updatable"].GetBool() 
-					: (layerJson["updatable"].GetInt() != 0);
-				layer->setUpdatable(updatable);
-			}
-		}
+
+	    
+	    for (const auto& layerJson : doc["layers"].GetArray()) {
+	        if (!layerJson.IsObject()) continue;
+	        
+	        int layerID = layerJson.HasMember("id") && layerJson["id"].IsInt() 
+	            ? layerJson["id"].GetInt() : -1;
+	        if (layerID < 0) continue;
+	        
+	        std::string layerName = layerJson.HasMember("name") && layerJson["name"].IsString()
+	            ? layerJson["name"].GetString() 
+	            : ("Layer_" + std::to_string(layerID));
+	        
+	        // Create layer if it doesn't exist
+	        Layer* layer = m_layerManager.getLayer(layerID);
+	        if (!layer) {
+	            layer = m_layerManager.createLayer(layerName, layerID);
+	        } else {
+	            m_layerManager.renameLayer(layerID, layerName);
+	        }
+	        
+	        if (!layer) continue;
+	        
+	        // Load flags
+	        bool enabled = JsonIO::GetBoolOr(layerJson, "enabled", true);
+	        bool visible = JsonIO::GetBoolOr(layerJson, "visible", true);
+	        bool updatable = JsonIO::GetBoolOr(layerJson, "updatable", true);
+	        
+	        layer->setEnabled(enabled);
+	        layer->setVisible(visible);
+	        layer->setUpdatable(updatable);
+	    }
 	}
 	// ========== END ADD ==========
 
@@ -734,7 +728,7 @@ void GameObjectManager::loadSceneFromJson(const std::string& filename) {
 
 					// Pitch
 					if (chJson.HasMember("pitch") && chJson["pitch"].IsNumber()) {
-						ch->pitch = chJson["pitch"].GetFloat();
+					 ch->pitch = chJson["pitch"].GetFloat();
 					}
 
 					// Loop
@@ -746,7 +740,7 @@ void GameObjectManager::loadSceneFromJson(const std::string& filename) {
 
 					// Play on start
 					if (chJson.HasMember("playOnStart")) {
-						ch->playOnStart = chJson["playOnStart"].IsBool()
+					 ch->playOnStart = chJson["playOnStart"].IsBool()
 							? chJson["playOnStart"].GetBool()
 							: (chJson["playOnStart"].GetInt() != 0);
 					}
@@ -1031,20 +1025,22 @@ void GameObjectManager::saveSceneToJson(const std::string& filename, bool isNew)
 	
 	if (!isNew) {
 
-		rapidjson::Value layersArray(rapidjson::kArrayType);
-		for (Layer* layer : m_layerManager.getAllLayers()) {
-			if (!layer) continue;
-			
-			rapidjson::Value layerObj(rapidjson::kObjectType);
-			layerObj.AddMember("id", layer->getLayerID(), a);
-			layerObj.AddMember("name", rapidjson::Value(layer->getLayerName().c_str(), a), a);
-			layerObj.AddMember("enabled", layer->isEnabled() ? 1 : 0, a);
-			layerObj.AddMember("visible", layer->isVisible() ? 1 : 0, a);
-			layerObj.AddMember("updatable", layer->isUpdatable() ? 1 : 0, a);
-			
-			layersArray.PushBack(layerObj, a);
-		}
-		doc.AddMember("layers", layersArray, a);
+		rapidjson::Value layersArr(rapidjson::kArrayType);
+
+for (Layer* layer : m_layerManager.getAllLayers()) {
+    if (!layer) continue;
+
+    rapidjson::Value layerObj(rapidjson::kObjectType);
+    layerObj.AddMember("id", layer->getLayerID(), a);
+    layerObj.AddMember("name", rapidjson::Value(layer->getLayerName().c_str(), a), a);
+    layerObj.AddMember("enabled", layer->isEnabled() ? 1 : 0, a);  // Use 1/0 for consistency
+    layerObj.AddMember("visible", layer->isVisible() ? 1 : 0, a);
+    layerObj.AddMember("updatable", layer->isUpdatable() ? 1 : 0, a);
+
+    layersArr.PushBack(layerObj, a);
+}
+
+doc.AddMember("layers", layersArr, a);
 	
 		bool bulletSerialized = false;
 		// objects array
@@ -1609,89 +1605,89 @@ void GameObjectManager::saveSceneToJson(const std::string& filename, bool isNew)
 				rapidjson::Value jvl(rapidjson::kObjectType);
 				const rapidjson::Value* prefabVL = PM.getPrefabJsonComp(prefabDoc, "VisualLC");
 
-				// save only if filename dff from prefab or prefab no have
-				if (!vl->filename.empty()) {
-					if (!prefabVL || !prefabVL->HasMember("filename") ||
-						vl->filename != (*prefabVL)["filename"].GetString()) {
-						jvl.AddMember("filename", rapidjson::Value(vl->filename.c_str(), a), a);
-					}
-				}
-
-				if (!jvl.ObjectEmpty()) {
-					comps.AddMember("VisualLC", jvl, a);
-				}
+					// save only if filename dff from prefab or prefab no have
+		if (!vl->filename.empty()) {
+			if (!prefabVL || !prefabVL->HasMember("filename") ||
+				vl->filename != (*prefabVL)["filename"].GetString()) {
+				jvl.AddMember("filename", rapidjson::Value(vl->filename.c_str(), a), a);
 			}
-			// ---- WaterBody ---- 
-			if (auto wb = obj->getComponent<WaterBody>()) {
-				rapidjson::Value jw(rapidjson::kObjectType);
-				const rapidjson::Value* prefabWB = PM.getPrefabJsonComp(prefabDoc, "WaterBody");
-
-				// Helper lambda for comparing floats
-				auto pushIfDiffFloat = [&](const char* key, float val) {
-					if (!prefabWB || !prefabWB->HasMember(key) ||
-						!(*prefabWB)[key].IsNumber() ||
-						differsFloat((*prefabWB)[key].GetFloat(), val)) {
-						jw.AddMember(rapidjson::Value(key, a), rapidjson::Value(val), a);
-					}
-					};
-
-				auto pushIfDiffInt = [&](const char* key, int val) {
-					if (!prefabWB || !prefabWB->HasMember(key) ||
-						!(*prefabWB)[key].IsInt() ||
-						differsInt((*prefabWB)[key].GetInt(), val)) {
-						jw.AddMember(rapidjson::Value(key, a), rapidjson::Value(val), a);
-					}
-					};
-
-				auto pushIfDiffBool = [&](const char* key, bool val) {
-					if (!prefabWB || !prefabWB->HasMember(key) ||
-						((*prefabWB)[key].IsBool() && differsBool((*prefabWB)[key].GetBool(), val)) ||
-						((*prefabWB)[key].IsInt() && differsBool((*prefabWB)[key].GetInt() != 0, val))) {
-						jw.AddMember(rapidjson::Value(key, a), rapidjson::Value(val ? 1 : 0), a);
-					}
-					};
-
-				// Save wave parameters
-				pushIfDiffFloat("waveAmplitude", wb->waveAmplitude);
-				pushIfDiffFloat("waveFrequency", wb->waveFrequency);
-				pushIfDiffFloat("waveSpeed", wb->waveSpeed);
-
-				// Save water color if different from prefab
-				if (!prefabWB || !prefabWB->HasMember("waterColor") ||
-					differsFloat((*prefabWB)["waterColor"][0].GetFloat(), wb->waterColor.r) ||
-					differsFloat((*prefabWB)["waterColor"][1].GetFloat(), wb->waterColor.g) ||
-					differsFloat((*prefabWB)["waterColor"][2].GetFloat(), wb->waterColor.b) ||
-					differsFloat((*prefabWB)["waterColor"][3].GetFloat(), wb->waterColor.a)) {
-
-					rapidjson::Value colorArray(rapidjson::kArrayType);
-					colorArray.PushBack(wb->waterColor.r, a);
-					colorArray.PushBack(wb->waterColor.g, a);
-					colorArray.PushBack(wb->waterColor.b, a);
-					colorArray.PushBack(wb->waterColor.a, a);
-					jw.AddMember("waterColor", colorArray, a);
-				}
-
-				pushIfDiffFloat("waterAlpha", wb->waterAlpha);
-				pushIfDiffInt("subdivisions", wb->subdivisions);
-				pushIfDiffFloat("width", wb->width);
-				pushIfDiffFloat("height", wb->height);
-				pushIfDiffBool("isTrigger", wb->isTrigger);
-				pushIfDiffFloat("buoyancyForce", wb->buoyancyForce);
-				pushIfDiffFloat("waterDrag", wb->waterDrag);
-				pushIfDiffBool("renderWaves", wb->renderWaves);
-				pushIfDiffBool("useTexture", wb->useTexture);
-
-				if (!jw.ObjectEmpty()) {
-					comps.AddMember("WaterBody", jw, a);
-				}
-			}
-
-			if (!comps.ObjectEmpty()) jObj.AddMember("components", comps, a);
-			objects.PushBack(jObj, a);
 		}
 
-		// attach array
-		doc.AddMember("objects", objects, a);
+		if (!jvl.ObjectEmpty()) {
+			comps.AddMember("VisualLC", jvl, a);
+		}
+		}
+		// ---- WaterBody ---- 
+		if (auto wb = obj->getComponent<WaterBody>()) {
+			rapidjson::Value jw(rapidjson::kObjectType);
+			const rapidjson::Value* prefabWB = PM.getPrefabJsonComp(prefabDoc, "WaterBody");
+
+			// Helper lambda for comparing floats
+			auto pushIfDiffFloat = [&](const char* key, float val) {
+				if (!prefabWB || !prefabWB->HasMember(key) ||
+					!(*prefabWB)[key].IsNumber() ||
+					differsFloat((*prefabWB)[key].GetFloat(), val)) {
+					jw.AddMember(rapidjson::Value(key, a), rapidjson::Value(val), a);
+				}
+				};
+
+			auto pushIfDiffInt = [&](const char* key, int val) {
+				if (!prefabWB || !prefabWB->HasMember(key) ||
+					!(*prefabWB)[key].IsInt() ||
+					differsInt((*prefabWB)[key].GetInt(), val)) {
+					jw.AddMember(rapidjson::Value(key, a), rapidjson::Value(val), a);
+				}
+				};
+
+			auto pushIfDiffBool = [&](const char* key, bool val) {
+				if (!prefabWB || !prefabWB->HasMember(key) ||
+					((*prefabWB)[key].IsBool() && differsBool((*prefabWB)[key].GetBool(), val)) ||
+					((*prefabWB)[key].IsInt() && differsBool((*prefabWB)[key].GetInt() != 0, val))) {
+					jw.AddMember(rapidjson::Value(key, a), rapidjson::Value(val ? 1 : 0), a);
+				}
+				};
+
+			// Save wave parameters
+			pushIfDiffFloat("waveAmplitude", wb->waveAmplitude);
+			pushIfDiffFloat("waveFrequency", wb->waveFrequency);
+			pushIfDiffFloat("waveSpeed", wb->waveSpeed);
+
+			// Save water color if different from prefab
+			if (!prefabWB || !prefabWB->HasMember("waterColor") ||
+				differsFloat((*prefabWB)["waterColor"][0].GetFloat(), wb->waterColor.r) ||
+				differsFloat((*prefabWB)["waterColor"][1].GetFloat(), wb->waterColor.g) ||
+				differsFloat((*prefabWB)["waterColor"][2].GetFloat(), wb->waterColor.b) ||
+				differsFloat((*prefabWB)["waterColor"][3].GetFloat(), wb->waterColor.a)) {
+
+				rapidjson::Value colorArray(rapidjson::kArrayType);
+				colorArray.PushBack(wb->waterColor.r, a);
+				colorArray.PushBack(wb->waterColor.g, a);
+				colorArray.PushBack(wb->waterColor.b, a);
+				colorArray.PushBack(wb->waterColor.a, a);
+				jw.AddMember("waterColor", colorArray, a);
+			}
+
+			pushIfDiffFloat("waterAlpha", wb->waterAlpha);
+			pushIfDiffInt("subdivisions", wb->subdivisions);
+			pushIfDiffFloat("width", wb->width);
+			pushIfDiffFloat("height", wb->height);
+			pushIfDiffBool("isTrigger", wb->isTrigger);
+			pushIfDiffFloat("buoyancyForce", wb->buoyancyForce);
+			pushIfDiffFloat("waterDrag", wb->waterDrag);
+			pushIfDiffBool("renderWaves", wb->renderWaves);
+			pushIfDiffBool("useTexture", wb->useTexture);
+
+			if (!jw.ObjectEmpty()) {
+				comps.AddMember("WaterBody", jw, a);
+			}
+		}
+
+		if (!comps.ObjectEmpty()) jObj.AddMember("components", comps, a);
+		objects.PushBack(jObj, a);
+	}
+
+	// attach array
+	doc.AddMember("objects", objects, a);
 	}
 
 	std::string err;

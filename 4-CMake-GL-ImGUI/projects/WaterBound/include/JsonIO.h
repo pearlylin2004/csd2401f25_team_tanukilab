@@ -180,4 +180,13 @@ namespace JsonIO {
 	// for the indexing in animation vector
 	//inline std::vector<std::string> stateNames = { "Idle", "Walking", "Jumping", "Falling", "Shooting" };
 	/* ------- END ------- */
+
+	// ---- Layer serialization helpers ----
+	void SerializeLayerRef(rapidjson::Value& parent, int layerID, 
+	                       const LayerManager& lm, 
+	                       rapidjson::Document::AllocatorType& a);
+	
+	int DeserializeLayerRef(const rapidjson::Value& parent, 
+	                        LayerManager& lm, 
+	                        int defaultLayer = 1);
 }

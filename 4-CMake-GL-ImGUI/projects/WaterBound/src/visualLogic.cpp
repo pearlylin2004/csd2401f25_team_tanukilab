@@ -615,7 +615,7 @@ void VisualLogicSystem::executeActionNode(GameObject* obj, VisualLC* logic, Logi
 			m_manager->getAllGameObjects(gameObjects);
 
 			for (GameObject* object : gameObjects) {
-				if (object->hasComponent<CollisionInfo>() && obj->hasComponent<VisualLC>()) {
+				if (object->hasComponent<CollisionInfo>() && object->hasComponent<VisualLC>()) {
 
 					CollisionInfo* col = object->getComponent<CollisionInfo>();
 					if (col->collisionTag == targetValue) {

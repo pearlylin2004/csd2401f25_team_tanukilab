@@ -19,12 +19,19 @@ Technology is prohibited.
 #include "layerManager.h"
 
 LayerManager::LayerManager() {
-	//for now got 3 layers by default
-	//bg, game, UI
-	createLayer("Background", 0);
-	createLayer("Game", 1);
-	createLayer("UI", 2);
-	//can create more during run time if needed
+    // Create default layers - these will be overwritten when a scene loads
+    createLayer("Background", 0);
+    createLayer("Game", 1);
+    createLayer("UI", 2);
+}
+
+
+void LayerManager::initDefaultLayers() {
+    if (m_layers.empty()) {
+        createLayer("Background", 0);
+        createLayer("Game", 1);
+        createLayer("UI", 2);
+    }
 }
 
 Layer* LayerManager::createLayer(const std::string& name, int layerID) {
@@ -130,6 +137,11 @@ void LayerManager::clearAllLayers() {
 	for(auto& layer : m_layers) {
 		layer.second->clear();
 	}
+}
+
+void LayerManager::clearAllLayerDefinitions() {
+    m_layers.clear();
+    m_layerNameToID.clear();
 }
 
 //layer enable/disable by ID

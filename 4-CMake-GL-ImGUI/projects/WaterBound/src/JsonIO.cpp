@@ -1953,3 +1953,56 @@ void GameObjectManager::loadFromJson(const std::string& filename) {
 
     std::cout << "Scene loaded (JSON): " << filename << "\n";
 }
+/**
+ * \brief Serializes a layer reference with both ID and name.
+ * \param parent The JSON object to add the layer data to.
+ * \param layerID The layer ID to serialize.
+ * \param lm Reference to LayerManager for name lookup.
+ * \param a RapidJSON allocator.
+ */
+void JsonIO::SerializeLayerRef(rapidjson::Value& parent, int layerID,
+    const LayerManager& lm,
+    rapidjson::Document::AllocatorType& a) {
+    // Skip default game layer (ID 1)
+    if (layerID == -1 || layerID == 1) return;
+
+    // Always save ID (reliable)
+    parent.AddMember("layer", layerID, a);
+
+    // Also save name (readable, fallback)
+    Layer* layer = const_cast<LayerManager&>(lm).getLayer(layerID);
+    if (layer) {
+        parent.AddMember("layerName",
+            rapidjson::Value(layer->getLayerName().c_str(), a), a);
+    }
+}
+
+/**
+ * \brief Deserializes a layer reference, supporting both ID and name.
+ * \param parent The JSON object containing layer data.
+ * \param lm Reference to LayerManager for name lookup.
+ * \param defaultLayer Default layer ID if not found (default: 1 = Game layer).
+ * \return The resolved layer ID.
+ */
+int JsonIO::DeserializeLayerRef(const rapidjson::Value& parent,
+    LayerManager& lm,
+    int defaultLayer) {
+    // Priority 1: Try layer ID
+    if (parent.HasMember("layer") && parent["layer"].IsInt()) {
+        int layerID = parent["layer"].GetInt();
+        if (lm.getLayer(layerID)) {
+            return layerID;
+        }
+    }
+
+    // Priority 2: Try layer name (fallback)
+    if (parent.HasMember("layerName") && parent["layerName"].IsString()) {
+        std::string layerName = parent["layerName"].GetString();
+        Layer* layer = lm.getLayerByName(layerName);
+        if (layer) {
+            return layer->getLayerID();
+        }
+    }
+
+    return defaultLayer;
+}
