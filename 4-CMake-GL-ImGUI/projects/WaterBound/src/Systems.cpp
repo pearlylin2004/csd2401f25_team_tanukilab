@@ -1107,6 +1107,17 @@ void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime, M
 				PhysicsForces::deactivateBullet(obj);
 			}
 		}
+		else {
+			//Haardcoded way-- need fix in future
+			if (t->y > -100.0f || t->x > -100.0f) {
+				t->x = -1000.0f;
+				t->y = -1000.0f;
+				p->dynamics.position.x = -1000.0f;
+				p->dynamics.position.y = -1000.0f;
+				p->dynamics.velocity.x = 0.0f;
+				p->dynamics.velocity.y = 0.0f;
+			}
+		}
 	}
 
 	auto end = std::chrono::high_resolution_clock::now();
