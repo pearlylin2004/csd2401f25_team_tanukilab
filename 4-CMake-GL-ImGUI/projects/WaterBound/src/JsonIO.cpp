@@ -1314,6 +1314,14 @@ namespace JsonIO {
                     a->fadeInDuration = ja["fadeInDuration"].GetFloat();
                     a->fadeOutOnStop = ja["fadeOutOnStop"].GetBool();
                     a->fadeOutDuration = ja["fadeOutDuration"].GetFloat();
+
+                    // Load 3D audio settings (backwards compatibility)
+                    if (ja.HasMember("isSpatial"))
+                        a->isSpatial = ja["isSpatial"].GetBool();
+                    if (ja.HasMember("minDistance"))
+                        a->minDistance = ja["minDistance"].GetFloat();
+                    if (ja.HasMember("maxDistance"))
+                        a->maxDistance = ja["maxDistance"].GetFloat();
                 }
             }
 
