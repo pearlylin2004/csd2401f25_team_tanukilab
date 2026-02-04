@@ -265,6 +265,49 @@ void GameObjectManager::loadSceneFromJson(const std::string& filename) {
 	m_layerManager.clearAllLayers();
 	m_gameObjects.clear();
 
+	// ========== ADD: Load layer states ==========
+	if (doc.HasMember("layers") && doc["layers"].IsArray()) {
+		for (const auto& layerJson : doc["layers"].GetArray()) {
+			if (!layerJson.IsObject()) continue;
+			
+			int layerID = layerJson.HasMember("id") ? layerJson["id"].GetInt() : -1;
+			if (layerID < 0) continue;
+			
+			Layer* layer = m_layerManager.getLayer(layerID);
+			if (!layer) continue;
+			
+			// Load layer name
+			if (layerJson.HasMember("name") && layerJson["name"].IsString()) {
+				m_layerManager.renameLayer(layerID, layerJson["name"].GetString());
+			}
+			
+			// Load enabled state
+			if (layerJson.HasMember("enabled")) {
+				bool enabled = layerJson["enabled"].IsBool() 
+					? layerJson["enabled"].GetBool() 
+					: (layerJson["enabled"].GetInt() != 0);
+				layer->setEnabled(enabled);
+			}
+			
+			// Load visibility (only if different from enabled)
+			if (layerJson.HasMember("visible")) {
+				bool visible = layerJson["visible"].IsBool() 
+					? layerJson["visible"].GetBool() 
+					: (layerJson["visible"].GetInt() != 0);
+				layer->setVisible(visible);
+			}
+			
+			// Load updatable (only if different from enabled)
+			if (layerJson.HasMember("updatable")) {
+				bool updatable = layerJson["updatable"].IsBool() 
+					? layerJson["updatable"].GetBool() 
+					: (layerJson["updatable"].GetInt() != 0);
+				layer->setUpdatable(updatable);
+			}
+		}
+	}
+	// ========== END ADD ==========
+
 	if (!doc.HasMember("objects") || !doc["objects"].IsArray()) {
 		std::cerr << "Scene JSON missing 'objects' array.\n";
 		return;
@@ -980,10 +1023,25 @@ void GameObjectManager::saveSceneToJson(const std::string& filename, bool isNew)
 
 	// version header
 	doc.AddMember("version", rapidjson::Value(1), a);
-	bool bulletSerialized = false;
-
+	
 	if (!isNew) {
 
+		rapidjson::Value layersArray(rapidjson::kArrayType);
+		for (Layer* layer : m_layerManager.getAllLayers()) {
+			if (!layer) continue;
+			
+			rapidjson::Value layerObj(rapidjson::kObjectType);
+			layerObj.AddMember("id", layer->getLayerID(), a);
+			layerObj.AddMember("name", rapidjson::Value(layer->getLayerName().c_str(), a), a);
+			layerObj.AddMember("enabled", layer->isEnabled() ? 1 : 0, a);
+			layerObj.AddMember("visible", layer->isVisible() ? 1 : 0, a);
+			layerObj.AddMember("updatable", layer->isUpdatable() ? 1 : 0, a);
+			
+			layersArray.PushBack(layerObj, a);
+		}
+		doc.AddMember("layers", layersArray, a);
+	
+		bool bulletSerialized = false;
 		// objects array
 		rapidjson::Value objects(rapidjson::kArrayType);
 
@@ -1314,8 +1372,8 @@ void GameObjectManager::saveSceneToJson(const std::string& filename, bool isNew)
 									(!prefabAnimState.HasMember("frameTime") || differsFloat(static_cast<float>(prefabAnimState["frameTime"].GetDouble()), animState.frameTime));
 								(!prefabAnimState.HasMember("initialFramCol") || differsFloat(static_cast<float>(prefabAnimState["initialFramCol"].GetDouble()), animState.initialFrame.x));
 								(!prefabAnimState.HasMember("initialFramRow") || differsFloat(static_cast<float>(prefabAnimState["initialFramRow"].GetDouble()), animState.initialFrame.y));
-								(!prefabAnimState.HasMember("lastFrameCol") || differsFloat(static_cast<float>(prefabAnimState["lastFrameCol"].GetDouble()), animState.lastFrame.x));
-								(!prefabAnimState.HasMember("lastFrameRow") || differsFloat(static_cast<float>(prefabAnimState["lastFrameRow"].GetDouble()), animState.lastFrame.y));
+								(!prefabAnimState.HasMember("lastFramCol") || differsFloat(static_cast<float>(prefabAnimState["lastFramCol"].GetDouble()), animState.lastFrame.x));
+								(!prefabAnimState.HasMember("lastFramRow") || differsFloat(static_cast<float>(prefabAnimState["lastFramRow"].GetDouble()), animState.lastFrame.y));
 							}
 							else {
 								shouldSerialize = true; // prefab doesn't have animState for this state
@@ -1481,7 +1539,7 @@ void GameObjectManager::saveSceneToJson(const std::string& filename, bool isNew)
 					const auto& v = prefabTM->FindMember(key)->value;
 					return (v.IsBool() && v.GetBool() != val) ||
 						(v.IsInt() && (v.GetInt() != 0) != val);
-					};
+				};
 
 				if (diffFloat("tileW", tm->tileW))
 					jt.AddMember("tileW", tm->tileW, a);
@@ -1682,7 +1740,6 @@ If the path ends with ".json", writes JSON using saveSceneToJson.
 void GameObjectManager::saveScene(const std::string& path, bool isNew) const {
 	if (ends_with(path, ".json")) saveSceneToJson(path, isNew);
 }
-
 
 //layer stuff
 LayerManager& GameObjectManager::getLayerManager() {
