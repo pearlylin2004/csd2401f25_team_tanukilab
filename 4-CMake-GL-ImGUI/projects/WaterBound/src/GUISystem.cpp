@@ -29,19 +29,6 @@ static std::string runtimeScenePath(std::string const& name) {
     return std::string(RUNTIME_SCENE_DIR_R) + "/" + name;
 }
 
-/*GUISystem::GUISystem() :
-    m_currentState(GameState::NONE),
-    m_previousState(GameState::MENU),
-    m_stateBeforePause(GameState::MENU),
-    g_manager(nullptr),
-    g_luaSystem(nullptr) {
-    std::cout << "[GUI] GUISystem constructor called" << std::endl;
-}
-
-GUISystem::~GUISystem() {
-    std::cout << "[GUI] GUISystem destructor called" << std::endl;
-}*/
-
 void GUISystem::init(GameObjectManager& manager, LuaSystem& luaSystem) {
     std::cout << "[GUI] GUISystem::init started" << std::endl;
 
