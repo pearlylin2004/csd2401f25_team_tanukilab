@@ -28,7 +28,7 @@ SceneWindow::SceneWindow(AssetBrowser& aBrowser, Editor::ObjSelectionState& Osta
     m_menuBarState(Mstate),
     m_sceneWindowState(Sstate),
     m_sceneState(sceneState),
-    m_gizmoState(gizmoState) {}
+    m_gizmoState(gizmoState){}
 
 void SceneWindow::render(GLuint texture, float aspectRatio, GameObjectManager& manager) {
     /* ---------- Draw Editor Camera Window --------- */
@@ -438,7 +438,7 @@ void SceneWindow::renderObjCollider(GameObject* obj) {
         outlineColor = IM_COL32(90, 100, 255, 220); // blue
         fillColor = IM_COL32(100, 150, 255, 15); // light blue
     }
-    float thickness = 1.5f;
+    float thickness = 2.5f;
 
     if (collision->colliderType == shape::circle) {
         ImVec2 center = worldToScreen(transform->x, transform->y);
@@ -629,7 +629,9 @@ void SceneWindow::loadScene(GameObjectManager& manager) {
     // refresh cached object vector
     CachedGameObjects::Instance().refresh();
 
-    m_sceneState.currentSceneName = std::move(m_menuBarState.sceneToLoad); 
+	//set current scene name
+    GameState newState = GUISystem::getInstance().sceneToState(m_menuBarState.sceneToLoad);
+    GUISystem::getInstance().setCurrentState(newState);
 
     DebugLog::addMessage("Loaded scene: " + m_sceneState.currentSceneName + "\n");
 }

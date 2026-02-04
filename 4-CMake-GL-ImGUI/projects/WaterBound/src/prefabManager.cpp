@@ -790,7 +790,7 @@ void PrefabManager::applyPrefabComponents(GameObject* go, const rapidjson::Value
 		p->jumpForce = JsonIO::GetFloatOr(jp, "jumpForce", 0.f);
 		p->dynamics.mass = JsonIO::GetFloatOr(jp, "mass", 1.f);
 		p->inWater = JsonIO::GetBoolOr(jp, "inWater", false);
-		p->buoancy = JsonIO::GetBoolOr(jp, "buoyancy", false);
+		p->buoyancy = JsonIO::GetBoolOr(jp, "buoyancy", false);
 	}
 
 	// ---- CollisionInfo (presence only) ----
@@ -987,8 +987,8 @@ void PrefabManager::applyPrefabComponents(GameObject* go, const rapidjson::Value
 
 				// Load 3D audio settings
 				ch->isSpatial = JsonIO::GetBoolOr(channelObj, "isSpatial", false);
-				ch->minDistance = JsonIO::GetFloatOr(channelObj, "minDistance", 5.0f);
-				ch->maxDistance = JsonIO::GetFloatOr(channelObj, "maxDistance", 50.0f);
+				ch->minDistance = JsonIO::GetFloatOr(channelObj, "minDistance", 1.0f);
+				ch->maxDistance = JsonIO::GetFloatOr(channelObj, "maxDistance", 100.0f);
 			}
 		}
 		// OLD FORMAT: Single channel (backwards compatibility)
@@ -1005,6 +1005,11 @@ void PrefabManager::applyPrefabComponents(GameObject* go, const rapidjson::Value
 			ac->fadeInDuration = JsonIO::GetFloatOr(ja, "fadeInDuration", 0.f);
 			ac->fadeOutOnStop = JsonIO::GetBoolOr(ja, "fadeOutOnStop", false);
 			ac->fadeOutDuration = JsonIO::GetFloatOr(ja, "fadeOutDuration", 0.f);
+
+			// Load 3D audio settings (backwards compatibility)
+			ac->isSpatial = JsonIO::GetBoolOr(ja, "isSpatial", false);
+			ac->minDistance = JsonIO::GetFloatOr(ja, "minDistance", 1.0f);
+			ac->maxDistance = JsonIO::GetFloatOr(ja, "maxDistance", 100.0f);
 		}
 	}
 
@@ -1138,7 +1143,7 @@ void PrefabManager::serializeComponents(const GameObject* obj, rapidjson::Value&
 		jp.AddMember("mass", p->dynamics.mass, a);
 
 		jp.AddMember("inWater", p->inWater ? 1 : 0, a);
-		jp.AddMember("buoyancy", p->buoancy ? 1 : 0, a);
+		jp.AddMember("buoyancy", p->buoyancy ? 1 : 0, a);
 
 		comps.AddMember("Physics", jp, a);
 	}
@@ -1225,7 +1230,7 @@ void PrefabManager::serializeComponents(const GameObject* obj, rapidjson::Value&
 			channelObj.AddMember("fadeOutDuration", channel.fadeOutDuration, a);
 
 			// Save 3D audio settings
-			channelObj.AddMember("isSpatial", channel.isSpatial ? 1 : 0, a);
+			channelObj.AddMember("isSpatial", channel.isSpatial, a);
 			channelObj.AddMember("minDistance", channel.minDistance, a);
 			channelObj.AddMember("maxDistance", channel.maxDistance, a);
 

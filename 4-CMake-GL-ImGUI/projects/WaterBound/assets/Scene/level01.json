@@ -143,6 +143,7 @@
     },
     {
       "name": "background5",
+      "layer": 0,
       "components": {
         "Transform": {
           "pos": [
@@ -169,6 +170,7 @@
     {
       "prefabid": "dd60e1e1-641c-4ed5-b69d-ffadfa02fb7a",
       "name": "player",
+      "layer": 1,
       "components": {
         "Transform": {
           "pos": [
@@ -192,7 +194,7 @@
           ]
         },
         "StateMachine": {
-          "stateTime": 8.39919662475586
+          "stateTime": 23.622032165527344
         },
         "AudioComponent": {
           "channels": {
@@ -257,6 +259,7 @@
     },
     {
       "name": "background1",
+      "layer": 0,
       "components": {
         "Transform": {
           "pos": [
@@ -282,6 +285,7 @@
     },
     {
       "name": "background2",
+      "layer": 0,
       "components": {
         "Transform": {
           "pos": [
@@ -307,6 +311,7 @@
     },
     {
       "name": "background4",
+      "layer": 0,
       "components": {
         "Transform": {
           "pos": [
@@ -332,6 +337,7 @@
     },
     {
       "name": "background6",
+      "layer": 0,
       "components": {
         "Transform": {
           "pos": [
@@ -387,6 +393,7 @@
     {
       "prefabid": "94d018f7-a766-4ee6-95be-f39272697938",
       "name": "platform_left",
+      "layer": 1,
       "components": {
         "Transform": {
           "pos": [
@@ -411,6 +418,7 @@
     {
       "prefabid": "94d018f7-a766-4ee6-95be-f39272697938",
       "name": "platform_right29",
+      "layer": 1,
       "components": {
         "Transform": {
           "pos": [
@@ -435,6 +443,7 @@
     {
       "prefabid": "94d018f7-a766-4ee6-95be-f39272697938",
       "name": "platform_right",
+      "layer": 1,
       "components": {
         "Transform": {
           "pos": [
@@ -459,6 +468,7 @@
     {
       "prefabid": "eaa2ba42-971a-413b-b8c4-99b2f5ab674d",
       "name": "fire_right",
+      "layer": 1,
       "components": {
         "Transform": {
           "pos": [

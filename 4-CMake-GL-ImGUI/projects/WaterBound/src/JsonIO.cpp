@@ -911,7 +911,7 @@ namespace JsonIO {
             jp.AddMember("gravity", p->gravity, a);
             jp.AddMember("damping", p->damping, a);
             jp.AddMember("mass", p->dynamics.mass, a);
-            jp.AddMember("buoyancy", p->buoancy, a);
+            jp.AddMember("buoyancy", p->buoyancy, a);
 
             doc.AddMember("Physics", jp, a);
         }
@@ -1209,7 +1209,7 @@ namespace JsonIO {
                 p->gravity = jp["gravity"].GetFloat();
                 p->damping = jp["damping"].GetFloat();
                 p->dynamics.mass = jp["mass"].GetFloat();
-                p->buoancy = jp["buoyancy"].GetBool();
+                p->buoyancy = jp["buoyancy"].GetBool();
             }
 
             // Collision
@@ -1314,6 +1314,14 @@ namespace JsonIO {
                     a->fadeInDuration = ja["fadeInDuration"].GetFloat();
                     a->fadeOutOnStop = ja["fadeOutOnStop"].GetBool();
                     a->fadeOutDuration = ja["fadeOutDuration"].GetFloat();
+
+                    // Load 3D audio settings (backwards compatibility)
+                    if (ja.HasMember("isSpatial"))
+                        a->isSpatial = ja["isSpatial"].GetBool();
+                    if (ja.HasMember("minDistance"))
+                        a->minDistance = ja["minDistance"].GetFloat();
+                    if (ja.HasMember("maxDistance"))
+                        a->maxDistance = ja["maxDistance"].GetFloat();
                 }
             }
 
@@ -1724,7 +1732,7 @@ void GameObjectManager::saveToJson(const std::string& filename, bool isNew) cons
                 rapidjson::Value jp(rapidjson::kObjectType);
                 // store as 0/1 to mirror .txt
                 jp.AddMember("inWater", rapidjson::Value(p->inWater ? 1 : 0), a);
-                jp.AddMember("buoyancy", rapidjson::Value(p->buoancy ? 1 : 0), a); // member is 'buoancy' in struct
+                jp.AddMember("buoyancy", rapidjson::Value(p->buoyancy ? 1 : 0), a); // member is 'buoyancy' in struct
                 comps.AddMember("Physics", jp, a);
             }
 
@@ -1899,7 +1907,7 @@ void GameObjectManager::loadFromJson(const std::string& filename) {
                     : (jp["inWater"].GetInt() != 0);
             }
             if (jp.HasMember("buoyancy")) {
-                p->buoancy = jp["buoyancy"].IsBool()
+                p->buoyancy = jp["buoyancy"].IsBool()
                     ? jp["buoyancy"].GetBool()
                     : (jp["buoyancy"].GetInt() != 0);
             }

@@ -84,7 +84,7 @@ private:
     
     void toggleFullscreen();
 
-    std::unique_ptr<GUISystem> m_guiSystem;
+    //std::unique_ptr<GUISystem> m_guiSystem;
 
 
     // Core Engine Systems

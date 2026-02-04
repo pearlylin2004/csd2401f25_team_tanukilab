@@ -29,8 +29,8 @@ static std::string runtimeScenePath(std::string const& name) {
     return std::string(RUNTIME_SCENE_DIR_R) + "/" + name;
 }
 
-GUISystem::GUISystem() :
-    m_currentState(GameState::MENU),
+/*GUISystem::GUISystem() :
+    m_currentState(GameState::NONE),
     m_previousState(GameState::MENU),
     m_stateBeforePause(GameState::MENU),
     g_manager(nullptr),
@@ -40,7 +40,7 @@ GUISystem::GUISystem() :
 
 GUISystem::~GUISystem() {
     std::cout << "[GUI] GUISystem destructor called" << std::endl;
-}
+}*/
 
 void GUISystem::init(GameObjectManager& manager, LuaSystem& luaSystem) {
     std::cout << "[GUI] GUISystem::init started" << std::endl;
@@ -55,19 +55,61 @@ void GUISystem::init(GameObjectManager& manager, LuaSystem& luaSystem) {
 
 //update function to check for button clicking
 void GUISystem::update() {
-    if (m_currentState == GameState::PLAYING) return;
-    if (UISystem::isShowUI()) return; //skip if UI is shown
+    if (EditorManager::isEditingMode()) return;
+    if (UISystem::isShowUI()) return; // skip if UI is shown
+    //if (m_buttons.empty()) return;
 
-    //get mouse position
     Vector2D worldMousePos = InputHandler::getWorldMousePosition();
 
-    //check for hover over
-    if (InputHandler::isMouseButtonClicked(GLFW_MOUSE_BUTTON_LEFT)) {
-        if (m_buttons.empty()) return;
-        for (auto& pair : m_buttons) {
-            GameObject* btn = pair.second; //get button object
-            if (!btn) continue; //safety check if button is valid
+    if (m_currentState == GameState::PLAYING) {
+        std::vector<GameObject*> allObjs;
+        g_manager->getAllGameObjects(allObjs);
+        if (allObjs.empty()) return; //check if its empty
+        Transform* playerT = nullptr;
+        Transform* winT = nullptr;
+        CollisionInfo* playerC = nullptr;
+        CollisionInfo* winC = nullptr;
+        //iterate through all objects to find buttons
+        for (GameObject* obj : allObjs) {
+            if (obj->getObjectName() == "player") {
+                playerT = obj->getComponent<Transform>();
+                playerC = obj->getComponent<CollisionInfo>();
+            }
+            if (obj->getObjectName() == "to win") {
+                winT = obj->getComponent<Transform>();
+                winC = obj->getComponent<CollisionInfo>();
+            }
+        }
+        if (!playerT || !playerC || !winT || !winC) return;
 
+        Vector2D playerPos{ playerT->x, playerT->y };
+        Vector2D playerSize = playerC->colliderSize;
+        Vector2D winPos{ winT->x, winT->y };
+        Vector2D winSize = winC->colliderSize;
+
+        std::cout << "check: " << std::endl;
+        std::cout << playerPos.x << " " << playerPos.y << " " << std::endl;
+        std::cout << winPos.x << " " << winPos.y << " " << std::endl;
+
+        // AABB collision check
+        bool collided =
+            (playerPos.x + playerSize.x / 2 >= winPos.x - winSize.x / 2) &&
+            (playerPos.x - playerSize.x / 2 <= winPos.x + winSize.x / 2) &&
+            (playerPos.y + playerSize.y / 2 >= winPos.y - winSize.y / 2) &&
+            (playerPos.y - playerSize.y / 2 <= winPos.y + winSize.y / 2);
+
+
+        if (collided) {
+            std::cout << "Player wins!" << std::endl;
+            m_currentState = GameState::WIN;
+            loadScreen(*g_manager, "win_scene.json");
+        }
+    }
+
+    else if (InputHandler::isMouseButtonClicked(GLFW_MOUSE_BUTTON_LEFT)) {
+        //iterate with iterator to safely remove invalid buttons
+        for (auto it = m_buttons.begin(); it != m_buttons.end(); ) {
+            GameObject* btn = it->second;
             if (isPointInButton(worldMousePos, btn)) {
                 Button* btnComp = btn->getComponent<Button>(); //get button component
                 if (btnComp) {
@@ -76,6 +118,7 @@ void GUISystem::update() {
                 }
                 return; //stop checking after a click
             }
+            ++it;
         }
     }
 }
@@ -83,9 +126,10 @@ void GUISystem::update() {
 //creation of buttons
 void GUISystem::createButtons(GameObjectManager& manager) {
     //clear previous references
-    m_buttons.clear();
+    removeButtons();
 
     //get all game objects from manager
+    std::vector<GameObject*> allObjs;
     manager.getAllGameObjects(allObjs);
 
     if (allObjs.empty()) return; //check if its empty
@@ -98,9 +142,14 @@ void GUISystem::createButtons(GameObjectManager& manager) {
         Button* btnComp = obj->getComponent<Button>(); //get button component
         m_buttons[btnComp->actionName] = obj; //store button in map with action name as key
     }
-    createButtonActions(); //create button actions
 
-    std::cout << "[GUI] Menu buttons created successfully" << std::endl;
+    if(m_buttons.empty()) {
+        std::cout << "[GUI] No buttons found in the current scene." << std::endl;
+	}
+    else {
+        createButtonActions(); //create button actions
+        std::cout << "[GUI] Menu buttons created successfully" << std::endl;
+    }   
 }
 
 //removing of buttons 
@@ -186,7 +235,10 @@ void GUISystem::createButtonActions() {
 }
 
 void GUISystem::startGame(GameObjectManager& manager) {
-    std::cout << "[GUI] Play button clicked - starting game" << std::endl;
+    std::cout << "[GUI] Starting game" << std::endl;
+
+    //change state to playing
+	m_currentState = GameState::PLAYING;
 
     removeButtons(); //remove menu buttons
 	manager.clearScene(); //clear current scene
@@ -257,4 +309,26 @@ void GUISystem::loadScreen(GameObjectManager& manager, const std::string& sceneN
     manager.initializeSceneResources();
 
     createButtons(manager);
+}
+
+
+//helper function to convert scene name to game state
+GameState GUISystem::sceneToState(const std::string& sceneName) {
+    if (sceneName == "menu_scene.json") {
+        return GameState::MENU;
+    }
+    if (sceneName == "control_scene.json") {
+        return GameState::CONTROL;
+    }
+    if (sceneName == "level01.json" || sceneName == "level02.json") {
+		//if (!m_buttons.empty()) removeButtons();
+        return GameState::PLAYING;
+    }
+    if (sceneName == "pause_scene.json") {
+        return GameState::PAUSED;
+    }
+    if (sceneName == "confirmation_scene.json") {
+        return GameState::EXITCONFIRMATION;
+    }
+    return GameState::MENU; //fallback
 }

@@ -17,11 +17,14 @@ Technology is prohibited.
 #pragma once
 
 enum class GameState {
+    NONE,
     MENU,
     PLAYING,
     CONTROL,
     PAUSED,
     EXIT,
     EXITCONFIRMATION,
-    LEVELS //maybe for future use
+    LEVELS,//maybe for future use
+    WIN,
+    LOSE
 };

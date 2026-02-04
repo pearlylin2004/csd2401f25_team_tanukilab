@@ -34,6 +34,7 @@ Technology is prohibited.
 #include "JsonIO.h"
 #include "prefabManager.h"
 #include "performance.h"
+#include "GUISystem.h"
 
 #ifndef RUNTIME_DIR_R
 #define RUNTIME_DIR_R "./assets"
@@ -343,6 +344,7 @@ private:
 	Editor::SceneWindowState& m_sceneWindowState;
 	Editor::SceneState& m_sceneState;
 	Editor::GizmoState& m_gizmoState;
+	//GUISystem* m_guiSystem;
 
 	static bool s_isSceneHovered;
 };

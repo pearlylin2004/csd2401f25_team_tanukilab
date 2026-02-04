@@ -58,7 +58,7 @@
         "AudioComponent": {
           "channels": {
             "button_hover": {
-              "audioFile": "assets/Audio/underwater.wav", 
+              "audioFile": "assets/Audio\\UI Button Hover.wav", 
               "volume": 0.800000011920929,
               "pitch": 1.0,
               "loop": 0,
@@ -105,7 +105,7 @@
         "AudioComponent": {
           "channels": {
             "button_hover": {
-              "audioFile": "assets/Audio/underwater.wav", 
+              "audioFile": "assets/Audio\\UI Button Hover.wav", 
               "volume": 0.800000011920929,
               "pitch": 1.0,
               "loop": 0,
@@ -152,7 +152,7 @@
         "AudioComponent": {
           "channels": {
             "button_hover": {
-              "audioFile": "assets/Audio/underwater.wav", 
+              "audioFile": "assets/Audio\\UI Button Hover.wav", 
               "volume": 0.800000011920929,
               "pitch": 1.0,
               "loop": 0,

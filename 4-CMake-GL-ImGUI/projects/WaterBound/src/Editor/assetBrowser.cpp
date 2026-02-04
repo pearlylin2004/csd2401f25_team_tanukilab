@@ -298,6 +298,15 @@ void AssetBrowser::render() {
                 }
 
             }
+            else if (extension == "lua") {
+                std::filesystem::path absPath = std::filesystem::absolute(fullPath);
+                std::string absPathStr = absPath.string();
+                std::replace(absPathStr.begin(), absPathStr.end(), '/', '\\');
+
+                std::string command = "code \"" + absPathStr + "\"";
+                system(command.c_str());
+                DebugLog::addMessage("Opening " + asset.name + " in VS Code.\n");
+            }
         }
 
         // make sure this text wraps if it's too long
@@ -344,7 +353,7 @@ void AssetBrowser::loadAssetsFromDirectory() {
     for (const auto& entry : std::filesystem::directory_iterator(m_AssetBrowserState.currentFolder)) {
         if (entry.is_directory()) {
             std::string folderName = entry.path().filename().string();
-            if (folderName == "resources" || folderName == "scripting" || folderName == "shaders") continue;
+            if (folderName == "resources" || folderName == "shaders") continue;
             m_AssetBrowserState.subFolders.push_back(folderName);
         }
     }
@@ -362,7 +371,7 @@ void AssetBrowser::loadAssetsFromDirectory() {
             // skip unwanted files
             if (filename == Editor::sceneState.tempSceneName) continue;
             if (filename == "prefab_registry.json") continue;
-            if (extension == ".vert" || extension == ".frag" || extension == ".lua") continue;
+            if (extension == ".vert" || extension == ".frag") continue;
 
             asset.name = std::move(filename);
             asset.path = entry.path().string();

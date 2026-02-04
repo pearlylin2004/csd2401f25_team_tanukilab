@@ -472,9 +472,14 @@ void GameObjectManager::loadSceneFromJson(const std::string& filename) {
 					: (jp["inWater"].GetInt() != 0);
 			}
 			if (jp.HasMember("buoyancy")) {
-				p->buoancy = jp["buoyancy"].IsBool()
+				p->buoyancy = jp["buoyancy"].IsBool()
 					? jp["buoyancy"].GetBool()
 					: (jp["buoyancy"].GetInt() != 0);
+			}
+			if (jp.HasMember("autoUpdate")) {
+				p->autoUpdate = jp["autoUpdate"].IsBool()
+					? jp["autoUpdate"].GetBool()
+					: (jp["autoUpdate"].GetInt() != 0);
 			}
 		}
 
@@ -733,6 +738,20 @@ void GameObjectManager::loadSceneFromJson(const std::string& filename) {
 					if (chJson.HasMember("fadeOutDuration") && chJson["fadeOutDuration"].IsNumber()) {
 						ch->fadeOutDuration = chJson["fadeOutDuration"].GetFloat();
 					}
+
+					// Load 3D audio settings
+					if (chJson.HasMember("isSpatial")) {
+						ch->isSpatial = chJson["isSpatial"].IsBool()
+							? chJson["isSpatial"].GetBool()
+							: (chJson["isSpatial"].GetInt() != 0); 
+					}
+					if (chJson.HasMember("minDistance") && chJson["minDistance"].IsNumber()) {
+						ch->minDistance = chJson["minDistance"].GetFloat();
+					}
+					if (chJson.HasMember("maxDistance") && chJson["maxDistance"].IsNumber()) {
+						ch->maxDistance = chJson["maxDistance"].GetFloat();
+					}
+
 				}
 			}
 		}
@@ -1164,7 +1183,8 @@ void GameObjectManager::saveSceneToJson(const std::string& filename, bool isNew)
 				// if different then change scene data
 				pushIfDiffBool("physicsFlag", p->physicsFlag);
 				pushIfDiffBool("inWater", p->inWater);
-				pushIfDiffBool("buoyancy", p->buoancy);
+				pushIfDiffBool("buoyancy", p->buoyancy);
+				pushIfDiffBool("autoUpdate", p->autoUpdate);
 
 				pushIfDiffFloat("moveSpeed", p->moveSpeed);
 				pushIfDiffFloat("jumpForce", p->jumpForce);
