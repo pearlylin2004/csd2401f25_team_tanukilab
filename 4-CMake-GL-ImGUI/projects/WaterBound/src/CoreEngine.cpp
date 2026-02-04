@@ -255,6 +255,7 @@ void CoreEngine::Update(float deltaTime) {
     m_tileMapSystem->update(*m_manager);
     m_particleSystem->update(*m_manager, deltaTime);;
     m_renderSystem->update(*m_manager, deltaTime);
+    m_waterSystem->update(*m_manager, deltaTime);
     m_fontSystem->update(*m_manager, m_fps);
     m_audioSystem->update(*m_manager, deltaTime);
     m_waterSystem->render(*m_manager);
