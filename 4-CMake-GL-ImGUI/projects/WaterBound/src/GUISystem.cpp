@@ -86,7 +86,7 @@ void GUISystem::update() {
                 fireC = obj->getComponent<CollisionInfo>();
             }
         }
-        if (!playerT || !playerC || !winT || !winC) return;
+        if (!playerT || !playerC || !winT || !winC ||!fireT || !fireC) return;
 
         Vector2D playerPos{ playerT->x, playerT->y };
         Vector2D playerSize = playerC->colliderSize;
@@ -95,9 +95,9 @@ void GUISystem::update() {
 		Vector2D firePos{ fireT->x, fireT->y };
 		Vector2D fireSize = fireC->colliderSize;
 
-        std::cout << "check: " << std::endl;
-        std::cout << playerPos.x << " " << playerPos.y << " " << std::endl;
-        std::cout << winPos.x << " " << winPos.y << " " << std::endl;
+        //std::cout << "check: " << std::endl;
+        //std::cout << playerPos.x << " " << playerPos.y << " " << std::endl;
+        //std::cout << winPos.x << " " << winPos.y << " " << std::endl;
 
         //AABB collision check
         bool win_collided =
@@ -134,7 +134,6 @@ void GUISystem::update() {
             m_currentState = GameState::PLAYING;
 
             loadScreenNoButton(*g_manager,"level0" + std::to_string(level) + ".json");
-            
         }
     }
 
