@@ -226,3 +226,33 @@ std::vector<GameObject*> LayerManager::getUpdatableObjects() const {
 	
 	return result;
 }
+
+bool LayerManager::renameLayer(int layerID, const std::string& newName) {
+	//check if new name already exists
+	if (m_layerNameToID.find(newName) != m_layerNameToID.end()) {
+		std::cerr << "Layer Manager Error: Layer name '" << newName << "' already exists.\n";
+		return false;
+	}
+
+	Layer* layer = getLayer(layerID);
+	if (!layer) {
+		std::cerr << "Layer Manager Error: Layer ID " << layerID << " not found.\n";
+		return false;
+	}
+
+	//remove old name from map
+	std::string oldName = layer->getLayerName();
+	m_layerNameToID.erase(oldName);
+
+	//update layer name
+	layer->setLayerName(newName);
+
+	//add new name to map
+	m_layerNameToID[newName] = layerID;
+
+	return true;
+}
+
+size_t LayerManager::getLayerCount() const {
+	return m_layers.size();
+}
