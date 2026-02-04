@@ -511,9 +511,9 @@ void RenderSystem::fboAspectRatio(int& width, int& height) const {
 	height = fboHeight;
 }
 
-void ParticleSystem::clearUsedID(int ID)
+void ParticleSystem::clearUsedID(size_t ID)
 {
-	for(int i = 0; i < Particle::UIDs.size(); ++i)
+	for(size_t i = 0; i < Particle::UIDs.size(); ++i)
 	{
 		if (Particle::UIDs[i].uid == ID)
 		{
@@ -527,7 +527,7 @@ void ParticleSystem::clearUsedID(int ID)
 	}
 }
 
-int ParticleSystem::IDGenerator()
+size_t ParticleSystem::IDGenerator()
 {
 	size_t ID = 0;
 	bool empty = false;
@@ -601,7 +601,7 @@ void ParticleSystem::activateParticle(GameObjectManager& manager)
 				/*if (particleData->grpNo == 0)
 					particleData->grpNo = IDGenerator(manager);*/
 				//static int pid = 0;
-				int UID = IDGenerator();
+				size_t UID = IDGenerator();
 				Particle::UIDs.push_back(Particle::UID(UID, particleData->master.particleAmt));
 				std::cout << "UID made is: " << UID << std::endl;
 				for (size_t i = 0; i < particleData->master.particleAmt; ++i)
@@ -633,6 +633,7 @@ void ParticleSystem::activateParticle(GameObjectManager& manager)
 
 void ParticleSystem::update(GameObjectManager& manager, float const& deltaTime)
 {
+	(void)deltaTime;
 	activateParticle(manager);
 	std::vector<GameObject*> gameObjects;
 	manager.getAllGameObjects(gameObjects);

@@ -115,12 +115,20 @@ private:
 class ParticleSystem
 {
 public:
+	//activate particle based on master particle data
+	//can add other functions in the future to choose the effects
 	void activateParticle(GameObjectManager& manager);
+	//currently used for testing purposes only
+	//will be used in the future if more effects are added
 	void update(GameObjectManager& manager, float const& deltaTime);
-	int IDGenerator();
+	//give each particle a unique ID
+	size_t IDGenerator();
+	//generate position based on offset
 	Vector2D positionGenerator(float offset);
+	//generate velocity based on direction
 	Vector2D velocityGenerator(Vector2D direction);
-	static void clearUsedID(int ID);
+	//clear used ID when particle group is finished
+	static void clearUsedID(size_t ID);
 	//std::vector<size_t> usedID;
 };
 
