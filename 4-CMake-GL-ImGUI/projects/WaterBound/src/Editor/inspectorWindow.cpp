@@ -139,7 +139,7 @@ void InspectorWindow::render(GameObjectManager& manager) {
 
         /* ------------------- Collision ------------------- */
         if (selected->hasComponent<CollisionInfo>()) {
-            renderCollision(selected, manager);
+            renderCollision(selected/*, manager*/);
 
             ImGui::Spacing();
             ImGui::Separator();
@@ -776,7 +776,7 @@ void InspectorWindow::renderStateMachine(GameObject* selected) {
     }
 }
 
-void InspectorWindow::renderCollision( GameObject* selected, GameObjectManager& manager) {
+void InspectorWindow::renderCollision( GameObject* selected/*, GameObjectManager& manager*/) {
     CollisionInfo* collision = selected->getComponent<CollisionInfo>();
     Transform* transform = selected->getComponent<Transform>();
     Render* render = selected->getComponent<Render>();
@@ -1683,71 +1683,39 @@ void InspectorWindow::renderVisualLogic(GameObject* selected) {
 
 void InspectorWindow::renderLayerControls(GameObject* selected, GameObjectManager& manager) {
     if (ImGui::CollapsingHeader("Layer")) {
-
         int currentLayer = selected->getLayer();
         Layer* layer = manager.getLayerManager().getLayer(currentLayer);
-
-        // current layer info
-        if (layer) {
-            ImGui::Text("Current Layer:");
-            ImGui::SameLine();
-            ImGui::TextColored(ImVec4(0.4f, 0.8f, 1.0f, 1.0f), "%s (ID: %d)",
-                layer->getLayerName().c_str(), currentLayer);
-        }
-
-        ImGui::Spacing();
-
-        /* ------------------- Layer Select ------------------- */
-        if (ImGui::BeginCombo("Assign to Layer", layer ? layer->getLayerName().c_str() : "None")) {
-
-            std::vector<Layer*> allLayers = manager.getLayerManager().getAllLayers();
-            for (Layer* l : allLayers) {
-                bool isSelected = (l->getLayerID() == currentLayer);
-
-                std::string label = l->getLayerName() + " (ID: " + std::to_string(l->getLayerID()) +
-                    ", Objects: " + std::to_string(l->getObjectCount()) + ")";
-
-                if (ImGui::Selectable(label.c_str(), isSelected)) {
-                    if (manager.assignObjectToLayer(selected, l->getLayerID())) {
-                        DebugLog::addMessage(selected->getObjectName() + " moved to layer: " + l->getLayerName());
-                    }
-                    else {
-                        DebugLog::addMessage("Failed to assign layer!");
-                    }
-                }
-
-                if (isSelected) {
-                    ImGui::SetItemDefaultFocus();
-                }
-            }
-
-            ImGui::EndCombo();
-        }
-
-        ImGui::Spacing();
-        ImGui::Separator();
-        ImGui::Spacing();
 
         /* ------------------- Layer Properties ------------------- */
         if (layer && ImGui::TreeNode("Layer Properties")) {
 
-            // rename layer
-            /*char nameBuffer[128];
-            strncpy(nameBuffer, layer->getLayerName().c_str(), sizeof(nameBuffer));
-            nameBuffer[sizeof(nameBuffer) - 1] = '\0';
-
-            if (ImGui::InputText("Layer Name", nameBuffer, sizeof(nameBuffer), ImGuiInputTextFlags_EnterReturnsTrue)) {
-                if (manager.getLayerManager().renameLayer(currentLayer, nameBuffer)) {
-                    DebugLog::addMessage("Layer renamed to: " + std::string(nameBuffer));
+            // layers dropdown
+            if (ImGui::BeginCombo("Assign to Layer", layer->getLayerName().c_str())) {
+                std::vector<Layer*> allLayers = manager.getLayerManager().getAllLayers();
+                for (Layer* l : allLayers) {
+                    bool isSelected = (l->getLayerID() == currentLayer);
+                    std::string label = l->getLayerName() + " (ID: " + std::to_string(l->getLayerID()) +
+                        ", Objects: " + std::to_string(l->getObjectCount()) + ")";
+                    if (ImGui::Selectable(label.c_str(), isSelected)) {
+                        if (manager.assignObjectToLayer(selected, l->getLayerID())) {
+                            DebugLog::addMessage(selected->getObjectName() + " moved to layer: " + l->getLayerName());
+                        }
+                        else {
+                            DebugLog::addMessage("Failed to assign layer!");
+                        }
+                    }
+                    if (isSelected) {
+                        ImGui::SetItemDefaultFocus();
+                    }
                 }
-                else {
-                    DebugLog::addMessage("Failed to rename layer (name already exists)");
-                }
+                ImGui::EndCombo();
             }
 
-            ImGui::Spacing();*/
+            ImGui::Spacing();
+            ImGui::Separator();
+            ImGui::Spacing();
 
-            // layer flags
+            // master flag
             bool enabled = layer->isEnabled();
             if (ImGui::Checkbox("Enabled", &enabled)) {
                 layer->setEnabled(enabled);
@@ -1757,12 +1725,10 @@ void InspectorWindow::renderLayerControls(GameObject* selected, GameObjectManage
             ImGui::SameLine();
             ImGui::TextDisabled("(?)");
             if (ImGui::IsItemHovered()) {
-                ImGui::SetTooltip("Master toggle -> affects both visibility and updates");
+                ImGui::SetTooltip("Master toggle - affects both visibility and updates");
             }
 
-            ImGui::Spacing();
-
-            // individual flags
+            // flags
             ImGui::BeginDisabled(!enabled);
 
             bool visible = layer->isVisible();
@@ -1789,6 +1755,22 @@ void InspectorWindow::renderLayerControls(GameObject* selected, GameObjectManage
 
             ImGui::TreePop();
         }
+
+        ImGui::Spacing();
+        ImGui::Separator();
+        ImGui::Spacing();
+
+        if (layer && ImGui::TreeNode("Layer Info")) {
+            if (layer) {
+                ImGui::Text("Name: %s", layer->getLayerName().c_str());
+                ImGui::Text("ID: %d", currentLayer);
+                ImGui::Text("Objects in layer: %zu", layer->getObjectCount());
+            }
+            ImGui::TreePop();
+        }
+
+        ImGui::Spacing();
+        ImGui::Spacing();
     }
 }
 

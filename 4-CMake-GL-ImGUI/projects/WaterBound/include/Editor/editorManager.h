@@ -122,7 +122,7 @@ private:
 	void renderTransform(GameObject* selected, GameObjectManager& manager);
 	void renderRender(GameObject* selected);
 	void renderStateMachine(GameObject* selected);
-	void renderCollision(GameObject* selected, GameObjectManager& manager);
+	void renderCollision(GameObject* selected/*, GameObjectManager& manager*/);
 	void renderInput(GameObject* selected);
 	void renderPhysics(GameObject* selected, bool canMove);
 	void renderFont(GameObject* selected);
