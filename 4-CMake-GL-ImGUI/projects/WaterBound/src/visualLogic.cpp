@@ -614,12 +614,12 @@ void VisualLogicSystem::executeActionNode(GameObject* obj, VisualLC* logic, Logi
 			std::vector<GameObject*> gameObjects;
 			m_manager->getAllGameObjects(gameObjects);
 
-			for (GameObject* obj : gameObjects) {
-				if (obj->hasComponent<CollisionInfo>() && obj->hasComponent<VisualLC>()) {
+			for (GameObject* object : gameObjects) {
+				if (object->hasComponent<CollisionInfo>() && obj->hasComponent<VisualLC>()) {
 
-					CollisionInfo* col = obj->getComponent<CollisionInfo>();
+					CollisionInfo* col = object->getComponent<CollisionInfo>();
 					if (col->collisionTag == targetValue) {
-						obj->getComponent<VisualLC>()->bulletRefill = true;
+						object->getComponent<VisualLC>()->bulletRefill = true;
 					}
 				}
 			}
@@ -630,9 +630,9 @@ void VisualLogicSystem::executeActionNode(GameObject* obj, VisualLC* logic, Logi
 			std::vector<GameObject*> gameObjects;
 			m_manager->getAllGameObjects(gameObjects);
 
-			for (GameObject* obj : gameObjects) {
-				if (obj->getObjectName() == targetValue && obj->hasComponent<VisualLC>()) 
-					obj->getComponent<VisualLC>()->bulletRefill = true;
+			for (GameObject* object : gameObjects) {
+				if (object->getObjectName() == targetValue && object->hasComponent<VisualLC>())
+					object->getComponent<VisualLC>()->bulletRefill = true;
 			}
 		}
 		else if (targetType == "self") {

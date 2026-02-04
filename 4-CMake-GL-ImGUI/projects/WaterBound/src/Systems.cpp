@@ -613,7 +613,7 @@ void ParticleSystem::activateParticle(GameObjectManager& manager)
 					Transform* transform = newObj->addComponent<Transform>();
 					Render* render = newObj->addComponent<Render>();
 					Particle* indivData = newObj->addComponent<Particle>();
-					Physics* physics = newObj->addComponent<Physics>();
+					/*Physics* physics = */newObj->addComponent<Physics>();
 					Vector2D spawnPos = positionGenerator(particleData->master.offset);
 					transform->x = masterTransform->x + spawnPos.x;
 					transform->y = masterTransform->y + spawnPos.y;
@@ -2063,10 +2063,10 @@ void AudioSystem::updateSpatialAudio(GameObjectManager& manager) {
 		if (!obj->hasComponent<AudioComponent>() || !obj->hasComponent<Transform>()) continue;
 
 		Transform* transform = obj->getComponent<Transform>();
-		AudioComponent* audio = obj->getComponent<AudioComponent>();
+		AudioComponent* audioC= obj->getComponent<AudioComponent>();
 
 		// Update position for each 3D audio channel
-		for (auto& [channelName, audio] : audio->audioChannels) {
+		for (auto& [channelName, audio] : audioC->audioChannels) {
 			// Only update 3D sounds that are currently playing
 			if (!audio.isSpatial || audio.state != AudioState::Playing || !audio.channel) continue;
 
