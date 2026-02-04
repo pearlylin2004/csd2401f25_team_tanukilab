@@ -43,14 +43,15 @@
       "collisionTag": "bullet",
       "ignoreCollisionsWith": [
         "player",
-        "platform",
-        "environment"
+        "bullet",
+        "environment",
+        "platform"
       ]
     },
     "AudioComponent": {
       "channels": {
         "default": {
-          "audioFile": "assets/Audio/underwater.wav",
+          "audioFile": "assets/Prefab\\water gun.wav",
           "volume": 0.800000011920929,
           "pitch": 1.0,
           "loop": 0,

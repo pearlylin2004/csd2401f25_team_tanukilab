@@ -79,7 +79,6 @@ void GUISystem::update() {
     }
 }
 
-
 //creation of buttons
 void GUISystem::createButtons(GameObjectManager& manager) {
     //clear previous references
