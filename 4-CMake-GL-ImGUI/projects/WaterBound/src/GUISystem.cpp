@@ -29,19 +29,6 @@ static std::string runtimeScenePath(std::string const& name) {
     return std::string(RUNTIME_SCENE_DIR_R) + "/" + name;
 }
 
-/*GUISystem::GUISystem() :
-    m_currentState(GameState::NONE),
-    m_previousState(GameState::MENU),
-    m_stateBeforePause(GameState::MENU),
-    g_manager(nullptr),
-    g_luaSystem(nullptr) {
-    std::cout << "[GUI] GUISystem constructor called" << std::endl;
-}
-
-GUISystem::~GUISystem() {
-    std::cout << "[GUI] GUISystem destructor called" << std::endl;
-}*/
-
 void GUISystem::init(GameObjectManager& manager, LuaSystem& luaSystem) {
     std::cout << "[GUI] GUISystem::init started" << std::endl;
 
@@ -67,11 +54,14 @@ void GUISystem::update() {
         if (allObjs.empty()) return; //check if its empty
         Transform* playerT = nullptr;
         Transform* winT = nullptr;
-		Transform* fireT = nullptr;
+		Transform* fireT1 = nullptr;
+        Transform* fireT2 = nullptr;
         CollisionInfo* playerC = nullptr;
         CollisionInfo* winC = nullptr;
-		CollisionInfo* fireC = nullptr;
-        StateMachine* fireSM = nullptr;
+		CollisionInfo* fireC1 = nullptr;
+        CollisionInfo* fireC2 = nullptr;
+        StateMachine* fireSM1 = nullptr;
+        StateMachine* fireSM2 = nullptr;
         //iterate through all objects to find buttons
         for (GameObject* obj : allObjs) {
             if (obj->getObjectName() == "player") {
@@ -83,19 +73,26 @@ void GUISystem::update() {
                 winC = obj->getComponent<CollisionInfo>();
             }
             if (obj->getObjectName() == "fire_right") {
-                fireT = obj->getComponent<Transform>();
-                fireC = obj->getComponent<CollisionInfo>();
-                fireSM = obj->getComponent<StateMachine>();
+                fireT1 = obj->getComponent<Transform>();
+                fireC1 = obj->getComponent<CollisionInfo>();
+                fireSM1 = obj->getComponent<StateMachine>();
+            }
+            if (obj->getObjectName() == "fire_left") {
+                fireT2 = obj->getComponent<Transform>();
+                fireC2 = obj->getComponent<CollisionInfo>();
+                fireSM2 = obj->getComponent<StateMachine>();
             }
         }
-        if (!playerT || !playerC || !winT || !winC) return;
+        if (!playerT || !playerC || !winT || !winC || !fireT1 || !fireT2 || !fireC1 || !fireC2 || !fireSM1 || !fireSM2) return;
 
         Vector2D playerPos{ playerT->x, playerT->y };
         Vector2D playerSize = playerC->colliderSize;
         Vector2D winPos{ winT->x, winT->y };
         Vector2D winSize = winC->colliderSize;
-		Vector2D firePos{ fireT->x, fireT->y };
-		Vector2D fireSize = fireC->colliderSize;
+		Vector2D firePos1{ fireT1->x, fireT1->y };
+		Vector2D fireSize1 = fireC1->colliderSize;
+        Vector2D firePos2{ fireT2->x, fireT2->y };
+        Vector2D fireSize2 = fireC2->colliderSize;
 
         //std::cout << "check: " << std::endl;
         //std::cout << playerPos.x << " " << playerPos.y << " " << std::endl;
@@ -108,13 +105,6 @@ void GUISystem::update() {
             (playerPos.y + playerSize.y / 2 >= winPos.y - winSize.y / 2) &&
             (playerPos.y - playerSize.y / 2 <= winPos.y + winSize.y / 2);
 
-        bool lose_collided =
-            (playerPos.x + playerSize.x / 2 >= firePos.x - fireSize.x / 2) &&
-            (playerPos.x - playerSize.x / 2 <= firePos.x + fireSize.x / 2) &&
-            (playerPos.y + playerSize.y / 2 >= firePos.y - fireSize.y / 2) &&
-			(playerPos.y - playerSize.y / 2 <= firePos.y + fireSize.y / 2);
-
-
         if (win_collided) {
             //collision check for win condition
             if (level == max_level) {
@@ -122,7 +112,7 @@ void GUISystem::update() {
                 m_currentState = GameState::WIN;
                 loadScreen(*g_manager, "win_scene.json");
             }
-			//check collision to load next level
+            //check collision to load next level
             else {
                 std::cout << "Level Complete! Loading next level..." << std::endl;
                 level++;
@@ -130,13 +120,35 @@ void GUISystem::update() {
                 loadScreenNoButton(*g_manager, "level0" + std::to_string(level) + ".json");
             }
         }
-        else if (lose_collided) {
-            //collision check for lose condition
-            std::cout << "Player loses!" << std::endl;
-            m_currentState = GameState::PLAYING;
 
-            loadScreenNoButton(*g_manager,"level0" + std::to_string(level) + ".json");
-            
+        if (fireSM1 && fireSM1->state == PlayerState::Idle) {
+            bool lose_collided1 =
+                (playerPos.x + playerSize.x / 2 >= firePos1.x - fireSize1.x / 2) &&
+                (playerPos.x - playerSize.x / 2 <= firePos1.x + fireSize1.x / 2) &&
+                (playerPos.y + playerSize.y / 2 >= firePos1.y - fireSize1.y / 2) &&
+                (playerPos.y - playerSize.y / 2 <= firePos1.y + fireSize1.y / 2);
+            if (lose_collided1) {
+                //collision check for lose condition
+                std::cout << "Player loses!" << std::endl;
+                m_currentState = GameState::PLAYING;
+                loadScreenNoButton(*g_manager, "level0" + std::to_string(level) + ".json");
+                return;
+            }
+        }
+
+        if (fireSM2 && fireSM2->state == PlayerState::Idle) {
+            bool lose_collided2 =
+                (playerPos.x + playerSize.x / 2 >= firePos2.x - fireSize2.x / 2) &&
+                (playerPos.x - playerSize.x / 2 <= firePos2.x + fireSize2.x / 2) &&
+                (playerPos.y + playerSize.y / 2 >= firePos2.y - fireSize2.y / 2) &&
+                (playerPos.y - playerSize.y / 2 <= firePos2.y + fireSize2.y / 2);
+
+            if (lose_collided2) {
+                //collision check for lose condition
+                std::cout << "Player loses!" << std::endl;
+                m_currentState = GameState::PLAYING;
+                loadScreenNoButton(*g_manager, "level0" + std::to_string(level) + ".json");
+            }
         }
     }
 

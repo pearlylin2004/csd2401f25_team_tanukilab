@@ -25,6 +25,5 @@ enum class GameState {
     EXIT,
     EXITCONFIRMATION,
     LEVELS,//maybe for future use
-    WIN,
-    LOSE
+    WIN
 };
