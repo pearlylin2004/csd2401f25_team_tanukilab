@@ -319,7 +319,7 @@ void WaterSystem::applyWaterPhysics(GameObjectManager& manager) {
             if (isPointInWater(waterObj, objPos)) {
                 physics->inWater = true;
                 
-                if (physics->buoancy || water->isTrigger) {
+                if (physics->buoyancy || water->isTrigger) {
                     physics->velY += water->buoyancyForce * 0.016f; 
                 }
                 

@@ -790,7 +790,7 @@ void PrefabManager::applyPrefabComponents(GameObject* go, const rapidjson::Value
 		p->jumpForce = JsonIO::GetFloatOr(jp, "jumpForce", 0.f);
 		p->dynamics.mass = JsonIO::GetFloatOr(jp, "mass", 1.f);
 		p->inWater = JsonIO::GetBoolOr(jp, "inWater", false);
-		p->buoancy = JsonIO::GetBoolOr(jp, "buoyancy", false);
+		p->buoyancy = JsonIO::GetBoolOr(jp, "buoyancy", false);
 	}
 
 	// ---- CollisionInfo (presence only) ----
@@ -1143,7 +1143,7 @@ void PrefabManager::serializeComponents(const GameObject* obj, rapidjson::Value&
 		jp.AddMember("mass", p->dynamics.mass, a);
 
 		jp.AddMember("inWater", p->inWater ? 1 : 0, a);
-		jp.AddMember("buoyancy", p->buoancy ? 1 : 0, a);
+		jp.AddMember("buoyancy", p->buoyancy ? 1 : 0, a);
 
 		comps.AddMember("Physics", jp, a);
 	}

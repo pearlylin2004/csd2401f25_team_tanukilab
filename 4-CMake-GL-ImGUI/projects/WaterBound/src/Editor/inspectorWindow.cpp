@@ -995,7 +995,7 @@ void InspectorWindow::renderPhysics(GameObject* selected, bool canMove) {
         }
 
         if (ImGui::TreeNode("Water")) {
-            ImGui::Checkbox("Buoyancy (we dh)", &physic->buoancy);
+            ImGui::Checkbox("Buoyancy (we dh)", &physic->buoyancy);
 
             ImGui::TreePop();
         }
