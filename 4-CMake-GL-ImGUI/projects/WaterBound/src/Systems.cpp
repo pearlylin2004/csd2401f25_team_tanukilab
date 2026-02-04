@@ -136,6 +136,62 @@ void InputSystem::update(GameObjectManager& manager, const float& deltaTime, Mes
     }
     /* ---- END ---- */
 
+    // Press 8 to manually run FSM assignment check
+    if (InputHandler::isKeyTriggered(GLFW_KEY_8)) {
+        std::cout << "\n[DEBUG KEY 8] ====== MANUAL FSM ASSIGNMENT CHECK ======\n";
+        
+        std::vector<GameObject*> allObjects;
+        manager.getAllGameObjects(allObjects);
+        
+        for (GameObject* obj : allObjects) {
+            if (!obj) continue;
+            
+            std::string name = obj->getObjectName();
+            CollisionInfo* col = obj->getComponent<CollisionInfo>();
+            StateMachine* sm = obj->getComponent<StateMachine>();
+            Input* inp = obj->getComponent<Input>();
+            Physics* phys = obj->getComponent<Physics>();
+            Animation* anim = obj->getComponent<Animation>();
+            
+            std::string tag = col ? col->collisionTag : "(no CollisionInfo)";
+            
+            std::cout << "[DEBUG] Object: " << name 
+                      << " | Layer: " << obj->getLayer()
+                      << " | Tag: " << tag
+                      << " | StateMachine: " << (sm ? "YES" : "NO")
+                      << " | Input: " << (inp ? "YES" : "NO")
+                      << " | Physics: " << (phys ? "YES" : "NO")
+                      << " | Animation: " << (anim ? "YES" : "NO")
+                      << "\n";
+            
+            // Check if this object SHOULD have an FSM
+            if (col && col->collisionTag == "player") {
+                std::cout << "       -> Player object detected!\n";
+                if (!sm) std::cout << "       -> WARNING: Missing StateMachine component!\n";
+                if (!inp) std::cout << "       -> WARNING: Missing Input component!\n";
+            }
+        }
+
+        // Specifically check for player
+        GameObject* player = manager.getGameObject("player");
+        if (player) {
+            std::cout << "\n[DEBUG] PLAYER FOUND!\n";
+            std::cout << "  - Has StateMachine: " << (player->hasComponent<StateMachine>() ? "YES" : "NO") << "\n";
+            std::cout << "  - Has Input: " << (player->hasComponent<Input>() ? "YES" : "NO") << "\n";
+            std::cout << "  - Has Physics: " << (player->hasComponent<Physics>() ? "YES" : "NO") << "\n";
+            std::cout << "  - Has Animation: " << (player->hasComponent<Animation>() ? "YES" : "NO") << "\n";
+            
+            CollisionInfo* col = player->getComponent<CollisionInfo>();
+            if (col) {
+                std::cout << "  - Collision Tag: " << col->collisionTag << "\n";
+            }
+        } else {
+            std::cout << "\n[DEBUG] WARNING: No object named 'player' found!\n";
+        }
+        
+        std::cout << "[DEBUG KEY 8] ======================================\n\n";
+    }
+
     auto end = std::chrono::high_resolution_clock::now();
     double ms = std::chrono::duration<double, std::milli>(end - start).count();
     g_SystemTimers.push_back({ "Input", ms });
@@ -233,7 +289,7 @@ void RenderSystem::update(GameObjectManager& manager, float const& deltaTime)
 	//drawing models with texture
 	glUseProgram(renderer::shdr_pgm[0]); // hasTex shader
 	uView = glGetUniformLocation(renderer::shdr_pgm[0], "V");
-	uProj = glGetUniformLocation(renderer::shdr_pgm[0], "P");
+uProj = glGetUniformLocation(renderer::shdr_pgm[0], "P");
 	glUniformMatrix4fv(uView, 1, GL_FALSE, glm::value_ptr(camView));
 	glUniformMatrix4fv(uProj, 1, GL_FALSE, glm::value_ptr(camProj));
 	instancePerBatch(objectWithTex);
@@ -1179,7 +1235,7 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 			for (int x = minCellX; x <= maxCellX; ++x) {
 				for (int y = minCellY; y <= maxCellY; ++y) {
 					int key = Collision::HashCell(x, y);
-					grid[key].objects.push_back(obj);
+				grid[key].objects.push_back(obj);
 				}
 			}
 		}
@@ -1360,22 +1416,22 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 					//			// move both obj away from each other (to simulate push)
 					//			t1->x += info.normal.x * info.penetration * 0.5f;
 					//			t2->x -= info.normal.x * info.penetration * 0.5f;
-
+					//
 					//			p1->dynamics.position.x = t1->x;
 					//			p2->dynamics.position.x = t2->x;
 					//		}
-
+					//
 					//		if (info.normal.y != 0) {
 					//			t1->y += info.normal.y * info.penetration * 0.5f;
 					//			t2->y -= info.normal.y * info.penetration * 0.5f;
-
+					//
 					//			// Update physics positions to match transforms
 					//			p1->dynamics.position.y = t1->y;
 					//			p2->dynamics.position.y = t2->y;
-
+					//
 					//			p1->dynamics.velocity.y = 0.f;
 					//			p2->dynamics.velocity.y = 0.f;
-
+					//
 					//			if (info.normal.y > 0) p1->onGround = true;
 					//			else p2->onGround = true;
 					//		}
@@ -1387,21 +1443,21 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 					//			// push moving obj out of collided obj
 					//			t1->x += info.normal.x * info.penetration;
 					//			p1->dynamics.position.x = t1->x;
-
+					//
 					//			p1->dynamics.velocity.x = 0.f;
 					//			p1->velX = 0.f;
-
+					//
 					//		}
-
+					//
 					//		if (info.normal.y != 0) {
 					//			t1->y += info.normal.y * info.penetration;
 					//			p1->dynamics.position.y = t1->y;
-
-					//			p1->dynamics.velocity.y = 0.0f;
-
+					//
+					//			p1->dynamics.velocity.y = 0.f;
+					//
 					//			if (info.normal.y > 0) p1->onGround = true;
 					//		}
-
+					//
 					//		DebugLog::addMessage("Collision detected between Object.\n", DebugMode::PlaySimul);
 					//	}
 					//	// CASE 3: anything else
@@ -1409,17 +1465,17 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 					//		if (info.normal.y != 0) {
 					//			p1->dynamics.velocity.y = 0.0f;
 					//			p2->dynamics.velocity.y = 0.0f;
-
+					//
 					//			if (info.normal.y > 0) p1->onGround = true;
 					//			else p2->onGround = true;
 					//		}
-
+					//
 					//		/* ---------- trigger visual logic collision events ---------- */
 					//		if (obj1->hasComponent<VisualLC>()) {
 					//			VisualLC* logic1 = obj1->getComponent<VisualLC>();
 					//			logic1->curCollision.insert(obj2);
 					//		}
-
+					//
 					//		if (obj2->hasComponent<VisualLC>()) {
 					//			VisualLC* logic2 = obj2->getComponent<VisualLC>();
 					//			logic2->curCollision.insert(obj1);
@@ -1650,7 +1706,7 @@ void UISystem::dockingSetUp() {
 		ImGuiID dockLeftBottom, dockRightBottom;
 		// split left panel into top and bottom
 		ImGui::DockBuilderSplitNode(dockLeft, ImGuiDir_Down, 0.40f, &dockLeftBottom, &dockLeft);
-		// split right panel into top and bottom
+			// split right panel into top and bottom
 		ImGui::DockBuilderSplitNode(dockRight, ImGuiDir_Down, 0.40f, &dockRightBottom, &dockRight);
 
 
@@ -1715,16 +1771,66 @@ void LogicSystem::update(GameObjectManager& manager, float const& dt) {
 	std::vector<GameObject*> objs;
 	manager.getAllGameObjects(objs);
 
-	static LogicContainer container; // Single container instance
+	static LogicContainer container;
+	
+	// DEBUG: Run once to show what objects exist
+	static bool debugOnce = true;
+	if (debugOnce) {
+		debugOnce = false;
+		std::cout << "\n[LogicSystem DEBUG] ====== OBJECT FSM ASSIGNMENT ======" << std::endl;
+		for (auto* go : objs) {
+			if (!go) continue;
+			CollisionInfo* col = go->getComponent<CollisionInfo>();
+			std::string tag = col ? col->collisionTag : "(no CollisionInfo)";
+			bool hasSM = go->hasComponent<StateMachine>();
+			bool hasInput = go->hasComponent<Input>();
+			
+		std::cout << "[DEBUG] Object: " << go->getObjectName() 
+		          << " | Layer: " << go->getLayer()
+		          << " | Tag: " << tag
+			          << " | StateMachine: " << (hasSM ? "YES" : "NO")
+			          << " | Input: " << (hasInput ? "YES" : "NO")
+			          << " | Physics: " << (go->hasComponent<Physics>() ? "YES" : "NO")
+			          << " | Animation: " << (go->hasComponent<Animation>() ? "YES" : "NO")
+			          << "\n";
+			
+			// Check if this object SHOULD have an FSM
+			if (col && col->collisionTag == "player") {
+				std::cout << "       -> Player object detected!\n";
+				if (!hasSM) std::cout << "       -> WARNING: Missing StateMachine component!\n";
+				if (!hasInput) std::cout << "       -> WARNING: Missing Input component!\n";
+			}
+		}
+		std::cout << "[LogicSystem DEBUG] ======================================\n" << std::endl;
+	}
 
 	for (auto* go : objs) {
 		if (!go) continue;
-		// skip if no sm/fixed state 
-		if (!go->hasComponent<StateMachine>() || go->getComponent<StateMachine>()->fixState) continue;
-		if (!go->hasComponent<Transform>() || !go->hasComponent<Physics>() || !go->hasComponent<Input>()) continue; // skip if obj cant move (no input-based state change)
 
-		// Update class-based FSM + trigger-action rules
-		container.update(*go, dt);
+		// Get collision tag to determine which FSM to use
+		CollisionInfo* col = go->getComponent<CollisionInfo>();
+		std::string tag = col ? col->collisionTag : "";
+
+		// Player FSM
+		if (go->hasComponent<StateMachine>() && go->hasComponent<Input>()) {
+			if (!go->getComponent<StateMachine>()->fixState) {
+				container.update(*go, dt);
+			}
+		}
+		// Fire FSM
+		else if (tag == "fire" && go->hasComponent<StateMachine>()) {
+			container.updateFire(*go, dt);
+		}
+		// Water Refill FSM
+		else if (tag == "water" && go->hasComponent<StateMachine>()) {
+			// DEBUG: Verify this is being called
+			static bool waterDebugOnce = true;
+			if (waterDebugOnce) {
+				std::cout << "[DEBUG] updateRefill() being called for: " << go->getObjectName() << std::endl;
+				waterDebugOnce = false;
+			}
+			container.updateRefill(*go, dt);
+		}
 	}
 
 	auto end = std::chrono::high_resolution_clock::now();

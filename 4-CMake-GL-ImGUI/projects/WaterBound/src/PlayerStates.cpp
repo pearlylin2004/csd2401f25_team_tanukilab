@@ -164,15 +164,38 @@ void FallingState::onUpdate(GameObject& obj, float dt) {
 void DeadState::onEnter(GameObject& obj) {
     resetAnimationFrame(obj, PlayerState::Dead);
 
-    // Disable movement
+    // Disable physics/movement
     if (Physics* p = obj.getComponent<Physics>()) {
         p->velX = 0.0f;
         p->velY = 0.0f;
-        p->onGround = true;
+        p->gravity = 0.0f;  // Stop falling
         p->canMove = false;
+        p->physicsFlag = false;  // Disable physics entirely
     }
 
-    std::string msg = "[FSM] " + obj.getObjectName() + " -> Dead";
+    // Disable collision
+    if (CollisionInfo* c = obj.getComponent<CollisionInfo>()) {
+        c->collisionFlag = false;
+    }
+
+    // Transform into smoke visual
+    if (Render* r = obj.getComponent<Render>()) {
+        r->texFile = "assets/textures/smoke.png";
+        r->texChanged = true;
+    }
+
+    // Play death/smoke sound
+    if (AudioComponent* audio = obj.getComponent<AudioComponent>()) {
+        AudioChannel* death = audio->getOrCreateChannel("death");
+        if (death) {
+            death->audioFile = "assets/audio/death_poof.wav";
+            death->loop = false;
+            death->volume = 0.8f;
+            death->isPendingPlay = true;
+        }
+    }
+
+    std::string msg = "[FSM] " + obj.getObjectName() + " -> Dead (transformed to smoke)";
     DebugLog::addMessage(msg, DebugMode::PlaySimul);
     std::cout << msg << std::endl;
 }
@@ -182,8 +205,5 @@ void DeadState::onUpdate(GameObject& obj, float dt) {
     (void)dt;
 
     // Could add respawn timer here
-    // Example:
-    // if (stateTime > 2.0f) {
-    //     // Trigger respawn
-    // }
+   
 }
