@@ -2,9 +2,11 @@
 /*!
 \file        WaterSystem.cpp
 \author     Asha Mathyalakan, asha.m, 2402886
+             -100%
 \par        asha.m@digipen.edu
 \date        January, 28, 2026
-\brief       Implementation of water system for animated water bodies
+\brief       Implementation of water system for animated water bodies, collision, 
+            buoyancy for object
 
 Copyright (C) 2026 DigiPen Institute of Technology.
 Reproduction or disclosure of this file or its contents
