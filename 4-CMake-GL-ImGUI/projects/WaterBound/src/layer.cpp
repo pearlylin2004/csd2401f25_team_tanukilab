@@ -77,6 +77,10 @@ const std::string& Layer::getLayerName() const {
 	return m_layerName;
 }
 
+void Layer::setLayerName(const std::string& name) {
+	m_layerName = name;
+}
+
 void Layer::clear() {
 	m_objects.clear();
 	m_objectSet.clear();
