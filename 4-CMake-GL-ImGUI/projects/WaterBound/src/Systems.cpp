@@ -1283,32 +1283,47 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 
 						// CASE 1: Both pushable
 						if (!obj1IsStatic && !obj2IsStatic) {
-							std::cout << "bullet meet bullet\n";
+							// Push both out of collision
 							if (info.normal.x != 0) {
 								t1->x += info.normal.x * info.penetration * 0.5f;
 								t2->x -= info.normal.x * info.penetration * 0.5f;
-
 								p1->dynamics.position.x = t1->x;
 								p2->dynamics.position.x = t2->x;
 							}
-
 							if (info.normal.y != 0) {
 								t1->y += info.normal.y * info.penetration * 0.5f;
 								t2->y -= info.normal.y * info.penetration * 0.5f;
 								p1->dynamics.position.y = t1->y;
 								p2->dynamics.position.y = t2->y;
+							}
 
-								if (info.normal.y > 0) {
-									// obj1 lands on obj2 from above
-									p1->dynamics.velocity.y = 0.f;
-									p1->velY = 0.f;
-									p1->onGround = true;
-								}
-								else if (info.normal.y < 0) {
-									// obj2 lands on obj1 from above
-									p2->dynamics.velocity.y = 0.f;
-									p2->velY = 0.f;
-									p2->onGround = true;
+							// Bounce or stop based on bounciness
+							if (p1->bounciness > 0.0f || p2->bounciness > 0.0f) {
+								float dot1 = p1->dynamics.velocity.x * info.normal.x + p1->dynamics.velocity.y * info.normal.y;
+								float dot2 = p2->dynamics.velocity.x * (-info.normal.x) + p2->dynamics.velocity.y * (-info.normal.y);
+
+								float b1 = (p1->bounciness > 0.0f) ? p1->bounciness : 1.0f;
+								float b2 = (p2->bounciness > 0.0f) ? p2->bounciness : 1.0f;
+
+								p1->dynamics.velocity.x = (p1->dynamics.velocity.x - 2.0f * dot1 * info.normal.x) * b1;
+								p1->dynamics.velocity.y = (p1->dynamics.velocity.y - 2.0f * dot1 * info.normal.y) * b1;
+
+								p2->dynamics.velocity.x = (p2->dynamics.velocity.x - 2.0f * dot2 * (-info.normal.x)) * b2;
+								p2->dynamics.velocity.y = (p2->dynamics.velocity.y - 2.0f * dot2 * (-info.normal.y)) * b2;
+							}
+							else {
+								// Original stop behavior
+								if (info.normal.y != 0) {
+									if (info.normal.y > 0) {
+										p1->dynamics.velocity.y = 0.f;
+										p1->velY = 0.f;
+										p1->onGround = true;
+									}
+									else {
+										p2->dynamics.velocity.y = 0.f;
+										p2->velY = 0.f;
+										p2->onGround = true;
+									}
 								}
 							}
 						}
