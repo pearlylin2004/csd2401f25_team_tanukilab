@@ -50,6 +50,7 @@ public:
     void init(GameObjectManager& manager, LuaSystem& luaSystem);
     void update(); //update menu system
     void loadScreen(GameObjectManager& manager, const std::string& sceneName); //load a screen
+    void loadScreenNoButton(GameObjectManager& manager, const std::string& sceneName); //for no buttons
     void changeState(GameState newState, const std::string& sceneName = ""); //update of state
 
     GameState getCurrentState() const { return m_currentState; } //check current state
@@ -82,7 +83,6 @@ private:
     GameObjectManager* g_manager = nullptr;
     LuaSystem* g_luaSystem = nullptr;
 
-    //for now
-    GameObject* playerObj = new GameObject("player", "dd60e1e1-641c-4ed5-b69d-ffadfa02fb7a");
-    GameObject* toWinObj = new GameObject("to win", "98416fa9-2ae1-4432-bcf4-0d4352a9b29a");
+    int level;
+    int max_level = 2;
 };
