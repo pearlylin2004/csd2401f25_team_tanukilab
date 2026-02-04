@@ -520,7 +520,7 @@
     {
       "prefabid": "eaa2ba42-971a-413b-b8c4-99b2f5ab674d",
       "name": "fire_left",
-      "layer": 0,
+      "layer": 1,
       "components": {
         "Transform": {
           "pos": [
