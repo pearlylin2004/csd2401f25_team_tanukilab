@@ -131,6 +131,7 @@ private:
 	void renderParticles(GameObject* selected);
 	void renderLua(GameObject* selected);
 	void renderVisualLogic(GameObject* selected);
+	void renderLayerControls(GameObject* selected, GameObjectManager& manager);
 
 	void wrongFileTypePopup(const std::string& filename);
 
