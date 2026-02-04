@@ -75,9 +75,9 @@ void TileMapSystem::update(GameObjectManager& manager)
 	std::vector<GameObject*> objects;
 	manager.getAllGameObjects(objects);
 	//RenderSystem::objectWithTex2.clear();
-	/*for (auto& [key, instances] : RenderSystem::objectWithTex2) {
+	for (auto& [key, instances] : RenderSystem::objectWithTex2) {
 		instances.clear();
-	}*/
+	}
 
 	for (GameObject* obj : objects)
 	{
