@@ -219,6 +219,7 @@ public:
     bool inWater = false;
     bool buoancy = true;
 
+	float bounciness = 0.0f; // 0 = no bounce, 1 = full bounce
     //const float waterBounce = 60.0f;   // upward velocity when entering water
 
 };
