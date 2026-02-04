@@ -1304,11 +1304,11 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 								float b1 = (p1->bounciness > 0.0f) ? p1->bounciness : 1.0f;
 								float b2 = (p2->bounciness > 0.0f) ? p2->bounciness : 1.0f;
 
-								p1->dynamics.velocity.x = (p1->dynamics.velocity.x - 2.0f * dot1 * info.normal.x) * b1;
-								p1->dynamics.velocity.y = (p1->dynamics.velocity.y - 2.0f * dot1 * info.normal.y) * b1;
+								p1->dynamics.velocity.x = (p1->dynamics.velocity.x - dot1 * info.normal.x) * b1;
+								p1->dynamics.velocity.y = (p1->dynamics.velocity.y - dot1 * info.normal.y) * b1;
 
-								p2->dynamics.velocity.x = (p2->dynamics.velocity.x - 2.0f * dot2 * (-info.normal.x)) * b2;
-								p2->dynamics.velocity.y = (p2->dynamics.velocity.y - 2.0f * dot2 * (-info.normal.y)) * b2;
+								p2->dynamics.velocity.x = (p2->dynamics.velocity.x - dot2 * (-info.normal.x)) * b2;
+								p2->dynamics.velocity.y = (p2->dynamics.velocity.y - dot2 * (-info.normal.y)) * b2;
 							}
 							else {
 								// Original stop behavior
@@ -1342,8 +1342,8 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 							if (p1->bounciness > 0.0f) {
 								// Reflect: v' = v - 2(v·n)n, then scale by bounciness
 								float dot = p1->dynamics.velocity.x * info.normal.x + p1->dynamics.velocity.y * info.normal.y;
-								p1->dynamics.velocity.x = (p1->dynamics.velocity.x - 2.0f * dot * info.normal.x) * p1->bounciness;
-								p1->dynamics.velocity.y = (p1->dynamics.velocity.y - 2.0f * dot * info.normal.y) * p1->bounciness;
+								p1->dynamics.velocity.x = (p1->dynamics.velocity.x - dot * info.normal.x) * p1->bounciness;
+								p1->dynamics.velocity.y = (p1->dynamics.velocity.y - dot * info.normal.y) * p1->bounciness;
 							}
 							else {
 								// Original stop behavior
@@ -1375,8 +1375,8 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 								Vector2D n = { -info.normal.x, -info.normal.y };
 								float dot = p2->dynamics.velocity.x * n.x + p2->dynamics.velocity.y * n.y;
 
-								p2->dynamics.velocity.x = (p2->dynamics.velocity.x - 2.0f * dot * n.x) * p2->bounciness;
-								p2->dynamics.velocity.y = (p2->dynamics.velocity.y - 2.0f * dot * n.y) * p2->bounciness;
+								p2->dynamics.velocity.x = (p2->dynamics.velocity.x - dot * n.x) * p2->bounciness;
+								p2->dynamics.velocity.y = (p2->dynamics.velocity.y - dot * n.y) * p2->bounciness;
 							}
 							else {
 								// Original stop behavior (only when NOT bouncing)
@@ -1517,20 +1517,36 @@ void CollisionSystem::HandleTilemapCollisions(const std::unordered_map<int, Coll
 						objAABB, vel, boxAABB, Vector2D(0, 0));
 
 					if (info.collided) {
+						// Push out of collision first
 						if (info.normal.x != 0) {
 							t->x += info.normal.x * info.penetration;
 							p->dynamics.position.x = t->x;
-							p->dynamics.velocity.x = 0.f;
-							p->velX = 0.f;
 						}
-
 						if (info.normal.y != 0) {
 							t->y += info.normal.y * info.penetration;
 							p->dynamics.position.y = t->y;
-							p->dynamics.velocity.y = 0.0f;
+						}
 
-							if (info.normal.y > 0) {
-								p->onGround = true;
+						// Bounce or stop based on bounciness
+						if (p->bounciness > 0.0f) {
+							float dot = p->dynamics.velocity.x * info.normal.x + p->dynamics.velocity.y * info.normal.y;
+
+							// Only remove velocity going INTO the surface (not 2x reflection)
+							// This makes water "splash" along the wall instead of bouncing off
+							p->dynamics.velocity.x = (p->dynamics.velocity.x - dot * info.normal.x) * p->bounciness;
+							p->dynamics.velocity.y = (p->dynamics.velocity.y - dot * info.normal.y) * p->bounciness;
+						}
+						else {
+							// Normal stop response (player, etc.)
+							if (info.normal.x != 0) {
+								p->dynamics.velocity.x = 0.f;
+								p->velX = 0.f;
+							}
+							if (info.normal.y != 0) {
+								p->dynamics.velocity.y = 0.0f;
+								if (info.normal.y > 0) {
+									p->onGround = true;
+								}
 							}
 						}
 
