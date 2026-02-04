@@ -73,6 +73,12 @@ public:
 	std::vector<GameObject*> getVisibleObjects() const;
 	std::vector<GameObject*> getUpdatableObjects() const;
 
+	//rename a layer (updates both the layer and the name-to-ID map)
+	bool renameLayer(int layerID, const std::string& newName);
+	
+	//get layer count
+	size_t getLayerCount() const;
+
 private:
 	//map of layerID to Layer object
 	std::map<int, std::unique_ptr<Layer>> m_layers;

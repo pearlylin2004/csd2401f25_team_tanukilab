@@ -20,7 +20,7 @@ Technology is prohibited.
 #include <string>
 #include <vector>
 #include <unordered_set>
-#include <iostream>
+
 //forward declaration
 class GameObject;
 
@@ -42,6 +42,9 @@ public:
 	//get layer id and name
 	int getLayerID() const;
 	const std::string& getLayerName() const;
+	
+	//set layer name (for editor)
+	void setLayerName(const std::string& name);
 	
 	//clear all objects from layer
 	void clear();
