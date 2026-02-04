@@ -1762,7 +1762,7 @@ void GameObjectManager::createBulletPool(const std::string& templateBulletName, 
 	if (CollisionInfo* c = templateBullet->getComponent<CollisionInfo>()) {
 		c->collisionTag = "bullet";
 		c->ignoreCollisionsWith.insert("player");
-		c->ignoreCollisionsWith.insert("bullet");
+		//c->ignoreCollisionsWith.insert("bullet");
 	}
 	std::cout << "Creating bullet pool with " << poolSize << " bullets...\n";
 
@@ -1794,7 +1794,7 @@ void GameObjectManager::createBulletPool(const std::string& templateBulletName, 
 		if (CollisionInfo* c = clonedBullet->getComponent<CollisionInfo>()) {
 			c->collisionTag = "bullet";
 			c->ignoreCollisionsWith.insert("player");
-			c->ignoreCollisionsWith.insert("bullet");
+			//c->ignoreCollisionsWith.insert("bullet");
 		}
 		/*GameObject* clonedBullet = *///CloneGameObject(templateBulletName, bulletName);
 		//incase of bullets not cloned properly

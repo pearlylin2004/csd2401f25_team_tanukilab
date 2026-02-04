@@ -1054,17 +1054,29 @@ void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime, M
 		Transform* t = obj->getComponent<Transform>();
 
 		if (p->alive) {
-			// Update bullet physics
-			Vector3D gravityForce = { 0.0f, p->gravity * p->dynamics.mass, 0.0f };
-
+			// Update forces (non-gravity forces)
 			DynamicsSystem::UpdateForces(p->dynamics, deltaTime);
-			DynamicsSystem::Integrate(p->dynamics, deltaTime, p->gravity, false);
+
+			// Check gravity delay
+			if (p->gravityDelayTimer > 0.0f) {
+				// No gravity yet - just integrate velocity into position
+				p->gravityDelayTimer -= deltaTime;
+
+				Vector3D deltaPos = Vec3_Scale(&p->dynamics.velocity, deltaTime);
+				p->dynamics.position = Vec3_Add(&p->dynamics.position, &deltaPos);
+			}
+			else {
+				// Gravity delay expired - normal physics with gravity
+				DynamicsSystem::Integrate(p->dynamics, deltaTime, p->gravity, false);
+			}
 
 			t->x = p->dynamics.position.x;
 			t->y = p->dynamics.position.y;
+
 			// Update life timer
 			p->lifeTimer += deltaTime;
-			// Deactivate if lifetime exceeded
+
+			// Deactivate if lifetime exceeded or fell too far
 			if (p->lifeTimer >= p->maxLifetime || p->dynamics.position.y < -20.0f) {
 				PhysicsForces::deactivateBullet(obj);
 			}
@@ -1285,6 +1297,7 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 
 							// Bounce or stop based on bounciness
 							if (p1->bounciness > 0.0f || p2->bounciness > 0.0f) {
+								std::cout << "CASE1 bounce: " << obj1->getObjectName() << " vs " << obj2->getObjectName() << std::endl;
 								float dot1 = p1->dynamics.velocity.x * info.normal.x + p1->dynamics.velocity.y * info.normal.y;
 								float dot2 = p2->dynamics.velocity.x * (-info.normal.x) + p2->dynamics.velocity.y * (-info.normal.y);
 
@@ -1315,37 +1328,66 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 						}
 						// CASE 2: obj1 is pushable, obj2 is static
 						else if (!obj1IsStatic && obj2IsStatic) {
+							// Push out of collision
 							if (info.normal.x != 0) {
 								t1->x += info.normal.x * info.penetration;
 								p1->dynamics.position.x = t1->x;
-								p1->dynamics.velocity.x = 0.f;
-								p1->velX = 0.f;
 							}
-
 							if (info.normal.y != 0) {
 								t1->y += info.normal.y * info.penetration;
 								p1->dynamics.position.y = t1->y;
-								p1->dynamics.velocity.y = 0.f;
+							}
 
-								if (info.normal.y > 0) p1->onGround = true;
+							// Bounce or stop based on bounciness
+							if (p1->bounciness > 0.0f) {
+								// Reflect: v' = v - 2(v·n)n, then scale by bounciness
+								float dot = p1->dynamics.velocity.x * info.normal.x + p1->dynamics.velocity.y * info.normal.y;
+								p1->dynamics.velocity.x = (p1->dynamics.velocity.x - 2.0f * dot * info.normal.x) * p1->bounciness;
+								p1->dynamics.velocity.y = (p1->dynamics.velocity.y - 2.0f * dot * info.normal.y) * p1->bounciness;
+							}
+							else {
+								// Original stop behavior
+								if (info.normal.x != 0) {
+									p1->dynamics.velocity.x = 0.f;
+									p1->velX = 0.f;
+								}
+								if (info.normal.y != 0) {
+									p1->dynamics.velocity.y = 0.f;
+									if (info.normal.y > 0) p1->onGround = true;
+								}
 							}
 						}
 						// CASE 3: obj1 is static, obj2 is pushable
 						else if (obj1IsStatic && !obj2IsStatic) {
+							// Push out of collision
 							if (info.normal.x != 0) {
-								// push obj2 in OPPOSITE direction
 								t2->x -= info.normal.x * info.penetration;
 								p2->dynamics.position.x = t2->x;
-								p2->dynamics.velocity.x = 0.f;
-								p2->velX = 0.f;
 							}
-
 							if (info.normal.y != 0) {
 								t2->y -= info.normal.y * info.penetration;
 								p2->dynamics.position.y = t2->y;
-								p2->dynamics.velocity.y = 0.f;
+							}
 
-								if (info.normal.y < 0) p2->onGround = true;
+							// Bounce or stop based on bounciness
+							if (p2->bounciness > 0.0f) {
+								// Normal is from obj1's perspective, flip for obj2
+								Vector2D n = { -info.normal.x, -info.normal.y };
+								float dot = p2->dynamics.velocity.x * n.x + p2->dynamics.velocity.y * n.y;
+
+								p2->dynamics.velocity.x = (p2->dynamics.velocity.x - 2.0f * dot * n.x) * p2->bounciness;
+								p2->dynamics.velocity.y = (p2->dynamics.velocity.y - 2.0f * dot * n.y) * p2->bounciness;
+							}
+							else {
+								// Original stop behavior (only when NOT bouncing)
+								if (info.normal.x != 0) {
+									p2->dynamics.velocity.x = 0.f;
+									p2->velX = 0.f;
+								}
+								if (info.normal.y != 0) {
+									p2->dynamics.velocity.y = 0.f;
+									if (info.normal.y < 0) p2->onGround = true;
+								}
 							}
 						}
 						// CASE 4: Both are static (shouldnt happen?)

@@ -219,6 +219,10 @@ public:
     bool inWater = false;
     bool buoancy = true;
 
+    //bullet gravity thing
+    float gravityDelayTimer = 0.0f;
+    float gravityDelay = 0.2f;
+
 	float bounciness = 0.0f; // 0 = no bounce, 1 = full bounce
     //const float waterBounce = 60.0f;   // upward velocity when entering water
 
