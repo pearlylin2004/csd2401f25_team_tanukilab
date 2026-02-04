@@ -56,13 +56,57 @@ void GUISystem::init(GameObjectManager& manager, LuaSystem& luaSystem) {
 //update function to check for button clicking
 void GUISystem::update() {
     if (EditorManager::isEditingMode()) return;
-    if (m_currentState == GameState::PLAYING) return;
     if (UISystem::isShowUI()) return; // skip if UI is shown
-    if (m_buttons.empty()) return;
+    //if (m_buttons.empty()) return;
 
     Vector2D worldMousePos = InputHandler::getWorldMousePosition();
 
-    if (InputHandler::isMouseButtonClicked(GLFW_MOUSE_BUTTON_LEFT)) {
+    if (m_currentState == GameState::PLAYING) {
+        std::vector<GameObject*> allObjs;
+        g_manager->getAllGameObjects(allObjs);
+        if (allObjs.empty()) return; //check if its empty
+        Transform* playerT = nullptr;
+        Transform* winT = nullptr;
+        CollisionInfo* playerC = nullptr;
+        CollisionInfo* winC = nullptr;
+        //iterate through all objects to find buttons
+        for (GameObject* obj : allObjs) {
+            if (obj->getObjectName() == "player") {
+                playerT = obj->getComponent<Transform>();
+                playerC = obj->getComponent<CollisionInfo>();
+            }
+            if (obj->getObjectName() == "to win") {
+                winT = obj->getComponent<Transform>();
+                winC = obj->getComponent<CollisionInfo>();
+            }
+        }
+        if (!playerT || !playerC || !winT || !winC) return;
+
+        Vector2D playerPos{ playerT->x, playerT->y };
+        Vector2D playerSize = playerC->colliderSize;
+        Vector2D winPos{ winT->x, winT->y };
+        Vector2D winSize = winC->colliderSize;
+
+        std::cout << "check: " << std::endl;
+        std::cout << playerPos.x << " " << playerPos.y << " " << std::endl;
+        std::cout << winPos.x << " " << winPos.y << " " << std::endl;
+
+        // AABB collision check
+        bool collided =
+            (playerPos.x + playerSize.x / 2 >= winPos.x - winSize.x / 2) &&
+            (playerPos.x - playerSize.x / 2 <= winPos.x + winSize.x / 2) &&
+            (playerPos.y + playerSize.y / 2 >= winPos.y - winSize.y / 2) &&
+            (playerPos.y - playerSize.y / 2 <= winPos.y + winSize.y / 2);
+
+
+        if (collided) {
+            std::cout << "Player wins!" << std::endl;
+            m_currentState = GameState::WIN;
+            loadScreen(*g_manager, "win_scene.json");
+        }
+    }
+
+    else if (InputHandler::isMouseButtonClicked(GLFW_MOUSE_BUTTON_LEFT)) {
         //iterate with iterator to safely remove invalid buttons
         for (auto it = m_buttons.begin(); it != m_buttons.end(); ) {
             GameObject* btn = it->second;
