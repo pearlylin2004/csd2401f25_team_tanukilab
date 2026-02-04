@@ -183,7 +183,7 @@ public:
     Dynamics dynamics;
 
     bool canMove = true;  // Add this flag
-
+    bool autoUpdate = false;
 
     float velX = 0.0f;
     float velY = 0.0f;
@@ -217,7 +217,7 @@ public:
 
 
     bool inWater = false;
-    bool buoancy = true;
+    bool buoyancy = true;
 
     //const float waterBounce = 60.0f;   // upward velocity when entering water
 
