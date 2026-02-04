@@ -65,6 +65,11 @@ public:
      */
     TriggerActionSystem& getTriggerActionSystem() { return m_triggerActionSystem; }
 
+    void updateFire(GameObject& obj, float dt);
+    void updateRefill(GameObject& obj, float dt);
+    RuntimeStateMachine* getOrCreateFireMachine(GameObject& obj);
+    RuntimeStateMachine* getOrCreateRefillMachine(GameObject& obj);
+
 private:
 
     /*!

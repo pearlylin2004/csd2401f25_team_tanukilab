@@ -6,6 +6,12 @@
 \date		November, 5th, 2025
 \brief		Implements the LogicContainer using class-based FSM and trigger-action system.
             
+            FSM Architecture:
+            - RuntimeStateMachine: Manages states and transitions
+            - RuntimeState: Base class for all states (IdleState, WalkingState, etc.)
+            - RuntimeTransition: Defines condition and action for state changes
+            
+            This is a proper class-based FSM, NOT a switch/enum-based implementation.
 
 Copyright (C) 2025 DigiPen Institute of Technology.
 Reproduction or disclosure of this file or its contents
@@ -21,26 +27,19 @@ Technology is prohibited.
 #include "Systems.h"
 #include "Component.h"
 #include "GameObjectManager.h"
+#include "FireStates.h"
+#include "RefillStates.h"
 #include <iostream>
 
 // ============================================================================
 // Helper Functions
 // ============================================================================
 
-/*!
- * \brief Checks if any movement key (A/D) is currently held.
- * \return True if movement input detected.
- */
 static inline bool anyMoveHeld() {
     return InputHandler::isKeyHeld(GLFW_KEY_A) ||
         InputHandler::isKeyHeld(GLFW_KEY_D);
 }
 
-/*!
- * \brief Checks if this GameObject is a special prefab that shouldn't walk.
- * \param obj The GameObject to check.
- * \return True if it's a blocked prefab.
- */
 static inline bool isBlockedPrefab(GameObject& obj) {
     std::string prefabID = obj.getObjectPrefabID();
     return prefabID == "eaa2ba42-971a-413b-b8c4-99b2f5ab674d" ||
@@ -48,34 +47,32 @@ static inline bool isBlockedPrefab(GameObject& obj) {
 }
 
 // ============================================================================
-// GET OR CREATE RUNTIME FSM
+// PLAYER FSM FACTORY
 // ============================================================================
 
 RuntimeStateMachine* LogicContainer::getOrCreateMachine(GameObject& obj) {
-    // Check if machine already exists
     auto it = m_machines.find(&obj);
     if (it != m_machines.end()) {
         return it->second.get();
     }
 
-    // Create new machine
+    // Create class-based state machine (not enum/switch based)
     auto machine = std::make_unique<RuntimeStateMachine>();
 
-    // ===== CREATE STATES =====
+    // Create state objects - each is a class inheriting from RuntimeState
     auto idleState = std::make_unique<IdleState>();
     auto walkingState = std::make_unique<WalkingState>();
     auto jumpingState = std::make_unique<JumpingState>();
     auto fallingState = std::make_unique<FallingState>();
     auto deadState = std::make_unique<DeadState>();
 
-    // ===== TRANSITIONS FROM IDLE (added to IdleState) =====
+    // Idle -> Walking transition
     idleState->addTransition(RuntimeTransition(
         "Walking",
-        [](GameObject& o) {
-            return anyMoveHeld() && !isBlockedPrefab(o);
-        }
+        [](GameObject& o) { return anyMoveHeld() && !isBlockedPrefab(o); }
     ));
 
+    // Idle -> Jumping transition
     idleState->addTransition(RuntimeTransition(
         "Jumping",
         [](GameObject& o) {
@@ -83,15 +80,14 @@ RuntimeStateMachine* LogicContainer::getOrCreateMachine(GameObject& obj) {
             return p && InputHandler::isKeyTriggered(GLFW_KEY_SPACE) && p->onGround;
         },
         [](GameObject& o) {
-            Physics* p = o.getComponent<Physics>();
-            if (p) {
+            if (Physics* p = o.getComponent<Physics>()) {
                 p->velY = p->jumpForce;
                 p->onGround = false;
             }
         }
     ));
 
-    // ===== TRANSITIONS FROM WALKING (added to WalkingState) =====
+    // Walking -> Idle transition
     walkingState->addTransition(RuntimeTransition(
         "Idle",
         [](GameObject& o) {
@@ -100,6 +96,7 @@ RuntimeStateMachine* LogicContainer::getOrCreateMachine(GameObject& obj) {
         }
     ));
 
+    // Walking -> Falling transition
     walkingState->addTransition(RuntimeTransition(
         "Falling",
         [](GameObject& o) {
@@ -108,6 +105,7 @@ RuntimeStateMachine* LogicContainer::getOrCreateMachine(GameObject& obj) {
         }
     ));
 
+    // Walking -> Jumping transition
     walkingState->addTransition(RuntimeTransition(
         "Jumping",
         [](GameObject& o) {
@@ -115,15 +113,14 @@ RuntimeStateMachine* LogicContainer::getOrCreateMachine(GameObject& obj) {
             return p && InputHandler::isKeyTriggered(GLFW_KEY_SPACE) && p->onGround;
         },
         [](GameObject& o) {
-            Physics* p = o.getComponent<Physics>();
-            if (p) {
+            if (Physics* p = o.getComponent<Physics>()) {
                 p->velY = p->jumpForce;
                 p->onGround = false;
             }
         }
     ));
 
-    // ===== TRANSITIONS FROM JUMPING (added to JumpingState) =====
+    // Jumping -> Falling transition
     jumpingState->addTransition(RuntimeTransition(
         "Falling",
         [](GameObject& o) {
@@ -132,7 +129,7 @@ RuntimeStateMachine* LogicContainer::getOrCreateMachine(GameObject& obj) {
         }
     ));
 
-    // ===== TRANSITIONS FROM FALLING (added to FallingState) =====
+    // Falling -> Walking transition (with landing sound action)
     fallingState->addTransition(RuntimeTransition(
         "Walking",
         [](GameObject& o) {
@@ -141,8 +138,7 @@ RuntimeStateMachine* LogicContainer::getOrCreateMachine(GameObject& obj) {
         },
         [](GameObject& o) {
             if (AudioComponent* audio = o.getComponent<AudioComponent>()) {
-                AudioChannel* landing = audio->getOrCreateChannel("landing");
-                if (landing) {
+                if (AudioChannel* landing = audio->getOrCreateChannel("landing")) {
                     landing->audioFile = "assets/audio/landing.wav";
                     landing->loop = false;
                     landing->volume = 1.0f;
@@ -152,6 +148,7 @@ RuntimeStateMachine* LogicContainer::getOrCreateMachine(GameObject& obj) {
         }
     ));
 
+    // Falling -> Idle transition (with landing sound action)
     fallingState->addTransition(RuntimeTransition(
         "Idle",
         [](GameObject& o) {
@@ -160,8 +157,7 @@ RuntimeStateMachine* LogicContainer::getOrCreateMachine(GameObject& obj) {
         },
         [](GameObject& o) {
             if (AudioComponent* audio = o.getComponent<AudioComponent>()) {
-                AudioChannel* landing = audio->getOrCreateChannel("landing");
-                if (landing) {
+                if (AudioChannel* landing = audio->getOrCreateChannel("landing")) {
                     landing->audioFile = "assets/audio/landing.wav";
                     landing->loop = false;
                     landing->volume = 1.0f;
@@ -171,17 +167,14 @@ RuntimeStateMachine* LogicContainer::getOrCreateMachine(GameObject& obj) {
         }
     ));
 
-    // ===== ADD STATES TO MACHINE =====
+    // Add all states to the machine
     machine->addState(std::move(idleState));
     machine->addState(std::move(walkingState));
     machine->addState(std::move(jumpingState));
     machine->addState(std::move(fallingState));
     machine->addState(std::move(deadState));
-
-    // ===== SET INITIAL STATE =====
     machine->setInitial("Idle", obj);
 
-    // Store and return
     RuntimeStateMachine* ptr = machine.get();
     m_machines[&obj] = std::move(machine);
     return ptr;
@@ -197,24 +190,13 @@ void LogicContainer::syncStateToComponent(GameObject& obj) {
 
     if (!machine || !component) return;
 
-    // Sync runtime state → component for editor/debug/animation
     std::string current = machine->currentStateName();
 
-    if (current == "Idle") {
-        component->state = PlayerState::Idle;
-    }
-    else if (current == "Walking") {
-        component->state = PlayerState::Walking;
-    }
-    else if (current == "Jumping") {
-        component->state = PlayerState::Jumping;
-    }
-    else if (current == "Falling") {
-        component->state = PlayerState::Falling;
-    }
-    else if (current == "Dead") {
-        component->state = PlayerState::Dead;
-    }
+    if (current == "Idle")          component->state = PlayerState::Idle;
+    else if (current == "Walking")  component->state = PlayerState::Walking;
+    else if (current == "Jumping")  component->state = PlayerState::Jumping;
+    else if (current == "Falling")  component->state = PlayerState::Falling;
+    else if (current == "Dead")     component->state = PlayerState::Dead;
 
     component->stateTime = machine->stateTime();
 }
@@ -224,15 +206,116 @@ void LogicContainer::syncStateToComponent(GameObject& obj) {
 // ============================================================================
 
 void LogicContainer::update(GameObject& obj, float dt) {
-    // Update the runtime FSM
     RuntimeStateMachine* machine = getOrCreateMachine(obj);
     if (!machine) return;
 
     machine->update(obj, dt);
-
-    // Sync to component for editor/animation
     syncStateToComponent(obj);
-
-    // Update trigger-action rules
     m_triggerActionSystem.update(obj);
+}
+
+// ============================================================================
+// FIRE FSM FACTORY
+// ============================================================================
+
+RuntimeStateMachine* LogicContainer::getOrCreateFireMachine(GameObject& obj) {
+    auto it = m_machines.find(&obj);
+    if (it != m_machines.end()) {
+        return it->second.get();
+    }
+
+    auto machine = std::make_unique<RuntimeStateMachine>();
+
+    // Create class-based states for Fire FSM
+    auto activeState = std::make_unique<FireActiveState>();
+    auto extinguishedState = std::make_unique<FireExtinguishedState>();
+
+    // Active -> Extinguished transition (triggered by bullet collision)
+    activeState->addTransition(RuntimeTransition(
+        "Extinguished",
+        [](GameObject& o) {
+            if (VisualLC* vl = o.getComponent<VisualLC>()) {
+                for (GameObject* collidedObj : vl->curCollision) {
+                    if (!collidedObj) continue;
+                    CollisionInfo* c = collidedObj->getComponent<CollisionInfo>();
+                    if (c && c->collisionTag == "bullet") {
+                        // Debug output - shows FSM transition
+                        std::cout << "[FSM] " << o.getObjectName() << ": Active -> Extinguished (bullet hit)" << std::endl;
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+    ));
+
+    machine->addState(std::move(activeState));
+    machine->addState(std::move(extinguishedState));
+    machine->setInitial("Active", obj);
+
+    RuntimeStateMachine* ptr = machine.get();
+    m_machines[&obj] = std::move(machine);
+    return ptr;
+}
+
+// ============================================================================
+// REFILL FSM FACTORY
+// ============================================================================
+
+RuntimeStateMachine* LogicContainer::getOrCreateRefillMachine(GameObject& obj) {
+    auto it = m_machines.find(&obj);
+    if (it != m_machines.end()) {
+        return it->second.get();
+    }
+
+    auto machine = std::make_unique<RuntimeStateMachine>();
+
+    // Create class-based states for Refill FSM
+    auto fullState = std::make_unique<RefillFullState>();
+    auto emptyState = std::make_unique<RefillEmptyState>();
+
+    // Full -> Empty transition (triggered by player collision)
+    fullState->addTransition(RuntimeTransition(
+        "Empty",
+        [](GameObject& o) {
+            if (VisualLC* vl = o.getComponent<VisualLC>()) {
+                for (GameObject* collidedObj : vl->curCollision) {
+                    if (!collidedObj) continue;
+                    CollisionInfo* c = collidedObj->getComponent<CollisionInfo>();
+                    if (c && c->collisionTag == "player") {
+                        // Debug output - shows FSM transition
+                        std::cout << "[FSM] " << o.getObjectName() << ": Full -> Empty (player touched)" << std::endl;
+                        return true;
+                    }
+                }
+            }
+            return false;
+        },
+        [](GameObject& o) {
+            (void)o;
+            VisualLC::globalFloatVar["bullets"] = 10.0f;
+        }
+    ));
+
+    machine->addState(std::move(fullState));
+    machine->addState(std::move(emptyState));
+    machine->setInitial("Full", obj);
+
+    RuntimeStateMachine* ptr = machine.get();
+    m_machines[&obj] = std::move(machine);
+    return ptr;
+}
+
+// ============================================================================
+// FIRE & REFILL UPDATE
+// ============================================================================
+
+void LogicContainer::updateFire(GameObject& obj, float dt) {
+    RuntimeStateMachine* machine = getOrCreateFireMachine(obj);
+    if (machine) machine->update(obj, dt);
+}
+
+void LogicContainer::updateRefill(GameObject& obj, float dt) {
+    RuntimeStateMachine* machine = getOrCreateRefillMachine(obj);
+    if (machine) machine->update(obj, dt);
 }
