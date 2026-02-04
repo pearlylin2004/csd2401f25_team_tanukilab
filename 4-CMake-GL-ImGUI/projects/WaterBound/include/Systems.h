@@ -317,17 +317,72 @@ private:
 
 	static GameObjectManager* m_manager;
 };
+/*!***********************************************************************
+\brief
+	Water system for rendering animated water bodies with wave effects
+	and applying buoyancy physics to objects in water
 
+*************************************************************************/
 class WaterSystem {
 public:
 	WaterSystem();
 	~WaterSystem();
 
+	/*!***********************************************************************
+	\brief
+		Initialize water shader and uniform locations
+	*************************************************************************/
 	void init();
+
+	/*!***********************************************************************
+	\brief
+		Update water movement and apply water physics to objects
+
+	\param[in] manager
+		Game object manager containing all objects
+
+	\param[in] deltaTime
+		Time elapsed since last frame
+	*************************************************************************/
 	void update(GameObjectManager& manager, float deltaTime);
+
+	/*!***********************************************************************
+	\brief
+		Render all water bodies with wave movement
+
+	\param[in] manager
+		Game object manager containing water body objects
+	*************************************************************************/
 	void render(GameObjectManager& manager);
+
+	/*!***********************************************************************
+	\brief
+		Check if a point is inside a water body
+
+	\param[in] waterObj
+		Water body object to check against
+
+	\param[in] point
+		2D point to test
+
+	\return
+		True if point is in water, false otherwise
+	*************************************************************************/
 	bool isPointInWater(GameObject* waterObj, const Vector2D& point);
+
+	/*!***********************************************************************
+	\brief
+		Apply buoyancy and drag forces to objects in water
+
+	\param[in] manager
+		Game object manager containing all objects
+	*************************************************************************/
 	void applyWaterPhysics(GameObjectManager& manager);
+
+	/*!***********************************************************************
+	\brief
+		Clean up water meshes and shader resources
+	*************************************************************************/
 	void cleanup();
 
 private:
