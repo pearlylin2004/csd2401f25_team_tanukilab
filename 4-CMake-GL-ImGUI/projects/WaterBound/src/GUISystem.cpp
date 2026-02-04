@@ -42,7 +42,7 @@ void GUISystem::init(GameObjectManager& manager, LuaSystem& luaSystem) {
 
 //update function to check for button clicking
 void GUISystem::update() {
-    if (EditorManager::isEditingMode()) return;
+    //if (EditorManager::isEditingMode()) return;
     if (UISystem::isShowUI()) return; // skip if UI is shown
     //if (m_buttons.empty()) return;
 
@@ -58,6 +58,7 @@ void GUISystem::update() {
         CollisionInfo* playerC = nullptr;
         CollisionInfo* winC = nullptr;
 		CollisionInfo* fireC = nullptr;
+        StateMachine* fireSM = nullptr;
         //iterate through all objects to find buttons
         for (GameObject* obj : allObjs) {
             if (obj->getObjectName() == "player") {
@@ -71,6 +72,7 @@ void GUISystem::update() {
             if (obj->getObjectName() == "fire_right") {
                 fireT = obj->getComponent<Transform>();
                 fireC = obj->getComponent<CollisionInfo>();
+                fireSM = obj->getComponent<StateMachine>();
             }
         }
         if (!playerT || !playerC || !winT || !winC ||!fireT || !fireC) return;
