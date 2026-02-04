@@ -83,7 +83,7 @@ void GUISystem::update() {
                 fireSM2 = obj->getComponent<StateMachine>();
             }
         }
-        if (!playerT || !playerC || !winT || !winC) return;
+        if (!playerT || !playerC || !winT || !winC || !fireT1 || !fireT2 || !fireC1 || !fireC2 || !fireSM1 || !fireSM2) return;
 
         Vector2D playerPos{ playerT->x, playerT->y };
         Vector2D playerSize = playerC->colliderSize;
@@ -105,19 +105,6 @@ void GUISystem::update() {
             (playerPos.y + playerSize.y / 2 >= winPos.y - winSize.y / 2) &&
             (playerPos.y - playerSize.y / 2 <= winPos.y + winSize.y / 2);
 
-        bool lose_collided1 =
-            (playerPos.x + playerSize.x / 2 >= firePos1.x - fireSize1.x / 2) &&
-            (playerPos.x - playerSize.x / 2 <= firePos1.x + fireSize1.x / 2) &&
-            (playerPos.y + playerSize.y / 2 >= firePos1.y - fireSize1.y / 2) &&
-			(playerPos.y - playerSize.y / 2 <= firePos1.y + fireSize1.y / 2);
-
-        bool lose_collided2 =
-            (playerPos.x + playerSize.x / 2 >= firePos1.x - fireSize2.x / 2) &&
-            (playerPos.x - playerSize.x / 2 <= firePos1.x + fireSize2.x / 2) &&
-            (playerPos.y + playerSize.y / 2 >= firePos1.y - fireSize2.y / 2) &&
-            (playerPos.y - playerSize.y / 2 <= firePos1.y + fireSize2.y / 2);
-
-
         if (win_collided) {
             //collision check for win condition
             if (level == max_level) {
@@ -125,7 +112,7 @@ void GUISystem::update() {
                 m_currentState = GameState::WIN;
                 loadScreen(*g_manager, "win_scene.json");
             }
-			//check collision to load next level
+            //check collision to load next level
             else {
                 std::cout << "Level Complete! Loading next level..." << std::endl;
                 level++;
@@ -133,12 +120,35 @@ void GUISystem::update() {
                 loadScreenNoButton(*g_manager, "level0" + std::to_string(level) + ".json");
             }
         }
-        else if (lose_collided1 || lose_collided2) {
-            //collision check for lose condition
-            std::cout << "Player loses!" << std::endl;
-            m_currentState = GameState::PLAYING;
 
-            loadScreenNoButton(*g_manager,"level0" + std::to_string(level) + ".json");
+        if (fireSM1 && fireSM1->state == PlayerState::Idle) {
+            bool lose_collided1 =
+                (playerPos.x + playerSize.x / 2 >= firePos1.x - fireSize1.x / 2) &&
+                (playerPos.x - playerSize.x / 2 <= firePos1.x + fireSize1.x / 2) &&
+                (playerPos.y + playerSize.y / 2 >= firePos1.y - fireSize1.y / 2) &&
+                (playerPos.y - playerSize.y / 2 <= firePos1.y + fireSize1.y / 2);
+            if (lose_collided1) {
+                //collision check for lose condition
+                std::cout << "Player loses!" << std::endl;
+                m_currentState = GameState::PLAYING;
+                loadScreenNoButton(*g_manager, "level0" + std::to_string(level) + ".json");
+                return;
+            }
+        }
+
+        if (fireSM2 && fireSM2->state == PlayerState::Idle) {
+            bool lose_collided2 =
+                (playerPos.x + playerSize.x / 2 >= firePos2.x - fireSize2.x / 2) &&
+                (playerPos.x - playerSize.x / 2 <= firePos2.x + fireSize2.x / 2) &&
+                (playerPos.y + playerSize.y / 2 >= firePos2.y - fireSize2.y / 2) &&
+                (playerPos.y - playerSize.y / 2 <= firePos2.y + fireSize2.y / 2);
+
+            if (lose_collided2) {
+                //collision check for lose condition
+                std::cout << "Player loses!" << std::endl;
+                m_currentState = GameState::PLAYING;
+                loadScreenNoButton(*g_manager, "level0" + std::to_string(level) + ".json");
+            }
         }
     }
 

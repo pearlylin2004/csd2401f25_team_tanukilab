@@ -83,6 +83,6 @@ private:
     GameObjectManager* g_manager = nullptr;
     LuaSystem* g_luaSystem = nullptr;
 
-    int level;
+    int level = 0;
     int max_level = 2;
 };
