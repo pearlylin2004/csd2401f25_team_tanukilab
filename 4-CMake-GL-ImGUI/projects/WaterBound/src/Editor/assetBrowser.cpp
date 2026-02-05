@@ -353,7 +353,7 @@ void AssetBrowser::loadAssetsFromDirectory() {
     for (const auto& entry : std::filesystem::directory_iterator(m_AssetBrowserState.currentFolder)) {
         if (entry.is_directory()) {
             std::string folderName = entry.path().filename().string();
-            if (folderName == "resources" || folderName == "shaders") continue;
+            if (folderName == "resources") continue;
             m_AssetBrowserState.subFolders.push_back(folderName);
         }
     }
@@ -371,7 +371,6 @@ void AssetBrowser::loadAssetsFromDirectory() {
             // skip unwanted files
             if (filename == Editor::sceneState.tempSceneName) continue;
             if (filename == "prefab_registry.json") continue;
-            if (extension == ".vert" || extension == ".frag") continue;
 
             asset.name = std::move(filename);
             asset.path = entry.path().string();

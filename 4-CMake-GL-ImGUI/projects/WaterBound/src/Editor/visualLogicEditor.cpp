@@ -1322,6 +1322,7 @@ void VisualLogicEditor::renderNodeProperties() {
 					"level01.json",
 					"level02.json",
 					"level03.json",
+					"level04.json",
 					"menu_scene.json"
 				};
 
