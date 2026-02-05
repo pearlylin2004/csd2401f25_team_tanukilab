@@ -61,32 +61,32 @@ void InputSystem::update(GameObjectManager& manager, const float& deltaTime, Mes
     }
 
     // ============ LAYER TESTING CODE ============
-    // Press 1 to toggle Background layer (layer 0)
-    if (InputHandler::isKeyTriggered(GLFW_KEY_1)) {
+    // Press Ctrl+1 to toggle Background layer (layer 0)
+    if (InputHandler::isComboKeyTriggered(GLFW_KEY_1)) {
         LayerManager& lm = manager.getLayerManager();
         bool currentState = lm.isLayerEnabled(0);
         lm.setLayerEnabled(0, !currentState);
         std::cout << "Background layer " << (!currentState ? "ENABLED" : "DISABLED") << std::endl;
     }
 
-    // Press 2 to toggle Game layer (layer 1)
-    if (InputHandler::isKeyTriggered(GLFW_KEY_2)) {
+    // Press Ctrl+2 to toggle Game layer (layer 1)
+    if (InputHandler::isComboKeyTriggered(GLFW_KEY_2)) {
         LayerManager& lm = manager.getLayerManager();
         bool currentState = lm.isLayerEnabled(1);
         lm.setLayerEnabled(1, !currentState);
         std::cout << "Game layer " << (!currentState ? "ENABLED" : "DISABLED") << std::endl;
     }
 
-    // Press 3 to toggle UI layer (layer 2)
-    if (InputHandler::isKeyTriggered(GLFW_KEY_3)) {
+    // Press Ctrl+3 to toggle UI layer (layer 2)
+    if (InputHandler::isComboKeyTriggered(GLFW_KEY_3)) {
         LayerManager& lm = manager.getLayerManager();
         bool currentState = lm.isLayerEnabled(2);
         lm.setLayerEnabled(2, !currentState);
         std::cout << "UI layer " << (!currentState ? "ENABLED" : "DISABLED") << std::endl;
     }
 
-    // Press 4 to toggle Game layer visibility only (still updates, just invisible)
-    if (InputHandler::isKeyTriggered(GLFW_KEY_4)) {
+    // Press Ctrl+4 to toggle Game layer visibility only (still updates, just invisible)
+    if (InputHandler::isComboKeyTriggered(GLFW_KEY_4)) {
         LayerManager& lm = manager.getLayerManager();
         Layer* gameLayer = lm.getLayer(1);
         if (gameLayer) {
@@ -96,8 +96,8 @@ void InputSystem::update(GameObjectManager& manager, const float& deltaTime, Mes
         }
     }
 
-    // Press 5 to toggle Game layer updates only (visible but frozen)
-    if (InputHandler::isKeyTriggered(GLFW_KEY_5)) {
+    // Press Ctrl+5 to toggle Game layer updates only (visible but frozen)
+    if (InputHandler::isComboKeyTriggered(GLFW_KEY_5)) {
         LayerManager& lm = manager.getLayerManager();
         Layer* gameLayer = lm.getLayer(1);
         if (gameLayer) {
@@ -107,8 +107,8 @@ void InputSystem::update(GameObjectManager& manager, const float& deltaTime, Mes
         }
     }
 
-    // Press 6 to print layer status
-    if (InputHandler::isKeyTriggered(GLFW_KEY_6)) {
+    // Press Ctrl+6 to print layer status
+    if (InputHandler::isComboKeyTriggered(GLFW_KEY_6)) {
         LayerManager& lm = manager.getLayerManager();
         std::cout << "\n=== LAYER STATUS ===" << std::endl;
         for (Layer* layer : lm.getAllLayers()) {
@@ -122,7 +122,7 @@ void InputSystem::update(GameObjectManager& manager, const float& deltaTime, Mes
         }
         std::cout << "===================\n" << std::endl;
     }
-    // ============ END LAYER TESTING CODE ============
+  
 #endif
 
     // Press F9 to simulate a failure (for crash logger)
