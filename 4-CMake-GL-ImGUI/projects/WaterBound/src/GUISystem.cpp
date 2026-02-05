@@ -4,9 +4,12 @@
 \author     Asha Mathyalakan, asha.m, 2402886
             - 5% of the file
 \author     Pearly Lin Lee Ying, p.lin, 2401591
-            - 95% of the file
+            - 55% of the file
+\author     Tan Chee Qing, cheeqing.tan, 2401486
+            - 10% of the file
 \par        asha.m@digipen.edu
 \par        p.lin@digipen.edu
+\par        cheeqing.tan@digipen.edu
 \date       November, 7th, 2025
 \brief      Handles initialization, updates, and GUI interactions such as
             creating/removing menu buttons and transitioning between
