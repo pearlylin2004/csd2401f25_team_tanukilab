@@ -454,7 +454,7 @@ void CoreEngine::startBGM() {
     AudioChannel bgm;
     bgm.audioFile = m_bgmFilePath;
     bgm.loop = true;
-    bgm.volume = 0.2f;
+    bgm.volume = 0.125f;
 
     m_bgmChannel = AudioHandler::getInstance().playSound(&bgm);
 }
