@@ -1,3 +1,19 @@
+/* Start Header ************************************************************************/
+/*!
+\file       RefillStates.cpp
+\author     Varick, v.teo, 2403417
+\par        v.teo@digipen.edu
+\date       February, 5th, 2026
+\brief      Implements the Water Refill FSM states. Handles enter/update logic for
+            Full and Empty states including collision, visual, and audio changes.
+
+Copyright (C) 2025 DigiPen Institute of Technology.
+Reproduction or disclosure of this file or its contents
+without the prior written consent of DigiPen Institute of
+Technology is prohibited.
+*/
+/* End Header **************************************************************************/
+
 #include "RefillStates.h"
 #include "GameObject.h"
 #include "Component.h"
