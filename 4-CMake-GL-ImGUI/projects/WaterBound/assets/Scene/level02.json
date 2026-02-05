@@ -861,7 +861,7 @@
         "AudioComponent": {
           "channels": {
             "change": {
-              "audioFile": "assets/Audio\\underwater.wav",
+          "audioFile": "assets/Audio\\Victory.wav",
               "volume": 1.0,
               "pitch": 1.0,
               "loop": 0,
