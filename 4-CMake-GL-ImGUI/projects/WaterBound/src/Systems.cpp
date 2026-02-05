@@ -935,50 +935,57 @@ void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime, M
 				physics->shootTimer += deltaTime;
 
 				// Check if mouse button is being held down
-				if (InputHandler::isMouseLeftHeld() && (!UISystem::isShowUI() ||(SceneWindow::isSceneHovered() && !EditorManager::isEditingMode()))) {
+				if (InputHandler::isMouseLeftHeld()) {
+#ifdef _DEBUG
+					if ((!UISystem::isShowUI() || (SceneWindow::isSceneHovered() && !EditorManager::isEditingMode()))) {
+#endif // _DEBUG
 
-					if (VisualLC::globalFloatVar.count("bullets") &&
-						VisualLC::globalFloatVar["bullets"] > 0) {
-						if (physics->shootTimer >= physics->fireRate) {
-							GameObject* bullet = PhysicsForces::findAvailableBullet(manager);
 
-							if (bullet != nullptr) {
-								// Get mouse position in world coordinates
-								Vector2D mouseWorldPos = InputHandler::getWorldMousePosition();
+						if (VisualLC::globalFloatVar.count("bullets") &&
+							VisualLC::globalFloatVar["bullets"] > 0) {
+							if (physics->shootTimer >= physics->fireRate) {
+								GameObject* bullet = PhysicsForces::findAvailableBullet(manager);
 
-								//set a flay saying channel is pending to play sound
-								if (bullet->hasComponent<AudioComponent>()) {
-									AudioComponent* audio = bullet->getComponent<AudioComponent>();
-									AudioChannel* ch = audio->getDefaultChannel();
-									ch->isPendingPlay = true;
-
-									// Shoot bullet toward mouse position
-									PhysicsForces::shoot(bullet, transform, mouseWorldPos);
-									messageBus.publish(Message("KeyPressed", nullptr, KeyEvent{ "LEFT_CLICK", true }));
+								if (bullet != nullptr) {
+									// Get mouse position in world coordinates
+									Vector2D mouseWorldPos = InputHandler::getWorldMousePosition();
 
 									//set a flay saying channel is pending to play sound
 									if (bullet->hasComponent<AudioComponent>()) {
 										AudioComponent* audio = bullet->getComponent<AudioComponent>();
 										AudioChannel* ch = audio->getDefaultChannel();
 										ch->isPendingPlay = true;
+
+										// Shoot bullet toward mouse position
+										PhysicsForces::shoot(bullet, transform, mouseWorldPos);
+										messageBus.publish(Message("KeyPressed", nullptr, KeyEvent{ "LEFT_CLICK", true }));
+
+										//set a flay saying channel is pending to play sound
+										if (bullet->hasComponent<AudioComponent>()) {
+											AudioComponent* audio = bullet->getComponent<AudioComponent>();
+											AudioChannel* ch = audio->getDefaultChannel();
+											ch->isPendingPlay = true;
+										}
+
+
+										VisualLogicSystem::broadcastBulletShoot();
+
+										DebugLog::addMessage("Bullet fired!", DebugMode::PlaySimul);
+										physics->shootTimer = 0.0f;
 									}
-
-
-									VisualLogicSystem::broadcastBulletShoot();
-
-									DebugLog::addMessage("Bullet fired!", DebugMode::PlaySimul);
-									physics->shootTimer = 0.0f;
-								}
-								else {
-									physics->shootTimer = physics->fireRate * 0.5f;
-									DebugLog::addMessage("No bullets available!", DebugMode::PlaySimul);
+									else {
+										physics->shootTimer = physics->fireRate * 0.5f;
+										DebugLog::addMessage("No bullets available!", DebugMode::PlaySimul);
+									}
 								}
 							}
 						}
+						else {
+							DebugLog::addMessage("Out of bullets!", DebugMode::PlaySimul);
+						}
+#ifdef _DEBUG
 					}
-					else {
-						DebugLog::addMessage("Out of bullets!", DebugMode::PlaySimul);
-					}
+#endif // _DEBUG
 				}
 				//else if (InputHandler::isMouseLeftClicked()) { /// to shoot only one bullet at a time
 				//	// Single shot mode: Only fire once on click (if autoFire is disabled)
