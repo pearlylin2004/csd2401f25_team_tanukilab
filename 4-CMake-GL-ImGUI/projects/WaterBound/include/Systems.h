@@ -117,7 +117,7 @@ class ParticleSystem
 public:
 	void activateParticle(GameObjectManager& manager);
 	void update(GameObjectManager& manager, float const& deltaTime);
-	int IDGenerator();
+	size_t IDGenerator();
 	Vector2D positionGenerator(float offset);
 	Vector2D velocityGenerator(Vector2D direction);
 	static void clearUsedID(int ID);
@@ -290,7 +290,7 @@ public:
 	// broadcast whenever bullet shoot
 	static void broadcastBulletShoot();
 
-	void resetLogicState(GameObjectManager& manager);
+	void resetLogicState(/*GameObjectManager& manager*/);
 private:
 	// execute a specific node
 	void executeNode(GameObject* obj, VisualLC* logic, int nodeId, float dt);

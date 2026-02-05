@@ -581,7 +581,7 @@ void ParticleSystem::clearUsedID(int ID)
 	}
 }
 
-int ParticleSystem::IDGenerator()
+size_t ParticleSystem::IDGenerator()
 {
 	size_t ID = 0;
 	bool empty = false;
@@ -655,7 +655,7 @@ void ParticleSystem::activateParticle(GameObjectManager& manager)
 				/*if (particleData->grpNo == 0)
 					particleData->grpNo = IDGenerator(manager);*/
 				//static int pid = 0;
-				int UID = IDGenerator();
+				size_t UID = IDGenerator();
 				Particle::UIDs.push_back(Particle::UID(UID, particleData->master.particleAmt));
 				std::cout << "UID made is: " << UID << std::endl;
 				for (size_t i = 0; i < particleData->master.particleAmt; ++i)
@@ -667,7 +667,7 @@ void ParticleSystem::activateParticle(GameObjectManager& manager)
 					Transform* transform = newObj->addComponent<Transform>();
 					Render* render = newObj->addComponent<Render>();
 					Particle* indivData = newObj->addComponent<Particle>();
-					Physics* physics = newObj->addComponent<Physics>();
+					/*Physics* physics = */newObj->addComponent<Physics>();
 					Vector2D spawnPos = positionGenerator(particleData->master.offset);
 					transform->x = masterTransform->x + spawnPos.x;
 					transform->y = masterTransform->y + spawnPos.y;
@@ -687,6 +687,7 @@ void ParticleSystem::activateParticle(GameObjectManager& manager)
 
 void ParticleSystem::update(GameObjectManager& manager, float const& deltaTime)
 {
+	(void)deltaTime;
 	activateParticle(manager);
 	std::vector<GameObject*> gameObjects;
 	manager.getAllGameObjects(gameObjects);
@@ -984,7 +985,7 @@ void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime, M
 				particle->childData.timer -= deltaTime;
 				if (particle->childData.timer <= 0.f)
 				{
-					ParticleSystem::clearUsedID(particle->childData.grpNo);
+					ParticleSystem::clearUsedID(static_cast<int>(particle->childData.grpNo));
 					manager.deleteGameObject(object);
 					continue;
 				}
@@ -1064,11 +1065,11 @@ void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime, M
 										messageBus.publish(Message("KeyPressed", nullptr, KeyEvent{ "LEFT_CLICK", true }));
 
 										//set a flay saying channel is pending to play sound
-										if (bullet->hasComponent<AudioComponent>()) {
+										/*if (bullet->hasComponent<AudioComponent>()) {
 											AudioComponent* audio = bullet->getComponent<AudioComponent>();
 											AudioChannel* ch = audio->getDefaultChannel();
 											ch->isPendingPlay = true;
-										}
+										}*/
 
 
 										VisualLogicSystem::broadcastBulletShoot();
@@ -1323,9 +1324,9 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 			if (cellObject.size() < 2) continue; //skip if less than 2 objects because cant collide
 
 			//loop through objects in the cell to check for collision
-			for (size_t n = 0; n < cellObject.size(); n++) {
+			for (size_t n1 = 0; n1 < cellObject.size(); n1++) {
 				//object 1
-				GameObject* obj1 = cellObject[n];
+				GameObject* obj1 = cellObject[n1];
 				Transform* t1 = obj1->getComponent<Transform>();
 				CollisionInfo* c1 = obj1->getComponent<CollisionInfo>();
 				Physics* p1 = obj1->getComponent<Physics>();
@@ -1333,7 +1334,7 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 
 				Vector2D vel1{ p1->dynamics.velocity.x, p1->dynamics.velocity.y };
 				//object 2 looping
-				for (size_t m = n + 1; m < cellObject.size(); m++) {
+				for (size_t m = n1 + 1; m < cellObject.size(); m++) {
 					GameObject* obj2 = cellObject[m]; //get obj2
 
 					//object 2
@@ -2274,10 +2275,10 @@ void AudioSystem::updateSpatialAudio(GameObjectManager& manager) {
 		if (!obj->hasComponent<AudioComponent>() || !obj->hasComponent<Transform>()) continue;
 
 		Transform* transform = obj->getComponent<Transform>();
-		AudioComponent* audio = obj->getComponent<AudioComponent>();
+		AudioComponent* audioC = obj->getComponent<AudioComponent>();
 
 		// Update position for each 3D audio channel
-		for (auto& [channelName, audio] : audio->audioChannels) {
+		for (auto& [channelName, audio] : audioC->audioChannels) {
 			// Only update 3D sounds that are currently playing
 			if (!audio.isSpatial || audio.state != AudioState::Playing || !audio.channel) continue;
 

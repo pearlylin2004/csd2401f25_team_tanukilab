@@ -323,7 +323,7 @@ void GUISystem::restartLevel() {
     g_manager->clearScene();
     g_manager->loadScene(m_currentLevel);
     g_manager->initializeSceneResources();
-    g_visualLogicSystem->resetLogicState(*g_manager);
+    g_visualLogicSystem->resetLogicState();
     g_visualLogicSystem->initAll(*g_manager);
     resetAllObjectsToSpawn();
     m_currentState = GameState::PLAYING;
@@ -341,7 +341,7 @@ void GUISystem::loadLevel(const std::string& levelName) {
 
     g_manager->loadScene(fullPath);
     g_manager->initializeSceneResources();
-	g_visualLogicSystem->resetLogicState(*g_manager);
+	g_visualLogicSystem->resetLogicState();
     g_visualLogicSystem->initAll(*g_manager);
 
     // Save spawn positions for this level
@@ -401,10 +401,8 @@ void GUISystem::resetAllObjectsToSpawn() {
 
 			if (obj->hasComponent<Animation>()) {
 				Animation* anim = obj->getComponent<Animation>();
-                anim->animState[static_cast<int>(sm->state)].currentFrameColumn = anim->animState[static_cast<int>(sm->state)].initialFrame.x;
-                anim->animState[static_cast<int>(sm->state)].currentFrameRow = anim->animState[static_cast<int>(sm->state)].initialFrame.y;
-
-                anim->animState[static_cast<int>(sm->state)].currentFrameColumn = anim->animState[static_cast<int>(sm->state)].initialFrame.x;
+                anim->animState[static_cast<int>(sm->state)].currentFrameColumn = static_cast<int>(anim->animState[static_cast<int>(sm->state)].initialFrame.x);
+                anim->animState[static_cast<int>(sm->state)].currentFrameRow = static_cast<int>(anim->animState[static_cast<int>(sm->state)].initialFrame.y);
 			}
         }
 
