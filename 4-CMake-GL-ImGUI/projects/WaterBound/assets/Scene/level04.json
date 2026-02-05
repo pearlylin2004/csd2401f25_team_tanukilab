@@ -7,14 +7,17 @@
       "components": {
         "Transform": {
           "pos": [
-            27.232994079589844,
-            73.79768371582031,
+            -1000.0,
+            -1000.0,
             1.0
           ]
         },
         "Render": {
           "texture": "assets/Texture\\water_texture.png",
           "hasTex": 1
+        },
+        "Physics": {
+          "autoUpdate": 0
         },
         "CollisionInfo": {
           "ignoreCollisionsWith": [
@@ -50,6 +53,7 @@
           ]
         },
         "Physics": {
+          "autoUpdate": 0,
           "jumpForce": 90.0
         },
         "CollisionInfo": {
@@ -59,7 +63,7 @@
           ]
         },
         "StateMachine": {
-          "stateTime": 116.4032211303711
+          "stateTime": 29.374034881591797
         },
         "AudioComponent": {
           "channels": {
@@ -248,6 +252,25 @@
       }
     },
     {
+      "prefabid": "8b8d44fa-ed22-4288-98ee-c476958f5b5b",
+      "name": "endgoal(23)",
+      "components": {
+        "Transform": {
+          "pos": [
+            18.650976181030273,
+            -3.1563878059387207,
+            0.0
+          ]
+        },
+        "Physics": {
+          "autoUpdate": 0
+        },
+        "VisualLC": {
+          "filename": "endgoal04.json"
+        }
+      }
+    },
+    {
       "name": "water balance back",
       "components": {
         "Transform": {
@@ -280,19 +303,6 @@
           "colliderType": "square",
           "collisionRes": "StopWhenCollide",
           "collisionTag": "inventory"
-        }
-      }
-    },
-    {
-      "prefabid": "8b8d44fa-ed22-4288-98ee-c476958f5b5b",
-      "name": "endgoal(23)",
-      "components": {
-        "Transform": {
-          "pos": [
-            18.58748435974121,
-            -3.1563878059387207,
-            0.0
-          ]
         }
       }
     },
@@ -360,6 +370,7 @@
           "physicsFlag": 1,
           "inWater": 0,
           "buoyancy": 1,
+          "autoUpdate": 0,
           "moveSpeed": 1.0,
           "jumpForce": 100.0,
           "mass": 1.0,
@@ -403,6 +414,7 @@
           "physicsFlag": 1,
           "inWater": 0,
           "buoyancy": 1,
+          "autoUpdate": 0,
           "moveSpeed": 1.0,
           "jumpForce": 100.0,
           "mass": 1.0,
@@ -444,8 +456,9 @@
         },
         "Physics": {
           "physicsFlag": 1,
-          "inWater": 0,
+          "inWater": 1,
           "buoyancy": 1,
+          "autoUpdate": 0,
           "moveSpeed": 1.0,
           "jumpForce": 100.0,
           "mass": 1.0,
@@ -480,6 +493,9 @@
             0.0
           ]
         },
+        "Physics": {
+          "autoUpdate": 0
+        },
         "CollisionInfo": {
           "colliderSize": [
             7.294000148773193,
@@ -498,6 +514,9 @@
             -1.657539963722229,
             0.30000001192092896
           ]
+        },
+        "Physics": {
+          "autoUpdate": 0
         }
       }
     },
@@ -505,40 +524,58 @@
       "name": "waterbody",
       "components": {
         "Transform": {
-          "pos": [0.0, -10.0, 0.4],
-          "scale": [1.0, 1.0, 1.0],
-          "rotation": 0.0
+          "pos": [
+            0.0,
+            -10.0,
+            0.4000000059604645
+          ],
+          "rotation": 0.0,
+          "scale": [
+            1.0,
+            1.0,
+            1.0
+          ]
         },
         "Physics": {
           "physicsFlag": 1,
-          "mass": 1.0,
-          "damping": 1.0,
-          "gravity": 0.0,
           "inWater": 0,
-          "buoancy": 0
+          "buoyancy": 1,
+          "autoUpdate": 0,
+          "moveSpeed": 1.0,
+          "jumpForce": 100.0,
+          "mass": 1.0,
+          "damping": 1.0
         },
         "CollisionInfo": {
           "collisionFlag": 1,
+          "autoFitScale": 1,
+          "colliderSize": [
+            50.0,
+            6.0
+          ],
           "colliderType": "square",
-          "colliderSize": [50.0, 6.0],   
-          "collisionRes": "NoResponse",     
-          "collisionTag": "water",
-          "ignoreCollisionsWith": []
+          "collisionRes": "NoResponse",
+          "collisionTag": "water"
         },
         "WaterBody": {
-          "waveAmplitude": 0.15,
+          "waveAmplitude": 0.15000000596046448,
           "waveFrequency": 1.0,
           "waveSpeed": 1.0,
-          "waterColor": [0.1, 0.3, 0.6, 1.0],
-          "waterAlpha": 0.7,
+          "waterColor": [
+            0.10000000149011612,
+            0.30000001192092896,
+            0.6000000238418579,
+            1.0
+          ],
+          "waterAlpha": 0.699999988079071,
           "subdivisions": 40,
           "width": 40.0,
           "height": 8.0,
-          "isTrigger": true,
+          "isTrigger": 1,
           "buoyancyForce": 12.0,
-          "waterDrag": 0.975,
-          "renderWaves": true,
-          "useTexture": false
+          "waterDrag": 0.9750000238418579,
+          "renderWaves": 1,
+          "useTexture": 0
         }
       }
     },
@@ -546,31 +583,43 @@
       "name": "floatingBox",
       "components": {
         "Transform": {
-          "pos": [-6.0, -8.0, 0.0],
-          "scale": [4, 1.5, 1],
-          "rotation": 0
+          "pos": [
+            -6.0,
+            -5.993197917938232,
+            0.0
+          ],
+          "rotation": 0.0,
+          "scale": [
+            4.0,
+            1.5,
+            1.0
+          ]
         },
         "Render": {
+          "shape": "square",
           "hasTex": 0,
-          "clr": [0.8, 0.6, 0.4]
+          "hasAnimation": 0
         },
         "Physics": {
           "physicsFlag": 1,
-          "autoUpdate": true,
-          "mass": 5,
-          "damping": 0.985,
-          "gravity": -9.8,
           "inWater": 0,
           "buoyancy": 1,
-          "moveSpeed": 1.0 
+          "autoUpdate": 1,
+          "moveSpeed": 1.0,
+          "jumpForce": 100.0,
+          "mass": 5.0,
+          "damping": 0.9850000143051147
         },
         "CollisionInfo": {
           "collisionFlag": 1,
+          "autoFitScale": 1,
+          "colliderSize": [
+            2.0,
+            2.0
+          ],
           "colliderType": "square",
-          "colliderSize": [2, 2],
           "collisionRes": "MoveWhenCollide",
-          "collisionTag": "floatingObject",
-          "ignoreCollisionsWith": []
+          "collisionTag": "floatingObject"
         }
       }
     }
