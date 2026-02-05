@@ -66,7 +66,12 @@ void GUISystem::update() {
         m_pendingLevelLoad = false;
         std::string levelToLoad = m_pendingLevelName;
         m_pendingLevelName = "";
-        loadLevel(levelToLoad);
+        if (levelToLoad == "win_scene.json") {
+            loadScreen(*g_manager, levelToLoad);
+        }
+        else {
+            loadLevel(levelToLoad);
+        }
         return;
     }
 
