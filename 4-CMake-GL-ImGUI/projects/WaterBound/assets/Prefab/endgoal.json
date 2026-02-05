@@ -46,7 +46,7 @@
     "AudioComponent": {
       "channels": {
         "change": {
-          "audioFile": "assets/Audio\\underwater.wav",
+          "audioFile": "assets/Audio\\Victory.wav",
           "volume": 1.0,
           "pitch": 1.0,
           "loop": 0,
@@ -56,7 +56,7 @@
           "fadeInDuration": 1.0,
           "fadeOutOnStop": 0,
           "fadeOutDuration": 1.0,
-          "isSpatial": 0,
+          "isSpatial": false,
           "minDistance": 1.0,
           "maxDistance": 100.0
         }
