@@ -70,20 +70,21 @@ void CoreEngine::Init(bool forceWindowed) {
     int winWidth = cfg.width;
     int winHeight = cfg.height;
 
-    /*if (wantFullscreen) {
-        monitor = glfwGetPrimaryMonitor();
-        const GLFWvidmode* mode = glfwGetVideoMode(monitor);
-        winWidth = mode->width;
-        winHeight = mode->height;
-
+    if (wantFullscreen) {
+        
         // remember windowed size for when we toggle back
         m_windowedWidth = cfg.width;
         m_windowedHeight = cfg.height;
     }
     else {
+        monitor = glfwGetPrimaryMonitor();
+        const GLFWvidmode* mode = glfwGetVideoMode(monitor);
+        winWidth = mode->width;
+        winHeight = mode->height;
+
         m_windowedWidth = cfg.width;
         m_windowedHeight = cfg.height;
-    }*/
+    }
 
     cfg.width = winWidth;
     cfg.height = winHeight;
@@ -146,7 +147,7 @@ void CoreEngine::Init(bool forceWindowed) {
 
     PrefabManager::Instance().loadPrefabRegistry();
     //m_guiSystem->init(*m_manager, *m_luaSystem);
-    GUISystem::getInstance().init(*m_manager, *m_luaSystem);
+    GUISystem::getInstance().init(*m_manager, *m_luaSystem, *m_visualLCSystem);
     m_luaSystem->init();
     m_renderSystem->init(*m_manager, winWidth, winHeight);
     m_waterSystem->init();
