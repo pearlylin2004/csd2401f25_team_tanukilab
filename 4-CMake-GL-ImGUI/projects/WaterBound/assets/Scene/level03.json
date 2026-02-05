@@ -7,14 +7,17 @@
       "components": {
         "Transform": {
           "pos": [
-            27.232994079589844,
-            73.79768371582031,
+            -1000.0,
+            -1002.6854248046875,
             1.0
           ]
         },
         "Render": {
           "texture": "assets/Texture\\water_texture.png",
           "hasTex": 1
+        },
+        "Physics": {
+          "autoUpdate": 0
         },
         "CollisionInfo": {
           "ignoreCollisionsWith": [
@@ -38,8 +41,8 @@
       "components": {
         "Transform": {
           "pos": [
-            0.6831403970718384,
-            -2.8452765941619873,
+            0.0,
+            -2.8452768325805664,
             0.9980000257492065
           ],
           "scale": [
@@ -49,6 +52,7 @@
           ]
         },
         "Physics": {
+          "autoUpdate": 0,
           "jumpForce": 90.0
         },
         "CollisionInfo": {
@@ -58,7 +62,7 @@
           ]
         },
         "StateMachine": {
-          "stateTime": 25.595422744750977,
+          "stateTime": 14.385859489440918,
           "Falling": {
             "animState": {
               "texture": "assets/Texture/Kinuta_Fall_SS.png",
@@ -316,8 +320,8 @@
       "components": {
         "Transform": {
           "pos": [
-            1000.0,
-            0.0,
+            17.0,
+            7.5,
             0.9800000190734863
           ],
           "rotation": 0.0,
@@ -360,6 +364,9 @@
             0.0,
             0.019999999552965164
           ]
+        },
+        "Physics": {
+          "autoUpdate": 0
         }
       }
     },
@@ -373,6 +380,9 @@
             -4.845276832580566,
             0.019999999552965164
           ]
+        },
+        "Physics": {
+          "autoUpdate": 0
         }
       }
     },
@@ -815,6 +825,7 @@
           "physicsFlag": 1,
           "inWater": 0,
           "buoyancy": 1,
+          "autoUpdate": 0,
           "moveSpeed": 1.0,
           "jumpForce": 100.0,
           "mass": 1.0,
@@ -851,7 +862,7 @@
           }
         },
         "VisualLC": {
-          "filename": "endgoal03.json"
+          "filename": "endgoal.json"
         }
       }
     },
@@ -865,6 +876,9 @@
             -2.8452770709991455,
             0.019999999552965164
           ]
+        },
+        "Physics": {
+          "autoUpdate": 0
         }
       }
     },
@@ -873,14 +887,14 @@
       "components": {
         "Transform": {
           "pos": [
-            5.473330020904541,
-            -2.2347419261932373,
+            6.40472412109375,
+            -3.0952770709991455,
             0.0
           ],
-          "rotation": 0.0,
+          "rotation": 48.59770965576172,
           "scale": [
-            4.0,
-            4.0,
+            2.5,
+            2.5,
             0.0
           ]
         },
@@ -895,6 +909,7 @@
           "physicsFlag": 1,
           "inWater": 0,
           "buoyancy": 1,
+          "autoUpdate": 0,
           "moveSpeed": 1.0,
           "jumpForce": 100.0,
           "mass": 1.0,
@@ -904,8 +919,8 @@
           "collisionFlag": 1,
           "autoFitScale": 1,
           "colliderSize": [
-            4.0,
-            4.0
+            2.5,
+            2.5
           ],
           "colliderType": "square",
           "collisionRes": "NoResponse",
@@ -913,6 +928,55 @@
         },
         "VisualLC": {
           "filename": "fake-wheel.json"
+        }
+      }
+    },
+    {
+      "name": "Rectangle_26",
+      "components": {
+        "Transform": {
+          "pos": [
+            6.554724216461182,
+            -1.3834338188171387,
+            0.9599999785423279
+          ],
+          "rotation": 0.0,
+          "scale": [
+            1.899999976158142,
+            0.6000000238418579,
+            0.0
+          ]
+        },
+        "Render": {
+          "shape": "square",
+          "hasTex": 1,
+          "texture": "assets/Texture\\tile.png",
+          "hasTex": 1,
+          "hasAnimation": 0
+        },
+        "Physics": {
+          "physicsFlag": 1,
+          "inWater": 0,
+          "buoyancy": 1,
+          "autoUpdate": 0,
+          "moveSpeed": 1.0,
+          "jumpForce": 100.0,
+          "mass": 1.0,
+          "damping": 0.9800000190734863
+        },
+        "CollisionInfo": {
+          "collisionFlag": 1,
+          "autoFitScale": 1,
+          "colliderSize": [
+            1.899999976158142,
+            0.6000000238418579
+          ],
+          "colliderType": "square",
+          "collisionRes": "StopWhenCollide",
+          "collisionTag": "default"
+        },
+        "VisualLC": {
+          "filename": "Rectangle_26_Logic.json"
         }
       }
     }

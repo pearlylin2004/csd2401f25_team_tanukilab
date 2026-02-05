@@ -877,6 +877,8 @@ void VisualLogicSystem::resetLogicState(GameObjectManager& manager) {
 	std::vector<GameObject*> allObjects;
 	m_manager->getAllGameObjects(allObjects);
 
+	VisualLC::globalFloatVar.clear();
+	
 	// Loop through all objects and reset their VisualLC components
 	for (GameObject* obj : allObjects) {
 		if (obj->hasComponent<VisualLC>()) {

@@ -14,7 +14,7 @@
       "hasTrueOutput": false,
       "hasFalseOutput": false,
       "parameters": {
-        "angle": "10.000000"
+        "angle": "50.000000"
       }
     },
     {
@@ -81,6 +81,23 @@
         "threshold": "0",
         "variable": "spin"
       }
+    },
+    {
+      "id": 6,
+      "implementation": "Set Global Float",
+      "type": 1,
+      "position": [
+        445.0,
+        -71.0
+      ],
+      "hasInput": true,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false,
+      "parameters": {
+        "value": "1.000000",
+        "variable": "wheelSpin"
+      }
     }
   ],
   "connections": [
@@ -100,6 +117,12 @@
       "fromNodeId": 5,
       "outputPin": "True",
       "toNodeId": 1,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 3,
+      "outputPin": "Out",
+      "toNodeId": 6,
       "inputPin": "In"
     }
   ]

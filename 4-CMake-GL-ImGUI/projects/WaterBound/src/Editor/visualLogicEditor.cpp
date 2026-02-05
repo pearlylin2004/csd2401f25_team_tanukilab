@@ -2280,6 +2280,25 @@ std::vector<std::string> VisualLogicEditor::getGlobalVariableNamesFromNodes() {
 		}
 	}
 
+	std::vector<GameObject*> allObjects = CachedGameObjects::Instance().getCachedObjects();
+
+		for (GameObject* obj : allObjects) {
+			if (obj->hasComponent<VisualLC>()) {
+				VisualLC* logic = obj->getComponent<VisualLC>();
+
+				// Scan this object's nodes for global variables
+				for (const LogicNode& node : logic->nodes) {
+					if (node.imp == NodeImplementation::SET_GLOBAL_FLOAT &&
+						node.parameters.count("variable")) {
+						std::string varName = node.parameters.at("variable");
+						if (!varName.empty()) {
+							uniqueVars.insert(varName);
+						}
+					}
+				}
+			}
+		}
+
 	return std::vector<std::string>(uniqueVars.begin(), uniqueVars.end());
 }
 
