@@ -48,6 +48,9 @@
           "texture": "assets/button.png",
           "hasTex": 1,
           "hasAnimation": 0
+        },
+        "Button": {
+          "action": "open_control"
         }
       }
     },
@@ -157,6 +160,9 @@
           "texture": "assets/button.png",
           "hasTex": 1,
           "hasAnimation": 0
+        },
+        "Button": {
+          "action": "menu"
         }
       }
     },
@@ -182,6 +188,9 @@
           "texture": "assets/button.png",
           "hasTex": 1,
           "hasAnimation": 0
+        },
+        "Button": {
+          "action": "resume_game"
         }
       }
     }
