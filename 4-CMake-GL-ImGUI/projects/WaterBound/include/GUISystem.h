@@ -39,6 +39,8 @@ namespace std {
     };
 }
 
+class VisualLogicSystem; // forward decla that save my life
+
 class GUISystem {
 public:
     //singleton accessor
@@ -47,7 +49,7 @@ public:
         return instance;
     }
 
-    void init(GameObjectManager& manager, LuaSystem& luaSystem);
+    void init(GameObjectManager& manager, LuaSystem& luaSystem, VisualLogicSystem& vlSystem);
     void update(); //update menu system
     void loadScreen(GameObjectManager& manager, const std::string& sceneName); //load a screen
     void changeState(GameState newState, const std::string& sceneName = ""); //update of state
@@ -58,6 +60,14 @@ public:
     void setStateBeforePause(GameState state) { m_stateBeforePause = state; } //set state before pause
 
 	GameState sceneToState(const std::string& sceneName); //convert scene name to game state
+
+    void restartLevel(); // restart current level
+	void loadLevel(const std::string& levelSceneName); // load next level
+    void resetAllObjectsToSpawn(); // helper for restart
+
+    bool m_pendingRestart = false;
+    bool m_pendingLevelLoad = false;
+    std::string m_pendingLevelName = "";
 
 private:
     GUISystem() = default;
@@ -81,4 +91,8 @@ private:
     GameState m_stateBeforePause = GameState::MENU;
     GameObjectManager* g_manager = nullptr;
     LuaSystem* g_luaSystem = nullptr;
+    VisualLogicSystem* g_visualLogicSystem = nullptr;
+
+    std::unordered_map<std::string, Vector2D> m_spawnPositions;
+    std::string m_currentLevel = "";
 };

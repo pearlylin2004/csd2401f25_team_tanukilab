@@ -70,25 +70,26 @@ void CoreEngine::Init(bool forceWindowed) {
     int winWidth = cfg.width;
     int winHeight = cfg.height;
 
-    /*if (wantFullscreen) {
+    if (wantFullscreen) {
         monitor = glfwGetPrimaryMonitor();
         const GLFWvidmode* mode = glfwGetVideoMode(monitor);
         winWidth = mode->width;
         winHeight = mode->height;
-
         // remember windowed size for when we toggle back
         m_windowedWidth = cfg.width;
         m_windowedHeight = cfg.height;
     }
     else {
+        
+
         m_windowedWidth = cfg.width;
         m_windowedHeight = cfg.height;
-    }*/
+    }
 
     cfg.width = winWidth;
     cfg.height = winHeight;
 
-    glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
+	glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE); // set this to true to allow resizing (rmb to change back to false!!)
     m_window = glfwCreateWindow(winWidth, winHeight, m_title.c_str(), monitor, nullptr);
 
     if (!m_window) {
@@ -146,7 +147,7 @@ void CoreEngine::Init(bool forceWindowed) {
 
     PrefabManager::Instance().loadPrefabRegistry();
     //m_guiSystem->init(*m_manager, *m_luaSystem);
-    GUISystem::getInstance().init(*m_manager, *m_luaSystem);
+    GUISystem::getInstance().init(*m_manager, *m_luaSystem, *m_visualLCSystem);
     m_luaSystem->init();
     m_renderSystem->init(*m_manager, winWidth, winHeight);
     m_waterSystem->init();
@@ -183,7 +184,7 @@ void CoreEngine::GameLoop() {
     //pause checking, and set it to paused state if escape is held
     if (InputHandler::isKeyTriggered(GLFW_KEY_ESCAPE)) {
         auto current = GUISystem::getInstance().getCurrentState(); //get current state
-        if (current != GameState::PAUSED) {
+        if (current != GameState::PAUSED && current != GameState::MENU) {
             GUISystem::getInstance().setStateBeforePause(current); //store state before pausing
             GUISystem::getInstance().changeState(GameState::PAUSED, "pause_scene.json");
         }
@@ -255,6 +256,7 @@ void CoreEngine::Update(float deltaTime) {
     m_tileMapSystem->update(*m_manager);
     m_particleSystem->update(*m_manager, deltaTime);;
     m_renderSystem->update(*m_manager, deltaTime);
+    m_waterSystem->update(*m_manager, deltaTime);
     m_fontSystem->update(*m_manager, m_fps);
     m_audioSystem->update(*m_manager, deltaTime);
     m_waterSystem->render(*m_manager);
@@ -452,7 +454,7 @@ void CoreEngine::startBGM() {
     AudioChannel bgm;
     bgm.audioFile = m_bgmFilePath;
     bgm.loop = true;
-    bgm.volume = 0.3f;
+    bgm.volume = 0.125f;
 
     m_bgmChannel = AudioHandler::getInstance().playSound(&bgm);
 }

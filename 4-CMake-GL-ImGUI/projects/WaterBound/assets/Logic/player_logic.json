@@ -118,6 +118,94 @@
         "targetType": "tag",
         "targetValue": "inventory"
       }
+    },
+    {
+      "id": 8,
+      "implementation": "On Start",
+      "type": 0,
+      "position": [
+        -244.0,
+        -115.0
+      ],
+      "hasInput": false,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false
+    },
+    {
+      "id": 9,
+      "implementation": "Set Position",
+      "type": 1,
+      "position": [
+        77.0,
+        -116.0
+      ],
+      "hasInput": true,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false,
+      "parameters": {
+        "x": "-20",
+        "y": "0"
+      }
+    },
+    {
+      "id": 10,
+      "implementation": "Print Message",
+      "type": 1,
+      "position": [
+        393.0,
+        -118.0
+      ],
+      "hasInput": true,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false,
+      "parameters": {
+        "message": "I love GAM"
+      }
+    },
+    {
+      "id": 11,
+      "implementation": "On Update",
+      "type": 0,
+      "position": [
+        -238.0,
+        186.0
+      ],
+      "hasInput": false,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false
+    },
+    {
+      "id": 12,
+      "implementation": "Check State",
+      "type": 2,
+      "position": [
+        81.0,
+        175.0
+      ],
+      "hasInput": true,
+      "hasOutput": false,
+      "hasTrueOutput": true,
+      "hasFalseOutput": true,
+      "parameters": {
+        "state": "Dead"
+      }
+    },
+    {
+      "id": 13,
+      "implementation": "Restart Level",
+      "type": 1,
+      "position": [
+        375.0,
+        206.0
+      ],
+      "hasInput": true,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false
     }
   ],
   "connections": [
@@ -155,6 +243,24 @@
       "fromNodeId": 5,
       "outputPin": "Out",
       "toNodeId": 7,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 9,
+      "outputPin": "Out",
+      "toNodeId": 10,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 11,
+      "outputPin": "Out",
+      "toNodeId": 12,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 12,
+      "outputPin": "True",
+      "toNodeId": 13,
       "inputPin": "In"
     }
   ]

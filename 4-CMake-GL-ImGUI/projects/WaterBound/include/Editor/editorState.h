@@ -268,7 +268,9 @@ namespace Editor {
 		{"Set Force on Collider", NodeType::ACTION, NodeImplementation::APPLY_FORCE_ON_COLLIDED},
 		{"Set Global Float", NodeType::ACTION, NodeImplementation::SET_GLOBAL_FLOAT},
 		{"Modify Global Float", NodeType::ACTION, NodeImplementation::MODIFY_GLOBAL_FLOAT},
-		{"Trigger Bullet Refill Event", NodeType::ACTION, NodeImplementation::TRIGGER_BULLET_REFILL_EVENT}
+		{"Trigger Bullet Refill Event", NodeType::ACTION, NodeImplementation::TRIGGER_BULLET_REFILL_EVENT},
+		{"Restart Level", NodeType::ACTION, NodeImplementation::RESTART_LEVEL},
+		{"Load Level", NodeType::ACTION, NodeImplementation::LOAD_LEVEL},
 	};
 	/* ----------------- Logic End ---------------- */
 

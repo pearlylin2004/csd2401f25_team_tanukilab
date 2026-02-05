@@ -309,6 +309,8 @@ namespace JsonIO {
         if (str == "Set Global Float") return NodeImplementation::SET_GLOBAL_FLOAT;
         if (str == "Modify Global Float") return NodeImplementation::MODIFY_GLOBAL_FLOAT;
 		if (str == "Trigger Bullet Refill Event") return NodeImplementation::TRIGGER_BULLET_REFILL_EVENT;
+        if (str == "Restart Level") return NodeImplementation::RESTART_LEVEL;
+        if (str == "Load Level") return NodeImplementation::LOAD_LEVEL;
 
 		if (str == "Check Key Held") return NodeImplementation::CHECK_KEY_HELD;
 		if (str == "Compare Value") return NodeImplementation::COMPARE_VALUE;
@@ -353,6 +355,8 @@ namespace JsonIO {
 			case NodeImplementation::SET_GLOBAL_FLOAT: return "Set Global Float";
 			case NodeImplementation::MODIFY_GLOBAL_FLOAT: return "Modify Global Float";
 			case NodeImplementation::TRIGGER_BULLET_REFILL_EVENT: return "Trigger Bullet Refill Event";
+			case NodeImplementation::RESTART_LEVEL: return "Restart Level";
+			case NodeImplementation::LOAD_LEVEL: return "Load Level";
 
             case NodeImplementation::CHECK_KEY_HELD: return "Check Key Held";
             case NodeImplementation::COMPARE_VALUE: return "Compare Value";
@@ -365,6 +369,30 @@ namespace JsonIO {
             default: return "Default";
         }
     }
+
+    GameState stringToGamestate(const std::string& stateStr) {
+		if (stateStr == "MENU") return GameState::MENU;
+		if (stateStr == "PLAYING") return GameState::PLAYING;
+		if (stateStr == "CONTROL") return GameState::CONTROL;
+		if (stateStr == "PAUSED") return GameState::PAUSED;
+        if (stateStr == "EXIT") return GameState::EXIT;
+        if (stateStr == "EXITCONFIRMATION") return GameState::EXITCONFIRMATION;
+        //if (stateStr == "LEVELS") return GameState::LEVELS;
+		return GameState::NONE;
+	}
+
+	std::string GameStateToString(GameState gm) {
+		switch (gm) {
+		case GameState::MENU: return "MENU";
+		case GameState::PLAYING: return "PLAYING";
+		case GameState::CONTROL: return "CONTROL";
+		case GameState::PAUSED: return "PAUSED";
+		case GameState::EXIT: return "EXIT";
+		case GameState::EXITCONFIRMATION: return "EXITCONFIRMATION";
+		//case GameState::LEVELS: return "LEVELS";
+		default: return "NONE";
+		}
+	}
 
     // Add this helper function in JsonIO.cpp or create a utilities file
     int stringToGLFWKey(const std::string& keyStr) {
@@ -911,7 +939,7 @@ namespace JsonIO {
             jp.AddMember("gravity", p->gravity, a);
             jp.AddMember("damping", p->damping, a);
             jp.AddMember("mass", p->dynamics.mass, a);
-            jp.AddMember("buoyancy", p->buoancy, a);
+            jp.AddMember("buoyancy", p->buoyancy, a);
 
             doc.AddMember("Physics", jp, a);
         }
@@ -1209,7 +1237,7 @@ namespace JsonIO {
                 p->gravity = jp["gravity"].GetFloat();
                 p->damping = jp["damping"].GetFloat();
                 p->dynamics.mass = jp["mass"].GetFloat();
-                p->buoancy = jp["buoyancy"].GetBool();
+                p->buoyancy = jp["buoyancy"].GetBool();
             }
 
             // Collision
@@ -1732,7 +1760,7 @@ void GameObjectManager::saveToJson(const std::string& filename, bool isNew) cons
                 rapidjson::Value jp(rapidjson::kObjectType);
                 // store as 0/1 to mirror .txt
                 jp.AddMember("inWater", rapidjson::Value(p->inWater ? 1 : 0), a);
-                jp.AddMember("buoyancy", rapidjson::Value(p->buoancy ? 1 : 0), a); // member is 'buoancy' in struct
+                jp.AddMember("buoyancy", rapidjson::Value(p->buoyancy ? 1 : 0), a); // member is 'buoyancy' in struct
                 comps.AddMember("Physics", jp, a);
             }
 
@@ -1907,7 +1935,7 @@ void GameObjectManager::loadFromJson(const std::string& filename) {
                     : (jp["inWater"].GetInt() != 0);
             }
             if (jp.HasMember("buoyancy")) {
-                p->buoancy = jp["buoyancy"].IsBool()
+                p->buoyancy = jp["buoyancy"].IsBool()
                     ? jp["buoyancy"].GetBool()
                     : (jp["buoyancy"].GetInt() != 0);
             }

@@ -2,13 +2,38 @@
   "version": 1,
   "objects": [
     {
+      "name": "background6",
+      "components": {
+        "Transform": {
+          "pos": [
+            0.0,
+            0.0,
+            -0.0010000000474974513
+          ],
+          "rotation": 0.0,
+          "scale": [
+            45.0,
+            45.0,
+            0.0
+          ]
+        },
+        "Render": {
+          "shape": "square",
+          "hasTex": 1,
+          "texture": "assets/Texture\\game_bg_layer_6.png",
+          "hasTex": 1,
+          "hasAnimation": 0
+        }
+      }
+    },
+    {
       "prefabid": "b1a12273-a692-4ce0-8072-156da2c70842",
       "name": "bullet",
       "components": {
         "Transform": {
           "pos": [
-            27.232994079589844,
-            73.79768371582031,
+            -1000.0,
+            -1002.4993896484375,
             1.0
           ]
         },
@@ -16,10 +41,12 @@
           "texture": "assets/Texture\\water_texture.png",
           "hasTex": 1
         },
+        "Physics": {
+          "autoUpdate": 0
+        },
         "CollisionInfo": {
           "ignoreCollisionsWith": [
             "player",
-            "bullet",
             "hazards"
           ]
         },
@@ -30,114 +57,6 @@
               "scriptName": "bullet"
             }
           ]
-        }
-      }
-    },
-    {
-      "prefabid": "f04819ff-270c-41b4-8387-73382eb85103",
-      "name": "water_source3030",
-      "components": {
-        "Transform": {
-          "pos": [
-            17.59305763244629,
-            -0.14866113662719727,
-            0.0
-          ]
-        },
-        "StateMachine": {
-          "stateTime": 252.32286071777344,
-          "Idle": {
-            "animState": {
-              "texture": "assets/Texture\\Water_Source_Full.png",
-              "loop": 1,
-              "play": 0,
-              "totalColumn": 1,
-              "totalRow": 1,
-              "frameTime": 0.10000000149011612,
-              "initialFramCol": 0.0,
-              "initialFramRow": 0.0,
-              "lastFramCol": 0.0,
-              "lastFramRow": 0.0
-            }
-          },
-          "Walking": {
-            "animState": {
-              "texture": "assets/Texture\\Water_Source_Empty.png",
-              "loop": 1,
-              "play": 0,
-              "totalColumn": 1,
-              "totalRow": 1,
-              "frameTime": 0.10000000149011612,
-              "initialFramCol": 0.0,
-              "initialFramRow": 0.0,
-              "lastFramCol": 0.0,
-              "lastFramRow": 0.0
-            }
-          },
-          "Jumping": {
-            "animState": {
-              "texture": "",
-              "loop": 1,
-              "play": 0,
-              "totalColumn": 1,
-              "totalRow": 1,
-              "frameTime": 0.10000000149011612,
-              "initialFramCol": 0.0,
-              "initialFramRow": 0.0,
-              "lastFramCol": 0.0,
-              "lastFramRow": 0.0
-            }
-          },
-          "Falling": {
-            "animState": {
-              "texture": "assets/Texture\\Water_Source_Empty.png",
-              "loop": 1,
-              "play": 0,
-              "totalColumn": 1,
-              "totalRow": 1,
-              "frameTime": 0.10000000149011612,
-              "initialFramCol": 0.0,
-              "initialFramRow": 0.0,
-              "lastFramCol": 0.0,
-              "lastFramRow": 0.0
-            }
-          },
-          "Shooting": {
-            "animState": {
-              "texture": "",
-              "loop": 1,
-              "play": 0,
-              "totalColumn": 1,
-              "totalRow": 1,
-              "frameTime": 0.10000000149011612,
-              "initialFramCol": 0.0,
-              "initialFramRow": 0.0,
-              "lastFramCol": 0.0,
-              "lastFramRow": 0.0
-            }
-          },
-          "Dead": {
-            "animState": {
-              "texture": "",
-              "loop": 1,
-              "play": 0,
-              "totalColumn": 1,
-              "totalRow": 1,
-              "frameTime": 0.10000000149011612,
-              "initialFramCol": 0.0,
-              "initialFramRow": 0.0,
-              "lastFramCol": 0.0,
-              "lastFramRow": 0.0
-            }
-          }
-        },
-        "AudioComponent": {
-          "channels": {
-            "default": {
-              "fadeInOnStart": 1,
-              "fadeInDuration": 0.6399999856948853
-            }
-          }
         }
       }
     },
@@ -175,16 +94,17 @@
         "Transform": {
           "pos": [
             0.0,
-            -7.5,
+            -2.8452768325805664,
             0.9980000257492065
           ],
           "scale": [
-            5.0,
-            5.0,
+            4.0,
+            4.0,
             0.0
           ]
         },
         "Physics": {
+          "autoUpdate": 0,
           "jumpForce": 90.0
         },
         "CollisionInfo": {
@@ -194,7 +114,7 @@
           ]
         },
         "StateMachine": {
-          "stateTime": 23.622032165527344
+          "stateTime": 9.8779935836792
         },
         "AudioComponent": {
           "channels": {
@@ -642,8 +562,8 @@
       "components": {
         "Transform": {
           "pos": [
-            -13.0702543258667,
-            -7.312854766845703,
+            17.0,
+            7.5,
             0.9900000095367432
           ],
           "rotation": 0.0,
@@ -678,8 +598,8 @@
       "components": {
         "Transform": {
           "pos": [
-            -12.97700023651123,
-            -7.301594257354736,
+            17.0,
+            7.5,
             0.9800000190734863
           ],
           "rotation": 0.0,
@@ -692,7 +612,7 @@
         "Render": {
           "shape": "square",
           "hasTex": 1,
-          "texture": "assets/Texture\\Water_100.png",
+          "texture": "assets/Texture\\Water_90.png",
           "hasTex": 1,
           "hasAnimation": 0
         },
@@ -713,110 +633,360 @@
       }
     },
     {
-      "prefabid": "f04819ff-270c-41b4-8387-73382eb85103",
-      "name": "water_source30",
+      "name": "Rectangle_20",
       "components": {
         "Transform": {
           "pos": [
-            -5.438690185546875,
-            -7.751836776733398,
+            -2.345275640487671,
+            -2.3452765941619873,
+            0.0
+          ],
+          "rotation": 0.0,
+          "scale": [
+            1.0,
+            1.0,
             0.0
           ]
         },
-        "StateMachine": {
-          "stateTime": 252.32286071777344,
-          "Idle": {
-            "animState": {
-              "texture": "assets/Texture\\Water_Source_Full.png",
-              "loop": 1,
-              "play": 0,
-              "totalColumn": 1,
-              "totalRow": 1,
-              "frameTime": 0.10000000149011612,
-              "initialFramCol": 0.0,
-              "initialFramRow": 0.0,
-              "lastFramCol": 0.0,
-              "lastFramRow": 0.0
+        "TileMap": {
+          "tileW": 2.0,
+          "tileH": 2.0,
+          "columns": 50,
+          "rows": 50,
+          "enableCol": 1,
+          "tiles": [
+            {
+              "x": 7,
+              "y": -2,
+              "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
+            },
+            {
+              "x": 6,
+              "y": -4,
+              "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
+            },
+            {
+              "x": -3,
+              "y": -4,
+              "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
+            },
+            {
+              "x": -7,
+              "y": -4,
+              "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
+            },
+            {
+              "x": -6,
+              "y": -4,
+              "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
+            },
+            {
+              "x": -5,
+              "y": -4,
+              "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
+            },
+            {
+              "x": 6,
+              "y": -2,
+              "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
+            },
+            {
+              "x": -4,
+              "y": -4,
+              "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
+            },
+            {
+              "x": 7,
+              "y": -4,
+              "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
+            },
+            {
+              "x": -7,
+              "y": -3,
+              "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
+            },
+            {
+              "x": -6,
+              "y": -3,
+              "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
+            },
+            {
+              "x": -5,
+              "y": -3,
+              "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
+            },
+            {
+              "x": 7,
+              "y": -3,
+              "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
+            },
+            {
+              "x": 6,
+              "y": -1,
+              "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
+            },
+            {
+              "x": -4,
+              "y": -3,
+              "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
+            },
+            {
+              "x": 7,
+              "y": -1,
+              "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
+            },
+            {
+              "x": 6,
+              "y": -3,
+              "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
+            },
+            {
+              "x": -3,
+              "y": -3,
+              "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
+            },
+            {
+              "x": 5,
+              "y": -2,
+              "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
+            },
+            {
+              "x": 4,
+              "y": -4,
+              "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
+            },
+            {
+              "x": -1,
+              "y": -4,
+              "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
+            },
+            {
+              "x": -2,
+              "y": -2,
+              "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
+            },
+            {
+              "x": 5,
+              "y": -3,
+              "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
+            },
+            {
+              "x": -2,
+              "y": -3,
+              "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
+            },
+            {
+              "x": 5,
+              "y": -4,
+              "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
+            },
+            {
+              "x": 4,
+              "y": -2,
+              "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
+            },
+            {
+              "x": -1,
+              "y": -2,
+              "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
+            },
+            {
+              "x": -2,
+              "y": -4,
+              "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
+            },
+            {
+              "x": 5,
+              "y": -1,
+              "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
+            },
+            {
+              "x": 4,
+              "y": -3,
+              "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
+            },
+            {
+              "x": -1,
+              "y": -3,
+              "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
+            },
+            {
+              "x": 1,
+              "y": -4,
+              "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
+            },
+            {
+              "x": 0,
+              "y": -2,
+              "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
+            },
+            {
+              "x": 0,
+              "y": -3,
+              "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
+            },
+            {
+              "x": 1,
+              "y": -2,
+              "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
+            },
+            {
+              "x": 0,
+              "y": -4,
+              "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
+            },
+            {
+              "x": 1,
+              "y": -3,
+              "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
+            },
+            {
+              "x": -8,
+              "y": -4,
+              "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
+            },
+            {
+              "x": -8,
+              "y": -3,
+              "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
+            },
+            {
+              "x": -9,
+              "y": -3,
+              "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
+            },
+            {
+              "x": -9,
+              "y": -4,
+              "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
+            },
+            {
+              "x": 3,
+              "y": -4,
+              "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
+            },
+            {
+              "x": 2,
+              "y": -2,
+              "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
+            },
+            {
+              "x": 2,
+              "y": -3,
+              "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
+            },
+            {
+              "x": 3,
+              "y": -2,
+              "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
+            },
+            {
+              "x": 2,
+              "y": -4,
+              "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
+            },
+            {
+              "x": 3,
+              "y": -3,
+              "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
+            },
+            {
+              "x": 9,
+              "y": -3,
+              "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
+            },
+            {
+              "x": 8,
+              "y": -1,
+              "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
+            },
+            {
+              "x": 9,
+              "y": -4,
+              "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
+            },
+            {
+              "x": 8,
+              "y": -2,
+              "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
+            },
+            {
+              "x": 8,
+              "y": -3,
+              "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
+            },
+            {
+              "x": 9,
+              "y": -1,
+              "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
+            },
+            {
+              "x": 8,
+              "y": -4,
+              "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
+            },
+            {
+              "x": 9,
+              "y": -2,
+              "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
+            },
+            {
+              "x": 11,
+              "y": -3,
+              "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
+            },
+            {
+              "x": 10,
+              "y": -1,
+              "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
+            },
+            {
+              "x": 11,
+              "y": -4,
+              "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
+            },
+            {
+              "x": 10,
+              "y": -2,
+              "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
+            },
+            {
+              "x": 11,
+              "y": -1,
+              "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
+            },
+            {
+              "x": 10,
+              "y": -3,
+              "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
+            },
+            {
+              "x": 11,
+              "y": -2,
+              "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
+            },
+            {
+              "x": 10,
+              "y": -4,
+              "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
             }
-          },
-          "Walking": {
-            "animState": {
-              "texture": "assets/Texture\\Water_Source_Empty.png",
-              "loop": 1,
-              "play": 0,
-              "totalColumn": 1,
-              "totalRow": 1,
-              "frameTime": 0.10000000149011612,
-              "initialFramCol": 0.0,
-              "initialFramRow": 0.0,
-              "lastFramCol": 0.0,
-              "lastFramRow": 0.0
-            }
-          },
-          "Jumping": {
-            "animState": {
-              "texture": "",
-              "loop": 1,
-              "play": 0,
-              "totalColumn": 1,
-              "totalRow": 1,
-              "frameTime": 0.10000000149011612,
-              "initialFramCol": 0.0,
-              "initialFramRow": 0.0,
-              "lastFramCol": 0.0,
-              "lastFramRow": 0.0
-            }
-          },
-          "Falling": {
-            "animState": {
-              "texture": "assets/Texture\\Water_Source_Empty.png",
-              "loop": 1,
-              "play": 0,
-              "totalColumn": 1,
-              "totalRow": 1,
-              "frameTime": 0.10000000149011612,
-              "initialFramCol": 0.0,
-              "initialFramRow": 0.0,
-              "lastFramCol": 0.0,
-              "lastFramRow": 0.0
-            }
-          },
-          "Shooting": {
-            "animState": {
-              "texture": "",
-              "loop": 1,
-              "play": 0,
-              "totalColumn": 1,
-              "totalRow": 1,
-              "frameTime": 0.10000000149011612,
-              "initialFramCol": 0.0,
-              "initialFramRow": 0.0,
-              "lastFramCol": 0.0,
-              "lastFramRow": 0.0
-            }
-          },
-          "Dead": {
-            "animState": {
-              "texture": "",
-              "loop": 1,
-              "play": 0,
-              "totalColumn": 1,
-              "totalRow": 1,
-              "frameTime": 0.10000000149011612,
-              "initialFramCol": 0.0,
-              "initialFramRow": 0.0,
-              "lastFramCol": 0.0,
-              "lastFramRow": 0.0
-            }
-          }
+          ]
+        }
+      }
+    },
+    {
+      "prefabid": "8b8d44fa-ed22-4288-98ee-c476958f5b5b",
+      "name": "endgoal(21)",
+      "components": {
+        "Transform": {
+          "pos": [
+            13.596,
+            -0.04527680575847626,
+            0.0
+          ]
         },
-        "AudioComponent": {
-          "channels": {
-            "default": {
-              "fadeInOnStart": 1,
-              "fadeInDuration": 0.6399999856948853
-            }
-          }
+        "Physics": {
+          "autoUpdate": 0
         }
       }
     }

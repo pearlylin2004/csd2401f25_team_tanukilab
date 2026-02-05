@@ -183,7 +183,7 @@ public:
     Dynamics dynamics;
 
     bool canMove = true;  // Add this flag
-
+    bool autoUpdate = false;
 
     float velX = 0.0f;
     float velY = 0.0f;
@@ -217,8 +217,13 @@ public:
 
 
     bool inWater = false;
-    bool buoancy = true;
+    bool buoyancy = true;
 
+    //bullet gravity thing
+    float gravityDelayTimer = 0.0f;
+    float gravityDelay = 0.2f;
+
+	float bounciness = 0.0f; // 0 = no bounce, 1 = full bounce
     //const float waterBounce = 60.0f;   // upward velocity when entering water
 
 };
@@ -668,6 +673,8 @@ enum class NodeImplementation {
     SET_GLOBAL_FLOAT,
     MODIFY_GLOBAL_FLOAT,
     TRIGGER_BULLET_REFILL_EVENT, // whenever bullet is refilled, add this node
+    RESTART_LEVEL,
+    LOAD_LEVEL,
 
     // DEFAULT
     DEFAULT // nothing happen :)
