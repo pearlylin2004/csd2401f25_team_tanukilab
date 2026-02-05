@@ -309,6 +309,8 @@ namespace JsonIO {
         if (str == "Set Global Float") return NodeImplementation::SET_GLOBAL_FLOAT;
         if (str == "Modify Global Float") return NodeImplementation::MODIFY_GLOBAL_FLOAT;
 		if (str == "Trigger Bullet Refill Event") return NodeImplementation::TRIGGER_BULLET_REFILL_EVENT;
+        if (str == "Restart Level") return NodeImplementation::RESTART_LEVEL;
+        if (str == "Load Level") return NodeImplementation::LOAD_LEVEL;
 
 		if (str == "Check Key Held") return NodeImplementation::CHECK_KEY_HELD;
 		if (str == "Compare Value") return NodeImplementation::COMPARE_VALUE;
@@ -353,6 +355,8 @@ namespace JsonIO {
 			case NodeImplementation::SET_GLOBAL_FLOAT: return "Set Global Float";
 			case NodeImplementation::MODIFY_GLOBAL_FLOAT: return "Modify Global Float";
 			case NodeImplementation::TRIGGER_BULLET_REFILL_EVENT: return "Trigger Bullet Refill Event";
+			case NodeImplementation::RESTART_LEVEL: return "Restart Level";
+			case NodeImplementation::LOAD_LEVEL: return "Load Level";
 
             case NodeImplementation::CHECK_KEY_HELD: return "Check Key Held";
             case NodeImplementation::COMPARE_VALUE: return "Compare Value";
@@ -365,6 +369,30 @@ namespace JsonIO {
             default: return "Default";
         }
     }
+
+    GameState stringToGamestate(const std::string& stateStr) {
+		if (stateStr == "MENU") return GameState::MENU;
+		if (stateStr == "PLAYING") return GameState::PLAYING;
+		if (stateStr == "CONTROL") return GameState::CONTROL;
+		if (stateStr == "PAUSED") return GameState::PAUSED;
+        if (stateStr == "EXIT") return GameState::EXIT;
+        if (stateStr == "EXITCONFIRMATION") return GameState::EXITCONFIRMATION;
+        //if (stateStr == "LEVELS") return GameState::LEVELS;
+		return GameState::NONE;
+	}
+
+	std::string GameStateToString(GameState gm) {
+		switch (gm) {
+		case GameState::MENU: return "MENU";
+		case GameState::PLAYING: return "PLAYING";
+		case GameState::CONTROL: return "CONTROL";
+		case GameState::PAUSED: return "PAUSED";
+		case GameState::EXIT: return "EXIT";
+		case GameState::EXITCONFIRMATION: return "EXITCONFIRMATION";
+		//case GameState::LEVELS: return "LEVELS";
+		default: return "NONE";
+		}
+	}
 
     // Add this helper function in JsonIO.cpp or create a utilities file
     int stringToGLFWKey(const std::string& keyStr) {

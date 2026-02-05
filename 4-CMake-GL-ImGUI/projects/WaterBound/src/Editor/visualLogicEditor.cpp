@@ -1282,6 +1282,67 @@ void VisualLogicEditor::renderNodeProperties() {
 				ImGui::TextColored(ImVec4(1.0f, 0.8f, 0.0f, 1.0f), "Note: Only works during collision events");
 			}
 		}
+		else if (node.imp == NodeImplementation::RESTART_LEVEL) {
+			ImGui::Text("Restart Level");
+			ImGui::Separator();
+			ImGui::TextWrapped("Restarts the current level and resets all objects to their spawn positions.");
+			ImGui::Spacing();
+			ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "This will:");
+			ImGui::BulletText("Reset all object positions");
+			ImGui::BulletText("Reset all velocities to zero");
+			ImGui::BulletText("Set all states to IDLE");
+			ImGui::BulletText("Reset animations to idle");
+		}
+
+		else if (node.imp == NodeImplementation::LOAD_LEVEL) {
+			ImGui::Text("Load Level");
+			ImGui::Separator();
+
+			// Level name input
+			char levelBuffer[256];
+			std::string currentLevel = node.parameters.count("levelName") ?
+				node.parameters["levelName"] : "level01.json";
+			strncpy(levelBuffer, currentLevel.c_str(), 255);
+			levelBuffer[255] = '\0';
+
+			ImGui::Text("Level File:");
+			if (ImGui::InputText("##levelName", levelBuffer, 256)) {
+				node.parameters["levelName"] = levelBuffer;
+			}
+
+			ImGui::Spacing();
+			ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f),
+				"Enter the level filename (e.g., level02.json)");
+
+			// Optional: Quick select dropdown for existing levels
+			ImGui::Spacing();
+			if (ImGui::BeginCombo("##quickSelectLevel", "Quick Select")) {
+				// List common level files
+				const char* commonLevels[] = {
+					"level01.json",
+					"level02.json",
+					"level03.json",
+					"menu_scene.json"
+				};
+
+				for (const char* level : commonLevels) {
+					if (ImGui::Selectable(level)) {
+						node.parameters["levelName"] = level;
+					}
+				}
+				ImGui::EndCombo();
+			}
+
+			ImGui::Spacing();
+			if (!currentLevel.empty()) {
+				ImGui::TextColored(ImVec4(0.5f, 1.0f, 0.5f, 1.0f),
+					"Will load: %s", currentLevel.c_str());
+			}
+			else {
+				ImGui::TextColored(ImVec4(1.0f, 0.5f, 0.5f, 1.0f),
+					"No level specified!");
+			}
+			}
 	}
 	
 	/* ---------- END ---------- */
@@ -1800,6 +1861,9 @@ void VisualLogicEditor::addNode(NodeType type, NodeImplementation imp) {
 		else if (imp == NodeImplementation::MODIFY_GLOBAL_FLOAT) {
 			node.parameters["variable"] = "var";
 			node.parameters["value"] = "1";
+		}
+		else if (imp == NodeImplementation::LOAD_LEVEL) {
+			node.parameters["levelName"] = "level01.json";
 		}
 	}
 	// CONDITION nodes

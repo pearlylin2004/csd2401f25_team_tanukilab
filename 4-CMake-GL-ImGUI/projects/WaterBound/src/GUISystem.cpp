@@ -42,7 +42,7 @@ GUISystem::~GUISystem() {
     std::cout << "[GUI] GUISystem destructor called" << std::endl;
 }*/
 
-void GUISystem::init(GameObjectManager& manager, LuaSystem& luaSystem) {
+void GUISystem::init(GameObjectManager& manager, LuaSystem& luaSystem, VisualLogicSystem& vlSystem) {
     std::cout << "[GUI] GUISystem::init started" << std::endl;
 
     // Load the menu scene - this will populate button data in the manager
@@ -50,11 +50,26 @@ void GUISystem::init(GameObjectManager& manager, LuaSystem& luaSystem) {
 
     g_manager = &manager;
     g_luaSystem = &luaSystem;
+    g_visualLogicSystem = &vlSystem;
     std::cout << "[GUI] GUISystem::init completed successfully" << std::endl;
 }
 
 //update function to check for button clicking
 void GUISystem::update() {
+    if (m_pendingRestart) {
+        m_pendingRestart = false;
+        restartLevel();
+        return;
+    }
+
+    if (m_pendingLevelLoad && !UISystem::isShowUI()) {
+        m_pendingLevelLoad = false;
+        std::string levelToLoad = m_pendingLevelName;
+        m_pendingLevelName = "";
+        loadLevel(levelToLoad);
+        return;
+    }
+
     if (EditorManager::isEditingMode()) return;
     if (m_currentState == GameState::PLAYING) return;
     if (UISystem::isShowUI()) return; // skip if UI is shown
@@ -203,6 +218,8 @@ void GUISystem::startGame(GameObjectManager& manager) {
     manager.init();
     manager.initializeSceneResources();
 
+    m_currentLevel = std::string(RUNTIME_SCENE_DIR_R) + "/level01.json";
+
     std::vector<GameObject*> gameObjects;
     g_manager->getAllGameObjects(gameObjects);
     //iterate over all Lua scripts in the folder
@@ -287,4 +304,114 @@ GameState GUISystem::sceneToState(const std::string& sceneName) {
         return GameState::EXITCONFIRMATION;
     }
     return GameState::MENU; //fallback
+}
+
+void GUISystem::restartLevel() {
+    std::cout << "[GUI] Restarting level" << std::endl;
+
+    if (m_currentLevel.empty()) {
+        std::cerr << "[GUI] No current level to restart!" << std::endl;
+        return;
+    }
+
+    removeButtons();
+    g_manager->clearScene();
+    g_manager->loadScene(m_currentLevel);
+    g_manager->initializeSceneResources();
+    g_visualLogicSystem->resetLogicState(*g_manager);
+    g_visualLogicSystem->initAll(*g_manager);
+    resetAllObjectsToSpawn();
+    m_currentState = GameState::PLAYING;
+}
+
+void GUISystem::loadLevel(const std::string& levelName) {
+    std::cout << "[GUI] Loading level: " << levelName << std::endl;
+
+    std::string fullPath = std::string(RUNTIME_SCENE_DIR_R) + "/" + levelName;
+    m_currentLevel = fullPath;
+
+    //m_currentLevel = levelName;
+    removeButtons();
+    g_manager->clearScene();
+
+    g_manager->loadScene(fullPath);
+    g_manager->initializeSceneResources();
+	g_visualLogicSystem->resetLogicState(*g_manager);
+    g_visualLogicSystem->initAll(*g_manager);
+
+    // Save spawn positions for this level
+    m_spawnPositions.clear();
+    std::vector<GameObject*> allObjects;
+    g_manager->getAllGameObjects(allObjects);
+
+    for (GameObject* obj : allObjects) {
+        if (obj->hasComponent<Transform>()) {
+            Transform* transform = obj->getComponent<Transform>();
+            m_spawnPositions[obj->getObjectName()] = Vector2D(transform->x, transform->y);
+        }
+    }
+
+    m_currentState = GameState::PLAYING;
+}
+
+void GUISystem::resetAllObjectsToSpawn() {
+    std::cout << "[GUI] Resetting all objects to spawn positions" << std::endl;
+
+    std::vector<GameObject*> allObjects;
+    g_manager->getAllGameObjects(allObjects);
+
+    for (GameObject* obj : allObjects) {
+        std::string objName = obj->getObjectName();
+
+        // Reset position to spawn
+        if (m_spawnPositions.count(objName)) {
+            Transform* transform = obj->getComponent<Transform>();
+            if (transform) {
+                Vector2D spawnPos = m_spawnPositions[objName];
+                transform->x = spawnPos.x;
+                transform->y = spawnPos.y;
+            }
+        }
+
+        if (obj->hasComponent<AudioComponent>()) {
+			for (auto& soundPair : obj->getComponent<AudioComponent>()->audioChannels) {
+				soundPair.second.state = AudioState::Stopped;
+			}
+        }
+
+        // Reset velocity to zero
+        if (obj->hasComponent<Physics>()) {
+            Physics* physics = obj->getComponent<Physics>();
+            physics->velX = 0.0f;
+            physics->velY = 0.0f;
+        }
+
+        // Reset to idle state
+        if (obj->hasComponent<StateMachine>()) {
+            StateMachine* sm = obj->getComponent<StateMachine>();
+            sm->state = PlayerState::Idle;
+			sm->facingRight = true;
+            sm->fixState = false;
+			sm->stateTime = 0.f;
+
+			if (obj->hasComponent<Animation>()) {
+				Animation* anim = obj->getComponent<Animation>();
+                anim->animState[static_cast<int>(sm->state)].currentFrameColumn = anim->animState[static_cast<int>(sm->state)].initialFrame.x;
+                anim->animState[static_cast<int>(sm->state)].currentFrameRow = anim->animState[static_cast<int>(sm->state)].initialFrame.y;
+
+                anim->animState[static_cast<int>(sm->state)].currentFrameColumn = anim->animState[static_cast<int>(sm->state)].initialFrame.x;
+			}
+        }
+
+        if (obj->hasComponent<TileMap>()) {
+			TileMap* tileMap = obj->getComponent<TileMap>();
+            tileMap->collisionBoxs.clear();
+			tileMap->colChanged = true;
+
+            if (tileMap->enableCol && obj->hasComponent<Transform>()) {
+                Transform* tmTransform = obj->getComponent<Transform>();
+                Collision::buildTileCollisionBox(tileMap, tmTransform);
+            }
+        }
+    }
 }

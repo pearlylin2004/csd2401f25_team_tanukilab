@@ -673,6 +673,8 @@ enum class NodeImplementation {
     SET_GLOBAL_FLOAT,
     MODIFY_GLOBAL_FLOAT,
     TRIGGER_BULLET_REFILL_EVENT, // whenever bullet is refilled, add this node
+    RESTART_LEVEL,
+    LOAD_LEVEL,
 
     // DEFAULT
     DEFAULT // nothing happen :)
