@@ -137,7 +137,7 @@ void InputSystem::update(GameObjectManager& manager, const float& deltaTime, Mes
     /* ---- END ---- */
 
     // Press 8 to manually run FSM assignment check
-    if (InputHandler::isKeyTriggered(GLFW_KEY_8)) {
+	if (InputHandler::isComboKeyTriggered(GLFW_KEY_8)) {
         std::cout << "\n[DEBUG KEY 8] ====== MANUAL FSM ASSIGNMENT CHECK ======\n";
         
         std::vector<GameObject*> allObjects;
