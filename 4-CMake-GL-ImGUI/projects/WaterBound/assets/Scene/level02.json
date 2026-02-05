@@ -112,7 +112,7 @@
           ]
         },
         "StateMachine": {
-          "stateTime": 6.853488445281982,
+          "stateTime": 185.85609436035156,
           "Falling": {
             "animState": {
               "texture": "assets/Texture/Kinuta_Fall_SS.png",
