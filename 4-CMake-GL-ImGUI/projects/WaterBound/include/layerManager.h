@@ -1,12 +1,14 @@
 /* Start Header ************************************************************************/
 /*!
 \file       layerManager.h
-\author     Hugo Low Ren Hao, low.h, 2402272
-
+\author     Hugo Low Ren Hao, low.h, 2402272, 60%
+\author 	Varick Teo, v.teo, 2403417, 40%
 \par        low.h@digipen.edu
+\par        v.teo@digipen.edu
 \date       November, 1, 2025
 \brief      This file contains the declaration of the LayerManager class.
-			It manages multiple layers and assigns GameObjects to them.
+			It manages multiple layers, assigns GameObjects to them, and provides
+			layer-wide visibility and update control for system integration.
 
 Copyright (C) 2025 DigiPen Institute of Technology.
 Reproduction or disclosure of this file or its contents
