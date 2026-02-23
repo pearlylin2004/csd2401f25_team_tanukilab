@@ -75,6 +75,7 @@ void CoreEngine::Init(bool forceWindowed) {
         const GLFWvidmode* mode = glfwGetVideoMode(monitor);
         winWidth = mode->width;
         winHeight = mode->height;
+
         // remember windowed size for when we toggle back
         m_windowedWidth = cfg.width;
         m_windowedHeight = cfg.height;

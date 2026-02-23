@@ -96,8 +96,8 @@ private:
     GameObjectManager* g_manager = nullptr;
     LuaSystem* g_luaSystem = nullptr;
 
-    // int level = 0;
-    // int max_level = 2;
+    int level = 0;
+    int max_level = 2;
     VisualLogicSystem* g_visualLogicSystem = nullptr;
 
     std::unordered_map<std::string, Vector2D> m_spawnPositions;

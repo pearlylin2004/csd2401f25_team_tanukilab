@@ -1775,98 +1775,98 @@ void InspectorWindow::renderLayerControls(GameObject* selected, GameObjectManage
     }
 }
 
-void InspectorWindow::renderLayerControls(GameObject* selected, GameObjectManager& manager) {
-    if (ImGui::CollapsingHeader("Layer")) {
-        int currentLayer = selected->getLayer();
-        Layer* layer = manager.getLayerManager().getLayer(currentLayer);
-
-        /* ------------------- Layer Properties ------------------- */
-        if (layer && ImGui::TreeNode("Layer Properties")) {
-
-            // layers dropdown
-            if (ImGui::BeginCombo("Assign to Layer", layer->getLayerName().c_str())) {
-                std::vector<Layer*> allLayers = manager.getLayerManager().getAllLayers();
-                for (Layer* l : allLayers) {
-                    bool isSelected = (l->getLayerID() == currentLayer);
-                    std::string label = l->getLayerName() + " (ID: " + std::to_string(l->getLayerID()) +
-                        ", Objects: " + std::to_string(l->getObjectCount()) + ")";
-                    if (ImGui::Selectable(label.c_str(), isSelected)) {
-                        if (manager.assignObjectToLayer(selected, l->getLayerID())) {
-                            DebugLog::addMessage(selected->getObjectName() + " moved to layer: " + l->getLayerName());
-                        }
-                        else {
-                            DebugLog::addMessage("Failed to assign layer!");
-                        }
-                    }
-                    if (isSelected) {
-                        ImGui::SetItemDefaultFocus();
-                    }
-                }
-                ImGui::EndCombo();
-            }
-
-            ImGui::Spacing();
-            ImGui::Separator();
-            ImGui::Spacing();
-
-            // master flag
-            bool enabled = layer->isEnabled();
-            if (ImGui::Checkbox("Enabled", &enabled)) {
-                layer->setEnabled(enabled);
-                DebugLog::addMessage("Layer " + layer->getLayerName() +
-                    (enabled ? " enabled" : " disabled"));
-            }
-            ImGui::SameLine();
-            ImGui::TextDisabled("(?)");
-            if (ImGui::IsItemHovered()) {
-                ImGui::SetTooltip("Master toggle - affects both visibility and updates");
-            }
-
-            // flags
-            ImGui::BeginDisabled(!enabled);
-
-            bool visible = layer->isVisible();
-            if (ImGui::Checkbox("Visible", &visible)) {
-                layer->setVisible(visible);
-            }
-            ImGui::SameLine();
-            ImGui::TextDisabled("(?)");
-            if (ImGui::IsItemHovered()) {
-                ImGui::SetTooltip("Controls rendering only");
-            }
-
-            bool updatable = layer->isUpdatable();
-            if (ImGui::Checkbox("Updatable", &updatable)) {
-                layer->setUpdatable(updatable);
-            }
-            ImGui::SameLine();
-            ImGui::TextDisabled("(?)");
-            if (ImGui::IsItemHovered()) {
-                ImGui::SetTooltip("Controls physics/logic updates only");
-            }
-
-            ImGui::EndDisabled();
-
-            ImGui::TreePop();
-        }
-
-        ImGui::Spacing();
-        ImGui::Separator();
-        ImGui::Spacing();
-
-        if (layer && ImGui::TreeNode("Layer Info")) {
-            if (layer) {
-                ImGui::Text("Name: %s", layer->getLayerName().c_str());
-                ImGui::Text("ID: %d", currentLayer);
-                ImGui::Text("Objects in layer: %zu", layer->getObjectCount());
-            }
-            ImGui::TreePop();
-        }
-
-        ImGui::Spacing();
-        ImGui::Spacing();
-    }
-}
+//void InspectorWindow::renderLayerControls(GameObject* selected, GameObjectManager& manager) {
+//    if (ImGui::CollapsingHeader("Layer")) {
+//        int currentLayer = selected->getLayer();
+//        Layer* layer = manager.getLayerManager().getLayer(currentLayer);
+//
+//        /* ------------------- Layer Properties ------------------- */
+//        if (layer && ImGui::TreeNode("Layer Properties")) {
+//
+//            // layers dropdown
+//            if (ImGui::BeginCombo("Assign to Layer", layer->getLayerName().c_str())) {
+//                std::vector<Layer*> allLayers = manager.getLayerManager().getAllLayers();
+//                for (Layer* l : allLayers) {
+//                    bool isSelected = (l->getLayerID() == currentLayer);
+//                    std::string label = l->getLayerName() + " (ID: " + std::to_string(l->getLayerID()) +
+//                        ", Objects: " + std::to_string(l->getObjectCount()) + ")";
+//                    if (ImGui::Selectable(label.c_str(), isSelected)) {
+//                        if (manager.assignObjectToLayer(selected, l->getLayerID())) {
+//                            DebugLog::addMessage(selected->getObjectName() + " moved to layer: " + l->getLayerName());
+//                        }
+//                        else {
+//                            DebugLog::addMessage("Failed to assign layer!");
+//                        }
+//                    }
+//                    if (isSelected) {
+//                        ImGui::SetItemDefaultFocus();
+//                    }
+//                }
+//                ImGui::EndCombo();
+//            }
+//
+//            ImGui::Spacing();
+//            ImGui::Separator();
+//            ImGui::Spacing();
+//
+//            // master flag
+//            bool enabled = layer->isEnabled();
+//            if (ImGui::Checkbox("Enabled", &enabled)) {
+//                layer->setEnabled(enabled);
+//                DebugLog::addMessage("Layer " + layer->getLayerName() +
+//                    (enabled ? " enabled" : " disabled"));
+//            }
+//            ImGui::SameLine();
+//            ImGui::TextDisabled("(?)");
+//            if (ImGui::IsItemHovered()) {
+//                ImGui::SetTooltip("Master toggle - affects both visibility and updates");
+//            }
+//
+//            // flags
+//            ImGui::BeginDisabled(!enabled);
+//
+//            bool visible = layer->isVisible();
+//            if (ImGui::Checkbox("Visible", &visible)) {
+//                layer->setVisible(visible);
+//            }
+//            ImGui::SameLine();
+//            ImGui::TextDisabled("(?)");
+//            if (ImGui::IsItemHovered()) {
+//                ImGui::SetTooltip("Controls rendering only");
+//            }
+//
+//            bool updatable = layer->isUpdatable();
+//            if (ImGui::Checkbox("Updatable", &updatable)) {
+//                layer->setUpdatable(updatable);
+//            }
+//            ImGui::SameLine();
+//            ImGui::TextDisabled("(?)");
+//            if (ImGui::IsItemHovered()) {
+//                ImGui::SetTooltip("Controls physics/logic updates only");
+//            }
+//
+//            ImGui::EndDisabled();
+//
+//            ImGui::TreePop();
+//        }
+//
+//        ImGui::Spacing();
+//        ImGui::Separator();
+//        ImGui::Spacing();
+//
+//        if (layer && ImGui::TreeNode("Layer Info")) {
+//            if (layer) {
+//                ImGui::Text("Name: %s", layer->getLayerName().c_str());
+//                ImGui::Text("ID: %d", currentLayer);
+//                ImGui::Text("Objects in layer: %zu", layer->getObjectCount());
+//            }
+//            ImGui::TreePop();
+//        }
+//
+//        ImGui::Spacing();
+//        ImGui::Spacing();
+//    }
+//}
 
 void InspectorWindow::wrongFileTypePopup(const std::string& filename) {
     // open popup if flagged

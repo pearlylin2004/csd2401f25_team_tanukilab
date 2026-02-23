@@ -286,7 +286,7 @@ void RenderSystem::update(GameObjectManager& manager, float const& deltaTime)
 	{
 		renderer::drawInstances(pair);
 	}
-	glDisable(GL_DEPTH_TEST);
+	//glDisable(GL_DEPTH_TEST);
 	//drawing models with texture
 	glUseProgram(renderer::shdr_pgm[0]); // hasTex shader
 	uView = glGetUniformLocation(renderer::shdr_pgm[0], "V");
@@ -385,7 +385,7 @@ RenderSystem::~RenderSystem() {
 // Load all textures for game objects with a Render component
 void RenderSystem::init(GameObjectManager& manager, int fboW, int fboH)
 {
-	glDisable(GL_DEPTH_TEST);
+	//glDisable(GL_DEPTH_TEST);
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	//stbi_set_flip_vertically_on_load(true);

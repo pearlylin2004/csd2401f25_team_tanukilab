@@ -327,7 +327,7 @@ void WaterSystem::applyWaterPhysics(GameObjectManager& manager) {
         
         //bool wasInWater = physics->inWater;
         physics->inWater = false;
-		(void)wasInWater;
+		//(void)wasInWater;
 
         // Check if object is in any water body
         for (GameObject* waterObj : waterBodies) {
