@@ -639,6 +639,15 @@ void VisualLogicSystem::executeActionNode(GameObject* obj, VisualLC* logic, Logi
 			logic->bulletRefill = true;
 		}
 	}
+	else if (node.imp == NodeImplementation::RESTART_LEVEL) {
+		GUISystem::getInstance().m_pendingRestart = true;
+	}
+	else if (node.imp == NodeImplementation::LOAD_LEVEL) {
+		std::string levelName = node.parameters.count("levelName") ?
+			node.parameters["levelName"] : "level01.json";
+		GUISystem::getInstance().m_pendingLevelLoad = true;
+		GUISystem::getInstance().m_pendingLevelName = levelName;
+	}
 }
 
 bool VisualLogicSystem::executeConditionNode(GameObject* obj, VisualLC* logic, LogicNode& node, float dt) {
@@ -862,4 +871,41 @@ bool VisualLogicSystem::shouldTriggerCollision(LogicNode& node, GameObject* coll
 	}
 
 	return false;
+}
+
+void VisualLogicSystem::resetLogicState(/*GameObjectManager& manager*/) {
+	std::vector<GameObject*> allObjects;
+	m_manager->getAllGameObjects(allObjects);
+
+	VisualLC::globalFloatVar.clear();
+	
+	// Loop through all objects and reset their VisualLC components
+	for (GameObject* obj : allObjects) {
+		if (obj->hasComponent<VisualLC>()) {
+			VisualLC* logic = obj->getComponent<VisualLC>();
+
+
+			logic->justStarted = true;           // Tell system this is a fresh start
+			logic->isExecuting = false;          // Not currently executing
+			logic->currentExecutingNodeId = -1;  // No node is executing
+
+			logic->intVar.clear();       // Clear all integer variables
+			logic->floatVar.clear();     // Clear all float variables
+			logic->stringVar.clear();    // Clear all string variables
+			logic->boolVar.clear();      // Clear all boolean variables
+			logic->timers.clear();       // Clear all timers (they'll restart from 0)
+			logic->currentExePath.clear(); // Clear execution path tracking
+
+			logic->wasHoveredLastFrame = false; // Not being hovered
+
+			logic->curCollision.clear();  // Clear current collisions
+			logic->preCollision.clear();  // Clear previous collisions
+			logic->lastCollidedObj = nullptr; // No last collided object
+
+			logic->bulletShot = false;   // No bullet shot event
+			logic->bulletRefill = false; // No bullet refill event
+
+		}
+	}
+
 }

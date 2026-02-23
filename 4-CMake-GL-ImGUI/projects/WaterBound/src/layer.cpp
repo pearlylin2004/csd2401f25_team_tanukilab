@@ -1,12 +1,14 @@
 /* Start Header ************************************************************************/
 /*!
 \file       layer.cpp
-\author     Hugo Low Ren Hao, low.h, 2402272
-
+\author     Hugo Low Ren Hao, low.h, 2402272, 60%
+\author 	Varick Teo, v.teo, 2403417, 40%
 \par        low.h@digipen.edu
-\date       November, 1, 2025
-\brief      This file contains the Implementation of the Layer class.
-			It manages a collection of GameObjects assigned to a specific layer.
+\par        v.teo@digipen.edu
+\date       October, 30, 2025
+\brief      Implements the Layer class for managing collections of GameObjects
+			within specific rendering/update layers. Includes enable/disable flags
+			for visibility and update control with system integration support.
 
 Copyright (C) 2025 DigiPen Institute of Technology.
 Reproduction or disclosure of this file or its contents

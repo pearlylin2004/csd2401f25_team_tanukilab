@@ -182,6 +182,7 @@ void DeadState::onEnter(GameObject& obj) {
     if (Render* r = obj.getComponent<Render>()) {
         r->texFile = "assets/textures/smoke.png";
         r->texChanged = true;
+        r->hasTex = true;
     }
 
     // Play death/smoke sound

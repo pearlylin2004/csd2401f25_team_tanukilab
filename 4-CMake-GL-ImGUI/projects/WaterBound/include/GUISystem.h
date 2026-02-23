@@ -4,9 +4,12 @@
 \author     Asha Mathyalakan, asha.m, 2402886
             - 5% of the file
 \author     Pearly Lin Lee Ying, p.lin, 2401591
-            - 95% of the file
+            - 50% of the file
+\author     Tan Chee Qing, cheeqing.tan, 2401486
+            - 5% of the file
 \par        asha.m@digipen.edu
 \par        p.lin@digipen.edu
+\par        cheeqing.tan@digipen.edu
 \date       November, 7th, 2025
 \brief      Consists of declarations for managing creation and removal
 //          of menu buttons, detects button clicks, and updates game state
@@ -39,6 +42,8 @@ namespace std {
     };
 }
 
+class VisualLogicSystem; // forward decla that save my life
+
 class GUISystem {
 public:
     //singleton accessor
@@ -47,7 +52,7 @@ public:
         return instance;
     }
 
-    void init(GameObjectManager& manager, LuaSystem& luaSystem);
+    void init(GameObjectManager& manager, LuaSystem& luaSystem, VisualLogicSystem& vlSystem);
     void update(); //update menu system
     void loadScreen(GameObjectManager& manager, const std::string& sceneName); //load a screen
     void loadScreenNoButton(GameObjectManager& manager, const std::string& sceneName); //for no buttons
@@ -59,6 +64,14 @@ public:
     void setStateBeforePause(GameState state) { m_stateBeforePause = state; } //set state before pause
 
 	GameState sceneToState(const std::string& sceneName); //convert scene name to game state
+
+    void restartLevel(); // restart current level
+	void loadLevel(const std::string& levelSceneName); // load next level
+    void resetAllObjectsToSpawn(); // helper for restart
+
+    bool m_pendingRestart = false;
+    bool m_pendingLevelLoad = false;
+    std::string m_pendingLevelName = "";
 
 private:
     GUISystem() = default;
@@ -83,6 +96,10 @@ private:
     GameObjectManager* g_manager = nullptr;
     LuaSystem* g_luaSystem = nullptr;
 
-    int level = 0;
-    int max_level = 2;
+    // int level = 0;
+    // int max_level = 2;
+    VisualLogicSystem* g_visualLogicSystem = nullptr;
+
+    std::unordered_map<std::string, Vector2D> m_spawnPositions;
+    std::string m_currentLevel = "";
 };

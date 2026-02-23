@@ -137,7 +137,7 @@ void InputSystem::update(GameObjectManager& manager, const float& deltaTime, Mes
     /* ---- END ---- */
 
     // Press 8 to manually run FSM assignment check
-    if (InputHandler::isKeyTriggered(GLFW_KEY_8)) {
+	if (InputHandler::isComboKeyTriggered(GLFW_KEY_8)) {
         std::cout << "\n[DEBUG KEY 8] ====== MANUAL FSM ASSIGNMENT CHECK ======\n";
         
         std::vector<GameObject*> allObjects;
@@ -987,7 +987,7 @@ void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime, M
 				particle->childData.timer -= deltaTime;
 				if (particle->childData.timer <= 0.f)
 				{
-					ParticleSystem::clearUsedID(particle->childData.grpNo);
+					ParticleSystem::clearUsedID(static_cast<int>(particle->childData.grpNo));
 					manager.deleteGameObject(object);
 					continue;
 				}
@@ -1041,43 +1041,78 @@ void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime, M
 				physics->shootTimer += deltaTime;
 
 				// Check if mouse button is being held down
-				if (InputHandler::isMouseLeftHeld() && (!UISystem::isShowUI() ||(SceneWindow::isSceneHovered() && !EditorManager::isEditingMode()))) {
+				if (InputHandler::isMouseLeftHeld()) {
+#ifdef _DEBUG
+					if ((!UISystem::isShowUI() || (SceneWindow::isSceneHovered() && !EditorManager::isEditingMode()))) {
+#endif // _DEBUG
 
-					if (VisualLC::globalFloatVar.count("bullets") &&
-						VisualLC::globalFloatVar["bullets"] > 0) {
-						if (physics->shootTimer >= physics->fireRate) {
-							GameObject* bullet = PhysicsForces::findAvailableBullet(manager);
 
-							if (bullet != nullptr) {
-								// Get mouse position in world coordinates
-								Vector2D mouseWorldPos = InputHandler::getWorldMousePosition();
+						if (VisualLC::globalFloatVar.count("bullets") &&
+							VisualLC::globalFloatVar["bullets"] > 0) {
+							if (physics->shootTimer >= physics->fireRate) {
+								GameObject* bullet = PhysicsForces::findAvailableBullet(manager);
 
-								//set a flag saying channel is pending to play sound
-								if (bullet->hasComponent<AudioComponent>()) {
-									AudioComponent* audio = bullet->getComponent<AudioComponent>();
-									AudioChannel* ch = audio->getDefaultChannel();
-									ch->isPendingPlay = true;
+								if (bullet != nullptr) {
+									// Get mouse position in world coordinates
+									Vector2D mouseWorldPos = InputHandler::getWorldMousePosition();
 
-									// Shoot bullet toward mouse position
-									PhysicsForces::shoot(bullet, transform, mouseWorldPos);
-									messageBus.publish(Message("KeyPressed", nullptr, KeyEvent{ "LEFT_CLICK", true }));
+									//set a flay saying channel is pending to play sound
+									if (bullet->hasComponent<AudioComponent>()) {
+										AudioComponent* audio = bullet->getComponent<AudioComponent>();
+										AudioChannel* ch = audio->getDefaultChannel();
+										ch->isPendingPlay = true;
 
-									VisualLogicSystem::broadcastBulletShoot();
+										// Shoot bullet toward mouse position
+										PhysicsForces::shoot(bullet, transform, mouseWorldPos);
+										messageBus.publish(Message("KeyPressed", nullptr, KeyEvent{ "LEFT_CLICK", true }));
 
-									DebugLog::addMessage("Bullet fired!", DebugMode::PlaySimul);
-									physics->shootTimer = 0.0f;
-								}
-								else {
-									physics->shootTimer = physics->fireRate * 0.5f;
-									DebugLog::addMessage("No bullets available!", DebugMode::PlaySimul);
+										//set a flay saying channel is pending to play sound
+										/*if (bullet->hasComponent<AudioComponent>()) {
+											AudioComponent* audio = bullet->getComponent<AudioComponent>();
+											AudioChannel* ch = audio->getDefaultChannel();
+											ch->isPendingPlay = true;
+										}*/
+
+
+										VisualLogicSystem::broadcastBulletShoot();
+
+										DebugLog::addMessage("Bullet fired!", DebugMode::PlaySimul);
+										physics->shootTimer = 0.0f;
+									}
+									else {
+										physics->shootTimer = physics->fireRate * 0.5f;
+										DebugLog::addMessage("No bullets available!", DebugMode::PlaySimul);
+									}
 								}
 							}
 						}
+						else {
+							DebugLog::addMessage("Out of bullets!", DebugMode::PlaySimul);
+						}
+#ifdef _DEBUG
 					}
-					else {
-						DebugLog::addMessage("Out of bullets!", DebugMode::PlaySimul);
-					}
+#endif // _DEBUG
 				}
+				//else if (InputHandler::isMouseLeftClicked()) { /// to shoot only one bullet at a time
+				//	// Single shot mode: Only fire once on click (if autoFire is disabled)
+				//	if (!physics->autoFire && physics->shootTimer >= physics->fireRate) {
+				//		GameObject* bullet = PhysicsForces::findAvailableBullet(manager);
+
+				//		if (bullet != nullptr) {
+				//			Vector2D mouseWorldPos = InputHandler::getWorldMousePosition();
+				//			PhysicsForces::shoot(bullet, transform, mouseWorldPos);
+				//			messageBus.publish(Message("KeyPressed", nullptr, KeyEvent{ "LEFT_CLICK", true }));
+
+				//			if (bullet->hasComponent<AudioComponent>()) {
+				//				AudioComponent* audio = bullet->getComponent<AudioComponent>();
+				//				AudioChannel* ch = audio->getDefaultChannel();
+				//				ch->isPendingPlay = true;
+				//			}
+
+				//			physics->shootTimer = 0.0f;
+				//		}
+				//	}
+				//}
 				else {
 					physics->shootTimer = physics->fireRate;
 				}
@@ -1148,17 +1183,29 @@ void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime, M
 		Transform* t = obj->getComponent<Transform>();
 
 		if (p->alive) {
-			// Update bullet physics
-			Vector3D gravityForce = { 0.0f, p->gravity * p->dynamics.mass, 0.0f };
-
+			// Update forces (non-gravity forces)
 			DynamicsSystem::UpdateForces(p->dynamics, deltaTime);
-			DynamicsSystem::Integrate(p->dynamics, deltaTime, p->gravity, false);
+
+			// Check gravity delay
+			if (p->gravityDelayTimer > 0.0f) {
+				// No gravity yet - just integrate velocity into position
+				p->gravityDelayTimer -= deltaTime;
+
+				Vector3D deltaPos = Vec3_Scale(&p->dynamics.velocity, deltaTime);
+				p->dynamics.position = Vec3_Add(&p->dynamics.position, &deltaPos);
+			}
+			else {
+				// Gravity delay expired - normal physics with gravity
+				DynamicsSystem::Integrate(p->dynamics, deltaTime, p->gravity, false);
+			}
 
 			t->x = p->dynamics.position.x;
 			t->y = p->dynamics.position.y;
+
 			// Update life timer
 			p->lifeTimer += deltaTime;
-			// Deactivate if lifetime exceeded
+
+			// Deactivate if lifetime exceeded or fell too far
 			if (p->lifeTimer >= p->maxLifetime || p->dynamics.position.y < -20.0f) {
 				PhysicsForces::deactivateBullet(obj);
 			}
@@ -1180,6 +1227,7 @@ void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime, M
 	double ms = std::chrono::duration<double, std::milli>(end - start).count();
 	g_SystemTimers.push_back({ "Physics", ms });
 }
+
 
 //helper function for collision detection
 static uint64_t MakePairKey(GameObject* a, GameObject* b)
@@ -1279,9 +1327,9 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 			if (cellObject.size() < 2) continue; //skip if less than 2 objects because cant collide
 
 			//loop through objects in the cell to check for collision
-			for (size_t n = 0; n < cellObject.size(); n++) {
+			for (size_t n1 = 0; n1 < cellObject.size(); n1++) {
 				//object 1
-				GameObject* obj1 = cellObject[n];
+				GameObject* obj1 = cellObject[n1];
 				Transform* t1 = obj1->getComponent<Transform>();
 				CollisionInfo* c1 = obj1->getComponent<CollisionInfo>();
 				Physics* p1 = obj1->getComponent<Physics>();
@@ -1289,7 +1337,7 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 
 				Vector2D vel1{ p1->dynamics.velocity.x, p1->dynamics.velocity.y };
 				//object 2 looping
-				for (size_t m = n + 1; m < cellObject.size(); m++) {
+				for (size_t m = n1 + 1; m < cellObject.size(); m++) {
 					GameObject* obj2 = cellObject[m]; //get obj2
 
 					//object 2
@@ -1365,64 +1413,109 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 							if (info.normal.x != 0) {
 								t1->x += info.normal.x * info.penetration * 0.5f;
 								t2->x -= info.normal.x * info.penetration * 0.5f;
-
 								p1->dynamics.position.x = t1->x;
 								p2->dynamics.position.x = t2->x;
 							}
-
 							if (info.normal.y != 0) {
 								t1->y += info.normal.y * info.penetration * 0.5f;
 								t2->y -= info.normal.y * info.penetration * 0.5f;
 								p1->dynamics.position.y = t1->y;
 								p2->dynamics.position.y = t2->y;
+							}
 
-								if (info.normal.y > 0) {
-									// obj1 lands on obj2 from above
-									p1->dynamics.velocity.y = 0.f;
-									p1->velY = 0.f;
-									p1->onGround = true;
-								}
-								else if (info.normal.y < 0) {
-									// obj2 lands on obj1 from above
-									p2->dynamics.velocity.y = 0.f;
-									p2->velY = 0.f;
-									p2->onGround = true;
+							// Bounce or stop based on bounciness
+							if (p1->bounciness > 0.0f || p2->bounciness > 0.0f) {
+								std::cout << "CASE1 bounce: " << obj1->getObjectName() << " vs " << obj2->getObjectName() << std::endl;
+								float dot1 = p1->dynamics.velocity.x * info.normal.x + p1->dynamics.velocity.y * info.normal.y;
+								float dot2 = p2->dynamics.velocity.x * (-info.normal.x) + p2->dynamics.velocity.y * (-info.normal.y);
+
+								float b1 = (p1->bounciness > 0.0f) ? p1->bounciness : 1.0f;
+								float b2 = (p2->bounciness > 0.0f) ? p2->bounciness : 1.0f;
+
+								p1->dynamics.velocity.x = (p1->dynamics.velocity.x - dot1 * info.normal.x) * b1;
+								p1->dynamics.velocity.y = (p1->dynamics.velocity.y - dot1 * info.normal.y) * b1;
+
+								p2->dynamics.velocity.x = (p2->dynamics.velocity.x - dot2 * (-info.normal.x)) * b2;
+								p2->dynamics.velocity.y = (p2->dynamics.velocity.y - dot2 * (-info.normal.y)) * b2;
+							}
+							else {
+								// Original stop behavior
+								if (info.normal.y != 0) {
+									if (info.normal.y > 0) {
+										p1->dynamics.velocity.y = 0.f;
+										p1->velY = 0.f;
+										p1->onGround = true;
+									}
+									else {
+										p2->dynamics.velocity.y = 0.f;
+										p2->velY = 0.f;
+										p2->onGround = true;
+									}
 								}
 							}
 						}
 						// CASE 2: obj1 is pushable, obj2 is static
 						else if (!obj1IsStatic && obj2IsStatic) {
+							// Push out of collision
 							if (info.normal.x != 0) {
 								t1->x += info.normal.x * info.penetration;
 								p1->dynamics.position.x = t1->x;
-								p1->dynamics.velocity.x = 0.f;
-								p1->velX = 0.f;
 							}
-
 							if (info.normal.y != 0) {
 								t1->y += info.normal.y * info.penetration;
 								p1->dynamics.position.y = t1->y;
-								p1->dynamics.velocity.y = 0.f;
+							}
 
-								if (info.normal.y > 0) p1->onGround = true;
+							// Bounce or stop based on bounciness
+							if (p1->bounciness > 0.0f) {
+								// Reflect: v' = v - 2(v�n)n, then scale by bounciness
+								float dot = p1->dynamics.velocity.x * info.normal.x + p1->dynamics.velocity.y * info.normal.y;
+								p1->dynamics.velocity.x = (p1->dynamics.velocity.x - dot * info.normal.x) * p1->bounciness;
+								p1->dynamics.velocity.y = (p1->dynamics.velocity.y - dot * info.normal.y) * p1->bounciness;
+							}
+							else {
+								// Original stop behavior
+								if (info.normal.x != 0) {
+									p1->dynamics.velocity.x = 0.f;
+									p1->velX = 0.f;
+								}
+								if (info.normal.y != 0) {
+									p1->dynamics.velocity.y = 0.f;
+									if (info.normal.y > 0) p1->onGround = true;
+								}
 							}
 						}
 						// CASE 3: obj1 is static, obj2 is pushable
 						else if (obj1IsStatic && !obj2IsStatic) {
+							// Push out of collision
 							if (info.normal.x != 0) {
-								// push obj2 in OPPOSITE direction
 								t2->x -= info.normal.x * info.penetration;
 								p2->dynamics.position.x = t2->x;
-								p2->dynamics.velocity.x = 0.f;
-								p2->velX = 0.f;
 							}
-
 							if (info.normal.y != 0) {
 								t2->y -= info.normal.y * info.penetration;
 								p2->dynamics.position.y = t2->y;
-								p2->dynamics.velocity.y = 0.f;
+							}
 
-								if (info.normal.y < 0) p2->onGround = true;
+							// Bounce or stop based on bounciness
+							if (p2->bounciness > 0.0f) {
+								// Normal is from obj1's perspective, flip for obj2
+								Vector2D n = { -info.normal.x, -info.normal.y };
+								float dot = p2->dynamics.velocity.x * n.x + p2->dynamics.velocity.y * n.y;
+
+								p2->dynamics.velocity.x = (p2->dynamics.velocity.x - dot * n.x) * p2->bounciness;
+								p2->dynamics.velocity.y = (p2->dynamics.velocity.y - dot * n.y) * p2->bounciness;
+							}
+							else {
+								// Original stop behavior (only when NOT bouncing)
+								if (info.normal.x != 0) {
+									p2->dynamics.velocity.x = 0.f;
+									p2->velX = 0.f;
+								}
+								if (info.normal.y != 0) {
+									p2->dynamics.velocity.y = 0.f;
+									if (info.normal.y < 0) p2->onGround = true;
+								}
 							}
 						}
 						// CASE 4: Both are static (shouldnt happen?)
@@ -1552,20 +1645,36 @@ void CollisionSystem::HandleTilemapCollisions(const std::unordered_map<int, Coll
 						objAABB, vel, boxAABB, Vector2D(0, 0));
 
 					if (info.collided) {
+						// Push out of collision first
 						if (info.normal.x != 0) {
 							t->x += info.normal.x * info.penetration;
 							p->dynamics.position.x = t->x;
-							p->dynamics.velocity.x = 0.f;
-							p->velX = 0.f;
 						}
-
 						if (info.normal.y != 0) {
 							t->y += info.normal.y * info.penetration;
 							p->dynamics.position.y = t->y;
-							p->dynamics.velocity.y = 0.0f;
+						}
 
-							if (info.normal.y > 0) {
-								p->onGround = true;
+						// Bounce or stop based on bounciness
+						if (p->bounciness > 0.0f) {
+							float dot = p->dynamics.velocity.x * info.normal.x + p->dynamics.velocity.y * info.normal.y;
+
+							// Only remove velocity going INTO the surface (not 2x reflection)
+							// This makes water "splash" along the wall instead of bouncing off
+							p->dynamics.velocity.x = (p->dynamics.velocity.x - dot * info.normal.x) * p->bounciness;
+							p->dynamics.velocity.y = (p->dynamics.velocity.y - dot * info.normal.y) * p->bounciness;
+						}
+						else {
+							// Normal stop response (player, etc.)
+							if (info.normal.x != 0) {
+								p->dynamics.velocity.x = 0.f;
+								p->velX = 0.f;
+							}
+							if (info.normal.y != 0) {
+								p->dynamics.velocity.y = 0.0f;
+								if (info.normal.y > 0) {
+									p->onGround = true;
+								}
 							}
 						}
 
@@ -2169,7 +2278,7 @@ void AudioSystem::updateSpatialAudio(GameObjectManager& manager) {
 		if (!obj->hasComponent<AudioComponent>() || !obj->hasComponent<Transform>()) continue;
 
 		Transform* transform = obj->getComponent<Transform>();
-		AudioComponent* audioC= obj->getComponent<AudioComponent>();
+		AudioComponent* audioC = obj->getComponent<AudioComponent>();
 
 		// Update position for each 3D audio channel
 		for (auto& [channelName, audio] : audioC->audioChannels) {

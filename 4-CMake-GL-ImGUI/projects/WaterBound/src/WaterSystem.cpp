@@ -128,9 +128,9 @@ void WaterSystem::setupWaterMesh(GameObject* waterObj) {
     std::vector<glm::vec3> colors;
     std::vector<glm::vec2> texCoords;
     std::vector<GLuint> indices;
-
-    //int numVertices = (mesh.subdivisions + 1) * 2;
-
+    
+    //int numVertices = (mesh.subdivisions + 1) * 2; // Top and bottom rows
+    
     // Generate vertices
     for (int i = 0; i <= mesh.subdivisions; ++i) {
         float t = static_cast<float>(i) / mesh.subdivisions;
@@ -191,11 +191,11 @@ void WaterSystem::setupWaterMesh(GameObject* waterObj) {
     // Color attribute
     glEnableVertexAttribArray(1);
     glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), (void*)(uintptr_t)(posSize));
-
+    
     // TexCoord attribute
     glEnableVertexAttribArray(2);
     glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(glm::vec2), (void*)(uintptr_t)(posSize + colSize));
-
+    
     // Create EBO
     glGenBuffers(1, &mesh.ebo);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh.ebo);
@@ -323,10 +323,9 @@ void WaterSystem::applyWaterPhysics(GameObjectManager& manager) {
         Transform* transform = obj->getComponent<Transform>();
 
         if (!physics || !transform) continue;
-        if (obj->hasComponent<WaterBody>()) continue; // Skip water bodies themselves
-
-
-        bool wasInWater = physics->inWater;
+        if (obj->hasComponent<WaterBody>()) continue; 
+        
+        //bool wasInWater = physics->inWater;
         physics->inWater = false;
 		(void)wasInWater;
 
@@ -339,21 +338,24 @@ void WaterSystem::applyWaterPhysics(GameObjectManager& manager) {
             if (isPointInWater(waterObj, objPos)) {
                 physics->inWater = true;
 
+                // if (physics->buoyancy || water->isTrigger) {
+
+                //     float buoyancyStrength = physics->buoyancy ? 2.5f : 1.0f;
+
+                //     // Calculate depth in water 
+                //     Transform* waterTransform = waterObj->getComponent<Transform>();
+                //     float waterSurfaceY = waterTransform->y + (water->height * 0.5f);
+                //     float depth = waterSurfaceY - transform->y;
+
+                //     float depthFactor = glm::clamp(depth / water->height, 0.0f, 1.0f);
+                //     float buoyancyForce = water->buoyancyForce * buoyancyStrength * depthFactor * 0.016f;
+
+                //     // Apply upward buoyancy force
+                //     physics->velY += buoyancyForce;
+                // }
+                
                 if (physics->buoyancy || water->isTrigger) {
-
-                    float buoyancyStrength = physics->buoyancy ? 2.5f : 1.0f;
-
-                    // Calculate depth in water 
-                    Transform* waterTransform = waterObj->getComponent<Transform>();
-                    float waterSurfaceY = waterTransform->y + (water->height * 0.5f);
-                    float depth = waterSurfaceY - transform->y;
-
-                    float depthFactor = glm::clamp(depth / water->height, 0.0f, 1.0f);
-                    float buoyancyForce = water->buoyancyForce * buoyancyStrength * depthFactor * 0.016f;
-
-                    // Apply upward buoyancy force
-                    physics->velY += buoyancyForce;
-
+                    physics->velY += water->buoyancyForce * 0.016f; 
                 }
 
 

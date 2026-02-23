@@ -19,9 +19,10 @@ Technology is prohibited.
 #include "Editor/editorManager.h"
 #include "Systems.h"
 
-InspectorWindow::InspectorWindow(Editor::ObjSelectionState& Ostate, Editor::GizmoState& gState) : 
+InspectorWindow::InspectorWindow(Editor::ObjSelectionState& Ostate, Editor::GizmoState& gState) :
     m_objSelectionState(Ostate),
-    m_gizmoState(gState) {}
+    m_gizmoState(gState) {
+}
 
 void InspectorWindow::render(GameObjectManager& manager) {
     ImGui::Begin("Inspector");
@@ -57,40 +58,40 @@ void InspectorWindow::render(GameObjectManager& manager) {
 
         /* ------------------- Edit Object Name ------------------- */
         /*if (selected == m_objSelectionState.selectedObject) {*/
-            std::string& objName = selected->getObjectName();
-            char buffer[128];
-            strncpy(buffer, objName.c_str(), sizeof(buffer));
-            buffer[sizeof(buffer) - 1] = '\0';
+        std::string& objName = selected->getObjectName();
+        char buffer[128];
+        strncpy(buffer, objName.c_str(), sizeof(buffer));
+        buffer[sizeof(buffer) - 1] = '\0';
 
-            ImGui::Text("Name");
-            ImGui::SameLine();
+        ImGui::Text("Name");
+        ImGui::SameLine();
 
-            // ENTER to apply name change
-            if (ImGui::InputText("##Name", buffer, sizeof(buffer), ImGuiInputTextFlags_EnterReturnsTrue)) {
-                std::string oldObjName = objName;
-                std::string newObjName = buffer;
+        // ENTER to apply name change
+        if (ImGui::InputText("##Name", buffer, sizeof(buffer), ImGuiInputTextFlags_EnterReturnsTrue)) {
+            std::string oldObjName = objName;
+            std::string newObjName = buffer;
 
-                if (selected == m_objSelectionState.selectedObject) {
-                    if (manager.renameGameObject(m_objSelectionState.selectedObject, newObjName)) {
-                        // update obj new name jic redo/undo
-                        UndoRedoManager::Instance().updateObjName(oldObjName, newObjName);
+            if (selected == m_objSelectionState.selectedObject) {
+                if (manager.renameGameObject(m_objSelectionState.selectedObject, newObjName)) {
+                    // update obj new name jic redo/undo
+                    UndoRedoManager::Instance().updateObjName(oldObjName, newObjName);
 
-                        DebugLog::addMessage("Object renamed to " + newObjName + "\n");
-                    }
-                    else {
-                        DebugLog::addMessage("Failed to rename: name already exists\n");
-                    }
+                    DebugLog::addMessage("Object renamed to " + newObjName + "\n");
                 }
                 else {
-                    const std::string& prefabID = selected->getObjectPrefabID();
-                    PrefabManager::Instance().getPrefabName(prefabID) = newObjName;
-                    selected->getObjectName() = newObjName;
-                    //PrefabManager::Instance().savePrefabRegistry();
-
-                    DebugLog::addMessage("Prefab renamed to " + newObjName + "\n");
+                    DebugLog::addMessage("Failed to rename: name already exists\n");
                 }
             }
-            ImGui::Text("ENTER to apply");
+            else {
+                const std::string& prefabID = selected->getObjectPrefabID();
+                PrefabManager::Instance().getPrefabName(prefabID) = newObjName;
+                selected->getObjectName() = newObjName;
+                //PrefabManager::Instance().savePrefabRegistry();
+
+                DebugLog::addMessage("Prefab renamed to " + newObjName + "\n");
+            }
+        }
+        ImGui::Text("ENTER to apply");
 
         ImGui::Spacing();
         ImGui::Separator();
@@ -210,7 +211,7 @@ void InspectorWindow::render(GameObjectManager& manager) {
         }
         /* ------------------- END ------------------- */
 
-		/* ------------------- Particle System ------------------- */
+        /* ------------------- Particle System ------------------- */
         if (selected->hasComponent<Particle>()) {
             renderParticles(selected);
 
@@ -223,7 +224,7 @@ void InspectorWindow::render(GameObjectManager& manager) {
         /* ------------------- Visual LC ------------------- */
         if (selected->hasComponent<VisualLC>()) {
             renderVisualLogic(selected);
-        
+
             ImGui::Spacing();
             ImGui::Separator();
             ImGui::Spacing();
@@ -231,9 +232,9 @@ void InspectorWindow::render(GameObjectManager& manager) {
         /* ------------------- END ------------------- */
 
 
-		/* ------------------- Layer Controls ------------------- */
-		renderLayerControls(selected, manager);
-		/* ------------------- END ------------------- */
+        /* ------------------- Layer Controls ------------------- */
+        renderLayerControls(selected, manager);
+        /* ------------------- END ------------------- */
 
 
         /* ------------------- Add Component ------------------- */
@@ -353,7 +354,7 @@ void InspectorWindow::renderTransform(GameObject* selected, GameObjectManager& m
     if (ImGui::CollapsingHeader("Transform")) {
 
         if (ImGui::TreeNode("Position")) {
-			bool posActive = false;
+            bool posActive = false;
 
             if (ImGui::DragFloat("X", &transform->x, 0.1f)) {
                 if (!m_isEditingPos) {
@@ -362,7 +363,7 @@ void InspectorWindow::renderTransform(GameObject* selected, GameObjectManager& m
                     m_transformEditObject = selected;
                 }
             }
-			posActive |= ImGui::IsItemActive();
+            posActive |= ImGui::IsItemActive();
 
             if (ImGui::DragFloat("Y", &transform->y, 0.1f)) {
                 if (!m_isEditingPos) {
@@ -443,7 +444,7 @@ void InspectorWindow::renderTransform(GameObject* selected, GameObjectManager& m
                     m_transformEditObject = selected;
                 }
             }
-			scaleActive |= ImGui::IsItemActive();
+            scaleActive |= ImGui::IsItemActive();
 
             ImGui::BeginDisabled(m_objSelectionState.aspectRatioLock);
             if (ImGui::DragFloat("Y1", &transform->scaleY, 0.1f, 0.f)) {
@@ -455,7 +456,7 @@ void InspectorWindow::renderTransform(GameObject* selected, GameObjectManager& m
                     m_transformEditObject = selected;
                 }
             }
-			scaleActive |= ImGui::IsItemActive();
+            scaleActive |= ImGui::IsItemActive();
 
             if (ImGui::DragFloat("Z1", &transform->scaleZ, 0.1f, 0.f)) {
                 transform->scaleZ = std::max(transform->scaleZ, 0.f);
@@ -467,7 +468,7 @@ void InspectorWindow::renderTransform(GameObject* selected, GameObjectManager& m
                     m_transformEditObject = selected;
                 }
             }
-			scaleActive |= ImGui::IsItemActive();
+            scaleActive |= ImGui::IsItemActive();
 
             ImGui::EndDisabled();
 
@@ -501,7 +502,7 @@ void InspectorWindow::renderTransform(GameObject* selected, GameObjectManager& m
     }
 }
 
-void InspectorWindow::renderRender( GameObject* selected) {
+void InspectorWindow::renderRender(GameObject* selected) {
     Render* render = selected->getComponent<Render>();
     //Animation* animation = selected->getComponent<Animation>();
     CollisionInfo* collision = selected->getComponent<CollisionInfo>();
@@ -549,7 +550,7 @@ void InspectorWindow::renderRender( GameObject* selected) {
                 }
                 ImGui::EndDragDropTarget();
             }
-            
+
             if (render->hasTex) {
                 ImGui::SameLine();
                 ImGui::Spacing();
@@ -582,7 +583,7 @@ void InspectorWindow::renderRender( GameObject* selected) {
             }
 
             ImGui::TreePop();
-        } 
+        }
 
         if (ImGui::TreeNode("Colour")) {
             // cannot edit colour if obj has a texture
@@ -593,8 +594,8 @@ void InspectorWindow::renderRender( GameObject* selected) {
             ImGui::EndDisabled();
             ImGui::TreePop();
         }
-        
-     
+
+
         ImGui::Spacing();
         ImGui::Spacing();
         ImGui::Separator();
@@ -654,7 +655,7 @@ void InspectorWindow::renderStateMachine(GameObject* selected) {
                 // Edit animation for the selected state
                 if (selectedStateIndex >= 0 && selectedStateIndex < animation->animState.size()) {
                     AnimateState& currentState = animation->animState[selectedStateIndex];
-                                   
+
                     // Texture file button with drag and drop
                     std::string texName = currentState.texFile.empty() ? "(Drop new texture here)" : currentState.texFile;
                     ImGui::Button(texName.c_str(), ImVec2(-1, 0));
@@ -699,7 +700,7 @@ void InspectorWindow::renderStateMachine(GameObject* selected) {
                     ImGui::Separator();
                     ImGui::Spacing();
 
-                    if (!currentState.texFile.empty()){
+                    if (!currentState.texFile.empty()) {
                         if (ImGui::Button("Clear Texture")) {
                             glDeleteTextures(1, &currentState.texHDL);
                             currentState.texHDL = 0;
@@ -712,7 +713,7 @@ void InspectorWindow::renderStateMachine(GameObject* selected) {
                     ImGui::Separator();
                     ImGui::Spacing();
 
-					ImGui::Checkbox("Play Animation", &currentState.play);
+                    ImGui::Checkbox("Play Animation", &currentState.play);
 
                     ImGui::Checkbox("Loop", &currentState.loop);
 
@@ -736,7 +737,7 @@ void InspectorWindow::renderStateMachine(GameObject* selected) {
                     if (ImGui::InputInt("Last Row", &tempLastRow))
                         currentState.lastFrame.y = (float)tempLastRow;
 
-                    if(ImGui::InputFloat("Frame Time", &currentState.frameTime, 0.001f))
+                    if (ImGui::InputFloat("Frame Time", &currentState.frameTime, 0.001f))
                         currentState.frameTime = std::max(currentState.frameTime, 0.001f);
 
                     ImGui::EndDisabled();
@@ -759,7 +760,7 @@ void InspectorWindow::renderStateMachine(GameObject* selected) {
                     DebugLog::addMessage("Removed Animation Component");
                 }
             }
-                        
+
             ImGui::TreePop();
         }
 
@@ -776,7 +777,7 @@ void InspectorWindow::renderStateMachine(GameObject* selected) {
     }
 }
 
-void InspectorWindow::renderCollision( GameObject* selected/*, GameObjectManager& manager*/) {
+void InspectorWindow::renderCollision(GameObject* selected/*, GameObjectManager& manager*/) {
     CollisionInfo* collision = selected->getComponent<CollisionInfo>();
     Transform* transform = selected->getComponent<Transform>();
     Render* render = selected->getComponent<Render>();
@@ -785,12 +786,12 @@ void InspectorWindow::renderCollision( GameObject* selected/*, GameObjectManager
         {
             // checked means this object can collide with obj in the same layer
             ImGui::Checkbox("Enable", &collision->collisionFlag);
-            
+
             // select layer
             /*int layer = selected->getLayer();
             if (ImGui::InputInt("Layer", &layer)) {
                 if (layer < 0) layer = 0;
-                
+
                 if (m_objSelectionState.selectedPrefab) {
                     selected->setLayer(layer);
                 }
@@ -825,7 +826,7 @@ void InspectorWindow::renderCollision( GameObject* selected/*, GameObjectManager
             }
 
             CollisionResponseMode mode = collision->collisionRes;
-            const char* modes[] = { "Static", "Pushable", "No Response"};
+            const char* modes[] = { "Static", "Pushable", "No Response" };
             int current = static_cast<int>(mode);
 
             if (ImGui::Combo("Collision Response", &current, modes, IM_ARRAYSIZE(modes))) {
@@ -845,7 +846,7 @@ void InspectorWindow::renderCollision( GameObject* selected/*, GameObjectManager
             if (ImGui::Combo("Shape", &current, shapes, IM_ARRAYSIZE(shapes))) {
                 collision->colliderType = static_cast<shape>(current);
             }
-                                
+
             if (collision->colliderType == shape::circle) {
                 if (ImGui::InputFloat("Diamater", &collision->colliderSize.x, 1.f)) {
                     collision->colliderSize.x = std::max(collision->colliderSize.x, 0.f);
@@ -919,11 +920,11 @@ void InspectorWindow::renderCollision( GameObject* selected/*, GameObjectManager
                     collision->ignoreCollisionsWith.clear();
                 }
             }
-            
+
             if (!collisionTags.empty() && collision->ignoreCollisionsWith.size() != collisionTags.size()) {
                 if (ImGui::Button("Check All", ImVec2(-1, 0))) {
                     for (const std::string& tag : collisionTags) {
-						collision->ignoreCollisionsWith.insert(tag);
+                        collision->ignoreCollisionsWith.insert(tag);
                     }
                 }
             }
@@ -967,26 +968,26 @@ void InspectorWindow::renderPhysics(GameObject* selected, bool canMove) {
 
         ImGui::Spacing();
         ImGui::Separator();
-       
+
 
         // only show movement data if object is controlable via input
         if (ImGui::TreeNode("Input Movement Control")) {
             if (canMove) {
                 if (ImGui::TreeNode("Movement")) {
-                    if(ImGui::InputFloat("Speed", &physic->moveSpeed, 1.f))
+                    if (ImGui::InputFloat("Speed", &physic->moveSpeed, 1.f))
                         physic->moveSpeed = std::max(physic->moveSpeed, 0.f); // set the min speed to 0.f
 
-                    if(ImGui::InputFloat("Jump Force", &physic->jumpForce, 1.f))
+                    if (ImGui::InputFloat("Jump Force", &physic->jumpForce, 1.f))
                         physic->jumpForce = std::max(physic->jumpForce, 0.f); // set the min jump force to 0.f
 
-                    if(ImGui::InputFloat("Mass", &physic->dynamics.mass, 1.f))
+                    if (ImGui::InputFloat("Mass", &physic->dynamics.mass, 1.f))
                         physic->dynamics.mass = std::max(physic->dynamics.mass, 0.f); // 0.f mass means static obj (never move, e.g. wall)
 
                     ImGui::TreePop();
                 }
 
                 if (ImGui::TreeNode("Environment")) {
-                    if(ImGui::InputFloat("Damping", &physic->damping, 0.1f))
+                    if (ImGui::InputFloat("Damping", &physic->damping, 0.1f))
                         physic->damping = std::clamp(physic->damping, 0.f, 1.f); // damping within 0.1 to 1.f
 
                     ImGui::TreePop();
@@ -1055,7 +1056,7 @@ void InspectorWindow::renderFont(GameObject* selected) {
             }
 
             // size of the text
-            if(ImGui::InputFloat("Size", &font->scale, 1.f))
+            if (ImGui::InputFloat("Size", &font->scale, 1.f))
                 font->scale = std::max(font->scale, 0.f);
 
             // colour of the text
@@ -1179,7 +1180,7 @@ void InspectorWindow::renderAudio(GameObject* selected) {
 
                     if (!ch.audioFile.empty()) {
                         ImGui::Spacing();
-                        
+
                         // Manual Playback Controls
                         ImGui::Text("Playback Controls");
 
@@ -1212,7 +1213,7 @@ void InspectorWindow::renderAudio(GameObject* selected) {
                         bool loopChanged = ImGui::Checkbox("Loop", &ch.loop);
                         bool playOnStartChanged = ImGui::Checkbox("Play On Start", &ch.playOnStart);
                         bool mutedChanged = ImGui::Checkbox("Muted", &ch.muted);
-						ImGui::Checkbox("Spatial Audio", &ch.isSpatial);
+                        ImGui::Checkbox("Spatial Audio", &ch.isSpatial);
 
                         // Stop currently playing sound if critical settings changed
                         if ((loopChanged || playOnStartChanged || mutedChanged) && ch.channel) {
@@ -1345,30 +1346,30 @@ void InspectorWindow::renderTileMap(GameObject* selected)
 
             ImGui::TextWrapped("%s", displayText.c_str());
 
-			// drag and drop from asset browser
+            // drag and drop from asset browser
             if (ImGui::BeginDragDropTarget()) {
-				if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("ASSET")) {
-					const char* droppedPath = (const char*)payload->Data;
-					std::string path = droppedPath;
+                if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("ASSET")) {
+                    const char* droppedPath = (const char*)payload->Data;
+                    std::string path = droppedPath;
 
                     std::string ext;
-					std::filesystem::path fsPath(path);
-					ext = fsPath.extension().string();
-					
-					// only accept if dropped file is a png/jpg/jpeg
-					if (ext == ".png" || ext == ".jpg" || ext == ".jpeg") {
-						TileMapSystem::filename = path;
+                    std::filesystem::path fsPath(path);
+                    ext = fsPath.extension().string();
 
-						DebugLog::addMessage("Selected brush texture: " + TileMapSystem::filename + "\n");
-					}
-					else {
-						// texture file type error pop up
-						Editor::popupState.textureFileTypePopup = true;
-						Editor::popupState.filename = fsPath.filename().string();
-						// invalid texture format -> don't change anything
-						DebugLog::addMessage("Invalid texture format : " + path + "\n");
-					}
-				}
+                    // only accept if dropped file is a png/jpg/jpeg
+                    if (ext == ".png" || ext == ".jpg" || ext == ".jpeg") {
+                        TileMapSystem::filename = path;
+
+                        DebugLog::addMessage("Selected brush texture: " + TileMapSystem::filename + "\n");
+                    }
+                    else {
+                        // texture file type error pop up
+                        Editor::popupState.textureFileTypePopup = true;
+                        Editor::popupState.filename = fsPath.filename().string();
+                        // invalid texture format -> don't change anything
+                        DebugLog::addMessage("Invalid texture format : " + path + "\n");
+                    }
+                }
 
                 ImGui::EndDragDropTarget();
             }
@@ -1377,18 +1378,18 @@ void InspectorWindow::renderTileMap(GameObject* selected)
 
 
             // clear texture from brush
-			if (!TileMapSystem::filename.empty()) {
-				ImGui::Spacing();
+            if (!TileMapSystem::filename.empty()) {
+                ImGui::Spacing();
 
                 ImGui::Checkbox("Eraser Mode", &TileMapSystem::eraseMode);
                 ImGui::Spacing();
 
-				if (ImGui::Button("Clear Brush", ImVec2(-1, 0))) {
-					TileMapSystem::filename.clear();
+                if (ImGui::Button("Clear Brush", ImVec2(-1, 0))) {
+                    TileMapSystem::filename.clear();
                     TileMapSystem::eraseMode = false;
-					DebugLog::addMessage("Cleared brush texture\n");
-				}
-			}
+                    DebugLog::addMessage("Cleared brush texture\n");
+                }
+            }
 
             ImGui::TreePop();
         }
@@ -1428,7 +1429,7 @@ void InspectorWindow::renderParticles(GameObject* selected)
         ImGui::InputFloat("Velocity Y", &ps->master.velocity.y);
 
         ImGui::ColorEdit3("Start Colour", &ps->master.clr.x);
-        
+
         ImGui::Spacing();
         ImGui::Separator();
         ImGui::Spacing();
@@ -1437,24 +1438,24 @@ void InspectorWindow::renderParticles(GameObject* selected)
             selected->removeComponent<Particle>();
             DebugLog::addMessage("Removed Particle System Component");
         }
-	}
+    }
 }
 
 void InspectorWindow::renderLua(GameObject* selected) {
-	LuaScript* script = selected->getComponent<LuaScript>();
+    LuaScript* script = selected->getComponent<LuaScript>();
 
     if (ImGui::CollapsingHeader("Lua Script")) {
 
         /* ---------- reload script list button ---------- */
         if (ImGui::Button("Refresh Script List") || Editor::scriptState.availScripts.empty()) {
             Editor::scriptState.availScripts.clear();
-			
+
             if (std::filesystem::exists(Editor::scriptState.scriptDir)) {
-				for (const auto& entry : std::filesystem::directory_iterator(Editor::scriptState.scriptDir)) {
-					if (entry.is_regular_file() && entry.path().extension() == ".lua") {
+                for (const auto& entry : std::filesystem::directory_iterator(Editor::scriptState.scriptDir)) {
+                    if (entry.is_regular_file() && entry.path().extension() == ".lua") {
                         Editor::scriptState.availScripts.push_back(entry.path().filename().string());
-					}
-				}
+                    }
+                }
             }
         }
         /* ---------- END ---------- */
@@ -1466,13 +1467,13 @@ void InspectorWindow::renderLua(GameObject* selected) {
 
 
         /* ---------- Dropdown to Select Script ---------- */
-		int scriptIndex = -1;
+        int scriptIndex = -1;
         for (int i = 0; i < script->scripts.size(); ++i) {
             ImGui::PushID(i);
-			LuaScript::ScriptEntry& scriptEntry = script->scripts[i];
+            LuaScript::ScriptEntry& scriptEntry = script->scripts[i];
 
-			ImGui::Text("Script %d:", i + 1);
-			std::string displayName = scriptEntry.scriptName.empty() ? "None" : scriptEntry.scriptName;
+            ImGui::Text("Script %d:", i + 1);
+            std::string displayName = scriptEntry.scriptName.empty() ? "None" : scriptEntry.scriptName;
 
             if (ImGui::BeginCombo("##ScriptSelector", displayName.c_str())) {
                 // clear script
@@ -1509,13 +1510,13 @@ void InspectorWindow::renderLua(GameObject* selected) {
                 ImGui::SameLine();
                 if (ImGui::Button("Edit")) {
                     std::string command;
-                #ifdef _WIN32
+#ifdef _WIN32
                     command = "code \"" + scriptEntry.filename + "\"";
-                #elif __APPLE__
+#elif __APPLE__
                     command = "open -a 'Visual Studio Code' \"" + scriptEntry.filename + "\"";
-                #else
-                   command = "code \"" + scriptEntry.filename + "\"";
-                #endif
+#else
+                    command = "code \"" + scriptEntry.filename + "\"";
+#endif
                     system(command.c_str());
                     DebugLog::addMessage("Opening script: " + scriptEntry.filename + "\n");
                 }
@@ -1561,7 +1562,7 @@ void InspectorWindow::renderLua(GameObject* selected) {
         ImGui::Separator();
         ImGui::Spacing();
 
-   
+
         // Remove component button
         if (ImGui::Button("Remove Lua Script", ImVec2(-1, 0))) {
             selected->removeComponent<LuaScript>();
@@ -1573,14 +1574,14 @@ void InspectorWindow::renderLua(GameObject* selected) {
 void InspectorWindow::renderVisualLogic(GameObject* selected) {
     VisualLC* logic = selected->getComponent<VisualLC>();
 
-	if (ImGui::CollapsingHeader("Visual Logic")) {
+    if (ImGui::CollapsingHeader("Visual Logic")) {
         std::string displayName = logic->filename.empty() ? "<Create New>" : logic->filename;
 
 
-		/* ---------- Dropdown to Select Logic Graph ---------- */
+        /* ---------- Dropdown to Select Logic Graph ---------- */
         if (ImGui::BeginCombo("Logic Graph", displayName.c_str())) {
             // create new logic asset
-			if (ImGui::Selectable("<Create New>", logic->filename.empty())) {                           
+            if (ImGui::Selectable("<Create New>", logic->filename.empty())) {
                 logic->filename.clear();
                 logic->nodes.clear();
                 logic->connections.clear();
@@ -1590,8 +1591,8 @@ void InspectorWindow::renderVisualLogic(GameObject* selected) {
                 Editor::visualLogicState.showEditor = true;
                 Editor::visualLogicState.targetObj = selected;
 
-				DebugLog::addMessage("Creating new Visual Logic Graph for " + selected->getObjectName());
-			}
+                DebugLog::addMessage("Creating new Visual Logic Graph for " + selected->getObjectName());
+            }
 
             // list existing logic assets
             if (std::filesystem::exists("assets/Logic")) {
@@ -1625,7 +1626,7 @@ void InspectorWindow::renderVisualLogic(GameObject* selected) {
                 }
             }
 
-			ImGui::EndCombo();
+            ImGui::EndCombo();
         }
         /* ---------- END ---------- */
 
@@ -1638,9 +1639,9 @@ void InspectorWindow::renderVisualLogic(GameObject* selected) {
         /* ---------- Edit Logic Graph ---------- */
         if (!logic->filename.empty() && ImGui::Button("Edit Logic Graph", ImVec2(-1, 0))) {
             Editor::visualLogicState.showEditor = true;
-			Editor::visualLogicState.currentGraphName = logic->filename;
+            Editor::visualLogicState.currentGraphName = logic->filename;
             Editor::visualLogicState.targetObj = selected;
-            
+
             // loading logic
             if (!logic->filename.empty()) {
 
@@ -1674,11 +1675,104 @@ void InspectorWindow::renderVisualLogic(GameObject* selected) {
         ImGui::Spacing();
 
 
-		if (ImGui::Button("Remove Virtual Logic", ImVec2(-1, 0))) {
-			selected->removeComponent<VisualLC>();
-			DebugLog::addMessage("Removed Virtual Logic Controller");
-		}
-	}
+        if (ImGui::Button("Remove Virtual Logic", ImVec2(-1, 0))) {
+            selected->removeComponent<VisualLC>();
+            DebugLog::addMessage("Removed Virtual Logic Controller");
+        }
+    }
+}
+
+void InspectorWindow::renderLayerControls(GameObject* selected, GameObjectManager& manager) {
+    if (ImGui::CollapsingHeader("Layer")) {
+        int currentLayer = selected->getLayer();
+        Layer* layer = manager.getLayerManager().getLayer(currentLayer);
+
+        /* ------------------- Layer Properties ------------------- */
+        if (layer && ImGui::TreeNode("Layer Properties")) {
+
+            // layers dropdown
+            if (ImGui::BeginCombo("Assign to Layer", layer->getLayerName().c_str())) {
+                std::vector<Layer*> allLayers = manager.getLayerManager().getAllLayers();
+                for (Layer* l : allLayers) {
+                    bool isSelected = (l->getLayerID() == currentLayer);
+                    std::string label = l->getLayerName() + " (ID: " + std::to_string(l->getLayerID()) +
+                        ", Objects: " + std::to_string(l->getObjectCount()) + ")";
+                    if (ImGui::Selectable(label.c_str(), isSelected)) {
+                        if (manager.assignObjectToLayer(selected, l->getLayerID())) {
+                            DebugLog::addMessage(selected->getObjectName() + " moved to layer: " + l->getLayerName());
+                        }
+                        else {
+                            DebugLog::addMessage("Failed to assign layer!");
+                        }
+                    }
+                    if (isSelected) {
+                        ImGui::SetItemDefaultFocus();
+                    }
+                }
+                ImGui::EndCombo();
+            }
+
+            ImGui::Spacing();
+            ImGui::Separator();
+            ImGui::Spacing();
+
+            // master flag
+            bool enabled = layer->isEnabled();
+            if (ImGui::Checkbox("Enabled", &enabled)) {
+                layer->setEnabled(enabled);
+                DebugLog::addMessage("Layer " + layer->getLayerName() +
+                    (enabled ? " enabled" : " disabled"));
+            }
+            ImGui::SameLine();
+            ImGui::TextDisabled("(?)");
+            if (ImGui::IsItemHovered()) {
+                ImGui::SetTooltip("Master toggle - affects both visibility and updates");
+            }
+
+            // flags
+            ImGui::BeginDisabled(!enabled);
+
+            bool visible = layer->isVisible();
+            if (ImGui::Checkbox("Visible", &visible)) {
+                layer->setVisible(visible);
+            }
+            ImGui::SameLine();
+            ImGui::TextDisabled("(?)");
+            if (ImGui::IsItemHovered()) {
+                ImGui::SetTooltip("Controls rendering only");
+            }
+
+            bool updatable = layer->isUpdatable();
+            if (ImGui::Checkbox("Updatable", &updatable)) {
+                layer->setUpdatable(updatable);
+            }
+            ImGui::SameLine();
+            ImGui::TextDisabled("(?)");
+            if (ImGui::IsItemHovered()) {
+                ImGui::SetTooltip("Controls physics/logic updates only");
+            }
+
+            ImGui::EndDisabled();
+
+            ImGui::TreePop();
+        }
+
+        ImGui::Spacing();
+        ImGui::Separator();
+        ImGui::Spacing();
+
+        if (layer && ImGui::TreeNode("Layer Info")) {
+            if (layer) {
+                ImGui::Text("Name: %s", layer->getLayerName().c_str());
+                ImGui::Text("ID: %d", currentLayer);
+                ImGui::Text("Objects in layer: %zu", layer->getObjectCount());
+            }
+            ImGui::TreePop();
+        }
+
+        ImGui::Spacing();
+        ImGui::Spacing();
+    }
 }
 
 void InspectorWindow::renderLayerControls(GameObject* selected, GameObjectManager& manager) {

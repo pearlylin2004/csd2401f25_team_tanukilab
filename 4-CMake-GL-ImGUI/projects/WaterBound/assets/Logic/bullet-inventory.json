@@ -82,8 +82,8 @@
       "implementation": "Compare Global Float",
       "type": 2,
       "position": [
-        543.3333129882813,
-        99.99999237060547
+        543.3334350585938,
+        100.00001525878906
       ],
       "hasInput": true,
       "hasOutput": false,
@@ -116,8 +116,8 @@
       "implementation": "Compare Global Float",
       "type": 2,
       "position": [
-        828.3333129882813,
-        101.66666412353516
+        828.333251953125,
+        101.66667938232422
       ],
       "hasInput": true,
       "hasOutput": false,
@@ -468,16 +468,16 @@
       "implementation": "Set Position",
       "type": 1,
       "position": [
-        413.75482177734375,
-        399.35894775390625
+        413.7547302246094,
+        399.3589782714844
       ],
       "hasInput": true,
       "hasOutput": true,
       "hasTrueOutput": false,
       "hasFalseOutput": false,
       "parameters": {
-        "x": "-12.977",
-        "y": "-7.302"
+        "x": "17",
+        "y": "7.5"
       }
     }
   ],

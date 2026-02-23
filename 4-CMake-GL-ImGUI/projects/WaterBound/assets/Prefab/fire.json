@@ -10,8 +10,8 @@
       ],
       "rotation": 1.0,
       "scale": [
-        5.0,
-        3.4375,
+        3.0,
+        3.0,
         0.0
       ]
     },
@@ -34,8 +34,8 @@
       "collisionFlag": 1,
       "autoFitScale": 1,
       "colliderSize": [
-        5.0,
-        3.4375,
+        3.0,
+        3.0,
         0.0
       ],
       "colliderType": "square",

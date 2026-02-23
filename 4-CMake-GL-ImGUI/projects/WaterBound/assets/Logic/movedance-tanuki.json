@@ -1,0 +1,126 @@
+{
+  "version": 1,
+  "nodes": [
+    {
+      "id": 1,
+      "implementation": "On Update",
+      "type": 0,
+      "position": [
+        -252.0,
+        27.0
+      ],
+      "hasInput": false,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false
+    },
+    {
+      "id": 2,
+      "implementation": "Move Object",
+      "type": 1,
+      "position": [
+        387.5,
+        51.25
+      ],
+      "hasInput": true,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false,
+      "parameters": {
+        "x": "5.000000",
+        "y": "0"
+      }
+    },
+    {
+      "id": 3,
+      "implementation": "On Start",
+      "type": 0,
+      "position": [
+        -59.0,
+        -82.0
+      ],
+      "hasInput": false,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false
+    },
+    {
+      "id": 4,
+      "implementation": "Set Float",
+      "type": 1,
+      "position": [
+        269.0,
+        -91.0
+      ],
+      "hasInput": true,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false,
+      "parameters": {
+        "value": "0.000000",
+        "variable": "count"
+      }
+    },
+    {
+      "id": 5,
+      "implementation": "Compare Variable",
+      "type": 2,
+      "position": [
+        91.0,
+        43.0
+      ],
+      "hasInput": true,
+      "hasOutput": false,
+      "hasTrueOutput": true,
+      "hasFalseOutput": true,
+      "parameters": {
+        "comparison": "less",
+        "threshold": "500.000000",
+        "variable": "count"
+      }
+    },
+    {
+      "id": 6,
+      "implementation": "Modify Float Variable",
+      "type": 1,
+      "position": [
+        707.75,
+        48.75
+      ],
+      "hasInput": true,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false,
+      "parameters": {
+        "value": "0.500000",
+        "variable": "count"
+      }
+    }
+  ],
+  "connections": [
+    {
+      "fromNodeId": 3,
+      "outputPin": "Out",
+      "toNodeId": 4,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 1,
+      "outputPin": "Out",
+      "toNodeId": 5,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 5,
+      "outputPin": "True",
+      "toNodeId": 2,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 2,
+      "outputPin": "Out",
+      "toNodeId": 6,
+      "inputPin": "In"
+    }
+  ]
+}

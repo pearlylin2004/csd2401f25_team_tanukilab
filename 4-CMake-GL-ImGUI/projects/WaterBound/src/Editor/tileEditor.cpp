@@ -78,7 +78,7 @@ void TileMapSystem::update(GameObjectManager& manager)
 	manager.getAllGameObjects(objects);
 	//RenderSystem::objectWithTex2.clear();
 	for (auto& [key, instances] : RenderSystem::objectWithTex2) {
-		instances.clear(); // Clear contents but keep capacity
+		instances.clear();
 	}
 
 	for (GameObject* obj : objects)

@@ -297,6 +297,8 @@ public:
 
 	// broadcast whenever bullet shoot
 	static void broadcastBulletShoot();
+
+	void resetLogicState(/*GameObjectManager& manager*/);
 private:
 	// execute a specific node
 	void executeNode(GameObject* obj, VisualLC* logic, int nodeId, float dt);

@@ -430,7 +430,7 @@ void InputHandler::dropCallback(GLFWwindow* window, int count, const char** path
 			else if (ext == ".png" || ext == ".jpg" || ext == ".jpeg") {
 				targetFolder = "Texture";
 			}
-			// if lua, auto add to scripting
+			// if lua, auto add to Scripts
 			else if (ext == ".lua") {
 				targetFolder = "scripting";
 			}
