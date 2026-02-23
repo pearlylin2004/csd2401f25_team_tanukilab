@@ -275,6 +275,7 @@ void RenderSystem::update(GameObjectManager& manager, float const& deltaTime)
 
 
 	}
+	glDisable(GL_BLEND);
 	//drawing models without texture
 	glUseProgram(renderer::shdr_pgm[1]);
 	GLint uView = glGetUniformLocation(renderer::shdr_pgm[1], "V");
@@ -384,7 +385,7 @@ RenderSystem::~RenderSystem() {
 // Load all textures for game objects with a Render component
 void RenderSystem::init(GameObjectManager& manager, int fboW, int fboH)
 {
-	glEnable(GL_BLEND);
+	//glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	//stbi_set_flip_vertically_on_load(true);
 	std::vector<GameObject*> gameObjects;
@@ -424,7 +425,7 @@ void RenderSystem::init(GameObjectManager& manager, int fboW, int fboH)
 void RenderSystem::batchingSetUp(GameObjectManager& manager, float const& deltaTime)
 {
 	LayerManager& layerManager = manager.getLayerManager();
-	
+
 	for (std::pair<const BatchKey, std::vector<renderer::InstanceData>>& pair : objectWithTex) pair.second.clear();
 	for (std::pair<const BatchKey, std::vector<renderer::InstanceData>>& pair : objectWithoutTex) pair.second.clear();
 
@@ -435,7 +436,7 @@ void RenderSystem::batchingSetUp(GameObjectManager& manager, float const& deltaT
 		for (GameObject* obj : layer->getObjects()) {
 			if (!obj->hasComponent<Render>() || !obj->hasComponent<Transform>())
 				continue;
-			
+
 			Render* render = obj->getComponent<Render>();
 			Transform* transform = obj->getComponent<Transform>();
 
@@ -457,7 +458,7 @@ void RenderSystem::batchingSetUp(GameObjectManager& manager, float const& deltaT
 				Animation* animation = obj->getComponent<Animation>();
 				StateMachine* sm = obj->getComponent<StateMachine>();
 				AnimateState& as = animation->animState[static_cast<int>(sm->state)];
-					
+
 				if (render->hasAnimation && !as.texFile.empty()) {
 					glm::vec2 texOffSet{ as.currentFrameColumn / static_cast<float>(as.totalColumn), 1.f - ((as.currentFrameRow + 1) / static_cast<float>(as.totalRow)) };
 					glm::vec2 texScale{ 1.f / as.totalColumn, 1.f / as.totalRow };
@@ -495,25 +496,119 @@ void RenderSystem::batchingSetUp(GameObjectManager& manager, float const& deltaT
 						}
 					}
 					data.texParams = { texOffSet, texScale };
-					BatchKey key{ render->modelRef.shape, as.texHDL };
+					BatchKey key{ transform->z, as.texHDL };
 					objectWithTex[key].push_back(data);
 				}
 				else {
-					BatchKey key{ render->modelRef.shape, 0 };
+					BatchKey key{ transform->z, 0 };
 					objectWithoutTex[key].push_back(data);
 				}
 			}
 			else if (render->hasTex) {
-				BatchKey key{ render->modelRef.shape, render->texHDL };
+				BatchKey key{ transform->z, render->texHDL };
 				objectWithTex[key].push_back(data);
 			}
 			else {
-				BatchKey key{ render->modelRef.shape, 0 };
+				BatchKey key{ transform->z, 0 };
 				objectWithoutTex[key].push_back(data);
 			}
 		}
 	}
 }
+
+//void RenderSystem::batchingSetUp(GameObjectManager& manager, float const& deltaTime)
+//{
+//	LayerManager& layerManager = manager.getLayerManager();
+//	
+//	for (std::pair<const BatchKey, std::vector<renderer::InstanceData>>& pair : objectWithTex) pair.second.clear();
+//	for (std::pair<const BatchKey, std::vector<renderer::InstanceData>>& pair : objectWithoutTex) pair.second.clear();
+//
+//	// Process objects layer by layer for efficient visibility check
+//	for (Layer* layer : layerManager.getAllLayers()) {
+//		if (!layer || !layer->isVisible()) continue; // Skip non-visible layers (single flag check)
+//
+//		for (GameObject* obj : layer->getObjects()) {
+//			if (!obj->hasComponent<Render>() || !obj->hasComponent<Transform>())
+//				continue;
+//			
+//			Render* render = obj->getComponent<Render>();
+//			Transform* transform = obj->getComponent<Transform>();
+//
+//			float scaleX = transform->flipX ? -transform->scaleX : transform->scaleX;
+//
+//			renderer::InstanceData data;
+//			float angle = glm::radians(transform->rotation);
+//			transform->mdlWorld = glm::mat4{ 1 };
+//			transform->mdlWorld = glm::translate(transform->mdlWorld, glm::vec3(transform->x, transform->y, transform->z));
+//			transform->mdlWorld = glm::rotate(transform->mdlWorld, angle, glm::vec3(0, 0, 1.f));
+//			transform->mdlWorld = glm::scale(transform->mdlWorld, glm::vec3(scaleX, transform->scaleY, transform->scaleZ));
+//			data.model = transform->mdlWorld;
+//			data.color = render->clr;
+//			data.texParams = glm::vec4(0, 0, 1, 1);
+//
+//			// Animation handling (same as before)
+//			if (obj->hasComponent<Animation>() && obj->hasComponent<StateMachine>())
+//			{
+//				Animation* animation = obj->getComponent<Animation>();
+//				StateMachine* sm = obj->getComponent<StateMachine>();
+//				AnimateState& as = animation->animState[static_cast<int>(sm->state)];
+//					
+//				if (render->hasAnimation && !as.texFile.empty()) {
+//					glm::vec2 texOffSet{ as.currentFrameColumn / static_cast<float>(as.totalColumn), 1.f - ((as.currentFrameRow + 1) / static_cast<float>(as.totalRow)) };
+//					glm::vec2 texScale{ 1.f / as.totalColumn, 1.f / as.totalRow };
+//
+//					// Only update animation if layer is updatable
+//					if (as.play && layer->isUpdatable() && !EditorManager::isEditingMode() && !EditorManager::isPaused())
+//					{
+//						as.frameTimer += deltaTime;
+//						if (as.frameTimer >= as.frameTime)
+//						{
+//							as.frameTimer -= as.frameTime;
+//							if (as.currentFrameColumn >= as.lastFrame.x && as.currentFrameRow >= as.lastFrame.y)
+//							{
+//								if (as.loop) {
+//									as.currentFrameColumn = (int)as.initialFrame.x;
+//									as.currentFrameRow = (int)as.initialFrame.y;
+//									as.frameTimer = 0;
+//								}
+//								else {
+//									as.play = false;
+//								}
+//							}
+//							else {
+//								++as.currentFrameColumn;
+//								if (as.currentFrameColumn >= as.totalColumn) {
+//									as.currentFrameColumn = 0;
+//									++as.currentFrameRow;
+//									if (as.currentFrameRow > as.lastFrame.y) {
+//										as.currentFrameColumn = (int)as.initialFrame.x;
+//										as.currentFrameRow = (int)as.initialFrame.y;
+//									}
+//								}
+//							}
+//							animation->runItBack = true;
+//						}
+//					}
+//					data.texParams = { texOffSet, texScale };
+//					BatchKey key{ render->modelRef.shape, as.texHDL };
+//					objectWithTex[key].push_back(data);
+//				}
+//				else {
+//					BatchKey key{ render->modelRef.shape, 0 };
+//					objectWithoutTex[key].push_back(data);
+//				}
+//			}
+//			else if (render->hasTex) {
+//				BatchKey key{ render->modelRef.shape, render->texHDL };
+//				objectWithTex[key].push_back(data);
+//			}
+//			else {
+//				BatchKey key{ render->modelRef.shape, 0 };
+//				objectWithoutTex[key].push_back(data);
+//			}
+//		}
+//	}
+//}
 
 void RenderSystem::instancePerBatch(std::unordered_map<BatchKey, std::vector<renderer::InstanceData>, BatchKeyHash> &batch)
 {

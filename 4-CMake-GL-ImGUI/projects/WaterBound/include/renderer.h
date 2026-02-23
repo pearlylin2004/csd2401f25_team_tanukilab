@@ -49,19 +49,18 @@ enum class cameraMode {
 };
 
 struct BatchKey {
-	shape meshType;
+	GLuint z;
 	GLuint texID;
 	mutable GLuint ssboID = 0;
 
 	bool operator==(const BatchKey& other) const noexcept {
-		return meshType == other.meshType && texID == other.texID;
+		return z == other.z;
 	}
 };
 
 struct BatchKeyHash {
 	std::size_t operator()(const BatchKey& k) const noexcept {
-		// simple hash combine
-		return std::hash<int>()((int)k.meshType) ^ (std::hash<GLuint>()(k.texID) << 1);
+		return std::hash<GLuint>()(k.z);
 	}
 };
 
