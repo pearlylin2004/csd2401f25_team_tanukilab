@@ -49,7 +49,7 @@ enum class cameraMode {
 };
 
 struct BatchKey {
-	GLuint z;
+	float z;
 	GLuint texID;
 	mutable GLuint ssboID = 0;
 
