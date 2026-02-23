@@ -116,7 +116,7 @@ void GUISystem::createButtonActions() {
     //play
     m_buttonActions[ButtonAction::START_GAME] = [this]() {
         changeState(GameState::PLAYING);
-        startGame(*g_manager);
+        startGame();
      };
 
     //exit confirmation
@@ -142,7 +142,7 @@ void GUISystem::createButtonActions() {
             changeState(GameState::PAUSED, "pause_scene.json");
             break;
         case GameState::PLAYING:
-            startGame(*g_manager); // resume the game
+            startGame(); // resume the game
             break;
         case GameState::EXITCONFIRMATION:
             changeState(GameState::EXITCONFIRMATION, "confirmation_scene.json");
@@ -176,7 +176,7 @@ void GUISystem::createButtonActions() {
     std::cout << "[GUI] Menu buttons created successfully" << std::endl;
 }
 
-void GUISystem::startGame(GameObjectManager& manager) {
+void GUISystem::startGame() {
     std::cout << "[GUI] Starting game" << std::endl;
 
     //change state to playing
