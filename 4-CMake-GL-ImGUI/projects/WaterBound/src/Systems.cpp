@@ -1037,12 +1037,25 @@ void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime, M
 				physics->dynamics.velocity.y = 0.0f;
 				physics->velY = 0.0f;
 				physics->onGround = true;
+
+				// coyote
+				physics->coyoteAvailable = true; // reset when on ground
+				physics->coyoteTimer = physics->coyoteTime;
+			}
+
+			// coyote timer update when not on ground
+			if (!physics->onGround) {
+				if (physics->coyoteTimer > 0.f)
+					physics->coyoteTimer -= deltaTime;
+				else
+					physics->coyoteAvailable = false;
 			}
 
 			// STEP 2: Jump input
 			if (InputHandler::isKeyTriggered(GLFW_KEY_SPACE)) {
-				if (previousOnGround[object]) {
+				if (previousOnGround[object]/* || physics->coyoteAvailable*/) {
 					PhysicsForces::jump(object);
+					physics->coyoteAvailable = false;
 					messageBus.publish(Message("KeyPressed", nullptr, KeyEvent{ "SPACE", true }));
 				}
 			}
@@ -1448,11 +1461,17 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 										p1->dynamics.velocity.y = 0.f;
 										p1->velY = 0.f;
 										p1->onGround = true;
+
+										p1->coyoteAvailable = true;   // add this
+										p1->coyoteTimer = p1->coyoteTime;
 									}
 									else {
 										p2->dynamics.velocity.y = 0.f;
 										p2->velY = 0.f;
 										p2->onGround = true;
+
+										p2->coyoteAvailable = true;   // add this
+										p2->coyoteTimer = p2->coyoteTime;
 									}
 								}
 							}
@@ -1484,7 +1503,11 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 								}
 								if (info.normal.y != 0) {
 									p1->dynamics.velocity.y = 0.f;
-									if (info.normal.y > 0) p1->onGround = true;
+									if (info.normal.y > 0) {
+										p1->onGround = true;
+										p1->coyoteAvailable = true;   // add this
+										p1->coyoteTimer = p1->coyoteTime;
+									}
 								}
 							}
 						}
@@ -1517,7 +1540,11 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 								}
 								if (info.normal.y != 0) {
 									p2->dynamics.velocity.y = 0.f;
-									if (info.normal.y < 0) p2->onGround = true;
+									if (info.normal.y < 0) {
+										p2->onGround = true;
+										p2->coyoteAvailable = true;   // add this
+										p2->coyoteTimer = p2->coyoteTime;
+									}
 								}
 							}
 						}
@@ -1677,6 +1704,8 @@ void CollisionSystem::HandleTilemapCollisions(const std::unordered_map<int, Coll
 								p->dynamics.velocity.y = 0.0f;
 								if (info.normal.y > 0) {
 									p->onGround = true;
+									p->coyoteAvailable = true;   // add this
+									p->coyoteTimer = p->coyoteTime;
 								}
 							}
 						}
