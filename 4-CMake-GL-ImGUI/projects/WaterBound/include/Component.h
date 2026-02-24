@@ -195,9 +195,13 @@ public:
     float floorY = -7.5f;
     bool onGround = false;
 
+	// jump buffer (forgive early jump before landing)
+	float jumpBufferTime = 0.15f; // how long before landing can still jump
+	float jumpBufferTimer = 0.f;
+
     // coyote jump (can still jump after walking off ledge)
     float coyoteTime = 0.15f;      // how long after leaving edge can still jump
-    float coyoteTimer = 0.0f;      // countdown timer
+    float coyoteTimer = 0.f;
     bool  coyoteAvailable = false;
 
     //water bullet

@@ -1051,14 +1051,28 @@ void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime, M
 					physics->coyoteAvailable = false;
 			}
 
+			// jump buffer timer update
+			if (physics->jumpBufferTimer > 0.f)
+				physics->jumpBufferTimer -= deltaTime;
+
 			// STEP 2: Jump input
-			if (InputHandler::isKeyTriggered(GLFW_KEY_SPACE)) {
-				if (previousOnGround[object] || physics->coyoteAvailable) {
-					PhysicsForces::jump(object);
-					physics->coyoteAvailable = false;
-					messageBus.publish(Message("KeyPressed", nullptr, KeyEvent{ "SPACE", true }));
-				}
+			// when space pressed, store the intention
+			if (InputHandler::isKeyTriggered(GLFW_KEY_SPACE))
+				physics->jumpBufferTimer = physics->jumpBufferTime;
+
+			// jump if buffer is active AND player is grounded or coyote available
+			if (physics->jumpBufferTimer > 0.f && (previousOnGround[object] || physics->coyoteAvailable)) {
+				PhysicsForces::jump(object);
+				physics->jumpBufferTimer = 0.f;
+				physics->coyoteAvailable = false;
+				messageBus.publish(Message("KeyPressed", nullptr, KeyEvent{ "SPACE", true }));
 			}
+
+			//// tap for small jump, hold for big jump
+			//if (InputHandler::isKeyReleased(GLFW_KEY_SPACE)) {
+			//	if (physics->dynamics.velocity.y > 0.0f)
+			//		physics->dynamics.velocity.y *= 0.8f;
+			//}
 
 			// STEP 3: Movement
 			float targetVelX = 0.0f;
