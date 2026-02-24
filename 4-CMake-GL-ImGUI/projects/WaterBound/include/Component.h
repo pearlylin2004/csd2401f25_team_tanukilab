@@ -187,7 +187,7 @@ public:
 
     float velX = 0.0f;
     float velY = 0.0f;
-    float gravity = -20.8f;
+    float gravity = -20.f;
 
     // properties
     float damping = 0.98f; // in the air
