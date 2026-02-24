@@ -518,6 +518,17 @@ void GameObjectManager::loadSceneFromJson(const std::string& filename) {
 					? jp["autoUpdate"].GetBool()
 					: (jp["autoUpdate"].GetInt() != 0);
 			}
+			if (jp.HasMember("freezeRotation")) {
+				p->freezeRotation = jp["freezeRotation"].IsBool()
+				? jp["freezeRotation"].GetBool()
+				: (jp["freezeRotation"].GetInt() != 0);
+			}
+
+			if (jp.HasMember("angularDrag") && jp["angularDrag"].IsNumber())
+				p->dynamics.angularDrag = jp["angularDrag"].GetFloat();
+
+			if (jp.HasMember("inertiaOverride") && jp["inertiaOverride"].IsNumber())
+				p->inertiaOverride = jp["inertiaOverride"].GetFloat();
 		}
 
 		// ---- CollisionInfo (presence only) ----
@@ -567,6 +578,13 @@ void GameObjectManager::loadSceneFromJson(const std::string& filename) {
 						c->ignoreCollisionsWith.insert(tag.GetString());
 					}
 				}
+			}
+		}
+
+		if (auto* p = go->getComponent<Physics>()) {
+			if (auto* c = go->getComponent<CollisionInfo>()) {
+				p->recalculateInertia(c->colliderSize, c->colliderType);
+
 			}
 		}
 
@@ -1244,6 +1262,10 @@ doc.AddMember("layers", layersArr, a);
 				pushIfDiffFloat("jumpForce", p->jumpForce);
 				pushIfDiffFloat("mass", p->dynamics.mass);
 				pushIfDiffFloat("damping", p->damping);
+
+				pushIfDiffBool("freezeRotation", p->freezeRotation);
+				pushIfDiffFloat("angularDrag", p->dynamics.angularDrag);
+				pushIfDiffFloat("inertiaOverride", p->inertiaOverride);
 
 				if (!jp.ObjectEmpty()) comps.AddMember("Physics", jp, a);
 			}

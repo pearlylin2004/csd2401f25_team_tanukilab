@@ -1,5 +1,28 @@
 {
   "version": 1,
+  "layers": [
+    {
+      "id": 0,
+      "name": "Background",
+      "enabled": 1,
+      "visible": 1,
+      "updatable": 1
+    },
+    {
+      "id": 1,
+      "name": "Game",
+      "enabled": 1,
+      "visible": 1,
+      "updatable": 1
+    },
+    {
+      "id": 2,
+      "name": "UI",
+      "enabled": 1,
+      "visible": 1,
+      "updatable": 1
+    }
+  ],
   "objects": [
     {
       "name": "background6",
@@ -33,7 +56,7 @@
         "Transform": {
           "pos": [
             -1000.0,
-            -1002.4993896484375,
+            -1002.747314453125,
             1.0
           ]
         },
@@ -42,7 +65,10 @@
           "hasTex": 1
         },
         "Physics": {
-          "autoUpdate": 0
+          "autoUpdate": 0,
+          "freezeRotation": 1,
+          "angularDrag": 0.9800000190734863,
+          "inertiaOverride": 0.0
         },
         "CollisionInfo": {
           "ignoreCollisionsWith": [
@@ -92,7 +118,7 @@
         "Transform": {
           "pos": [
             0.0,
-            -2.8452768325805664,
+            -2.8452765941619873,
             0.9980000257492065
           ],
           "scale": [
@@ -103,7 +129,10 @@
         },
         "Physics": {
           "autoUpdate": 0,
-          "jumpForce": 90.0
+          "jumpForce": 90.0,
+          "freezeRotation": 1,
+          "angularDrag": 0.9800000190734863,
+          "inertiaOverride": 0.0
         },
         "CollisionInfo": {
           "collisionTag": "player",
@@ -112,7 +141,7 @@
           ]
         },
         "StateMachine": {
-          "stateTime": 9.8779935836792
+          "stateTime": 25.2170467376709
         },
         "AudioComponent": {
           "channels": {
@@ -305,7 +334,7 @@
         "Render": {
           "shape": "square",
           "hasTex": 1,
-          "texture": "assets/Texture\\Water_90.png",
+          "texture": "assets/Texture\\Water_100.png",
           "hasTex": 1,
           "hasAnimation": 0
         },
@@ -379,11 +408,6 @@
               "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
             },
             {
-              "x": 6,
-              "y": -2,
-              "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
-            },
-            {
               "x": -4,
               "y": -4,
               "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
@@ -391,6 +415,11 @@
             {
               "x": 7,
               "y": -4,
+              "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
+            },
+            {
+              "x": 6,
+              "y": -2,
               "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
             },
             {
@@ -673,13 +702,16 @@
       "components": {
         "Transform": {
           "pos": [
-            13.596,
+            13.595999717712402,
             -0.04527680575847626,
             0.0
           ]
         },
         "Physics": {
-          "autoUpdate": 0
+          "autoUpdate": 0,
+          "freezeRotation": 1,
+          "angularDrag": 0.9800000190734863,
+          "inertiaOverride": 0.0
         }
       }
     }

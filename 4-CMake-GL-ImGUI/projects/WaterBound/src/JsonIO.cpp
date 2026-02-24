@@ -940,6 +940,9 @@ namespace JsonIO {
             jp.AddMember("damping", p->damping, a);
             jp.AddMember("mass", p->dynamics.mass, a);
             jp.AddMember("buoyancy", p->buoyancy, a);
+            jp.AddMember("freezeRotation", p->freezeRotation, a);
+            jp.AddMember("angularDrag", p->dynamics.angularDrag, a);
+            jp.AddMember("inertiaOverride", p->inertiaOverride, a);
 
             doc.AddMember("Physics", jp, a);
         }
@@ -1238,6 +1241,11 @@ namespace JsonIO {
                 p->damping = jp["damping"].GetFloat();
                 p->dynamics.mass = jp["mass"].GetFloat();
                 p->buoyancy = jp["buoyancy"].GetBool();
+
+                if (jp.HasMember("freezeRotation")) p->freezeRotation = jp["freezeRotation"].GetBool();
+                if (jp.HasMember("angularDrag")) p->dynamics.angularDrag = jp["angularDrag"].GetFloat();
+                if (jp.HasMember("inertiaOverride")) p->inertiaOverride = jp["inertiaOverride"].GetFloat();
+
             }
 
             // Collision

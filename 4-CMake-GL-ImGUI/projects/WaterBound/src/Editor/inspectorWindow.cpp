@@ -848,17 +848,29 @@ void InspectorWindow::renderCollision(GameObject* selected/*, GameObjectManager&
             }
 
             if (collision->colliderType == shape::circle) {
-                if (ImGui::InputFloat("Diamater", &collision->colliderSize.x, 1.f)) {
+                if (ImGui::InputFloat("Diameter", &collision->colliderSize.x, 1.f)) {
                     collision->colliderSize.x = std::max(collision->colliderSize.x, 0.f);
                     collision->colliderSize.y = collision->colliderSize.y;
+                    if (Physics* p = selected->getComponent<Physics>()) {
+                        if (!p->freezeRotation) p->recalculateInertia(collision->colliderSize, shape::circle);
+                    }
                 }
             }
             else {
-                if (ImGui::InputFloat("Width", &collision->colliderSize.x, 1.f))
+                if (ImGui::InputFloat("Width", &collision->colliderSize.x, 1.f)) {
                     collision->colliderSize.x = std::max(collision->colliderSize.x, 0.f);
+                    if (Physics* p = selected->getComponent<Physics>()) {
+                        if (!p->freezeRotation) p->recalculateInertia(collision->colliderSize, collision->colliderType);
+                    }
+                }
 
-                if (ImGui::InputFloat("Height", &collision->colliderSize.y, 1.f))
+                if (ImGui::InputFloat("Height", &collision->colliderSize.y, 1.f)) {
                     collision->colliderSize.y = std::max(collision->colliderSize.y, 0.f);
+                    if (Physics* p = selected->getComponent<Physics>()) {
+                        if (!p->freezeRotation) p->recalculateInertia(collision->colliderSize, collision->colliderType);
+                    }
+
+                }
             }
 
             ImGui::EndDisabled();
@@ -964,76 +976,93 @@ void InspectorWindow::renderPhysics(GameObject* selected, bool canMove) {
     Physics* physic = selected->getComponent<Physics>();
 
     if (ImGui::CollapsingHeader("Physics")) {
-        ImGui::Checkbox("Is Trigger", &physic->physicsFlag);
+
+        // --- flat fields ---
+        if (ImGui::InputFloat("Mass", &physic->dynamics.mass, 1.f)) {
+            physic->dynamics.mass = std::max(physic->dynamics.mass, 0.f);
+            if (!physic->freezeRotation) {
+                if (auto* c = selected->getComponent<CollisionInfo>())
+                    physic->recalculateInertia(c->colliderSize, c->colliderType);
+            }
+        }
+
+        if (ImGui::InputFloat("Linear Drag", &physic->damping, 0.1f))
+            physic->damping = std::clamp(physic->damping, 0.f, 1.f);
+
+        if (ImGui::SliderFloat("Angular Drag", &physic->dynamics.angularDrag, 0.0f, 1.0f))
+            physic->dynamics.angularDrag = std::clamp(physic->dynamics.angularDrag, 0.0f, 1.0f);
+
+        if (ImGui::InputFloat("Gravity Scale", &physic->gravity, 1.f))
+            physic->gravity = std::min(physic->gravity, 0.f); // gravity should stay negative
+
+        ImGui::Checkbox("Buoyancy", &physic->buoyancy);
 
         ImGui::Spacing();
         ImGui::Separator();
+        ImGui::Spacing();
 
+        // --- input movement (only shown if object has Input component) ---
+        if (canMove && ImGui::TreeNode("Movement")) {
+            if (ImGui::InputFloat("Speed", &physic->moveSpeed, 1.f))
+                physic->moveSpeed = std::max(physic->moveSpeed, 0.f);
 
-        // only show movement data if object is controlable via input
-        if (ImGui::TreeNode("Input Movement Control")) {
-            if (canMove) {
-                if (ImGui::TreeNode("Movement")) {
-                    if (ImGui::InputFloat("Speed", &physic->moveSpeed, 1.f))
-                        physic->moveSpeed = std::max(physic->moveSpeed, 0.f); // set the min speed to 0.f
+            if (ImGui::InputFloat("Jump Force", &physic->jumpForce, 1.f))
+                physic->jumpForce = std::max(physic->jumpForce, 0.f);
 
-                    if (ImGui::InputFloat("Jump Force", &physic->jumpForce, 1.f))
-                        physic->jumpForce = std::max(physic->jumpForce, 0.f); // set the min jump force to 0.f
+            ImGui::TreePop();
+        }
 
-                    if (ImGui::InputFloat("Mass", &physic->dynamics.mass, 1.f))
-                        physic->dynamics.mass = std::max(physic->dynamics.mass, 0.f); // 0.f mass means static obj (never move, e.g. wall)
+        ImGui::Spacing();
+        ImGui::Separator();
+        ImGui::Spacing();
 
-                    ImGui::TreePop();
+        // --- Constraints ---
+        if (ImGui::TreeNode("Constraints")) {
+            ImGui::Text("Freeze Rotation");
+            ImGui::SameLine();
+            ImGui::Checkbox("Z", &physic->freezeRotation);
+
+            if (!physic->freezeRotation) {
+                ImGui::Spacing();
+                if (ImGui::InputFloat("Inertia Override", &physic->inertiaOverride, 1.f)) {
+                    physic->inertiaOverride = std::max(physic->inertiaOverride, 0.f);
+                    if (auto* c = selected->getComponent<CollisionInfo>())
+                        physic->recalculateInertia(c->colliderSize, c->colliderType);
                 }
+                if (ImGui::IsItemHovered())
+                    ImGui::SetTooltip("0 = auto-calculate from mass and shape");
 
-                if (ImGui::TreeNode("Environment")) {
-                    if (ImGui::InputFloat("Damping", &physic->damping, 0.1f))
-                        physic->damping = std::clamp(physic->damping, 0.f, 1.f); // damping within 0.1 to 1.f
-
-                    ImGui::TreePop();
+                ImGui::SameLine();
+                if (ImGui::Button("Reset")) {
+                    physic->inertiaOverride = 0.0f;
+                    if (auto* c = selected->getComponent<CollisionInfo>())
+                        physic->recalculateInertia(c->colliderSize, c->colliderType);
                 }
-            }
-            else {
-                ImGui::TextWrapped("Requires Input component to move");
+                if (ImGui::IsItemHovered())
+                    ImGui::SetTooltip("Reset to auto-calculated value");
+                ImGui::Text("Inertia: %.4f", physic->dynamics.inertia);
             }
 
             ImGui::TreePop();
         }
 
-        if (ImGui::TreeNode("Water")) {
-            ImGui::Checkbox("Buoyancy (we dh)", &physic->buoyancy);
+        ImGui::Spacing();
+        ImGui::Separator();
+        ImGui::Spacing();
 
-            ImGui::TreePop();
-        }
-
-        if (ImGui::TreeNode("Debug Info")) {
-            ImGui::Text("Velocity: (%.2f, %.2f, %.2f)",
-                physic->dynamics.velocity.x,
-                physic->dynamics.velocity.y,
-                physic->dynamics.velocity.z);
-
-            ImGui::Spacing();
-
+        // --- debug info ---
+        if (ImGui::TreeNode("Info")) {
+            ImGui::Text("Velocity: (%.2f, %.2f)", physic->dynamics.velocity.x, physic->dynamics.velocity.y);
             Vector2D vel2D{ physic->dynamics.velocity.x, physic->dynamics.velocity.y };
-            float vel = Vec_Length(&vel2D);
-            ImGui::Text("Speed: %.2f", vel);
-
-            ImGui::Spacing();
-
-            ImGui::Text("Acceleration: (%.2f, %.2f, %.2f)",
-                physic->dynamics.acceleration.x,
-                physic->dynamics.acceleration.y,
-                physic->dynamics.acceleration.z);
-
-            ImGui::Spacing();
-
+            ImGui::Text("Speed: %.2f", Vec_Length(&vel2D));
+            ImGui::Text("Angular Velocity: %.4f", physic->dynamics.angularVelocity);
             ImGui::Text("Inverse Mass: %.4f", physic->dynamics.inverseMass);
-
             ImGui::TreePop();
         }
+
+        ImGui::Spacing();
 
         if (ImGui::Button("Remove Physics", ImVec2(-1, 0))) {
-            // add a delete component func here
             selected->removeComponent<Physics>();
             DebugLog::addMessage("Removed Physics Component");
         }

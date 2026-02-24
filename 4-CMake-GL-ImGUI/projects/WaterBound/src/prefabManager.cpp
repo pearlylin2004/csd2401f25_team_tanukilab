@@ -791,6 +791,10 @@ void PrefabManager::applyPrefabComponents(GameObject* go, const rapidjson::Value
 		p->dynamics.mass = JsonIO::GetFloatOr(jp, "mass", 1.f);
 		p->inWater = JsonIO::GetBoolOr(jp, "inWater", false);
 		p->buoyancy = JsonIO::GetBoolOr(jp, "buoyancy", false);
+
+		if (jp.HasMember("freezeRotation")) p->freezeRotation = jp["freezeRotation"].GetBool();
+		if (jp.HasMember("angularDrag")) p->dynamics.angularDrag = jp["angularDrag"].GetFloat();
+		if (jp.HasMember("inertiaOverride")) p->inertiaOverride = jp["inertiaOverride"].GetFloat();
 	}
 
 	// ---- CollisionInfo (presence only) ----
@@ -822,6 +826,13 @@ void PrefabManager::applyPrefabComponents(GameObject* go, const rapidjson::Value
 					c->ignoreCollisionsWith.insert(tag.GetString());
 				}
 			}
+		}
+	}
+
+	if (auto* p = go->getComponent<Physics>()) {
+		if (auto* c = go->getComponent<CollisionInfo>()) {
+			p->recalculateInertia(c->colliderSize, c->colliderType);
+
 		}
 	}
 
@@ -1144,6 +1155,10 @@ void PrefabManager::serializeComponents(const GameObject* obj, rapidjson::Value&
 
 		jp.AddMember("inWater", p->inWater ? 1 : 0, a);
 		jp.AddMember("buoyancy", p->buoyancy ? 1 : 0, a);
+
+		jp.AddMember("freezeRotation", p->freezeRotation, a);
+		jp.AddMember("angularDrag", p->dynamics.angularDrag, a);
+		jp.AddMember("inertiaOverride", p->inertiaOverride, a);
 
 		comps.AddMember("Physics", jp, a);
 	}

@@ -84,5 +84,14 @@ void DynamicsSystem::Integrate(Dynamics& dyn, float deltaTime, float gravityValu
     dyn.position = Vec3_Add(&dyn.position, &deltaPos);
 }
 
+void DynamicsSystem::IntegrateAngular(Dynamics& dyn, float deltaTime) {
+    if (dyn.inertia > 0.0f)
+        dyn.angularAcceleration = dyn.torque / dyn.inertia;
+
+    dyn.angularVelocity += dyn.angularAcceleration * deltaTime;
+    dyn.angularVelocity *= dyn.angularDrag;  // friction/air resistance on spin
+    dyn.torque = 0.0f;                      // clear for next frame
+}
+
 
 

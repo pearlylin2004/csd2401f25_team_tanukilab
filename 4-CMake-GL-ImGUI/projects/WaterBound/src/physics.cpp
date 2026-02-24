@@ -39,6 +39,7 @@ void PhysicsForces::applyDamping(Physics* physics) {
     physics->damping; // instead of 0.99f
 
     physics->dynamics.velocity.x *= physics->damping;
+	physics->dynamics.angularVelocity *= physics->dynamics.angularDrag;
    // physics->dynamics.velocity.y *= physics->damping;
 }
 /**
@@ -47,24 +48,26 @@ void PhysicsForces::applyDamping(Physics* physics) {
  */
 void PhysicsForces::updatePosition(Transform* transform, Physics* physics, float deltaTime) {
     DynamicsSystem::UpdateForces(physics->dynamics, deltaTime);
-    //DynamicsSystem::Integrate(physics->dynamics, deltaTime);
     if (!physics->onGround) {
-        Vector3D gravity = { 0.0f, physics->gravity * physics->dynamics.mass, 0.0f };
         DynamicsSystem::Integrate(physics->dynamics, deltaTime, physics->gravity, false);
     }
     else {
         physics->dynamics.velocity.y = 0.0f;
         physics->velY = 0.0f;
-
     }
     transform->x = physics->dynamics.position.x;
     transform->y = physics->dynamics.position.y;
 
-   
+    // Integrate angular velocity into rotation (degrees/sec)
+    if (!physics->freezeRotation) {
+        DynamicsSystem::IntegrateAngular(physics->dynamics, deltaTime);
+        transform->rotation += physics->dynamics.angularVelocity * deltaTime;
+    }
+
     physics->velX = physics->dynamics.velocity.x;
     physics->velY = physics->dynamics.velocity.y;
-
 }
+
 /**
  * @brief Applies jump force to make an object jump
  *
@@ -221,4 +224,20 @@ void PhysicsForces::deactivateBullet(GameObject* bullet) {
     p->alive = false;
 
     DebugLog::addMessage("Bullet deactivated and returned to pool", DebugMode::PlaySimul);
+}
+
+void Physics::recalculateInertia(const Vector2D& colliderSize, shape colliderType) {
+    if (inertiaOverride > 0.0f) {
+        dynamics.inertia = inertiaOverride;
+        return;
+    }
+    if (colliderType == shape::circle) {
+        float radius = colliderSize.x / 2.0f;
+        dynamics.inertia = 0.5f * dynamics.mass * radius * radius;
+    }
+    else {
+        float w = colliderSize.x;
+        float h = colliderSize.y;
+        dynamics.inertia = (1.0f / 12.0f) * dynamics.mass * (w * w + h * h);
+    }
 }

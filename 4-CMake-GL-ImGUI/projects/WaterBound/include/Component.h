@@ -172,10 +172,13 @@ struct Animation : public Component
 // Physics component to store velocity and other physics-related properties
 struct Physics : public Component {
 public:
-
+    //clone component
     std::unique_ptr<Component> clone() const override {
         return std::make_unique<Physics>(*this);
     }
+
+	//helper function to recalculate moment of inertia when collider size changes, for now just use box collider formula, can add more later if needed
+    void recalculateInertia(const Vector2D& colliderSize, const shape colliderType);
 
     bool physicsFlag = true;
     float moveSpeed = 1.0f;
@@ -215,7 +218,6 @@ public:
     bool useArcTrajectory = true;
     float minArcHeight = 2.0f;
 
-
     bool inWater = false;
     bool buoyancy = true;
 
@@ -223,7 +225,11 @@ public:
     float gravityDelayTimer = 0.0f;
     float gravityDelay = 0.2f;
 
-	float bounciness = 0.0f; // 0 = no bounce, 1 = full bounce
+    float bounciness = 0.0f;
+	bool freezeRotation = true; //determine whether object can rotate (by default cannot)
+	float inertiaOverride = 0.0f; // if > 0, use this value for inertia instead of calculating based on mass and collider size
+    
+
     //const float waterBounce = 60.0f;   // upward velocity when entering water
 
 };

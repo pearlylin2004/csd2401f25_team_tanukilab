@@ -1481,6 +1481,13 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 									if (info.normal.y > 0) p1->onGround = true;
 								}
 							}
+							// Apply torque to obj2 if it can rotate (e.g. water wheel hit by bullet)
+							if (!p2->freezeRotation) {
+								Vector2D r = { info.contactPoint.x - t2->x, info.contactPoint.y - t2->y };
+								float torque = p1->dynamics.mass *
+									(r.x * p1->dynamics.velocity.y - r.y * p1->dynamics.velocity.x);
+								p2->dynamics.torque += torque;
+							}
 						}
 						// CASE 3: obj1 is static, obj2 is pushable
 						else if (obj1IsStatic && !obj2IsStatic) {
@@ -1513,6 +1520,13 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 									p2->dynamics.velocity.y = 0.f;
 									if (info.normal.y < 0) p2->onGround = true;
 								}
+							}
+							// Apply torque to obj1 if it can rotate
+							if (!p1->freezeRotation) {
+								Vector2D r = { info.contactPoint.x - t1->x, info.contactPoint.y - t1->y };
+								float torque = p2->dynamics.mass *
+									(r.x * p2->dynamics.velocity.y - r.y * p2->dynamics.velocity.x);
+								p1->dynamics.torque += torque;
 							}
 						}
 						// CASE 4: Both are static (shouldnt happen?)
