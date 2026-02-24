@@ -43,7 +43,7 @@ void PhysicsForces::applyDamping(Physics* physics, float targetVelX, float delta
 
     // accel when moving, decel when stopping
     if (targetVelX != 0.f) {
-        float accel = physics->onGround ? (20.0f / physics->dynamics.mass) : (8.0f / physics->dynamics.mass);
+        float accel = physics->onGround ? (physics->groundAccelForce / physics->dynamics.mass) : (physics->airAccelForce / physics->dynamics.mass);
 
         physics->dynamics.velocity.x += (targetVelX - physics->dynamics.velocity.x) * accel * deltaTime;
     }
@@ -65,18 +65,17 @@ void PhysicsForces::updatePosition(Transform* transform, Physics* physics, float
     DynamicsSystem::UpdateForces(physics->dynamics, deltaTime);
     //DynamicsSystem::Integrate(physics->dynamics, deltaTime);
     if (!physics->onGround) {
-        float grav = physics->gravity * physics->dynamics.mass; // should be negative e.g. -9.8f
+        float grav = physics->gravity * physics->dynamics.mass; // gravity force F=mg
         if (physics->dynamics.velocity.y < 0.0f)
             grav *= 1.5f;  // faster fall
         else if (std::abs(physics->dynamics.velocity.y) < 2.0f)
-            grav *= 0.6f;
+            grav *= 0.7f; // apex hang when near the peak
 
         // integrate gravity into velocity
         physics->dynamics.velocity.y += grav * deltaTime;
 
         // terminal velocity
-        if (physics->dynamics.velocity.y < -20.0f)
-            physics->dynamics.velocity.y = -20.0f;
+        physics->dynamics.velocity.y = std::max(physics->dynamics.velocity.y, physics->maxFallSpeed);
 
         // integrate velocity into position
         physics->dynamics.position.x += physics->dynamics.velocity.x * deltaTime;

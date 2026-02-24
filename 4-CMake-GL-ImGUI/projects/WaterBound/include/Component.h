@@ -197,6 +197,9 @@ public:
     float jumpForce = 10.0f;
     float floorY = -7.5f;
     bool onGround = false;
+    float maxFallSpeed = -20.f;
+    float groundAccelForce = 20.f;
+    float airAccelForce = 8.f;
 
 	// jump buffer (forgive early jump before landing)
 	float jumpBufferTime = 0.15f; // how long before landing can still jump
