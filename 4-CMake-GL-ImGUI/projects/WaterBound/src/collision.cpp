@@ -578,12 +578,17 @@ namespace Collision {
         trans1->scaleX = s1 + (targetScale - s1) * 0.2f; // interpolate 20% per frame
         trans1->scaleY = s1 + (targetScale - s1) * 0.2f;
 
-        //smooth position blending
-        float weight = m2 / totalMass;
-        float targetX = trans1->x + (trans2->x - trans1->x) * weight;
-        float targetY = trans1->y + (trans2->y - trans1->y) * weight;
-        trans1->x = trans1->x + (targetX - trans1->x) * 0.2f;
-        trans1->y = trans1->y + (targetY - trans1->y) * 0.2f;
+        //vector from obj2 to obj1
+        float dx = trans1->x - trans2->x;
+        float dy = trans1->y - trans2->y;
+        float dist = sqrtf(dx * dx + dy * dy);
+
+		//move the smaller droplet towards the larger one based on mass ratio
+        if (dist > 0.001f) {
+            float moveFactor = m2 / totalMass * 0.2f; // move 20% per frame
+            trans2->x += dx * moveFactor;
+            trans2->y += dy * moveFactor;
+        }
 
         //wobble effect for realism
         float time = glfwGetTime();
