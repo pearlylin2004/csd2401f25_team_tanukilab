@@ -971,31 +971,67 @@ void InspectorWindow::renderPhysics(GameObject* selected, bool canMove) {
 
 
         // only show movement data if object is controlable via input
+        if (ImGui::TreeNode("Properties")) {
+            if (ImGui::InputFloat("Mass", &physic->dynamics.mass, 1.f))
+                physic->dynamics.mass = std::max(physic->dynamics.mass, 0.f); // 0.f mass means static obj (never move, e.g. wall)
+
+            ImGui::TreePop();
+        }
+
         if (ImGui::TreeNode("Input Movement Control")) {
             if (canMove) {
+
                 if (ImGui::TreeNode("Movement")) {
-                    if (ImGui::InputFloat("Speed", &physic->moveSpeed, 1.f))
+                    if (ImGui::InputFloat("Move Speed", &physic->moveSpeed, 1.f))
                         physic->moveSpeed = std::max(physic->moveSpeed, 0.f); // set the min speed to 0.f
 
                     if (ImGui::InputFloat("Jump Force", &physic->jumpForce, 1.f))
                         physic->jumpForce = std::max(physic->jumpForce, 0.f); // set the min jump force to 0.f
 
-                    if (ImGui::InputFloat("Mass", &physic->dynamics.mass, 1.f))
-                        physic->dynamics.mass = std::max(physic->dynamics.mass, 0.f); // 0.f mass means static obj (never move, e.g. wall)
+                    if (ImGui::InputFloat("Ground Accel", &physic->groundAccelForce, 1.0f))
+                        physic->groundAccelForce = std::max(physic->groundAccelForce, 0.f); // set the min to 0.f
 
+                    if(ImGui::InputFloat("Air Accel", &physic->airAccelForce, 1.0f))
+                        physic->airAccelForce = std::max(physic->airAccelForce, 0.f); // set the min to 0.f
+
+                    if (ImGui::InputFloat("Max Fall Speed", &physic->maxFallSpeed, 1.0f))
+                        physic->maxFallSpeed = std::max(physic->maxFallSpeed, 0.f); // set the min to 0.f
+
+
+
+                    ImGui::TreePop();
+
+                }
+
+                if (ImGui::TreeNode("Jump Buffer")) {
+                    ImGui::SliderFloat("Buffer Time", &physic->jumpBufferTime, 0.0f, 10.f);
                     ImGui::TreePop();
                 }
 
-                if (ImGui::TreeNode("Environment")) {
-                    if (ImGui::InputFloat("Damping", &physic->damping, 0.1f))
-                        physic->damping = std::clamp(physic->damping, 0.f, 1.f); // damping within 0.1 to 1.f
+                if (ImGui::TreeNode("Coyote Jump")) {
+                    ImGui::SliderFloat("Coyote Time", &physic->coyoteTime, 0.0f, 10.f);
+                    ImGui::TreePop();
+                }
 
+                if (ImGui::TreeNode("Ledge Assist")) {
+                    ImGui::InputFloat("Assist Range", &physic->ledgeAssistRange, 0.1f);
+                    ImGui::InputFloat("Climb Speed", &physic->ledgeClimbSpeed, 1.0f);
                     ImGui::TreePop();
                 }
             }
             else {
                 ImGui::TextWrapped("Requires Input component to move");
             }
+
+            ImGui::TreePop();
+        }
+
+        if (ImGui::TreeNode("Environment")) {
+            if (ImGui::InputFloat("Air Drag", &physic->damping, 0.1f))
+                physic->damping = std::clamp(physic->damping, 0.f, 1.f); // damping within 0.1 to 1.f
+
+            if (ImGui::InputFloat("Friction (Ground)", &physic->friction, 0.1f))
+                physic->friction = std::clamp(physic->friction, 0.f, 1.f);
 
             ImGui::TreePop();
         }
@@ -1028,6 +1064,9 @@ void InspectorWindow::renderPhysics(GameObject* selected, bool canMove) {
             ImGui::Spacing();
 
             ImGui::Text("Inverse Mass: %.4f", physic->dynamics.inverseMass);
+            ImGui::Text("Coyote Available: %s", physic->coyoteAvailable ? "true" : "false");
+            ImGui::Text("Jump Buffer: %.3f", physic->jumpBufferTimer);
+            ImGui::Text("Ledge Climbing: %s", physic->ledgeClimb ? "true" : "false");
 
             ImGui::TreePop();
         }

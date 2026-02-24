@@ -932,12 +932,18 @@ namespace JsonIO {
         if (Physics* p = obj->getComponent<Physics>()) {
             Value jp(kObjectType);
 
-            // lazy to type, but no need to convert boolean to 1/0 should be fine for the obj still
             jp.AddMember("physicsFlag", p->physicsFlag, a);
             jp.AddMember("moveSpeed", p->moveSpeed, a);
             jp.AddMember("jumpForce", p->jumpForce, a);
-            jp.AddMember("gravity", p->gravity, a);
             jp.AddMember("damping", p->damping, a);
+            jp.AddMember("friction", p->friction, a);
+            jp.AddMember("maxFallSpeed", p->maxFallSpeed, a);
+            jp.AddMember("groundAccelForce", p->groundAccelForce, a);
+            jp.AddMember("airAccelForce", p->airAccelForce, a);
+            jp.AddMember("jumpBufferTime", p->jumpBufferTime, a);
+            jp.AddMember("coyoteTime", p->coyoteTime, a);
+            jp.AddMember("ledgeAssistRange", p->ledgeAssistRange, a);
+            jp.AddMember("ledgeClimbSpeed", p->ledgeClimbSpeed, a);
             jp.AddMember("mass", p->dynamics.mass, a);
             jp.AddMember("buoyancy", p->buoyancy, a);
 
@@ -1234,8 +1240,15 @@ namespace JsonIO {
                 p->physicsFlag = jp["physicsFlag"].GetBool();
                 p->moveSpeed = jp["moveSpeed"].GetFloat();
                 p->jumpForce = jp["jumpForce"].GetFloat();
-                p->gravity = jp["gravity"].GetFloat();
                 p->damping = jp["damping"].GetFloat();
+                p->friction = jp.HasMember("friction") ? jp["friction"].GetFloat() : 0.80f;
+                p->maxFallSpeed = jp.HasMember("maxFallSpeed") ? jp["maxFallSpeed"].GetFloat() : -30.f;
+                p->groundAccelForce = jp.HasMember("groundAccelForce") ? jp["groundAccelForce"].GetFloat() : 20.f;
+                p->airAccelForce = jp.HasMember("airAccelForce") ? jp["airAccelForce"].GetFloat() : 8.f;
+                p->jumpBufferTime = jp.HasMember("jumpBufferTime") ? jp["jumpBufferTime"].GetFloat() : 0.15f;
+                p->coyoteTime = jp.HasMember("coyoteTime") ? jp["coyoteTime"].GetFloat() : 0.15f;
+                p->ledgeAssistRange = jp.HasMember("ledgeAssistRange") ? jp["ledgeAssistRange"].GetFloat() : 0.8f;
+                p->ledgeClimbSpeed = jp.HasMember("ledgeClimbSpeed") ? jp["ledgeClimbSpeed"].GetFloat() : 8.f;
                 p->dynamics.mass = jp["mass"].GetFloat();
                 p->buoyancy = jp["buoyancy"].GetBool();
             }
