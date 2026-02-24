@@ -1055,6 +1055,31 @@ void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime, M
 			if (physics->jumpBufferTimer > 0.f)
 				physics->jumpBufferTimer -= deltaTime;
 
+			if (physics->ledgeClimb) {
+				float diff = physics->ledgeTargetY - transform->y;
+
+				if (std::abs(diff) < 0.05f) {
+					// reach top
+					transform->y = physics->ledgeTargetY;
+					physics->dynamics.position.y = physics->ledgeTargetY;
+					physics->dynamics.velocity.y = 0.0f;
+					physics->velY = 0.0f;
+					physics->onGround = true;
+					physics->ledgeClimb = false;
+					physics->coyoteAvailable = true;
+					physics->coyoteTimer = physics->coyoteTime;
+				}
+				else {
+					// still climbing
+					float step = physics->ledgeClimbSpeed * deltaTime;
+					transform->y += std::min(step, diff);
+					physics->dynamics.position.y = transform->y;
+					physics->dynamics.velocity.y = 0.0f;
+					physics->velY = 0.0f;
+					physics->onGround = false;
+				}
+			}
+
 			// STEP 2: Jump input
 			// when space pressed, store the intention
 			if (InputHandler::isKeyTriggered(GLFW_KEY_SPACE))
@@ -1090,7 +1115,7 @@ void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime, M
 			physics->dynamics.velocity.x = targetVelX;
 
 			// STEP 4: Integrate physics
-			if (!object->checkAutoMove()) {
+			if (!object->checkAutoMove() && !physics->ledgeClimb) {
 				PhysicsForces::applyDamping(physics);
 				PhysicsForces::updatePosition(transform, physics, deltaTime);
 			}
@@ -1501,17 +1526,22 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 
 									float distToTop = platAABB.getMax().y - playerAABB.getMin().y;
 
-									if (distToTop > 0.0f && distToTop < p1->ledgeAssistRange) {
+									if (distToTop > 0.f && distToTop < p1->ledgeAssistRange) {
 										// Nudge player up onto platform
-										t1->y += distToTop;
-										p1->dynamics.position.y = t1->y;
-										p1->dynamics.velocity.y = 0.0f;
-										p1->velY = 0.0f;
+										//t1->y += distToTop;
+										p1->ledgeClimb = true;
+										p1->ledgeTargetY = t1->y + distToTop;
+
+										//p1->dynamics.position.y = t1->y;
+										/*p1->dynamics.velocity.y = 0.f;
+										p1->velY = 0.f;
+
 										p1->onGround = true;
 										p1->coyoteAvailable = true;
-										p1->coyoteTimer = p1->coyoteTime;
+										p1->coyoteTimer = p1->coyoteTime;*/
 
-										return;
+										//return;
+										continue;
 									}
 								}
 
@@ -1560,14 +1590,18 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 									float distToTop = platAABB.getMax().y - playerAABB.getMin().y;
 
 									if (distToTop > 0.0f && distToTop < p2->ledgeAssistRange) {
-										t2->y += distToTop;
+										/*t2->y += distToTop;
 										p2->dynamics.position.y = t2->y;
 										p2->dynamics.velocity.y = 0.0f;
 										p2->velY = 0.0f;
 										p2->onGround = true;
 										p2->coyoteAvailable = true;
 										p2->coyoteTimer = p2->coyoteTime;
-										return;
+										return;*/
+										p2->ledgeClimb = true;
+										p2->ledgeTargetY = t2->y + distToTop;
+
+										continue;
 									}
 								}
 
@@ -1682,22 +1716,29 @@ void CollisionSystem::HandleTilemapCollisions(const std::unordered_map<int, Coll
 						else {
 							// Normal stop response (player, etc.)
 							if (info.normal.x != 0) {
-								if (p->dynamics.velocity.y > 0.0f) {
+								if (p->dynamics.velocity.y > 0.f) {
 									Collision::AABB playerAABB = Collision::getObjectAABBbyCollider(t, c->colliderSize);
 									float distToTop = boxAABB.getMax().y - playerAABB.getMin().y;
 
-									if (distToTop > 0.0f && distToTop < p->ledgeAssistRange) {
-										t->y += distToTop;
+									if (distToTop > 0.f && distToTop < p->ledgeAssistRange) {
+										/*t->y += distToTop;
 										p->dynamics.position.y = t->y;
 										p->dynamics.velocity.y = 0.0f;
 										p->velY = 0.0f;
 										p->onGround = true;
 										p->coyoteAvailable = true;
 										p->coyoteTimer = p->coyoteTime;
-										continue;
+										continue;*/
+										p->ledgeClimb = true;
+										p->ledgeTargetY = t->y + distToTop;
+										collisionResolved = true;
+
+										break;
 									}
 								}
 
+								t->x += info.normal.x * info.penetration;
+								p->dynamics.position.x = t->x;
 								p->dynamics.velocity.x = 0.f;
 								p->velX = 0.f;
 							}

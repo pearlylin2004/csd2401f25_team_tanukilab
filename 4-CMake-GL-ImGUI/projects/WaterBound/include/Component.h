@@ -200,12 +200,15 @@ public:
 	float jumpBufferTimer = 0.f;
 
     // coyote jump (can still jump after walking off ledge)
-    float coyoteTime = 0.15f;      // how long after leaving edge can still jump
+    float coyoteTime = 0.35f;      // how long after leaving edge can still jump
     float coyoteTimer = 0.f;
     bool  coyoteAvailable = false;
 
     // ledge assist
-	float ledgeAssistRange = 0.5f; // how far away from ledge can still grab
+	float ledgeAssistRange = 0.8f; // how far away from ledge can still grab
+    float ledgeClimbSpeed = 1.f;
+    float ledgeTargetY = 0.f;
+    bool ledgeClimb = false;
 
     //water bullet
     bool alive = false;
