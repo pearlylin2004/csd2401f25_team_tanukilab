@@ -556,51 +556,79 @@ namespace Collision {
         Transform* trans1 = obj1->getComponent<Transform>();
         Transform* trans2 = obj2->getComponent<Transform>();
 
-        if (!phys2->alive) return false;
+        if (!phys1->alive || !phys2->alive) return false;
 
-		//convert to circle for collision check
+        // Masses and coefficient of restitution
         float m1 = phys1->dynamics.mass;
         float m2 = phys2->dynamics.mass;
-        float totalMass = m1 + m2;
 
-        //momentum conservation for velocity 
-        if (totalMass > 0) {
-            phys1->dynamics.velocity.x = (phys1->dynamics.velocity.x * m1 + phys2->dynamics.velocity.x * m2) / totalMass;
-            phys1->dynamics.velocity.y = (phys1->dynamics.velocity.y * m1 + phys2->dynamics.velocity.y * m2) / totalMass;
-            phys1->dynamics.mass = totalMass;
-        }
-
-        //smooth scale growth based on area
-        float s1 = trans1->scaleX;
-        float s2 = trans2->scaleX;
-        float targetScale = sqrtf((s1 * s1) + (s2 * s2));
-        targetScale = std::clamp(targetScale, 0.5f, 5.0f);
-        trans1->scaleX = s1 + (targetScale - s1) * 0.2f; // interpolate 20% per frame
-        trans1->scaleY = s1 + (targetScale - s1) * 0.2f;
-
-        //vector from obj2 to obj1
-        float dx = trans1->x - trans2->x;
-        float dy = trans1->y - trans2->y;
+        //vector from obj1 to obj2
+        float dx = trans2->x - trans1->x;
+        float dy = trans2->y - trans1->y;
         float dist = sqrtf(dx * dx + dy * dy);
+        if (dist < 0.0001f) return false; //avoid division by zero
 
-		//move the smaller droplet towards the larger one based on mass ratio
-        if (dist > 0.001f) {
-            float moveFactor = m2 / totalMass * 0.2f; // move 20% per frame
-            trans2->x += dx * moveFactor;
-            trans2->y += dy * moveFactor;
+        //normalized collision direction
+        float nx = dx / dist;
+        float ny = dy / dist;
+
+        //relative velocity along the normal
+        float rvx = phys2->dynamics.velocity.x - phys1->dynamics.velocity.x;
+        float rvy = phys2->dynamics.velocity.y - phys1->dynamics.velocity.y;
+        float velAlongNormal = rvx * nx + rvy * ny;
+
+        //surface tension
+        float restDistance = 1.0f;
+        float tensionStrength = 20.0f;
+
+        float displacement = restDistance - dist;
+
+        if (displacement > 0.0f) {
+            float springForce = tensionStrength * displacement;
+
+            phys1->dynamics.velocity.x -= springForce * nx / m1;
+            phys1->dynamics.velocity.y -= springForce * ny / m1;
+            phys2->dynamics.velocity.x += springForce * nx / m2;
+            phys2->dynamics.velocity.y += springForce * ny / m2;
         }
 
-        //wobble effect for realism
-        float time = glfwGetTime();
-        trans1->scaleX += 0.03f * sinf(time * 10.0f);
-        trans1->scaleY += 0.03f * cosf(time * 10.0f);
+		//viscosity
+        float viscosity = 0.25f;
 
-		//update the physics position to match the new transform position
+        float tangentX = rvx - velAlongNormal * nx;
+        float tangentY = rvy - velAlongNormal * ny;
+
+        phys1->dynamics.velocity.x += viscosity * tangentX;
+        phys1->dynamics.velocity.y += viscosity * tangentY;
+        phys2->dynamics.velocity.x -= viscosity * tangentX;
+        phys2->dynamics.velocity.y -= viscosity * tangentY;
+
+		//very soft bounce to prevent sticking
+        if (velAlongNormal < 0.0f) {
+            float e = 0.1f; //very low bounce
+            float j = -(1 + e) * velAlongNormal / (1 / m1 + 1 / m2);
+
+            phys1->dynamics.velocity.x -= j * nx / m1;
+            phys1->dynamics.velocity.y -= j * ny / m1;
+            phys2->dynamics.velocity.x += j * nx / m2;
+            phys2->dynamics.velocity.y += j * ny / m2;
+        }
+
+		//soft position correction to prevent sinking
+        float penetration = std::max(0.0f, restDistance - dist);
+        float correctionPercent = 0.3f;  //only correct 30%
+        float correction = penetration * correctionPercent;
+
+        trans1->x -= correction * nx / m1;
+        trans1->y -= correction * ny / m1;
+        trans2->x += correction * nx / m2;
+        trans2->y += correction * ny / m2;
+
+        //update physics positions
         phys1->dynamics.position.x = trans1->x;
         phys1->dynamics.position.y = trans1->y;
-
-		//deactivate the second particle that is "absorbed" into the first one
-        phys2->alive = false;
+        phys2->dynamics.position.x = trans2->x;
+        phys2->dynamics.position.y = trans2->y;
 
         return true;
     }
