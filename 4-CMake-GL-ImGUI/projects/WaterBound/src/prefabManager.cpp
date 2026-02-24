@@ -791,6 +791,12 @@ void PrefabManager::applyPrefabComponents(GameObject* go, const rapidjson::Value
 		p->dynamics.mass = JsonIO::GetFloatOr(jp, "mass", 1.f);
 		p->inWater = JsonIO::GetBoolOr(jp, "inWater", false);
 		p->buoyancy = JsonIO::GetBoolOr(jp, "buoyancy", false);
+
+		if (go->hasComponent<Transform>()) {
+			Transform* transform = go->getComponent<Transform>();
+			p->dynamics.position.x = transform->x;
+			p->dynamics.position.y = transform->y;
+		}
 	}
 
 	// ---- CollisionInfo (presence only) ----

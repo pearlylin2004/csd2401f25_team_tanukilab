@@ -1,5 +1,28 @@
 {
   "version": 1,
+  "layers": [
+    {
+      "id": 0,
+      "name": "Background",
+      "enabled": 1,
+      "visible": 1,
+      "updatable": 1
+    },
+    {
+      "id": 1,
+      "name": "Game",
+      "enabled": 1,
+      "visible": 1,
+      "updatable": 1
+    },
+    {
+      "id": 2,
+      "name": "UI",
+      "enabled": 1,
+      "visible": 1,
+      "updatable": 1
+    }
+  ],
   "objects": [
     {
       "prefabid": "b1a12273-a692-4ce0-8072-156da2c70842",
@@ -42,8 +65,8 @@
       "components": {
         "Transform": {
           "pos": [
-            -15.365083694458008,
-            2.5420632362365723,
+            -16.63492774963379,
+            -0.13571438193321228,
             0.9980000257492065
           ],
           "scale": [
@@ -62,7 +85,7 @@
           ]
         },
         "StateMachine": {
-          "stateTime": 29.374034881591797
+          "stateTime": 2.617915391921997
         },
         "AudioComponent": {
           "channels": {
@@ -251,25 +274,6 @@
       }
     },
     {
-      "prefabid": "8b8d44fa-ed22-4288-98ee-c476958f5b5b",
-      "name": "endgoal(23)",
-      "components": {
-        "Transform": {
-          "pos": [
-            14.886,
-            -3.1563878059387207,
-            0.0
-          ]
-        },
-        "Physics": {
-          "autoUpdate": 0
-        },
-        "VisualLC": {
-          "filename": "endgoal04.json"
-        }
-      }
-    },
-    {
       "name": "water balance back",
       "components": {
         "Transform": {
@@ -302,6 +306,25 @@
           "colliderType": "square",
           "collisionRes": "StopWhenCollide",
           "collisionTag": "inventory"
+        }
+      }
+    },
+    {
+      "prefabid": "8b8d44fa-ed22-4288-98ee-c476958f5b5b",
+      "name": "endgoal(23)",
+      "components": {
+        "Transform": {
+          "pos": [
+            14.88599967956543,
+            -3.1563878059387207,
+            0.0
+          ]
+        },
+        "Physics": {
+          "autoUpdate": 0
+        },
+        "VisualLC": {
+          "filename": "endgoal04.json"
         }
       }
     },
@@ -437,7 +460,7 @@
       "components": {
         "Transform": {
           "pos": [
-            15.718,
+            15.718000411987305,
             -8.92064380645752,
             0.0
           ],
@@ -584,7 +607,7 @@
         "Transform": {
           "pos": [
             -6.0,
-            -5.993197917938232,
+            -5.875854969024658,
             0.0
           ],
           "rotation": 0.0,

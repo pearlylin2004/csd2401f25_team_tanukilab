@@ -518,6 +518,12 @@ void GameObjectManager::loadSceneFromJson(const std::string& filename) {
 					? jp["autoUpdate"].GetBool()
 					: (jp["autoUpdate"].GetInt() != 0);
 			}
+
+			if (go->hasComponent<Transform>()) {
+				Transform* transform = go->getComponent<Transform>();
+				p->dynamics.position.x = transform->x;
+				p->dynamics.position.y = transform->y;
+			}
 		}
 
 		// ---- CollisionInfo (presence only) ----
