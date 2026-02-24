@@ -579,7 +579,7 @@ namespace Collision {
 
         //surface tension
         float restDistance = 1.0f;
-        float tensionStrength = 20.0f;
+        float tensionStrength = 3.0f; //can change 
 
         float displacement = restDistance - dist;
 
@@ -593,7 +593,7 @@ namespace Collision {
         }
 
 		//viscosity
-        float viscosity = 0.25f;
+        float viscosity = 0.1f; //can change
         float tangentX = rvx - velAlongNormal * nx;
         float tangentY = rvy - velAlongNormal * ny;
 
@@ -604,7 +604,7 @@ namespace Collision {
 
 		//very soft bounce to prevent sticking
         if (velAlongNormal < 0.0f) {
-            float e = 0.1f; //very low bounce
+            float e = 0.02f; //very low bounce, can change
             float j = -(1 + e) * velAlongNormal / (1 / m1 + 1 / m2);
 
             phys1->dynamics.velocity.x -= j * nx / m1;
@@ -615,7 +615,7 @@ namespace Collision {
 
 		//soft position correction to prevent sinking
         float penetration = std::max(0.0f, restDistance - dist);
-        float correctionPercent = 0.3f;  //only correct 30%
+        float correctionPercent = 0.15f;  //can change
         float correction = penetration * correctionPercent;
 
         trans1->x -= correction * nx / m1;

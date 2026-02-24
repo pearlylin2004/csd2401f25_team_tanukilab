@@ -1201,12 +1201,12 @@ void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime, M
 			t->y = p->dynamics.position.y;
 
 			// Update life timer
-			/*p->lifeTimer += deltaTime;
+			p->lifeTimer += deltaTime;
 
 			// Deactivate if lifetime exceeded or fell too far
 			if (p->lifeTimer >= p->maxLifetime || p->dynamics.position.y < -20.0f) {
 				PhysicsForces::deactivateBullet(obj);
-			}*/
+			}
 		}
 		else {
 			//Haardcoded way-- need fix in future
