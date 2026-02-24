@@ -24,6 +24,7 @@ Technology is prohibited.
 #include "component.h"
 #include <vector>
 #include "GameObject.h"
+#include "GameObjectManager.h"
 
 namespace Collision {
     using f64 = double;
@@ -107,7 +108,10 @@ namespace Collision {
 	bool CollisionIntersection_CircleLine_Static(const Circle& c, const Vector2D& lineStart, const Vector2D& lineEnd);
 	CollisionInfo CollisionIntersection_CircleLine_Dynamic_Info(const Circle& c, const Vector2D& velC, const Vector2D& lineStart, const Vector2D& lineEnd);
 
-    // tilemap (merged tiles)
+    //tilemap (merged tiles)
     void buildTileCollisionBox(TileMap* tm, Transform* transform);
+
+    //water particle merge
+    bool HandleWaterParticleMerge(GameObject* obj1, GameObject* obj2);
 }
 #endif

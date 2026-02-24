@@ -537,4 +537,65 @@ namespace Collision {
 
         tm->colChanged = false;
     }
+
+    // particle merging - Scale-Safe Version
+    bool HandleWaterParticleMerge(GameObject* obj1, GameObject* obj2) {
+        if (!obj1 || !obj2 || obj1 == obj2) return false;
+
+        //check if its bullet first
+        if (obj1->getObjectName().find("bullet") != 0) return false;
+        if (obj2->getObjectName().find("bullet") != 0) return false;
+
+		//check if component of physics and transform exist
+        if (!obj1->hasComponent<Physics>() || !obj1->hasComponent<Transform>()) return false;
+        if (!obj2->hasComponent<Physics>() || !obj2->hasComponent<Transform>()) return false;
+
+        //get physics and transform component
+        Physics* phys1 = obj1->getComponent<Physics>();
+        Physics* phys2 = obj2->getComponent<Physics>();
+        Transform* trans1 = obj1->getComponent<Transform>();
+        Transform* trans2 = obj2->getComponent<Transform>();
+
+        if (!phys2->alive) return false;
+
+		//convert to circle for collision check
+        float m1 = phys1->dynamics.mass;
+        float m2 = phys2->dynamics.mass;
+        float totalMass = m1 + m2;
+
+        //momentum conservation for velocity 
+        if (totalMass > 0) {
+            phys1->dynamics.velocity.x = (phys1->dynamics.velocity.x * m1 + phys2->dynamics.velocity.x * m2) / totalMass;
+            phys1->dynamics.velocity.y = (phys1->dynamics.velocity.y * m1 + phys2->dynamics.velocity.y * m2) / totalMass;
+            phys1->dynamics.mass = totalMass;
+        }
+
+        //update scale based on mass 
+        float s1 = trans1->scaleX;
+        float s2 = trans2->scaleX;
+
+        //result scale based on area
+        float newScale = sqrtf((s1 * s1) + (s2 * s2));
+
+		//ensure new scale is within reasonable bounds to prevent extreme sizes
+        if (newScale < 0.5f) newScale = 0.5f;
+        if (newScale > 5.0f) newScale = 5.0f;
+
+        trans1->scaleX = newScale;
+        trans1->scaleY = newScale;
+
+		//move the merged particle to the weighted average position to prevent drifting
+        float weight = m2 / totalMass;
+        trans1->x += (trans2->x - trans1->x) * weight;
+        trans1->y += (trans2->y - trans1->y) * weight;
+
+		//update the physics position to match the new transform position
+        phys1->dynamics.position.x = trans1->x;
+        phys1->dynamics.position.y = trans1->y;
+
+		//deactivate the second particle that is "absorbed" into the first one
+        phys2->alive = false;
+
+        return true;
+    }
 }

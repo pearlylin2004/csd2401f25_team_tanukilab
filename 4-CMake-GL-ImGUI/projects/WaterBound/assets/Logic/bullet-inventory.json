@@ -27,7 +27,7 @@
       "hasTrueOutput": false,
       "hasFalseOutput": false,
       "parameters": {
-        "value": "100",
+        "value": "1000.000000",
         "variable": "bullets"
       }
     },

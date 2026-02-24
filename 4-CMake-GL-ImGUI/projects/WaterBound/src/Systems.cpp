@@ -1045,8 +1045,6 @@ void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime, M
 #ifdef _DEBUG
 					if ((!UISystem::isShowUI() || (SceneWindow::isSceneHovered() && !EditorManager::isEditingMode()))) {
 #endif // _DEBUG
-
-
 						if (VisualLC::globalFloatVar.count("bullets") &&
 							VisualLC::globalFloatVar["bullets"] > 0) {
 							if (physics->shootTimer >= physics->fireRate) {
@@ -1203,12 +1201,12 @@ void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime, M
 			t->y = p->dynamics.position.y;
 
 			// Update life timer
-			p->lifeTimer += deltaTime;
+			/*p->lifeTimer += deltaTime;
 
 			// Deactivate if lifetime exceeded or fell too far
 			if (p->lifeTimer >= p->maxLifetime || p->dynamics.position.y < -20.0f) {
 				PhysicsForces::deactivateBullet(obj);
-			}
+			}*/
 		}
 		else {
 			//Haardcoded way-- need fix in future
@@ -1392,6 +1390,14 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 
 					//checking if collided
 					if (info.collided) {
+
+						//water particle merge logic
+						if (obj1->getComponent<CollisionInfo>()->collisionTag == "bullet" &&
+							obj2->getComponent<CollisionInfo>()->collisionTag == "bullet"){
+							if (Collision::HandleWaterParticleMerge(obj1, obj2))
+								continue; //skip normal collision
+						}
+
 						// Visual logic events (if needed)
 						if (obj1->hasComponent<VisualLC>()) {
 							VisualLC* logic1 = obj1->getComponent<VisualLC>();
