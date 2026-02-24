@@ -1030,10 +1030,44 @@ void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime, M
 
 		// Handle player input
 		if (object->hasComponent<Input>() && !EditorManager::isEditingMode() && !EditorManager::isPaused()) {
+			// STEP 1: Ground check FIRST
+			if (transform->y <= physics->floorY && !object->checkAutoMove()) {
+				transform->y = physics->floorY;
+				physics->dynamics.position.y = physics->floorY;
+				physics->dynamics.velocity.y = 0.0f;
+				physics->velY = 0.0f;
+				physics->onGround = true;
+			}
+
+			// STEP 2: Jump input
+			if (InputHandler::isKeyTriggered(GLFW_KEY_SPACE)) {
+				if (previousOnGround[object]) {
+					PhysicsForces::jump(object);
+					messageBus.publish(Message("KeyPressed", nullptr, KeyEvent{ "SPACE", true }));
+				}
+			}
+
+			// STEP 3: Movement
+			float targetVelX = 0.0f;
+			if (InputHandler::isKeyHeld(GLFW_KEY_A)) {
+				physics->canMove = true;
+				targetVelX = -physics->moveSpeed;
+				transform->flipX = true;
+				messageBus.publish(Message("KeyPressed", nullptr, KeyEvent{ "A", true }));
+			}
+			else if (InputHandler::isKeyHeld(GLFW_KEY_D) && physics->canMove) {
+				targetVelX = physics->moveSpeed;
+				transform->flipX = false;
+				messageBus.publish(Message("KeyPressed", nullptr, KeyEvent{ "D", true }));
+			}
+			physics->dynamics.velocity.x = targetVelX;
+
+			// STEP 4: Integrate physics
 			if (!object->checkAutoMove()) {
 				PhysicsForces::applyDamping(physics);
 				PhysicsForces::updatePosition(transform, physics, deltaTime);
 			}
+
 
 			// Continuous shooting system
 			if (physics->canShoot) {
@@ -1118,38 +1152,7 @@ void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime, M
 				}
 			}
 
-			// Movement controls (A/D keys)
-			float targetVelX = 0.0f;
-			if (InputHandler::isKeyHeld(GLFW_KEY_A)) {
-				physics->canMove = true;
-				targetVelX = -physics->moveSpeed;
-				transform->flipX = true;
-				messageBus.publish(Message("KeyPressed", nullptr, KeyEvent{ "A", true }));
-			}
-			else if (InputHandler::isKeyHeld(GLFW_KEY_D) && physics->canMove) {
-				targetVelX = physics->moveSpeed;
-				transform->flipX = false;
-				messageBus.publish(Message("KeyPressed", nullptr, KeyEvent{ "D", true }));
-			}
-			physics->dynamics.velocity.x = targetVelX;
-
-			// Jump (SPACE key)
-			if (InputHandler::isKeyTriggered(GLFW_KEY_SPACE)) {
-				if (previousOnGround[object]) {
-					PhysicsForces::jump(object);
-					messageBus.publish(Message("KeyPressed", nullptr, KeyEvent{ "SPACE", true }));
-				}
-			}
-
-			// Ground collision
-			if (transform->y < physics->floorY && !object->checkAutoMove()) {
-				transform->y = physics->floorY;
-				physics->dynamics.position.y = physics->floorY;
-				physics->dynamics.velocity.y = 0.0f;
-				physics->velY = 0.0f;
-				physics->onGround = true;
-			}
-			transform->x += physics->velX * deltaTime;
+			
 		}
 
 		// Auto-move objects

@@ -49,18 +49,31 @@ void PhysicsForces::updatePosition(Transform* transform, Physics* physics, float
     DynamicsSystem::UpdateForces(physics->dynamics, deltaTime);
     //DynamicsSystem::Integrate(physics->dynamics, deltaTime);
     if (!physics->onGround) {
-        Vector3D gravity = { 0.0f, physics->gravity * physics->dynamics.mass, 0.0f };
-        DynamicsSystem::Integrate(physics->dynamics, deltaTime, physics->gravity, false);
+        float grav = physics->gravity; // should be negative e.g. -9.8f
+        if (physics->dynamics.velocity.y < 0.0f)
+            grav *= 2.f;  // faster fall
+
+        // integrate gravity into velocity
+        physics->dynamics.velocity.y += grav * deltaTime;
+
+        // terminal velocity
+        if (physics->dynamics.velocity.y < -20.0f)
+            physics->dynamics.velocity.y = -20.0f;
+
+        // integrate velocity into position
+        physics->dynamics.position.x += physics->dynamics.velocity.x * deltaTime;
+        physics->dynamics.position.y += physics->dynamics.velocity.y * deltaTime;
+
+        transform->x = physics->dynamics.position.x;
+        transform->y = physics->dynamics.position.y;
     }
     else {
+        // sync dynamics from transform
+        physics->dynamics.position.x = transform->x;
+        physics->dynamics.position.y = transform->y;
         physics->dynamics.velocity.y = 0.0f;
-        physics->velY = 0.0f;
-
     }
-    transform->x = physics->dynamics.position.x;
-    transform->y = physics->dynamics.position.y;
 
-   
     physics->velX = physics->dynamics.velocity.x;
     physics->velY = physics->dynamics.velocity.y;
 
@@ -75,13 +88,16 @@ void PhysicsForces::jump(GameObject* object) {
         return;
 
     Physics* physics = object->getComponent<Physics>();
+    Transform* transform = object->getComponent<Transform>();
 
+    physics->dynamics.position.x = transform->x;
+    physics->dynamics.position.y = transform->y;
 
-    // Apply upward 
-    Vector3D jumpDir = { 0.0f, 1.0f, 0.0f };
-    DynamicsSystem::AddForce(physics->dynamics, jumpDir, physics->jumpForce, 0.1f);
-    //physics->dynamics.velocity.y = 5.0f; // Instant upward velocity
+    // direct velocity impulse
+    physics->dynamics.velocity.y = physics->jumpForce; // jumpForce = 12.0f
+    physics->velY = physics->jumpForce;
     physics->onGround = false;
+
     //physics->canMove = true;
     DebugLog::addMessage("Player jumped!", DebugMode::PlaySimul);
 }
