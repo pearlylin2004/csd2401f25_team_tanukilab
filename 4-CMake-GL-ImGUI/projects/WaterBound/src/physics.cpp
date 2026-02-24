@@ -49,7 +49,7 @@ void PhysicsForces::updatePosition(Transform* transform, Physics* physics, float
     DynamicsSystem::UpdateForces(physics->dynamics, deltaTime);
     //DynamicsSystem::Integrate(physics->dynamics, deltaTime);
     if (!physics->onGround) {
-        float grav = physics->gravity; // should be negative e.g. -9.8f
+        float grav = physics->gravity * physics->mass; // should be negative e.g. -9.8f
         if (physics->dynamics.velocity.y < 0.0f)
             grav *= 2.f;  // faster fall
 
@@ -94,7 +94,7 @@ void PhysicsForces::jump(GameObject* object) {
     physics->dynamics.position.y = transform->y;
 
     // direct velocity impulse
-    physics->dynamics.velocity.y = physics->jumpForce; // jumpForce = 12.0f
+    physics->dynamics.velocity.y = physics->jumpForce / physics->mass; // jumpForce = 12.0f
     physics->velY = physics->jumpForce;
     physics->onGround = false;
 

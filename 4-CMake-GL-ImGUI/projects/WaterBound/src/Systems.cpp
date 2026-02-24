@@ -1112,7 +1112,24 @@ void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime, M
 				transform->flipX = false;
 				messageBus.publish(Message("KeyPressed", nullptr, KeyEvent{ "D", true }));
 			}
-			physics->dynamics.velocity.x = targetVelX;
+
+
+			// accel when moving, decel when stopping
+			if (targetVelX != 0.f) {
+				float accel = physics->onGround ? (20.0f / physics->mass) : (8.0f / physics->mass);
+
+				physics->dynamics.velocity.x += (targetVelX - physics->dynamics.velocity.x) * accel * deltaTime;
+			}
+			else {
+				float decel = (physics->velY <= 0) ? (1.0f - physics->friction) : physics->damping;
+
+				physics->dynamics.velocity.x *= pow(decel, deltaTime * 60.0f);
+
+				if (fabsf(physics->dynamics.velocity.x) < 0.5f) {
+					physics->dynamics.velocity.x = 0.f;
+				}
+			}
+			//physics->dynamics.velocity.x = targetVelX;
 
 			// STEP 4: Integrate physics
 			if (!object->checkAutoMove() && !physics->ledgeClimb) {

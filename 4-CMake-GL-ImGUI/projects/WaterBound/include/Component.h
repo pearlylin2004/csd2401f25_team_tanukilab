@@ -189,6 +189,10 @@ public:
     float velY = 0.0f;
     float gravity = -9.8f;
 
+    // properties
+    float mass = 1.f;
+    float friction = 0.1f;
+
     //Jump 
     float damping = 0.98f;
     float jumpForce = 100.0f;
