@@ -196,7 +196,7 @@ public:
     bool onGround = false;
 
     // coyote jump (can still jump after walking off ledge)
-    float coyoteTime = 5.15f;      // how long after leaving edge can still jump
+    float coyoteTime = 0.15f;      // how long after leaving edge can still jump
     float coyoteTimer = 0.0f;      // countdown timer
     bool  coyoteAvailable = false;
 
