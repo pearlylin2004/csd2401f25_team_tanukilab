@@ -35,8 +35,8 @@
       "collisionFlag": 1,
       "autoFitScale": 0,
       "colliderSize": [
-        3.0,
-        3.0,
+        2.0,
+        3.200000047683716,
         0.0
       ],
       "colliderType": "square",
