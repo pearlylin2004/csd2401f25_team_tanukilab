@@ -1053,7 +1053,7 @@ void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime, M
 
 			// STEP 2: Jump input
 			if (InputHandler::isKeyTriggered(GLFW_KEY_SPACE)) {
-				if (previousOnGround[object]/* || physics->coyoteAvailable*/) {
+				if (previousOnGround[object] || physics->coyoteAvailable) {
 					PhysicsForces::jump(object);
 					physics->coyoteAvailable = false;
 					messageBus.publish(Message("KeyPressed", nullptr, KeyEvent{ "SPACE", true }));
