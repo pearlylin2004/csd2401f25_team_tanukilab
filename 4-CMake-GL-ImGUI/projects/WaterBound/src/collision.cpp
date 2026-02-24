@@ -594,7 +594,6 @@ namespace Collision {
 
 		//viscosity
         float viscosity = 0.25f;
-
         float tangentX = rvx - velAlongNormal * nx;
         float tangentY = rvy - velAlongNormal * ny;
 

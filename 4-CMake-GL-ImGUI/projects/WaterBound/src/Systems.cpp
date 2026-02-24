@@ -1301,12 +1301,6 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 				maxCellY = static_cast<int>(maxY / CELL_SIZE);
 			}
 
-			//clamp to grid boundaries so it dont go out the valid range of grid
-			//minCellX = std::max(0, std::min(minCellX, GRID_WIDTH - 1));
-			//maxCellX = std::max(0, std::min(maxCellX, GRID_WIDTH - 1));
-			//minCellY = std::max(0, std::min(minCellY, GRID_HEIGHT - 1));
-			//maxCellY = std::max(0, std::min(maxCellY, GRID_HEIGHT - 1));
-
 			//putting the object into the grid cells it occupies
 			for (int x = minCellX; x <= maxCellX; ++x) {
 				for (int y = minCellY; y <= maxCellY; ++y) {
@@ -1414,14 +1408,24 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 						bool obj1IsStatic = (c1->collisionRes == CollisionResponseMode::StopWhenCollide);
 						bool obj2IsStatic = (c2->collisionRes == CollisionResponseMode::StopWhenCollide);
 
+						//helper lambda for bounce calculation
+						auto ApplyBounce = [](Physics* p, const Vector2D& normal) {
+							float dot = p->dynamics.velocity.x * normal.x + p->dynamics.velocity.y * normal.y;
+							float b = (p->bounciness > 0.0f) ? p->bounciness : 1.0f;
+							p->dynamics.velocity.x = (p->dynamics.velocity.x - 2.0f * dot * normal.x) * b;
+							p->dynamics.velocity.y = (p->dynamics.velocity.y - 2.0f * dot * normal.y) * b;
+							};
+
 						// CASE 1: Both pushable
 						if (!obj1IsStatic && !obj2IsStatic) {
+							//push out of collision equally
 							if (info.normal.x != 0) {
 								t1->x += info.normal.x * info.penetration * 0.5f;
 								t2->x -= info.normal.x * info.penetration * 0.5f;
 								p1->dynamics.position.x = t1->x;
 								p2->dynamics.position.x = t2->x;
 							}
+							//push out of collision equally
 							if (info.normal.y != 0) {
 								t1->y += info.normal.y * info.penetration * 0.5f;
 								t2->y -= info.normal.y * info.penetration * 0.5f;
@@ -1432,17 +1436,8 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 							// Bounce or stop based on bounciness
 							if (p1->bounciness > 0.0f || p2->bounciness > 0.0f) {
 								std::cout << "CASE1 bounce: " << obj1->getObjectName() << " vs " << obj2->getObjectName() << std::endl;
-								float dot1 = p1->dynamics.velocity.x * info.normal.x + p1->dynamics.velocity.y * info.normal.y;
-								float dot2 = p2->dynamics.velocity.x * (-info.normal.x) + p2->dynamics.velocity.y * (-info.normal.y);
-
-								float b1 = (p1->bounciness > 0.0f) ? p1->bounciness : 1.0f;
-								float b2 = (p2->bounciness > 0.0f) ? p2->bounciness : 1.0f;
-
-								p1->dynamics.velocity.x = (p1->dynamics.velocity.x - dot1 * info.normal.x) * b1;
-								p1->dynamics.velocity.y = (p1->dynamics.velocity.y - dot1 * info.normal.y) * b1;
-
-								p2->dynamics.velocity.x = (p2->dynamics.velocity.x - dot2 * (-info.normal.x)) * b2;
-								p2->dynamics.velocity.y = (p2->dynamics.velocity.y - dot2 * (-info.normal.y)) * b2;
+								ApplyBounce(p1, info.normal);
+								ApplyBounce(p2, { -info.normal.x, -info.normal.y });
 							}
 							else {
 								// Original stop behavior
@@ -1474,10 +1469,8 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 
 							// Bounce or stop based on bounciness
 							if (p1->bounciness > 0.0f) {
-								// Reflect: v' = v - 2(v�n)n, then scale by bounciness
-								float dot = p1->dynamics.velocity.x * info.normal.x + p1->dynamics.velocity.y * info.normal.y;
-								p1->dynamics.velocity.x = (p1->dynamics.velocity.x - dot * info.normal.x) * p1->bounciness;
-								p1->dynamics.velocity.y = (p1->dynamics.velocity.y - dot * info.normal.y) * p1->bounciness;
+								std::cout << "CASE2 bounce: " << obj1->getObjectName() << " vs " << obj2->getObjectName() << std::endl;
+								ApplyBounce(p1, info.normal);
 							}
 							else {
 								// Original stop behavior
@@ -1505,12 +1498,8 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 
 							// Bounce or stop based on bounciness
 							if (p2->bounciness > 0.0f) {
-								// Normal is from obj1's perspective, flip for obj2
-								Vector2D n = { -info.normal.x, -info.normal.y };
-								float dot = p2->dynamics.velocity.x * n.x + p2->dynamics.velocity.y * n.y;
-
-								p2->dynamics.velocity.x = (p2->dynamics.velocity.x - dot * n.x) * p2->bounciness;
-								p2->dynamics.velocity.y = (p2->dynamics.velocity.y - dot * n.y) * p2->bounciness;
+								std::cout << "CASE3 bounce: " << obj1->getObjectName() << " vs " << obj2->getObjectName() << std::endl;
+								ApplyBounce(p2, { -info.normal.x, -info.normal.y });
 							}
 							else {
 								// Original stop behavior (only when NOT bouncing)
@@ -1523,99 +1512,11 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 									if (info.normal.y < 0) p2->onGround = true;
 								}
 							}
-						}
-						// CASE 4: Both are static (shouldnt happen?)
-						else {
-							/*if (info.normal.x != 0) {
-								t1->x -= info.normal.x * info.penetration;
-								p1->dynamics.position.x = t1->x;
-							}
-
-							if (info.normal.y != 0) {
-								t1->y += info.normal.y * info.penetration;
-								p1->dynamics.position.y = t1->y;
-							}*/
-						}					
+						}				
 					}
-					//if (info.collided) {
-					//	// c1 is the moving obj (player), c2 is the obj it collide with
-					//	// CASE 1: collided obj is pushable
-					//	if (c2->collisionRes == CollisionResponseMode::MoveWhenCollide) {
-					//		if (info.normal.x != 0) {
-					//			// move both obj away from each other (to simulate push)
-					//			t1->x += info.normal.x * info.penetration * 0.5f;
-					//			t2->x -= info.normal.x * info.penetration * 0.5f;
-					//
-					//			p1->dynamics.position.x = t1->x;
-					//			p2->dynamics.position.x = t2->x;
-					//		}
-					//
-					//		if (info.normal.y != 0) {
-					//			t1->y += info.normal.y * info.penetration * 0.5f;
-					//			t2->y -= info.normal.y * info.penetration * 0.5f;
-					//
-					//			// Update physics positions to match transforms
-					//			p1->dynamics.position.y = t1->y;
-					//			p2->dynamics.position.y = t2->y;
-					//
-					//			p1->dynamics.velocity.y = 0.f;
-					//			p2->dynamics.velocity.y = 0.f;
-					//
-					//			if (info.normal.y > 0) p1->onGround = true;
-					//			else p2->onGround = true;
-					//		}
-					//	}
-					//	// CASE 2: collided obj is static
-					//	else if (c2->collisionRes == CollisionResponseMode::StopWhenCollide) {
-					//		// Resolve penetration
-					//		if (info.normal.x != 0) {
-					//			// push moving obj out of collided obj
-					//			t1->x += info.normal.x * info.penetration;
-					//			p1->dynamics.position.x = t1->x;
-					//
-					//			p1->dynamics.velocity.x = 0.f;
-					//			p1->velX = 0.f;
-					//
-					//		}
-					//
-					//		if (info.normal.y != 0) {
-					//			t1->y += info.normal.y * info.penetration;
-					//			p1->dynamics.position.y = t1->y;
-					//
-					//			p1->dynamics.velocity.y = 0.f;
-					//
-					//			if (info.normal.y > 0) p1->onGround = true;
-					//		}
-					//
-					//		DebugLog::addMessage("Collision detected between Object.\n", DebugMode::PlaySimul);
-					//	}
-					//	// CASE 3: anything else
-					//	else {
-					//		if (info.normal.y != 0) {
-					//			p1->dynamics.velocity.y = 0.0f;
-					//			p2->dynamics.velocity.y = 0.0f;
-					//
-					//			if (info.normal.y > 0) p1->onGround = true;
-					//			else p2->onGround = true;
-					//		}
-					//
-					//		/* ---------- trigger visual logic collision events ---------- */
-					//		if (obj1->hasComponent<VisualLC>()) {
-					//			VisualLC* logic1 = obj1->getComponent<VisualLC>();
-					//			logic1->curCollision.insert(obj2);
-					//		}
-					//
-					//		if (obj2->hasComponent<VisualLC>()) {
-					//			VisualLC* logic2 = obj2->getComponent<VisualLC>();
-					//			logic2->curCollision.insert(obj1);
-					//		}
-					//		/* ---------- END ---------- */
-					//	}
-					//
 				}
 			}
 		}
-
 		// obj vs tilemap collision
 		if (!activeTilemaps.empty()) HandleTilemapCollisions(grid, activeTilemaps);
 
