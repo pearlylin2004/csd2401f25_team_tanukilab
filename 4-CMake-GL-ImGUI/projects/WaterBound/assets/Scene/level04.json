@@ -53,8 +53,7 @@
           ]
         },
         "Physics": {
-          "autoUpdate": 0,
-          "jumpForce": 90.0
+          "autoUpdate": 0
         },
         "CollisionInfo": {
           "collisionTag": "player",
