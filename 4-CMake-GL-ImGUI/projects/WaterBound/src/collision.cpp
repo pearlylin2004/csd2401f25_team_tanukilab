@@ -538,7 +538,7 @@ namespace Collision {
         tm->colChanged = false;
     }
 
-    // particle merging - Scale-Safe Version
+    //particle merging
     bool HandleWaterParticleMerge(GameObject* obj1, GameObject* obj2) {
         if (!obj1 || !obj2 || obj1 == obj2) return false;
 
@@ -570,24 +570,25 @@ namespace Collision {
             phys1->dynamics.mass = totalMass;
         }
 
-        //update scale based on mass 
+        //smooth scale growth based on area
         float s1 = trans1->scaleX;
         float s2 = trans2->scaleX;
+        float targetScale = sqrtf((s1 * s1) + (s2 * s2));
+        targetScale = std::clamp(targetScale, 0.5f, 5.0f);
+        trans1->scaleX = s1 + (targetScale - s1) * 0.2f; // interpolate 20% per frame
+        trans1->scaleY = s1 + (targetScale - s1) * 0.2f;
 
-        //result scale based on area
-        float newScale = sqrtf((s1 * s1) + (s2 * s2));
-
-		//ensure new scale is within reasonable bounds to prevent extreme sizes
-        if (newScale < 0.5f) newScale = 0.5f;
-        if (newScale > 5.0f) newScale = 5.0f;
-
-        trans1->scaleX = newScale;
-        trans1->scaleY = newScale;
-
-		//move the merged particle to the weighted average position to prevent drifting
+        //smooth position blending
         float weight = m2 / totalMass;
-        trans1->x += (trans2->x - trans1->x) * weight;
-        trans1->y += (trans2->y - trans1->y) * weight;
+        float targetX = trans1->x + (trans2->x - trans1->x) * weight;
+        float targetY = trans1->y + (trans2->y - trans1->y) * weight;
+        trans1->x = trans1->x + (targetX - trans1->x) * 0.2f;
+        trans1->y = trans1->y + (targetY - trans1->y) * 0.2f;
+
+        //wobble effect for realism
+        float time = glfwGetTime();
+        trans1->scaleX += 0.03f * sinf(time * 10.0f);
+        trans1->scaleY += 0.03f * cosf(time * 10.0f);
 
 		//update the physics position to match the new transform position
         phys1->dynamics.position.x = trans1->x;
