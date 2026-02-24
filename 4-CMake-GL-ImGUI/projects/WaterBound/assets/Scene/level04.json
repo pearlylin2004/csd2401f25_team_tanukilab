@@ -573,7 +573,7 @@
           "height": 8.0,
           "isTrigger": 1,
           "buoyancyForce": 12.0,
-          "waterDrag": 0.9750000238418579,
+          "waterDrag": 0.989,
           "renderWaves": 1,
           "useTexture": 0
         }
