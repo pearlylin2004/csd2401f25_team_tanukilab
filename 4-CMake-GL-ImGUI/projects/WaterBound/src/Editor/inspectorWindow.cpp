@@ -826,7 +826,7 @@ void InspectorWindow::renderCollision(GameObject* selected/*, GameObjectManager&
             }
 
             CollisionResponseMode mode = collision->collisionRes;
-            const char* modes[] = { "Static", "Pushable", "No Response" };
+            const char* modes[] = { "Static", "Pushable", "Kinematic" };
             int current = static_cast<int>(mode);
 
             if (ImGui::Combo("Collision Response", &current, modes, IM_ARRAYSIZE(modes))) {
