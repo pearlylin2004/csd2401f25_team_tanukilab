@@ -1093,11 +1093,11 @@ void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime, M
 				messageBus.publish(Message("KeyPressed", nullptr, KeyEvent{ "SPACE", true }));
 			}
 
-			//// tap for small jump, hold for big jump
-			//if (InputHandler::isKeyReleased(GLFW_KEY_SPACE)) {
-			//	if (physics->dynamics.velocity.y > 0.0f)
-			//		physics->dynamics.velocity.y *= 0.8f;
-			//}
+			// tap for small jump, hold for big jump
+			if (InputHandler::isKeyReleased(GLFW_KEY_SPACE)) {
+				if (physics->dynamics.velocity.y > 0.0f)
+					physics->dynamics.velocity.y *= 0.8f;
+			}
 
 			// STEP 3: Movement
 			float targetVelX = 0.0f;
@@ -1113,27 +1113,9 @@ void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime, M
 				messageBus.publish(Message("KeyPressed", nullptr, KeyEvent{ "D", true }));
 			}
 
-
-			// accel when moving, decel when stopping
-			if (targetVelX != 0.f) {
-				float accel = physics->onGround ? (20.0f / physics->mass) : (8.0f / physics->mass);
-
-				physics->dynamics.velocity.x += (targetVelX - physics->dynamics.velocity.x) * accel * deltaTime;
-			}
-			else {
-				float decel = (physics->velY <= 0) ? (1.0f - physics->friction) : physics->damping;
-
-				physics->dynamics.velocity.x *= pow(decel, deltaTime * 60.0f);
-
-				if (fabsf(physics->dynamics.velocity.x) < 0.5f) {
-					physics->dynamics.velocity.x = 0.f;
-				}
-			}
-			//physics->dynamics.velocity.x = targetVelX;
-
 			// STEP 4: Integrate physics
 			if (!object->checkAutoMove() && !physics->ledgeClimb) {
-				PhysicsForces::applyDamping(physics);
+				PhysicsForces::applyDamping(physics, targetVelX, deltaTime);
 				PhysicsForces::updatePosition(transform, physics, deltaTime);
 			}
 

@@ -25,7 +25,7 @@
     "Physics": {
       "physicsFlag": 1,
       "moveSpeed": 5.0,
-      "jumpForce": 7.0,
+      "jumpForce": 12.5,
       "damping": 0.9800000190734863,
       "mass": 1.0,
       "inWater": 0,

@@ -34,12 +34,28 @@ void PhysicsForces::applyGravity(Physics* physics) {
  * @brief Applies velocity damping to simulate friction/air resistance
  * Reduces horizontal velocity over time using damping
  */
-void PhysicsForces::applyDamping(Physics* physics) {
+void PhysicsForces::applyDamping(Physics* physics, float targetVelX, float deltaTime) {
     // Simple velocity damping 
-    physics->damping; // instead of 0.99f
+    //physics->damping; // instead of 0.99f
 
-    physics->dynamics.velocity.x *= physics->damping;
+    //physics->dynamics.velocity.x *= physics->damping;
    // physics->dynamics.velocity.y *= physics->damping;
+
+    // accel when moving, decel when stopping
+    if (targetVelX != 0.f) {
+        float accel = physics->onGround ? (20.0f / physics->dynamics.mass) : (8.0f / physics->dynamics.mass);
+
+        physics->dynamics.velocity.x += (targetVelX - physics->dynamics.velocity.x) * accel * deltaTime;
+    }
+    else {
+        float decel = (physics->velY <= 0) ? (1.0f - physics->friction) : physics->damping;
+
+        physics->dynamics.velocity.x *= pow(decel, deltaTime * 60.0f);
+
+        if (fabsf(physics->dynamics.velocity.x) < 0.5f) {
+            physics->dynamics.velocity.x = 0.f;
+        }
+    }
 }
 /**
  * @brief Updates object position based on physics
@@ -49,9 +65,11 @@ void PhysicsForces::updatePosition(Transform* transform, Physics* physics, float
     DynamicsSystem::UpdateForces(physics->dynamics, deltaTime);
     //DynamicsSystem::Integrate(physics->dynamics, deltaTime);
     if (!physics->onGround) {
-        float grav = physics->gravity * physics->mass; // should be negative e.g. -9.8f
+        float grav = physics->gravity * physics->dynamics.mass; // should be negative e.g. -9.8f
         if (physics->dynamics.velocity.y < 0.0f)
-            grav *= 2.f;  // faster fall
+            grav *= 1.5f;  // faster fall
+        else if (std::abs(physics->dynamics.velocity.y) < 2.0f)
+            grav *= 0.6f;
 
         // integrate gravity into velocity
         physics->dynamics.velocity.y += grav * deltaTime;
@@ -94,8 +112,9 @@ void PhysicsForces::jump(GameObject* object) {
     physics->dynamics.position.y = transform->y;
 
     // direct velocity impulse
-    physics->dynamics.velocity.y = physics->jumpForce / physics->mass; // jumpForce = 12.0f
-    physics->velY = physics->jumpForce;
+    float jumpVel = physics->jumpForce / physics->dynamics.mass;
+    physics->dynamics.velocity.y = jumpVel;
+    physics->velY = jumpVel;
     physics->onGround = false;
 
     //physics->canMove = true;

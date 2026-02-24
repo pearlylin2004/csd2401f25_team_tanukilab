@@ -187,15 +187,14 @@ public:
 
     float velX = 0.0f;
     float velY = 0.0f;
-    float gravity = -9.8f;
+    float gravity = -20.8f;
 
     // properties
-    float mass = 1.f;
-    float friction = 0.1f;
+    float damping = 0.98f; // in the air
+    float friction = 0.2f; // on ground
 
     //Jump 
-    float damping = 0.98f;
-    float jumpForce = 100.0f;
+    float jumpForce = 10.0f;
     float floorY = -7.5f;
     bool onGround = false;
 
