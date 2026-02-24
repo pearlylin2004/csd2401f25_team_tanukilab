@@ -1494,8 +1494,32 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 						else if (!obj1IsStatic && obj2IsStatic) {
 							// Push out of collision
 							if (info.normal.x != 0) {
+								// ledge assistance
+								if (p1->dynamics.velocity.y > 0.0f) {
+									Collision::AABB playerAABB = Collision::getObjectAABBbyCollider(t1, c1->colliderSize);
+									Collision::AABB platAABB = Collision::getObjectAABBbyCollider(t2, c2->colliderSize);
+
+									float distToTop = platAABB.getMax().y - playerAABB.getMin().y;
+
+									if (distToTop > 0.0f && distToTop < p1->ledgeAssistRange) {
+										// Nudge player up onto platform
+										t1->y += distToTop;
+										p1->dynamics.position.y = t1->y;
+										p1->dynamics.velocity.y = 0.0f;
+										p1->velY = 0.0f;
+										p1->onGround = true;
+										p1->coyoteAvailable = true;
+										p1->coyoteTimer = p1->coyoteTime;
+
+										return;
+									}
+								}
+
 								t1->x += info.normal.x * info.penetration;
 								p1->dynamics.position.x = t1->x;
+
+								p1->dynamics.velocity.x = 0.f;
+								p1->velX = 0.f;
 							}
 							if (info.normal.y != 0) {
 								t1->y += info.normal.y * info.penetration;
@@ -1529,8 +1553,29 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 						else if (obj1IsStatic && !obj2IsStatic) {
 							// Push out of collision
 							if (info.normal.x != 0) {
+								if (p2->dynamics.velocity.y > 0.0f) {
+									Collision::AABB playerAABB = Collision::getObjectAABBbyCollider(t2, c2->colliderSize);
+									Collision::AABB platAABB = Collision::getObjectAABBbyCollider(t1, c1->colliderSize);
+
+									float distToTop = platAABB.getMax().y - playerAABB.getMin().y;
+
+									if (distToTop > 0.0f && distToTop < p2->ledgeAssistRange) {
+										t2->y += distToTop;
+										p2->dynamics.position.y = t2->y;
+										p2->dynamics.velocity.y = 0.0f;
+										p2->velY = 0.0f;
+										p2->onGround = true;
+										p2->coyoteAvailable = true;
+										p2->coyoteTimer = p2->coyoteTime;
+										return;
+									}
+								}
+
 								t2->x -= info.normal.x * info.penetration;
 								p2->dynamics.position.x = t2->x;
+
+								p2->dynamics.velocity.x = 0.f;
+								p2->velX = 0.f;
 							}
 							if (info.normal.y != 0) {
 								t2->y -= info.normal.y * info.penetration;
@@ -1637,6 +1682,22 @@ void CollisionSystem::HandleTilemapCollisions(const std::unordered_map<int, Coll
 						else {
 							// Normal stop response (player, etc.)
 							if (info.normal.x != 0) {
+								if (p->dynamics.velocity.y > 0.0f) {
+									Collision::AABB playerAABB = Collision::getObjectAABBbyCollider(t, c->colliderSize);
+									float distToTop = boxAABB.getMax().y - playerAABB.getMin().y;
+
+									if (distToTop > 0.0f && distToTop < p->ledgeAssistRange) {
+										t->y += distToTop;
+										p->dynamics.position.y = t->y;
+										p->dynamics.velocity.y = 0.0f;
+										p->velY = 0.0f;
+										p->onGround = true;
+										p->coyoteAvailable = true;
+										p->coyoteTimer = p->coyoteTime;
+										continue;
+									}
+								}
+
 								p->dynamics.velocity.x = 0.f;
 								p->velX = 0.f;
 							}

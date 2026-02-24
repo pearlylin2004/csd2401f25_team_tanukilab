@@ -204,6 +204,9 @@ public:
     float coyoteTimer = 0.f;
     bool  coyoteAvailable = false;
 
+    // ledge assist
+	float ledgeAssistRange = 0.5f; // how far away from ledge can still grab
+
     //water bullet
     bool alive = false;
     float lifeTimer = 0.0f;
