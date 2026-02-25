@@ -1221,13 +1221,16 @@ void InspectorWindow::renderPhysics(GameObject* selected, bool canMove) {
                     if (auto* c = selected->getComponent<CollisionInfo>())
                         physic->recalculateInertia(c->colliderSize, c->colliderType);
                 }
-                if (ImGui::IsItemActivated())
-                    if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
-                if (ImGui::IsItemDeactivatedAfterEdit())
-                    if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
-
-                ImGui::TreePop();
             }
+            if (ImGui::IsItemActivated())
+                if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
+            if (ImGui::IsItemDeactivatedAfterEdit())
+                if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
+
+            //if (ImGui::DragFloat("Gravity Scale", &physic->gravity, 1.f))
+            //    physic->gravity = std::min(physic->gravity, 0.f); // gravity should stay negative
+
+            ImGui::TreePop();
         }
 
         if (ImGui::TreeNode("Input Movement Control")) {
@@ -1310,25 +1313,13 @@ void InspectorWindow::renderPhysics(GameObject* selected, bool canMove) {
                     ImGui::TreePop();
                 }
             }
+            ImGui::TreePop();
         }
-
-        if (ImGui::InputFloat("Linear Drag", &physic->damping, 0.1f))
-            physic->damping = std::clamp(physic->damping, 0.f, 1.f);
-
-        if (ImGui::SliderFloat("Angular Drag", &physic->dynamics.angularDrag, 0.0f, 1.0f))
-            physic->dynamics.angularDrag = std::clamp(physic->dynamics.angularDrag, 0.0f, 1.0f);
-
-        if (ImGui::InputFloat("Gravity Scale", &physic->gravity, 1.f))
-            physic->gravity = std::min(physic->gravity, 0.f); // gravity should stay negative
 
         //ImGui::Checkbox("Buoyancy", &physic->buoyancy);
 
-        ImGui::Spacing();
-        ImGui::Separator();
-        ImGui::Spacing();
-
         // --- input movement (only shown if object has Input component) ---
-        if (canMove && ImGui::TreeNode("Movement")) {
+        /*if (canMove && ImGui::TreeNode("Movement")) {
             if (ImGui::InputFloat("Speed", &physic->moveSpeed, 1.f))
                 physic->moveSpeed = std::max(physic->moveSpeed, 0.f);
 
@@ -1336,33 +1327,44 @@ void InspectorWindow::renderPhysics(GameObject* selected, bool canMove) {
                 physic->jumpForce = std::max(physic->jumpForce, 0.f);
 
             ImGui::TreePop();
-        }
-
-        ImGui::Spacing();
-        ImGui::Separator();
-        ImGui::Spacing();
+        }*/
 
         // --- Constraints ---
         if (ImGui::TreeNode("Constraints")) {
             ImGui::Text("Freeze Rotation");
             ImGui::SameLine();
-            ImGui::Checkbox("Z", &physic->freezeRotation);
+
+            if (ImGui::Checkbox("Z", &physic->freezeRotation)) {
+                physic->freezeRotation = !physic->freezeRotation;
+                if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
+                physic->freezeRotation = !physic->freezeRotation;
+                if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
+            }
 
             if (!physic->freezeRotation) {
                 ImGui::Spacing();
-                if (ImGui::InputFloat("Inertia Override", &physic->inertiaOverride, 1.f)) {
+
+                if (ImGui::DragFloat("Inertia Override", &physic->inertiaOverride, 0.1f)) {
                     physic->inertiaOverride = std::max(physic->inertiaOverride, 0.f);
                     if (auto* c = selected->getComponent<CollisionInfo>())
                         physic->recalculateInertia(c->colliderSize, c->colliderType);
                 }
+                if (ImGui::IsItemActivated())
+                    if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
+                if (ImGui::IsItemDeactivatedAfterEdit())
+                    if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
                 if (ImGui::IsItemHovered())
                     ImGui::SetTooltip("0 = auto-calculate from mass and shape");
 
                 ImGui::SameLine();
                 if (ImGui::Button("Reset")) {
+                    if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
+
                     physic->inertiaOverride = 0.0f;
                     if (auto* c = selected->getComponent<CollisionInfo>())
                         physic->recalculateInertia(c->colliderSize, c->colliderType);
+
+                    if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
                 }
                 if (ImGui::IsItemHovered())
                     ImGui::SetTooltip("Reset to auto-calculated value");
@@ -1387,6 +1389,13 @@ void InspectorWindow::renderPhysics(GameObject* selected, bool canMove) {
             if (ImGui::IsItemDeactivatedAfterEdit())
                 if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
 
+            if (ImGui::DragFloat("Angular Drag", &physic->dynamics.angularDrag, 0.1f, 0.f))
+                physic->dynamics.angularDrag = std::clamp(physic->dynamics.angularDrag, 0.f, 1.0f);
+            if (ImGui::IsItemActivated())
+                if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
+            if (ImGui::IsItemDeactivatedAfterEdit())
+                if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
+
             ImGui::TreePop();
         }
 
@@ -1402,33 +1411,24 @@ void InspectorWindow::renderPhysics(GameObject* selected, bool canMove) {
         }
 
         if (ImGui::TreeNode("Debug Info")) {
-            ImGui::Text("Velocity: (%.2f, %.2f, %.2f)",
-                physic->dynamics.velocity.x,
-                physic->dynamics.velocity.y,
-                physic->dynamics.velocity.z);
+            
+            ImGui::Text("Velocity: (%.2f, %.2f)", physic->dynamics.velocity.x, physic->dynamics.velocity.y);
+            Vector2D vel2D{ physic->dynamics.velocity.x, physic->dynamics.velocity.y };
+            ImGui::Text("Speed: %.2f", Vec_Length(&vel2D));
+            ImGui::Text("Angular Velocity: %.4f", physic->dynamics.angularVelocity);
+            ImGui::Text("Inverse Mass: %.4f", physic->dynamics.inverseMass);
+            ImGui::Text("Coyote Available: %s", physic->coyoteAvailable ? "true" : "false");
+            ImGui::Text("Jump Buffer: %.3f", physic->jumpBufferTimer);
+            ImGui::Text("Ledge Climbing: %s", physic->ledgeClimb ? "true" : "false");
 
-            ImGui::Spacing();
+            ImGui::TreePop();
+        }
 
-            // --- debug info ---
-            if (ImGui::TreeNode("Info")) {
-                ImGui::Text("Velocity: (%.2f, %.2f)", physic->dynamics.velocity.x, physic->dynamics.velocity.y);
-                Vector2D vel2D{ physic->dynamics.velocity.x, physic->dynamics.velocity.y };
-                ImGui::Text("Speed: %.2f", Vec_Length(&vel2D));
-                ImGui::Text("Angular Velocity: %.4f", physic->dynamics.angularVelocity);
-                ImGui::Text("Inverse Mass: %.4f", physic->dynamics.inverseMass);
-                ImGui::Text("Coyote Available: %s", physic->coyoteAvailable ? "true" : "false");
-                ImGui::Text("Jump Buffer: %.3f", physic->jumpBufferTimer);
-                ImGui::Text("Ledge Climbing: %s", physic->ledgeClimb ? "true" : "false");
+        if (entry) {
+            if (ImGui::Button("Remove Physics", ImVec2(-1, 0))) {
+                UndoRedoManager::Instance().executeCmd(std::make_unique<RemoveComponentCmd>(m_manager, selected, *entry));
 
-                ImGui::TreePop();
-            }
-
-            if (entry) {
-                if (ImGui::Button("Remove Physics", ImVec2(-1, 0))) {
-                    UndoRedoManager::Instance().executeCmd(std::make_unique<RemoveComponentCmd>(m_manager, selected, *entry));
-
-                    DebugLog::addMessage("Removed Physics\n");
-                }
+                DebugLog::addMessage("Removed Physics\n");
             }
         }
     }
