@@ -1388,12 +1388,13 @@ namespace JsonIO {
         Value jl(kObjectType);
         Value scriptsArray(kArrayType);
         for (const auto& scriptEntry : ls->scripts) {
-            if (scriptEntry.filename.empty() && scriptEntry.scriptName.empty()) continue;
+            //if (scriptEntry.filename.empty() && scriptEntry.scriptName.empty()) continue;
             Value entry(kObjectType);
             entry.AddMember("filename", Value(scriptEntry.filename.c_str(), a), a);
             entry.AddMember("scriptName", Value(scriptEntry.scriptName.c_str(), a), a);
             scriptsArray.PushBack(entry, a);
         }
+
         if (!scriptsArray.Empty()) {
             jl.AddMember("scripts", scriptsArray, a);
             doc.AddMember("LuaScript", jl, a);
