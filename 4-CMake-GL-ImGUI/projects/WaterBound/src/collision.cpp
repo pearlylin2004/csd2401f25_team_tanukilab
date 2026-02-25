@@ -577,8 +577,8 @@ namespace Collision {
         float restDistance = 1.0f; //particle radius spacing
         float stiffness = 6.0f; //pressure strength
         float viscosity = 0.08f; //smoothing
-        float correctionPercent = 0.05f; //positional correction
-        float gravitySlip = 0.4f; //sideways slide strength
+        float correctionPercent = 0.02f; //positional correction
+        float gravitySlip = 20.0f; //sideways slide strength
 
         //only interact if close
         float penetration = restDistance - dist;
@@ -586,8 +586,9 @@ namespace Collision {
             return false;
 
         //soft pressure 
-        float verticalFactor = 1.0f - fabs(ny);
-        float pressureForce = stiffness * penetration * verticalFactor;
+        //float verticalFactor = 1.0f - fabs(ny);
+        float horizontalFactor = fabs(nx);
+        float pressureForce = stiffness * penetration * horizontalFactor;
         phys1->dynamics.velocity.x -= pressureForce * nx / m1;
         phys1->dynamics.velocity.y -= pressureForce * ny / m1;
         phys2->dynamics.velocity.x += pressureForce * nx / m2;
@@ -610,13 +611,13 @@ namespace Collision {
         phys2->dynamics.velocity.x -= slide * nx;
 
         //no bounce
-        if (velAlongNormal < 0.0f){
+        /*if (velAlongNormal < 0.0f) {
             float j = -(velAlongNormal) / (1 / m1 + 1 / m2);
             phys1->dynamics.velocity.x -= j * nx / m1;
             phys1->dynamics.velocity.y -= j * ny / m1;
             phys2->dynamics.velocity.x += j * nx / m2;
             phys2->dynamics.velocity.y += j * ny / m2;
-        }
+        }*/
 
 		//soft position correction to prevent sinking
         float correction = penetration * correctionPercent;
