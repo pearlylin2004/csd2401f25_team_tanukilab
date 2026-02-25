@@ -24,5 +24,6 @@ enum class GameState {
     PAUSED,
     EXIT,
     EXITCONFIRMATION,
-    LEVELS //maybe for future use
+    LEVELS,//maybe for future use
+    WIN
 };

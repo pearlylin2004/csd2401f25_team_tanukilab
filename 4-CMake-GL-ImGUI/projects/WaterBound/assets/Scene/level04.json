@@ -46,8 +46,8 @@
       "components": {
         "Transform": {
           "pos": [
-            0.0,
-            -2.4738094806671143,
+            -16.63492774963379,
+            -0.13571438193321228,
             0.9980000257492065
           ],
           "scale": [
@@ -57,11 +57,7 @@
           ]
         },
         "Physics": {
-          "autoUpdate": 0,
-          "jumpForce": 90.0,
-          "freezeRotation": 1,
-          "angularDrag": 0.9800000190734863,
-          "inertiaOverride": 0.0
+          "autoUpdate": 0
         },
         "CollisionInfo": {
           "collisionTag": "player",
@@ -72,8 +68,7 @@
           ]
         },
         "StateMachine": {
-          "facingRight": 0,
-          "stateTime": 75.01741027832031
+          "stateTime": 2.617915391921997
         },
         "AudioComponent": {
           "channels": {
@@ -319,6 +314,25 @@
         "CollisionInfo": {
           "bounciness": 0.0,
           "friction": 0.0
+        },
+        "VisualLC": {
+          "filename": "endgoal04.json"
+        }
+      }
+    },
+    {
+      "prefabid": "8b8d44fa-ed22-4288-98ee-c476958f5b5b",
+      "name": "endgoal(23)",
+      "components": {
+        "Transform": {
+          "pos": [
+            14.88599967956543,
+            -3.1563878059387207,
+            0.0
+          ]
+        },
+        "Physics": {
+          "autoUpdate": 0
         },
         "VisualLC": {
           "filename": "endgoal04.json"
@@ -638,7 +652,7 @@
         "Transform": {
           "pos": [
             -6.0,
-            -163476.15625,
+            -5.875854969024658,
             0.0
           ],
           "rotation": 0.0,

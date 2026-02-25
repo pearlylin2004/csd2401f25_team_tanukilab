@@ -1,13 +1,13 @@
 /* Start Header ************************************************************************/
 /*!
 \file       undoRedo.cpp
-\author     Hugo Low Ren Hao, low.h, 2402272
-            - 100%
-\par		low.h@digipen.edu
+\author     Tan Chee Qing, cheeqing.tan, 2401486 - 80%
+            Hugo Low Ren Hao, low.h, 2402272 - 20%
+\par		cheeqing.tan@digipen.edu
+            low.h@digipen.edu
 \date       November, 10th, 2025
 \brief      Definitions of all the functions and ctor needed for undo and redo in editor.
-            Mostly is to take snapshots of the transform of the objects and creation/
-            deletion.
+            All components/properties should be able to undo/redo
 
 Copyright (C) 2025 DigiPen Institute of Technology.
 Reproduction or disclosure of this file or its contents
@@ -19,6 +19,73 @@ Technology is prohibited.
 #include "JsonIO.h"
 #include "Editor/undoRedo.h"
 #include "Editor/editorManager.h"
+#include "Systems.h"
+
+/* ---------------- Add Component ---------------- */
+AddComponentCmd::AddComponentCmd(GameObjectManager& manager, GameObject* obj, const Editor::ComponentEntry& entry) : m_manager(manager), m_entry(entry) {
+    if (obj) {
+        m_objectName = obj->getObjectName();
+        m_serializedData = m_entry.serializeComp(obj);
+    }
+}
+
+void AddComponentCmd::execute() {
+    GameObject* obj = m_manager.getGameObject(m_objectName);
+    if (!obj /*|| m_serializedData.empty()*/) return;
+
+    m_entry.deserializeComp(obj, m_serializedData);
+    // add back component with default values first
+    /*if (!m_entry.hasComp(obj)) m_entry.addComp(obj);*/
+
+    // patching?
+}
+
+void AddComponentCmd::undo() {
+    GameObject* obj = m_manager.getGameObject(m_objectName);
+    if (!obj) return;
+
+    if (m_entry.hasComp(obj)) m_entry.removeComp(obj);
+}
+
+void AddComponentCmd::updateObjName(const std::string& oldName, const std::string& newName) {
+    if (m_objectName == oldName) m_objectName = newName;
+}
+/* ---------------- END ---------------- */
+
+
+/* ---------------- Remove Component ---------------- */
+RemoveComponentCmd::RemoveComponentCmd(GameObjectManager& manager, GameObject* obj, const Editor::ComponentEntry& entry) : m_manager(manager), m_entry(entry) {
+    if (obj) {
+        m_objectName = obj->getObjectName();
+        m_serializedData = m_entry.serializeComp(obj);
+
+        m_entry.removeComp(obj);
+    }
+}
+
+void RemoveComponentCmd::execute() {
+    GameObject* obj = m_manager.getGameObject(m_objectName);
+    if (!obj) return;
+
+    if (m_entry.hasComp(obj)) m_entry.removeComp(obj);
+}
+
+void RemoveComponentCmd::undo() {
+    GameObject* obj = m_manager.getGameObject(m_objectName);
+    if (!obj /*|| m_serializedData.empty()*/) return;
+
+    m_entry.deserializeComp(obj, m_serializedData); // adds if missing, restores data
+
+    //if (!m_entry.hasComp(obj)) m_entry.addComp(obj);
+
+    // patch?
+}
+
+void RemoveComponentCmd::updateObjName(const std::string& oldName, const std::string& newName) {
+    if (m_objectName == oldName) m_objectName = newName;
+}
+/* ---------------- END ---------------- */
+
 
 TransformSnapshot captureTransform(GameObject* obj) {
     TransformSnapshot snap;
@@ -232,7 +299,97 @@ void TileMapCmd::updateObjName(const std::string& oldName, const std::string& ne
 	if (m_objectName == oldName)
 		m_objectName = newName;
 }
+/* ---------------- END ---------------- */
 
+
+/* ---------------- Grid Setting -------------- */
+TileMapToolCmd::TileMapToolCmd(bool& showGrid, const TileMapToolSnapshot& before, const TileMapToolSnapshot& after)
+    : m_showGrid(showGrid), m_before(before), m_after(after) {
+}
+
+void TileMapToolCmd::execute() { applySnapshot(m_after); }
+void TileMapToolCmd::undo() { applySnapshot(m_before); }
+
+void TileMapToolCmd::applySnapshot(const TileMapToolSnapshot& snap) {
+    TileMapSystem::filename = snap.filename;
+    TileMapSystem::brushSize = snap.brushSize;
+    TileMapSystem::eraseMode = snap.eraseMode;
+    m_showGrid = snap.showGrid;
+}
+/* ---------------- END ---------------- */
+
+
+/* ---------------- Component Property ---------------- */
+ComponentPropertyCmd::ComponentPropertyCmd(GameObjectManager& manager, const std::string& objName, const Editor::ComponentEntry& entry, const std::string& before, const std::string& after)
+    :   m_manager(manager),
+        m_objectName(objName),
+        m_entry(entry),
+        m_before(before),
+        m_after(after)
+{}
+
+void ComponentPropertyCmd::execute() {
+    GameObject* obj = m_manager.getGameObject(m_objectName);
+
+    if (obj) m_entry.deserializeComp(obj, m_after);
+}
+
+void ComponentPropertyCmd::undo() {
+    GameObject* obj = m_manager.getGameObject(m_objectName);
+
+    if (obj) m_entry.deserializeComp(obj, m_before);
+}
+
+void ComponentPropertyCmd::updateObjName(const std::string& oldName, const std::string& newName) {
+    if (m_objectName == oldName) m_objectName = newName;
+}
+/* ---------------- END ---------------- */
+
+
+/* ---------------- Layer ---------------- */
+AssignLayerCmd::AssignLayerCmd(GameObjectManager& manager, GameObject* obj, int layerBefore, int layerAfter)
+    : m_manager(manager),
+      m_layerBefore(layerBefore),
+      m_layerAfter(layerAfter) {
+    if (obj) m_objectName = obj->getObjectName();
+}
+
+void AssignLayerCmd::execute() {
+    GameObject* obj = m_manager.getGameObject(m_objectName);
+
+    if (obj) m_manager.assignObjectToLayer(obj, m_layerAfter);
+}
+
+void AssignLayerCmd::undo() {
+    GameObject* obj = m_manager.getGameObject(m_objectName);
+
+    if (obj) m_manager.assignObjectToLayer(obj, m_layerBefore);
+}
+
+void AssignLayerCmd::updateObjName(const std::string& oldName, const std::string& newName) {
+    if (m_objectName == oldName) m_objectName = newName;
+}
+
+LayerPropertyCmd::LayerPropertyCmd(GameObjectManager& manager, int layerID, const LayerSnapshot& before, const LayerSnapshot& after)
+    : m_manager(manager), m_layerID(layerID), m_before(before), m_after(after) 
+{ }
+
+void LayerPropertyCmd::execute() { applySnapshot(m_after); }
+
+void LayerPropertyCmd::undo() { applySnapshot(m_before); }
+
+void LayerPropertyCmd::applySnapshot(const LayerSnapshot& snap) {
+    Layer* layer = m_manager.getLayerManager().getLayer(m_layerID);
+    if (!layer) return;
+
+    layer->setEnabled(snap.enabled);
+    layer->setVisible(snap.visible);
+    layer->setUpdatable(snap.updatable);
+}
+/* ---------------- END ---------------- */
+
+
+/* ---------------- UNDO/REDO ---------------- */
 void UndoRedoManager::executeCmd(std::unique_ptr<CmdInterface> cmd) {
     // execute the command (transform/create/delete)
     cmd->execute();
@@ -288,6 +445,7 @@ void UndoRedoManager::clear() {
     m_undoDeque.clear();
     m_redoDeque.clear();
     m_isEditingTransform = false;
+    m_isEditingComponent = false;
 }
 
 void UndoRedoManager::beginTransformEdit(GameObject* obj) {
@@ -403,6 +561,7 @@ ReparentCmd::ReparentCmd(GameObjectManager& manager, const std::string& childNam
 }
 
 void ReparentCmd::execute() { apply(m_newParent, m_newOffset, m_newLocalRot); }
+
 void ReparentCmd::undo() { apply(m_oldParent, m_oldOffset, m_oldLocalRot); }
 
 void ReparentCmd::apply(const std::string& parent, const Vector2D& offset, float localRot) {
@@ -414,5 +573,142 @@ void ReparentCmd::apply(const std::string& parent, const Vector2D& offset, float
     t->localOffset = offset;
     t->localRotation = localRot;
 }
+
+void UndoRedoManager::beginTileMapToolEdit(bool showGrid) {
+    if (m_isEditingTileMapTool) return;
+
+    m_isEditingTileMapTool = true;
+
+    m_tileMapToolBefore = {
+        TileMapSystem::filename,
+        TileMapSystem::brushSize,
+        TileMapSystem::eraseMode,
+        showGrid
+    };
+}
+
+void UndoRedoManager::endTileMapToolEdit(bool showGrid) {
+    if (!m_isEditingTileMapTool) return;
+
+    TileMapToolSnapshot after = {
+        TileMapSystem::filename,
+        TileMapSystem::brushSize,
+        TileMapSystem::eraseMode,
+        showGrid
+    };
+
+    bool changed = (m_tileMapToolBefore.filename != after.filename ||
+        m_tileMapToolBefore.brushSize != after.brushSize ||
+        m_tileMapToolBefore.eraseMode != after.eraseMode ||
+        m_tileMapToolBefore.showGrid != after.showGrid);
+
+    if (changed) {
+        auto cmd = std::make_unique<TileMapToolCmd>(Editor::gizmoState.showGrid, m_tileMapToolBefore, after);
+        m_undoDeque.push_back(std::move(cmd));
+        m_redoDeque.clear();
+        if (m_undoDeque.size() > MAX_UNDO_STEPS)
+            m_undoDeque.pop_front();
+    }
+
+    m_isEditingTileMapTool = false;
+}
+
+void UndoRedoManager::beginComponentEdit(GameObject* obj, const Editor::ComponentEntry& entry) {
+    if (!obj || m_isEditingComponent) return;
+
+    m_isEditingComponent = true;
+    m_editingComponentObjName = obj->getObjectName();
+    m_editingComponentEntry = entry;
+    m_componentBefore = entry.serializeComp(obj);
+}
+
+void UndoRedoManager::endComponentEdit(GameObjectManager& manager, GameObject* obj, const Editor::ComponentEntry& entry) {
+    if (!m_isEditingComponent || !obj) {
+        m_isEditingComponent = false;
+        return;
+    }
+
+    if (obj->getObjectName() != m_editingComponentObjName) {
+        m_isEditingComponent = false;
+        return;
+    }
+
+    std::string after = entry.serializeComp(obj);
+
+    // only push if something actually changed
+    if (after != m_componentBefore) {
+        auto cmd = std::make_unique<ComponentPropertyCmd>(
+            manager, m_editingComponentObjName, entry, m_componentBefore, after);
+
+        m_undoDeque.push_back(std::move(cmd));
+        m_redoDeque.clear();
+
+        if (m_undoDeque.size() > MAX_UNDO_STEPS)
+            m_undoDeque.pop_front();
+    }
+
+    m_isEditingComponent = false;
+}
+
+void UndoRedoManager::beginLayerEdit(int layerID, Layer* layer) {
+    if (!layer || m_isEditingLayer) return;
+
+    m_isEditingLayer = true;
+    m_editingLayerID = layerID;
+    m_layerBefore = { layer->isEnabled(), layer->isVisible(), layer->isUpdatable() };
+}
+
+void UndoRedoManager::endLayerEdit(GameObjectManager& manager, int layerID, Layer* layer) {
+    if (!m_isEditingLayer || !layer) {
+        m_isEditingLayer = false;
+        return;
+    }
+
+    LayerSnapshot after = { layer->isEnabled(), layer->isVisible(), layer->isUpdatable() };
+
+    bool changed = (m_layerBefore.enabled != after.enabled ||
+        m_layerBefore.visible != after.visible ||
+        m_layerBefore.updatable != after.updatable);
+
+    if (changed) {
+        auto cmd = std::make_unique<LayerPropertyCmd>(manager, m_editingLayerID, m_layerBefore, after);
+
+        m_undoDeque.push_back(std::move(cmd));
+        m_redoDeque.clear();
+
+        if (m_undoDeque.size() > MAX_UNDO_STEPS)
+            m_undoDeque.pop_front();
+    }
+
+    m_isEditingLayer = false;
+}
+
+void UndoRedoManager::beginLayerAssign(GameObject* obj) {
+    if (!obj || m_isAssigningLayer) return;
+
+    m_isAssigningLayer = true;
+    m_assigningObjName = obj->getObjectName();
+    m_layerAssignBefore = obj->getLayer();
+}
+
+void UndoRedoManager::endLayerAssign(GameObjectManager& manager, GameObject* obj, int newLayerID) {
+    if (!m_isAssigningLayer || !obj) {
+        m_isAssigningLayer = false;
+        return;
+    }
+
+    if (m_layerAssignBefore != newLayerID) {
+        auto cmd = std::make_unique<AssignLayerCmd>(manager, obj, m_layerAssignBefore, newLayerID);
+        
+        m_undoDeque.push_back(std::move(cmd));
+        m_redoDeque.clear();
+
+        if (m_undoDeque.size() > MAX_UNDO_STEPS)
+            m_undoDeque.pop_front();
+    }
+
+    m_isAssigningLayer = false;
+}
+/* ---------------- END ---------------- */
 
 #endif

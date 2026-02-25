@@ -31,7 +31,7 @@
         "Transform": {
           "pos": [
             -1000.0,
-            -1002.4993286132813,
+            -977.5313720703125,
             1.0
           ]
         },
@@ -89,8 +89,8 @@
       "components": {
         "Transform": {
           "pos": [
-            0.0,
-            -2.8452768325805664,
+            -15.808714866638184,
+            -4.745276927947998,
             0.9980000257492065
           ],
           "scale": [
@@ -100,11 +100,7 @@
           ]
         },
         "Physics": {
-          "autoUpdate": 0,
-          "jumpForce": 90.0,
-          "freezeRotation": 1,
-          "angularDrag": 0.9800000190734863,
-          "inertiaOverride": 0.0
+          "autoUpdate": 0
         },
         "CollisionInfo": {
           "collisionTag": "player",
@@ -113,7 +109,21 @@
           ]
         },
         "StateMachine": {
-          "stateTime": 38.664852142333984
+          "stateTime": 1.139194369316101,
+          "Falling": {
+            "animState": {
+              "texture": "assets/Texture/Kinuta_Fall_SS.png",
+              "loop": 0,
+              "play": 0,
+              "totalColumn": 4,
+              "totalRow": 1,
+              "frameTime": 0.10000000149011612,
+              "initialFramCol": 0.0,
+              "initialFramRow": 0.0,
+              "lastFramCol": 0.0,
+              "lastFramRow": 0.0
+            }
+          }
         },
         "AudioComponent": {
           "channels": {
@@ -128,6 +138,36 @@
               "fadeInDuration": 1.0,
               "fadeOutOnStop": 1,
               "fadeOutDuration": 0.15000000596046448,
+              "isSpatial": 0,
+              "minDistance": 1.0,
+              "maxDistance": 100.0
+            },
+            "jump": {
+              "audioFile": "assets/audio/jump.wav",
+              "volume": 0.699999988079071,
+              "pitch": 1.0,
+              "loop": 0,
+              "playOnStart": 0,
+              "muted": 0,
+              "fadeInOnStart": 0,
+              "fadeInDuration": 1.0,
+              "fadeOutOnStop": 0,
+              "fadeOutDuration": 1.0,
+              "isSpatial": 0,
+              "minDistance": 1.0,
+              "maxDistance": 100.0
+            },
+            "landing": {
+              "audioFile": "assets/audio/landing.wav",
+              "volume": 1.0,
+              "pitch": 1.0,
+              "loop": 0,
+              "playOnStart": 0,
+              "muted": 0,
+              "fadeInOnStart": 0,
+              "fadeInDuration": 1.0,
+              "fadeOutOnStop": 0,
+              "fadeOutDuration": 1.0,
               "isSpatial": 0,
               "minDistance": 1.0,
               "maxDistance": 100.0
@@ -380,13 +420,13 @@
               "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
             },
             {
-              "x": 7,
-              "y": -2,
+              "x": 6,
+              "y": -4,
               "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
             },
             {
-              "x": 6,
-              "y": -4,
+              "x": 7,
+              "y": -2,
               "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
             },
             {
@@ -405,8 +445,8 @@
               "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
             },
             {
-              "x": 6,
-              "y": -2,
+              "x": 7,
+              "y": -4,
               "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
             },
             {
@@ -415,8 +455,13 @@
               "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
             },
             {
-              "x": 7,
-              "y": -4,
+              "x": 6,
+              "y": -2,
+              "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
+            },
+            {
+              "x": 6,
+              "y": -2,
               "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
             },
             {
@@ -440,13 +485,13 @@
               "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
             },
             {
-              "x": 6,
-              "y": -1,
+              "x": 7,
+              "y": -3,
               "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
             },
             {
-              "x": 7,
-              "y": -3,
+              "x": 6,
+              "y": -1,
               "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
             },
             {
@@ -455,16 +500,21 @@
               "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
             },
             {
-              "x": 6,
-              "y": -3,
-              "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
-            },
-            {
               "x": 7,
               "y": -1,
               "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
             },
             {
+              "x": 6,
+              "y": -3,
+              "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
+            },
+            {
+              "x": -1,
+              "y": -4,
+              "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
+            },
+            {
               "x": -2,
               "y": -2,
               "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
@@ -485,6 +535,11 @@
               "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
             },
             {
+              "x": -1,
+              "y": -1,
+              "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
+            },
+            {
               "x": -2,
               "y": -3,
               "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
@@ -492,11 +547,6 @@
             {
               "x": 5,
               "y": -3,
-              "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
-            },
-            {
-              "x": -2,
-              "y": -4,
               "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
             },
             {
@@ -521,6 +571,21 @@
             },
             {
               "x": 4,
+              "y": -3,
+              "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
+            },
+            {
+              "x": 5,
+              "y": -4,
+              "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
+            },
+            {
+              "x": -2,
+              "y": -1,
+              "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
+            },
+            {
+              "x": -1,
               "y": -3,
               "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
             },
@@ -530,13 +595,18 @@
               "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
             },
             {
+              "x": 1,
+              "y": -4,
+              "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
+            },
+            {
               "x": 0,
               "y": -2,
               "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
             },
             {
               "x": 1,
-              "y": -4,
+              "y": -1,
               "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
             },
             {
@@ -557,6 +627,11 @@
             {
               "x": 1,
               "y": -3,
+              "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
+            },
+            {
+              "x": 0,
+              "y": -1,
               "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
             },
             {
@@ -580,32 +655,7 @@
               "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
             },
             {
-              "x": 2,
-              "y": -2,
-              "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
-            },
-            {
-              "x": 3,
-              "y": -4,
-              "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
-            },
-            {
-              "x": 2,
-              "y": -3,
-              "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
-            },
-            {
-              "x": 2,
-              "y": -4,
-              "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
-            },
-            {
-              "x": 3,
-              "y": -2,
-              "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
-            },
-            {
-              "x": 3,
+              "x": 9,
               "y": -3,
               "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
             },
@@ -685,8 +735,33 @@
               "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
             },
             {
-              "x": 11,
-              "y": -2,
+              "x": 1,
+              "y": 0,
+              "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
+            },
+            {
+              "x": 1,
+              "y": 1,
+              "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
+            },
+            {
+              "x": 0,
+              "y": 0,
+              "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
+            },
+            {
+              "x": 1,
+              "y": 2,
+              "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
+            },
+            {
+              "x": -1,
+              "y": 0,
+              "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
+            },
+            {
+              "x": 0,
+              "y": 1,
               "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
             }
           ]
@@ -709,6 +784,50 @@
           "freezeRotation": 1,
           "angularDrag": 0.9800000190734863,
           "inertiaOverride": 0.0
+        }
+      }
+    },
+    {
+      "name": "Rectangle_22",
+      "components": {
+        "Transform": {
+          "pos": [
+            -10.125200271606445,
+            -4.035590171813965,
+            0.0
+          ],
+          "rotation": 0.0,
+          "scale": [
+            1.0,
+            1.0,
+            0.0
+          ]
+        },
+        "Render": {
+          "shape": "square",
+          "hasTex": 0,
+          "hasAnimation": 0
+        },
+        "Physics": {
+          "physicsFlag": 1,
+          "inWater": 0,
+          "buoyancy": 1,
+          "autoUpdate": 0,
+          "moveSpeed": 1.0,
+          "jumpForce": 100.0,
+          "mass": 1.0,
+          "damping": 0.9800000190734863
+        },
+        "CollisionInfo": {
+          "collisionFlag": 1,
+          "autoFitScale": 1,
+          "colliderSize": [
+            1.0,
+            1.0
+          ],
+          "colliderType": "square",
+          "collisionRes": "StopWhenCollide",
+          "collisionTag": "default"
         }
       }
     }

@@ -81,7 +81,7 @@ void GUISystem::update() {
     if (EditorManager::isEditingMode()) return;
     if (m_currentState == GameState::PLAYING) return;
     if (UISystem::isShowUI()) return; // skip if UI is shown
-    if (m_buttons.empty()) return;
+    //if (m_buttons.empty()) return;
 
     Vector2D worldMousePos = InputHandler::getWorldMousePosition();
 
@@ -153,7 +153,7 @@ void GUISystem::createButtonActions() {
     //play
     m_buttonActions[ButtonAction::START_GAME] = [this]() {
         changeState(GameState::PLAYING);
-        startGame(*g_manager);
+        startGame();
      };
 
     //exit confirmation
@@ -179,7 +179,7 @@ void GUISystem::createButtonActions() {
             changeState(GameState::PAUSED, "pause_scene.json");
             break;
         case GameState::PLAYING:
-            startGame(*g_manager); // resume the game
+            startGame(); // resume the game
             break;
         case GameState::EXITCONFIRMATION:
             changeState(GameState::EXITCONFIRMATION, "confirmation_scene.json");
@@ -213,18 +213,16 @@ void GUISystem::createButtonActions() {
     std::cout << "[GUI] Menu buttons created successfully" << std::endl;
 }
 
-void GUISystem::startGame(GameObjectManager& manager) {
+void GUISystem::startGame() {
     std::cout << "[GUI] Starting game" << std::endl;
 
     //change state to playing
 	m_currentState = GameState::PLAYING;
+    level = 1;
 
     removeButtons(); //remove menu buttons
-	manager.clearScene(); //clear current scene
 
-    // Load the game scene
-    manager.init();
-    manager.initializeSceneResources();
+	loadScreenNoButton(*g_manager, "level01.json");
 
     m_currentLevel = std::string(RUNTIME_SCENE_DIR_R) + "/level01.json";
 
@@ -280,16 +278,29 @@ bool GUISystem::isPointInButton(const Vector2D& point, GameObject* button) {
         point.y <= transform->y + halfHeight);
 }
 
+//buttons
 void GUISystem::loadScreen(GameObjectManager& manager, const std::string& sceneName) {
     std::cout << "[GUI] Loading screen: " << sceneName << "\n";
 
     removeButtons(); // clear references
+    AudioHandler::getInstance().stopAll(manager);
     manager.clearScene(); //delete al scene object
 
     manager.loadScene(runtimeScenePath(sceneName));
     manager.initializeSceneResources();
 
     createButtons(manager);
+}
+
+//no buttons
+void GUISystem::loadScreenNoButton(GameObjectManager& manager, const std::string& sceneName) {
+    std::cout << "[GUI] Loading screen: " << sceneName << "\n";
+
+    AudioHandler::getInstance().stopAll(manager);
+    manager.clearScene(); //delete al scene object
+    manager.init();
+    manager.loadScene(runtimeScenePath(sceneName));
+    manager.initializeSceneResources();
 }
 
 
@@ -323,6 +334,8 @@ void GUISystem::restartLevel() {
     }
 
     removeButtons();
+    AudioHandler::getInstance().stopAll(*g_manager);
+
     g_manager->clearScene();
     g_manager->loadScene(m_currentLevel);
     g_manager->initializeSceneResources();
@@ -340,11 +353,13 @@ void GUISystem::loadLevel(const std::string& levelName) {
 
     //m_currentLevel = levelName;
     removeButtons();
+    AudioHandler::getInstance().stopAll(*g_manager);
+
     g_manager->clearScene();
 
     g_manager->loadScene(fullPath);
     g_manager->initializeSceneResources();
-	g_visualLogicSystem->resetLogicState();
+    g_visualLogicSystem->resetLogicState();
     g_visualLogicSystem->initAll(*g_manager);
 
     // Save spawn positions for this level

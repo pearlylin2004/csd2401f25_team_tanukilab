@@ -25,7 +25,7 @@
     "Physics": {
       "physicsFlag": 1,
       "moveSpeed": 5.0,
-      "jumpForce": 100.0,
+      "jumpForce": 12.5,
       "damping": 0.9800000190734863,
       "mass": 1.0,
       "inWater": 0,
@@ -35,8 +35,8 @@
       "collisionFlag": 1,
       "autoFitScale": 0,
       "colliderSize": [
-        3.0,
-        3.0,
+        2.0,
+        3.200000047683716,
         0.0
       ],
       "colliderType": "square",

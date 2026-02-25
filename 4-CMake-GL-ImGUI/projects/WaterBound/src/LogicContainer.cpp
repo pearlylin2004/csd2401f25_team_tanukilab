@@ -77,14 +77,14 @@ RuntimeStateMachine* LogicContainer::getOrCreateMachine(GameObject& obj) {
         "Jumping",
         [](GameObject& o) {
             Physics* p = o.getComponent<Physics>();
-            return p && InputHandler::isKeyTriggered(GLFW_KEY_SPACE) && p->onGround;
-        },
+            return p && p->velY > 0.f;
+        }/*,
         [](GameObject& o) {
             if (Physics* p = o.getComponent<Physics>()) {
                 p->velY = p->jumpForce;
                 p->onGround = false;
             }
-        }
+        }*/
     ));
 
     // Walking -> Idle transition
@@ -110,14 +110,14 @@ RuntimeStateMachine* LogicContainer::getOrCreateMachine(GameObject& obj) {
         "Jumping",
         [](GameObject& o) {
             Physics* p = o.getComponent<Physics>();
-            return p && InputHandler::isKeyTriggered(GLFW_KEY_SPACE) && p->onGround;
-        },
+            return p && p->velY > 0.f;
+        }/*,
         [](GameObject& o) {
             if (Physics* p = o.getComponent<Physics>()) {
                 p->velY = p->jumpForce;
                 p->onGround = false;
             }
-        }
+        }*/
     ));
 
     // Jumping -> Falling transition

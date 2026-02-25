@@ -100,27 +100,36 @@ public:
 	//void renderCollision(Collision::AABB const& box, glm::vec3 const& clr);
 	//GLuint getTexture() const { return texture; }
 	void batchingSetUp(GameObjectManager& manager, float const& deltaTime);
-	void instancePerBatch(std::unordered_map<BatchKey, std::vector<renderer::InstanceData>, BatchKeyHash> &batch);
+	void instancePerBatch(std::map<BatchKey, std::vector<renderer::InstanceData>> &batch);
 	void clearBatches();
 
 	void fboAspectRatio(int& width, int& height) const;
 	~RenderSystem();
 	//bool batchRebuild = true;
-	static std::unordered_map<BatchKey, std::vector<renderer::InstanceData>, BatchKeyHash> objectWithTex2;
-private:
-	std::unordered_map<BatchKey, std::vector<renderer::InstanceData>, BatchKeyHash> objectWithTex;
-	std::unordered_map<BatchKey, std::vector<renderer::InstanceData>, BatchKeyHash> objectWithoutTex;
+	//static std::unordered_map<BatchKey, std::vector<renderer::InstanceData>, BatchKeyHash> objectWithTex2;
+	//static std::unordered_map<BatchKey, std::vector<renderer::InstanceData>, BatchKeyHash> objectWithTex;
+	//static std::unordered_map<BatchKey, std::vector<renderer::InstanceData>, BatchKeyHash> objectWithoutTex;
+	static std::map<BatchKey, std::vector<renderer::InstanceData>> objectWithTex;
+	static std::map<BatchKey, std::vector<renderer::InstanceData>> objectWithoutTex;
 };
 
 class ParticleSystem
 {
 public:
+	//activate particle based on master particle data
+	//can add other functions in the future to choose the effects
 	void activateParticle(GameObjectManager& manager);
+	//currently used for testing purposes only
+	//will be used in the future if more effects are added
 	void update(GameObjectManager& manager, float const& deltaTime);
+	//give each particle a unique ID
 	size_t IDGenerator();
+	//generate position based on offset
 	Vector2D positionGenerator(float offset);
+	//generate velocity based on direction
 	Vector2D velocityGenerator(Vector2D direction);
-	static void clearUsedID(int ID);
+	//clear used ID when particle group is finished
+	static void clearUsedID(size_t ID);
 	//std::vector<size_t> usedID;
 };
 
@@ -346,17 +355,72 @@ private:
 
 	static GameObjectManager* m_manager;
 };
+/*!***********************************************************************
+\brief
+	Water system for rendering animated water bodies with wave effects
+	and applying buoyancy physics to objects in water
 
+*************************************************************************/
 class WaterSystem {
 public:
 	WaterSystem();
 	~WaterSystem();
 
+	/*!***********************************************************************
+	\brief
+		Initialize water shader and uniform locations
+	*************************************************************************/
 	void init();
+
+	/*!***********************************************************************
+	\brief
+		Update water movement and apply water physics to objects
+
+	\param[in] manager
+		Game object manager containing all objects
+
+	\param[in] deltaTime
+		Time elapsed since last frame
+	*************************************************************************/
 	void update(GameObjectManager& manager, float deltaTime);
+
+	/*!***********************************************************************
+	\brief
+		Render all water bodies with wave movement
+
+	\param[in] manager
+		Game object manager containing water body objects
+	*************************************************************************/
 	void render(GameObjectManager& manager);
+
+	/*!***********************************************************************
+	\brief
+		Check if a point is inside a water body
+
+	\param[in] waterObj
+		Water body object to check against
+
+	\param[in] point
+		2D point to test
+
+	\return
+		True if point is in water, false otherwise
+	*************************************************************************/
 	bool isPointInWater(GameObject* waterObj, const Vector2D& point);
+
+	/*!***********************************************************************
+	\brief
+		Apply buoyancy and drag forces to objects in water
+
+	\param[in] manager
+		Game object manager containing all objects
+	*************************************************************************/
 	void applyWaterPhysics(GameObjectManager& manager);
+
+	/*!***********************************************************************
+	\brief
+		Clean up water meshes and shader resources
+	*************************************************************************/
 	void cleanup();
 
 private:

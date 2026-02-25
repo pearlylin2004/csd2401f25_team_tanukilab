@@ -12,9 +12,9 @@
       "path": "/Prefab/player.json"
     },
     {
-      "id": "98416fa9-2ae1-4432-bcf4-0d4352a9b29a",
-      "name": "to win",
-      "path": "/Prefab/to win.json"
+      "id": "4715fbb7-b7e3-463e-a596-be3ce6711e35",
+      "name": "player",
+      "path": "/Prefab/player_2.json"
     },
     {
       "id": "f7665aa3-619e-49a1-892a-31fbc8b377a2",
@@ -40,21 +40,6 @@
       "id": "94d018f7-a766-4ee6-95be-f39272697938",
       "name": "tile_platform",
       "path": "/Prefab/tile_platform.json"
-    },
-    {
-      "id": "887d25cd-bd8d-481f-9f64-f371300a2cf0",
-      "name": "win screen",
-      "path": "/Prefab/win screen.json"
-    },
-    {
-      "id": "25591e7c-7d8f-47e1-a686-f950e77e91a1",
-      "name": "land_vfx",
-      "path": "/Prefab/land_vfx.json"
-    },
-    {
-      "id": "4715fbb7-b7e3-463e-a596-be3ce6711e35",
-      "name": "player",
-      "path": "/Prefab/player_2.json"
     },
     {
       "id": "0d16ad75-981d-4d14-ae8b-90c2d2cb38d5",

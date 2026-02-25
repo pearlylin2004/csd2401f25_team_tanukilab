@@ -195,13 +195,34 @@ public:
 
     float velX = 0.0f;
     float velY = 0.0f;
-    float gravity = -9.8f;
+    float gravity = -20.f;
+
+    // properties
+    float damping = 0.98f; // in the air
+    float friction = 0.2f; // on ground
 
     //Jump 
-    float damping = 0.98f;
-    float jumpForce = 100.0f;
+    float jumpForce = 10.0f;
     float floorY = -7.5f;
     bool onGround = false;
+    float maxFallSpeed = -20.f;
+    float groundAccelForce = 20.f;
+    float airAccelForce = 8.f;
+
+	// jump buffer (forgive early jump before landing)
+	float jumpBufferTime = 0.15f; // how long before landing can still jump
+	float jumpBufferTimer = 0.f;
+
+    // coyote jump (can still jump after walking off ledge)
+    float coyoteTime = 0.35f;      // how long after leaving edge can still jump
+    float coyoteTimer = 0.f;
+    bool  coyoteAvailable = false;
+
+    // ledge assist
+	float ledgeAssistRange = 0.8f; // how far away from ledge can still grab
+    float ledgeClimbSpeed = 1.f;
+    float ledgeTargetY = 0.f;
+    bool ledgeClimb = false;
 
     //water bullet
     bool alive = false;

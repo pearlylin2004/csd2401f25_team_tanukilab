@@ -168,12 +168,54 @@ namespace JsonIO {
 	bool SaveCollisionTags(const std::string& filepath, const std::vector<std::string>& tags, std::string* err = nullptr);
 
 	// ---- for undo/redo in editor ----
+	// ---- per-component de/serialize ----
+	std::string serializeTransform(GameObject* obj);
+	void deserializeTransform(GameObject* obj, const std::string& json);
+
+	std::string serializeRender(GameObject* obj);
+	void deserializeRender(GameObject* obj, const std::string& json);
+
+	std::string serializeParticle(GameObject* obj);
+	void deserializeParticle(GameObject* obj, const std::string& json);
+
+	std::string serializePhysics(GameObject* obj);
+	void deserializePhysics(GameObject* obj, const std::string& json);
+
+	std::string serializeCollision(GameObject* obj);
+	void deserializeCollision(GameObject* obj, const std::string& json);
+
+	std::string serializeInput(GameObject* obj);
+	void deserializeInput(GameObject* obj, const std::string& json);
+
+	std::string serializeFont(GameObject* obj);
+	void deserializeFont(GameObject* obj, const std::string& json);
+
+	std::string serializeAudio(GameObject* obj);
+	void deserializeAudio(GameObject* obj, const std::string& json);
+
+	std::string serializeAnimation(GameObject* obj);
+	void deserializeAnimation(GameObject* obj, const std::string& json);
+
+	std::string serializeStateMachine(GameObject* obj);
+	void deserializeStateMachine(GameObject* obj, const std::string& json);
+
+	std::string serializeTileMap(GameObject* obj);
+	void deserializeTileMap(GameObject* obj, const std::string& json);
+		
+	std::string serializeLuaScript(GameObject* obj);
+	void deserializeLuaScript(GameObject* obj, const std::string& json);
+
+	std::string serializeVisualLC(GameObject* obj);
+	void deserializeVisualLC(GameObject* obj, const std::string& json);
+
+
 	std::string serializeGameObj(GameObject* obj);
 	GameObject* deserializeGameObj(GameObjectManager& manager, const std::string& jsonStr);
 
 	// ---- visual logic in editor ----
 	bool saveVisualLogic(const std::string& filepath, const std::vector<LogicNode>& nodes, const std::vector<LogicConnection>& connections, std::string* err = nullptr);
 	bool loadVisualLogic(const std::string& filepath, std::vector<LogicNode>& nodes, std::vector<LogicConnection>& connections, std::string* err = nullptr);
+
 	// ---- END ----
 
 	/* ------ moved to components.h ------ */

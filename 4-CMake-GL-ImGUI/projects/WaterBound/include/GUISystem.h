@@ -55,6 +55,7 @@ public:
     void init(GameObjectManager& manager, LuaSystem& luaSystem, VisualLogicSystem& vlSystem);
     void update(); //update menu system
     void loadScreen(GameObjectManager& manager, const std::string& sceneName); //load a screen
+    void loadScreenNoButton(GameObjectManager& manager, const std::string& sceneName); //for no buttons
     void changeState(GameState newState, const std::string& sceneName = ""); //update of state
 
     GameState getCurrentState() const { return m_currentState; } //check current state
@@ -80,7 +81,7 @@ private:
 
     void createButtons(GameObjectManager& manager); //create menu buttons
     void removeButtons(); //remove menu buttons
-    void startGame(GameObjectManager& manager); //start game
+    void startGame(); //start game
     void stopGame(); //stop game	
 
     bool isPointInButton(const Vector2D& point, GameObject* button);
@@ -94,6 +95,9 @@ private:
     GameState m_stateBeforePause = GameState::MENU;
     GameObjectManager* g_manager = nullptr;
     LuaSystem* g_luaSystem = nullptr;
+
+    int level = 0;
+    int max_level = 2;
     VisualLogicSystem* g_visualLogicSystem = nullptr;
 
     std::unordered_map<std::string, Vector2D> m_spawnPositions;

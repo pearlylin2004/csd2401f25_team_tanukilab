@@ -23,7 +23,7 @@ EditorManager::EditorManager(GameObjectManager& manager) :
     editorDebugWindow(DebugMode::Editor),
     playDebugWindow(DebugMode::PlaySimul),
     hierarchyWindow(Editor::objSelectionState),
-    inspectorWindow(Editor::objSelectionState, Editor::gizmoState),
+    inspectorWindow(manager, Editor::objSelectionState, Editor::gizmoState),
     menuBar(assetBrowser, Editor::assetBrowserState, Editor::menuBarState, Editor::objSelectionState, Editor::sceneState),
     performanceWindow(),
     sceneWindow(assetBrowser, Editor::objSelectionState, Editor::menuBarState, Editor::sceneWindowState, Editor::sceneState, Editor::gizmoState),
@@ -44,7 +44,7 @@ void EditorManager::update() {
     assetBrowser.render();
     editorDebugWindow.render();
     hierarchyWindow.render(m_manager);
-    inspectorWindow.render(m_manager);
+    inspectorWindow.render();
     menuBar.render(m_manager);
     performanceWindow.render();
     VisualLogicEditor::Instance().render();
