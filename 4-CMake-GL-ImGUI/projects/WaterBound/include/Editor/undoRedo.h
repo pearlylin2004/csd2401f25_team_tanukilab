@@ -207,6 +207,49 @@ private:
 	std::string				m_after;
 };
 
+// for layer properties
+class AssignLayerCmd : public CmdInterface {
+public:
+	AssignLayerCmd(GameObjectManager& manager, GameObject* obj, int layerBefore, int layerAfter);
+
+	void execute() override;
+
+	void undo() override;
+
+	void updateObjName(const std::string& oldName, const std::string& newName) override;
+
+private:
+	GameObjectManager&		m_manager;
+	std::string				m_objectName;
+	int						m_layerBefore;
+	int						m_layerAfter;
+};
+
+struct LayerSnapshot {
+	bool enabled;
+	bool visible;
+	bool updatable;
+};
+
+class LayerPropertyCmd : public CmdInterface {
+public:
+	LayerPropertyCmd(GameObjectManager& manager, int layerID, const LayerSnapshot& before, const LayerSnapshot& after);
+
+	void execute() override;
+
+	void undo() override;
+
+	void updateObjName(const std::string&, const std::string&) override {}
+
+private:
+	GameObjectManager&		m_manager;
+	int						m_layerID;
+	LayerSnapshot			m_before;
+	LayerSnapshot			m_after;
+
+	void applySnapshot(const LayerSnapshot& snap);
+};
+
 // big boss for undo/redo operation (singleton)
 class UndoRedoManager {
 public:
@@ -270,6 +313,13 @@ public:
 	bool isEditingComponent() const { return m_isEditingComponent; }
 	/* ---- END ---- */
 
+	/* ---- LAYER ---- */
+	void beginLayerEdit(int layerID, Layer* layer);
+	void endLayerEdit(GameObjectManager& manager, int layerID, Layer* layer);
+	void beginLayerAssign(GameObject* obj);
+	void endLayerAssign(GameObjectManager& manager, GameObject* obj, int newLayerID);
+	/* ---- END ----*/
+
 
 	// max steps to undo/redo
 	static constexpr size_t MAX_UNDO_STEPS{ 30 };
@@ -290,11 +340,19 @@ private:
 	std::string			m_editingTilemapObjName;
 	std::vector<TileChange> m_tileChanges;
 
-	// for component properties (all except transform/tilemap)
+	// for component properties (all except transform/animation/partial tilemap)
 	bool					m_isEditingComponent = false;
 	std::string				m_editingComponentObjName;
 	Editor::ComponentEntry	m_editingComponentEntry;
 	std::string				m_componentBefore;
+
+	// for layer
+	bool					m_isEditingLayer{ false };
+	int						m_editingLayerID{ -1 };
+	LayerSnapshot			m_layerBefore{};
+	bool					m_isAssigningLayer{ false };
+	std::string				m_assigningObjName{};
+	int						m_layerAssignBefore{ -1 };
 };
 
 // take a snapshot of an object's transform state

@@ -2145,18 +2145,24 @@ void InspectorWindow::renderLayerControls(GameObject* selected) {
             // layers dropdown
             if (ImGui::BeginCombo("Assign to Layer", layer->getLayerName().c_str())) {
                 std::vector<Layer*> allLayers = m_manager.getLayerManager().getAllLayers();
+
                 for (Layer* l : allLayers) {
                     bool isSelected = (l->getLayerID() == currentLayer);
-                    std::string label = l->getLayerName() + " (ID: " + std::to_string(l->getLayerID()) +
-                        ", Objects: " + std::to_string(l->getObjectCount()) + ")";
+                    std::string label = l->getLayerName() + " (ID: " + std::to_string(l->getLayerID()) + ", Objects: " + std::to_string(l->getObjectCount()) + ")";
+
                     if (ImGui::Selectable(label.c_str(), isSelected)) {
+                        UndoRedoManager::Instance().beginLayerAssign(selected);\
+
                         if (m_manager.assignObjectToLayer(selected, l->getLayerID())) {
+                            UndoRedoManager::Instance().endLayerAssign(m_manager, selected, l->getLayerID());
+
                             DebugLog::addMessage(selected->getObjectName() + " moved to layer: " + l->getLayerName());
                         }
                         else {
                             DebugLog::addMessage("Failed to assign layer!");
                         }
                     }
+
                     if (isSelected) {
                         ImGui::SetItemDefaultFocus();
                     }
@@ -2171,7 +2177,12 @@ void InspectorWindow::renderLayerControls(GameObject* selected) {
             // master flag
             bool enabled = layer->isEnabled();
             if (ImGui::Checkbox("Enabled", &enabled)) {
+                UndoRedoManager::Instance().beginLayerEdit(currentLayer, layer);
+
                 layer->setEnabled(enabled);
+
+                UndoRedoManager::Instance().endLayerEdit(m_manager, currentLayer, layer);
+
                 DebugLog::addMessage("Layer " + layer->getLayerName() +
                     (enabled ? " enabled" : " disabled"));
             }
@@ -2186,7 +2197,11 @@ void InspectorWindow::renderLayerControls(GameObject* selected) {
 
             bool visible = layer->isVisible();
             if (ImGui::Checkbox("Visible", &visible)) {
+                UndoRedoManager::Instance().beginLayerEdit(currentLayer, layer);
+
                 layer->setVisible(visible);
+
+                UndoRedoManager::Instance().endLayerEdit(m_manager, currentLayer, layer);
             }
             ImGui::SameLine();
             ImGui::TextDisabled("(?)");
@@ -2196,7 +2211,11 @@ void InspectorWindow::renderLayerControls(GameObject* selected) {
 
             bool updatable = layer->isUpdatable();
             if (ImGui::Checkbox("Updatable", &updatable)) {
+                UndoRedoManager::Instance().beginLayerEdit(currentLayer, layer);
+
                 layer->setUpdatable(updatable);
+
+                UndoRedoManager::Instance().endLayerEdit(m_manager, currentLayer, layer);
             }
             ImGui::SameLine();
             ImGui::TextDisabled("(?)");

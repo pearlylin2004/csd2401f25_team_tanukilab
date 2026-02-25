@@ -328,6 +328,49 @@ void ComponentPropertyCmd::updateObjName(const std::string& oldName, const std::
 /* ---------------- END ---------------- */
 
 
+/* ---------------- Layer ---------------- */
+AssignLayerCmd::AssignLayerCmd(GameObjectManager& manager, GameObject* obj, int layerBefore, int layerAfter)
+    : m_manager(manager),
+      m_layerBefore(layerBefore),
+      m_layerAfter(layerAfter) {
+    if (obj) m_objectName = obj->getObjectName();
+}
+
+void AssignLayerCmd::execute() {
+    GameObject* obj = m_manager.getGameObject(m_objectName);
+
+    if (obj) m_manager.assignObjectToLayer(obj, m_layerAfter);
+}
+
+void AssignLayerCmd::undo() {
+    GameObject* obj = m_manager.getGameObject(m_objectName);
+
+    if (obj) m_manager.assignObjectToLayer(obj, m_layerBefore);
+}
+
+void AssignLayerCmd::updateObjName(const std::string& oldName, const std::string& newName) {
+    if (m_objectName == oldName) m_objectName = newName;
+}
+
+LayerPropertyCmd::LayerPropertyCmd(GameObjectManager& manager, int layerID, const LayerSnapshot& before, const LayerSnapshot& after)
+    : m_manager(manager), m_layerID(layerID), m_before(before), m_after(after) 
+{ }
+
+void LayerPropertyCmd::execute() { applySnapshot(m_after); }
+
+void LayerPropertyCmd::undo() { applySnapshot(m_before); }
+
+void LayerPropertyCmd::applySnapshot(const LayerSnapshot& snap) {
+    Layer* layer = m_manager.getLayerManager().getLayer(m_layerID);
+    if (!layer) return;
+
+    layer->setEnabled(snap.enabled);
+    layer->setVisible(snap.visible);
+    layer->setUpdatable(snap.updatable);
+}
+/* ---------------- END ---------------- */
+
+
 /* ---------------- UNDO/REDO ---------------- */
 void UndoRedoManager::executeCmd(std::unique_ptr<CmdInterface> cmd) {
     // execute the command (transform/create/delete)
@@ -525,6 +568,66 @@ void UndoRedoManager::endComponentEdit(GameObjectManager& manager, GameObject* o
     }
 
     m_isEditingComponent = false;
+}
+
+void UndoRedoManager::beginLayerEdit(int layerID, Layer* layer) {
+    if (!layer || m_isEditingLayer) return;
+
+    m_isEditingLayer = true;
+    m_editingLayerID = layerID;
+    m_layerBefore = { layer->isEnabled(), layer->isVisible(), layer->isUpdatable() };
+}
+
+void UndoRedoManager::endLayerEdit(GameObjectManager& manager, int layerID, Layer* layer) {
+    if (!m_isEditingLayer || !layer) {
+        m_isEditingLayer = false;
+        return;
+    }
+
+    LayerSnapshot after = { layer->isEnabled(), layer->isVisible(), layer->isUpdatable() };
+
+    bool changed = (m_layerBefore.enabled != after.enabled ||
+        m_layerBefore.visible != after.visible ||
+        m_layerBefore.updatable != after.updatable);
+
+    if (changed) {
+        auto cmd = std::make_unique<LayerPropertyCmd>(manager, m_editingLayerID, m_layerBefore, after);
+
+        m_undoDeque.push_back(std::move(cmd));
+        m_redoDeque.clear();
+
+        if (m_undoDeque.size() > MAX_UNDO_STEPS)
+            m_undoDeque.pop_front();
+    }
+
+    m_isEditingLayer = false;
+}
+
+void UndoRedoManager::beginLayerAssign(GameObject* obj) {
+    if (!obj || m_isAssigningLayer) return;
+
+    m_isAssigningLayer = true;
+    m_assigningObjName = obj->getObjectName();
+    m_layerAssignBefore = obj->getLayer();
+}
+
+void UndoRedoManager::endLayerAssign(GameObjectManager& manager, GameObject* obj, int newLayerID) {
+    if (!m_isAssigningLayer || !obj) {
+        m_isAssigningLayer = false;
+        return;
+    }
+
+    if (m_layerAssignBefore != newLayerID) {
+        auto cmd = std::make_unique<AssignLayerCmd>(manager, obj, m_layerAssignBefore, newLayerID);
+        
+        m_undoDeque.push_back(std::move(cmd));
+        m_redoDeque.clear();
+
+        if (m_undoDeque.size() > MAX_UNDO_STEPS)
+            m_undoDeque.pop_front();
+    }
+
+    m_isAssigningLayer = false;
 }
 /* ---------------- END ---------------- */
 
