@@ -246,6 +246,28 @@ void AudioHandler::resumeAll(GameObjectManager& manager) {
 	}
 }
 
+void AudioHandler::stopAll(GameObjectManager& manager) {
+	std::vector<GameObject*> gameObjects;
+	manager.getAllGameObjects(gameObjects);
+
+	for (GameObject* obj : gameObjects) {
+		if (!obj->hasComponent<AudioComponent>()) continue;
+		AudioComponent* ac = obj->getComponent<AudioComponent>();
+
+		for (auto& pair : ac->audioChannels) {
+
+			AudioChannel& ch = pair.second;
+
+			if (ch.state == AudioState::Playing && ch.channel) {
+				stopSound(&ch);
+				ch.state = AudioState::Stopped;
+			}
+
+		}
+
+	}
+}
+
 // PAUSE / RESUME a particular sound
 //void AudioHandler::toggleSoundPause(AudioChannel* audio) {
 //	//size_t pos = static_cast<size_t>(id);
