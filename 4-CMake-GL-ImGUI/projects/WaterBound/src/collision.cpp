@@ -241,7 +241,14 @@ namespace Collision {
                 else if (minv == bottom) n = Vector2D{ 0,-1 };
                 else n = Vector2D{ 0,1 };
             }
-            info.normal = n;
+            // flip normal: should point FROM circle center TOWARD aabb (push-out direction for aabb)
+            info.normal = { -n.x, -n.y };
+
+            // penetration depth = radius - distance from center to closest point
+            float dist = sqrtf(distSq);
+            info.penetration = c.getRadius() - dist;
+
+            info.contactPoint = { c.getCenter().x - n.x * c.getRadius(), c.getCenter().y - n.y * c.getRadius() };
             return info;
         }
 
@@ -283,18 +290,35 @@ namespace Collision {
             return info;
         }
 
-        Vector2D normal{ 0,0 };
-        if (txEntry > tyEntry) {
-            //x axis
-            normal = (relVel.x > 0.0f) ? Vector2D{ -1,0 } : Vector2D{ 1,0 };
-        }
-        else {
-            normal = (relVel.y > 0.0f) ? Vector2D{ 0,-1 } : Vector2D{ 0,1 };
+        // compute circle center position at moment of impact
+        float cx_imp = c.getCenter().x + relVel.x * entryTime;
+        float cy_imp = c.getCenter().y + relVel.y * entryTime;
+
+        // closest point on AABB to circle center at impact
+        float cpX = Math_Max(aabb.getMin().x, Math_Min(cx_imp, aabb.getMax().x));
+        float cpY = Math_Max(aabb.getMin().y, Math_Min(cy_imp, aabb.getMax().y));
+
+        // radial normal: from closest point toward circle center
+        float ndx = cx_imp - cpX;
+        float ndy = cy_imp - cpY;
+        Vector2D temp{ ndx, ndy };
+        Vector2D normal = Vec_Normalize(&temp);
+
+        // fallback to axis-aligned if degenerate (center exactly on AABB edge)
+        if (Vec_Length(&normal) <= EPSILON) {
+            if (txEntry > tyEntry)
+                normal = (relVel.x > 0.0f) ? Vector2D{ -1,0 } : Vector2D{ 1,0 };
+            else
+                normal = (relVel.y > 0.0f) ? Vector2D{ 0,-1 } : Vector2D{ 0,1 };
         }
 
         info.collided = true;
         info.timeOfImpact = entryTime;
         info.normal = normal;
+        info.contactPoint = {
+            cx_imp - normal.x * c.getRadius(),
+            cy_imp - normal.y * c.getRadius()
+        };
         return info;
     }
 

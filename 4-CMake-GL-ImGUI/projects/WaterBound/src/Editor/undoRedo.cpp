@@ -551,6 +551,29 @@ void UndoRedoManager::recordTileChange(int x, int y, const std::string& oldTile,
 	m_tileChanges.push_back({ x, y, oldTile, newTile });
 }
 
+//undo redo for parenting
+ReparentCmd::ReparentCmd(GameObjectManager& manager, const std::string& childName,
+    const std::string& oldParent, const Vector2D& oldOffset, float oldLocalRot,
+    const std::string& newParent, const Vector2D& newOffset, float newLocalRot)
+    : m_manager(manager), m_childName(childName),
+    m_oldParent(oldParent), m_oldOffset(oldOffset), m_oldLocalRot(oldLocalRot),
+    m_newParent(newParent), m_newOffset(newOffset), m_newLocalRot(newLocalRot) {
+}
+
+void ReparentCmd::execute() { apply(m_newParent, m_newOffset, m_newLocalRot); }
+
+void ReparentCmd::undo() { apply(m_oldParent, m_oldOffset, m_oldLocalRot); }
+
+void ReparentCmd::apply(const std::string& parent, const Vector2D& offset, float localRot) {
+    GameObject* child = m_manager.getGameObject(m_childName);
+    if (!child) return;
+    Transform* t = child->getComponent<Transform>();
+    if (!t) return;
+    t->parentName = parent;
+    t->localOffset = offset;
+    t->localRotation = localRot;
+}
+
 void UndoRedoManager::beginTileMapToolEdit(bool showGrid) {
     if (m_isEditingTileMapTool) return;
 

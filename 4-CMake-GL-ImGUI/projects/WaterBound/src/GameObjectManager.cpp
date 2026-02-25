@@ -77,14 +77,28 @@ GameObject* GameObjectManager::getGameObject(const std::string& name) {
 void GameObjectManager::deleteGameObject(GameObject* object) {
 	if (!object) return;
 
+	const std::string& deletedName = object->getObjectName();
+
 	m_layerManager.removeObjectFromLayer(object);
 
-	for (auto iterator = m_gameObjects.begin(); iterator != m_gameObjects.end(); ++iterator) {
-		if (iterator->second.get() == object) {
-			m_gameObjects.erase(iterator);
-			return;
+	auto toErase = m_gameObjects.end();
+
+	for (auto it = m_gameObjects.begin(); it != m_gameObjects.end(); ++it) {
+		if (it->second.get() == object) {
+			toErase = it;
+			continue; // don't skip remaining children
+		}
+
+		Transform* t = it->second->getComponent<Transform>();
+		if (t && t->parentName == deletedName) {
+			t->parentName.clear();
+			t->localOffset = { 0.f, 0.f };
+			t->localRotation = 0.f;
 		}
 	}
+
+	if (toErase != m_gameObjects.end())
+		m_gameObjects.erase(toErase);
 }
 
 //clone an existing object
@@ -375,6 +389,15 @@ void GameObjectManager::loadSceneFromJson(const std::string& filename) {
 				t->scaleZ = jt["scale"][2].GetFloat();
 			}
 
+			if (jt.HasMember("parentName") && jt["parentName"].IsString())
+				t->parentName = jt["parentName"].GetString();
+			if (jt.HasMember("localOffset") && jt["localOffset"].IsArray() && jt["localOffset"].Size() == 2) {
+				t->localOffset.x = jt["localOffset"][0].GetFloat();
+				t->localOffset.y = jt["localOffset"][1].GetFloat();
+			}
+			if (jt.HasMember("localRotation") && jt["localRotation"].IsNumber())
+				t->localRotation = jt["localRotation"].GetFloat();
+
 			/*std::cout << "\n\nReading from scene...\n";
 			std::cout << "Transform: x: " << t->x << ", y: " << t->y << ", z: " << t->z << std::endl;
 			std::cout << "Rotation: " << t->rotation << std::endl;
@@ -541,6 +564,17 @@ void GameObjectManager::loadSceneFromJson(const std::string& filename) {
 				p->dynamics.position.x = transform->x;
 				p->dynamics.position.y = transform->y;
 			}
+			if (jp.HasMember("freezeRotation")) {
+				p->freezeRotation = jp["freezeRotation"].IsBool()
+				? jp["freezeRotation"].GetBool()
+				: (jp["freezeRotation"].GetInt() != 0);
+			}
+
+			if (jp.HasMember("angularDrag") && jp["angularDrag"].IsNumber())
+				p->dynamics.angularDrag = jp["angularDrag"].GetFloat();
+
+			if (jp.HasMember("inertiaOverride") && jp["inertiaOverride"].IsNumber())
+				p->inertiaOverride = jp["inertiaOverride"].GetFloat();
 		}
 
 		// ---- CollisionInfo (presence only) ----
@@ -582,6 +616,11 @@ void GameObjectManager::loadSceneFromJson(const std::string& filename) {
 				c->collisionTag = jc["collisionTag"].GetString();
 			}
 
+			// Load physics material
+			if (jc.HasMember("bounciness") && jc["bounciness"].IsNumber())
+				c->material.bounciness = jc["bounciness"].GetFloat();
+			if (jc.HasMember("friction") && jc["friction"].IsNumber())
+				c->material.friction = jc["friction"].GetFloat();
 			if (jc.HasMember("colliderType") && jc["colliderType"].IsString())
 				c->colliderType = JsonIO::StrToShape(jc["colliderType"].GetString());
 
@@ -593,6 +632,13 @@ void GameObjectManager::loadSceneFromJson(const std::string& filename) {
 						c->ignoreCollisionsWith.insert(tag.GetString());
 					}
 				}
+			}
+		}
+
+		if (auto* p = go->getComponent<Physics>()) {
+			if (auto* c = go->getComponent<CollisionInfo>()) {
+				p->recalculateInertia(c->colliderSize, c->colliderType);
+
 			}
 		}
 
@@ -1152,6 +1198,15 @@ doc.AddMember("layers", layersArr, a);
 					jt.AddMember("scale", sc, a);
 				}
 
+				// Save parent-child hierarchy (only if have parent)
+				if (!t->parentName.empty()) {
+					jt.AddMember("parentName", rapidjson::Value(t->parentName.c_str(), a), a);
+					rapidjson::Value lo(rapidjson::kArrayType);
+					lo.PushBack(t->localOffset.x, a).PushBack(t->localOffset.y, a);
+					jt.AddMember("localOffset", lo, a);
+					jt.AddMember("localRotation", t->localRotation, a);
+				}
+
 				if (!jt.ObjectEmpty()) comps.AddMember("Transform", jt, a);
 			}
 
@@ -1279,6 +1334,10 @@ doc.AddMember("layers", layersArr, a);
 				pushIfDiffFloat("ledgeAssistRange", p->ledgeAssistRange);
 				pushIfDiffFloat("ledgeClimbSpeed", p->ledgeClimbSpeed);
 
+				pushIfDiffBool("freezeRotation", p->freezeRotation);
+				pushIfDiffFloat("angularDrag", p->dynamics.angularDrag);
+				pushIfDiffFloat("inertiaOverride", p->inertiaOverride);
+
 				if (!jp.ObjectEmpty()) comps.AddMember("Physics", jp, a);
 			}
 
@@ -1327,6 +1386,14 @@ doc.AddMember("layers", layersArr, a);
 					jc.AddMember("collisionTag", rapidjson::Value(c->collisionTag.c_str(), a), a);
 				}
 
+				// Save physics material (only if differs from prefab or no prefab)
+				if (!prefabC || !prefabC->HasMember("bounciness") ||
+					differsFloat((*prefabC)["bounciness"].GetFloat(), c->material.bounciness))
+					jc.AddMember("bounciness", c->material.bounciness, a);
+
+				if (!prefabC || !prefabC->HasMember("friction") ||
+					differsFloat((*prefabC)["friction"].GetFloat(), c->material.friction))
+					jc.AddMember("friction", c->material.friction, a);
 				std::string colliderTypeStr = JsonIO::ShapeToStr(c->colliderType);
 				if (!prefabC || !prefabC->HasMember("colliderType") || colliderTypeStr != (*prefabC)["colliderType"].GetString()) {
 					jc.AddMember("colliderType", rapidjson::Value(colliderTypeStr.c_str(), a), a);

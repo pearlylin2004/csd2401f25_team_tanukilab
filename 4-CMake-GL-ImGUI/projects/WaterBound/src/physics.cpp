@@ -38,7 +38,8 @@ void PhysicsForces::applyDamping(Physics* physics, float targetVelX, float delta
     // Simple velocity damping 
     //physics->damping; // instead of 0.99f
 
-    //physics->dynamics.velocity.x *= physics->damping;
+    physics->dynamics.velocity.x *= physics->damping;
+	physics->dynamics.angularVelocity *= physics->dynamics.angularDrag;
    // physics->dynamics.velocity.y *= physics->damping;
 
     // accel when moving, decel when stopping
@@ -63,8 +64,8 @@ void PhysicsForces::applyDamping(Physics* physics, float targetVelX, float delta
  */
 void PhysicsForces::updatePosition(Transform* transform, Physics* physics, float deltaTime) {
     DynamicsSystem::UpdateForces(physics->dynamics, deltaTime);
-    //DynamicsSystem::Integrate(physics->dynamics, deltaTime);
     if (!physics->onGround) {
+        //DynamicsSystem::Integrate(physics->dynamics, deltaTime, physics->gravity, false);
         float grav = physics->gravity * physics->dynamics.mass; // gravity force F=mg
         if (physics->dynamics.velocity.y < 0.0f)
             grav *= 1.5f;  // faster fall
@@ -89,12 +90,19 @@ void PhysicsForces::updatePosition(Transform* transform, Physics* physics, float
         physics->dynamics.position.x = transform->x;
         physics->dynamics.position.y = transform->y;
         physics->dynamics.velocity.y = 0.0f;
+        //physics->velY = 0.0f;
+    }
+
+    // Integrate angular velocity into rotation (degrees/sec)
+    if (!physics->freezeRotation) {
+        DynamicsSystem::IntegrateAngular(physics->dynamics, deltaTime);
+        transform->rotation += physics->dynamics.angularVelocity * deltaTime;
     }
 
     physics->velX = physics->dynamics.velocity.x;
     physics->velY = physics->dynamics.velocity.y;
-
 }
+
 /**
  * @brief Applies jump force to make an object jump
  *
@@ -167,7 +175,6 @@ void PhysicsForces::shoot(GameObject* bullet, const Transform* origin, const Vec
     p->lifeTimer = 0.0f;
     p->gravityDelayTimer = p->gravityDelay;  // Initialize gravity immunity
     p->alive = true;
-	p->bounciness = 0.7f; // some bounce
 
     DebugLog::addMessage("Bullet fired!", DebugMode::PlaySimul);
 }
@@ -255,4 +262,20 @@ void PhysicsForces::deactivateBullet(GameObject* bullet) {
     p->alive = false;
 
     DebugLog::addMessage("Bullet deactivated and returned to pool", DebugMode::PlaySimul);
+}
+
+void Physics::recalculateInertia(const Vector2D& colliderSize, shape colliderType) {
+    if (inertiaOverride > 0.0f) {
+        dynamics.inertia = inertiaOverride;
+        return;
+    }
+    if (colliderType == shape::circle) {
+        float radius = colliderSize.x / 2.0f;
+        dynamics.inertia = 0.5f * dynamics.mass * radius * radius;
+    }
+    else {
+        float w = colliderSize.x;
+        float h = colliderSize.y;
+        dynamics.inertia = (1.0f / 12.0f) * dynamics.mass * (w * w + h * h);
+    }
 }

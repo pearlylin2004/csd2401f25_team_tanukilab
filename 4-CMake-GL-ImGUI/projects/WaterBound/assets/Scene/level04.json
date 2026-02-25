@@ -35,27 +35,8 @@
             1.0
           ]
         },
-        "Render": {
-          "texture": "assets/Texture\\water_texture.png",
-          "hasTex": 1
-        },
         "Physics": {
           "autoUpdate": 0
-        },
-        "CollisionInfo": {
-          "ignoreCollisionsWith": [
-            "player",
-            "bullet",
-            "hazards"
-          ]
-        },
-        "LuaScript": {
-          "scripts": [
-            {
-              "filename": "./assets/scripting\\bullet.lua",
-              "scriptName": "bullet"
-            }
-          ]
         }
       }
     },
@@ -80,6 +61,8 @@
         },
         "CollisionInfo": {
           "collisionTag": "player",
+          "bounciness": 0.0,
+          "friction": 0.0,
           "ignoreCollisionsWith": [
             "bullet"
           ]
@@ -305,7 +288,9 @@
           ],
           "colliderType": "square",
           "collisionRes": "StopWhenCollide",
-          "collisionTag": "inventory"
+          "collisionTag": "inventory",
+          "bounciness": 0.0,
+          "friction": 0.0
         }
       }
     },
@@ -321,7 +306,14 @@
           ]
         },
         "Physics": {
-          "autoUpdate": 0
+          "autoUpdate": 0,
+          "freezeRotation": 1,
+          "angularDrag": 0.9800000190734863,
+          "inertiaOverride": 0.0
+        },
+        "CollisionInfo": {
+          "bounciness": 0.0,
+          "friction": 0.0
         },
         "VisualLC": {
           "filename": "endgoal04.json"
@@ -347,7 +339,7 @@
         "Render": {
           "shape": "square",
           "hasTex": 1,
-          "texture": "assets/Texture\\Water_100.png",
+          "texture": "assets/Texture\\Water_80.png",
           "hasTex": 1,
           "hasAnimation": 0
         },
@@ -360,7 +352,9 @@
           ],
           "colliderType": "square",
           "collisionRes": "StopWhenCollide",
-          "collisionTag": "inventory"
+          "collisionTag": "inventory",
+          "bounciness": 0.0,
+          "friction": 0.0
         },
         "VisualLC": {
           "filename": "bullet-inventory.json"
@@ -396,7 +390,10 @@
           "moveSpeed": 1.0,
           "jumpForce": 100.0,
           "mass": 1.0,
-          "damping": 0.9800000190734863
+          "damping": 0.9800000190734863,
+          "freezeRotation": 1,
+          "angularDrag": 0.9800000190734863,
+          "inertiaOverride": 0.0
         },
         "CollisionInfo": {
           "collisionFlag": 1,
@@ -407,7 +404,9 @@
           ],
           "colliderType": "square",
           "collisionRes": "StopWhenCollide",
-          "collisionTag": "default"
+          "collisionTag": "default",
+          "bounciness": 0.0,
+          "friction": 0.0
         }
       }
     },
@@ -440,7 +439,10 @@
           "moveSpeed": 1.0,
           "jumpForce": 100.0,
           "mass": 1.0,
-          "damping": 0.9800000190734863
+          "damping": 0.9800000190734863,
+          "freezeRotation": 1,
+          "angularDrag": 0.9800000190734863,
+          "inertiaOverride": 0.0
         },
         "CollisionInfo": {
           "collisionFlag": 1,
@@ -451,7 +453,9 @@
           ],
           "colliderType": "square",
           "collisionRes": "StopWhenCollide",
-          "collisionTag": "environment"
+          "collisionTag": "environment",
+          "bounciness": 0.0,
+          "friction": 0.0
         }
       }
     },
@@ -484,7 +488,10 @@
           "moveSpeed": 1.0,
           "jumpForce": 100.0,
           "mass": 1.0,
-          "damping": 0.9800000190734863
+          "damping": 0.9800000190734863,
+          "freezeRotation": 1,
+          "angularDrag": 0.9800000190734863,
+          "inertiaOverride": 0.0
         },
         "CollisionInfo": {
           "collisionFlag": 1,
@@ -495,7 +502,9 @@
           ],
           "colliderType": "square",
           "collisionRes": "StopWhenCollide",
-          "collisionTag": "default"
+          "collisionTag": "default",
+          "bounciness": 0.0,
+          "friction": 0.0
         }
       }
     },
@@ -511,18 +520,23 @@
           ],
           "scale": [
             7.294000148773193,
-            7.593839168548584,
+            7.294000148773193,
             0.0
           ]
         },
         "Physics": {
-          "autoUpdate": 0
+          "autoUpdate": 0,
+          "freezeRotation": 1,
+          "angularDrag": 0.9800000190734863,
+          "inertiaOverride": 0.0
         },
         "CollisionInfo": {
           "colliderSize": [
             7.294000148773193,
-            7.593839168548584
-          ]
+            7.294000148773193
+          ],
+          "bounciness": 0.0,
+          "friction": 0.0
         }
       }
     },
@@ -538,7 +552,14 @@
           ]
         },
         "Physics": {
-          "autoUpdate": 0
+          "autoUpdate": 0,
+          "freezeRotation": 1,
+          "angularDrag": 0.9800000190734863,
+          "inertiaOverride": 0.0
+        },
+        "CollisionInfo": {
+          "bounciness": 0.0,
+          "friction": 0.0
         }
       }
     },
@@ -566,7 +587,10 @@
           "moveSpeed": 1.0,
           "jumpForce": 100.0,
           "mass": 1.0,
-          "damping": 1.0
+          "damping": 1.0,
+          "freezeRotation": 1,
+          "angularDrag": 0.9800000190734863,
+          "inertiaOverride": 0.0
         },
         "CollisionInfo": {
           "collisionFlag": 1,
@@ -577,7 +601,9 @@
           ],
           "colliderType": "square",
           "collisionRes": "NoResponse",
-          "collisionTag": "water"
+          "collisionTag": "water",
+          "bounciness": 0.0,
+          "friction": 0.0
         },
         "WaterBody": {
           "waveAmplitude": 0.15000000596046448,
@@ -630,7 +656,10 @@
           "moveSpeed": 1.0,
           "jumpForce": 100.0,
           "mass": 5.0,
-          "damping": 0.9850000143051147
+          "damping": 0.9850000143051147,
+          "freezeRotation": 1,
+          "angularDrag": 0.9800000190734863,
+          "inertiaOverride": 0.0
         },
         "CollisionInfo": {
           "collisionFlag": 1,
@@ -641,7 +670,60 @@
           ],
           "colliderType": "square",
           "collisionRes": "MoveWhenCollide",
-          "collisionTag": "floatingObject"
+          "collisionTag": "floatingObject",
+          "bounciness": 0.0,
+          "friction": 0.0
+        }
+      }
+    },
+    {
+      "name": "Water Wheel",
+      "components": {
+        "Transform": {
+          "pos": [
+            -11.555547714233398,
+            -6.920639991760254,
+            0.0
+          ],
+          "rotation": 28.783843994140625,
+          "scale": [
+            5.5,
+            5.5,
+            0.0
+          ]
+        },
+        "Render": {
+          "shape": "square",
+          "hasTex": 1,
+          "texture": "assets/Texture\\Water Wheel Light Version.png",
+          "hasTex": 1,
+          "hasAnimation": 0
+        },
+        "Physics": {
+          "physicsFlag": 1,
+          "inWater": 1,
+          "buoyancy": 1,
+          "autoUpdate": 0,
+          "moveSpeed": 1.0,
+          "jumpForce": 100.0,
+          "mass": 1.0,
+          "damping": 0.9800000190734863,
+          "freezeRotation": 0,
+          "angularDrag": 0.9800000190734863,
+          "inertiaOverride": 0.5
+        },
+        "CollisionInfo": {
+          "collisionFlag": 1,
+          "autoFitScale": 0,
+          "colliderSize": [
+            4.5,
+            5.5
+          ],
+          "colliderType": "circle",
+          "collisionRes": "StopWhenCollide",
+          "collisionTag": "default",
+          "bounciness": 0.0,
+          "friction": 0.0
         }
       }
     }

@@ -85,7 +85,7 @@ void SceneWindow::render(GLuint texture, float aspectRatio, GameObjectManager& m
 
         // drag to reposition obj
         if (InputHandler::isMouseDragging() && !ImGuizmo::IsUsing() && TileMapSystem::filename.empty()) {
-            objDragging();
+            objDragging(manager);
         }
 
         if (InputHandler::isMouseLeftReleased()) {
@@ -219,10 +219,11 @@ void SceneWindow::renderGizmo(GameObjectManager& manager) {
             glm::value_ptr(scale));
 
         // update the object
-        t->x = translation.x;
-        t->y = translation.y;
+        TransformSystem::setWorldPosition(t, translation.x, translation.y, manager);
         t->z = translation.z;
-        t->rotation = rotation.z;
+
+        TransformSystem::setWorldRotation(t, rotation.z, manager);
+
         t->scaleX = scale.x;
         t->scaleY = scale.y;
         t->scaleZ = scale.z;
@@ -838,7 +839,7 @@ void SceneWindow::objPicking() {
     }
 }
 
-void SceneWindow::objDragging() const {
+void SceneWindow::objDragging(GameObjectManager& manager) const {
     // early return if no obj is selected
     GameObject* obj = m_objSelectionState.draggedObject;
     if (!obj) return;
@@ -848,8 +849,7 @@ void SceneWindow::objDragging() const {
 
     // change current object position based on mouse delta
     Vector2D mousePos = InputHandler::getMouseDeltaWorldInViewport(m_sceneWindowState.sceneSize);
-    transform->x += mousePos.x;
-    transform->y += mousePos.y;
+    TransformSystem::setWorldPosition(transform, transform->x + mousePos.x, transform->y + mousePos.y, manager);
 
     // if obj has physics, do not follow gravity while dragging
     /*Physics* physics = obj->getComponent<Physics>();
