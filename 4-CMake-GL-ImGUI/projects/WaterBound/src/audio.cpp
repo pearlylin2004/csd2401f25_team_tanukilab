@@ -254,15 +254,14 @@ void AudioHandler::stopAll(GameObjectManager& manager) {
 		if (!obj->hasComponent<AudioComponent>()) continue;
 		AudioComponent* ac = obj->getComponent<AudioComponent>();
 
-		for (auto& pair : ac->audioChannels) {
-
-			AudioChannel& ch = pair.second;
-
-			if (ch.state == AudioState::Playing && ch.channel) {
+		for (auto& [name, ch] : ac->audioChannels) {
+			if (ch.channel) {
 				stopSound(&ch);
-				ch.state = AudioState::Stopped;
 			}
 
+			ch.state = AudioState::Stopped;
+			ch.isPendingPlay = false;
+			ch.isPendingStop = false;
 		}
 
 	}

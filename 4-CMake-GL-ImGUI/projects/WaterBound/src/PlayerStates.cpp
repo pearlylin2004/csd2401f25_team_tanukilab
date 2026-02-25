@@ -20,6 +20,7 @@ Technology is prohibited.
 #include "input.h"
 #include "Systems.h"
 #include <iostream>
+#include <random>
 
 // ============================================================================
 // Helper Functions
@@ -32,6 +33,15 @@ Technology is prohibited.
 static inline bool anyMoveHeld() {
     return InputHandler::isKeyHeld(GLFW_KEY_A) ||
         InputHandler::isKeyHeld(GLFW_KEY_D);
+}
+
+/*!
+ * \brief Returns a random float in [min, max].
+ */
+static float randf(float min, float max) {
+    static std::mt19937 gen{ std::random_device{}() };
+    std::uniform_real_distribution<float> dist(min, max);
+    return dist(gen);
 }
 
 /*!
@@ -84,13 +94,14 @@ void IdleState::onUpdate(GameObject& obj, float dt) {
 void WalkingState::onEnter(GameObject& obj) {
     resetAnimationFrame(obj, PlayerState::Walking);
 
-    // Play footsteps audio
+    // Play footsteps audio with randomized pitch/volume per walk session
     if (AudioComponent* audio = obj.getComponent<AudioComponent>()) {
         AudioChannel* footsteps = audio->getOrCreateChannel("footsteps");
         if (footsteps) {
             footsteps->audioFile = "assets/audio/footsteps.wav";
             footsteps->loop = true;
-            footsteps->volume = 0.5f;
+            footsteps->pitch = randf(0.92f, 1.08f);
+            footsteps->volume = randf(0.4f, 0.55f);
             footsteps->playOnStart = false;
             footsteps->isPendingPlay = true;
         }
@@ -111,6 +122,15 @@ void WalkingState::onUpdate(GameObject& obj, float dt) {
         }
         if (InputHandler::isKeyHeld(GLFW_KEY_D)) {
             fsm->facingRight = true;
+        }
+    }
+
+    // Subtle pitch drift while walking for a natural feel
+    if (AudioComponent* audio = obj.getComponent<AudioComponent>()) {
+        if (AudioChannel* footsteps = audio->getChannel("footsteps")) {
+            if (footsteps->channel && footsteps->state == AudioState::Playing) {
+                footsteps->channel->setPitch(randf(0.96f, 1.04f));
+            }
         }
     }
 }
@@ -215,5 +235,4 @@ void DeadState::onUpdate(GameObject& obj, float dt) {
     (void)dt;
 
     // Could add respawn timer here
-   
 }
