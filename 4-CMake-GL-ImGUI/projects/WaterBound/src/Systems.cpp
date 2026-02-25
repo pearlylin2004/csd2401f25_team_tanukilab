@@ -243,9 +243,6 @@ void RenderSystem::update(GameObjectManager& manager, float const& deltaTime)
 				Render* render = object->getComponent<Render>();
 
 				if (render->texChanged) {
-					if (render->texHDL != 0)
-						glDeleteTextures(1, &render->texHDL);
-
 					if (render->hasTex) {
 						TextureData texData = ResourceManager::getInstance().getTexture(render->texFile);
 						render->texHDL = texData.id;
@@ -265,10 +262,6 @@ void RenderSystem::update(GameObjectManager& manager, float const& deltaTime)
 					{
 						for (AnimateState& as : animation->animState) {
 							if (as.texChanged && !as.texFile.empty()) {
-
-								if (as.texHDL != 0)
-									glDeleteTextures(1, &render->texHDL);
-
 								TextureData textureData = ResourceManager::getInstance().getTexture(as.texFile);
 								as.texHDL = textureData.id;
 								as.texChanged = false;
