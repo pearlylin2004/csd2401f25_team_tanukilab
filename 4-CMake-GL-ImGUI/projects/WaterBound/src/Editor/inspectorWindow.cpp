@@ -2213,7 +2213,7 @@ void InspectorWindow::renderLayerControls(GameObject* selected) {
 
                 layer->setEnabled(enabled);
 
-                UndoRedoManager::Instance().endLayerEdit(m_manager, currentLayer, layer);
+                UndoRedoManager::Instance().endLayerEdit(m_manager, layer);
 
                 DebugLog::addMessage("Layer " + layer->getLayerName() +
                     (enabled ? " enabled" : " disabled"));
@@ -2233,7 +2233,7 @@ void InspectorWindow::renderLayerControls(GameObject* selected) {
 
                 layer->setVisible(visible);
 
-                UndoRedoManager::Instance().endLayerEdit(m_manager, currentLayer, layer);
+                UndoRedoManager::Instance().endLayerEdit(m_manager, layer);
             }
             ImGui::SameLine();
             ImGui::TextDisabled("(?)");
@@ -2247,7 +2247,7 @@ void InspectorWindow::renderLayerControls(GameObject* selected) {
 
                 layer->setUpdatable(updatable);
 
-                UndoRedoManager::Instance().endLayerEdit(m_manager, currentLayer, layer);
+                UndoRedoManager::Instance().endLayerEdit(m_manager, layer);
             }
             ImGui::SameLine();
             ImGui::TextDisabled("(?)");

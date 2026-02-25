@@ -635,7 +635,7 @@ void UndoRedoManager::beginLayerEdit(int layerID, Layer* layer) {
     m_layerBefore = { layer->isEnabled(), layer->isVisible(), layer->isUpdatable() };
 }
 
-void UndoRedoManager::endLayerEdit(GameObjectManager& manager, int layerID, Layer* layer) {
+void UndoRedoManager::endLayerEdit(GameObjectManager& manager, Layer* layer) {
     if (!m_isEditingLayer || !layer) {
         m_isEditingLayer = false;
         return;
