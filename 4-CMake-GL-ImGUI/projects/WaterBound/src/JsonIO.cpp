@@ -864,6 +864,652 @@ namespace JsonIO {
     }
 
     /* ---------- Saving obj state in json for undo/redo ---------- */
+    std::string serializeTransform(GameObject* obj) {
+        Transform* t = obj ? obj->getComponent<Transform>() : nullptr;
+        if (!t) return "";
+
+        using namespace rapidjson;
+        Document doc; doc.SetObject();
+        auto& a = doc.GetAllocator();
+
+        Value jt(kObjectType);
+        WriteVec3(jt, "pos", t->x, t->y, t->z, a);
+        jt.AddMember("rotation", Value().SetFloat(t->rotation), a);
+        WriteVec3(jt, "scale", t->scaleX, t->scaleY, t->scaleZ, a);
+        doc.AddMember("Transform", jt, a);
+
+        StringBuffer buf; Writer<StringBuffer> w(buf); doc.Accept(w);
+        return buf.GetString();
+    }
+
+    void deserializeTransform(GameObject* obj, const std::string& json) {
+        if (!obj || json.empty()) return;
+
+        using namespace rapidjson;
+        Document doc; doc.Parse(json.c_str());
+        if (doc.HasParseError() || !doc.HasMember("Transform")) return;
+
+        const Value& jt = doc["Transform"];
+        Transform* t = obj->hasComponent<Transform>()
+            ? obj->getComponent<Transform>()
+            : obj->addComponent<Transform>();
+
+        ReadVec3(jt, "pos", t->x, t->y, t->z);
+        GetFloat(jt, "rotation", t->rotation);
+        ReadVec3(jt, "scale", t->scaleX, t->scaleY, t->scaleZ);
+    }
+
+    std::string serializeRender(GameObject* obj) {
+        Render* r = obj ? obj->getComponent<Render>() : nullptr;
+        if (!r) return "";
+
+        using namespace rapidjson;
+        Document doc; doc.SetObject();
+        auto& a = doc.GetAllocator();
+
+        Value jr(kObjectType);
+        jr.AddMember("shape", Value(ShapeToStr(r->modelRef.shape), a), a);
+        jr.AddMember("hasTex", Value().SetBool(r->hasTex), a);
+        if (r->hasTex && !r->texFile.empty())
+            jr.AddMember("texture", Value(r->texFile.c_str(), a), a);
+        jr.AddMember("hasAnimation", Value(r->hasAnimation ? 1 : 0), a);
+        WriteVec3(jr, "clr", r->clr.x, r->clr.y, r->clr.z, a);
+        doc.AddMember("Render", jr, a);
+
+        StringBuffer buf; Writer<StringBuffer> w(buf); doc.Accept(w);
+        return buf.GetString();
+    }
+
+    void deserializeRender(GameObject* obj, const std::string& json) {
+        if (!obj || json.empty()) return;
+
+        using namespace rapidjson;
+        Document doc; doc.Parse(json.c_str());
+        if (doc.HasParseError() || !doc.HasMember("Render")) return;
+
+        const Value& jr = doc["Render"];
+        Render* r = obj->hasComponent<Render>()
+            ? obj->getComponent<Render>()
+            : obj->addComponent<Render>();
+
+        std::string shp = (jr.HasMember("shape") && jr["shape"].IsString())
+            ? jr["shape"].GetString() : "square";
+        r->modelRef = renderer::models[static_cast<int>(StrToShape(shp))];
+
+        if (jr.HasMember("hasTex"))
+            r->hasTex = jr["hasTex"].IsBool() ? jr["hasTex"].GetBool() : (jr["hasTex"].GetInt() != 0);
+
+        if (r->hasTex && jr.HasMember("texture") && jr["texture"].IsString()) {
+            r->texFile = jr["texture"].GetString();
+            r->texHDL = 0;
+            r->texChanged = true;
+        }
+        else {
+            r->texFile.clear();
+            r->texHDL = 0;
+            r->texChanged = false;
+        }
+
+        if (jr.HasMember("hasAnimation"))
+            r->hasAnimation = jr["hasAnimation"].IsBool()
+            ? jr["hasAnimation"].GetBool() : (jr["hasAnimation"].GetInt() != 0);
+
+        ReadVec3(jr, "clr", r->clr.x, r->clr.y, r->clr.z);
+    }
+
+    std::string serializeParticle(GameObject* obj) {
+        Particle* p = obj ? obj->getComponent<Particle>() : nullptr;
+        if (!p || !p->isMaster) return "";
+
+        using namespace rapidjson;
+        Document doc; doc.SetObject();
+        auto& a = doc.GetAllocator();
+
+        Value jp(kObjectType);
+        jp.AddMember("isMaster", Value(p->isMaster ? 1 : 0), a);
+        WriteVec4(jp, "clr", p->master.clr.r, p->master.clr.g, p->master.clr.b, p->master.clr.a, a);
+        WriteVec2(jp, "velocity", p->master.velocity.x, p->master.velocity.y, a);
+        jp.AddMember("timer", Value(p->master.timer), a);
+        jp.AddMember("offset", Value(p->master.offset), a);
+        jp.AddMember("particleAmt", Value(p->master.particleAmt), a);
+        doc.AddMember("Particle", jp, a);
+
+        StringBuffer buf; Writer<StringBuffer> w(buf); doc.Accept(w);
+        return buf.GetString();
+    }
+
+    void deserializeParticle(GameObject* obj, const std::string& json) {
+        if (!obj || json.empty()) return;
+        using namespace rapidjson;
+        Document doc; doc.Parse(json.c_str());
+        if (doc.HasParseError() || !doc.HasMember("Particle")) return;
+
+        const Value& jp = doc["Particle"];
+        Particle* p = obj->hasComponent<Particle>()
+            ? obj->getComponent<Particle>()
+            : obj->addComponent<Particle>();
+
+        if (jp.HasMember("isMaster"))
+            p->isMaster = jp["isMaster"].IsBool() ? jp["isMaster"].GetBool() : (jp["isMaster"].GetInt() != 0);
+
+        ReadVec4(jp, "clr", p->master.clr.r, p->master.clr.g, p->master.clr.b, p->master.clr.a);
+        ReadVec2(jp, "velocity", p->master.velocity.x, p->master.velocity.y);
+        if (jp.HasMember("timer") && jp["timer"].IsNumber())      p->master.timer = jp["timer"].GetFloat();
+        if (jp.HasMember("offset") && jp["offset"].IsNumber())     p->master.offset = jp["offset"].GetFloat();
+        if (jp.HasMember("particleAmt") && jp["particleAmt"].IsInt())   p->master.particleAmt = jp["particleAmt"].GetInt();
+    }
+
+    std::string serializePhysics(GameObject* obj) {
+        Physics* p = obj ? obj->getComponent<Physics>() : nullptr;
+        if (!p) return "";
+
+        using namespace rapidjson;
+        Document doc; doc.SetObject();
+        auto& a = doc.GetAllocator();
+
+        Value jp(kObjectType);
+        jp.AddMember("physicsFlag", p->physicsFlag, a);
+        jp.AddMember("moveSpeed", p->moveSpeed, a);
+        jp.AddMember("jumpForce", p->jumpForce, a);
+        jp.AddMember("damping", p->damping, a);
+        jp.AddMember("friction", p->friction, a);
+        jp.AddMember("maxFallSpeed", p->maxFallSpeed, a);
+        jp.AddMember("groundAccelForce", p->groundAccelForce, a);
+        jp.AddMember("airAccelForce", p->airAccelForce, a);
+        jp.AddMember("jumpBufferTime", p->jumpBufferTime, a);
+        jp.AddMember("coyoteTime", p->coyoteTime, a);
+        jp.AddMember("ledgeAssistRange", p->ledgeAssistRange, a);
+        jp.AddMember("ledgeClimbSpeed", p->ledgeClimbSpeed, a);
+        jp.AddMember("mass", p->dynamics.mass, a);
+        jp.AddMember("buoyancy", p->buoyancy, a);
+        doc.AddMember("Physics", jp, a);
+
+        StringBuffer buf; Writer<StringBuffer> w(buf); doc.Accept(w);
+        return buf.GetString();
+    }
+
+    void deserializePhysics(GameObject* obj, const std::string& json) {
+        if (!obj || json.empty()) return;
+
+        using namespace rapidjson;
+        Document doc; doc.Parse(json.c_str());
+        if (doc.HasParseError() || !doc.HasMember("Physics")) return;
+
+        const Value& jp = doc["Physics"];
+        Physics* p = obj->hasComponent<Physics>()
+            ? obj->getComponent<Physics>()
+            : obj->addComponent<Physics>();
+
+        p->physicsFlag = jp["physicsFlag"].GetBool();
+        p->moveSpeed = jp["moveSpeed"].GetFloat();
+        p->jumpForce = jp["jumpForce"].GetFloat();
+        p->damping = jp["damping"].GetFloat();
+        p->friction = jp.HasMember("friction") ? jp["friction"].GetFloat() : 0.80f;
+        p->maxFallSpeed = jp.HasMember("maxFallSpeed") ? jp["maxFallSpeed"].GetFloat() : -30.f;
+        p->groundAccelForce = jp.HasMember("groundAccelForce") ? jp["groundAccelForce"].GetFloat() : 20.f;
+        p->airAccelForce = jp.HasMember("airAccelForce") ? jp["airAccelForce"].GetFloat() : 8.f;
+        p->jumpBufferTime = jp.HasMember("jumpBufferTime") ? jp["jumpBufferTime"].GetFloat() : 0.15f;
+        p->coyoteTime = jp.HasMember("coyoteTime") ? jp["coyoteTime"].GetFloat() : 0.15f;
+        p->ledgeAssistRange = jp.HasMember("ledgeAssistRange") ? jp["ledgeAssistRange"].GetFloat() : 0.8f;
+        p->ledgeClimbSpeed = jp.HasMember("ledgeClimbSpeed") ? jp["ledgeClimbSpeed"].GetFloat() : 8.f;
+        p->dynamics.mass = jp["mass"].GetFloat();
+        p->buoyancy = jp["buoyancy"].GetBool();
+    }
+
+    std::string serializeCollision(GameObject* obj) {
+        CollisionInfo* c = obj ? obj->getComponent<CollisionInfo>() : nullptr;
+        if (!c) return "";
+
+        using namespace rapidjson;
+        Document doc; doc.SetObject();
+        auto& a = doc.GetAllocator();
+
+        Value jc(kObjectType);
+        jc.AddMember("collisionFlag", c->collisionFlag, a);
+        jc.AddMember("autoFitScale", c->autoFitScale, a);
+        jc.AddMember("width", c->colliderSize.x, a);
+        jc.AddMember("height", c->colliderSize.y, a);
+        jc.AddMember("collisionRes", Value(CollisionResponseModeToStr(c->collisionRes), a), a);
+        jc.AddMember("collisionTag", Value(c->collisionTag.c_str(), a), a);
+        jc.AddMember("colliderType", Value(ShapeToStr(c->colliderType), a), a);
+
+        Value ignoreArray(kArrayType);
+        for (const std::string& tag : c->ignoreCollisionsWith)
+            ignoreArray.PushBack(Value(tag.c_str(), a), a);
+        jc.AddMember("ignoreCollisionsWith", ignoreArray, a);
+        doc.AddMember("Collision", jc, a);
+
+        StringBuffer buf; Writer<StringBuffer> w(buf); doc.Accept(w);
+        return buf.GetString();
+    }
+
+    void deserializeCollision(GameObject* obj, const std::string& json) {
+        if (!obj || json.empty()) return;
+        using namespace rapidjson;
+        Document doc; doc.Parse(json.c_str());
+        if (doc.HasParseError() || !doc.HasMember("Collision")) return;
+
+        const Value& jc = doc["Collision"];
+        CollisionInfo* c = obj->hasComponent<CollisionInfo>()
+            ? obj->getComponent<CollisionInfo>()
+            : obj->addComponent<CollisionInfo>();
+
+        c->collisionFlag = jc["collisionFlag"].GetBool();
+        c->autoFitScale = jc["autoFitScale"].GetBool();
+        c->colliderSize.x = jc["width"].GetFloat();
+        c->colliderSize.y = jc["height"].GetFloat();
+
+        if (jc.HasMember("collisionRes")) c->collisionRes = StrToCollisionResponseMode(jc["collisionRes"].GetString());
+        if (jc.HasMember("collisionTag")) c->collisionTag = jc["collisionTag"].GetString();
+        if (jc.HasMember("colliderType") && jc["colliderType"].IsString())
+            c->colliderType = StrToShape(jc["colliderType"].GetString());
+
+        if (jc.HasMember("ignoreCollisionsWith")) {
+            const Value& arr = jc["ignoreCollisionsWith"];
+            c->ignoreCollisionsWith.clear();
+            for (rapidjson::SizeType i = 0; i < arr.Size(); ++i)
+                c->ignoreCollisionsWith.insert(arr[i].GetString());
+        }
+    }
+
+    std::string serializeInput(GameObject* obj) {
+        if (!obj || !obj->hasComponent<Input>()) return "";
+
+        using namespace rapidjson;
+        Document doc; doc.SetObject();
+        doc.AddMember("Input", true, doc.GetAllocator());
+        StringBuffer buf; Writer<StringBuffer> w(buf); doc.Accept(w);
+        return buf.GetString();
+    }
+
+    void deserializeInput(GameObject* obj, const std::string& json) {
+        if (!obj || json.empty()) return;
+        using namespace rapidjson;
+        Document doc; doc.Parse(json.c_str());
+        if (doc.HasParseError() || !doc.HasMember("Input")) return;
+        if (!obj->hasComponent<Input>()) obj->addComponent<Input>();
+    }
+
+    std::string serializeFont(GameObject* obj) {
+        FontComponent* f = obj ? obj->getComponent<FontComponent>() : nullptr;
+        if (!f) return "";
+
+        using namespace rapidjson;
+        Document doc; doc.SetObject();
+        auto& a = doc.GetAllocator();
+
+        Value jf(kObjectType);
+        jf.AddMember("word", Value(f->word.c_str(), a), a);
+        jf.AddMember("scale", f->scale, a);
+        jf.AddMember("fontType", f->fontType, a);
+        WriteVec3(jf, "clr", f->clr.x, f->clr.y, f->clr.z, a);
+        doc.AddMember("Font", jf, a);
+
+        StringBuffer buf; Writer<StringBuffer> w(buf); doc.Accept(w);
+        return buf.GetString();
+    }
+
+    void deserializeFont(GameObject* obj, const std::string& json) {
+        if (!obj || json.empty()) return;
+
+        using namespace rapidjson;
+        Document doc; doc.Parse(json.c_str());
+        if (doc.HasParseError() || !doc.HasMember("Font")) return;
+
+        const Value& jf = doc["Font"];
+        FontComponent* f = obj->hasComponent<FontComponent>()
+            ? obj->getComponent<FontComponent>()
+            : obj->addComponent<FontComponent>();
+
+        f->word = jf["word"].GetString();
+        f->scale = jf["scale"].GetFloat();
+        f->fontType = jf["fontType"].GetInt();
+        ReadVec3(jf, "clr", f->clr.x, f->clr.y, f->clr.z);
+    }
+
+    std::string serializeAudio(GameObject* obj) {
+        AudioComponent* audio = obj ? obj->getComponent<AudioComponent>() : nullptr;
+        if (!audio) return "";
+
+        using namespace rapidjson;
+        Document doc; doc.SetObject();
+        auto& a = doc.GetAllocator();
+
+        Value ja(kObjectType);
+        Value channels(kObjectType);
+        for (const auto& [channelName, ch] : audio->audioChannels) {
+            Value channelObj(kObjectType);
+            channelObj.AddMember("audioFile", Value(ch.audioFile.c_str(), a), a);
+            channelObj.AddMember("volume", ch.volume, a);
+            channelObj.AddMember("pitch", ch.pitch, a);
+            channelObj.AddMember("loop", ch.loop, a);
+            channelObj.AddMember("muted", ch.muted, a);
+            channelObj.AddMember("playOnStart", ch.playOnStart, a);
+            channelObj.AddMember("fadeInOnStart", ch.fadeInOnStart, a);
+            channelObj.AddMember("fadeInDuration", ch.fadeInDuration, a);
+            channelObj.AddMember("fadeOutOnStop", ch.fadeOutOnStop, a);
+            channelObj.AddMember("fadeOutDuration", ch.fadeOutDuration, a);
+            channelObj.AddMember("isSpatial", ch.isSpatial, a);
+            channelObj.AddMember("minDistance", ch.minDistance, a);
+            channelObj.AddMember("maxDistance", ch.maxDistance, a);
+            channels.AddMember(Value(channelName.c_str(), a), channelObj, a);
+        }
+        ja.AddMember("channels", channels, a);
+        doc.AddMember("AudioComponent", ja, a);
+
+        StringBuffer buf; Writer<StringBuffer> w(buf); doc.Accept(w);
+        return buf.GetString();
+    }
+
+    void deserializeAudio(GameObject* obj, const std::string& json) {
+        if (!obj || json.empty()) return;
+        using namespace rapidjson;
+        Document doc; doc.Parse(json.c_str());
+        if (doc.HasParseError() || !doc.HasMember("AudioComponent")) return;
+
+        const Value& ja = doc["AudioComponent"];
+        AudioComponent* ac = obj->hasComponent<AudioComponent>()
+            ? obj->getComponent<AudioComponent>()
+            : obj->addComponent<AudioComponent>();
+
+        // stop anything currently playing before overwriting
+        for (auto& [name, ch] : ac->audioChannels)
+            if (ch.channel) { ch.channel->stop(); ch.channel = nullptr; }
+        ac->audioChannels.clear();
+
+        if (ja.HasMember("channels") && ja["channels"].IsObject()) {
+            const Value& channels = ja["channels"];
+            for (auto it = channels.MemberBegin(); it != channels.MemberEnd(); ++it) {
+                std::string channelName = it->name.GetString();
+                const Value& co = it->value;
+                AudioChannel* ch = ac->getOrCreateChannel(channelName);
+
+                if (co.HasMember("audioFile"))       ch->audioFile = co["audioFile"].GetString();
+                if (co.HasMember("volume"))          ch->volume = co["volume"].GetFloat();
+                if (co.HasMember("pitch"))           ch->pitch = co["pitch"].GetFloat();
+                if (co.HasMember("loop"))            ch->loop = co["loop"].GetBool();
+                if (co.HasMember("muted"))           ch->muted = co["muted"].GetBool();
+                if (co.HasMember("playOnStart"))     ch->playOnStart = co["playOnStart"].GetBool();
+                if (co.HasMember("fadeInOnStart"))   ch->fadeInOnStart = co["fadeInOnStart"].GetBool();
+                if (co.HasMember("fadeInDuration"))  ch->fadeInDuration = co["fadeInDuration"].GetFloat();
+                if (co.HasMember("fadeOutOnStop"))   ch->fadeOutOnStop = co["fadeOutOnStop"].GetBool();
+                if (co.HasMember("fadeOutDuration")) ch->fadeOutDuration = co["fadeOutDuration"].GetFloat();
+                if (co.HasMember("isSpatial"))       ch->isSpatial = co["isSpatial"].GetBool();
+                if (co.HasMember("minDistance"))     ch->minDistance = co["minDistance"].GetFloat();
+                if (co.HasMember("maxDistance"))     ch->maxDistance = co["maxDistance"].GetFloat();
+            }
+        }
+    }
+
+    // Animation serializer - base implementation
+    std::string serializeAnimation(GameObject* obj) {
+        Animation* anim = obj ? obj->getComponent<Animation>() : nullptr;
+        if (!anim) return "";
+
+        using namespace rapidjson;
+        Document doc; doc.SetObject();
+        auto& a = doc.GetAllocator();
+
+        Value js(kObjectType);
+        for (size_t i = 0; i < stateNames.size() && i < anim->animState.size(); ++i) {
+            const AnimateState& st = anim->animState[i];
+            Value stateObj(kObjectType);
+            Value animStateObj(kObjectType);
+            animStateObj.AddMember("texture", Value(st.texFile.c_str(), a), a);
+            animStateObj.AddMember("loop", Value(st.loop ? 1 : 0), a);
+            animStateObj.AddMember("play", Value(st.play ? 1 : 0), a);
+            animStateObj.AddMember("totalColumn", Value(st.totalColumn), a);
+            animStateObj.AddMember("totalRow", Value(st.totalRow), a);
+            animStateObj.AddMember("frameTime", Value(st.frameTime), a);
+            animStateObj.AddMember("initialFramCol", Value(st.initialFrame.x), a);
+            animStateObj.AddMember("initialFramRow", Value(st.initialFrame.y), a);
+            animStateObj.AddMember("lastFramCol", Value(st.lastFrame.x), a);
+            animStateObj.AddMember("lastFramRow", Value(st.lastFrame.y), a);
+            stateObj.AddMember("animState", animStateObj, a);
+            js.AddMember(Value(stateNames[i].c_str(), a), stateObj, a);
+        }
+        doc.AddMember("Animation", js, a);
+
+        StringBuffer buf; Writer<StringBuffer> w(buf); doc.Accept(w);
+        return buf.GetString();
+    }
+
+    void deserializeAnimation(GameObject* obj, const std::string& json) {
+        if (!obj || json.empty()) return;
+        using namespace rapidjson;
+        Document doc; doc.Parse(json.c_str());
+        if (doc.HasParseError() || !doc.HasMember("Animation")) return;
+
+        const Value& smObj = doc["Animation"];
+        Animation* anim = obj->hasComponent<Animation>()
+            ? obj->getComponent<Animation>()
+            : obj->addComponent<Animation>();
+        anim->animState.resize(stateNames.size());
+
+        for (size_t i = 0; i < stateNames.size() && i < anim->animState.size(); ++i) {
+            if (!smObj.HasMember(stateNames[i].c_str())) continue;
+            const Value& stateObj = smObj[stateNames[i].c_str()];
+            if (!stateObj.IsObject() || !stateObj.HasMember("animState")) continue;
+            const Value& ao = stateObj["animState"];
+            if (!ao.IsObject()) continue;
+            AnimateState& st = anim->animState[i];
+
+            if (ao.HasMember("texture") && ao["texture"].IsString()) st.texFile = ao["texture"].GetString();
+            else { st.texFile.clear(); st.texChanged = false; }
+
+            st.texChanged = true;
+
+            auto readBoolOrInt = [&](const char* key, bool& out) {
+                if (!ao.HasMember(key)) return;
+                out = ao[key].IsBool() ? ao[key].GetBool() : (ao[key].GetInt() != 0);
+                };
+            readBoolOrInt("loop", st.loop);
+            readBoolOrInt("play", st.play);
+
+            if (ao.HasMember("totalColumn") && ao["totalColumn"].IsInt())      st.totalColumn = ao["totalColumn"].GetInt();
+            if (ao.HasMember("totalRow") && ao["totalRow"].IsInt())         st.totalRow = ao["totalRow"].GetInt();
+            if (ao.HasMember("frameTime") && ao["frameTime"].IsNumber())     st.frameTime = ao["frameTime"].GetFloat();
+            if (ao.HasMember("initialFramCol") && ao["initialFramCol"].IsNumber()) st.initialFrame.x = ao["initialFramCol"].GetFloat();
+            if (ao.HasMember("initialFramRow") && ao["initialFramRow"].IsNumber()) st.initialFrame.y = ao["initialFramRow"].GetFloat();
+            if (ao.HasMember("lastFramCol") && ao["lastFramCol"].IsNumber())    st.lastFrame.x = ao["lastFramCol"].GetFloat();
+            if (ao.HasMember("lastFramRow") && ao["lastFramRow"].IsNumber())    st.lastFrame.y = ao["lastFramRow"].GetFloat();
+        }
+    }
+
+    std::string serializeStateMachine(GameObject* obj) {
+        if (!obj || !obj->hasComponent<StateMachine>()) return "";
+
+        // if no animation component, just save empty statemachine shell
+        if (!obj->hasComponent<Animation>()) return "{\"StateMachine\":{}}";
+
+        // reuse animation serializer, then swap the key
+        std::string animJson = serializeAnimation(obj);
+        if (animJson.empty()) return "{\"StateMachine\":{}}";
+
+        // swap "Animation" key to "StateMachine"
+        using namespace rapidjson;
+        Document doc; doc.Parse(animJson.c_str());
+        if (doc.HasParseError() || !doc.HasMember("Animation"))
+            return "{\"StateMachine\":{}}";
+
+        // move value from "Animation" to "StateMachine"
+        Value smValue(std::move(doc["Animation"]));  // not a copy, move it
+        doc.RemoveMember("Animation");
+        doc.AddMember("StateMachine", smValue, doc.GetAllocator());
+
+        StringBuffer buf; Writer<StringBuffer> w(buf); doc.Accept(w);
+        return buf.GetString();
+    }
+
+    void deserializeStateMachine(GameObject* obj, const std::string& json) {
+        if (!obj || json.empty()) return;
+        using namespace rapidjson;
+        Document doc; doc.Parse(json.c_str());
+        if (doc.HasParseError() || !doc.HasMember("StateMachine")) return;
+
+        // ensure StateMachine component exists
+        if (!obj->hasComponent<StateMachine>()) obj->addComponent<StateMachine>();
+
+        // swap "StateMachine" key to "Animation" then reuse animation deserializer
+        Value animValue(std::move(doc["StateMachine"]));
+        doc.RemoveMember("StateMachine");
+        doc.AddMember("Animation", animValue, doc.GetAllocator());
+
+        StringBuffer buf; Writer<StringBuffer> w(buf); doc.Accept(w);
+        std::string animJson = buf.GetString();
+
+        deserializeAnimation(obj, animJson);
+    }
+
+
+    std::string serializeTileMap(GameObject* obj) {
+        TileMap* tm = obj ? obj->getComponent<TileMap>() : nullptr;
+        if (!tm) return "";
+
+        using namespace rapidjson;
+        Document doc; doc.SetObject();
+        auto& a = doc.GetAllocator();
+
+        Value jt(kObjectType);
+        jt.AddMember("tileW", tm->tileW, a);
+        jt.AddMember("tileH", tm->tileH, a);
+        jt.AddMember("columns", tm->columns, a);
+        jt.AddMember("rows", tm->rows, a);
+        jt.AddMember("enableCol", Value(tm->enableCol ? 1 : 0), a);
+
+        Value tileArray(kArrayType);
+        for (const auto& [key, id] : tm->tiles) {
+            Value t(kObjectType);
+            t.AddMember("x", key.x, a);
+            t.AddMember("y", key.y, a);
+            t.AddMember("id", Value(id.c_str(), a), a);
+            tileArray.PushBack(t, a);
+        }
+        jt.AddMember("tiles", tileArray, a);
+        doc.AddMember("TileMap", jt, a);
+
+        StringBuffer buf; Writer<StringBuffer> w(buf); doc.Accept(w);
+        return buf.GetString();
+    }
+
+    void deserializeTileMap(GameObject* obj, const std::string& json) {
+        if (!obj || json.empty()) return;
+        using namespace rapidjson;
+        Document doc; doc.Parse(json.c_str());
+        if (doc.HasParseError() || !doc.HasMember("TileMap")) return;
+
+        const Value& tmj = doc["TileMap"];
+        TileMap* tm = obj->hasComponent<TileMap>()
+            ? obj->getComponent<TileMap>()
+            : obj->addComponent<TileMap>();
+
+        if (tmj.HasMember("tileW"))    tm->tileW = tmj["tileW"].GetFloat();
+        if (tmj.HasMember("tileH"))    tm->tileH = tmj["tileH"].GetFloat();
+        if (tmj.HasMember("columns"))  tm->columns = tmj["columns"].GetInt();
+        if (tmj.HasMember("rows"))     tm->rows = tmj["rows"].GetInt();
+        if (tmj.HasMember("enableCol"))
+            tm->enableCol = tmj["enableCol"].IsBool()
+            ? tmj["enableCol"].GetBool() : (tmj["enableCol"].GetInt() != 0);
+
+        tm->tiles.clear();
+        if (tmj.HasMember("tiles") && tmj["tiles"].IsArray()) {
+            for (const auto& t : tmj["tiles"].GetArray())
+                tm->setTile(t["x"].GetInt(), t["y"].GetInt(), t["id"].GetString());
+        }
+    }
+
+    std::string serializeLuaScript(GameObject* obj) {
+        LuaScript* ls = obj ? obj->getComponent<LuaScript>() : nullptr;
+        if (!ls) return "";
+
+        using namespace rapidjson;
+        Document doc; doc.SetObject();
+        auto& a = doc.GetAllocator();
+
+        Value jl(kObjectType);
+        Value scriptsArray(kArrayType);
+        for (const auto& scriptEntry : ls->scripts) {
+            //if (scriptEntry.filename.empty() && scriptEntry.scriptName.empty()) continue;
+            Value entry(kObjectType);
+            entry.AddMember("filename", Value(scriptEntry.filename.c_str(), a), a);
+            entry.AddMember("scriptName", Value(scriptEntry.scriptName.c_str(), a), a);
+            scriptsArray.PushBack(entry, a);
+        }
+
+        if (!scriptsArray.Empty()) {
+            jl.AddMember("scripts", scriptsArray, a);
+            doc.AddMember("LuaScript", jl, a);
+        }
+
+        StringBuffer buf; Writer<StringBuffer> w(buf); doc.Accept(w);
+        return buf.GetString();
+    }
+
+    void deserializeLuaScript(GameObject* obj, const std::string& json) {
+        if (!obj || json.empty()) return;
+        using namespace rapidjson;
+        Document doc; doc.Parse(json.c_str());
+        if (doc.HasParseError() || !doc.HasMember("LuaScript")) return;
+
+        const Value& jl = doc["LuaScript"];
+        LuaScript* ls = obj->hasComponent<LuaScript>()
+            ? obj->getComponent<LuaScript>()
+            : obj->addComponent<LuaScript>();
+        ls->scripts.clear();
+
+        if (jl.HasMember("scripts") && jl["scripts"].IsArray()) {
+            for (const auto& se : jl["scripts"].GetArray()) {
+                if (!se.IsObject()) continue;
+                LuaScript::ScriptEntry entry;
+                if (se.HasMember("filename") && se["filename"].IsString())   entry.filename = se["filename"].GetString();
+                if (se.HasMember("scriptName") && se["scriptName"].IsString()) entry.scriptName = se["scriptName"].GetString();
+                entry.changed = true;
+                ls->scripts.push_back(entry);
+            }
+        }
+        ls->scriptsChanged = true;
+    }
+
+    std::string serializeVisualLC(GameObject* obj) {
+        VisualLC* vl = obj ? obj->getComponent<VisualLC>() : nullptr;
+        if (!vl) return "";
+
+        using namespace rapidjson;
+        Document doc; doc.SetObject();
+        auto& a = doc.GetAllocator();
+
+        Value jvl(kObjectType);
+        if (!vl->filename.empty())
+            jvl.AddMember("filename", Value(vl->filename.c_str(), a), a);
+        doc.AddMember("VisualLC", jvl, a);
+
+        StringBuffer buf; Writer<StringBuffer> w(buf); doc.Accept(w);
+        return buf.GetString();
+    }
+
+    void deserializeVisualLC(GameObject* obj, const std::string& json) {
+        if (!obj || json.empty()) return;
+        using namespace rapidjson;
+        Document doc; doc.Parse(json.c_str());
+        if (doc.HasParseError() || !doc.HasMember("VisualLC")) return;
+
+        const Value& jvl = doc["VisualLC"];
+        VisualLC* vl = obj->hasComponent<VisualLC>()
+            ? obj->getComponent<VisualLC>()
+            : obj->addComponent<VisualLC>();
+
+        if (jvl.HasMember("filename") && jvl["filename"].IsString()) {
+            vl->filename = jvl["filename"].GetString();
+            if (!vl->filename.empty()) {
+                std::string filepath = "/Logic/" + vl->filename;
+                std::string err;
+                if (!JsonIO::loadVisualLogic(filepath, vl->nodes, vl->connections, &err))
+                    DebugLog::addMessage("Failed to load Visual Logic file: " + err);
+            }
+        }
+    }
+
+
     std::string serializeGameObj(GameObject* obj) {
         if (!obj) return "";
 
@@ -873,253 +1519,39 @@ namespace JsonIO {
         doc.SetObject();
         auto& a = doc.GetAllocator();
 
-        // Basic info
+        // basic info
         doc.AddMember("name", Value(obj->getObjectName().c_str(), a), a);
         doc.AddMember("prefabID", Value(obj->getObjectPrefabID().c_str(), a), a);
         doc.AddMember("layer", obj->getLayer(), a);
 
-        // Transform
-        if (Transform* t = obj->getComponent<Transform>()) {
-            Value jt(kObjectType);
-            JsonIO::WriteVec3(jt, "pos", t->x, t->y, t->z, a);
-            jt.AddMember("rotation", Value().SetFloat(t->rotation), a);
-            JsonIO::WriteVec3(jt, "scale", t->scaleX, t->scaleY, t->scaleZ, a);
-            doc.AddMember("Transform", jt, a);
-        }
-
-        // Render
-        if (Render* r = obj->getComponent<Render>()) {
-            Value jr(kObjectType);
-
-            jr.AddMember("shape", Value(JsonIO::ShapeToStr(r->modelRef.shape), a),a);
-            jr.AddMember("hasTex", Value().SetBool(r->hasTex), a);
-            if (r->hasTex && !r->texFile.empty()) {
-                jr.AddMember("texture", Value(r->texFile.c_str(), a), a);
+        // parse component json and merge its single top-level member into main doc
+        auto merge = [&](const std::string& componentJson) {
+            if (componentJson.empty()) return;
+            Document tmp; tmp.Parse(componentJson.c_str());
+            if (tmp.HasParseError() || !tmp.IsObject()) return;
+            for (auto it = tmp.MemberBegin(); it != tmp.MemberEnd(); ++it) {
+                Value key(it->name.GetString(), a);
+                Value val;
+                val.CopyFrom(it->value, a);
+                doc.AddMember(key, val, a);
             }
+        };
 
-            // 0/1 to mirror prior text formats
-            jr.AddMember("hasAnimation", Value(r->hasAnimation ? 1 : 0), a);
-            JsonIO::WriteVec3(jr, "clr", r->clr.x, r->clr.y, r->clr.z, a);
+        merge(serializeTransform(obj));
+        merge(serializeRender(obj));
+        merge(serializeParticle(obj));
+        merge(serializePhysics(obj));
+        merge(serializeCollision(obj));
+        merge(serializeInput(obj));
+        merge(serializeFont(obj));
+        merge(serializeAudio(obj));
+        merge(serializeStateMachine(obj));
+        merge(serializeTileMap(obj));
+        merge(serializeLuaScript(obj));
+        merge(serializeVisualLC(obj));
 
-            doc.AddMember("Render", jr, a);
-        }
-
-        // Particle
-        if (Particle* p = obj->getComponent<Particle>()) {
-            // Only serialize if this is a master particle
-            if (p->isMaster) {
-                Value jp(kObjectType);
-
-                // isMaster (0/1 to mirror prior text formats)
-                jp.AddMember("isMaster", Value(p->isMaster ? 1 : 0), a);
-
-                // Master GroupData - color (as vec4)
-                JsonIO::WriteVec4(jp, "clr", p->master.clr.r, p->master.clr.g, p->master.clr.b, p->master.clr.a, a);
-
-                // Master GroupData - velocity (as vec2)
-                JsonIO::WriteVec2(jp, "velocity", p->master.velocity.x, p->master.velocity.y, a);
-
-                // Master GroupData - other fields
-                jp.AddMember("timer", Value(p->master.timer), a);
-                jp.AddMember("offset", Value(p->master.offset), a);
-                jp.AddMember("particleAmt", Value(p->master.particleAmt), a);
-
-                doc.AddMember("Particle", jp, a);
-            }
-        }
-
-        // Physics
-        if (Physics* p = obj->getComponent<Physics>()) {
-            Value jp(kObjectType);
-
-            // lazy to type, but no need to convert boolean to 1/0 should be fine for the obj still
-            jp.AddMember("physicsFlag", p->physicsFlag, a);
-            jp.AddMember("moveSpeed", p->moveSpeed, a);
-            jp.AddMember("jumpForce", p->jumpForce, a);
-            jp.AddMember("gravity", p->gravity, a);
-            jp.AddMember("damping", p->damping, a);
-            jp.AddMember("mass", p->dynamics.mass, a);
-            jp.AddMember("buoyancy", p->buoyancy, a);
-
-            doc.AddMember("Physics", jp, a);
-        }
-
-        // Collision
-        if (CollisionInfo* c = obj->getComponent<CollisionInfo>()) {
-            Value jc(kObjectType);
-
-            jc.AddMember("collisionFlag", c->collisionFlag, a);
-            jc.AddMember("autoFitScale", c->autoFitScale, a);
-            jc.AddMember("width", c->colliderSize.x, a);
-            jc.AddMember("height", c->colliderSize.y, a);
-
-            Value collisionResStr(CollisionResponseModeToStr(c->collisionRes), a);
-            jc.AddMember("collisionRes", collisionResStr, a);
-
-            rapidjson::Value tagVal(c->collisionTag.c_str(), a);
-            jc.AddMember(rapidjson::Value("collisionTag", a), tagVal, a);
-
-            // Ignore collisions array
-            rapidjson::Value ignoreArray(rapidjson::kArrayType);
-            for (const std::string& tag : c->ignoreCollisionsWith) {
-                ignoreArray.PushBack(rapidjson::Value(tag.c_str(), a), a);
-            }
-            jc.AddMember(rapidjson::Value("ignoreCollisionsWith", a), ignoreArray, a);
-
-            doc.AddMember("Collision", jc, a);
-        }
-
-        // Button
-        if(Button* b = obj->getComponent<Button>()) {
-            Value jb(kObjectType);
-            Value actionStr(ButtonActionToStr(b->actionName), a);
-            jb.AddMember("action", actionStr, a);
-            jb.AddMember("isHovered", b->isHovered, a);
-            jb.AddMember("isPressed", b->isPressed, a);
-            doc.AddMember("Button", jb, a);
-		}
-
-        // Input
-        if (obj->hasComponent<Input>()) {
-            doc.AddMember("Input", true, a);
-        }
-
-        // Font
-        if (FontComponent* f = obj->getComponent<FontComponent>()) {
-            Value jf(kObjectType);
-
-            jf.AddMember("word", Value(f->word.c_str(), a), a);
-            jf.AddMember("scale", f->scale, a);
-            jf.AddMember("fontType", f->fontType, a);
-            JsonIO::WriteVec3(jf, "clr", f->clr.x, f->clr.y, f->clr.z, a);
-
-            doc.AddMember("Font", jf, a);
-        }
-
-        // Audio
-        if (AudioComponent* audio = obj->getComponent<AudioComponent>()) {
-            Value ja(kObjectType);
-            Value channels(kObjectType);
-
-            // Serialize ALL channels
-            for (const auto& [channelName, channel] : audio->audioChannels) {
-                Value channelObj(kObjectType);
-
-                channelObj.AddMember("audioFile", Value(channel.audioFile.c_str(), a), a);
-                channelObj.AddMember("volume", channel.volume, a);
-                channelObj.AddMember("pitch", channel.pitch, a);
-                channelObj.AddMember("loop", channel.loop, a);
-                channelObj.AddMember("muted", channel.muted, a);
-                channelObj.AddMember("playOnStart", channel.playOnStart, a);
-                channelObj.AddMember("fadeInOnStart", channel.fadeInOnStart, a);
-                channelObj.AddMember("fadeInDuration", channel.fadeInDuration, a);
-                channelObj.AddMember("fadeOutOnStop", channel.fadeOutOnStop, a);
-                channelObj.AddMember("fadeOutDuration", channel.fadeOutDuration, a);
-
-                // Save 3D audio settings
-                channelObj.AddMember("isSpatial", channel.isSpatial, a);
-                channelObj.AddMember("minDistance", channel.minDistance, a);
-                channelObj.AddMember("maxDistance", channel.maxDistance, a);
-
-                channels.AddMember(Value(channelName.c_str(), a), channelObj, a);
-            }
-
-            ja.AddMember("channels", channels, a);
-            doc.AddMember("AudioComponent", ja, a);
-        }
-
-        if (StateMachine* sm = obj->getComponent<StateMachine>()) {
-            if (Animation* anim = obj->getComponent<Animation>()) {
-                Value js(kObjectType);
-
-                for (size_t i = 0; i < stateNames.size() && i < anim->animState.size(); ++i) {
-                    const AnimateState& animState = anim->animState[i];
-
-                    rapidjson::Value stateObj(rapidjson::kObjectType);
-                    rapidjson::Value animStateObj(rapidjson::kObjectType);
-
-                    animStateObj.AddMember("texture", rapidjson::Value(animState.texFile.c_str(), a), a);
-                    animStateObj.AddMember("loop", rapidjson::Value(animState.loop ? 1 : 0), a);
-                    animStateObj.AddMember("play", rapidjson::Value(animState.play ? 1 : 0), a);
-                    animStateObj.AddMember("totalColumn", rapidjson::Value(animState.totalColumn), a);
-                    animStateObj.AddMember("totalRow", rapidjson::Value(animState.totalRow), a);
-                    animStateObj.AddMember("frameTime", rapidjson::Value(animState.frameTime), a);
-                    animStateObj.AddMember("initialFramCol", rapidjson::Value(animState.initialFrame.x), a);
-                    animStateObj.AddMember("initialFramRow", rapidjson::Value(animState.initialFrame.y), a);
-                    animStateObj.AddMember("lastFramCol", rapidjson::Value(animState.lastFrame.x), a);
-                    animStateObj.AddMember("lastFramRow", rapidjson::Value(animState.lastFrame.y), a);
-                    stateObj.AddMember("animState", animStateObj, a);
-
-                    js.AddMember(rapidjson::Value(stateNames[i].c_str(), a), stateObj, a);
-                }
-
-                doc.AddMember("StateMachine", js, a);
-            }
-        }
-
-        // TileMap
-        if (TileMap* tm = obj->getComponent<TileMap>()) {
-            Value jt(kObjectType);
-
-            jt.AddMember("tileW", tm->tileW, a);
-            jt.AddMember("tileH", tm->tileH, a);
-            jt.AddMember("columns", tm->columns, a);
-            jt.AddMember("rows", tm->rows, a);
-            jt.AddMember("enableCol", Value(tm->enableCol ? 1 : 0), a);
-
-
-            // Serialize tiles array
-            Value tileArray(kArrayType);
-            for (const auto& [key, id] : tm->tiles) {
-                Value t(kObjectType);
-                t.AddMember("x", key.x, a);
-                t.AddMember("y", key.y, a);
-                t.AddMember("id", rapidjson::Value(id.c_str(), a), a);
-                tileArray.PushBack(t, a);
-            }
-            jt.AddMember("tiles", tileArray, a);
-
-            doc.AddMember("TileMap", jt, a);
-        }
-
-        // LuaScript
-        if (LuaScript* ls = obj->getComponent<LuaScript>()) {
-            Value jl(kObjectType);
-            Value scriptsArray(kArrayType);
-
-            for (const auto& scriptEntry : ls->scripts) {
-                if (scriptEntry.filename.empty() && scriptEntry.scriptName.empty()) continue;
-
-                Value entry(kObjectType);
-                entry.AddMember("filename", Value(scriptEntry.filename.c_str(), a), a);
-                entry.AddMember("scriptName", Value(scriptEntry.scriptName.c_str(), a), a);
-
-                scriptsArray.PushBack(entry, a);
-            }
-
-            if (!scriptsArray.Empty()) {
-                jl.AddMember("scripts", scriptsArray, a);
-                doc.AddMember("LuaScript", jl, a);
-            }
-        }
-
-        // Visual Logic
-        if (VisualLC* vl = obj->getComponent<VisualLC>()) {
-            Value jvl(kObjectType);
-
-            if (!vl->filename.empty()) {
-                jvl.AddMember("filename", Value(vl->filename.c_str(), a), a);
-            }
-
-            doc.AddMember("VisualLC", jvl, a);
-        }
-
-        // convert to string
-        StringBuffer buffer;
-        Writer<StringBuffer> writer(buffer);
-        doc.Accept(writer);
-
-        return buffer.GetString();
+        StringBuffer buf; Writer<StringBuffer> w(buf); doc.Accept(w);
+        return buf.GetString();
     }
 
     GameObject* deserializeGameObj(GameObjectManager& manager, const std::string& jsonStr) {
@@ -1140,363 +1572,19 @@ namespace JsonIO {
 
             if (doc.HasMember("layer")) manager.assignObjectToLayer(obj, doc["layer"].GetInt());
 
-            // Transform
-            if (doc.HasMember("Transform")) {
-                const Value& jt = doc["Transform"];
-                Transform* t = obj->addComponent<Transform>();
-
-                ReadVec3(jt, "pos", t->x, t->y, t->z);
-                GetFloat(jt, "rotation", t->rotation);
-                ReadVec3(jt, "scale", t->scaleX, t->scaleY, t->scaleZ);
-            }
-
-            // Render
-            if (doc.HasMember("Render")) {
-                const Value& jr = doc["Render"];
-                Render* r = obj->addComponent<Render>();
-
-                std::string shp = (jr.HasMember("shape") && jr["shape"].IsString())
-                    ? jr["shape"].GetString()
-                    : "square";
-                r->modelRef = renderer::models[static_cast<int>(JsonIO::StrToShape(shp))];
-
-                // hasTex / texture (accept bool or 0/1)
-                if (jr.HasMember("hasTex")) {
-                    r->hasTex = jr["hasTex"].IsBool()
-                        ? jr["hasTex"].GetBool()
-                        : (jr["hasTex"].GetInt() != 0);
-                }
-                else {
-                    r->hasTex = false;
-                }
-
-                if (r->hasTex && jr.HasMember("texture") && jr["texture"].IsString()) {
-                    r->texFile = jr["texture"].GetString();
-                    r->texHDL = 0;         // will be uploaded later by renderer
-                    r->texChanged = true;     // flag for upload
-                }
-                else {
-                    r->texFile.clear();
-                    r->texHDL = 0;
-                    r->texChanged = false;
-                }
-
-                if (jr.HasMember("hasAnimation")) {
-                    r->hasAnimation = jr["hasAnimation"].IsBool()
-                        ? jr["hasAnimation"].GetBool()
-                        : (jr["hasAnimation"].GetInt() != 0);
-                }
-                else {
-                    r->hasAnimation = false;
-                }
-
-                ReadVec3(jr, "clr", r->clr.x, r->clr.y, r->clr.z);
-            }
-
-            // Particle
-            if (doc.HasMember("Particle")) {
-                const Value& jp = doc["Particle"];
-                Particle* p = obj->addComponent<Particle>();
-
-                // isMaster (accept bool or 0/1)
-                if (jp.HasMember("isMaster")) {
-                    p->isMaster = jp["isMaster"].IsBool()
-                        ? jp["isMaster"].GetBool()
-                        : (jp["isMaster"].GetInt() != 0);
-                }
-                else {
-                    p->isMaster = true;
-                }
-
-                // Master GroupData - color
-                ReadVec4(jp, "clr", p->master.clr.r, p->master.clr.g, p->master.clr.b, p->master.clr.a);
-
-                // Master GroupData - velocity
-                ReadVec2(jp, "velocity", p->master.velocity.x, p->master.velocity.y);
-
-                // Master GroupData - other fields
-                if (jp.HasMember("timer") && jp["timer"].IsNumber()) {
-                    p->master.timer = jp["timer"].GetFloat();
-                }
-                if (jp.HasMember("offset") && jp["offset"].IsNumber()) {
-                    p->master.offset = jp["offset"].GetFloat();
-                }
-                if (jp.HasMember("particleAmt") && jp["particleAmt"].IsInt()) {
-                    p->master.particleAmt = jp["particleAmt"].GetInt();
-                }
-            }
-
-            // Physics
-            if (doc.HasMember("Physics")) {
-                const Value& jp = doc["Physics"];
-                Physics* p = obj->addComponent<Physics>();
-
-                p->physicsFlag = jp["physicsFlag"].GetBool();
-                p->moveSpeed = jp["moveSpeed"].GetFloat();
-                p->jumpForce = jp["jumpForce"].GetFloat();
-                p->gravity = jp["gravity"].GetFloat();
-                p->damping = jp["damping"].GetFloat();
-                p->dynamics.mass = jp["mass"].GetFloat();
-                p->buoyancy = jp["buoyancy"].GetBool();
-            }
-
-            // Collision
-            if (doc.HasMember("Collision")) {
-                const Value& jc = doc["Collision"];
-                CollisionInfo* c = obj->addComponent<CollisionInfo>();
-
-                c->collisionFlag = jc["collisionFlag"].GetBool();
-                c->autoFitScale = jc["autoFitScale"].GetBool();
-                c->colliderSize.x = jc["width"].GetFloat();
-                c->colliderSize.y = jc["height"].GetFloat();
-
-                if (jc.HasMember("collisionRes")) {
-                    c->collisionRes = StrToCollisionResponseMode(jc["collisionRes"].GetString());
-                }
-
-                if (jc.HasMember("collisionTag")) {
-                    c->collisionTag = jc["collisionTag"].GetString();
-                }
-
-                if (jc.HasMember("ignoreCollisionsWith")) {
-                    const rapidjson::Value& ignoreArray = jc["ignoreCollisionsWith"];
-                    c->ignoreCollisionsWith.clear();
-                    for (rapidjson::SizeType i = 0; i < ignoreArray.Size(); ++i) {
-                        c->ignoreCollisionsWith.insert(ignoreArray[i].GetString());
-                    }
-                }
-            }
-
-            // Input
-            if (doc.HasMember("Input") && doc["Input"].GetBool()) {
-                obj->addComponent<Input>();
-            }
-
-            // Font
-            if (doc.HasMember("Font")) {
-                const Value& jf = doc["Font"];
-                FontComponent* f = obj->addComponent<FontComponent>();
-
-                f->word = jf["word"].GetString();
-                f->scale = jf["scale"].GetFloat();
-                f->fontType = jf["fontType"].GetInt();
-                ReadVec3(jf, "clr", f->clr.x, f->clr.y, f->clr.z);
-            }
-
-            // Audio
-            if (doc.HasMember("AudioComponent")) {
-                const Value& ja = doc["AudioComponent"];
-                AudioComponent* ac = obj->addComponent<AudioComponent>();
-
-                if (ja.HasMember("channels") && ja["channels"].IsObject()) {
-                    const Value& channels = ja["channels"];
-
-                    // Load ALL channels
-                    for (auto it = channels.MemberBegin(); it != channels.MemberEnd(); ++it) {
-                        std::string channelName = it->name.GetString();
-                        const Value& channelObj = it->value;
-
-                        AudioChannel* ch = ac->getOrCreateChannel(channelName);
-
-                        if (channelObj.HasMember("audioFile"))
-                            ch->audioFile = channelObj["audioFile"].GetString();
-                        if (channelObj.HasMember("volume"))
-                            ch->volume = channelObj["volume"].GetFloat();
-                        if (channelObj.HasMember("pitch"))
-                            ch->pitch = channelObj["pitch"].GetFloat();
-                        if (channelObj.HasMember("loop"))
-                            ch->loop = channelObj["loop"].GetBool();
-                        if (channelObj.HasMember("muted"))
-                            ch->muted = channelObj["muted"].GetBool();
-                        if (channelObj.HasMember("playOnStart"))
-                            ch->playOnStart = channelObj["playOnStart"].GetBool();
-                        if (channelObj.HasMember("fadeInOnStart"))
-                            ch->fadeInOnStart = channelObj["fadeInOnStart"].GetBool();
-                        if (channelObj.HasMember("fadeInDuration"))
-                            ch->fadeInDuration = channelObj["fadeInDuration"].GetFloat();
-                        if (channelObj.HasMember("fadeOutOnStop"))
-                            ch->fadeOutOnStop = channelObj["fadeOutOnStop"].GetBool();
-                        if (channelObj.HasMember("fadeOutDuration"))
-                            ch->fadeOutDuration = channelObj["fadeOutDuration"].GetFloat();
-
-                        // Load 3D audio settings
-                        if (channelObj.HasMember("isSpatial"))
-                            ch->isSpatial = channelObj["isSpatial"].GetBool();
-                        if (channelObj.HasMember("minDistance"))
-                            ch->minDistance = channelObj["minDistance"].GetFloat();
-                        if (channelObj.HasMember("maxDistance"))
-                            ch->maxDistance = channelObj["maxDistance"].GetFloat();
-                    }
-                }
-                else {
-                    // BACKWARDS COMPATIBILITY: Old single-channel format
-                    /*AudioChannel* ch = */ac->getDefaultChannel();
-                    AudioChannel* a = ac->getDefaultChannel();
-
-                    a->audioFile = ja["audioFile"].GetString();
-                    a->loop = ja["loop"].GetBool();
-                    a->playOnStart = ja["playOnStart"].GetBool();
-                    a->volume = ja["volume"].GetFloat();
-                    a->pitch = ja["pitch"].GetFloat();
-                    a->fadeInOnStart = ja["fadeInOnStart"].GetBool();
-                    a->fadeInDuration = ja["fadeInDuration"].GetFloat();
-                    a->fadeOutOnStop = ja["fadeOutOnStop"].GetBool();
-                    a->fadeOutDuration = ja["fadeOutDuration"].GetFloat();
-
-                    // Load 3D audio settings (backwards compatibility)
-                    if (ja.HasMember("isSpatial"))
-                        a->isSpatial = ja["isSpatial"].GetBool();
-                    if (ja.HasMember("minDistance"))
-                        a->minDistance = ja["minDistance"].GetFloat();
-                    if (ja.HasMember("maxDistance"))
-                        a->maxDistance = ja["maxDistance"].GetFloat();
-                }
-            }
-
-            // State Machine with Animation
-            if (doc.HasMember("StateMachine")) {
-                const Value& smObj = doc["StateMachine"];
-                StateMachine* sm = obj->addComponent<StateMachine>();
-                Animation* anim = obj->addComponent<Animation>();
-                anim->animState.resize(stateNames.size());
-
-                if (sm && anim) {
-                    for (size_t i = 0; i < stateNames.size() && i < anim->animState.size(); ++i) {
-                        if (smObj.HasMember(stateNames[i].c_str())) {
-                            const Value& stateObj = smObj[stateNames[i].c_str()];
-
-                            if (!stateObj.IsObject()) continue;
-                            if (!stateObj.HasMember("animState")) continue;
-
-                            const Value& animStateObj = stateObj["animState"];
-                            if (!animStateObj.IsObject()) continue;
-
-                            AnimateState& st = anim->animState[i];
-
-                            // --- texture ---
-                            if (animStateObj.HasMember("texture") && animStateObj["texture"].IsString()) {
-                                st.texFile = animStateObj["texture"].GetString();
-                            }
-                            else {
-                                st.texFile.clear();
-                                st.texChanged = false;
-                            }
-
-                            // --- loop (int or bool) ---
-                            if (animStateObj.HasMember("loop")) {
-                                const auto& v = animStateObj["loop"];
-                                if (v.IsBool()) st.loop = v.GetBool();
-                                else if (v.IsInt()) st.loop = (v.GetInt() != 0);
-                            }
-                            if (animStateObj.HasMember("play")) {
-                                const auto& v = animStateObj["play"];
-                                if (v.IsBool()) st.play = v.GetBool();
-                                else if (v.IsInt()) st.play = (v.GetInt() != 0);
-                            }
-
-                            // --- numeric fields ---
-                            if (animStateObj.HasMember("totalColumn") && animStateObj["totalColumn"].IsInt())
-                                st.totalColumn = animStateObj["totalColumn"].GetInt();
-
-                            if (animStateObj.HasMember("totalRow") && animStateObj["totalRow"].IsInt())
-                                st.totalRow = animStateObj["totalRow"].GetInt();
-
-                            if (animStateObj.HasMember("frameTime") &&
-                                (animStateObj["frameTime"].IsFloat() || animStateObj["frameTime"].IsDouble()))
-                                st.frameTime = animStateObj["frameTime"].GetFloat();
-
-                            // --- frame indices ---
-                            if (animStateObj.HasMember("initialFrameCol") && animStateObj["initialFrameCol"].IsInt())
-                                st.initialFrame.x = (float)animStateObj["initialFrameCol"].GetInt();
-
-                            if (animStateObj.HasMember("initialFrameRow") && animStateObj["initialFrameRow"].IsInt())
-                                st.initialFrame.y = (float)animStateObj["initialFrameRow"].GetInt();
-
-                            if (animStateObj.HasMember("lastFrameCol") && animStateObj["lastFrameCol"].IsInt())
-                                st.lastFrame.x = (float)animStateObj["lastFrameCol"].GetInt();
-
-                            if (animStateObj.HasMember("lastFrameRow") && animStateObj["lastFrameRow"].IsInt())
-                                st.lastFrame.y = (float)animStateObj["lastFrameRow"].GetInt();
-                        }
-                    }
-                }
-            }
-
-            // TileMap
-            if (doc.HasMember("TileMap"))
-            {
-                const Value& tmj = doc["TileMap"];
-                TileMap* tm = obj->addComponent<TileMap>();
-
-                if (tmj.HasMember("tileW"))    tm->tileW = tmj["tileW"].GetFloat();
-                if (tmj.HasMember("tileH"))    tm->tileH = tmj["tileH"].GetFloat();
-                if (tmj.HasMember("columns"))  tm->columns = tmj["columns"].GetInt();
-                if (tmj.HasMember("rows"))     tm->rows = tmj["rows"].GetInt();
-                if (tmj.HasMember("enableCol")) {
-                    tm->enableCol = tmj["enableCol"].IsBool()
-                        ? tmj["enableCol"].GetBool()
-                        : (tmj["enableCol"].GetInt() != 0);
-                }
-
-                tm->tiles.clear();
-
-                if (tmj.HasMember("tiles") && tmj["tiles"].IsArray()) {
-                    for (const auto& t : tmj["tiles"].GetArray()) {
-                        int x = t["x"].GetInt();
-                        int y = t["y"].GetInt();
-                        std::string id = t["id"].GetString();
-                        tm->setTile(x, y, id);
-                    }
-                }
-            }
-
-            // LuaScript
-            if (doc.HasMember("LuaScript")) {
-                const Value& jl = doc["LuaScript"];
-                LuaScript* ls = obj->addComponent<LuaScript>();
-
-                ls->scripts.clear();
-
-                if (jl.HasMember("scripts") && jl["scripts"].IsArray()) {
-                    for (const auto& scriptEntry : jl["scripts"].GetArray()) {
-                        if (!scriptEntry.IsObject()) continue;
-
-                        LuaScript::ScriptEntry entry;
-
-                        if (scriptEntry.HasMember("filename") && scriptEntry["filename"].IsString()) {
-                            entry.filename = scriptEntry["filename"].GetString();
-                        }
-
-                        if (scriptEntry.HasMember("scriptName") && scriptEntry["scriptName"].IsString()) {
-                            entry.scriptName = scriptEntry["scriptName"].GetString();
-                        }
-
-                        entry.changed = true;
-                        ls->scripts.push_back(entry);
-                    }
-                }
-
-                ls->scriptsChanged = true;
-            }
-
-            // Visual Logic
-            if (doc.HasMember("VisualLC")) {
-                const Value& jvl = doc["VisualLC"];
-                VisualLC* vl = obj->addComponent<VisualLC>();
-
-                if (jvl.HasMember("filename") && jvl["filename"].IsString()) {
-                    vl->filename = jvl["filename"].GetString();
-
-                    // Load the visual logic graph from file
-                    if (!vl->filename.empty()) {
-                        std::string filepath = "/Logic/" + vl->filename;
-                        std::string err;
-                        if (!JsonIO::loadVisualLogic(filepath, vl->nodes, vl->connections, &err)) {
-                            DebugLog::addMessage("Failed to load Visual Logic file: " + err);
-                        }
-                    }
-                }
-            }
+            // deserialize all components
+            deserializeTransform(obj, jsonStr);
+            deserializeRender(obj, jsonStr);
+            deserializeParticle(obj, jsonStr);
+            deserializePhysics(obj, jsonStr);
+            deserializeCollision(obj, jsonStr);
+            deserializeInput(obj, jsonStr);
+            deserializeFont(obj, jsonStr);
+            deserializeAudio(obj, jsonStr);
+            deserializeStateMachine(obj, jsonStr);
+            deserializeTileMap(obj, jsonStr);
+            deserializeLuaScript(obj, jsonStr);
+            deserializeVisualLC(obj, jsonStr);
 
             return obj;
         }

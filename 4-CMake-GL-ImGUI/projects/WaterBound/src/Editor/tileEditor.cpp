@@ -67,6 +67,8 @@ void TileMapSystem::tileUpdate(GameObject* obj)
 			}
 		}
 	}
+#else
+	(void)obj; // avoid unused parameter warning in release mode
 #endif
 }
 

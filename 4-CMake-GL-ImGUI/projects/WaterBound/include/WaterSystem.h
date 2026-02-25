@@ -1,10 +1,12 @@
 /* Start Header ************************************************************************/
 /*!
 \file        WaterSystem.h
-\author      Asha Mathyalakan, asha.m, 2402886
+\author      Asha Mathyalakan, asha.m, 
+             2402886 , 100%
 \par         asha.m@digipen.edu
 \date        January, 28, 2026
-\brief       Water system for rendering animated water bodies and handling water physics
+\brief       Water system for rendering movement of 
+            water bodies and handling water physics
 
 Copyright (C) 2026 DigiPen Institute of Technology.
 Reproduction or disclosure of this file or its contents
@@ -23,35 +25,35 @@ class WaterSystem {
 public:
     WaterSystem();
     ~WaterSystem();
-    
+
     // Initialize water system and load water shaders
     void init();
-    
+
     // Update water animation and physics
     void update(GameObjectManager& manager, float deltaTime);
-    
+
     // Render all water bodies
     void render(GameObjectManager& manager);
-    
+
     // Check if a point is inside water
     bool isPointInWater(GameObject* waterObj, const Vector2D& point);
-    
+
     // Apply water physics to objects
     void applyWaterPhysics(GameObjectManager& manager);
-    
+
     // Cleanup
     void cleanup();
 
 private:
     // Setup water mesh for a water body
     void setupWaterMesh(GameObject* waterObj);
-    
+
     // Render a single water body
     void renderWaterBody(GameObject* waterObj);
-    
+
     // Water shader program
     GLuint m_waterShaderProgram;
-    
+
     // Uniform locations
     GLint m_timeLocation;
     GLint m_waveAmplitudeLocation;
@@ -62,7 +64,7 @@ private:
     GLint m_useTextureLocation;
     GLint m_viewMatrixLocation;
     GLint m_projMatrixLocation;
-    
+
     // Water mesh data
     struct WaterMesh {
         GLuint vao;
@@ -72,7 +74,7 @@ private:
         int elementCount;
         int subdivisions;
     };
-    
+
     // Cache of water meshes per game object
     std::unordered_map<GameObject*, WaterMesh> m_waterMeshes;
 };

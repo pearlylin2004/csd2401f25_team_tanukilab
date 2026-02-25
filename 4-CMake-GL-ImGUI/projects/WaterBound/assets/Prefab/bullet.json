@@ -50,7 +50,7 @@
     "AudioComponent": {
       "channels": {
         "default": {
-          "audioFile": "assets/Prefab\\water gun.wav",
+          "audioFile": "assets/Audio\\water gun.wav",
           "volume": 0.800000011920929,
           "pitch": 1.0,
           "loop": 0,
