@@ -400,10 +400,7 @@ namespace Editor {
 			},
 			[](const GameObject* obj) { return obj->hasComponent<TileMap>(); },
 			[](GameObject* obj) { 
-				//if (TileMap* tm = obj->getComponent<TileMap>()) {
-					//tm->colChanged = true;
-					gizmoState.showGrid = false;
-				//}
+				gizmoState.showGrid = false;
 				obj->removeComponent<TileMap>(); },
 			[](GameObject* obj) { return JsonIO::serializeTileMap(obj); },
 			[](GameObject* obj, std::string data) { JsonIO::deserializeTileMap(obj, data); }
