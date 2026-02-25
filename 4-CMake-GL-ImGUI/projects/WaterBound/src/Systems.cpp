@@ -2554,6 +2554,7 @@ void AudioSystem::updateSpatialAudio(GameObjectManager& manager) {
 }
 
 void TransformSystem::update(GameObjectManager& manager, const float& deltaTime) {
+	(void)deltaTime;
 	if (EditorManager::isEditingMode()) return;
 
 	std::vector<GameObject*> gameObjects;
