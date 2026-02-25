@@ -1,0 +1,866 @@
+{
+  "version": 1,
+  "layers": [
+    {
+      "id": 0,
+      "name": "Background",
+      "enabled": 1,
+      "visible": 1,
+      "updatable": 1
+    },
+    {
+      "id": 1,
+      "name": "Game",
+      "enabled": 1,
+      "visible": 1,
+      "updatable": 1
+    },
+    {
+      "id": 2,
+      "name": "UI",
+      "enabled": 1,
+      "visible": 1,
+      "updatable": 1
+    }
+  ],
+  "objects": [
+    {
+      "prefabid": "b1a12273-a692-4ce0-8072-156da2c70842",
+      "name": "bullet",
+      "components": {
+        "Transform": {
+          "pos": [
+            -1000.0,
+            -1000.0,
+            1.0
+          ]
+        },
+        "Render": {
+          "texture": "assets/Texture\\water_texture.png",
+          "hasTex": 1
+        },
+        "Physics": {
+          "friction": 0.800000011920929,
+          "maxFallSpeed": -30.0,
+          "groundAccelForce": 20.0,
+          "airAccelForce": 8.0,
+          "jumpBufferTime": 0.15000000596046448,
+          "coyoteTime": 0.15000000596046448,
+          "ledgeAssistRange": 0.800000011920929,
+          "ledgeClimbSpeed": 8.0
+        },
+        "CollisionInfo": {
+          "ignoreCollisionsWith": [
+            "player",
+            "bullet",
+            "hazards"
+          ]
+        },
+        "LuaScript": {
+          "scripts": [
+            {
+              "filename": "./assets/scripting\\bullet.lua",
+              "scriptName": "bullet"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "prefabid": "dd60e1e1-641c-4ed5-b69d-ffadfa02fb7a",
+      "name": "player",
+      "components": {
+        "Transform": {
+          "pos": [
+            -11.255812644958496,
+            -0.13571445643901825,
+            0.9980000257492065
+          ],
+          "scale": [
+            4.0,
+            4.0,
+            0.0
+          ]
+        },
+        "Physics": {
+          "friction": 0.800000011920929,
+          "maxFallSpeed": -30.0,
+          "groundAccelForce": 20.0,
+          "airAccelForce": 8.0,
+          "jumpBufferTime": 0.15000000596046448,
+          "coyoteTime": 0.15000000596046448,
+          "ledgeAssistRange": 0.800000011920929,
+          "ledgeClimbSpeed": 8.0
+        },
+        "CollisionInfo": {
+          "collisionTag": "player",
+          "ignoreCollisionsWith": [
+            "bullet"
+          ]
+        },
+        "StateMachine": {
+          "state": "Jumping",
+          "stateTime": 5.9672698974609375
+        },
+        "AudioComponent": {
+          "channels": {
+            "footsteps": {
+              "audioFile": "assets/audio/footsteps.wav",
+              "volume": 0.5,
+              "pitch": 1.0,
+              "loop": 1,
+              "playOnStart": 0,
+              "muted": 0,
+              "fadeInOnStart": 0,
+              "fadeInDuration": 1.0,
+              "fadeOutOnStop": 1,
+              "fadeOutDuration": 0.15000000596046448,
+              "isSpatial": 0,
+              "minDistance": 1.0,
+              "maxDistance": 100.0
+            },
+            "jump": {
+              "audioFile": "assets/audio/jump.wav",
+              "volume": 0.699999988079071,
+              "pitch": 1.0,
+              "loop": 0,
+              "playOnStart": 0,
+              "muted": 0,
+              "fadeInOnStart": 0,
+              "fadeInDuration": 1.0,
+              "fadeOutOnStop": 0,
+              "fadeOutDuration": 1.0,
+              "isSpatial": 0,
+              "minDistance": 1.0,
+              "maxDistance": 100.0
+            },
+            "landing": {
+              "audioFile": "assets/audio/landing.wav",
+              "volume": 1.0,
+              "pitch": 1.0,
+              "loop": 0,
+              "playOnStart": 0,
+              "muted": 0,
+              "fadeInOnStart": 0,
+              "fadeInDuration": 1.0,
+              "fadeOutOnStop": 0,
+              "fadeOutDuration": 1.0,
+              "isSpatial": 0,
+              "minDistance": 1.0,
+              "maxDistance": 100.0
+            },
+            "refill": {
+              "audioFile": "assets/Audio\\collect_water.wav",
+              "volume": 1.0,
+              "pitch": 1.0,
+              "loop": 0,
+              "playOnStart": 0,
+              "muted": 0,
+              "fadeInOnStart": 1,
+              "fadeInDuration": 0.5400000214576721,
+              "fadeOutOnStop": 1,
+              "fadeOutDuration": 0.7799999713897705,
+              "isSpatial": 0,
+              "minDistance": 1.0,
+              "maxDistance": 100.0
+            }
+          }
+        },
+        "LuaScript": {
+          "scripts": [
+            {
+              "filename": "./assets/scripting\\player.lua",
+              "scriptName": "player"
+            }
+          ]
+        },
+        "VisualLC": {
+          "filename": "player_logic.json"
+        }
+      }
+    },
+    {
+      "name": "background5",
+      "components": {
+        "Transform": {
+          "pos": [
+            0.0,
+            0.0,
+            -0.07999999821186066
+          ],
+          "rotation": 0.0,
+          "scale": [
+            45.0,
+            22.0,
+            0.0
+          ]
+        },
+        "Render": {
+          "shape": "square",
+          "hasTex": 1,
+          "texture": "assets/Texture\\game_bg_layer_5.png",
+          "hasTex": 1,
+          "hasAnimation": 0
+        }
+      }
+    },
+    {
+      "prefabid": "f7665aa3-619e-49a1-892a-31fbc8b377a2",
+      "name": "platform",
+      "layer": 0,
+      "components": {
+        "Transform": {
+          "pos": [
+            0.0,
+            0.0,
+            -0.10000000149011612
+          ]
+        }
+      }
+    },
+    {
+      "name": "background1",
+      "components": {
+        "Transform": {
+          "pos": [
+            0.0,
+            0.0,
+            -0.07999999821186066
+          ],
+          "rotation": 0.0,
+          "scale": [
+            45.0,
+            22.0,
+            0.0
+          ]
+        },
+        "Render": {
+          "shape": "square",
+          "hasTex": 1,
+          "texture": "assets/Texture\\game_bg_layer_1.png",
+          "hasTex": 1,
+          "hasAnimation": 0
+        }
+      }
+    },
+    {
+      "name": "background2",
+      "components": {
+        "Transform": {
+          "pos": [
+            -0.066006600856781,
+            0.0,
+            -0.10000000149011612
+          ],
+          "rotation": 0.0,
+          "scale": [
+            45.0,
+            22.0,
+            0.0
+          ]
+        },
+        "Render": {
+          "shape": "square",
+          "hasTex": 1,
+          "texture": "assets/Texture\\game_bg_layer_2.png",
+          "hasTex": 1,
+          "hasAnimation": 0
+        }
+      }
+    },
+    {
+      "name": "background4",
+      "components": {
+        "Transform": {
+          "pos": [
+            0.0,
+            0.0,
+            -0.10000000149011612
+          ],
+          "rotation": 0.0,
+          "scale": [
+            45.0,
+            22.0,
+            0.0
+          ]
+        },
+        "Render": {
+          "shape": "square",
+          "hasTex": 1,
+          "texture": "assets/Texture\\game_bg_layer_4.png",
+          "hasTex": 1,
+          "hasAnimation": 0
+        }
+      }
+    },
+    {
+      "name": "background6",
+      "components": {
+        "Transform": {
+          "pos": [
+            -0.06349208205938339,
+            0.0634920671582222,
+            -0.0010000000474974513
+          ],
+          "rotation": 0.0,
+          "scale": [
+            45.0,
+            45.0,
+            0.0
+          ]
+        },
+        "Render": {
+          "shape": "square",
+          "hasTex": 1,
+          "texture": "assets/Texture\\game_bg_layer_6.png",
+          "hasTex": 1,
+          "hasAnimation": 0
+        }
+      }
+    },
+    {
+      "name": "water balance back",
+      "components": {
+        "Transform": {
+          "pos": [
+            17.0,
+            7.5,
+            0.9900000095367432
+          ],
+          "rotation": 0.0,
+          "scale": [
+            6.588000774383545,
+            6.588000774383545,
+            0.0
+          ]
+        },
+        "Render": {
+          "shape": "square",
+          "hasTex": 1,
+          "texture": "assets/Texture\\Water_ContainerRim.png",
+          "hasTex": 1,
+          "hasAnimation": 0
+        },
+        "CollisionInfo": {
+          "collisionFlag": 1,
+          "autoFitScale": 1,
+          "colliderSize": [
+            6.588000774383545,
+            6.588000774383545
+          ],
+          "colliderType": "square",
+          "collisionRes": "StopWhenCollide",
+          "collisionTag": "inventory",
+          "colliderType": "square"
+        }
+      }
+    },
+    {
+      "prefabid": "8b8d44fa-ed22-4288-98ee-c476958f5b5b",
+      "name": "endgoal(23)",
+      "components": {
+        "Transform": {
+          "pos": [
+            14.88599967956543,
+            -3.1563878059387207,
+            0.0
+          ]
+        },
+        "Physics": {
+          "friction": 0.800000011920929,
+          "maxFallSpeed": -30.0,
+          "groundAccelForce": 20.0,
+          "airAccelForce": 8.0,
+          "jumpBufferTime": 0.15000000596046448,
+          "coyoteTime": 0.15000000596046448,
+          "ledgeAssistRange": 0.800000011920929,
+          "ledgeClimbSpeed": 8.0
+        },
+        "VisualLC": {
+          "filename": "endgoal04.json"
+        }
+      }
+    },
+    {
+      "name": "water balance",
+      "components": {
+        "Transform": {
+          "pos": [
+            17.0,
+            7.5,
+            0.9800000190734863
+          ],
+          "rotation": 0.0,
+          "scale": [
+            6.588000774383545,
+            6.588000774383545,
+            0.0
+          ]
+        },
+        "Render": {
+          "shape": "square",
+          "hasTex": 1,
+          "texture": "assets/Texture\\Water_100.png",
+          "hasTex": 1,
+          "hasAnimation": 0
+        },
+        "CollisionInfo": {
+          "collisionFlag": 1,
+          "autoFitScale": 1,
+          "colliderSize": [
+            6.588000774383545,
+            6.588000774383545
+          ],
+          "colliderType": "square",
+          "collisionRes": "StopWhenCollide",
+          "collisionTag": "inventory",
+          "colliderType": "square"
+        },
+        "VisualLC": {
+          "filename": "bullet-inventory.json"
+        }
+      }
+    },
+    {
+      "name": "Rectangle_20",
+      "components": {
+        "Transform": {
+          "pos": [
+            -16.63492202758789,
+            -2.2857143878936768,
+            0.0
+          ],
+          "rotation": 0.0,
+          "scale": [
+            12.399999618530273,
+            1.100000023841858,
+            0.0
+          ]
+        },
+        "Render": {
+          "shape": "square",
+          "hasTex": 0,
+          "hasAnimation": 0
+        },
+        "Physics": {
+          "physicsFlag": 1,
+          "buoyancy": 1,
+          "moveSpeed": 1.0,
+          "jumpForce": 100.0,
+          "mass": 1.0,
+          "damping": 0.9800000190734863,
+          "friction": 0.20000000298023224,
+          "maxFallSpeed": -20.0,
+          "groundAccelForce": 20.0,
+          "airAccelForce": 8.0,
+          "jumpBufferTime": 0.15000000596046448,
+          "coyoteTime": 0.3499999940395355,
+          "ledgeAssistRange": 0.800000011920929,
+          "ledgeClimbSpeed": 1.0
+        },
+        "CollisionInfo": {
+          "collisionFlag": 1,
+          "autoFitScale": 1,
+          "colliderSize": [
+            12.399999618530273,
+            1.100000023841858
+          ],
+          "colliderType": "square",
+          "collisionRes": "StopWhenCollide",
+          "collisionTag": "default",
+          "colliderType": "square"
+        }
+      }
+    },
+    {
+      "name": "Rectangle_2021",
+      "components": {
+        "Transform": {
+          "pos": [
+            -1.1759999990463257,
+            -4.523809432983398,
+            0.0
+          ],
+          "rotation": 0.0,
+          "scale": [
+            7.300000190734863,
+            1.100000023841858,
+            0.0
+          ]
+        },
+        "Render": {
+          "shape": "square",
+          "hasTex": 0,
+          "hasAnimation": 0
+        },
+        "Physics": {
+          "physicsFlag": 1,
+          "buoyancy": 1,
+          "moveSpeed": 1.0,
+          "jumpForce": 100.0,
+          "mass": 1.0,
+          "damping": 0.9800000190734863,
+          "friction": 0.20000000298023224,
+          "maxFallSpeed": -20.0,
+          "groundAccelForce": 20.0,
+          "airAccelForce": 8.0,
+          "jumpBufferTime": 0.15000000596046448,
+          "coyoteTime": 0.3499999940395355,
+          "ledgeAssistRange": 0.800000011920929,
+          "ledgeClimbSpeed": 1.0
+        },
+        "CollisionInfo": {
+          "collisionFlag": 1,
+          "autoFitScale": 1,
+          "colliderSize": [
+            7.300000190734863,
+            1.100000023841858
+          ],
+          "colliderType": "square",
+          "collisionRes": "StopWhenCollide",
+          "collisionTag": "environment",
+          "colliderType": "square"
+        }
+      }
+    },
+    {
+      "name": "Rectangle_202122",
+      "components": {
+        "Transform": {
+          "pos": [
+            15.718000411987305,
+            -8.92064380645752,
+            0.0
+          ],
+          "rotation": 0.0,
+          "scale": [
+            7.300000190734863,
+            7.099999904632568,
+            0.0
+          ]
+        },
+        "Render": {
+          "shape": "square",
+          "hasTex": 0,
+          "hasAnimation": 0
+        },
+        "Physics": {
+          "physicsFlag": 1,
+          "buoyancy": 1,
+          "moveSpeed": 1.0,
+          "jumpForce": 100.0,
+          "mass": 1.0,
+          "damping": 0.9800000190734863,
+          "friction": 0.20000000298023224,
+          "maxFallSpeed": -20.0,
+          "groundAccelForce": 20.0,
+          "airAccelForce": 8.0,
+          "jumpBufferTime": 0.15000000596046448,
+          "coyoteTime": 0.3499999940395355,
+          "ledgeAssistRange": 0.800000011920929,
+          "ledgeClimbSpeed": 1.0
+        },
+        "CollisionInfo": {
+          "collisionFlag": 1,
+          "autoFitScale": 1,
+          "colliderSize": [
+            7.300000190734863,
+            7.099999904632568
+          ],
+          "colliderType": "square",
+          "collisionRes": "StopWhenCollide",
+          "collisionTag": "default",
+          "colliderType": "square"
+        }
+      }
+    },
+    {
+      "prefabid": "979be788-8fb0-42b0-831a-273a92bc89a8",
+      "name": "tree(24)",
+      "components": {
+        "Transform": {
+          "pos": [
+            4.20550537109375,
+            2.1613781452178955,
+            0.0
+          ],
+          "scale": [
+            12.894000053405762,
+            12.494000434875488,
+            0.0
+          ]
+        },
+        "Render": {
+          "texture": "assets/Texture\\Tree_Broken.png",
+          "hasTex": 1
+        },
+        "Physics": {
+          "friction": 0.800000011920929,
+          "maxFallSpeed": -30.0,
+          "groundAccelForce": 20.0,
+          "airAccelForce": 8.0,
+          "jumpBufferTime": 0.15000000596046448,
+          "coyoteTime": 0.15000000596046448,
+          "ledgeAssistRange": 0.800000011920929,
+          "ledgeClimbSpeed": 8.0
+        },
+        "CollisionInfo": {
+          "colliderSize": [
+            12.894000053405762,
+            12.494000434875488
+          ]
+        }
+      }
+    },
+    {
+      "prefabid": "0d16ad75-981d-4d14-ae8b-90c2d2cb38d5",
+      "name": "branch(25)",
+      "components": {
+        "Transform": {
+          "pos": [
+            6.507999897003174,
+            -0.3019999861717224,
+            0.30000001192092896
+          ],
+          "scale": [
+            6.671999931335449,
+            1.7719999551773071,
+            0.949999988079071
+          ]
+        },
+        "Physics": {
+          "friction": 0.800000011920929,
+          "maxFallSpeed": -30.0,
+          "groundAccelForce": 20.0,
+          "airAccelForce": 8.0,
+          "jumpBufferTime": 0.15000000596046448,
+          "coyoteTime": 0.15000000596046448,
+          "ledgeAssistRange": 0.800000011920929,
+          "ledgeClimbSpeed": 8.0
+        },
+        "CollisionInfo": {
+          "colliderSize": [
+            6.572000026702881,
+            0.47200000286102295
+          ],
+          "collisionRes": "NoResponse"
+        }
+      }
+    },
+    {
+      "name": "waterbody",
+      "components": {
+        "Transform": {
+          "pos": [
+            0.0,
+            -10.0,
+            0.4000000059604645
+          ],
+          "rotation": 0.0,
+          "scale": [
+            42.5,
+            7.900000095367432,
+            1.0
+          ]
+        },
+        "Physics": {
+          "physicsFlag": 1,
+          "buoyancy": 1,
+          "moveSpeed": 1.0,
+          "jumpForce": 100.0,
+          "mass": 1.0,
+          "damping": 1.0,
+          "friction": 0.20000000298023224,
+          "maxFallSpeed": -20.0,
+          "groundAccelForce": 20.0,
+          "airAccelForce": 8.0,
+          "jumpBufferTime": 0.15000000596046448,
+          "coyoteTime": 0.3499999940395355,
+          "ledgeAssistRange": 0.800000011920929,
+          "ledgeClimbSpeed": 1.0
+        },
+        "CollisionInfo": {
+          "collisionFlag": 1,
+          "autoFitScale": 1,
+          "colliderSize": [
+            42.5,
+            7.900000095367432
+          ],
+          "colliderType": "square",
+          "collisionRes": "NoResponse",
+          "collisionTag": "water",
+          "colliderType": "square"
+        },
+        "WaterBody": {
+          "waveAmplitude": 0.15000000596046448,
+          "waveFrequency": 1.0,
+          "waveSpeed": 1.0,
+          "waterColor": [
+            0.10000000149011612,
+            0.30000001192092896,
+            0.6000000238418579,
+            1.0
+          ],
+          "waterAlpha": 0.699999988079071,
+          "subdivisions": 40,
+          "width": 40.0,
+          "height": 8.0,
+          "isTrigger": 1,
+          "buoyancyForce": 12.0,
+          "waterDrag": 0.9750000238418579,
+          "renderWaves": 1,
+          "useTexture": 0
+        }
+      }
+    },
+    {
+      "name": "floatingBox",
+      "components": {
+        "Transform": {
+          "pos": [
+            -6.0,
+            -5.875854969024658,
+            0.0
+          ],
+          "rotation": 0.0,
+          "scale": [
+            4.0,
+            1.5,
+            1.0
+          ]
+        },
+        "Render": {
+          "shape": "square",
+          "hasTex": 0,
+          "hasAnimation": 0
+        },
+        "Physics": {
+          "physicsFlag": 1,
+          "buoyancy": 1,
+          "moveSpeed": 1.0,
+          "jumpForce": 100.0,
+          "mass": 5.0,
+          "damping": 0.9850000143051147,
+          "friction": 0.20000000298023224,
+          "maxFallSpeed": -20.0,
+          "groundAccelForce": 20.0,
+          "airAccelForce": 8.0,
+          "jumpBufferTime": 0.15000000596046448,
+          "coyoteTime": 0.3499999940395355,
+          "ledgeAssistRange": 0.800000011920929,
+          "ledgeClimbSpeed": 1.0
+        },
+        "CollisionInfo": {
+          "collisionFlag": 1,
+          "autoFitScale": 1,
+          "colliderSize": [
+            2.0,
+            2.0
+          ],
+          "colliderType": "square",
+          "collisionRes": "MoveWhenCollide",
+          "collisionTag": "floatingObject",
+          "colliderType": "square"
+        }
+      }
+    },
+    {
+      "name": "branch collision",
+      "components": {
+        "Transform": {
+          "pos": [
+            5.199999809265137,
+            -0.699999988079071,
+            0.0
+          ],
+          "rotation": 0.0,
+          "scale": [
+            3.0,
+            0.6000000238418579,
+            0.0
+          ]
+        },
+        "Physics": {
+          "physicsFlag": 1,
+          "buoyancy": 1,
+          "moveSpeed": 1.0,
+          "jumpForce": 10.0,
+          "mass": 1.0,
+          "damping": 0.9800000190734863,
+          "friction": 0.20000000298023224,
+          "maxFallSpeed": -20.0,
+          "groundAccelForce": 20.0,
+          "airAccelForce": 8.0,
+          "jumpBufferTime": 0.15000000596046448,
+          "coyoteTime": 0.3499999940395355,
+          "ledgeAssistRange": 0.800000011920929,
+          "ledgeClimbSpeed": 1.0
+        },
+        "CollisionInfo": {
+          "collisionFlag": 1,
+          "autoFitScale": 0,
+          "colliderSize": [
+            3.0,
+            0.6000000238418579
+          ],
+          "colliderType": "square",
+          "collisionRes": "StopWhenCollide",
+          "collisionTag": "default",
+          "colliderType": "square"
+        },
+        "VisualLC": {
+          "filename": "branch collision 2_Logic.json"
+        }
+      }
+    },
+    {
+      "name": "branch collision 2",
+      "components": {
+        "Transform": {
+          "pos": [
+            7.800000190734863,
+            0.0,
+            0.0
+          ],
+          "rotation": 0.0,
+          "scale": [
+            2.5999999046325684,
+            1.2999999523162842,
+            0.0
+          ]
+        },
+        "Physics": {
+          "physicsFlag": 1,
+          "buoyancy": 1,
+          "moveSpeed": 1.0,
+          "jumpForce": 10.0,
+          "mass": 1.0,
+          "damping": 0.9800000190734863,
+          "friction": 0.20000000298023224,
+          "maxFallSpeed": -20.0,
+          "groundAccelForce": 20.0,
+          "airAccelForce": 8.0,
+          "jumpBufferTime": 0.15000000596046448,
+          "coyoteTime": 0.3499999940395355,
+          "ledgeAssistRange": 0.800000011920929,
+          "ledgeClimbSpeed": 1.0
+        },
+        "CollisionInfo": {
+          "collisionFlag": 1,
+          "autoFitScale": 0,
+          "colliderSize": [
+            2.5999999046325684,
+            1.2999999523162842
+          ],
+          "colliderType": "square",
+          "collisionRes": "StopWhenCollide",
+          "collisionTag": "default",
+          "colliderType": "square"
+        },
+        "VisualLC": {
+          "filename": "branch collision 2_Logic.json"
+        }
+      }
+    }
+  ]
+}

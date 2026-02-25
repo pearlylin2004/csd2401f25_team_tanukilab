@@ -23,8 +23,8 @@
       "implementation": "Set Float",
       "type": 1,
       "position": [
-        78.74999237060547,
-        -153.74998474121094
+        78.75,
+        -153.75
       ],
       "hasInput": true,
       "hasOutput": true,
@@ -32,7 +32,7 @@
       "hasFalseOutput": false,
       "parameters": {
         "value": "0.000000",
-        "variable": "bulletCount"
+        "variable": "waterHold"
       }
     },
     {
@@ -40,8 +40,8 @@
       "implementation": "On Start",
       "type": 0,
       "position": [
-        -260.0,
-        -150.0
+        -400.0,
+        -172.0
       ],
       "hasInput": false,
       "hasOutput": true,
@@ -49,29 +49,12 @@
       "hasFalseOutput": false
     },
     {
-      "id": 4,
-      "implementation": "Modify Float Variable",
-      "type": 1,
-      "position": [
-        99.99999237060547,
-        -32.499996185302734
-      ],
-      "hasInput": true,
-      "hasOutput": true,
-      "hasTrueOutput": false,
-      "hasFalseOutput": false,
-      "parameters": {
-        "value": "1.000000",
-        "variable": "bulletCount"
-      }
-    },
-    {
       "id": 5,
       "implementation": "Set Float",
       "type": 1,
       "position": [
-        422.5000305175781,
-        -157.50001525878906
+        422.5,
+        -157.5
       ],
       "hasInput": true,
       "hasOutput": true,
@@ -96,30 +79,12 @@
       "hasFalseOutput": false
     },
     {
-      "id": 7,
-      "implementation": "Compare Variable",
-      "type": 2,
-      "position": [
-        -584.46435546875,
-        77.392822265625
-      ],
-      "hasInput": true,
-      "hasOutput": false,
-      "hasTrueOutput": true,
-      "hasFalseOutput": true,
-      "parameters": {
-        "comparison": "greater",
-        "threshold": "1.000000",
-        "variable": "bulletCount"
-      }
-    },
-    {
       "id": 8,
       "implementation": "Compare Variable",
       "type": 2,
       "position": [
-        396.4287109375,
-        115.00000762939453
+        360.0953369140625,
+        165.0
       ],
       "hasInput": true,
       "hasOutput": false,
@@ -136,8 +101,8 @@
       "implementation": "Move Object",
       "type": 1,
       "position": [
-        721.2499389648438,
-        128.74998474121094
+        687.25,
+        86.75
       ],
       "hasInput": true,
       "hasOutput": true,
@@ -153,8 +118,8 @@
       "implementation": "On Collision Enter",
       "type": 0,
       "position": [
-        -217.25,
-        346.75
+        -757.25,
+        426.75
       ],
       "hasInput": false,
       "hasOutput": true,
@@ -170,8 +135,8 @@
       "implementation": "Set Float",
       "type": 1,
       "position": [
-        218.25,
-        341.75
+        -387.75,
+        437.75
       ],
       "hasInput": true,
       "hasOutput": true,
@@ -187,8 +152,8 @@
       "implementation": "On Collision Exit",
       "type": 0,
       "position": [
-        557.142822265625,
-        -39.999996185302734
+        705.142822265625,
+        -36.0
       ],
       "hasInput": false,
       "hasOutput": true,
@@ -200,98 +165,12 @@
       }
     },
     {
-      "id": 13,
-      "implementation": "Modify Float Variable",
-      "type": 1,
-      "position": [
-        897.142822265625,
-        -43.92856979370117
-      ],
-      "hasInput": true,
-      "hasOutput": true,
-      "hasTrueOutput": false,
-      "hasFalseOutput": false,
-      "parameters": {
-        "value": "-1.000000",
-        "variable": "bulletCount"
-      }
-    },
-    {
-      "id": 14,
-      "implementation": "Set Float",
-      "type": 1,
-      "position": [
-        718.21435546875,
-        -156.07144165039063
-      ],
-      "hasInput": true,
-      "hasOutput": true,
-      "hasTrueOutput": false,
-      "hasFalseOutput": false,
-      "parameters": {
-        "value": "0.000000",
-        "variable": "broken"
-      }
-    },
-    {
-      "id": 15,
-      "implementation": "Set Float",
-      "type": 1,
-      "position": [
-        87.67864227294922,
-        77.17855834960938
-      ],
-      "hasInput": true,
-      "hasOutput": true,
-      "hasTrueOutput": false,
-      "hasFalseOutput": false,
-      "parameters": {
-        "value": "1",
-        "variable": "broken"
-      }
-    },
-    {
-      "id": 17,
-      "implementation": "Compare Variable",
-      "type": 2,
-      "position": [
-        -19.999998092651367,
-        198.0000457763672
-      ],
-      "hasInput": true,
-      "hasOutput": false,
-      "hasTrueOutput": true,
-      "hasFalseOutput": true,
-      "parameters": {
-        "comparison": "greater",
-        "threshold": "0",
-        "variable": "broken"
-      }
-    },
-    {
-      "id": 18,
-      "implementation": "Set Float",
-      "type": 1,
-      "position": [
-        527.6787109375,
-        349.178466796875
-      ],
-      "hasInput": true,
-      "hasOutput": true,
-      "hasTrueOutput": false,
-      "hasFalseOutput": false,
-      "parameters": {
-        "value": "0.000000",
-        "variable": "broken"
-      }
-    },
-    {
       "id": 19,
       "implementation": "Check Timer",
       "type": 2,
       "position": [
         -233.0001220703125,
-        73.00009155273438
+        73.0001220703125
       ],
       "hasInput": true,
       "hasOutput": false,
@@ -307,8 +186,8 @@
       "implementation": "Play Sound",
       "type": 1,
       "position": [
-        407.5000305175781,
-        1.2500001192092896
+        407.5,
+        1.25
       ],
       "hasInput": true,
       "hasOutput": true,
@@ -317,33 +196,250 @@
       "parameters": {
         "channel": "drop"
       }
+    },
+    {
+      "id": 23,
+      "implementation": "Rotate Object",
+      "type": 1,
+      "position": [
+        682.0,
+        228.0
+      ],
+      "hasInput": true,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false,
+      "parameters": {
+        "angle": "-40.000000"
+      }
+    },
+    {
+      "id": 28,
+      "implementation": "Modify Float Variable",
+      "type": 1,
+      "position": [
+        110.0,
+        -38.0
+      ],
+      "hasInput": true,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false,
+      "parameters": {
+        "value": "1.000000",
+        "variable": "waterHold"
+      }
+    },
+    {
+      "id": 29,
+      "implementation": "Modify Float Variable",
+      "type": 1,
+      "position": [
+        1032.0,
+        -52.0
+      ],
+      "hasInput": true,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false,
+      "parameters": {
+        "value": "-1.000000",
+        "variable": "waterHold"
+      }
+    },
+    {
+      "id": 30,
+      "implementation": "Compare Variable",
+      "type": 2,
+      "position": [
+        -582.0,
+        56.0
+      ],
+      "hasInput": true,
+      "hasOutput": false,
+      "hasTrueOutput": true,
+      "hasFalseOutput": true,
+      "parameters": {
+        "comparison": "greater",
+        "threshold": "1.000000",
+        "variable": "waterHold"
+      }
+    },
+    {
+      "id": 32,
+      "implementation": "Compare Global Float",
+      "type": 2,
+      "position": [
+        -354.0,
+        206.0
+      ],
+      "hasInput": true,
+      "hasOutput": false,
+      "hasTrueOutput": true,
+      "hasFalseOutput": true,
+      "parameters": {
+        "comparison": "greater",
+        "threshold": "0",
+        "variable": "broken"
+      }
+    },
+    {
+      "id": 33,
+      "implementation": "Set Global Float",
+      "type": 1,
+      "position": [
+        -118.0,
+        -258.0
+      ],
+      "hasInput": true,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false,
+      "parameters": {
+        "value": "0",
+        "variable": "broken"
+      }
+    },
+    {
+      "id": 34,
+      "implementation": "Modify Global Float",
+      "type": 1,
+      "position": [
+        92.0,
+        72.0
+      ],
+      "hasInput": true,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false,
+      "parameters": {
+        "value": "1",
+        "variable": "broken"
+      }
+    },
+    {
+      "id": 35,
+      "implementation": "On Collision Enter",
+      "type": 0,
+      "position": [
+        -756.0,
+        546.0
+      ],
+      "hasInput": false,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false,
+      "parameters": {
+        "colFilterType": "tag",
+        "colFilterValue": "water"
+      }
+    },
+    {
+      "id": 36,
+      "implementation": "Set Float",
+      "type": 1,
+      "position": [
+        -390.0,
+        548.0
+      ],
+      "hasInput": true,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false,
+      "parameters": {
+        "value": "1",
+        "variable": "touchWater"
+      }
+    },
+    {
+      "id": 37,
+      "implementation": "Set Float",
+      "type": 1,
+      "position": [
+        -236.0,
+        -414.0
+      ],
+      "hasInput": true,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false,
+      "parameters": {
+        "value": "0.000000",
+        "variable": "touchWater"
+      }
+    },
+    {
+      "id": 38,
+      "implementation": "Compare Variable",
+      "type": 2,
+      "position": [
+        286.0,
+        328.0
+      ],
+      "hasInput": true,
+      "hasOutput": false,
+      "hasTrueOutput": true,
+      "hasFalseOutput": true,
+      "parameters": {
+        "comparison": "equal",
+        "threshold": "1.000000",
+        "variable": "touchWater"
+      }
+    },
+    {
+      "id": 40,
+      "implementation": "Compare Value",
+      "type": 2,
+      "position": [
+        610.0,
+        338.0
+      ],
+      "hasInput": true,
+      "hasOutput": false,
+      "hasTrueOutput": true,
+      "hasFalseOutput": true,
+      "parameters": {
+        "comparison": "less",
+        "property": "rotation",
+        "threshold": "0.000000"
+      }
+    },
+    {
+      "id": 43,
+      "implementation": "Rotate Object",
+      "type": 1,
+      "position": [
+        910.0,
+        384.0
+      ],
+      "hasInput": true,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false,
+      "parameters": {
+        "angle": "40.000000"
+      }
+    },
+    {
+      "id": 44,
+      "implementation": "Compare Variable",
+      "type": 2,
+      "position": [
+        -28.0,
+        278.0
+      ],
+      "hasInput": true,
+      "hasOutput": false,
+      "hasTrueOutput": true,
+      "hasFalseOutput": true,
+      "parameters": {
+        "comparison": "equal",
+        "threshold": "1.000000",
+        "variable": "touchGround"
+      }
     }
   ],
   "connections": [
-    {
-      "fromNodeId": 3,
-      "outputPin": "Out",
-      "toNodeId": 2,
-      "inputPin": "In"
-    },
-    {
-      "fromNodeId": 1,
-      "outputPin": "Out",
-      "toNodeId": 4,
-      "inputPin": "In"
-    },
-    {
-      "fromNodeId": 2,
-      "outputPin": "Out",
-      "toNodeId": 5,
-      "inputPin": "In"
-    },
-    {
-      "fromNodeId": 6,
-      "outputPin": "Out",
-      "toNodeId": 7,
-      "inputPin": "In"
-    },
     {
       "fromNodeId": 8,
       "outputPin": "True",
@@ -357,51 +453,117 @@
       "inputPin": "In"
     },
     {
-      "fromNodeId": 12,
-      "outputPin": "Out",
-      "toNodeId": 13,
+      "fromNodeId": 8,
+      "outputPin": "True",
+      "toNodeId": 23,
       "inputPin": "In"
     },
     {
-      "fromNodeId": 5,
+      "fromNodeId": 2,
       "outputPin": "Out",
-      "toNodeId": 14,
+      "toNodeId": 5,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 1,
+      "outputPin": "Out",
+      "toNodeId": 28,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 12,
+      "outputPin": "Out",
+      "toNodeId": 29,
       "inputPin": "In"
     },
     {
       "fromNodeId": 6,
       "outputPin": "Out",
-      "toNodeId": 17,
+      "toNodeId": 30,
       "inputPin": "In"
     },
     {
-      "fromNodeId": 17,
-      "outputPin": "True",
-      "toNodeId": 8,
-      "inputPin": "In"
-    },
-    {
-      "fromNodeId": 11,
-      "outputPin": "Out",
-      "toNodeId": 18,
-      "inputPin": "In"
-    },
-    {
-      "fromNodeId": 7,
+      "fromNodeId": 30,
       "outputPin": "True",
       "toNodeId": 19,
       "inputPin": "In"
     },
     {
-      "fromNodeId": 19,
-      "outputPin": "True",
-      "toNodeId": 15,
+      "fromNodeId": 6,
+      "outputPin": "Out",
+      "toNodeId": 32,
       "inputPin": "In"
     },
     {
-      "fromNodeId": 15,
+      "fromNodeId": 32,
+      "outputPin": "True",
+      "toNodeId": 8,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 3,
+      "outputPin": "Out",
+      "toNodeId": 33,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 3,
+      "outputPin": "Out",
+      "toNodeId": 2,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 19,
+      "outputPin": "True",
+      "toNodeId": 34,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 34,
       "outputPin": "Out",
       "toNodeId": 20,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 35,
+      "outputPin": "Out",
+      "toNodeId": 36,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 3,
+      "outputPin": "Out",
+      "toNodeId": 37,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 38,
+      "outputPin": "True",
+      "toNodeId": 40,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 35,
+      "outputPin": "Out",
+      "toNodeId": 11,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 32,
+      "outputPin": "True",
+      "toNodeId": 44,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 44,
+      "outputPin": "True",
+      "toNodeId": 38,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 40,
+      "outputPin": "True",
+      "toNodeId": 43,
       "inputPin": "In"
     }
   ]

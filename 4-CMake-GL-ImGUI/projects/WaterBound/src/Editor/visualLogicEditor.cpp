@@ -788,6 +788,28 @@ void VisualLogicEditor::renderNodeProperties() {
 				ImGui::TextDisabled("Positive = counter-clockwise");
 			}
 		}
+		else if (node.imp == NodeImplementation::SET_ROTATION_RATE_OF_CHANGE)
+		{
+			float angle = node.parameters.count("angle") ? std::stof(node.parameters["angle"]) : 0.f;
+			float rateOfChange = node.parameters.count("rateOfChange") ? std::stof(node.parameters["rateOfChange"]) : 0.f;
+			float duration = node.parameters.count("duration") ? std::stof(node.parameters["duration"]) : 0.f;
+
+			if (ImGui::DragFloat("Rotation Rate (degrees/sec)", &angle, 1.f)) {
+				node.parameters["angle"] = std::to_string(angle);
+				ImGui::Spacing();
+				ImGui::TextDisabled("Positive = counter-clockwise");
+			}
+			if(ImGui::DragFloat("Rate of Change (degrees/sec^2)", &rateOfChange, 1.f)) {
+				node.parameters["rateOfChange"] = std::to_string(rateOfChange);
+				ImGui::Spacing();
+				ImGui::TextDisabled("Positive = counter-clockwise");
+			}
+			if(ImGui::DragFloat("Duration (seconds)", &duration, 0.1f)) {
+				node.parameters["duration"] = std::to_string(duration);
+				ImGui::Spacing();
+				ImGui::TextDisabled("Time taken to stop");
+			}
+		}
 		// set obj rotation to x degree
 		else if (node.imp == NodeImplementation::SET_ROTATION) {
 			float angle = node.parameters.count("angle") ? std::stof(node.parameters["angle"]) : 0.f;
@@ -1822,6 +1844,12 @@ void VisualLogicEditor::addNode(NodeType type, NodeImplementation imp) {
 		}
 		else if (imp == NodeImplementation::SET_ROTATION) {
 			node.parameters["angle"] = "0";
+		}
+		else if (imp == NodeImplementation::SET_ROTATION_RATE_OF_CHANGE)
+		{
+			node.parameters["angle"] = "0";
+			node.parameters["rate"] = "0";
+			node.parameters["duration"] = "0"; // in seconds
 		}
 		else if (imp == NodeImplementation::SET_POSITION) {
 			node.parameters["x"] = "0";
