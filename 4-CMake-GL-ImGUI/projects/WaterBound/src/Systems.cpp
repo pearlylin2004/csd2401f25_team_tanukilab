@@ -1488,7 +1488,7 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 
 							// Bounce or stop based on bounciness
 							if (p1->bounciness > 0.0f) {
-								float b = std::min(p1->bounciness, 0.05f); //tiny bounce
+								//float b = std::min(p1->bounciness, 0.05f); //tiny bounce
 								std::cout << "CASE2 bounce: " << obj1->getObjectName() << " vs " << obj2->getObjectName() << std::endl;
 								ApplyBounce(p1, info.normal, true);
 							}

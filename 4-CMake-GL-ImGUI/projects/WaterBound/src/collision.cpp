@@ -558,55 +558,60 @@ namespace Collision {
 
         if (!phys1->alive || !phys2->alive) return false;
 
-        // Masses and coefficient of restitution
+        //masses and coefficient of restitution
         float m1 = phys1->dynamics.mass;
         float m2 = phys2->dynamics.mass;
 
         //vector from obj1 to obj2
         float dx = trans2->x - trans1->x;
         float dy = trans2->y - trans1->y;
-        float dist = sqrtf(dx * dx + dy * dy);
-        if (dist < 0.0001f) return false; //avoid division by zero
+        float distSq = sqrtf(dx * dx + dy * dy);
+        if (distSq < 0.0001f) return false; //avoid division by zero
+
+        float dist = sqrtf(distSq);
 
         //normalized collision direction
         float nx = dx / dist;
         float ny = dy / dist;
 
-        //relative velocity along the normal
+        float restDistance = 1.0f; //particle radius spacing
+        float stiffness = 6.0f; //pressure strength
+        float viscosity = 0.08f; //smoothing
+        float correctionPercent = 0.05f; //positional correction
+        float gravitySlip = 0.4f; //sideways slide strength
+
+        //only interact if close
+        float penetration = restDistance - dist;
+        if (penetration <= 0.0f)
+            return false;
+
+        //soft pressure 
+        float verticalFactor = 1.0f - fabs(ny);
+        float pressureForce = stiffness * penetration * verticalFactor;
+        phys1->dynamics.velocity.x -= pressureForce * nx / m1;
+        phys1->dynamics.velocity.y -= pressureForce * ny / m1;
+        phys2->dynamics.velocity.x += pressureForce * nx / m2;
+        phys2->dynamics.velocity.y += pressureForce * ny / m2;
+
+        //viscosity
         float rvx = phys2->dynamics.velocity.x - phys1->dynamics.velocity.x;
         float rvy = phys2->dynamics.velocity.y - phys1->dynamics.velocity.y;
         float velAlongNormal = rvx * nx + rvy * ny;
-
-        //surface tension
-        float restDistance = 1.0f;
-        float tensionStrength = 3.0f; //can change 
-
-        float displacement = restDistance - dist;
-
-        if (displacement > 0.0f) {
-            float springForce = tensionStrength * displacement;
-
-            phys1->dynamics.velocity.x -= springForce * nx / m1;
-            phys1->dynamics.velocity.y -= springForce * ny / m1;
-            phys2->dynamics.velocity.x += springForce * nx / m2;
-            phys2->dynamics.velocity.y += springForce * ny / m2;
-        }
-
-		//viscosity
-        float viscosity = 0.1f; //can change
         float tangentX = rvx - velAlongNormal * nx;
         float tangentY = rvy - velAlongNormal * ny;
-
         phys1->dynamics.velocity.x += viscosity * tangentX;
         phys1->dynamics.velocity.y += viscosity * tangentY;
         phys2->dynamics.velocity.x -= viscosity * tangentX;
         phys2->dynamics.velocity.y -= viscosity * tangentY;
 
-		//very soft bounce to prevent sticking
-        if (velAlongNormal < 0.0f) {
-            float e = 0.02f; //very low bounce, can change
-            float j = -(1 + e) * velAlongNormal / (1 / m1 + 1 / m2);
+        //gravity
+        float slide = gravitySlip * fabs(ny);
+        phys1->dynamics.velocity.x += slide * nx;
+        phys2->dynamics.velocity.x -= slide * nx;
 
+        //no bounce
+        if (velAlongNormal < 0.0f){
+            float j = -(velAlongNormal) / (1 / m1 + 1 / m2);
             phys1->dynamics.velocity.x -= j * nx / m1;
             phys1->dynamics.velocity.y -= j * ny / m1;
             phys2->dynamics.velocity.x += j * nx / m2;
@@ -614,16 +619,11 @@ namespace Collision {
         }
 
 		//soft position correction to prevent sinking
-        float penetration = std::max(0.0f, restDistance - dist);
-        float correctionPercent = 0.15f;  //can change
         float correction = penetration * correctionPercent;
-
         trans1->x -= correction * nx / m1;
         trans1->y -= correction * ny / m1;
         trans2->x += correction * nx / m2;
         trans2->y += correction * ny / m2;
-
-        //update physics positions
         phys1->dynamics.position.x = trans1->x;
         phys1->dynamics.position.y = trans1->y;
         phys2->dynamics.position.x = trans2->x;
