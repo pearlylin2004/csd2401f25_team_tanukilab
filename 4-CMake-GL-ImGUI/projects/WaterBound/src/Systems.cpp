@@ -1252,13 +1252,6 @@ void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime, M
 										PhysicsForces::shoot(bullet, transform, mouseWorldPos);
 										messageBus.publish(Message("KeyPressed", nullptr, KeyEvent{ "LEFT_CLICK", true }));
 
-										//set a flay saying channel is pending to play sound
-										/*if (bullet->hasComponent<AudioComponent>()) {
-											AudioComponent* audio = bullet->getComponent<AudioComponent>();
-											AudioChannel* ch = audio->getDefaultChannel();
-											ch->isPendingPlay = true;
-										}*/
-
 
 										VisualLogicSystem::broadcastBulletShoot();
 
