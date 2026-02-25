@@ -144,6 +144,7 @@ void CoreEngine::Init(bool forceWindowed) {
     m_tileMapSystem = std::make_unique<TileMapSystem>();
 	m_particleSystem = std::make_unique<ParticleSystem>();
 	m_visualLCSystem = std::make_unique<VisualLogicSystem>();
+	m_transformSystem = std::make_unique<TransformSystem>();
 
 
     PrefabManager::Instance().loadPrefabRegistry();
@@ -253,6 +254,7 @@ void CoreEngine::Update(float deltaTime) {
     m_inputSystem->update(*m_manager, deltaTime, *m_messageBus);
     m_physicsSystem->update(*m_manager, deltaTime, *m_messageBus);
     m_collisionSystem->update(*m_manager, deltaTime);
+	m_transformSystem->update(*m_manager, deltaTime);//for parent->child transform
     m_logicSystem->update(*m_manager, deltaTime);
     m_tileMapSystem->update(*m_manager);
     m_particleSystem->update(*m_manager, deltaTime);;

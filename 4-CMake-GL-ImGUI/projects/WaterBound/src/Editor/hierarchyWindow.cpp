@@ -27,41 +27,112 @@ void HierarchyWindow::render(GameObjectManager& manager) {
     std::vector<GameObject*> gameObjects = CachedGameObjects::Instance().getCachedObjects();
 
     // by default just set to no children
-    ImGuiTreeNodeFlags baseFlags = ImGuiTreeNodeFlags_Leaf;
+    //ImGuiTreeNodeFlags baseFlags = ImGuiTreeNodeFlags_Leaf;
 
-    for (size_t i = 0; i < gameObjects.size(); i++) {
-        // if no children (in the future)
-    //    baseFlags |= ImGuiTreeNodeFlags_Leaf;
+    // Build parent → children map
+    std::unordered_map<std::string, std::vector<GameObject*>> childrenOf;
+    std::vector<GameObject*> rootObjects;
 
-        // highlight selected row
-        if (i == m_objSelectionState.selectedIndex) {
-            baseFlags |= ImGuiTreeNodeFlags_Selected;
+    for (GameObject* obj : gameObjects) {
+        Transform* t = obj->getComponent<Transform>();
+        if (!t || t->parentName.empty()) {
+            rootObjects.push_back(obj);
         }
         else {
-            baseFlags &= ~ImGuiTreeNodeFlags_Selected;
+            childrenOf[t->parentName].push_back(obj);
         }
+    }
 
-        // draw tree node for each object
-        if (ImGui::TreeNodeEx(gameObjects[i]->getObjectName().c_str(), baseFlags)) {
-            if (ImGui::IsItemClicked() && !ImGui::IsItemToggledOpen()) {
+    // Recursive lambda to render an object and its children
+    std::function<void(GameObject*)> renderNode = [&](GameObject* obj) {
+        const std::string& name = obj->getObjectName();
+        bool hasChildren = childrenOf.count(name) && !childrenOf[name].empty();
+        bool isSelected = (m_objSelectionState.selectedObject == obj);
 
-                // clear brush when select another obj
-				GameObject* prevSelected = m_objSelectionState.selectedObject;
-				if (prevSelected && prevSelected != gameObjects[i] && prevSelected->hasComponent<TileMap>()) {
-                    TileMapSystem::filename.clear();
-                    TileMapSystem::eraseMode = false;
-				}
+        ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow
+            | ImGuiTreeNodeFlags_SpanAvailWidth;
+        if (!hasChildren) flags |= ImGuiTreeNodeFlags_Leaf;
+        if (isSelected)   flags |= ImGuiTreeNodeFlags_Selected;
 
-                m_objSelectionState.selectedIndex = static_cast<int>(i);
-                m_objSelectionState.selectedObject = gameObjects[i];
+        bool nodeOpen = ImGui::TreeNodeEx(name.c_str(), flags);
+
+        // Selection
+        if (ImGui::IsItemClicked() && !ImGui::IsItemToggledOpen()) {
+            GameObject* prevSelected = m_objSelectionState.selectedObject;
+            if (prevSelected && prevSelected != obj && prevSelected->hasComponent<TileMap>()) {
+                TileMapSystem::filename.clear();
+                TileMapSystem::eraseMode = false;
             }
-
-            /* ------- right click context menu ------- */
-            showContextMenu(manager, gameObjects[i], static_cast<int>(i));
-
-            ImGui::TreePop();
-
+            m_objSelectionState.selectedObject = obj;
+            // Update index to match
+            auto it = std::find(gameObjects.begin(), gameObjects.end(), obj);
+            m_objSelectionState.selectedIndex = (it != gameObjects.end())
+                ? static_cast<int>(std::distance(gameObjects.begin(), it)) : -1;
         }
+
+        // Drag source — emit object name so inspector can receive it for parenting
+        if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID)) {
+            ImGui::SetDragDropPayload("HIERARCHY_OBJ", name.c_str(), name.size() + 1);
+            ImGui::Text("Parent to: %s", name.c_str());
+            ImGui::EndDragDropSource();
+        }
+
+        // Drop target — drag one object onto another to reparent
+        if (ImGui::BeginDragDropTarget()) {
+            if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("HIERARCHY_OBJ")) {
+                const char* childName = (const char*)payload->Data;
+                if (childName && std::string(childName) != name) {
+                    GameObject* child = manager.getGameObject(childName);
+                    if (child && child->hasComponent<Transform>() && obj->hasComponent<Transform>()) {
+                        Transform* ct = child->getComponent<Transform>();
+                        Transform* pt = obj->getComponent<Transform>();
+                        float dx = ct->x - pt->x;
+                        float dy = ct->y - pt->y;
+                        float rad = glm::radians(-pt->rotation);
+                        float cosA = cosf(rad), sinA = sinf(rad);
+
+                        // Capture before state
+                        std::string oldParent = ct->parentName;
+                        Vector2D    oldOffset = ct->localOffset;
+                        float       oldLocalRot = ct->localRotation;
+
+                        ct->localOffset.x = dx * cosA - dy * sinA;
+                        ct->localOffset.y = dx * sinA + dy * cosA;
+                        ct->localRotation = ct->rotation - pt->rotation;
+                        ct->parentName = name;
+
+                        // Record for undo
+                        auto cmd = std::make_unique<ReparentCmd>(manager, childName,
+                            oldParent, oldOffset, oldLocalRot,
+                            ct->parentName, ct->localOffset, ct->localRotation);
+                        UndoRedoManager::Instance().executeCmd(std::move(cmd));
+
+                        DebugLog::addMessage(childName + std::string(" parented to ") + name);
+                        CachedGameObjects::Instance().refresh();
+                    }
+                }
+            }
+            ImGui::EndDragDropTarget();
+        }
+
+        showContextMenu(manager, obj,
+            static_cast<int>(std::distance(gameObjects.begin(),
+                std::find(gameObjects.begin(), gameObjects.end(), obj))));
+
+        if (nodeOpen) {
+            // Recurse into children
+            if (hasChildren) {
+                for (GameObject* child : childrenOf[name]) {
+                    renderNode(child);
+                }
+            }
+            ImGui::TreePop();
+        }
+    };
+
+    // Render all root objects (children render recursively inside)
+    for (GameObject* root : rootObjects) {
+        renderNode(root);
     }
 
     if (gameObjects.empty()) {
@@ -78,11 +149,17 @@ void HierarchyWindow::render(GameObjectManager& manager) {
     /* ----------- Receive Dropped Prefab from Asset Browser ----------- */
     // make entire hierarchy viewport a invisible button that can receive asset
     //ImGuiID targetID = ImGui::GetID("HierarchyWindowDropTarget");
-    ImGui::SetCursorPos(ImVec2(0, 0));
-    ImGui::InvisibleButton("##drop_target", ImGui::GetContentRegionAvail());
+    // Use window-rect drop target instead of InvisibleButton
+    // This doesn't interfere with tree node drop targets
+    ImGuiWindow* window = ImGui::GetCurrentWindow();
+    if (ImGui::BeginDragDropTargetCustom(window->ContentRegionRect, window->ID)) {
+        handlePrefabDragDrop(manager);
+        ImGui::EndDragDropTarget();
+    }
 
     // accept the prefab drop
-    handlePrefabDragDrop(manager);
+    //handlePrefabDragDrop(manager);
+
     /* ---------- END --------- */
 
     ImGui::End();
@@ -95,48 +172,47 @@ void HierarchyWindow::render(GameObjectManager& manager) {
 
 void HierarchyWindow::handlePrefabDragDrop(GameObjectManager& manager) {
     // receive prefab and make it into a game obj referecing the prefab
-    if (ImGui::BeginDragDropTarget()) {
-        if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("ASSET")) {
-            const char* prefabPath = static_cast<const char*>(payload->Data);
-            std::filesystem::path path = prefabPath;
-            std::string folder = path.parent_path().filename().string();
+    // BeginDragDropTarget is handled by the caller
+    if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("ASSET")) {
+        const char* prefabPath = static_cast<const char*>(payload->Data);
+        std::filesystem::path path = prefabPath;
+        std::string folder = path.parent_path().filename().string();
 
-            // only accept if its in prefab folder
-            if (folder == "Prefab") {
-                std::string prefabID = PrefabManager::Instance().findPrefabIDByFilename(prefabPath);
+        // only accept if its in prefab folder
+        if (folder == "Prefab") {
+            std::string prefabID = PrefabManager::Instance().findPrefabIDByFilename(prefabPath);
 
-                std::string objName = PrefabManager::Instance().getPrefabName(prefabID) + "(" + std::to_string(manager.getGameObjectCount()) + ")";
-                GameObject* prefabObj = manager.createGameObject(objName);
-                prefabObj->getObjectPrefabID() = prefabID;
+            std::string objName = PrefabManager::Instance().getPrefabName(prefabID) + "(" + std::to_string(manager.getGameObjectCount()) + ")";
+            GameObject* prefabObj = manager.createGameObject(objName);
+            prefabObj->getObjectPrefabID() = prefabID;
 
-                if (prefabObj) {
-                    PrefabManager::Instance().instantiate(prefabObj, manager);
-                    Render* render = prefabObj->getComponent<Render>();
-                    if (render) render->texChanged = true;
+            if (prefabObj) {
+                PrefabManager::Instance().instantiate(prefabObj, manager);
+                Render* render = prefabObj->getComponent<Render>();
+                if (render) render->texChanged = true;
 
-                    auto cmd = std::make_unique<CreateObjectCmd>(manager, objName);
-                    UndoRedoManager::Instance().executeCmd(std::move(cmd));
+                auto cmd = std::make_unique<CreateObjectCmd>(manager, objName);
+                UndoRedoManager::Instance().executeCmd(std::move(cmd));
 
-                    // refresh cached object vector
-                    CachedGameObjects::Instance().refresh();
+                // refresh cached object vector
+                CachedGameObjects::Instance().refresh();
 
-                    DebugLog::addMessage("Added game obj from prefab\n");
-                }
-                else {
-                    Editor::popupState.prefabFileTypePopup = true;
-                    Editor::popupState.filename = path.filename().string();
-                    DebugLog::addMessage("Failed to receive\n");
-                }
+                DebugLog::addMessage("Added game obj from prefab\n");
             }
             else {
                 Editor::popupState.prefabFileTypePopup = true;
                 Editor::popupState.filename = path.filename().string();
-
-                DebugLog::addMessage("Wrong prefab file received: " + path.filename().string() + "\n");
+                DebugLog::addMessage("Failed to receive\n");
             }
         }
-        ImGui::EndDragDropTarget();
+        else {
+            Editor::popupState.prefabFileTypePopup = true;
+            Editor::popupState.filename = path.filename().string();
+
+            DebugLog::addMessage("Wrong prefab file received: " + path.filename().string() + "\n");
+        }
     }
+    
 }
 
 void HierarchyWindow::showContextMenu(GameObjectManager& manager, GameObject* obj, int objIndex) {
@@ -201,6 +277,22 @@ void HierarchyWindow::showContextMenu(GameObjectManager& manager, GameObject* ob
 
         if (ImGui::MenuItem("Create Object")) {
             AddObjWindow::createRec(manager);
+        }
+
+        ImGui::Spacing();
+        ImGui::Separator();
+        ImGui::Spacing();
+
+        // Add inside showContextMenu, after the existing Duplicate/Delete items:
+        Transform* t = obj->getComponent<Transform>();
+        if (t && !t->parentName.empty()) {
+            if (ImGui::MenuItem("Unparent")) {
+                t->parentName.clear();
+                t->localOffset = { 0.f, 0.f };
+                t->localRotation = 0.f;
+                CachedGameObjects::Instance().refresh();
+                DebugLog::addMessage(obj->getObjectName() + " unparented");
+            }
         }
 
         ImGui::EndPopup();

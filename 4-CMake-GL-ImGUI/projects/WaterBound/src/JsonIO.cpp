@@ -1022,6 +1022,11 @@ namespace JsonIO {
         jp.AddMember("ledgeClimbSpeed", p->ledgeClimbSpeed, a);
         jp.AddMember("mass", p->dynamics.mass, a);
         jp.AddMember("buoyancy", p->buoyancy, a);
+
+        if (jp.HasMember("freezeRotation")) p->freezeRotation = jp["freezeRotation"].GetBool();
+        if (jp.HasMember("angularDrag")) p->dynamics.angularDrag = jp["angularDrag"].GetFloat();
+        if (jp.HasMember("inertiaOverride")) p->inertiaOverride = jp["inertiaOverride"].GetFloat();
+
         doc.AddMember("Physics", jp, a);
 
         StringBuffer buf; Writer<StringBuffer> w(buf); doc.Accept(w);
@@ -1054,6 +1059,9 @@ namespace JsonIO {
         p->ledgeClimbSpeed = jp.HasMember("ledgeClimbSpeed") ? jp["ledgeClimbSpeed"].GetFloat() : 8.f;
         p->dynamics.mass = jp["mass"].GetFloat();
         p->buoyancy = jp["buoyancy"].GetBool();
+        if (jp.HasMember("freezeRotation")) p->freezeRotation = jp["freezeRotation"].GetBool();
+        if (jp.HasMember("angularDrag")) p->dynamics.angularDrag = jp["angularDrag"].GetFloat();
+        if (jp.HasMember("inertiaOverride")) p->inertiaOverride = jp["inertiaOverride"].GetFloat();
     }
 
     std::string serializeCollision(GameObject* obj) {

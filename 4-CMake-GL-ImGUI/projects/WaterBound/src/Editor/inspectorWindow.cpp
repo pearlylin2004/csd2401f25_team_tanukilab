@@ -359,21 +359,25 @@ void InspectorWindow::renderTransform(GameObject* selected) {
         if (ImGui::TreeNode("Position")) {
             bool posActive = false;
 
-            if (ImGui::DragFloat("X", &transform->x, 0.1f)) {
+            float newX = transform->x;
+            if (ImGui::DragFloat("X", &newX, 0.1f)) {
                 if (!m_isEditingPos) {
                     UndoRedoManager::Instance().beginTransformEdit(selected);
                     m_isEditingPos = true;
                     m_transformEditObject = selected;
                 }
+                TransformSystem::setWorldPosition(transform, newX, transform->y, m_manager);
             }
             posActive |= ImGui::IsItemActive();
 
-            if (ImGui::DragFloat("Y", &transform->y, 0.1f)) {
+            float newY = transform->y;
+            if (ImGui::DragFloat("Y", &newY, 0.1f)) {
                 if (!m_isEditingPos) {
                     UndoRedoManager::Instance().beginTransformEdit(selected);
                     m_isEditingPos = true;
                     m_transformEditObject = selected;
                 }
+                TransformSystem::setWorldPosition(transform, transform->x, newY, m_manager);
             }
             posActive |= ImGui::IsItemActive();
 
@@ -403,8 +407,9 @@ void InspectorWindow::renderTransform(GameObject* selected) {
 
         /* ------------------- Object Rotation ------------------- */
         if (ImGui::TreeNode("Rotation")) {
-            if (ImGui::DragFloat("Angle", &transform->rotation)) {
-                transform->rotation = std::clamp(transform->rotation, 0.f, 360.f);
+            float newRot = transform->rotation;
+            if (ImGui::DragFloat("Angle", &newRot)) {
+                TransformSystem::setWorldRotation(transform, newRot, m_manager);
             }
 
             // take snapshot when FIRST activated (before any changes)
@@ -498,6 +503,43 @@ void InspectorWindow::renderTransform(GameObject* selected) {
             if (m_isEditingScale && !scaleActive) {
                 UndoRedoManager::Instance().endTransformEdit(m_manager, m_transformEditObject);
                 m_isEditingScale = false;
+            }
+
+            ImGui::TreePop();
+
+        }
+
+        ImGui::Spacing();
+        ImGui::Separator();
+
+        if (ImGui::TreeNode("Hierarchy")) {
+            Transform* t = selected->getComponent<Transform>();
+
+            // Assign parent via drag-drop from hierarchy window
+            std::string currentParent = t->parentName.empty() ? "(none)" : t->parentName;
+            ImGui::Text("Parent: %s", currentParent.c_str());
+            ImGui::TextDisabled("(set parent by dragging in Hierarchy)");
+            
+
+            // Local offset display (read-only — managed by TransformSystem)
+            if (!t->parentName.empty()) {
+                ImGui::Spacing();
+                ImGui::Text("Local Offset: (%.2f, %.2f)", t->localOffset.x, t->localOffset.y);
+                ImGui::Text("Local Rotation: %.2f deg", t->localRotation);
+
+                ImGui::Spacing();
+                if (ImGui::Button("Unparent", ImVec2(-1, 0))) {
+                    auto cmd = std::make_unique<ReparentCmd>(m_manager, selected->getObjectName(),
+                        t->parentName, t->localOffset, t->localRotation,  // old state
+                        "", Vector2D{ 0.f, 0.f }, 0.f);                     // new state (no parent)
+                    UndoRedoManager::Instance().executeCmd(std::move(cmd));
+
+                    t->parentName.clear();
+                    t->localOffset = { 0.f, 0.f };
+                    t->localRotation = 0.f;
+                    CachedGameObjects::Instance().refresh();
+                    DebugLog::addMessage(selected->getObjectName() + " unparented");
+                }
             }
 
             ImGui::TreePop();
@@ -957,7 +999,10 @@ void InspectorWindow::renderCollision(GameObject* selected/*, GameObjectManager&
             if (collision->colliderType == shape::circle) {
                 if (ImGui::DragFloat("Diamater", &collision->colliderSize.x, 0.1f, 0.f, FLT_MAX)) {
                     collision->colliderSize.x = std::max(collision->colliderSize.x, 0.f);
-                    collision->colliderSize.y = collision->colliderSize.y;
+                    collision->colliderSize.y = collision->colliderSize.x;
+                    if (Physics* p = selected->getComponent<Physics>()) {
+                        if (!p->freezeRotation) p->recalculateInertia(collision->colliderSize, shape::circle);
+                    }
                 }
                 if (ImGui::IsItemActivated())
                     if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
@@ -965,15 +1010,39 @@ void InspectorWindow::renderCollision(GameObject* selected/*, GameObjectManager&
                     if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
             }
             else {
-                if (ImGui::DragFloat("Width", &collision->colliderSize.x, 0.1f, 0.f, FLT_MAX))
+                // if (ImGui::InputFloat("Width", &collision->colliderSize.x, 1.f)) {
+                //     collision->colliderSize.x = std::max(collision->colliderSize.x, 0.f);
+                //     if (Physics* p = selected->getComponent<Physics>()) {
+                //         if (!p->freezeRotation) p->recalculateInertia(collision->colliderSize, collision->colliderType);
+                //     }
+                // }
+
+                // if (ImGui::InputFloat("Height", &collision->colliderSize.y, 1.f)) {
+                //     collision->colliderSize.y = std::max(collision->colliderSize.y, 0.f);
+                //     if (Physics* p = selected->getComponent<Physics>()) {
+                //         if (!p->freezeRotation) p->recalculateInertia(collision->colliderSize, collision->colliderType);
+                //     }
+
+                // }
+                if (ImGui::DragFloat("Width", &collision->colliderSize.x, 0.1f, 0.f, FLT_MAX)){
                     collision->colliderSize.x = std::max(collision->colliderSize.x, 0.f);
+
+                    if (Physics* p = selected->getComponent<Physics>()) {
+                        if (!p->freezeRotation) p->recalculateInertia(collision->colliderSize, collision->colliderType);
+                    }
+                }
                 if (ImGui::IsItemActivated())
                     if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
                 if (ImGui::IsItemDeactivatedAfterEdit())
                     if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);;
 
-                if (ImGui::DragFloat("Height", &collision->colliderSize.y, 0.1f, 0.f, FLT_MAX))
+                if (ImGui::DragFloat("Height", &collision->colliderSize.y, 0.1f, 0.f, FLT_MAX)){
                     collision->colliderSize.y = std::max(collision->colliderSize.y, 0.f);
+                    
+                    if (Physics* p = selected->getComponent<Physics>()) {
+                        if (!p->freezeRotation) p->recalculateInertia(collision->colliderSize, collision->colliderType);
+                    }
+                }
                 if (ImGui::IsItemActivated())
                     if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
                 if (ImGui::IsItemDeactivatedAfterEdit())
@@ -990,6 +1059,26 @@ void InspectorWindow::renderCollision(GameObject* selected/*, GameObjectManager&
 
         ImGui::Spacing();
         ImGui::Separator();
+
+        if (ImGui::TreeNode("Physics Material")) {
+            ImGui::BeginDisabled(!collision->collisionFlag);
+
+            ImGui::SliderFloat("Bounciness", &collision->material.bounciness, 0.0f, 1.0f);
+            ImGui::SliderFloat("Friction", &collision->material.friction, 0.0f, 1.0f);
+
+            // Combine mode for bounciness
+            const char* combineModes[] = { "Average", "Minimum", "Maximum", "Multiply" };
+            int bounceMode = static_cast<int>(collision->material.bounceCombine);
+            if (ImGui::Combo("Bounce Combine", &bounceMode, combineModes, IM_ARRAYSIZE(combineModes)))
+                collision->material.bounceCombine = static_cast<PhysicsMaterial::CombineMode>(bounceMode);
+
+            int frictionMode = static_cast<int>(collision->material.frictionCombine);
+            if (ImGui::Combo("Friction Combine", &frictionMode, combineModes, IM_ARRAYSIZE(combineModes)))
+                collision->material.frictionCombine = static_cast<PhysicsMaterial::CombineMode>(frictionMode);
+
+            ImGui::EndDisabled();
+            ImGui::TreePop();
+        }
 
         if (ImGui::TreeNode("Collision Tag")) {
             std::string currentTag = collision->collisionTag.empty() ? "default" : collision->collisionTag;
@@ -1116,17 +1205,29 @@ void InspectorWindow::renderPhysics(GameObject* selected, bool canMove) {
         ImGui::Spacing();
         ImGui::Separator();
 
+        // --- flat fields ---
+        // if (ImGui::InputFloat("Mass", &physic->dynamics.mass, 1.f)) {
+        //     physic->dynamics.mass = std::max(physic->dynamics.mass, 0.f);
+        //     if (!physic->freezeRotation) {
+        //         if (auto* c = selected->getComponent<CollisionInfo>())
+        //             physic->recalculateInertia(c->colliderSize, c->colliderType);
 
         // only show movement data if object is controlable via input
         if (ImGui::TreeNode("Properties")) {
-            if (ImGui::DragFloat("Mass", &physic->dynamics.mass, 1.f, 0.f, FLT_MAX))
+            if (ImGui::DragFloat("Mass", &physic->dynamics.mass, 1.f, 0.f, FLT_MAX)) {
                 physic->dynamics.mass = std::max(physic->dynamics.mass, 0.f); // 0.f mass means static obj (never move, e.g. wall)
-            if (ImGui::IsItemActivated())
-                if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
-            if (ImGui::IsItemDeactivatedAfterEdit())
-                if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
 
-            ImGui::TreePop();
+                if (!physic->freezeRotation) {
+                    if (auto* c = selected->getComponent<CollisionInfo>())
+                        physic->recalculateInertia(c->colliderSize, c->colliderType);
+                }
+                if (ImGui::IsItemActivated())
+                    if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
+                if (ImGui::IsItemDeactivatedAfterEdit())
+                    if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
+
+                ImGui::TreePop();
+            }
         }
 
         if (ImGui::TreeNode("Input Movement Control")) {
@@ -1154,7 +1255,7 @@ void InspectorWindow::renderPhysics(GameObject* selected, bool canMove) {
                     if (ImGui::IsItemDeactivatedAfterEdit())
                         if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
 
-                    if(ImGui::DragFloat("Air Accel", &physic->airAccelForce, 1.0f))
+                    if (ImGui::DragFloat("Air Accel", &physic->airAccelForce, 1.0f))
                         physic->airAccelForce = std::max(physic->airAccelForce, 0.f); // set the min to 0.f
                     if (ImGui::IsItemActivated())
                         if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
@@ -1209,8 +1310,63 @@ void InspectorWindow::renderPhysics(GameObject* selected, bool canMove) {
                     ImGui::TreePop();
                 }
             }
-            else {
-                ImGui::TextWrapped("Requires Input component to move");
+        }
+
+        if (ImGui::InputFloat("Linear Drag", &physic->damping, 0.1f))
+            physic->damping = std::clamp(physic->damping, 0.f, 1.f);
+
+        if (ImGui::SliderFloat("Angular Drag", &physic->dynamics.angularDrag, 0.0f, 1.0f))
+            physic->dynamics.angularDrag = std::clamp(physic->dynamics.angularDrag, 0.0f, 1.0f);
+
+        if (ImGui::InputFloat("Gravity Scale", &physic->gravity, 1.f))
+            physic->gravity = std::min(physic->gravity, 0.f); // gravity should stay negative
+
+        //ImGui::Checkbox("Buoyancy", &physic->buoyancy);
+
+        ImGui::Spacing();
+        ImGui::Separator();
+        ImGui::Spacing();
+
+        // --- input movement (only shown if object has Input component) ---
+        if (canMove && ImGui::TreeNode("Movement")) {
+            if (ImGui::InputFloat("Speed", &physic->moveSpeed, 1.f))
+                physic->moveSpeed = std::max(physic->moveSpeed, 0.f);
+
+            if (ImGui::InputFloat("Jump Force", &physic->jumpForce, 1.f))
+                physic->jumpForce = std::max(physic->jumpForce, 0.f);
+
+            ImGui::TreePop();
+        }
+
+        ImGui::Spacing();
+        ImGui::Separator();
+        ImGui::Spacing();
+
+        // --- Constraints ---
+        if (ImGui::TreeNode("Constraints")) {
+            ImGui::Text("Freeze Rotation");
+            ImGui::SameLine();
+            ImGui::Checkbox("Z", &physic->freezeRotation);
+
+            if (!physic->freezeRotation) {
+                ImGui::Spacing();
+                if (ImGui::InputFloat("Inertia Override", &physic->inertiaOverride, 1.f)) {
+                    physic->inertiaOverride = std::max(physic->inertiaOverride, 0.f);
+                    if (auto* c = selected->getComponent<CollisionInfo>())
+                        physic->recalculateInertia(c->colliderSize, c->colliderType);
+                }
+                if (ImGui::IsItemHovered())
+                    ImGui::SetTooltip("0 = auto-calculate from mass and shape");
+
+                ImGui::SameLine();
+                if (ImGui::Button("Reset")) {
+                    physic->inertiaOverride = 0.0f;
+                    if (auto* c = selected->getComponent<CollisionInfo>())
+                        physic->recalculateInertia(c->colliderSize, c->colliderType);
+                }
+                if (ImGui::IsItemHovered())
+                    ImGui::SetTooltip("Reset to auto-calculated value");
+                ImGui::Text("Inertia: %.4f", physic->dynamics.inertia);
             }
 
             ImGui::TreePop();
@@ -1253,32 +1409,26 @@ void InspectorWindow::renderPhysics(GameObject* selected, bool canMove) {
 
             ImGui::Spacing();
 
-            Vector2D vel2D{ physic->dynamics.velocity.x, physic->dynamics.velocity.y };
-            float vel = Vec_Length(&vel2D);
-            ImGui::Text("Speed: %.2f", vel);
+            // --- debug info ---
+            if (ImGui::TreeNode("Info")) {
+                ImGui::Text("Velocity: (%.2f, %.2f)", physic->dynamics.velocity.x, physic->dynamics.velocity.y);
+                Vector2D vel2D{ physic->dynamics.velocity.x, physic->dynamics.velocity.y };
+                ImGui::Text("Speed: %.2f", Vec_Length(&vel2D));
+                ImGui::Text("Angular Velocity: %.4f", physic->dynamics.angularVelocity);
+                ImGui::Text("Inverse Mass: %.4f", physic->dynamics.inverseMass);
+                ImGui::Text("Coyote Available: %s", physic->coyoteAvailable ? "true" : "false");
+                ImGui::Text("Jump Buffer: %.3f", physic->jumpBufferTimer);
+                ImGui::Text("Ledge Climbing: %s", physic->ledgeClimb ? "true" : "false");
 
-            ImGui::Spacing();
+                ImGui::TreePop();
+            }
 
-            ImGui::Text("Acceleration: (%.2f, %.2f, %.2f)",
-                physic->dynamics.acceleration.x,
-                physic->dynamics.acceleration.y,
-                physic->dynamics.acceleration.z);
+            if (entry) {
+                if (ImGui::Button("Remove Physics", ImVec2(-1, 0))) {
+                    UndoRedoManager::Instance().executeCmd(std::make_unique<RemoveComponentCmd>(m_manager, selected, *entry));
 
-            ImGui::Spacing();
-
-            ImGui::Text("Inverse Mass: %.4f", physic->dynamics.inverseMass);
-            ImGui::Text("Coyote Available: %s", physic->coyoteAvailable ? "true" : "false");
-            ImGui::Text("Jump Buffer: %.3f", physic->jumpBufferTimer);
-            ImGui::Text("Ledge Climbing: %s", physic->ledgeClimb ? "true" : "false");
-
-            ImGui::TreePop();
-        }
-
-        if (entry) {
-            if (ImGui::Button("Remove Physics", ImVec2(-1, 0))) {
-                UndoRedoManager::Instance().executeCmd(std::make_unique<RemoveComponentCmd>(m_manager, selected, *entry));
-
-                DebugLog::addMessage("Removed Physics\n");
+                    DebugLog::addMessage("Removed Physics\n");
+                }
             }
         }
     }

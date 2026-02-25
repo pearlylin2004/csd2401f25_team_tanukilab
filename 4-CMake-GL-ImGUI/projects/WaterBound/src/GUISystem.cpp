@@ -425,6 +425,8 @@ void GUISystem::resetAllObjectsToSpawn() {
         }
 
         if (obj->hasComponent<TileMap>()) {
+
+            std::cout << "fkfkfkfk\n\n\n\n";
 			TileMap* tileMap = obj->getComponent<TileMap>();
             tileMap->collisionBoxs.clear();
 			tileMap->colChanged = true;

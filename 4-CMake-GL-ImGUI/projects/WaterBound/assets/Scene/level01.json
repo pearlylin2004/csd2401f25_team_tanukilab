@@ -755,7 +755,10 @@
           ]
         },
         "Physics": {
-          "autoUpdate": 0
+          "autoUpdate": 0,
+          "freezeRotation": 1,
+          "angularDrag": 0.9800000190734863,
+          "inertiaOverride": 0.0
         }
       }
     },

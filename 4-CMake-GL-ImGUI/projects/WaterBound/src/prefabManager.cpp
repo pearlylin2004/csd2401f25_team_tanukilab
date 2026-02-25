@@ -726,6 +726,15 @@ void PrefabManager::applyPrefabComponents(GameObject* go, const rapidjson::Value
 
 			//std::cout << t->scaleX << " " << t->scaleY << " " << t->scaleZ << "scale\n\n";
 		}
+
+		if (jt.HasMember("parentName") && jt["parentName"].IsString())
+			t->parentName = jt["parentName"].GetString();
+		if (jt.HasMember("localOffset") && jt["localOffset"].IsArray() && jt["localOffset"].Size() == 2) {
+			t->localOffset.x = jt["localOffset"][0].GetFloat();
+			t->localOffset.y = jt["localOffset"][1].GetFloat();
+		}
+		if (jt.HasMember("localRotation") && jt["localRotation"].IsNumber())
+			t->localRotation = jt["localRotation"].GetFloat();
 	}
 
 	// ---- Render ----
@@ -799,6 +808,10 @@ void PrefabManager::applyPrefabComponents(GameObject* go, const rapidjson::Value
 		p->dynamics.mass = JsonIO::GetFloatOr(jp, "mass", 1.f);
 		p->buoyancy = JsonIO::GetBoolOr(jp, "buoyancy", false);
 
+		if (jp.HasMember("freezeRotation")) p->freezeRotation = jp["freezeRotation"].GetBool();
+		if (jp.HasMember("angularDrag")) p->dynamics.angularDrag = jp["angularDrag"].GetFloat();
+		if (jp.HasMember("inertiaOverride")) p->inertiaOverride = jp["inertiaOverride"].GetFloat();
+		
 		if (go->hasComponent<Transform>()) {
 			Transform* transform = go->getComponent<Transform>();
 			p->dynamics.position.x = transform->x;
@@ -827,6 +840,9 @@ void PrefabManager::applyPrefabComponents(GameObject* go, const rapidjson::Value
 			c->collisionTag = jc["collisionTag"].GetString();
 		}
 
+		c->material.bounciness = JsonIO::GetFloatOr(jc, "bounciness", 0.0f);
+		c->material.friction = JsonIO::GetFloatOr(jc, "friction", 0.0f);
+		
 		if(jc.HasMember("colliderType") && jc["colliderType"].IsString())
 			c->colliderType = JsonIO::StrToShape(jc["colliderType"].GetString());
 
@@ -838,6 +854,14 @@ void PrefabManager::applyPrefabComponents(GameObject* go, const rapidjson::Value
 					c->ignoreCollisionsWith.insert(tag.GetString());
 				}
 			}
+		}
+
+	}
+
+	if (auto* p = go->getComponent<Physics>()) {
+		if (auto* c = go->getComponent<CollisionInfo>()) {
+			p->recalculateInertia(c->colliderSize, c->colliderType);
+
 		}
 	}
 
@@ -1099,6 +1123,14 @@ void PrefabManager::serializeComponents(const GameObject* obj, rapidjson::Value&
 		jt.AddMember("rotation", t->rotation, a);
 		JsonIO::WriteVec3(jt, "scale", t->scaleX, t->scaleY, t->scaleZ, a);
 
+		if (!t->parentName.empty()) {
+			jt.AddMember("parentName", rapidjson::Value(t->parentName.c_str(), a), a);
+			rapidjson::Value lo(rapidjson::kArrayType);
+			lo.PushBack(t->localOffset.x, a).PushBack(t->localOffset.y, a);
+			jt.AddMember("localOffset", lo, a);
+			jt.AddMember("localRotation", t->localRotation, a);
+		}
+
 		comps.AddMember("Transform", jt, a);
 	}
 
@@ -1166,6 +1198,10 @@ void PrefabManager::serializeComponents(const GameObject* obj, rapidjson::Value&
 		jp.AddMember("mass", p->dynamics.mass, a);
 		jp.AddMember("buoyancy", p->buoyancy ? 1 : 0, a);
 
+		jp.AddMember("freezeRotation", p->freezeRotation, a);
+		jp.AddMember("angularDrag", p->dynamics.angularDrag, a);
+		jp.AddMember("inertiaOverride", p->inertiaOverride, a);
+
 		comps.AddMember("Physics", jp, a);
 	}
 
@@ -1184,6 +1220,8 @@ void PrefabManager::serializeComponents(const GameObject* obj, rapidjson::Value&
 
 		jc.AddMember("collisionTag", rapidjson::Value(c->collisionTag.c_str(), a), a);
 
+		jc.AddMember("bounciness", c->material.bounciness, a);
+		jc.AddMember("friction", c->material.friction, a);
 		jc.AddMember("colliderType", rapidjson::Value(JsonIO::ShapeToStr(c->colliderType), a), a);
 
 		rapidjson::Value ignoreArray(rapidjson::kArrayType);
