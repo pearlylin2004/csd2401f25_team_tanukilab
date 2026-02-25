@@ -582,6 +582,9 @@ void GameObjectManager::loadSceneFromJson(const std::string& filename) {
 				c->collisionTag = jc["collisionTag"].GetString();
 			}
 
+			if (jc.HasMember("colliderType") && jc["colliderType"].IsString())
+				c->colliderType = JsonIO::StrToShape(jc["colliderType"].GetString());
+
 			// Load ignore the collision
 			if (jc.HasMember("ignoreCollisionsWith") && jc["ignoreCollisionsWith"].IsArray()) {
 				c->ignoreCollisionsWith.clear();
@@ -1322,6 +1325,11 @@ doc.AddMember("layers", layersArr, a);
 				if (!prefabC || !prefabC->HasMember("collisionTag") ||
 					c->collisionTag != (*prefabC)["collisionTag"].GetString()) {
 					jc.AddMember("collisionTag", rapidjson::Value(c->collisionTag.c_str(), a), a);
+				}
+
+				std::string colliderTypeStr = JsonIO::ShapeToStr(c->colliderType);
+				if (!prefabC || !prefabC->HasMember("colliderType") || colliderTypeStr != (*prefabC)["colliderType"].GetString()) {
+					jc.AddMember("colliderType", rapidjson::Value(colliderTypeStr.c_str(), a), a);
 				}
 
 				bool shouldSaveIgnoreList = false;

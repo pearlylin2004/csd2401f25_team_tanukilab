@@ -1071,6 +1071,7 @@ namespace JsonIO {
         jc.AddMember("height", c->colliderSize.y, a);
         jc.AddMember("collisionRes", Value(CollisionResponseModeToStr(c->collisionRes), a), a);
         jc.AddMember("collisionTag", Value(c->collisionTag.c_str(), a), a);
+        jc.AddMember("colliderType", Value(ShapeToStr(c->colliderType), a), a);
 
         Value ignoreArray(kArrayType);
         for (const std::string& tag : c->ignoreCollisionsWith)
@@ -1097,8 +1098,12 @@ namespace JsonIO {
         c->autoFitScale = jc["autoFitScale"].GetBool();
         c->colliderSize.x = jc["width"].GetFloat();
         c->colliderSize.y = jc["height"].GetFloat();
+
         if (jc.HasMember("collisionRes")) c->collisionRes = StrToCollisionResponseMode(jc["collisionRes"].GetString());
         if (jc.HasMember("collisionTag")) c->collisionTag = jc["collisionTag"].GetString();
+        if (jc.HasMember("colliderType") && jc["colliderType"].IsString())
+            c->colliderType = StrToShape(jc["colliderType"].GetString());
+
         if (jc.HasMember("ignoreCollisionsWith")) {
             const Value& arr = jc["ignoreCollisionsWith"];
             c->ignoreCollisionsWith.clear();
@@ -1304,10 +1309,14 @@ namespace JsonIO {
             if (ao.HasMember("totalColumn") && ao["totalColumn"].IsInt())    st.totalColumn = ao["totalColumn"].GetInt();
             if (ao.HasMember("totalRow") && ao["totalRow"].IsInt())       st.totalRow = ao["totalRow"].GetInt();
             if (ao.HasMember("frameTime") && ao["frameTime"].IsNumber())   st.frameTime = ao["frameTime"].GetFloat();
-            if (ao.HasMember("initialFramCol") && ao["initialFramCol"].IsInt()) st.initialFrame.x = (float)ao["initialFramCol"].GetInt();
-            if (ao.HasMember("initialFramRow") && ao["initialFramRow"].IsInt()) st.initialFrame.y = (float)ao["initialFramRow"].GetInt();
-            if (ao.HasMember("lastFramCol") && ao["lastFramCol"].IsInt())    st.lastFrame.x = (float)ao["lastFramCol"].GetInt();
-            if (ao.HasMember("lastFramRow") && ao["lastFramRow"].IsInt())    st.lastFrame.y = (float)ao["lastFramRow"].GetInt();
+            if (ao.HasMember("initialFramCol") && ao["initialFramCol"].IsNumber())
+                st.initialFrame.x = ao["initialFramCol"].GetFloat();
+            if (ao.HasMember("initialFramRow") && ao["initialFramRow"].IsNumber())
+                st.initialFrame.y = ao["initialFramRow"].GetFloat();
+            if (ao.HasMember("lastFramCol") && ao["lastFramCol"].IsNumber())
+                st.lastFrame.x = ao["lastFramCol"].GetFloat();
+            if (ao.HasMember("lastFramRow") && ao["lastFramRow"].IsNumber())
+                st.lastFrame.y = ao["lastFramRow"].GetFloat();
         }
     }
 
