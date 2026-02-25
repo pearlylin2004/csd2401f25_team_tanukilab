@@ -19,6 +19,7 @@ Technology is prohibited.
 #include "JsonIO.h"
 #include "Editor/undoRedo.h"
 #include "Editor/editorManager.h"
+#include "Systems.h"
 
 /* ---------------- Add Component ---------------- */
 AddComponentCmd::AddComponentCmd(GameObjectManager& manager, GameObject* obj, const Editor::ComponentEntry& entry) : m_manager(manager), m_entry(entry) {
@@ -301,6 +302,23 @@ void TileMapCmd::updateObjName(const std::string& oldName, const std::string& ne
 /* ---------------- END ---------------- */
 
 
+/* ---------------- Grid Setting -------------- */
+TileMapToolCmd::TileMapToolCmd(bool& showGrid, const TileMapToolSnapshot& before, const TileMapToolSnapshot& after)
+    : m_showGrid(showGrid), m_before(before), m_after(after) {
+}
+
+void TileMapToolCmd::execute() { applySnapshot(m_after); }
+void TileMapToolCmd::undo() { applySnapshot(m_before); }
+
+void TileMapToolCmd::applySnapshot(const TileMapToolSnapshot& snap) {
+    TileMapSystem::filename = snap.filename;
+    TileMapSystem::brushSize = snap.brushSize;
+    TileMapSystem::eraseMode = snap.eraseMode;
+    m_showGrid = snap.showGrid;
+}
+/* ---------------- END ---------------- */
+
+
 /* ---------------- Component Property ---------------- */
 ComponentPropertyCmd::ComponentPropertyCmd(GameObjectManager& manager, const std::string& objName, const Editor::ComponentEntry& entry, const std::string& before, const std::string& after)
     :   m_manager(manager),
@@ -531,6 +549,45 @@ void UndoRedoManager::recordTileChange(int x, int y, const std::string& oldTile,
 	}
 
 	m_tileChanges.push_back({ x, y, oldTile, newTile });
+}
+
+void UndoRedoManager::beginTileMapToolEdit(bool showGrid) {
+    if (m_isEditingTileMapTool) return;
+
+    m_isEditingTileMapTool = true;
+
+    m_tileMapToolBefore = {
+        TileMapSystem::filename,
+        TileMapSystem::brushSize,
+        TileMapSystem::eraseMode,
+        showGrid
+    };
+}
+
+void UndoRedoManager::endTileMapToolEdit(bool showGrid) {
+    if (!m_isEditingTileMapTool) return;
+
+    TileMapToolSnapshot after = {
+        TileMapSystem::filename,
+        TileMapSystem::brushSize,
+        TileMapSystem::eraseMode,
+        showGrid
+    };
+
+    bool changed = (m_tileMapToolBefore.filename != after.filename ||
+        m_tileMapToolBefore.brushSize != after.brushSize ||
+        m_tileMapToolBefore.eraseMode != after.eraseMode ||
+        m_tileMapToolBefore.showGrid != after.showGrid);
+
+    if (changed) {
+        auto cmd = std::make_unique<TileMapToolCmd>(Editor::gizmoState.showGrid, m_tileMapToolBefore, after);
+        m_undoDeque.push_back(std::move(cmd));
+        m_redoDeque.clear();
+        if (m_undoDeque.size() > MAX_UNDO_STEPS)
+            m_undoDeque.pop_front();
+    }
+
+    m_isEditingTileMapTool = false;
 }
 
 void UndoRedoManager::beginComponentEdit(GameObject* obj, const Editor::ComponentEntry& entry) {

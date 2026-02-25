@@ -185,6 +185,31 @@ private:
 	std::vector<TileChange>	m_changes;
 };
 
+// grid settings & tilemap filename
+struct TileMapToolSnapshot {
+	std::string filename;
+	int brushSize;
+	bool eraseMode;
+	bool showGrid;
+};
+
+class TileMapToolCmd : public CmdInterface {
+public:
+	TileMapToolCmd(bool& showGrid, const TileMapToolSnapshot& before, const TileMapToolSnapshot& after);
+
+	void execute() override;
+
+	void undo() override;
+
+	void updateObjName(const std::string&, const std::string&) override {}
+
+private:
+	bool& m_showGrid;
+	TileMapToolSnapshot m_before;
+	TileMapToolSnapshot m_after;
+	void applySnapshot(const TileMapToolSnapshot& snap);
+};
+
 // store any component property changes
 class ComponentPropertyCmd : public CmdInterface {
 public:
@@ -250,6 +275,7 @@ private:
 	void applySnapshot(const LayerSnapshot& snap);
 };
 
+
 // big boss for undo/redo operation (singleton)
 class UndoRedoManager {
 public:
@@ -300,6 +326,11 @@ public:
 	void recordTileChange(int x, int y, const std::string& oldTile, const std::string& newTile);
 
 	bool isEditingTilemap() const { return m_isEditingTilemap; }
+
+	void beginTileMapToolEdit(bool showGrid);
+
+	void endTileMapToolEdit(bool showGrid);
+
 	/* ---- END ---- */
 
 
@@ -339,6 +370,8 @@ private:
 	bool				m_isEditingTilemap = false;
 	std::string			m_editingTilemapObjName;
 	std::vector<TileChange> m_tileChanges;
+	bool m_isEditingTileMapTool{ false };
+	TileMapToolSnapshot m_tileMapToolBefore{};
 
 	// for component properties (all except transform/animation/partial tilemap)
 	bool					m_isEditingComponent = false;

@@ -1710,7 +1710,12 @@ void InspectorWindow::renderTileMap(GameObject* selected)
         if (ImGui::TreeNode("Brush")) {
             std::string displayText = TileMapSystem::filename.empty() ? "No Brush Selected (Drag texture here)" : std::filesystem::path(TileMapSystem::filename).filename().string();
 
-            ImGui::SliderInt("Brush Size", &TileMapSystem::brushSize, 1, 5);
+            ImGui::DragInt("Brush Size", &TileMapSystem::brushSize, 0.1f, 1, 5);
+            if (ImGui::IsItemActivated())
+                UndoRedoManager::Instance().beginTileMapToolEdit(m_gizmoState.showGrid);
+            if (ImGui::IsItemDeactivatedAfterEdit())
+                UndoRedoManager::Instance().endTileMapToolEdit(m_gizmoState.showGrid);
+
             ImGui::Text("(%dx%d tiles)", TileMapSystem::brushSize, TileMapSystem::brushSize);
 
             ImGui::BeginChild("BrushDropZone", ImVec2(-1, 80), true, ImGuiWindowFlags_NoScrollWithMouse);
@@ -1738,7 +1743,11 @@ void InspectorWindow::renderTileMap(GameObject* selected)
 
                     // only accept if dropped file is a png/jpg/jpeg
                     if (ext == ".png" || ext == ".jpg" || ext == ".jpeg") {
+                        UndoRedoManager::Instance().beginTileMapToolEdit(m_gizmoState.showGrid);
+
                         TileMapSystem::filename = path;
+
+                        UndoRedoManager::Instance().endTileMapToolEdit(m_gizmoState.showGrid);
 
                         DebugLog::addMessage("Selected brush texture: " + TileMapSystem::filename + "\n");
                     }
@@ -1762,14 +1771,20 @@ void InspectorWindow::renderTileMap(GameObject* selected)
             if (!TileMapSystem::filename.empty()) {
                 ImGui::Spacing();
 
-                ImGui::Checkbox("Eraser Mode", &TileMapSystem::eraseMode);
+                if (ImGui::Checkbox("Eraser Mode", &TileMapSystem::eraseMode)) {
+                    TileMapSystem::eraseMode = !TileMapSystem::eraseMode;
+                    UndoRedoManager::Instance().beginTileMapToolEdit(m_gizmoState.showGrid);
+                    TileMapSystem::eraseMode = !TileMapSystem::eraseMode;
+                    UndoRedoManager::Instance().endTileMapToolEdit(m_gizmoState.showGrid);
+                }
 
                 ImGui::Spacing();
 
                 if (ImGui::Button("Clear Brush", ImVec2(-1, 0))) {
+                    UndoRedoManager::Instance().beginTileMapToolEdit(m_gizmoState.showGrid);
                     TileMapSystem::filename.clear();
                     TileMapSystem::eraseMode = false;
-                    DebugLog::addMessage("Cleared brush texture\n");
+                    UndoRedoManager::Instance().endTileMapToolEdit(m_gizmoState.showGrid);
                 }
             }
 
@@ -1777,7 +1792,12 @@ void InspectorWindow::renderTileMap(GameObject* selected)
         }
 
         if (ImGui::TreeNode("Grid")) {
-            ImGui::Checkbox("Enable", &m_gizmoState.showGrid);
+            if (ImGui::Checkbox("Enable", &m_gizmoState.showGrid)) {
+                m_gizmoState.showGrid = !m_gizmoState.showGrid;
+                UndoRedoManager::Instance().beginTileMapToolEdit(m_gizmoState.showGrid);
+                m_gizmoState.showGrid = !m_gizmoState.showGrid;
+                UndoRedoManager::Instance().endTileMapToolEdit(m_gizmoState.showGrid);
+            }
 
             ImGui::DragInt("Grid Columns", &tm->columns);
             if (ImGui::IsItemActivated())
