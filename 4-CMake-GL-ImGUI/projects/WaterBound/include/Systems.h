@@ -100,16 +100,17 @@ public:
 	//void renderCollision(Collision::AABB const& box, glm::vec3 const& clr);
 	//GLuint getTexture() const { return texture; }
 	void batchingSetUp(GameObjectManager& manager, float const& deltaTime);
-	void instancePerBatch(std::unordered_map<BatchKey, std::vector<renderer::InstanceData>, BatchKeyHash> &batch);
+	void instancePerBatch(std::map<BatchKey, std::vector<renderer::InstanceData>> &batch);
 	void clearBatches();
 
 	void fboAspectRatio(int& width, int& height) const;
 	~RenderSystem();
 	//bool batchRebuild = true;
-	static std::unordered_map<BatchKey, std::vector<renderer::InstanceData>, BatchKeyHash> objectWithTex2;
-private:
-	std::unordered_map<BatchKey, std::vector<renderer::InstanceData>, BatchKeyHash> objectWithTex;
-	std::unordered_map<BatchKey, std::vector<renderer::InstanceData>, BatchKeyHash> objectWithoutTex;
+	//static std::unordered_map<BatchKey, std::vector<renderer::InstanceData>, BatchKeyHash> objectWithTex2;
+	//static std::unordered_map<BatchKey, std::vector<renderer::InstanceData>, BatchKeyHash> objectWithTex;
+	//static std::unordered_map<BatchKey, std::vector<renderer::InstanceData>, BatchKeyHash> objectWithoutTex;
+	static std::map<BatchKey, std::vector<renderer::InstanceData>> objectWithTex;
+	static std::map<BatchKey, std::vector<renderer::InstanceData>> objectWithoutTex;
 };
 
 class ParticleSystem

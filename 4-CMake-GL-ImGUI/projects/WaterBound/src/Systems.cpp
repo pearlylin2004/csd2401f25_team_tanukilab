@@ -28,6 +28,8 @@ Technology is prohibited.
 
 std::string TileMapSystem::filename{};
 std::vector<Particle::UID> Particle::UIDs;
+std::map<BatchKey, std::vector<renderer::InstanceData>> RenderSystem::objectWithTex{};
+std::map<BatchKey, std::vector<renderer::InstanceData>> RenderSystem::objectWithoutTex{};
 //here we go buddies
 
 //all the systems need to get all game objects
@@ -275,8 +277,8 @@ void RenderSystem::update(GameObjectManager& manager, float const& deltaTime)
 
 
 	}
-	glDisable(GL_BLEND);
 	//drawing models without texture
+	glDepthMask(GL_TRUE);
 	glUseProgram(renderer::shdr_pgm[1]);
 	GLint uView = glGetUniformLocation(renderer::shdr_pgm[1], "V");
 	GLint uProj = glGetUniformLocation(renderer::shdr_pgm[1], "P");
@@ -287,10 +289,14 @@ void RenderSystem::update(GameObjectManager& manager, float const& deltaTime)
 	{
 		renderer::drawInstances(pair);
 	}
+	//glDisable(GL_DEPTH_TEST);
 	//drawing models with texture
+	glDepthMask(GL_FALSE);  // don't write to depth buffer
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glUseProgram(renderer::shdr_pgm[0]); // hasTex shader
 	uView = glGetUniformLocation(renderer::shdr_pgm[0], "V");
-uProj = glGetUniformLocation(renderer::shdr_pgm[0], "P");
+	uProj = glGetUniformLocation(renderer::shdr_pgm[0], "P");
 	glUniformMatrix4fv(uView, 1, GL_FALSE, glm::value_ptr(camView));
 	glUniformMatrix4fv(uProj, 1, GL_FALSE, glm::value_ptr(camProj));
 	instancePerBatch(objectWithTex);
@@ -305,18 +311,19 @@ uProj = glGetUniformLocation(renderer::shdr_pgm[0], "P");
 		//renderer::model& mdl = renderer::models[(int)key.meshType];
 		renderer::drawInstances(pair);
 	}
-	instancePerBatch(objectWithTex2);
-	for (std::pair<const BatchKey, std::vector<renderer::InstanceData>>& pair : objectWithTex2)
-	{
-		const BatchKey& key = pair.first;
-		//std::vector<renderer::InstanceData>& instances = pair.second;
-		glBindTextureUnit(0, key.texID);
-		GLint uTexLoc = glGetUniformLocation(renderer::shdr_pgm[0], "uTex2d");
-		if (uTexLoc != -1)
-			glUniform1i(uTexLoc, 0);
-		//renderer::model& mdl = renderer::models[(int)key.meshType];
-		renderer::drawInstances(pair);
-	}
+	glDepthMask(GL_TRUE);
+	//instancePerBatch(objectWithTex2);
+	//for (std::pair<const BatchKey, std::vector<renderer::InstanceData>>& pair : objectWithTex2)
+	//{
+	//	const BatchKey& key = pair.first;
+	//	//std::vector<renderer::InstanceData>& instances = pair.second;
+	//	glBindTextureUnit(0, key.texID);
+	//	GLint uTexLoc = glGetUniformLocation(renderer::shdr_pgm[0], "uTex2d");
+	//	if (uTexLoc != -1)
+	//		glUniform1i(uTexLoc, 0);
+	//	//renderer::model& mdl = renderer::models[(int)key.meshType];
+	//	renderer::drawInstances(pair);
+	//}
 
 	/*if (UISystem::isShowUI()) glBindFramebuffer(GL_FRAMEBUFFER, 0);*/
 
@@ -385,6 +392,7 @@ RenderSystem::~RenderSystem() {
 // Load all textures for game objects with a Render component
 void RenderSystem::init(GameObjectManager& manager, int fboW, int fboH)
 {
+	//glEnable(GL_DEPTH_TEST);
 	//glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	//stbi_set_flip_vertically_on_load(true);
@@ -425,8 +433,8 @@ void RenderSystem::init(GameObjectManager& manager, int fboW, int fboH)
 void RenderSystem::batchingSetUp(GameObjectManager& manager, float const& deltaTime)
 {
 	LayerManager& layerManager = manager.getLayerManager();
-
-	for (std::pair<const BatchKey, std::vector<renderer::InstanceData>>& pair : objectWithTex) pair.second.clear();
+	
+	//for (std::pair<const BatchKey, std::vector<renderer::InstanceData>>& pair : objectWithTex) pair.second.clear();
 	for (std::pair<const BatchKey, std::vector<renderer::InstanceData>>& pair : objectWithoutTex) pair.second.clear();
 
 	// Process objects layer by layer for efficient visibility check
@@ -496,20 +504,22 @@ void RenderSystem::batchingSetUp(GameObjectManager& manager, float const& deltaT
 						}
 					}
 					data.texParams = { texOffSet, texScale };
-					BatchKey key{ transform->z, as.texHDL };
+					//data.textureID = render->texHDL;
+					BatchKey key{ transform->z, as.texHDL, render->modelRef.shape };
 					objectWithTex[key].push_back(data);
 				}
 				else {
-					BatchKey key{ transform->z, 0 };
+					BatchKey key{ transform->z, 0, render->modelRef.shape };
 					objectWithoutTex[key].push_back(data);
 				}
 			}
 			else if (render->hasTex) {
-				BatchKey key{ transform->z, render->texHDL };
+				//data.textureID = render->texHDL;
+				BatchKey key{ transform->z, render->texHDL, render->modelRef.shape };
 				objectWithTex[key].push_back(data);
 			}
 			else {
-				BatchKey key{ transform->z, 0 };
+				BatchKey key{ transform->z, 0, render->modelRef.shape };
 				objectWithoutTex[key].push_back(data);
 			}
 		}
@@ -610,7 +620,7 @@ void RenderSystem::batchingSetUp(GameObjectManager& manager, float const& deltaT
 //	}
 //}
 
-void RenderSystem::instancePerBatch(std::unordered_map<BatchKey, std::vector<renderer::InstanceData>, BatchKeyHash> &batch)
+void RenderSystem::instancePerBatch(std::map<BatchKey, std::vector<renderer::InstanceData>> &batch)
 {
 	for (std::pair<const BatchKey, std::vector<renderer::InstanceData>>& objs : batch)
 	{

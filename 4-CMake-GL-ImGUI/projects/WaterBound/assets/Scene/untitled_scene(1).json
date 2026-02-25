@@ -1,0 +1,340 @@
+{
+  "version": 1,
+  "layers": [
+    {
+      "id": 0,
+      "name": "Background",
+      "enabled": 1,
+      "visible": 1,
+      "updatable": 1
+    },
+    {
+      "id": 1,
+      "name": "Game",
+      "enabled": 1,
+      "visible": 1,
+      "updatable": 1
+    },
+    {
+      "id": 2,
+      "name": "UI",
+      "enabled": 1,
+      "visible": 1,
+      "updatable": 1
+    }
+  ],
+  "objects": [
+    {
+      "name": "Empty_0",
+      "components": {
+        "Transform": {
+          "pos": [
+            2.446993112564087,
+            -3.1141879558563232,
+            0.10000000149011612
+          ],
+          "rotation": 0.0,
+          "scale": [
+            9.5,
+            9.5,
+            0.0
+          ]
+        },
+        "Render": {
+          "shape": "square",
+          "hasTex": 1,
+          "texture": "assets/Texture\\game_bg_layer_4.png",
+          "hasTex": 1,
+          "hasAnimation": 0
+        }
+      }
+    },
+    {
+      "name": "Rectangle_1",
+      "components": {
+        "Transform": {
+          "pos": [
+            6.438474655151367,
+            2.569857120513916,
+            -0.10000000149011612
+          ],
+          "rotation": 0.0,
+          "scale": [
+            5.0,
+            5.0,
+            0.0
+          ]
+        },
+        "Render": {
+          "shape": "square",
+          "hasTex": 0,
+          "hasAnimation": 1
+        },
+        "StateMachine": {
+          "state": "Idle",
+          "facingRight": 1,
+          "stateTime": 0.0,
+          "Idle": {
+            "animState": {
+              "texture": "assets/Texture\\Kinuta_Idle_SS.png",
+              "loop": 1,
+              "play": 0,
+              "totalColumn": 4,
+              "totalRow": 4,
+              "frameTime": 0.10000000149011612,
+              "initialFramCol": 0.0,
+              "initialFramRow": 0.0,
+              "lastFramCol": 1.0,
+              "lastFramRow": 3.0
+            }
+          },
+          "Walking": {
+            "animState": {
+              "texture": "",
+              "loop": 1,
+              "play": 0,
+              "totalColumn": 1,
+              "totalRow": 1,
+              "frameTime": 0.10000000149011612,
+              "initialFramCol": 0.0,
+              "initialFramRow": 0.0,
+              "lastFramCol": 0.0,
+              "lastFramRow": 0.0
+            }
+          },
+          "Jumping": {
+            "animState": {
+              "texture": "",
+              "loop": 1,
+              "play": 0,
+              "totalColumn": 1,
+              "totalRow": 1,
+              "frameTime": 0.10000000149011612,
+              "initialFramCol": 0.0,
+              "initialFramRow": 0.0,
+              "lastFramCol": 0.0,
+              "lastFramRow": 0.0
+            }
+          },
+          "Falling": {
+            "animState": {
+              "texture": "",
+              "loop": 1,
+              "play": 0,
+              "totalColumn": 1,
+              "totalRow": 1,
+              "frameTime": 0.10000000149011612,
+              "initialFramCol": 0.0,
+              "initialFramRow": 0.0,
+              "lastFramCol": 0.0,
+              "lastFramRow": 0.0
+            }
+          },
+          "Shooting": {
+            "animState": {
+              "texture": "",
+              "loop": 1,
+              "play": 0,
+              "totalColumn": 1,
+              "totalRow": 1,
+              "frameTime": 0.10000000149011612,
+              "initialFramCol": 0.0,
+              "initialFramRow": 0.0,
+              "lastFramCol": 0.0,
+              "lastFramRow": 0.0
+            }
+          },
+          "Dead": {
+            "animState": {
+              "texture": "",
+              "loop": 1,
+              "play": 0,
+              "totalColumn": 1,
+              "totalRow": 1,
+              "frameTime": 0.10000000149011612,
+              "initialFramCol": 0.0,
+              "initialFramRow": 0.0,
+              "lastFramCol": 0.0,
+              "lastFramRow": 0.0
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "Rectangle_2",
+      "components": {
+        "Transform": {
+          "pos": [
+            -2.2857143878936768,
+            0.0,
+            0.0
+          ],
+          "rotation": 0.0,
+          "scale": [
+            8.699999809265137,
+            8.699999809265137,
+            0.0
+          ]
+        },
+        "Render": {
+          "shape": "square",
+          "hasTex": 0,
+          "hasAnimation": 0
+        }
+      }
+    },
+    {
+      "name": "Empty_3",
+      "components": {
+        "Transform": {
+          "pos": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "rotation": 0.0,
+          "scale": [
+            1.0,
+            1.0,
+            0.0
+          ]
+        },
+        "TileMap": {
+          "tileW": 3.0,
+          "tileH": 3.0,
+          "columns": 50,
+          "rows": 50,
+          "enableCol": 0,
+          "tiles": [
+            {
+              "x": -6,
+              "y": 0,
+              "id": "assets/Texture\\endgoal.png"
+            },
+            {
+              "x": -3,
+              "y": -1,
+              "id": "assets/Texture\\endgoal.png"
+            },
+            {
+              "x": -5,
+              "y": 0,
+              "id": "assets/Texture\\endgoal.png"
+            },
+            {
+              "x": -1,
+              "y": -3,
+              "id": "assets/Texture\\endgoal.png"
+            },
+            {
+              "x": -2,
+              "y": -1,
+              "id": "assets/Texture\\endgoal.png"
+            },
+            {
+              "x": -4,
+              "y": 0,
+              "id": "assets/Texture\\endgoal.png"
+            },
+            {
+              "x": 4,
+              "y": -1,
+              "id": "assets/Texture\\endgoal.png"
+            },
+            {
+              "x": -1,
+              "y": -1,
+              "id": "assets/Texture\\endgoal.png"
+            },
+            {
+              "x": 0,
+              "y": -2,
+              "id": "assets/Texture\\endgoal.png"
+            },
+            {
+              "x": 4,
+              "y": -2,
+              "id": "assets/Texture\\endgoal.png"
+            },
+            {
+              "x": -1,
+              "y": -2,
+              "id": "assets/Texture\\endgoal.png"
+            },
+            {
+              "x": 0,
+              "y": -4,
+              "id": "assets/Texture\\endgoal.png"
+            },
+            {
+              "x": 1,
+              "y": -2,
+              "id": "assets/Texture\\endgoal.png"
+            },
+            {
+              "x": 2,
+              "y": -2,
+              "id": "assets/Texture\\endgoal.png"
+            },
+            {
+              "x": 3,
+              "y": -2,
+              "id": "assets/Texture\\endgoal.png"
+            },
+            {
+              "x": 4,
+              "y": 0,
+              "id": "assets/Texture\\endgoal.png"
+            },
+            {
+              "x": -1,
+              "y": 1,
+              "id": "assets/Texture\\endgoal.png"
+            },
+            {
+              "x": 4,
+              "y": 1,
+              "id": "assets/Texture\\endgoal.png"
+            },
+            {
+              "x": 3,
+              "y": 2,
+              "id": "assets/Texture\\endgoal.png"
+            },
+            {
+              "x": 2,
+              "y": 2,
+              "id": "assets/Texture\\endgoal.png"
+            },
+            {
+              "x": 1,
+              "y": 2,
+              "id": "assets/Texture\\endgoal.png"
+            },
+            {
+              "x": 0,
+              "y": 2,
+              "id": "assets/Texture\\endgoal.png"
+            },
+            {
+              "x": -2,
+              "y": 0,
+              "id": "assets/Texture\\endgoal.png"
+            },
+            {
+              "x": -1,
+              "y": -4,
+              "id": "assets/Texture\\endgoal.png"
+            },
+            {
+              "x": -2,
+              "y": -2,
+              "id": "assets/Texture\\endgoal.png"
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

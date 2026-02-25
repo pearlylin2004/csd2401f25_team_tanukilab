@@ -51,18 +51,27 @@ enum class cameraMode {
 struct BatchKey {
 	float z;
 	GLuint texID;
+	shape meshType;
 	mutable GLuint ssboID = 0;
 
 	bool operator==(const BatchKey& other) const noexcept {
-		return z == other.z;
+		return z == other.z && texID == other.texID && meshType == other.meshType;
+	}
+
+	bool operator<(const BatchKey& other) const noexcept {
+		if (z != other.z) return z < other.z;
+		if(texID != other.texID) return texID < other.texID; // tiebreaker
+		return meshType < other.meshType; // final tiebreaker
 	}
 };
 
-struct BatchKeyHash {
-	std::size_t operator()(const BatchKey& k) const noexcept {
-		return std::hash<GLuint>()(k.z);
-	}
-};
+//struct BatchKeyHash {
+//	std::size_t operator()(const BatchKey& k) const noexcept {
+//		size_t h1 = std::hash<float>()(k.z);
+//		size_t h2 = std::hash<GLuint>()(k.texID);
+//		return h1 ^ (h2 << 1);
+//	}
+//};
 
 /*!***********************************************************************
 \brief
@@ -87,6 +96,7 @@ struct renderer
 		glm::mat4 model;
 		glm::vec4 color;
 		glm::vec4 texParams;
+		//GLuint textureID = 0; // Added textureID to InstanceData for easier access in shaders
 	};
 
 	/*!***********************************************************************
