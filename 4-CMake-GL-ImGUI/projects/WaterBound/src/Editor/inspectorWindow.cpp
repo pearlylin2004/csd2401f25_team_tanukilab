@@ -1884,9 +1884,9 @@ void InspectorWindow::renderLua(GameObject* selected) {
             Editor::scriptState.availScripts.clear();
 
             if (std::filesystem::exists(Editor::scriptState.scriptDir)) {
-                for (const auto& entry : std::filesystem::directory_iterator(Editor::scriptState.scriptDir)) {
-                    if (entry.is_regular_file() && entry.path().extension() == ".lua") {
-                        Editor::scriptState.availScripts.push_back(entry.path().filename().string());
+                for (const auto& file : std::filesystem::directory_iterator(Editor::scriptState.scriptDir)) {
+                    if (file.is_regular_file() && file.path().extension() == ".lua") {
+                        Editor::scriptState.availScripts.push_back(file.path().filename().string());
                     }
                 }
             }
