@@ -1084,6 +1084,10 @@ namespace JsonIO {
         jc.AddMember("collisionRes", Value(CollisionResponseModeToStr(c->collisionRes), a), a);
         jc.AddMember("collisionTag", Value(c->collisionTag.c_str(), a), a);
         jc.AddMember("colliderType", Value(ShapeToStr(c->colliderType), a), a);
+        jc.AddMember("bounciness", c->material.bounciness, a);
+        jc.AddMember("friction", c->material.friction, a);
+        jc.AddMember("bounceCombine", static_cast<int>(c->material.bounceCombine), a);
+        jc.AddMember("frictionCombine", static_cast<int>(c->material.frictionCombine), a);
 
         Value ignoreArray(kArrayType);
         for (const std::string& tag : c->ignoreCollisionsWith)
@@ -1116,12 +1120,23 @@ namespace JsonIO {
         if (jc.HasMember("colliderType") && jc["colliderType"].IsString())
             c->colliderType = StrToShape(jc["colliderType"].GetString());
 
+        if (jc.HasMember("bounciness")) c->material.bounciness = jc["bounciness"].GetFloat();
+        if (jc.HasMember("friction")) c->material.friction = jc["friction"].GetFloat();
+        if (jc.HasMember("bounceCombine")) c->material.bounceCombine = static_cast<PhysicsMaterial::CombineMode>(jc["bounceCombine"].GetInt());
+        if (jc.HasMember("frictionCombine")) c->material.frictionCombine = static_cast<PhysicsMaterial::CombineMode>(jc["frictionCombine"].GetInt());
+
         if (jc.HasMember("ignoreCollisionsWith")) {
             const Value& arr = jc["ignoreCollisionsWith"];
             c->ignoreCollisionsWith.clear();
             for (rapidjson::SizeType i = 0; i < arr.Size(); ++i)
                 c->ignoreCollisionsWith.insert(arr[i].GetString());
         }
+
+        if(Physics* p = obj->getComponent<Physics>())
+            if (!p->freezeRotation) {
+                if (auto* c = obj->getComponent<CollisionInfo>())
+                    p->recalculateInertia(c->colliderSize, c->colliderType);
+            }
     }
 
     std::string serializeInput(GameObject* obj) {

@@ -1058,23 +1058,37 @@ void InspectorWindow::renderCollision(GameObject* selected/*, GameObjectManager&
         }
 
         ImGui::Spacing();
-        ImGui::Separator();
 
         if (ImGui::TreeNode("Physics Material")) {
             ImGui::BeginDisabled(!collision->collisionFlag);
 
-            ImGui::SliderFloat("Bounciness", &collision->material.bounciness, 0.0f, 1.0f);
-            ImGui::SliderFloat("Friction", &collision->material.friction, 0.0f, 1.0f);
+            ImGui::DragFloat("Bounciness", &collision->material.bounciness, 0.1f, 0.0f, 1.0f);
+            if (ImGui::IsItemActivated())
+                if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
+            if (ImGui::IsItemDeactivatedAfterEdit())
+                if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
+
+            ImGui::DragFloat("Friction", &collision->material.friction, 0.1f, 0.0f, 1.0f);
+            if (ImGui::IsItemActivated())
+                if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
+            if (ImGui::IsItemDeactivatedAfterEdit())
+                if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
 
             // Combine mode for bounciness
             const char* combineModes[] = { "Average", "Minimum", "Maximum", "Multiply" };
             int bounceMode = static_cast<int>(collision->material.bounceCombine);
-            if (ImGui::Combo("Bounce Combine", &bounceMode, combineModes, IM_ARRAYSIZE(combineModes)))
+            if (ImGui::Combo("Bounce Combine", &bounceMode, combineModes, IM_ARRAYSIZE(combineModes))) {
+                if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
                 collision->material.bounceCombine = static_cast<PhysicsMaterial::CombineMode>(bounceMode);
+                if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
+            }
 
             int frictionMode = static_cast<int>(collision->material.frictionCombine);
-            if (ImGui::Combo("Friction Combine", &frictionMode, combineModes, IM_ARRAYSIZE(combineModes)))
+            if (ImGui::Combo("Friction Combine", &frictionMode, combineModes, IM_ARRAYSIZE(combineModes))) {
+                if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
                 collision->material.frictionCombine = static_cast<PhysicsMaterial::CombineMode>(frictionMode);
+                if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
+            }
 
             ImGui::EndDisabled();
             ImGui::TreePop();
