@@ -85,6 +85,7 @@ public:
 	// temp to just pause/resume all audio for game obj
 	void pauseAll(GameObjectManager& manager);
 	void resumeAll(GameObjectManager& manager);
+	void stopAll(GameObjectManager& manager);
 
 	void pauseSound(AudioChannel* audio);
 
