@@ -57,7 +57,15 @@ static void resetAnimationFrame(GameObject& obj, PlayerState state) {
 
 void IdleState::onEnter(GameObject& obj) {
     resetAnimationFrame(obj, PlayerState::Idle);
-
+    if (AudioComponent* audio = obj.getComponent<AudioComponent>()) {
+        if (AudioChannel* footsteps = audio->getChannel("footsteps")) {
+            if (footsteps->state == AudioState::Playing) {
+                footsteps->isPendingStop = true;
+                footsteps->fadeOutOnStop = true;
+                footsteps->fadeOutDuration = 0.15f;
+            }
+        }
+    }
     std::string msg = "[FSM] " + obj.getObjectName() + " -> Idle";
     DebugLog::addMessage(msg, DebugMode::PlaySimul);
     std::cout << msg << std::endl;
@@ -83,6 +91,7 @@ void WalkingState::onEnter(GameObject& obj) {
             footsteps->audioFile = "assets/audio/footsteps.wav";
             footsteps->loop = true;
             footsteps->volume = 0.5f;
+            footsteps->playOnStart = false;
             footsteps->isPendingPlay = true;
         }
     }
