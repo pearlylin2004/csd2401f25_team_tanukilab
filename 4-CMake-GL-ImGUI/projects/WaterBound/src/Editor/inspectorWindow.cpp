@@ -1396,12 +1396,12 @@ void InspectorWindow::renderPhysics(GameObject* selected, bool canMove) {
             if (ImGui::IsItemDeactivatedAfterEdit())
                 if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
 
-            if (ImGui::DragFloat("Friction (Ground)", &physic->friction, 0.1f))
+            /*if (ImGui::DragFloat("Friction (Ground)", &physic->friction, 0.1f))
                 physic->friction = std::clamp(physic->friction, 0.f, 1.f);
             if (ImGui::IsItemActivated())
                 if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
             if (ImGui::IsItemDeactivatedAfterEdit())
-                if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
+                if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);*/
 
             if (ImGui::DragFloat("Angular Drag", &physic->dynamics.angularDrag, 0.1f, 0.f))
                 physic->dynamics.angularDrag = std::clamp(physic->dynamics.angularDrag, 0.f, 1.0f);

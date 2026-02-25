@@ -1218,8 +1218,11 @@ void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime, M
 
 			// STEP 4: Integrate physics
 			if (!object->checkAutoMove() && !physics->ledgeClimb) {
-				PhysicsForces::applyDamping(physics, targetVelX, deltaTime);
-				PhysicsForces::updatePosition(transform, physics, deltaTime);
+
+				if (CollisionInfo* collision = object->getComponent<CollisionInfo>()) {
+					PhysicsForces::applyDamping(physics, collision->material.friction, targetVelX, deltaTime);
+					PhysicsForces::updatePosition(transform, physics, deltaTime);
+				}
 			}
 
 

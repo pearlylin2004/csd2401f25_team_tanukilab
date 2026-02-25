@@ -199,7 +199,7 @@ public:
 
     // properties
     float damping = 0.98f; // in the air
-    float friction = 0.2f; // on ground
+    //float friction = 0.2f; // on ground
 
     //Jump 
     float jumpForce = 10.0f;
@@ -312,7 +312,7 @@ struct PhysicsMaterial {
     enum class CombineMode { Average, Minimum, Maximum, Multiply };
 
     float bounciness = 0.0f;
-    float friction = 0.0f;
+    float friction = 0.f; // higher means harder to move, rmb to 1 - friction for movement
     CombineMode bounceCombine = CombineMode::Average;
     CombineMode frictionCombine = CombineMode::Average;
 
@@ -369,8 +369,8 @@ public:
     Vector2D contactPoint = { 0,0 };
     float penetration = 0.0f; //for it to not overlap 
 
-    float bounciness = 0.0f;
-    float friction = 0.0f;
+    /*float bounciness = 0.0f;
+    float friction = 0.0f;*/
 
 };
 

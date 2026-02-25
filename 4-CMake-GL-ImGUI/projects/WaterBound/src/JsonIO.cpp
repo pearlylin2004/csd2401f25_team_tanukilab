@@ -1012,7 +1012,7 @@ namespace JsonIO {
         jp.AddMember("moveSpeed", p->moveSpeed, a);
         jp.AddMember("jumpForce", p->jumpForce, a);
         jp.AddMember("damping", p->damping, a);
-        jp.AddMember("friction", p->friction, a);
+        //jp.AddMember("friction", p->friction, a);
         jp.AddMember("maxFallSpeed", p->maxFallSpeed, a);
         jp.AddMember("groundAccelForce", p->groundAccelForce, a);
         jp.AddMember("airAccelForce", p->airAccelForce, a);
@@ -1048,7 +1048,7 @@ namespace JsonIO {
         p->moveSpeed = jp["moveSpeed"].GetFloat();
         p->jumpForce = jp["jumpForce"].GetFloat();
         p->damping = jp["damping"].GetFloat();
-        p->friction = jp.HasMember("friction") ? jp["friction"].GetFloat() : 0.80f;
+        //p->friction = jp.HasMember("friction") ? jp["friction"].GetFloat() : 0.80f;
         p->maxFallSpeed = jp.HasMember("maxFallSpeed") ? jp["maxFallSpeed"].GetFloat() : -30.f;
         p->groundAccelForce = jp.HasMember("groundAccelForce") ? jp["groundAccelForce"].GetFloat() : 20.f;
         p->airAccelForce = jp.HasMember("airAccelForce") ? jp["airAccelForce"].GetFloat() : 8.f;

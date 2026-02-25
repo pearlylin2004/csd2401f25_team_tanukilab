@@ -525,8 +525,8 @@ void GameObjectManager::loadSceneFromJson(const std::string& filename) {
 			if (jp.HasMember("mass") && jp["mass"].IsNumber())
 				p->dynamics.mass = jp["mass"].GetFloat();
 
-			if (jp.HasMember("friction") && jp["friction"].IsNumber())
-				p->friction = jp["friction"].GetFloat();
+			/*if (jp.HasMember("friction") && jp["friction"].IsNumber())
+				p->friction = jp["friction"].GetFloat();*/
 			if (jp.HasMember("maxFallSpeed") && jp["maxFallSpeed"].IsNumber())
 				p->maxFallSpeed = jp["maxFallSpeed"].GetFloat();
 			if (jp.HasMember("groundAccelForce") && jp["groundAccelForce"].IsNumber())
@@ -1325,7 +1325,7 @@ doc.AddMember("layers", layersArr, a);
 				pushIfDiffFloat("jumpForce", p->jumpForce);
 				pushIfDiffFloat("mass", p->dynamics.mass);
 				pushIfDiffFloat("damping", p->damping);
-				pushIfDiffFloat("friction", p->friction);
+				//pushIfDiffFloat("friction", p->friction);
 				pushIfDiffFloat("maxFallSpeed", p->maxFallSpeed);
 				pushIfDiffFloat("groundAccelForce", p->groundAccelForce);
 				pushIfDiffFloat("airAccelForce", p->airAccelForce);
