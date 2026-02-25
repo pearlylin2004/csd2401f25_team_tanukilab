@@ -1811,29 +1811,61 @@ void InspectorWindow::renderTileMap(GameObject* selected)
 void InspectorWindow::renderParticles(GameObject* selected)
 {
     Particle* ps = selected->getComponent<Particle>();
+
+    const Editor::ComponentEntry* entry = Editor::findEntry("Particle");
+
     if (ImGui::CollapsingHeader("Particle System")) {
-        ImGui::InputInt("Max Particles", &ps->master.particleAmt);
-        ImGui::InputFloat("Particle Lifetime", &ps->master.timer, 0.1f);
-        ImGui::InputFloat("Offset", &ps->master.offset);
-        ImGui::InputFloat("Velocity X", &ps->master.velocity.x);
-        ImGui::InputFloat("Velocity Y", &ps->master.velocity.y);
+        ImGui::DragInt("Max Particles", &ps->master.particleAmt);
+        if (ImGui::IsItemActivated())
+            if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
+        if (ImGui::IsItemDeactivatedAfterEdit())
+            if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
+
+        ImGui::DragFloat("Particle Lifetime", &ps->master.timer, 0.1f);
+        if (ImGui::IsItemActivated())
+            if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
+        if (ImGui::IsItemDeactivatedAfterEdit())
+            if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
+
+        ImGui::DragFloat("Offset", &ps->master.offset, 0.1f);
+        if (ImGui::IsItemActivated())
+            if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
+        if (ImGui::IsItemDeactivatedAfterEdit())
+            if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
+
+        ImGui::DragFloat("Velocity X", &ps->master.velocity.x, 0.1f);
+        if (ImGui::IsItemActivated())
+            if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
+        if (ImGui::IsItemDeactivatedAfterEdit())
+            if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
+
+        ImGui::DragFloat("Velocity Y", &ps->master.velocity.y, 0.1f);
+        if (ImGui::IsItemActivated())
+            if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
+        if (ImGui::IsItemDeactivatedAfterEdit())
+            if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
 
         ImGui::ColorEdit3("Start Colour", &ps->master.clr.x);
+        if (ImGui::IsItemActivated())
+            if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
+        if (ImGui::IsItemDeactivatedAfterEdit())
+            if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
+
+        static bool colourPickerWasOpen = false;
+        bool colourPickerOpen = ImGui::IsPopupOpen("", ImGuiPopupFlags_AnyPopup);
+        if (colourPickerOpen && !colourPickerWasOpen)
+            if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
+        if (!colourPickerOpen && colourPickerWasOpen)
+            if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
+        colourPickerWasOpen = colourPickerOpen;
 
         ImGui::Spacing();
         ImGui::Separator();
         ImGui::Spacing();
 
-        //if (ImGui::Button("Remove Particle System", ImVec2(-1, 0))) {
-        //    // add a delete component func here
-        //    selected->removeComponent<Particle>();
-        //    DebugLog::addMessage("Removed Particle System Component");
-        //}
-        if (const Editor::ComponentEntry* entry = Editor::findEntry("Particle")) {
+        if (entry) {
             if (ImGui::Button("Remove Particle", ImVec2(-1, 0))) {
-                UndoRedoManager::Instance().executeCmd(
-                    std::make_unique<RemoveComponentCmd>(m_manager, selected, *entry)
-                );
+                UndoRedoManager::Instance().executeCmd(std::make_unique<RemoveComponentCmd>(m_manager, selected, *entry));
                 DebugLog::addMessage("Removed Particle\n");
             }
         }
@@ -1842,6 +1874,8 @@ void InspectorWindow::renderParticles(GameObject* selected)
 
 void InspectorWindow::renderLua(GameObject* selected) {
     LuaScript* script = selected->getComponent<LuaScript>();
+
+    const Editor::ComponentEntry* entry = Editor::findEntry("Lua Script");
 
     if (ImGui::CollapsingHeader("Lua Script")) {
 
@@ -1877,9 +1911,13 @@ void InspectorWindow::renderLua(GameObject* selected) {
             if (ImGui::BeginCombo("##ScriptSelector", displayName.c_str())) {
                 // clear script
                 if (ImGui::Selectable("None", scriptEntry.scriptName.empty())) {
+                    if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
+
                     scriptEntry.scriptName = "";
                     scriptEntry.filename = "";
                     scriptEntry.changed = true;
+
+                    if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
 
                     DebugLog::addMessage("Cleared script " + displayName + " for " + selected->getObjectName());
                 }
@@ -1891,10 +1929,14 @@ void InspectorWindow::renderLua(GameObject* selected) {
                     bool isSelected = (scriptEntry.scriptName == nameWithoutExt);
 
                     if (ImGui::Selectable(scriptFile.c_str(), isSelected)) {
+                        if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
+
                         scriptEntry.scriptName = nameWithoutExt;
                         scriptEntry.filename = Editor::scriptState.scriptDir + scriptFile;
                         scriptEntry.changed = true;
                         script->scriptsChanged = true;
+
+                        if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
 
                         DebugLog::addMessage("Assigned script " + scriptFile + " to slot " + std::to_string(i + 1) + "\n");
                     }
@@ -1943,14 +1985,24 @@ void InspectorWindow::renderLua(GameObject* selected) {
 
         // Remove script if requested (do this after the loop)
         if (scriptIndex >= 0) {
+            if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
+
             script->scripts.erase(script->scripts.begin() + scriptIndex);
             script->scriptsChanged = true;
+
+            if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
+
             DebugLog::addMessage("Removed script slot " + std::to_string(scriptIndex + 1) + "\n");
         }
 
         /* ---------- Add new script button ---------- */
         if (ImGui::Button("+ Add Script", ImVec2(-1, 0))) {
+            if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
+
             script->scripts.push_back(LuaScript::ScriptEntry());
+            script->scriptsChanged = true;
+
+            if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
             DebugLog::addMessage("Added new script slot\n");
         }
 
@@ -1961,11 +2013,10 @@ void InspectorWindow::renderLua(GameObject* selected) {
         ImGui::Separator();
         ImGui::Spacing();
 
-        if (const Editor::ComponentEntry* entry = Editor::findEntry("Lua Script")) {
+        if (entry) {
             if (ImGui::Button("Remove Lua Script", ImVec2(-1, 0))) {
-                UndoRedoManager::Instance().executeCmd(
-                    std::make_unique<RemoveComponentCmd>(m_manager, selected, *entry)
-                );
+                UndoRedoManager::Instance().executeCmd(std::make_unique<RemoveComponentCmd>(m_manager, selected, *entry));
+
                 DebugLog::addMessage("Removed Lua Script\n");
             }
         }
@@ -1975,6 +2026,8 @@ void InspectorWindow::renderLua(GameObject* selected) {
 void InspectorWindow::renderVisualLogic(GameObject* selected) {
     VisualLC* logic = selected->getComponent<VisualLC>();
 
+    const Editor::ComponentEntry* entry = Editor::findEntry("Visual Logic");
+
     if (ImGui::CollapsingHeader("Visual Logic")) {
         std::string displayName = logic->filename.empty() ? "<Create New>" : logic->filename;
 
@@ -1983,9 +2036,13 @@ void InspectorWindow::renderVisualLogic(GameObject* selected) {
         if (ImGui::BeginCombo("Logic Graph", displayName.c_str())) {
             // create new logic asset
             if (ImGui::Selectable("<Create New>", logic->filename.empty())) {
+                if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
+
                 logic->filename.clear();
                 logic->nodes.clear();
                 logic->connections.clear();
+
+                if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
 
                 VisualLogicEditor::Instance().clear();
 
@@ -1997,17 +2054,19 @@ void InspectorWindow::renderVisualLogic(GameObject* selected) {
 
             // list existing logic assets
             if (std::filesystem::exists("assets/Logic")) {
-                for (const auto& entry : std::filesystem::directory_iterator("assets/Logic")) {
-                    if (entry.is_regular_file() && entry.path().extension() != ".json") {
+                for (const auto& file : std::filesystem::directory_iterator("assets/Logic")) {
+                    if (file.is_regular_file() && file.path().extension() != ".json") {
                         continue;
                     }
 
-                    std::string assetName = entry.path().filename().string();
+                    std::string assetName = file.path().filename().string();
                     bool isSelected = (logic->filename == assetName);
 
                     if (ImGui::Selectable(assetName.c_str(), isSelected)) {
+                        if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
                         Editor::visualLogicState.targetObj = selected;
                         VisualLogicEditor::Instance().loadLogic(assetName);
+                        if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
                     }
 
                     if (isSelected) {
@@ -2065,16 +2124,10 @@ void InspectorWindow::renderVisualLogic(GameObject* selected) {
         ImGui::Spacing();
 
 
-        /*if (ImGui::Button("Remove Virtual Logic", ImVec2(-1, 0))) {
-            selected->removeComponent<VisualLC>();
-            DebugLog::addMessage("Removed Virtual Logic Controller");
-        }*/
-
-        if (const Editor::ComponentEntry* entry = Editor::findEntry("Visual Logic")) {
+        if (entry) {
             if (ImGui::Button("Remove Visual Logic", ImVec2(-1, 0))) {
-                UndoRedoManager::Instance().executeCmd(
-                    std::make_unique<RemoveComponentCmd>(m_manager, selected, *entry)
-                );
+                UndoRedoManager::Instance().executeCmd(std::make_unique<RemoveComponentCmd>(m_manager, selected, *entry));
+
                 DebugLog::addMessage("Removed Visual Logic\n");
             }
         }
