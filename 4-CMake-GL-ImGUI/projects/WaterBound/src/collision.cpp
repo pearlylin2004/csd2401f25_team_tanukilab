@@ -577,7 +577,7 @@ namespace Collision {
         float restDistance = 1.0f; //particle radius spacing
         float stiffness = 6.0f; //pressure strength
         float viscosity = 0.08f; //smoothing
-        float correctionPercent = 0.02f; //positional correction
+        float correctionPercent = 0.8f; //positional correction
         float gravitySlip = 20.0f; //sideways slide strength
 
         //only interact if close
@@ -587,12 +587,13 @@ namespace Collision {
 
         //soft pressure 
         //float verticalFactor = 1.0f - fabs(ny);
-        float horizontalFactor = fabs(nx);
-        float pressureForce = stiffness * penetration * horizontalFactor;
-        phys1->dynamics.velocity.x -= pressureForce * nx / m1;
-        phys1->dynamics.velocity.y -= pressureForce * ny / m1;
-        phys2->dynamics.velocity.x += pressureForce * nx / m2;
-        phys2->dynamics.velocity.y += pressureForce * ny / m2;
+        //float horizontalFactor = fabs(nx);
+        //float pressureForce = stiffness * penetration * horizontalFactor;
+        float pressure = stiffness * penetration;
+        phys1->dynamics.velocity.x -= pressure * nx / m1;
+        phys1->dynamics.velocity.y -= pressure * ny / m1;
+        phys2->dynamics.velocity.x += pressure * nx / m2;
+        phys2->dynamics.velocity.y += pressure * ny / m2;
 
         //viscosity
         float rvx = phys2->dynamics.velocity.x - phys1->dynamics.velocity.x;
@@ -606,9 +607,9 @@ namespace Collision {
         phys2->dynamics.velocity.y -= viscosity * tangentY;
 
         //gravity
-        float slide = gravitySlip * fabs(ny);
-        phys1->dynamics.velocity.x += slide * nx;
-        phys2->dynamics.velocity.x -= slide * nx;
+        //float slide = gravitySlip * fabs(ny);
+        //phys1->dynamics.velocity.x += slide * nx;
+        //phys2->dynamics.velocity.x -= slide * nx;
 
         //no bounce
         /*if (velAlongNormal < 0.0f) {
@@ -620,15 +621,13 @@ namespace Collision {
         }*/
 
 		//soft position correction to prevent sinking
-        float correction = penetration * correctionPercent;
-        trans1->x -= correction * nx / m1;
-        trans1->y -= correction * ny / m1;
-        trans2->x += correction * nx / m2;
-        trans2->y += correction * ny / m2;
-        phys1->dynamics.position.x = trans1->x;
-        phys1->dynamics.position.y = trans1->y;
-        phys2->dynamics.position.x = trans2->x;
-        phys2->dynamics.position.y = trans2->y;
+        float correction = penetration * correctionPercent * 0.5f;
+        trans1->x -= correction * nx;
+        trans1->y -= correction * ny;
+        trans2->x += correction * nx;
+        trans2->y += correction * ny;
+        phys1->dynamics.position = { trans1->x, trans1->y };
+        phys2->dynamics.position = { trans2->x, trans2->y };
 
         return true;
     }
