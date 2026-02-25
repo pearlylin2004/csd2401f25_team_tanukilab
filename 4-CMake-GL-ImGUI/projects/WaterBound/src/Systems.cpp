@@ -1571,7 +1571,7 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 						bool obj2IsStatic = (c2->collisionRes == CollisionResponseMode::StopWhenCollide);
 
 						//helper lambda for bounce calculation
-						auto ApplyBounce = [](Physics* p, const Vector2D& normal, bool isStatic) {
+						auto ApplyBounce = [](Physics* p, CollisionInfo* c, const Vector2D& normal, bool isStatic) {
 							//get current velocity
 							Vector2D vel{ p->dynamics.velocity.x, p->dynamics.velocity.y };
 							//velocity along collision normal
@@ -1579,13 +1579,13 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 
 							if (isStatic) {
 								//static object
-								float b = std::min(p->bounciness, 0.05f); //tiny bounce
+								float b = std::min(c->material.bounciness, 0.05f); //tiny bounce
 								p->dynamics.velocity.x -= velAlongNormal * normal.x * (1.0f - b);
 								p->dynamics.velocity.y -= velAlongNormal * normal.y * (1.0f - b);
 							}
 							else {
 								//movable object
-								float b = (p->bounciness > 0.0f) ? p->bounciness : 1.0f;
+								float b = (c->material.bounciness > 0.0f) ? c->material.bounciness : 1.0f;
 								p->dynamics.velocity.x = (p->dynamics.velocity.x - 2.0f * velAlongNormal * normal.x) * b;
 								p->dynamics.velocity.y = (p->dynamics.velocity.y - 2.0f * velAlongNormal * normal.y) * b;
 							}
@@ -1624,10 +1624,10 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 								p2->dynamics.velocity.x = (p2->dynamics.velocity.x - 2.0f * dot2 * (-info.normal.x)) * combined;
 								p2->dynamics.velocity.y = (p2->dynamics.velocity.y - 2.0f * dot2 * (-info.normal.y)) * combined;
 							}
-							if (p1->bounciness > 0.0f || p2->bounciness > 0.0f) {
+							if (c1->material.bounciness > 0.0f || c2->material.bounciness > 0.0f) {
 								std::cout << "CASE1 bounce: " << obj1->getObjectName() << " vs " << obj2->getObjectName() << std::endl;
-								ApplyBounce(p1, info.normal, false);
-								ApplyBounce(p2, { -info.normal.x, -info.normal.y }, false);
+								ApplyBounce(p1, c1, info.normal, false);
+								ApplyBounce(p2, c2, { -info.normal.x, -info.normal.y }, false);
 							}
 							else {
 								// Original stop behavior
@@ -1718,10 +1718,11 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 								p1->dynamics.velocity.x = (p1->dynamics.velocity.x - 2.0f * dot * info.normal.x) * combinedBounciness;
 								p1->dynamics.velocity.y = (p1->dynamics.velocity.y - 2.0f * dot * info.normal.y) * combinedBounciness;
 							}
-							if (p1->bounciness > 0.0f) {
+
+							if (c1->material.bounciness > 0.0f) {
 								//float b = std::min(p1->bounciness, 0.05f); //tiny bounce
 								std::cout << "CASE2 bounce: " << obj1->getObjectName() << " vs " << obj2->getObjectName() << std::endl;
-								ApplyBounce(p1, info.normal, true);
+								ApplyBounce(p1, c1, info.normal, true);
 							}
 							else {
 								// Original stop behavior
@@ -1802,9 +1803,9 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 								p2->dynamics.velocity.x = (p2->dynamics.velocity.x - 2.0f * dot * n.x) * combinedBounciness;
 								p2->dynamics.velocity.y = (p2->dynamics.velocity.y - 2.0f * dot * n.y) * combinedBounciness;
 							}
-							if (p2->bounciness > 0.0f) {
+							if (c2->material.bounciness > 0.0f) {
 								std::cout << "CASE3 bounce: " << obj1->getObjectName() << " vs " << obj2->getObjectName() << std::endl;
-								ApplyBounce(p2, { -info.normal.x, -info.normal.y }, true);
+								ApplyBounce(p2, c2, { -info.normal.x, -info.normal.y }, true);
 							}
 							else {
 								// Original stop behavior (only when NOT bouncing)

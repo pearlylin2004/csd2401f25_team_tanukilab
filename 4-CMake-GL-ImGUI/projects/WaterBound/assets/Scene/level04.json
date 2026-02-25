@@ -321,25 +321,6 @@
       }
     },
     {
-      "prefabid": "8b8d44fa-ed22-4288-98ee-c476958f5b5b",
-      "name": "endgoal(23)",
-      "components": {
-        "Transform": {
-          "pos": [
-            14.88599967956543,
-            -3.1563878059387207,
-            0.0
-          ]
-        },
-        "Physics": {
-          "autoUpdate": 0
-        },
-        "VisualLC": {
-          "filename": "endgoal04.json"
-        }
-      }
-    },
-    {
       "name": "water balance",
       "components": {
         "Transform": {

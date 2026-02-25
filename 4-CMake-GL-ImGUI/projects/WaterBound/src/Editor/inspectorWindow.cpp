@@ -366,7 +366,7 @@ void InspectorWindow::renderTransform(GameObject* selected) {
                     m_isEditingPos = true;
                     m_transformEditObject = selected;
                 }
-                TransformSystem::setWorldPosition(transform, newX, transform->y, manager);
+                TransformSystem::setWorldPosition(transform, newX, transform->y, m_manager);
             }
             posActive |= ImGui::IsItemActive();
 
@@ -377,7 +377,7 @@ void InspectorWindow::renderTransform(GameObject* selected) {
                     m_isEditingPos = true;
                     m_transformEditObject = selected;
                 }
-                TransformSystem::setWorldPosition(transform, transform->x, newY, manager);
+                TransformSystem::setWorldPosition(transform, transform->x, newY, m_manager);
             }
             posActive |= ImGui::IsItemActive();
 
@@ -409,7 +409,7 @@ void InspectorWindow::renderTransform(GameObject* selected) {
         if (ImGui::TreeNode("Rotation")) {
             float newRot = transform->rotation;
             if (ImGui::DragFloat("Angle", &newRot)) {
-                TransformSystem::setWorldRotation(transform, newRot, manager);
+                TransformSystem::setWorldRotation(transform, newRot, m_manager);
             }
 
             // take snapshot when FIRST activated (before any changes)
@@ -529,7 +529,7 @@ void InspectorWindow::renderTransform(GameObject* selected) {
 
                 ImGui::Spacing();
                 if (ImGui::Button("Unparent", ImVec2(-1, 0))) {
-                    auto cmd = std::make_unique<ReparentCmd>(manager, selected->getObjectName(),
+                    auto cmd = std::make_unique<ReparentCmd>(m_manager, selected->getObjectName(),
                         t->parentName, t->localOffset, t->localRotation,  // old state
                         "", Vector2D{ 0.f, 0.f }, 0.f);                     // new state (no parent)
                     UndoRedoManager::Instance().executeCmd(std::move(cmd));
@@ -1214,19 +1214,20 @@ void InspectorWindow::renderPhysics(GameObject* selected, bool canMove) {
 
         // only show movement data if object is controlable via input
         if (ImGui::TreeNode("Properties")) {
-            if (ImGui::DragFloat("Mass", &physic->dynamics.mass, 1.f, 0.f, FLT_MAX)){
+            if (ImGui::DragFloat("Mass", &physic->dynamics.mass, 1.f, 0.f, FLT_MAX)) {
                 physic->dynamics.mass = std::max(physic->dynamics.mass, 0.f); // 0.f mass means static obj (never move, e.g. wall)
-                
-                if (!physic->freezeRotation) {
-                if (auto* c = selected->getComponent<CollisionInfo>())
-                    physic->recalculateInertia(c->colliderSize, c->colliderType);
-            }
-            if (ImGui::IsItemActivated())
-                if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
-            if (ImGui::IsItemDeactivatedAfterEdit())
-                if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
 
-            ImGui::TreePop();
+                if (!physic->freezeRotation) {
+                    if (auto* c = selected->getComponent<CollisionInfo>())
+                        physic->recalculateInertia(c->colliderSize, c->colliderType);
+                }
+                if (ImGui::IsItemActivated())
+                    if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
+                if (ImGui::IsItemDeactivatedAfterEdit())
+                    if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
+
+                ImGui::TreePop();
+            }
         }
 
         if (ImGui::TreeNode("Input Movement Control")) {
@@ -1254,7 +1255,7 @@ void InspectorWindow::renderPhysics(GameObject* selected, bool canMove) {
                     if (ImGui::IsItemDeactivatedAfterEdit())
                         if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
 
-                    if(ImGui::DragFloat("Air Accel", &physic->airAccelForce, 1.0f))
+                    if (ImGui::DragFloat("Air Accel", &physic->airAccelForce, 1.0f))
                         physic->airAccelForce = std::max(physic->airAccelForce, 0.f); // set the min to 0.f
                     if (ImGui::IsItemActivated())
                         if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
@@ -1320,7 +1321,7 @@ void InspectorWindow::renderPhysics(GameObject* selected, bool canMove) {
         if (ImGui::InputFloat("Gravity Scale", &physic->gravity, 1.f))
             physic->gravity = std::min(physic->gravity, 0.f); // gravity should stay negative
 
-        ImGui::Checkbox("Buoyancy", &physic->buoyancy);
+        //ImGui::Checkbox("Buoyancy", &physic->buoyancy);
 
         ImGui::Spacing();
         ImGui::Separator();
@@ -1408,25 +1409,26 @@ void InspectorWindow::renderPhysics(GameObject* selected, bool canMove) {
 
             ImGui::Spacing();
 
-        // --- debug info ---
-        if (ImGui::TreeNode("Info")) {
-            ImGui::Text("Velocity: (%.2f, %.2f)", physic->dynamics.velocity.x, physic->dynamics.velocity.y);
-            Vector2D vel2D{ physic->dynamics.velocity.x, physic->dynamics.velocity.y };
-            ImGui::Text("Speed: %.2f", Vec_Length(&vel2D));
-            ImGui::Text("Angular Velocity: %.4f", physic->dynamics.angularVelocity);
-            ImGui::Text("Inverse Mass: %.4f", physic->dynamics.inverseMass);
-            ImGui::Text("Coyote Available: %s", physic->coyoteAvailable ? "true" : "false");
-            ImGui::Text("Jump Buffer: %.3f", physic->jumpBufferTimer);
-            ImGui::Text("Ledge Climbing: %s", physic->ledgeClimb ? "true" : "false");
+            // --- debug info ---
+            if (ImGui::TreeNode("Info")) {
+                ImGui::Text("Velocity: (%.2f, %.2f)", physic->dynamics.velocity.x, physic->dynamics.velocity.y);
+                Vector2D vel2D{ physic->dynamics.velocity.x, physic->dynamics.velocity.y };
+                ImGui::Text("Speed: %.2f", Vec_Length(&vel2D));
+                ImGui::Text("Angular Velocity: %.4f", physic->dynamics.angularVelocity);
+                ImGui::Text("Inverse Mass: %.4f", physic->dynamics.inverseMass);
+                ImGui::Text("Coyote Available: %s", physic->coyoteAvailable ? "true" : "false");
+                ImGui::Text("Jump Buffer: %.3f", physic->jumpBufferTimer);
+                ImGui::Text("Ledge Climbing: %s", physic->ledgeClimb ? "true" : "false");
 
-            ImGui::TreePop();
-        }
+                ImGui::TreePop();
+            }
 
-        if (entry) {
-            if (ImGui::Button("Remove Physics", ImVec2(-1, 0))) {
-                UndoRedoManager::Instance().executeCmd(std::make_unique<RemoveComponentCmd>(m_manager, selected, *entry));
+            if (entry) {
+                if (ImGui::Button("Remove Physics", ImVec2(-1, 0))) {
+                    UndoRedoManager::Instance().executeCmd(std::make_unique<RemoveComponentCmd>(m_manager, selected, *entry));
 
-                DebugLog::addMessage("Removed Physics\n");
+                    DebugLog::addMessage("Removed Physics\n");
+                }
             }
         }
     }
