@@ -349,10 +349,26 @@ void WaterSystem::applyWaterPhysics(GameObjectManager& manager) {
                     float submergedFraction = glm::clamp(depth / (halfObjHeight * 2.0f + 0.001f), 0.0f, 1.0f);
 
                     physics->velY += water->buoyancyForce * submergedFraction * 0.016f * 2.0f;
-                    float verticalDrag = glm::mix(water->waterDrag * 0.9999f, water->waterDrag, submergedFraction);
+                    float verticalDrag = glm::mix(water->waterDrag, water->waterDrag, submergedFraction);
                     physics->velY *= verticalDrag;
                     physics->velX *= water->waterDrag;
                 }
+
+                //float waterSurfaceY = waterTransform->y + (water->height * waterTransform->scaleY * 0.5f);
+                //float depth = waterSurfaceY - transform->y;
+
+                //// submergedFraction
+                //float halfObjHeight = transform->scaleY * 0.5f;
+                //float submergedFraction = glm::clamp(depth / (halfObjHeight * 2.0f + 0.001f), 0.0f, 1.0f);
+
+                //// Mass-based 
+                //float safeMass = (physics->dynamics.mass > 0.0f) ? physics->dynamics.mass : 1.0f;
+                //float buoyancyAccel = (water->buoyancyForce / safeMass) * submergedFraction * 0.016f * 2.0f;
+                //physics->velY += buoyancyAccel;
+
+                //float verticalDrag = glm::mix(water->waterDrag * 0.9999f, water->waterDrag, submergedFraction);
+                //physics->velY *= verticalDrag;
+                //physics->velX *= water->waterDrag;
 
                 break; // Object can only be in one water body at a time
             }
