@@ -606,9 +606,22 @@ void InspectorWindow::renderRender(GameObject* selected) {
             ImGui::ColorEdit3("##Colour", &render->clr.x); // pass pointer of the first float cuz imgui want that
 
             if (ImGui::IsItemActivated())
-                if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);  // ADD
+                if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
             if (ImGui::IsItemDeactivatedAfterEdit())
-                if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);  // ADD
+                if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
+
+            static glm::vec4 prevColour = render->clr;
+            static bool colourEditing = false;
+
+            if (!colourEditing && render->clr != prevColour) {
+                colourEditing = true;
+                if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
+            }
+            if (colourEditing && ImGui::IsMouseReleased(0)) {
+                colourEditing = false;
+                prevColour = render->clr;
+                if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
+            }
 
             ImGui::EndDisabled();
             ImGui::TreePop();
@@ -1077,8 +1090,16 @@ void InspectorWindow::renderInput(GameObject* selected) {
 void InspectorWindow::renderPhysics(GameObject* selected, bool canMove) {
     Physics* physic = selected->getComponent<Physics>();
 
+    const Editor::ComponentEntry* entry = Editor::findEntry("Physics");
+
+
     if (ImGui::CollapsingHeader("Physics")) {
-        ImGui::Checkbox("Is Trigger", &physic->physicsFlag);
+        if (ImGui::Checkbox("Is Trigger", &physic->physicsFlag)) {
+            physic->physicsFlag = !physic->physicsFlag;
+            if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
+            physic->physicsFlag = !physic->physicsFlag;
+            if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
+        }
 
         ImGui::Spacing();
         ImGui::Separator();
@@ -1086,8 +1107,12 @@ void InspectorWindow::renderPhysics(GameObject* selected, bool canMove) {
 
         // only show movement data if object is controlable via input
         if (ImGui::TreeNode("Properties")) {
-            if (ImGui::InputFloat("Mass", &physic->dynamics.mass, 1.f))
+            if (ImGui::DragFloat("Mass", &physic->dynamics.mass, 1.f, 0.f, FLT_MAX))
                 physic->dynamics.mass = std::max(physic->dynamics.mass, 0.f); // 0.f mass means static obj (never move, e.g. wall)
+            if (ImGui::IsItemActivated())
+                if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
+            if (ImGui::IsItemDeactivatedAfterEdit())
+                if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
 
             ImGui::TreePop();
         }
@@ -1096,21 +1121,40 @@ void InspectorWindow::renderPhysics(GameObject* selected, bool canMove) {
             if (canMove) {
 
                 if (ImGui::TreeNode("Movement")) {
-                    if (ImGui::InputFloat("Move Speed", &physic->moveSpeed, 1.f))
+                    if (ImGui::DragFloat("Move Speed", &physic->moveSpeed, 1.f))
                         physic->moveSpeed = std::max(physic->moveSpeed, 0.f); // set the min speed to 0.f
+                    if (ImGui::IsItemActivated())
+                        if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
+                    if (ImGui::IsItemDeactivatedAfterEdit())
+                        if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
 
-                    if (ImGui::InputFloat("Jump Force", &physic->jumpForce, 1.f))
+                    if (ImGui::DragFloat("Jump Force", &physic->jumpForce, 1.f))
                         physic->jumpForce = std::max(physic->jumpForce, 0.f); // set the min jump force to 0.f
+                    if (ImGui::IsItemActivated())
+                        if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
+                    if (ImGui::IsItemDeactivatedAfterEdit())
+                        if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
 
-                    if (ImGui::InputFloat("Ground Accel", &physic->groundAccelForce, 1.0f))
+                    if (ImGui::DragFloat("Ground Accel", &physic->groundAccelForce, 1.0f))
                         physic->groundAccelForce = std::max(physic->groundAccelForce, 0.f); // set the min to 0.f
+                    if (ImGui::IsItemActivated())
+                        if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
+                    if (ImGui::IsItemDeactivatedAfterEdit())
+                        if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
 
-                    if(ImGui::InputFloat("Air Accel", &physic->airAccelForce, 1.0f))
+                    if(ImGui::DragFloat("Air Accel", &physic->airAccelForce, 1.0f))
                         physic->airAccelForce = std::max(physic->airAccelForce, 0.f); // set the min to 0.f
+                    if (ImGui::IsItemActivated())
+                        if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
+                    if (ImGui::IsItemDeactivatedAfterEdit())
+                        if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
 
-                    if (ImGui::InputFloat("Max Fall Speed", &physic->maxFallSpeed, 1.0f))
+                    if (ImGui::DragFloat("Max Fall Speed", &physic->maxFallSpeed, 1.0f))
                         physic->maxFallSpeed = std::max(physic->maxFallSpeed, 0.f); // set the min to 0.f
-
+                    if (ImGui::IsItemActivated())
+                        if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
+                    if (ImGui::IsItemDeactivatedAfterEdit())
+                        if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
 
 
                     ImGui::TreePop();
@@ -1119,17 +1163,37 @@ void InspectorWindow::renderPhysics(GameObject* selected, bool canMove) {
 
                 if (ImGui::TreeNode("Jump Buffer")) {
                     ImGui::SliderFloat("Buffer Time", &physic->jumpBufferTime, 0.0f, 10.f);
+                    if (ImGui::IsItemActivated())
+                        if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
+                    if (ImGui::IsItemDeactivatedAfterEdit())
+                        if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
+
                     ImGui::TreePop();
                 }
 
                 if (ImGui::TreeNode("Coyote Jump")) {
                     ImGui::SliderFloat("Coyote Time", &physic->coyoteTime, 0.0f, 10.f);
+                    if (ImGui::IsItemActivated())
+                        if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
+                    if (ImGui::IsItemDeactivatedAfterEdit())
+                        if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
+
                     ImGui::TreePop();
                 }
 
                 if (ImGui::TreeNode("Ledge Assist")) {
-                    ImGui::InputFloat("Assist Range", &physic->ledgeAssistRange, 0.1f);
-                    ImGui::InputFloat("Climb Speed", &physic->ledgeClimbSpeed, 1.0f);
+                    ImGui::DragFloat("Assist Range", &physic->ledgeAssistRange, 0.1f);
+                    if (ImGui::IsItemActivated())
+                        if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
+                    if (ImGui::IsItemDeactivatedAfterEdit())
+                        if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
+
+                    ImGui::DragFloat("Climb Speed", &physic->ledgeClimbSpeed, 1.0f);
+                    if (ImGui::IsItemActivated())
+                        if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
+                    if (ImGui::IsItemDeactivatedAfterEdit())
+                        if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
+
                     ImGui::TreePop();
                 }
             }
@@ -1141,17 +1205,30 @@ void InspectorWindow::renderPhysics(GameObject* selected, bool canMove) {
         }
 
         if (ImGui::TreeNode("Environment")) {
-            if (ImGui::InputFloat("Air Drag", &physic->damping, 0.1f))
+            if (ImGui::DragFloat("Air Drag", &physic->damping, 0.1f))
                 physic->damping = std::clamp(physic->damping, 0.f, 1.f); // damping within 0.1 to 1.f
+            if (ImGui::IsItemActivated())
+                if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
+            if (ImGui::IsItemDeactivatedAfterEdit())
+                if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
 
-            if (ImGui::InputFloat("Friction (Ground)", &physic->friction, 0.1f))
+            if (ImGui::DragFloat("Friction (Ground)", &physic->friction, 0.1f))
                 physic->friction = std::clamp(physic->friction, 0.f, 1.f);
+            if (ImGui::IsItemActivated())
+                if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
+            if (ImGui::IsItemDeactivatedAfterEdit())
+                if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
 
             ImGui::TreePop();
         }
 
         if (ImGui::TreeNode("Water")) {
-            ImGui::Checkbox("Buoyancy (we dh)", &physic->buoyancy);
+            if (ImGui::Checkbox("Buoyancy", &physic->buoyancy)) {
+                physic->buoyancy = !physic->buoyancy;
+                if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
+                physic->buoyancy = !physic->buoyancy;
+                if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
+            }
 
             ImGui::TreePop();
         }
@@ -1185,11 +1262,10 @@ void InspectorWindow::renderPhysics(GameObject* selected, bool canMove) {
             ImGui::TreePop();
         }
 
-        if (const Editor::ComponentEntry* entry = Editor::findEntry("Physics")) {
+        if (entry) {
             if (ImGui::Button("Remove Physics", ImVec2(-1, 0))) {
-                UndoRedoManager::Instance().executeCmd(
-                    std::make_unique<RemoveComponentCmd>(m_manager, selected, *entry)
-                );
+                UndoRedoManager::Instance().executeCmd(std::make_unique<RemoveComponentCmd>(m_manager, selected, *entry));
+
                 DebugLog::addMessage("Removed Physics\n");
             }
         }
@@ -1198,6 +1274,8 @@ void InspectorWindow::renderPhysics(GameObject* selected, bool canMove) {
 
 void InspectorWindow::renderFont(GameObject* selected) {
     FontComponent* font = selected->getComponent<FontComponent>();
+
+    const Editor::ComponentEntry* entry = Editor::findEntry("Font");
 
     if (ImGui::CollapsingHeader("Font")) {
         {
@@ -1210,13 +1288,38 @@ void InspectorWindow::renderFont(GameObject* selected) {
             if (ImGui::InputText("##Word", buffer, sizeof(buffer))) {
                 font->word = buffer;
             }
+            if (ImGui::IsItemActivated())
+                if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
+            if (ImGui::IsItemDeactivatedAfterEdit())
+                if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
 
             // size of the text
-            if (ImGui::InputFloat("Size", &font->scale, 1.f))
+            if (ImGui::DragFloat("Size", &font->scale, 1.f))
                 font->scale = std::max(font->scale, 0.f);
+            if (ImGui::IsItemActivated())
+                if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
+            if (ImGui::IsItemDeactivatedAfterEdit())
+                if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
 
             // colour of the text
             ImGui::ColorEdit3("Colour", &font->clr.x);
+            if (ImGui::IsItemActivated())
+                if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
+            if (ImGui::IsItemDeactivatedAfterEdit())
+                if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
+            
+            static glm::vec3 prevColour = font->clr;
+            static bool colourEditing = false;
+
+            if (!colourEditing && font->clr != prevColour) {
+                colourEditing = true;
+                if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
+            }
+            if (colourEditing && ImGui::IsMouseReleased(0)) {
+                colourEditing = false;
+                prevColour = font->clr;
+                if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
+            }
 
             // font type of the text
             /* scuffed way to select font */
@@ -1226,19 +1329,22 @@ void InspectorWindow::renderFont(GameObject* selected) {
                 "Times New Roman"
             };
 
-            ImGui::Combo("Font Type", &font->fontType, fontNames, IM_ARRAYSIZE(fontNames));
+            int prevFontType = font->fontType;
+            if (ImGui::Combo("Font Type", &font->fontType, fontNames, IM_ARRAYSIZE(fontNames))) {
+                if (entry) {
+                    std::swap(font->fontType, prevFontType);
+                    UndoRedoManager::Instance().beginComponentEdit(selected, *entry); // before 
+
+                    std::swap(font->fontType, prevFontType);
+                    UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry); // after
+                }
+            }
         }
 
-        //if (ImGui::Button("Remove Font", ImVec2(-1, 0))) {
-        //    // add a delete component func here
-        //    selected->removeComponent<FontComponent>();
-        //    DebugLog::addMessage("Removed Font Component");
-        //}
-        if (const Editor::ComponentEntry* entry = Editor::findEntry("Font")) {
+        if (entry) {
             if (ImGui::Button("Remove Font", ImVec2(-1, 0))) {
-                UndoRedoManager::Instance().executeCmd(
-                    std::make_unique<RemoveComponentCmd>(m_manager, selected, *entry)
-                );
+                UndoRedoManager::Instance().executeCmd(std::make_unique<RemoveComponentCmd>(m_manager, selected, *entry));
+
                 DebugLog::addMessage("Removed Font\n");
             }
         }
