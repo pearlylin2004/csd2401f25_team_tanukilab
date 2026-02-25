@@ -1009,6 +1009,7 @@ namespace JsonIO {
 
         Value jp(kObjectType);
         jp.AddMember("physicsFlag", p->physicsFlag, a);
+        jp.AddMember("autoUpdate", p->autoUpdate, a);
         jp.AddMember("moveSpeed", p->moveSpeed, a);
         jp.AddMember("jumpForce", p->jumpForce, a);
         jp.AddMember("damping", p->damping, a);
@@ -1046,6 +1047,7 @@ namespace JsonIO {
             : obj->addComponent<Physics>();
 
         p->physicsFlag = jp["physicsFlag"].GetBool();
+        p->autoUpdate = jp["autoUpdate"].GetBool();
         p->moveSpeed = jp["moveSpeed"].GetFloat();
         p->jumpForce = jp["jumpForce"].GetFloat();
         p->damping = jp["damping"].GetFloat();

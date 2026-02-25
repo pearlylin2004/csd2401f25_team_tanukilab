@@ -794,6 +794,7 @@ void PrefabManager::applyPrefabComponents(GameObject* go, const rapidjson::Value
 		auto* p = go->addComponent<Physics>();
 
 		p->physicsFlag = JsonIO::GetBoolOr(jp, "physicsFlag", true);
+		p->autoUpdate = JsonIO::GetBoolOr(jp, "autoUpdate", false);
 		p->moveSpeed = JsonIO::GetFloatOr(jp, "moveSpeed", 1.f);
 		p->damping = JsonIO::GetFloatOr(jp, "damping", 0.98f);
 		//p->friction = JsonIO::GetFloatOr(jp, "friction", 0.80f);
@@ -874,7 +875,7 @@ void PrefabManager::applyPrefabComponents(GameObject* go, const rapidjson::Value
 		std::string state;
 		sm->state = /*JsonIO::GetString(smj, "state", state) ? parsePlayerState(state) :*/ PlayerState::Idle;
 		sm->facingRight = JsonIO::GetBoolOr(smj, "facingRight", true);
-		sm->stateTime = JsonIO::GetFloatOr(smj, "stateTime", 0.f);
+		//sm->stateTime = JsonIO::GetFloatOr(smj, "stateTime", 0.f);
 
 		/* ---- Animation based on state ---- */
 			// Helper lambda to parse a single animation state
@@ -1185,6 +1186,7 @@ void PrefabManager::serializeComponents(const GameObject* obj, rapidjson::Value&
 		rapidjson::Value jp(rapidjson::kObjectType);
 
 		jp.AddMember("physicsFlag", p->physicsFlag ? 1 : 0, a);
+		jp.AddMember("autoUpdate", p->autoUpdate ? 1 : 0, a);
 		jp.AddMember("moveSpeed", p->moveSpeed, a);
 		jp.AddMember("jumpForce", p->jumpForce, a);
 		jp.AddMember("damping", p->damping, a);
@@ -1241,7 +1243,7 @@ void PrefabManager::serializeComponents(const GameObject* obj, rapidjson::Value&
 
 		js.AddMember("state", rapidjson::Value(playerStateToStr(sm->state), a), a);
 		js.AddMember("facingRight", sm->facingRight ? 1 : 0, a);
-		js.AddMember("stateTime", sm->stateTime, a);
+		//js.AddMember("stateTime", sm->stateTime, a);
 
 		/* ------ Animation for states ----- */
 		if (auto anim = obj->getComponent<Animation>()) {

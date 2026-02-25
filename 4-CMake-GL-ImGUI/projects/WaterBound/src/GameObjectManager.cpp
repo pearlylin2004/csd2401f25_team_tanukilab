@@ -513,6 +513,12 @@ void GameObjectManager::loadSceneFromJson(const std::string& filename) {
 					: (jp["physicsFlag"].GetInt() != 0);
 			}
 
+			if (jp.HasMember("autoUpdate")) {
+				p->autoUpdate = jp["autoUpdate"].IsBool()
+					? jp["autoUpdate"].GetBool()
+					: (jp["autoUpdate"].GetInt() != 0);
+			}
+
 			if (jp.HasMember("moveSpeed") && jp["moveSpeed"].IsNumber())
 				p->moveSpeed = jp["moveSpeed"].GetFloat();
 
@@ -555,11 +561,6 @@ void GameObjectManager::loadSceneFromJson(const std::string& filename) {
 					? jp["buoyancy"].GetBool()
 					: (jp["buoyancy"].GetInt() != 0);
 			}
-			//if (jp.HasMember("autoUpdate")) {
-			//	p->autoUpdate = jp["autoUpdate"].IsBool()
-			//		? jp["autoUpdate"].GetBool()
-			//		: (jp["autoUpdate"].GetInt() != 0);
-			//}
 
 			if (go->hasComponent<Transform>()) {
 				Transform* transform = go->getComponent<Transform>();
@@ -660,8 +661,8 @@ void GameObjectManager::loadSceneFromJson(const std::string& filename) {
 				else if (smj["facingRight"].IsInt())   sm->facingRight = (smj["facingRight"].GetInt() != 0);
 			}
 
-			if (smj.HasMember("stateTime") && smj["stateTime"].IsNumber())
-				sm->stateTime = static_cast<float>(smj["stateTime"].GetDouble());
+			/*if (smj.HasMember("stateTime") && smj["stateTime"].IsNumber())
+				sm->stateTime = static_cast<float>(smj["stateTime"].GetDouble());*/
 
 			/*std::cout << "\n\nReading scene...\n";
 			std::cout << "State: " << sm->facingRight << std::endl;
@@ -1320,8 +1321,8 @@ doc.AddMember("layers", layersArr, a);
 				// if different then change scene data
 				pushIfDiffBool("physicsFlag", p->physicsFlag);
 				//pushIfDiffBool("inWater", p->inWater);
+				pushIfDiffBool("autoUpdate", p->autoUpdate);
 				pushIfDiffBool("buoyancy", p->buoyancy);
-				//pushIfDiffBool("autoUpdate", p->autoUpdate);
 
 				pushIfDiffFloat("moveSpeed", p->moveSpeed);
 				pushIfDiffFloat("jumpForce", p->jumpForce);
@@ -1453,9 +1454,9 @@ doc.AddMember("layers", layersArr, a);
 					((*prefabSM)["facingRight"].IsInt() && differsBool((*prefabSM)["facingRight"].GetInt() != 0, sm->facingRight)))
 					js.AddMember("facingRight", rapidjson::Value(sm->facingRight ? 1 : 0), a);
 
-				if (!prefabSM || !prefabSM->HasMember("stateTime") ||
+				/*if (!prefabSM || !prefabSM->HasMember("stateTime") ||
 					differsFloat((*prefabSM)["stateTime"].GetFloat(), sm->stateTime))
-					js.AddMember("stateTime", rapidjson::Value(sm->stateTime), a);
+					js.AddMember("stateTime", rapidjson::Value(sm->stateTime), a);*/
 
 
 				/* ------ Animation for states ----- */
