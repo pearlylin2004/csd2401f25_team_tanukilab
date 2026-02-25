@@ -1016,6 +1016,7 @@ namespace JsonIO {
         jp.AddMember("maxFallSpeed", p->maxFallSpeed, a);
         jp.AddMember("groundAccelForce", p->groundAccelForce, a);
         jp.AddMember("airAccelForce", p->airAccelForce, a);
+        jp.AddMember("apexHangMul", p->apexHangMul, a);
         jp.AddMember("jumpBufferTime", p->jumpBufferTime, a);
         jp.AddMember("coyoteTime", p->coyoteTime, a);
         jp.AddMember("ledgeAssistRange", p->ledgeAssistRange, a);
@@ -1052,6 +1053,7 @@ namespace JsonIO {
         p->maxFallSpeed = jp.HasMember("maxFallSpeed") ? jp["maxFallSpeed"].GetFloat() : -30.f;
         p->groundAccelForce = jp.HasMember("groundAccelForce") ? jp["groundAccelForce"].GetFloat() : 20.f;
         p->airAccelForce = jp.HasMember("airAccelForce") ? jp["airAccelForce"].GetFloat() : 8.f;
+        p->apexHangMul = jp.HasMember("apexHangMul") ? jp["apexHangMul"].GetFloat() : 0.2f;
         p->jumpBufferTime = jp.HasMember("jumpBufferTime") ? jp["jumpBufferTime"].GetFloat() : 0.15f;
         p->coyoteTime = jp.HasMember("coyoteTime") ? jp["coyoteTime"].GetFloat() : 0.15f;
         p->ledgeAssistRange = jp.HasMember("ledgeAssistRange") ? jp["ledgeAssistRange"].GetFloat() : 0.8f;
@@ -1134,8 +1136,7 @@ namespace JsonIO {
 
         if(Physics* p = obj->getComponent<Physics>())
             if (!p->freezeRotation) {
-                if (auto* c = obj->getComponent<CollisionInfo>())
-                    p->recalculateInertia(c->colliderSize, c->colliderType);
+                p->recalculateInertia(c->colliderSize, c->colliderType);
             }
     }
 

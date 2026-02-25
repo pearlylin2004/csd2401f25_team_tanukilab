@@ -69,8 +69,8 @@ void PhysicsForces::updatePosition(Transform* transform, Physics* physics, float
         float grav = physics->gravity * physics->dynamics.mass; // gravity force F=mg
         if (physics->dynamics.velocity.y < 0.0f)
             grav *= 1.5f;  // faster fall
-        else if (std::abs(physics->dynamics.velocity.y) < 2.0f)
-            grav *= 0.7f; // apex hang when near the peak
+        else if (std::abs(physics->dynamics.velocity.y) < 1.0f)
+            grav *= physics->apexHangMul; // apex hang when near the peak
 
         // integrate gravity into velocity
         physics->dynamics.velocity.y += grav * deltaTime;

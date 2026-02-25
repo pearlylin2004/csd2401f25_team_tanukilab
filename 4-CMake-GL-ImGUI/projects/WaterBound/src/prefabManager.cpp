@@ -801,6 +801,7 @@ void PrefabManager::applyPrefabComponents(GameObject* go, const rapidjson::Value
 		p->maxFallSpeed = JsonIO::GetFloatOr(jp, "maxFallSpeed", -30.f);
 		p->groundAccelForce = JsonIO::GetFloatOr(jp, "groundAccelForce", 20.f);
 		p->airAccelForce = JsonIO::GetFloatOr(jp, "airAccelForce", 8.f);
+		p->apexHangMul = JsonIO::GetFloatOr(jp, "apexHangMul", 0.2f);
 		p->jumpBufferTime = JsonIO::GetFloatOr(jp, "jumpBufferTime", 0.15f);
 		p->coyoteTime = JsonIO::GetFloatOr(jp, "coyoteTime", 0.15f);
 		p->ledgeAssistRange = JsonIO::GetFloatOr(jp, "ledgeAssistRange", 0.8f);
@@ -1191,6 +1192,7 @@ void PrefabManager::serializeComponents(const GameObject* obj, rapidjson::Value&
 		jp.AddMember("maxFallSpeed", p->maxFallSpeed, a);
 		jp.AddMember("groundAccelForce", p->groundAccelForce, a);
 		jp.AddMember("airAccelForce", p->airAccelForce, a);
+		jp.AddMember("apexHangMul", p->apexHangMul, a);
 		jp.AddMember("jumpBufferTime", p->jumpBufferTime, a);
 		jp.AddMember("coyoteTime", p->coyoteTime, a);
 		jp.AddMember("ledgeAssistRange", p->ledgeAssistRange, a);

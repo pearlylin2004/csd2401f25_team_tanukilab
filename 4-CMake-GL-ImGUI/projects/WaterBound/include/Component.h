@@ -208,6 +208,7 @@ public:
     float maxFallSpeed = -20.f;
     float groundAccelForce = 20.f;
     float airAccelForce = 8.f;
+    float apexHangMul = 0.2f;
 
 	// jump buffer (forgive early jump before landing)
 	float jumpBufferTime = 0.15f; // how long before landing can still jump

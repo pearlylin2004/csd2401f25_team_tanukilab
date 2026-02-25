@@ -533,6 +533,8 @@ void GameObjectManager::loadSceneFromJson(const std::string& filename) {
 				p->groundAccelForce = jp["groundAccelForce"].GetFloat();
 			if (jp.HasMember("airAccelForce") && jp["airAccelForce"].IsNumber())
 				p->airAccelForce = jp["airAccelForce"].GetFloat();
+			if (jp.HasMember("apexHangMul") && jp["apexHangMul"].IsNumber())
+				p->apexHangMul = jp["apexHangMul"].GetFloat();
 			if (jp.HasMember("jumpBufferTime") && jp["jumpBufferTime"].IsNumber())
 				p->jumpBufferTime = jp["jumpBufferTime"].GetFloat();
 			if (jp.HasMember("coyoteTime") && jp["coyoteTime"].IsNumber())
@@ -1329,6 +1331,7 @@ doc.AddMember("layers", layersArr, a);
 				pushIfDiffFloat("maxFallSpeed", p->maxFallSpeed);
 				pushIfDiffFloat("groundAccelForce", p->groundAccelForce);
 				pushIfDiffFloat("airAccelForce", p->airAccelForce);
+				pushIfDiffFloat("apexHangMul", p->apexHangMul);
 				pushIfDiffFloat("jumpBufferTime", p->jumpBufferTime);
 				pushIfDiffFloat("coyoteTime", p->coyoteTime);
 				pushIfDiffFloat("ledgeAssistRange", p->ledgeAssistRange);
