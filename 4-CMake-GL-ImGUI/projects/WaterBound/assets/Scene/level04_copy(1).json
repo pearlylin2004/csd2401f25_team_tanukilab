@@ -99,8 +99,8 @@
           ]
         },
         "StateMachine": {
-          "state": "Jumping",
-          "stateTime": 5.9672698974609375
+          "state": "Falling",
+          "stateTime": 65.2000503540039
         },
         "AudioComponent": {
           "channels": {
@@ -319,6 +319,32 @@
       }
     },
     {
+      "prefabid": "8b8d44fa-ed22-4288-98ee-c476958f5b5b",
+      "name": "endgoal(23)",
+      "components": {
+        "Transform": {
+          "pos": [
+            14.88599967956543,
+            -3.1563878059387207,
+            0.0
+          ]
+        },
+        "Physics": {
+          "friction": 0.800000011920929,
+          "maxFallSpeed": -30.0,
+          "groundAccelForce": 20.0,
+          "airAccelForce": 8.0,
+          "jumpBufferTime": 0.15000000596046448,
+          "coyoteTime": 0.15000000596046448,
+          "ledgeAssistRange": 0.800000011920929,
+          "ledgeClimbSpeed": 8.0
+        },
+        "VisualLC": {
+          "filename": "endgoal04.json"
+        }
+      }
+    },
+    {
       "name": "water balance back",
       "components": {
         "Transform": {
@@ -352,32 +378,6 @@
           "collisionRes": "StopWhenCollide",
           "collisionTag": "inventory",
           "colliderType": "square"
-        }
-      }
-    },
-    {
-      "prefabid": "8b8d44fa-ed22-4288-98ee-c476958f5b5b",
-      "name": "endgoal(23)",
-      "components": {
-        "Transform": {
-          "pos": [
-            14.88599967956543,
-            -3.1563878059387207,
-            0.0
-          ]
-        },
-        "Physics": {
-          "friction": 0.800000011920929,
-          "maxFallSpeed": -30.0,
-          "groundAccelForce": 20.0,
-          "airAccelForce": 8.0,
-          "jumpBufferTime": 0.15000000596046448,
-          "coyoteTime": 0.15000000596046448,
-          "ledgeAssistRange": 0.800000011920929,
-          "ledgeClimbSpeed": 8.0
-        },
-        "VisualLC": {
-          "filename": "endgoal04.json"
         }
       }
     },
@@ -642,8 +642,7 @@
           "colliderSize": [
             6.572000026702881,
             0.47200000286102295
-          ],
-          "collisionRes": "NoResponse"
+          ]
         }
       }
     },
@@ -825,7 +824,7 @@
           "rotation": 0.0,
           "scale": [
             2.5999999046325684,
-            1.2999999523162842,
+            1.399999976158142,
             0.0
           ]
         },
@@ -850,7 +849,7 @@
           "autoFitScale": 0,
           "colliderSize": [
             2.5999999046325684,
-            1.2999999523162842
+            1.600000023841858
           ],
           "colliderType": "square",
           "collisionRes": "StopWhenCollide",
