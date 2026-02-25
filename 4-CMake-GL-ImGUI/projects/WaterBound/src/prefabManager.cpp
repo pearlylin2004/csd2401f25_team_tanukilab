@@ -794,7 +794,7 @@ void PrefabManager::applyPrefabComponents(GameObject* go, const rapidjson::Value
 		auto* p = go->addComponent<Physics>();
 
 		p->physicsFlag = JsonIO::GetBoolOr(jp, "physicsFlag", true);
-		p->autoUpdate = JsonIO::GetBoolOr(jp, "autoUpdate", false);
+		//p->autoUpdate = JsonIO::GetBoolOr(jp, "autoUpdate", false);
 		p->moveSpeed = JsonIO::GetFloatOr(jp, "moveSpeed", 1.f);
 		p->damping = JsonIO::GetFloatOr(jp, "damping", 0.98f);
 		//p->friction = JsonIO::GetFloatOr(jp, "friction", 0.80f);
@@ -1186,7 +1186,7 @@ void PrefabManager::serializeComponents(const GameObject* obj, rapidjson::Value&
 		rapidjson::Value jp(rapidjson::kObjectType);
 
 		jp.AddMember("physicsFlag", p->physicsFlag ? 1 : 0, a);
-		jp.AddMember("autoUpdate", p->autoUpdate ? 1 : 0, a);
+		//jp.AddMember("autoUpdate", p->autoUpdate ? 1 : 0, a);
 		jp.AddMember("moveSpeed", p->moveSpeed, a);
 		jp.AddMember("jumpForce", p->jumpForce, a);
 		jp.AddMember("damping", p->damping, a);
