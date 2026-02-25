@@ -65,13 +65,15 @@
         },
         "CollisionInfo": {
           "collisionTag": "player",
+          "bounciness": 0.0,
+          "friction": 0.0,
           "ignoreCollisionsWith": [
             "bullet"
           ]
         },
         "StateMachine": {
           "facingRight": 0,
-          "stateTime": 10.871583938598633
+          "stateTime": 75.01741027832031
         },
         "AudioComponent": {
           "channels": {
@@ -260,28 +262,6 @@
       }
     },
     {
-      "prefabid": "8b8d44fa-ed22-4288-98ee-c476958f5b5b",
-      "name": "endgoal(23)",
-      "components": {
-        "Transform": {
-          "pos": [
-            14.88599967956543,
-            -3.1563878059387207,
-            0.0
-          ]
-        },
-        "Physics": {
-          "autoUpdate": 0,
-          "freezeRotation": 1,
-          "angularDrag": 0.9800000190734863,
-          "inertiaOverride": 0.0
-        },
-        "VisualLC": {
-          "filename": "endgoal04.json"
-        }
-      }
-    },
-    {
       "name": "water balance back",
       "components": {
         "Transform": {
@@ -313,7 +293,35 @@
           ],
           "colliderType": "square",
           "collisionRes": "StopWhenCollide",
-          "collisionTag": "inventory"
+          "collisionTag": "inventory",
+          "bounciness": 0.0,
+          "friction": 0.0
+        }
+      }
+    },
+    {
+      "prefabid": "8b8d44fa-ed22-4288-98ee-c476958f5b5b",
+      "name": "endgoal(23)",
+      "components": {
+        "Transform": {
+          "pos": [
+            14.88599967956543,
+            -3.1563878059387207,
+            0.0
+          ]
+        },
+        "Physics": {
+          "autoUpdate": 0,
+          "freezeRotation": 1,
+          "angularDrag": 0.9800000190734863,
+          "inertiaOverride": 0.0
+        },
+        "CollisionInfo": {
+          "bounciness": 0.0,
+          "friction": 0.0
+        },
+        "VisualLC": {
+          "filename": "endgoal04.json"
         }
       }
     },
@@ -336,7 +344,7 @@
         "Render": {
           "shape": "square",
           "hasTex": 1,
-          "texture": "assets/Texture\\Water_90.png",
+          "texture": "assets/Texture\\Water_80.png",
           "hasTex": 1,
           "hasAnimation": 0
         },
@@ -349,7 +357,9 @@
           ],
           "colliderType": "square",
           "collisionRes": "StopWhenCollide",
-          "collisionTag": "inventory"
+          "collisionTag": "inventory",
+          "bounciness": 0.0,
+          "friction": 0.0
         },
         "VisualLC": {
           "filename": "bullet-inventory.json"
@@ -399,7 +409,9 @@
           ],
           "colliderType": "square",
           "collisionRes": "StopWhenCollide",
-          "collisionTag": "default"
+          "collisionTag": "default",
+          "bounciness": 0.0,
+          "friction": 0.0
         }
       }
     },
@@ -446,7 +458,9 @@
           ],
           "colliderType": "square",
           "collisionRes": "StopWhenCollide",
-          "collisionTag": "environment"
+          "collisionTag": "environment",
+          "bounciness": 0.0,
+          "friction": 0.0
         }
       }
     },
@@ -493,7 +507,9 @@
           ],
           "colliderType": "square",
           "collisionRes": "StopWhenCollide",
-          "collisionTag": "default"
+          "collisionTag": "default",
+          "bounciness": 0.0,
+          "friction": 0.0
         }
       }
     },
@@ -523,7 +539,9 @@
           "colliderSize": [
             7.294000148773193,
             7.294000148773193
-          ]
+          ],
+          "bounciness": 0.0,
+          "friction": 0.0
         }
       }
     },
@@ -543,6 +561,10 @@
           "freezeRotation": 1,
           "angularDrag": 0.9800000190734863,
           "inertiaOverride": 0.0
+        },
+        "CollisionInfo": {
+          "bounciness": 0.0,
+          "friction": 0.0
         }
       }
     },
@@ -584,7 +606,9 @@
           ],
           "colliderType": "square",
           "collisionRes": "NoResponse",
-          "collisionTag": "water"
+          "collisionTag": "water",
+          "bounciness": 0.0,
+          "friction": 0.0
         },
         "WaterBody": {
           "waveAmplitude": 0.15000000596046448,
@@ -614,7 +638,7 @@
         "Transform": {
           "pos": [
             -6.0,
-            -135898.875,
+            -163476.15625,
             0.0
           ],
           "rotation": 0.0,
@@ -651,7 +675,9 @@
           ],
           "colliderType": "square",
           "collisionRes": "MoveWhenCollide",
-          "collisionTag": "floatingObject"
+          "collisionTag": "floatingObject",
+          "bounciness": 0.0,
+          "friction": 0.0
         }
       }
     },
@@ -664,7 +690,7 @@
             -6.920639991760254,
             0.0
           ],
-          "rotation": 25.03506088256836,
+          "rotation": 28.783843994140625,
           "scale": [
             5.5,
             5.5,
@@ -700,7 +726,9 @@
           ],
           "colliderType": "circle",
           "collisionRes": "StopWhenCollide",
-          "collisionTag": "default"
+          "collisionTag": "default",
+          "bounciness": 0.0,
+          "friction": 0.0
         }
       }
     }

@@ -199,7 +199,7 @@ public:
 		tracking of the world time
 
 	*************************************************************************/
-	//void update(GameObjectManager& manager, const float& deltaTime);
+	void update(GameObjectManager& manager, const float& deltaTime);
 };
 
 // Collision system - detects and resolves collisions between game objects

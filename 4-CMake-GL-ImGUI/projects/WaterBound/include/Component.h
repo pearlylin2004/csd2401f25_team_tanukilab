@@ -66,6 +66,11 @@ public:
     float scaleX = 1.0f, scaleY = 1.0f, scaleZ{ 0.f };
     bool flipX = false; // flip scaleX when change direction, true means flip to left
     glm::mat4 mdlWorld = 1.f;
+
+    // Hierarchy (optional, null = root object)
+    std::string parentName = "";   // serialised as name reference
+    Vector2D    localOffset{ 0, 0 }; // position relative to parent at bind time
+    float       localRotation = 0.0f; // rotation relative to parent at bind time
 };
 
 // Render component to store rendering-related properties

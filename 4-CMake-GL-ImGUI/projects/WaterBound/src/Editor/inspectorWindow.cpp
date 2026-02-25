@@ -498,6 +498,39 @@ void InspectorWindow::renderTransform(GameObject* selected, GameObjectManager& m
             }
 
             ImGui::TreePop();
+
+        }
+
+        ImGui::Spacing();
+        ImGui::Separator();
+
+        if (ImGui::TreeNode("Hierarchy")) {
+            Transform* t = selected->getComponent<Transform>();
+
+            
+
+            // Assign parent via drag-drop from hierarchy window
+            std::string currentParent = t->parentName.empty() ? "(none)" : t->parentName;
+            ImGui::Text("Parent: %s", currentParent.c_str());
+            ImGui::TextDisabled("(set parent by dragging in Hierarchy)");
+            
+
+            // Local offset display (read-only — managed by TransformSystem)
+            if (!t->parentName.empty()) {
+                ImGui::Spacing();
+                ImGui::Text("Local Offset: (%.2f, %.2f)", t->localOffset.x, t->localOffset.y);
+                ImGui::Text("Local Rotation: %.2f deg", t->localRotation);
+
+                ImGui::Spacing();
+                if (ImGui::Button("Unparent", ImVec2(-1, 0))) {
+                    t->parentName.clear();
+                    t->localOffset = { 0.f, 0.f };
+                    t->localRotation = 0.f;
+                    DebugLog::addMessage(std::string(selected->getObjectName()) + " unparented");
+                }
+            }
+
+            ImGui::TreePop();
         }
     }
 }

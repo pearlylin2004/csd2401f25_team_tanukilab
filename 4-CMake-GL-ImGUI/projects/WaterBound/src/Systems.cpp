@@ -1427,19 +1427,15 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 							}
 
 							// Bounce or stop based on bounciness
-							if (c1->material.combinedBounciness(c2->material)) {
-								//std::cout << "CASE1 bounce: " << obj1->getObjectName() << " vs " << obj2->getObjectName() << std::endl;
+							float combined = c1->material.combinedBounciness(c2->material);
+							if (combined > 0.0f) {
 								float dot1 = p1->dynamics.velocity.x * info.normal.x + p1->dynamics.velocity.y * info.normal.y;
 								float dot2 = p2->dynamics.velocity.x * (-info.normal.x) + p2->dynamics.velocity.y * (-info.normal.y);
 
-								float b1 = (p1->bounciness > 0.0f) ? p1->bounciness : 1.0f;
-								float b2 = (p2->bounciness > 0.0f) ? p2->bounciness : 1.0f;
-
-								p1->dynamics.velocity.x = (p1->dynamics.velocity.x - dot1 * info.normal.x) * b1;
-								p1->dynamics.velocity.y = (p1->dynamics.velocity.y - dot1 * info.normal.y) * b1;
-
-								p2->dynamics.velocity.x = (p2->dynamics.velocity.x - dot2 * (-info.normal.x)) * b2;
-								p2->dynamics.velocity.y = (p2->dynamics.velocity.y - dot2 * (-info.normal.y)) * b2;
+								p1->dynamics.velocity.x = (p1->dynamics.velocity.x - 2.0f * dot1 * info.normal.x) * combined;
+								p1->dynamics.velocity.y = (p1->dynamics.velocity.y - 2.0f * dot1 * info.normal.y) * combined;
+								p2->dynamics.velocity.x = (p2->dynamics.velocity.x - 2.0f * dot2 * (-info.normal.x)) * combined;
+								p2->dynamics.velocity.y = (p2->dynamics.velocity.y - 2.0f * dot2 * (-info.normal.y)) * combined;
 							}
 							else {
 								// Original stop behavior
@@ -1469,14 +1465,24 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 								p1->dynamics.position.y = t1->y;
 							}
 							// Apply torque to obj2 if it can rotate (e.g. water wheel hit by bullet)
-							if (!p2->freezeRotation && p2->dynamics.inertia > 0.0f) {
-								Vector2D r = { info.contactPoint.x - t2->x, info.contactPoint.y - t2->y };
+							// If obj2 is a child, redirect torque to its parent (e.g. spoke → water wheel)
+							Physics* torqueTarget = p2;
+							Transform* torqueOrigin = t2;
+							if (!t2->parentName.empty()) {
+								GameObject* par = manager.getGameObject(t2->parentName);
+								if (par && par->hasComponent<Physics>() && par->hasComponent<Transform>()) {
+									torqueTarget = par->getComponent<Physics>();
+									torqueOrigin = par->getComponent<Transform>(); // lever arm from wheel centre
+								}
+							}
+							if (!torqueTarget->freezeRotation && torqueTarget->dynamics.inertia > 0.0f) {
+								Vector2D r = { info.contactPoint.x - torqueOrigin->x, info.contactPoint.y - torqueOrigin->y };
 								float impulseMagnitude = p1->dynamics.mass *
 									(r.x * p1->dynamics.velocity.y - r.y * p1->dynamics.velocity.x);
-								p2->dynamics.angularVelocity += impulseMagnitude / p2->dynamics.inertia;
+								torqueTarget->dynamics.angularVelocity += impulseMagnitude / torqueTarget->dynamics.inertia;
 							}
 							// Bounce or stop based on bounciness
-							float combinedBounciness = (c1->bounciness + c2->bounciness) * 0.5f;
+							float combinedBounciness = c1->material.combinedBounciness(c2->material);
 							if (combinedBounciness > 0.0f) {
 								float dot = p1->dynamics.velocity.x * info.normal.x +
 									p1->dynamics.velocity.y * info.normal.y;
@@ -1509,20 +1515,29 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 							}
 
 							// Apply torque to obj1 if it can rotate
-							if (!p1->freezeRotation && p1->dynamics.inertia > 0.0f) {
-								Vector2D r = { info.contactPoint.x - t1->x, info.contactPoint.y - t1->y };
+							// If obj1 is a child, redirect torque to its parent
+							Physics* torqueTarget = p1;
+							Transform* torqueOrigin = t1;
+							if (!t1->parentName.empty()) {
+								GameObject* par = manager.getGameObject(t1->parentName);
+								if (par && par->hasComponent<Physics>() && par->hasComponent<Transform>()) {
+									torqueTarget = par->getComponent<Physics>();
+									torqueOrigin = par->getComponent<Transform>();
+								}
+							}
+							if (!torqueTarget->freezeRotation && torqueTarget->dynamics.inertia > 0.0f) {
+								Vector2D r = { info.contactPoint.x - torqueOrigin->x, info.contactPoint.y - torqueOrigin->y };
 								float impulseMagnitude = p2->dynamics.mass *
 									(r.x * p2->dynamics.velocity.y - r.y * p2->dynamics.velocity.x);
-								p1->dynamics.angularVelocity += impulseMagnitude / p1->dynamics.inertia;
+								torqueTarget->dynamics.angularVelocity += impulseMagnitude / torqueTarget->dynamics.inertia;
 							}
-
 							// Bounce or stop based on bounciness
-							float combinedBounciness = (c1->bounciness + c2->bounciness) * 0.5f;
+							float combinedBounciness = c1->material.combinedBounciness(c2->material);
 							if (combinedBounciness > 0.0f) {
-								float dot = p1->dynamics.velocity.x * info.normal.x +
-									p1->dynamics.velocity.y * info.normal.y;
-								p1->dynamics.velocity.x = (p1->dynamics.velocity.x - 2.0f * dot * info.normal.x) * combinedBounciness;
-								p1->dynamics.velocity.y = (p1->dynamics.velocity.y - 2.0f * dot * info.normal.y) * combinedBounciness;
+								Vector2D n = { -info.normal.x, -info.normal.y }; // flip: normal is from p1's perspective
+								float dot = p2->dynamics.velocity.x * n.x + p2->dynamics.velocity.y * n.y;
+								p2->dynamics.velocity.x = (p2->dynamics.velocity.x - 2.0f * dot * n.x) * combinedBounciness;
+								p2->dynamics.velocity.y = (p2->dynamics.velocity.y - 2.0f * dot * n.y) * combinedBounciness;
 							}
 							else {
 								// Original stop behavior (only when NOT bouncing)
@@ -1675,13 +1690,11 @@ void CollisionSystem::HandleTilemapCollisions(const std::unordered_map<int, Coll
 						}
 
 						// Bounce or stop based on bounciness
-						if (p->bounciness > 0.0f) {
+						float bounce = c->material.bounciness; // tile has no material, treat as 0 → average = b/2, but bullet hits tile directly so use full value
+						if (bounce > 0.0f) {
 							float dot = p->dynamics.velocity.x * info.normal.x + p->dynamics.velocity.y * info.normal.y;
-
-							// Only remove velocity going INTO the surface (not 2x reflection)
-							// This makes water "splash" along the wall instead of bouncing off
-							p->dynamics.velocity.x = (p->dynamics.velocity.x - dot * info.normal.x) * p->bounciness;
-							p->dynamics.velocity.y = (p->dynamics.velocity.y - dot * info.normal.y) * p->bounciness;
+							p->dynamics.velocity.x = (p->dynamics.velocity.x - 2.0f * dot * info.normal.x) * bounce;
+							p->dynamics.velocity.y = (p->dynamics.velocity.y - 2.0f * dot * info.normal.y) * bounce;
 						}
 						else {
 							// Normal stop response (player, etc.)
@@ -2318,6 +2331,41 @@ void AudioSystem::updateSpatialAudio(GameObjectManager& manager) {
 				std::cerr << "[AudioSystem] Failed to set 3D attributes for: "
 					<< obj->getObjectName() << " channel: " << channelName << std::endl;
 			}
+		}
+	}
+}
+
+void TransformSystem::update(GameObjectManager& manager, const float& deltaTime) {
+	(void)deltaTime; // no time dependency for hierarchy propagation
+
+	std::vector<GameObject*> gameObjects;
+	manager.getAllGameObjects(gameObjects);
+
+	for (GameObject* object : gameObjects) {
+		if (!object->hasComponent<Transform>()) continue;
+		Transform* t = object->getComponent<Transform>();
+		if (t->parentName.empty()) continue;
+
+		GameObject* parent = manager.getGameObject(t->parentName);
+		if (!parent || !parent->hasComponent<Transform>()) continue;
+
+		Transform* pt = parent->getComponent<Transform>();
+		float parentRad = glm::radians(pt->rotation);
+		float cosA = cosf(parentRad);
+		float sinA = sinf(parentRad);
+
+		float rotatedX = t->localOffset.x * cosA - t->localOffset.y * sinA;
+		float rotatedY = t->localOffset.x * sinA + t->localOffset.y * cosA;
+
+		t->x = pt->x + rotatedX;
+		t->y = pt->y + rotatedY;
+		t->rotation = pt->rotation + t->localRotation;
+
+		// Keep physics position in sync if child has physics
+		if (object->hasComponent<Physics>()) {
+			Physics* p = object->getComponent<Physics>();
+			p->dynamics.position.x = t->x;
+			p->dynamics.position.y = t->y;
 		}
 	}
 }

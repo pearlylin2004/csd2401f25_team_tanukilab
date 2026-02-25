@@ -375,6 +375,15 @@ void GameObjectManager::loadSceneFromJson(const std::string& filename) {
 				t->scaleZ = jt["scale"][2].GetFloat();
 			}
 
+			if (jt.HasMember("parentName") && jt["parentName"].IsString())
+				t->parentName = jt["parentName"].GetString();
+			if (jt.HasMember("localOffset") && jt["localOffset"].IsArray() && jt["localOffset"].Size() == 2) {
+				t->localOffset.x = jt["localOffset"][0].GetFloat();
+				t->localOffset.y = jt["localOffset"][1].GetFloat();
+			}
+			if (jt.HasMember("localRotation") && jt["localRotation"].IsNumber())
+				t->localRotation = jt["localRotation"].GetFloat();
+
 			/*std::cout << "\n\nReading from scene...\n";
 			std::cout << "Transform: x: " << t->x << ", y: " << t->y << ", z: " << t->z << std::endl;
 			std::cout << "Rotation: " << t->rotation << std::endl;
@@ -1148,6 +1157,15 @@ doc.AddMember("layers", layersArr, a);
 					rapidjson::Value sc(rapidjson::kArrayType);
 					sc.PushBack(t->scaleX, a).PushBack(t->scaleY, a).PushBack(t->scaleZ, a);
 					jt.AddMember("scale", sc, a);
+				}
+
+				// Save parent-child hierarchy (only if have parent)
+				if (!t->parentName.empty()) {
+					jt.AddMember("parentName", rapidjson::Value(t->parentName.c_str(), a), a);
+					rapidjson::Value lo(rapidjson::kArrayType);
+					lo.PushBack(t->localOffset.x, a).PushBack(t->localOffset.y, a);
+					jt.AddMember("localOffset", lo, a);
+					jt.AddMember("localRotation", t->localRotation, a);
 				}
 
 				if (!jt.ObjectEmpty()) comps.AddMember("Transform", jt, a);

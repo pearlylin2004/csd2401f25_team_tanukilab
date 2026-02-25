@@ -44,10 +44,12 @@
       "colliderType": "circle",
       "collisionRes": "MoveWhenCollide",
       "collisionTag": "bullet",
+      "bounciness": 0.2980000078678131,
+      "friction": 0.0,
       "ignoreCollisionsWith": [
         "player",
-        "environment",
-        "platform"
+        "platform",
+        "environment"
       ]
     },
     "AudioComponent": {
