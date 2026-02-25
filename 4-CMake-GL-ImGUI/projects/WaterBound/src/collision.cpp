@@ -578,7 +578,7 @@ namespace Collision {
         float stiffness = 6.0f; //pressure strength
         float viscosity = 0.08f; //smoothing
         float correctionPercent = 0.8f; //positional correction
-        float gravitySlip = 20.0f; //sideways slide strength
+        //float gravitySlip = 20.0f; //sideways slide strength
 
         //only interact if close
         float penetration = restDistance - dist;
