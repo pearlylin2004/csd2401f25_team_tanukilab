@@ -1494,18 +1494,6 @@ void InspectorWindow::renderAudio(GameObject* selected) {
                         ImGui::Separator();
                         ImGui::Spacing();
 
-                        //// Basic Controls - detect changes and stop sound if settings change
-                        //bool loopChanged = ImGui::Checkbox("Loop", &ch.loop);
-                        //bool playOnStartChanged = ImGui::Checkbox("Play On Start", &ch.playOnStart);
-                        //bool mutedChanged = ImGui::Checkbox("Muted", &ch.muted);
-                        //ImGui::Checkbox("Spatial Audio", &ch.isSpatial);
-
-                        //// Stop currently playing sound if critical settings changed
-                        //if ((loopChanged || playOnStartChanged || mutedChanged) && ch.channel) {
-                        //    ch.isPendingStop = true;
-                        //    DebugLog::addMessage("Stopped audio in '" + channelName + "' due to setting change\n");
-                        //}
-
                         if (ImGui::Checkbox("Loop", &ch.loop)) {
                             ch.loop = !ch.loop;
                             if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
