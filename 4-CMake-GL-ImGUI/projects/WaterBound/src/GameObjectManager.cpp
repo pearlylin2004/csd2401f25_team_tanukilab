@@ -502,21 +502,44 @@ void GameObjectManager::loadSceneFromJson(const std::string& filename) {
 			if (jp.HasMember("mass") && jp["mass"].IsNumber())
 				p->dynamics.mass = jp["mass"].GetFloat();
 
+			if (jp.HasMember("friction") && jp["friction"].IsNumber())
+				p->friction = jp["friction"].GetFloat();
+			if (jp.HasMember("maxFallSpeed") && jp["maxFallSpeed"].IsNumber())
+				p->maxFallSpeed = jp["maxFallSpeed"].GetFloat();
+			if (jp.HasMember("groundAccelForce") && jp["groundAccelForce"].IsNumber())
+				p->groundAccelForce = jp["groundAccelForce"].GetFloat();
+			if (jp.HasMember("airAccelForce") && jp["airAccelForce"].IsNumber())
+				p->airAccelForce = jp["airAccelForce"].GetFloat();
+			if (jp.HasMember("jumpBufferTime") && jp["jumpBufferTime"].IsNumber())
+				p->jumpBufferTime = jp["jumpBufferTime"].GetFloat();
+			if (jp.HasMember("coyoteTime") && jp["coyoteTime"].IsNumber())
+				p->coyoteTime = jp["coyoteTime"].GetFloat();
+			if (jp.HasMember("ledgeAssistRange") && jp["ledgeAssistRange"].IsNumber())
+				p->ledgeAssistRange = jp["ledgeAssistRange"].GetFloat();
+			if (jp.HasMember("ledgeClimbSpeed") && jp["ledgeClimbSpeed"].IsNumber())
+				p->ledgeClimbSpeed = jp["ledgeClimbSpeed"].GetFloat();
 
-			if (jp.HasMember("inWater")) {
+
+			/*if (jp.HasMember("inWater")) {
 				p->inWater = jp["inWater"].IsBool()
 					? jp["inWater"].GetBool()
 					: (jp["inWater"].GetInt() != 0);
-			}
+			}*/
 			if (jp.HasMember("buoyancy")) {
 				p->buoyancy = jp["buoyancy"].IsBool()
 					? jp["buoyancy"].GetBool()
 					: (jp["buoyancy"].GetInt() != 0);
 			}
-			if (jp.HasMember("autoUpdate")) {
-				p->autoUpdate = jp["autoUpdate"].IsBool()
-					? jp["autoUpdate"].GetBool()
-					: (jp["autoUpdate"].GetInt() != 0);
+			//if (jp.HasMember("autoUpdate")) {
+			//	p->autoUpdate = jp["autoUpdate"].IsBool()
+			//		? jp["autoUpdate"].GetBool()
+			//		: (jp["autoUpdate"].GetInt() != 0);
+			//}
+
+			if (go->hasComponent<Transform>()) {
+				Transform* transform = go->getComponent<Transform>();
+				p->dynamics.position.x = transform->x;
+				p->dynamics.position.y = transform->y;
 			}
 		}
 
@@ -558,6 +581,9 @@ void GameObjectManager::loadSceneFromJson(const std::string& filename) {
 			if (jc.HasMember("collisionTag") && jc["collisionTag"].IsString()) {
 				c->collisionTag = jc["collisionTag"].GetString();
 			}
+
+			if (jc.HasMember("colliderType") && jc["colliderType"].IsString())
+				c->colliderType = JsonIO::StrToShape(jc["colliderType"].GetString());
 
 			// Load ignore the collision
 			if (jc.HasMember("ignoreCollisionsWith") && jc["ignoreCollisionsWith"].IsArray()) {
@@ -1236,14 +1262,22 @@ doc.AddMember("layers", layersArr, a);
 
 				// if different then change scene data
 				pushIfDiffBool("physicsFlag", p->physicsFlag);
-				pushIfDiffBool("inWater", p->inWater);
+				//pushIfDiffBool("inWater", p->inWater);
 				pushIfDiffBool("buoyancy", p->buoyancy);
-				pushIfDiffBool("autoUpdate", p->autoUpdate);
+				//pushIfDiffBool("autoUpdate", p->autoUpdate);
 
 				pushIfDiffFloat("moveSpeed", p->moveSpeed);
 				pushIfDiffFloat("jumpForce", p->jumpForce);
 				pushIfDiffFloat("mass", p->dynamics.mass);
 				pushIfDiffFloat("damping", p->damping);
+				pushIfDiffFloat("friction", p->friction);
+				pushIfDiffFloat("maxFallSpeed", p->maxFallSpeed);
+				pushIfDiffFloat("groundAccelForce", p->groundAccelForce);
+				pushIfDiffFloat("airAccelForce", p->airAccelForce);
+				pushIfDiffFloat("jumpBufferTime", p->jumpBufferTime);
+				pushIfDiffFloat("coyoteTime", p->coyoteTime);
+				pushIfDiffFloat("ledgeAssistRange", p->ledgeAssistRange);
+				pushIfDiffFloat("ledgeClimbSpeed", p->ledgeClimbSpeed);
 
 				if (!jp.ObjectEmpty()) comps.AddMember("Physics", jp, a);
 			}
@@ -1291,6 +1325,11 @@ doc.AddMember("layers", layersArr, a);
 				if (!prefabC || !prefabC->HasMember("collisionTag") ||
 					c->collisionTag != (*prefabC)["collisionTag"].GetString()) {
 					jc.AddMember("collisionTag", rapidjson::Value(c->collisionTag.c_str(), a), a);
+				}
+
+				std::string colliderTypeStr = JsonIO::ShapeToStr(c->colliderType);
+				if (!prefabC || !prefabC->HasMember("colliderType") || colliderTypeStr != (*prefabC)["colliderType"].GetString()) {
+					jc.AddMember("colliderType", rapidjson::Value(colliderTypeStr.c_str(), a), a);
 				}
 
 				bool shouldSaveIgnoreList = false;

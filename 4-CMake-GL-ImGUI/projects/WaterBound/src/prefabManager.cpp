@@ -785,12 +785,25 @@ void PrefabManager::applyPrefabComponents(GameObject* go, const rapidjson::Value
 		auto* p = go->addComponent<Physics>();
 
 		p->physicsFlag = JsonIO::GetBoolOr(jp, "physicsFlag", true);
-		p->moveSpeed = JsonIO::GetFloatOr(jp, "moveSpeed", 0.f);
-		p->damping = JsonIO::GetFloatOr(jp, "damping", 0.f);
-		p->jumpForce = JsonIO::GetFloatOr(jp, "jumpForce", 0.f);
+		p->moveSpeed = JsonIO::GetFloatOr(jp, "moveSpeed", 1.f);
+		p->damping = JsonIO::GetFloatOr(jp, "damping", 0.98f);
+		p->friction = JsonIO::GetFloatOr(jp, "friction", 0.80f);
+		p->jumpForce = JsonIO::GetFloatOr(jp, "jumpForce", 12.5f);
+		p->maxFallSpeed = JsonIO::GetFloatOr(jp, "maxFallSpeed", -30.f);
+		p->groundAccelForce = JsonIO::GetFloatOr(jp, "groundAccelForce", 20.f);
+		p->airAccelForce = JsonIO::GetFloatOr(jp, "airAccelForce", 8.f);
+		p->jumpBufferTime = JsonIO::GetFloatOr(jp, "jumpBufferTime", 0.15f);
+		p->coyoteTime = JsonIO::GetFloatOr(jp, "coyoteTime", 0.15f);
+		p->ledgeAssistRange = JsonIO::GetFloatOr(jp, "ledgeAssistRange", 0.8f);
+		p->ledgeClimbSpeed = JsonIO::GetFloatOr(jp, "ledgeClimbSpeed", 8.f);
 		p->dynamics.mass = JsonIO::GetFloatOr(jp, "mass", 1.f);
-		p->inWater = JsonIO::GetBoolOr(jp, "inWater", false);
 		p->buoyancy = JsonIO::GetBoolOr(jp, "buoyancy", false);
+
+		if (go->hasComponent<Transform>()) {
+			Transform* transform = go->getComponent<Transform>();
+			p->dynamics.position.x = transform->x;
+			p->dynamics.position.y = transform->y;
+		}
 	}
 
 	// ---- CollisionInfo (presence only) ----
@@ -813,6 +826,9 @@ void PrefabManager::applyPrefabComponents(GameObject* go, const rapidjson::Value
 		if (jc.HasMember("collisionTag") && jc["collisionTag"].IsString()) {
 			c->collisionTag = jc["collisionTag"].GetString();
 		}
+
+		if(jc.HasMember("colliderType") && jc["colliderType"].IsString())
+			c->colliderType = JsonIO::StrToShape(jc["colliderType"].GetString());
 
 		// Load ignore the collision
 		if (jc.HasMember("ignoreCollisionsWith") && jc["ignoreCollisionsWith"].IsArray()) {
@@ -1136,13 +1152,18 @@ void PrefabManager::serializeComponents(const GameObject* obj, rapidjson::Value&
 		rapidjson::Value jp(rapidjson::kObjectType);
 
 		jp.AddMember("physicsFlag", p->physicsFlag ? 1 : 0, a);
-
 		jp.AddMember("moveSpeed", p->moveSpeed, a);
 		jp.AddMember("jumpForce", p->jumpForce, a);
 		jp.AddMember("damping", p->damping, a);
+		jp.AddMember("friction", p->friction, a);
+		jp.AddMember("maxFallSpeed", p->maxFallSpeed, a);
+		jp.AddMember("groundAccelForce", p->groundAccelForce, a);
+		jp.AddMember("airAccelForce", p->airAccelForce, a);
+		jp.AddMember("jumpBufferTime", p->jumpBufferTime, a);
+		jp.AddMember("coyoteTime", p->coyoteTime, a);
+		jp.AddMember("ledgeAssistRange", p->ledgeAssistRange, a);
+		jp.AddMember("ledgeClimbSpeed", p->ledgeClimbSpeed, a);
 		jp.AddMember("mass", p->dynamics.mass, a);
-
-		jp.AddMember("inWater", p->inWater ? 1 : 0, a);
 		jp.AddMember("buoyancy", p->buoyancy ? 1 : 0, a);
 
 		comps.AddMember("Physics", jp, a);
@@ -1162,6 +1183,8 @@ void PrefabManager::serializeComponents(const GameObject* obj, rapidjson::Value&
 		jc.AddMember("collisionRes", rapidjson::Value(JsonIO::CollisionResponseModeToStr(c->collisionRes), a), a);
 
 		jc.AddMember("collisionTag", rapidjson::Value(c->collisionTag.c_str(), a), a);
+
+		jc.AddMember("colliderType", rapidjson::Value(JsonIO::ShapeToStr(c->colliderType), a), a);
 
 		rapidjson::Value ignoreArray(rapidjson::kArrayType);
 		for (const std::string& tag : c->ignoreCollisionsWith) {
