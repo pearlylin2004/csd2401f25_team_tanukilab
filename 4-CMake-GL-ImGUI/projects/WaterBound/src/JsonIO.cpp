@@ -1241,9 +1241,9 @@ namespace JsonIO {
         }
     }
 
-    std::string serializeStateMachine(GameObject* obj) {
-        if (!obj || !obj->hasComponent<StateMachine>()) return "";
-        Animation* anim = obj->getComponent<Animation>();
+    // Animation serializer - base implementation
+    std::string serializeAnimation(GameObject* obj) {
+        Animation* anim = obj ? obj->getComponent<Animation>() : nullptr;
         if (!anim) return "";
 
         using namespace rapidjson;
@@ -1268,7 +1268,74 @@ namespace JsonIO {
             stateObj.AddMember("animState", animStateObj, a);
             js.AddMember(Value(stateNames[i].c_str(), a), stateObj, a);
         }
-        doc.AddMember("StateMachine", js, a);
+        doc.AddMember("Animation", js, a);
+
+        StringBuffer buf; Writer<StringBuffer> w(buf); doc.Accept(w);
+        return buf.GetString();
+    }
+
+    void deserializeAnimation(GameObject* obj, const std::string& json) {
+        if (!obj || json.empty()) return;
+        using namespace rapidjson;
+        Document doc; doc.Parse(json.c_str());
+        if (doc.HasParseError() || !doc.HasMember("Animation")) return;
+
+        const Value& smObj = doc["Animation"];
+        Animation* anim = obj->hasComponent<Animation>()
+            ? obj->getComponent<Animation>()
+            : obj->addComponent<Animation>();
+        anim->animState.resize(stateNames.size());
+
+        for (size_t i = 0; i < stateNames.size() && i < anim->animState.size(); ++i) {
+            if (!smObj.HasMember(stateNames[i].c_str())) continue;
+            const Value& stateObj = smObj[stateNames[i].c_str()];
+            if (!stateObj.IsObject() || !stateObj.HasMember("animState")) continue;
+            const Value& ao = stateObj["animState"];
+            if (!ao.IsObject()) continue;
+            AnimateState& st = anim->animState[i];
+
+            if (ao.HasMember("texture") && ao["texture"].IsString()) st.texFile = ao["texture"].GetString();
+            else { st.texFile.clear(); st.texChanged = false; }
+
+            st.texChanged = true;
+
+            auto readBoolOrInt = [&](const char* key, bool& out) {
+                if (!ao.HasMember(key)) return;
+                out = ao[key].IsBool() ? ao[key].GetBool() : (ao[key].GetInt() != 0);
+                };
+            readBoolOrInt("loop", st.loop);
+            readBoolOrInt("play", st.play);
+
+            if (ao.HasMember("totalColumn") && ao["totalColumn"].IsInt())      st.totalColumn = ao["totalColumn"].GetInt();
+            if (ao.HasMember("totalRow") && ao["totalRow"].IsInt())         st.totalRow = ao["totalRow"].GetInt();
+            if (ao.HasMember("frameTime") && ao["frameTime"].IsNumber())     st.frameTime = ao["frameTime"].GetFloat();
+            if (ao.HasMember("initialFramCol") && ao["initialFramCol"].IsNumber()) st.initialFrame.x = ao["initialFramCol"].GetFloat();
+            if (ao.HasMember("initialFramRow") && ao["initialFramRow"].IsNumber()) st.initialFrame.y = ao["initialFramRow"].GetFloat();
+            if (ao.HasMember("lastFramCol") && ao["lastFramCol"].IsNumber())    st.lastFrame.x = ao["lastFramCol"].GetFloat();
+            if (ao.HasMember("lastFramRow") && ao["lastFramRow"].IsNumber())    st.lastFrame.y = ao["lastFramRow"].GetFloat();
+        }
+    }
+
+    std::string serializeStateMachine(GameObject* obj) {
+        if (!obj || !obj->hasComponent<StateMachine>()) return "";
+
+        // if no animation component, just save empty statemachine shell
+        if (!obj->hasComponent<Animation>()) return "{\"StateMachine\":{}}";
+
+        // reuse animation serializer, then swap the key
+        std::string animJson = serializeAnimation(obj);
+        if (animJson.empty()) return "{\"StateMachine\":{}}";
+
+        // swap "Animation" key to "StateMachine"
+        using namespace rapidjson;
+        Document doc; doc.Parse(animJson.c_str());
+        if (doc.HasParseError() || !doc.HasMember("Animation"))
+            return "{\"StateMachine\":{}}";
+
+        // move value from "Animation" to "StateMachine"
+        Value smValue(std::move(doc["Animation"]));  // not a copy, move it
+        doc.RemoveMember("Animation");
+        doc.AddMember("StateMachine", smValue, doc.GetAllocator());
 
         StringBuffer buf; Writer<StringBuffer> w(buf); doc.Accept(w);
         return buf.GetString();
@@ -1280,44 +1347,18 @@ namespace JsonIO {
         Document doc; doc.Parse(json.c_str());
         if (doc.HasParseError() || !doc.HasMember("StateMachine")) return;
 
-        const Value& smObj = doc["StateMachine"];
+        // ensure StateMachine component exists
         if (!obj->hasComponent<StateMachine>()) obj->addComponent<StateMachine>();
-        Animation* anim = obj->hasComponent<Animation>()
-            ? obj->getComponent<Animation>()
-            : obj->addComponent<Animation>();
-        anim->animState.resize(stateNames.size());
 
-        for (size_t i = 0; i < stateNames.size() && i < anim->animState.size(); ++i) {
-            if (!smObj.HasMember(stateNames[i].c_str())) continue;
-            const Value& stateObj = smObj[stateNames[i].c_str()];
-            if (!stateObj.IsObject() || !stateObj.HasMember("animState")) continue;
+        // swap "StateMachine" key to "Animation" then reuse animation deserializer
+        Value animValue(std::move(doc["StateMachine"]));
+        doc.RemoveMember("StateMachine");
+        doc.AddMember("Animation", animValue, doc.GetAllocator());
 
-            const Value& ao = stateObj["animState"];
-            if (!ao.IsObject()) continue;
-            AnimateState& st = anim->animState[i];
+        StringBuffer buf; Writer<StringBuffer> w(buf); doc.Accept(w);
+        std::string animJson = buf.GetString();
 
-            if (ao.HasMember("texture") && ao["texture"].IsString()) st.texFile = ao["texture"].GetString();
-            else { st.texFile.clear(); st.texChanged = false; }
-
-            auto readBoolOrInt = [&](const char* key, bool& out) {
-                if (!ao.HasMember(key)) return;
-                out = ao[key].IsBool() ? ao[key].GetBool() : (ao[key].GetInt() != 0);
-                };
-            readBoolOrInt("loop", st.loop);
-            readBoolOrInt("play", st.play);
-
-            if (ao.HasMember("totalColumn") && ao["totalColumn"].IsInt())    st.totalColumn = ao["totalColumn"].GetInt();
-            if (ao.HasMember("totalRow") && ao["totalRow"].IsInt())       st.totalRow = ao["totalRow"].GetInt();
-            if (ao.HasMember("frameTime") && ao["frameTime"].IsNumber())   st.frameTime = ao["frameTime"].GetFloat();
-            if (ao.HasMember("initialFramCol") && ao["initialFramCol"].IsNumber())
-                st.initialFrame.x = ao["initialFramCol"].GetFloat();
-            if (ao.HasMember("initialFramRow") && ao["initialFramRow"].IsNumber())
-                st.initialFrame.y = ao["initialFramRow"].GetFloat();
-            if (ao.HasMember("lastFramCol") && ao["lastFramCol"].IsNumber())
-                st.lastFrame.x = ao["lastFramCol"].GetFloat();
-            if (ao.HasMember("lastFramRow") && ao["lastFramRow"].IsNumber())
-                st.lastFrame.y = ao["lastFramRow"].GetFloat();
-        }
+        deserializeAnimation(obj, animJson);
     }
 
 

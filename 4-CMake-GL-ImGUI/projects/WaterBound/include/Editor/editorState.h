@@ -434,6 +434,16 @@ namespace Editor {
 			[](GameObject* obj) { obj->removeComponent<VisualLC>(); },
 			[](GameObject* obj) { return JsonIO::serializeVisualLC(obj); },
 			[](GameObject* obj, std::string data) { JsonIO::deserializeVisualLC(obj, data); }
+		},
+		{ "Animation",
+			[](GameObject* obj) {
+			obj->addComponent<Animation>();
+			DebugLog::addMessage("Added Virtual Logic component for " + obj->getObjectName());
+			},
+			[](const GameObject* obj) { return obj->hasComponent<Animation>(); },
+			[](GameObject* obj) { obj->removeComponent<Animation>(); },
+			[](GameObject* obj) { return JsonIO::serializeAnimation(obj); },
+			[](GameObject* obj, std::string data) { JsonIO::deserializeAnimation(obj, data); }
 		}
 	};
 

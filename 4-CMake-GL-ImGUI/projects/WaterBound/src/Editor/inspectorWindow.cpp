@@ -271,6 +271,7 @@ void InspectorWindow::addComponent(GameObject* selected) {
     for (const Editor::ComponentEntry& comp : Editor::componentRegistry) {
         // skip if selected obj alr has this component
         if (comp.hasComp(selected)) continue;
+        if (comp.name == "Animation") continue;
 
         // search
         if (strlen(search) > 0) {
@@ -648,8 +649,9 @@ void InspectorWindow::renderStateMachine(GameObject* selected) {
     Render* render = selected->getComponent<Render>();
     Animation* animation = selected->getComponent<Animation>();
 
-    // cache state machine component entry
-    const Editor::ComponentEntry* entry = Editor::findEntry("State Machine");
+    // cache state machine/animation component entry
+    const Editor::ComponentEntry* smEntry = Editor::findEntry("State Machine");
+    const Editor::ComponentEntry* entry = Editor::findEntry("Animation");
 
     if (ImGui::CollapsingHeader("State Machine")) {
         /* ---------- Animation ---------- */
@@ -661,16 +663,21 @@ void InspectorWindow::renderStateMachine(GameObject* selected) {
             else if (!animation) {
                 ImGui::Spacing();
                 if (ImGui::Selectable("Add Animation")) {
-                    selected->addComponent<Animation>();
+                    if (entry) UndoRedoManager::Instance().executeCmd(
+                        std::make_unique<AddComponentCmd>(m_manager, selected, *entry)
+                    );
+                    else selected->addComponent<Animation>();
                 }
             }
             else if (!animation->animState.empty()) {
                 if (ImGui::Checkbox("Is animated", &render->hasAnimation)) {
-                    render->hasAnimation = !render->hasAnimation;
-                    if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
+                    const Editor::ComponentEntry* renderEntry = Editor::findEntry("Render");
 
                     render->hasAnimation = !render->hasAnimation;
-                    if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
+                    if (renderEntry) UndoRedoManager::Instance().beginComponentEdit(selected, *renderEntry);
+
+                    render->hasAnimation = !render->hasAnimation;
+                    if (renderEntry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *renderEntry);
                 }
 
                 ImGui::Separator();
@@ -835,18 +842,23 @@ void InspectorWindow::renderStateMachine(GameObject* selected) {
                 ImGui::EndDisabled();
 
                 ImGui::Separator();
-                if (ImGui::Button("Remove Animation", ImVec2(-1, 0))) {
-                    selected->removeComponent<Animation>();
-                    DebugLog::addMessage("Removed Animation Component");
+                if (entry) {
+                    if (ImGui::Button("Remove Animation", ImVec2(-1, 0))) {
+                        UndoRedoManager::Instance().executeCmd(std::make_unique<RemoveComponentCmd>(m_manager, selected, *entry));
+
+                        DebugLog::addMessage("Removed Animation Component\n");
+                    }
                 }
 
             }
             else {
 
-                if (ImGui::Button("Remove Animation", ImVec2(-1, 0))) {
-                    // add a delete component func here
-                    selected->removeComponent<Animation>();
-                    DebugLog::addMessage("Removed Animation Component");
+                if (entry) {
+                    if (ImGui::Button("Remove Animation", ImVec2(-1, 0))) {
+                        UndoRedoManager::Instance().executeCmd(std::make_unique<RemoveComponentCmd>(m_manager, selected, *entry));
+
+                        DebugLog::addMessage("Removed Animation Component\n");
+                    }
                 }
             }
 
@@ -857,9 +869,9 @@ void InspectorWindow::renderStateMachine(GameObject* selected) {
         ImGui::Separator();
         ImGui::Spacing();
 
-        if (entry) {
+        if (smEntry) {
             if (ImGui::Button("Remove State Machine", ImVec2(-1, 0))) {
-                UndoRedoManager::Instance().executeCmd(std::make_unique<RemoveComponentCmd>(m_manager, selected, *entry));
+                UndoRedoManager::Instance().executeCmd(std::make_unique<RemoveComponentCmd>(m_manager, selected, *smEntry));
 
                 DebugLog::addMessage("Removed State Machine\n");
             }
