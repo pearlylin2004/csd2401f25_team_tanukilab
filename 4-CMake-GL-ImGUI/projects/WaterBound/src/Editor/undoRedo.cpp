@@ -1,13 +1,13 @@
 /* Start Header ************************************************************************/
 /*!
 \file       undoRedo.cpp
-\author     Hugo Low Ren Hao, low.h, 2402272
-            - 100%
-\par		low.h@digipen.edu
+\author     Tan Chee Qing, cheeqing.tan, 2401486 - 80%
+            Hugo Low Ren Hao, low.h, 2402272 - 20%
+\par		cheeqing.tan@digipen.edu
+            low.h@digipen.edu
 \date       November, 10th, 2025
 \brief      Definitions of all the functions and ctor needed for undo and redo in editor.
-            Mostly is to take snapshots of the transform of the objects and creation/
-            deletion.
+            All components/properties should be able to undo/redo
 
 Copyright (C) 2025 DigiPen Institute of Technology.
 Reproduction or disclosure of this file or its contents
@@ -19,6 +19,72 @@ Technology is prohibited.
 #include "JsonIO.h"
 #include "Editor/undoRedo.h"
 #include "Editor/editorManager.h"
+
+/* ---------------- Add Component ---------------- */
+AddComponentCmd::AddComponentCmd(GameObjectManager& manager, GameObject* obj, const Editor::ComponentEntry& entry) : m_manager(manager), m_entry(entry) {
+    if (obj) {
+        m_objectName = obj->getObjectName();
+        m_serializedData = m_entry.serializeComp(obj);
+    }
+}
+
+void AddComponentCmd::execute() {
+    GameObject* obj = m_manager.getGameObject(m_objectName);
+    if (!obj /*|| m_serializedData.empty()*/) return;
+
+    m_entry.deserializeComp(obj, m_serializedData);
+    // add back component with default values first
+    /*if (!m_entry.hasComp(obj)) m_entry.addComp(obj);*/
+
+    // patching?
+}
+
+void AddComponentCmd::undo() {
+    GameObject* obj = m_manager.getGameObject(m_objectName);
+    if (!obj) return;
+
+    if (m_entry.hasComp(obj)) m_entry.removeComp(obj);
+}
+
+void AddComponentCmd::updateObjName(const std::string& oldName, const std::string& newName) {
+    if (m_objectName == oldName) m_objectName = newName;
+}
+/* ---------------- END ---------------- */
+
+
+/* ---------------- Remove Component ---------------- */
+RemoveComponentCmd::RemoveComponentCmd(GameObjectManager& manager, GameObject* obj, const Editor::ComponentEntry& entry) : m_manager(manager), m_entry(entry) {
+    if (obj) {
+        m_objectName = obj->getObjectName();
+        m_serializedData = m_entry.serializeComp(obj);
+
+        m_entry.removeComp(obj);
+    }
+}
+
+void RemoveComponentCmd::execute() {
+    GameObject* obj = m_manager.getGameObject(m_objectName);
+    if (!obj) return;
+
+    if (m_entry.hasComp(obj)) m_entry.removeComp(obj);
+}
+
+void RemoveComponentCmd::undo() {
+    GameObject* obj = m_manager.getGameObject(m_objectName);
+    if (!obj /*|| m_serializedData.empty()*/) return;
+
+    m_entry.deserializeComp(obj, m_serializedData); // adds if missing, restores data
+
+    //if (!m_entry.hasComp(obj)) m_entry.addComp(obj);
+
+    // patch?
+}
+
+void RemoveComponentCmd::updateObjName(const std::string& oldName, const std::string& newName) {
+    if (m_objectName == oldName) m_objectName = newName;
+}
+/* ---------------- END ---------------- */
+
 
 TransformSnapshot captureTransform(GameObject* obj) {
     TransformSnapshot snap;
@@ -232,7 +298,29 @@ void TileMapCmd::updateObjName(const std::string& oldName, const std::string& ne
 	if (m_objectName == oldName)
 		m_objectName = newName;
 }
+/* ---------------- END ---------------- */
 
+
+/* ---------------- AUDIO ---------------- */
+AudioCmd::AudioCmd(GameObjectManager& manager, const std::string& objName, const AudioSnapshot& before, const AudioSnapshot& after) : m_manager(manager) {
+
+}
+
+void AudioCmd::execute() {
+
+}
+
+void AudioCmd::undo() {
+
+}
+
+void AudioCmd::updateObjName(const std::string& oldName, const std::string& newName) {
+
+}
+/* ---------------- END ---------------- */
+
+
+/* ---------------- UNDO/REDO ---------------- */
 void UndoRedoManager::executeCmd(std::unique_ptr<CmdInterface> cmd) {
     // execute the command (transform/create/delete)
     cmd->execute();
@@ -392,5 +480,6 @@ void UndoRedoManager::recordTileChange(int x, int y, const std::string& oldTile,
 
 	m_tileChanges.push_back({ x, y, oldTile, newTile });
 }
+/* ---------------- END ---------------- */
 
 #endif

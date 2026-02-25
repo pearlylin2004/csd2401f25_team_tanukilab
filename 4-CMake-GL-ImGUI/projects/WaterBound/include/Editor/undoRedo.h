@@ -1,9 +1,10 @@
 ﻿/* Start Header ************************************************************************/
 /*!
 \file       undoRedo.h
-\author     Hugo Low Ren Hao, low.h, 2402272
-						- 100%
-\par				low.h@digipen.edu
+\author     Tan Chee Qing, cheeqing.tan, 2401486 - 80%
+			Hugo Low Ren Hao, low.h, 2402272 - 20%
+\par		cheeqing.tan@digipen.edu
+			low.h@digipen.edu
 \date       November, 10th, 2025
 \brief      Class for recording the steps and snapshots for undo and redo. UndoRedoManager
 			should be the only public interface needed to track and execute undo and redo
@@ -39,6 +40,33 @@ struct TileChange {
 	std::string newTile;
 };
 
+// snapshot of a single audio channel's properties
+struct AudioChannelSnapshot {
+	std::string audioFile;
+
+	float volume{ 1.f };
+	float pitch{ 1.f };
+
+	bool loop{ false };
+	bool playOnStart{ false };
+	bool muted{ false };
+	bool isSpatial{ false };
+
+	float minDistance{ 1.f };
+	float maxDistance{ 100.f };
+
+	bool fadeInOnStart{ false };
+	float fadeInDuration{ 1.f };
+	bool fadeOutOnStop{ false };
+	float fadeOutDuration{ 1.f };
+};
+
+// snapshot of an entire audio component
+struct AudioSnapshot {
+	// key -> channel name, value -> channel state
+	std::map<std::string, AudioChannelSnapshot> channels;
+};
+
 // base class
 class CmdInterface {
 public:
@@ -50,6 +78,50 @@ public:
 
 	// to be override in derived class, store obj name (in case of rename)
 	virtual void updateObjName(const std::string&, const std::string&) {}
+};
+
+// record adding any component to a game obj (work together with componentRegistry in editorState.h)
+class AddComponentCmd : public CmdInterface {
+public:
+	// ctor with obj and component entry (to know which component to add)
+	AddComponentCmd(GameObjectManager& manager, GameObject* obj, const Editor::ComponentEntry& entry);
+	
+	// apply the component addition
+	void execute() override;
+
+	// remove the added component (undo the addition)
+	void undo() override;
+
+	// if renamed, save the old name and new name (so undo/redo still work)
+	void updateObjName(const std::string& oldName, const std::string& newName) override;
+
+private:
+	GameObjectManager&		m_manager;
+	std::string				m_objectName;
+	Editor::ComponentEntry	m_entry;
+	std::string				m_serializedData;
+};
+
+// record removing any component from a game obj (work together with componentRegistry in editorState.h)
+class RemoveComponentCmd : public CmdInterface {
+public:
+	// ctor with obj and component entry (to know which component to add)
+	RemoveComponentCmd(GameObjectManager& manager, GameObject* obj, const Editor::ComponentEntry& entry);
+
+	// apply the component removal
+	void execute() override;
+
+	// add the removed component and restores the properties
+	void undo() override;
+
+	// if renamed, save the old name and new name (so undo/redo still work)
+	void updateObjName(const std::string& oldName, const std::string& newName) override;
+
+private:
+	GameObjectManager&		m_manager;
+	std::string				m_objectName;
+	Editor::ComponentEntry	m_entry;
+	std::string				m_serializedData;
 };
 
 // store transform changes
@@ -71,10 +143,10 @@ private:
 	// helper to write transform data to a game obj
 	void applySnapshot(const TransformSnapshot& snap);
 
-	GameObjectManager& m_manager;
-	std::string m_objectName;
-	TransformSnapshot m_before;
-	TransformSnapshot m_after;
+	GameObjectManager&		m_manager;
+	std::string				m_objectName;
+	TransformSnapshot		m_before;
+	TransformSnapshot		m_after;
 };
 
 // store obj creation
@@ -92,10 +164,10 @@ public:
 	void updateObjName(const std::string& oldName, const std::string& newName);
 
 private:
-	GameObjectManager& m_manager;
-	std::string m_objectName;
-	std::string m_serializedData;
-	bool m_wasExecuted = false;
+	GameObjectManager&		m_manager;
+	std::string				m_objectName;
+	std::string				m_serializedData;
+	bool					m_wasExecuted = false;
 };
 
 // store for obj deletion
@@ -113,12 +185,13 @@ public:
 	void updateObjName(const std::string& oldName, const std::string& newName);
 
 private:
-	GameObjectManager& m_manager;
-	std::string m_objectName;
-	std::string m_serializedData;
-	int m_layer = 0;
+	GameObjectManager&		m_manager;
+	std::string				m_objectName;
+	std::string				m_serializedData;
+	int						m_layer = 0;
 };
 
+// store tilemap changes (can be multiple tiles changed in one edit, so store in a vector of changes)
 class TileMapCmd : public CmdInterface {
 public:
 	TileMapCmd(GameObjectManager& manager, const std::string& objName, const std::vector<TileChange>& changes);
@@ -133,9 +206,30 @@ public:
 	void updateObjName(const std::string& oldName, const std::string& newName);
 
 private:
-	GameObjectManager& m_manager;
-	std::string m_objectName;
-	std::vector<TileChange> m_changes;
+	GameObjectManager&		m_manager;
+	std::string				m_objectName;
+	std::vector<TileChange>	m_changes;
+};
+
+// store audio changes (can be multiple channels changed in one edit, so store in a map of channel name and its snapshot)
+class AudioCmd : public CmdInterface {
+public:
+	AudioCmd(GameObjectManager& manager, const std::string& objName, const AudioSnapshot& before, const AudioSnapshot& after);
+
+	// apply AFTER
+	void execute() override;
+
+	// apply BEFORE
+	void undo() override;
+
+	// if renamed, save the old name and new name (so undo/redo still work)
+	void updateObjName(const std::string& oldName, const std::string& newName);
+
+private:
+	GameObjectManager&		m_manager;
+	std::string				m_objectName;
+	AudioSnapshot			m_before;
+	AudioSnapshot			m_after;
 };
 
 // big boss for undo/redo operation (singleton)
@@ -191,7 +285,7 @@ public:
 	/* ---- END ---- */
 
 	// max steps to undo/redo
-	static constexpr size_t MAX_UNDO_STEPS{ 20 };
+	static constexpr size_t MAX_UNDO_STEPS{ 30 };
 
 private:
 	UndoRedoManager() = default;
@@ -200,13 +294,13 @@ private:
 	std::deque<std::unique_ptr<CmdInterface>> m_redoDeque;
 
 	// for transform
-	bool m_isEditingTransform = false;
-	std::string m_editingObjName;
-	TransformSnapshot m_transformBefore;
+	bool				m_isEditingTransform = false;
+	std::string			m_editingObjName;
+	TransformSnapshot	m_transformBefore;
 
 	// for tilemap
-	bool m_isEditingTilemap = false;
-	std::string m_editingTilemapObjName;
+	bool				m_isEditingTilemap = false;
+	std::string			m_editingTilemapObjName;
 	std::vector<TileChange> m_tileChanges;
 };
 

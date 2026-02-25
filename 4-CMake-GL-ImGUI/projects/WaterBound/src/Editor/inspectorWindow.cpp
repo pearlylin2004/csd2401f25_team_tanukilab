@@ -19,12 +19,13 @@ Technology is prohibited.
 #include "Editor/editorManager.h"
 #include "Systems.h"
 
-InspectorWindow::InspectorWindow(Editor::ObjSelectionState& Ostate, Editor::GizmoState& gState) :
+InspectorWindow::InspectorWindow(GameObjectManager& manager, Editor::ObjSelectionState& Ostate, Editor::GizmoState& gState) :
+    m_manager(manager),
     m_objSelectionState(Ostate),
     m_gizmoState(gState) {
 }
 
-void InspectorWindow::render(GameObjectManager& manager) {
+void InspectorWindow::render() {
     ImGui::Begin("Inspector");
 
     GameObject* selected = nullptr;
@@ -36,8 +37,7 @@ void InspectorWindow::render(GameObjectManager& manager) {
             const std::string& prefabID = selected->getObjectPrefabID();
 
             if (PrefabManager::Instance().savePrefab(selected)) {
-                int count = PrefabManager::Instance().applyToAllInstances(prefabID, manager);
-                /*manager.loadScene(JsonIO::runtimeScenePath(Editor::sceneState.currentSceneName));*/
+                int count = PrefabManager::Instance().applyToAllInstances(prefabID, m_manager);
                 DebugLog::addMessage("Applied prefab changes to " + std::to_string(count) + " instances\n");
             }
             else {
@@ -57,7 +57,6 @@ void InspectorWindow::render(GameObjectManager& manager) {
     if (selected) {
 
         /* ------------------- Edit Object Name ------------------- */
-        /*if (selected == m_objSelectionState.selectedObject) {*/
         std::string& objName = selected->getObjectName();
         char buffer[128];
         strncpy(buffer, objName.c_str(), sizeof(buffer));
@@ -72,7 +71,7 @@ void InspectorWindow::render(GameObjectManager& manager) {
             std::string newObjName = buffer;
 
             if (selected == m_objSelectionState.selectedObject) {
-                if (manager.renameGameObject(m_objSelectionState.selectedObject, newObjName)) {
+                if (m_manager.renameGameObject(m_objSelectionState.selectedObject, newObjName)) {
                     // update obj new name jic redo/undo
                     UndoRedoManager::Instance().updateObjName(oldObjName, newObjName);
 
@@ -106,7 +105,7 @@ void InspectorWindow::render(GameObjectManager& manager) {
             ImGui::Separator();
             ImGui::Spacing();
 
-            renderTransform(selected, manager);
+            renderTransform(selected);
         }
         /* ------------------- END ------------------- */
 
@@ -233,7 +232,7 @@ void InspectorWindow::render(GameObjectManager& manager) {
 
 
         /* ------------------- Layer Controls ------------------- */
-        renderLayerControls(selected, manager);
+        renderLayerControls(selected);
         /* ------------------- END ------------------- */
 
 
@@ -261,7 +260,6 @@ void InspectorWindow::render(GameObjectManager& manager) {
 }
 
 void InspectorWindow::addComponent(GameObject* selected) {
-    //if (!ImGui::CollapsingHeader("Add Component")) return;
 
     ImGui::BeginChild("AddComponentSection", ImVec2(0, 400), true, ImGuiWindowFlags_NoScrollbar);
     ImGui::TextDisabled("Add Component");
@@ -288,6 +286,10 @@ void InspectorWindow::addComponent(GameObject* selected) {
         // draw component selectable
         if (ImGui::Selectable(comp.name.c_str())) {
             comp.addComp(selected);
+
+            // record for undo/redo
+            UndoRedoManager::Instance().executeCmd(std::make_unique<AddComponentCmd>(m_manager, selected, comp));
+
             ImGui::CloseCurrentPopup();
         }
     }
@@ -346,7 +348,7 @@ void InspectorWindow::renderGizmoCtrl() {
     }
 }
 
-void InspectorWindow::renderTransform(GameObject* selected, GameObjectManager& manager) {
+void InspectorWindow::renderTransform(GameObject* selected) {
     //Transform* transform, CollisionInfo* collision
     Transform* transform = selected->getComponent<Transform>();
     CollisionInfo* collision = selected->getComponent<CollisionInfo>();
@@ -391,7 +393,7 @@ void InspectorWindow::renderTransform(GameObject* selected, GameObjectManager& m
             posActive |= ImGui::IsItemActive();
 
             if (m_isEditingPos && !posActive) {
-                UndoRedoManager::Instance().endTransformEdit(manager, m_transformEditObject);
+                UndoRedoManager::Instance().endTransformEdit(m_manager, m_transformEditObject);
                 m_isEditingPos = false;
             }
 
@@ -413,7 +415,7 @@ void InspectorWindow::renderTransform(GameObject* selected, GameObjectManager& m
 
             // end snapshot when deactivated (after all changes)
             if (ImGui::IsItemDeactivated() && m_isEditingRot) {
-                UndoRedoManager::Instance().endTransformEdit(manager, m_transformEditObject);
+                UndoRedoManager::Instance().endTransformEdit(m_manager, m_transformEditObject);
                 m_isEditingRot = false;
             }
 
@@ -493,7 +495,7 @@ void InspectorWindow::renderTransform(GameObject* selected, GameObjectManager& m
             }
 
             if (m_isEditingScale && !scaleActive) {
-                UndoRedoManager::Instance().endTransformEdit(manager, m_transformEditObject);
+                UndoRedoManager::Instance().endTransformEdit(m_manager, m_transformEditObject);
                 m_isEditingScale = false;
             }
 
@@ -601,10 +603,13 @@ void InspectorWindow::renderRender(GameObject* selected) {
         ImGui::Separator();
         ImGui::Spacing();
 
-        if (ImGui::Button("Remove Render", ImVec2(-1, 0))) {
-            // add a delete component func here
-            selected->removeComponent<Render>();
-            DebugLog::addMessage("Removed Render Component");
+        if (const Editor::ComponentEntry* entry = Editor::findEntry("Render")) {
+            if (ImGui::Button("Remove Render", ImVec2(-1, 0))) {
+                UndoRedoManager::Instance().executeCmd(
+                    std::make_unique<RemoveComponentCmd>(m_manager, selected, *entry)
+                );
+                DebugLog::addMessage("Removed Render Component\n");
+            }
         }
     }
 }
@@ -768,10 +773,19 @@ void InspectorWindow::renderStateMachine(GameObject* selected) {
         ImGui::Separator();
         ImGui::Spacing();
 
-        if (ImGui::Button("Remove State Machine", ImVec2(-1, 0))) {
-            // add a delete component func here
-            selected->removeComponent<StateMachine>();
-            DebugLog::addMessage("Removed State Machine");
+        //if (ImGui::Button("Remove State Machine", ImVec2(-1, 0))) {
+        //    // add a delete component func here
+        //    selected->removeComponent<StateMachine>();
+        //    DebugLog::addMessage("Removed State Machine");
+        //}
+
+        if (const Editor::ComponentEntry* entry = Editor::findEntry("State Machine")) {
+            if (ImGui::Button("Remove State Machine", ImVec2(-1, 0))) {
+                UndoRedoManager::Instance().executeCmd(
+                    std::make_unique<RemoveComponentCmd>(m_manager, selected, *entry)
+                );
+                DebugLog::addMessage("Removed State Machine\n");
+            }
         }
 
     }
@@ -786,24 +800,6 @@ void InspectorWindow::renderCollision(GameObject* selected/*, GameObjectManager&
         {
             // checked means this object can collide with obj in the same layer
             ImGui::Checkbox("Enable", &collision->collisionFlag);
-
-            // select layer
-            /*int layer = selected->getLayer();
-            if (ImGui::InputInt("Layer", &layer)) {
-                if (layer < 0) layer = 0;
-
-                if (m_objSelectionState.selectedPrefab) {
-                    selected->setLayer(layer);
-                }
-                else if (manager.assignObjectToLayer(selected, layer)) {
-                    DebugLog::addMessage(selected->getObjectName() + " changed layer to " + std::to_string(selected->getLayer()));
-
-                }
-                else {
-                    DebugLog::addMessage(selected->getObjectName() + " failed to change layer!" );
-                }
-
-            }*/
         }
 
         ImGui::Spacing();
@@ -937,10 +933,19 @@ void InspectorWindow::renderCollision(GameObject* selected/*, GameObjectManager&
             ImGui::TreePop();
         }
 
-        if (ImGui::Button("Remove Collision", ImVec2(-1, 0))) {
-            // add a delete component func here
-            selected->removeComponent<CollisionInfo>();
-            DebugLog::addMessage("Removed Collision Component");
+        //if (ImGui::Button("Remove Collision", ImVec2(-1, 0))) {
+        //    // add a delete component func here
+        //    selected->removeComponent<CollisionInfo>();
+        //    DebugLog::addMessage("Removed Collision Component");
+        //}
+
+        if (const Editor::ComponentEntry* entry = Editor::findEntry("Collision")) {
+            if (ImGui::Button("Remove Collision", ImVec2(-1, 0))) {
+                UndoRedoManager::Instance().executeCmd(
+                    std::make_unique<RemoveComponentCmd>(m_manager, selected, *entry)
+                );
+                DebugLog::addMessage("Removed Collision\n");
+            }
         }
     }
     else {
@@ -952,10 +957,19 @@ void InspectorWindow::renderInput(GameObject* selected) {
     if (ImGui::CollapsingHeader("Input Control")) {
         ImGui::TextWrapped("This object can be controlled by keyboard input");
 
-        if (ImGui::Button("Remove Input", ImVec2(-1, 0))) {
-            // add a delete component func here
-            selected->removeComponent<Input>();
-            DebugLog::addMessage("Removed Input Component");
+        //if (ImGui::Button("Remove Input", ImVec2(-1, 0))) {
+        //    // add a delete component func here
+        //    selected->removeComponent<Input>();
+        //    DebugLog::addMessage("Removed Input Component");
+        //}
+
+        if (const Editor::ComponentEntry* entry = Editor::findEntry("Input Control")) {
+            if (ImGui::Button("Remove Input Control", ImVec2(-1, 0))) {
+                UndoRedoManager::Instance().executeCmd(
+                    std::make_unique<RemoveComponentCmd>(m_manager, selected, *entry)
+                );
+                DebugLog::addMessage("Removed Input Control\n");
+            }
         }
     }
 }
@@ -1071,10 +1085,13 @@ void InspectorWindow::renderPhysics(GameObject* selected, bool canMove) {
             ImGui::TreePop();
         }
 
-        if (ImGui::Button("Remove Physics", ImVec2(-1, 0))) {
-            // add a delete component func here
-            selected->removeComponent<Physics>();
-            DebugLog::addMessage("Removed Physics Component");
+        if (const Editor::ComponentEntry* entry = Editor::findEntry("Physics")) {
+            if (ImGui::Button("Remove Physics", ImVec2(-1, 0))) {
+                UndoRedoManager::Instance().executeCmd(
+                    std::make_unique<RemoveComponentCmd>(m_manager, selected, *entry)
+                );
+                DebugLog::addMessage("Removed Physics\n");
+            }
         }
     }
 }
@@ -1112,10 +1129,18 @@ void InspectorWindow::renderFont(GameObject* selected) {
             ImGui::Combo("Font Type", &font->fontType, fontNames, IM_ARRAYSIZE(fontNames));
         }
 
-        if (ImGui::Button("Remove Font", ImVec2(-1, 0))) {
-            // add a delete component func here
-            selected->removeComponent<FontComponent>();
-            DebugLog::addMessage("Removed Font Component");
+        //if (ImGui::Button("Remove Font", ImVec2(-1, 0))) {
+        //    // add a delete component func here
+        //    selected->removeComponent<FontComponent>();
+        //    DebugLog::addMessage("Removed Font Component");
+        //}
+        if (const Editor::ComponentEntry* entry = Editor::findEntry("Font")) {
+            if (ImGui::Button("Remove Font", ImVec2(-1, 0))) {
+                UndoRedoManager::Instance().executeCmd(
+                    std::make_unique<RemoveComponentCmd>(m_manager, selected, *entry)
+                );
+                DebugLog::addMessage("Removed Font\n");
+            }
         }
     }
 }
@@ -1352,9 +1377,18 @@ void InspectorWindow::renderAudio(GameObject* selected) {
         ImGui::Spacing();
 
         // Remove Entire Component
-        if (ImGui::Button("Remove Audio Component", ImVec2(-1, 0))) {
+        /*if (ImGui::Button("Remove Audio Component", ImVec2(-1, 0))) {
             selected->removeComponent<AudioComponent>();
             DebugLog::addMessage("Removed Audio Component");
+        }*/
+
+        if (const Editor::ComponentEntry* entry = Editor::findEntry("Audio")) {
+            if (ImGui::Button("Remove Audio", ImVec2(-1, 0))) {
+                UndoRedoManager::Instance().executeCmd(
+                    std::make_unique<RemoveComponentCmd>(m_manager, selected, *entry)
+                );
+                DebugLog::addMessage("Removed Audio\n");
+            }
         }
     }
 }
@@ -1451,10 +1485,19 @@ void InspectorWindow::renderTileMap(GameObject* selected)
             ImGui::TreePop();
         }
 
-        if (ImGui::Button("Remove TileMap", ImVec2(-1, 0))) {
-            // add a delete component func here
-            selected->removeComponent<TileMap>();
-            DebugLog::addMessage("Removed Tile Map Component");
+        //if (ImGui::Button("Remove TileMap", ImVec2(-1, 0))) {
+        //    // add a delete component func here
+        //    selected->removeComponent<TileMap>();
+        //    DebugLog::addMessage("Removed Tile Map Component");
+        //}
+
+        if (const Editor::ComponentEntry* entry = Editor::findEntry("Tile Map")) {
+            if (ImGui::Button("Remove Tile Map", ImVec2(-1, 0))) {
+                UndoRedoManager::Instance().executeCmd(
+                    std::make_unique<RemoveComponentCmd>(m_manager, selected, *entry)
+                );
+                DebugLog::addMessage("Removed Tile Map\n");
+            }
         }
     }
 }
@@ -1474,10 +1517,19 @@ void InspectorWindow::renderParticles(GameObject* selected)
         ImGui::Spacing();
         ImGui::Separator();
         ImGui::Spacing();
-        if (ImGui::Button("Remove Particle System", ImVec2(-1, 0))) {
-            // add a delete component func here
-            selected->removeComponent<Particle>();
-            DebugLog::addMessage("Removed Particle System Component");
+
+        //if (ImGui::Button("Remove Particle System", ImVec2(-1, 0))) {
+        //    // add a delete component func here
+        //    selected->removeComponent<Particle>();
+        //    DebugLog::addMessage("Removed Particle System Component");
+        //}
+        if (const Editor::ComponentEntry* entry = Editor::findEntry("Particle")) {
+            if (ImGui::Button("Remove Particle", ImVec2(-1, 0))) {
+                UndoRedoManager::Instance().executeCmd(
+                    std::make_unique<RemoveComponentCmd>(m_manager, selected, *entry)
+                );
+                DebugLog::addMessage("Removed Particle\n");
+            }
         }
     }
 }
@@ -1605,9 +1657,18 @@ void InspectorWindow::renderLua(GameObject* selected) {
 
 
         // Remove component button
-        if (ImGui::Button("Remove Lua Script", ImVec2(-1, 0))) {
+        /*if (ImGui::Button("Remove Lua Script", ImVec2(-1, 0))) {
             selected->removeComponent<LuaScript>();
             DebugLog::addMessage("Removed Lua Script Component");
+        }*/
+
+        if (const Editor::ComponentEntry* entry = Editor::findEntry("Lua Script")) {
+            if (ImGui::Button("Remove Lua Script", ImVec2(-1, 0))) {
+                UndoRedoManager::Instance().executeCmd(
+                    std::make_unique<RemoveComponentCmd>(m_manager, selected, *entry)
+                );
+                DebugLog::addMessage("Removed Lua Script\n");
+            }
         }
     }
 }
@@ -1648,17 +1709,6 @@ void InspectorWindow::renderVisualLogic(GameObject* selected) {
                     if (ImGui::Selectable(assetName.c_str(), isSelected)) {
                         Editor::visualLogicState.targetObj = selected;
                         VisualLogicEditor::Instance().loadLogic(assetName);
-                        /*logic->filename = assetName;
-
-                        std::string filepath = "/Logic/" + assetName;
-                        std::string err;
-                        if (JsonIO::loadVisualLogic(filepath, logic->nodes, logic->connections, &err)) {
-                            DebugLog::addMessage("Loaded Visual Logic Graph: " + assetName + "\n");
-                            DebugLog::addMessage("Loaded " + std::to_string(logic->nodes.size()) + " nodes\n");
-                        }
-                        else {
-                            DebugLog::addMessage("ERROR loading Visual Logic: " + err + "\n");
-                        }*/
                     }
 
                     if (isSelected) {
@@ -1716,30 +1766,39 @@ void InspectorWindow::renderVisualLogic(GameObject* selected) {
         ImGui::Spacing();
 
 
-        if (ImGui::Button("Remove Virtual Logic", ImVec2(-1, 0))) {
+        /*if (ImGui::Button("Remove Virtual Logic", ImVec2(-1, 0))) {
             selected->removeComponent<VisualLC>();
             DebugLog::addMessage("Removed Virtual Logic Controller");
+        }*/
+
+        if (const Editor::ComponentEntry* entry = Editor::findEntry("Visual Logic")) {
+            if (ImGui::Button("Remove Visual Logic", ImVec2(-1, 0))) {
+                UndoRedoManager::Instance().executeCmd(
+                    std::make_unique<RemoveComponentCmd>(m_manager, selected, *entry)
+                );
+                DebugLog::addMessage("Removed Visual Logic\n");
+            }
         }
     }
 }
 
-void InspectorWindow::renderLayerControls(GameObject* selected, GameObjectManager& manager) {
+void InspectorWindow::renderLayerControls(GameObject* selected) {
     if (ImGui::CollapsingHeader("Layer")) {
         int currentLayer = selected->getLayer();
-        Layer* layer = manager.getLayerManager().getLayer(currentLayer);
+        Layer* layer = m_manager.getLayerManager().getLayer(currentLayer);
 
         /* ------------------- Layer Properties ------------------- */
         if (layer && ImGui::TreeNode("Layer Properties")) {
 
             // layers dropdown
             if (ImGui::BeginCombo("Assign to Layer", layer->getLayerName().c_str())) {
-                std::vector<Layer*> allLayers = manager.getLayerManager().getAllLayers();
+                std::vector<Layer*> allLayers = m_manager.getLayerManager().getAllLayers();
                 for (Layer* l : allLayers) {
                     bool isSelected = (l->getLayerID() == currentLayer);
                     std::string label = l->getLayerName() + " (ID: " + std::to_string(l->getLayerID()) +
                         ", Objects: " + std::to_string(l->getObjectCount()) + ")";
                     if (ImGui::Selectable(label.c_str(), isSelected)) {
-                        if (manager.assignObjectToLayer(selected, l->getLayerID())) {
+                        if (m_manager.assignObjectToLayer(selected, l->getLayerID())) {
                             DebugLog::addMessage(selected->getObjectName() + " moved to layer: " + l->getLayerName());
                         }
                         else {

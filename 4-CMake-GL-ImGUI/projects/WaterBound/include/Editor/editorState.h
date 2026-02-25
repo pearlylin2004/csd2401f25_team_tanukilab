@@ -24,6 +24,7 @@ Technology is prohibited.
 #include <ImGuizmo.h>
 #include "GameObjectManager.h"
 #include "prefabManager.h"
+#include "JsonIO.h"
 
 namespace Editor {
 	/* ----------------- Menu Bar -----------------*/
@@ -160,7 +161,7 @@ namespace Editor {
 
 		// grid
 		bool showGrid = false;
-		int gridSpacing = 1;
+		//int gridSpacing = 1;
 		Vector2D gridOffset{ 0.0f, 0.0f };
 	};
 	/* ----------------- Gizmo End -----------------*/
@@ -280,6 +281,11 @@ namespace Editor {
 		std::string name;
 		std::function<void(GameObject*)>addComp; // func to add component (hlp3 is now my fav module)
 		std::function<bool(const GameObject*)>hasComp; // func to check if has component
+		std::function<void(GameObject*)> removeComp; // func to remove component
+
+		// for undo/redo
+		std::function<std::string(GameObject*)> serializeComp;   // component -> JSON string
+		std::function<void(GameObject*, std::string)> deserializeComp; // JSON string -> component
 	};
 	/* ----------------- Component End ---------------- */
 
@@ -306,7 +312,10 @@ namespace Editor {
 			r->modelRef = renderer::models[static_cast<int>(shape::square)];
 			DebugLog::addMessage("Added Render component for " + obj->getObjectName());
 			},
-			[](const GameObject* obj) { return obj->hasComponent<Render>(); }
+			[](const GameObject* obj) { return obj->hasComponent<Render>(); },
+			[](GameObject* obj) { obj->removeComponent<Render>(); },
+			[](GameObject* obj) { return JsonIO::serializeRender(obj); },
+			[](GameObject* obj, std::string data) { JsonIO::deserializeRender(obj, data); }
 		},
 
 		{"Collision",
@@ -326,7 +335,10 @@ namespace Editor {
 
 			DebugLog::addMessage("Added Collision component for " + obj->getObjectName());
 			},
-			[](const GameObject* obj) { return obj->hasComponent<CollisionInfo>(); }
+			[](const GameObject* obj) { return obj->hasComponent<CollisionInfo>(); },
+			[](GameObject* obj) { obj->removeComponent<CollisionInfo>(); },
+			[](GameObject* obj) { return JsonIO::serializeCollision(obj); },
+			[](GameObject* obj, std::string data) { JsonIO::deserializeCollision(obj, data); }
 		},
 
 		{"Physics",
@@ -334,7 +346,10 @@ namespace Editor {
 			obj->addComponent<Physics>();
 			DebugLog::addMessage("Added Physics component for " + obj->getObjectName());
 			},
-			[](const GameObject* obj) { return obj->hasComponent<Physics>(); }
+			[](const GameObject* obj) { return obj->hasComponent<Physics>(); },
+			[](GameObject* obj) { obj->removeComponent<Physics>(); },
+			[](GameObject* obj) { return JsonIO::serializePhysics(obj); },
+			[](GameObject* obj, std::string data) { JsonIO::deserializePhysics(obj, data); }
 		},
 
 		{"Input Control",
@@ -342,74 +357,95 @@ namespace Editor {
 			obj->addComponent<Input>();
 			DebugLog::addMessage("Added Input component for " + obj->getObjectName());
 			},
-			[](const GameObject* obj) { return obj->hasComponent<Input>(); }
+			[](const GameObject* obj) { return obj->hasComponent<Input>(); },
+			[](GameObject* obj) { obj->removeComponent<Input>(); },
+			[](GameObject* obj) { return JsonIO::serializeInput(obj); },
+			[](GameObject* obj, std::string data) { JsonIO::deserializeInput(obj, data); }
 		},
 
-		//{"Animation",
-		//	[](GameObject* obj) {
-		//	// animation need render component
-		//	/*Render* r = obj->getComponent<Render>();
-		//	if (!r) r = obj->addComponent<Render>();
-		//	DebugLog::addMessage("Added Render component for " + obj->getObjectName());*/
-
-		//	/*r->hasAnimation = true;
-		//	r->hasTex = true;*/
-
-		//	obj->addComponent<Animation>();
-		//	DebugLog::addMessage("Added Animation component for " + obj->getObjectName());
-		//	},
-		//	[](const GameObject* obj) { return obj->hasComponent<Animation>();}
-		//},
 		{"State Machine",
 			[](GameObject* obj) {
 			obj->addComponent<StateMachine>();
 			DebugLog::addMessage("Added State Machine for " + obj->getObjectName());
 			},
-			[](const GameObject* obj) { return obj->hasComponent<StateMachine>(); }
+			[](const GameObject* obj) { return obj->hasComponent<StateMachine>(); },
+			[](GameObject* obj) { obj->removeComponent<StateMachine>(); },
+			[](GameObject* obj) { return JsonIO::serializeStateMachine(obj); },
+			[](GameObject* obj, std::string data) { JsonIO::deserializeStateMachine(obj, data); }
 		},
 		{"Font",
 			[](GameObject* obj) {
 			obj->addComponent<FontComponent>();
 			DebugLog::addMessage("Added Font component for " + obj->getObjectName());
 			},
-			[](const GameObject* obj) { return obj->hasComponent<FontComponent>(); }
+			[](const GameObject* obj) { return obj->hasComponent<FontComponent>(); },
+			[](GameObject* obj) { obj->removeComponent<FontComponent>(); },
+			[](GameObject* obj) { return JsonIO::serializeFont(obj); },
+			[](GameObject* obj, std::string data) { JsonIO::deserializeFont(obj, data); }
 		},
 		{"Audio",
 			[](GameObject* obj) {
 			obj->addComponent<AudioComponent>();
 			DebugLog::addMessage("Added Audio component for " + obj->getObjectName());
 			},
-			[](const GameObject* obj) { return obj->hasComponent<AudioComponent>(); }
+			[](const GameObject* obj) { return obj->hasComponent<AudioComponent>(); },
+			[](GameObject* obj) { obj->removeComponent<AudioComponent>(); },
+			[](GameObject* obj) { return JsonIO::serializeAudio(obj); },
+			[](GameObject* obj, std::string data) { JsonIO::deserializeAudio(obj, data); }
 		},
 		{"Tile Map",
 			[](GameObject* obj) {
 			obj->addComponent<TileMap>();
 			DebugLog::addMessage("Added Tile Map component for " + obj->getObjectName());
 			},
-			[](const GameObject* obj) { return obj->hasComponent<TileMap>(); }
+			[](const GameObject* obj) { return obj->hasComponent<TileMap>(); },
+			[](GameObject* obj) { 
+				//if (TileMap* tm = obj->getComponent<TileMap>()) {
+					//tm->colChanged = true;
+					gizmoState.showGrid = false;
+				//}
+				obj->removeComponent<TileMap>(); },
+			[](GameObject* obj) { return JsonIO::serializeTileMap(obj); },
+			[](GameObject* obj, std::string data) { JsonIO::deserializeTileMap(obj, data); }
 		},
 		{"Lua Script",
 			[](GameObject* obj) {
 			obj->addComponent<LuaScript>();
 			DebugLog::addMessage("Added Lua Script component for " + obj->getObjectName());
 			},
-			[](const GameObject* obj) { return obj->hasComponent<LuaScript>(); }
+			[](const GameObject* obj) { return obj->hasComponent<LuaScript>(); },
+			[](GameObject* obj) { obj->removeComponent<LuaScript>(); },
+			[](GameObject* obj) { return JsonIO::serializeLuaScript(obj); },
+			[](GameObject* obj, std::string data) { JsonIO::deserializeLuaScript(obj, data); }
 		},
 		{"Particle",
 			[](GameObject* obj) {
 			obj->addComponent<Particle>();
 			DebugLog::addMessage("Added Particle component for " + obj->getObjectName());
 			},
-			[](const GameObject* obj) { return obj->hasComponent<Particle>(); }
+			[](const GameObject* obj) { return obj->hasComponent<Particle>(); },
+			[](GameObject* obj) { obj->removeComponent<Particle>(); },
+			[](GameObject* obj) { return JsonIO::serializeParticle(obj); },
+			[](GameObject* obj, std::string data) { JsonIO::deserializeParticle(obj, data); }
 		},
 		{"Visual Logic",
 			[](GameObject* obj) {
 			obj->addComponent<VisualLC>();
 			DebugLog::addMessage("Added Virtual Logic component for " + obj->getObjectName());
 			},
-			[](const GameObject* obj) { return obj->hasComponent<VisualLC>(); }
+			[](const GameObject* obj) { return obj->hasComponent<VisualLC>(); },
+			[](GameObject* obj) { obj->removeComponent<VisualLC>(); },
+			[](GameObject* obj) { return JsonIO::serializeVisualLC(obj); },
+			[](GameObject* obj, std::string data) { JsonIO::deserializeVisualLC(obj, data); }
 		}
 	};
+
+	// find component entry
+	inline const ComponentEntry* findEntry(const std::string& name) {
+		for (const ComponentEntry& e : componentRegistry)
+			if (e.name == name) return &e;
+		return nullptr;
+	}
 	/* ----------------- Component End ---------------- */
 }
 #endif
