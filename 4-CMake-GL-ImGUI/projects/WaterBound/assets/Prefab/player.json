@@ -27,9 +27,18 @@
       "moveSpeed": 5.0,
       "jumpForce": 12.5,
       "damping": 0.9800000190734863,
+      "maxFallSpeed": -30.0,
+      "groundAccelForce": 20.0,
+      "airAccelForce": 8.0,
+      "jumpBufferTime": 0.15000000596046448,
+      "coyoteTime": 0.15000000596046448,
+      "ledgeAssistRange": 0.800000011920929,
+      "ledgeClimbSpeed": 8.0,
       "mass": 1.0,
-      "inWater": 0,
-      "buoyancy": 0
+      "buoyancy": 0,
+      "freezeRotation": true,
+      "angularDrag": 0.9800000190734863,
+      "inertiaOverride": 0.0
     },
     "CollisionInfo": {
       "collisionFlag": 1,
@@ -42,6 +51,9 @@
       "colliderType": "square",
       "collisionRes": "MoveWhenCollide",
       "collisionTag": "default",
+      "bounciness": 0.0,
+      "friction": 0.20000000298023224,
+      "colliderType": "square",
       "ignoreCollisionsWith": []
     },
     "StateMachine": {
