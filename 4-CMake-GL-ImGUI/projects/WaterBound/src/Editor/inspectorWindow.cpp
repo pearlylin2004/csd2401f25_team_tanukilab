@@ -570,7 +570,7 @@ void InspectorWindow::renderRender(GameObject* selected) {
                 if (ImGui::Button("Clear Texture")) {
                     if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
 
-                    glDeleteTextures(1, &render->texHDL);
+                    //glDeleteTextures(1, &render->texHDL);
                     render->texHDL = 0;
                     render->hasTex = false;
                     render->texFile.clear();
@@ -757,7 +757,7 @@ void InspectorWindow::renderStateMachine(GameObject* selected) {
                         if (ImGui::Button("Clear Texture")) {
                             if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
 
-                            glDeleteTextures(1, &currentState.texHDL);
+                            //glDeleteTextures(1, &currentState.texHDL);
                             currentState.texHDL = 0;
                             currentState.texFile.clear();
                             currentState.texChanged = true;
