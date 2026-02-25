@@ -81,7 +81,7 @@ void HierarchyWindow::render(GameObjectManager& manager) {
         if (ImGui::BeginDragDropTarget()) {
             if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("HIERARCHY_OBJ")) {
                 const char* childName = (const char*)payload->Data;
-                if (childName && childName != name) {
+                if (childName && std::string(childName) != name) {
                     GameObject* child = manager.getGameObject(childName);
                     if (child && child->hasComponent<Transform>() && obj->hasComponent<Transform>()) {
                         Transform* ct = child->getComponent<Transform>();
@@ -90,10 +90,23 @@ void HierarchyWindow::render(GameObjectManager& manager) {
                         float dy = ct->y - pt->y;
                         float rad = glm::radians(-pt->rotation);
                         float cosA = cosf(rad), sinA = sinf(rad);
+
+                        // Capture before state
+                        std::string oldParent = ct->parentName;
+                        Vector2D    oldOffset = ct->localOffset;
+                        float       oldLocalRot = ct->localRotation;
+
                         ct->localOffset.x = dx * cosA - dy * sinA;
                         ct->localOffset.y = dx * sinA + dy * cosA;
                         ct->localRotation = ct->rotation - pt->rotation;
                         ct->parentName = name;
+
+                        // Record for undo
+                        auto cmd = std::make_unique<ReparentCmd>(manager, childName,
+                            oldParent, oldOffset, oldLocalRot,
+                            ct->parentName, ct->localOffset, ct->localRotation);
+                        UndoRedoManager::Instance().executeCmd(std::move(cmd));
+
                         DebugLog::addMessage(childName + std::string(" parented to ") + name);
                         CachedGameObjects::Instance().refresh();
                     }

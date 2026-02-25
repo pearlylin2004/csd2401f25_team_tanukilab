@@ -200,6 +200,41 @@ public:
 
 	*************************************************************************/
 	void update(GameObjectManager& manager, const float& deltaTime);
+
+	static void setWorldPosition(Transform* t, float worldX, float worldY, GameObjectManager& manager) {
+		t->x = worldX;
+		t->y = worldY;
+
+		// Keep localOffset in sync if this object has a parent
+		if (!t->parentName.empty()) {
+			GameObject* parent = manager.getGameObject(t->parentName);
+			if (parent && parent->hasComponent<Transform>()) {
+				Transform* pt = parent->getComponent<Transform>();
+				float dx = worldX - pt->x;
+				float dy = worldY - pt->y;
+				float rad = glm::radians(-pt->rotation);
+				float cosA = cosf(rad), sinA = sinf(rad);
+				t->localOffset.x = dx * cosA - dy * sinA;
+				t->localOffset.y = dx * sinA + dy * cosA;
+			}
+		}
+	}
+
+	static void setWorldRotation(Transform* t, float worldRotation, GameObjectManager& manager) {
+		// Normalise to [0, 360)
+		worldRotation = fmodf(worldRotation, 360.f);
+		if (worldRotation < 0.f) worldRotation += 360.f;
+
+		t->rotation = worldRotation;
+
+		if (!t->parentName.empty()) {
+			GameObject* parent = manager.getGameObject(t->parentName);
+			if (parent && parent->hasComponent<Transform>()) {
+				Transform* pt = parent->getComponent<Transform>();
+				t->localRotation = worldRotation - pt->rotation;
+			}
+		}
+	}
 };
 
 // Collision system - detects and resolves collisions between game objects

@@ -77,14 +77,28 @@ GameObject* GameObjectManager::getGameObject(const std::string& name) {
 void GameObjectManager::deleteGameObject(GameObject* object) {
 	if (!object) return;
 
+	const std::string& deletedName = object->getObjectName();
+
 	m_layerManager.removeObjectFromLayer(object);
 
-	for (auto iterator = m_gameObjects.begin(); iterator != m_gameObjects.end(); ++iterator) {
-		if (iterator->second.get() == object) {
-			m_gameObjects.erase(iterator);
-			return;
+	auto toErase = m_gameObjects.end();
+
+	for (auto it = m_gameObjects.begin(); it != m_gameObjects.end(); ++it) {
+		if (it->second.get() == object) {
+			toErase = it;
+			continue; // don't skip remaining children
+		}
+
+		Transform* t = it->second->getComponent<Transform>();
+		if (t && t->parentName == deletedName) {
+			t->parentName.clear();
+			t->localOffset = { 0.f, 0.f };
+			t->localRotation = 0.f;
 		}
 	}
+
+	if (toErase != m_gameObjects.end())
+		m_gameObjects.erase(toErase);
 }
 
 //clone an existing object

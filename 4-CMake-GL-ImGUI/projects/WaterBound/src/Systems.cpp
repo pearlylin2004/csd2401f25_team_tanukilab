@@ -2336,10 +2336,18 @@ void AudioSystem::updateSpatialAudio(GameObjectManager& manager) {
 }
 
 void TransformSystem::update(GameObjectManager& manager, const float& deltaTime) {
-	(void)deltaTime; // no time dependency for hierarchy propagation
+	if (EditorManager::isEditingMode()) return;
 
 	std::vector<GameObject*> gameObjects;
 	manager.getAllGameObjects(gameObjects);
+
+	// This is a simple sort to ensure parents are processed before children in one pass
+	// Roots first, then children. should handle single-level correctly
+	// For multi-level, a full topological sort would be needed
+	std::stable_partition(gameObjects.begin(), gameObjects.end(), [](GameObject* obj) {
+		Transform* t = obj->getComponent<Transform>();
+		return !t || t->parentName.empty(); // roots first
+		});
 
 	for (GameObject* object : gameObjects) {
 		if (!object->hasComponent<Transform>()) continue;

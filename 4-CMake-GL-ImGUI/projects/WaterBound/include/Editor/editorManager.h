@@ -336,7 +336,7 @@ private:
 	// handle click and select logic and collision
 	void objPicking();
 	// handle dragging of the obj (obj will follow cursor)
-	void objDragging() const;
+	void objDragging(GameObjectManager& manager) const;
 	/* -------- END -------- */
 
 	AssetBrowser& m_assetBrowser;

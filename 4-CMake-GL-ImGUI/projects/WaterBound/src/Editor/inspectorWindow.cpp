@@ -356,21 +356,25 @@ void InspectorWindow::renderTransform(GameObject* selected, GameObjectManager& m
         if (ImGui::TreeNode("Position")) {
             bool posActive = false;
 
-            if (ImGui::DragFloat("X", &transform->x, 0.1f)) {
+            float newX = transform->x;
+            if (ImGui::DragFloat("X", &newX, 0.1f)) {
                 if (!m_isEditingPos) {
                     UndoRedoManager::Instance().beginTransformEdit(selected);
                     m_isEditingPos = true;
                     m_transformEditObject = selected;
                 }
+                TransformSystem::setWorldPosition(transform, newX, transform->y, manager);
             }
             posActive |= ImGui::IsItemActive();
 
-            if (ImGui::DragFloat("Y", &transform->y, 0.1f)) {
+            float newY = transform->y;
+            if (ImGui::DragFloat("Y", &newY, 0.1f)) {
                 if (!m_isEditingPos) {
                     UndoRedoManager::Instance().beginTransformEdit(selected);
                     m_isEditingPos = true;
                     m_transformEditObject = selected;
                 }
+                TransformSystem::setWorldPosition(transform, transform->x, newY, manager);
             }
             posActive |= ImGui::IsItemActive();
 
@@ -400,8 +404,9 @@ void InspectorWindow::renderTransform(GameObject* selected, GameObjectManager& m
 
         /* ------------------- Object Rotation ------------------- */
         if (ImGui::TreeNode("Rotation")) {
-            if (ImGui::DragFloat("Angle", &transform->rotation)) {
-                transform->rotation = std::clamp(transform->rotation, 0.f, 360.f);
+            float newRot = transform->rotation;
+            if (ImGui::DragFloat("Angle", &newRot)) {
+                TransformSystem::setWorldRotation(transform, newRot, manager);
             }
 
             // take snapshot when FIRST activated (before any changes)
@@ -507,8 +512,6 @@ void InspectorWindow::renderTransform(GameObject* selected, GameObjectManager& m
         if (ImGui::TreeNode("Hierarchy")) {
             Transform* t = selected->getComponent<Transform>();
 
-            
-
             // Assign parent via drag-drop from hierarchy window
             std::string currentParent = t->parentName.empty() ? "(none)" : t->parentName;
             ImGui::Text("Parent: %s", currentParent.c_str());
@@ -523,10 +526,16 @@ void InspectorWindow::renderTransform(GameObject* selected, GameObjectManager& m
 
                 ImGui::Spacing();
                 if (ImGui::Button("Unparent", ImVec2(-1, 0))) {
+                    auto cmd = std::make_unique<ReparentCmd>(manager, selected->getObjectName(),
+                        t->parentName, t->localOffset, t->localRotation,  // old state
+                        "", Vector2D{ 0.f, 0.f }, 0.f);                     // new state (no parent)
+                    UndoRedoManager::Instance().executeCmd(std::move(cmd));
+
                     t->parentName.clear();
                     t->localOffset = { 0.f, 0.f };
                     t->localRotation = 0.f;
-                    DebugLog::addMessage(std::string(selected->getObjectName()) + " unparented");
+                    CachedGameObjects::Instance().refresh();
+                    DebugLog::addMessage(selected->getObjectName() + " unparented");
                 }
             }
 
