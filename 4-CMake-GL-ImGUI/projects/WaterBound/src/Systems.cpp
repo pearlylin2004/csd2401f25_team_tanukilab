@@ -1155,6 +1155,12 @@ void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime, M
 			transform->y += physics->dynamics.velocity.y * deltaTime;
 			transform->x += physics->dynamics.velocity.x * deltaTime;
 		}
+
+		// Angular integration for rotatable objects (e.g. water wheel)
+		if (!physics->freezeRotation) {
+			DynamicsSystem::IntegrateAngular(physics->dynamics, deltaTime);
+			transform->rotation += physics->dynamics.angularVelocity * deltaTime;
+		}
 	}
 
 	// Bullet physics
@@ -1279,10 +1285,10 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 			//square
 			if (c->colliderType == shape::square){
 				Collision::AABB box = Collision::getObjectAABBbyCollider(objT, c->colliderSize); // use custom collider instead of scale
-				minCellX = static_cast<int>(box.getMin().x / CELL_SIZE);
-				maxCellX = static_cast<int>(box.getMax().x / CELL_SIZE);
-				minCellY = static_cast<int>(box.getMin().y / CELL_SIZE);
-				maxCellY = static_cast<int>(box.getMax().y / CELL_SIZE);
+				minCellX = static_cast<int>(std::floor(box.getMin().x / CELL_SIZE));
+				maxCellX = static_cast<int>(std::floor(box.getMax().x / CELL_SIZE));
+				minCellY = static_cast<int>(std::floor(box.getMin().y / CELL_SIZE));
+				maxCellY = static_cast<int>(std::floor(box.getMax().y / CELL_SIZE));
 			}
 			//circle
 			else if (c->colliderType == shape::circle) {
@@ -1294,10 +1300,10 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 				float minY = circle.getCenter().y - circle.getRadius();
 				float maxY = circle.getCenter().y + circle.getRadius();
 
-				minCellX = static_cast<int>(minX / CELL_SIZE);
-				maxCellX = static_cast<int>(maxX / CELL_SIZE);
-				minCellY = static_cast<int>(minY / CELL_SIZE);
-				maxCellY = static_cast<int>(maxY / CELL_SIZE);
+				minCellX = static_cast<int>(std::floor(minX / CELL_SIZE));
+				maxCellX = static_cast<int>(std::floor(maxX / CELL_SIZE));
+				minCellY = static_cast<int>(std::floor(minY / CELL_SIZE));
+				maxCellY = static_cast<int>(std::floor(maxY / CELL_SIZE));
 			}
 
 			//clamp to grid boundaries so it dont go out the valid range of grid
@@ -1421,8 +1427,8 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 							}
 
 							// Bounce or stop based on bounciness
-							if (p1->bounciness > 0.0f || p2->bounciness > 0.0f) {
-								std::cout << "CASE1 bounce: " << obj1->getObjectName() << " vs " << obj2->getObjectName() << std::endl;
+							if (c1->material.combinedBounciness(c2->material)) {
+								//std::cout << "CASE1 bounce: " << obj1->getObjectName() << " vs " << obj2->getObjectName() << std::endl;
 								float dot1 = p1->dynamics.velocity.x * info.normal.x + p1->dynamics.velocity.y * info.normal.y;
 								float dot2 = p2->dynamics.velocity.x * (-info.normal.x) + p2->dynamics.velocity.y * (-info.normal.y);
 
@@ -1462,13 +1468,20 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 								t1->y += info.normal.y * info.penetration;
 								p1->dynamics.position.y = t1->y;
 							}
-
+							// Apply torque to obj2 if it can rotate (e.g. water wheel hit by bullet)
+							if (!p2->freezeRotation && p2->dynamics.inertia > 0.0f) {
+								Vector2D r = { info.contactPoint.x - t2->x, info.contactPoint.y - t2->y };
+								float impulseMagnitude = p1->dynamics.mass *
+									(r.x * p1->dynamics.velocity.y - r.y * p1->dynamics.velocity.x);
+								p2->dynamics.angularVelocity += impulseMagnitude / p2->dynamics.inertia;
+							}
 							// Bounce or stop based on bounciness
-							if (p1->bounciness > 0.0f) {
-								// Reflect: v' = v - 2(v�n)n, then scale by bounciness
-								float dot = p1->dynamics.velocity.x * info.normal.x + p1->dynamics.velocity.y * info.normal.y;
-								p1->dynamics.velocity.x = (p1->dynamics.velocity.x - dot * info.normal.x) * p1->bounciness;
-								p1->dynamics.velocity.y = (p1->dynamics.velocity.y - dot * info.normal.y) * p1->bounciness;
+							float combinedBounciness = (c1->bounciness + c2->bounciness) * 0.5f;
+							if (combinedBounciness > 0.0f) {
+								float dot = p1->dynamics.velocity.x * info.normal.x +
+									p1->dynamics.velocity.y * info.normal.y;
+								p1->dynamics.velocity.x = (p1->dynamics.velocity.x - 2.0f * dot * info.normal.x) * combinedBounciness;
+								p1->dynamics.velocity.y = (p1->dynamics.velocity.y - 2.0f * dot * info.normal.y) * combinedBounciness;
 							}
 							else {
 								// Original stop behavior
@@ -1481,13 +1494,7 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 									if (info.normal.y > 0) p1->onGround = true;
 								}
 							}
-							// Apply torque to obj2 if it can rotate (e.g. water wheel hit by bullet)
-							if (!p2->freezeRotation) {
-								Vector2D r = { info.contactPoint.x - t2->x, info.contactPoint.y - t2->y };
-								float torque = p1->dynamics.mass *
-									(r.x * p1->dynamics.velocity.y - r.y * p1->dynamics.velocity.x);
-								p2->dynamics.torque += torque;
-							}
+							
 						}
 						// CASE 3: obj1 is static, obj2 is pushable
 						else if (obj1IsStatic && !obj2IsStatic) {
@@ -1501,14 +1508,21 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 								p2->dynamics.position.y = t2->y;
 							}
 
-							// Bounce or stop based on bounciness
-							if (p2->bounciness > 0.0f) {
-								// Normal is from obj1's perspective, flip for obj2
-								Vector2D n = { -info.normal.x, -info.normal.y };
-								float dot = p2->dynamics.velocity.x * n.x + p2->dynamics.velocity.y * n.y;
+							// Apply torque to obj1 if it can rotate
+							if (!p1->freezeRotation && p1->dynamics.inertia > 0.0f) {
+								Vector2D r = { info.contactPoint.x - t1->x, info.contactPoint.y - t1->y };
+								float impulseMagnitude = p2->dynamics.mass *
+									(r.x * p2->dynamics.velocity.y - r.y * p2->dynamics.velocity.x);
+								p1->dynamics.angularVelocity += impulseMagnitude / p1->dynamics.inertia;
+							}
 
-								p2->dynamics.velocity.x = (p2->dynamics.velocity.x - dot * n.x) * p2->bounciness;
-								p2->dynamics.velocity.y = (p2->dynamics.velocity.y - dot * n.y) * p2->bounciness;
+							// Bounce or stop based on bounciness
+							float combinedBounciness = (c1->bounciness + c2->bounciness) * 0.5f;
+							if (combinedBounciness > 0.0f) {
+								float dot = p1->dynamics.velocity.x * info.normal.x +
+									p1->dynamics.velocity.y * info.normal.y;
+								p1->dynamics.velocity.x = (p1->dynamics.velocity.x - 2.0f * dot * info.normal.x) * combinedBounciness;
+								p1->dynamics.velocity.y = (p1->dynamics.velocity.y - 2.0f * dot * info.normal.y) * combinedBounciness;
 							}
 							else {
 								// Original stop behavior (only when NOT bouncing)
@@ -1521,13 +1535,7 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 									if (info.normal.y < 0) p2->onGround = true;
 								}
 							}
-							// Apply torque to obj1 if it can rotate
-							if (!p1->freezeRotation) {
-								Vector2D r = { info.contactPoint.x - t1->x, info.contactPoint.y - t1->y };
-								float torque = p2->dynamics.mass *
-									(r.x * p2->dynamics.velocity.y - r.y * p2->dynamics.velocity.x);
-								p1->dynamics.torque += torque;
-							}
+							
 						}
 						// CASE 4: Both are static (shouldnt happen?)
 						else {

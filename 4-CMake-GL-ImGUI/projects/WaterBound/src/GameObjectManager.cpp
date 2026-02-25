@@ -570,6 +570,12 @@ void GameObjectManager::loadSceneFromJson(const std::string& filename) {
 				c->collisionTag = jc["collisionTag"].GetString();
 			}
 
+			// Load physics material
+			if (jc.HasMember("bounciness") && jc["bounciness"].IsNumber())
+				c->material.bounciness = jc["bounciness"].GetFloat();
+			if (jc.HasMember("friction") && jc["friction"].IsNumber())
+				c->material.friction = jc["friction"].GetFloat();
+
 			// Load ignore the collision
 			if (jc.HasMember("ignoreCollisionsWith") && jc["ignoreCollisionsWith"].IsArray()) {
 				c->ignoreCollisionsWith.clear();
@@ -1314,6 +1320,15 @@ doc.AddMember("layers", layersArr, a);
 					c->collisionTag != (*prefabC)["collisionTag"].GetString()) {
 					jc.AddMember("collisionTag", rapidjson::Value(c->collisionTag.c_str(), a), a);
 				}
+
+				// Save physics material (only if differs from prefab or no prefab)
+				if (!prefabC || !prefabC->HasMember("bounciness") ||
+					differsFloat((*prefabC)["bounciness"].GetFloat(), c->material.bounciness))
+					jc.AddMember("bounciness", c->material.bounciness, a);
+
+				if (!prefabC || !prefabC->HasMember("friction") ||
+					differsFloat((*prefabC)["friction"].GetFloat(), c->material.friction))
+					jc.AddMember("friction", c->material.friction, a);
 
 				bool shouldSaveIgnoreList = false;
 				if (!prefabC || !prefabC->HasMember("ignoreCollisionsWith")) {

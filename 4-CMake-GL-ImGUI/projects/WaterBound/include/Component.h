@@ -225,7 +225,6 @@ public:
     float gravityDelayTimer = 0.0f;
     float gravityDelay = 0.2f;
 
-    float bounciness = 0.0f;
 	bool freezeRotation = true; //determine whether object can rotate (by default cannot)
 	float inertiaOverride = 0.0f; // if > 0, use this value for inertia instead of calculating based on mass and collider size
     
@@ -282,6 +281,36 @@ struct Button : public Component {
     }
 };
 
+// to determine how to combine bounciness and friction when two objects collide, for now just use average, can add more later if needed
+struct PhysicsMaterial {
+    enum class CombineMode { Average, Minimum, Maximum, Multiply };
+
+    float bounciness = 0.0f;
+    float friction = 0.0f;
+    CombineMode bounceCombine = CombineMode::Average;
+    CombineMode frictionCombine = CombineMode::Average;
+
+    static float combine(float a, float b, CombineMode mode) {
+        switch (mode) {
+        case CombineMode::Minimum:  return std::min(a, b);
+        case CombineMode::Maximum:  return std::max(a, b);
+        case CombineMode::Multiply: return a * b;
+        default:                    return (a + b) * 0.5f; // Average
+        }
+    }
+
+    float combinedBounciness(const PhysicsMaterial& other) const {
+        CombineMode mode = (bounceCombine > other.bounceCombine)
+            ? bounceCombine : other.bounceCombine; // higher priority wins
+        return combine(bounciness, other.bounciness, mode);
+    }
+
+    float combinedFriction(const PhysicsMaterial& other) const {
+        CombineMode mode = (frictionCombine > other.frictionCombine)
+            ? frictionCombine : other.frictionCombine;
+        return combine(friction, other.friction, mode);
+    }
+};
 
 // CollisionInfo component to store collision-related information
 struct CollisionInfo : public Component {
@@ -300,6 +329,7 @@ public:
 
     std::string collisionTag = "default";  // Tag for object
     std::unordered_set<std::string> ignoreCollisionsWith;  // Tags to ignore collision with
+	PhysicsMaterial material; // Physical properties for collision response
 
     // Helper method to check if should collide with another tag
     bool shouldCollideWith(const std::string& otherTag) const {
@@ -312,6 +342,10 @@ public:
     Vector2D normal{ 0,0 };
     Vector2D contactPoint = { 0,0 };
     float penetration = 0.0f; //for it to not overlap 
+
+    float bounciness = 0.0f;
+    float friction = 0.0f;
+
 };
 
 // For imgui(testing)

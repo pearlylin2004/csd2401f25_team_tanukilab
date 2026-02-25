@@ -818,6 +818,9 @@ void PrefabManager::applyPrefabComponents(GameObject* go, const rapidjson::Value
 			c->collisionTag = jc["collisionTag"].GetString();
 		}
 
+		c->material.bounciness = JsonIO::GetFloatOr(jc, "bounciness", 0.0f);
+		c->material.friction = JsonIO::GetFloatOr(jc, "friction", 0.0f);
+
 		// Load ignore the collision
 		if (jc.HasMember("ignoreCollisionsWith") && jc["ignoreCollisionsWith"].IsArray()) {
 			c->ignoreCollisionsWith.clear();
@@ -827,6 +830,7 @@ void PrefabManager::applyPrefabComponents(GameObject* go, const rapidjson::Value
 				}
 			}
 		}
+
 	}
 
 	if (auto* p = go->getComponent<Physics>()) {
@@ -1177,6 +1181,9 @@ void PrefabManager::serializeComponents(const GameObject* obj, rapidjson::Value&
 		jc.AddMember("collisionRes", rapidjson::Value(JsonIO::CollisionResponseModeToStr(c->collisionRes), a), a);
 
 		jc.AddMember("collisionTag", rapidjson::Value(c->collisionTag.c_str(), a), a);
+
+		jc.AddMember("bounciness", c->material.bounciness, a);
+		jc.AddMember("friction", c->material.friction, a);
 
 		rapidjson::Value ignoreArray(rapidjson::kArrayType);
 		for (const std::string& tag : c->ignoreCollisionsWith) {

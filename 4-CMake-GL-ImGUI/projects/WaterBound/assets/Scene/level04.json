@@ -35,27 +35,8 @@
             1.0
           ]
         },
-        "Render": {
-          "texture": "assets/Texture\\water_texture.png",
-          "hasTex": 1
-        },
         "Physics": {
           "autoUpdate": 0
-        },
-        "CollisionInfo": {
-          "ignoreCollisionsWith": [
-            "player",
-            "bullet",
-            "hazards"
-          ]
-        },
-        "LuaScript": {
-          "scripts": [
-            {
-              "filename": "./assets/scripting\\bullet.lua",
-              "scriptName": "bullet"
-            }
-          ]
         }
       }
     },
@@ -90,7 +71,7 @@
         },
         "StateMachine": {
           "facingRight": 0,
-          "stateTime": 47.726322174072266
+          "stateTime": 10.871583938598633
         },
         "AudioComponent": {
           "channels": {
@@ -279,6 +260,28 @@
       }
     },
     {
+      "prefabid": "8b8d44fa-ed22-4288-98ee-c476958f5b5b",
+      "name": "endgoal(23)",
+      "components": {
+        "Transform": {
+          "pos": [
+            14.88599967956543,
+            -3.1563878059387207,
+            0.0
+          ]
+        },
+        "Physics": {
+          "autoUpdate": 0,
+          "freezeRotation": 1,
+          "angularDrag": 0.9800000190734863,
+          "inertiaOverride": 0.0
+        },
+        "VisualLC": {
+          "filename": "endgoal04.json"
+        }
+      }
+    },
+    {
       "name": "water balance back",
       "components": {
         "Transform": {
@@ -311,28 +314,6 @@
           "colliderType": "square",
           "collisionRes": "StopWhenCollide",
           "collisionTag": "inventory"
-        }
-      }
-    },
-    {
-      "prefabid": "8b8d44fa-ed22-4288-98ee-c476958f5b5b",
-      "name": "endgoal(23)",
-      "components": {
-        "Transform": {
-          "pos": [
-            14.88599967956543,
-            -3.1563878059387207,
-            0.0
-          ]
-        },
-        "Physics": {
-          "autoUpdate": 0,
-          "freezeRotation": 1,
-          "angularDrag": 0.9800000190734863,
-          "inertiaOverride": 0.0
-        },
-        "VisualLC": {
-          "filename": "endgoal04.json"
         }
       }
     },
@@ -633,7 +614,7 @@
         "Transform": {
           "pos": [
             -6.0,
-            -129508.0703125,
+            -135898.875,
             0.0
           ],
           "rotation": 0.0,
@@ -679,11 +660,11 @@
       "components": {
         "Transform": {
           "pos": [
-            -15.492053031921387,
-            -6.666670799255371,
+            -11.555547714233398,
+            -6.920639991760254,
             0.0
           ],
-          "rotation": 0.0,
+          "rotation": 25.03506088256836,
           "scale": [
             5.5,
             5.5,
@@ -708,13 +689,13 @@
           "damping": 0.9800000190734863,
           "freezeRotation": 0,
           "angularDrag": 0.9800000190734863,
-          "inertiaOverride": 0.0
+          "inertiaOverride": 0.5
         },
         "CollisionInfo": {
           "collisionFlag": 1,
           "autoFitScale": 0,
           "colliderSize": [
-            5.5,
+            4.5,
             5.5
           ],
           "colliderType": "circle",

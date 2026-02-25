@@ -850,7 +850,7 @@ void InspectorWindow::renderCollision(GameObject* selected/*, GameObjectManager&
             if (collision->colliderType == shape::circle) {
                 if (ImGui::InputFloat("Diameter", &collision->colliderSize.x, 1.f)) {
                     collision->colliderSize.x = std::max(collision->colliderSize.x, 0.f);
-                    collision->colliderSize.y = collision->colliderSize.y;
+                    collision->colliderSize.y = collision->colliderSize.x;
                     if (Physics* p = selected->getComponent<Physics>()) {
                         if (!p->freezeRotation) p->recalculateInertia(collision->colliderSize, shape::circle);
                     }
@@ -883,6 +883,26 @@ void InspectorWindow::renderCollision(GameObject* selected/*, GameObjectManager&
 
         ImGui::Spacing();
         ImGui::Separator();
+
+        if (ImGui::TreeNode("Physics Material")) {
+            ImGui::BeginDisabled(!collision->collisionFlag);
+
+            ImGui::SliderFloat("Bounciness", &collision->material.bounciness, 0.0f, 1.0f);
+            ImGui::SliderFloat("Friction", &collision->material.friction, 0.0f, 1.0f);
+
+            // Combine mode for bounciness
+            const char* combineModes[] = { "Average", "Minimum", "Maximum", "Multiply" };
+            int bounceMode = static_cast<int>(collision->material.bounceCombine);
+            if (ImGui::Combo("Bounce Combine", &bounceMode, combineModes, IM_ARRAYSIZE(combineModes)))
+                collision->material.bounceCombine = static_cast<PhysicsMaterial::CombineMode>(bounceMode);
+
+            int frictionMode = static_cast<int>(collision->material.frictionCombine);
+            if (ImGui::Combo("Friction Combine", &frictionMode, combineModes, IM_ARRAYSIZE(combineModes)))
+                collision->material.frictionCombine = static_cast<PhysicsMaterial::CombineMode>(frictionMode);
+
+            ImGui::EndDisabled();
+            ImGui::TreePop();
+        }
 
         if (ImGui::TreeNode("Collision Tag")) {
             std::string currentTag = collision->collisionTag.empty() ? "default" : collision->collisionTag;
@@ -976,6 +996,11 @@ void InspectorWindow::renderPhysics(GameObject* selected, bool canMove) {
     Physics* physic = selected->getComponent<Physics>();
 
     if (ImGui::CollapsingHeader("Physics")) {
+
+        ImGui::Checkbox("Is Trigger", &physic->physicsFlag);
+
+        ImGui::Spacing();
+        ImGui::Separator();
 
         // --- flat fields ---
         if (ImGui::InputFloat("Mass", &physic->dynamics.mass, 1.f)) {
