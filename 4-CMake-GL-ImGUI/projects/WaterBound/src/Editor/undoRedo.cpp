@@ -301,21 +301,29 @@ void TileMapCmd::updateObjName(const std::string& oldName, const std::string& ne
 /* ---------------- END ---------------- */
 
 
-/* ---------------- AUDIO ---------------- */
-AudioCmd::AudioCmd(GameObjectManager& manager, const std::string& objName, const AudioSnapshot& before, const AudioSnapshot& after) : m_manager(manager) {
+/* ---------------- Component Property ---------------- */
+ComponentPropertyCmd::ComponentPropertyCmd(GameObjectManager& manager, const std::string& objName, const Editor::ComponentEntry& entry, const std::string& before, const std::string& after)
+    :   m_manager(manager),
+        m_objectName(objName),
+        m_entry(entry),
+        m_before(before),
+        m_after(after)
+{}
 
+void ComponentPropertyCmd::execute() {
+    GameObject* obj = m_manager.getGameObject(m_objectName);
+
+    if (obj) m_entry.deserializeComp(obj, m_after);
 }
 
-void AudioCmd::execute() {
+void ComponentPropertyCmd::undo() {
+    GameObject* obj = m_manager.getGameObject(m_objectName);
 
+    if (obj) m_entry.deserializeComp(obj, m_before);
 }
 
-void AudioCmd::undo() {
-
-}
-
-void AudioCmd::updateObjName(const std::string& oldName, const std::string& newName) {
-
+void ComponentPropertyCmd::updateObjName(const std::string& oldName, const std::string& newName) {
+    if (m_objectName == oldName) m_objectName = newName;
 }
 /* ---------------- END ---------------- */
 
@@ -376,6 +384,7 @@ void UndoRedoManager::clear() {
     m_undoDeque.clear();
     m_redoDeque.clear();
     m_isEditingTransform = false;
+    m_isEditingComponent = false;
 }
 
 void UndoRedoManager::beginTransformEdit(GameObject* obj) {
@@ -479,6 +488,43 @@ void UndoRedoManager::recordTileChange(int x, int y, const std::string& oldTile,
 	}
 
 	m_tileChanges.push_back({ x, y, oldTile, newTile });
+}
+
+void UndoRedoManager::beginComponentEdit(GameObject* obj, const Editor::ComponentEntry& entry) {
+    if (!obj || m_isEditingComponent) return;
+
+    m_isEditingComponent = true;
+    m_editingComponentObjName = obj->getObjectName();
+    m_editingComponentEntry = entry;
+    m_componentBefore = entry.serializeComp(obj);
+}
+
+void UndoRedoManager::endComponentEdit(GameObjectManager& manager, GameObject* obj, const Editor::ComponentEntry& entry) {
+    if (!m_isEditingComponent || !obj) {
+        m_isEditingComponent = false;
+        return;
+    }
+
+    if (obj->getObjectName() != m_editingComponentObjName) {
+        m_isEditingComponent = false;
+        return;
+    }
+
+    std::string after = entry.serializeComp(obj);
+
+    // only push if something actually changed
+    if (after != m_componentBefore) {
+        auto cmd = std::make_unique<ComponentPropertyCmd>(
+            manager, m_editingComponentObjName, entry, m_componentBefore, after);
+
+        m_undoDeque.push_back(std::move(cmd));
+        m_redoDeque.clear();
+
+        if (m_undoDeque.size() > MAX_UNDO_STEPS)
+            m_undoDeque.pop_front();
+    }
+
+    m_isEditingComponent = false;
 }
 /* ---------------- END ---------------- */
 

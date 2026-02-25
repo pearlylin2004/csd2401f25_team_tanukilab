@@ -40,32 +40,6 @@ struct TileChange {
 	std::string newTile;
 };
 
-// snapshot of a single audio channel's properties
-struct AudioChannelSnapshot {
-	std::string audioFile;
-
-	float volume{ 1.f };
-	float pitch{ 1.f };
-
-	bool loop{ false };
-	bool playOnStart{ false };
-	bool muted{ false };
-	bool isSpatial{ false };
-
-	float minDistance{ 1.f };
-	float maxDistance{ 100.f };
-
-	bool fadeInOnStart{ false };
-	float fadeInDuration{ 1.f };
-	bool fadeOutOnStop{ false };
-	float fadeOutDuration{ 1.f };
-};
-
-// snapshot of an entire audio component
-struct AudioSnapshot {
-	// key -> channel name, value -> channel state
-	std::map<std::string, AudioChannelSnapshot> channels;
-};
 
 // base class
 class CmdInterface {
@@ -191,7 +165,7 @@ private:
 	int						m_layer = 0;
 };
 
-// store tilemap changes (can be multiple tiles changed in one edit, so store in a vector of changes)
+// store tilemap painting changes (not the properties)
 class TileMapCmd : public CmdInterface {
 public:
 	TileMapCmd(GameObjectManager& manager, const std::string& objName, const std::vector<TileChange>& changes);
@@ -211,25 +185,26 @@ private:
 	std::vector<TileChange>	m_changes;
 };
 
-// store audio changes (can be multiple channels changed in one edit, so store in a map of channel name and its snapshot)
-class AudioCmd : public CmdInterface {
+// store any component property changes
+class ComponentPropertyCmd : public CmdInterface {
 public:
-	AudioCmd(GameObjectManager& manager, const std::string& objName, const AudioSnapshot& before, const AudioSnapshot& after);
+	ComponentPropertyCmd(GameObjectManager& manager, const std::string& objName, const Editor::ComponentEntry& entry, const std::string& before, const std::string& after);
 
-	// apply AFTER
+	// apply AFTER state (redo)
 	void execute() override;
 
-	// apply BEFORE
+	// restore BEFORE state (undo)
 	void undo() override;
 
 	// if renamed, save the old name and new name (so undo/redo still work)
 	void updateObjName(const std::string& oldName, const std::string& newName);
-
+	
 private:
 	GameObjectManager&		m_manager;
 	std::string				m_objectName;
-	AudioSnapshot			m_before;
-	AudioSnapshot			m_after;
+	Editor::ComponentEntry	m_entry;
+	std::string				m_before;
+	std::string				m_after;
 };
 
 // big boss for undo/redo operation (singleton)
@@ -284,6 +259,18 @@ public:
 	bool isEditingTilemap() const { return m_isEditingTilemap; }
 	/* ---- END ---- */
 
+
+	/* ---- COMPONENT PROPERTIES ---- */
+	// call before any component property is about to change (captures before-state)
+	void beginComponentEdit(GameObject* obj, const Editor::ComponentEntry& entry);
+
+	// call after the change is done (captures after-state, pushes command if changed)
+	void endComponentEdit(GameObjectManager& manager, GameObject* obj, const Editor::ComponentEntry& entry);
+
+	bool isEditingComponent() const { return m_isEditingComponent; }
+	/* ---- END ---- */
+
+
 	// max steps to undo/redo
 	static constexpr size_t MAX_UNDO_STEPS{ 30 };
 
@@ -302,6 +289,12 @@ private:
 	bool				m_isEditingTilemap = false;
 	std::string			m_editingTilemapObjName;
 	std::vector<TileChange> m_tileChanges;
+
+	// for component properties (all except transform/tilemap)
+	bool					m_isEditingComponent = false;
+	std::string				m_editingComponentObjName;
+	Editor::ComponentEntry	m_editingComponentEntry;
+	std::string				m_componentBefore;
 };
 
 // take a snapshot of an object's transform state
