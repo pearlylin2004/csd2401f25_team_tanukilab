@@ -1354,20 +1354,30 @@ void InspectorWindow::renderFont(GameObject* selected) {
 void InspectorWindow::renderAudio(GameObject* selected) {
     AudioComponent* audio = selected->getComponent<AudioComponent>();
 
+    const Editor::ComponentEntry* entry = Editor::findEntry("Audio");
+
     if (ImGui::CollapsingHeader("Audio")) {
 
         // Add New Channel Section
         ImGui::Text("Add New Audio Channel");
         static char newChannelName[64] = "";
         ImGui::InputTextWithHint("##NewChannelName", "Channel name (e.g., footsteps)", newChannelName, sizeof(newChannelName));
+
         ImGui::SameLine();
+
         if (ImGui::Button("Add Channel")) {
             if (strlen(newChannelName) > 0) {
                 std::string channelName = newChannelName;
+
                 if (!audio->hasChannel(channelName)) {
+                    if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
+
                     audio->getOrCreateChannel(channelName);
+
+                    if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
+
                     DebugLog::addMessage("Added audio channel: " + channelName + "\n");
-                    newChannelName[0] = '\0'; // Clear input
+                    newChannelName[0] = '\0';
                 }
                 else {
                     DebugLog::addMessage("Channel '" + channelName + "' already exists!\n");
@@ -1436,7 +1446,12 @@ void InspectorWindow::renderAudio(GameObject* selected) {
 
                             // Only accept audio files
                             if (ext == ".wav" || ext == ".ogg" || ext == ".mp3") {
+                                if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
+
                                 ch.audioFile = path;
+
+                                if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
+
                                 DebugLog::addMessage("Changed audio of channel '" + channelName + "' to " + ch.audioFile + "\n");
                             }
                             else {
@@ -1479,16 +1494,51 @@ void InspectorWindow::renderAudio(GameObject* selected) {
                         ImGui::Separator();
                         ImGui::Spacing();
 
-                        // Basic Controls - detect changes and stop sound if settings change
-                        bool loopChanged = ImGui::Checkbox("Loop", &ch.loop);
-                        bool playOnStartChanged = ImGui::Checkbox("Play On Start", &ch.playOnStart);
-                        bool mutedChanged = ImGui::Checkbox("Muted", &ch.muted);
-                        ImGui::Checkbox("Spatial Audio", &ch.isSpatial);
+                        //// Basic Controls - detect changes and stop sound if settings change
+                        //bool loopChanged = ImGui::Checkbox("Loop", &ch.loop);
+                        //bool playOnStartChanged = ImGui::Checkbox("Play On Start", &ch.playOnStart);
+                        //bool mutedChanged = ImGui::Checkbox("Muted", &ch.muted);
+                        //ImGui::Checkbox("Spatial Audio", &ch.isSpatial);
 
-                        // Stop currently playing sound if critical settings changed
-                        if ((loopChanged || playOnStartChanged || mutedChanged) && ch.channel) {
-                            ch.isPendingStop = true;
-                            DebugLog::addMessage("Stopped audio in '" + channelName + "' due to setting change\n");
+                        //// Stop currently playing sound if critical settings changed
+                        //if ((loopChanged || playOnStartChanged || mutedChanged) && ch.channel) {
+                        //    ch.isPendingStop = true;
+                        //    DebugLog::addMessage("Stopped audio in '" + channelName + "' due to setting change\n");
+                        //}
+
+                        if (ImGui::Checkbox("Loop", &ch.loop)) {
+                            ch.loop = !ch.loop;
+                            if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
+
+                            ch.loop = !ch.loop;
+                            if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
+
+                            if (ch.channel) ch.isPendingStop = true;
+                        }
+                        if (ImGui::Checkbox("Play On Start", &ch.playOnStart)) {
+                            ch.playOnStart = !ch.playOnStart;
+                            if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
+
+                            ch.playOnStart = !ch.playOnStart;
+                            if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
+
+                            if (ch.channel) ch.isPendingStop = true;
+                        }
+                        if (ImGui::Checkbox("Muted", &ch.muted)) {
+                            ch.muted = !ch.muted;
+                            if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
+
+                            ch.muted = !ch.muted;
+                            if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
+
+                            if (ch.channel) ch.isPendingStop = true;
+                        }
+                        if (ImGui::Checkbox("Spatial Audio", &ch.isSpatial)) {
+                            ch.isSpatial = !ch.isSpatial;
+                            if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
+
+                            ch.isSpatial = !ch.isSpatial;
+                            if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
                         }
 
                         if (ch.isSpatial) {
@@ -1497,10 +1547,20 @@ void InspectorWindow::renderAudio(GameObject* selected) {
                             if (ImGui::DragFloat("Min Distance", &ch.minDistance, 0.1f, 0.1f, 1000.0f)) {
                                 ch.minDistance = std::clamp(ch.minDistance, 0.1f, 1000.0f);
                             }
+                            if (ImGui::IsItemActivated())
+                                if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
+                            if (ImGui::IsItemDeactivatedAfterEdit())
+                                if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
+
 
                             if (ImGui::DragFloat("Max Distance", &ch.maxDistance, 1.0f, 1.0f, 10000.0f)) {
                                 ch.maxDistance = std::clamp(ch.maxDistance, 1.0f, 10000.0f);
                             }
+                            if (ImGui::IsItemActivated())
+                                if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
+                            if (ImGui::IsItemDeactivatedAfterEdit())
+                                if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
+
 
                             ImGui::Unindent();
                         }
@@ -1512,31 +1572,63 @@ void InspectorWindow::renderAudio(GameObject* selected) {
                             if (ImGui::DragFloat("Volume", &ch.volume, 0.01f, 0.0f, 1.0f)) {
                                 ch.volume = std::clamp(ch.volume, 0.f, 1.f);
                             }
+                            if (ImGui::IsItemActivated())
+                                if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
+                            if (ImGui::IsItemDeactivatedAfterEdit())
+                                if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
+
 
                             if (ImGui::DragFloat("Pitch", &ch.pitch, 0.01f, 0.1f, 2.0f)) {
                                 ch.pitch = std::clamp(ch.pitch, 0.1f, 2.f);
                             }
+                            if (ImGui::IsItemActivated())
+                                if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
+                            if (ImGui::IsItemDeactivatedAfterEdit())
+                                if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
+
 
                             ImGui::TreePop();
                         }
 
                         // Fade Controls
                         if (ImGui::TreeNode("Fade In/Out")) {
-                            ImGui::Checkbox("Fade In On Start", &ch.fadeInOnStart);
+                            if (ImGui::Checkbox("Fade In On Start", &ch.fadeInOnStart)) {
+                                ch.fadeInOnStart = !ch.fadeInOnStart;
+                                if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
+
+                                ch.fadeInOnStart = !ch.fadeInOnStart;
+                                if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
+                            }
+
                             if (ch.fadeInOnStart) {
                                 ImGui::Indent();
-                                if (ImGui::DragFloat("Fade In Duration", &ch.fadeInDuration, 0.01f, 0.0f, 10.0f)) {
+                                if (ImGui::DragFloat("Fade In Duration", &ch.fadeInDuration, 0.01f, 0.0f, 10.0f))
                                     ch.fadeInDuration = std::clamp(ch.fadeInDuration, 0.f, 10.f);
-                                }
+                                if (ImGui::IsItemActivated())
+                                    if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
+                                if (ImGui::IsItemDeactivatedAfterEdit())
+                                    if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
+
                                 ImGui::Unindent();
                             }
 
-                            ImGui::Checkbox("Fade Out On Stop", &ch.fadeOutOnStop);
+                            if (ImGui::Checkbox("Fade Out On Stop", &ch.fadeOutOnStop)) {
+                                ch.fadeOutOnStop = !ch.fadeOutOnStop;
+                                if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
+
+                                ch.fadeOutOnStop = !ch.fadeOutOnStop;
+                                if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
+                            }
+
                             if (ch.fadeOutOnStop) {
                                 ImGui::Indent();
-                                if (ImGui::DragFloat("Fade Out Duration", &ch.fadeOutDuration, 0.01f, 0.0f, 10.0f)) {
+                                if (ImGui::DragFloat("Fade Out Duration", &ch.fadeOutDuration, 0.01f, 0.0f, 10.0f))
                                     ch.fadeOutDuration = std::clamp(ch.fadeOutDuration, 0.f, 10.f);
-                                }
+                                if (ImGui::IsItemActivated())
+                                    if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
+                                if (ImGui::IsItemDeactivatedAfterEdit())
+                                    if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
+
                                 ImGui::Unindent();
                             }
 
@@ -1549,11 +1641,16 @@ void InspectorWindow::renderAudio(GameObject* selected) {
 
                         // Remove Sound (clears file but keeps channel)
                         if (ImGui::Button("Clear Audio File", ImVec2(-1, 0))) {
+                            if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
+
                             ch.audioFile = "";
                             if (ch.channel) {
                                 ch.channel->stop();
                                 ch.channel = nullptr;
                             }
+
+                            if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
+
                             DebugLog::addMessage("Cleared audio from channel: " + channelName + "\n");
                         }
                     }
@@ -1573,7 +1670,11 @@ void InspectorWindow::renderAudio(GameObject* selected) {
 
             // Remove channel if marked for removal
             if (!channelToRemove.empty()) {
+                if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
+
                 audio->removeChannel(channelToRemove);
+
+                if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
                 DebugLog::addMessage("Removed audio channel: " + channelToRemove + "\n");
             }
         }
@@ -1582,17 +1683,10 @@ void InspectorWindow::renderAudio(GameObject* selected) {
         ImGui::Separator();
         ImGui::Spacing();
 
-        // Remove Entire Component
-        /*if (ImGui::Button("Remove Audio Component", ImVec2(-1, 0))) {
-            selected->removeComponent<AudioComponent>();
-            DebugLog::addMessage("Removed Audio Component");
-        }*/
-
-        if (const Editor::ComponentEntry* entry = Editor::findEntry("Audio")) {
+        if (entry) {
             if (ImGui::Button("Remove Audio", ImVec2(-1, 0))) {
-                UndoRedoManager::Instance().executeCmd(
-                    std::make_unique<RemoveComponentCmd>(m_manager, selected, *entry)
-                );
+                UndoRedoManager::Instance().executeCmd(std::make_unique<RemoveComponentCmd>(m_manager, selected, *entry));
+
                 DebugLog::addMessage("Removed Audio\n");
             }
         }
@@ -1603,8 +1697,15 @@ void InspectorWindow::renderTileMap(GameObject* selected)
 {
     TileMap* tm = selected->getComponent<TileMap>();
 
+    const Editor::ComponentEntry* entry = Editor::findEntry("Tile Map");
+
     if (ImGui::CollapsingHeader("Tile Map")) {
-        ImGui::Checkbox("Enable Collision", &tm->enableCol);
+        if (ImGui::Checkbox("Enable Collision", &tm->enableCol)) {
+            tm->enableCol = !tm->enableCol;
+            if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
+            tm->enableCol = !tm->enableCol;
+            if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
+        }
 
         if (ImGui::TreeNode("Brush")) {
             std::string displayText = TileMapSystem::filename.empty() ? "No Brush Selected (Drag texture here)" : std::filesystem::path(TileMapSystem::filename).filename().string();
@@ -1678,30 +1779,41 @@ void InspectorWindow::renderTileMap(GameObject* selected)
         if (ImGui::TreeNode("Grid")) {
             ImGui::Checkbox("Enable", &m_gizmoState.showGrid);
 
-            ImGui::InputInt("Grid Columns", &tm->columns);
-            ImGui::InputInt("Grid rows", &tm->rows);
+            ImGui::DragInt("Grid Columns", &tm->columns);
+            if (ImGui::IsItemActivated())
+                if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
+            if (ImGui::IsItemDeactivatedAfterEdit())
+                if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
+
+            ImGui::DragInt("Grid rows", &tm->rows);
+            if (ImGui::IsItemActivated())
+                if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
+            if (ImGui::IsItemDeactivatedAfterEdit())
+                if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
 
             ImGui::Spacing();
             ImGui::Separator();
             ImGui::Spacing();
 
-            ImGui::InputFloat("Tile Width", &tm->tileW, 1.f);
-            ImGui::InputFloat("Tile Height", &tm->tileH, 1.f);
+            ImGui::DragFloat("Tile Width", &tm->tileW, 1.f);
+            if (ImGui::IsItemActivated())
+                if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
+            if (ImGui::IsItemDeactivatedAfterEdit())
+                if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
+
+            ImGui::DragFloat("Tile Height", &tm->tileH, 1.f);
+            if (ImGui::IsItemActivated())
+                if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
+            if (ImGui::IsItemDeactivatedAfterEdit())
+                if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
 
             ImGui::TreePop();
         }
 
-        //if (ImGui::Button("Remove TileMap", ImVec2(-1, 0))) {
-        //    // add a delete component func here
-        //    selected->removeComponent<TileMap>();
-        //    DebugLog::addMessage("Removed Tile Map Component");
-        //}
-
-        if (const Editor::ComponentEntry* entry = Editor::findEntry("Tile Map")) {
+        if (entry) {
             if (ImGui::Button("Remove Tile Map", ImVec2(-1, 0))) {
-                UndoRedoManager::Instance().executeCmd(
-                    std::make_unique<RemoveComponentCmd>(m_manager, selected, *entry)
-                );
+                UndoRedoManager::Instance().executeCmd(std::make_unique<RemoveComponentCmd>(m_manager, selected, *entry));
+
                 DebugLog::addMessage("Removed Tile Map\n");
             }
         }
@@ -1860,13 +1972,6 @@ void InspectorWindow::renderLua(GameObject* selected) {
         ImGui::Spacing();
         ImGui::Separator();
         ImGui::Spacing();
-
-
-        // Remove component button
-        /*if (ImGui::Button("Remove Lua Script", ImVec2(-1, 0))) {
-            selected->removeComponent<LuaScript>();
-            DebugLog::addMessage("Removed Lua Script Component");
-        }*/
 
         if (const Editor::ComponentEntry* entry = Editor::findEntry("Lua Script")) {
             if (ImGui::Button("Remove Lua Script", ImVec2(-1, 0))) {
