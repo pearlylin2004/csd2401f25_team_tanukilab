@@ -1648,7 +1648,7 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 										p1->velY = 0.f;
 										p1->onGround = true;
 
-										p1->coyoteAvailable = true;   // add this
+										p1->coyoteAvailable = true;
 										p1->coyoteTimer = p1->coyoteTime;
 									}
 									else {
@@ -1668,7 +1668,7 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 										p2->velY = 0.f;
 										p2->onGround = true;
 
-										p2->coyoteAvailable = true;   // add this
+										p2->coyoteAvailable = true;
 										p2->coyoteTimer = p2->coyoteTime;
 									}
 								}
@@ -1757,7 +1757,7 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 									p1->dynamics.velocity.y = 0.f;
 									if (info.normal.y > 0) {
 										p1->onGround = true;
-										p1->coyoteAvailable = true;   // add this
+										p1->coyoteAvailable = true;
 										p1->coyoteTimer = p1->coyoteTime;
 									}
 								}
@@ -1840,7 +1840,7 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 									p2->dynamics.velocity.y = 0.f;
 									if (info.normal.y < 0) {
 										p2->onGround = true;
-										p2->coyoteAvailable = true;   // add this
+										p2->coyoteAvailable = true;
 										p2->coyoteTimer = p2->coyoteTime;
 									}
 								}
@@ -1949,7 +1949,7 @@ void CollisionSystem::HandleTilemapCollisions(const std::unordered_map<int, Coll
 								p->dynamics.velocity.y = 0.0f;
 								if (info.normal.y > 0) {
 									p->onGround = true;
-									p->coyoteAvailable = true;   // add this
+									p->coyoteAvailable = true;
 									p->coyoteTimer = p->coyoteTime;
 								}
 							}
