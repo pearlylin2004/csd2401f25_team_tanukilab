@@ -236,27 +236,6 @@ void AssetBrowser::render() {
             ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.1f, 0.4f, 0.7f, 1.0f));*/
         }
 
-        //// display button and the name of the file
-        //ImGui::BeginGroup();
-
-        //ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(100, 40));
-
-        //// can consider changing to image in the future
-        //if(ImGui::Button(asset.name.c_str(), ImVec2(m_AssetBrowserState.iconSize, m_AssetBrowserState.iconSize))) {
-        //    std::string extension;
-        //    std::filesystem::path a = asset.name;      // or asset.path if you want full path
-        //    std::string ext = a.extension().string();
-        //    size_t dotPos = asset.name.find_last_of('.');
-        //    if (dotPos != std::string::npos) extension = asset.name.substr(dotPos + 1);
-        //    std::cout << asset.name << " button clicked!!!!!" << std::endl;
-        //    if (extension == "png" || extension == "jpg" || extension == "jpeg")
-        //    {
-        //        TileMapSystem::filename = asset.path;
-        //        /*std::cout << asset.name << std::endl;
-        //        std::cout << asset.path << std::endl;*/
-        //    }
-        //}
-
         //ImGui::PopStyleVar();
         ImGui::BeginGroup();
 
