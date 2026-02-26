@@ -1354,6 +1354,21 @@ void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime, M
 			else {
 				// Gravity delay expired - normal physics with gravity
 				DynamicsSystem::Integrate(p->dynamics, deltaTime, p->gravity, false);
+
+				//flow force
+				Vector3D flowForce = { 10.0f, 0.0f, 0.0f };
+				//apply force
+				p->dynamics.velocity.x += flowForce.x * deltaTime;
+				p->dynamics.velocity.y += flowForce.y * deltaTime;
+				//turbulence
+				p->dynamics.velocity.y += sin(p->lifeTimer * 10.0f) * 3.0f * deltaTime;
+				//heavy drag
+				float waterDrag = 0.90f;
+				p->dynamics.velocity.x *= waterDrag;
+				p->dynamics.velocity.y *= waterDrag;
+				//integrate
+				Vector3D deltaPos = Vec3_Scale(&p->dynamics.velocity, deltaTime);
+				p->dynamics.position = Vec3_Add(&p->dynamics.position, &deltaPos);
 			}
 
 			t->x = p->dynamics.position.x;
