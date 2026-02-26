@@ -778,6 +778,37 @@
           "friction": 0.0
         }
       }
+    },
+    {
+      "name": "watergun",
+      "components": {
+        "Transform": {
+          "pos": [
+            0.34299999475479126,
+            -3.6029999256134033,
+            0.0
+          ],
+          "rotation": 0.0,
+          "scale": [
+            2.0,
+            2.5,
+            0.0
+          ],
+          "parentName": "player",
+          "localOffset": [
+            0.9432403445243835,
+            -0.87431800365448
+          ],
+          "localRotation": -1.0
+        },
+        "Render": {
+          "shape": "square",
+          "hasTex": 1,
+          "texture": "assets/Texture\\Water_Gun.png",
+          "hasTex": 1,
+          "hasAnimation": 0
+        }
+      }
     }
   ]
 }
