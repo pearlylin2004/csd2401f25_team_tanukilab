@@ -1586,6 +1586,15 @@ namespace JsonIO {
         merge(serializeLuaScript(obj));
         merge(serializeVisualLC(obj));
 
+        if (Button* b = obj->getComponent<Button>()) {
+            Value jb(kObjectType);
+            Value actionStr(ButtonActionToStr(b->actionName), a);
+            jb.AddMember("action", actionStr, a);
+            jb.AddMember("isHovered", b->isHovered, a);
+            jb.AddMember("isPressed", b->isPressed, a);
+            doc.AddMember("Button", jb, a);
+        }
+
         StringBuffer buf; Writer<StringBuffer> w(buf); doc.Accept(w);
         return buf.GetString();
     }
