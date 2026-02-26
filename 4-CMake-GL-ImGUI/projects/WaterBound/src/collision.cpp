@@ -596,6 +596,9 @@ namespace Collision {
         float viscosity = 0.008f; //smoothing
         float correctionPercent = 0.5f; //positional correction
         float damping = 0.05f; //damping
+		float flowStrength = 0.02f; //flow strength for water like behavior
+        float gravity = 0.002f; // tiny gravity to keep flow
+        float antiStick = 0.002f; // slide over neighbors
 
         //only interact if close
         float penetration = restDistance - dist;
@@ -615,6 +618,14 @@ namespace Collision {
         phys1->dynamics.velocity.y -= pressure * ny / m1;
         phys2->dynamics.velocity.x += pressure * nx / m2;
         phys2->dynamics.velocity.y += pressure * ny / m2;
+
+        //lateral flow proportional to penetration
+        phys1->dynamics.velocity.x += flowStrength * (penetration / restDistance);
+        phys2->dynamics.velocity.x += flowStrength * (penetration / restDistance);
+
+        //tiny gravity & anti sticking
+        phys1->dynamics.velocity.y += gravity - antiStick;
+        phys2->dynamics.velocity.y += gravity - antiStick;
 
         //cheap viscosity so wont affect fps
         float rvx = phys2->dynamics.velocity.x - phys1->dynamics.velocity.x;
