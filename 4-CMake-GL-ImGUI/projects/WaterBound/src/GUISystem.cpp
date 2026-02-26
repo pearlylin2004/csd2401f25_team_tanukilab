@@ -283,6 +283,7 @@ void GUISystem::loadScreen(GameObjectManager& manager, const std::string& sceneN
     std::cout << "[GUI] Loading screen: " << sceneName << "\n";
 
     removeButtons(); // clear references
+    AudioHandler::getInstance().stopAll(manager);
     manager.clearScene(); //delete al scene object
 
     manager.loadScene(runtimeScenePath(sceneName));
@@ -295,6 +296,7 @@ void GUISystem::loadScreen(GameObjectManager& manager, const std::string& sceneN
 void GUISystem::loadScreenNoButton(GameObjectManager& manager, const std::string& sceneName) {
     std::cout << "[GUI] Loading screen: " << sceneName << "\n";
 
+    AudioHandler::getInstance().stopAll(manager);
     manager.clearScene(); //delete al scene object
     manager.init();
     manager.loadScene(runtimeScenePath(sceneName));
@@ -332,6 +334,8 @@ void GUISystem::restartLevel() {
     }
 
     removeButtons();
+    AudioHandler::getInstance().stopAll(*g_manager);
+
     g_manager->clearScene();
     g_manager->loadScene(m_currentLevel);
     g_manager->initializeSceneResources();
@@ -349,11 +353,13 @@ void GUISystem::loadLevel(const std::string& levelName) {
 
     //m_currentLevel = levelName;
     removeButtons();
+    AudioHandler::getInstance().stopAll(*g_manager);
+
     g_manager->clearScene();
 
     g_manager->loadScene(fullPath);
     g_manager->initializeSceneResources();
-	g_visualLogicSystem->resetLogicState();
+    g_visualLogicSystem->resetLogicState();
     g_visualLogicSystem->initAll(*g_manager);
 
     // Save spawn positions for this level
@@ -419,6 +425,7 @@ void GUISystem::resetAllObjectsToSpawn() {
         }
 
         if (obj->hasComponent<TileMap>()) {
+
 			TileMap* tileMap = obj->getComponent<TileMap>();
             tileMap->collisionBoxs.clear();
 			tileMap->colChanged = true;

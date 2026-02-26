@@ -113,16 +113,16 @@ private:
 // Inspector (property editor)
 class InspectorWindow {
 public:
-	InspectorWindow(Editor::ObjSelectionState& Ostate, Editor::GizmoState& gState);
-	void render(GameObjectManager& manager);
+	InspectorWindow(GameObjectManager& m_manager, Editor::ObjSelectionState& Ostate, Editor::GizmoState& gState);
+	void render();
 
 private:
 	void addComponent(GameObject* selected);
 	void renderGizmoCtrl();
-	void renderTransform(GameObject* selected, GameObjectManager& manager);
+	void renderTransform(GameObject* selected);
 	void renderRender(GameObject* selected);
 	void renderStateMachine(GameObject* selected);
-	void renderCollision(GameObject* selected/*, GameObjectManager& manager*/);
+	void renderCollision(GameObject* selected);
 	void renderInput(GameObject* selected);
 	void renderPhysics(GameObject* selected, bool canMove);
 	void renderFont(GameObject* selected);
@@ -131,10 +131,11 @@ private:
 	void renderParticles(GameObject* selected);
 	void renderLua(GameObject* selected);
 	void renderVisualLogic(GameObject* selected);
-	void renderLayerControls(GameObject* selected, GameObjectManager& manager);
+	void renderLayerControls(GameObject* selected);
 
 	void wrongFileTypePopup(const std::string& filename);
 
+	GameObjectManager& m_manager;
 	Editor::ObjSelectionState& m_objSelectionState;
 	Editor::GizmoState& m_gizmoState;
 
@@ -336,7 +337,7 @@ private:
 	// handle click and select logic and collision
 	void objPicking();
 	// handle dragging of the obj (obj will follow cursor)
-	void objDragging() const;
+	void objDragging(GameObjectManager& manager) const;
 	/* -------- END -------- */
 
 	AssetBrowser& m_assetBrowser;

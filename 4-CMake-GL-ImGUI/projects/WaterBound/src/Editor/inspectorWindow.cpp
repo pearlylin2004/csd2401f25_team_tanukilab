@@ -19,12 +19,13 @@ Technology is prohibited.
 #include "Editor/editorManager.h"
 #include "Systems.h"
 
-InspectorWindow::InspectorWindow(Editor::ObjSelectionState& Ostate, Editor::GizmoState& gState) :
+InspectorWindow::InspectorWindow(GameObjectManager& manager, Editor::ObjSelectionState& Ostate, Editor::GizmoState& gState) :
+    m_manager(manager),
     m_objSelectionState(Ostate),
     m_gizmoState(gState) {
 }
 
-void InspectorWindow::render(GameObjectManager& manager) {
+void InspectorWindow::render() {
     ImGui::Begin("Inspector");
 
     GameObject* selected = nullptr;
@@ -36,8 +37,7 @@ void InspectorWindow::render(GameObjectManager& manager) {
             const std::string& prefabID = selected->getObjectPrefabID();
 
             if (PrefabManager::Instance().savePrefab(selected)) {
-                int count = PrefabManager::Instance().applyToAllInstances(prefabID, manager);
-                /*manager.loadScene(JsonIO::runtimeScenePath(Editor::sceneState.currentSceneName));*/
+                int count = PrefabManager::Instance().applyToAllInstances(prefabID, m_manager);
                 DebugLog::addMessage("Applied prefab changes to " + std::to_string(count) + " instances\n");
             }
             else {
@@ -57,7 +57,6 @@ void InspectorWindow::render(GameObjectManager& manager) {
     if (selected) {
 
         /* ------------------- Edit Object Name ------------------- */
-        /*if (selected == m_objSelectionState.selectedObject) {*/
         std::string& objName = selected->getObjectName();
         char buffer[128];
         strncpy(buffer, objName.c_str(), sizeof(buffer));
@@ -72,7 +71,7 @@ void InspectorWindow::render(GameObjectManager& manager) {
             std::string newObjName = buffer;
 
             if (selected == m_objSelectionState.selectedObject) {
-                if (manager.renameGameObject(m_objSelectionState.selectedObject, newObjName)) {
+                if (m_manager.renameGameObject(m_objSelectionState.selectedObject, newObjName)) {
                     // update obj new name jic redo/undo
                     UndoRedoManager::Instance().updateObjName(oldObjName, newObjName);
 
@@ -106,7 +105,7 @@ void InspectorWindow::render(GameObjectManager& manager) {
             ImGui::Separator();
             ImGui::Spacing();
 
-            renderTransform(selected, manager);
+            renderTransform(selected);
         }
         /* ------------------- END ------------------- */
 
@@ -233,7 +232,7 @@ void InspectorWindow::render(GameObjectManager& manager) {
 
 
         /* ------------------- Layer Controls ------------------- */
-        renderLayerControls(selected, manager);
+        renderLayerControls(selected);
         /* ------------------- END ------------------- */
 
 
@@ -261,7 +260,6 @@ void InspectorWindow::render(GameObjectManager& manager) {
 }
 
 void InspectorWindow::addComponent(GameObject* selected) {
-    //if (!ImGui::CollapsingHeader("Add Component")) return;
 
     ImGui::BeginChild("AddComponentSection", ImVec2(0, 400), true, ImGuiWindowFlags_NoScrollbar);
     ImGui::TextDisabled("Add Component");
@@ -273,6 +271,7 @@ void InspectorWindow::addComponent(GameObject* selected) {
     for (const Editor::ComponentEntry& comp : Editor::componentRegistry) {
         // skip if selected obj alr has this component
         if (comp.hasComp(selected)) continue;
+        if (comp.name == "Animation") continue;
 
         // search
         if (strlen(search) > 0) {
@@ -288,6 +287,10 @@ void InspectorWindow::addComponent(GameObject* selected) {
         // draw component selectable
         if (ImGui::Selectable(comp.name.c_str())) {
             comp.addComp(selected);
+
+            // record for undo/redo
+            UndoRedoManager::Instance().executeCmd(std::make_unique<AddComponentCmd>(m_manager, selected, comp));
+
             ImGui::CloseCurrentPopup();
         }
     }
@@ -346,7 +349,7 @@ void InspectorWindow::renderGizmoCtrl() {
     }
 }
 
-void InspectorWindow::renderTransform(GameObject* selected, GameObjectManager& manager) {
+void InspectorWindow::renderTransform(GameObject* selected) {
     //Transform* transform, CollisionInfo* collision
     Transform* transform = selected->getComponent<Transform>();
     CollisionInfo* collision = selected->getComponent<CollisionInfo>();
@@ -356,21 +359,25 @@ void InspectorWindow::renderTransform(GameObject* selected, GameObjectManager& m
         if (ImGui::TreeNode("Position")) {
             bool posActive = false;
 
-            if (ImGui::DragFloat("X", &transform->x, 0.1f)) {
+            float newX = transform->x;
+            if (ImGui::DragFloat("X", &newX, 0.1f)) {
                 if (!m_isEditingPos) {
                     UndoRedoManager::Instance().beginTransformEdit(selected);
                     m_isEditingPos = true;
                     m_transformEditObject = selected;
                 }
+                TransformSystem::setWorldPosition(transform, newX, transform->y, m_manager);
             }
             posActive |= ImGui::IsItemActive();
 
-            if (ImGui::DragFloat("Y", &transform->y, 0.1f)) {
+            float newY = transform->y;
+            if (ImGui::DragFloat("Y", &newY, 0.1f)) {
                 if (!m_isEditingPos) {
                     UndoRedoManager::Instance().beginTransformEdit(selected);
                     m_isEditingPos = true;
                     m_transformEditObject = selected;
                 }
+                TransformSystem::setWorldPosition(transform, transform->x, newY, m_manager);
             }
             posActive |= ImGui::IsItemActive();
 
@@ -391,7 +398,7 @@ void InspectorWindow::renderTransform(GameObject* selected, GameObjectManager& m
             posActive |= ImGui::IsItemActive();
 
             if (m_isEditingPos && !posActive) {
-                UndoRedoManager::Instance().endTransformEdit(manager, m_transformEditObject);
+                UndoRedoManager::Instance().endTransformEdit(m_manager, m_transformEditObject);
                 m_isEditingPos = false;
             }
 
@@ -400,8 +407,9 @@ void InspectorWindow::renderTransform(GameObject* selected, GameObjectManager& m
 
         /* ------------------- Object Rotation ------------------- */
         if (ImGui::TreeNode("Rotation")) {
-            if (ImGui::DragFloat("Angle", &transform->rotation)) {
-                transform->rotation = std::clamp(transform->rotation, 0.f, 360.f);
+            float newRot = transform->rotation;
+            if (ImGui::DragFloat("Angle", &newRot)) {
+                TransformSystem::setWorldRotation(transform, newRot, m_manager);
             }
 
             // take snapshot when FIRST activated (before any changes)
@@ -413,7 +421,7 @@ void InspectorWindow::renderTransform(GameObject* selected, GameObjectManager& m
 
             // end snapshot when deactivated (after all changes)
             if (ImGui::IsItemDeactivated() && m_isEditingRot) {
-                UndoRedoManager::Instance().endTransformEdit(manager, m_transformEditObject);
+                UndoRedoManager::Instance().endTransformEdit(m_manager, m_transformEditObject);
                 m_isEditingRot = false;
             }
 
@@ -493,8 +501,45 @@ void InspectorWindow::renderTransform(GameObject* selected, GameObjectManager& m
             }
 
             if (m_isEditingScale && !scaleActive) {
-                UndoRedoManager::Instance().endTransformEdit(manager, m_transformEditObject);
+                UndoRedoManager::Instance().endTransformEdit(m_manager, m_transformEditObject);
                 m_isEditingScale = false;
+            }
+
+            ImGui::TreePop();
+
+        }
+
+        ImGui::Spacing();
+        ImGui::Separator();
+
+        if (ImGui::TreeNode("Hierarchy")) {
+            Transform* t = selected->getComponent<Transform>();
+
+            // Assign parent via drag-drop from hierarchy window
+            std::string currentParent = t->parentName.empty() ? "(none)" : t->parentName;
+            ImGui::Text("Parent: %s", currentParent.c_str());
+            ImGui::TextDisabled("(set parent by dragging in Hierarchy)");
+            
+
+            // Local offset display (read-only — managed by TransformSystem)
+            if (!t->parentName.empty()) {
+                ImGui::Spacing();
+                ImGui::Text("Local Offset: (%.2f, %.2f)", t->localOffset.x, t->localOffset.y);
+                ImGui::Text("Local Rotation: %.2f deg", t->localRotation);
+
+                ImGui::Spacing();
+                if (ImGui::Button("Unparent", ImVec2(-1, 0))) {
+                    auto cmd = std::make_unique<ReparentCmd>(m_manager, selected->getObjectName(),
+                        t->parentName, t->localOffset, t->localRotation,  // old state
+                        "", Vector2D{ 0.f, 0.f }, 0.f);                     // new state (no parent)
+                    UndoRedoManager::Instance().executeCmd(std::move(cmd));
+
+                    t->parentName.clear();
+                    t->localOffset = { 0.f, 0.f };
+                    t->localRotation = 0.f;
+                    CachedGameObjects::Instance().refresh();
+                    DebugLog::addMessage(selected->getObjectName() + " unparented");
+                }
             }
 
             ImGui::TreePop();
@@ -504,8 +549,11 @@ void InspectorWindow::renderTransform(GameObject* selected, GameObjectManager& m
 
 void InspectorWindow::renderRender(GameObject* selected) {
     Render* render = selected->getComponent<Render>();
-    //Animation* animation = selected->getComponent<Animation>();
     CollisionInfo* collision = selected->getComponent<CollisionInfo>();
+
+    // cache render component entry
+    const Editor::ComponentEntry* entry = Editor::findEntry("Render");
+
 
     if (ImGui::CollapsingHeader("Render")) {
 
@@ -533,9 +581,14 @@ void InspectorWindow::renderRender(GameObject* selected) {
 
                     // only accept if dropped file is a png/jpg/jpeg
                     if (ext == ".png" || ext == ".jpg" || ext == ".jpeg") {
+                        if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
+
                         render->texFile = path;
                         render->hasTex = true;
                         render->texChanged = true;
+
+                        if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
+
                         DebugLog::addMessage("Changed texture of " + selected->getObjectName() + " to " + render->texFile + "\n");
                     }
                     else {
@@ -557,11 +610,15 @@ void InspectorWindow::renderRender(GameObject* selected) {
                 ImGui::Separator();
                 ImGui::Spacing();
                 if (ImGui::Button("Clear Texture")) {
-                    glDeleteTextures(1, &render->texHDL);
+                    if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
+
+                    //glDeleteTextures(1, &render->texHDL);
                     render->texHDL = 0;
                     render->hasTex = false;
                     render->texFile.clear();
                     render->texChanged = true;
+
+                    if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
                 }
             }
             ImGui::TreePop();
@@ -572,14 +629,14 @@ void InspectorWindow::renderRender(GameObject* selected) {
             int current = (render->modelRef.shape == shape::square) ? 0 : 1;
 
             if (ImGui::Combo("##Shape", &current, shapes, IM_ARRAYSIZE(shapes))) {
-                if (current == 0)
-                    render->modelRef.shape = shape::square;
-                else
-                    render->modelRef.shape = shape::circle;
+                if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
 
-                if (collision && collision->autoFitScale) {
-                    collision->colliderType = render->modelRef.shape;
-                }
+                if (current == 0) render->modelRef.shape = shape::square;
+                else render->modelRef.shape = shape::circle;
+
+                if (collision && collision->autoFitScale) collision->colliderType = render->modelRef.shape;
+
+                if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
             }
 
             ImGui::TreePop();
@@ -591,6 +648,24 @@ void InspectorWindow::renderRender(GameObject* selected) {
 
             ImGui::ColorEdit3("##Colour", &render->clr.x); // pass pointer of the first float cuz imgui want that
 
+            if (ImGui::IsItemActivated())
+                if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
+            if (ImGui::IsItemDeactivatedAfterEdit())
+                if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
+
+            static glm::vec4 prevColour = render->clr;
+            static bool colourEditing = false;
+
+            if (!colourEditing && render->clr != prevColour) {
+                colourEditing = true;
+                if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
+            }
+            if (colourEditing && ImGui::IsMouseReleased(0)) {
+                colourEditing = false;
+                prevColour = render->clr;
+                if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
+            }
+
             ImGui::EndDisabled();
             ImGui::TreePop();
         }
@@ -601,10 +676,13 @@ void InspectorWindow::renderRender(GameObject* selected) {
         ImGui::Separator();
         ImGui::Spacing();
 
-        if (ImGui::Button("Remove Render", ImVec2(-1, 0))) {
-            // add a delete component func here
-            selected->removeComponent<Render>();
-            DebugLog::addMessage("Removed Render Component");
+        if (entry) {
+            if (ImGui::Button("Remove Render", ImVec2(-1, 0))) {
+                UndoRedoManager::Instance().executeCmd(std::make_unique<RemoveComponentCmd>(m_manager, selected, *entry)
+                );
+
+                DebugLog::addMessage("Removed Render Component");
+            }
         }
     }
 }
@@ -612,6 +690,10 @@ void InspectorWindow::renderRender(GameObject* selected) {
 void InspectorWindow::renderStateMachine(GameObject* selected) {
     Render* render = selected->getComponent<Render>();
     Animation* animation = selected->getComponent<Animation>();
+
+    // cache state machine/animation component entry
+    const Editor::ComponentEntry* smEntry = Editor::findEntry("State Machine");
+    const Editor::ComponentEntry* entry = Editor::findEntry("Animation");
 
     if (ImGui::CollapsingHeader("State Machine")) {
         /* ---------- Animation ---------- */
@@ -623,11 +705,22 @@ void InspectorWindow::renderStateMachine(GameObject* selected) {
             else if (!animation) {
                 ImGui::Spacing();
                 if (ImGui::Selectable("Add Animation")) {
-                    selected->addComponent<Animation>();
+                    if (entry) UndoRedoManager::Instance().executeCmd(
+                        std::make_unique<AddComponentCmd>(m_manager, selected, *entry)
+                    );
+                    else selected->addComponent<Animation>();
                 }
             }
             else if (!animation->animState.empty()) {
-                ImGui::Checkbox("Is animated", &render->hasAnimation);
+                if (ImGui::Checkbox("Is animated", &render->hasAnimation)) {
+                    const Editor::ComponentEntry* renderEntry = Editor::findEntry("Render");
+
+                    render->hasAnimation = !render->hasAnimation;
+                    if (renderEntry) UndoRedoManager::Instance().beginComponentEdit(selected, *renderEntry);
+
+                    render->hasAnimation = !render->hasAnimation;
+                    if (renderEntry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *renderEntry);
+                }
 
                 ImGui::Separator();
 
@@ -640,12 +733,9 @@ void InspectorWindow::renderStateMachine(GameObject* selected) {
                 if (ImGui::BeginCombo("State", stateNames[selectedStateIndex].c_str())) {
                     for (int i = 0; i < stateNames.size(); ++i) {
                         bool isSelected = (selectedStateIndex == i);
-                        if (ImGui::Selectable(stateNames[i].c_str(), isSelected)) {
-                            selectedStateIndex = i;
-                        }
-                        if (isSelected) {
-                            ImGui::SetItemDefaultFocus();
-                        }
+                        if (ImGui::Selectable(stateNames[i].c_str(), isSelected)) selectedStateIndex = i;
+
+                        if (isSelected) ImGui::SetItemDefaultFocus();
                     }
                     ImGui::EndCombo();
                 }
@@ -678,8 +768,13 @@ void InspectorWindow::renderStateMachine(GameObject* selected) {
 
                             // only accept if dropped file is a png/jpg/jpeg
                             if (ext == ".png" || ext == ".jpg" || ext == ".jpeg") {
+                                if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
+
                                 currentState.texFile = path;
                                 currentState.texChanged = true;
+
+                                if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
+
                                 DebugLog::addMessage("Changed texture for " + stateNames[selectedStateIndex] + " state to " + path + "\n");
                             }
                             else {
@@ -702,10 +797,14 @@ void InspectorWindow::renderStateMachine(GameObject* selected) {
 
                     if (!currentState.texFile.empty()) {
                         if (ImGui::Button("Clear Texture")) {
-                            glDeleteTextures(1, &currentState.texHDL);
+                            if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
+
+                            //glDeleteTextures(1, &currentState.texHDL);
                             currentState.texHDL = 0;
                             currentState.texFile.clear();
                             currentState.texChanged = true;
+
+                            if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
                         }
                     }
 
@@ -713,32 +812,71 @@ void InspectorWindow::renderStateMachine(GameObject* selected) {
                     ImGui::Separator();
                     ImGui::Spacing();
 
-                    ImGui::Checkbox("Play Animation", &currentState.play);
+                    // play animation
+                    if (ImGui::Checkbox("Play Animation", &currentState.play)) {
+                        currentState.play = !currentState.play;
+                        if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
 
-                    ImGui::Checkbox("Loop", &currentState.loop);
+                        currentState.play = !currentState.play;
+                        if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
+                    }
 
-                    if (ImGui::InputInt("Total Columns", &currentState.totalColumn))
+                    // loop animation
+                    if (ImGui::Checkbox("Loop", &currentState.loop)) {
+                        currentState.loop = !currentState.loop;
+                        if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
+
+                        currentState.loop = !currentState.loop;
+                        if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
+                    }
+
+                    // total column
+                    if (ImGui::DragInt("Total Columns", &currentState.totalColumn))
                         currentState.totalColumn = std::max(currentState.totalColumn, 1);
+                    if (ImGui::IsItemActivated())
+                        if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
+                    if (ImGui::IsItemDeactivatedAfterEdit()) 
+                        if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
 
-                    if (ImGui::InputInt("Total Rows", &currentState.totalRow))
+                    // total rows
+                    if (ImGui::DragInt("Total Rows", &currentState.totalRow))
                         currentState.totalRow = std::max(currentState.totalRow, 1);
+                    if (ImGui::IsItemActivated())
+                        if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
+                    if (ImGui::IsItemDeactivatedAfterEdit())
+                        if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
 
-                    int tempInitCol = (int)currentState.initialFrame.x;
-                    int tempInitRow = (int)currentState.initialFrame.y;
-                    int tempLastCol = (int)currentState.lastFrame.x;
-                    int tempLastRow = (int)currentState.lastFrame.y;
+                    ImGui::DragFloat("Initial Column", &currentState.initialFrame.x, 1.f, 0.f, 100.f, "%.0f");
+                    if (ImGui::IsItemActivated())
+                        if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
+                    if (ImGui::IsItemDeactivatedAfterEdit())
+                        if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
 
-                    if (ImGui::InputInt("Initial Column", &tempInitCol))
-                        currentState.initialFrame.x = (float)tempInitCol;
-                    if (ImGui::InputInt("Initial Row", &tempInitRow))
-                        currentState.initialFrame.y = (float)tempInitRow;
-                    if (ImGui::InputInt("Last Column", &tempLastCol))
-                        currentState.lastFrame.x = (float)tempLastCol;
-                    if (ImGui::InputInt("Last Row", &tempLastRow))
-                        currentState.lastFrame.y = (float)tempLastRow;
+                    ImGui::DragFloat("Initial Row", &currentState.initialFrame.y, 1.f, 0.f, 100.f, "%.0f");
+                    if (ImGui::IsItemActivated())
+                        if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
+                    if (ImGui::IsItemDeactivatedAfterEdit())
+                        if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
 
-                    if (ImGui::InputFloat("Frame Time", &currentState.frameTime, 0.001f))
+                    ImGui::DragFloat("Last Column", &currentState.lastFrame.x, 1.f, 0.f, 100.f, "%.0f");
+                    if (ImGui::IsItemActivated())
+                        if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
+                    if (ImGui::IsItemDeactivatedAfterEdit())
+                        if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
+
+                    ImGui::DragFloat("Last Row", &currentState.lastFrame.y, 1.f, 0.f, 100.f, "%.0f");
+                    if (ImGui::IsItemActivated())
+                        if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
+                    if (ImGui::IsItemDeactivatedAfterEdit())
+                        if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
+
+                    // frame time
+                    if (ImGui::DragFloat("Frame Time", &currentState.frameTime, 0.001f))
                         currentState.frameTime = std::max(currentState.frameTime, 0.001f);
+                    if (ImGui::IsItemActivated())
+                        if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
+                    if (ImGui::IsItemDeactivatedAfterEdit())
+                        if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
 
                     ImGui::EndDisabled();
                 }
@@ -746,18 +884,23 @@ void InspectorWindow::renderStateMachine(GameObject* selected) {
                 ImGui::EndDisabled();
 
                 ImGui::Separator();
-                if (ImGui::Button("Remove Animation", ImVec2(-1, 0))) {
-                    selected->removeComponent<Animation>();
-                    DebugLog::addMessage("Removed Animation Component");
+                if (entry) {
+                    if (ImGui::Button("Remove Animation", ImVec2(-1, 0))) {
+                        UndoRedoManager::Instance().executeCmd(std::make_unique<RemoveComponentCmd>(m_manager, selected, *entry));
+
+                        DebugLog::addMessage("Removed Animation Component\n");
+                    }
                 }
 
             }
             else {
 
-                if (ImGui::Button("Remove Animation", ImVec2(-1, 0))) {
-                    // add a delete component func here
-                    selected->removeComponent<Animation>();
-                    DebugLog::addMessage("Removed Animation Component");
+                if (entry) {
+                    if (ImGui::Button("Remove Animation", ImVec2(-1, 0))) {
+                        UndoRedoManager::Instance().executeCmd(std::make_unique<RemoveComponentCmd>(m_manager, selected, *entry));
+
+                        DebugLog::addMessage("Removed Animation Component\n");
+                    }
                 }
             }
 
@@ -768,10 +911,12 @@ void InspectorWindow::renderStateMachine(GameObject* selected) {
         ImGui::Separator();
         ImGui::Spacing();
 
-        if (ImGui::Button("Remove State Machine", ImVec2(-1, 0))) {
-            // add a delete component func here
-            selected->removeComponent<StateMachine>();
-            DebugLog::addMessage("Removed State Machine");
+        if (smEntry) {
+            if (ImGui::Button("Remove State Machine", ImVec2(-1, 0))) {
+                UndoRedoManager::Instance().executeCmd(std::make_unique<RemoveComponentCmd>(m_manager, selected, *smEntry));
+
+                DebugLog::addMessage("Removed State Machine\n");
+            }
         }
 
     }
@@ -782,28 +927,18 @@ void InspectorWindow::renderCollision(GameObject* selected/*, GameObjectManager&
     Transform* transform = selected->getComponent<Transform>();
     Render* render = selected->getComponent<Render>();
 
+    // cache collision component entry
+    const Editor::ComponentEntry* entry = Editor::findEntry("Collision");
+
     if (ImGui::CollapsingHeader("Collision")) {
         {
             // checked means this object can collide with obj in the same layer
-            ImGui::Checkbox("Enable", &collision->collisionFlag);
-
-            // select layer
-            /*int layer = selected->getLayer();
-            if (ImGui::InputInt("Layer", &layer)) {
-                if (layer < 0) layer = 0;
-
-                if (m_objSelectionState.selectedPrefab) {
-                    selected->setLayer(layer);
-                }
-                else if (manager.assignObjectToLayer(selected, layer)) {
-                    DebugLog::addMessage(selected->getObjectName() + " changed layer to " + std::to_string(selected->getLayer()));
-
-                }
-                else {
-                    DebugLog::addMessage(selected->getObjectName() + " failed to change layer!" );
-                }
-
-            }*/
+            if (ImGui::Checkbox("Enable", &collision->collisionFlag)) {
+                collision->collisionFlag = !collision->collisionFlag;
+                if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
+                collision->collisionFlag = !collision->collisionFlag;
+                if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
+            }
         }
 
         ImGui::Spacing();
@@ -815,6 +950,10 @@ void InspectorWindow::renderCollision(GameObject* selected/*, GameObjectManager&
             // cannot edit if obj cannot collide
             ImGui::BeginDisabled(!collision->collisionFlag);
             if (ImGui::Checkbox("Auto-fit Scale", &collision->autoFitScale)) {
+                collision->autoFitScale = !collision->autoFitScale;
+                if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
+                collision->autoFitScale = !collision->autoFitScale;
+
                 if (collision->autoFitScale && transform) {
                     collision->colliderSize.x = transform->scaleX;
                     collision->colliderSize.y = transform->scaleY;
@@ -823,14 +962,20 @@ void InspectorWindow::renderCollision(GameObject* selected/*, GameObjectManager&
                 if (collision->autoFitScale && render) {
                     collision->colliderType = render->modelRef.shape;
                 }
+
+                if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
             }
 
             CollisionResponseMode mode = collision->collisionRes;
-            const char* modes[] = { "Static", "Pushable", "No Response" };
+            const char* modes[] = { "Static", "Pushable", "Kinematic" };
             int current = static_cast<int>(mode);
 
             if (ImGui::Combo("Collision Response", &current, modes, IM_ARRAYSIZE(modes))) {
+                if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
+
                 collision->collisionRes = static_cast<CollisionResponseMode>(current);
+
+                if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
             }
 
             ImGui::EndDisabled();
@@ -844,21 +989,64 @@ void InspectorWindow::renderCollision(GameObject* selected/*, GameObjectManager&
             current = static_cast<int>(colliderShape);
 
             if (ImGui::Combo("Shape", &current, shapes, IM_ARRAYSIZE(shapes))) {
+                if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
+
                 collision->colliderType = static_cast<shape>(current);
+
+                if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
             }
 
             if (collision->colliderType == shape::circle) {
-                if (ImGui::InputFloat("Diamater", &collision->colliderSize.x, 1.f)) {
+                if (ImGui::DragFloat("Diamater", &collision->colliderSize.x, 0.1f, 0.f, FLT_MAX)) {
                     collision->colliderSize.x = std::max(collision->colliderSize.x, 0.f);
-                    collision->colliderSize.y = collision->colliderSize.y;
+                    collision->colliderSize.y = collision->colliderSize.x;
+                    if (Physics* p = selected->getComponent<Physics>()) {
+                        if (!p->freezeRotation) p->recalculateInertia(collision->colliderSize, shape::circle);
+                    }
                 }
+                if (ImGui::IsItemActivated())
+                    if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
+                if (ImGui::IsItemDeactivatedAfterEdit())
+                    if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
             }
             else {
-                if (ImGui::InputFloat("Width", &collision->colliderSize.x, 1.f))
+                // if (ImGui::InputFloat("Width", &collision->colliderSize.x, 1.f)) {
+                //     collision->colliderSize.x = std::max(collision->colliderSize.x, 0.f);
+                //     if (Physics* p = selected->getComponent<Physics>()) {
+                //         if (!p->freezeRotation) p->recalculateInertia(collision->colliderSize, collision->colliderType);
+                //     }
+                // }
+
+                // if (ImGui::InputFloat("Height", &collision->colliderSize.y, 1.f)) {
+                //     collision->colliderSize.y = std::max(collision->colliderSize.y, 0.f);
+                //     if (Physics* p = selected->getComponent<Physics>()) {
+                //         if (!p->freezeRotation) p->recalculateInertia(collision->colliderSize, collision->colliderType);
+                //     }
+
+                // }
+                if (ImGui::DragFloat("Width", &collision->colliderSize.x, 0.1f, 0.f, FLT_MAX)){
                     collision->colliderSize.x = std::max(collision->colliderSize.x, 0.f);
 
-                if (ImGui::InputFloat("Height", &collision->colliderSize.y, 1.f))
+                    if (Physics* p = selected->getComponent<Physics>()) {
+                        if (!p->freezeRotation) p->recalculateInertia(collision->colliderSize, collision->colliderType);
+                    }
+                }
+                if (ImGui::IsItemActivated())
+                    if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
+                if (ImGui::IsItemDeactivatedAfterEdit())
+                    if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);;
+
+                if (ImGui::DragFloat("Height", &collision->colliderSize.y, 0.1f, 0.f, FLT_MAX)){
                     collision->colliderSize.y = std::max(collision->colliderSize.y, 0.f);
+                    
+                    if (Physics* p = selected->getComponent<Physics>()) {
+                        if (!p->freezeRotation) p->recalculateInertia(collision->colliderSize, collision->colliderType);
+                    }
+                }
+                if (ImGui::IsItemActivated())
+                    if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
+                if (ImGui::IsItemDeactivatedAfterEdit())
+                    if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
             }
 
             ImGui::EndDisabled();
@@ -870,7 +1058,41 @@ void InspectorWindow::renderCollision(GameObject* selected/*, GameObjectManager&
         }
 
         ImGui::Spacing();
-        ImGui::Separator();
+
+        if (ImGui::TreeNode("Physics Material")) {
+            ImGui::BeginDisabled(!collision->collisionFlag);
+
+            ImGui::DragFloat("Bounciness", &collision->material.bounciness, 0.1f, 0.0f, 1.0f);
+            if (ImGui::IsItemActivated())
+                if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
+            if (ImGui::IsItemDeactivatedAfterEdit())
+                if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
+
+            ImGui::DragFloat("Friction", &collision->material.friction, 0.1f, 0.0f, 1.0f);
+            if (ImGui::IsItemActivated())
+                if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
+            if (ImGui::IsItemDeactivatedAfterEdit())
+                if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
+
+            // Combine mode for bounciness
+            const char* combineModes[] = { "Average", "Minimum", "Maximum", "Multiply" };
+            int bounceMode = static_cast<int>(collision->material.bounceCombine);
+            if (ImGui::Combo("Bounce Combine", &bounceMode, combineModes, IM_ARRAYSIZE(combineModes))) {
+                if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
+                collision->material.bounceCombine = static_cast<PhysicsMaterial::CombineMode>(bounceMode);
+                if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
+            }
+
+            int frictionMode = static_cast<int>(collision->material.frictionCombine);
+            if (ImGui::Combo("Friction Combine", &frictionMode, combineModes, IM_ARRAYSIZE(combineModes))) {
+                if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
+                collision->material.frictionCombine = static_cast<PhysicsMaterial::CombineMode>(frictionMode);
+                if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
+            }
+
+            ImGui::EndDisabled();
+            ImGui::TreePop();
+        }
 
         if (ImGui::TreeNode("Collision Tag")) {
             std::string currentTag = collision->collisionTag.empty() ? "default" : collision->collisionTag;
@@ -882,12 +1104,14 @@ void InspectorWindow::renderCollision(GameObject* selected/*, GameObjectManager&
                     bool isSelected = (currentTag == tag);
 
                     if (ImGui::Selectable(tag.c_str(), isSelected)) {
+                        if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
+
                         collision->collisionTag = tag;
+
+                        if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
                     }
 
-                    if (isSelected) {
-                        ImGui::SetItemDefaultFocus();
-                    }
+                    if (isSelected) ImGui::SetItemDefaultFocus();
                 }
 
                 ImGui::EndCombo();
@@ -904,12 +1128,18 @@ void InspectorWindow::renderCollision(GameObject* selected/*, GameObjectManager&
                 bool isIgnored = (collision->ignoreCollisionsWith.find(tag) != collision->ignoreCollisionsWith.end());
 
                 if (ImGui::Checkbox(tag.c_str(), &isIgnored)) {
+                    isIgnored = !isIgnored;
+                    if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
+                    isIgnored = !isIgnored;
+
                     if (isIgnored) {
                         collision->ignoreCollisionsWith.insert(tag);
                     }
                     else {
                         collision->ignoreCollisionsWith.erase(tag);
                     }
+
+                    if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
                 }
             }
 
@@ -917,15 +1147,22 @@ void InspectorWindow::renderCollision(GameObject* selected/*, GameObjectManager&
 
             if (!collision->ignoreCollisionsWith.empty()) {
                 if (ImGui::Button("Uncheck All", ImVec2(-1, 0))) {
+                    if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
+
                     collision->ignoreCollisionsWith.clear();
+
+                    if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
                 }
             }
 
             if (!collisionTags.empty() && collision->ignoreCollisionsWith.size() != collisionTags.size()) {
                 if (ImGui::Button("Check All", ImVec2(-1, 0))) {
-                    for (const std::string& tag : collisionTags) {
+                    if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
+
+                    for (const std::string& tag : collisionTags) 
                         collision->ignoreCollisionsWith.insert(tag);
-                    }
+
+                    if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
                 }
             }
             else if (collisionTags.empty()) {
@@ -937,10 +1174,12 @@ void InspectorWindow::renderCollision(GameObject* selected/*, GameObjectManager&
             ImGui::TreePop();
         }
 
-        if (ImGui::Button("Remove Collision", ImVec2(-1, 0))) {
-            // add a delete component func here
-            selected->removeComponent<CollisionInfo>();
-            DebugLog::addMessage("Removed Collision Component");
+        if (entry) {
+            if (ImGui::Button("Remove Collision", ImVec2(-1, 0))) {
+                UndoRedoManager::Instance().executeCmd(std::make_unique<RemoveComponentCmd>(m_manager, selected, *entry));
+
+                DebugLog::addMessage("Removed Collision\n");
+            }
         }
     }
     else {
@@ -952,10 +1191,13 @@ void InspectorWindow::renderInput(GameObject* selected) {
     if (ImGui::CollapsingHeader("Input Control")) {
         ImGui::TextWrapped("This object can be controlled by keyboard input");
 
-        if (ImGui::Button("Remove Input", ImVec2(-1, 0))) {
-            // add a delete component func here
-            selected->removeComponent<Input>();
-            DebugLog::addMessage("Removed Input Component");
+        if (const Editor::ComponentEntry* entry = Editor::findEntry("Input Control")) {
+            if (ImGui::Button("Remove Input Control", ImVec2(-1, 0))) {
+                UndoRedoManager::Instance().executeCmd(
+                    std::make_unique<RemoveComponentCmd>(m_manager, selected, *entry)
+                );
+                DebugLog::addMessage("Removed Input Control\n");
+            }
         }
     }
 }
@@ -963,85 +1205,260 @@ void InspectorWindow::renderInput(GameObject* selected) {
 void InspectorWindow::renderPhysics(GameObject* selected, bool canMove) {
     Physics* physic = selected->getComponent<Physics>();
 
+    const Editor::ComponentEntry* entry = Editor::findEntry("Physics");
+
+
     if (ImGui::CollapsingHeader("Physics")) {
-        ImGui::Checkbox("Is Trigger", &physic->physicsFlag);
+        if (ImGui::Checkbox("Is Trigger", &physic->physicsFlag)) {
+            physic->physicsFlag = !physic->physicsFlag;
+            if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
+            physic->physicsFlag = !physic->physicsFlag;
+            if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
+        }
 
         ImGui::Spacing();
         ImGui::Separator();
 
+        // --- flat fields ---
+        // if (ImGui::InputFloat("Mass", &physic->dynamics.mass, 1.f)) {
+        //     physic->dynamics.mass = std::max(physic->dynamics.mass, 0.f);
+        //     if (!physic->freezeRotation) {
+        //         if (auto* c = selected->getComponent<CollisionInfo>())
+        //             physic->recalculateInertia(c->colliderSize, c->colliderType);
 
         // only show movement data if object is controlable via input
+        if (ImGui::TreeNode("Properties")) {
+            if (ImGui::DragFloat("Mass", &physic->dynamics.mass, 1.f, 0.f, FLT_MAX)) {
+                physic->dynamics.mass = std::max(physic->dynamics.mass, 0.f); // 0.f mass means static obj (never move, e.g. wall)
+
+                if (!physic->freezeRotation) {
+                    if (auto* c = selected->getComponent<CollisionInfo>())
+                        physic->recalculateInertia(c->colliderSize, c->colliderType);
+                }
+            }
+            if (ImGui::IsItemActivated())
+                if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
+            if (ImGui::IsItemDeactivatedAfterEdit())
+                if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
+
+            //if (ImGui::DragFloat("Gravity Scale", &physic->gravity, 1.f))
+            //    physic->gravity = std::min(physic->gravity, 0.f); // gravity should stay negative
+
+            ImGui::TreePop();
+        }
+
         if (ImGui::TreeNode("Input Movement Control")) {
             if (canMove) {
+
                 if (ImGui::TreeNode("Movement")) {
-                    if (ImGui::InputFloat("Speed", &physic->moveSpeed, 1.f))
+                    if (ImGui::DragFloat("Move Speed", &physic->moveSpeed, 1.f))
                         physic->moveSpeed = std::max(physic->moveSpeed, 0.f); // set the min speed to 0.f
+                    if (ImGui::IsItemActivated())
+                        if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
+                    if (ImGui::IsItemDeactivatedAfterEdit())
+                        if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
 
-                    if (ImGui::InputFloat("Jump Force", &physic->jumpForce, 1.f))
+                    if (ImGui::DragFloat("Jump Force", &physic->jumpForce, 1.f))
                         physic->jumpForce = std::max(physic->jumpForce, 0.f); // set the min jump force to 0.f
+                    if (ImGui::IsItemActivated())
+                        if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
+                    if (ImGui::IsItemDeactivatedAfterEdit())
+                        if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
 
-                    if (ImGui::InputFloat("Mass", &physic->dynamics.mass, 1.f))
-                        physic->dynamics.mass = std::max(physic->dynamics.mass, 0.f); // 0.f mass means static obj (never move, e.g. wall)
+                    if (ImGui::DragFloat("Ground Accel", &physic->groundAccelForce, 1.0f))
+                        physic->groundAccelForce = std::max(physic->groundAccelForce, 0.f); // set the min to 0.f
+                    if (ImGui::IsItemActivated())
+                        if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
+                    if (ImGui::IsItemDeactivatedAfterEdit())
+                        if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
+
+                    if (ImGui::DragFloat("Air Accel", &physic->airAccelForce, 1.0f))
+                        physic->airAccelForce = std::max(physic->airAccelForce, 0.f); // set the min to 0.f
+                    if (ImGui::IsItemActivated())
+                        if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
+                    if (ImGui::IsItemDeactivatedAfterEdit())
+                        if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
+
+                    if (ImGui::DragFloat("Apex Hang Multiplier", &physic->apexHangMul, 0.1f))
+                        physic->apexHangMul = std::clamp(physic->apexHangMul, 0.f, 1.f); // set the min to 0.f
+                    if (ImGui::IsItemActivated())
+                        if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
+                    if (ImGui::IsItemDeactivatedAfterEdit())
+                        if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
+
+                    if (ImGui::DragFloat("Max Fall Speed", &physic->maxFallSpeed, 1.0f))
+                        physic->maxFallSpeed = std::max(physic->maxFallSpeed, 0.f); // set the min to 0.f
+                    if (ImGui::IsItemActivated())
+                        if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
+                    if (ImGui::IsItemDeactivatedAfterEdit())
+                        if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
+
+
+                    ImGui::TreePop();
+
+                }
+
+                if (ImGui::TreeNode("Jump Buffer")) {
+                    ImGui::SliderFloat("Buffer Time", &physic->jumpBufferTime, 0.0f, 10.f);
+                    if (ImGui::IsItemActivated())
+                        if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
+                    if (ImGui::IsItemDeactivatedAfterEdit())
+                        if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
 
                     ImGui::TreePop();
                 }
 
-                if (ImGui::TreeNode("Environment")) {
-                    if (ImGui::InputFloat("Damping", &physic->damping, 0.1f))
-                        physic->damping = std::clamp(physic->damping, 0.f, 1.f); // damping within 0.1 to 1.f
+                if (ImGui::TreeNode("Coyote Jump")) {
+                    ImGui::SliderFloat("Coyote Time", &physic->coyoteTime, 0.0f, 10.f);
+                    if (ImGui::IsItemActivated())
+                        if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
+                    if (ImGui::IsItemDeactivatedAfterEdit())
+                        if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
+
+                    ImGui::TreePop();
+                }
+
+                if (ImGui::TreeNode("Ledge Assist")) {
+                    ImGui::DragFloat("Assist Range", &physic->ledgeAssistRange, 0.1f);
+                    if (ImGui::IsItemActivated())
+                        if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
+                    if (ImGui::IsItemDeactivatedAfterEdit())
+                        if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
+
+                    ImGui::DragFloat("Climb Speed", &physic->ledgeClimbSpeed, 1.0f);
+                    if (ImGui::IsItemActivated())
+                        if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
+                    if (ImGui::IsItemDeactivatedAfterEdit())
+                        if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
 
                     ImGui::TreePop();
                 }
             }
-            else {
-                ImGui::TextWrapped("Requires Input component to move");
+            ImGui::TreePop();
+        }
+
+        //ImGui::Checkbox("Buoyancy", &physic->buoyancy);
+
+        // --- input movement (only shown if object has Input component) ---
+        /*if (canMove && ImGui::TreeNode("Movement")) {
+            if (ImGui::InputFloat("Speed", &physic->moveSpeed, 1.f))
+                physic->moveSpeed = std::max(physic->moveSpeed, 0.f);
+
+            if (ImGui::InputFloat("Jump Force", &physic->jumpForce, 1.f))
+                physic->jumpForce = std::max(physic->jumpForce, 0.f);
+
+            ImGui::TreePop();
+        }*/
+
+        // --- Constraints ---
+        if (ImGui::TreeNode("Constraints")) {
+            ImGui::Text("Freeze Rotation");
+            ImGui::SameLine();
+
+            if (ImGui::Checkbox("Z", &physic->freezeRotation)) {
+                physic->freezeRotation = !physic->freezeRotation;
+                if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
+                physic->freezeRotation = !physic->freezeRotation;
+                if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
             }
+
+            if (!physic->freezeRotation) {
+                ImGui::Spacing();
+
+                if (ImGui::DragFloat("Inertia Override", &physic->inertiaOverride, 0.1f)) {
+                    physic->inertiaOverride = std::max(physic->inertiaOverride, 0.f);
+                    if (auto* c = selected->getComponent<CollisionInfo>())
+                        physic->recalculateInertia(c->colliderSize, c->colliderType);
+                }
+                if (ImGui::IsItemActivated())
+                    if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
+                if (ImGui::IsItemDeactivatedAfterEdit())
+                    if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
+                if (ImGui::IsItemHovered())
+                    ImGui::SetTooltip("0 = auto-calculate from mass and shape");
+
+                ImGui::SameLine();
+                if (ImGui::Button("Reset")) {
+                    if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
+
+                    physic->inertiaOverride = 0.0f;
+                    if (auto* c = selected->getComponent<CollisionInfo>())
+                        physic->recalculateInertia(c->colliderSize, c->colliderType);
+
+                    if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
+                }
+                if (ImGui::IsItemHovered())
+                    ImGui::SetTooltip("Reset to auto-calculated value");
+                ImGui::Text("Inertia: %.4f", physic->dynamics.inertia);
+            }
+
+            ImGui::TreePop();
+        }
+
+        if (ImGui::TreeNode("Environment")) {
+            if (ImGui::DragFloat("Air Drag", &physic->damping, 0.1f))
+                physic->damping = std::clamp(physic->damping, 0.f, 1.f); // damping within 0.1 to 1.f
+            if (ImGui::IsItemActivated())
+                if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
+            if (ImGui::IsItemDeactivatedAfterEdit())
+                if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
+
+            /*if (ImGui::DragFloat("Friction (Ground)", &physic->friction, 0.1f))
+                physic->friction = std::clamp(physic->friction, 0.f, 1.f);
+            if (ImGui::IsItemActivated())
+                if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
+            if (ImGui::IsItemDeactivatedAfterEdit())
+                if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);*/
+
+            if (ImGui::DragFloat("Angular Drag", &physic->dynamics.angularDrag, 0.1f, 0.f))
+                physic->dynamics.angularDrag = std::clamp(physic->dynamics.angularDrag, 0.f, 1.0f);
+            if (ImGui::IsItemActivated())
+                if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
+            if (ImGui::IsItemDeactivatedAfterEdit())
+                if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
 
             ImGui::TreePop();
         }
 
         if (ImGui::TreeNode("Water")) {
-            ImGui::Checkbox("Buoyancy (we dh)", &physic->buoyancy);
+            if (ImGui::Checkbox("Buoyancy", &physic->buoyancy)) {
+                physic->buoyancy = !physic->buoyancy;
+                if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
+                physic->buoyancy = !physic->buoyancy;
+                if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
+            }
 
             ImGui::TreePop();
         }
 
         if (ImGui::TreeNode("Debug Info")) {
-            ImGui::Text("Velocity: (%.2f, %.2f, %.2f)",
-                physic->dynamics.velocity.x,
-                physic->dynamics.velocity.y,
-                physic->dynamics.velocity.z);
-
-            ImGui::Spacing();
-
+            
+            ImGui::Text("Velocity: (%.2f, %.2f)", physic->dynamics.velocity.x, physic->dynamics.velocity.y);
             Vector2D vel2D{ physic->dynamics.velocity.x, physic->dynamics.velocity.y };
-            float vel = Vec_Length(&vel2D);
-            ImGui::Text("Speed: %.2f", vel);
-
-            ImGui::Spacing();
-
-            ImGui::Text("Acceleration: (%.2f, %.2f, %.2f)",
-                physic->dynamics.acceleration.x,
-                physic->dynamics.acceleration.y,
-                physic->dynamics.acceleration.z);
-
-            ImGui::Spacing();
-
+            ImGui::Text("Speed: %.2f", Vec_Length(&vel2D));
+            ImGui::Text("Angular Velocity: %.4f", physic->dynamics.angularVelocity);
             ImGui::Text("Inverse Mass: %.4f", physic->dynamics.inverseMass);
+            ImGui::Text("Coyote Available: %s", physic->coyoteAvailable ? "true" : "false");
+            ImGui::Text("Jump Buffer: %.3f", physic->jumpBufferTimer);
+            ImGui::Text("Ledge Climbing: %s", physic->ledgeClimb ? "true" : "false");
 
             ImGui::TreePop();
         }
 
-        if (ImGui::Button("Remove Physics", ImVec2(-1, 0))) {
-            // add a delete component func here
-            selected->removeComponent<Physics>();
-            DebugLog::addMessage("Removed Physics Component");
+        if (entry) {
+            if (ImGui::Button("Remove Physics", ImVec2(-1, 0))) {
+                UndoRedoManager::Instance().executeCmd(std::make_unique<RemoveComponentCmd>(m_manager, selected, *entry));
+
+                DebugLog::addMessage("Removed Physics\n");
+            }
         }
     }
 }
 
 void InspectorWindow::renderFont(GameObject* selected) {
     FontComponent* font = selected->getComponent<FontComponent>();
+
+    const Editor::ComponentEntry* entry = Editor::findEntry("Font");
 
     if (ImGui::CollapsingHeader("Font")) {
         {
@@ -1054,13 +1471,38 @@ void InspectorWindow::renderFont(GameObject* selected) {
             if (ImGui::InputText("##Word", buffer, sizeof(buffer))) {
                 font->word = buffer;
             }
+            if (ImGui::IsItemActivated())
+                if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
+            if (ImGui::IsItemDeactivatedAfterEdit())
+                if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
 
             // size of the text
-            if (ImGui::InputFloat("Size", &font->scale, 1.f))
+            if (ImGui::DragFloat("Size", &font->scale, 1.f))
                 font->scale = std::max(font->scale, 0.f);
+            if (ImGui::IsItemActivated())
+                if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
+            if (ImGui::IsItemDeactivatedAfterEdit())
+                if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
 
             // colour of the text
             ImGui::ColorEdit3("Colour", &font->clr.x);
+            if (ImGui::IsItemActivated())
+                if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
+            if (ImGui::IsItemDeactivatedAfterEdit())
+                if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
+            
+            static glm::vec3 prevColour = font->clr;
+            static bool colourEditing = false;
+
+            if (!colourEditing && font->clr != prevColour) {
+                colourEditing = true;
+                if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
+            }
+            if (colourEditing && ImGui::IsMouseReleased(0)) {
+                colourEditing = false;
+                prevColour = font->clr;
+                if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
+            }
 
             // font type of the text
             /* scuffed way to select font */
@@ -1070,13 +1512,24 @@ void InspectorWindow::renderFont(GameObject* selected) {
                 "Times New Roman"
             };
 
-            ImGui::Combo("Font Type", &font->fontType, fontNames, IM_ARRAYSIZE(fontNames));
+            int prevFontType = font->fontType;
+            if (ImGui::Combo("Font Type", &font->fontType, fontNames, IM_ARRAYSIZE(fontNames))) {
+                if (entry) {
+                    std::swap(font->fontType, prevFontType);
+                    UndoRedoManager::Instance().beginComponentEdit(selected, *entry); // before 
+
+                    std::swap(font->fontType, prevFontType);
+                    UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry); // after
+                }
+            }
         }
 
-        if (ImGui::Button("Remove Font", ImVec2(-1, 0))) {
-            // add a delete component func here
-            selected->removeComponent<FontComponent>();
-            DebugLog::addMessage("Removed Font Component");
+        if (entry) {
+            if (ImGui::Button("Remove Font", ImVec2(-1, 0))) {
+                UndoRedoManager::Instance().executeCmd(std::make_unique<RemoveComponentCmd>(m_manager, selected, *entry));
+
+                DebugLog::addMessage("Removed Font\n");
+            }
         }
     }
 }
@@ -1084,20 +1537,30 @@ void InspectorWindow::renderFont(GameObject* selected) {
 void InspectorWindow::renderAudio(GameObject* selected) {
     AudioComponent* audio = selected->getComponent<AudioComponent>();
 
+    const Editor::ComponentEntry* entry = Editor::findEntry("Audio");
+
     if (ImGui::CollapsingHeader("Audio")) {
 
         // Add New Channel Section
         ImGui::Text("Add New Audio Channel");
         static char newChannelName[64] = "";
         ImGui::InputTextWithHint("##NewChannelName", "Channel name (e.g., footsteps)", newChannelName, sizeof(newChannelName));
+
         ImGui::SameLine();
+
         if (ImGui::Button("Add Channel")) {
             if (strlen(newChannelName) > 0) {
                 std::string channelName = newChannelName;
+
                 if (!audio->hasChannel(channelName)) {
+                    if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
+
                     audio->getOrCreateChannel(channelName);
+
+                    if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
+
                     DebugLog::addMessage("Added audio channel: " + channelName + "\n");
-                    newChannelName[0] = '\0'; // Clear input
+                    newChannelName[0] = '\0';
                 }
                 else {
                     DebugLog::addMessage("Channel '" + channelName + "' already exists!\n");
@@ -1166,7 +1629,12 @@ void InspectorWindow::renderAudio(GameObject* selected) {
 
                             // Only accept audio files
                             if (ext == ".wav" || ext == ".ogg" || ext == ".mp3") {
+                                if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
+
                                 ch.audioFile = path;
+
+                                if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
+
                                 DebugLog::addMessage("Changed audio of channel '" + channelName + "' to " + ch.audioFile + "\n");
                             }
                             else {
@@ -1209,16 +1677,39 @@ void InspectorWindow::renderAudio(GameObject* selected) {
                         ImGui::Separator();
                         ImGui::Spacing();
 
-                        // Basic Controls - detect changes and stop sound if settings change
-                        bool loopChanged = ImGui::Checkbox("Loop", &ch.loop);
-                        bool playOnStartChanged = ImGui::Checkbox("Play On Start", &ch.playOnStart);
-                        bool mutedChanged = ImGui::Checkbox("Muted", &ch.muted);
-                        ImGui::Checkbox("Spatial Audio", &ch.isSpatial);
+                        if (ImGui::Checkbox("Loop", &ch.loop)) {
+                            ch.loop = !ch.loop;
+                            if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
 
-                        // Stop currently playing sound if critical settings changed
-                        if ((loopChanged || playOnStartChanged || mutedChanged) && ch.channel) {
-                            ch.isPendingStop = true;
-                            DebugLog::addMessage("Stopped audio in '" + channelName + "' due to setting change\n");
+                            ch.loop = !ch.loop;
+                            if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
+
+                            if (ch.channel) ch.isPendingStop = true;
+                        }
+                        if (ImGui::Checkbox("Play On Start", &ch.playOnStart)) {
+                            ch.playOnStart = !ch.playOnStart;
+                            if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
+
+                            ch.playOnStart = !ch.playOnStart;
+                            if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
+
+                            if (ch.channel) ch.isPendingStop = true;
+                        }
+                        if (ImGui::Checkbox("Muted", &ch.muted)) {
+                            ch.muted = !ch.muted;
+                            if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
+
+                            ch.muted = !ch.muted;
+                            if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
+
+                            if (ch.channel) ch.isPendingStop = true;
+                        }
+                        if (ImGui::Checkbox("Spatial Audio", &ch.isSpatial)) {
+                            ch.isSpatial = !ch.isSpatial;
+                            if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
+
+                            ch.isSpatial = !ch.isSpatial;
+                            if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
                         }
 
                         if (ch.isSpatial) {
@@ -1227,10 +1718,20 @@ void InspectorWindow::renderAudio(GameObject* selected) {
                             if (ImGui::DragFloat("Min Distance", &ch.minDistance, 0.1f, 0.1f, 1000.0f)) {
                                 ch.minDistance = std::clamp(ch.minDistance, 0.1f, 1000.0f);
                             }
+                            if (ImGui::IsItemActivated())
+                                if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
+                            if (ImGui::IsItemDeactivatedAfterEdit())
+                                if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
+
 
                             if (ImGui::DragFloat("Max Distance", &ch.maxDistance, 1.0f, 1.0f, 10000.0f)) {
                                 ch.maxDistance = std::clamp(ch.maxDistance, 1.0f, 10000.0f);
                             }
+                            if (ImGui::IsItemActivated())
+                                if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
+                            if (ImGui::IsItemDeactivatedAfterEdit())
+                                if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
+
 
                             ImGui::Unindent();
                         }
@@ -1242,31 +1743,63 @@ void InspectorWindow::renderAudio(GameObject* selected) {
                             if (ImGui::DragFloat("Volume", &ch.volume, 0.01f, 0.0f, 1.0f)) {
                                 ch.volume = std::clamp(ch.volume, 0.f, 1.f);
                             }
+                            if (ImGui::IsItemActivated())
+                                if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
+                            if (ImGui::IsItemDeactivatedAfterEdit())
+                                if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
+
 
                             if (ImGui::DragFloat("Pitch", &ch.pitch, 0.01f, 0.1f, 2.0f)) {
                                 ch.pitch = std::clamp(ch.pitch, 0.1f, 2.f);
                             }
+                            if (ImGui::IsItemActivated())
+                                if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
+                            if (ImGui::IsItemDeactivatedAfterEdit())
+                                if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
+
 
                             ImGui::TreePop();
                         }
 
                         // Fade Controls
                         if (ImGui::TreeNode("Fade In/Out")) {
-                            ImGui::Checkbox("Fade In On Start", &ch.fadeInOnStart);
+                            if (ImGui::Checkbox("Fade In On Start", &ch.fadeInOnStart)) {
+                                ch.fadeInOnStart = !ch.fadeInOnStart;
+                                if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
+
+                                ch.fadeInOnStart = !ch.fadeInOnStart;
+                                if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
+                            }
+
                             if (ch.fadeInOnStart) {
                                 ImGui::Indent();
-                                if (ImGui::DragFloat("Fade In Duration", &ch.fadeInDuration, 0.01f, 0.0f, 10.0f)) {
+                                if (ImGui::DragFloat("Fade In Duration", &ch.fadeInDuration, 0.01f, 0.0f, 10.0f))
                                     ch.fadeInDuration = std::clamp(ch.fadeInDuration, 0.f, 10.f);
-                                }
+                                if (ImGui::IsItemActivated())
+                                    if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
+                                if (ImGui::IsItemDeactivatedAfterEdit())
+                                    if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
+
                                 ImGui::Unindent();
                             }
 
-                            ImGui::Checkbox("Fade Out On Stop", &ch.fadeOutOnStop);
+                            if (ImGui::Checkbox("Fade Out On Stop", &ch.fadeOutOnStop)) {
+                                ch.fadeOutOnStop = !ch.fadeOutOnStop;
+                                if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
+
+                                ch.fadeOutOnStop = !ch.fadeOutOnStop;
+                                if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
+                            }
+
                             if (ch.fadeOutOnStop) {
                                 ImGui::Indent();
-                                if (ImGui::DragFloat("Fade Out Duration", &ch.fadeOutDuration, 0.01f, 0.0f, 10.0f)) {
+                                if (ImGui::DragFloat("Fade Out Duration", &ch.fadeOutDuration, 0.01f, 0.0f, 10.0f))
                                     ch.fadeOutDuration = std::clamp(ch.fadeOutDuration, 0.f, 10.f);
-                                }
+                                if (ImGui::IsItemActivated())
+                                    if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
+                                if (ImGui::IsItemDeactivatedAfterEdit())
+                                    if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
+
                                 ImGui::Unindent();
                             }
 
@@ -1279,11 +1812,16 @@ void InspectorWindow::renderAudio(GameObject* selected) {
 
                         // Remove Sound (clears file but keeps channel)
                         if (ImGui::Button("Clear Audio File", ImVec2(-1, 0))) {
+                            if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
+
                             ch.audioFile = "";
                             if (ch.channel) {
                                 ch.channel->stop();
                                 ch.channel = nullptr;
                             }
+
+                            if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
+
                             DebugLog::addMessage("Cleared audio from channel: " + channelName + "\n");
                         }
                     }
@@ -1303,7 +1841,11 @@ void InspectorWindow::renderAudio(GameObject* selected) {
 
             // Remove channel if marked for removal
             if (!channelToRemove.empty()) {
+                if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
+
                 audio->removeChannel(channelToRemove);
+
+                if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
                 DebugLog::addMessage("Removed audio channel: " + channelToRemove + "\n");
             }
         }
@@ -1312,10 +1854,12 @@ void InspectorWindow::renderAudio(GameObject* selected) {
         ImGui::Separator();
         ImGui::Spacing();
 
-        // Remove Entire Component
-        if (ImGui::Button("Remove Audio Component", ImVec2(-1, 0))) {
-            selected->removeComponent<AudioComponent>();
-            DebugLog::addMessage("Removed Audio Component");
+        if (entry) {
+            if (ImGui::Button("Remove Audio", ImVec2(-1, 0))) {
+                UndoRedoManager::Instance().executeCmd(std::make_unique<RemoveComponentCmd>(m_manager, selected, *entry));
+
+                DebugLog::addMessage("Removed Audio\n");
+            }
         }
     }
 }
@@ -1324,13 +1868,25 @@ void InspectorWindow::renderTileMap(GameObject* selected)
 {
     TileMap* tm = selected->getComponent<TileMap>();
 
+    const Editor::ComponentEntry* entry = Editor::findEntry("Tile Map");
+
     if (ImGui::CollapsingHeader("Tile Map")) {
-        ImGui::Checkbox("Enable Collision", &tm->enableCol);
+        if (ImGui::Checkbox("Enable Collision", &tm->enableCol)) {
+            tm->enableCol = !tm->enableCol;
+            if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
+            tm->enableCol = !tm->enableCol;
+            if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
+        }
 
         if (ImGui::TreeNode("Brush")) {
             std::string displayText = TileMapSystem::filename.empty() ? "No Brush Selected (Drag texture here)" : std::filesystem::path(TileMapSystem::filename).filename().string();
 
-            ImGui::SliderInt("Brush Size", &TileMapSystem::brushSize, 1, 5);
+            ImGui::DragInt("Brush Size", &TileMapSystem::brushSize, 0.1f, 1, 5);
+            if (ImGui::IsItemActivated())
+                UndoRedoManager::Instance().beginTileMapToolEdit(m_gizmoState.showGrid);
+            if (ImGui::IsItemDeactivatedAfterEdit())
+                UndoRedoManager::Instance().endTileMapToolEdit(m_gizmoState.showGrid);
+
             ImGui::Text("(%dx%d tiles)", TileMapSystem::brushSize, TileMapSystem::brushSize);
 
             ImGui::BeginChild("BrushDropZone", ImVec2(-1, 80), true, ImGuiWindowFlags_NoScrollWithMouse);
@@ -1358,7 +1914,11 @@ void InspectorWindow::renderTileMap(GameObject* selected)
 
                     // only accept if dropped file is a png/jpg/jpeg
                     if (ext == ".png" || ext == ".jpg" || ext == ".jpeg") {
+                        UndoRedoManager::Instance().beginTileMapToolEdit(m_gizmoState.showGrid);
+
                         TileMapSystem::filename = path;
+
+                        UndoRedoManager::Instance().endTileMapToolEdit(m_gizmoState.showGrid);
 
                         DebugLog::addMessage("Selected brush texture: " + TileMapSystem::filename + "\n");
                     }
@@ -1376,18 +1936,26 @@ void InspectorWindow::renderTileMap(GameObject* selected)
 
             ImGui::EndChild();
 
+            
 
             // clear texture from brush
             if (!TileMapSystem::filename.empty()) {
                 ImGui::Spacing();
 
-                ImGui::Checkbox("Eraser Mode", &TileMapSystem::eraseMode);
+                if (ImGui::Checkbox("Eraser Mode", &TileMapSystem::eraseMode)) {
+                    TileMapSystem::eraseMode = !TileMapSystem::eraseMode;
+                    UndoRedoManager::Instance().beginTileMapToolEdit(m_gizmoState.showGrid);
+                    TileMapSystem::eraseMode = !TileMapSystem::eraseMode;
+                    UndoRedoManager::Instance().endTileMapToolEdit(m_gizmoState.showGrid);
+                }
+
                 ImGui::Spacing();
 
                 if (ImGui::Button("Clear Brush", ImVec2(-1, 0))) {
+                    UndoRedoManager::Instance().beginTileMapToolEdit(m_gizmoState.showGrid);
                     TileMapSystem::filename.clear();
                     TileMapSystem::eraseMode = false;
-                    DebugLog::addMessage("Cleared brush texture\n");
+                    UndoRedoManager::Instance().endTileMapToolEdit(m_gizmoState.showGrid);
                 }
             }
 
@@ -1395,25 +1963,50 @@ void InspectorWindow::renderTileMap(GameObject* selected)
         }
 
         if (ImGui::TreeNode("Grid")) {
-            ImGui::Checkbox("Enable", &m_gizmoState.showGrid);
+            if (ImGui::Checkbox("Enable", &m_gizmoState.showGrid)) {
+                m_gizmoState.showGrid = !m_gizmoState.showGrid;
+                UndoRedoManager::Instance().beginTileMapToolEdit(m_gizmoState.showGrid);
+                m_gizmoState.showGrid = !m_gizmoState.showGrid;
+                UndoRedoManager::Instance().endTileMapToolEdit(m_gizmoState.showGrid);
+            }
 
-            ImGui::InputInt("Grid Columns", &tm->columns);
-            ImGui::InputInt("Grid rows", &tm->rows);
+            ImGui::DragInt("Grid Columns", &tm->columns);
+            if (ImGui::IsItemActivated())
+                if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
+            if (ImGui::IsItemDeactivatedAfterEdit())
+                if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
+
+            ImGui::DragInt("Grid rows", &tm->rows);
+            if (ImGui::IsItemActivated())
+                if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
+            if (ImGui::IsItemDeactivatedAfterEdit())
+                if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
 
             ImGui::Spacing();
             ImGui::Separator();
             ImGui::Spacing();
 
-            ImGui::InputFloat("Tile Width", &tm->tileW, 1.f);
-            ImGui::InputFloat("Tile Height", &tm->tileH, 1.f);
+            ImGui::DragFloat("Tile Width", &tm->tileW, 1.f);
+            if (ImGui::IsItemActivated())
+                if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
+            if (ImGui::IsItemDeactivatedAfterEdit())
+                if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
+
+            ImGui::DragFloat("Tile Height", &tm->tileH, 1.f);
+            if (ImGui::IsItemActivated())
+                if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
+            if (ImGui::IsItemDeactivatedAfterEdit())
+                if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
 
             ImGui::TreePop();
         }
 
-        if (ImGui::Button("Remove TileMap", ImVec2(-1, 0))) {
-            // add a delete component func here
-            selected->removeComponent<TileMap>();
-            DebugLog::addMessage("Removed Tile Map Component");
+        if (entry) {
+            if (ImGui::Button("Remove Tile Map", ImVec2(-1, 0))) {
+                UndoRedoManager::Instance().executeCmd(std::make_unique<RemoveComponentCmd>(m_manager, selected, *entry));
+
+                DebugLog::addMessage("Removed Tile Map\n");
+            }
         }
     }
 }
@@ -1421,28 +2014,71 @@ void InspectorWindow::renderTileMap(GameObject* selected)
 void InspectorWindow::renderParticles(GameObject* selected)
 {
     Particle* ps = selected->getComponent<Particle>();
+
+    const Editor::ComponentEntry* entry = Editor::findEntry("Particle");
+
     if (ImGui::CollapsingHeader("Particle System")) {
-        ImGui::InputInt("Max Particles", &ps->master.particleAmt);
-        ImGui::InputFloat("Particle Lifetime", &ps->master.timer, 0.1f);
-        ImGui::InputFloat("Offset", &ps->master.offset);
-        ImGui::InputFloat("Velocity X", &ps->master.velocity.x);
-        ImGui::InputFloat("Velocity Y", &ps->master.velocity.y);
+        ImGui::DragInt("Max Particles", &ps->master.particleAmt);
+        if (ImGui::IsItemActivated())
+            if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
+        if (ImGui::IsItemDeactivatedAfterEdit())
+            if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
+
+        ImGui::DragFloat("Particle Lifetime", &ps->master.timer, 0.1f);
+        if (ImGui::IsItemActivated())
+            if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
+        if (ImGui::IsItemDeactivatedAfterEdit())
+            if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
+
+        ImGui::DragFloat("Offset", &ps->master.offset, 0.1f);
+        if (ImGui::IsItemActivated())
+            if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
+        if (ImGui::IsItemDeactivatedAfterEdit())
+            if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
+
+        ImGui::DragFloat("Velocity X", &ps->master.velocity.x, 0.1f);
+        if (ImGui::IsItemActivated())
+            if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
+        if (ImGui::IsItemDeactivatedAfterEdit())
+            if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
+
+        ImGui::DragFloat("Velocity Y", &ps->master.velocity.y, 0.1f);
+        if (ImGui::IsItemActivated())
+            if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
+        if (ImGui::IsItemDeactivatedAfterEdit())
+            if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
 
         ImGui::ColorEdit3("Start Colour", &ps->master.clr.x);
+        if (ImGui::IsItemActivated())
+            if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
+        if (ImGui::IsItemDeactivatedAfterEdit())
+            if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
+
+        static bool colourPickerWasOpen = false;
+        bool colourPickerOpen = ImGui::IsPopupOpen("", ImGuiPopupFlags_AnyPopup);
+        if (colourPickerOpen && !colourPickerWasOpen)
+            if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
+        if (!colourPickerOpen && colourPickerWasOpen)
+            if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
+        colourPickerWasOpen = colourPickerOpen;
 
         ImGui::Spacing();
         ImGui::Separator();
         ImGui::Spacing();
-        if (ImGui::Button("Remove Particle System", ImVec2(-1, 0))) {
-            // add a delete component func here
-            selected->removeComponent<Particle>();
-            DebugLog::addMessage("Removed Particle System Component");
+
+        if (entry) {
+            if (ImGui::Button("Remove Particle", ImVec2(-1, 0))) {
+                UndoRedoManager::Instance().executeCmd(std::make_unique<RemoveComponentCmd>(m_manager, selected, *entry));
+                DebugLog::addMessage("Removed Particle\n");
+            }
         }
     }
 }
 
 void InspectorWindow::renderLua(GameObject* selected) {
     LuaScript* script = selected->getComponent<LuaScript>();
+
+    const Editor::ComponentEntry* entry = Editor::findEntry("Lua Script");
 
     if (ImGui::CollapsingHeader("Lua Script")) {
 
@@ -1451,9 +2087,9 @@ void InspectorWindow::renderLua(GameObject* selected) {
             Editor::scriptState.availScripts.clear();
 
             if (std::filesystem::exists(Editor::scriptState.scriptDir)) {
-                for (const auto& entry : std::filesystem::directory_iterator(Editor::scriptState.scriptDir)) {
-                    if (entry.is_regular_file() && entry.path().extension() == ".lua") {
-                        Editor::scriptState.availScripts.push_back(entry.path().filename().string());
+                for (const auto& file : std::filesystem::directory_iterator(Editor::scriptState.scriptDir)) {
+                    if (file.is_regular_file() && file.path().extension() == ".lua") {
+                        Editor::scriptState.availScripts.push_back(file.path().filename().string());
                     }
                 }
             }
@@ -1478,9 +2114,13 @@ void InspectorWindow::renderLua(GameObject* selected) {
             if (ImGui::BeginCombo("##ScriptSelector", displayName.c_str())) {
                 // clear script
                 if (ImGui::Selectable("None", scriptEntry.scriptName.empty())) {
+                    if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
+
                     scriptEntry.scriptName = "";
                     scriptEntry.filename = "";
                     scriptEntry.changed = true;
+
+                    if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
 
                     DebugLog::addMessage("Cleared script " + displayName + " for " + selected->getObjectName());
                 }
@@ -1492,10 +2132,14 @@ void InspectorWindow::renderLua(GameObject* selected) {
                     bool isSelected = (scriptEntry.scriptName == nameWithoutExt);
 
                     if (ImGui::Selectable(scriptFile.c_str(), isSelected)) {
+                        if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
+
                         scriptEntry.scriptName = nameWithoutExt;
                         scriptEntry.filename = Editor::scriptState.scriptDir + scriptFile;
                         scriptEntry.changed = true;
                         script->scriptsChanged = true;
+
+                        if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
 
                         DebugLog::addMessage("Assigned script " + scriptFile + " to slot " + std::to_string(i + 1) + "\n");
                     }
@@ -1544,14 +2188,24 @@ void InspectorWindow::renderLua(GameObject* selected) {
 
         // Remove script if requested (do this after the loop)
         if (scriptIndex >= 0) {
+            if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
+
             script->scripts.erase(script->scripts.begin() + scriptIndex);
             script->scriptsChanged = true;
+
+            if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
+
             DebugLog::addMessage("Removed script slot " + std::to_string(scriptIndex + 1) + "\n");
         }
 
         /* ---------- Add new script button ---------- */
         if (ImGui::Button("+ Add Script", ImVec2(-1, 0))) {
+            if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
+
             script->scripts.push_back(LuaScript::ScriptEntry());
+            script->scriptsChanged = true;
+
+            if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
             DebugLog::addMessage("Added new script slot\n");
         }
 
@@ -1562,17 +2216,20 @@ void InspectorWindow::renderLua(GameObject* selected) {
         ImGui::Separator();
         ImGui::Spacing();
 
+        if (entry) {
+            if (ImGui::Button("Remove Lua Script", ImVec2(-1, 0))) {
+                UndoRedoManager::Instance().executeCmd(std::make_unique<RemoveComponentCmd>(m_manager, selected, *entry));
 
-        // Remove component button
-        if (ImGui::Button("Remove Lua Script", ImVec2(-1, 0))) {
-            selected->removeComponent<LuaScript>();
-            DebugLog::addMessage("Removed Lua Script Component");
+                DebugLog::addMessage("Removed Lua Script\n");
+            }
         }
     }
 }
 
 void InspectorWindow::renderVisualLogic(GameObject* selected) {
     VisualLC* logic = selected->getComponent<VisualLC>();
+
+    const Editor::ComponentEntry* entry = Editor::findEntry("Visual Logic");
 
     if (ImGui::CollapsingHeader("Visual Logic")) {
         std::string displayName = logic->filename.empty() ? "<Create New>" : logic->filename;
@@ -1582,9 +2239,13 @@ void InspectorWindow::renderVisualLogic(GameObject* selected) {
         if (ImGui::BeginCombo("Logic Graph", displayName.c_str())) {
             // create new logic asset
             if (ImGui::Selectable("<Create New>", logic->filename.empty())) {
+                if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
+
                 logic->filename.clear();
                 logic->nodes.clear();
                 logic->connections.clear();
+
+                if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
 
                 VisualLogicEditor::Instance().clear();
 
@@ -1596,28 +2257,19 @@ void InspectorWindow::renderVisualLogic(GameObject* selected) {
 
             // list existing logic assets
             if (std::filesystem::exists("assets/Logic")) {
-                for (const auto& entry : std::filesystem::directory_iterator("assets/Logic")) {
-                    if (entry.is_regular_file() && entry.path().extension() != ".json") {
+                for (const auto& file : std::filesystem::directory_iterator("assets/Logic")) {
+                    if (file.is_regular_file() && file.path().extension() != ".json") {
                         continue;
                     }
 
-                    std::string assetName = entry.path().filename().string();
+                    std::string assetName = file.path().filename().string();
                     bool isSelected = (logic->filename == assetName);
 
                     if (ImGui::Selectable(assetName.c_str(), isSelected)) {
+                        if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
                         Editor::visualLogicState.targetObj = selected;
                         VisualLogicEditor::Instance().loadLogic(assetName);
-                        /*logic->filename = assetName;
-
-                        std::string filepath = "/Logic/" + assetName;
-                        std::string err;
-                        if (JsonIO::loadVisualLogic(filepath, logic->nodes, logic->connections, &err)) {
-                            DebugLog::addMessage("Loaded Visual Logic Graph: " + assetName + "\n");
-                            DebugLog::addMessage("Loaded " + std::to_string(logic->nodes.size()) + " nodes\n");
-                        }
-                        else {
-                            DebugLog::addMessage("ERROR loading Visual Logic: " + err + "\n");
-                        }*/
+                        if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
                     }
 
                     if (isSelected) {
@@ -1675,36 +2327,45 @@ void InspectorWindow::renderVisualLogic(GameObject* selected) {
         ImGui::Spacing();
 
 
-        if (ImGui::Button("Remove Virtual Logic", ImVec2(-1, 0))) {
-            selected->removeComponent<VisualLC>();
-            DebugLog::addMessage("Removed Virtual Logic Controller");
+        if (entry) {
+            if (ImGui::Button("Remove Visual Logic", ImVec2(-1, 0))) {
+                UndoRedoManager::Instance().executeCmd(std::make_unique<RemoveComponentCmd>(m_manager, selected, *entry));
+
+                DebugLog::addMessage("Removed Visual Logic\n");
+            }
         }
     }
 }
 
-void InspectorWindow::renderLayerControls(GameObject* selected, GameObjectManager& manager) {
+void InspectorWindow::renderLayerControls(GameObject* selected) {
     if (ImGui::CollapsingHeader("Layer")) {
         int currentLayer = selected->getLayer();
-        Layer* layer = manager.getLayerManager().getLayer(currentLayer);
+        Layer* layer = m_manager.getLayerManager().getLayer(currentLayer);
 
         /* ------------------- Layer Properties ------------------- */
         if (layer && ImGui::TreeNode("Layer Properties")) {
 
             // layers dropdown
             if (ImGui::BeginCombo("Assign to Layer", layer->getLayerName().c_str())) {
-                std::vector<Layer*> allLayers = manager.getLayerManager().getAllLayers();
+                std::vector<Layer*> allLayers = m_manager.getLayerManager().getAllLayers();
+
                 for (Layer* l : allLayers) {
                     bool isSelected = (l->getLayerID() == currentLayer);
-                    std::string label = l->getLayerName() + " (ID: " + std::to_string(l->getLayerID()) +
-                        ", Objects: " + std::to_string(l->getObjectCount()) + ")";
+                    std::string label = l->getLayerName() + " (ID: " + std::to_string(l->getLayerID()) + ", Objects: " + std::to_string(l->getObjectCount()) + ")";
+
                     if (ImGui::Selectable(label.c_str(), isSelected)) {
-                        if (manager.assignObjectToLayer(selected, l->getLayerID())) {
+                        UndoRedoManager::Instance().beginLayerAssign(selected);\
+
+                        if (m_manager.assignObjectToLayer(selected, l->getLayerID())) {
+                            UndoRedoManager::Instance().endLayerAssign(m_manager, selected, l->getLayerID());
+
                             DebugLog::addMessage(selected->getObjectName() + " moved to layer: " + l->getLayerName());
                         }
                         else {
                             DebugLog::addMessage("Failed to assign layer!");
                         }
                     }
+
                     if (isSelected) {
                         ImGui::SetItemDefaultFocus();
                     }
@@ -1719,7 +2380,12 @@ void InspectorWindow::renderLayerControls(GameObject* selected, GameObjectManage
             // master flag
             bool enabled = layer->isEnabled();
             if (ImGui::Checkbox("Enabled", &enabled)) {
+                UndoRedoManager::Instance().beginLayerEdit(currentLayer, layer);
+
                 layer->setEnabled(enabled);
+
+                UndoRedoManager::Instance().endLayerEdit(m_manager, layer);
+
                 DebugLog::addMessage("Layer " + layer->getLayerName() +
                     (enabled ? " enabled" : " disabled"));
             }
@@ -1734,7 +2400,11 @@ void InspectorWindow::renderLayerControls(GameObject* selected, GameObjectManage
 
             bool visible = layer->isVisible();
             if (ImGui::Checkbox("Visible", &visible)) {
+                UndoRedoManager::Instance().beginLayerEdit(currentLayer, layer);
+
                 layer->setVisible(visible);
+
+                UndoRedoManager::Instance().endLayerEdit(m_manager, layer);
             }
             ImGui::SameLine();
             ImGui::TextDisabled("(?)");
@@ -1744,7 +2414,11 @@ void InspectorWindow::renderLayerControls(GameObject* selected, GameObjectManage
 
             bool updatable = layer->isUpdatable();
             if (ImGui::Checkbox("Updatable", &updatable)) {
+                UndoRedoManager::Instance().beginLayerEdit(currentLayer, layer);
+
                 layer->setUpdatable(updatable);
+
+                UndoRedoManager::Instance().endLayerEdit(m_manager, layer);
             }
             ImGui::SameLine();
             ImGui::TextDisabled("(?)");

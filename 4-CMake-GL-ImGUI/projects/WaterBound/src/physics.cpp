@@ -34,12 +34,29 @@ void PhysicsForces::applyGravity(Physics* physics) {
  * @brief Applies velocity damping to simulate friction/air resistance
  * Reduces horizontal velocity over time using damping
  */
-void PhysicsForces::applyDamping(Physics* physics) {
+void PhysicsForces::applyDamping(Physics* physics, float friction, float targetVelX, float deltaTime) {
     // Simple velocity damping 
-    physics->damping; // instead of 0.99f
+    //physics->damping; // instead of 0.99f
 
-    physics->dynamics.velocity.x *= physics->damping;
+    //physics->dynamics.velocity.x *= physics->damping;
+	physics->dynamics.angularVelocity *= physics->dynamics.angularDrag;
    // physics->dynamics.velocity.y *= physics->damping;
+
+    // accel when moving, decel when stopping
+    if (targetVelX != 0.f) {
+        float accel = physics->onGround ? (physics->groundAccelForce / physics->dynamics.mass) : (physics->airAccelForce / physics->dynamics.mass);
+
+        physics->dynamics.velocity.x += (targetVelX - physics->dynamics.velocity.x) * accel * deltaTime;
+    }
+    else {
+        float decel = (physics->velY <= 0) ? (1.f - friction) : physics->damping;
+
+        physics->dynamics.velocity.x *= pow(decel, deltaTime * 60.0f);
+
+        if (fabsf(physics->dynamics.velocity.x) < 0.5f) {
+            physics->dynamics.velocity.x = 0.f;
+        }
+    }
 }
 /**
  * @brief Updates object position based on physics
@@ -47,24 +64,45 @@ void PhysicsForces::applyDamping(Physics* physics) {
  */
 void PhysicsForces::updatePosition(Transform* transform, Physics* physics, float deltaTime) {
     DynamicsSystem::UpdateForces(physics->dynamics, deltaTime);
-    //DynamicsSystem::Integrate(physics->dynamics, deltaTime);
     if (!physics->onGround) {
-        Vector3D gravity = { 0.0f, physics->gravity * physics->dynamics.mass, 0.0f };
-        DynamicsSystem::Integrate(physics->dynamics, deltaTime, physics->gravity, false);
+        //DynamicsSystem::Integrate(physics->dynamics, deltaTime, physics->gravity, false);
+        float grav = physics->gravity * physics->dynamics.mass; // gravity force F=mg
+        if (physics->dynamics.velocity.y < 0.0f)
+            grav *= 1.5f;  // faster fall
+        else if (std::abs(physics->dynamics.velocity.y) < 1.0f)
+            grav *= physics->apexHangMul; // apex hang when near the peak
+
+        // integrate gravity into velocity
+        physics->dynamics.velocity.y += grav * deltaTime;
+
+        // terminal velocity
+        physics->dynamics.velocity.y = std::max(physics->dynamics.velocity.y, physics->maxFallSpeed);
+
+        // integrate velocity into position
+        physics->dynamics.position.x += physics->dynamics.velocity.x * deltaTime;
+        physics->dynamics.position.y += physics->dynamics.velocity.y * deltaTime;
+
+        transform->x = physics->dynamics.position.x;
+        transform->y = physics->dynamics.position.y;
     }
     else {
+        // sync dynamics from transform
+        physics->dynamics.position.x = transform->x;
+        physics->dynamics.position.y = transform->y;
         physics->dynamics.velocity.y = 0.0f;
-        physics->velY = 0.0f;
-
+        //physics->velY = 0.0f;
     }
-    transform->x = physics->dynamics.position.x;
-    transform->y = physics->dynamics.position.y;
 
-   
+    // Integrate angular velocity into rotation (degrees/sec)
+    if (!physics->freezeRotation) {
+        DynamicsSystem::IntegrateAngular(physics->dynamics, deltaTime);
+        transform->rotation += physics->dynamics.angularVelocity * deltaTime;
+    }
+
     physics->velX = physics->dynamics.velocity.x;
     physics->velY = physics->dynamics.velocity.y;
-
 }
+
 /**
  * @brief Applies jump force to make an object jump
  *
@@ -75,13 +113,17 @@ void PhysicsForces::jump(GameObject* object) {
         return;
 
     Physics* physics = object->getComponent<Physics>();
+    Transform* transform = object->getComponent<Transform>();
 
+    physics->dynamics.position.x = transform->x;
+    physics->dynamics.position.y = transform->y;
 
-    // Apply upward 
-    Vector3D jumpDir = { 0.0f, 1.0f, 0.0f };
-    DynamicsSystem::AddForce(physics->dynamics, jumpDir, physics->jumpForce, 0.1f);
-    //physics->dynamics.velocity.y = 5.0f; // Instant upward velocity
+    // direct velocity impulse
+    float jumpVel = physics->jumpForce / physics->dynamics.mass;
+    physics->dynamics.velocity.y = jumpVel;
+    physics->velY = jumpVel;
     physics->onGround = false;
+
     //physics->canMove = true;
     DebugLog::addMessage("Player jumped!", DebugMode::PlaySimul);
 }
@@ -133,7 +175,6 @@ void PhysicsForces::shoot(GameObject* bullet, const Transform* origin, const Vec
     p->lifeTimer = 0.0f;
     p->gravityDelayTimer = p->gravityDelay;  // Initialize gravity immunity
     p->alive = true;
-	p->bounciness = 0.7f; // some bounce
 
     DebugLog::addMessage("Bullet fired!", DebugMode::PlaySimul);
 }
@@ -221,4 +262,20 @@ void PhysicsForces::deactivateBullet(GameObject* bullet) {
     p->alive = false;
 
     DebugLog::addMessage("Bullet deactivated and returned to pool", DebugMode::PlaySimul);
+}
+
+void Physics::recalculateInertia(const Vector2D& colliderSize, shape colliderType) {
+    if (inertiaOverride > 0.0f) {
+        dynamics.inertia = inertiaOverride;
+        return;
+    }
+    if (colliderType == shape::circle) {
+        float radius = colliderSize.x / 2.0f;
+        dynamics.inertia = 0.5f * dynamics.mass * radius * radius;
+    }
+    else {
+        float w = colliderSize.x;
+        float h = colliderSize.y;
+        dynamics.inertia = (1.0f / 12.0f) * dynamics.mass * (w * w + h * h);
+    }
 }

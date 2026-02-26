@@ -1,9 +1,10 @@
 ﻿/* Start Header ************************************************************************/
 /*!
 \file       undoRedo.h
-\author     Hugo Low Ren Hao, low.h, 2402272
-						- 100%
-\par				low.h@digipen.edu
+\author     Tan Chee Qing, cheeqing.tan, 2401486 - 80%
+			Hugo Low Ren Hao, low.h, 2402272 - 20%
+\par		cheeqing.tan@digipen.edu
+			low.h@digipen.edu
 \date       November, 10th, 2025
 \brief      Class for recording the steps and snapshots for undo and redo. UndoRedoManager
 			should be the only public interface needed to track and execute undo and redo
@@ -39,6 +40,7 @@ struct TileChange {
 	std::string newTile;
 };
 
+
 // base class
 class CmdInterface {
 public:
@@ -50,6 +52,50 @@ public:
 
 	// to be override in derived class, store obj name (in case of rename)
 	virtual void updateObjName(const std::string&, const std::string&) {}
+};
+
+// record adding any component to a game obj (work together with componentRegistry in editorState.h)
+class AddComponentCmd : public CmdInterface {
+public:
+	// ctor with obj and component entry (to know which component to add)
+	AddComponentCmd(GameObjectManager& manager, GameObject* obj, const Editor::ComponentEntry& entry);
+	
+	// apply the component addition
+	void execute() override;
+
+	// remove the added component (undo the addition)
+	void undo() override;
+
+	// if renamed, save the old name and new name (so undo/redo still work)
+	void updateObjName(const std::string& oldName, const std::string& newName) override;
+
+private:
+	GameObjectManager&		m_manager;
+	std::string				m_objectName;
+	Editor::ComponentEntry	m_entry;
+	std::string				m_serializedData;
+};
+
+// record removing any component from a game obj (work together with componentRegistry in editorState.h)
+class RemoveComponentCmd : public CmdInterface {
+public:
+	// ctor with obj and component entry (to know which component to add)
+	RemoveComponentCmd(GameObjectManager& manager, GameObject* obj, const Editor::ComponentEntry& entry);
+
+	// apply the component removal
+	void execute() override;
+
+	// add the removed component and restores the properties
+	void undo() override;
+
+	// if renamed, save the old name and new name (so undo/redo still work)
+	void updateObjName(const std::string& oldName, const std::string& newName) override;
+
+private:
+	GameObjectManager&		m_manager;
+	std::string				m_objectName;
+	Editor::ComponentEntry	m_entry;
+	std::string				m_serializedData;
 };
 
 // store transform changes
@@ -71,10 +117,10 @@ private:
 	// helper to write transform data to a game obj
 	void applySnapshot(const TransformSnapshot& snap);
 
-	GameObjectManager& m_manager;
-	std::string m_objectName;
-	TransformSnapshot m_before;
-	TransformSnapshot m_after;
+	GameObjectManager&		m_manager;
+	std::string				m_objectName;
+	TransformSnapshot		m_before;
+	TransformSnapshot		m_after;
 };
 
 // store obj creation
@@ -92,10 +138,10 @@ public:
 	void updateObjName(const std::string& oldName, const std::string& newName);
 
 private:
-	GameObjectManager& m_manager;
-	std::string m_objectName;
-	std::string m_serializedData;
-	bool m_wasExecuted = false;
+	GameObjectManager&		m_manager;
+	std::string				m_objectName;
+	std::string				m_serializedData;
+	bool					m_wasExecuted = false;
 };
 
 // store for obj deletion
@@ -113,12 +159,13 @@ public:
 	void updateObjName(const std::string& oldName, const std::string& newName);
 
 private:
-	GameObjectManager& m_manager;
-	std::string m_objectName;
-	std::string m_serializedData;
-	int m_layer = 0;
+	GameObjectManager&		m_manager;
+	std::string				m_objectName;
+	std::string				m_serializedData;
+	int						m_layer = 0;
 };
 
+// store tilemap painting changes (not the properties)
 class TileMapCmd : public CmdInterface {
 public:
 	TileMapCmd(GameObjectManager& manager, const std::string& objName, const std::vector<TileChange>& changes);
@@ -133,10 +180,119 @@ public:
 	void updateObjName(const std::string& oldName, const std::string& newName);
 
 private:
-	GameObjectManager& m_manager;
-	std::string m_objectName;
-	std::vector<TileChange> m_changes;
+	GameObjectManager&		m_manager;
+	std::string				m_objectName;
+	std::vector<TileChange>	m_changes;
 };
+
+class ReparentCmd : public CmdInterface {
+public:
+	ReparentCmd(GameObjectManager& manager, const std::string& childName,
+		const std::string& oldParent, const Vector2D& oldOffset, float oldLocalRot,
+		const std::string& newParent, const Vector2D& newOffset, float newLocalRot);
+
+	void execute() override;
+	void undo()    override;
+
+private:
+	void apply(const std::string& parent, const Vector2D& offset, float localRot);
+
+	GameObjectManager& m_manager;
+	std::string m_childName;
+	std::string m_oldParent;  Vector2D m_oldOffset;  float m_oldLocalRot;
+	std::string m_newParent;  Vector2D m_newOffset;  float m_newLocalRot;
+};
+
+// grid settings & tilemap filename
+struct TileMapToolSnapshot {
+	std::string filename;
+	int brushSize;
+	bool eraseMode;
+	bool showGrid;
+};
+
+class TileMapToolCmd : public CmdInterface {
+public:
+	TileMapToolCmd(bool& showGrid, const TileMapToolSnapshot& before, const TileMapToolSnapshot& after);
+
+	void execute() override;
+
+	void undo() override;
+
+	void updateObjName(const std::string&, const std::string&) override {}
+
+private:
+	bool& m_showGrid;
+	TileMapToolSnapshot m_before;
+	TileMapToolSnapshot m_after;
+	void applySnapshot(const TileMapToolSnapshot& snap);
+};
+
+// store any component property changes
+class ComponentPropertyCmd : public CmdInterface {
+public:
+	ComponentPropertyCmd(GameObjectManager& manager, const std::string& objName, const Editor::ComponentEntry& entry, const std::string& before, const std::string& after);
+
+	// apply AFTER state (redo)
+	void execute() override;
+
+	// restore BEFORE state (undo)
+	void undo() override;
+
+	// if renamed, save the old name and new name (so undo/redo still work)
+	void updateObjName(const std::string& oldName, const std::string& newName);
+	
+private:
+	GameObjectManager&		m_manager;
+	std::string				m_objectName;
+	Editor::ComponentEntry	m_entry;
+	std::string				m_before;
+	std::string				m_after;
+};
+
+// for layer properties
+class AssignLayerCmd : public CmdInterface {
+public:
+	AssignLayerCmd(GameObjectManager& manager, GameObject* obj, int layerBefore, int layerAfter);
+
+	void execute() override;
+
+	void undo() override;
+
+	void updateObjName(const std::string& oldName, const std::string& newName) override;
+
+private:
+	GameObjectManager&		m_manager;
+	std::string				m_objectName;
+	int						m_layerBefore;
+	int						m_layerAfter;
+};
+
+struct LayerSnapshot {
+	bool enabled;
+	bool visible;
+	bool updatable;
+};
+
+class LayerPropertyCmd : public CmdInterface {
+public:
+	LayerPropertyCmd(GameObjectManager& manager, int layerID, const LayerSnapshot& before, const LayerSnapshot& after);
+
+	void execute() override;
+
+	void undo() override;
+
+	void updateObjName(const std::string&, const std::string&) override {}
+
+private:
+	GameObjectManager&		m_manager;
+	int						m_layerID;
+	LayerSnapshot			m_before;
+	LayerSnapshot			m_after;
+
+	void applySnapshot(const LayerSnapshot& snap);
+};
+
 
 // big boss for undo/redo operation (singleton)
 class UndoRedoManager {
@@ -188,10 +344,34 @@ public:
 	void recordTileChange(int x, int y, const std::string& oldTile, const std::string& newTile);
 
 	bool isEditingTilemap() const { return m_isEditingTilemap; }
+
+	void beginTileMapToolEdit(bool showGrid);
+
+	void endTileMapToolEdit(bool showGrid);
+
 	/* ---- END ---- */
 
+
+	/* ---- COMPONENT PROPERTIES ---- */
+	// call before any component property is about to change (captures before-state)
+	void beginComponentEdit(GameObject* obj, const Editor::ComponentEntry& entry);
+
+	// call after the change is done (captures after-state, pushes command if changed)
+	void endComponentEdit(GameObjectManager& manager, GameObject* obj, const Editor::ComponentEntry& entry);
+
+	bool isEditingComponent() const { return m_isEditingComponent; }
+	/* ---- END ---- */
+
+	/* ---- LAYER ---- */
+	void beginLayerEdit(int layerID, Layer* layer);
+	void endLayerEdit(GameObjectManager& manager, Layer* layer);
+	void beginLayerAssign(GameObject* obj);
+	void endLayerAssign(GameObjectManager& manager, GameObject* obj, int newLayerID);
+	/* ---- END ----*/
+
+
 	// max steps to undo/redo
-	static constexpr size_t MAX_UNDO_STEPS{ 20 };
+	static constexpr size_t MAX_UNDO_STEPS{ 30 };
 
 private:
 	UndoRedoManager() = default;
@@ -200,14 +380,30 @@ private:
 	std::deque<std::unique_ptr<CmdInterface>> m_redoDeque;
 
 	// for transform
-	bool m_isEditingTransform = false;
-	std::string m_editingObjName;
-	TransformSnapshot m_transformBefore;
+	bool				m_isEditingTransform = false;
+	std::string			m_editingObjName;
+	TransformSnapshot	m_transformBefore;
 
 	// for tilemap
-	bool m_isEditingTilemap = false;
-	std::string m_editingTilemapObjName;
+	bool				m_isEditingTilemap = false;
+	std::string			m_editingTilemapObjName;
 	std::vector<TileChange> m_tileChanges;
+	bool m_isEditingTileMapTool{ false };
+	TileMapToolSnapshot m_tileMapToolBefore{};
+
+	// for component properties (all except transform/animation/partial tilemap)
+	bool					m_isEditingComponent = false;
+	std::string				m_editingComponentObjName;
+	Editor::ComponentEntry	m_editingComponentEntry;
+	std::string				m_componentBefore;
+
+	// for layer
+	bool					m_isEditingLayer{ false };
+	int						m_editingLayerID{ -1 };
+	LayerSnapshot			m_layerBefore{};
+	bool					m_isAssigningLayer{ false };
+	std::string				m_assigningObjName{};
+	int						m_layerAssignBefore{ -1 };
 };
 
 // take a snapshot of an object's transform state
