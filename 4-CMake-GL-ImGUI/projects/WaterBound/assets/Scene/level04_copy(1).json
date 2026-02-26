@@ -50,6 +50,8 @@
           "ledgeClimbSpeed": 8.0
         },
         "CollisionInfo": {
+          "colliderType": "square",
+          "colliderType": "square",
           "ignoreCollisionsWith": [
             "player",
             "bullet",
@@ -90,17 +92,22 @@
           "jumpBufferTime": 0.15000000596046448,
           "coyoteTime": 0.15000000596046448,
           "ledgeAssistRange": 0.800000011920929,
-          "ledgeClimbSpeed": 8.0
+          "ledgeClimbSpeed": 8.0,
+          "freezeRotation": 1,
+          "angularDrag": 0.9800000190734863,
+          "inertiaOverride": 0.0
         },
         "CollisionInfo": {
           "collisionTag": "player",
+          "bounciness": 0.0,
+          "friction": 0.0,
           "ignoreCollisionsWith": [
             "bullet"
           ]
         },
         "StateMachine": {
           "state": "Jumping",
-          "stateTime": 4.216402053833008
+          "stateTime": 91.20357513427734
         },
         "AudioComponent": {
           "channels": {
@@ -319,32 +326,6 @@
       }
     },
     {
-      "prefabid": "8b8d44fa-ed22-4288-98ee-c476958f5b5b",
-      "name": "endgoal(23)",
-      "components": {
-        "Transform": {
-          "pos": [
-            18.568527221679688,
-            -3.410356044769287,
-            0.0
-          ]
-        },
-        "Physics": {
-          "friction": 0.800000011920929,
-          "maxFallSpeed": -30.0,
-          "groundAccelForce": 20.0,
-          "airAccelForce": 8.0,
-          "jumpBufferTime": 0.15000000596046448,
-          "coyoteTime": 0.15000000596046448,
-          "ledgeAssistRange": 0.800000011920929,
-          "ledgeClimbSpeed": 8.0
-        },
-        "VisualLC": {
-          "filename": "endgoal04.json"
-        }
-      }
-    },
-    {
       "name": "water balance back",
       "components": {
         "Transform": {
@@ -377,7 +358,42 @@
           "colliderType": "square",
           "collisionRes": "StopWhenCollide",
           "collisionTag": "inventory",
+          "bounciness": 0.0,
+          "friction": 0.0,
           "colliderType": "square"
+        }
+      }
+    },
+    {
+      "prefabid": "8b8d44fa-ed22-4288-98ee-c476958f5b5b",
+      "name": "endgoal(23)",
+      "components": {
+        "Transform": {
+          "pos": [
+            18.568527221679688,
+            -3.410356044769287,
+            0.0
+          ]
+        },
+        "Physics": {
+          "friction": 0.800000011920929,
+          "maxFallSpeed": -30.0,
+          "groundAccelForce": 20.0,
+          "airAccelForce": 8.0,
+          "jumpBufferTime": 0.15000000596046448,
+          "coyoteTime": 0.15000000596046448,
+          "ledgeAssistRange": 0.800000011920929,
+          "ledgeClimbSpeed": 8.0,
+          "freezeRotation": 1,
+          "angularDrag": 0.9800000190734863,
+          "inertiaOverride": 0.0
+        },
+        "CollisionInfo": {
+          "bounciness": 0.0,
+          "friction": 0.0
+        },
+        "VisualLC": {
+          "filename": "endgoal04.json"
         }
       }
     },
@@ -414,6 +430,8 @@
           "colliderType": "square",
           "collisionRes": "StopWhenCollide",
           "collisionTag": "inventory",
+          "bounciness": 0.0,
+          "friction": 0.0,
           "colliderType": "square"
         },
         "VisualLC": {
@@ -456,7 +474,10 @@
           "jumpBufferTime": 0.15000000596046448,
           "coyoteTime": 0.3499999940395355,
           "ledgeAssistRange": 0.800000011920929,
-          "ledgeClimbSpeed": 1.0
+          "ledgeClimbSpeed": 1.0,
+          "freezeRotation": 1,
+          "angularDrag": 0.9800000190734863,
+          "inertiaOverride": 0.0
         },
         "CollisionInfo": {
           "collisionFlag": 1,
@@ -468,6 +489,8 @@
           "colliderType": "square",
           "collisionRes": "StopWhenCollide",
           "collisionTag": "default",
+          "bounciness": 0.0,
+          "friction": 0.0,
           "colliderType": "square"
         }
       }
@@ -507,7 +530,10 @@
           "jumpBufferTime": 0.15000000596046448,
           "coyoteTime": 0.3499999940395355,
           "ledgeAssistRange": 0.800000011920929,
-          "ledgeClimbSpeed": 1.0
+          "ledgeClimbSpeed": 1.0,
+          "freezeRotation": 1,
+          "angularDrag": 0.9800000190734863,
+          "inertiaOverride": 0.0
         },
         "CollisionInfo": {
           "collisionFlag": 1,
@@ -519,6 +545,8 @@
           "colliderType": "square",
           "collisionRes": "StopWhenCollide",
           "collisionTag": "environment",
+          "bounciness": 0.0,
+          "friction": 0.0,
           "colliderType": "square"
         }
       }
@@ -558,7 +586,10 @@
           "jumpBufferTime": 0.15000000596046448,
           "coyoteTime": 0.3499999940395355,
           "ledgeAssistRange": 0.800000011920929,
-          "ledgeClimbSpeed": 1.0
+          "ledgeClimbSpeed": 1.0,
+          "freezeRotation": 1,
+          "angularDrag": 0.9800000190734863,
+          "inertiaOverride": 0.0
         },
         "CollisionInfo": {
           "collisionFlag": 1,
@@ -570,6 +601,8 @@
           "colliderType": "square",
           "collisionRes": "StopWhenCollide",
           "collisionTag": "default",
+          "bounciness": 0.0,
+          "friction": 0.0,
           "colliderType": "square"
         }
       }
@@ -598,13 +631,18 @@
           "jumpBufferTime": 0.15000000596046448,
           "coyoteTime": 0.15000000596046448,
           "ledgeAssistRange": 0.800000011920929,
-          "ledgeClimbSpeed": 8.0
+          "ledgeClimbSpeed": 8.0,
+          "freezeRotation": 1,
+          "angularDrag": 0.9800000190734863,
+          "inertiaOverride": 0.0
         },
         "CollisionInfo": {
           "colliderSize": [
             17.5939998626709,
             17.493999481201172
-          ]
+          ],
+          "bounciness": 0.0,
+          "friction": 0.0
         }
       }
     },
@@ -632,13 +670,18 @@
           "jumpBufferTime": 0.15000000596046448,
           "coyoteTime": 0.15000000596046448,
           "ledgeAssistRange": 0.800000011920929,
-          "ledgeClimbSpeed": 8.0
+          "ledgeClimbSpeed": 8.0,
+          "freezeRotation": 1,
+          "angularDrag": 0.9800000190734863,
+          "inertiaOverride": 0.0
         },
         "CollisionInfo": {
           "colliderSize": [
             7.372000217437744,
             0.3720000088214874
-          ]
+          ],
+          "bounciness": 0.0,
+          "friction": 0.0
         }
       }
     },
@@ -672,7 +715,10 @@
           "jumpBufferTime": 0.15000000596046448,
           "coyoteTime": 0.3499999940395355,
           "ledgeAssistRange": 0.800000011920929,
-          "ledgeClimbSpeed": 1.0
+          "ledgeClimbSpeed": 1.0,
+          "freezeRotation": 1,
+          "angularDrag": 0.9800000190734863,
+          "inertiaOverride": 0.0
         },
         "CollisionInfo": {
           "collisionFlag": 1,
@@ -684,6 +730,8 @@
           "colliderType": "square",
           "collisionRes": "NoResponse",
           "collisionTag": "water",
+          "bounciness": 0.0,
+          "friction": 0.0,
           "colliderType": "square"
         },
         "WaterBody": {
@@ -743,7 +791,10 @@
           "jumpBufferTime": 0.15000000596046448,
           "coyoteTime": 0.3499999940395355,
           "ledgeAssistRange": 0.800000011920929,
-          "ledgeClimbSpeed": 1.0
+          "ledgeClimbSpeed": 1.0,
+          "freezeRotation": 1,
+          "angularDrag": 0.9800000190734863,
+          "inertiaOverride": 0.0
         },
         "CollisionInfo": {
           "collisionFlag": 1,
@@ -755,6 +806,8 @@
           "colliderType": "square",
           "collisionRes": "MoveWhenCollide",
           "collisionTag": "floatingObject",
+          "bounciness": 0.0,
+          "friction": 0.0,
           "colliderType": "square"
         }
       }
@@ -771,7 +824,7 @@
           "rotation": 0.0,
           "scale": [
             4.800000190734863,
-            1.0,
+            0.5,
             0.0
           ]
         },
@@ -789,18 +842,23 @@
           "jumpBufferTime": 0.15000000596046448,
           "coyoteTime": 0.3499999940395355,
           "ledgeAssistRange": 0.800000011920929,
-          "ledgeClimbSpeed": 1.0
+          "ledgeClimbSpeed": 1.0,
+          "freezeRotation": 1,
+          "angularDrag": 0.9800000190734863,
+          "inertiaOverride": 0.0
         },
         "CollisionInfo": {
           "collisionFlag": 1,
           "autoFitScale": 1,
           "colliderSize": [
             4.800000190734863,
-            1.0
+            0.5
           ],
           "colliderType": "square",
           "collisionRes": "StopWhenCollide",
           "collisionTag": "default",
+          "bounciness": 0.0,
+          "friction": 0.0,
           "colliderType": "square"
         },
         "VisualLC": {
@@ -838,7 +896,10 @@
           "jumpBufferTime": 0.15000000596046448,
           "coyoteTime": 0.3499999940395355,
           "ledgeAssistRange": 0.800000011920929,
-          "ledgeClimbSpeed": 1.0
+          "ledgeClimbSpeed": 1.0,
+          "freezeRotation": 1,
+          "angularDrag": 0.9800000190734863,
+          "inertiaOverride": 0.0
         },
         "CollisionInfo": {
           "collisionFlag": 1,
@@ -850,6 +911,8 @@
           "colliderType": "square",
           "collisionRes": "StopWhenCollide",
           "collisionTag": "default",
+          "bounciness": 0.0,
+          "friction": 0.0,
           "colliderType": "square"
         },
         "VisualLC": {
