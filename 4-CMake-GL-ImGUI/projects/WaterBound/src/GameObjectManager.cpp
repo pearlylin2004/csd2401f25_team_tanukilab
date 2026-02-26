@@ -89,6 +89,14 @@ void GameObjectManager::deleteGameObject(GameObject* object) {
 			continue; // don't skip remaining children
 		}
 
+		if (it->second->hasComponent<VisualLC>()) {
+			VisualLC* logic = it->second->getComponent<VisualLC>();
+			if (logic->lastCollidedObj == object)
+				logic->lastCollidedObj = nullptr;
+			logic->curCollision.erase(object);
+			logic->preCollision.erase(object);
+		}
+
 		Transform* t = it->second->getComponent<Transform>();
 		if (t && t->parentName == deletedName) {
 			t->parentName.clear();
