@@ -1689,11 +1689,23 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 
 								if (c1->collisionTag == "bullet") { // water
 									float spread = 10.f; // horizontal spread for flow
-									float flowSpeed = 20.f; // constant lateral push
+									float flowSpeed = 0.2f; // constant lateral push
 									float direction = (rand() % 2 == 0 ? 1.f : -1.f);
 
-									p1->dynamics.velocity.x += flowSpeed * deltaTime + spread * direction;
-									p1->dynamics.velocity.y += 0.f;
+									//p1->dynamics.velocity.x += flowSpeed * deltaTime + spread * direction;
+									//p1->dynamics.velocity.y += 0.f;
+
+									p1->dynamics.velocity.x += flowSpeed + spread * direction;
+									
+									// small downward bias so it stays on ground but can slide
+									p1->dynamics.velocity.y = -0.01f; // tiny downward motion
+
+									// apply sliding friction
+									float slideFriction = -0.10f;
+									p1->dynamics.velocity.x *= (1.0f - slideFriction);
+
+									// keep onGround true for other logic if needed
+									p1->onGround = true;
 								}
 								else {
 									//normal objects
@@ -1895,14 +1907,6 @@ void CollisionSystem::HandleTilemapCollisions(const std::unordered_map<int, Coll
 									float distToTop = boxAABB.getMax().y - playerAABB.getMin().y;
 
 									if (distToTop > 0.f && distToTop < p->ledgeAssistRange) {
-										/*t->y += distToTop;
-										p->dynamics.position.y = t->y;
-										p->dynamics.velocity.y = 0.0f;
-										p->velY = 0.0f;
-										p->onGround = true;
-										p->coyoteAvailable = true;
-										p->coyoteTimer = p->coyoteTime;
-										continue;*/
 										p->ledgeClimb = true;
 										p->ledgeTargetY = t->y + distToTop;
 										collisionResolved = true;
