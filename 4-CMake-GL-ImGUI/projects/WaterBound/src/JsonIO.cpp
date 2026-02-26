@@ -1009,19 +1009,25 @@ namespace JsonIO {
 
         Value jp(kObjectType);
         jp.AddMember("physicsFlag", p->physicsFlag, a);
+        jp.AddMember("autoUpdate", p->autoUpdate, a);
         jp.AddMember("moveSpeed", p->moveSpeed, a);
         jp.AddMember("jumpForce", p->jumpForce, a);
         jp.AddMember("damping", p->damping, a);
-        jp.AddMember("friction", p->friction, a);
+        //jp.AddMember("friction", p->friction, a);
         jp.AddMember("maxFallSpeed", p->maxFallSpeed, a);
         jp.AddMember("groundAccelForce", p->groundAccelForce, a);
         jp.AddMember("airAccelForce", p->airAccelForce, a);
+        jp.AddMember("apexHangMul", p->apexHangMul, a);
         jp.AddMember("jumpBufferTime", p->jumpBufferTime, a);
         jp.AddMember("coyoteTime", p->coyoteTime, a);
         jp.AddMember("ledgeAssistRange", p->ledgeAssistRange, a);
         jp.AddMember("ledgeClimbSpeed", p->ledgeClimbSpeed, a);
         jp.AddMember("mass", p->dynamics.mass, a);
         jp.AddMember("buoyancy", p->buoyancy, a);
+        jp.AddMember("freezeRotation", p->freezeRotation, a);
+        jp.AddMember("angularDrag", p->dynamics.angularDrag, a);
+        jp.AddMember("inertiaOverride", p->inertiaOverride, a);
+
         doc.AddMember("Physics", jp, a);
 
         StringBuffer buf; Writer<StringBuffer> w(buf); doc.Accept(w);
@@ -1041,19 +1047,29 @@ namespace JsonIO {
             : obj->addComponent<Physics>();
 
         p->physicsFlag = jp["physicsFlag"].GetBool();
+        p->autoUpdate = jp["autoUpdate"].GetBool();
         p->moveSpeed = jp["moveSpeed"].GetFloat();
         p->jumpForce = jp["jumpForce"].GetFloat();
         p->damping = jp["damping"].GetFloat();
-        p->friction = jp.HasMember("friction") ? jp["friction"].GetFloat() : 0.80f;
+        //p->friction = jp.HasMember("friction") ? jp["friction"].GetFloat() : 0.80f;
         p->maxFallSpeed = jp.HasMember("maxFallSpeed") ? jp["maxFallSpeed"].GetFloat() : -30.f;
         p->groundAccelForce = jp.HasMember("groundAccelForce") ? jp["groundAccelForce"].GetFloat() : 20.f;
         p->airAccelForce = jp.HasMember("airAccelForce") ? jp["airAccelForce"].GetFloat() : 8.f;
+        p->apexHangMul = jp.HasMember("apexHangMul") ? jp["apexHangMul"].GetFloat() : 0.2f;
         p->jumpBufferTime = jp.HasMember("jumpBufferTime") ? jp["jumpBufferTime"].GetFloat() : 0.15f;
         p->coyoteTime = jp.HasMember("coyoteTime") ? jp["coyoteTime"].GetFloat() : 0.15f;
         p->ledgeAssistRange = jp.HasMember("ledgeAssistRange") ? jp["ledgeAssistRange"].GetFloat() : 0.8f;
         p->ledgeClimbSpeed = jp.HasMember("ledgeClimbSpeed") ? jp["ledgeClimbSpeed"].GetFloat() : 8.f;
         p->dynamics.mass = jp["mass"].GetFloat();
         p->buoyancy = jp["buoyancy"].GetBool();
+        if (jp.HasMember("freezeRotation")) p->freezeRotation = jp["freezeRotation"].GetBool();
+        if (jp.HasMember("angularDrag")) p->dynamics.angularDrag = jp["angularDrag"].GetFloat();
+        if (jp.HasMember("inertiaOverride")) p->inertiaOverride = jp["inertiaOverride"].GetFloat();
+
+        if (!p->freezeRotation) {
+            if (auto* c = obj->getComponent<CollisionInfo>())
+                p->recalculateInertia(c->colliderSize, c->colliderType);
+        }
     }
 
     std::string serializeCollision(GameObject* obj) {
@@ -1072,6 +1088,10 @@ namespace JsonIO {
         jc.AddMember("collisionRes", Value(CollisionResponseModeToStr(c->collisionRes), a), a);
         jc.AddMember("collisionTag", Value(c->collisionTag.c_str(), a), a);
         jc.AddMember("colliderType", Value(ShapeToStr(c->colliderType), a), a);
+        jc.AddMember("bounciness", c->material.bounciness, a);
+        jc.AddMember("friction", c->material.friction, a);
+        jc.AddMember("bounceCombine", static_cast<int>(c->material.bounceCombine), a);
+        jc.AddMember("frictionCombine", static_cast<int>(c->material.frictionCombine), a);
 
         Value ignoreArray(kArrayType);
         for (const std::string& tag : c->ignoreCollisionsWith)
@@ -1104,12 +1124,22 @@ namespace JsonIO {
         if (jc.HasMember("colliderType") && jc["colliderType"].IsString())
             c->colliderType = StrToShape(jc["colliderType"].GetString());
 
+        if (jc.HasMember("bounciness")) c->material.bounciness = jc["bounciness"].GetFloat();
+        if (jc.HasMember("friction")) c->material.friction = jc["friction"].GetFloat();
+        if (jc.HasMember("bounceCombine")) c->material.bounceCombine = static_cast<PhysicsMaterial::CombineMode>(jc["bounceCombine"].GetInt());
+        if (jc.HasMember("frictionCombine")) c->material.frictionCombine = static_cast<PhysicsMaterial::CombineMode>(jc["frictionCombine"].GetInt());
+
         if (jc.HasMember("ignoreCollisionsWith")) {
             const Value& arr = jc["ignoreCollisionsWith"];
             c->ignoreCollisionsWith.clear();
             for (rapidjson::SizeType i = 0; i < arr.Size(); ++i)
                 c->ignoreCollisionsWith.insert(arr[i].GetString());
         }
+
+        if(Physics* p = obj->getComponent<Physics>())
+            if (!p->freezeRotation) {
+                p->recalculateInertia(c->colliderSize, c->colliderType);
+            }
     }
 
     std::string serializeInput(GameObject* obj) {

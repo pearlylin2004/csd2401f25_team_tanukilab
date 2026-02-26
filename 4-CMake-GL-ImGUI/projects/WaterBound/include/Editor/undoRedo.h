@@ -185,6 +185,24 @@ private:
 	std::vector<TileChange>	m_changes;
 };
 
+class ReparentCmd : public CmdInterface {
+public:
+	ReparentCmd(GameObjectManager& manager, const std::string& childName,
+		const std::string& oldParent, const Vector2D& oldOffset, float oldLocalRot,
+		const std::string& newParent, const Vector2D& newOffset, float newLocalRot);
+
+	void execute() override;
+	void undo()    override;
+
+private:
+	void apply(const std::string& parent, const Vector2D& offset, float localRot);
+
+	GameObjectManager& m_manager;
+	std::string m_childName;
+	std::string m_oldParent;  Vector2D m_oldOffset;  float m_oldLocalRot;
+	std::string m_newParent;  Vector2D m_newOffset;  float m_newLocalRot;
+};
+
 // grid settings & tilemap filename
 struct TileMapToolSnapshot {
 	std::string filename;
@@ -346,7 +364,7 @@ public:
 
 	/* ---- LAYER ---- */
 	void beginLayerEdit(int layerID, Layer* layer);
-	void endLayerEdit(GameObjectManager& manager, int layerID, Layer* layer);
+	void endLayerEdit(GameObjectManager& manager, Layer* layer);
 	void beginLayerAssign(GameObject* obj);
 	void endLayerAssign(GameObjectManager& manager, GameObject* obj, int newLayerID);
 	/* ---- END ----*/

@@ -17,7 +17,7 @@ Technology is prohibited.
 /* End Header **************************************************************************/
 
 #include "Systems.h"
-std::unordered_map<BatchKey, std::vector<renderer::InstanceData>, BatchKeyHash> RenderSystem::objectWithTex2{};
+
 bool TileMapSystem::eraseMode = false;
 int TileMapSystem::brushSize = 1;
 
@@ -77,7 +77,7 @@ void TileMapSystem::update(GameObjectManager& manager)
 	std::vector<GameObject*> objects;
 	manager.getAllGameObjects(objects);
 	//RenderSystem::objectWithTex2.clear();
-	for (auto& [key, instances] : RenderSystem::objectWithTex2) {
+	for (auto& [key, instances] : RenderSystem::objectWithTex) {
 		instances.clear();
 	}
 
@@ -132,7 +132,7 @@ void TileMapSystem::update(GameObjectManager& manager)
 			data.color = glm::vec4(0, 0, 0, 1);
 			data.texParams = glm::vec4(0, 0, 1, 1); //no slicing
 			TextureData texID = ResourceManager::getInstance().getTexture(tileID);
-			RenderSystem::objectWithTex2[BatchKey{ shape::square, texID.id }].push_back(data);
+			RenderSystem::objectWithTex[BatchKey{ transform->z, texID.id, shape::square }].push_back(data);
 		}
 	}
 

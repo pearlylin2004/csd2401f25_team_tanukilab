@@ -28,23 +28,28 @@
       "damping": 0.9800000190734863,
       "mass": 1.0,
       "inWater": 0,
-      "buoyancy": 0
+      "buoyancy": 0,
+      "freezeRotation": true,
+      "angularDrag": 0.9800000190734863,
+      "inertiaOverride": 0.0
     },
     "CollisionInfo": {
       "collisionFlag": 1,
-      "autoFitScale": 1,
+      "autoFitScale": 0,
       "colliderSize": [
         0.5,
         0.5,
         0.0
       ],
-      "colliderType": "square",
+      "colliderType": "circle",
       "collisionRes": "MoveWhenCollide",
       "collisionTag": "bullet",
+      "bounciness": 0.2980000078678131,
+      "friction": 0.0,
       "ignoreCollisionsWith": [
         "player",
-        "environment",
-        "platform"
+        "platform",
+        "environment"
       ]
     },
     "AudioComponent": {
@@ -60,7 +65,7 @@
           "fadeInDuration": 0.20000000298023224,
           "fadeOutOnStop": 1,
           "fadeOutDuration": 0.5,
-          "isSpatial": 0,
+          "isSpatial": false,
           "minDistance": 5.0,
           "maxDistance": 50.0
         }
