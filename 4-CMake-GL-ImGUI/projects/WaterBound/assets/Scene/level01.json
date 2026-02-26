@@ -237,26 +237,6 @@
       }
     },
     {
-      "name": "gun_rect",
-      "components": {
-        "Transform": {
-          "pos": [-4.0, -2.8652768325805664, 0.999],
-          "rotation": 0.0,
-          "scale": [2.0, 0.5, 0.0]
-        },
-        "Render": {
-          "shape": "square",
-          "hasTex": 0,
-          "hasAnimation": 0
-        },
-        "Weapon": {
-          "ownerName": "player",
-          "pivotOffset": [1.5, 0.0],
-          "flipWithAim": true
-        }
-      }
-    },
-    {
       "prefabid": "f7665aa3-619e-49a1-892a-31fbc8b377a2",
       "name": "platform",
       "layer": 0,
