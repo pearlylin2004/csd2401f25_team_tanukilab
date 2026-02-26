@@ -725,6 +725,8 @@ enum class NodeImplementation {
     MOVE_OBJECT,
     ROTATE_OBJECT,
     SET_ROTATION,
+    SET_ROTATION_RATE_OF_CHANGE,
+    //ROTATE_TO,
     SET_POSITION,
     SET_SCALE,
 	SCALE_PROPORTIONAL,
@@ -742,6 +744,7 @@ enum class NodeImplementation {
     TRIGGER_BULLET_REFILL_EVENT, // whenever bullet is refilled, add this node
     RESTART_LEVEL,
     LOAD_LEVEL,
+	DISABLE_COLLISION,
 
     // DEFAULT
     DEFAULT // nothing happen :)

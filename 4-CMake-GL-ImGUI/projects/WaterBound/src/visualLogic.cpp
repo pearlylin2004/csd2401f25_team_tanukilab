@@ -376,6 +376,23 @@ void VisualLogicSystem::executeActionNode(GameObject* obj, VisualLC* logic, Logi
 			transform->rotation = angle;
 		}
 	}
+	else if(node.imp == NodeImplementation::SET_ROTATION_RATE_OF_CHANGE) {
+		Transform* transform = obj->getComponent<Transform>();
+		if (transform) {
+			float angle = node.parameters.count("angle") ? std::stof(node.parameters["angle"]) : 0.f;
+			float rateOfChange = node.parameters.count("rate") ? std::stof(node.parameters["rate"]) : 0.f;
+			float time = node.parameters.count("time") ? std::stof(node.parameters["time"]) : 0.f;
+			transform->rotation = angle;
+			static float timer = 0.f;
+			static float initialChange = angle;
+			if (timer < time && ((angle > 0 && initialChange > 0) || (angle < 0 && initialChange < 0)))
+			{
+				transform->rotation += initialChange * dt;
+				initialChange += rateOfChange * dt;
+				timer += dt;
+			}
+		}
+	}
 	else if (node.imp == NodeImplementation::SET_POSITION) {
 		Transform* transform = obj->getComponent<Transform>();
 
@@ -648,6 +665,17 @@ void VisualLogicSystem::executeActionNode(GameObject* obj, VisualLC* logic, Logi
 		GUISystem::getInstance().m_pendingLevelLoad = true;
 		GUISystem::getInstance().m_pendingLevelName = levelName;
 	}
+	else if(node.imp == NodeImplementation::DISABLE_COLLISION) {
+		CollisionInfo* collision = obj->getComponent<CollisionInfo>();
+		if (collision) 
+			collision->collisionFlag = false;
+	}
+	/*else if(node.imp == NodeImplementation::ENABLE_COLLISION) {
+		CollisionInfo* collision = obj->getComponent<CollisionInfo>();
+		if (collision) {
+			collision->enabled = true;
+		}
+	}*/
 }
 
 bool VisualLogicSystem::executeConditionNode(GameObject* obj, VisualLC* logic, LogicNode& node, float dt) {
