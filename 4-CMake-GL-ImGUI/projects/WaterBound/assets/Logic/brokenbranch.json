@@ -83,8 +83,8 @@
       "implementation": "Compare Variable",
       "type": 2,
       "position": [
-        360.0953369140625,
-        165.0
+        360.0951843261719,
+        164.99998474121094
       ],
       "hasInput": true,
       "hasOutput": false,
@@ -373,7 +373,7 @@
       "implementation": "Compare Variable",
       "type": 2,
       "position": [
-        198.0,
+        197.9999542236328,
         446.0
       ],
       "hasInput": true,
@@ -391,8 +391,8 @@
       "implementation": "Compare Value",
       "type": 2,
       "position": [
-        610.0,
-        338.0
+        609.9999389648438,
+        338.0000305175781
       ],
       "hasInput": true,
       "hasOutput": false,
@@ -409,8 +409,8 @@
       "implementation": "Rotate Object",
       "type": 1,
       "position": [
-        910.0,
-        384.0
+        909.9999389648438,
+        384.0000305175781
       ],
       "hasInput": true,
       "hasOutput": true,
@@ -425,8 +425,8 @@
       "implementation": "Compare Variable",
       "type": 2,
       "position": [
-        -28.0,
-        278.0
+        -27.999963760375977,
+        277.99993896484375
       ],
       "hasInput": true,
       "hasOutput": false,
@@ -436,92 +436,6 @@
         "comparison": "equal",
         "threshold": "1.000000",
         "variable": "touchGround"
-      }
-    },
-    {
-      "id": 46,
-      "implementation": "Apply Force On Collided",
-      "type": 1,
-      "position": [
-        1080.0,
-        540.0
-      ],
-      "hasInput": true,
-      "hasOutput": true,
-      "hasTrueOutput": false,
-      "hasFalseOutput": false,
-      "parameters": {
-        "forceX": "0",
-        "forceY": "7.000000"
-      }
-    },
-    {
-      "id": 48,
-      "implementation": "Check Timer",
-      "type": 2,
-      "position": [
-        762.0,
-        512.0
-      ],
-      "hasInput": true,
-      "hasOutput": false,
-      "hasTrueOutput": true,
-      "hasFalseOutput": true,
-      "parameters": {
-        "threshold": "0",
-        "timerName": "timer_0"
-      }
-    },
-    {
-      "id": 49,
-      "implementation": "Set Float",
-      "type": 1,
-      "position": [
-        54.0,
-        -386.0
-      ],
-      "hasInput": true,
-      "hasOutput": true,
-      "hasTrueOutput": false,
-      "hasFalseOutput": false,
-      "parameters": {
-        "value": "0.000000",
-        "variable": "touched"
-      }
-    },
-    {
-      "id": 50,
-      "implementation": "Compare Variable",
-      "type": 2,
-      "position": [
-        654.0,
-        208.0
-      ],
-      "hasInput": true,
-      "hasOutput": false,
-      "hasTrueOutput": true,
-      "hasFalseOutput": true,
-      "parameters": {
-        "comparison": "equal",
-        "threshold": "0",
-        "variable": "touched"
-      }
-    },
-    {
-      "id": 51,
-      "implementation": "Modify Float Variable",
-      "type": 1,
-      "position": [
-        -380.0,
-        660.0
-      ],
-      "hasInput": true,
-      "hasOutput": true,
-      "hasTrueOutput": false,
-      "hasFalseOutput": false,
-      "parameters": {
-        "value": "1.000000",
-        "variable": "touched"
       }
     },
     {
@@ -555,23 +469,6 @@
       "hasFalseOutput": false,
       "parameters": {
         "variable": "touchWater"
-      }
-    },
-    {
-      "id": 54,
-      "implementation": "Move Object",
-      "type": 1,
-      "position": [
-        470.0,
-        564.0
-      ],
-      "hasInput": true,
-      "hasOutput": true,
-      "hasTrueOutput": false,
-      "hasFalseOutput": false,
-      "parameters": {
-        "x": "0",
-        "y": "-4.000000"
       }
     }
   ],
@@ -697,51 +594,15 @@
       "inputPin": "In"
     },
     {
-      "fromNodeId": 48,
-      "outputPin": "True",
-      "toNodeId": 46,
-      "inputPin": "In"
-    },
-    {
-      "fromNodeId": 8,
-      "outputPin": "True",
-      "toNodeId": 50,
-      "inputPin": "In"
-    },
-    {
-      "fromNodeId": 50,
-      "outputPin": "True",
-      "toNodeId": 23,
-      "inputPin": "In"
-    },
-    {
-      "fromNodeId": 3,
-      "outputPin": "Out",
-      "toNodeId": 49,
-      "inputPin": "In"
-    },
-    {
-      "fromNodeId": 35,
-      "outputPin": "Out",
-      "toNodeId": 51,
-      "inputPin": "In"
-    },
-    {
       "fromNodeId": 52,
       "outputPin": "Out",
       "toNodeId": 53,
       "inputPin": "In"
     },
     {
-      "fromNodeId": 38,
+      "fromNodeId": 8,
       "outputPin": "True",
-      "toNodeId": 54,
-      "inputPin": "In"
-    },
-    {
-      "fromNodeId": 54,
-      "outputPin": "Out",
-      "toNodeId": 48,
+      "toNodeId": 23,
       "inputPin": "In"
     }
   ]
