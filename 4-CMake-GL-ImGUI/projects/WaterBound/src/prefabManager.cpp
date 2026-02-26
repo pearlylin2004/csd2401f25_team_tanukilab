@@ -875,6 +875,8 @@ void PrefabManager::applyPrefabComponents(GameObject* go, const rapidjson::Value
 		std::string state;
 		sm->state = /*JsonIO::GetString(smj, "state", state) ? parsePlayerState(state) :*/ PlayerState::Idle;
 		sm->facingRight = JsonIO::GetBoolOr(smj, "facingRight", true);
+		sm->fixState = false;
+
 		//sm->stateTime = JsonIO::GetFloatOr(smj, "stateTime", 0.f);
 
 		/* ---- Animation based on state ---- */

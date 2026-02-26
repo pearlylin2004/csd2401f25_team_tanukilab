@@ -661,6 +661,8 @@ void GameObjectManager::loadSceneFromJson(const std::string& filename) {
 				else if (smj["facingRight"].IsInt())   sm->facingRight = (smj["facingRight"].GetInt() != 0);
 			}
 
+			sm->fixState = false;
+
 			/*if (smj.HasMember("stateTime") && smj["stateTime"].IsNumber())
 				sm->stateTime = static_cast<float>(smj["stateTime"].GetDouble());*/
 
