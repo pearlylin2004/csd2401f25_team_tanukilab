@@ -413,3 +413,8 @@ private:
 
 	std::unordered_map<GameObject*, WaterMesh> m_waterMeshes;
 };
+
+class GunSystem {
+public:
+	void update(GameObjectManager& manager);
+};

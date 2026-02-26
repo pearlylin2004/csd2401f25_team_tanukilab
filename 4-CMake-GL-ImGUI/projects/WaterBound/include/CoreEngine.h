@@ -106,4 +106,5 @@ private:
     std::unique_ptr<ParticleSystem> m_particleSystem;
     std::unique_ptr<VisualLogicSystem> m_visualLCSystem;
     std::unique_ptr<WaterSystem> m_waterSystem;
+    std::unique_ptr<GunSystem> m_gunSystem;
 };

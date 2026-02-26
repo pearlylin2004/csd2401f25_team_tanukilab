@@ -132,6 +132,7 @@ void CoreEngine::Init(bool forceWindowed) {
     m_physicsSystem = std::make_unique<PhysicsSystem>();
     m_renderSystem = std::make_unique<RenderSystem>();
     m_waterSystem = std::make_unique<WaterSystem>();
+    m_gunSystem = std::make_unique<GunSystem>();
 #ifdef _DEBUG
     m_uiSystem = std::make_unique<UISystem>();
 #endif
@@ -252,6 +253,7 @@ void CoreEngine::Update(float deltaTime) {
     // Update all systems in order
     m_inputSystem->update(*m_manager, deltaTime, *m_messageBus);
     m_physicsSystem->update(*m_manager, deltaTime, *m_messageBus);
+    m_gunSystem->update(*m_manager);
     m_collisionSystem->update(*m_manager, deltaTime);
     m_logicSystem->update(*m_manager, deltaTime);
     m_tileMapSystem->update(*m_manager);
