@@ -599,9 +599,10 @@ namespace Collision {
         float ny = dy / dist;
 
         float restDistance = 1.0f; //particle radius spacing
-        float stiffness = 6.0f; //pressure strength
-        float viscosity = 0.08f; //smoothing
+        float stiffness = 12.0f; //pressure strength
+        float viscosity = 0.025f; //smoothing
         float correctionPercent = 0.8f; //positional correction
+        float frictionCoeff = 0.02f; //friction
 
         //only interact if close
         float penetration = restDistance - dist;
@@ -635,6 +636,21 @@ namespace Collision {
         phys1->dynamics.position = { trans1->x, trans1->y };
         phys2->dynamics.position = { trans2->x, trans2->y };
 
+        //friction
+        float tangentMag = sqrtf(tangentX * tangentX + tangentY * tangentY);
+        if (tangentMag > 0.0001f){
+            float tx = tangentX / tangentMag;
+            float ty = tangentY / tangentMag;
+            float jt = -(rvx * tx + rvy * ty);
+            jt /= (1.0f / m1 + 1.0f / m2);
+            float maxFriction = pressure * frictionCoeff;
+            jt = std::clamp(jt, -maxFriction, maxFriction);
+
+            phys1->dynamics.velocity.x -= jt * tx / m1;
+            phys1->dynamics.velocity.y -= jt * ty / m1;
+            phys2->dynamics.velocity.x += jt * tx / m2;
+            phys2->dynamics.velocity.y += jt * ty / m2;
+        }
         return true;
     }
 }
