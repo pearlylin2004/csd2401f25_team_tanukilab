@@ -1363,19 +1363,26 @@ void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime, M
 			p->lifeTimer += deltaTime;
 
 			// Deactivate if lifetime exceeded or fell too far
-			if (p->lifeTimer >= p->maxLifetime || p->dynamics.position.y < -20.0f) {
+			/*if (p->lifeTimer >= p->maxLifetime || p->dynamics.position.y < -20.0f) {
 				PhysicsForces::deactivateBullet(obj);
+			}*/
+			if (!EditorManager::isEditingMode()) {
+				if (p->lifeTimer >= p->maxLifetime || p->dynamics.position.y < -20.0f) {
+					PhysicsForces::deactivateBullet(obj);
+				}
 			}
 		}
 		else {
 			//Haardcoded way-- need fix in future
-			if (t->y > -100.0f || t->x > -100.0f) {
-				t->x = -1000.0f;
-				t->y = -1000.0f;
-				p->dynamics.position.x = -1000.0f;
-				p->dynamics.position.y = -1000.0f;
-				p->dynamics.velocity.x = 0.0f;
-				p->dynamics.velocity.y = 0.0f;
+			if (!EditorManager::isEditingMode()) {
+				if (t->y > -100.0f || t->x > -100.0f) {
+					t->x = -1000.0f;
+					t->y = -1000.0f;
+					p->dynamics.position.x = -1000.0f;
+					p->dynamics.position.y = -1000.0f;
+					p->dynamics.velocity.x = 0.0f;
+					p->dynamics.velocity.y = 0.0f;
+				}
 			}
 		}
 	}
@@ -1547,8 +1554,9 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 						//water particle merge logic
 						if (obj1->getComponent<CollisionInfo>()->collisionTag == "bullet" &&
 							obj2->getComponent<CollisionInfo>()->collisionTag == "bullet"){
-							if (Collision::HandleWaterParticleMerge(obj1, obj2))
-								continue; //skip normal collision
+							if (!EditorManager::isEditingMode()) {
+								if (Collision::HandleWaterParticleMerge(obj1, obj2)) continue; //skip normal collision
+							}
 						}
 
 						// Visual logic events (if needed)
