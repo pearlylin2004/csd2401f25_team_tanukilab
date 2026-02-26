@@ -85,7 +85,6 @@
           ]
         },
         "Physics": {
-          "friction": 0.800000011920929,
           "maxFallSpeed": -30.0,
           "groundAccelForce": 20.0,
           "airAccelForce": 8.0,
@@ -99,8 +98,6 @@
         },
         "CollisionInfo": {
           "collisionTag": "player",
-          "bounciness": 0.0,
-          "friction": 0.0,
           "ignoreCollisionsWith": [
             "bullet"
           ]
