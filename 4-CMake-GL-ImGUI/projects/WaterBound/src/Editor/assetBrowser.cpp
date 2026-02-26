@@ -121,6 +121,30 @@ void AssetBrowser::render() {
             ImGui::PopTextWrapPos();
             ImGui::EndGroup();
 
+            // RIGHT CLICK subfolder to rename / delete
+            if (ImGui::BeginPopupContextItem(("subfolderCtx_" + subFolder).c_str())) {
+                if (ImGui::MenuItem("Rename")) {
+                    m_AssetBrowserState.folderToRename =
+                        (std::filesystem::path(m_AssetBrowserState.currentFolder)
+                            / m_AssetBrowserState.currentViewFolder / subFolder).string();
+
+                    std::strncpy(m_AssetBrowserState.renameFolderBuffer, subFolder.c_str(),
+                        sizeof(m_AssetBrowserState.renameFolderBuffer));
+
+                    m_AssetBrowserState.showRenameSubfolderPopup = true;
+                }
+
+                if (ImGui::MenuItem("Delete")) {
+                    m_AssetBrowserState.folderToDelete =
+                        (std::filesystem::path(m_AssetBrowserState.currentFolder)
+                            / m_AssetBrowserState.currentViewFolder / subFolder).string();
+
+                    m_AssetBrowserState.showDeleteSubfolderPopup = true;
+                }
+
+                ImGui::EndPopup();
+            }
+
             // ---- Drop assets INTO this subfolder button ----
             if (ImGui::BeginDragDropTarget()) {
                 if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("ASSET")) {
@@ -419,6 +443,8 @@ void AssetBrowser::render() {
     assetRenamePopup();
     assetReplacePopup();
     createSubfolderPopup();
+    renameSubfolderPopup();
+    deleteSubfolderPopup();
     /* -------- END -------- */
 }
 
@@ -849,4 +875,114 @@ void AssetBrowser::createSubfolderPopup() {
         ImGui::EndPopup();
     }
 }
+
+void AssetBrowser::renameSubfolderPopup() {
+    if (m_AssetBrowserState.showRenameSubfolderPopup) {
+        ImGui::OpenPopup("Rename Folder");
+        m_AssetBrowserState.showRenameSubfolderPopup = false;
+    }
+
+    ImGui::SetNextWindowPos(ImGui::GetMainViewport()->GetCenter(), ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
+    if (ImGui::BeginPopupModal("Rename Folder", NULL, ImGuiWindowFlags_AlwaysAutoResize)) {
+        ImGui::Text("Enter new folder name:");
+        ImGui::InputText("##renameFolderInput", m_AssetBrowserState.renameFolderBuffer,
+            sizeof(m_AssetBrowserState.renameFolderBuffer));
+
+        if (ImGui::Button("Rename") || InputHandler::isKeyTriggered(GLFW_KEY_ENTER)) {
+            std::string newName = m_AssetBrowserState.renameFolderBuffer;
+            if (!newName.empty() && !m_AssetBrowserState.folderToRename.empty()) {
+                std::filesystem::path oldPath(m_AssetBrowserState.folderToRename);
+                std::filesystem::path newPath = oldPath.parent_path() / newName;
+
+                if (!std::filesystem::exists(newPath)) {
+                    try {
+                        // rename in runtime assets
+                        std::filesystem::rename(oldPath, newPath);
+
+                        // mirror rename in source project folder
+                        std::string relative;
+                        size_t pos = m_AssetBrowserState.folderToRename.find("assets/");
+                        if (pos != std::string::npos)
+                            relative = m_AssetBrowserState.folderToRename.substr(pos + strlen("assets/"));
+                        if (!relative.empty()) {
+                            std::filesystem::path projectOld = std::filesystem::path(std::string(SOURCE_DIR_R)) / relative;
+                            std::filesystem::path projectNew = projectOld.parent_path() / newName;
+                            if (std::filesystem::exists(projectOld))
+                                std::filesystem::rename(projectOld, projectNew);
+                        }
+
+                        EditorManager::assetChanged();
+                        DebugLog::addMessage("Renamed folder: " + oldPath.string() + " -> " + newPath.string());
+                    }
+                    catch (const std::filesystem::filesystem_error& e) {
+                        DebugLog::addMessage("Failed to rename folder: " + std::string(e.what()));
+                    }
+                }
+                else {
+                    DebugLog::addMessage("Folder with that name already exists.");
+                }
+            }
+            m_AssetBrowserState.folderToRename.clear();
+            ImGui::CloseCurrentPopup();
+        }
+
+        ImGui::SameLine();
+        if (ImGui::Button("Cancel")) {
+            m_AssetBrowserState.folderToRename.clear();
+            ImGui::CloseCurrentPopup();
+        }
+        ImGui::EndPopup();
+    }
+}
+
+void AssetBrowser::deleteSubfolderPopup() {
+    if (m_AssetBrowserState.showDeleteSubfolderPopup) {
+        ImGui::OpenPopup("Confirm Delete Folder");
+        m_AssetBrowserState.showDeleteSubfolderPopup = false;
+    }
+
+    ImGui::SetNextWindowPos(ImGui::GetMainViewport()->GetCenter(), ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
+    if (ImGui::BeginPopupModal("Confirm Delete Folder", NULL, ImGuiWindowFlags_AlwaysAutoResize)) {
+        ImGui::Text("Delete this folder and ALL its contents?");
+        ImGui::TextColored(ImVec4(1, 0.4f, 0.4f, 1), "%s", m_AssetBrowserState.folderToDelete.c_str());
+        ImGui::Separator();
+
+        if (ImGui::Button("Delete") || InputHandler::isKeyTriggered(GLFW_KEY_ENTER)) {
+            if (!m_AssetBrowserState.folderToDelete.empty() &&
+                std::filesystem::exists(m_AssetBrowserState.folderToDelete)) {
+                try {
+                    // delete from runtime assets
+                    std::filesystem::remove_all(m_AssetBrowserState.folderToDelete);
+
+                    // mirror delete in source project folder
+                    std::string relative;
+                    size_t pos = m_AssetBrowserState.folderToDelete.find("assets/");
+                    if (pos != std::string::npos)
+                        relative = m_AssetBrowserState.folderToDelete.substr(pos + strlen("assets/"));
+                    if (!relative.empty()) {
+                        std::filesystem::path projectPath = std::filesystem::path(std::string(SOURCE_DIR_R)) / relative;
+                        if (std::filesystem::exists(projectPath))
+                            std::filesystem::remove_all(projectPath);
+                    }
+
+                    EditorManager::assetChanged();
+                    DebugLog::addMessage("Deleted folder: " + m_AssetBrowserState.folderToDelete);
+                }
+                catch (const std::filesystem::filesystem_error& e) {
+                    DebugLog::addMessage("Failed to delete folder: " + std::string(e.what()));
+                }
+            }
+            m_AssetBrowserState.folderToDelete.clear();
+            ImGui::CloseCurrentPopup();
+        }
+
+        ImGui::SameLine();
+        if (ImGui::Button("Cancel")) {
+            m_AssetBrowserState.folderToDelete.clear();
+            ImGui::CloseCurrentPopup();
+        }
+        ImGui::EndPopup();
+    }
+}
+
 #endif

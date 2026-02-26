@@ -95,9 +95,13 @@ namespace Editor {
 
 		// creating subfolder
 		bool showCreateSubfolderPopup = false;
+		bool showRenameSubfolderPopup = false;
+		bool showDeleteSubfolderPopup = false;
 		char newSubfolderNameBuffer[128] = {};
+		char renameFolderBuffer[128] = {};
 		std::vector<std::string> currentViewSubFolders; // subfolders inside currentViewFolder
-		//std::string currentViewSubFolder;
+		std::string folderToRename;
+		std::string folderToDelete;
 
 		// for dropping of files from file explorer
 		std::string hoverFolder;
