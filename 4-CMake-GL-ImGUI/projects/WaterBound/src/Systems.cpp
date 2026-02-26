@@ -1059,6 +1059,7 @@ void FontSystem::RenderText(GLuint& s, std::string text, float x, float y, float
 //		}
 //	}
 //}
+
 void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime, MessageBus& messageBus) {
 	auto start = std::chrono::high_resolution_clock::now();
 
