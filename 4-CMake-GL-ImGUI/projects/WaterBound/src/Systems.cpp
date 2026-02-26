@@ -1355,6 +1355,7 @@ void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime, M
 				// Gravity delay expired - normal physics with gravity
 				DynamicsSystem::Integrate(p->dynamics, deltaTime, p->gravity, false);
 
+				/*for water to move*/
 				//flow force
 				Vector3D flowForce = { 10.0f, 0.0f, 0.0f };
 				//apply force
