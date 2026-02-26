@@ -582,32 +582,34 @@ namespace Collision {
 
         if (!phys1->alive || !phys2->alive) return false;
 
-        //masses and coefficient of restitution
-        float m1 = phys1->dynamics.mass;
-        float m2 = phys2->dynamics.mass;
-
         //vector from obj1 to obj2
         float dx = trans2->x - trans1->x;
         float dy = trans2->y - trans1->y;
-        float distSq = sqrtf(dx * dx + dy * dy);
-        if (distSq < 0.0001f) return false; //avoid division by zero
+        float distSq = dx * dx + dy * dy;
+        if (distSq < 1e-8f) return false; //avoid division by zero
 
         float dist = sqrtf(distSq);
+
+        //only interact if close
+        float restDistance = 1.0f; //particle radius
+        float penetration = restDistance - dist;
+        if (penetration <= 0.0f) return false;
 
         //normalized collision direction
         float nx = dx / dist;
         float ny = dy / dist;
 
+        //masses and coefficient of restitution
+        float m1 = phys1->dynamics.mass;
+        float m2 = phys2->dynamics.mass;
+
+        //settings
         float restDistance = 1.0f; //particle radius spacing
         float stiffness = 12.0f; //pressure strength
         float viscosity = 0.025f; //smoothing
         float correctionPercent = 0.8f; //positional correction
         float frictionCoeff = 0.02f; //friction
-
-        //only interact if close
-        float penetration = restDistance - dist;
-        if (penetration <= 0.0f)
-            return false;
+        float damping = 0.02f; //damping
 
         //soft pressure 
         float pressure = stiffness * penetration;
@@ -616,41 +618,24 @@ namespace Collision {
         phys2->dynamics.velocity.x += pressure * nx / m2;
         phys2->dynamics.velocity.y += pressure * ny / m2;
 
-        //viscosity
-        float rvx = phys2->dynamics.velocity.x - phys1->dynamics.velocity.x;
-        float rvy = phys2->dynamics.velocity.y - phys1->dynamics.velocity.y;
-        float velAlongNormal = rvx * nx + rvy * ny;
-        float tangentX = rvx - velAlongNormal * nx;
-        float tangentY = rvy - velAlongNormal * ny;
-        phys1->dynamics.velocity.x += viscosity * tangentX;
-        phys1->dynamics.velocity.y += viscosity * tangentY;
-        phys2->dynamics.velocity.x -= viscosity * tangentX;
-        phys2->dynamics.velocity.y -= viscosity * tangentY;
+        //simple damping instead of full viscosity or friction
+        phys1->dynamics.velocity.x *= (1.0f - damping);
+        phys1->dynamics.velocity.y *= (1.0f - damping);
+        phys2->dynamics.velocity.x *= (1.0f - damping);
+        phys2->dynamics.velocity.y *= (1.0f - damping);
 
-		//soft position correction to prevent sinking
+        //soft positional correction
+        float correctionPercent = 0.8f;
         float correction = penetration * correctionPercent * 0.5f;
         trans1->x -= correction * nx;
         trans1->y -= correction * ny;
         trans2->x += correction * nx;
         trans2->y += correction * ny;
+
+        //update physics positions
         phys1->dynamics.position = { trans1->x, trans1->y };
         phys2->dynamics.position = { trans2->x, trans2->y };
 
-        //friction
-        float tangentMag = sqrtf(tangentX * tangentX + tangentY * tangentY);
-        if (tangentMag > 0.0001f){
-            float tx = tangentX / tangentMag;
-            float ty = tangentY / tangentMag;
-            float jt = -(rvx * tx + rvy * ty);
-            jt /= (1.0f / m1 + 1.0f / m2);
-            float maxFriction = pressure * frictionCoeff;
-            jt = std::clamp(jt, -maxFriction, maxFriction);
-
-            phys1->dynamics.velocity.x -= jt * tx / m1;
-            phys1->dynamics.velocity.y -= jt * ty / m1;
-            phys2->dynamics.velocity.x += jt * tx / m2;
-            phys2->dynamics.velocity.y += jt * ty / m2;
-        }
         return true;
     }
 }

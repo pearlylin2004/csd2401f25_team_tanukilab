@@ -1688,13 +1688,6 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 								p1->dynamics.position.y = t1->y;
 
 								if (c1->collisionTag == "bullet") { // water
-									// stop vertical motion
-									//p1->dynamics.velocity.y = 0.f;
-
-									// optional sideways spread to simulate flow
-									//float spread = 20.f; // tweak this for faster/slower spread
-									//p1->dynamics.velocity.x += (rand() % 2 == 0 ? spread : -spread);
-
 									float spread = 10.f; // horizontal spread for flow
 									float flowSpeed = 20.f; // constant lateral push
 									float direction = (rand() % 2 == 0 ? 1.f : -1.f);
