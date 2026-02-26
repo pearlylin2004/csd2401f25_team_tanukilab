@@ -78,7 +78,12 @@ void AssetBrowser::render() {
 
     if (!m_AssetBrowserState.currentViewFolder.empty()) {
         if (ImGui::Button("< Back")) {
-            m_AssetBrowserState.currentViewFolder.clear();
+            std::filesystem::path current(m_AssetBrowserState.currentViewFolder);
+            std::string parent = current.parent_path().string();
+
+            m_AssetBrowserState.currentViewFolder = parent;
+
+            EditorManager::assetChanged();
         }
 
         // if inside a folder and drag and drop a file, add it into the folder
@@ -87,6 +92,82 @@ void AssetBrowser::render() {
         ImGui::SameLine();
         ImGui::Text("Folder: %s", m_AssetBrowserState.currentViewFolder.c_str());
         ImGui::Separator();
+
+        /*if (!m_AssetBrowserState.currentViewSubFolder.empty()) {
+            ImGui::SameLine();
+            ImGui::Text("/ %s", m_AssetBrowserState.currentViewSubFolder.c_str());
+        }*/
+
+        ImGui::Separator();
+
+        for (const std::string& subFolder : m_AssetBrowserState.currentViewSubFolders) {
+            ImGui::PushID(("subfolder_" + subFolder).c_str());
+            ImGui::BeginGroup();
+            //ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(100, 40));
+            //ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.25f, 0.45f, 0.65f, 1.0f)); // blue tint to distinguish
+
+            // subfolder button
+            if (ImGui::Button(subFolder.c_str(), ImVec2(m_AssetBrowserState.iconSize, m_AssetBrowserState.iconSize))) {
+                m_AssetBrowserState.currentViewFolder = m_AssetBrowserState.currentViewFolder + "/" + subFolder;
+
+                EditorManager::assetChanged();
+            }
+
+            /*ImGui::PopStyleColor();
+            ImGui::PopStyleVar();*/
+
+            ImGui::PushTextWrapPos(ImGui::GetCursorPosX() + m_AssetBrowserState.iconSize);
+            ImGui::Text("%s", subFolder.c_str());
+            ImGui::PopTextWrapPos();
+            ImGui::EndGroup();
+
+            // ---- Drop assets INTO this subfolder button ----
+            if (ImGui::BeginDragDropTarget()) {
+                if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("ASSET")) {
+                    std::string srcPath(static_cast<const char*>(payload->Data));
+                    std::filesystem::path src(srcPath);
+                    std::filesystem::path destDir =
+                        std::filesystem::path(m_AssetBrowserState.currentFolder)
+                        / m_AssetBrowserState.currentViewFolder
+                        / subFolder;
+                    std::filesystem::path dest = destDir / src.filename();
+
+                    if (!std::filesystem::exists(dest)) {
+                        try {
+                            std::filesystem::rename(src, dest);  // moves the file
+
+                            // Also mirror move in SOURCE_DIR_R (project folder) if needed
+                            std::string relative;
+                            size_t pos = srcPath.find("assets/");
+                            if (pos != std::string::npos) relative = srcPath.substr(pos + strlen("assets/"));
+                            if (!relative.empty()) {
+                                std::filesystem::path projectSrc = std::filesystem::path(std::string(SOURCE_DIR_R)) / relative;
+                                std::filesystem::path projectDest = std::filesystem::path(std::string(SOURCE_DIR_R))
+                                    / m_AssetBrowserState.currentViewFolder / subFolder / src.filename();
+
+                                if (std::filesystem::exists(projectSrc))
+                                    std::filesystem::rename(projectSrc, projectDest);
+                            }
+
+                            EditorManager::assetChanged();
+                            DebugLog::addMessage("Moved " + src.filename().string() + " into subfolder: " + subFolder);
+                        }
+                        catch (const std::filesystem::filesystem_error& e) {
+                            DebugLog::addMessage("Move failed: " + std::string(e.what()));
+                        }
+                    }
+                }
+                ImGui::EndDragDropTarget();
+            }
+
+            float windowVisibleX2 = ImGui::GetWindowPos().x + ImGui::GetWindowContentRegionMax().x;
+
+            float lastButtonX2 = ImGui::GetItemRectMax().x;
+            float nextButtonX2 = lastButtonX2 + m_AssetBrowserState.iconSize;
+            if (nextButtonX2 < windowVisibleX2) ImGui::SameLine();
+
+            ImGui::PopID();
+        }
     }
 
     float windowVisibleX2 = ImGui::GetWindowPos().x + ImGui::GetWindowContentRegionMax().x;
@@ -102,6 +183,8 @@ void AssetBrowser::render() {
             // folder button
             if (ImGui::Button(folder.c_str(), ImVec2(m_AssetBrowserState.iconSize, m_AssetBrowserState.iconSize))) {
                 m_AssetBrowserState.currentViewFolder = folder;
+
+                EditorManager::assetChanged(); // refresh subfolder
             }
 
             // see if mouse is on which folder (for dropping of files from file explorer)
@@ -127,19 +210,19 @@ void AssetBrowser::render() {
 
     int index{};
     for (const Editor::Asset& asset : m_assets) {
+        // New fixed code:
+        if (m_AssetBrowserState.currentViewFolder.empty()) continue;
+
+        std::filesystem::path expectedDir =
+            std::filesystem::path(m_AssetBrowserState.currentFolder) / m_AssetBrowserState.currentViewFolder;
+
+        // Misc special case: files sitting directly in assets root
         std::string assetFolderName = std::filesystem::path(asset.folder).filename().string();
-
-        if (m_AssetBrowserState.currentFolder.empty()) {
-            // if at root (Asset folder), show only folders
-            //if (asset.folder != m_AssetBrowserState.currentFolder) continue;
-            continue;
+        if (m_AssetBrowserState.currentViewFolder == "Misc" && assetFolderName == "assets") {
+            // show it
         }
-        else {
-            // if file is directly inside Assets, put them in Misc
-            if (m_AssetBrowserState.currentViewFolder == "Misc" && assetFolderName == "assets") assetFolderName = "Misc";
-
-            // if in subfolder, show assets in that folder only
-            if (assetFolderName != m_AssetBrowserState.currentViewFolder) continue;
+        else if (std::filesystem::path(asset.folder) != expectedDir) {
+            continue;
         }
 
         std::string fullPath = asset.folder + "/" + asset.name;
@@ -336,6 +419,19 @@ void AssetBrowser::render() {
         ImGui::PopID();
     }
 
+    if (!m_AssetBrowserState.currentViewFolder.empty()) {
+        // Only trigger context menu on empty space (not on an item)
+        if (ImGui::BeginPopupContextWindow("##EmptySpaceContext",
+            ImGuiPopupFlags_MouseButtonRight | ImGuiPopupFlags_NoOpenOverItems)) {
+            if (ImGui::MenuItem("Add Folder")) {
+                m_AssetBrowserState.newSubfolderNameBuffer[0] = '\0';
+                m_AssetBrowserState.showCreateSubfolderPopup = true;
+            }
+
+            ImGui::EndPopup();
+        }
+    }
+
 
     ImGui::End();
 
@@ -343,6 +439,7 @@ void AssetBrowser::render() {
     assetDeletePopup();
     assetRenamePopup();
     assetReplacePopup();
+    createSubfolderPopup();
     /* -------- END -------- */
 }
 
@@ -386,6 +483,22 @@ void AssetBrowser::loadAssetsFromDirectory() {
                 "\n Asset Path: " << asset.path <<
                 "\n Asset Folder: " << asset.folder << std::endl;*/
             m_assets.push_back(asset);
+        }
+    }
+
+    // populate subfolders for the currently viewed folder
+    m_AssetBrowserState.currentViewSubFolders.clear();
+    if (!m_AssetBrowserState.currentViewFolder.empty()) {
+        std::filesystem::path viewedPath =
+            std::filesystem::path(m_AssetBrowserState.currentFolder) / m_AssetBrowserState.currentViewFolder;
+
+        if (std::filesystem::exists(viewedPath) && std::filesystem::is_directory(viewedPath)) {
+            for (const auto& entry : std::filesystem::directory_iterator(viewedPath)) {
+                if (entry.is_directory()) {
+                    m_AssetBrowserState.currentViewSubFolders.push_back(
+                        entry.path().filename().string());
+                }
+            }
         }
     }
 
@@ -700,6 +813,57 @@ void AssetBrowser::assetReplacePopup() {
         ImGui::SameLine();
         if (ImGui::Button("Cancel")) {
             m_AssetBrowserState.fullPathToReplace.clear();
+            ImGui::CloseCurrentPopup();
+        }
+
+        ImGui::EndPopup();
+    }
+}
+
+void AssetBrowser::createSubfolderPopup() {
+    if (m_AssetBrowserState.showCreateSubfolderPopup) {
+        ImGui::OpenPopup("Add Folder");
+        m_AssetBrowserState.showCreateSubfolderPopup = false;
+    }
+
+    ImVec2 center = ImGui::GetMainViewport()->GetCenter();
+    ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
+
+    if (ImGui::BeginPopupModal("Add Folder", NULL, ImGuiWindowFlags_AlwaysAutoResize)) {
+        ImGui::Text("Enter folder name:");
+        ImGui::InputText("##folderName", m_AssetBrowserState.newSubfolderNameBuffer,
+            sizeof(m_AssetBrowserState.newSubfolderNameBuffer));
+
+        if (ImGui::Button("Create") || InputHandler::isKeyTriggered(GLFW_KEY_ENTER)) {
+            std::string folderName = m_AssetBrowserState.newSubfolderNameBuffer;
+            if (!folderName.empty()) {
+                // Create in runtime assets folder
+                std::filesystem::path newDir =
+                    std::filesystem::path(m_AssetBrowserState.currentFolder)
+                    / m_AssetBrowserState.currentViewFolder
+                    / folderName;
+
+                // Create in project source folder too
+                std::filesystem::path newDirSource =
+                    std::filesystem::path(std::string(SOURCE_DIR_R))
+                    / m_AssetBrowserState.currentViewFolder
+                    / folderName;
+
+                try {
+                    std::filesystem::create_directories(newDir);
+                    std::filesystem::create_directories(newDirSource);
+                    EditorManager::assetChanged();
+                    DebugLog::addMessage("Created folder: " + newDir.string());
+                }
+                catch (const std::filesystem::filesystem_error& e) {
+                    DebugLog::addMessage("Failed to create folder: " + std::string(e.what()));
+                }
+            }
+            ImGui::CloseCurrentPopup();
+        }
+
+        ImGui::SameLine();
+        if (ImGui::Button("Cancel")) {
             ImGui::CloseCurrentPopup();
         }
 

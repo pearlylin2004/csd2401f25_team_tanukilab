@@ -77,6 +77,7 @@ private:
 	void assetDeletePopup();
 	void assetRenamePopup();
 	void assetReplacePopup();
+	void createSubfolderPopup();
 
 	Editor::AssetBrowserState& m_AssetBrowserState;
 	Editor::ObjSelectionState& m_objSelectionState;

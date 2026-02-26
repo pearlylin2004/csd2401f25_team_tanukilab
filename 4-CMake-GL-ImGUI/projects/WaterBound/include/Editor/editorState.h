@@ -93,6 +93,12 @@ namespace Editor {
 		std::vector<std::string> subFolders;
 		std::vector<PrefabUsageInfo> prefabUsageInfo; // for tracking prefab usage info in delete popup
 
+		// creating subfolder
+		bool showCreateSubfolderPopup = false;
+		char newSubfolderNameBuffer[128] = {};
+		std::vector<std::string> currentViewSubFolders; // subfolders inside currentViewFolder
+		//std::string currentViewSubFolder;
+
 		// for dropping of files from file explorer
 		std::string hoverFolder;
 
