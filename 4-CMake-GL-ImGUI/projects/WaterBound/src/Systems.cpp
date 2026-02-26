@@ -1384,6 +1384,49 @@ void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime, M
 	g_SystemTimers.push_back({ "Physics", ms });
 }
 
+void GunSystem::update(GameObjectManager& manager)
+{
+	std::vector<GameObject*> gameObjects;
+	manager.getAllGameObjects(gameObjects);
+
+	Vector2D mouseWorldPos = InputHandler::getWorldMousePosition();
+
+	for (GameObject* obj : gameObjects)
+	{
+		if (!obj->hasComponent<Weapon>() || !obj->hasComponent<Transform>())
+			continue;
+
+		Weapon* gun = obj->getComponent<Weapon>();
+		Transform* gunTransform = obj->getComponent<Transform>();
+
+		GameObject* owner = manager.getGameObject(gun->ownerName);
+		if (!owner || !owner->hasComponent<Transform>())
+			continue;
+
+		Transform* ownerTransform = owner->getComponent<Transform>();
+
+		float dx = mouseWorldPos.x - ownerTransform->x;
+		float dy = mouseWorldPos.y - ownerTransform->y;
+		float angleRad = std::atan2(dy, dx);
+		float angleDeg = glm::degrees(angleRad);
+
+		gun->currentAngleDeg = angleDeg;
+
+		float cosA = std::cos(angleRad);
+		float sinA = std::sin(angleRad);
+
+		gunTransform->x = ownerTransform->x + (gun->pivotOffset.x * cosA - gun->pivotOffset.y * sinA);
+		gunTransform->y = ownerTransform->y + (gun->pivotOffset.x * sinA + gun->pivotOffset.y * cosA);
+		gunTransform->z = ownerTransform->z + 0.001f; // render in front of player
+
+		// Rotate to mouse
+		gunTransform->rotation = angleDeg;
+
+		if (gun->flipWithAim)
+			gunTransform->flipX = (dx < 0.f);
+	}
+}
+
 
 //helper function for collision detection
 static uint64_t MakePairKey(GameObject* a, GameObject* b)

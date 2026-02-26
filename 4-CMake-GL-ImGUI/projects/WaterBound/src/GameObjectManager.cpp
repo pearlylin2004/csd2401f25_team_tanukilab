@@ -1052,6 +1052,28 @@ void GameObjectManager::loadSceneFromJson(const std::string& filename) {
 			}*/
 
 		}
+		// ---- Weapon ----
+		if (comps.HasMember("Weapon") && comps["Weapon"].IsObject()) {
+			const auto& jg = comps["Weapon"];
+
+			auto* gun = go->getComponent<Weapon>();
+			if (!gun) gun = go->addComponent<Weapon>();
+
+			if (jg.HasMember("ownerName") && jg["ownerName"].IsString())
+				gun->ownerName = jg["ownerName"].GetString();
+
+			if (jg.HasMember("pivotOffset") && jg["pivotOffset"].IsArray() && jg["pivotOffset"].Size() == 2) {
+				gun->pivotOffset.x = jg["pivotOffset"][0].GetFloat();
+				gun->pivotOffset.y = jg["pivotOffset"][1].GetFloat();
+			}
+
+			if (jg.HasMember("flipWithAim")) {
+				gun->flipWithAim = jg["flipWithAim"].IsBool()
+					? jg["flipWithAim"].GetBool()
+					: (jg["flipWithAim"].GetInt() != 0);
+			}
+		}
+
 	}
 
 	//create bullet pool
@@ -1794,9 +1816,27 @@ doc.AddMember("layers", layersArr, a);
 			}
 		}
 
+		// ---- Weapon ----
+		if (auto* gun = obj->getComponent<Weapon>()) {
+			rapidjson::Value jg(rapidjson::kObjectType);
+
+			jg.AddMember("ownerName",
+				rapidjson::Value(gun->ownerName.c_str(), a), a);
+
+			rapidjson::Value pivotArr(rapidjson::kArrayType);
+			pivotArr.PushBack(gun->pivotOffset.x, a);
+			pivotArr.PushBack(gun->pivotOffset.y, a);
+			jg.AddMember("pivotOffset", pivotArr, a);
+
+			jg.AddMember("flipWithAim",
+				rapidjson::Value(gun->flipWithAim ? 1 : 0), a);
+
+			comps.AddMember("Weapon", jg, a);
+		}
+
 		if (!comps.ObjectEmpty()) jObj.AddMember("components", comps, a);
 		objects.PushBack(jObj, a);
-	}
+		}
 
 	// attach array
 	doc.AddMember("objects", objects, a);

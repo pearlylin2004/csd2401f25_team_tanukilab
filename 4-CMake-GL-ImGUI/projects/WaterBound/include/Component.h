@@ -843,3 +843,19 @@ public:
     bool useTexture = false;          
     GLuint waterTexture = 0;          
 };
+
+struct Weapon : public Component {
+public:
+    Weapon() = default;
+
+    std::unique_ptr<Component> clone() const override {
+        return std::make_unique<Weapon>(*this);
+    }
+    std::string ownerName = "player";
+
+    Vector2D pivotOffset{ 1.5f, 0.f };
+
+    bool flipWithAim = true;
+
+    float currentAngleDeg = 0.f;
+};
