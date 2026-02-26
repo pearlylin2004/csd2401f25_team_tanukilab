@@ -1630,7 +1630,7 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 								p2->dynamics.velocity.y = (p2->dynamics.velocity.y - 2.0f * dot2 * (-info.normal.y)) * combined;
 							}
 							if (c1->material.bounciness > 0.0f || c2->material.bounciness > 0.0f) {
-								std::cout << "CASE1 bounce: " << obj1->getObjectName() << " vs " << obj2->getObjectName() << std::endl;
+								//std::cout << "CASE1 bounce: " << obj1->getObjectName() << " vs " << obj2->getObjectName() << std::endl;
 								ApplyBounce(p1, c1, info.normal, false);
 								ApplyBounce(p2, c2, { -info.normal.x, -info.normal.y }, false);
 							}
@@ -1638,19 +1638,46 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 								// Original stop behavior
 								if (info.normal.y != 0) {
 									if (info.normal.y > 0) {
+										// obj1 landed on top of obj2.
+										// If obj2 is a floating platform in water, inject a
+										// downward velocity impulse into it so it visibly dips
+										// before the buoyancy system floats it back up.
+										if (c2->collisionTag == "floatingObject" &&
+											p1->velY < -1.0f)
+										{
+											float impactFraction = 0.7f; // tune: higher = deeper dip
+											float mass1 = p1->dynamics.mass;
+											float mass2 = p2->dynamics.mass;
+											float massRatio = glm::clamp(mass1 / mass2, 0.1f, 3.0f);
+											p2->velY += p1->velY * impactFraction * massRatio;
+											p2->velY = glm::max(p2->velY, -15.0f);
+											p2->dynamics.velocity.y = p2->velY;
+										}
 										p1->dynamics.velocity.y = 0.f;
 										p1->velY = 0.f;
 										p1->onGround = true;
 
-										p1->coyoteAvailable = true;   // add this
+										p1->coyoteAvailable = true;
 										p1->coyoteTimer = p1->coyoteTime;
 									}
 									else {
+										// obj2 landed on top of obj1 — mirror logic
+										if (c1->collisionTag == "floatingObject" &&
+											p2->velY < -1.0f)
+										{
+											float impactFraction = 0.35f;
+											float mass2val = p2->dynamics.mass;
+											float mass1val = p1->dynamics.mass;
+											float massRatio = glm::clamp(mass2val / mass1val, 0.1f, 3.0f);
+											p1->velY += p2->velY * impactFraction * massRatio;
+											p1->velY = glm::max(p1->velY, -15.0f);
+											p1->dynamics.velocity.y = p1->velY;
+										}
 										p2->dynamics.velocity.y = 0.f;
 										p2->velY = 0.f;
 										p2->onGround = true;
 
-										p2->coyoteAvailable = true;   // add this
+										p2->coyoteAvailable = true;
 										p2->coyoteTimer = p2->coyoteTime;
 									}
 								}
@@ -1740,7 +1767,7 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 
 							if (c1->material.bounciness > 0.0f) {
 								//float b = std::min(p1->bounciness, 0.05f); //tiny bounce
-								std::cout << "CASE2 bounce: " << obj1->getObjectName() << " vs " << obj2->getObjectName() << std::endl;
+								//std::cout << "CASE2 bounce: " << obj1->getObjectName() << " vs " << obj2->getObjectName() << std::endl;
 								ApplyBounce(p1, c1, info.normal, true);
 							}
 							else {
@@ -1824,7 +1851,7 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 								p2->dynamics.velocity.y = (p2->dynamics.velocity.y - 2.0f * dot * n.y) * combinedBounciness;
 							}
 							if (c2->material.bounciness > 0.0f) {
-								std::cout << "CASE3 bounce: " << obj1->getObjectName() << " vs " << obj2->getObjectName() << std::endl;
+								//std::cout << "CASE3 bounce: " << obj1->getObjectName() << " vs " << obj2->getObjectName() << std::endl;
 								ApplyBounce(p2, c2, { -info.normal.x, -info.normal.y }, true);
 							}
 							else {
@@ -1837,7 +1864,7 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 									p2->dynamics.velocity.y = 0.f;
 									if (info.normal.y < 0) {
 										p2->onGround = true;
-										p2->coyoteAvailable = true;   // add this
+										p2->coyoteAvailable = true;
 										p2->coyoteTimer = p2->coyoteTime;
 									}
 								}
@@ -1924,7 +1951,7 @@ void CollisionSystem::HandleTilemapCollisions(const std::unordered_map<int, Coll
 								p->dynamics.velocity.y = 0.0f;
 								if (info.normal.y > 0) {
 									p->onGround = true;
-									p->coyoteAvailable = true;   // add this
+									p->coyoteAvailable = true;
 									p->coyoteTimer = p->coyoteTime;
 								}
 							}

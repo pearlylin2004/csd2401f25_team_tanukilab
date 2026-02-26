@@ -294,6 +294,8 @@ namespace JsonIO {
         if (str == "Move Object") return NodeImplementation::MOVE_OBJECT;
         if (str == "Rotate Object") return NodeImplementation::ROTATE_OBJECT;
         if (str == "Set Rotation") return NodeImplementation::SET_ROTATION;
+		if (str == "Set Rotation Rate of Change") return NodeImplementation::SET_ROTATION_RATE_OF_CHANGE;
+		//if (str == "Rotate To") return NodeImplementation::ROTATE_TO;
         if (str == "Set Position") return NodeImplementation::SET_POSITION;
         if (str == "Set Scale") return NodeImplementation::SET_SCALE;
         if (str == "Scale Proportional") return NodeImplementation::SCALE_PROPORTIONAL;
@@ -311,6 +313,7 @@ namespace JsonIO {
 		if (str == "Trigger Bullet Refill Event") return NodeImplementation::TRIGGER_BULLET_REFILL_EVENT;
         if (str == "Restart Level") return NodeImplementation::RESTART_LEVEL;
         if (str == "Load Level") return NodeImplementation::LOAD_LEVEL;
+        if (str == "Disable Collision") return NodeImplementation::DISABLE_COLLISION;
 
 		if (str == "Check Key Held") return NodeImplementation::CHECK_KEY_HELD;
 		if (str == "Compare Value") return NodeImplementation::COMPARE_VALUE;
@@ -339,7 +342,9 @@ namespace JsonIO {
             case NodeImplementation::PRINT_MESSAGE: return "Print Message";
             case NodeImplementation::MOVE_OBJECT: return "Move Object";
 		    case NodeImplementation::ROTATE_OBJECT: return "Rotate Object";
+			case NodeImplementation::SET_ROTATION_RATE_OF_CHANGE: return "Set Rotation Rate of Change";
 			case NodeImplementation::SET_ROTATION: return "Set Rotation";
+			//case NodeImplementation::ROTATE_TO: return "Rotate To";
             case NodeImplementation::SET_POSITION: return "Set Position";
             case NodeImplementation::SET_SCALE: return "Set Scale";
             case NodeImplementation::SCALE_PROPORTIONAL: return "Scale Proportional";
@@ -357,6 +362,7 @@ namespace JsonIO {
 			case NodeImplementation::TRIGGER_BULLET_REFILL_EVENT: return "Trigger Bullet Refill Event";
 			case NodeImplementation::RESTART_LEVEL: return "Restart Level";
 			case NodeImplementation::LOAD_LEVEL: return "Load Level";
+			case NodeImplementation::DISABLE_COLLISION: return "Disable Collision";
 
             case NodeImplementation::CHECK_KEY_HELD: return "Check Key Held";
             case NodeImplementation::COMPARE_VALUE: return "Compare Value";
@@ -1579,6 +1585,15 @@ namespace JsonIO {
         merge(serializeTileMap(obj));
         merge(serializeLuaScript(obj));
         merge(serializeVisualLC(obj));
+
+        if (Button* b = obj->getComponent<Button>()) {
+            Value jb(kObjectType);
+            Value actionStr(ButtonActionToStr(b->actionName), a);
+            jb.AddMember("action", actionStr, a);
+            jb.AddMember("isHovered", b->isHovered, a);
+            jb.AddMember("isPressed", b->isPressed, a);
+            doc.AddMember("Button", jb, a);
+        }
 
         StringBuffer buf; Writer<StringBuffer> w(buf); doc.Accept(w);
         return buf.GetString();

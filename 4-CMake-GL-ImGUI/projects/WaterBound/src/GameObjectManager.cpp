@@ -89,6 +89,15 @@ void GameObjectManager::deleteGameObject(GameObject* object) {
 			continue; // don't skip remaining children
 		}
 
+		// clear dangling pointer in obj that refer to this deleted obj in visual logic
+		if (it->second->hasComponent<VisualLC>()) {
+			VisualLC* logic = it->second->getComponent<VisualLC>();
+			if (logic->lastCollidedObj == object)
+				logic->lastCollidedObj = nullptr;
+			logic->curCollision.erase(object);
+			logic->preCollision.erase(object);
+		}
+
 		Transform* t = it->second->getComponent<Transform>();
 		if (t && t->parentName == deletedName) {
 			t->parentName.clear();
@@ -660,6 +669,8 @@ void GameObjectManager::loadSceneFromJson(const std::string& filename) {
 				if (smj["facingRight"].IsBool())       sm->facingRight = smj["facingRight"].GetBool();
 				else if (smj["facingRight"].IsInt())   sm->facingRight = (smj["facingRight"].GetInt() != 0);
 			}
+
+			sm->fixState = false;
 
 			/*if (smj.HasMember("stateTime") && smj["stateTime"].IsNumber())
 				sm->stateTime = static_cast<float>(smj["stateTime"].GetDouble());*/

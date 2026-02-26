@@ -93,6 +93,16 @@ namespace Editor {
 		std::vector<std::string> subFolders;
 		std::vector<PrefabUsageInfo> prefabUsageInfo; // for tracking prefab usage info in delete popup
 
+		// creating subfolder
+		bool showCreateSubfolderPopup = false;
+		bool showRenameSubfolderPopup = false;
+		bool showDeleteSubfolderPopup = false;
+		char newSubfolderNameBuffer[128] = {};
+		char renameFolderBuffer[128] = {};
+		std::vector<std::string> currentViewSubFolders; // subfolders inside currentViewFolder
+		std::string folderToRename;
+		std::string folderToDelete;
+
 		// for dropping of files from file explorer
 		std::string hoverFolder;
 
@@ -255,7 +265,9 @@ namespace Editor {
 		{"Move Object", NodeType::ACTION, NodeImplementation::MOVE_OBJECT},
 		{"Set Position", NodeType::ACTION, NodeImplementation::SET_POSITION},
 		{"Rotate Object", NodeType::ACTION, NodeImplementation::ROTATE_OBJECT},
+		{"Set Rotation Rate of Change", NodeType::ACTION, NodeImplementation::SET_ROTATION_RATE_OF_CHANGE},
 		{"Set Rotation", NodeType::ACTION, NodeImplementation::SET_ROTATION},
+		//{"Rotate To", NodeType::ACTION, NodeImplementation::ROTATE_TO},
 		{"Set Scale", NodeType::ACTION, NodeImplementation::SET_SCALE},
 		{"Scale Proportional", NodeType::ACTION, NodeImplementation::SCALE_PROPORTIONAL},
 		{"Set Float", NodeType::ACTION, NodeImplementation::SET_FLOAT},
@@ -272,6 +284,7 @@ namespace Editor {
 		{"Trigger Bullet Refill Event", NodeType::ACTION, NodeImplementation::TRIGGER_BULLET_REFILL_EVENT},
 		{"Restart Level", NodeType::ACTION, NodeImplementation::RESTART_LEVEL},
 		{"Load Level", NodeType::ACTION, NodeImplementation::LOAD_LEVEL},
+		{"Disable Collision", NodeType::ACTION, NodeImplementation::DISABLE_COLLISION},
 	};
 	/* ----------------- Logic End ---------------- */
 

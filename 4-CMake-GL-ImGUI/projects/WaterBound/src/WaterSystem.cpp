@@ -5,7 +5,7 @@
              -100%
 \par        asha.m@digipen.edu
 \date        January, 28, 2026
-\brief       Implementation of water system for animated water bodies, collision, 
+\brief       Implementation of water system for animated water bodies, collision,
             buoyancy for object
 
 Copyright (C) 2026 DigiPen Institute of Technology.
@@ -128,9 +128,9 @@ void WaterSystem::setupWaterMesh(GameObject* waterObj) {
     std::vector<glm::vec3> colors;
     std::vector<glm::vec2> texCoords;
     std::vector<GLuint> indices;
-    
+
     //int numVertices = (mesh.subdivisions + 1) * 2; // Top and bottom rows
-    
+
     // Generate vertices
     for (int i = 0; i <= mesh.subdivisions; ++i) {
         float t = static_cast<float>(i) / mesh.subdivisions;
@@ -191,11 +191,11 @@ void WaterSystem::setupWaterMesh(GameObject* waterObj) {
     // Color attribute
     glEnableVertexAttribArray(1);
     glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), (void*)(uintptr_t)(posSize));
-    
+
     // TexCoord attribute
     glEnableVertexAttribArray(2);
     glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(glm::vec2), (void*)(uintptr_t)(posSize + colSize));
-    
+
     // Create EBO
     glGenBuffers(1, &mesh.ebo);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh.ebo);
@@ -323,54 +323,56 @@ void WaterSystem::applyWaterPhysics(GameObjectManager& manager) {
         Transform* transform = obj->getComponent<Transform>();
 
         if (!physics || !transform) continue;
-        if (obj->hasComponent<WaterBody>()) continue; 
-        
-        //bool wasInWater = physics->inWater;
+        if (obj->hasComponent<WaterBody>()) continue;
+
         physics->inWater = false;
-		//(void)wasInWater;
 
         // Check if object is in any water body
         for (GameObject* waterObj : waterBodies) {
             WaterBody* water = waterObj->getComponent<WaterBody>();
+            Transform* waterTransform = waterObj->getComponent<Transform>();
+            if (!waterTransform) continue;
 
             Vector2D objPos = { transform->x, transform->y };
 
             if (isPointInWater(waterObj, objPos)) {
                 physics->inWater = true;
 
-                // if (physics->buoyancy || water->isTrigger) {
+                //if (physics->buoyancy || water->isTrigger) {
+                //   
 
-                //     float buoyancyStrength = physics->buoyancy ? 2.5f : 1.0f;
+                //    float waterSurfaceY = waterTransform->y + (water->height * waterTransform->scaleY * 0.5f);
+                //    float depth = waterSurfaceY - transform->y;
 
-                //     // Calculate depth in water 
-                //     Transform* waterTransform = waterObj->getComponent<Transform>();
-                //     float waterSurfaceY = waterTransform->y + (water->height * 0.5f);
-                //     float depth = waterSurfaceY - transform->y;
+                //    // submergedFraction
+                //    float halfObjHeight = transform->scaleY * 0.5f;
+                //    float submergedFraction = glm::clamp(depth / (halfObjHeight * 2.0f + 0.001f), 0.0f, 1.0f);
 
-                //     float depthFactor = glm::clamp(depth / water->height, 0.0f, 1.0f);
-                //     float buoyancyForce = water->buoyancyForce * buoyancyStrength * depthFactor * 0.016f;
+                //    physics->velY += water->buoyancyForce * submergedFraction * 0.016f * 2.0f;
+                //    float verticalDrag = glm::mix(water->waterDrag, water->waterDrag, submergedFraction);
+                //    physics->velY *= verticalDrag;
+                //    physics->velX *= water->waterDrag;
+                //}
 
-                //     // Apply upward buoyancy force
-                //     physics->velY += buoyancyForce;
-                // }
-                
-                if (physics->buoyancy || water->isTrigger) {
-                    physics->velY += water->buoyancyForce * 0.016f; 
-                }
+                float waterSurfaceY = waterTransform->y + (water->height * waterTransform->scaleY * 0.5f);
+                float depth = waterSurfaceY - transform->y;
 
+                //// submergedFraction
+                float halfObjHeight = transform->scaleY * 0.5f;
+                float submergedFraction = glm::clamp(depth / (halfObjHeight * 2.0f + 0.001f), 0.0f, 1.0f);
 
-                // Apply water drag
-                //float oldVelX = physics->velX;
-                //float oldVelY = physics->velY;
+                //// Mass-based 
+                float safeMass = (physics->dynamics.mass > 0.0f) ? physics->dynamics.mass : 1.0f;
+                float buoyancyAccel = (water->buoyancyForce / safeMass) * submergedFraction * 0.016f * 2.0f;
+                physics->velY += buoyancyAccel;
+
+                float verticalDrag = glm::mix(water->waterDrag * 0.9999f, water->waterDrag, submergedFraction);
+                physics->velY *= verticalDrag;
                 physics->velX *= water->waterDrag;
-                physics->velY *= water->waterDrag;
 
                 break; // Object can only be in one water body at a time
             }
-
         }
-
-
     }
 }
 
