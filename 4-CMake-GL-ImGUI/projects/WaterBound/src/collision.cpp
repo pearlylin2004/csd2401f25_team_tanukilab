@@ -590,8 +590,14 @@ namespace Collision {
 
         float dist = sqrtf(distSq);
 
+        //settings
+        float restDistance = 1.0f; //particle radius spacing
+        float stiffness = 6.0f; //pressure strength
+        float viscosity = 0.008f; //smoothing
+        float correctionPercent = 0.5f; //positional correction
+        float damping = 0.05f; //damping
+
         //only interact if close
-        float restDistance = 1.0f; //particle radius
         float penetration = restDistance - dist;
         if (penetration <= 0.0f) return false;
 
@@ -603,20 +609,21 @@ namespace Collision {
         float m1 = phys1->dynamics.mass;
         float m2 = phys2->dynamics.mass;
 
-        //settings
-        float restDistance = 1.0f; //particle radius spacing
-        float stiffness = 12.0f; //pressure strength
-        float viscosity = 0.025f; //smoothing
-        float correctionPercent = 0.8f; //positional correction
-        float frictionCoeff = 0.02f; //friction
-        float damping = 0.02f; //damping
-
         //soft pressure 
         float pressure = stiffness * penetration;
         phys1->dynamics.velocity.x -= pressure * nx / m1;
         phys1->dynamics.velocity.y -= pressure * ny / m1;
         phys2->dynamics.velocity.x += pressure * nx / m2;
         phys2->dynamics.velocity.y += pressure * ny / m2;
+
+        //cheap viscosity so wont affect fps
+        float rvx = phys2->dynamics.velocity.x - phys1->dynamics.velocity.x;
+        float rvy = phys2->dynamics.velocity.y - phys1->dynamics.velocity.y;
+        float velAlongNormal = rvx * nx + rvy * ny;
+        phys1->dynamics.velocity.x += velAlongNormal * nx * viscosity;
+        phys1->dynamics.velocity.y += velAlongNormal * ny * viscosity;
+        phys2->dynamics.velocity.x -= velAlongNormal * nx * viscosity;
+        phys2->dynamics.velocity.y -= velAlongNormal * ny * viscosity;
 
         //simple damping instead of full viscosity or friction
         phys1->dynamics.velocity.x *= (1.0f - damping);
@@ -625,7 +632,6 @@ namespace Collision {
         phys2->dynamics.velocity.y *= (1.0f - damping);
 
         //soft positional correction
-        float correctionPercent = 0.8f;
         float correction = penetration * correctionPercent * 0.5f;
         trans1->x -= correction * nx;
         trans1->y -= correction * ny;
