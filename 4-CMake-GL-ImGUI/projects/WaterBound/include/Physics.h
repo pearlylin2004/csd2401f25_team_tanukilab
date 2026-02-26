@@ -39,7 +39,7 @@ struct PhysicsForces {
     /**
      * @brief Applies velocity damping to reduce movement over time
      */
-    static void applyDamping(Physics* physics, float targetVelX, float deltaTime);
+    static void applyDamping(Physics* physics, float friction, float targetVelX, float deltaTime);
     /**
      * @brief Updates transform position based on physics simulation
      */

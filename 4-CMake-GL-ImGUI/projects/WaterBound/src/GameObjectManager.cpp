@@ -513,6 +513,12 @@ void GameObjectManager::loadSceneFromJson(const std::string& filename) {
 					: (jp["physicsFlag"].GetInt() != 0);
 			}
 
+			if (jp.HasMember("autoUpdate")) {
+				p->autoUpdate = jp["autoUpdate"].IsBool()
+					? jp["autoUpdate"].GetBool()
+					: (jp["autoUpdate"].GetInt() != 0);
+			}
+
 			if (jp.HasMember("moveSpeed") && jp["moveSpeed"].IsNumber())
 				p->moveSpeed = jp["moveSpeed"].GetFloat();
 
@@ -525,14 +531,16 @@ void GameObjectManager::loadSceneFromJson(const std::string& filename) {
 			if (jp.HasMember("mass") && jp["mass"].IsNumber())
 				p->dynamics.mass = jp["mass"].GetFloat();
 
-			if (jp.HasMember("friction") && jp["friction"].IsNumber())
-				p->friction = jp["friction"].GetFloat();
+			/*if (jp.HasMember("friction") && jp["friction"].IsNumber())
+				p->friction = jp["friction"].GetFloat();*/
 			if (jp.HasMember("maxFallSpeed") && jp["maxFallSpeed"].IsNumber())
 				p->maxFallSpeed = jp["maxFallSpeed"].GetFloat();
 			if (jp.HasMember("groundAccelForce") && jp["groundAccelForce"].IsNumber())
 				p->groundAccelForce = jp["groundAccelForce"].GetFloat();
 			if (jp.HasMember("airAccelForce") && jp["airAccelForce"].IsNumber())
 				p->airAccelForce = jp["airAccelForce"].GetFloat();
+			if (jp.HasMember("apexHangMul") && jp["apexHangMul"].IsNumber())
+				p->apexHangMul = jp["apexHangMul"].GetFloat();
 			if (jp.HasMember("jumpBufferTime") && jp["jumpBufferTime"].IsNumber())
 				p->jumpBufferTime = jp["jumpBufferTime"].GetFloat();
 			if (jp.HasMember("coyoteTime") && jp["coyoteTime"].IsNumber())
@@ -553,11 +561,6 @@ void GameObjectManager::loadSceneFromJson(const std::string& filename) {
 					? jp["buoyancy"].GetBool()
 					: (jp["buoyancy"].GetInt() != 0);
 			}
-			//if (jp.HasMember("autoUpdate")) {
-			//	p->autoUpdate = jp["autoUpdate"].IsBool()
-			//		? jp["autoUpdate"].GetBool()
-			//		: (jp["autoUpdate"].GetInt() != 0);
-			//}
 
 			if (go->hasComponent<Transform>()) {
 				Transform* transform = go->getComponent<Transform>();
@@ -658,8 +661,10 @@ void GameObjectManager::loadSceneFromJson(const std::string& filename) {
 				else if (smj["facingRight"].IsInt())   sm->facingRight = (smj["facingRight"].GetInt() != 0);
 			}
 
-			if (smj.HasMember("stateTime") && smj["stateTime"].IsNumber())
-				sm->stateTime = static_cast<float>(smj["stateTime"].GetDouble());
+			sm->fixState = false;
+
+			/*if (smj.HasMember("stateTime") && smj["stateTime"].IsNumber())
+				sm->stateTime = static_cast<float>(smj["stateTime"].GetDouble());*/
 
 			/*std::cout << "\n\nReading scene...\n";
 			std::cout << "State: " << sm->facingRight << std::endl;
@@ -1318,17 +1323,18 @@ doc.AddMember("layers", layersArr, a);
 				// if different then change scene data
 				pushIfDiffBool("physicsFlag", p->physicsFlag);
 				//pushIfDiffBool("inWater", p->inWater);
+				pushIfDiffBool("autoUpdate", p->autoUpdate);
 				pushIfDiffBool("buoyancy", p->buoyancy);
-				//pushIfDiffBool("autoUpdate", p->autoUpdate);
 
 				pushIfDiffFloat("moveSpeed", p->moveSpeed);
 				pushIfDiffFloat("jumpForce", p->jumpForce);
 				pushIfDiffFloat("mass", p->dynamics.mass);
 				pushIfDiffFloat("damping", p->damping);
-				pushIfDiffFloat("friction", p->friction);
+				//pushIfDiffFloat("friction", p->friction);
 				pushIfDiffFloat("maxFallSpeed", p->maxFallSpeed);
 				pushIfDiffFloat("groundAccelForce", p->groundAccelForce);
 				pushIfDiffFloat("airAccelForce", p->airAccelForce);
+				pushIfDiffFloat("apexHangMul", p->apexHangMul);
 				pushIfDiffFloat("jumpBufferTime", p->jumpBufferTime);
 				pushIfDiffFloat("coyoteTime", p->coyoteTime);
 				pushIfDiffFloat("ledgeAssistRange", p->ledgeAssistRange);
@@ -1450,9 +1456,9 @@ doc.AddMember("layers", layersArr, a);
 					((*prefabSM)["facingRight"].IsInt() && differsBool((*prefabSM)["facingRight"].GetInt() != 0, sm->facingRight)))
 					js.AddMember("facingRight", rapidjson::Value(sm->facingRight ? 1 : 0), a);
 
-				if (!prefabSM || !prefabSM->HasMember("stateTime") ||
+				/*if (!prefabSM || !prefabSM->HasMember("stateTime") ||
 					differsFloat((*prefabSM)["stateTime"].GetFloat(), sm->stateTime))
-					js.AddMember("stateTime", rapidjson::Value(sm->stateTime), a);
+					js.AddMember("stateTime", rapidjson::Value(sm->stateTime), a);*/
 
 
 				/* ------ Animation for states ----- */

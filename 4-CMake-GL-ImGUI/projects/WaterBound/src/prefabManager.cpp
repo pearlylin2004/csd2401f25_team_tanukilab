@@ -794,13 +794,15 @@ void PrefabManager::applyPrefabComponents(GameObject* go, const rapidjson::Value
 		auto* p = go->addComponent<Physics>();
 
 		p->physicsFlag = JsonIO::GetBoolOr(jp, "physicsFlag", true);
+		//p->autoUpdate = JsonIO::GetBoolOr(jp, "autoUpdate", false);
 		p->moveSpeed = JsonIO::GetFloatOr(jp, "moveSpeed", 1.f);
 		p->damping = JsonIO::GetFloatOr(jp, "damping", 0.98f);
-		p->friction = JsonIO::GetFloatOr(jp, "friction", 0.80f);
+		//p->friction = JsonIO::GetFloatOr(jp, "friction", 0.80f);
 		p->jumpForce = JsonIO::GetFloatOr(jp, "jumpForce", 12.5f);
 		p->maxFallSpeed = JsonIO::GetFloatOr(jp, "maxFallSpeed", -30.f);
 		p->groundAccelForce = JsonIO::GetFloatOr(jp, "groundAccelForce", 20.f);
 		p->airAccelForce = JsonIO::GetFloatOr(jp, "airAccelForce", 8.f);
+		p->apexHangMul = JsonIO::GetFloatOr(jp, "apexHangMul", 0.2f);
 		p->jumpBufferTime = JsonIO::GetFloatOr(jp, "jumpBufferTime", 0.15f);
 		p->coyoteTime = JsonIO::GetFloatOr(jp, "coyoteTime", 0.15f);
 		p->ledgeAssistRange = JsonIO::GetFloatOr(jp, "ledgeAssistRange", 0.8f);
@@ -873,7 +875,9 @@ void PrefabManager::applyPrefabComponents(GameObject* go, const rapidjson::Value
 		std::string state;
 		sm->state = /*JsonIO::GetString(smj, "state", state) ? parsePlayerState(state) :*/ PlayerState::Idle;
 		sm->facingRight = JsonIO::GetBoolOr(smj, "facingRight", true);
-		sm->stateTime = JsonIO::GetFloatOr(smj, "stateTime", 0.f);
+		sm->fixState = false;
+
+		//sm->stateTime = JsonIO::GetFloatOr(smj, "stateTime", 0.f);
 
 		/* ---- Animation based on state ---- */
 			// Helper lambda to parse a single animation state
@@ -1184,13 +1188,15 @@ void PrefabManager::serializeComponents(const GameObject* obj, rapidjson::Value&
 		rapidjson::Value jp(rapidjson::kObjectType);
 
 		jp.AddMember("physicsFlag", p->physicsFlag ? 1 : 0, a);
+		//jp.AddMember("autoUpdate", p->autoUpdate ? 1 : 0, a);
 		jp.AddMember("moveSpeed", p->moveSpeed, a);
 		jp.AddMember("jumpForce", p->jumpForce, a);
 		jp.AddMember("damping", p->damping, a);
-		jp.AddMember("friction", p->friction, a);
+		//jp.AddMember("friction", p->friction, a);
 		jp.AddMember("maxFallSpeed", p->maxFallSpeed, a);
 		jp.AddMember("groundAccelForce", p->groundAccelForce, a);
 		jp.AddMember("airAccelForce", p->airAccelForce, a);
+		jp.AddMember("apexHangMul", p->apexHangMul, a);
 		jp.AddMember("jumpBufferTime", p->jumpBufferTime, a);
 		jp.AddMember("coyoteTime", p->coyoteTime, a);
 		jp.AddMember("ledgeAssistRange", p->ledgeAssistRange, a);
@@ -1239,7 +1245,7 @@ void PrefabManager::serializeComponents(const GameObject* obj, rapidjson::Value&
 
 		js.AddMember("state", rapidjson::Value(playerStateToStr(sm->state), a), a);
 		js.AddMember("facingRight", sm->facingRight ? 1 : 0, a);
-		js.AddMember("stateTime", sm->stateTime, a);
+		//js.AddMember("stateTime", sm->stateTime, a);
 
 		/* ------ Animation for states ----- */
 		if (auto anim = obj->getComponent<Animation>()) {

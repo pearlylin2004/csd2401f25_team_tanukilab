@@ -34,11 +34,11 @@ void PhysicsForces::applyGravity(Physics* physics) {
  * @brief Applies velocity damping to simulate friction/air resistance
  * Reduces horizontal velocity over time using damping
  */
-void PhysicsForces::applyDamping(Physics* physics, float targetVelX, float deltaTime) {
+void PhysicsForces::applyDamping(Physics* physics, float friction, float targetVelX, float deltaTime) {
     // Simple velocity damping 
     //physics->damping; // instead of 0.99f
 
-    physics->dynamics.velocity.x *= physics->damping;
+    //physics->dynamics.velocity.x *= physics->damping;
 	physics->dynamics.angularVelocity *= physics->dynamics.angularDrag;
    // physics->dynamics.velocity.y *= physics->damping;
 
@@ -49,7 +49,7 @@ void PhysicsForces::applyDamping(Physics* physics, float targetVelX, float delta
         physics->dynamics.velocity.x += (targetVelX - physics->dynamics.velocity.x) * accel * deltaTime;
     }
     else {
-        float decel = (physics->velY <= 0) ? (1.0f - physics->friction) : physics->damping;
+        float decel = (physics->velY <= 0) ? (1.f - friction) : physics->damping;
 
         physics->dynamics.velocity.x *= pow(decel, deltaTime * 60.0f);
 
@@ -69,8 +69,8 @@ void PhysicsForces::updatePosition(Transform* transform, Physics* physics, float
         float grav = physics->gravity * physics->dynamics.mass; // gravity force F=mg
         if (physics->dynamics.velocity.y < 0.0f)
             grav *= 1.5f;  // faster fall
-        else if (std::abs(physics->dynamics.velocity.y) < 2.0f)
-            grav *= 0.7f; // apex hang when near the peak
+        else if (std::abs(physics->dynamics.velocity.y) < 1.0f)
+            grav *= physics->apexHangMul; // apex hang when near the peak
 
         // integrate gravity into velocity
         physics->dynamics.velocity.y += grav * deltaTime;

@@ -364,7 +364,7 @@ public:
 
 	/* ---- LAYER ---- */
 	void beginLayerEdit(int layerID, Layer* layer);
-	void endLayerEdit(GameObjectManager& manager, int layerID, Layer* layer);
+	void endLayerEdit(GameObjectManager& manager, Layer* layer);
 	void beginLayerAssign(GameObject* obj);
 	void endLayerAssign(GameObjectManager& manager, GameObject* obj, int newLayerID);
 	/* ---- END ----*/
