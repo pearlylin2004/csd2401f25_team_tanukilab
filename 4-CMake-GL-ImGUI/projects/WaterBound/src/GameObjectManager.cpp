@@ -89,6 +89,7 @@ void GameObjectManager::deleteGameObject(GameObject* object) {
 			continue; // don't skip remaining children
 		}
 
+		// clear dangling pointer in obj that refer to this deleted obj in visual logic
 		if (it->second->hasComponent<VisualLC>()) {
 			VisualLC* logic = it->second->getComponent<VisualLC>();
 			if (logic->lastCollidedObj == object)
