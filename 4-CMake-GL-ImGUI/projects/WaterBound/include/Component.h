@@ -846,3 +846,18 @@ public:
     bool useTexture = false;          
     GLuint waterTexture = 0;          
 };
+struct WeaponComponent : public Component {
+public:
+    WeaponComponent() = default;
+
+    std::unique_ptr<Component> clone() const override {
+        return std::make_unique<WeaponComponent>(*this);
+    }
+
+    Vector2D barrelOffset{ 1.0f, 0.0f };
+
+    bool aimAtMouse = true;
+    float baseLocalOffsetX = 0.0f;
+    bool  baseLocalOffsetInitialised = false;
+    float currentAngle = 0.0f;
+};

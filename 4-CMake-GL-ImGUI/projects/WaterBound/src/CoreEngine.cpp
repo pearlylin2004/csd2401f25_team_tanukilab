@@ -130,6 +130,7 @@ void CoreEngine::Init(bool forceWindowed) {
     m_inputSystem = std::make_unique<InputSystem>();
     m_collisionSystem = std::make_unique<CollisionSystem>();
     m_physicsSystem = std::make_unique<PhysicsSystem>();
+    m_weaponSystem = std::make_unique<WeaponSystem>();
     m_renderSystem = std::make_unique<RenderSystem>();
     m_waterSystem = std::make_unique<WaterSystem>();
 #ifdef _DEBUG
@@ -255,6 +256,7 @@ void CoreEngine::Update(float deltaTime) {
     m_physicsSystem->update(*m_manager, deltaTime, *m_messageBus);
     m_collisionSystem->update(*m_manager, deltaTime);
 	m_transformSystem->update(*m_manager, deltaTime);//for parent->child transform
+    m_weaponSystem->update(*m_manager, deltaTime);
     m_logicSystem->update(*m_manager, deltaTime);
     m_tileMapSystem->update(*m_manager);
     m_particleSystem->update(*m_manager, deltaTime);;

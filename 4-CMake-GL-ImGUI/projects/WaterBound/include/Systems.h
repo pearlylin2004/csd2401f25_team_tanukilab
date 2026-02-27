@@ -449,3 +449,18 @@ private:
 
 	std::unordered_map<GameObject*, WaterMesh> m_waterMeshes;
 };
+
+class WeaponSystem {
+public:
+	/*!***********************************************************************
+	\brief
+		Update weapon objects
+
+	\param[in] manager
+		Game object manager containing all objects.
+
+	\param[in] deltaTime
+		Time elapsed since last frame 
+	*************************************************************************/
+	void update(GameObjectManager& manager, const float& deltaTime);
+};

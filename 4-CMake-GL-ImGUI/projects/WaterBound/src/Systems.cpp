@@ -1245,26 +1245,44 @@ void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime, M
 									// Get mouse position in world coordinates
 									Vector2D mouseWorldPos = InputHandler::getWorldMousePosition();
 
-									//set a flay saying channel is pending to play sound
-									if (bullet->hasComponent<AudioComponent>()) {
-										AudioComponent* audio = bullet->getComponent<AudioComponent>();
-										AudioChannel* ch = audio->getDefaultChannel();
-										ch->isPendingPlay = true;
+									Transform* spawnTransform = transform;
+									{
+										std::vector<GameObject*> allObjs;
+										manager.getAllGameObjects(allObjs);
+										for (GameObject* candidate : allObjs)
+										{
+											if (!candidate->hasComponent<WeaponComponent>()) continue;
+											if (!candidate->hasComponent<Transform>()) continue;
+											Transform* wt = candidate->getComponent<Transform>();
+											if (wt->parentName == object->getObjectName())
+											{
+												spawnTransform = wt;
+												//set a flay saying channel is pending to play sound
+												if (bullet->hasComponent<AudioComponent>()) {
+													AudioComponent* audio = bullet->getComponent<AudioComponent>();
+													AudioChannel* ch = audio->getDefaultChannel();
+													ch->isPendingPlay = true;
 
-										// Shoot bullet toward mouse position
-										PhysicsForces::shoot(bullet, transform, mouseWorldPos);
-										messageBus.publish(Message("KeyPressed", nullptr, KeyEvent{ "LEFT_CLICK", true }));
+													// Shoot bullet toward mouse position
+													PhysicsForces::shoot(bullet, spawnTransform, mouseWorldPos);
+													messageBus.publish(Message("KeyPressed", nullptr, KeyEvent{ "LEFT_CLICK", true }));
 
 
-										VisualLogicSystem::broadcastBulletShoot();
+													VisualLogicSystem::broadcastBulletShoot();
 
-										DebugLog::addMessage("Bullet fired!", DebugMode::PlaySimul);
-										physics->shootTimer = 0.0f;
+													DebugLog::addMessage("Bullet fired!", DebugMode::PlaySimul);
+													physics->shootTimer = 0.0f;
+												}
+												else {
+													physics->shootTimer = physics->fireRate * 0.5f;
+													DebugLog::addMessage("No bullets available!", DebugMode::PlaySimul);
+												}
+												break;
+											}
+										}
 									}
-									else {
-										physics->shootTimer = physics->fireRate * 0.5f;
-										DebugLog::addMessage("No bullets available!", DebugMode::PlaySimul);
-									}
+
+									
 								}
 							}
 						}
@@ -1384,6 +1402,85 @@ void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime, M
 	g_SystemTimers.push_back({ "Physics", ms });
 }
 
+void WeaponSystem::update(GameObjectManager& manager, const float& deltaTime)
+{
+	(void)deltaTime;
+
+	#ifdef _DEBUG
+		if (EditorManager::isEditingMode()) return;
+	#endif
+
+	std::vector<GameObject*> gameObjects;
+	manager.getAllGameObjects(gameObjects);
+
+	const Vector2D mouseWorld = InputHandler::getWorldMousePosition();
+
+	for (GameObject* obj : gameObjects)
+	{
+		if (!obj->hasComponent<Transform>() || !obj->hasComponent<WeaponComponent>())
+			continue;
+
+		WeaponComponent* weapon = obj->getComponent<WeaponComponent>();
+		if (!weapon->aimAtMouse) continue;
+
+		Transform* weaponTransform = obj->getComponent<Transform>();
+
+
+		if (!weapon->baseLocalOffsetInitialised)
+		{
+			weapon->baseLocalOffsetX = weaponTransform->localOffset.x;
+			weapon->baseLocalOffsetInitialised = true;
+		}
+
+		bool ownerFacingLeft = false;
+
+		if (!weaponTransform->parentName.empty())
+		{
+			GameObject* owner = manager.getGameObject(weaponTransform->parentName);
+			if (owner && owner->hasComponent<Transform>())
+			{
+				ownerFacingLeft = owner->getComponent<Transform>()->flipX;
+			}
+		}
+
+		weaponTransform->localOffset.x = ownerFacingLeft
+			? -std::abs(weapon->baseLocalOffsetX)
+			: std::abs(weapon->baseLocalOffsetX);
+
+		if (!weaponTransform->parentName.empty())
+		{
+			GameObject* owner = manager.getGameObject(weaponTransform->parentName);
+			if (owner && owner->hasComponent<Transform>())
+			{
+				Transform* pt = owner->getComponent<Transform>();
+				const float parentRad = glm::radians(pt->rotation);
+				const float cosA = cosf(parentRad);
+				const float sinA = sinf(parentRad);
+				const float rotatedX = weaponTransform->localOffset.x * cosA
+					- weaponTransform->localOffset.y * sinA;
+				const float rotatedY = weaponTransform->localOffset.x * sinA
+					+ weaponTransform->localOffset.y * cosA;
+				weaponTransform->x = pt->x + rotatedX;
+				weaponTransform->y = pt->y + rotatedY;
+			}
+		}
+
+		const float dx = mouseWorld.x - weaponTransform->x;
+		const float dy = mouseWorld.y - weaponTransform->y;
+		
+		const float aimAngleRad = ownerFacingLeft
+			? std::atan2(-dy, -dx)  
+			: std::atan2(dy, dx); 
+
+		weaponTransform->flipX = ownerFacingLeft;
+
+
+		const float aimAngleDeg = glm::degrees(aimAngleRad);
+		weaponTransform->rotation = aimAngleDeg;
+
+		weapon->currentAngle = aimAngleDeg;
+	}
+}
 
 //helper function for collision detection
 static uint64_t MakePairKey(GameObject* a, GameObject* b)
