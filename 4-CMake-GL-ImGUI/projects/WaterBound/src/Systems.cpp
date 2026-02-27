@@ -1389,9 +1389,6 @@ void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime, M
 			p->lifeTimer += deltaTime;
 
 			// Deactivate if lifetime exceeded or fell too far
-			if (p->lifeTimer >= p->maxLifetime || p->dynamics.position.y < -20.0f) {
-				PhysicsForces::deactivateBullet(obj);
-			}
 			if (!EditorManager::isEditingMode()) {
 				if (p->lifeTimer >= p->maxLifetime || p->dynamics.position.y < -20.0f) {
 					PhysicsForces::deactivateBullet(obj);
