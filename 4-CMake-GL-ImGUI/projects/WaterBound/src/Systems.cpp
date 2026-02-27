@@ -1353,20 +1353,30 @@ void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime, M
 			}
 			else {
 				// Gravity delay expired - normal physics with gravity
-				DynamicsSystem::Integrate(p->dynamics, deltaTime, p->gravity, false);
+				//DynamicsSystem::Integrate(p->dynamics, deltaTime, p->gravity, false);
 
 				/*for water to move*/
 				//flow force
-				Vector3D flowForce = { 10.0f, 0.0f, 0.0f };
-				//apply force
-				p->dynamics.velocity.x += flowForce.x * deltaTime;
-				p->dynamics.velocity.y += flowForce.y * deltaTime;
-				//turbulence
-				p->dynamics.velocity.y += sin(p->lifeTimer * 10.0f) * 3.0f * deltaTime;
-				//heavy drag
-				float waterDrag = 0.90f;
-				p->dynamics.velocity.x *= waterDrag;
-				p->dynamics.velocity.y *= waterDrag;
+				float flowStrength = 25.0f * expf(-p->lifeTimer * 0.6f);
+				p->dynamics.velocity.x += flowStrength * deltaTime;
+				p->dynamics.velocity.y += 0.0f;
+				//strong gravity
+				p->dynamics.velocity.y += -25.0f * deltaTime;
+				//turbulence that decays over time
+				float turbulence = sin(p->lifeTimer * 8.0f) * 2.0f * expf(-p->lifeTimer);
+				p->dynamics.velocity.y += turbulence * deltaTime;
+				//quadratic drag
+				float speed = sqrt(
+					p->dynamics.velocity.x * p->dynamics.velocity.x +
+					p->dynamics.velocity.y * p->dynamics.velocity.y);
+
+				if (speed > 0.0001f) {
+					float dragCoefficient = 0.5f;
+					float dragForce = dragCoefficient * speed * speed;
+
+					p->dynamics.velocity.x -= (p->dynamics.velocity.x / speed) * dragForce * deltaTime;
+					p->dynamics.velocity.y -= (p->dynamics.velocity.y / speed) * dragForce * deltaTime;
+				}
 				//integrate
 				Vector3D deltaPos = Vec3_Scale(&p->dynamics.velocity, deltaTime);
 				p->dynamics.position = Vec3_Add(&p->dynamics.position, &deltaPos);
@@ -1379,9 +1389,9 @@ void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime, M
 			p->lifeTimer += deltaTime;
 
 			// Deactivate if lifetime exceeded or fell too far
-			/*if (p->lifeTimer >= p->maxLifetime || p->dynamics.position.y < -20.0f) {
+			if (p->lifeTimer >= p->maxLifetime || p->dynamics.position.y < -20.0f) {
 				PhysicsForces::deactivateBullet(obj);
-			}*/
+			}
 			if (!EditorManager::isEditingMode()) {
 				if (p->lifeTimer >= p->maxLifetime || p->dynamics.position.y < -20.0f) {
 					PhysicsForces::deactivateBullet(obj);
