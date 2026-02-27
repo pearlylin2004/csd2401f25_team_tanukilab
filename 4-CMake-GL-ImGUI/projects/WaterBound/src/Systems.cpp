@@ -1373,7 +1373,6 @@ void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime, M
 				if (speed > 0.0001f) {
 					float dragCoefficient = 0.5f;
 					float dragForce = dragCoefficient * speed * speed;
-
 					p->dynamics.velocity.x -= (p->dynamics.velocity.x / speed) * dragForce * deltaTime;
 					p->dynamics.velocity.y -= (p->dynamics.velocity.y / speed) * dragForce * deltaTime;
 				}
