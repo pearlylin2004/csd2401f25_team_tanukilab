@@ -462,7 +462,10 @@ void GameObjectManager::loadSceneFromJson(const std::string& filename) {
 				r->clr.g = jr["clr"][1].GetFloat();
 				r->clr.b = jr["clr"][2].GetFloat();
 			}
-
+			if (jr.HasMember("colorR") && jr["colorR"].IsNumber()) r->clr.r = jr["colorR"].GetFloat();
+			if (jr.HasMember("colorG") && jr["colorG"].IsNumber()) r->clr.g = jr["colorG"].GetFloat();
+			if (jr.HasMember("colorB") && jr["colorB"].IsNumber()) r->clr.b = jr["colorB"].GetFloat();
+			if (jr.HasMember("colorA") && jr["colorA"].IsNumber()) r->clr.a = jr["colorA"].GetFloat();
 
 			//          if (jr.HasMember("visible")     && jr["visible"].IsBool())     r->visible       = jr["visible"].GetBool();
 			//          if (jr.HasMember("transparent") && jr["transparent"].IsBool()) r->isTransparent = jr["transparent"].GetBool();
@@ -1240,6 +1243,19 @@ doc.AddMember("layers", layersArr, a);
 						jr.AddMember(rapidjson::Value(key, a), rapidjson::Value(val ? 1 : 0), a);
 					}
 					};
+				auto pushIfDiffFloat = [&](const char* key, float val) {
+					if (!prefabR || !prefabR->HasMember(key) ||
+						!(*prefabR)[key].IsNumber() ||
+						((*prefabR)[key].GetFloat() != val))
+					{
+						jr.AddMember(rapidjson::Value(key, a), rapidjson::Value(val), a);
+					}
+					};
+
+				pushIfDiffFloat("colorR", r->clr.r);
+				pushIfDiffFloat("colorG", r->clr.g);
+				pushIfDiffFloat("colorB", r->clr.b);
+				pushIfDiffFloat("colorA", r->clr.a);
 
 				// save hasTex based on whether have texture
 				pushIfDiffBool("hasTex", r->hasTex);

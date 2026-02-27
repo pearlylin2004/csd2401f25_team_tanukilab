@@ -757,7 +757,7 @@ void PrefabManager::applyPrefabComponents(GameObject* go, const rapidjson::Value
 		}
 
 		r->hasAnimation = JsonIO::GetBoolOr(jr, "hasAnimation", false);
-		JsonIO::ReadVec3(jr, "clr", r->clr.r, r->clr.g, r->clr.b);
+		JsonIO::ReadVec4(jr, "clr", r->clr.r, r->clr.g, r->clr.b, r->clr.a);
 
 		/*std::cout << r->hasTex << " has tex\n\n";
 		std::cout << r->hasAnimation << " has animation\n\n";*/
@@ -1148,7 +1148,7 @@ void PrefabManager::serializeComponents(const GameObject* obj, rapidjson::Value&
 			jr.AddMember("texture", rapidjson::Value(r->texFile.c_str(), a), a);
 		jr.AddMember("hasAnimation", r->hasAnimation ? 1 : 0, a);
 		if (r->clr.r != 1.f || r->clr.g != 1.f || r->clr.b != 1.f) {
-			JsonIO::WriteVec3(jr, "clr", r->clr.r, r->clr.g, r->clr.b, a);
+			JsonIO::WriteVec4(jr, "clr", r->clr.r, r->clr.g, r->clr.b, r->clr.a, a);
 		}
 
 		comps.AddMember("Render", jr, a);

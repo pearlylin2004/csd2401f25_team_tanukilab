@@ -129,7 +129,7 @@ void TileMapSystem::update(GameObjectManager& manager)
 			mdl = glm::translate(mdl, pos);
 			mdl = glm::scale(mdl, glm::vec3(tm->tileW, tm->tileH, 1.f));
 			data.model = mdl;
-			data.color = glm::vec4(0, 0, 0, 1);
+			data.color = glm::vec4(1, 1, 1, 1);
 			data.texParams = glm::vec4(0, 0, 1, 1); //no slicing
 			TextureData texID = ResourceManager::getInstance().getTexture(tileID);
 			RenderSystem::objectWithTex[BatchKey{ transform->z, texID.id, shape::square }].push_back(data);

@@ -13,6 +13,6 @@ void main()
     {
         discard;
     }
-    FragColor = texColor1;
+    FragColor = texColor1 * vColor;
 	//FragColor = vec4(1.0,0.0,1.0,1.0);
 }

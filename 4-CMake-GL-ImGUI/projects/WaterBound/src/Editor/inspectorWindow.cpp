@@ -646,7 +646,7 @@ void InspectorWindow::renderRender(GameObject* selected) {
             // cannot edit colour if obj has a texture
             ImGui::BeginDisabled(render->hasTex);
 
-            ImGui::ColorEdit3("##Colour", &render->clr.x); // pass pointer of the first float cuz imgui want that
+            ImGui::ColorEdit4("##Colour", &render->clr.x); // pass pointer of the first float cuz imgui want that
 
             if (ImGui::IsItemActivated())
                 if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);

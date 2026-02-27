@@ -919,7 +919,7 @@ namespace JsonIO {
         if (r->hasTex && !r->texFile.empty())
             jr.AddMember("texture", Value(r->texFile.c_str(), a), a);
         jr.AddMember("hasAnimation", Value(r->hasAnimation ? 1 : 0), a);
-        WriteVec3(jr, "clr", r->clr.x, r->clr.y, r->clr.z, a);
+        WriteVec4(jr, "clr", r->clr.r, r->clr.g, r->clr.b, r->clr.a, a);
         doc.AddMember("Render", jr, a);
 
         StringBuffer buf; Writer<StringBuffer> w(buf); doc.Accept(w);
@@ -960,7 +960,7 @@ namespace JsonIO {
             r->hasAnimation = jr["hasAnimation"].IsBool()
             ? jr["hasAnimation"].GetBool() : (jr["hasAnimation"].GetInt() != 0);
 
-        ReadVec3(jr, "clr", r->clr.x, r->clr.y, r->clr.z);
+        ReadVec4(jr, "clr", r->clr.r, r->clr.g, r->clr.b, r->clr.a);
     }
 
     std::string serializeParticle(GameObject* obj) {
