@@ -992,11 +992,14 @@ void InspectorWindow::renderCollision(GameObject* selected/*, GameObjectManager&
                 if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
 
                 collision->colliderType = static_cast<shape>(current);
+                if (collision->colliderType == shape::circle)
+                    collision->colliderRot = 0.f;
 
                 if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
             }
 
             if (collision->colliderType == shape::circle) {
+                // diameter
                 if (ImGui::DragFloat("Diamater", &collision->colliderSize.x, 0.1f, 0.f, FLT_MAX)) {
                     collision->colliderSize.x = std::max(collision->colliderSize.x, 0.f);
                     collision->colliderSize.y = collision->colliderSize.x;
@@ -1008,22 +1011,15 @@ void InspectorWindow::renderCollision(GameObject* selected/*, GameObjectManager&
                     if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
                 if (ImGui::IsItemDeactivatedAfterEdit())
                     if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
+
+                // position offset
+                if (ImGui::DragFloat2("Offset", &collision->colliderPos.x, 0.1f)) {}
+                if (ImGui::IsItemActivated())
+                    if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
+                if (ImGui::IsItemDeactivatedAfterEdit())
+                    if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
             }
             else {
-                // if (ImGui::InputFloat("Width", &collision->colliderSize.x, 1.f)) {
-                //     collision->colliderSize.x = std::max(collision->colliderSize.x, 0.f);
-                //     if (Physics* p = selected->getComponent<Physics>()) {
-                //         if (!p->freezeRotation) p->recalculateInertia(collision->colliderSize, collision->colliderType);
-                //     }
-                // }
-
-                // if (ImGui::InputFloat("Height", &collision->colliderSize.y, 1.f)) {
-                //     collision->colliderSize.y = std::max(collision->colliderSize.y, 0.f);
-                //     if (Physics* p = selected->getComponent<Physics>()) {
-                //         if (!p->freezeRotation) p->recalculateInertia(collision->colliderSize, collision->colliderType);
-                //     }
-
-                // }
                 if (ImGui::DragFloat("Width", &collision->colliderSize.x, 0.1f, 0.f, FLT_MAX)){
                     collision->colliderSize.x = std::max(collision->colliderSize.x, 0.f);
 
@@ -1047,6 +1043,22 @@ void InspectorWindow::renderCollision(GameObject* selected/*, GameObjectManager&
                     if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
                 if (ImGui::IsItemDeactivatedAfterEdit())
                     if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
+
+                // position offset
+                if (ImGui::DragFloat2("Offset", &collision->colliderPos.x, 0.1f)) {}
+                if (ImGui::IsItemActivated())
+                    if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
+                if (ImGui::IsItemDeactivatedAfterEdit())
+                    if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
+
+                // rotation
+                if (ImGui::DragFloat("Rotation", &collision->colliderRot, 0.5f, 0.f, 360.f)) {
+                    collision->colliderRot = std::clamp(collision->colliderRot, 0.f, 360.f);
+                }
+                if (ImGui::IsItemActivated())
+                    if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
+                if (ImGui::IsItemDeactivatedAfterEdit())
+                    if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);;
             }
 
             ImGui::EndDisabled();

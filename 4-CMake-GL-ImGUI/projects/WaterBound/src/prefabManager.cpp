@@ -227,14 +227,6 @@ std::string PrefabManager::findPrefabIDByFilename(const std::filesystem::path& f
 		if (registryPath == searchStr) return id;
 	}
 
-	// filename only (for legacy support cuz i lazy change)
-	/*std::string f{ filename.filename().string() };
-
-	for (const auto& [id, info] : m_prefabRegistry) {
-		if (std::filesystem::path(info.path).filename().string() == f)
-			return id;
-	}*/
-
 	return "";
 }
 
@@ -847,10 +839,16 @@ void PrefabManager::applyPrefabComponents(GameObject* go, const rapidjson::Value
 		c->colliderType = JsonIO::GetString(jc, "colliderType", shp) ? JsonIO::StrToShape(shp) : shape::square;
 		std::string res;
 		c->collisionRes = JsonIO::GetString(jc, "collisionRes", res) ? JsonIO::StrToCollisionResponseMode(res) : CollisionResponseMode::StopWhenCollide;
+
 		if (jc.HasMember("colliderSize") && jc["colliderSize"].IsArray() && jc["colliderSize"].Size() >= 2) {
 			c->colliderSize.x = jc["colliderSize"][0].GetFloat();
 			c->colliderSize.y = jc["colliderSize"][1].GetFloat();
 		}
+		if (jc.HasMember("colliderPos") && jc["colliderPos"].IsArray() && jc["colliderPos"].Size() >= 2) {
+			c->colliderPos.x = jc["colliderPos"][0].GetFloat();
+			c->colliderPos.y = jc["colliderPos"][1].GetFloat();
+		}
+		c->colliderRot = JsonIO::GetFloatOr(jc, "colliderRot", 0.f);
 
 		// Load Collision Tag
 		if (jc.HasMember("collisionTag") && jc["collisionTag"].IsString()) {
@@ -859,9 +857,6 @@ void PrefabManager::applyPrefabComponents(GameObject* go, const rapidjson::Value
 
 		c->material.bounciness = JsonIO::GetFloatOr(jc, "bounciness", 0.0f);
 		c->material.friction = JsonIO::GetFloatOr(jc, "friction", 0.0f);
-		
-		if(jc.HasMember("colliderType") && jc["colliderType"].IsString())
-			c->colliderType = JsonIO::StrToShape(jc["colliderType"].GetString());
 
 		// Load ignore the collision
 		if (jc.HasMember("ignoreCollisionsWith") && jc["ignoreCollisionsWith"].IsArray()) {
@@ -1233,7 +1228,15 @@ void PrefabManager::serializeComponents(const GameObject* obj, rapidjson::Value&
 		jc.AddMember("collisionFlag", c->collisionFlag ? 1 : 0, a);
 		jc.AddMember("autoFitScale", c->autoFitScale ? 1 : 0, a);
 
-		JsonIO::PutArray3f(jc, "colliderSize", { c->colliderSize.x, c->colliderSize.y, 0.f }, a);
+		rapidjson::Value sc(rapidjson::kArrayType);
+		sc.PushBack(c->colliderSize.x, a).PushBack(c->colliderSize.y, a);
+		jc.AddMember("colliderSize", sc, a);
+
+		rapidjson::Value sp(rapidjson::kArrayType);
+		sp.PushBack(c->colliderPos.x, a).PushBack(c->colliderPos.y, a);
+		jc.AddMember("colliderPos", sp, a);
+
+		jc.AddMember("colliderRot", c->colliderRot, a);
 
 		jc.AddMember("colliderType", rapidjson::Value(JsonIO::ShapeToStr(c->colliderType), a), a);
 
