@@ -1,0 +1,63 @@
+#include "Systems.h"
+
+bool Camera::camPresent = false;
+
+void Camera::update(GameObjectManager& manager)
+{
+	std::vector<GameObject*> objects;
+	manager.getAllGameObjects(objects);
+	for (GameObject* obj : objects)
+	{
+		if (obj->hasComponent<camera>())
+		{
+			const camera* camInfo = obj->getComponent<camera>();
+			const Transform* transform = obj->getComponent<Transform>();
+			if (camInfo->useScreenSize)
+			{
+				renderer::cam.width = static_cast<float>(screenWidth);
+				renderer::cam.ar = static_cast<float>(screenWidth) / screenHeight;
+			}
+			else
+			{
+				renderer::cam.width = camInfo->width;
+				renderer::cam.ar = camInfo->width / camInfo->height;
+			}
+			renderer::cam.campos = glm::vec3(transform->x, transform->y, transform->z);
+			renderer::cam.zoom = camInfo->zoom;
+			renderer::cam.minZoom = camInfo->minZoom;
+			renderer::cam.maxZoom = camInfo->maxZoom;
+			float halfH = camInfo->zoom;
+			float halfW = camInfo->zoom * renderer::cam.ar;
+
+			if (camInfo->mapWidth > halfW)
+				renderer::cam.campos.x = glm::clamp(renderer::cam.campos.x,
+					-camInfo->mapWidth + halfW, camInfo->mapWidth - halfW);
+
+			if (camInfo->mapHeight > halfH)
+				renderer::cam.campos.y = glm::clamp(renderer::cam.campos.y,
+					-camInfo->mapHeight + halfH, camInfo->mapHeight - halfH);
+			camPresent = true;
+		}
+	}
+	if (!camPresent)
+		camDefault();
+}
+
+void Camera::camDefault()
+{
+	
+	renderer::cam.ar = static_cast<float>(screenWidth) / screenHeight;
+	renderer::cam.width = static_cast<float>(screenWidth);
+	renderer::cam.rot = 0;
+	renderer::cam.zoom = 10;
+	renderer::cam.campos = glm::vec3(0, 0, 0);
+	renderer::cam.up = glm::vec3(0, 1, 0);
+	renderer::cam.zoomFactor = 0.1f;
+	renderer::cam.minZoom = 0.1f;
+	renderer::cam.maxZoom = 50.f;
+}
+void Camera::onResize(int w, int h)
+{
+	screenHeight = h;
+	screenWidth = w;
+}
