@@ -183,13 +183,17 @@ bool PrefabManager::setPrefabPath(const std::string& prefabID, const std::string
 		return false;
 	}
 
-	std::filesystem::path path{ newName };
-	std::string newNameWPath = path.filename().string();
+	std::string path = newName;
+	std::replace(path.begin(), path.end(), '\\', '/');
 
-	iterator->second.path = "/Prefab/" + newNameWPath;
+	// ensure leading slash to match registry format e.g. "/Prefab/sub/player.json"
+	if (!path.empty() && path[0] != '/')
+		path = "/" + path;
+
+	iterator->second.path = path;
 	savePrefabRegistry();
 
-	DebugLog::addMessage("Updated prefab path for ID " + prefabID + " -> " + newNameWPath);
+	DebugLog::addMessage("Updated prefab path for ID " + prefabID + " -> " + path);
 	return true;
 }
 
@@ -213,12 +217,23 @@ const std::string& PrefabManager::getPrefabName(const std::string& prefabID) con
 }
 
 std::string PrefabManager::findPrefabIDByFilename(const std::filesystem::path& filename) {
-	std::string f{ filename.filename().string() };
+	std::string searchStr = filename.string();
+	std::replace(searchStr.begin(), searchStr.end(), '\\', '/');
+
+	// try full path match first (e.g. "Prefab/subfolder/player.json")
+	for (const auto& [id, info] : m_prefabRegistry) {
+		std::string registryPath = info.path;
+		std::replace(registryPath.begin(), registryPath.end(), '\\', '/');
+		if (registryPath == searchStr) return id;
+	}
+
+	// filename only (for legacy support cuz i lazy change)
+	/*std::string f{ filename.filename().string() };
 
 	for (const auto& [id, info] : m_prefabRegistry) {
 		if (std::filesystem::path(info.path).filename().string() == f)
 			return id;
-	}
+	}*/
 
 	return "";
 }

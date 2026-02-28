@@ -176,11 +176,37 @@ void HierarchyWindow::handlePrefabDragDrop(GameObjectManager& manager) {
     if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("ASSET")) {
         const char* prefabPath = static_cast<const char*>(payload->Data);
         std::filesystem::path path = prefabPath;
-        std::string folder = path.parent_path().filename().string();
+        //std::string folder = path.parent_path().filename().string();
+
+        // check if "Prefab" appears anywhere in the path (handles subfolders)
+        bool isInPrefabFolder = false;
+        for (const std::filesystem::path& part : path) {
+            if (part.string() == "Prefab") {
+                isInPrefabFolder = true;
+                break;
+            }
+        }
 
         // only accept if its in prefab folder
-        if (folder == "Prefab") {
-            std::string prefabID = PrefabManager::Instance().findPrefabIDByFilename(prefabPath);
+        if (isInPrefabFolder && path.extension() == ".json") {
+            std::string fullPath = path.string();
+            std::replace(fullPath.begin(), fullPath.end(), '\\', '/');
+
+            /*std::string registryPath;
+            size_t pos = fullPath.find("/Prefab/");
+            if (pos != std::string::npos)
+                registryPath = fullPath.substr(pos);
+            else {
+                pos = fullPath.find("Prefab/");
+                if (pos != std::string::npos)
+                    registryPath = "/" + fullPath.substr(pos);
+            }*/
+
+            std::string prefabID = PrefabManager::Instance().findPrefabIDByFilename(AssetBrowser::toRegistryPath(path.string()));
+            if (prefabID.empty()) {
+                DebugLog::addMessage("Cannot find prefab ID for: " + path.string());
+                return;
+            }
 
             std::string objName = PrefabManager::Instance().getPrefabName(prefabID) + "(" + std::to_string(manager.getGameObjectCount()) + ")";
             GameObject* prefabObj = manager.createGameObject(objName);
