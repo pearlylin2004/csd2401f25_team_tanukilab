@@ -294,6 +294,30 @@ private:
 };
 
 
+// visual logic editor
+struct VLGraphSnapshot {
+	std::vector<LogicNode> nodes;
+	std::vector<LogicConnection> connections;
+};
+
+class VLGraphCmd : public CmdInterface {
+public:
+	VLGraphCmd(const VLGraphSnapshot& before, const VLGraphSnapshot& after);
+
+	void execute() override;
+
+	void undo() override;
+
+	void updateObjName(const std::string&, const std::string&) override;
+
+private:
+	void apply(const VLGraphSnapshot& snap);
+
+	VLGraphSnapshot			m_before;
+	VLGraphSnapshot			m_after;
+};
+
+
 // big boss for undo/redo operation (singleton)
 class UndoRedoManager {
 public:
@@ -370,6 +394,18 @@ public:
 	/* ---- END ----*/
 
 
+	/* ---- VISUAL LOGIC ----*/
+	void beginVLEdit();
+	void endVLEdit();
+	bool isEditingVL() const { return m_isEditingVL; }
+	void vlUndo();
+	void vlRedo();
+	bool canVLUndo() const { return !m_vlUndoDeque.empty(); }
+	bool canVLRedo() const { return !m_vlRedoDeque.empty(); }
+	void clearVL();
+	/* ---- END ----*/
+
+
 	// max steps to undo/redo
 	static constexpr size_t MAX_UNDO_STEPS{ 30 };
 
@@ -404,6 +440,12 @@ private:
 	bool					m_isAssigningLayer{ false };
 	std::string				m_assigningObjName{};
 	int						m_layerAssignBefore{ -1 };
+
+	// for visual logic
+	bool					m_isEditingVL = false;
+	VLGraphSnapshot			m_vlBefore;
+	std::deque<std::unique_ptr<VLGraphCmd>> m_vlUndoDeque;
+	std::deque<std::unique_ptr<VLGraphCmd>> m_vlRedoDeque;
 };
 
 // take a snapshot of an object's transform state
