@@ -2257,18 +2257,22 @@ void InspectorWindow::renderVisualLogic(GameObject* selected) {
 
             // list existing logic assets
             if (std::filesystem::exists("assets/Logic")) {
-                for (const auto& file : std::filesystem::directory_iterator("assets/Logic")) {
-                    if (file.is_regular_file() && file.path().extension() != ".json") {
+                for (const auto& file : std::filesystem::recursive_directory_iterator("assets/Logic")) {
+                    if (!file.is_regular_file() && file.path().extension() != ".json") {
                         continue;
                     }
 
-                    std::string assetName = file.path().filename().string();
-                    bool isSelected = (logic->filename == assetName);
+                    //std::string assetName = file.path().filename().string();
+                    std::string relativePath = std::filesystem::relative(file.path(), "assets/Logic").string();
 
-                    if (ImGui::Selectable(assetName.c_str(), isSelected)) {
+                    bool isSelected = (logic->filename == relativePath);
+
+                    if (ImGui::Selectable(relativePath.c_str(), isSelected)) {
                         if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
+
                         Editor::visualLogicState.targetObj = selected;
-                        VisualLogicEditor::Instance().loadLogic(assetName);
+                        VisualLogicEditor::Instance().loadLogic(relativePath);
+
                         if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
                     }
 
