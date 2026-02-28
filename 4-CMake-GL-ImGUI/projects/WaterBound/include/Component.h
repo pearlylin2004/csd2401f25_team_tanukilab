@@ -689,6 +689,11 @@ struct LogicConnection {
 
     std::string outputPin; // OUT, TRUE, FALSE
     std::string inputPin; // IN
+
+    inline bool operator==(const LogicConnection& other) const {
+        return fromNodeId == other.fromNodeId && toNodeId == other.toNodeId &&
+            outputPin == other.outputPin && inputPin == other.inputPin;
+    }
 };
 
 enum class NodeType {
@@ -764,6 +769,11 @@ struct LogicNode {
 
     // for node configuration
     std::map<std::string, std::string> parameters;
+
+    inline bool operator==(const LogicNode& other) const {
+        return id == other.id && position.x == other.position.x &&
+            position.y == other.position.y && parameters == other.parameters;
+    }
 };
 
 class GameObject; // annoying forward declaration

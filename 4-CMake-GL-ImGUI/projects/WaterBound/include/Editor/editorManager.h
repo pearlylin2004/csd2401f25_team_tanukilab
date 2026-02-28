@@ -170,8 +170,8 @@ private:
 	VisualLogicEditor();
 
 	int m_nextNodeId;
-	int m_selectedNodeId;
-	int m_selectedConIndex;
+	int& m_selectedNodeId;
+	int& m_selectedConIndex;
 
 	// dragging state
 	bool m_isDragging;
