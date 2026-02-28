@@ -402,19 +402,6 @@ void AssetBrowser::render() {
                 }
 
                 if (isInPrefabFolder) {
-                    // build registry path from asset.path 
-                    /*std::string fullPath = asset.path;
-                    std::replace(fullPath.begin(), fullPath.end(), '\\', '/');
-
-                    std::string registryPath;
-                    size_t pos = fullPath.find("/Prefab/");
-                    if (pos != std::string::npos)
-                        registryPath = fullPath.substr(pos);
-                    else {
-                        pos = fullPath.find("Prefab/");
-                        if (pos != std::string::npos)
-                            registryPath = "/" + fullPath.substr(pos);
-                    }*/
 
                     // get ID of the double clicked prefab by its filename
                     std::string prefabID = PrefabManager::Instance().findPrefabIDByFilename(toRegistryPath(asset.path));
@@ -581,21 +568,6 @@ void AssetBrowser::assetDeletePopup() {
         }
 
         if (isInPrefabFolder) {
-            // extract path from "Prefab/" onwards to match registry format e.g. "/Prefab/user/player.json"
-            //std::string fullPath = pathToDelete.string();
-            //std::replace(fullPath.begin(), fullPath.end(), '\\', '/');
-
-            //// make sure path has a leading slash
-            //std::string registryPath;
-            //size_t pos = fullPath.find("/Prefab/");
-            //if (pos != std::string::npos)
-            //    registryPath = fullPath.substr(pos);
-            //else {
-            //    pos = fullPath.find("Prefab/");
-            //    if (pos != std::string::npos)
-            //        registryPath = "/" + fullPath.substr(pos);
-            //}
-
             std::string prefabID = PrefabManager::Instance().findPrefabIDByFilename(toRegistryPath(pathToDelete.string()));
 
             if (!prefabID.empty()) {
@@ -637,11 +609,6 @@ void AssetBrowser::assetDeletePopup() {
                 std::filesystem::exists(m_AssetBrowserState.fullPathToDelete)) {
 
                 bool deletionSuccess = true;
-
-                /*std::string registryPath = relativePath;
-                std::replace(registryPath.begin(), registryPath.end(), '\\', '/');
-                if (!registryPath.empty() && registryPath[0] != '/')
-                    registryPath = "/" + registryPath;*/
 
                 // delete from prefab registry FIRST (before files) if its prefab
                 std::string prefabID = PrefabManager::Instance().findPrefabIDByFilename(toRegistryPath(m_AssetBrowserState.fullPathToDelete));

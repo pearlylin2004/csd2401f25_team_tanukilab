@@ -192,16 +192,6 @@ void HierarchyWindow::handlePrefabDragDrop(GameObjectManager& manager) {
             std::string fullPath = path.string();
             std::replace(fullPath.begin(), fullPath.end(), '\\', '/');
 
-            /*std::string registryPath;
-            size_t pos = fullPath.find("/Prefab/");
-            if (pos != std::string::npos)
-                registryPath = fullPath.substr(pos);
-            else {
-                pos = fullPath.find("Prefab/");
-                if (pos != std::string::npos)
-                    registryPath = "/" + fullPath.substr(pos);
-            }*/
-
             std::string prefabID = PrefabManager::Instance().findPrefabIDByFilename(AssetBrowser::toRegistryPath(path.string()));
             if (prefabID.empty()) {
                 DebugLog::addMessage("Cannot find prefab ID for: " + path.string());
