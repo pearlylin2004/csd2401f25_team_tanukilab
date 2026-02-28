@@ -350,7 +350,7 @@ public:
 
     bool collisionFlag = true; // whether objest can collide with another obj
     shape colliderType = shape::square;
-    Vector2D colliderSize{ 0,0 }; // size of the bounding box, if collider is circle then x will be diamater
+    Vector2D colliderSize{ 0,0 }; // size of the bounding box, if collider is circle then x is diamater
     Vector2D colliderPos{ 0,0 };
     float colliderRot = 0.f;
     bool autoFitScale = true; // auto-fit the collider with the size of the mesh (i.e. obj bigger -> collider bigger)

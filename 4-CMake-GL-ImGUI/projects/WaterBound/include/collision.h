@@ -88,12 +88,10 @@ namespace Collision {
     };
 
     AABB getObjectAABB(const Transform* transform);
-    //AABB getObjectAABBbyCollider(const Transform* transform, const Vector2D& collider); // use customized collider for AABB
     AABB getObjectAABBbyCollider(const Transform* transform, const CollisionInfo* collision);
     // help draw rotated box collider in editor
     void getColliderCorners(const Transform* transform, const CollisionInfo* collision, ImVec2 screenCorners[4], std::function<ImVec2(float, float)> worldToScreen);
-    Circle getObjectCircle(const Transform* transform);
-    //Circle getObjectCirclebyCollider(const Transform* transform, const Vector2D& collider);
+    //Circle getObjectCircle(const Transform* transform);
     Circle getObjectCirclebyCollider(const Transform* transform, const CollisionInfo* collision);
 
     //AABB and AABB
