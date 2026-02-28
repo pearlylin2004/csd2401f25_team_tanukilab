@@ -449,3 +449,15 @@ private:
 
 	std::unordered_map<GameObject*, WaterMesh> m_waterMeshes;
 };
+
+class Camera
+{
+public:
+	void update(GameObjectManager& manager);
+	void camDefault();
+	static void onResize(int w, int h);
+	static bool camPresent;
+private:
+	static int screenWidth;
+	static int screenHeight;
+};

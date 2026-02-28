@@ -384,6 +384,7 @@ void CoreEngine::toggleFullscreen()
      * --------------------------------------------------------------------
      */
     renderer::onResize(fbw, fbh);
+    Camera::onResize(fbw, fbh);
 
     // Update both gameplay camera and editor camera to new aspect ratios
     renderer::cam.update();

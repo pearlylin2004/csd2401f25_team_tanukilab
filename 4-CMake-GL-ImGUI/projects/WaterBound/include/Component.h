@@ -97,6 +97,25 @@ public:
     renderer::model modelRef;
 };
 
+struct camera : public Component
+{
+    public:
+    camera() = default;
+    std::unique_ptr<Component> clone() const override {
+        return std::make_unique<camera>(*this);
+    }
+    bool useScreenSize = true;
+    float height = 1.f;
+    int width = 1.f;
+    glm::vec3 campos{ 0,0,0 };
+    float zoom = 1;;
+    //float zoomFactor = 0;
+    float minZoom = 0;
+	float maxZoom = 1;
+    float mapWidth = 1;
+    float mapHeight = 1;
+};
+
 struct Particle : public Component {
 public:
     std::unique_ptr<Component> clone() const override {
