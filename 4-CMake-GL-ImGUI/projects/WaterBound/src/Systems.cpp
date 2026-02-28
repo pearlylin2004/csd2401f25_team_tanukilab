@@ -1437,7 +1437,7 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 			int minCellX = 0, maxCellX = 0, minCellY = 0, maxCellY = 0;
 			//square
 			if (c->colliderType == shape::square){
-				Collision::AABB box = Collision::getObjectAABBbyCollider(objT, c->colliderSize); // use custom collider instead of scale
+				Collision::AABB box = Collision::getObjectAABBbyCollider(objT, c); // use custom collider instead of scale
 				minCellX = static_cast<int>(std::floor(box.getMin().x / CELL_SIZE));
 				maxCellX = static_cast<int>(std::floor(box.getMax().x / CELL_SIZE));
 				minCellY = static_cast<int>(std::floor(box.getMin().y / CELL_SIZE));
@@ -1446,7 +1446,7 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 			//circle
 			else if (c->colliderType == shape::circle) {
 				//need one for circle
-				Collision::Circle circle = Collision::getObjectCirclebyCollider(objT, c->colliderSize);
+				Collision::Circle circle = Collision::getObjectCirclebyCollider(objT, c);
 
 				float minX = circle.getCenter().x - circle.getRadius();
 				float maxX = circle.getCenter().x + circle.getRadius();
@@ -1515,25 +1515,25 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 
 					//if both square
 					if (c1->colliderType == shape::square && c2->colliderType == shape::square) {
-						Collision::AABB aabb1 = Collision::getObjectAABBbyCollider(t1, c1->colliderSize);
-						Collision::AABB aabb2 = Collision::getObjectAABBbyCollider(t2, c2->colliderSize);
+						Collision::AABB aabb1 = Collision::getObjectAABBbyCollider(t1, c1);
+						Collision::AABB aabb2 = Collision::getObjectAABBbyCollider(t2, c2);
 						info = Collision::CollisionIntersection_RectRect_Dynamic_Info(aabb1, vel1, aabb2, vel2);
 					}
 					//if both circle
 					else if (c1->colliderType == shape::circle && c2->colliderType == shape::circle) {
-						Collision::Circle circle1 = Collision::getObjectCirclebyCollider(t1, c1->colliderSize);
-						Collision::Circle circle2 = Collision::getObjectCirclebyCollider(t2, c2->colliderSize);
+						Collision::Circle circle1 = Collision::getObjectCirclebyCollider(t1, c1);
+						Collision::Circle circle2 = Collision::getObjectCirclebyCollider(t2, c2);
 						info = Collision::CollisionIntersection_CircleCircle_Dynamic_Info(circle1, vel1, circle2, vel2);
 					}
 					// if one is square one is circle
 					else if (c1->colliderType == shape::square && c2->colliderType == shape::circle) {
-						Collision::AABB aabb1 = Collision::getObjectAABBbyCollider(t1, c1->colliderSize);
-						Collision::Circle circle2 = Collision::getObjectCirclebyCollider(t2, c2->colliderSize);
+						Collision::AABB aabb1 = Collision::getObjectAABBbyCollider(t1, c1);
+						Collision::Circle circle2 = Collision::getObjectCirclebyCollider(t2, c2);
 						info = Collision::CollisionIntersection_CircleAABB_Dynamic_Info(circle2, vel2, aabb1, vel1);
 					}
 					else if (c1->colliderType == shape::circle && c2->colliderType == shape::square) {
-						Collision::AABB aabb2 = Collision::getObjectAABBbyCollider(t2, c2->colliderSize);
-						Collision::Circle circle1 = Collision::getObjectCirclebyCollider(t1, c1->colliderSize);
+						Collision::AABB aabb2 = Collision::getObjectAABBbyCollider(t2, c2);
+						Collision::Circle circle1 = Collision::getObjectCirclebyCollider(t1, c1);
 						info = Collision::CollisionIntersection_CircleAABB_Dynamic_Info(circle1, vel1, aabb2, vel2);
 					}
 					else {
@@ -1682,8 +1682,8 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 								t1->x += info.normal.x * info.penetration * pushPercent;
 								// ledge assistance
 								if (p1->dynamics.velocity.y > 0.0f) {
-									Collision::AABB playerAABB = Collision::getObjectAABBbyCollider(t1, c1->colliderSize);
-									Collision::AABB platAABB = Collision::getObjectAABBbyCollider(t2, c2->colliderSize);
+									Collision::AABB playerAABB = Collision::getObjectAABBbyCollider(t1, c1);
+									Collision::AABB platAABB = Collision::getObjectAABBbyCollider(t2, c2);
 
 									float distToTop = platAABB.getMax().y - playerAABB.getMin().y;
 
@@ -1769,8 +1769,8 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 							// Push out of collision
 							if (info.normal.x != 0) {
 								if (p2->dynamics.velocity.y > 0.0f) {
-									Collision::AABB playerAABB = Collision::getObjectAABBbyCollider(t2, c2->colliderSize);
-									Collision::AABB platAABB = Collision::getObjectAABBbyCollider(t1, c1->colliderSize);
+									Collision::AABB playerAABB = Collision::getObjectAABBbyCollider(t2, c2);
+									Collision::AABB platAABB = Collision::getObjectAABBbyCollider(t1, c1);
 
 									float distToTop = platAABB.getMax().y - playerAABB.getMin().y;
 
@@ -1882,7 +1882,7 @@ void CollisionSystem::HandleTilemapCollisions(const std::unordered_map<int, Coll
 
 			if (!t || !c || !p) continue;
 
-			Collision::AABB objAABB = Collision::getObjectAABBbyCollider(t, c->colliderSize);
+			Collision::AABB objAABB = Collision::getObjectAABBbyCollider(t, c);
 			Vector2D vel{ p->dynamics.velocity.x, p->dynamics.velocity.y };
 
 			// check against all active tilemaps
@@ -1920,7 +1920,7 @@ void CollisionSystem::HandleTilemapCollisions(const std::unordered_map<int, Coll
 							// Normal stop response (player, etc.)
 							if (info.normal.x != 0) {
 								if (p->dynamics.velocity.y > 0.f) {
-									Collision::AABB playerAABB = Collision::getObjectAABBbyCollider(t, c->colliderSize);
+									Collision::AABB playerAABB = Collision::getObjectAABBbyCollider(t, c);
 									float distToTop = boxAABB.getMax().y - playerAABB.getMin().y;
 
 									if (distToTop > 0.f && distToTop < p->ledgeAssistRange) {
