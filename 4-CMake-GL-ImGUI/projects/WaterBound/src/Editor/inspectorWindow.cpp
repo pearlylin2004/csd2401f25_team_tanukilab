@@ -2087,9 +2087,14 @@ void InspectorWindow::renderLua(GameObject* selected) {
             Editor::scriptState.availScripts.clear();
 
             if (std::filesystem::exists(Editor::scriptState.scriptDir)) {
-                for (const auto& file : std::filesystem::directory_iterator(Editor::scriptState.scriptDir)) {
+                for (const auto& file : std::filesystem::recursive_directory_iterator(Editor::scriptState.scriptDir)) {
                     if (file.is_regular_file() && file.path().extension() == ".lua") {
-                        Editor::scriptState.availScripts.push_back(file.path().filename().string());
+                        // store relative path from scriptDir e.g. "subfolder/script.lua"
+                        std::string relativePath = std::filesystem::relative(
+                            file.path(), Editor::scriptState.scriptDir).string();
+                        std::replace(relativePath.begin(), relativePath.end(), '\\', '/');
+
+                        Editor::scriptState.availScripts.push_back(relativePath);
                     }
                 }
             }
@@ -2128,7 +2133,9 @@ void InspectorWindow::renderLua(GameObject* selected) {
                 // list all scripts
                 for (const std::string& scriptFile : Editor::scriptState.availScripts) {
                     // check if this script is selected (compare with scriptName)
-                    std::string nameWithoutExt = scriptFile.substr(0, scriptFile.find_last_of('.'));
+                    std::filesystem::path scriptPath(scriptFile);
+                    std::string nameWithoutExt = scriptPath.stem().string();
+
                     bool isSelected = (scriptEntry.scriptName == nameWithoutExt);
 
                     if (ImGui::Selectable(scriptFile.c_str(), isSelected)) {
