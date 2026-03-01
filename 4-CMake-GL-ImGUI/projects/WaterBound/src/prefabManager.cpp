@@ -1116,6 +1116,26 @@ void PrefabManager::applyPrefabComponents(GameObject* go, const rapidjson::Value
 			}
 		}
 	}
+
+	// ---- Weapon Component ----
+	if (comps.HasMember("WeaponComponent") && comps["WeaponComponent"].IsObject()) {
+		const auto& jweap = comps["WeaponComponent"];
+		auto* wc = go->getComponent<WeaponComponent>();
+		if (!wc)
+			wc = go->addComponent<WeaponComponent>();
+
+		if (jweap.HasMember("barrelOffset") && jweap["barrelOffset"].IsArray()
+			&& jweap["barrelOffset"].Size() >= 2) {
+			wc->barrelOffset.x = jweap["barrelOffset"][0].GetFloat();
+			wc->barrelOffset.y = jweap["barrelOffset"][1].GetFloat();
+		}
+
+		if (jweap.HasMember("aimAtMouse")) {
+			wc->aimAtMouse = jweap["aimAtMouse"].IsBool()
+				? jweap["aimAtMouse"].GetBool()
+				: (jweap["aimAtMouse"].GetInt() != 0);
+		}
+	}
 }
 
 void PrefabManager::serializeComponents(const GameObject* obj, rapidjson::Value& comps, rapidjson::Document::AllocatorType& a) {
@@ -1381,6 +1401,19 @@ void PrefabManager::serializeComponents(const GameObject* obj, rapidjson::Value&
 		}
 
 		comps.AddMember("VisualLC", jvl, a);
+	}
+
+	// ---- Weapon Component ----
+	if (auto wc = obj->getComponent<WeaponComponent>()) {
+		rapidjson::Value jweap(rapidjson::kObjectType);
+		rapidjson::Value barrelArr(rapidjson::kArrayType);
+		barrelArr.PushBack(wc->barrelOffset.x, a);
+		barrelArr.PushBack(wc->barrelOffset.y, a);
+		jweap.AddMember("barrelOffset", barrelArr, a);
+		jweap.AddMember("aimAtMouse", wc->aimAtMouse ? 1 : 0, a);
+		if (!jweap.ObjectEmpty()) {
+			comps.AddMember("WeaponComponent", jweap, a);
+		}
 	}
 }
 
