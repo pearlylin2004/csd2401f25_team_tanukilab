@@ -127,7 +127,7 @@ GameObject* GameObjectManager::CloneGameObject(const std::string& sourceName, co
 
 	//cloning GameObject
 	std::unique_ptr<GameObject> clonedObject = iterator->second->clone(newName);
-
+	 
 	GameObject* ptr = clonedObject.get();//raw pointer
 
 	m_gameObjects[newName] = std::move(clonedObject);//move into map

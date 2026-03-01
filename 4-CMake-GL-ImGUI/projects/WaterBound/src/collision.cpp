@@ -652,77 +652,76 @@ namespace Collision {
 
         if (!phys1->alive || !phys2->alive) return false;
 
-        //masses and coefficient of restitution
-        float m1 = phys1->dynamics.mass;
-        float m2 = phys2->dynamics.mass;
-
         //vector from obj1 to obj2
         float dx = trans2->x - trans1->x;
         float dy = trans2->y - trans1->y;
-        float distSq = sqrtf(dx * dx + dy * dy);
-        if (distSq < 0.0001f) return false; //avoid division by zero
+        float distSq = dx * dx + dy * dy;
+        if (distSq < 1e-8f) return false; //avoid division by zero
 
         float dist = sqrtf(distSq);
+
+        //settings
+        float restDistance = 1.0f; //particle radius spacing
+        float stiffness = 6.0f; //pressure strength
+        float viscosity = 0.008f; //smoothing
+        float correctionPercent = 0.5f; //positional correction
+        float damping = 0.05f; //damping
+		float flowStrength = 0.02f; //flow strength for water like behavior
+        float gravity = 0.002f; // tiny gravity to keep flow
+        float antiStick = 0.002f; // slide over neighbors
+
+        //only interact if close
+        float penetration = restDistance - dist;
+        if (penetration <= 0.0f) return false;
 
         //normalized collision direction
         float nx = dx / dist;
         float ny = dy / dist;
 
-        float restDistance = 1.0f; //particle radius spacing
-        float stiffness = 6.0f; //pressure strength
-        float viscosity = 0.08f; //smoothing
-        float correctionPercent = 0.02f; //positional correction
-        float gravitySlip = 20.0f; //sideways slide strength
-
-        //only interact if close
-        float penetration = restDistance - dist;
-        if (penetration <= 0.0f)
-            return false;
+        //masses and coefficient of restitution
+        float m1 = phys1->dynamics.mass;
+        float m2 = phys2->dynamics.mass;
 
         //soft pressure 
-        //float verticalFactor = 1.0f - fabs(ny);
-        float horizontalFactor = fabs(nx);
-        float pressureForce = stiffness * penetration * horizontalFactor;
-        phys1->dynamics.velocity.x -= pressureForce * nx / m1;
-        phys1->dynamics.velocity.y -= pressureForce * ny / m1;
-        phys2->dynamics.velocity.x += pressureForce * nx / m2;
-        phys2->dynamics.velocity.y += pressureForce * ny / m2;
+        float pressure = stiffness * penetration;
+        phys1->dynamics.velocity.x -= pressure * nx / m1;
+        phys1->dynamics.velocity.y -= pressure * ny / m1;
+        phys2->dynamics.velocity.x += pressure * nx / m2;
+        phys2->dynamics.velocity.y += pressure * ny / m2;
 
-        //viscosity
+        //lateral flow proportional to penetration
+        phys1->dynamics.velocity.x += flowStrength * (penetration / restDistance);
+        phys2->dynamics.velocity.x += flowStrength * (penetration / restDistance);
+
+        //tiny gravity & anti sticking
+        phys1->dynamics.velocity.y += gravity - antiStick;
+        phys2->dynamics.velocity.y += gravity - antiStick;
+
+        //cheap viscosity so wont affect fps
         float rvx = phys2->dynamics.velocity.x - phys1->dynamics.velocity.x;
         float rvy = phys2->dynamics.velocity.y - phys1->dynamics.velocity.y;
         float velAlongNormal = rvx * nx + rvy * ny;
-        float tangentX = rvx - velAlongNormal * nx;
-        float tangentY = rvy - velAlongNormal * ny;
-        phys1->dynamics.velocity.x += viscosity * tangentX;
-        phys1->dynamics.velocity.y += viscosity * tangentY;
-        phys2->dynamics.velocity.x -= viscosity * tangentX;
-        phys2->dynamics.velocity.y -= viscosity * tangentY;
+        phys1->dynamics.velocity.x += velAlongNormal * nx * viscosity;
+        phys1->dynamics.velocity.y += velAlongNormal * ny * viscosity;
+        phys2->dynamics.velocity.x -= velAlongNormal * nx * viscosity;
+        phys2->dynamics.velocity.y -= velAlongNormal * ny * viscosity;
 
-        //gravity
-        float slide = gravitySlip * fabs(ny);
-        phys1->dynamics.velocity.x += slide * nx;
-        phys2->dynamics.velocity.x -= slide * nx;
+        //simple damping instead of full viscosity or friction
+        phys1->dynamics.velocity.x *= (1.0f - damping);
+        phys1->dynamics.velocity.y *= (1.0f - damping);
+        phys2->dynamics.velocity.x *= (1.0f - damping);
+        phys2->dynamics.velocity.y *= (1.0f - damping);
 
-        //no bounce
-        /*if (velAlongNormal < 0.0f) {
-            float j = -(velAlongNormal) / (1 / m1 + 1 / m2);
-            phys1->dynamics.velocity.x -= j * nx / m1;
-            phys1->dynamics.velocity.y -= j * ny / m1;
-            phys2->dynamics.velocity.x += j * nx / m2;
-            phys2->dynamics.velocity.y += j * ny / m2;
-        }*/
+        //soft positional correction
+        float correction = penetration * correctionPercent * 0.5f;
+        trans1->x -= correction * nx;
+        trans1->y -= correction * ny;
+        trans2->x += correction * nx;
+        trans2->y += correction * ny;
 
-		//soft position correction to prevent sinking
-        float correction = penetration * correctionPercent;
-        trans1->x -= correction * nx / m1;
-        trans1->y -= correction * ny / m1;
-        trans2->x += correction * nx / m2;
-        trans2->y += correction * ny / m2;
-        phys1->dynamics.position.x = trans1->x;
-        phys1->dynamics.position.y = trans1->y;
-        phys2->dynamics.position.x = trans2->x;
-        phys2->dynamics.position.y = trans2->y;
+        //update physics positions
+        phys1->dynamics.position = { trans1->x, trans1->y };
+        phys2->dynamics.position = { trans2->x, trans2->y };
 
         return true;
     }

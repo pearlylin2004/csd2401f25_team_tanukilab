@@ -1059,6 +1059,7 @@ void FontSystem::RenderText(GLuint& s, std::string text, float x, float y, float
 //		}
 //	}
 //}
+
 void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime, MessageBus& messageBus) {
 	auto start = std::chrono::high_resolution_clock::now();
 
@@ -1352,7 +1353,32 @@ void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime, M
 			}
 			else {
 				// Gravity delay expired - normal physics with gravity
-				DynamicsSystem::Integrate(p->dynamics, deltaTime, p->gravity, false);
+				//DynamicsSystem::Integrate(p->dynamics, deltaTime, p->gravity, false);
+
+				/*for water to move*/
+				//flow force
+				float flowStrength = 25.0f * expf(-p->lifeTimer * 0.6f);
+				p->dynamics.velocity.x += flowStrength * deltaTime;
+				p->dynamics.velocity.y += 0.0f;
+				//strong gravity
+				p->dynamics.velocity.y += -25.0f * deltaTime;
+				//turbulence that decays over time
+				float turbulence = sin(p->lifeTimer * 8.0f) * 2.0f * expf(-p->lifeTimer);
+				p->dynamics.velocity.y += turbulence * deltaTime;
+				//quadratic drag
+				float speed = sqrt(
+					p->dynamics.velocity.x * p->dynamics.velocity.x +
+					p->dynamics.velocity.y * p->dynamics.velocity.y);
+
+				if (speed > 0.0001f) {
+					float dragCoefficient = 0.5f;
+					float dragForce = dragCoefficient * speed * speed;
+					p->dynamics.velocity.x -= (p->dynamics.velocity.x / speed) * dragForce * deltaTime;
+					p->dynamics.velocity.y -= (p->dynamics.velocity.y / speed) * dragForce * deltaTime;
+				}
+				//integrate
+				Vector3D deltaPos = Vec3_Scale(&p->dynamics.velocity, deltaTime);
+				p->dynamics.position = Vec3_Add(&p->dynamics.position, &deltaPos);
 			}
 
 			t->x = p->dynamics.position.x;
@@ -1362,19 +1388,23 @@ void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime, M
 			p->lifeTimer += deltaTime;
 
 			// Deactivate if lifetime exceeded or fell too far
-			if (p->lifeTimer >= p->maxLifetime || p->dynamics.position.y < -20.0f) {
-				PhysicsForces::deactivateBullet(obj);
+			if (!EditorManager::isEditingMode()) {
+				if (p->lifeTimer >= p->maxLifetime || p->dynamics.position.y < -20.0f) {
+					PhysicsForces::deactivateBullet(obj);
+				}
 			}
 		}
 		else {
 			//Haardcoded way-- need fix in future
-			if (t->y > -100.0f || t->x > -100.0f) {
-				t->x = -1000.0f;
-				t->y = -1000.0f;
-				p->dynamics.position.x = -1000.0f;
-				p->dynamics.position.y = -1000.0f;
-				p->dynamics.velocity.x = 0.0f;
-				p->dynamics.velocity.y = 0.0f;
+			if (!EditorManager::isEditingMode()) {
+				if (t->y > -100.0f || t->x > -100.0f) {
+					t->x = -1000.0f;
+					t->y = -1000.0f;
+					p->dynamics.position.x = -1000.0f;
+					p->dynamics.position.y = -1000.0f;
+					p->dynamics.velocity.x = 0.0f;
+					p->dynamics.velocity.y = 0.0f;
+				}
 			}
 		}
 	}
@@ -1546,8 +1576,9 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 						//water particle merge logic
 						if (obj1->getComponent<CollisionInfo>()->collisionTag == "bullet" &&
 							obj2->getComponent<CollisionInfo>()->collisionTag == "bullet"){
-							if (Collision::HandleWaterParticleMerge(obj1, obj2))
-								continue; //skip normal collision
+							if (!EditorManager::isEditingMode()) {
+								if (Collision::HandleWaterParticleMerge(obj1, obj2)) continue; //skip normal collision
+							}
 						}
 
 						// Visual logic events (if needed)
@@ -1680,6 +1711,7 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 							// Push out of collision
 							if (info.normal.x != 0) {
 								t1->x += info.normal.x * info.penetration * pushPercent;
+
 								// ledge assistance
 								if (p1->dynamics.velocity.y > 0.0f) {
 									Collision::AABB playerAABB = Collision::getObjectAABBbyCollider(t1, c1);
@@ -1688,33 +1720,46 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 									float distToTop = platAABB.getMax().y - playerAABB.getMin().y;
 
 									if (distToTop > 0.f && distToTop < p1->ledgeAssistRange) {
-										// Nudge player up onto platform
-										//t1->y += distToTop;
 										p1->ledgeClimb = true;
 										p1->ledgeTargetY = t1->y + distToTop;
-
-										//p1->dynamics.position.y = t1->y;
-										/*p1->dynamics.velocity.y = 0.f;
-										p1->velY = 0.f;
-
-										p1->onGround = true;
-										p1->coyoteAvailable = true;
-										p1->coyoteTimer = p1->coyoteTime;*/
-
-										//return;
 										continue;
 									}
 								}
 
-								//t1->x += info.normal.x * info.penetration;
-								p1->dynamics.position.x = t1->x;
-
-								p1->dynamics.velocity.x = 0.f;
-								p1->velX = 0.f;
+								//stop horizontal motion for non-bullet objects
+								if (c1->collisionTag != "bullet") { 
+									p1->dynamics.velocity.x = 0.f;
+									p1->velX = 0.f;
+								}
 							}
 							if (info.normal.y != 0) {
 								t1->y += info.normal.y * info.penetration * pushPercent;
 								p1->dynamics.position.y = t1->y;
+
+								if (c1->collisionTag == "bullet") { // water
+									float spread = 10.f; // horizontal spread for flow
+									float flowSpeed = 0.2f; // constant lateral push
+									float direction = (rand() % 2 == 0 ? 1.f : -1.f);
+
+									//p1->dynamics.velocity.x += flowSpeed * deltaTime + spread * direction;
+									//p1->dynamics.velocity.y += 0.f;
+
+									p1->dynamics.velocity.x += flowSpeed + spread * direction;
+									
+									// small downward bias so it stays on ground but can slide
+									p1->dynamics.velocity.y = -0.01f; // tiny downward motion
+
+									// apply sliding friction
+									float slideFriction = -0.10f;
+									p1->dynamics.velocity.x *= (1.0f - slideFriction);
+
+									// keep onGround true for other logic if needed
+									p1->onGround = true;
+								}
+								else {
+									//normal objects
+									p1->dynamics.velocity.y = 0.f;
+								}
 							}
 							// Apply torque to obj2 if it can rotate (e.g. water wheel hit by bullet)
 							// If obj2 is a child, redirect torque to its parent (e.g. spoke → water wheel)
@@ -1748,21 +1793,22 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 								ApplyBounce(p1, c1, info.normal, true);
 							}
 							else {
-								// Original stop behavior
-								if (info.normal.x != 0) {
-									p1->dynamics.velocity.x = 0.f;
-									p1->velX = 0.f;
-								}
-								if (info.normal.y != 0) {
-									p1->dynamics.velocity.y = 0.f;
-									if (info.normal.y > 0) {
-										p1->onGround = true;
-										p1->coyoteAvailable = true;
-										p1->coyoteTimer = p1->coyoteTime;
+								//original stop behaviors
+								if (c1->collisionTag != "bullet") {
+									if (info.normal.x != 0) {
+										p1->dynamics.velocity.x = 0.f;
+										p1->velX = 0.f;
+									}
+									if (info.normal.y != 0) {
+										p1->dynamics.velocity.y = 0.f;
+										if (info.normal.y > 0) {
+											p1->onGround = true;
+											p1->coyoteAvailable = true;
+											p1->coyoteTimer = p1->coyoteTime;
+										}
 									}
 								}
 							}
-							
 						}
 						// CASE 3: obj1 is static, obj2 is pushable
 						else if (obj1IsStatic && !obj2IsStatic) {
@@ -1791,14 +1837,36 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 								}
 
 								t2->x -= info.normal.x * info.penetration;
-								p2->dynamics.position.x = t2->x;
 
-								p2->dynamics.velocity.x = 0.f;
-								p2->velX = 0.f;
+								if (c2->collisionTag == "bullet") {
+									// FLOWING BULLET: slide horizontally
+									float spread = 10.f;
+									float flowSpeed = 20.f;
+									float direction = (rand() % 2 == 0 ? 1.f : -1.f);
+
+									p2->dynamics.velocity.x += flowSpeed * deltaTime + spread * direction;
+									p2->dynamics.velocity.y += 0.f; // optional slight downward movement
+								}
+								else {
+									// normal object stops horizontally
+									p2->dynamics.velocity.x = 0.f;
+									p2->velX = 0.f;
+								}
+								p2->dynamics.position.x = t2->x;
 							}
+
 							if (info.normal.y != 0) {
 								t2->y -= info.normal.y * info.penetration;
 								p2->dynamics.position.y = t2->y;
+
+								if (c2->collisionTag != "bullet") {
+									p2->dynamics.velocity.y = 0.f;
+									if (info.normal.y < 0) {
+										p2->onGround = true;
+										p2->coyoteAvailable = true;
+										p2->coyoteTimer = p2->coyoteTime;
+									}
+								}
 							}
 
 							// Apply torque to obj1 if it can rotate
@@ -1845,22 +1913,8 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 									}
 								}
 							}
-							
-						}
-						// CASE 4: Both are static (shouldnt happen?)
-						else {
-							/*if (info.normal.x != 0) {
-								t1->x -= info.normal.x * info.penetration;
-								p1->dynamics.position.x = t1->x;
-							}
-
-							if (info.normal.y != 0) {
-								t1->y += info.normal.y * info.penetration;
-								p1->dynamics.position.y = t1->y;
-							}*/
-						}					
+						}				
 					}
-					
 				}
 			}
 		}
@@ -1924,14 +1978,6 @@ void CollisionSystem::HandleTilemapCollisions(const std::unordered_map<int, Coll
 									float distToTop = boxAABB.getMax().y - playerAABB.getMin().y;
 
 									if (distToTop > 0.f && distToTop < p->ledgeAssistRange) {
-										/*t->y += distToTop;
-										p->dynamics.position.y = t->y;
-										p->dynamics.velocity.y = 0.0f;
-										p->velY = 0.0f;
-										p->onGround = true;
-										p->coyoteAvailable = true;
-										p->coyoteTimer = p->coyoteTime;
-										continue;*/
 										p->ledgeClimb = true;
 										p->ledgeTargetY = t->y + distToTop;
 										collisionResolved = true;
