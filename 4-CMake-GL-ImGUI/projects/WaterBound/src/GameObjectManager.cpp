@@ -1291,16 +1291,12 @@ doc.AddMember("layers", layersArr, a);
 				pushIfDiffFloat("colorA", r->clr.a);
 
 				// save hasTex based on whether have texture
-				pushIfDiffBool("hasTex", r->hasTex);
+				// always write these - critical instance data
+				jr.AddMember("hasTex", rapidjson::Value(r->hasTex ? 1 : 0), a);
 				if (r->hasTex && !r->texFile.empty()) {
-					if (!prefabR || !prefabR->HasMember("texture") || r->texFile != (*prefabR)["texture"].GetString()) {
-						jr.AddMember("texture", rapidjson::Value(r->texFile.c_str(), a), a);
-						//jr.AddMember("hasTex", rapidjson::Value(r->hasTex ? 1 : 0), a);
-					}
-
+					jr.AddMember("texture", rapidjson::Value(r->texFile.c_str(), a), a);
 				}
-
-				pushIfDiffBool("hasAnimation", r->hasAnimation);
+				jr.AddMember("hasAnimation", rapidjson::Value(r->hasAnimation ? 1 : 0), a);
 
 				if (!jr.ObjectEmpty()) comps.AddMember("Render", jr, a);
 			}
