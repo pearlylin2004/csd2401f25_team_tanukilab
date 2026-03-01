@@ -302,7 +302,7 @@ void renderer::camera::update()
 	if (mode == cameraMode::GAME)
 	{
 		// for gameplay camera, always focus at the center of the view
-		view = glm::lookAt(campos, glm::vec3(0, 0, -1), up);
+		view = glm::lookAt(campos, glm::vec3(campos.x, campos.y, -1), up);
 	}
 	else
 	{

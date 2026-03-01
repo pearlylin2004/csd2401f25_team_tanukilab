@@ -107,11 +107,9 @@ struct camera : public Component
     bool useScreenSize = true;
     float height = 1.f;
     int width = 1.f;
-    glm::vec3 campos{ 0,0,0 };
-    float zoom = 1;;
-    //float zoomFactor = 0;
+    float zoom = 10;
     float minZoom = 0;
-	float maxZoom = 1;
+	float maxZoom = 50;
     float mapWidth = 1;
     float mapHeight = 1;
 };

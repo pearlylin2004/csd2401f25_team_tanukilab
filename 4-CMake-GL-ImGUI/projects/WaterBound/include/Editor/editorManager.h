@@ -135,6 +135,7 @@ private:
 	void renderLua(GameObject* selected);
 	void renderVisualLogic(GameObject* selected);
 	void renderLayerControls(GameObject* selected);
+	void renderCamera(GameObject* selected);
 
 	void wrongFileTypePopup(const std::string& filename);
 

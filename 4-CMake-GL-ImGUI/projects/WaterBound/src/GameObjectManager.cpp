@@ -506,6 +506,39 @@ void GameObjectManager::loadSceneFromJson(const std::string& filename) {
 			// Note: isActive is not deserialized as requested
 		}
 
+		// ---- Camera ----
+		if (comps.HasMember("Camera") && comps["Camera"].IsObject()) {
+			const auto& jcam = comps["Camera"];
+			auto* cam = go->getComponent<camera>();
+			if (!cam) cam = go->addComponent<camera>();
+
+			if (jcam.HasMember("useScreenSize"))
+				cam->useScreenSize = jcam["useScreenSize"].IsBool()
+				? jcam["useScreenSize"].GetBool()
+				: (jcam["useScreenSize"].GetInt() != 0);
+
+			if (jcam.HasMember("height") && jcam["height"].IsNumber())
+				cam->height = jcam["height"].GetFloat();
+
+			if (jcam.HasMember("width") && jcam["width"].IsNumber())
+				cam->width = jcam["width"].GetInt();
+
+			if (jcam.HasMember("zoom") && jcam["zoom"].IsNumber())
+				cam->zoom = jcam["zoom"].GetFloat();
+
+			if (jcam.HasMember("minZoom") && jcam["minZoom"].IsNumber())
+				cam->minZoom = jcam["minZoom"].GetFloat();
+
+			if (jcam.HasMember("maxZoom") && jcam["maxZoom"].IsNumber())
+				cam->maxZoom = jcam["maxZoom"].GetFloat();
+
+			if (jcam.HasMember("mapWidth") && jcam["mapWidth"].IsNumber())
+				cam->mapWidth = jcam["mapWidth"].GetFloat();
+
+			if (jcam.HasMember("mapHeight") && jcam["mapHeight"].IsNumber())
+				cam->mapHeight = jcam["mapHeight"].GetFloat();
+		}
+
 		// ---- Input (presence only) ----
 		if (comps.HasMember("Input") && comps["Input"].IsObject()) {
 			auto* i = go->getComponent<Input>();
@@ -1262,7 +1295,7 @@ doc.AddMember("layers", layersArr, a);
 				if (r->hasTex && !r->texFile.empty()) {
 					if (!prefabR || !prefabR->HasMember("texture") || r->texFile != (*prefabR)["texture"].GetString()) {
 						jr.AddMember("texture", rapidjson::Value(r->texFile.c_str(), a), a);
-						jr.AddMember("hasTex", rapidjson::Value(r->hasTex ? 1 : 0), a);
+						//jr.AddMember("hasTex", rapidjson::Value(r->hasTex ? 1 : 0), a);
 					}
 
 				}
@@ -1321,6 +1354,47 @@ doc.AddMember("layers", layersArr, a);
 
 					if (!jp.ObjectEmpty()) comps.AddMember("Particle", jp, a);
 				}
+			}
+
+			// ---- Camera ----
+			if (auto cam = obj->getComponent<camera>()) {
+				rapidjson::Value jcam(rapidjson::kObjectType);
+				const rapidjson::Value* prefabCam = PM.getPrefabJsonComp(prefabDoc, "Camera");
+
+				auto pushIfDiffBool = [&](const char* key, bool val) {
+					if (!prefabCam || !prefabCam->HasMember(key) ||
+						((*prefabCam)[key].IsBool() && differsBool((*prefabCam)[key].GetBool(), val)) ||
+						((*prefabCam)[key].IsInt() && differsBool((*prefabCam)[key].GetInt() != 0, val))) {
+						jcam.AddMember(rapidjson::Value(key, a), rapidjson::Value(val ? 1 : 0), a);
+					}
+					};
+
+				auto pushIfDiffFloat = [&](const char* key, float val) {
+					if (!prefabCam || !prefabCam->HasMember(key) ||
+						!(*prefabCam)[key].IsNumber() ||
+						((*prefabCam)[key].GetFloat() != val)) {
+						jcam.AddMember(rapidjson::Value(key, a), rapidjson::Value(val), a);
+					}
+					};
+
+				auto pushIfDiffInt = [&](const char* key, int val) {
+					if (!prefabCam || !prefabCam->HasMember(key) ||
+						!(*prefabCam)[key].IsNumber() ||
+						((*prefabCam)[key].GetInt() != val)) {
+						jcam.AddMember(rapidjson::Value(key, a), rapidjson::Value(val), a);
+					}
+					};
+
+				pushIfDiffBool("useScreenSize", cam->useScreenSize);
+				pushIfDiffFloat("height", cam->height);
+				pushIfDiffInt("width", cam->width);
+				pushIfDiffFloat("zoom", cam->zoom);
+				pushIfDiffFloat("minZoom", cam->minZoom);
+				pushIfDiffFloat("maxZoom", cam->maxZoom);
+				pushIfDiffFloat("mapWidth", cam->mapWidth);
+				pushIfDiffFloat("mapHeight", cam->mapHeight);
+
+				if (!jcam.ObjectEmpty()) comps.AddMember("Camera", jcam, a);
 			}
 
 			// ---- Physics ----

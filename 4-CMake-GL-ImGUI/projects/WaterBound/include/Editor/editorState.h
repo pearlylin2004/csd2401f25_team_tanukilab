@@ -457,6 +457,16 @@ namespace Editor {
 			[](GameObject* obj) { obj->removeComponent<Animation>(); },
 			[](GameObject* obj) { return JsonIO::serializeAnimation(obj); },
 			[](GameObject* obj, std::string data) { JsonIO::deserializeAnimation(obj, data); }
+		},
+		{ "Camera",
+			[](GameObject* obj) {
+			obj->addComponent<camera>();
+			DebugLog::addMessage("Added Camera component for " + obj->getObjectName());
+			},
+			[](const GameObject* obj) { return obj->hasComponent<camera>(); },
+			[](GameObject* obj) { obj->removeComponent<camera>(); },
+			[](GameObject* obj) { return JsonIO::serializeCamera(obj); },
+			[](GameObject* obj, std::string data) { JsonIO::deserializeCamera(obj, data); }
 		}
 	};
 

@@ -1002,6 +1002,39 @@ void PrefabManager::applyPrefabComponents(GameObject* go, const rapidjson::Value
 		}
 	}
 
+	// ---- Camera ----
+	if (comps.HasMember("Camera") && comps["Camera"].IsObject())
+	{
+		const auto& jcam = comps["Camera"];
+		auto* cam = go->addComponent<camera>();
+
+		if (jcam.HasMember("useScreenSize"))
+			cam->useScreenSize = jcam["useScreenSize"].IsBool()
+			? jcam["useScreenSize"].GetBool()
+			: (jcam["useScreenSize"].GetInt() != 0);
+
+		if (jcam.HasMember("height") && jcam["height"].IsNumber())
+			cam->height = jcam["height"].GetFloat();
+
+		if (jcam.HasMember("width") && jcam["width"].IsNumber())
+			cam->width = jcam["width"].GetInt();
+
+		if (jcam.HasMember("zoom") && jcam["zoom"].IsNumber())
+			cam->zoom = jcam["zoom"].GetFloat();
+
+		if (jcam.HasMember("minZoom") && jcam["minZoom"].IsNumber())
+			cam->minZoom = jcam["minZoom"].GetFloat();
+
+		if (jcam.HasMember("maxZoom") && jcam["maxZoom"].IsNumber())
+			cam->maxZoom = jcam["maxZoom"].GetFloat();
+
+		if (jcam.HasMember("mapWidth") && jcam["mapWidth"].IsNumber())
+			cam->mapWidth = jcam["mapWidth"].GetFloat();
+
+		if (jcam.HasMember("mapHeight") && jcam["mapHeight"].IsNumber())
+			cam->mapHeight = jcam["mapHeight"].GetFloat();
+	}
+
 	// ---- AudioComponent - Multi-Channel with Backwards Compatibility ----
 	if (comps.HasMember("AudioComponent") && comps["AudioComponent"].IsObject()) {
 		const auto& ja = comps["AudioComponent"];
@@ -1177,6 +1210,19 @@ void PrefabManager::serializeComponents(const GameObject* obj, rapidjson::Value&
 
 			comps.AddMember("Particle", jp, a);
 		}
+	}
+
+	if (auto cam = obj->getComponent<camera>()) {
+		rapidjson::Value jcam(rapidjson::kObjectType);
+		jcam.AddMember("useScreenSize", cam->useScreenSize ? 1 : 0, a);
+		jcam.AddMember("height", cam->height, a);
+		jcam.AddMember("width", cam->width, a);
+		jcam.AddMember("zoom", cam->zoom, a);
+		jcam.AddMember("minZoom", cam->minZoom, a);
+		jcam.AddMember("maxZoom", cam->maxZoom, a);
+		jcam.AddMember("mapWidth", cam->mapWidth, a);
+		jcam.AddMember("mapHeight", cam->mapHeight, a);
+		comps.AddMember("Camera", jcam, a);
 	}
 
 	if (auto i = obj->getComponent<Input>()) {

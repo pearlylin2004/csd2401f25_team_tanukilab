@@ -457,7 +457,6 @@ public:
 	void camDefault();
 	static void onResize(int w, int h);
 	static bool camPresent;
-private:
 	static int screenWidth;
 	static int screenHeight;
 };

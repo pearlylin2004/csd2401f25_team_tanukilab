@@ -1545,6 +1545,55 @@ namespace JsonIO {
         }
     }
 
+    std::string serializeCamera(GameObject* obj) 
+    {
+        camera* cam = obj ? obj->getComponent<camera>() : nullptr;
+        if (!cam) return "";
+        using namespace rapidjson;
+        Document doc; doc.SetObject();
+        auto& a = doc.GetAllocator();
+        Value jcam(kObjectType);
+        jcam.AddMember("useScreenSize", cam->useScreenSize, a);
+        jcam.AddMember("height", cam->height, a);
+        jcam.AddMember("width", cam->width, a);
+        jcam.AddMember("zoom", cam->zoom, a);
+        jcam.AddMember("minZoom", cam->minZoom, a);
+        jcam.AddMember("maxZoom", cam->maxZoom, a);
+        jcam.AddMember("mapWidth", cam->mapWidth, a);
+        jcam.AddMember("mapHeight", cam->mapHeight, a);
+        doc.AddMember("Camera", jcam, a);
+        StringBuffer buf; Writer<StringBuffer> w(buf); doc.Accept(w);
+        return buf.GetString();
+	}
+
+    void deserializeCamera(GameObject* obj, const std::string& json) 
+    {
+        if (!obj || json.empty()) return;
+        using namespace rapidjson;
+        Document doc; doc.Parse(json.c_str());
+        if (doc.HasParseError() || !doc.HasMember("Camera")) return;
+        const Value& jcam = doc["Camera"];
+        camera* cam = obj->hasComponent<camera>()
+            ? obj->getComponent<camera>()
+            : obj->addComponent<camera>();
+        if (jcam.HasMember("useScreenSize") && jcam["useScreenSize"].IsBool())
+            cam->useScreenSize = jcam["useScreenSize"].GetBool();
+        if (jcam.HasMember("height") && jcam["height"].IsFloat())
+            cam->height = jcam["height"].GetFloat();
+        if (jcam.HasMember("width") && jcam["width"].IsInt())
+            cam->width = jcam["width"].GetInt();
+        if (jcam.HasMember("zoom") && jcam["zoom"].IsFloat())
+            cam->zoom = jcam["zoom"].GetFloat();
+        if (jcam.HasMember("minZoom") && jcam["minZoom"].IsFloat())
+            cam->minZoom = jcam["minZoom"].GetFloat();
+        if (jcam.HasMember("maxZoom") && jcam["maxZoom"].IsFloat())
+            cam->maxZoom = jcam["maxZoom"].GetFloat();
+        if (jcam.HasMember("mapWidth") && jcam["mapWidth"].IsFloat())
+            cam->mapWidth = jcam["mapWidth"].GetFloat();
+        if (jcam.HasMember("mapHeight") && jcam["mapHeight"].IsFloat())
+            cam->mapHeight = jcam["mapHeight"].GetFloat();
+	}
+
 
     std::string serializeGameObj(GameObject* obj) {
         if (!obj) return "";

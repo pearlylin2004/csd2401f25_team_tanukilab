@@ -1,11 +1,14 @@
 #include "Systems.h"
 
 bool Camera::camPresent = false;
+int Camera::screenWidth = 0;
+int Camera::screenHeight = 0;
 
 void Camera::update(GameObjectManager& manager)
 {
 	std::vector<GameObject*> objects;
 	manager.getAllGameObjects(objects);
+	camPresent = false;
 	for (GameObject* obj : objects)
 	{
 		if (obj->hasComponent<camera>())
@@ -29,13 +32,18 @@ void Camera::update(GameObjectManager& manager)
 			float halfH = camInfo->zoom;
 			float halfW = camInfo->zoom * renderer::cam.ar;
 
-			if (camInfo->mapWidth > halfW)
+			if (camInfo->mapWidth >= halfW)
 				renderer::cam.campos.x = glm::clamp(renderer::cam.campos.x,
 					-camInfo->mapWidth + halfW, camInfo->mapWidth - halfW);
+			else
+				renderer::cam.campos.x = 0;
 
-			if (camInfo->mapHeight > halfH)
+			if (camInfo->mapHeight >= halfH)
 				renderer::cam.campos.y = glm::clamp(renderer::cam.campos.y,
 					-camInfo->mapHeight + halfH, camInfo->mapHeight - halfH);
+			else
+				renderer::cam.campos.y = 0;
+
 			camPresent = true;
 		}
 	}

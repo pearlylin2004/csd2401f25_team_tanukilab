@@ -230,6 +230,14 @@ void InspectorWindow::render() {
         }
         /* ------------------- END ------------------- */
 
+        /* ------------------- Camera ------------------- */
+        if(selected->hasComponent<camera>()) {
+            renderCamera(selected);
+            ImGui::Spacing();
+            ImGui::Separator();
+            ImGui::Spacing();
+		}
+		/* ------------------- END ------------------- */
 
         /* ------------------- Layer Controls ------------------- */
         renderLayerControls(selected);
@@ -682,6 +690,95 @@ void InspectorWindow::renderRender(GameObject* selected) {
                 );
 
                 DebugLog::addMessage("Removed Render Component");
+            }
+        }
+    }
+}
+
+void InspectorWindow::renderCamera(GameObject* selected) {
+    camera* cam = selected->getComponent<camera>();
+    const Editor::ComponentEntry* entry = Editor::findEntry("Camera");
+
+    if (ImGui::CollapsingHeader("Camera")) {
+
+        if (ImGui::TreeNode("Viewport")) {
+            // Toggle between screen size and custom size
+            if (ImGui::Checkbox("Use Screen Size", &cam->useScreenSize)) {
+                if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
+                if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
+            }
+
+            // Only allow editing width/height if not using screen size
+            ImGui::BeginDisabled(cam->useScreenSize);
+
+            if (ImGui::DragFloat("Height", &cam->height, 0.1f, 0.1f, 10000.f)) {
+                if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
+                if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
+            }
+
+            if (ImGui::DragInt("Width", &cam->width, 1.f, 1, 10000)) {
+                if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
+                if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
+            }
+
+            ImGui::EndDisabled();
+            ImGui::TreePop();
+        }
+
+        if (ImGui::TreeNode("Zoom")) {
+            if (ImGui::IsItemActivated())
+                if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
+            if (ImGui::IsItemDeactivatedAfterEdit())
+                if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
+
+            ImGui::DragFloat("Zoom", &cam->zoom, 0.01f, cam->minZoom, cam->maxZoom);
+            if (ImGui::IsItemActivated())
+                if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
+            if (ImGui::IsItemDeactivatedAfterEdit())
+                if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
+
+            ImGui::DragFloat("Min Zoom", &cam->minZoom, 0.01f, 0.f, cam->maxZoom);
+            if (ImGui::IsItemActivated())
+                if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
+            if (ImGui::IsItemDeactivatedAfterEdit())
+                if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
+
+            ImGui::DragFloat("Max Zoom", &cam->maxZoom, 0.01f, cam->minZoom, 10000.f);
+            if (ImGui::IsItemActivated())
+                if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
+            if (ImGui::IsItemDeactivatedAfterEdit())
+                if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
+
+            ImGui::TreePop();
+        }
+
+        if (ImGui::TreeNode("Map Bounds")) {
+            ImGui::DragFloat("Map Width", &cam->mapWidth, 0.1f, 0.f, 100000.f);
+            if (ImGui::IsItemActivated())
+                if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
+            if (ImGui::IsItemDeactivatedAfterEdit())
+                if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
+
+            ImGui::DragFloat("Map Height", &cam->mapHeight, 0.1f, 0.f, 100000.f);
+            if (ImGui::IsItemActivated())
+                if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
+            if (ImGui::IsItemDeactivatedAfterEdit())
+                if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
+
+            ImGui::TreePop();
+        }
+
+        ImGui::Spacing();
+        ImGui::Spacing();
+        ImGui::Separator();
+        ImGui::Spacing();
+
+        if (entry) {
+            if (ImGui::Button("Remove Camera", ImVec2(-1, 0))) {
+                UndoRedoManager::Instance().executeCmd(
+                    std::make_unique<RemoveComponentCmd>(m_manager, selected, *entry)
+                );
+                DebugLog::addMessage("Removed Camera Component");
             }
         }
     }

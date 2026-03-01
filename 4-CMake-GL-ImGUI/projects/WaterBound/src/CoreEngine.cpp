@@ -76,6 +76,7 @@ void CoreEngine::Init(bool forceWindowed) {
         // remember windowed size for when we toggle back
         m_windowedWidth = cfg.width;
         m_windowedHeight = cfg.height;
+        Camera::onResize(winWidth, winHeight);
     }
     else {
         monitor = glfwGetPrimaryMonitor();
@@ -85,6 +86,7 @@ void CoreEngine::Init(bool forceWindowed) {
 
         m_windowedWidth = cfg.width;
         m_windowedHeight = cfg.height;
+		Camera::onResize(winWidth, winHeight);
     }
 
     cfg.width = winWidth;
@@ -251,6 +253,8 @@ void CoreEngine::Update(float deltaTime) {
 
    
     // Update all systems in order
+	m_cameraSystem->update(*m_manager);
+    renderer::cam.update();
     m_inputSystem->update(*m_manager, deltaTime, *m_messageBus);
     m_physicsSystem->update(*m_manager, deltaTime, *m_messageBus);
     m_collisionSystem->update(*m_manager, deltaTime);
