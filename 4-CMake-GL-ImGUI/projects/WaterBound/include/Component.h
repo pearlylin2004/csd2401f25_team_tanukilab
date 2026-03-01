@@ -106,7 +106,7 @@ struct camera : public Component
     }
     bool useScreenSize = true;
     float height = 1.f;
-    int width = 1.f;
+    int width = 1;
     float zoom = 10;
     float minZoom = 0;
 	float maxZoom = 50;

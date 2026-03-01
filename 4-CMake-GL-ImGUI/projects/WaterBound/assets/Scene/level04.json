@@ -35,6 +35,15 @@
             1.0
           ]
         },
+        "Render": {
+          "colorR": 1.0,
+          "colorG": 1.0,
+          "colorB": 1.0,
+          "colorA": 1.0,
+          "hasTex": 1,
+          "texture": "assets/Texture/water_texture.png",
+          "hasAnimation": 0
+        },
         "Physics": {
           "autoUpdate": 0,
           "maxFallSpeed": -30.0,
@@ -63,6 +72,15 @@
             4.0,
             0.0
           ]
+        },
+        "Render": {
+          "colorR": 1.0,
+          "colorG": 1.0,
+          "colorB": 1.0,
+          "colorA": 1.0,
+          "hasTex": 1,
+          "texture": "assets/Texture/Leaf_Gun_Empty.png",
+          "hasAnimation": 1
         },
         "Physics": {
           "autoUpdate": 0
@@ -127,7 +145,7 @@
           "pos": [
             0.0,
             0.0,
-            -0.07999999821186066
+            -0.07900000363588333
           ],
           "rotation": 0.0,
           "scale": [
@@ -138,9 +156,12 @@
         },
         "Render": {
           "shape": "square",
+          "colorR": 1.0,
+          "colorG": 1.0,
+          "colorB": 1.0,
+          "colorA": 1.0,
           "hasTex": 1,
           "texture": "assets/Texture\\game_bg_layer_5.png",
-          "hasTex": 1,
           "hasAnimation": 0
         }
       }
@@ -156,6 +177,14 @@
             0.0,
             -0.10000000149011612
           ]
+        },
+        "Render": {
+          "colorR": 1.0,
+          "colorG": 1.0,
+          "colorB": 1.0,
+          "colorA": 1.0,
+          "hasTex": 0,
+          "hasAnimation": 0
         }
       }
     },
@@ -177,9 +206,12 @@
         },
         "Render": {
           "shape": "square",
+          "colorR": 1.0,
+          "colorG": 1.0,
+          "colorB": 1.0,
+          "colorA": 1.0,
           "hasTex": 1,
           "texture": "assets/Texture\\game_bg_layer_1.png",
-          "hasTex": 1,
           "hasAnimation": 0
         }
       }
@@ -202,9 +234,12 @@
         },
         "Render": {
           "shape": "square",
+          "colorR": 1.0,
+          "colorG": 1.0,
+          "colorB": 1.0,
+          "colorA": 1.0,
           "hasTex": 1,
           "texture": "assets/Texture\\game_bg_layer_2.png",
-          "hasTex": 1,
           "hasAnimation": 0
         }
       }
@@ -227,9 +262,12 @@
         },
         "Render": {
           "shape": "square",
+          "colorR": 1.0,
+          "colorG": 1.0,
+          "colorB": 1.0,
+          "colorA": 1.0,
           "hasTex": 1,
           "texture": "assets/Texture\\game_bg_layer_4.png",
-          "hasTex": 1,
           "hasAnimation": 0
         }
       }
@@ -252,49 +290,13 @@
         },
         "Render": {
           "shape": "square",
+          "colorR": 1.0,
+          "colorG": 1.0,
+          "colorB": 1.0,
+          "colorA": 1.0,
           "hasTex": 1,
           "texture": "assets/Texture\\game_bg_layer_6.png",
-          "hasTex": 1,
           "hasAnimation": 0
-        }
-      }
-    },
-    {
-      "name": "water balance back",
-      "components": {
-        "Transform": {
-          "pos": [
-            17.0,
-            7.5,
-            0.9900000095367432
-          ],
-          "rotation": 0.0,
-          "scale": [
-            6.588000774383545,
-            6.588000774383545,
-            0.0
-          ]
-        },
-        "Render": {
-          "shape": "square",
-          "hasTex": 1,
-          "texture": "assets/Texture\\Water_ContainerRim.png",
-          "hasTex": 1,
-          "hasAnimation": 0
-        },
-        "CollisionInfo": {
-          "collisionFlag": 1,
-          "autoFitScale": 1,
-          "colliderSize": [
-            6.588000774383545,
-            6.588000774383545
-          ],
-          "colliderType": "square",
-          "collisionRes": "StopWhenCollide",
-          "collisionTag": "inventory",
-          "bounciness": 0.0,
-          "friction": 0.0,
-          "colliderType": "square"
         }
       }
     },
@@ -308,6 +310,15 @@
             -3.3468639850616455,
             0.0
           ]
+        },
+        "Render": {
+          "colorR": 1.0,
+          "colorG": 1.0,
+          "colorB": 1.0,
+          "colorA": 1.0,
+          "hasTex": 1,
+          "texture": "assets/Texture\\endgoal.png",
+          "hasAnimation": 0
         },
         "Physics": {
           "autoUpdate": 0,
@@ -333,6 +344,48 @@
       }
     },
     {
+      "name": "water balance back",
+      "components": {
+        "Transform": {
+          "pos": [
+            17.0,
+            7.5,
+            0.9900000095367432
+          ],
+          "rotation": 0.0,
+          "scale": [
+            6.588000774383545,
+            6.588000774383545,
+            0.0
+          ]
+        },
+        "Render": {
+          "shape": "square",
+          "colorR": 1.0,
+          "colorG": 1.0,
+          "colorB": 1.0,
+          "colorA": 1.0,
+          "hasTex": 1,
+          "texture": "assets/Texture\\Water_ContainerRim.png",
+          "hasAnimation": 0
+        },
+        "CollisionInfo": {
+          "collisionFlag": 1,
+          "autoFitScale": 1,
+          "colliderSize": [
+            6.588000774383545,
+            6.588000774383545
+          ],
+          "colliderType": "square",
+          "collisionRes": "StopWhenCollide",
+          "collisionTag": "inventory",
+          "bounciness": 0.0,
+          "friction": 0.0,
+          "colliderType": "square"
+        }
+      }
+    },
+    {
       "name": "water balance",
       "components": {
         "Transform": {
@@ -350,9 +403,12 @@
         },
         "Render": {
           "shape": "square",
+          "colorR": 1.0,
+          "colorG": 1.0,
+          "colorB": 1.0,
+          "colorA": 1.0,
           "hasTex": 1,
           "texture": "assets/Texture\\Water_100.png",
-          "hasTex": 1,
           "hasAnimation": 0
         },
         "CollisionInfo": {
@@ -392,9 +448,12 @@
         },
         "Render": {
           "shape": "square",
+          "colorR": 1.0,
+          "colorG": 1.0,
+          "colorB": 1.0,
+          "colorA": 1.0,
           "hasTex": 1,
           "texture": "assets/Texture\\Platform_Tile_Map_Sakura.png",
-          "hasTex": 1,
           "hasAnimation": 0
         },
         "Physics": {
@@ -451,9 +510,12 @@
         },
         "Render": {
           "shape": "square",
+          "colorR": 1.0,
+          "colorG": 1.0,
+          "colorB": 1.0,
+          "colorA": 1.0,
           "hasTex": 1,
           "texture": "assets/Texture\\Platform_Tile_Map_Sakura.png",
-          "hasTex": 1,
           "hasAnimation": 0
         },
         "Physics": {
@@ -510,9 +572,12 @@
         },
         "Render": {
           "shape": "square",
+          "colorR": 1.0,
+          "colorG": 1.0,
+          "colorB": 1.0,
+          "colorA": 1.0,
           "hasTex": 1,
           "texture": "assets/Texture\\Platform_Tile_Map_Sakura.png",
-          "hasTex": 1,
           "hasAnimation": 0
         },
         "Physics": {
@@ -567,6 +632,15 @@
             0.0
           ]
         },
+        "Render": {
+          "colorR": 1.0,
+          "colorG": 1.0,
+          "colorB": 1.0,
+          "colorA": 1.0,
+          "hasTex": 1,
+          "texture": "assets/Texture\\Tree_Base.png",
+          "hasAnimation": 0
+        },
         "Physics": {
           "autoUpdate": 0,
           "maxFallSpeed": -30.0,
@@ -606,6 +680,15 @@
             2.9719998836517334,
             0.949999988079071
           ]
+        },
+        "Render": {
+          "colorR": 1.0,
+          "colorG": 1.0,
+          "colorB": 1.0,
+          "colorA": 1.0,
+          "hasTex": 1,
+          "texture": "assets/Texture\\Tree_Broken_Branch.png",
+          "hasAnimation": 0
         },
         "Physics": {
           "autoUpdate": 0,
@@ -709,7 +792,7 @@
         "Transform": {
           "pos": [
             -6.253969192504883,
-            -6.005908012390137,
+            -6.032975673675537,
             0.0
           ],
           "rotation": 0.0,
@@ -721,9 +804,12 @@
         },
         "Render": {
           "shape": "square",
+          "colorR": 1.0,
+          "colorG": 1.0,
+          "colorB": 1.0,
+          "colorA": 1.0,
           "hasTex": 1,
           "texture": "assets/Texture\\Platform_Tile_Map_Sakura.png",
-          "hasTex": 1,
           "hasAnimation": 0
         },
         "Physics": {
@@ -780,9 +866,12 @@
         },
         "Render": {
           "shape": "square",
+          "colorR": 1.0,
+          "colorG": 1.0,
+          "colorB": 1.0,
+          "colorA": 1.0,
           "hasTex": 1,
           "texture": "assets/Texture\\Water Wheel Light Version.png",
-          "hasTex": 1,
           "hasAnimation": 0
         },
         "Physics": {

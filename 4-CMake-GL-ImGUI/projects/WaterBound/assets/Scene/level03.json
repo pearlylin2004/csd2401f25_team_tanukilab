@@ -36,8 +36,13 @@
           ]
         },
         "Render": {
+          "colorR": 1.0,
+          "colorG": 1.0,
+          "colorB": 1.0,
+          "colorA": 1.0,
+          "hasTex": 1,
           "texture": "assets/Texture\\water_texture.png",
-          "hasTex": 1
+          "hasAnimation": 0
         },
         "Physics": {
           "autoUpdate": 0,
@@ -84,17 +89,17 @@
             0.0
           ]
         },
+        "Render": {
+          "colorR": 1.0,
+          "colorG": 1.0,
+          "colorB": 1.0,
+          "colorA": 1.0,
+          "hasTex": 1,
+          "texture": "assets/Texture/Leaf_Gun_Empty.png",
+          "hasAnimation": 1
+        },
         "Physics": {
-          "maxFallSpeed": -30.0,
-          "groundAccelForce": 20.0,
-          "airAccelForce": 8.0,
-          "jumpBufferTime": 0.15000000596046448,
-          "coyoteTime": 0.15000000596046448,
-          "ledgeAssistRange": 0.800000011920929,
-          "ledgeClimbSpeed": 8.0,
-          "freezeRotation": 1,
-          "angularDrag": 0.9800000190734863,
-          "inertiaOverride": 0.0
+          "autoUpdate": 0
         },
         "CollisionInfo": {
           "collisionTag": "player",
@@ -202,7 +207,7 @@
           "pos": [
             0.0,
             0.0,
-            -0.07999999821186066
+            -0.07900000363588333
           ],
           "rotation": 0.0,
           "scale": [
@@ -213,9 +218,12 @@
         },
         "Render": {
           "shape": "square",
+          "colorR": 1.0,
+          "colorG": 1.0,
+          "colorB": 1.0,
+          "colorA": 1.0,
           "hasTex": 1,
           "texture": "assets/Texture\\game_bg_layer_5.png",
-          "hasTex": 1,
           "hasAnimation": 0
         }
       }
@@ -231,6 +239,14 @@
             0.0,
             -0.10000000149011612
           ]
+        },
+        "Render": {
+          "colorR": 1.0,
+          "colorG": 1.0,
+          "colorB": 1.0,
+          "colorA": 1.0,
+          "hasTex": 0,
+          "hasAnimation": 0
         }
       }
     },
@@ -252,9 +268,12 @@
         },
         "Render": {
           "shape": "square",
+          "colorR": 1.0,
+          "colorG": 1.0,
+          "colorB": 1.0,
+          "colorA": 1.0,
           "hasTex": 1,
           "texture": "assets/Texture\\game_bg_layer_1.png",
-          "hasTex": 1,
           "hasAnimation": 0
         }
       }
@@ -277,9 +296,12 @@
         },
         "Render": {
           "shape": "square",
+          "colorR": 1.0,
+          "colorG": 1.0,
+          "colorB": 1.0,
+          "colorA": 1.0,
           "hasTex": 1,
           "texture": "assets/Texture\\game_bg_layer_2.png",
-          "hasTex": 1,
           "hasAnimation": 0
         }
       }
@@ -302,9 +324,12 @@
         },
         "Render": {
           "shape": "square",
+          "colorR": 1.0,
+          "colorG": 1.0,
+          "colorB": 1.0,
+          "colorA": 1.0,
           "hasTex": 1,
           "texture": "assets/Texture\\game_bg_layer_4.png",
-          "hasTex": 1,
           "hasAnimation": 0
         }
       }
@@ -327,9 +352,12 @@
         },
         "Render": {
           "shape": "square",
+          "colorR": 1.0,
+          "colorG": 1.0,
+          "colorB": 1.0,
+          "colorA": 1.0,
           "hasTex": 1,
           "texture": "assets/Texture\\game_bg_layer_6.png",
-          "hasTex": 1,
           "hasAnimation": 0
         }
       }
@@ -352,9 +380,12 @@
         },
         "Render": {
           "shape": "square",
+          "colorR": 1.0,
+          "colorG": 1.0,
+          "colorB": 1.0,
+          "colorA": 1.0,
           "hasTex": 1,
           "texture": "assets/Texture\\Water_ContainerRim.png",
-          "hasTex": 1,
           "hasAnimation": 0
         },
         "CollisionInfo": {
@@ -391,9 +422,12 @@
         },
         "Render": {
           "shape": "square",
+          "colorR": 1.0,
+          "colorG": 1.0,
+          "colorB": 1.0,
+          "colorA": 1.0,
           "hasTex": 1,
           "texture": "assets/Texture\\Water_100.png",
-          "hasTex": 1,
           "hasAnimation": 0
         },
         "CollisionInfo": {
@@ -417,6 +451,65 @@
     },
     {
       "prefabid": "eaa2ba42-971a-413b-b8c4-99b2f5ab674d",
+      "name": "fire(21)22",
+      "components": {
+        "Transform": {
+          "pos": [
+            -7.84527587890625,
+            -4.845276832580566,
+            0.019999999552965164
+          ]
+        },
+        "Render": {
+          "colorR": 1.0,
+          "colorG": 1.0,
+          "colorB": 1.0,
+          "colorA": 1.0,
+          "hasTex": 1,
+          "texture": "assets/Texture/Smoke_Sprite_Sheet.jpg",
+          "hasAnimation": 1
+        },
+        "Physics": {
+          "autoUpdate": 0,
+          "maxFallSpeed": -30.0,
+          "groundAccelForce": 20.0,
+          "airAccelForce": 8.0,
+          "apexHangMul": 0.20000000298023224,
+          "jumpBufferTime": 0.15000000596046448,
+          "coyoteTime": 0.15000000596046448,
+          "ledgeAssistRange": 0.800000011920929,
+          "ledgeClimbSpeed": 8.0,
+          "freezeRotation": 1,
+          "angularDrag": 0.9800000190734863,
+          "inertiaOverride": 0.0
+        },
+        "CollisionInfo": {
+          "bounciness": 0.0,
+          "friction": 0.0
+        },
+        "AudioComponent": {
+          "channels": {
+            "fire_loop": {
+              "audioFile": "assets/audio/fire_crackle.wav",
+              "volume": 0.5,
+              "pitch": 1.0,
+              "loop": 1,
+              "playOnStart": 0,
+              "muted": 0,
+              "fadeInOnStart": 0,
+              "fadeInDuration": 1.0,
+              "fadeOutOnStop": 0,
+              "fadeOutDuration": 1.0,
+              "isSpatial": 1,
+              "minDistance": 1.0,
+              "maxDistance": 100.0
+            }
+          }
+        }
+      }
+    },
+    {
+      "prefabid": "eaa2ba42-971a-413b-b8c4-99b2f5ab674d",
       "name": "fire(21)",
       "components": {
         "Transform": {
@@ -427,8 +520,12 @@
           ]
         },
         "Render": {
-          "texture": "assets/textures/steam.png",
+          "colorR": 1.0,
+          "colorG": 1.0,
+          "colorB": 1.0,
+          "colorA": 1.0,
           "hasTex": 1,
+          "texture": "assets/textures/steam.png",
           "hasAnimation": 0
         },
         "Physics": {
@@ -487,56 +584,6 @@
       }
     },
     {
-      "prefabid": "eaa2ba42-971a-413b-b8c4-99b2f5ab674d",
-      "name": "fire(21)22",
-      "components": {
-        "Transform": {
-          "pos": [
-            -7.84527587890625,
-            -4.845276832580566,
-            0.019999999552965164
-          ]
-        },
-        "Physics": {
-          "autoUpdate": 0,
-          "maxFallSpeed": -30.0,
-          "groundAccelForce": 20.0,
-          "airAccelForce": 8.0,
-          "apexHangMul": 0.20000000298023224,
-          "jumpBufferTime": 0.15000000596046448,
-          "coyoteTime": 0.15000000596046448,
-          "ledgeAssistRange": 0.800000011920929,
-          "ledgeClimbSpeed": 8.0,
-          "freezeRotation": 1,
-          "angularDrag": 0.9800000190734863,
-          "inertiaOverride": 0.0
-        },
-        "CollisionInfo": {
-          "bounciness": 0.0,
-          "friction": 0.0
-        },
-        "AudioComponent": {
-          "channels": {
-            "fire_loop": {
-              "audioFile": "assets/audio/fire_crackle.wav",
-              "volume": 0.5,
-              "pitch": 1.0,
-              "loop": 1,
-              "playOnStart": 0,
-              "muted": 0,
-              "fadeInOnStart": 0,
-              "fadeInDuration": 1.0,
-              "fadeOutOnStop": 0,
-              "fadeOutDuration": 1.0,
-              "isSpatial": 1,
-              "minDistance": 1.0,
-              "maxDistance": 100.0
-            }
-          }
-        }
-      }
-    },
-    {
       "name": "tile",
       "components": {
         "Transform": {
@@ -560,7 +607,7 @@
           "enableCol": 1,
           "tiles": [
             {
-              "x": 6,
+              "x": -7,
               "y": -4,
               "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
             },
@@ -570,12 +617,12 @@
               "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
             },
             {
-              "x": -3,
+              "x": 6,
               "y": -4,
               "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
             },
             {
-              "x": -7,
+              "x": -3,
               "y": -4,
               "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
             },
@@ -586,11 +633,6 @@
             },
             {
               "x": -5,
-              "y": -4,
-              "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
-            },
-            {
-              "x": -4,
               "y": -4,
               "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
             },
@@ -630,28 +672,18 @@
               "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
             },
             {
-              "x": 6,
-              "y": -1,
-              "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
-            },
-            {
-              "x": 7,
-              "y": -3,
-              "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
-            },
-            {
               "x": -4,
               "y": -3,
               "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
             },
             {
               "x": 6,
-              "y": -3,
+              "y": -1,
               "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
             },
             {
               "x": 7,
-              "y": -1,
+              "y": -3,
               "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
             },
             {
@@ -660,13 +692,13 @@
               "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
             },
             {
-              "x": 4,
-              "y": -4,
+              "x": 6,
+              "y": -3,
               "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
             },
             {
-              "x": 5,
-              "y": -2,
+              "x": 7,
+              "y": -1,
               "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
             },
             {
@@ -680,13 +712,33 @@
               "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
             },
             {
+              "x": 4,
+              "y": -4,
+              "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
+            },
+            {
+              "x": 5,
+              "y": -2,
+              "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
+            },
+            {
+              "x": -2,
+              "y": -3,
+              "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
+            },
+            {
               "x": 5,
               "y": -3,
               "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
             },
             {
               "x": -2,
-              "y": -3,
+              "y": -4,
+              "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
+            },
+            {
+              "x": -1,
+              "y": -2,
               "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
             },
             {
@@ -700,13 +752,8 @@
               "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
             },
             {
-              "x": -2,
-              "y": -4,
-              "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
-            },
-            {
               "x": -1,
-              "y": -2,
+              "y": -3,
               "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
             },
             {
@@ -717,11 +764,6 @@
             {
               "x": 5,
               "y": -1,
-              "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
-            },
-            {
-              "x": -1,
-              "y": -3,
               "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
             },
             {
@@ -971,9 +1013,12 @@
         },
         "Render": {
           "shape": "square",
+          "colorR": 1.0,
+          "colorG": 1.0,
+          "colorB": 1.0,
+          "colorA": 1.0,
           "hasTex": 1,
           "texture": "assets/Texture\\endgoal.png",
-          "hasTex": 1,
           "hasAnimation": 0
         },
         "Physics": {
@@ -1046,8 +1091,12 @@
           ]
         },
         "Render": {
-          "texture": "assets/textures/steam.png",
+          "colorR": 1.0,
+          "colorG": 1.0,
+          "colorB": 1.0,
+          "colorA": 1.0,
           "hasTex": 1,
+          "texture": "assets/textures/steam.png",
           "hasAnimation": 0
         },
         "Physics": {
@@ -1123,9 +1172,12 @@
         },
         "Render": {
           "shape": "square",
+          "colorR": 1.0,
+          "colorG": 1.0,
+          "colorB": 1.0,
+          "colorA": 1.0,
           "hasTex": 1,
           "texture": "assets/Texture\\Water Wheel Light Version.png",
-          "hasTex": 1,
           "hasAnimation": 0
         },
         "Physics": {
@@ -1185,9 +1237,12 @@
         },
         "Render": {
           "shape": "square",
+          "colorR": 1.0,
+          "colorG": 1.0,
+          "colorB": 1.0,
+          "colorA": 1.0,
           "hasTex": 1,
           "texture": "assets/Texture\\tile.png",
-          "hasTex": 1,
           "hasAnimation": 0
         },
         "Physics": {
