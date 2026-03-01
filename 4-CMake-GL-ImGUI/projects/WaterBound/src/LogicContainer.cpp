@@ -30,6 +30,7 @@ Technology is prohibited.
 #include "FireStates.h"
 #include "RefillStates.h"
 #include <iostream>
+#include <random>
 
 // ============================================================================
 // Helper Functions
@@ -44,6 +45,29 @@ static inline bool isBlockedPrefab(GameObject& obj) {
     std::string prefabID = obj.getObjectPrefabID();
     return prefabID == "eaa2ba42-971a-413b-b8c4-99b2f5ab674d" ||
         prefabID == "f04819ff-270c-41b4-8387-73382eb85103";
+}
+
+static const std::vector<std::string> s_landingFiles = {
+    "assets/audio/landing.wav"
+};
+
+static void playRandomLanding(GameObject& o) {
+    static std::mt19937 gen{ std::random_device{}() };
+    AudioComponent* audio = o.getComponent<AudioComponent>();
+    if (!audio || s_landingFiles.empty()) return;
+
+    AudioChannel* landing = audio->getOrCreateChannel("landing");
+    if (!landing) return;
+
+    std::uniform_int_distribution<int> dist(0, static_cast<int>(s_landingFiles.size()) - 1);
+    std::uniform_real_distribution<float> pitchDist(0.90f, 1.10f);
+    std::uniform_real_distribution<float> volDist(0.7f, 1.0f);
+
+    landing->audioFile = s_landingFiles[dist(gen)];
+    landing->loop = false;
+    landing->pitch = pitchDist(gen);
+    landing->volume = volDist(gen);
+    landing->isPendingPlay = true;
 }
 
 // ============================================================================
@@ -129,7 +153,7 @@ RuntimeStateMachine* LogicContainer::getOrCreateMachine(GameObject& obj) {
         }
     ));
 
-    // Falling -> Walking transition (with landing sound action)
+    // Falling -> Walking transition (with randomized landing sound)
     fallingState->addTransition(RuntimeTransition(
         "Walking",
         [](GameObject& o) {
@@ -137,18 +161,11 @@ RuntimeStateMachine* LogicContainer::getOrCreateMachine(GameObject& obj) {
             return p && p->onGround && anyMoveHeld();
         },
         [](GameObject& o) {
-            if (AudioComponent* audio = o.getComponent<AudioComponent>()) {
-                if (AudioChannel* landing = audio->getOrCreateChannel("landing")) {
-                    landing->audioFile = "assets/audio/landing.wav";
-                    landing->loop = false;
-                    landing->volume = 1.0f;
-                    landing->isPendingPlay = true;
-                }
-            }
+            playRandomLanding(o);
         }
     ));
 
-    // Falling -> Idle transition (with landing sound action)
+    // Falling -> Idle transition (with randomized landing sound)
     fallingState->addTransition(RuntimeTransition(
         "Idle",
         [](GameObject& o) {
@@ -156,14 +173,7 @@ RuntimeStateMachine* LogicContainer::getOrCreateMachine(GameObject& obj) {
             return p && p->onGround && !anyMoveHeld();
         },
         [](GameObject& o) {
-            if (AudioComponent* audio = o.getComponent<AudioComponent>()) {
-                if (AudioChannel* landing = audio->getOrCreateChannel("landing")) {
-                    landing->audioFile = "assets/audio/landing.wav";
-                    landing->loop = false;
-                    landing->volume = 1.0f;
-                    landing->isPendingPlay = true;
-                }
-            }
+            playRandomLanding(o);
         }
     ));
 

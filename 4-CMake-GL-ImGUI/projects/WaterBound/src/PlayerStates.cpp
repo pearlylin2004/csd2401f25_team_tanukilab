@@ -26,29 +26,23 @@ Technology is prohibited.
 // Helper Functions
 // ============================================================================
 
-/*!
- * \brief Checks if any movement key (A/D) is currently held.
- * \return True if A or D is pressed.
- */
 static inline bool anyMoveHeld() {
     return InputHandler::isKeyHeld(GLFW_KEY_A) ||
         InputHandler::isKeyHeld(GLFW_KEY_D);
 }
 
-/*!
- * \brief Returns a random float in [min, max].
- */
 static float randf(float min, float max) {
     static std::mt19937 gen{ std::random_device{}() };
     std::uniform_real_distribution<float> dist(min, max);
     return dist(gen);
 }
 
-/*!
- * \brief Resets animation to the initial frame for a given state.
- * \param obj The GameObject with Animation component.
- * \param state The PlayerState whose animation frame to reset.
- */
+static int randInt(int min, int maxExclusive) {
+    static std::mt19937 gen{ std::random_device{}() };
+    std::uniform_int_distribution<int> dist(min, maxExclusive - 1);
+    return dist(gen);
+}
+
 static void resetAnimationFrame(GameObject& obj, PlayerState state) {
     if (Animation* a = obj.getComponent<Animation>()) {
         int idx = static_cast<int>(state);
@@ -62,17 +56,39 @@ static void resetAnimationFrame(GameObject& obj, PlayerState state) {
 }
 
 // ============================================================================
+// Footstep Sound Pools
+// ============================================================================
+
+// Add your footstep .wav files here (at least 3 for good variety)
+static const std::vector<std::string> s_footstepFiles = {
+    "assets/audio/Foot Step 1.wav",
+    "assets/audio/Foot Step 2.wav",
+    "assets/audio/Foot Step 3.wav",
+    "assets/audio/Foot Step 4.wav",
+    "assets/audio/Foot Step 5.wav"
+};
+
+// Landing sound pool (played on Falling -> Idle/Walking transitions)
+static const std::vector<std::string> s_landingFiles = {
+    "assets/audio/landing.wav",
+    
+};
+
+// Which animation frames trigger a footstep sound.
+// These are the frames where the foot hits the ground in your walk spritesheet.
+// *** ADJUST THESE to match your walking animation ***
+static const std::vector<int> s_footContactFrames = { 1, 4 };
+
+// ============================================================================
 // IDLE STATE
 // ============================================================================
 
 void IdleState::onEnter(GameObject& obj) {
     resetAnimationFrame(obj, PlayerState::Idle);
     if (AudioComponent* audio = obj.getComponent<AudioComponent>()) {
-        if (AudioChannel* footsteps = audio->getChannel("footsteps")) {
-            if (footsteps->state == AudioState::Playing) {
-                footsteps->isPendingStop = true;
-                footsteps->fadeOutOnStop = true;
-                footsteps->fadeOutDuration = 0.15f;
+        if (AudioChannel* footstep = audio->getChannel("footstep")) {
+            if (footstep->state == AudioState::Playing) {
+                footstep->isPendingStop = true;
             }
         }
     }
@@ -84,7 +100,6 @@ void IdleState::onEnter(GameObject& obj) {
 void IdleState::onUpdate(GameObject& obj, float dt) {
     (void)obj;
     (void)dt;
-    // Transitions handle all logic
 }
 
 // ============================================================================
@@ -93,19 +108,8 @@ void IdleState::onUpdate(GameObject& obj, float dt) {
 
 void WalkingState::onEnter(GameObject& obj) {
     resetAnimationFrame(obj, PlayerState::Walking);
-
-    // Play footsteps audio with randomized pitch/volume per walk session
-    if (AudioComponent* audio = obj.getComponent<AudioComponent>()) {
-        AudioChannel* footsteps = audio->getOrCreateChannel("footsteps");
-        if (footsteps) {
-            footsteps->audioFile = "assets/audio/footsteps.wav";
-            footsteps->loop = true;
-            footsteps->pitch = randf(0.92f, 1.08f);
-            footsteps->volume = randf(0.4f, 0.55f);
-            footsteps->playOnStart = false;
-            footsteps->isPendingPlay = true;
-        }
-    }
+    m_lastFrame = -1;
+    m_lastSoundIdx = -1;
 
     std::string msg = "[FSM] " + obj.getObjectName() + " -> Walking";
     DebugLog::addMessage(msg, DebugMode::PlaySimul);
@@ -115,34 +119,64 @@ void WalkingState::onEnter(GameObject& obj) {
 void WalkingState::onUpdate(GameObject& obj, float dt) {
     (void)dt;
 
-    // Update facing direction based on input
+    // Update facing direction
     if (StateMachine* fsm = obj.getComponent<StateMachine>()) {
-        if (InputHandler::isKeyHeld(GLFW_KEY_A)) {
-            fsm->facingRight = false;
-        }
-        if (InputHandler::isKeyHeld(GLFW_KEY_D)) {
-            fsm->facingRight = true;
-        }
+        if (InputHandler::isKeyHeld(GLFW_KEY_A)) fsm->facingRight = false;
+        if (InputHandler::isKeyHeld(GLFW_KEY_D)) fsm->facingRight = true;
     }
 
-    // Subtle pitch drift while walking for a natural feel
-    if (AudioComponent* audio = obj.getComponent<AudioComponent>()) {
-        if (AudioChannel* footsteps = audio->getChannel("footsteps")) {
-            if (footsteps->channel && footsteps->state == AudioState::Playing) {
-                footsteps->channel->setPitch(randf(0.96f, 1.04f));
+    // Sync footsteps to animation frames
+    if (Animation* anim = obj.getComponent<Animation>()) {
+        int walkIdx = static_cast<int>(PlayerState::Walking);
+        if (walkIdx < static_cast<int>(anim->animState.size())) {
+            int curFrame = anim->animState[walkIdx].currentFrameColumn;
+
+            // Only act when the frame actually changes
+            if (curFrame != m_lastFrame) {
+                m_lastFrame = curFrame;
+
+                // Check if this is a foot-contact frame
+                for (int contactFrame : s_footContactFrames) {
+                    if (curFrame == contactFrame) {
+                        playRandomFootstep(obj);
+                        break;
+                    }
+                }
             }
         }
     }
 }
 
+void WalkingState::playRandomFootstep(GameObject& obj) {
+    AudioComponent* audio = obj.getComponent<AudioComponent>();
+    if (!audio || s_footstepFiles.empty()) return;
+
+    AudioChannel* step = audio->getOrCreateChannel("footstep");
+    if (!step) return;
+
+    // Pick a random index that differs from the last one played
+    int idx = randInt(0, static_cast<int>(s_footstepFiles.size()));
+    if (s_footstepFiles.size() > 1) {
+        while (idx == m_lastSoundIdx) {
+            idx = randInt(0, static_cast<int>(s_footstepFiles.size()));
+        }
+    }
+    m_lastSoundIdx = idx;
+
+    step->audioFile = s_footstepFiles[idx];
+    step->loop = false;
+    step->pitch = randf(0.90f, 1.10f);
+    step->volume = randf(0.30f, 0.45f);
+    step->playOnStart = false;
+    step->isPendingPlay = true;
+}
+
 void WalkingState::onExit(GameObject& obj) {
-    // Stop footsteps audio with fade out
     if (AudioComponent* audio = obj.getComponent<AudioComponent>()) {
-        AudioChannel* footsteps = audio->getChannel("footsteps");
-        if (footsteps && footsteps->state == AudioState::Playing) {
-            footsteps->isPendingStop = true;
-            footsteps->fadeOutOnStop = true;
-            footsteps->fadeOutDuration = 0.15f;
+        if (AudioChannel* step = audio->getChannel("footstep")) {
+            if (step->state == AudioState::Playing) {
+                step->isPendingStop = true;
+            }
         }
     }
 }
@@ -154,7 +188,6 @@ void WalkingState::onExit(GameObject& obj) {
 void JumpingState::onEnter(GameObject& obj) {
     resetAnimationFrame(obj, PlayerState::Jumping);
 
-    // Play jump sound
     if (AudioComponent* audio = obj.getComponent<AudioComponent>()) {
         AudioChannel* jump = audio->getOrCreateChannel("jump");
         if (jump) {
@@ -173,7 +206,6 @@ void JumpingState::onEnter(GameObject& obj) {
 void JumpingState::onUpdate(GameObject& obj, float dt) {
     (void)obj;
     (void)dt;
-    // Transition to Falling handled by condition check
 }
 
 // ============================================================================
@@ -183,7 +215,6 @@ void JumpingState::onUpdate(GameObject& obj, float dt) {
 void FallingState::onUpdate(GameObject& obj, float dt) {
     (void)obj;
     (void)dt;
-    // Landing sound played in transition action
 }
 
 // ============================================================================
@@ -193,28 +224,24 @@ void FallingState::onUpdate(GameObject& obj, float dt) {
 void DeadState::onEnter(GameObject& obj) {
     resetAnimationFrame(obj, PlayerState::Dead);
 
-    // Disable physics/movement
     if (Physics* p = obj.getComponent<Physics>()) {
         p->velX = 0.0f;
         p->velY = 0.0f;
-        p->gravity = 0.0f;  // Stop falling
+        p->gravity = 0.0f;
         p->canMove = false;
-        p->physicsFlag = false;  // Disable physics entirely
+        p->physicsFlag = false;
     }
 
-    // Disable collision
     if (CollisionInfo* c = obj.getComponent<CollisionInfo>()) {
         c->collisionFlag = false;
     }
 
-    // Transform into smoke visual
     if (Render* r = obj.getComponent<Render>()) {
         r->texFile = "assets/textures/smoke.png";
         r->texChanged = true;
         r->hasTex = true;
     }
 
-    // Play death/smoke sound
     if (AudioComponent* audio = obj.getComponent<AudioComponent>()) {
         AudioChannel* death = audio->getOrCreateChannel("death");
         if (death) {
@@ -233,6 +260,4 @@ void DeadState::onEnter(GameObject& obj) {
 void DeadState::onUpdate(GameObject& obj, float dt) {
     (void)obj;
     (void)dt;
-
-    // Could add respawn timer here
 }
