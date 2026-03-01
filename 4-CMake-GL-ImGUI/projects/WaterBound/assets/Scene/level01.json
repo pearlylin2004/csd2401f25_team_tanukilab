@@ -124,8 +124,8 @@
       "components": {
         "Transform": {
           "pos": [
-            -3.9285008907318115,
-            -2.745276927947998,
+            -14.808911323547363,
+            -4.5865478515625,
             0.9980000257492065
           ],
           "scale": [
@@ -403,6 +403,44 @@
         },
         "VisualLC": {
           "filename": "bullet-inventory.json"
+        }
+      }
+    },
+    {
+      "name": "watergun",
+      "components": {
+        "Transform": {
+          "pos": [
+            -3.0980653762817383,
+            -3.6029999256134033,
+            0.0
+          ],
+          "rotation": 12.18714714050293,
+          "scale": [
+            3.200000047683716,
+            1.2999999523162842,
+            0.0
+          ],
+          "parentName": "player",
+          "localOffset": [
+            0.8153396844863892,
+            -0.8720855116844177
+          ],
+          "localRotation": -1.0
+        },
+        "Render": {
+          "shape": "square",
+          "hasTex": 1,
+          "texture": "assets/Texture\\Water_Gun.png",
+          "hasTex": 1,
+          "hasAnimation": 0
+        },
+        "WeaponComponent": {
+          "barrelOffset": [
+            1.0,
+            0.0
+          ],
+          "aimAtMouse": 1
         }
       }
     },
@@ -776,44 +814,6 @@
         "CollisionInfo": {
           "bounciness": 0.0,
           "friction": 0.0
-        }
-      }
-    },
-    {
-      "name": "watergun",
-      "components": {
-        "Transform": {
-          "pos": [
-            -3.0980653762817383,
-            -3.6029999256134033,
-            0.0
-          ],
-          "rotation": 12.18714714050293,
-          "scale": [
-            3.200000047683716,
-            1.2999999523162842,
-            0.0
-          ],
-          "parentName": "player",
-          "localOffset": [
-            0.8153396844863892,
-            -0.8720855116844177
-          ],
-          "localRotation": -1.0
-        },
-        "Render": {
-          "shape": "square",
-          "hasTex": 1,
-          "texture": "assets/Texture\\Water_Gun.png",
-          "hasTex": 1,
-          "hasAnimation": 0
-        },
-        "WeaponComponent": {
-          "barrelOffset": [
-            1.0,
-            0.0
-          ],
-          "aimAtMouse": 1
         }
       }
     }
