@@ -83,8 +83,8 @@
       "implementation": "Compare Variable",
       "type": 2,
       "position": [
-        360.0951843261719,
-        164.99998474121094
+        360.09521484375,
+        165.0
       ],
       "hasInput": true,
       "hasOutput": false,
@@ -101,8 +101,8 @@
       "implementation": "Move Object",
       "type": 1,
       "position": [
-        687.25,
-        86.75
+        687.2501220703125,
+        86.75000762939453
       ],
       "hasInput": true,
       "hasOutput": true,
@@ -110,7 +110,7 @@
       "hasFalseOutput": false,
       "parameters": {
         "x": "0",
-        "y": "-4.000000"
+        "y": "-20.000000"
       }
     },
     {
@@ -118,7 +118,7 @@
       "implementation": "On Collision Enter",
       "type": 0,
       "position": [
-        -757.25,
+        -756.138916015625,
         426.75
       ],
       "hasInput": false,
@@ -135,8 +135,8 @@
       "implementation": "Set Float",
       "type": 1,
       "position": [
-        -387.75,
-        437.75
+        -387.7499694824219,
+        437.7499694824219
       ],
       "hasInput": true,
       "hasOutput": true,
@@ -153,7 +153,7 @@
       "type": 0,
       "position": [
         705.142822265625,
-        -36.0
+        -36.00002670288086
       ],
       "hasInput": false,
       "hasOutput": true,
@@ -203,7 +203,7 @@
       "type": 1,
       "position": [
         962.0,
-        206.0
+        206.00001525878906
       ],
       "hasInput": true,
       "hasOutput": true,
@@ -236,7 +236,7 @@
       "type": 1,
       "position": [
         1032.0,
-        -52.0
+        -51.99998474121094
       ],
       "hasInput": true,
       "hasOutput": true,
@@ -339,8 +339,8 @@
       "implementation": "Set Float",
       "type": 1,
       "position": [
-        -390.0,
-        548.0
+        -389.9999694824219,
+        547.9999389648438
       ],
       "hasInput": true,
       "hasOutput": true,
@@ -373,7 +373,7 @@
       "implementation": "Compare Variable",
       "type": 2,
       "position": [
-        197.9999542236328,
+        197.99993896484375,
         446.0
       ],
       "hasInput": true,
@@ -391,8 +391,8 @@
       "implementation": "Compare Value",
       "type": 2,
       "position": [
-        609.9999389648438,
-        338.0000305175781
+        610.0,
+        338.00006103515625
       ],
       "hasInput": true,
       "hasOutput": false,
@@ -410,7 +410,7 @@
       "type": 1,
       "position": [
         909.9999389648438,
-        384.0000305175781
+        384.0
       ],
       "hasInput": true,
       "hasOutput": true,
@@ -425,7 +425,7 @@
       "implementation": "Compare Variable",
       "type": 2,
       "position": [
-        -27.999963760375977,
+        -27.99994468688965,
         277.99993896484375
       ],
       "hasInput": true,
