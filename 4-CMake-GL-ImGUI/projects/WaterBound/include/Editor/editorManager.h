@@ -70,6 +70,9 @@ public:
 	void render();
 	void loadAssetsFromDirectory();
 
+	// Add this as a private static helper in AssetBrowser or a free function
+	static std::string toRegistryPath(const std::string& assetPath);
+
 	// return the loaded list of assets (to check duplicated name when creating new scene)
 	const std::vector<Editor::Asset>& getAssets() const { return m_assets; }
 
@@ -170,8 +173,8 @@ private:
 	VisualLogicEditor();
 
 	int m_nextNodeId;
-	int m_selectedNodeId;
-	int m_selectedConIndex;
+	int& m_selectedNodeId;
+	int& m_selectedConIndex;
 
 	// dragging state
 	bool m_isDragging;

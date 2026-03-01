@@ -19,7 +19,8 @@ Technology is prohibited.
 
 VisualLogicEditor::VisualLogicEditor() :
 	m_nextNodeId(1),
-	m_selectedNodeId(-1),
+	m_selectedNodeId(Editor::visualLogicState.selectedNodeId),
+	m_selectedConIndex(Editor::visualLogicState.selectedConIndex),
 	m_isDragging(false),
 	m_draggingNodeId(-1),
 	m_canvasOffset(50.f, 50.f),
@@ -232,6 +233,9 @@ void VisualLogicEditor::render() {
 
 	// stop dragging when mouse release
 	if (InputHandler::isMouseLeftReleased()) {
+		if (m_isDragging && m_draggingNodeId != -1)
+			UndoRedoManager::Instance().endVLEdit();
+
 		m_isDragging = false;
 		m_draggingNodeId = -1;
 	}
@@ -259,6 +263,16 @@ void VisualLogicEditor::render() {
 		if (InputHandler::isComboKeyTriggered(GLFW_KEY_D) &&
 			m_selectedNodeId != -1) {
 			duplicateSelectedNode();
+		}
+
+		// undo with Ctrl+Z
+		if (InputHandler::isComboKeyTriggered(GLFW_KEY_Z)) {
+			UndoRedoManager::Instance().vlUndo();
+		}
+
+		// redo with Ctrl+Y
+		if (InputHandler::isComboKeyTriggered(GLFW_KEY_Y)) {
+			UndoRedoManager::Instance().vlRedo();
 		}
 
 		// select next node with Tab, previous with Shift+Tab
@@ -311,6 +325,8 @@ void VisualLogicEditor::updateNextNodeId() {
 
 // In VisualLogicEditor class
 void VisualLogicEditor::clear() {
+	UndoRedoManager::Instance().clearVL();
+
 	Editor::visualLogicState.nodes.clear();
 	Editor::visualLogicState.connections.clear();
 	Editor::visualLogicState.currentGraphName.clear();
@@ -469,6 +485,8 @@ void VisualLogicEditor::renderNode(ImDrawList* drawList, LogicNode& node, ImVec2
 		m_isDragging = true;
 		m_draggingNodeId = node.id;
 		m_dragOffset = ImVec2(mousePos.x - nodePos.x, mousePos.y - nodePos.y);
+
+		UndoRedoManager::Instance().beginVLEdit();
 	}
 
 	// update position if dragging
@@ -660,6 +678,10 @@ void VisualLogicEditor::renderNodeProperties() {
 		return;
 	}
 
+	if (ImGui::IsAnyItemActive() && !UndoRedoManager::Instance().isEditingVL()) {
+		UndoRedoManager::Instance().beginVLEdit();
+	}
+
 	std::vector<LogicNode>::iterator it = std::find_if(Editor::visualLogicState.nodes.begin(), Editor::visualLogicState.nodes.end(),
 		[this](const LogicNode& n) { return n.id == m_selectedNodeId; });
 
@@ -823,8 +845,8 @@ void VisualLogicEditor::renderNodeProperties() {
 			ImGui::Text("Set Position");
 			ImGui::Separator();
 
-			static char xBuffer[64];
-			static char yBuffer[64];
+			char xBuffer[64];
+			char yBuffer[64];
 
 			std::string currentX = node.parameters.count("x") ?
 				node.parameters["x"] : "0";
@@ -851,8 +873,8 @@ void VisualLogicEditor::renderNodeProperties() {
 			ImGui::Text("Set Scale");
 			ImGui::Separator();
 
-			static char scaleXBuffer[64];
-			static char scaleYBuffer[64];
+			char scaleXBuffer[64];
+			char scaleYBuffer[64];
 
 			std::string currentScaleX = node.parameters.count("scaleX") ?
 				node.parameters["scaleX"] : "1";
@@ -1031,41 +1053,30 @@ void VisualLogicEditor::renderNodeProperties() {
 			ImGui::Text("Reset Timer");
 			ImGui::Separator();
 
-			std::vector<std::string> availableTimers;
-			for (const LogicNode& node1 : Editor::visualLogicState.nodes) {
-				if ((node1.imp == NodeImplementation::CHECK_TIMER ||
-					node1.imp == NodeImplementation::RESET_TIMER) &&
-					node1.parameters.count("timerName")) {
+			char timerBuf[64];
+			strncpy_s(timerBuf, node.parameters["timerName"].c_str(), sizeof(timerBuf) - 1);
+			timerBuf[sizeof(timerBuf) - 1] = '\0';
 
-					std::string timer = node1.parameters.at("timerName");
-
-					if (std::find(availableTimers.begin(), availableTimers.end(), timer) == availableTimers.end()) {
-						availableTimers.push_back(timer);
-
-					}
-				}
+			ImGui::Text("Timer Name:");
+			if (ImGui::InputText("##timerName", timerBuf, sizeof(timerBuf))) {
+				node.parameters["timerName"] = timerBuf;
 			}
 
-			std::string currentTimer = node.parameters.count("timerName") ?
-				node.parameters["timerName"] : "timer_0";
-
-			ImGui::Text("Timer ID:");
-			if (ImGui::BeginCombo("##timerName", currentTimer.c_str())) {
-				for (const std::string& timer : availableTimers) {
-					bool isSelected = (currentTimer == timer);
-					if (ImGui::Selectable(timer.c_str(), isSelected)) {
-						node.parameters["timerName"] = timer;
-					}
-
-					if (isSelected) {
-						ImGui::SetItemDefaultFocus();
+			// quick select existing timers used across all nodes
+			if (ImGui::BeginCombo("##timerQuickSelect", "Select Existing")) {
+				for (const LogicNode& n : Editor::visualLogicState.nodes) {
+					if (n.parameters.count("timerName") && n.id != node.id) {
+						std::string t = n.parameters.at("timerName");
+						if (ImGui::Selectable(t.c_str())) {
+							node.parameters["timerName"] = t;
+						}
 					}
 				}
 				ImGui::EndCombo();
 			}
 
 			ImGui::Separator();
-			ImGui::TextWrapped("Resets the selected timer to 0 seconds.");
+			ImGui::TextWrapped("Resets the selected timer to 0.");
 		}
 		else if (node.imp == NodeImplementation::SET_TEXTURE) {
 			ImGui::Text("Set Texture");
@@ -1549,8 +1560,7 @@ void VisualLogicEditor::renderNodeProperties() {
 
 			std::vector<std::string> availableTimers;
 			for (const LogicNode& node2 : Editor::visualLogicState.nodes) {
-				if ((node2.imp == NodeImplementation::CHECK_TIMER ||
-					node2.imp == NodeImplementation::RESET_TIMER) &&
+				if ((node2.imp == NodeImplementation::RESET_TIMER) &&
 					node2.parameters.count("timerName")) {
 
 					std::string timer = node2.parameters.at("timerName");
@@ -1561,31 +1571,38 @@ void VisualLogicEditor::renderNodeProperties() {
 				}
 			}
 
-			std::string currentTimer = node.parameters.count("timerName") ? node.parameters["timerName"] : "timer_0";
+			std::string currentTimer = node.parameters.count("timerName") ? node.parameters["timerName"] : "";
 
 			ImGui::Text("Timer ID:");
-			if (ImGui::BeginCombo("##timerName", currentTimer.c_str())) {
-				for (const std::string& timer : availableTimers) {
-					bool isSelected = (currentTimer == timer);
-					if (ImGui::Selectable(timer.c_str(), isSelected)) {
-						node.parameters["timerName"] = timer;
+			if (!availableTimers.empty()) {
+				if (ImGui::BeginCombo("##timerName", currentTimer.c_str())) {
+					for (const std::string& timer : availableTimers) {
+						bool isSelected = (currentTimer == timer);
+						if (ImGui::Selectable(timer.c_str(), isSelected)) {
+							node.parameters["timerName"] = timer;
+						}
+						if (isSelected) {
+							ImGui::SetItemDefaultFocus();
+						}
 					}
-					if (isSelected) {
-						ImGui::SetItemDefaultFocus();
-					}
+					ImGui::EndCombo();
 				}
-				ImGui::EndCombo();
+
+				char thresholdBuffer[64];
+				std::string currentThreshold = node.parameters.count("threshold") ?
+					node.parameters["threshold"] : "5.0";
+				strncpy_s(thresholdBuffer, currentThreshold.c_str(), sizeof(thresholdBuffer) - 1);
+
+				ImGui::Text("Threshold (seconds):");
+				if (ImGui::InputText("##threshold", thresholdBuffer, sizeof(thresholdBuffer))) {
+					node.parameters["threshold"] = thresholdBuffer;
+				}
+			}
+			else {
+				// red text
+				ImGui::TextColored({255, 0, 0, 1}, "Set a Timer first");
 			}
 
-			static char thresholdBuffer[64];
-			std::string currentThreshold = node.parameters.count("threshold") ?
-				node.parameters["threshold"] : "5.0";
-			strncpy_s(thresholdBuffer, currentThreshold.c_str(), sizeof(thresholdBuffer) - 1);
-
-			ImGui::Text("Threshold (seconds):");
-			if (ImGui::InputText("##threshold", thresholdBuffer, sizeof(thresholdBuffer))) {
-				node.parameters["threshold"] = thresholdBuffer;
-			}
 		}
 		else if (node.imp == NodeImplementation::COMPARE_GLOBAL_FLOAT) {
 			ImGui::Text("Compare Global Float Variable");
@@ -1684,6 +1701,10 @@ void VisualLogicEditor::renderNodeProperties() {
 		}
 	}
 	/* ---------- END ---------- */
+
+	if (!ImGui::IsAnyItemActive() && UndoRedoManager::Instance().isEditingVL()) {
+		UndoRedoManager::Instance().endVLEdit();
+	}
 }
 
 void VisualLogicEditor::renderSavePopup() {
@@ -1783,6 +1804,8 @@ void VisualLogicEditor::renderSavePopup() {
 }
 
 void VisualLogicEditor::addNode(NodeType type, NodeImplementation imp) {
+	UndoRedoManager::Instance().beginVLEdit();
+
 	LogicNode node;
 	
 	if (m_showNodeMenu) {
@@ -1797,24 +1820,6 @@ void VisualLogicEditor::addNode(NodeType type, NodeImplementation imp) {
 
 		node.position = viewportCenter;
 	}
-
-	//if (m_selectedNodeId != -1) {
-	//	// Find the selected node
-	//	auto it = std::find_if(Editor::visualLogicState.nodes.begin(),
-	//		Editor::visualLogicState.nodes.end(),
-	//		[this](const LogicNode& n) { return n.id == m_selectedNodeId; });
-
-	//	if (it != Editor::visualLogicState.nodes.end()) {
-	//		node.position.x = it->position.x + 150.f; // offset to the right
-	//		node.position.y = it->position.y + 20.f; // same y position
-	//	}
-	//	else {
-	//		node.position = Vector2D(100, 100);
-	//	}
-	//}
-	//else {
-	//	node.position = Vector2D(100, 100);
-	//}
 
 	node.id = m_nextNodeId++;
 	node.type = type;
@@ -1932,6 +1937,8 @@ void VisualLogicEditor::addNode(NodeType type, NodeImplementation imp) {
 	// select newly created node
 	m_selectedNodeId = node.id;
 	m_selectedConIndex = -1;
+
+	UndoRedoManager::Instance().endVLEdit();
 }
 
 ImU32 VisualLogicEditor::getNodeColor(NodeType type) {
@@ -1953,6 +1960,8 @@ bool VisualLogicEditor::isPinHovered(ImVec2 pinPos, ImVec2 mousePos) {
 }
 
 void VisualLogicEditor::createConnection(int fromNodeId, std::string fromPin, int toNodeId, std::string toPin) {
+	UndoRedoManager::Instance().beginVLEdit();
+
 	// Check if connection already exists
 	for (const LogicConnection& conn : Editor::visualLogicState.connections) {
 		if (conn.fromNodeId == fromNodeId && conn.toNodeId == toNodeId) {
@@ -1970,10 +1979,14 @@ void VisualLogicEditor::createConnection(int fromNodeId, std::string fromPin, in
 
 	DebugLog::addMessage("Created connection from node " + std::to_string(fromNodeId) +
 		" to node " + std::to_string(toNodeId) + "\n");
+
+	UndoRedoManager::Instance().endVLEdit();
 }
 
 void VisualLogicEditor::deleteSelectedNode() {
 	if (m_selectedNodeId == -1) return;
+
+	UndoRedoManager::Instance().beginVLEdit();
 
 	// remove connections
 	Editor::visualLogicState.connections.erase(
@@ -1998,10 +2011,14 @@ void VisualLogicEditor::deleteSelectedNode() {
 
 	DebugLog::addMessage("Deleted node ID: " + std::to_string(m_selectedNodeId));
 	m_selectedNodeId = -1;
+
+	UndoRedoManager::Instance().endVLEdit();
 }
 
 void VisualLogicEditor::duplicateSelectedNode() {
 	if (m_selectedNodeId == -1) return;
+
+	UndoRedoManager::Instance().beginVLEdit();
 
 	// find selected node
 	std::vector<LogicNode>::iterator it = std::find_if(Editor::visualLogicState.nodes.begin(),
@@ -2029,6 +2046,8 @@ void VisualLogicEditor::duplicateSelectedNode() {
 	m_selectedNodeId = duplicate.id;
 
 	DebugLog::addMessage("Duplicated node to ID: " + std::to_string(duplicate.id));
+
+	UndoRedoManager::Instance().endVLEdit();
 }
 
 void VisualLogicEditor::selectNextNode(bool forward) {
@@ -2106,6 +2125,8 @@ void VisualLogicEditor::deleteSelectedConnection() {
 		return;
 	}
 
+	UndoRedoManager::Instance().beginVLEdit();
+
 	const LogicConnection& conn = Editor::visualLogicState.connections[m_selectedConIndex];
 	DebugLog::addMessage("Deleted connection from node " +
 		std::to_string(conn.fromNodeId) + " to " +
@@ -2115,6 +2136,8 @@ void VisualLogicEditor::deleteSelectedConnection() {
 		Editor::visualLogicState.connections.begin() + m_selectedConIndex);
 
 	m_selectedConIndex = -1;
+
+	UndoRedoManager::Instance().endVLEdit();
 }
 
 void VisualLogicEditor::reloadAllVisualLogic(const std::string& scriptName) {

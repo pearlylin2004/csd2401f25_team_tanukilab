@@ -179,6 +179,9 @@ namespace Editor {
 
 	/* ----------------- Visual Logic Editor ---------------- */
 	struct VisualLogicState {
+		int selectedNodeId = -1;
+		int selectedConIndex = -1;
+
 		bool showEditor = false;
 		bool isFocus = false; // whether the window is focused
 		bool wantCloseEditor = false;

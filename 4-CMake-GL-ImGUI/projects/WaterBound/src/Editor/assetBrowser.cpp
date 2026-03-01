@@ -160,6 +160,23 @@ void AssetBrowser::render() {
                         try {
                             std::filesystem::rename(src, dest);  // moves the file
 
+                            if (src.extension() == ".json") {
+                                std::string prefabID = PrefabManager::Instance().findPrefabIDByFilename(toRegistryPath(src.string()));
+
+                                if (!prefabID.empty()) {
+                                    // build new path relative to assets folder: "/Prefab/subfolder/filename.json"
+                                    std::string newRelativePath = "/" +
+                                        (std::filesystem::path(m_AssetBrowserState.currentViewFolder)
+                                            / subFolder
+                                            / src.filename()).string();
+
+                                    std::replace(newRelativePath.begin(), newRelativePath.end(), '\\', '/');
+
+                                    // update in prefab registry
+                                    PrefabManager::Instance().setPrefabPath(prefabID, newRelativePath);
+                                }
+                            }
+
                             // Also mirror move in SOURCE_DIR_R (project folder) if needed
                             std::string relative;
                             size_t pos = srcPath.find("assets/");
@@ -356,34 +373,12 @@ void AssetBrowser::render() {
                 m_menuBarState.sceneToLoad = asset.name;
                 m_menuBarState.showLoadScenePopup = true;
             }
-            // if its a logic, open :)
+            // if its a logic, open
             else if (assetFolderName == "Logic") {
                 Editor::visualLogicState.targetObj = nullptr;
                 VisualLogicEditor::Instance().loadLogic(asset.name);
             }
-            // if its a prefab, convert to temp game obj for editing in inspector
-            else if (assetFolderName == "Prefab") {
-                // get ID of the double clicked prefab by its filename
-                std::string prefabID = PrefabManager::Instance().findPrefabIDByFilename(asset.name);
-                if (prefabID.empty()) {
-                    DebugLog::addMessage("Cannot find prefab ID for " + asset.name + ".\n");
-                    return;
-                }
-
-                // set the selected prefab to double clicked prefab, later will show in inspector
-                std::unique_ptr<GameObject> tempPrefab = PrefabManager::Instance().createTempPrefabObj(prefabID);
-                if (tempPrefab) {
-                    m_objSelectionState.selectedObject = nullptr;
-                    m_objSelectionState.selectedIndex = -1;
-                    m_objSelectionState.selectedPrefab = std::move(tempPrefab);
-
-                    DebugLog::addMessage("Open Prefab " + m_objSelectionState.selectedPrefab->getObjectName() + ".\n");
-                }
-                else {
-                    DebugLog::addMessage("Failed to open prefab " + prefabID + " object for editing.\n");
-                }
-
-            }
+            // if its a lua, open in VSC
             else if (extension == "lua") {
                 std::filesystem::path absPath = std::filesystem::absolute(fullPath);
                 std::string absPathStr = absPath.string();
@@ -392,6 +387,43 @@ void AssetBrowser::render() {
                 std::string command = "code \"" + absPathStr + "\"";
                 system(command.c_str());
                 DebugLog::addMessage("Opening " + asset.name + " in VS Code.\n");
+            }
+            // if its a prefab, open in inspector
+            else {
+                // if its a prefab, convert to temp game obj for editing in inspector
+            //else if (assetFolderName == "Prefab") {
+                bool isInPrefabFolder = false;
+                std::filesystem::path folderPath(asset.folder);
+                for (const auto& part : folderPath) {
+                    if (part.string() == "Prefab") {
+                        isInPrefabFolder = true;
+                        break;
+                    }
+                }
+
+                if (isInPrefabFolder) {
+
+                    // get ID of the double clicked prefab by its filename
+                    std::string prefabID = PrefabManager::Instance().findPrefabIDByFilename(toRegistryPath(asset.path));
+                    if (prefabID.empty()) {
+                        DebugLog::addMessage("Cannot find prefab ID for " + asset.name + ".\n");
+                        return;
+                    }
+
+                    // set the selected prefab to double clicked prefab, later will show in inspector
+                    std::unique_ptr<GameObject> tempPrefab = PrefabManager::Instance().createTempPrefabObj(prefabID);
+                    if (tempPrefab) {
+                        m_objSelectionState.selectedObject = nullptr;
+                        m_objSelectionState.selectedIndex = -1;
+                        m_objSelectionState.selectedPrefab = std::move(tempPrefab);
+
+                        DebugLog::addMessage("Open Prefab " + m_objSelectionState.selectedPrefab->getObjectName() + ".\n");
+                    }
+                    else {
+                        DebugLog::addMessage("Failed to open prefab " + prefabID + " object for editing.\n");
+                    }
+
+                }
             }
         }
 
@@ -510,6 +542,17 @@ void AssetBrowser::loadAssetsFromDirectory() {
     //DebugLog::addMessage("Assets loaded from " + m_AssetBrowserState.currentFolder);
 }
 
+// Add this as a private static helper in AssetBrowser or a free function
+std::string AssetBrowser::toRegistryPath(const std::string& assetPath) {
+    std::string p = assetPath;
+    std::replace(p.begin(), p.end(), '\\', '/');
+    size_t pos = p.find("/Prefab/");
+    if (pos != std::string::npos) return p.substr(pos);
+    pos = p.find("Prefab/");
+    if (pos != std::string::npos) return "/" + p.substr(pos);
+    return p;
+}
+
 void AssetBrowser::assetDeletePopup() {
     // open popup if flagged
     if (m_AssetBrowserState.showDeletePopup) {
@@ -517,8 +560,15 @@ void AssetBrowser::assetDeletePopup() {
         std::filesystem::path pathToDelete(m_AssetBrowserState.fullPathToDelete);
         std::string folder = pathToDelete.parent_path().filename().string();
 
-        if (folder == "Prefab") {
-            std::string prefabID = PrefabManager::Instance().findPrefabIDByFilename(pathToDelete.filename().string());
+        /*if (folder == "Prefab") {
+            std::string prefabID = PrefabManager::Instance().findPrefabIDByFilename(pathToDelete.filename().string());*/
+        bool isInPrefabFolder = false;
+        for (const auto& part : pathToDelete) {
+            if (part.string() == "Prefab") { isInPrefabFolder = true; break; }
+        }
+
+        if (isInPrefabFolder) {
+            std::string prefabID = PrefabManager::Instance().findPrefabIDByFilename(toRegistryPath(pathToDelete.string()));
 
             if (!prefabID.empty()) {
                 std::vector<PrefabUsageInfo> usageInfo;
@@ -560,15 +610,8 @@ void AssetBrowser::assetDeletePopup() {
 
                 bool deletionSuccess = true;
 
-                // extract relative path first
-                std::string relativePath;
-                size_t pos = m_AssetBrowserState.fullPathToDelete.find("assets/");
-                if (pos != std::string::npos) {
-                    relativePath = m_AssetBrowserState.fullPathToDelete.substr(pos + strlen("assets/"));
-                }
-
                 // delete from prefab registry FIRST (before files) if its prefab
-                std::string prefabID = PrefabManager::Instance().findPrefabIDByFilename(relativePath);
+                std::string prefabID = PrefabManager::Instance().findPrefabIDByFilename(toRegistryPath(m_AssetBrowserState.fullPathToDelete));
                 if (!prefabID.empty()) {
                     if (!PrefabManager::Instance().deletePrefab(prefabID)) {
                         DebugLog::addMessage("Failed to delete prefab from registry: " + prefabID);
@@ -583,6 +626,13 @@ void AssetBrowser::assetDeletePopup() {
                         if (!std::filesystem::remove(m_AssetBrowserState.fullPathToDelete)) {
                             DebugLog::addMessage("Failed to delete asset file");
                             deletionSuccess = false;
+                        }
+
+                        // extract relative path first
+                        std::string relativePath;
+                        size_t pos = m_AssetBrowserState.fullPathToDelete.find("assets/");
+                        if (pos != std::string::npos) {
+                            relativePath = m_AssetBrowserState.fullPathToDelete.substr(pos + strlen("assets/"));
                         }
 
                         // delete from project folder
@@ -752,7 +802,7 @@ void AssetBrowser::assetRenamePopup() {
                     /* -------- Changing Prefab Name + Registry Entry -------- */
 
                     // get prefabid by the path
-                    std::string prefabID = PrefabManager::Instance().findPrefabIDByFilename(old);
+                    std::string prefabID = PrefabManager::Instance().findPrefabIDByFilename(toRegistryPath(old.string()));
                     if (!prefabID.empty()) {
                         // change prefab name and save
                         PrefabManager::Instance().setPrefabPath(prefabID, newPath.string());

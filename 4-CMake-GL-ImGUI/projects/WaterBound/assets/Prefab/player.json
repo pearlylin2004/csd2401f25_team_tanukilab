@@ -55,7 +55,6 @@
       "collisionTag": "default",
       "bounciness": 0.0,
       "friction": 0.20000000298023224,
-      "colliderType": "square",
       "ignoreCollisionsWith": []
     },
     "StateMachine": {

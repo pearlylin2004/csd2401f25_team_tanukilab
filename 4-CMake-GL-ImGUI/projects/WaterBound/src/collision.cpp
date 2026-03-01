@@ -41,26 +41,96 @@ namespace Collision {
         return Collision::AABB(min, max);
     }
 
-    AABB getObjectAABBbyCollider(const Transform* transform, const Vector2D& collider) {
-        float halfWidth = collider.x * 0.5f;
-        float halfHeight = collider.y * 0.5f;
+    AABB getObjectAABBbyCollider(const Transform* transform, const CollisionInfo* collision) {
+        Vector2D size = collision->colliderSize;
+        Vector2D pos = collision->colliderPos;
+        float rot = collision->colliderRot + transform->rotation;
 
-        Vector2D center(transform->x, transform->y);
-        Vector2D min(center.x - halfWidth, center.y - halfHeight);
-        Vector2D max(center.x + halfWidth, center.y + halfHeight);
-        return Collision::AABB(min, max);                         
-    }                                                             
+        float halfWidth = size.x * 0.5f;
+        float halfHeight = size.y * 0.5f;
+
+        // rotate collider offset by transform rotation so it move with object
+        float cosT = cosf(glm::radians(transform->rotation));
+        float sinT = sinf(glm::radians(transform->rotation));
+        float rotOffsetX = pos.x * cosT - pos.y * sinT;
+        float rotOffsetY = pos.x * sinT + pos.y * cosT;
+
+        // corners relative to centre (before rotate)
+        Vector2D corners[4] = {
+            { -halfWidth, -halfHeight },
+            {  halfWidth, -halfHeight },
+            {  halfWidth,  halfHeight },
+            { -halfWidth,  halfHeight }
+        };
+
+        // rotate each corner by collider rotation
+        float cosR = cosf(glm::radians(rot));
+        float sinR = sinf(glm::radians(rot));
+
+        float minX = FLT_MAX, minY = FLT_MAX;
+        float maxX = -FLT_MAX, maxY = -FLT_MAX;
+
+        for (const Vector2D& corner : corners) {
+            float rx = corner.x * cosR - corner.y * sinR;
+            float ry = corner.x * sinR + corner.y * cosR;
+
+            // world position
+            float worldX = transform->x + rotOffsetX + rx;
+            float worldY = transform->y + rotOffsetY + ry;
+
+            if (worldX < minX) minX = worldX;
+            if (worldX > maxX) maxX = worldX;
+            if (worldY < minY) minY = worldY;
+            if (worldY > maxY) maxY = worldY;
+        }
+
+        return Collision::AABB({ minX, minY }, { maxX, maxY });
+    }
+
+    // add this helper alongside getObjectAABBbyCollider
+    void getColliderCorners(const Transform* transform, const CollisionInfo* collision, ImVec2 screenCorners[4], std::function<ImVec2(float, float)> worldToScreen) {
+        float halfW = collision->colliderSize.x * 0.5f;
+        float halfH = collision->colliderSize.y * 0.5f;
+
+        float totalRot = glm::radians(collision->colliderRot + transform->rotation);
+        float cosR = cosf(totalRot);
+        float sinR = sinf(totalRot);
+
+        float cosT = cosf(glm::radians(transform->rotation));
+        float sinT = sinf(glm::radians(transform->rotation));
+        float offX = collision->colliderPos.x * cosT - collision->colliderPos.y * sinT;
+        float offY = collision->colliderPos.x * sinT + collision->colliderPos.y * cosT;
+
+        float cx = transform->x + offX;
+        float cy = transform->y + offY;
+
+        Vector2D local[4] = {
+            { -halfW, -halfH }, {  halfW, -halfH },
+            {  halfW,  halfH }, { -halfW,  halfH }
+        };
+
+        for (int i = 0; i < 4; ++i) {
+            float rx = local[i].x * cosR - local[i].y * sinR;
+            float ry = local[i].x * sinR + local[i].y * cosR;
+            screenCorners[i] = worldToScreen(cx + rx, cy + ry);
+        }
+    }
 
 	//helper function to get a Circle from a renderer object
-    Circle getObjectCircle(const Transform* transform) {
+    /*Circle getObjectCircle(const Transform* transform) {
         Vector2D center(transform->x, transform->y);
         float radius = std::max(transform->scaleX, transform->scaleY) * 0.5f;
         return Collision::Circle(center, radius);
-    }
+    }*/
 
-    Circle getObjectCirclebyCollider(const Transform* transform, const Vector2D& collider) {
-        Vector2D center(transform->x, transform->y);
-        float radius = std::max(collider.x, collider.y) * 0.5f; // x and y will be the same actually
+    Circle getObjectCirclebyCollider(const Transform* transform, const CollisionInfo* collision) {
+        Vector2D size = collision->colliderSize;
+        Vector2D pos = collision->colliderPos;
+        float rot = collision->colliderRot + transform->rotation;
+
+        Vector2D center(transform->x + pos.x, transform->y + pos.y); // collider move with obj
+        float radius = std::max(size.x, size.y) * 0.5f; // x and y will be the same actually
+        
         return Collision::Circle(center, radius);
     }
 
