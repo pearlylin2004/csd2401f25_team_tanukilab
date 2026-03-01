@@ -1551,6 +1551,43 @@ namespace JsonIO {
         }
     }
 
+    std::string serializeWeapon(GameObject* obj) {
+        WeaponComponent* wc = obj ? obj->getComponent<WeaponComponent>() : nullptr;
+        if (!wc) return "";
+        using namespace rapidjson;
+        Document doc; doc.SetObject();
+        auto& a = doc.GetAllocator();
+        Value jweap(kObjectType);
+        Value barrelArr(kArrayType);
+        barrelArr.PushBack(wc->barrelOffset.x, a);
+        barrelArr.PushBack(wc->barrelOffset.y, a);
+        jweap.AddMember("barrelOffset", barrelArr, a);
+        jweap.AddMember("aimAtMouse", wc->aimAtMouse ? 1 : 0, a);
+        doc.AddMember("WeaponComponent", jweap, a);
+        StringBuffer buf; Writer<StringBuffer> w(buf); doc.Accept(w);
+        return buf.GetString();
+    }
+    void deserializeWeapon(GameObject* obj, const std::string& json) {
+        if (!obj || json.empty()) return;
+        using namespace rapidjson;
+        Document doc; doc.Parse(json.c_str());
+        if (doc.HasParseError() || !doc.HasMember("WeaponComponent")) return;
+        const Value& jweap = doc["WeaponComponent"];
+        WeaponComponent* wc = obj->hasComponent<WeaponComponent>()
+            ? obj->getComponent<WeaponComponent>()
+            : obj->addComponent<WeaponComponent>();
+        if (jweap.HasMember("barrelOffset") && jweap["barrelOffset"].IsArray()
+            && jweap["barrelOffset"].Size() >= 2) {
+            wc->barrelOffset.x = jweap["barrelOffset"][0].GetFloat();
+            wc->barrelOffset.y = jweap["barrelOffset"][1].GetFloat();
+        }
+        if (jweap.HasMember("aimAtMouse")) {
+            wc->aimAtMouse = jweap["aimAtMouse"].IsBool()
+                ? jweap["aimAtMouse"].GetBool()
+                : (jweap["aimAtMouse"].GetInt() != 0);
+        }
+    }
+
 
     std::string serializeGameObj(GameObject* obj) {
         if (!obj) return "";

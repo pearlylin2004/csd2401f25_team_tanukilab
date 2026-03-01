@@ -31,7 +31,7 @@
         "Transform": {
           "pos": [
             -1000.0,
-            -1000.0,
+            -1002.5213623046875,
             1.0
           ]
         },
@@ -45,6 +45,15 @@
           "coyoteTime": 0.15000000596046448,
           "ledgeAssistRange": 0.800000011920929,
           "ledgeClimbSpeed": 8.0
+        },
+        "CollisionInfo": {
+          "colliderPos": [
+            0.0,
+            0.0
+          ],
+          "colliderRot": 0.0,
+          "colliderType": "square",
+          "colliderType": "square"
         }
       }
     },
@@ -54,8 +63,8 @@
       "components": {
         "Transform": {
           "pos": [
-            -16.409990310668945,
-            -0.13571445643901825,
+            -17.334003448486328,
+            -0.11850577592849731,
             0.9980000257492065
           ],
           "scale": [
@@ -68,10 +77,31 @@
           "autoUpdate": 0
         },
         "CollisionInfo": {
+          "colliderPos": [
+            0.0,
+            0.0
+          ],
+          "colliderRot": 0.0,
           "collisionTag": "player",
           "ignoreCollisionsWith": [
             "bullet"
           ]
+        },
+        "StateMachine": {
+          "Falling": {
+            "animState": {
+              "texture": "assets/Texture/Kinuta_Fall_SS.png",
+              "loop": 0,
+              "play": 0,
+              "totalColumn": 4,
+              "totalRow": 1,
+              "frameTime": 0.10000000149011612,
+              "initialFramCol": 0.0,
+              "initialFramRow": 0.0,
+              "lastFramCol": 0.0,
+              "lastFramRow": 0.0
+            }
+          }
         },
         "AudioComponent": {
           "channels": {
@@ -86,6 +116,21 @@
               "fadeInDuration": 1.0,
               "fadeOutOnStop": 1,
               "fadeOutDuration": 0.15000000596046448,
+              "isSpatial": 0,
+              "minDistance": 1.0,
+              "maxDistance": 100.0
+            },
+            "landing": {
+              "audioFile": "assets/audio/landing.wav",
+              "volume": 1.0,
+              "pitch": 1.0,
+              "loop": 0,
+              "playOnStart": 0,
+              "muted": 0,
+              "fadeInOnStart": 0,
+              "fadeInDuration": 1.0,
+              "fadeOutOnStop": 0,
+              "fadeOutDuration": 1.0,
               "isSpatial": 0,
               "minDistance": 1.0,
               "maxDistance": 100.0
@@ -289,6 +334,11 @@
             6.588000774383545,
             6.588000774383545
           ],
+          "colliderPos": [
+            0.0,
+            0.0
+          ],
+          "colliderRot": 0.0,
           "colliderType": "square",
           "collisionRes": "StopWhenCollide",
           "collisionTag": "inventory",
@@ -324,6 +374,11 @@
           "inertiaOverride": 0.0
         },
         "CollisionInfo": {
+          "colliderPos": [
+            0.0,
+            0.0
+          ],
+          "colliderRot": 0.0,
           "bounciness": 0.0,
           "friction": 0.0
         },
@@ -362,6 +417,11 @@
             6.588000774383545,
             6.588000774383545
           ],
+          "colliderPos": [
+            0.0,
+            0.0
+          ],
+          "colliderRot": 0.0,
           "colliderType": "square",
           "collisionRes": "StopWhenCollide",
           "collisionTag": "inventory",
@@ -424,6 +484,11 @@
             12.399999618530273,
             1.100000023841858
           ],
+          "colliderPos": [
+            0.0,
+            0.0
+          ],
+          "colliderRot": 0.0,
           "colliderType": "square",
           "collisionRes": "StopWhenCollide",
           "collisionTag": "default",
@@ -483,9 +548,14 @@
             7.300000190734863,
             1.100000023841858
           ],
+          "colliderPos": [
+            0.0,
+            0.0
+          ],
+          "colliderRot": 0.0,
           "colliderType": "square",
           "collisionRes": "StopWhenCollide",
-          "collisionTag": "environment",
+          "collisionTag": "default",
           "bounciness": 0.0,
           "friction": 0.0,
           "colliderType": "square"
@@ -542,6 +612,11 @@
             7.300000190734863,
             7.099999904632568
           ],
+          "colliderPos": [
+            0.0,
+            0.0
+          ],
+          "colliderRot": 0.0,
           "colliderType": "square",
           "collisionRes": "StopWhenCollide",
           "collisionTag": "default",
@@ -586,6 +661,11 @@
             17.5939998626709,
             17.493999481201172
           ],
+          "colliderPos": [
+            0.0,
+            0.0
+          ],
+          "colliderRot": 0.0,
           "bounciness": 0.0,
           "friction": 0.0
         }
@@ -626,6 +706,11 @@
             7.372000217437744,
             0.3720000088214874
           ],
+          "colliderPos": [
+            0.0,
+            0.0
+          ],
+          "colliderRot": 0.0,
           "bounciness": 0.0,
           "friction": 0.0
         }
@@ -674,6 +759,11 @@
             50.0,
             6.0
           ],
+          "colliderPos": [
+            0.0,
+            0.0
+          ],
+          "colliderRot": 0.0,
           "colliderType": "square",
           "collisionRes": "NoResponse",
           "collisionTag": "water",
@@ -709,7 +799,7 @@
         "Transform": {
           "pos": [
             -6.253969192504883,
-            -6.005908012390137,
+            -6.047811508178711,
             0.0
           ],
           "rotation": 0.0,
@@ -753,6 +843,11 @@
             4.0,
             2.0
           ],
+          "colliderPos": [
+            0.0,
+            0.0
+          ],
+          "colliderRot": 0.0,
           "colliderType": "square",
           "collisionRes": "MoveWhenCollide",
           "collisionTag": "floatingObject",
@@ -771,7 +866,7 @@
             -6.920639991760254,
             0.0
           ],
-          "rotation": 28.783843994140625,
+          "rotation": -1117.5108642578125,
           "scale": [
             5.5,
             5.5,
@@ -812,6 +907,11 @@
             4.5,
             5.5
           ],
+          "colliderPos": [
+            0.0,
+            0.0
+          ],
+          "colliderRot": 0.0,
           "colliderType": "circle",
           "collisionRes": "StopWhenCollide",
           "collisionTag": "default",
@@ -864,6 +964,11 @@
             4.800000190734863,
             0.5
           ],
+          "colliderPos": [
+            0.0,
+            0.0
+          ],
+          "colliderRot": 0.0,
           "colliderType": "square",
           "collisionRes": "StopWhenCollide",
           "collisionTag": "default",
@@ -919,6 +1024,11 @@
             4.5,
             2.4000000953674316
           ],
+          "colliderPos": [
+            0.0,
+            0.0
+          ],
+          "colliderRot": 0.0,
           "colliderType": "square",
           "collisionRes": "StopWhenCollide",
           "collisionTag": "default",
@@ -928,6 +1038,44 @@
         },
         "VisualLC": {
           "filename": "branch collision 2_Logic.json"
+        }
+      }
+    },
+    {
+      "name": "watergun",
+      "components": {
+        "Transform": {
+          "pos": [
+            -6.090872764587402,
+            -4.611270904541016,
+            0.0
+          ],
+          "rotation": 29.51104164123535,
+          "scale": [
+            3.200000047683716,
+            1.2999999523162842,
+            0.0
+          ],
+          "parentName": "player",
+          "localOffset": [
+            0.8153396844863892,
+            -0.8720855116844177
+          ],
+          "localRotation": -1.0
+        },
+        "Render": {
+          "shape": "square",
+          "hasTex": 1,
+          "texture": "assets/Texture\\Water_Gun.png",
+          "hasTex": 1,
+          "hasAnimation": 0
+        },
+        "WeaponComponent": {
+          "barrelOffset": [
+            1.0,
+            0.0
+          ],
+          "aimAtMouse": 1
         }
       }
     }

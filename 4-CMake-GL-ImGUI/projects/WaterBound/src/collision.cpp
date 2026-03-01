@@ -126,7 +126,6 @@ namespace Collision {
     Circle getObjectCirclebyCollider(const Transform* transform, const CollisionInfo* collision) {
         Vector2D size = collision->colliderSize;
         Vector2D pos = collision->colliderPos;
-        float rot = collision->colliderRot + transform->rotation;
 
         Vector2D center(transform->x + pos.x, transform->y + pos.y); // collider move with obj
         float radius = std::max(size.x, size.y) * 0.5f; // x and y will be the same actually
