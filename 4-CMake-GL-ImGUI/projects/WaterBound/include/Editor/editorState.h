@@ -93,6 +93,16 @@ namespace Editor {
 		std::vector<std::string> subFolders;
 		std::vector<PrefabUsageInfo> prefabUsageInfo; // for tracking prefab usage info in delete popup
 
+		// creating subfolder
+		bool showCreateSubfolderPopup = false;
+		bool showRenameSubfolderPopup = false;
+		bool showDeleteSubfolderPopup = false;
+		char newSubfolderNameBuffer[128] = {};
+		char renameFolderBuffer[128] = {};
+		std::vector<std::string> currentViewSubFolders; // subfolders inside currentViewFolder
+		std::string folderToRename;
+		std::string folderToDelete;
+
 		// for dropping of files from file explorer
 		std::string hoverFolder;
 
@@ -169,6 +179,9 @@ namespace Editor {
 
 	/* ----------------- Visual Logic Editor ---------------- */
 	struct VisualLogicState {
+		int selectedNodeId = -1;
+		int selectedConIndex = -1;
+
 		bool showEditor = false;
 		bool isFocus = false; // whether the window is focused
 		bool wantCloseEditor = false;

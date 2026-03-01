@@ -1091,6 +1091,9 @@ namespace JsonIO {
         jc.AddMember("autoFitScale", c->autoFitScale, a);
         jc.AddMember("width", c->colliderSize.x, a);
         jc.AddMember("height", c->colliderSize.y, a);
+        jc.AddMember("x", c->colliderPos.x, a);
+        jc.AddMember("y", c->colliderPos.y, a);
+        jc.AddMember("rotation", c->colliderRot, a);
         jc.AddMember("collisionRes", Value(CollisionResponseModeToStr(c->collisionRes), a), a);
         jc.AddMember("collisionTag", Value(c->collisionTag.c_str(), a), a);
         jc.AddMember("colliderType", Value(ShapeToStr(c->colliderType), a), a);
@@ -1122,8 +1125,11 @@ namespace JsonIO {
 
         c->collisionFlag = jc["collisionFlag"].GetBool();
         c->autoFitScale = jc["autoFitScale"].GetBool();
-        c->colliderSize.x = jc["width"].GetFloat();
-        c->colliderSize.y = jc["height"].GetFloat();
+        c->colliderSize.x = JsonIO::GetFloatOr(jc, "width", 0.f);
+        c->colliderSize.y = JsonIO::GetFloatOr(jc, "height", 0.f);
+        c->colliderPos.x = JsonIO::GetFloatOr(jc, "x", 0.f);
+        c->colliderPos.y = JsonIO::GetFloatOr(jc, "y", 0.f);
+        c->colliderRot = JsonIO::GetFloatOr(jc, "rotation", 0.f);
 
         if (jc.HasMember("collisionRes")) c->collisionRes = StrToCollisionResponseMode(jc["collisionRes"].GetString());
         if (jc.HasMember("collisionTag")) c->collisionTag = jc["collisionTag"].GetString();
@@ -1585,6 +1591,15 @@ namespace JsonIO {
         merge(serializeTileMap(obj));
         merge(serializeLuaScript(obj));
         merge(serializeVisualLC(obj));
+
+        if (Button* b = obj->getComponent<Button>()) {
+            Value jb(kObjectType);
+            Value actionStr(ButtonActionToStr(b->actionName), a);
+            jb.AddMember("action", actionStr, a);
+            jb.AddMember("isHovered", b->isHovered, a);
+            jb.AddMember("isPressed", b->isPressed, a);
+            doc.AddMember("Button", jb, a);
+        }
 
         StringBuffer buf; Writer<StringBuffer> w(buf); doc.Accept(w);
         return buf.GetString();

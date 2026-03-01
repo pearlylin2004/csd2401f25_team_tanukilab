@@ -89,6 +89,15 @@ void GameObjectManager::deleteGameObject(GameObject* object) {
 			continue; // don't skip remaining children
 		}
 
+		// clear dangling pointer in obj that refer to this deleted obj in visual logic
+		if (it->second->hasComponent<VisualLC>()) {
+			VisualLC* logic = it->second->getComponent<VisualLC>();
+			if (logic->lastCollidedObj == object)
+				logic->lastCollidedObj = nullptr;
+			logic->curCollision.erase(object);
+			logic->preCollision.erase(object);
+		}
+
 		Transform* t = it->second->getComponent<Transform>();
 		if (t && t->parentName == deletedName) {
 			t->parentName.clear();
@@ -118,7 +127,7 @@ GameObject* GameObjectManager::CloneGameObject(const std::string& sourceName, co
 
 	//cloning GameObject
 	std::unique_ptr<GameObject> clonedObject = iterator->second->clone(newName);
-
+	 
 	GameObject* ptr = clonedObject.get();//raw pointer
 
 	m_gameObjects[newName] = std::move(clonedObject);//move into map
@@ -608,11 +617,20 @@ void GameObjectManager::loadSceneFromJson(const std::string& filename) {
 				c->collisionRes = JsonIO::StrToCollisionResponseMode(jc["collisionRes"].GetString());
 			}
 
-			if (jc.HasMember("colliderSize") && jc["colliderSize"].IsArray() && jc["colliderSize"].Size() == 2)
-			{
+			// colliderSize
+			if (jc.HasMember("colliderSize") && jc["colliderSize"].IsArray() && jc["colliderSize"].Size() >= 2) {
 				c->colliderSize.x = jc["colliderSize"][0].GetFloat();
 				c->colliderSize.y = jc["colliderSize"][1].GetFloat();
 			}
+
+			// colliderPos
+			if (jc.HasMember("colliderPos") && jc["colliderPos"].IsArray() && jc["colliderPos"].Size() >= 2) {
+				c->colliderPos.x = jc["colliderPos"][0].GetFloat();
+				c->colliderPos.y = jc["colliderPos"][1].GetFloat();
+			}
+
+			// colliderRot
+			c->colliderRot = JsonIO::GetFloatOr(jc, "colliderRot", 0.f);
 
 			// Load Collision Tag
 			if (jc.HasMember("collisionTag") && jc["collisionTag"].IsString()) {
@@ -1389,14 +1407,28 @@ doc.AddMember("layers", layersArr, a);
 				pushIfDiffBool("collisionFlag", c->collisionFlag);
 				pushIfDiffBool("autoFitScale", c->autoFitScale);
 
+				// colliderSize
 				if (!prefabC || !prefabC->HasMember("colliderSize") ||
 					differsFloat((*prefabC)["colliderSize"][0].GetFloat(), c->colliderSize.x) ||
 					differsFloat((*prefabC)["colliderSize"][1].GetFloat(), c->colliderSize.y)) {
-
 					rapidjson::Value sc(rapidjson::kArrayType);
 					sc.PushBack(c->colliderSize.x, a).PushBack(c->colliderSize.y, a);
 					jc.AddMember("colliderSize", sc, a);
 				}
+
+				// colliderPos
+				if (!prefabC || !prefabC->HasMember("colliderPos") ||
+					differsFloat((*prefabC)["colliderPos"][0].GetFloat(), c->colliderPos.x) ||
+					differsFloat((*prefabC)["colliderPos"][1].GetFloat(), c->colliderPos.y)) {
+					rapidjson::Value sp(rapidjson::kArrayType);
+					sp.PushBack(c->colliderPos.x, a).PushBack(c->colliderPos.y, a);
+					jc.AddMember("colliderPos", sp, a);
+				}
+
+				// colliderRot
+				if (!prefabC || !prefabC->HasMember("colliderRot") ||
+					differsFloat((*prefabC)["colliderRot"].GetFloat(), c->colliderRot))
+					jc.AddMember("colliderRot", c->colliderRot, a);
 
 				std::string shapeStr = JsonIO::ShapeToStr(c->colliderType);
 				if (!prefabC || !prefabC->HasMember("colliderType") || shapeStr != (*prefabC)["colliderType"].GetString())

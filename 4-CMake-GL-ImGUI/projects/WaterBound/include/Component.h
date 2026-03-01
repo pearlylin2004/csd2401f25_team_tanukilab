@@ -350,7 +350,9 @@ public:
 
     bool collisionFlag = true; // whether objest can collide with another obj
     shape colliderType = shape::square;
-    Vector2D colliderSize{ 0,0 }; // size of the bounding box, if collider is circle then x will be diamater
+    Vector2D colliderSize{ 0,0 }; // size of the bounding box, if collider is circle then x is diamater
+    Vector2D colliderPos{ 0,0 };
+    float colliderRot = 0.f;
     bool autoFitScale = true; // auto-fit the collider with the size of the mesh (i.e. obj bigger -> collider bigger)
     CollisionResponseMode collisionRes = CollisionResponseMode::StopWhenCollide;
 
@@ -689,6 +691,11 @@ struct LogicConnection {
 
     std::string outputPin; // OUT, TRUE, FALSE
     std::string inputPin; // IN
+
+    inline bool operator==(const LogicConnection& other) const {
+        return fromNodeId == other.fromNodeId && toNodeId == other.toNodeId &&
+            outputPin == other.outputPin && inputPin == other.inputPin;
+    }
 };
 
 enum class NodeType {
@@ -764,6 +771,11 @@ struct LogicNode {
 
     // for node configuration
     std::map<std::string, std::string> parameters;
+
+    inline bool operator==(const LogicNode& other) const {
+        return id == other.id && position.x == other.position.x &&
+            position.y == other.position.y && parameters == other.parameters;
+    }
 };
 
 class GameObject; // annoying forward declaration

@@ -544,7 +544,7 @@ void VisualLogicSystem::executeActionNode(GameObject* obj, VisualLC* logic, Logi
 		if (!collidedTransform) return;
 
 		float deltaX = node.parameters.count("deltaXCollided") ? std::stof(node.parameters["deltaXCollided"]) : 0.f;
-		float deltaY = node.parameters.count("deltaYCollided") ? std::stof(node.parameters["deltaXCollided"]) : 0.f;
+		float deltaY = node.parameters.count("deltaYCollided") ? std::stof(node.parameters["deltaYCollided"]) : 0.f;
 
 		collidedTransform->x += deltaX;
 		collidedTransform->y += deltaY;
