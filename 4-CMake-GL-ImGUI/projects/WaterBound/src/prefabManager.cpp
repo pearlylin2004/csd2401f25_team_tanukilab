@@ -183,13 +183,17 @@ bool PrefabManager::setPrefabPath(const std::string& prefabID, const std::string
 		return false;
 	}
 
-	std::filesystem::path path{ newName };
-	std::string newNameWPath = path.filename().string();
+	std::string path = newName;
+	std::replace(path.begin(), path.end(), '\\', '/');
 
-	iterator->second.path = "/Prefab/" + newNameWPath;
+	// ensure leading slash to match registry format e.g. "/Prefab/sub/player.json"
+	if (!path.empty() && path[0] != '/')
+		path = "/" + path;
+
+	iterator->second.path = path;
 	savePrefabRegistry();
 
-	DebugLog::addMessage("Updated prefab path for ID " + prefabID + " -> " + newNameWPath);
+	DebugLog::addMessage("Updated prefab path for ID " + prefabID + " -> " + path);
 	return true;
 }
 
@@ -213,11 +217,14 @@ const std::string& PrefabManager::getPrefabName(const std::string& prefabID) con
 }
 
 std::string PrefabManager::findPrefabIDByFilename(const std::filesystem::path& filename) {
-	std::string f{ filename.filename().string() };
+	std::string searchStr = filename.string();
+	std::replace(searchStr.begin(), searchStr.end(), '\\', '/');
 
+	// try full path match first (e.g. "Prefab/subfolder/player.json")
 	for (const auto& [id, info] : m_prefabRegistry) {
-		if (std::filesystem::path(info.path).filename().string() == f)
-			return id;
+		std::string registryPath = info.path;
+		std::replace(registryPath.begin(), registryPath.end(), '\\', '/');
+		if (registryPath == searchStr) return id;
 	}
 
 	return "";
@@ -832,10 +839,16 @@ void PrefabManager::applyPrefabComponents(GameObject* go, const rapidjson::Value
 		c->colliderType = JsonIO::GetString(jc, "colliderType", shp) ? JsonIO::StrToShape(shp) : shape::square;
 		std::string res;
 		c->collisionRes = JsonIO::GetString(jc, "collisionRes", res) ? JsonIO::StrToCollisionResponseMode(res) : CollisionResponseMode::StopWhenCollide;
+
 		if (jc.HasMember("colliderSize") && jc["colliderSize"].IsArray() && jc["colliderSize"].Size() >= 2) {
 			c->colliderSize.x = jc["colliderSize"][0].GetFloat();
 			c->colliderSize.y = jc["colliderSize"][1].GetFloat();
 		}
+		if (jc.HasMember("colliderPos") && jc["colliderPos"].IsArray() && jc["colliderPos"].Size() >= 2) {
+			c->colliderPos.x = jc["colliderPos"][0].GetFloat();
+			c->colliderPos.y = jc["colliderPos"][1].GetFloat();
+		}
+		c->colliderRot = JsonIO::GetFloatOr(jc, "colliderRot", 0.f);
 
 		// Load Collision Tag
 		if (jc.HasMember("collisionTag") && jc["collisionTag"].IsString()) {
@@ -844,9 +857,6 @@ void PrefabManager::applyPrefabComponents(GameObject* go, const rapidjson::Value
 
 		c->material.bounciness = JsonIO::GetFloatOr(jc, "bounciness", 0.0f);
 		c->material.friction = JsonIO::GetFloatOr(jc, "friction", 0.0f);
-		
-		if(jc.HasMember("colliderType") && jc["colliderType"].IsString())
-			c->colliderType = JsonIO::StrToShape(jc["colliderType"].GetString());
 
 		// Load ignore the collision
 		if (jc.HasMember("ignoreCollisionsWith") && jc["ignoreCollisionsWith"].IsArray()) {
@@ -1149,6 +1159,26 @@ void PrefabManager::applyPrefabComponents(GameObject* go, const rapidjson::Value
 			}
 		}
 	}
+
+	// ---- Weapon Component ----
+	if (comps.HasMember("WeaponComponent") && comps["WeaponComponent"].IsObject()) {
+		const auto& jweap = comps["WeaponComponent"];
+		auto* wc = go->getComponent<WeaponComponent>();
+		if (!wc)
+			wc = go->addComponent<WeaponComponent>();
+
+		if (jweap.HasMember("barrelOffset") && jweap["barrelOffset"].IsArray()
+			&& jweap["barrelOffset"].Size() >= 2) {
+			wc->barrelOffset.x = jweap["barrelOffset"][0].GetFloat();
+			wc->barrelOffset.y = jweap["barrelOffset"][1].GetFloat();
+		}
+
+		if (jweap.HasMember("aimAtMouse")) {
+			wc->aimAtMouse = jweap["aimAtMouse"].IsBool()
+				? jweap["aimAtMouse"].GetBool()
+				: (jweap["aimAtMouse"].GetInt() != 0);
+		}
+	}
 }
 
 void PrefabManager::serializeComponents(const GameObject* obj, rapidjson::Value& comps, rapidjson::Document::AllocatorType& a) {
@@ -1264,7 +1294,15 @@ void PrefabManager::serializeComponents(const GameObject* obj, rapidjson::Value&
 		jc.AddMember("collisionFlag", c->collisionFlag ? 1 : 0, a);
 		jc.AddMember("autoFitScale", c->autoFitScale ? 1 : 0, a);
 
-		JsonIO::PutArray3f(jc, "colliderSize", { c->colliderSize.x, c->colliderSize.y, 0.f }, a);
+		rapidjson::Value sc(rapidjson::kArrayType);
+		sc.PushBack(c->colliderSize.x, a).PushBack(c->colliderSize.y, a);
+		jc.AddMember("colliderSize", sc, a);
+
+		rapidjson::Value sp(rapidjson::kArrayType);
+		sp.PushBack(c->colliderPos.x, a).PushBack(c->colliderPos.y, a);
+		jc.AddMember("colliderPos", sp, a);
+
+		jc.AddMember("colliderRot", c->colliderRot, a);
 
 		jc.AddMember("colliderType", rapidjson::Value(JsonIO::ShapeToStr(c->colliderType), a), a);
 
@@ -1427,6 +1465,20 @@ void PrefabManager::serializeComponents(const GameObject* obj, rapidjson::Value&
 		}
 
 		comps.AddMember("VisualLC", jvl, a);
+	}
+
+	// ---- Weapon Component ----
+	if (auto wc = obj->getComponent<WeaponComponent>()) {
+		rapidjson::Value jweap(rapidjson::kObjectType);
+		rapidjson::Value barrelArr(rapidjson::kArrayType);
+
+		barrelArr.PushBack(wc->barrelOffset.x, a);
+		barrelArr.PushBack(wc->barrelOffset.y, a);
+		jweap.AddMember("barrelOffset", barrelArr, a);
+		jweap.AddMember("aimAtMouse", wc->aimAtMouse ? 1 : 0, a);
+		if (!jweap.ObjectEmpty()) {
+			comps.AddMember("WeaponComponent", jweap, a);
+		}
 	}
 }
 

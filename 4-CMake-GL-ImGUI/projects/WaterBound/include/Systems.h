@@ -460,3 +460,18 @@ public:
 	static int screenWidth;
 	static int screenHeight;
 };
+
+class WeaponSystem {
+public:
+	/*!***********************************************************************
+	\brief
+		Update weapon objects
+
+	\param[in] manager
+		Game object manager containing all objects.
+
+	\param[in] deltaTime
+		Time elapsed since last frame 
+	*************************************************************************/
+	void update(GameObjectManager& manager, const float& deltaTime);
+};

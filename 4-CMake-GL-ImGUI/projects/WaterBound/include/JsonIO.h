@@ -210,6 +210,9 @@ namespace JsonIO {
 
 	std::string serializeCamera(GameObject* obj);
 	void deserializeCamera(GameObject* obj, const std::string& json);
+	
+	std::string serializeWeapon(GameObject* obj);
+	void deserializeWeapon(GameObject* obj, const std::string& json);
 
 
 	std::string serializeGameObj(GameObject* obj);

@@ -43,6 +43,11 @@ public:
     void onEnter(GameObject& obj) override;
     void onUpdate(GameObject& obj, float dt) override;
     void onExit(GameObject& obj) override;
+
+private:
+    void playRandomFootstep(GameObject& obj);
+    int m_lastFrame = -1;      //!< Detect animation frame changes
+    int m_lastSoundIdx = -1;   //!< Prevent same sound playing twice in a row
 };
 
 /*!

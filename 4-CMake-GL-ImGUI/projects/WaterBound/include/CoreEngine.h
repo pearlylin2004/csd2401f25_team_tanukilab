@@ -108,4 +108,5 @@ private:
     std::unique_ptr<WaterSystem> m_waterSystem;
 	std::unique_ptr<TransformSystem> m_transformSystem;
     std::unique_ptr<Camera> m_cameraSystem;
+    std::unique_ptr<WeaponSystem> m_weaponSystem;
 };

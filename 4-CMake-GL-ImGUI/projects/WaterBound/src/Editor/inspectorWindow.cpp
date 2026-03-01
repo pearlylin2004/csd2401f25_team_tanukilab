@@ -1089,11 +1089,14 @@ void InspectorWindow::renderCollision(GameObject* selected/*, GameObjectManager&
                 if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
 
                 collision->colliderType = static_cast<shape>(current);
+                if (collision->colliderType == shape::circle)
+                    collision->colliderRot = 0.f;
 
                 if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
             }
 
             if (collision->colliderType == shape::circle) {
+                // diameter
                 if (ImGui::DragFloat("Diamater", &collision->colliderSize.x, 0.1f, 0.f, FLT_MAX)) {
                     collision->colliderSize.x = std::max(collision->colliderSize.x, 0.f);
                     collision->colliderSize.y = collision->colliderSize.x;
@@ -1105,22 +1108,15 @@ void InspectorWindow::renderCollision(GameObject* selected/*, GameObjectManager&
                     if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
                 if (ImGui::IsItemDeactivatedAfterEdit())
                     if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
+
+                // position offset
+                if (ImGui::DragFloat2("Offset", &collision->colliderPos.x, 0.1f)) {}
+                if (ImGui::IsItemActivated())
+                    if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
+                if (ImGui::IsItemDeactivatedAfterEdit())
+                    if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
             }
             else {
-                // if (ImGui::InputFloat("Width", &collision->colliderSize.x, 1.f)) {
-                //     collision->colliderSize.x = std::max(collision->colliderSize.x, 0.f);
-                //     if (Physics* p = selected->getComponent<Physics>()) {
-                //         if (!p->freezeRotation) p->recalculateInertia(collision->colliderSize, collision->colliderType);
-                //     }
-                // }
-
-                // if (ImGui::InputFloat("Height", &collision->colliderSize.y, 1.f)) {
-                //     collision->colliderSize.y = std::max(collision->colliderSize.y, 0.f);
-                //     if (Physics* p = selected->getComponent<Physics>()) {
-                //         if (!p->freezeRotation) p->recalculateInertia(collision->colliderSize, collision->colliderType);
-                //     }
-
-                // }
                 if (ImGui::DragFloat("Width", &collision->colliderSize.x, 0.1f, 0.f, FLT_MAX)){
                     collision->colliderSize.x = std::max(collision->colliderSize.x, 0.f);
 
@@ -1144,6 +1140,22 @@ void InspectorWindow::renderCollision(GameObject* selected/*, GameObjectManager&
                     if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
                 if (ImGui::IsItemDeactivatedAfterEdit())
                     if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
+
+                // position offset
+                if (ImGui::DragFloat2("Offset", &collision->colliderPos.x, 0.1f)) {}
+                if (ImGui::IsItemActivated())
+                    if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
+                if (ImGui::IsItemDeactivatedAfterEdit())
+                    if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
+
+                // rotation
+                if (ImGui::DragFloat("Rotation", &collision->colliderRot, 0.5f, 0.f, 360.f)) {
+                    collision->colliderRot = std::clamp(collision->colliderRot, 0.f, 360.f);
+                }
+                if (ImGui::IsItemActivated())
+                    if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
+                if (ImGui::IsItemDeactivatedAfterEdit())
+                    if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);;
             }
 
             ImGui::EndDisabled();
@@ -2184,9 +2196,14 @@ void InspectorWindow::renderLua(GameObject* selected) {
             Editor::scriptState.availScripts.clear();
 
             if (std::filesystem::exists(Editor::scriptState.scriptDir)) {
-                for (const auto& file : std::filesystem::directory_iterator(Editor::scriptState.scriptDir)) {
+                for (const auto& file : std::filesystem::recursive_directory_iterator(Editor::scriptState.scriptDir)) {
                     if (file.is_regular_file() && file.path().extension() == ".lua") {
-                        Editor::scriptState.availScripts.push_back(file.path().filename().string());
+                        // store relative path from scriptDir e.g. "subfolder/script.lua"
+                        std::string relativePath = std::filesystem::relative(
+                            file.path(), Editor::scriptState.scriptDir).string();
+                        std::replace(relativePath.begin(), relativePath.end(), '\\', '/');
+
+                        Editor::scriptState.availScripts.push_back(relativePath);
                     }
                 }
             }
@@ -2225,7 +2242,9 @@ void InspectorWindow::renderLua(GameObject* selected) {
                 // list all scripts
                 for (const std::string& scriptFile : Editor::scriptState.availScripts) {
                     // check if this script is selected (compare with scriptName)
-                    std::string nameWithoutExt = scriptFile.substr(0, scriptFile.find_last_of('.'));
+                    std::filesystem::path scriptPath(scriptFile);
+                    std::string nameWithoutExt = scriptPath.stem().string();
+
                     bool isSelected = (scriptEntry.scriptName == nameWithoutExt);
 
                     if (ImGui::Selectable(scriptFile.c_str(), isSelected)) {
@@ -2354,18 +2373,22 @@ void InspectorWindow::renderVisualLogic(GameObject* selected) {
 
             // list existing logic assets
             if (std::filesystem::exists("assets/Logic")) {
-                for (const auto& file : std::filesystem::directory_iterator("assets/Logic")) {
-                    if (file.is_regular_file() && file.path().extension() != ".json") {
+                for (const auto& file : std::filesystem::recursive_directory_iterator("assets/Logic")) {
+                    if (!file.is_regular_file() && file.path().extension() != ".json") {
                         continue;
                     }
 
-                    std::string assetName = file.path().filename().string();
-                    bool isSelected = (logic->filename == assetName);
+                    //std::string assetName = file.path().filename().string();
+                    std::string relativePath = std::filesystem::relative(file.path(), "assets/Logic").string();
 
-                    if (ImGui::Selectable(assetName.c_str(), isSelected)) {
+                    bool isSelected = (logic->filename == relativePath);
+
+                    if (ImGui::Selectable(relativePath.c_str(), isSelected)) {
                         if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
+
                         Editor::visualLogicState.targetObj = selected;
-                        VisualLogicEditor::Instance().loadLogic(assetName);
+                        VisualLogicEditor::Instance().loadLogic(relativePath);
+
                         if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
                     }
 

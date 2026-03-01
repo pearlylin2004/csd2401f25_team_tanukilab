@@ -1,4 +1,4 @@
-/* Start Header ************************************************************************/
+﻿/* Start Header ************************************************************************/
 /*!
 \file       physics.cpp
 \author     Asha Mathyalakan, asha.m, 2402886
@@ -140,29 +140,26 @@ void PhysicsForces::shoot(GameObject* bullet, const Transform* origin, const Vec
     Transform* t = bullet->getComponent<Transform>();
     Physics* p = bullet->getComponent<Physics>();
 
-    // Spawn at player position
-    t->x = origin->x;
-    t->y = origin->y;
-    t->z = 0.0f;
-
-    p->dynamics.position.x = origin->x;
-    p->dynamics.position.y = origin->y;
-
-    // Calculate direction vector from player to mouse
+    // Spawn at bullet position
     float dx = targetPos.x - origin->x;
     float dy = targetPos.y - origin->y;
     float magnitude = sqrtf(dx * dx + dy * dy);
 
-    // Prevent shooting at self (fallback to facing direction)
-    if (magnitude < 0.5f) {
-        dx = origin->flipX ? -1.0f : 1.0f;
-        dy = 0.0f;
-        magnitude = 1.0f;
-    }
-
-    // Normalize direction and scale by bullet speed
+    // Normalize direction
     float dirX = dx / magnitude;
     float dirY = dy / magnitude;
+
+    float barrelOffset = origin->scaleX * 0.5f;
+    float spawnX = origin->x + dirX * barrelOffset;
+    float spawnY = origin->y + dirY * barrelOffset;
+
+    // Spawn at barrel tip
+    t->x = spawnX;
+    t->y = spawnY;
+    t->z = 0.0f;
+
+    p->dynamics.position.x = spawnX;
+    p->dynamics.position.y = spawnY;
 
     float bulletSpeed = p->moveSpeed * 2.0f;  // Adjust multiplier as needed
     p->dynamics.velocity.x = dirX * bulletSpeed;
