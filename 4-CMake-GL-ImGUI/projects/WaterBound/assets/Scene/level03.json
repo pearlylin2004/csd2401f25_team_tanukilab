@@ -56,6 +56,11 @@
           "ledgeClimbSpeed": 8.0
         },
         "CollisionInfo": {
+          "colliderPos": [
+            0.0,
+            0.0
+          ],
+          "colliderRot": 0.0,
           "colliderType": "square",
           "colliderType": "square",
           "ignoreCollisionsWith": [
@@ -80,7 +85,7 @@
         "Transform": {
           "pos": [
             -17.205570220947266,
-            -4.745276927947998,
+            -4.728067874908447,
             0.9980000257492065
           ],
           "scale": [
@@ -102,6 +107,11 @@
           "autoUpdate": 0
         },
         "CollisionInfo": {
+          "colliderPos": [
+            0.0,
+            0.0
+          ],
+          "colliderRot": 0.0,
           "collisionTag": "player",
           "ignoreCollisionsWith": [
             "bullet"
@@ -395,6 +405,11 @@
             6.588000774383545,
             6.588000774383545
           ],
+          "colliderPos": [
+            0.0,
+            0.0
+          ],
+          "colliderRot": 0.0,
           "colliderType": "square",
           "collisionRes": "StopWhenCollide",
           "collisionTag": "inventory",
@@ -437,6 +452,11 @@
             6.588000774383545,
             6.588000774383545
           ],
+          "colliderPos": [
+            0.0,
+            0.0
+          ],
+          "colliderRot": 0.0,
           "colliderType": "square",
           "collisionRes": "StopWhenCollide",
           "collisionTag": "inventory",
@@ -455,8 +475,8 @@
       "components": {
         "Transform": {
           "pos": [
-            -7.84527587890625,
-            -4.845276832580566,
+            -7.897176742553711,
+            -4.819326400756836,
             0.019999999552965164
           ]
         },
@@ -484,6 +504,11 @@
           "inertiaOverride": 0.0
         },
         "CollisionInfo": {
+          "colliderPos": [
+            0.0,
+            0.0
+          ],
+          "colliderRot": 0.0,
           "bounciness": 0.0,
           "friction": 0.0
         },
@@ -543,6 +568,11 @@
           "inertiaOverride": 0.0
         },
         "CollisionInfo": {
+          "colliderPos": [
+            0.0,
+            0.0
+          ],
+          "colliderRot": 0.0,
           "collisionTag": "steam",
           "bounciness": 0.0,
           "friction": 0.0
@@ -580,6 +610,47 @@
               "maxDistance": 100.0
             }
           }
+        }
+      }
+    },
+    {
+      "name": "watergun",
+      "components": {
+        "Transform": {
+          "pos": [
+            -3.0980653762817383,
+            -3.6029999256134033,
+            0.0
+          ],
+          "rotation": 12.18714714050293,
+          "scale": [
+            3.200000047683716,
+            1.2999999523162842,
+            0.0
+          ],
+          "parentName": "player",
+          "localOffset": [
+            0.8153396844863892,
+            -0.8720855116844177
+          ],
+          "localRotation": -1.0
+        },
+        "Render": {
+          "shape": "square",
+          "colorR": 1.0,
+          "colorG": 1.0,
+          "colorB": 1.0,
+          "colorA": 1.0,
+          "hasTex": 1,
+          "texture": "assets/Texture\\Water_Gun.png",
+          "hasAnimation": 0
+        },
+        "WeaponComponent": {
+          "barrelOffset": [
+            1.0,
+            0.0
+          ],
+          "aimAtMouse": 1
         }
       }
     },
@@ -1048,6 +1119,11 @@
             1.9000000953674316,
             4.599999904632568
           ],
+          "colliderPos": [
+            0.0,
+            0.0
+          ],
+          "colliderRot": 0.0,
           "colliderType": "square",
           "collisionRes": "StopWhenCollide",
           "collisionTag": "default",
@@ -1114,6 +1190,11 @@
           "inertiaOverride": 0.0
         },
         "CollisionInfo": {
+          "colliderPos": [
+            0.0,
+            0.0
+          ],
+          "colliderRot": 0.0,
           "collisionTag": "steam",
           "bounciness": 0.0,
           "friction": 0.0
@@ -1207,6 +1288,11 @@
             2.4000000953674316,
             2.4000000953674316
           ],
+          "colliderPos": [
+            0.0,
+            0.0
+          ],
+          "colliderRot": 0.0,
           "colliderType": "circle",
           "collisionRes": "StopWhenCollide",
           "collisionTag": "default",
@@ -1272,6 +1358,11 @@
             1.899999976158142,
             0.6000000238418579
           ],
+          "colliderPos": [
+            0.0,
+            0.0
+          ],
+          "colliderRot": 0.0,
           "colliderType": "square",
           "collisionRes": "StopWhenCollide",
           "collisionTag": "default",

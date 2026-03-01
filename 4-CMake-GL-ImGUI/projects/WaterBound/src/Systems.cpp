@@ -175,7 +175,7 @@ void InputSystem::update(GameObjectManager& manager, const float& deltaTime, Mes
         }
 
         // Specifically check for player
-        GameObject* player = manager.getGameObject("player");
+       /* GameObject* player = manager.getGameObject("player");
         if (player) {
             std::cout << "\n[DEBUG] PLAYER FOUND!\n";
             std::cout << "  - Has StateMachine: " << (player->hasComponent<StateMachine>() ? "YES" : "NO") << "\n";
@@ -189,7 +189,7 @@ void InputSystem::update(GameObjectManager& manager, const float& deltaTime, Mes
             }
         } else {
             std::cout << "\n[DEBUG] WARNING: No object named 'player' found!\n";
-        }
+        }*/
         
         std::cout << "[DEBUG KEY 8] ======================================\n\n";
     }
