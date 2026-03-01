@@ -66,6 +66,11 @@ public:
     float scaleX = 1.0f, scaleY = 1.0f, scaleZ{ 0.f };
     bool flipX = false; // flip scaleX when change direction, true means flip to left
     glm::mat4 mdlWorld = 1.f;
+
+    // Hierarchy (optional, null = root object)
+    std::string parentName = "";   // serialised as name reference
+    Vector2D    localOffset{ 0, 0 }; // position relative to parent at bind time
+    float       localRotation = 0.0f; // rotation relative to parent at bind time
 };
 
 // Render component to store rendering-related properties
@@ -172,10 +177,13 @@ struct Animation : public Component
 // Physics component to store velocity and other physics-related properties
 struct Physics : public Component {
 public:
-
+    //clone component
     std::unique_ptr<Component> clone() const override {
         return std::make_unique<Physics>(*this);
     }
+
+	//helper function to recalculate moment of inertia when collider size changes, for now just use box collider formula, can add more later if needed
+    void recalculateInertia(const Vector2D& colliderSize, const shape colliderType);
 
     bool physicsFlag = true;
     float moveSpeed = 1.0f;
@@ -191,7 +199,7 @@ public:
 
     // properties
     float damping = 0.98f; // in the air
-    float friction = 0.2f; // on ground
+    //float friction = 0.2f; // on ground
 
     //Jump 
     float jumpForce = 10.0f;
@@ -200,6 +208,7 @@ public:
     float maxFallSpeed = -20.f;
     float groundAccelForce = 20.f;
     float airAccelForce = 8.f;
+    float apexHangMul = 0.2f;
 
 	// jump buffer (forgive early jump before landing)
 	float jumpBufferTime = 0.15f; // how long before landing can still jump
@@ -236,7 +245,6 @@ public:
     bool useArcTrajectory = true;
     float minArcHeight = 2.0f;
 
-
     bool inWater = false;
     bool buoyancy = true;
 
@@ -244,7 +252,10 @@ public:
     float gravityDelayTimer = 0.0f;
     float gravityDelay = 0.2f;
 
-	float bounciness = 0.0f; // 0 = no bounce, 1 = full bounce
+	bool freezeRotation = true; //determine whether object can rotate (by default cannot)
+	float inertiaOverride = 0.0f; // if > 0, use this value for inertia instead of calculating based on mass and collider size
+    
+
     //const float waterBounce = 60.0f;   // upward velocity when entering water
 
 };
@@ -297,6 +308,36 @@ struct Button : public Component {
     }
 };
 
+// to determine how to combine bounciness and friction when two objects collide, for now just use average, can add more later if needed
+struct PhysicsMaterial {
+    enum class CombineMode { Average, Minimum, Maximum, Multiply };
+
+    float bounciness = 0.0f;
+    float friction = 0.f; // higher means harder to move, rmb to 1 - friction for movement
+    CombineMode bounceCombine = CombineMode::Average;
+    CombineMode frictionCombine = CombineMode::Average;
+
+    static float combine(float a, float b, CombineMode mode) {
+        switch (mode) {
+        case CombineMode::Minimum:  return std::min(a, b);
+        case CombineMode::Maximum:  return std::max(a, b);
+        case CombineMode::Multiply: return a * b;
+        default:                    return (a + b) * 0.5f; // Average
+        }
+    }
+
+    float combinedBounciness(const PhysicsMaterial& other) const {
+        CombineMode mode = (bounceCombine > other.bounceCombine)
+            ? bounceCombine : other.bounceCombine; // higher priority wins
+        return combine(bounciness, other.bounciness, mode);
+    }
+
+    float combinedFriction(const PhysicsMaterial& other) const {
+        CombineMode mode = (frictionCombine > other.frictionCombine)
+            ? frictionCombine : other.frictionCombine;
+        return combine(friction, other.friction, mode);
+    }
+};
 
 // CollisionInfo component to store collision-related information
 struct CollisionInfo : public Component {
@@ -309,12 +350,15 @@ public:
 
     bool collisionFlag = true; // whether objest can collide with another obj
     shape colliderType = shape::square;
-    Vector2D colliderSize{ 0,0 }; // size of the bounding box, if collider is circle then x will be diamater
+    Vector2D colliderSize{ 0,0 }; // size of the bounding box, if collider is circle then x is diamater
+    Vector2D colliderPos{ 0,0 };
+    float colliderRot = 0.f;
     bool autoFitScale = true; // auto-fit the collider with the size of the mesh (i.e. obj bigger -> collider bigger)
     CollisionResponseMode collisionRes = CollisionResponseMode::StopWhenCollide;
 
     std::string collisionTag = "default";  // Tag for object
     std::unordered_set<std::string> ignoreCollisionsWith;  // Tags to ignore collision with
+	PhysicsMaterial material; // Physical properties for collision response
 
     // Helper method to check if should collide with another tag
     bool shouldCollideWith(const std::string& otherTag) const {
@@ -327,6 +371,10 @@ public:
     Vector2D normal{ 0,0 };
     Vector2D contactPoint = { 0,0 };
     float penetration = 0.0f; //for it to not overlap 
+
+    /*float bounciness = 0.0f;
+    float friction = 0.0f;*/
+
 };
 
 // For imgui(testing)
@@ -643,6 +691,11 @@ struct LogicConnection {
 
     std::string outputPin; // OUT, TRUE, FALSE
     std::string inputPin; // IN
+
+    inline bool operator==(const LogicConnection& other) const {
+        return fromNodeId == other.fromNodeId && toNodeId == other.toNodeId &&
+            outputPin == other.outputPin && inputPin == other.inputPin;
+    }
 };
 
 enum class NodeType {
@@ -679,6 +732,8 @@ enum class NodeImplementation {
     MOVE_OBJECT,
     ROTATE_OBJECT,
     SET_ROTATION,
+    SET_ROTATION_RATE_OF_CHANGE,
+    //ROTATE_TO,
     SET_POSITION,
     SET_SCALE,
 	SCALE_PROPORTIONAL,
@@ -696,6 +751,7 @@ enum class NodeImplementation {
     TRIGGER_BULLET_REFILL_EVENT, // whenever bullet is refilled, add this node
     RESTART_LEVEL,
     LOAD_LEVEL,
+	DISABLE_COLLISION,
 
     // DEFAULT
     DEFAULT // nothing happen :)
@@ -715,6 +771,11 @@ struct LogicNode {
 
     // for node configuration
     std::map<std::string, std::string> parameters;
+
+    inline bool operator==(const LogicNode& other) const {
+        return id == other.id && position.x == other.position.x &&
+            position.y == other.position.y && parameters == other.parameters;
+    }
 };
 
 class GameObject; // annoying forward declaration

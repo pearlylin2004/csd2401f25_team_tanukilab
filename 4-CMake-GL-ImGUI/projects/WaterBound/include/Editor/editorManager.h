@@ -70,6 +70,9 @@ public:
 	void render();
 	void loadAssetsFromDirectory();
 
+	// Add this as a private static helper in AssetBrowser or a free function
+	static std::string toRegistryPath(const std::string& assetPath);
+
 	// return the loaded list of assets (to check duplicated name when creating new scene)
 	const std::vector<Editor::Asset>& getAssets() const { return m_assets; }
 
@@ -77,6 +80,9 @@ private:
 	void assetDeletePopup();
 	void assetRenamePopup();
 	void assetReplacePopup();
+	void createSubfolderPopup();
+	void renameSubfolderPopup();
+	void deleteSubfolderPopup();
 
 	Editor::AssetBrowserState& m_AssetBrowserState;
 	Editor::ObjSelectionState& m_objSelectionState;
@@ -167,8 +173,8 @@ private:
 	VisualLogicEditor();
 
 	int m_nextNodeId;
-	int m_selectedNodeId;
-	int m_selectedConIndex;
+	int& m_selectedNodeId;
+	int& m_selectedConIndex;
 
 	// dragging state
 	bool m_isDragging;
@@ -337,7 +343,7 @@ private:
 	// handle click and select logic and collision
 	void objPicking();
 	// handle dragging of the obj (obj will follow cursor)
-	void objDragging() const;
+	void objDragging(GameObjectManager& manager) const;
 	/* -------- END -------- */
 
 	AssetBrowser& m_assetBrowser;

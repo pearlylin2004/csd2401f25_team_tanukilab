@@ -41,26 +41,96 @@ namespace Collision {
         return Collision::AABB(min, max);
     }
 
-    AABB getObjectAABBbyCollider(const Transform* transform, const Vector2D& collider) {
-        float halfWidth = collider.x * 0.5f;
-        float halfHeight = collider.y * 0.5f;
+    AABB getObjectAABBbyCollider(const Transform* transform, const CollisionInfo* collision) {
+        Vector2D size = collision->colliderSize;
+        Vector2D pos = collision->colliderPos;
+        float rot = collision->colliderRot + transform->rotation;
 
-        Vector2D center(transform->x, transform->y);
-        Vector2D min(center.x - halfWidth, center.y - halfHeight);
-        Vector2D max(center.x + halfWidth, center.y + halfHeight);
-        return Collision::AABB(min, max);                         
-    }                                                             
+        float halfWidth = size.x * 0.5f;
+        float halfHeight = size.y * 0.5f;
+
+        // rotate collider offset by transform rotation so it move with object
+        float cosT = cosf(glm::radians(transform->rotation));
+        float sinT = sinf(glm::radians(transform->rotation));
+        float rotOffsetX = pos.x * cosT - pos.y * sinT;
+        float rotOffsetY = pos.x * sinT + pos.y * cosT;
+
+        // corners relative to centre (before rotate)
+        Vector2D corners[4] = {
+            { -halfWidth, -halfHeight },
+            {  halfWidth, -halfHeight },
+            {  halfWidth,  halfHeight },
+            { -halfWidth,  halfHeight }
+        };
+
+        // rotate each corner by collider rotation
+        float cosR = cosf(glm::radians(rot));
+        float sinR = sinf(glm::radians(rot));
+
+        float minX = FLT_MAX, minY = FLT_MAX;
+        float maxX = -FLT_MAX, maxY = -FLT_MAX;
+
+        for (const Vector2D& corner : corners) {
+            float rx = corner.x * cosR - corner.y * sinR;
+            float ry = corner.x * sinR + corner.y * cosR;
+
+            // world position
+            float worldX = transform->x + rotOffsetX + rx;
+            float worldY = transform->y + rotOffsetY + ry;
+
+            if (worldX < minX) minX = worldX;
+            if (worldX > maxX) maxX = worldX;
+            if (worldY < minY) minY = worldY;
+            if (worldY > maxY) maxY = worldY;
+        }
+
+        return Collision::AABB({ minX, minY }, { maxX, maxY });
+    }
+
+    // add this helper alongside getObjectAABBbyCollider
+    void getColliderCorners(const Transform* transform, const CollisionInfo* collision, ImVec2 screenCorners[4], std::function<ImVec2(float, float)> worldToScreen) {
+        float halfW = collision->colliderSize.x * 0.5f;
+        float halfH = collision->colliderSize.y * 0.5f;
+
+        float totalRot = glm::radians(collision->colliderRot + transform->rotation);
+        float cosR = cosf(totalRot);
+        float sinR = sinf(totalRot);
+
+        float cosT = cosf(glm::radians(transform->rotation));
+        float sinT = sinf(glm::radians(transform->rotation));
+        float offX = collision->colliderPos.x * cosT - collision->colliderPos.y * sinT;
+        float offY = collision->colliderPos.x * sinT + collision->colliderPos.y * cosT;
+
+        float cx = transform->x + offX;
+        float cy = transform->y + offY;
+
+        Vector2D local[4] = {
+            { -halfW, -halfH }, {  halfW, -halfH },
+            {  halfW,  halfH }, { -halfW,  halfH }
+        };
+
+        for (int i = 0; i < 4; ++i) {
+            float rx = local[i].x * cosR - local[i].y * sinR;
+            float ry = local[i].x * sinR + local[i].y * cosR;
+            screenCorners[i] = worldToScreen(cx + rx, cy + ry);
+        }
+    }
 
 	//helper function to get a Circle from a renderer object
-    Circle getObjectCircle(const Transform* transform) {
+    /*Circle getObjectCircle(const Transform* transform) {
         Vector2D center(transform->x, transform->y);
         float radius = std::max(transform->scaleX, transform->scaleY) * 0.5f;
         return Collision::Circle(center, radius);
-    }
+    }*/
 
-    Circle getObjectCirclebyCollider(const Transform* transform, const Vector2D& collider) {
-        Vector2D center(transform->x, transform->y);
-        float radius = std::max(collider.x, collider.y) * 0.5f; // x and y will be the same actually
+    Circle getObjectCirclebyCollider(const Transform* transform, const CollisionInfo* collision) {
+        Vector2D size = collision->colliderSize;
+        Vector2D pos = collision->colliderPos;
+        float rot = collision->colliderRot + transform->rotation;
+
+        Vector2D center(transform->x + pos.x, transform->y + pos.y); // collider move with obj
+        float radius = std::max(size.x, size.y) * 0.5f; // x and y will be the same actually
+        
         return Collision::Circle(center, radius);
     }
 
@@ -241,7 +311,14 @@ namespace Collision {
                 else if (minv == bottom) n = Vector2D{ 0,-1 };
                 else n = Vector2D{ 0,1 };
             }
-            info.normal = n;
+            // flip normal: should point FROM circle center TOWARD aabb (push-out direction for aabb)
+            info.normal = { -n.x, -n.y };
+
+            // penetration depth = radius - distance from center to closest point
+            float dist = sqrtf(distSq);
+            info.penetration = c.getRadius() - dist;
+
+            info.contactPoint = { c.getCenter().x - n.x * c.getRadius(), c.getCenter().y - n.y * c.getRadius() };
             return info;
         }
 
@@ -283,18 +360,35 @@ namespace Collision {
             return info;
         }
 
-        Vector2D normal{ 0,0 };
-        if (txEntry > tyEntry) {
-            //x axis
-            normal = (relVel.x > 0.0f) ? Vector2D{ -1,0 } : Vector2D{ 1,0 };
-        }
-        else {
-            normal = (relVel.y > 0.0f) ? Vector2D{ 0,-1 } : Vector2D{ 0,1 };
+        // compute circle center position at moment of impact
+        float cx_imp = c.getCenter().x + relVel.x * entryTime;
+        float cy_imp = c.getCenter().y + relVel.y * entryTime;
+
+        // closest point on AABB to circle center at impact
+        float cpX = Math_Max(aabb.getMin().x, Math_Min(cx_imp, aabb.getMax().x));
+        float cpY = Math_Max(aabb.getMin().y, Math_Min(cy_imp, aabb.getMax().y));
+
+        // radial normal: from closest point toward circle center
+        float ndx = cx_imp - cpX;
+        float ndy = cy_imp - cpY;
+        Vector2D temp{ ndx, ndy };
+        Vector2D normal = Vec_Normalize(&temp);
+
+        // fallback to axis-aligned if degenerate (center exactly on AABB edge)
+        if (Vec_Length(&normal) <= EPSILON) {
+            if (txEntry > tyEntry)
+                normal = (relVel.x > 0.0f) ? Vector2D{ -1,0 } : Vector2D{ 1,0 };
+            else
+                normal = (relVel.y > 0.0f) ? Vector2D{ 0,-1 } : Vector2D{ 0,1 };
         }
 
         info.collided = true;
         info.timeOfImpact = entryTime;
         info.normal = normal;
+        info.contactPoint = {
+            cx_imp - normal.x * c.getRadius(),
+            cy_imp - normal.y * c.getRadius()
+        };
         return info;
     }
 
@@ -536,5 +630,100 @@ namespace Collision {
         }
 
         tm->colChanged = false;
+    }
+
+    //particle merging
+    bool HandleWaterParticleMerge(GameObject* obj1, GameObject* obj2) {
+        if (!obj1 || !obj2 || obj1 == obj2) return false;
+
+        //check if its bullet first
+        if (obj1->getObjectName().find("bullet") != 0) return false;
+        if (obj2->getObjectName().find("bullet") != 0) return false;
+
+		//check if component of physics and transform exist
+        if (!obj1->hasComponent<Physics>() || !obj1->hasComponent<Transform>()) return false;
+        if (!obj2->hasComponent<Physics>() || !obj2->hasComponent<Transform>()) return false;
+
+        //get physics and transform component
+        Physics* phys1 = obj1->getComponent<Physics>();
+        Physics* phys2 = obj2->getComponent<Physics>();
+        Transform* trans1 = obj1->getComponent<Transform>();
+        Transform* trans2 = obj2->getComponent<Transform>();
+
+        if (!phys1->alive || !phys2->alive) return false;
+
+        //masses and coefficient of restitution
+        float m1 = phys1->dynamics.mass;
+        float m2 = phys2->dynamics.mass;
+
+        //vector from obj1 to obj2
+        float dx = trans2->x - trans1->x;
+        float dy = trans2->y - trans1->y;
+        float distSq = sqrtf(dx * dx + dy * dy);
+        if (distSq < 0.0001f) return false; //avoid division by zero
+
+        float dist = sqrtf(distSq);
+
+        //normalized collision direction
+        float nx = dx / dist;
+        float ny = dy / dist;
+
+        float restDistance = 1.0f; //particle radius spacing
+        float stiffness = 6.0f; //pressure strength
+        float viscosity = 0.08f; //smoothing
+        float correctionPercent = 0.02f; //positional correction
+        float gravitySlip = 20.0f; //sideways slide strength
+
+        //only interact if close
+        float penetration = restDistance - dist;
+        if (penetration <= 0.0f)
+            return false;
+
+        //soft pressure 
+        //float verticalFactor = 1.0f - fabs(ny);
+        float horizontalFactor = fabs(nx);
+        float pressureForce = stiffness * penetration * horizontalFactor;
+        phys1->dynamics.velocity.x -= pressureForce * nx / m1;
+        phys1->dynamics.velocity.y -= pressureForce * ny / m1;
+        phys2->dynamics.velocity.x += pressureForce * nx / m2;
+        phys2->dynamics.velocity.y += pressureForce * ny / m2;
+
+        //viscosity
+        float rvx = phys2->dynamics.velocity.x - phys1->dynamics.velocity.x;
+        float rvy = phys2->dynamics.velocity.y - phys1->dynamics.velocity.y;
+        float velAlongNormal = rvx * nx + rvy * ny;
+        float tangentX = rvx - velAlongNormal * nx;
+        float tangentY = rvy - velAlongNormal * ny;
+        phys1->dynamics.velocity.x += viscosity * tangentX;
+        phys1->dynamics.velocity.y += viscosity * tangentY;
+        phys2->dynamics.velocity.x -= viscosity * tangentX;
+        phys2->dynamics.velocity.y -= viscosity * tangentY;
+
+        //gravity
+        float slide = gravitySlip * fabs(ny);
+        phys1->dynamics.velocity.x += slide * nx;
+        phys2->dynamics.velocity.x -= slide * nx;
+
+        //no bounce
+        /*if (velAlongNormal < 0.0f) {
+            float j = -(velAlongNormal) / (1 / m1 + 1 / m2);
+            phys1->dynamics.velocity.x -= j * nx / m1;
+            phys1->dynamics.velocity.y -= j * ny / m1;
+            phys2->dynamics.velocity.x += j * nx / m2;
+            phys2->dynamics.velocity.y += j * ny / m2;
+        }*/
+
+		//soft position correction to prevent sinking
+        float correction = penetration * correctionPercent;
+        trans1->x -= correction * nx / m1;
+        trans1->y -= correction * ny / m1;
+        trans2->x += correction * nx / m2;
+        trans2->y += correction * ny / m2;
+        phys1->dynamics.position.x = trans1->x;
+        phys1->dynamics.position.y = trans1->y;
+        phys2->dynamics.position.x = trans2->x;
+        phys2->dynamics.position.y = trans2->y;
+
+        return true;
     }
 }

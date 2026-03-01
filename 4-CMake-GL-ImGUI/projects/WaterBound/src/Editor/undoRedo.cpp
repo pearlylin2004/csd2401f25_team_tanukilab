@@ -389,6 +389,43 @@ void LayerPropertyCmd::applySnapshot(const LayerSnapshot& snap) {
 /* ---------------- END ---------------- */
 
 
+/* ---------------- Visual Logic Editor ---------------- */
+VLGraphCmd::VLGraphCmd(const VLGraphSnapshot& before, const VLGraphSnapshot& after)
+    : m_before(before), m_after(after) 
+{ }
+
+void VLGraphCmd::execute() {
+    apply(m_after);
+}
+
+void VLGraphCmd::undo() {
+    apply(m_before);
+}
+
+void VLGraphCmd::updateObjName(const std::string&, const std::string&)
+{ /* -- no obj in VL editor so this is empty -- */ }
+
+void VLGraphCmd::apply(const VLGraphSnapshot& snap) {
+    Editor::visualLogicState.nodes = snap.nodes;
+    Editor::visualLogicState.connections = snap.connections;
+
+    // clear selected node if no longer exist
+    bool nodeStillExists = std::any_of(snap.nodes.begin(), snap.nodes.end(),
+        [](const LogicNode& n) { return n.id == Editor::visualLogicState.selectedNodeId; });
+
+    if (!nodeStillExists)
+        Editor::visualLogicState.selectedNodeId = -1;
+
+    // clear selected connection if no longer exist
+    bool conStillExists = (Editor::visualLogicState.selectedConIndex >= 0 &&
+        Editor::visualLogicState.selectedConIndex < (int)snap.connections.size());
+
+    if (!conStillExists)
+        Editor::visualLogicState.selectedConIndex = -1;
+}
+/* ---------------- END ---------------- */
+
+
 /* ---------------- UNDO/REDO ---------------- */
 void UndoRedoManager::executeCmd(std::unique_ptr<CmdInterface> cmd) {
     // execute the command (transform/create/delete)
@@ -551,6 +588,29 @@ void UndoRedoManager::recordTileChange(int x, int y, const std::string& oldTile,
 	m_tileChanges.push_back({ x, y, oldTile, newTile });
 }
 
+//undo redo for parenting
+ReparentCmd::ReparentCmd(GameObjectManager& manager, const std::string& childName,
+    const std::string& oldParent, const Vector2D& oldOffset, float oldLocalRot,
+    const std::string& newParent, const Vector2D& newOffset, float newLocalRot)
+    : m_manager(manager), m_childName(childName),
+    m_oldParent(oldParent), m_oldOffset(oldOffset), m_oldLocalRot(oldLocalRot),
+    m_newParent(newParent), m_newOffset(newOffset), m_newLocalRot(newLocalRot) {
+}
+
+void ReparentCmd::execute() { apply(m_newParent, m_newOffset, m_newLocalRot); }
+
+void ReparentCmd::undo() { apply(m_oldParent, m_oldOffset, m_oldLocalRot); }
+
+void ReparentCmd::apply(const std::string& parent, const Vector2D& offset, float localRot) {
+    GameObject* child = m_manager.getGameObject(m_childName);
+    if (!child) return;
+    Transform* t = child->getComponent<Transform>();
+    if (!t) return;
+    t->parentName = parent;
+    t->localOffset = offset;
+    t->localRotation = localRot;
+}
+
 void UndoRedoManager::beginTileMapToolEdit(bool showGrid) {
     if (m_isEditingTileMapTool) return;
 
@@ -635,7 +695,7 @@ void UndoRedoManager::beginLayerEdit(int layerID, Layer* layer) {
     m_layerBefore = { layer->isEnabled(), layer->isVisible(), layer->isUpdatable() };
 }
 
-void UndoRedoManager::endLayerEdit(GameObjectManager& manager, int layerID, Layer* layer) {
+void UndoRedoManager::endLayerEdit(GameObjectManager& manager, Layer* layer) {
     if (!m_isEditingLayer || !layer) {
         m_isEditingLayer = false;
         return;
@@ -685,6 +745,62 @@ void UndoRedoManager::endLayerAssign(GameObjectManager& manager, GameObject* obj
     }
 
     m_isAssigningLayer = false;
+}
+
+void UndoRedoManager::beginVLEdit() {
+    if (m_isEditingVL) return;
+
+    m_isEditingVL = true;
+    m_vlBefore = { Editor::visualLogicState.nodes, Editor::visualLogicState.connections };
+}
+
+void UndoRedoManager::endVLEdit() {
+    if (!m_isEditingVL) return;
+
+    m_isEditingVL = false;
+    VLGraphSnapshot after = { Editor::visualLogicState.nodes, Editor::visualLogicState.connections };
+
+    // only push when something actually changed
+    bool nodesChanged = (m_vlBefore.nodes != after.nodes);
+    bool connChanged = (m_vlBefore.connections != after.connections);
+
+    if (nodesChanged || connChanged) {
+        auto cmd = std::make_unique<VLGraphCmd>(m_vlBefore, after);
+        m_vlUndoDeque.push_back(std::move(cmd));
+        m_vlRedoDeque.clear();
+
+        if (m_vlUndoDeque.size() > MAX_UNDO_STEPS)
+            m_vlUndoDeque.pop_front();
+    }
+}
+
+void UndoRedoManager::vlUndo() {
+    if (m_vlUndoDeque.empty()) return;
+
+    auto& cmd = m_vlUndoDeque.back();
+    cmd->undo();
+    m_vlRedoDeque.push_back(std::move(cmd));
+    m_vlUndoDeque.pop_back();
+
+    std::cout << "undo queue: " << m_vlUndoDeque.size() << "\n\n";
+}
+
+void UndoRedoManager::vlRedo() {
+    if (m_vlRedoDeque.empty()) return;
+    
+    auto& cmd = m_vlRedoDeque.back();
+    cmd->execute();
+    m_vlUndoDeque.push_back(std::move(cmd));
+    m_vlRedoDeque.pop_back();
+
+    std::cout << "undo queue: " << m_vlUndoDeque.size() << "\n\n";
+
+}
+
+void UndoRedoManager::clearVL() {
+    m_vlUndoDeque.clear();
+    m_vlRedoDeque.clear();
+    m_isEditingVL = false;
 }
 /* ---------------- END ---------------- */
 

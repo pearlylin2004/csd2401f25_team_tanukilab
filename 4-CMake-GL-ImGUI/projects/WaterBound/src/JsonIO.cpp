@@ -294,6 +294,8 @@ namespace JsonIO {
         if (str == "Move Object") return NodeImplementation::MOVE_OBJECT;
         if (str == "Rotate Object") return NodeImplementation::ROTATE_OBJECT;
         if (str == "Set Rotation") return NodeImplementation::SET_ROTATION;
+		if (str == "Set Rotation Rate of Change") return NodeImplementation::SET_ROTATION_RATE_OF_CHANGE;
+		//if (str == "Rotate To") return NodeImplementation::ROTATE_TO;
         if (str == "Set Position") return NodeImplementation::SET_POSITION;
         if (str == "Set Scale") return NodeImplementation::SET_SCALE;
         if (str == "Scale Proportional") return NodeImplementation::SCALE_PROPORTIONAL;
@@ -311,6 +313,7 @@ namespace JsonIO {
 		if (str == "Trigger Bullet Refill Event") return NodeImplementation::TRIGGER_BULLET_REFILL_EVENT;
         if (str == "Restart Level") return NodeImplementation::RESTART_LEVEL;
         if (str == "Load Level") return NodeImplementation::LOAD_LEVEL;
+        if (str == "Disable Collision") return NodeImplementation::DISABLE_COLLISION;
 
 		if (str == "Check Key Held") return NodeImplementation::CHECK_KEY_HELD;
 		if (str == "Compare Value") return NodeImplementation::COMPARE_VALUE;
@@ -339,7 +342,9 @@ namespace JsonIO {
             case NodeImplementation::PRINT_MESSAGE: return "Print Message";
             case NodeImplementation::MOVE_OBJECT: return "Move Object";
 		    case NodeImplementation::ROTATE_OBJECT: return "Rotate Object";
+			case NodeImplementation::SET_ROTATION_RATE_OF_CHANGE: return "Set Rotation Rate of Change";
 			case NodeImplementation::SET_ROTATION: return "Set Rotation";
+			//case NodeImplementation::ROTATE_TO: return "Rotate To";
             case NodeImplementation::SET_POSITION: return "Set Position";
             case NodeImplementation::SET_SCALE: return "Set Scale";
             case NodeImplementation::SCALE_PROPORTIONAL: return "Scale Proportional";
@@ -357,6 +362,7 @@ namespace JsonIO {
 			case NodeImplementation::TRIGGER_BULLET_REFILL_EVENT: return "Trigger Bullet Refill Event";
 			case NodeImplementation::RESTART_LEVEL: return "Restart Level";
 			case NodeImplementation::LOAD_LEVEL: return "Load Level";
+			case NodeImplementation::DISABLE_COLLISION: return "Disable Collision";
 
             case NodeImplementation::CHECK_KEY_HELD: return "Check Key Held";
             case NodeImplementation::COMPARE_VALUE: return "Compare Value";
@@ -1009,19 +1015,25 @@ namespace JsonIO {
 
         Value jp(kObjectType);
         jp.AddMember("physicsFlag", p->physicsFlag, a);
+        jp.AddMember("autoUpdate", p->autoUpdate, a);
         jp.AddMember("moveSpeed", p->moveSpeed, a);
         jp.AddMember("jumpForce", p->jumpForce, a);
         jp.AddMember("damping", p->damping, a);
-        jp.AddMember("friction", p->friction, a);
+        //jp.AddMember("friction", p->friction, a);
         jp.AddMember("maxFallSpeed", p->maxFallSpeed, a);
         jp.AddMember("groundAccelForce", p->groundAccelForce, a);
         jp.AddMember("airAccelForce", p->airAccelForce, a);
+        jp.AddMember("apexHangMul", p->apexHangMul, a);
         jp.AddMember("jumpBufferTime", p->jumpBufferTime, a);
         jp.AddMember("coyoteTime", p->coyoteTime, a);
         jp.AddMember("ledgeAssistRange", p->ledgeAssistRange, a);
         jp.AddMember("ledgeClimbSpeed", p->ledgeClimbSpeed, a);
         jp.AddMember("mass", p->dynamics.mass, a);
         jp.AddMember("buoyancy", p->buoyancy, a);
+        jp.AddMember("freezeRotation", p->freezeRotation, a);
+        jp.AddMember("angularDrag", p->dynamics.angularDrag, a);
+        jp.AddMember("inertiaOverride", p->inertiaOverride, a);
+
         doc.AddMember("Physics", jp, a);
 
         StringBuffer buf; Writer<StringBuffer> w(buf); doc.Accept(w);
@@ -1041,19 +1053,29 @@ namespace JsonIO {
             : obj->addComponent<Physics>();
 
         p->physicsFlag = jp["physicsFlag"].GetBool();
+        p->autoUpdate = jp["autoUpdate"].GetBool();
         p->moveSpeed = jp["moveSpeed"].GetFloat();
         p->jumpForce = jp["jumpForce"].GetFloat();
         p->damping = jp["damping"].GetFloat();
-        p->friction = jp.HasMember("friction") ? jp["friction"].GetFloat() : 0.80f;
+        //p->friction = jp.HasMember("friction") ? jp["friction"].GetFloat() : 0.80f;
         p->maxFallSpeed = jp.HasMember("maxFallSpeed") ? jp["maxFallSpeed"].GetFloat() : -30.f;
         p->groundAccelForce = jp.HasMember("groundAccelForce") ? jp["groundAccelForce"].GetFloat() : 20.f;
         p->airAccelForce = jp.HasMember("airAccelForce") ? jp["airAccelForce"].GetFloat() : 8.f;
+        p->apexHangMul = jp.HasMember("apexHangMul") ? jp["apexHangMul"].GetFloat() : 0.2f;
         p->jumpBufferTime = jp.HasMember("jumpBufferTime") ? jp["jumpBufferTime"].GetFloat() : 0.15f;
         p->coyoteTime = jp.HasMember("coyoteTime") ? jp["coyoteTime"].GetFloat() : 0.15f;
         p->ledgeAssistRange = jp.HasMember("ledgeAssistRange") ? jp["ledgeAssistRange"].GetFloat() : 0.8f;
         p->ledgeClimbSpeed = jp.HasMember("ledgeClimbSpeed") ? jp["ledgeClimbSpeed"].GetFloat() : 8.f;
         p->dynamics.mass = jp["mass"].GetFloat();
         p->buoyancy = jp["buoyancy"].GetBool();
+        if (jp.HasMember("freezeRotation")) p->freezeRotation = jp["freezeRotation"].GetBool();
+        if (jp.HasMember("angularDrag")) p->dynamics.angularDrag = jp["angularDrag"].GetFloat();
+        if (jp.HasMember("inertiaOverride")) p->inertiaOverride = jp["inertiaOverride"].GetFloat();
+
+        if (!p->freezeRotation) {
+            if (auto* c = obj->getComponent<CollisionInfo>())
+                p->recalculateInertia(c->colliderSize, c->colliderType);
+        }
     }
 
     std::string serializeCollision(GameObject* obj) {
@@ -1069,9 +1091,16 @@ namespace JsonIO {
         jc.AddMember("autoFitScale", c->autoFitScale, a);
         jc.AddMember("width", c->colliderSize.x, a);
         jc.AddMember("height", c->colliderSize.y, a);
+        jc.AddMember("x", c->colliderPos.x, a);
+        jc.AddMember("y", c->colliderPos.y, a);
+        jc.AddMember("rotation", c->colliderRot, a);
         jc.AddMember("collisionRes", Value(CollisionResponseModeToStr(c->collisionRes), a), a);
         jc.AddMember("collisionTag", Value(c->collisionTag.c_str(), a), a);
         jc.AddMember("colliderType", Value(ShapeToStr(c->colliderType), a), a);
+        jc.AddMember("bounciness", c->material.bounciness, a);
+        jc.AddMember("friction", c->material.friction, a);
+        jc.AddMember("bounceCombine", static_cast<int>(c->material.bounceCombine), a);
+        jc.AddMember("frictionCombine", static_cast<int>(c->material.frictionCombine), a);
 
         Value ignoreArray(kArrayType);
         for (const std::string& tag : c->ignoreCollisionsWith)
@@ -1096,13 +1125,21 @@ namespace JsonIO {
 
         c->collisionFlag = jc["collisionFlag"].GetBool();
         c->autoFitScale = jc["autoFitScale"].GetBool();
-        c->colliderSize.x = jc["width"].GetFloat();
-        c->colliderSize.y = jc["height"].GetFloat();
+        c->colliderSize.x = JsonIO::GetFloatOr(jc, "width", 0.f);
+        c->colliderSize.y = JsonIO::GetFloatOr(jc, "height", 0.f);
+        c->colliderPos.x = JsonIO::GetFloatOr(jc, "x", 0.f);
+        c->colliderPos.y = JsonIO::GetFloatOr(jc, "y", 0.f);
+        c->colliderRot = JsonIO::GetFloatOr(jc, "rotation", 0.f);
 
         if (jc.HasMember("collisionRes")) c->collisionRes = StrToCollisionResponseMode(jc["collisionRes"].GetString());
         if (jc.HasMember("collisionTag")) c->collisionTag = jc["collisionTag"].GetString();
         if (jc.HasMember("colliderType") && jc["colliderType"].IsString())
             c->colliderType = StrToShape(jc["colliderType"].GetString());
+
+        if (jc.HasMember("bounciness")) c->material.bounciness = jc["bounciness"].GetFloat();
+        if (jc.HasMember("friction")) c->material.friction = jc["friction"].GetFloat();
+        if (jc.HasMember("bounceCombine")) c->material.bounceCombine = static_cast<PhysicsMaterial::CombineMode>(jc["bounceCombine"].GetInt());
+        if (jc.HasMember("frictionCombine")) c->material.frictionCombine = static_cast<PhysicsMaterial::CombineMode>(jc["frictionCombine"].GetInt());
 
         if (jc.HasMember("ignoreCollisionsWith")) {
             const Value& arr = jc["ignoreCollisionsWith"];
@@ -1110,6 +1147,11 @@ namespace JsonIO {
             for (rapidjson::SizeType i = 0; i < arr.Size(); ++i)
                 c->ignoreCollisionsWith.insert(arr[i].GetString());
         }
+
+        if(Physics* p = obj->getComponent<Physics>())
+            if (!p->freezeRotation) {
+                p->recalculateInertia(c->colliderSize, c->colliderType);
+            }
     }
 
     std::string serializeInput(GameObject* obj) {
@@ -1549,6 +1591,15 @@ namespace JsonIO {
         merge(serializeTileMap(obj));
         merge(serializeLuaScript(obj));
         merge(serializeVisualLC(obj));
+
+        if (Button* b = obj->getComponent<Button>()) {
+            Value jb(kObjectType);
+            Value actionStr(ButtonActionToStr(b->actionName), a);
+            jb.AddMember("action", actionStr, a);
+            jb.AddMember("isHovered", b->isHovered, a);
+            jb.AddMember("isPressed", b->isPressed, a);
+            doc.AddMember("Button", jb, a);
+        }
 
         StringBuffer buf; Writer<StringBuffer> w(buf); doc.Accept(w);
         return buf.GetString();

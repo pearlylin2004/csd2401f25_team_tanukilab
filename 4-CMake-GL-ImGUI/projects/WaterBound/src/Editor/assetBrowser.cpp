@@ -78,7 +78,12 @@ void AssetBrowser::render() {
 
     if (!m_AssetBrowserState.currentViewFolder.empty()) {
         if (ImGui::Button("< Back")) {
-            m_AssetBrowserState.currentViewFolder.clear();
+            std::filesystem::path current(m_AssetBrowserState.currentViewFolder);
+            std::string parent = current.parent_path().string();
+
+            m_AssetBrowserState.currentViewFolder = parent;
+
+            EditorManager::assetChanged();
         }
 
         // if inside a folder and drag and drop a file, add it into the folder
@@ -87,6 +92,123 @@ void AssetBrowser::render() {
         ImGui::SameLine();
         ImGui::Text("Folder: %s", m_AssetBrowserState.currentViewFolder.c_str());
         ImGui::Separator();
+
+        /*if (!m_AssetBrowserState.currentViewSubFolder.empty()) {
+            ImGui::SameLine();
+            ImGui::Text("/ %s", m_AssetBrowserState.currentViewSubFolder.c_str());
+        }*/
+
+        ImGui::Separator();
+
+        for (const std::string& subFolder : m_AssetBrowserState.currentViewSubFolders) {
+            ImGui::PushID(("subfolder_" + subFolder).c_str());
+            ImGui::BeginGroup();
+            //ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(100, 40));
+            //ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.25f, 0.45f, 0.65f, 1.0f)); // blue tint to distinguish
+
+            // subfolder button
+            if (ImGui::Button(subFolder.c_str(), ImVec2(m_AssetBrowserState.iconSize, m_AssetBrowserState.iconSize))) {
+                m_AssetBrowserState.currentViewFolder = m_AssetBrowserState.currentViewFolder + "/" + subFolder;
+
+                EditorManager::assetChanged();
+            }
+
+            /*ImGui::PopStyleColor();
+            ImGui::PopStyleVar();*/
+
+            ImGui::PushTextWrapPos(ImGui::GetCursorPosX() + m_AssetBrowserState.iconSize);
+            ImGui::Text("%s", subFolder.c_str());
+            ImGui::PopTextWrapPos();
+            ImGui::EndGroup();
+
+            // RIGHT CLICK subfolder to rename / delete
+            if (ImGui::BeginPopupContextItem(("subfolderCtx_" + subFolder).c_str())) {
+                if (ImGui::MenuItem("Rename")) {
+                    m_AssetBrowserState.folderToRename =
+                        (std::filesystem::path(m_AssetBrowserState.currentFolder)
+                            / m_AssetBrowserState.currentViewFolder / subFolder).string();
+
+                    std::strncpy(m_AssetBrowserState.renameFolderBuffer, subFolder.c_str(),
+                        sizeof(m_AssetBrowserState.renameFolderBuffer));
+
+                    m_AssetBrowserState.showRenameSubfolderPopup = true;
+                }
+
+                if (ImGui::MenuItem("Delete")) {
+                    m_AssetBrowserState.folderToDelete =
+                        (std::filesystem::path(m_AssetBrowserState.currentFolder)
+                            / m_AssetBrowserState.currentViewFolder / subFolder).string();
+
+                    m_AssetBrowserState.showDeleteSubfolderPopup = true;
+                }
+
+                ImGui::EndPopup();
+            }
+
+            // ---- Drop assets INTO this subfolder button ----
+            if (ImGui::BeginDragDropTarget()) {
+                if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("ASSET")) {
+                    std::string srcPath(static_cast<const char*>(payload->Data));
+                    std::filesystem::path src(srcPath);
+                    std::filesystem::path destDir =
+                        std::filesystem::path(m_AssetBrowserState.currentFolder)
+                        / m_AssetBrowserState.currentViewFolder
+                        / subFolder;
+                    std::filesystem::path dest = destDir / src.filename();
+
+                    if (!std::filesystem::exists(dest)) {
+                        try {
+                            std::filesystem::rename(src, dest);  // moves the file
+
+                            if (src.extension() == ".json") {
+                                std::string prefabID = PrefabManager::Instance().findPrefabIDByFilename(toRegistryPath(src.string()));
+
+                                if (!prefabID.empty()) {
+                                    // build new path relative to assets folder: "/Prefab/subfolder/filename.json"
+                                    std::string newRelativePath = "/" +
+                                        (std::filesystem::path(m_AssetBrowserState.currentViewFolder)
+                                            / subFolder
+                                            / src.filename()).string();
+
+                                    std::replace(newRelativePath.begin(), newRelativePath.end(), '\\', '/');
+
+                                    // update in prefab registry
+                                    PrefabManager::Instance().setPrefabPath(prefabID, newRelativePath);
+                                }
+                            }
+
+                            // Also mirror move in SOURCE_DIR_R (project folder) if needed
+                            std::string relative;
+                            size_t pos = srcPath.find("assets/");
+                            if (pos != std::string::npos) relative = srcPath.substr(pos + strlen("assets/"));
+                            if (!relative.empty()) {
+                                std::filesystem::path projectSrc = std::filesystem::path(std::string(SOURCE_DIR_R)) / relative;
+                                std::filesystem::path projectDest = std::filesystem::path(std::string(SOURCE_DIR_R))
+                                    / m_AssetBrowserState.currentViewFolder / subFolder / src.filename();
+
+                                if (std::filesystem::exists(projectSrc))
+                                    std::filesystem::rename(projectSrc, projectDest);
+                            }
+
+                            EditorManager::assetChanged();
+                            DebugLog::addMessage("Moved " + src.filename().string() + " into subfolder: " + subFolder);
+                        }
+                        catch (const std::filesystem::filesystem_error& e) {
+                            DebugLog::addMessage("Move failed: " + std::string(e.what()));
+                        }
+                    }
+                }
+                ImGui::EndDragDropTarget();
+            }
+
+            float windowVisibleX2 = ImGui::GetWindowPos().x + ImGui::GetWindowContentRegionMax().x;
+
+            float lastButtonX2 = ImGui::GetItemRectMax().x;
+            float nextButtonX2 = lastButtonX2 + m_AssetBrowserState.iconSize;
+            if (nextButtonX2 < windowVisibleX2) ImGui::SameLine();
+
+            ImGui::PopID();
+        }
     }
 
     float windowVisibleX2 = ImGui::GetWindowPos().x + ImGui::GetWindowContentRegionMax().x;
@@ -102,6 +224,8 @@ void AssetBrowser::render() {
             // folder button
             if (ImGui::Button(folder.c_str(), ImVec2(m_AssetBrowserState.iconSize, m_AssetBrowserState.iconSize))) {
                 m_AssetBrowserState.currentViewFolder = folder;
+
+                EditorManager::assetChanged(); // refresh subfolder
             }
 
             // see if mouse is on which folder (for dropping of files from file explorer)
@@ -127,19 +251,19 @@ void AssetBrowser::render() {
 
     int index{};
     for (const Editor::Asset& asset : m_assets) {
+        // New fixed code:
+        if (m_AssetBrowserState.currentViewFolder.empty()) continue;
+
+        std::filesystem::path expectedDir =
+            std::filesystem::path(m_AssetBrowserState.currentFolder) / m_AssetBrowserState.currentViewFolder;
+
+        // Misc special case: files sitting directly in assets root
         std::string assetFolderName = std::filesystem::path(asset.folder).filename().string();
-
-        if (m_AssetBrowserState.currentFolder.empty()) {
-            // if at root (Asset folder), show only folders
-            //if (asset.folder != m_AssetBrowserState.currentFolder) continue;
-            continue;
+        if (m_AssetBrowserState.currentViewFolder == "Misc" && assetFolderName == "assets") {
+            // show it
         }
-        else {
-            // if file is directly inside Assets, put them in Misc
-            if (m_AssetBrowserState.currentViewFolder == "Misc" && assetFolderName == "assets") assetFolderName = "Misc";
-
-            // if in subfolder, show assets in that folder only
-            if (assetFolderName != m_AssetBrowserState.currentViewFolder) continue;
+        else if (std::filesystem::path(asset.folder) != expectedDir) {
+            continue;
         }
 
         std::string fullPath = asset.folder + "/" + asset.name;
@@ -152,27 +276,6 @@ void AssetBrowser::render() {
             /*ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.3f, 0.6f, 0.9f, 1.0f));
             ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.1f, 0.4f, 0.7f, 1.0f));*/
         }
-
-        //// display button and the name of the file
-        //ImGui::BeginGroup();
-
-        //ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(100, 40));
-
-        //// can consider changing to image in the future
-        //if(ImGui::Button(asset.name.c_str(), ImVec2(m_AssetBrowserState.iconSize, m_AssetBrowserState.iconSize))) {
-        //    std::string extension;
-        //    std::filesystem::path a = asset.name;      // or asset.path if you want full path
-        //    std::string ext = a.extension().string();
-        //    size_t dotPos = asset.name.find_last_of('.');
-        //    if (dotPos != std::string::npos) extension = asset.name.substr(dotPos + 1);
-        //    std::cout << asset.name << " button clicked!!!!!" << std::endl;
-        //    if (extension == "png" || extension == "jpg" || extension == "jpeg")
-        //    {
-        //        TileMapSystem::filename = asset.path;
-        //        /*std::cout << asset.name << std::endl;
-        //        std::cout << asset.path << std::endl;*/
-        //    }
-        //}
 
         //ImGui::PopStyleVar();
         ImGui::BeginGroup();
@@ -270,34 +373,12 @@ void AssetBrowser::render() {
                 m_menuBarState.sceneToLoad = asset.name;
                 m_menuBarState.showLoadScenePopup = true;
             }
-            // if its a logic, open :)
+            // if its a logic, open
             else if (assetFolderName == "Logic") {
                 Editor::visualLogicState.targetObj = nullptr;
                 VisualLogicEditor::Instance().loadLogic(asset.name);
             }
-            // if its a prefab, convert to temp game obj for editing in inspector
-            else if (assetFolderName == "Prefab") {
-                // get ID of the double clicked prefab by its filename
-                std::string prefabID = PrefabManager::Instance().findPrefabIDByFilename(asset.name);
-                if (prefabID.empty()) {
-                    DebugLog::addMessage("Cannot find prefab ID for " + asset.name + ".\n");
-                    return;
-                }
-
-                // set the selected prefab to double clicked prefab, later will show in inspector
-                std::unique_ptr<GameObject> tempPrefab = PrefabManager::Instance().createTempPrefabObj(prefabID);
-                if (tempPrefab) {
-                    m_objSelectionState.selectedObject = nullptr;
-                    m_objSelectionState.selectedIndex = -1;
-                    m_objSelectionState.selectedPrefab = std::move(tempPrefab);
-
-                    DebugLog::addMessage("Open Prefab " + m_objSelectionState.selectedPrefab->getObjectName() + ".\n");
-                }
-                else {
-                    DebugLog::addMessage("Failed to open prefab " + prefabID + " object for editing.\n");
-                }
-
-            }
+            // if its a lua, open in VSC
             else if (extension == "lua") {
                 std::filesystem::path absPath = std::filesystem::absolute(fullPath);
                 std::string absPathStr = absPath.string();
@@ -306,6 +387,43 @@ void AssetBrowser::render() {
                 std::string command = "code \"" + absPathStr + "\"";
                 system(command.c_str());
                 DebugLog::addMessage("Opening " + asset.name + " in VS Code.\n");
+            }
+            // if its a prefab, open in inspector
+            else {
+                // if its a prefab, convert to temp game obj for editing in inspector
+            //else if (assetFolderName == "Prefab") {
+                bool isInPrefabFolder = false;
+                std::filesystem::path folderPath(asset.folder);
+                for (const auto& part : folderPath) {
+                    if (part.string() == "Prefab") {
+                        isInPrefabFolder = true;
+                        break;
+                    }
+                }
+
+                if (isInPrefabFolder) {
+
+                    // get ID of the double clicked prefab by its filename
+                    std::string prefabID = PrefabManager::Instance().findPrefabIDByFilename(toRegistryPath(asset.path));
+                    if (prefabID.empty()) {
+                        DebugLog::addMessage("Cannot find prefab ID for " + asset.name + ".\n");
+                        return;
+                    }
+
+                    // set the selected prefab to double clicked prefab, later will show in inspector
+                    std::unique_ptr<GameObject> tempPrefab = PrefabManager::Instance().createTempPrefabObj(prefabID);
+                    if (tempPrefab) {
+                        m_objSelectionState.selectedObject = nullptr;
+                        m_objSelectionState.selectedIndex = -1;
+                        m_objSelectionState.selectedPrefab = std::move(tempPrefab);
+
+                        DebugLog::addMessage("Open Prefab " + m_objSelectionState.selectedPrefab->getObjectName() + ".\n");
+                    }
+                    else {
+                        DebugLog::addMessage("Failed to open prefab " + prefabID + " object for editing.\n");
+                    }
+
+                }
             }
         }
 
@@ -336,6 +454,19 @@ void AssetBrowser::render() {
         ImGui::PopID();
     }
 
+    if (!m_AssetBrowserState.currentViewFolder.empty()) {
+        // Only trigger context menu on empty space (not on an item)
+        if (ImGui::BeginPopupContextWindow("##EmptySpaceContext",
+            ImGuiPopupFlags_MouseButtonRight | ImGuiPopupFlags_NoOpenOverItems)) {
+            if (ImGui::MenuItem("Add Folder")) {
+                m_AssetBrowserState.newSubfolderNameBuffer[0] = '\0';
+                m_AssetBrowserState.showCreateSubfolderPopup = true;
+            }
+
+            ImGui::EndPopup();
+        }
+    }
+
 
     ImGui::End();
 
@@ -343,6 +474,9 @@ void AssetBrowser::render() {
     assetDeletePopup();
     assetRenamePopup();
     assetReplacePopup();
+    createSubfolderPopup();
+    renameSubfolderPopup();
+    deleteSubfolderPopup();
     /* -------- END -------- */
 }
 
@@ -389,7 +523,34 @@ void AssetBrowser::loadAssetsFromDirectory() {
         }
     }
 
+    // populate subfolders for the currently viewed folder
+    m_AssetBrowserState.currentViewSubFolders.clear();
+    if (!m_AssetBrowserState.currentViewFolder.empty()) {
+        std::filesystem::path viewedPath =
+            std::filesystem::path(m_AssetBrowserState.currentFolder) / m_AssetBrowserState.currentViewFolder;
+
+        if (std::filesystem::exists(viewedPath) && std::filesystem::is_directory(viewedPath)) {
+            for (const auto& entry : std::filesystem::directory_iterator(viewedPath)) {
+                if (entry.is_directory()) {
+                    m_AssetBrowserState.currentViewSubFolders.push_back(
+                        entry.path().filename().string());
+                }
+            }
+        }
+    }
+
     //DebugLog::addMessage("Assets loaded from " + m_AssetBrowserState.currentFolder);
+}
+
+// Add this as a private static helper in AssetBrowser or a free function
+std::string AssetBrowser::toRegistryPath(const std::string& assetPath) {
+    std::string p = assetPath;
+    std::replace(p.begin(), p.end(), '\\', '/');
+    size_t pos = p.find("/Prefab/");
+    if (pos != std::string::npos) return p.substr(pos);
+    pos = p.find("Prefab/");
+    if (pos != std::string::npos) return "/" + p.substr(pos);
+    return p;
 }
 
 void AssetBrowser::assetDeletePopup() {
@@ -399,8 +560,15 @@ void AssetBrowser::assetDeletePopup() {
         std::filesystem::path pathToDelete(m_AssetBrowserState.fullPathToDelete);
         std::string folder = pathToDelete.parent_path().filename().string();
 
-        if (folder == "Prefab") {
-            std::string prefabID = PrefabManager::Instance().findPrefabIDByFilename(pathToDelete.filename().string());
+        /*if (folder == "Prefab") {
+            std::string prefabID = PrefabManager::Instance().findPrefabIDByFilename(pathToDelete.filename().string());*/
+        bool isInPrefabFolder = false;
+        for (const auto& part : pathToDelete) {
+            if (part.string() == "Prefab") { isInPrefabFolder = true; break; }
+        }
+
+        if (isInPrefabFolder) {
+            std::string prefabID = PrefabManager::Instance().findPrefabIDByFilename(toRegistryPath(pathToDelete.string()));
 
             if (!prefabID.empty()) {
                 std::vector<PrefabUsageInfo> usageInfo;
@@ -442,15 +610,8 @@ void AssetBrowser::assetDeletePopup() {
 
                 bool deletionSuccess = true;
 
-                // extract relative path first
-                std::string relativePath;
-                size_t pos = m_AssetBrowserState.fullPathToDelete.find("assets/");
-                if (pos != std::string::npos) {
-                    relativePath = m_AssetBrowserState.fullPathToDelete.substr(pos + strlen("assets/"));
-                }
-
                 // delete from prefab registry FIRST (before files) if its prefab
-                std::string prefabID = PrefabManager::Instance().findPrefabIDByFilename(relativePath);
+                std::string prefabID = PrefabManager::Instance().findPrefabIDByFilename(toRegistryPath(m_AssetBrowserState.fullPathToDelete));
                 if (!prefabID.empty()) {
                     if (!PrefabManager::Instance().deletePrefab(prefabID)) {
                         DebugLog::addMessage("Failed to delete prefab from registry: " + prefabID);
@@ -465,6 +626,13 @@ void AssetBrowser::assetDeletePopup() {
                         if (!std::filesystem::remove(m_AssetBrowserState.fullPathToDelete)) {
                             DebugLog::addMessage("Failed to delete asset file");
                             deletionSuccess = false;
+                        }
+
+                        // extract relative path first
+                        std::string relativePath;
+                        size_t pos = m_AssetBrowserState.fullPathToDelete.find("assets/");
+                        if (pos != std::string::npos) {
+                            relativePath = m_AssetBrowserState.fullPathToDelete.substr(pos + strlen("assets/"));
                         }
 
                         // delete from project folder
@@ -634,7 +802,7 @@ void AssetBrowser::assetRenamePopup() {
                     /* -------- Changing Prefab Name + Registry Entry -------- */
 
                     // get prefabid by the path
-                    std::string prefabID = PrefabManager::Instance().findPrefabIDByFilename(old);
+                    std::string prefabID = PrefabManager::Instance().findPrefabIDByFilename(toRegistryPath(old.string()));
                     if (!prefabID.empty()) {
                         // change prefab name and save
                         PrefabManager::Instance().setPrefabPath(prefabID, newPath.string());
@@ -706,4 +874,165 @@ void AssetBrowser::assetReplacePopup() {
         ImGui::EndPopup();
     }
 }
+
+void AssetBrowser::createSubfolderPopup() {
+    if (m_AssetBrowserState.showCreateSubfolderPopup) {
+        ImGui::OpenPopup("Add Folder");
+        m_AssetBrowserState.showCreateSubfolderPopup = false;
+    }
+
+    ImVec2 center = ImGui::GetMainViewport()->GetCenter();
+    ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
+
+    if (ImGui::BeginPopupModal("Add Folder", NULL, ImGuiWindowFlags_AlwaysAutoResize)) {
+        ImGui::Text("Enter folder name:");
+        ImGui::InputText("##folderName", m_AssetBrowserState.newSubfolderNameBuffer,
+            sizeof(m_AssetBrowserState.newSubfolderNameBuffer));
+
+        if (ImGui::Button("Create") || InputHandler::isKeyTriggered(GLFW_KEY_ENTER)) {
+            std::string folderName = m_AssetBrowserState.newSubfolderNameBuffer;
+            if (!folderName.empty()) {
+                // Create in runtime assets folder
+                std::filesystem::path newDir =
+                    std::filesystem::path(m_AssetBrowserState.currentFolder)
+                    / m_AssetBrowserState.currentViewFolder
+                    / folderName;
+
+                // Create in project source folder too
+                std::filesystem::path newDirSource =
+                    std::filesystem::path(std::string(SOURCE_DIR_R))
+                    / m_AssetBrowserState.currentViewFolder
+                    / folderName;
+
+                try {
+                    std::filesystem::create_directories(newDir);
+                    std::filesystem::create_directories(newDirSource);
+                    EditorManager::assetChanged();
+                    DebugLog::addMessage("Created folder: " + newDir.string());
+                }
+                catch (const std::filesystem::filesystem_error& e) {
+                    DebugLog::addMessage("Failed to create folder: " + std::string(e.what()));
+                }
+            }
+            ImGui::CloseCurrentPopup();
+        }
+
+        ImGui::SameLine();
+        if (ImGui::Button("Cancel")) {
+            ImGui::CloseCurrentPopup();
+        }
+
+        ImGui::EndPopup();
+    }
+}
+
+void AssetBrowser::renameSubfolderPopup() {
+    if (m_AssetBrowserState.showRenameSubfolderPopup) {
+        ImGui::OpenPopup("Rename Folder");
+        m_AssetBrowserState.showRenameSubfolderPopup = false;
+    }
+
+    ImGui::SetNextWindowPos(ImGui::GetMainViewport()->GetCenter(), ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
+    if (ImGui::BeginPopupModal("Rename Folder", NULL, ImGuiWindowFlags_AlwaysAutoResize)) {
+        ImGui::Text("Enter new folder name:");
+        ImGui::InputText("##renameFolderInput", m_AssetBrowserState.renameFolderBuffer,
+            sizeof(m_AssetBrowserState.renameFolderBuffer));
+
+        if (ImGui::Button("Rename") || InputHandler::isKeyTriggered(GLFW_KEY_ENTER)) {
+            std::string newName = m_AssetBrowserState.renameFolderBuffer;
+            if (!newName.empty() && !m_AssetBrowserState.folderToRename.empty()) {
+                std::filesystem::path oldPath(m_AssetBrowserState.folderToRename);
+                std::filesystem::path newPath = oldPath.parent_path() / newName;
+
+                if (!std::filesystem::exists(newPath)) {
+                    try {
+                        // rename in runtime assets
+                        std::filesystem::rename(oldPath, newPath);
+
+                        // mirror rename in source project folder
+                        std::string relative;
+                        size_t pos = m_AssetBrowserState.folderToRename.find("assets/");
+                        if (pos != std::string::npos)
+                            relative = m_AssetBrowserState.folderToRename.substr(pos + strlen("assets/"));
+                        if (!relative.empty()) {
+                            std::filesystem::path projectOld = std::filesystem::path(std::string(SOURCE_DIR_R)) / relative;
+                            std::filesystem::path projectNew = projectOld.parent_path() / newName;
+                            if (std::filesystem::exists(projectOld))
+                                std::filesystem::rename(projectOld, projectNew);
+                        }
+
+                        EditorManager::assetChanged();
+                        DebugLog::addMessage("Renamed folder: " + oldPath.string() + " -> " + newPath.string());
+                    }
+                    catch (const std::filesystem::filesystem_error& e) {
+                        DebugLog::addMessage("Failed to rename folder: " + std::string(e.what()));
+                    }
+                }
+                else {
+                    DebugLog::addMessage("Folder with that name already exists.");
+                }
+            }
+            m_AssetBrowserState.folderToRename.clear();
+            ImGui::CloseCurrentPopup();
+        }
+
+        ImGui::SameLine();
+        if (ImGui::Button("Cancel")) {
+            m_AssetBrowserState.folderToRename.clear();
+            ImGui::CloseCurrentPopup();
+        }
+        ImGui::EndPopup();
+    }
+}
+
+void AssetBrowser::deleteSubfolderPopup() {
+    if (m_AssetBrowserState.showDeleteSubfolderPopup) {
+        ImGui::OpenPopup("Confirm Delete Folder");
+        m_AssetBrowserState.showDeleteSubfolderPopup = false;
+    }
+
+    ImGui::SetNextWindowPos(ImGui::GetMainViewport()->GetCenter(), ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
+    if (ImGui::BeginPopupModal("Confirm Delete Folder", NULL, ImGuiWindowFlags_AlwaysAutoResize)) {
+        ImGui::Text("Delete this folder and ALL its contents?");
+        ImGui::TextColored(ImVec4(1, 0.4f, 0.4f, 1), "%s", m_AssetBrowserState.folderToDelete.c_str());
+        ImGui::Separator();
+
+        if (ImGui::Button("Delete") || InputHandler::isKeyTriggered(GLFW_KEY_ENTER)) {
+            if (!m_AssetBrowserState.folderToDelete.empty() &&
+                std::filesystem::exists(m_AssetBrowserState.folderToDelete)) {
+                try {
+                    // delete from runtime assets
+                    std::filesystem::remove_all(m_AssetBrowserState.folderToDelete);
+
+                    // mirror delete in source project folder
+                    std::string relative;
+                    size_t pos = m_AssetBrowserState.folderToDelete.find("assets/");
+                    if (pos != std::string::npos)
+                        relative = m_AssetBrowserState.folderToDelete.substr(pos + strlen("assets/"));
+                    if (!relative.empty()) {
+                        std::filesystem::path projectPath = std::filesystem::path(std::string(SOURCE_DIR_R)) / relative;
+                        if (std::filesystem::exists(projectPath))
+                            std::filesystem::remove_all(projectPath);
+                    }
+
+                    EditorManager::assetChanged();
+                    DebugLog::addMessage("Deleted folder: " + m_AssetBrowserState.folderToDelete);
+                }
+                catch (const std::filesystem::filesystem_error& e) {
+                    DebugLog::addMessage("Failed to delete folder: " + std::string(e.what()));
+                }
+            }
+            m_AssetBrowserState.folderToDelete.clear();
+            ImGui::CloseCurrentPopup();
+        }
+
+        ImGui::SameLine();
+        if (ImGui::Button("Cancel")) {
+            m_AssetBrowserState.folderToDelete.clear();
+            ImGui::CloseCurrentPopup();
+        }
+        ImGui::EndPopup();
+    }
+}
+
 #endif

@@ -34,11 +34,12 @@ void PhysicsForces::applyGravity(Physics* physics) {
  * @brief Applies velocity damping to simulate friction/air resistance
  * Reduces horizontal velocity over time using damping
  */
-void PhysicsForces::applyDamping(Physics* physics, float targetVelX, float deltaTime) {
+void PhysicsForces::applyDamping(Physics* physics, float friction, float targetVelX, float deltaTime) {
     // Simple velocity damping 
     //physics->damping; // instead of 0.99f
 
     //physics->dynamics.velocity.x *= physics->damping;
+	physics->dynamics.angularVelocity *= physics->dynamics.angularDrag;
    // physics->dynamics.velocity.y *= physics->damping;
 
     // accel when moving, decel when stopping
@@ -48,7 +49,7 @@ void PhysicsForces::applyDamping(Physics* physics, float targetVelX, float delta
         physics->dynamics.velocity.x += (targetVelX - physics->dynamics.velocity.x) * accel * deltaTime;
     }
     else {
-        float decel = (physics->velY <= 0) ? (1.0f - physics->friction) : physics->damping;
+        float decel = (physics->velY <= 0) ? (1.f - friction) : physics->damping;
 
         physics->dynamics.velocity.x *= pow(decel, deltaTime * 60.0f);
 
@@ -63,13 +64,13 @@ void PhysicsForces::applyDamping(Physics* physics, float targetVelX, float delta
  */
 void PhysicsForces::updatePosition(Transform* transform, Physics* physics, float deltaTime) {
     DynamicsSystem::UpdateForces(physics->dynamics, deltaTime);
-    //DynamicsSystem::Integrate(physics->dynamics, deltaTime);
     if (!physics->onGround) {
+        //DynamicsSystem::Integrate(physics->dynamics, deltaTime, physics->gravity, false);
         float grav = physics->gravity * physics->dynamics.mass; // gravity force F=mg
         if (physics->dynamics.velocity.y < 0.0f)
             grav *= 1.5f;  // faster fall
-        else if (std::abs(physics->dynamics.velocity.y) < 2.0f)
-            grav *= 0.7f; // apex hang when near the peak
+        else if (std::abs(physics->dynamics.velocity.y) < 1.0f)
+            grav *= physics->apexHangMul; // apex hang when near the peak
 
         // integrate gravity into velocity
         physics->dynamics.velocity.y += grav * deltaTime;
@@ -89,12 +90,19 @@ void PhysicsForces::updatePosition(Transform* transform, Physics* physics, float
         physics->dynamics.position.x = transform->x;
         physics->dynamics.position.y = transform->y;
         physics->dynamics.velocity.y = 0.0f;
+        //physics->velY = 0.0f;
+    }
+
+    // Integrate angular velocity into rotation (degrees/sec)
+    if (!physics->freezeRotation) {
+        DynamicsSystem::IntegrateAngular(physics->dynamics, deltaTime);
+        transform->rotation += physics->dynamics.angularVelocity * deltaTime;
     }
 
     physics->velX = physics->dynamics.velocity.x;
     physics->velY = physics->dynamics.velocity.y;
-
 }
+
 /**
  * @brief Applies jump force to make an object jump
  *
@@ -167,7 +175,6 @@ void PhysicsForces::shoot(GameObject* bullet, const Transform* origin, const Vec
     p->lifeTimer = 0.0f;
     p->gravityDelayTimer = p->gravityDelay;  // Initialize gravity immunity
     p->alive = true;
-	p->bounciness = 0.7f; // some bounce
 
     DebugLog::addMessage("Bullet fired!", DebugMode::PlaySimul);
 }
@@ -255,4 +262,20 @@ void PhysicsForces::deactivateBullet(GameObject* bullet) {
     p->alive = false;
 
     DebugLog::addMessage("Bullet deactivated and returned to pool", DebugMode::PlaySimul);
+}
+
+void Physics::recalculateInertia(const Vector2D& colliderSize, shape colliderType) {
+    if (inertiaOverride > 0.0f) {
+        dynamics.inertia = inertiaOverride;
+        return;
+    }
+    if (colliderType == shape::circle) {
+        float radius = colliderSize.x / 2.0f;
+        dynamics.inertia = 0.5f * dynamics.mass * radius * radius;
+    }
+    else {
+        float w = colliderSize.x;
+        float h = colliderSize.y;
+        dynamics.inertia = (1.0f / 12.0f) * dynamics.mass * (w * w + h * h);
+    }
 }

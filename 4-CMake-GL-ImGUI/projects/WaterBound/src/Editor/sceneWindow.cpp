@@ -85,7 +85,7 @@ void SceneWindow::render(GLuint texture, float aspectRatio, GameObjectManager& m
 
         // drag to reposition obj
         if (InputHandler::isMouseDragging() && !ImGuizmo::IsUsing() && TileMapSystem::filename.empty()) {
-            objDragging();
+            objDragging(manager);
         }
 
         if (InputHandler::isMouseLeftReleased()) {
@@ -219,10 +219,11 @@ void SceneWindow::renderGizmo(GameObjectManager& manager) {
             glm::value_ptr(scale));
 
         // update the object
-        t->x = translation.x;
-        t->y = translation.y;
+        TransformSystem::setWorldPosition(t, translation.x, translation.y, manager);
         t->z = translation.z;
-        t->rotation = rotation.z;
+
+        TransformSystem::setWorldRotation(t, rotation.z, manager);
+
         t->scaleX = scale.x;
         t->scaleY = scale.y;
         t->scaleZ = scale.z;
@@ -441,11 +442,11 @@ void SceneWindow::renderObjCollider(GameObject* obj) {
     float thickness = 2.5f;
 
     if (collision->colliderType == shape::circle) {
-        ImVec2 center = worldToScreen(transform->x, transform->y);
+        ImVec2 center = worldToScreen(transform->x + collision->colliderPos.x, transform->y + collision->colliderPos.y);
 
         // use collider size as diameter
         float worldRadius = collision->colliderSize.x * 0.5f;
-        ImVec2 radiusPoint = worldToScreen(transform->x + worldRadius, transform->y);
+        ImVec2 radiusPoint = worldToScreen(transform->x + worldRadius + collision->colliderPos.x, transform->y + collision->colliderPos.y);
         float screenRadius = std::abs(radiusPoint.x - center.x);
 
         // circle outline
@@ -455,8 +456,7 @@ void SceneWindow::renderObjCollider(GameObject* obj) {
         drawList->AddCircleFilled(center, screenRadius, fillColor, 32);
 
         // center marker
-        float markerSize = 3.0f;
-        drawList->AddCircleFilled(center, markerSize, outlineColor);
+        drawList->AddCircleFilled(center, 3.f, outlineColor);
 
         // center cross
         float crossSize = 5.0f;
@@ -473,36 +473,34 @@ void SceneWindow::renderObjCollider(GameObject* obj) {
 
     }
     else {
-        // get the object aabb for highlighting
-        Collision::AABB aabb = Collision::getObjectAABBbyCollider(transform, collision->colliderSize);
-
-        // get corners of the AABB
-        ImVec2 topLeft = worldToScreen(aabb.getMin().x, aabb.getMax().y);
-        ImVec2 topRight = worldToScreen(aabb.getMax().x, aabb.getMax().y);
-        ImVec2 bottomLeft = worldToScreen(aabb.getMin().x, aabb.getMin().y);
-        ImVec2 bottomRight = worldToScreen(aabb.getMax().x, aabb.getMin().y);
+        // draw box collider
+        ImVec2 screenCorners[4];
+        Collision::getColliderCorners(transform, collision, screenCorners, worldToScreen);
 
         // box outline
-        drawList->AddLine(topLeft, topRight, outlineColor, thickness);
-        drawList->AddLine(topRight, bottomRight, outlineColor, thickness);
-        drawList->AddLine(bottomRight, bottomLeft, outlineColor, thickness);
-        drawList->AddLine(bottomLeft, topLeft, outlineColor, thickness);
+        drawList->AddLine(screenCorners[0], screenCorners[1], outlineColor, thickness);
+        drawList->AddLine(screenCorners[1], screenCorners[2], outlineColor, thickness);
+        drawList->AddLine(screenCorners[2], screenCorners[3], outlineColor, thickness);
+        drawList->AddLine(screenCorners[3], screenCorners[0], outlineColor, thickness);
 
         // corner markers
-        float markerSize = 2.f;
-        drawList->AddCircleFilled(topLeft, markerSize, outlineColor);
-        drawList->AddCircleFilled(topRight, markerSize, outlineColor);
-        drawList->AddCircleFilled(bottomLeft, markerSize, outlineColor);
-        drawList->AddCircleFilled(bottomRight, markerSize, outlineColor);
+        for (int i = 0; i < 4; ++i)
+            drawList->AddCircleFilled(screenCorners[i], 2.f, outlineColor);
 
-        // semi-transparent fill
-        drawList->AddQuadFilled(topLeft, topRight, bottomRight, bottomLeft, fillColor);
+        // fill
+        drawList->AddQuadFilled(screenCorners[0], screenCorners[1],
+            screenCorners[2], screenCorners[3], fillColor);
 
-        // center cross
-        ImVec2 center = worldToScreen(transform->x, transform->y);
-        float crossSize = 5.0f;
+        // center cross at collider center
+        float cosT = cosf(glm::radians(transform->rotation));
+        float sinT = sinf(glm::radians(transform->rotation));
+        float offX = collision->colliderPos.x * cosT - collision->colliderPos.y * sinT;
+        float offY = collision->colliderPos.x * sinT + collision->colliderPos.y * cosT;
+        ImVec2 center = worldToScreen(transform->x + offX, transform->y + offY);
+
+        float crossSize = 5.f;
         drawList->AddLine(ImVec2(center.x - crossSize, center.y), ImVec2(center.x + crossSize, center.y), outlineColor, 1.5f);
-        drawList->AddLine(ImVec2(center.x, center.y - crossSize), ImVec2(center.x, center.y + crossSize),outlineColor, 1.5f);
+        drawList->AddLine(ImVec2(center.x, center.y - crossSize), ImVec2(center.x, center.y + crossSize), outlineColor, 1.5f);
     }
 }
 
@@ -838,7 +836,7 @@ void SceneWindow::objPicking() {
     }
 }
 
-void SceneWindow::objDragging() const {
+void SceneWindow::objDragging(GameObjectManager& manager) const {
     // early return if no obj is selected
     GameObject* obj = m_objSelectionState.draggedObject;
     if (!obj) return;
@@ -848,8 +846,7 @@ void SceneWindow::objDragging() const {
 
     // change current object position based on mouse delta
     Vector2D mousePos = InputHandler::getMouseDeltaWorldInViewport(m_sceneWindowState.sceneSize);
-    transform->x += mousePos.x;
-    transform->y += mousePos.y;
+    TransformSystem::setWorldPosition(transform, transform->x + mousePos.x, transform->y + mousePos.y, manager);
 
     // if obj has physics, do not follow gravity while dragging
     /*Physics* physics = obj->getComponent<Physics>();

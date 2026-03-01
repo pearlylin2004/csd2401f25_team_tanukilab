@@ -48,8 +48,11 @@ struct Dynamics
     Vector3D acceleration{ 0.0f, 0.0f, 0.0f };
 
     // Angular motion properties
-    Vector3D angularVelocity{ 0.0f, 0.0f, 0.0f };
-    Vector3D angularAcceleration{ 0.0f, 0.0f, 0.0f };
+    float angularVelocity{ 0.0f };
+    float angularAcceleration{ 0.0f };
+	float torque{ 0.0f };
+	float inertia{ 1.0f };
+    float angularDrag = 0.98f;      // 1.0 = no damping, 0.98 = gradual slowdown
 
     // Mass properties
     float mass = 1.0f;
@@ -80,4 +83,6 @@ public:
      * @brief update position and velocity of objects
      */
     static void Integrate(Dynamics& dyn, float deltaTime, float gravityValue, bool onGround);
+
+	static void IntegrateAngular(Dynamics& dyn, float deltaTime);
 };

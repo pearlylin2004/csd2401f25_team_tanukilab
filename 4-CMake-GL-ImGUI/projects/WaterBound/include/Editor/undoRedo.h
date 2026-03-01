@@ -185,6 +185,24 @@ private:
 	std::vector<TileChange>	m_changes;
 };
 
+class ReparentCmd : public CmdInterface {
+public:
+	ReparentCmd(GameObjectManager& manager, const std::string& childName,
+		const std::string& oldParent, const Vector2D& oldOffset, float oldLocalRot,
+		const std::string& newParent, const Vector2D& newOffset, float newLocalRot);
+
+	void execute() override;
+	void undo()    override;
+
+private:
+	void apply(const std::string& parent, const Vector2D& offset, float localRot);
+
+	GameObjectManager& m_manager;
+	std::string m_childName;
+	std::string m_oldParent;  Vector2D m_oldOffset;  float m_oldLocalRot;
+	std::string m_newParent;  Vector2D m_newOffset;  float m_newLocalRot;
+};
+
 // grid settings & tilemap filename
 struct TileMapToolSnapshot {
 	std::string filename;
@@ -276,6 +294,30 @@ private:
 };
 
 
+// visual logic editor
+struct VLGraphSnapshot {
+	std::vector<LogicNode> nodes;
+	std::vector<LogicConnection> connections;
+};
+
+class VLGraphCmd : public CmdInterface {
+public:
+	VLGraphCmd(const VLGraphSnapshot& before, const VLGraphSnapshot& after);
+
+	void execute() override;
+
+	void undo() override;
+
+	void updateObjName(const std::string&, const std::string&) override;
+
+private:
+	void apply(const VLGraphSnapshot& snap);
+
+	VLGraphSnapshot			m_before;
+	VLGraphSnapshot			m_after;
+};
+
+
 // big boss for undo/redo operation (singleton)
 class UndoRedoManager {
 public:
@@ -346,9 +388,21 @@ public:
 
 	/* ---- LAYER ---- */
 	void beginLayerEdit(int layerID, Layer* layer);
-	void endLayerEdit(GameObjectManager& manager, int layerID, Layer* layer);
+	void endLayerEdit(GameObjectManager& manager, Layer* layer);
 	void beginLayerAssign(GameObject* obj);
 	void endLayerAssign(GameObjectManager& manager, GameObject* obj, int newLayerID);
+	/* ---- END ----*/
+
+
+	/* ---- VISUAL LOGIC ----*/
+	void beginVLEdit();
+	void endVLEdit();
+	bool isEditingVL() const { return m_isEditingVL; }
+	void vlUndo();
+	void vlRedo();
+	bool canVLUndo() const { return !m_vlUndoDeque.empty(); }
+	bool canVLRedo() const { return !m_vlRedoDeque.empty(); }
+	void clearVL();
 	/* ---- END ----*/
 
 
@@ -386,6 +440,12 @@ private:
 	bool					m_isAssigningLayer{ false };
 	std::string				m_assigningObjName{};
 	int						m_layerAssignBefore{ -1 };
+
+	// for visual logic
+	bool					m_isEditingVL = false;
+	VLGraphSnapshot			m_vlBefore;
+	std::deque<std::unique_ptr<VLGraphCmd>> m_vlUndoDeque;
+	std::deque<std::unique_ptr<VLGraphCmd>> m_vlRedoDeque;
 };
 
 // take a snapshot of an object's transform state

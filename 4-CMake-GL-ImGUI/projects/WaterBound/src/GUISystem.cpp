@@ -425,6 +425,7 @@ void GUISystem::resetAllObjectsToSpawn() {
         }
 
         if (obj->hasComponent<TileMap>()) {
+
 			TileMap* tileMap = obj->getComponent<TileMap>();
             tileMap->collisionBoxs.clear();
 			tileMap->colChanged = true;

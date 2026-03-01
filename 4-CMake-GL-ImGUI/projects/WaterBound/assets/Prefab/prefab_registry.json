@@ -12,11 +12,6 @@
       "path": "/Prefab/player.json"
     },
     {
-      "id": "4715fbb7-b7e3-463e-a596-be3ce6711e35",
-      "name": "player",
-      "path": "/Prefab/player_2.json"
-    },
-    {
       "id": "f7665aa3-619e-49a1-892a-31fbc8b377a2",
       "name": "platform",
       "path": "/Prefab/platform.json"
@@ -25,11 +20,6 @@
       "id": "eaa2ba42-971a-413b-b8c4-99b2f5ab674d",
       "name": "fire",
       "path": "/Prefab/fire.json"
-    },
-    {
-      "id": "9f0f3e8d-8d60-445e-aeeb-a90697e34426",
-      "name": "player",
-      "path": "/Prefab/player_1.json"
     },
     {
       "id": "f04819ff-270c-41b4-8387-73382eb85103",

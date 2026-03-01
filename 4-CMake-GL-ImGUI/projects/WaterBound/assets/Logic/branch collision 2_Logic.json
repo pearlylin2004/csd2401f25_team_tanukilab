@@ -1,0 +1,63 @@
+{
+  "version": 1,
+  "nodes": [
+    {
+      "id": 1,
+      "implementation": "On Update",
+      "type": 0,
+      "position": [
+        4.000041484832764,
+        51.00001907348633
+      ],
+      "hasInput": false,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false
+    },
+    {
+      "id": 3,
+      "implementation": "Compare Global Float",
+      "type": 2,
+      "position": [
+        315.0,
+        -33.33331298828125
+      ],
+      "hasInput": true,
+      "hasOutput": false,
+      "hasTrueOutput": true,
+      "hasFalseOutput": true,
+      "parameters": {
+        "comparison": "greater",
+        "threshold": "0.000000",
+        "variable": "broken"
+      }
+    },
+    {
+      "id": 4,
+      "implementation": "Disable Collision",
+      "type": 1,
+      "position": [
+        348.3333740234375,
+        81.66667938232422
+      ],
+      "hasInput": true,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false
+    }
+  ],
+  "connections": [
+    {
+      "fromNodeId": 1,
+      "outputPin": "Out",
+      "toNodeId": 3,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 3,
+      "outputPin": "True",
+      "toNodeId": 4,
+      "inputPin": "In"
+    }
+  ]
+}
