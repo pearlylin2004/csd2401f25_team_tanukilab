@@ -1441,6 +1441,8 @@ void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime, M
 
 void WeaponSystem::update(GameObjectManager& manager, const float& deltaTime)
 {
+	auto start = std::chrono::high_resolution_clock::now();
+
 	(void)deltaTime;
 
 	#ifdef _DEBUG
@@ -1517,6 +1519,10 @@ void WeaponSystem::update(GameObjectManager& manager, const float& deltaTime)
 
 		weapon->currentAngle = aimAngleDeg;
 	}
+
+	auto end = std::chrono::high_resolution_clock::now();
+	double ms = std::chrono::duration<double, std::milli>(end - start).count();
+	g_SystemTimers.push_back({ "Weapon", ms });
 }
 
 //helper function for collision detection
