@@ -407,8 +407,8 @@ void InspectorWindow::renderTransform(GameObject* selected) {
                     m_transformEditObject = selected;
                 }
 
-                newZ = std::clamp(newZ, far1, near1);
-                transform->z = newZ;
+                transform->z = std::clamp(newZ, far1, near1);
+                //transform->z = newZ;
             }
             posActive |= ImGui::IsItemActive();
 
