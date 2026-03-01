@@ -1216,6 +1216,13 @@ void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime, M
 				messageBus.publish(Message("KeyPressed", nullptr, KeyEvent{ "D", true }));
 			}
 
+			// Flip player to face mouse direction (only when no movement keys override)
+			if (!InputHandler::isKeyHeld(GLFW_KEY_A) && !InputHandler::isKeyHeld(GLFW_KEY_D)) {
+				Vector2D mouseWorldPos = InputHandler::getWorldMousePosition();
+				transform->flipX = (mouseWorldPos.x < transform->x);
+			}
+
+
 			// STEP 4: Integrate physics
 			if (!object->checkAutoMove() && !physics->ledgeClimb) {
 
