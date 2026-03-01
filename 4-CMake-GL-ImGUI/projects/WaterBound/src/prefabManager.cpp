@@ -1407,6 +1407,7 @@ void PrefabManager::serializeComponents(const GameObject* obj, rapidjson::Value&
 	if (auto wc = obj->getComponent<WeaponComponent>()) {
 		rapidjson::Value jweap(rapidjson::kObjectType);
 		rapidjson::Value barrelArr(rapidjson::kArrayType);
+
 		barrelArr.PushBack(wc->barrelOffset.x, a);
 		barrelArr.PushBack(wc->barrelOffset.y, a);
 		jweap.AddMember("barrelOffset", barrelArr, a);
