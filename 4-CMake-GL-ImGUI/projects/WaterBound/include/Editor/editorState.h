@@ -27,6 +27,8 @@ Technology is prohibited.
 #include "JsonIO.h"
 
 namespace Editor {
+	inline bool hasCam = false;
+
 	/* ----------------- Menu Bar -----------------*/
 	struct MenuBarState {
 		bool showNewScenePopup = false;
@@ -464,10 +466,11 @@ namespace Editor {
 		{ "Camera",
 			[](GameObject* obj) {
 			obj->addComponent<camera>();
+			hasCam = true;
 			DebugLog::addMessage("Added Camera component for " + obj->getObjectName());
 			},
 			[](const GameObject* obj) { return obj->hasComponent<camera>(); },
-			[](GameObject* obj) { obj->removeComponent<camera>(); },
+			[](GameObject* obj) { obj->removeComponent<camera>(); hasCam = false; },
 			[](GameObject* obj) { return JsonIO::serializeCamera(obj); },
 			[](GameObject* obj, std::string data) { JsonIO::deserializeCamera(obj, data); }
 		}

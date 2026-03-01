@@ -258,6 +258,9 @@ If the JSON is missing or malformed, the function prints an error and stops.
 void GameObjectManager::loadSceneFromJson(const std::string& filename) {
 	auto t1 = std::chrono::high_resolution_clock::now();
 
+	// set to false to make sure one scene can only have one camera component (set to true if obj has cam component)
+	Editor::hasCam = false;
+
 	rapidjson::Document doc;
 	std::string err;
 	if (!JsonIO::ReadFileToDocument(filename, doc, &err)) {
@@ -508,6 +511,7 @@ void GameObjectManager::loadSceneFromJson(const std::string& filename) {
 
 		// ---- Camera ----
 		if (comps.HasMember("Camera") && comps["Camera"].IsObject()) {
+			Editor::hasCam = true;
 			const auto& jcam = comps["Camera"];
 			auto* cam = go->getComponent<camera>();
 			if (!cam) cam = go->addComponent<camera>();

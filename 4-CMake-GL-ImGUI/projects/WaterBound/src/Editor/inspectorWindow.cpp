@@ -281,6 +281,9 @@ void InspectorWindow::addComponent(GameObject* selected) {
         if (comp.hasComp(selected)) continue;
         if (comp.name == "Animation") continue;
 
+        // only one camera component may exist in one scene
+        if (Editor::hasCam && comp.name == "Camera") continue;
+
         // search
         if (strlen(search) > 0) {
             std::string compName = comp.name;
@@ -396,12 +399,16 @@ void InspectorWindow::renderTransform(GameObject* selected) {
             float near1 = (m32 - 1.f) / m22;
             float far1 = (m32 + 1.f) / m22;
 
-            if (ImGui::DragFloat("Z", &transform->z, 0.1f, far1, near1)) {
+            float newZ = transform->z;
+            if (ImGui::DragFloat("Z", &newZ, 0.1f, far1, near1)) {
                 if (!m_isEditingPos) {
                     UndoRedoManager::Instance().beginTransformEdit(selected);
                     m_isEditingPos = true;
                     m_transformEditObject = selected;
                 }
+
+                newZ = std::clamp(newZ, far1, near1);
+                transform->z = newZ;
             }
             posActive |= ImGui::IsItemActive();
 
