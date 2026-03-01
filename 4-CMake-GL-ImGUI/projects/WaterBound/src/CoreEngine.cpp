@@ -76,7 +76,7 @@ void CoreEngine::Init(bool forceWindowed) {
         // remember windowed size for when we toggle back
         m_windowedWidth = cfg.width;
         m_windowedHeight = cfg.height;
-        Camera::onResize(winWidth, winHeight);
+        Camera::onResize(m_windowedWidth, m_windowedHeight);
     }
     else {
         monitor = glfwGetPrimaryMonitor();

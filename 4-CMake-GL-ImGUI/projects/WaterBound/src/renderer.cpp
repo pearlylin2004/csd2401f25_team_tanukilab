@@ -310,7 +310,7 @@ void renderer::camera::update()
 		view = glm::lookAt(campos, glm::vec3(campos.x, campos.y, -1.f), up);
 	}
 
-	proj = glm::ortho(-zoom * ar, zoom * ar, -zoom, zoom, -1.f, 1.f);
+	proj = glm::ortho(-zoom * ar, zoom * ar, -zoom, zoom, -10.f, 10.f);
 	
 }
 
