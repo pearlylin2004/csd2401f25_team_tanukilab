@@ -637,7 +637,9 @@ bool AudioHandler::isFadingOut(AudioChannel* audio) const {
 	return audio->fadeInfo.isFading && !audio->fadeInfo.isFadingIn;
 }
 
-void AudioHandler::updateListener(float listenerX, float listenerY, float listenerZ) {
+void AudioHandler::updateListener(float listenerX, float listenerY, float listenerZ,
+	float forwardX, float forwardY, float forwardZ,
+	float upX, float upY, float upZ) {
 	if (!system) return;
 
 	// Set listener position
@@ -647,8 +649,8 @@ void AudioHandler::updateListener(float listenerX, float listenerY, float listen
 	FMOD_VECTOR velocity = { 0.0f, 0.0f, 0.0f };
 
 	// Set listener orientation
-	FMOD_VECTOR forward = { 0.0f, 0.0f, 1.0f };  // Looking into screen
-	FMOD_VECTOR up = { 0.0f, 1.0f, 0.0f };         // Y-axis is up
+	FMOD_VECTOR forward = { forwardX, forwardY, forwardZ };
+	FMOD_VECTOR up = { upX, upY, upZ };
 
 	// Tell FMOD about the listener
 	FMODErrorCheck(system->set3DListenerAttributes(
@@ -669,4 +671,17 @@ void AudioHandler::setMusicVolume(float vol) {
 
 void AudioHandler::setSFXVolume(float vol) {
 	m_sfxVolume = std::max(0.0f, std::min(vol, 1.0f));
+}
+
+void AudioHandler::setMasterVolume(float vol) {
+    m_masterVolume = std::max(0.0f, std::min(vol, 1.0f));
+
+    // FMOD's master channel group controls ALL active channels at once
+    FMOD::ChannelGroup* masterGroup = nullptr;
+    if (system) {
+        system->getMasterChannelGroup(&masterGroup);
+        if (masterGroup) {
+            masterGroup->setVolume(m_masterVolume);
+        }
+    }
 }

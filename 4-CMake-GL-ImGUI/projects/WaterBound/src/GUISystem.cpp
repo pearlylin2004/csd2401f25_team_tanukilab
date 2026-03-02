@@ -224,25 +224,15 @@ void GUISystem::createButtonActions() {
         loadScreen(*g_manager, "menu_scene.json");
     };
 
-    // Volume controls
+    // Single master volume controls
     m_buttonActions[ButtonAction::MUSIC_VOL_UP] = [this]() {
         AudioHandler& ah = AudioHandler::getInstance();
-        ah.setMusicVolume(ah.getMusicVolume() + 0.1f);
+        ah.setMasterVolume(ah.getMasterVolume() + 0.1f);
         updateVolumeDisplay();
     };
     m_buttonActions[ButtonAction::MUSIC_VOL_DOWN] = [this]() {
         AudioHandler& ah = AudioHandler::getInstance();
-        ah.setMusicVolume(ah.getMusicVolume() - 0.1f);
-        updateVolumeDisplay();
-    };
-    m_buttonActions[ButtonAction::SFX_VOL_UP] = [this]() {
-        AudioHandler& ah = AudioHandler::getInstance();
-        ah.setSFXVolume(ah.getSFXVolume() + 0.1f);
-        updateVolumeDisplay();
-    };
-    m_buttonActions[ButtonAction::SFX_VOL_DOWN] = [this]() {
-        AudioHandler& ah = AudioHandler::getInstance();
-        ah.setSFXVolume(ah.getSFXVolume() - 0.1f);
+        ah.setMasterVolume(ah.getMasterVolume() - 0.1f);
         updateVolumeDisplay();
     };
 
@@ -252,16 +242,11 @@ void GUISystem::createButtonActions() {
 void GUISystem::updateVolumeDisplay() {
     AudioHandler& ah = AudioHandler::getInstance();
 
-    GameObject* musicText = g_manager->getGameObject("music_vol_text");
-    if (musicText && musicText->hasComponent<FontComponent>()) {
-        int pct = static_cast<int>(ah.getMusicVolume() * 100.0f + 0.5f);
-        musicText->getComponent<FontComponent>()->word = std::to_string(pct) + "%";
-    }
-
-    GameObject* sfxText = g_manager->getGameObject("sfx_vol_text");
-    if (sfxText && sfxText->hasComponent<FontComponent>()) {
-        int pct = static_cast<int>(ah.getSFXVolume() * 100.0f + 0.5f);
-        sfxText->getComponent<FontComponent>()->word = std::to_string(pct) + "%";
+    // Use a single volume text element (rename in your audio_scene.json accordingly)
+    GameObject* volText = g_manager->getGameObject("music_vol_text");
+    if (volText && volText->hasComponent<FontComponent>()) {
+        int pct = static_cast<int>(ah.getMasterVolume() * 100.0f + 0.5f);
+        volText->getComponent<FontComponent>()->word = std::to_string(pct) + "%";
     }
 }
 

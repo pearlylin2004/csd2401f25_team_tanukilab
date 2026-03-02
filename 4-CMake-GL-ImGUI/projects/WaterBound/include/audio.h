@@ -140,7 +140,7 @@ public:
 	bool isFadingOut(AudioChannel* audio) const;
 
 	// Spatial audio
-	void updateListener(float listenerX, float listenerY, float listenerZ);
+	void updateListener(float listenerX, float listenerY, float listenerZ, float forwardX, float forwardY, float forwardZ, float upX, float upY, float upZ);
 
 	// Global volume controls (0.0 to 1.0)
 	void setMusicVolume(float vol);
@@ -148,17 +148,22 @@ public:
 	void setSFXVolume(float vol);
 	float getSFXVolume() const { return m_sfxVolume; }
 
+	// Global volume control (0.0 to 1.0)
+	void setMasterVolume(float vol);
+	float getMasterVolume() const { return m_masterVolume; }
+
 	// Register the BGM channel so setMusicVolume can update it live
 	void registerBGMChannel(FMOD::Channel* channel) { m_bgmChannel = channel; }
 
 private:
 	AudioHandler() : system(nullptr) {}
-	~AudioHandler() { shutdown(); } // auto shutdown once instance is destroyed
+	~AudioHandler() { shutdown(); }
 
 	FMOD::System* system;
 
 	float m_musicVolume = 1.0f;
 	float m_sfxVolume = 1.0f;
 	float m_bgmBaseVolume = 0.125f;
+	float m_masterVolume = 1.0f;
 	FMOD::Channel* m_bgmChannel = nullptr;
 };

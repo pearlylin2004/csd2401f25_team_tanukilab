@@ -2023,7 +2023,7 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 									}
 								}
 							}
-						}				
+						}
 					}
 				}
 			}
@@ -2467,7 +2467,9 @@ void AudioSystem::update(GameObjectManager& manager, float deltaTime) {
 		AudioHandler::getInstance().updateListener(
 			playerTransform->x,
 			playerTransform->y,
-			playerTransform->z
+			playerTransform->z,
+			0.0f, 0.0f, 1.0f,  // forward: looking into screen
+			0.0f, 1.0f, 0.0f   // up: Y-axis is up
 		);
 	}
 
@@ -2763,12 +2765,11 @@ void TransformSystem::update(GameObjectManager& manager, const float& deltaTime)
 		float parentRad = glm::radians(pt->rotation);
 		float cosA = cosf(parentRad);
 		float sinA = sinf(parentRad);
+		float offsetX = t->localOffset.x * (t->flipX ? -1.0f : 1.0f); // account for flipX
+		float offsetY = t->localOffset.y;
 
-		float rotatedX = t->localOffset.x * cosA - t->localOffset.y * sinA;
-		float rotatedY = t->localOffset.x * sinA + t->localOffset.y * cosA;
-
-		t->x = pt->x + rotatedX;
-		t->y = pt->y + rotatedY;
+		t->x = pt->x + offsetX * cosA - offsetY * sinA;
+		t->y = pt->y + offsetX * sinA + offsetY * cosA;
 		t->rotation = pt->rotation + t->localRotation;
 
 		// Keep physics position in sync if child has physics
