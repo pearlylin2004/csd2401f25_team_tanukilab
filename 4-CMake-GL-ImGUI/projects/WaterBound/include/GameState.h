@@ -21,6 +21,7 @@ enum class GameState {
     MENU,
     PLAYING,
     CONTROL,
+    AUDIO,
     PAUSED,
     EXIT,
     EXITCONFIRMATION,

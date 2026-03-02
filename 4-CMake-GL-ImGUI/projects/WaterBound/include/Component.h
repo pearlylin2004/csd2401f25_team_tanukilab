@@ -157,7 +157,8 @@ struct FontComponent : public Component {
     }
 
     //GLuint texHdl;
-    Font::FontMdl mdl = Font::fontMdls[0];
+    //Font::FontMdl mdl = Font::fontMdls[0];
+    Font::FontMdl mdl{};
     std::string word = "";
     float scale = 1;
     glm::vec3 clr{ 0.f,0.f,0.f };
@@ -303,12 +304,17 @@ enum class ButtonAction {
     NONE,
     START_GAME,
     OPEN_CONTROL,
+	OPEN_AUDIO,
     EXIT_GAME,
     RESUME_GAME,
 	YES_EXIT,
 	NO_EXIT,
     BACK,
-    MENU
+    MENU,
+    MUSIC_VOL_UP,
+    MUSIC_VOL_DOWN,
+    SFX_VOL_UP,
+    SFX_VOL_DOWN
 };
 
 //Button component

@@ -129,6 +129,11 @@ void GUISystem::createButtons(GameObjectManager& manager) {
         createButtonActions(); //create button actions
         std::cout << "[GUI] Menu buttons created successfully" << std::endl;
     }   
+
+    // Safe to update volume display here, after all buttons/actions are set up
+    if (m_currentState == GameState::AUDIO) {
+        updateVolumeDisplay();
+    }
 }
 
 //removing of buttons 
@@ -166,7 +171,12 @@ void GUISystem::createButtonActions() {
         changeState(GameState::CONTROL, "control_scene.json");
      };
 
-    //back button
+    // audio scene
+    m_buttonActions[ButtonAction::OPEN_AUDIO] = [this]() {
+        changeState(GameState::AUDIO, "audio_scene.json");
+        //updateVolumeDisplay();
+    };
+
     m_buttonActions[ButtonAction::BACK] = [this]() {
         switch (m_previousState) {
         case GameState::MENU:
@@ -174,6 +184,9 @@ void GUISystem::createButtonActions() {
             break;
         case GameState::CONTROL:
             changeState(GameState::CONTROL, "control_scene.json");
+            break;
+        case GameState::AUDIO:
+            changeState(GameState::AUDIO, "audio_scene.json");
             break;
         case GameState::PAUSED:
             changeState(GameState::PAUSED, "pause_scene.json");
@@ -205,12 +218,51 @@ void GUISystem::createButtonActions() {
         m_currentState = GameState::EXIT;
         stopGame();
     };
+
     m_buttonActions[ButtonAction::NO_EXIT] = [this]() {
         m_currentState = GameState::MENU;
         loadScreen(*g_manager, "menu_scene.json");
     };
 
+    // Volume controls
+    m_buttonActions[ButtonAction::MUSIC_VOL_UP] = [this]() {
+        AudioHandler& ah = AudioHandler::getInstance();
+        ah.setMusicVolume(ah.getMusicVolume() + 0.1f);
+        updateVolumeDisplay();
+    };
+    m_buttonActions[ButtonAction::MUSIC_VOL_DOWN] = [this]() {
+        AudioHandler& ah = AudioHandler::getInstance();
+        ah.setMusicVolume(ah.getMusicVolume() - 0.1f);
+        updateVolumeDisplay();
+    };
+    m_buttonActions[ButtonAction::SFX_VOL_UP] = [this]() {
+        AudioHandler& ah = AudioHandler::getInstance();
+        ah.setSFXVolume(ah.getSFXVolume() + 0.1f);
+        updateVolumeDisplay();
+    };
+    m_buttonActions[ButtonAction::SFX_VOL_DOWN] = [this]() {
+        AudioHandler& ah = AudioHandler::getInstance();
+        ah.setSFXVolume(ah.getSFXVolume() - 0.1f);
+        updateVolumeDisplay();
+    };
+
     std::cout << "[GUI] Menu buttons created successfully" << std::endl;
+}
+
+void GUISystem::updateVolumeDisplay() {
+    AudioHandler& ah = AudioHandler::getInstance();
+
+    GameObject* musicText = g_manager->getGameObject("music_vol_text");
+    if (musicText && musicText->hasComponent<FontComponent>()) {
+        int pct = static_cast<int>(ah.getMusicVolume() * 100.0f + 0.5f);
+        musicText->getComponent<FontComponent>()->word = std::to_string(pct) + "%";
+    }
+
+    GameObject* sfxText = g_manager->getGameObject("sfx_vol_text");
+    if (sfxText && sfxText->hasComponent<FontComponent>()) {
+        int pct = static_cast<int>(ah.getSFXVolume() * 100.0f + 0.5f);
+        sfxText->getComponent<FontComponent>()->word = std::to_string(pct) + "%";
+    }
 }
 
 void GUISystem::startGame() {
@@ -311,6 +363,9 @@ GameState GUISystem::sceneToState(const std::string& sceneName) {
     }
     if (sceneName == "control_scene.json") {
         return GameState::CONTROL;
+    }
+    if (sceneName == "audio_scene.json") {
+        return GameState::AUDIO;
     }
     if (sceneName == "level01.json" || sceneName == "level02.json") {
 		//if (!m_buttons.empty()) removeButtons();

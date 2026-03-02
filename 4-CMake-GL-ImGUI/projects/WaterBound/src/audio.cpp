@@ -659,3 +659,14 @@ void AudioHandler::updateListener(float listenerX, float listenerY, float listen
 		&up
 	));
 }
+
+void AudioHandler::setMusicVolume(float vol) {
+	m_musicVolume = std::max(0.0f, std::min(vol, 1.0f));
+	if (m_bgmChannel) {
+		m_bgmChannel->setVolume(m_bgmBaseVolume * m_musicVolume);
+	}
+}
+
+void AudioHandler::setSFXVolume(float vol) {
+	m_sfxVolume = std::max(0.0f, std::min(vol, 1.0f));
+}

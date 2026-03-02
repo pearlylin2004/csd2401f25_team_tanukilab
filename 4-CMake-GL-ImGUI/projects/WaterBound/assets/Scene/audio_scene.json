@@ -1,0 +1,291 @@
+{
+  "version": 1,
+  "objects": [
+    {
+      "name": "background",
+      "components": {
+        "Transform": {
+          "pos": [0.0, 0.0, 0.0],
+          "rotation": 0.0,
+          "scale": [45.0, 37.5, 0.0]
+        },
+        "Render": {
+          "shape": "square",
+          "hasTex": 1,
+          "texture": "assets/menu_background.png",
+          "clr": [1.0, 1.0, 1.0]
+        }
+      }
+    },
+
+    {
+      "name": "audio_title",
+      "components": {
+        "Transform": {
+          "pos": [-5.0, 6.0, 1.0],
+          "rotation": 0.0,
+          "scale": [20.0, 20.0, 0.0]
+        },
+        "FontComponent": {
+          "word": "AUDIO SETTINGS",
+          "color": [0.0, 0.0, 0.0],
+          "scale": 0.6,
+          "fontType": 1
+        }
+      }
+    },
+
+    {
+      "name": "music_label",
+      "components": {
+        "Transform": {
+          "pos": [-8.0, 3.0, 1.0],
+          "rotation": 0.0,
+          "scale": [20.0, 20.0, 0.0]
+        },
+        "FontComponent": {
+          "word": "MUSIC",
+          "color": [0.0, 0.0, 0.0],
+          "scale": 0.5,
+          "fontType": 1
+        }
+      }
+    },
+
+    {
+      "name": "music_down_btn",
+      "components": {
+        "Transform": {
+          "pos": [-2.0, 3.0, 0.0],
+          "rotation": 0.0,
+          "scale": [3.0, 2.0, 0.0]
+        },
+        "Render": {
+          "shape": "square",
+          "hasTex": 1,
+          "texture": "assets/button.png",
+          "clr": [1.0, 1.0, 1.0]
+        },
+        "Button": {
+          "action": "music_vol_down"
+        }
+      }
+    },
+
+    {
+      "name": "music_down_text",
+      "components": {
+        "Transform": {
+          "pos": [-2.5, 2.6, 1.0],
+          "rotation": 0.0,
+          "scale": [20.0, 20.0, 0.0]
+        },
+        "FontComponent": {
+          "word": "-",
+          "color": [0.0, 0.0, 0.0],
+          "scale": 0.6,
+          "fontType": 1
+        }
+      }
+    },
+
+    {
+      "name": "music_vol_text",
+      "components": {
+        "Transform": {
+          "pos": [1.5, 2.6, 1.0],
+          "rotation": 0.0,
+          "scale": [20.0, 20.0, 0.0]
+        },
+        "FontComponent": {
+          "word": "100",
+          "color": [0.0, 0.0, 0.0],
+          "scale": 0.5,
+          "fontType": 1
+        }
+      }
+    },
+
+    {
+      "name": "music_up_btn",
+      "components": {
+        "Transform": {
+          "pos": [5.0, 3.0, 0.0],
+          "rotation": 0.0,
+          "scale": [3.0, 2.0, 0.0]
+        },
+        "Render": {
+          "shape": "square",
+          "hasTex": 1,
+          "texture": "assets/button.png",
+          "clr": [1.0, 1.0, 1.0]
+        },
+        "Button": {
+          "action": "music_vol_up"
+        }
+      }
+    },
+
+    {
+      "name": "music_up_text",
+      "components": {
+        "Transform": {
+          "pos": [4.5, 2.6, 1.0],
+          "rotation": 0.0,
+          "scale": [20.0, 20.0, 0.0]
+        },
+        "FontComponent": {
+          "word": "+",
+          "color": [0.0, 0.0, 0.0],
+          "scale": 0.6,
+          "fontType": 1
+        }
+      }
+    },
+
+    {
+      "name": "sfx_label",
+      "components": {
+        "Transform": {
+          "pos": [-8.0, 0.0, 1.0],
+          "rotation": 0.0,
+          "scale": [20.0, 20.0, 0.0]
+        },
+        "FontComponent": {
+          "word": "SFX",
+          "color": [0.0, 0.0, 0.0],
+          "scale": 0.5,
+          "fontType": 1
+        }
+      }
+    },
+
+    {
+      "name": "sfx_down_btn",
+      "components": {
+        "Transform": {
+          "pos": [-2.0, 0.0, 0.0],
+          "rotation": 0.0,
+          "scale": [3.0, 2.0, 0.0]
+        },
+        "Render": {
+          "shape": "square",
+          "hasTex": 1,
+          "texture": "assets/button.png",
+          "clr": [1.0, 1.0, 1.0]
+        },
+        "Button": {
+          "action": "sfx_vol_down"
+        }
+      }
+    },
+
+    {
+      "name": "sfx_down_text",
+      "components": {
+        "Transform": {
+          "pos": [-2.5, -0.4, 1.0],
+          "rotation": 0.0,
+          "scale": [20.0, 20.0, 0.0]
+        },
+        "FontComponent": {
+          "word": "-",
+          "color": [0.0, 0.0, 0.0],
+          "scale": 0.6,
+          "fontType": 1
+        }
+      }
+    },
+
+    {
+      "name": "sfx_vol_text",
+      "components": {
+        "Transform": {
+          "pos": [1.5, -0.4, 1.0],
+          "rotation": 0.0,
+          "scale": [20.0, 20.0, 0.0]
+        },
+        "FontComponent": {
+          "word": "100",
+          "color": [0.0, 0.0, 0.0],
+          "scale": 0.5,
+          "fontType": 1
+        }
+      }
+    },
+
+    {
+      "name": "sfx_up_btn",
+      "components": {
+        "Transform": {
+          "pos": [5.0, 0.0, 0.0],
+          "rotation": 0.0,
+          "scale": [3.0, 2.0, 0.0]
+        },
+        "Render": {
+          "shape": "square",
+          "hasTex": 1,
+          "texture": "assets/button.png",
+          "clr": [1.0, 1.0, 1.0]
+        },
+        "Button": {
+          "action": "sfx_vol_up"
+        }
+      }
+    },
+
+    {
+      "name": "sfx_up_text",
+      "components": {
+        "Transform": {
+          "pos": [4.5, -0.4, 1.0],
+          "rotation": 0.0,
+          "scale": [20.0, 20.0, 0.0]
+        },
+        "FontComponent": {
+          "word": "+",
+          "color": [0.0, 0.0, 0.0],
+          "scale": 0.6,
+          "fontType": 1
+        }
+      }
+    },
+
+    {
+      "name": "back_text",
+      "components": {
+        "Transform": {
+          "pos": [-16.5, 8.1, 1.0],
+          "rotation": 0.0,
+          "scale": [20.0, 20.0, 0.0]
+        },
+        "FontComponent": {
+          "word": "BACK",
+          "color": [0.0, 0.0, 0.0],
+          "scale": 0.5,
+          "fontType": 1
+        }
+      }
+    },
+
+    {
+      "name": "back_button",
+      "components": {
+        "Transform": {
+          "pos": [-15.5, 8.5, 0.0],
+          "rotation": 0.0,
+          "scale": [6.0, 2.0, 0.0]
+        },
+        "Render": {
+          "shape": "square",
+          "hasTex": 1,
+          "texture": "assets/button.png",
+          "clr": [1.0, 1.0, 1.0]
+        },
+        "Button": {
+          "action": "back"
+        }
+      }
+    }
+  ]
+}

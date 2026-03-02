@@ -83,6 +83,7 @@ private:
     void removeButtons(); //remove menu buttons
     void startGame(); //start game
     void stopGame(); //stop game	
+    void updateVolumeDisplay(); //update volume % text on audio page
 
     bool isPointInButton(const Vector2D& point, GameObject* button);
     void createButtonActions(); //create button actions

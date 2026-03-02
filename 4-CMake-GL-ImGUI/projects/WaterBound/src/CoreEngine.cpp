@@ -471,6 +471,9 @@ void CoreEngine::startBGM() {
     bgm.volume = 0.125f;
 
     m_bgmChannel = AudioHandler::getInstance().playSound(&bgm);
+
+    // Register so setMusicVolume() can update it live
+    AudioHandler::getInstance().registerBGMChannel(m_bgmChannel);
 }
 
 void CoreEngine::stopBGM() {

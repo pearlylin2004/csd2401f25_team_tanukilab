@@ -142,24 +142,23 @@ public:
 	// Spatial audio
 	void updateListener(float listenerX, float listenerY, float listenerZ);
 
-	// perform error check for FMOD functions
-	// moved to AudioUtility.h
-	//static void FMODErrorCheck(FMOD_RESULT result);
+	// Global volume controls (0.0 to 1.0)
+	void setMusicVolume(float vol);
+	float getMusicVolume() const { return m_musicVolume; }
+	void setSFXVolume(float vol);
+	float getSFXVolume() const { return m_sfxVolume; }
+
+	// Register the BGM channel so setMusicVolume can update it live
+	void registerBGMChannel(FMOD::Channel* channel) { m_bgmChannel = channel; }
 
 private:
 	AudioHandler() : system(nullptr) {}
 	~AudioHandler() { shutdown(); } // auto shutdown once instance is destroyed
 
-	// helper function to convert soundID to file path
-	// currently hardcoded the path, to change once deserialization is implemented
-	//std::string soundIDToFilePath(soundID id);
-
-	//void updateFades(float deltaTime);
-
 	FMOD::System* system;
 
-	/* Now all audio components will have its own channel, this audioHandle can no longer manage all of the channels */
-	//std::vector<FMOD::Sound*> sounds;
-	//std::vector<FMOD::Channel*> channels;
-	//std::vector<FadeInfo> fadeInfo;
+	float m_musicVolume = 1.0f;
+	float m_sfxVolume = 1.0f;
+	float m_bgmBaseVolume = 0.125f;
+	FMOD::Channel* m_bgmChannel = nullptr;
 };

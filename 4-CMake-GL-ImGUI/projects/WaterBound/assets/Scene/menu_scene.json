@@ -121,12 +121,65 @@
       }
     },
     {
-      "name": "exit_button",
+      "name": "audio_button",
       "components": {
         "Transform": {
           "pos": [
             -11.0,
             -4.0,
+            1.0
+          ],
+          "rotation": 0.0,
+          "scale": [
+            8.0,
+            3.0,
+            0.0
+          ]
+        },
+        "Render": {
+          "shape": "square",
+          "colorR": 1.0,
+          "colorG": 1.0,
+          "colorB": 1.0,
+          "colorA": 1.0,
+          "hasTex": 1,
+          "texture": "assets/audio_button.png",
+          "hasAnimation": 0
+        },
+        "Button": {
+          "action": "open_audio"
+        },
+        "AudioComponent": {
+          "channels": {
+            "button_hover": {
+              "audioFile": "assets/Audio\\UI Button Hover.wav",
+              "volume": 0.800000011920929,
+              "pitch": 1.0,
+              "loop": 0,
+              "playOnStart": 0,
+              "muted": 0,
+              "fadeInOnStart": 1,
+              "fadeInDuration": 0.20000000298023224,
+              "fadeOutOnStop": 1,
+              "fadeOutDuration": 0.5,
+              "isSpatial": 0,
+              "minDistance": 1.0,
+              "maxDistance": 100.0
+            }
+          }
+        },
+        "VisualLC": {
+          "filename": "shakeWhenHover.json"
+        }
+      }
+    },
+    {
+      "name": "exit_button",
+      "components": {
+        "Transform": {
+          "pos": [
+            -11.0,
+            -7.5,
             1.0
           ],
           "rotation": 0.0,

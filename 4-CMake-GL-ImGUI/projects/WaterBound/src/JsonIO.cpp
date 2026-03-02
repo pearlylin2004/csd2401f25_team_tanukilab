@@ -243,12 +243,17 @@ namespace JsonIO {
         switch (action) {
         case ButtonAction::START_GAME:    return "start_game";
         case ButtonAction::OPEN_CONTROL:   return "open_control";
+        case ButtonAction::OPEN_AUDIO:      return "open_audio";
         case ButtonAction::EXIT_GAME:      return "exit_game";
         case ButtonAction::RESUME_GAME:    return "resume_game";
 		case ButtonAction::YES_EXIT:       return "yes_exit";
 		case ButtonAction::NO_EXIT:        return "no_exit";
 		case ButtonAction::BACK:         return "back";
 		case ButtonAction::MENU:          return "menu";
+        case ButtonAction::MUSIC_VOL_UP:   return "music_vol_up";
+        case ButtonAction::MUSIC_VOL_DOWN: return "music_vol_down";
+        case ButtonAction::SFX_VOL_UP:     return "sfx_vol_up";
+        case ButtonAction::SFX_VOL_DOWN:   return "sfx_vol_down";
         default:                           return "none";
         }
 	}
@@ -257,12 +262,17 @@ namespace JsonIO {
     ButtonAction StrToButtonAction(const std::string& s) {
         if (s == "start_game") return ButtonAction::START_GAME;
         if (s == "open_control") return ButtonAction::OPEN_CONTROL;
+        if (s == "open_audio") return ButtonAction::OPEN_AUDIO;
         if (s == "exit_game") return ButtonAction::EXIT_GAME;
         if (s == "resume_game") return ButtonAction::RESUME_GAME;
         if (s == "yes_exit") return ButtonAction::YES_EXIT;
         if (s == "no_exit") return ButtonAction::NO_EXIT;
         if (s == "back") return ButtonAction::BACK;
         if (s == "menu") return ButtonAction::MENU;
+        if (s == "music_vol_up") return ButtonAction::MUSIC_VOL_UP;
+        if (s == "music_vol_down") return ButtonAction::MUSIC_VOL_DOWN;
+        if (s == "sfx_vol_up") return ButtonAction::SFX_VOL_UP;
+        if (s == "sfx_vol_down") return ButtonAction::SFX_VOL_DOWN;
         return ButtonAction::NONE;
 	}
 
