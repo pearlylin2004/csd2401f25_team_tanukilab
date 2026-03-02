@@ -61,11 +61,18 @@ static void resetAnimationFrame(GameObject& obj, PlayerState state) {
 
 // Add your footstep .wav files here (at least 3 for good variety)
 static const std::vector<std::string> s_footstepFiles = {
-    "assets/audio/Foot Step 1.wav",
-    "assets/audio/Foot Step 2.wav",
-    "assets/audio/Foot Step 3.wav",
-    "assets/audio/Foot Step 4.wav",
-    "assets/audio/Foot Step 5.wav"
+    //"assets/audio/Foot Step 1.wav",
+    //"assets/audio/Foot Step 2.wav",
+    //"assets/audio/Foot Step 3.wav",
+    //"assets/audio/Foot Step 4.wav",
+    //"assets/audio/Foot Step 5.wav"
+
+    "assets/audio/Footsteps2_Gravel-Dirt_far-small_1.wav",
+    "assets/audio/Footsteps2_Gravel-Dirt_far-small_2.wav",
+    "assets/audio/Footsteps2_Gravel-Dirt_far-small_3.wav",
+    "assets/audio/Footsteps2_Gravel-Dirt_far-small_4.wav",
+    "assets/audio/Footsteps2_Gravel-Dirt_far-small_5.wav",
+    "assets/audio/Footsteps2_Gravel-Dirt_far-small_6.wav"
 };
 
 // Landing sound pool (played on Falling -> Idle/Walking transitions)
