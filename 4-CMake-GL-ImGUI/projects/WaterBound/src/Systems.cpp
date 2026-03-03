@@ -1506,12 +1506,10 @@ void WeaponSystem::update(GameObjectManager& manager, const float& deltaTime)
 		const float dx = mouseWorld.x - weaponTransform->x;
 		const float dy = mouseWorld.y - weaponTransform->y;
 		
-		//const float aimAngleRad = ownerFacingLeft
-		//	? std::atan2(-dy, -dx)  
-		//	: std::atan2(dy, dx); 
-		const float aimAngleRad = std::atan2(dy, dx);
+		const float aimAngleRad = ownerFacingLeft
+			? std::atan2(-dy, -dx)  
+			: std::atan2(dy, dx); 
 		weaponTransform->flipX = ownerFacingLeft;
-
 
 		const float aimAngleDeg = glm::degrees(aimAngleRad);
 		weaponTransform->rotation = aimAngleDeg;
