@@ -687,8 +687,6 @@ void InspectorWindow::renderRender(GameObject* selected) {
         }
 
         if (ImGui::TreeNode("Colour")) {
-            // cannot edit colour if obj has a texture
-            ImGui::BeginDisabled(render->hasTex);
 
             ImGui::ColorEdit4("##Colour", &render->clr.x); // pass pointer of the first float cuz imgui want that
 
@@ -710,7 +708,6 @@ void InspectorWindow::renderRender(GameObject* selected) {
                 if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
             }
 
-            ImGui::EndDisabled();
             ImGui::TreePop();
         }
 
