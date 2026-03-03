@@ -1073,7 +1073,6 @@ void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime, M
 	if (m_stepReq)
 		m_stepReq = false;*/
 
-
 	std::vector<GameObject*> gameObjects;
 	manager.getAllGameObjects(gameObjects);
 
