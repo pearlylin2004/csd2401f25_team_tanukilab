@@ -253,6 +253,9 @@ namespace Editor {
 		{"On Hover Enter", NodeType::EVENT, NodeImplementation::ON_HOVER_ENTER},
 		{"While Hovering", NodeType::EVENT, NodeImplementation::WHILE_HOVERING},
 		{"On Hover Exit", NodeType::EVENT, NodeImplementation::ON_HOVER_EXIT},
+		{"On Click Enter", NodeType::EVENT, NodeImplementation::ON_CLICK_ENTER},
+		{"While Clicking", NodeType::EVENT, NodeImplementation::WHILE_CLICKING},
+		{"On Click Exit", NodeType::EVENT, NodeImplementation::ON_CLICK_EXIT},
 		{"On Bullet Shoot", NodeType::EVENT, NodeImplementation::ON_BULLET_SHOOT},
 		{"On Bullet Refill", NodeType::EVENT, NodeImplementation::ON_BULLET_REFILL},
 

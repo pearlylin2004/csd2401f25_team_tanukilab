@@ -738,6 +738,9 @@ enum class NodeImplementation {
     ON_HOVER_ENTER,
     WHILE_HOVERING,
 	ON_HOVER_EXIT,
+    ON_CLICK_ENTER,
+    WHILE_CLICKING,
+    ON_CLICK_EXIT,
     ON_BULLET_SHOOT,
     ON_BULLET_REFILL,
 
@@ -830,10 +833,15 @@ public:
 	static std::map<std::string, float> globalFloatVar;
 
 	bool wasHoveredLastFrame = false; // for hover event detection
+    bool wasClickedLastFrame = false; // on click event detection
 
-    // for caching
+    // for on hover events (caching only)
     bool hasHoverNodes = false;
 	bool hoverNodesChecked = false;
+
+    // for on click events (caching only)
+    bool hasClickNodes = false;
+    bool clickNodesChecked = false;
 
     // collision 
     std::unordered_set<GameObject*> curCollision;

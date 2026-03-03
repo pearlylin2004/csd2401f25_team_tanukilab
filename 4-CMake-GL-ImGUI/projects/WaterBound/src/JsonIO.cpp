@@ -297,6 +297,9 @@ namespace JsonIO {
 		if (str == "On Hover Enter") return NodeImplementation::ON_HOVER_ENTER;
 		if (str == "While Hovering") return NodeImplementation::WHILE_HOVERING;
 		if (str == "On Hover Exit") return NodeImplementation::ON_HOVER_EXIT;
+        if (str == "On Click Enter") return NodeImplementation::ON_CLICK_ENTER;
+        if (str == "While Clicking") return NodeImplementation::WHILE_CLICKING;
+        if (str == "On Click Exit") return NodeImplementation::ON_CLICK_EXIT;
         if (str == "On Bullet Shoot") return NodeImplementation::ON_BULLET_SHOOT;
 		if (str == "On Bullet Refill") return NodeImplementation::ON_BULLET_REFILL;
 
@@ -346,6 +349,9 @@ namespace JsonIO {
             case NodeImplementation::ON_HOVER_ENTER: return "On Hover Enter";
             case NodeImplementation::WHILE_HOVERING: return "While Hovering";
             case NodeImplementation::ON_HOVER_EXIT: return "On Hover Exit";
+            case NodeImplementation::ON_CLICK_ENTER: return "On Click Enter";
+            case NodeImplementation::WHILE_CLICKING: return "While Clicking";
+            case NodeImplementation::ON_CLICK_EXIT: return "On Click Exit";
             case NodeImplementation::ON_BULLET_SHOOT: return "On Bullet Shoot";
 			case NodeImplementation::ON_BULLET_REFILL: return "On Bullet Refill";
 
