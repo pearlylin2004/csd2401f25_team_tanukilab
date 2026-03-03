@@ -1032,6 +1032,12 @@ void GameObjectManager::loadSceneFromJson(const std::string& filename) {
 			//default to NONE
 			b->actionName = ButtonAction::NONE;
 
+			if (jb.HasMember("onClickChannel") && jb["onClickChannel"].IsString())
+				b->onClickChannel = jb["onClickChannel"].GetString();
+
+			if (jb.HasMember("onHoverChannel") && jb["onHoverChannel"].IsString())
+				b->onHoverChannel = jb["onHoverChannel"].GetString();
+
 			//parse action string
 			if (jb.HasMember("action") && jb["action"].IsString()) {
 				std::string actionStr = jb["action"].GetString();
@@ -1951,6 +1957,31 @@ doc.AddMember("layers", layersArr, a);
 
 			if (!jweap.ObjectEmpty()) {
 				comps.AddMember("WeaponComponent", jweap, a);
+			}
+		}
+
+		// ---- Button ----
+		if (auto btn = obj->getComponent<Button>()) {
+			rapidjson::Value jb(rapidjson::kObjectType);
+			const rapidjson::Value* prefabBtn = PM.getPrefabJsonComp(prefabDoc, "Button");
+
+			std::string actionStr = JsonIO::ButtonActionToStr(btn->actionName);
+			jb.AddMember("action", rapidjson::Value(actionStr.c_str(), a), a);
+
+			// onClickChannel
+			if (!prefabBtn || !prefabBtn->HasMember("onClickChannel") ||
+				btn->onClickChannel != (*prefabBtn)["onClickChannel"].GetString()) {
+				jb.AddMember("onClickChannel", rapidjson::Value(btn->onClickChannel.c_str(), a), a);
+			}
+
+			// onHoverChannel
+			if (!prefabBtn || !prefabBtn->HasMember("onHoverChannel") ||
+				btn->onHoverChannel != (*prefabBtn)["onHoverChannel"].GetString()) {
+				jb.AddMember("onHoverChannel", rapidjson::Value(btn->onHoverChannel.c_str(), a), a);
+			}
+
+			if (!jb.ObjectEmpty()) {
+				comps.AddMember("Button", jb, a);
 			}
 		}
 

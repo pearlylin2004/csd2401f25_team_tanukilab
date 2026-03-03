@@ -69,6 +69,7 @@ public:
 	void loadLevel(const std::string& levelSceneName); // load next level
     void resetAllObjectsToSpawn(); // helper for restart
 
+    ButtonAction m_pendingAction = ButtonAction::NONE;
     bool m_pendingRestart = false;
     bool m_pendingLevelLoad = false;
     std::string m_pendingLevelName = "";

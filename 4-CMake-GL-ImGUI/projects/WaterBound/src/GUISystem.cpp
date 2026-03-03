@@ -78,6 +78,13 @@ void GUISystem::update() {
         return;
     }
 
+    if (m_pendingAction != ButtonAction::NONE) {
+        auto actionIt = m_buttonActions.find(m_pendingAction);
+        m_pendingAction = ButtonAction::NONE;
+        if (actionIt != m_buttonActions.end()) actionIt->second();
+        return;
+    }
+
     if (EditorManager::isEditingMode()) return;
     if (m_currentState == GameState::PLAYING) return;
     if (UISystem::isShowUI()) return; // skip if UI is shown
@@ -85,17 +92,65 @@ void GUISystem::update() {
 
     Vector2D worldMousePos = InputHandler::getWorldMousePosition();
 
+    //if (InputHandler::isMouseButtonClicked(GLFW_MOUSE_BUTTON_LEFT)) {
+    //    //iterate with iterator to safely remove invalid buttons
+    //    for (auto it = m_buttons.begin(); it != m_buttons.end(); ) {
+    //        GameObject* btn = it->second;
+    //        if (isPointInButton(worldMousePos, btn)) {
+    //            Button* btnComp = btn->getComponent<Button>(); //get button component
+    //            if (btnComp) {
+    //                auto actionIt = m_buttonActions.find(btnComp->actionName); //find action by name
+    //                if (actionIt != m_buttonActions.end()) actionIt->second(); //execute action
+    //            }
+    //            return; //stop checking after a click
+    //        }
+    //        ++it;
+    //    }
+    //}
+
+    // on hover
+    for (auto it = m_buttons.begin(); it != m_buttons.end(); ++it) {
+        GameObject* btnObj = it->second;
+        Button* btnComp = btnObj->getComponent<Button>();
+        if (!btnComp) continue;
+
+        bool isOver = isPointInButton(worldMousePos, btnObj);
+
+        // hover enter sound
+        if (isOver && !btnComp->isHovered && !btnComp->onHoverChannel.empty()) {
+            AudioComponent* audio = btnObj->getComponent<AudioComponent>();
+            if (audio) {
+                AudioChannel* ch = audio->getChannel(btnComp->onHoverChannel);
+                if (ch) ch->isPendingPlay = true;
+            }
+        }
+
+        btnComp->isHovered = isOver;
+    }
+
+    // on audio
     if (InputHandler::isMouseButtonClicked(GLFW_MOUSE_BUTTON_LEFT)) {
-        //iterate with iterator to safely remove invalid buttons
         for (auto it = m_buttons.begin(); it != m_buttons.end(); ) {
-            GameObject* btn = it->second;
-            if (isPointInButton(worldMousePos, btn)) {
-                Button* btnComp = btn->getComponent<Button>(); //get button component
+            GameObject* btnObj = it->second;
+            if (isPointInButton(worldMousePos, btnObj)) {
+                Button* btnComp = btnObj->getComponent<Button>();
                 if (btnComp) {
-                    auto actionIt = m_buttonActions.find(btnComp->actionName); //find action by name
-                    if (actionIt != m_buttonActions.end()) actionIt->second(); //execute action
+                    // play click sounda
+                    if (!btnComp->onClickChannel.empty()) {
+                        AudioComponent* audio = btnObj->getComponent<AudioComponent>();
+                        if (audio) {
+                            AudioChannel* ch = audio->getChannel(btnComp->onClickChannel);
+                            if (ch) {
+                                ch->isPendingPlay = true;
+                                ch->persistOnSceneChange = true;
+                            }
+                        }
+                    }
+
+                    m_pendingAction = btnComp->actionName; // run action next frame so we can play audio first
+
                 }
-                return; //stop checking after a click
+                return;
             }
             ++it;
         }
@@ -320,7 +375,7 @@ void GUISystem::loadScreen(GameObjectManager& manager, const std::string& sceneN
     std::cout << "[GUI] Loading screen: " << sceneName << "\n";
 
     removeButtons(); // clear references
-    AudioHandler::getInstance().stopAll(manager);
+    //AudioHandler::getInstance().stopAll(manager);
     manager.clearScene(); //delete al scene object
 
     manager.loadScene(runtimeScenePath(sceneName));
@@ -333,7 +388,7 @@ void GUISystem::loadScreen(GameObjectManager& manager, const std::string& sceneN
 void GUISystem::loadScreenNoButton(GameObjectManager& manager, const std::string& sceneName) {
     std::cout << "[GUI] Loading screen: " << sceneName << "\n";
 
-    AudioHandler::getInstance().stopAll(manager);
+    //AudioHandler::getInstance().stopAll(manager);
     manager.clearScene(); //delete al scene object
     manager.init();
     manager.loadScene(runtimeScenePath(sceneName));

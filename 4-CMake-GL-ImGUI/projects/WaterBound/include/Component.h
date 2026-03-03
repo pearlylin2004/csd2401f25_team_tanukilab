@@ -323,6 +323,9 @@ struct Button : public Component {
     bool isHovered = false;   //hover state
     bool isPressed = false;   //pressed state
 
+    std::string onClickChannel = "";
+    std::string onHoverChannel = "";
+
     Button() = default;
     Button(ButtonAction action) : actionName(action) {} 
 
@@ -512,6 +515,9 @@ struct AudioChannel {
 	bool isSpatial = false;
 	float minDistance = 1.0f;
 	float maxDistance = 100.0f;
+
+    // run-time data
+    bool persistOnSceneChange = false;
 };
 
 //enum class soundID : int;
