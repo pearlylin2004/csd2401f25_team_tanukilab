@@ -1648,6 +1648,59 @@ namespace JsonIO {
         }
     }
 
+    std::string serializeWaterBody(GameObject* obj) {
+        WaterBody* w = obj ? obj->getComponent<WaterBody>() : nullptr;
+        if (!w) return "";
+
+        using namespace rapidjson;
+        Document doc; doc.SetObject();
+        auto& a = doc.GetAllocator();
+
+        Value jw(kObjectType);
+        jw.AddMember("waveAmplitude", w->waveAmplitude, a);
+        jw.AddMember("waveFrequency", w->waveFrequency, a);
+        jw.AddMember("waveSpeed", w->waveSpeed, a);
+        jw.AddMember("waterAlpha", w->waterAlpha, a);
+        jw.AddMember("subdivisions", w->subdivisions, a);
+        jw.AddMember("width", w->width, a);
+        jw.AddMember("height", w->height, a);
+        jw.AddMember("isTrigger", w->isTrigger, a);
+        jw.AddMember("buoyancyForce", w->buoyancyForce, a);
+        jw.AddMember("waterDrag", w->waterDrag, a);
+        jw.AddMember("renderWaves", w->renderWaves, a);
+        jw.AddMember("useTexture", w->useTexture, a);
+        WriteVec4(jw, "waterColor", w->waterColor.r, w->waterColor.g, w->waterColor.b, w->waterColor.a, a);
+        doc.AddMember("WaterBody", jw, a);
+
+        StringBuffer buf; Writer<StringBuffer> w2(buf); doc.Accept(w2);
+        return buf.GetString();
+    }
+
+    void deserializeWaterBody(GameObject* obj, const std::string& json) {
+        if (!obj || json.empty()) return;
+        using namespace rapidjson;
+        Document doc; doc.Parse(json.c_str());
+        if (doc.HasParseError() || !doc.HasMember("WaterBody")) return;
+
+        const Value& jw = doc["WaterBody"];
+        WaterBody* w = obj->hasComponent<WaterBody>()
+            ? obj->getComponent<WaterBody>()
+            : obj->addComponent<WaterBody>();
+
+        if (jw.HasMember("waveAmplitude"))  w->waveAmplitude = jw["waveAmplitude"].GetFloat();
+        if (jw.HasMember("waveFrequency"))  w->waveFrequency = jw["waveFrequency"].GetFloat();
+        if (jw.HasMember("waveSpeed"))      w->waveSpeed = jw["waveSpeed"].GetFloat();
+        if (jw.HasMember("waterAlpha"))     w->waterAlpha = jw["waterAlpha"].GetFloat();
+        if (jw.HasMember("subdivisions"))   w->subdivisions = jw["subdivisions"].GetInt();
+        if (jw.HasMember("width"))          w->width = jw["width"].GetFloat();
+        if (jw.HasMember("height"))         w->height = jw["height"].GetFloat();
+        if (jw.HasMember("isTrigger"))      w->isTrigger = jw["isTrigger"].GetBool();
+        if (jw.HasMember("buoyancyForce"))  w->buoyancyForce = jw["buoyancyForce"].GetFloat();
+        if (jw.HasMember("waterDrag"))      w->waterDrag = jw["waterDrag"].GetFloat();
+        if (jw.HasMember("renderWaves"))    w->renderWaves = jw["renderWaves"].GetBool();
+        if (jw.HasMember("useTexture"))     w->useTexture = jw["useTexture"].GetBool();
+        ReadVec4(jw, "waterColor", w->waterColor.r, w->waterColor.g, w->waterColor.b, w->waterColor.a);
+    }
 
     std::string serializeGameObj(GameObject* obj) {
         if (!obj) return "";
@@ -1688,6 +1741,8 @@ namespace JsonIO {
         merge(serializeTileMap(obj));
         merge(serializeLuaScript(obj));
         merge(serializeVisualLC(obj));
+        merge(serializeWaterBody(obj));
+        merge(serializeWeapon(obj));
 
         if (Button* b = obj->getComponent<Button>()) {
             Value jb(kObjectType);
@@ -1733,6 +1788,8 @@ namespace JsonIO {
             deserializeTileMap(obj, jsonStr);
             deserializeLuaScript(obj, jsonStr);
             deserializeVisualLC(obj, jsonStr);
+            deserializeWaterBody(obj, jsonStr);
+            deserializeWeapon(obj, jsonStr);
 
             return obj;
         }
