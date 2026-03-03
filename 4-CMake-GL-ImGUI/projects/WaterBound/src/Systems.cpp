@@ -55,6 +55,7 @@ void InputSystem::update(GameObjectManager& manager, const float& deltaTime, Mes
 
         // refresh cached object vector
         CachedGameObjects::Instance().refresh();
+		GUISystem::getInstance().createButtons(manager);
 
         messageBus.publish(Message("KeyPressed", nullptr, KeyEvent{ "0", true }));
 

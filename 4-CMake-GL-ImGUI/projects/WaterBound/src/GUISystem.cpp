@@ -116,12 +116,21 @@ void GUISystem::update() {
 
         bool isOver = isPointInButton(worldMousePos, btnObj);
 
-        // hover enter sound
+        // hover sound
         if (isOver && !btnComp->isHovered && !btnComp->onHoverChannel.empty()) {
             AudioComponent* audio = btnObj->getComponent<AudioComponent>();
             if (audio) {
                 AudioChannel* ch = audio->getChannel(btnComp->onHoverChannel);
                 if (ch) ch->isPendingPlay = true;
+            }
+        }
+
+        // hover exit
+        if (!isOver && btnComp->isHovered && !btnComp->onHoverChannel.empty()) {
+            AudioComponent* audio = btnObj->getComponent<AudioComponent>();
+            if (audio) {
+                AudioChannel* ch = audio->getChannel(btnComp->onHoverChannel);
+                if (ch) ch->isPendingStop = true;
             }
         }
 

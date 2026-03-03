@@ -2485,8 +2485,8 @@ void InspectorWindow::renderButton(GameObject* selected) {
     Button* b = selected->getComponent<Button>();
     const Editor::ComponentEntry* entry = Editor::findEntry("Button");
     if (ImGui::CollapsingHeader("Button")) {
-        // Action Name dropdown
-        const char* actionNames[] = {
+        // action Name dropdown
+        /*const char* actionNames[] = {
             "NONE", "START_GAME", "OPEN_CONTROL", "OPEN_AUDIO", "EXIT_GAME",
             "RESUME_GAME", "YES_EXIT", "NO_EXIT", "BACK", "MENU",
             "MUSIC_VOL_UP", "MUSIC_VOL_DOWN", "SFX_VOL_UP", "SFX_VOL_DOWN"
@@ -2496,9 +2496,9 @@ void InspectorWindow::renderButton(GameObject* selected) {
             if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
             b->actionName = static_cast<ButtonAction>(currentAction);
             if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
-        }
+        }*/
 
-        // Audio channel dropdowns
+        // audio channel dropdowns
         AudioComponent* audio = selected->getComponent<AudioComponent>();
         if (audio && !audio->audioChannels.empty()) {
             // build channel list with "None" as first option
