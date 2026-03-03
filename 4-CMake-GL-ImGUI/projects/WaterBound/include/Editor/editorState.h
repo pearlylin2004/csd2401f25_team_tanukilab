@@ -480,6 +480,13 @@ namespace Editor {
 			[](GameObject* obj) { return JsonIO::serializeWeapon(obj); },
 			[](GameObject* obj, std::string data) { JsonIO::deserializeWeapon(obj, data); }
 		},
+		{ "Button",
+			[](GameObject* obj) { obj->addComponent<Button>(); },
+			[](const GameObject* obj) { return obj->hasComponent<Button>(); },
+			[](GameObject* obj) { obj->removeComponent<Button>(); },
+			[](GameObject* obj) { return JsonIO::serializeButton(obj); },
+			[](GameObject* obj, std::string data) { JsonIO::deserializeButton(obj, data); }
+		},
 		{ "Camera",
 			[](GameObject* obj) {
 			obj->addComponent<camera>();

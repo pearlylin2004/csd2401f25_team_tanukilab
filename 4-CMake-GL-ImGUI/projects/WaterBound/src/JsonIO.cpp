@@ -1250,6 +1250,7 @@ namespace JsonIO {
             channelObj.AddMember("isSpatial", ch.isSpatial, a);
             channelObj.AddMember("minDistance", ch.minDistance, a);
             channelObj.AddMember("maxDistance", ch.maxDistance, a);
+            channelObj.AddMember("persistOnSceneChange", ch.persistOnSceneChange, a);
             channels.AddMember(Value(channelName.c_str(), a), channelObj, a);
         }
         ja.AddMember("channels", channels, a);
@@ -1295,6 +1296,7 @@ namespace JsonIO {
                 if (co.HasMember("isSpatial"))       ch->isSpatial = co["isSpatial"].GetBool();
                 if (co.HasMember("minDistance"))     ch->minDistance = co["minDistance"].GetFloat();
                 if (co.HasMember("maxDistance"))     ch->maxDistance = co["maxDistance"].GetFloat();
+                if (co.HasMember("persistOnSceneChange"))     ch->persistOnSceneChange = co["persistOnSceneChange"].GetBool();
             }
         }
     }
@@ -1708,6 +1710,44 @@ namespace JsonIO {
         ReadVec4(jw, "waterColor", w->waterColor.r, w->waterColor.g, w->waterColor.b, w->waterColor.a);
     }
 
+    std::string serializeButton(GameObject* obj) {
+        Button* b = obj ? obj->getComponent<Button>() : nullptr;
+        if (!b) return "";
+
+        using namespace rapidjson;
+        Document doc; doc.SetObject();
+        auto& a = doc.GetAllocator();
+        Value jb(kObjectType);
+
+        jb.AddMember("actionName", static_cast<int>(b->actionName), a);
+        jb.AddMember("isHovered", b->isHovered, a);
+        jb.AddMember("isPressed", b->isPressed, a);
+        jb.AddMember("onClickChannel", Value(b->onClickChannel.c_str(), a), a);
+        jb.AddMember("onHoverChannel", Value(b->onHoverChannel.c_str(), a), a);
+        doc.AddMember("Button", jb, a);
+        StringBuffer buf; Writer<StringBuffer> w(buf); doc.Accept(w);
+        return buf.GetString();
+    }
+
+    void deserializeButton(GameObject* obj, const std::string& json) {
+        if (!obj || json.empty()) return;
+        using namespace rapidjson;
+
+        Document doc; doc.Parse(json.c_str());
+        if (doc.HasParseError() || !doc.HasMember("Button")) return;
+
+        const Value& jb = doc["Button"];
+        Button* b = obj->hasComponent<Button>()
+            ? obj->getComponent<Button>()
+            : obj->addComponent<Button>();
+
+        if (jb.HasMember("actionName"))     b->actionName = static_cast<ButtonAction>(jb["actionName"].GetInt());
+        if (jb.HasMember("isHovered"))      b->isHovered = jb["isHovered"].GetBool();
+        if (jb.HasMember("isPressed"))      b->isPressed = jb["isPressed"].GetBool();
+        if (jb.HasMember("onClickChannel")) b->onClickChannel = jb["onClickChannel"].GetString();
+        if (jb.HasMember("onHoverChannel")) b->onHoverChannel = jb["onHoverChannel"].GetString();
+    }
+
     std::string serializeGameObj(GameObject* obj) {
         if (!obj) return "";
 
@@ -1749,15 +1789,16 @@ namespace JsonIO {
         merge(serializeVisualLC(obj));
         merge(serializeWaterBody(obj));
         merge(serializeWeapon(obj));
+        merge(serializeButton(obj));
 
-        if (Button* b = obj->getComponent<Button>()) {
+        /*if (Button* b = obj->getComponent<Button>()) {
             Value jb(kObjectType);
             Value actionStr(ButtonActionToStr(b->actionName), a);
             jb.AddMember("action", actionStr, a);
             jb.AddMember("isHovered", b->isHovered, a);
             jb.AddMember("isPressed", b->isPressed, a);
             doc.AddMember("Button", jb, a);
-        }
+        }*/
 
         StringBuffer buf; Writer<StringBuffer> w(buf); doc.Accept(w);
         return buf.GetString();
@@ -1796,6 +1837,7 @@ namespace JsonIO {
             deserializeVisualLC(obj, jsonStr);
             deserializeWaterBody(obj, jsonStr);
             deserializeWeapon(obj, jsonStr);
+            deserializeButton(obj, jsonStr);
 
             return obj;
         }

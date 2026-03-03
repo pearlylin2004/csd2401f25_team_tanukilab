@@ -250,6 +250,16 @@ void InspectorWindow::render() {
         }
         /* ------------------- END ------------------- */
 
+        /* ------------------- Visual LC ------------------- */
+        if (selected->hasComponent<Button>()) {
+            renderButton(selected);
+
+            ImGui::Spacing();
+            ImGui::Separator();
+            ImGui::Spacing();
+        }
+        /* ------------------- END ------------------- */
+
         /* ------------------- Camera ------------------- */
         if(selected->hasComponent<camera>()) {
             renderCamera(selected);
@@ -2466,6 +2476,77 @@ void InspectorWindow::renderVisualLogic(GameObject* selected) {
                 UndoRedoManager::Instance().executeCmd(std::make_unique<RemoveComponentCmd>(m_manager, selected, *entry));
 
                 DebugLog::addMessage("Removed Visual Logic\n");
+            }
+        }
+    }
+}
+
+void InspectorWindow::renderButton(GameObject* selected) {
+    Button* b = selected->getComponent<Button>();
+    const Editor::ComponentEntry* entry = Editor::findEntry("Button");
+    if (ImGui::CollapsingHeader("Button")) {
+        // Action Name dropdown
+        const char* actionNames[] = {
+            "NONE", "START_GAME", "OPEN_CONTROL", "OPEN_AUDIO", "EXIT_GAME",
+            "RESUME_GAME", "YES_EXIT", "NO_EXIT", "BACK", "MENU",
+            "MUSIC_VOL_UP", "MUSIC_VOL_DOWN", "SFX_VOL_UP", "SFX_VOL_DOWN"
+        };
+        int currentAction = static_cast<int>(b->actionName);
+        if (ImGui::Combo("Action", &currentAction, actionNames, IM_ARRAYSIZE(actionNames))) {
+            if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
+            b->actionName = static_cast<ButtonAction>(currentAction);
+            if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
+        }
+
+        // Audio channel dropdowns
+        AudioComponent* audio = selected->getComponent<AudioComponent>();
+        if (audio && !audio->audioChannels.empty()) {
+            // build channel list with "None" as first option
+            std::vector<std::string> channelKeys;
+            channelKeys.push_back("");
+            for (auto& pair : audio->audioChannels)
+                channelKeys.push_back(pair.first);
+
+            std::vector<const char*> channelNames;
+            channelNames.push_back("None");
+            for (int i = 1; i < (int)channelKeys.size(); i++)
+                channelNames.push_back(channelKeys[i].c_str());
+
+            // On Click Channel
+            int clickIdx = 0;
+            for (int i = 0; i < (int)channelKeys.size(); i++)
+                if (channelKeys[i] == b->onClickChannel) { clickIdx = i; break; }
+
+            if (ImGui::Combo("On Click Channel", &clickIdx, channelNames.data(), (int)channelNames.size())) {
+                if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
+                b->onClickChannel = channelKeys[clickIdx];
+                if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
+            }
+
+            // On Hover Channel
+            int hoverIdx = 0;
+            for (int i = 0; i < (int)channelKeys.size(); i++)
+                if (channelKeys[i] == b->onHoverChannel) { hoverIdx = i; break; }
+
+            if (ImGui::Combo("On Hover Channel", &hoverIdx, channelNames.data(), (int)channelNames.size())) {
+                if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
+                b->onHoverChannel = channelKeys[hoverIdx];
+                if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
+            }
+        }
+        else {
+            ImGui::TextDisabled("No AudioComponent / channels found on this object");
+        }
+
+        ImGui::Spacing();
+        ImGui::Separator();
+        ImGui::Spacing();
+
+        if (entry) {
+            if (ImGui::Button("Remove Button", ImVec2(-1, 0))) {
+                UndoRedoManager::Instance().executeCmd(
+                    std::make_unique<RemoveComponentCmd>(m_manager, selected, *entry));
+                DebugLog::addMessage("Removed Button\n");
             }
         }
     }

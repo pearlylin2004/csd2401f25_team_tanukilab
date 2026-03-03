@@ -1179,6 +1179,25 @@ void PrefabManager::applyPrefabComponents(GameObject* go, const rapidjson::Value
 				: (jweap["aimAtMouse"].GetInt() != 0);
 		}
 	}
+
+	// ---- Button Component ----
+	if (comps.HasMember("Button") && comps["Button"].IsObject()) {
+		const auto& jb = comps["Button"];
+		auto* b = go->getComponent<Button>();
+		if (!b)
+			b = go->addComponent<Button>();
+
+		b->actionName = ButtonAction::NONE;
+
+		if (jb.HasMember("action") && jb["action"].IsString())
+			b->actionName = JsonIO::StrToButtonAction(jb["action"].GetString());
+
+		if (jb.HasMember("onClickChannel") && jb["onClickChannel"].IsString())
+			b->onClickChannel = jb["onClickChannel"].GetString();
+
+		if (jb.HasMember("onHoverChannel") && jb["onHoverChannel"].IsString())
+			b->onHoverChannel = jb["onHoverChannel"].GetString();
+	}
 }
 
 void PrefabManager::serializeComponents(const GameObject* obj, rapidjson::Value& comps, rapidjson::Document::AllocatorType& a) {
@@ -1479,6 +1498,18 @@ void PrefabManager::serializeComponents(const GameObject* obj, rapidjson::Value&
 		if (!jweap.ObjectEmpty()) {
 			comps.AddMember("WeaponComponent", jweap, a);
 		}
+	}
+
+	// ---- Button Component ----
+	if (auto btn = obj->getComponent<Button>()) {
+		rapidjson::Value jb(rapidjson::kObjectType);
+
+		std::string actionStr = JsonIO::ButtonActionToStr(btn->actionName);
+		jb.AddMember("action", rapidjson::Value(actionStr.c_str(), a), a);
+
+		jb.AddMember("onClickChannel", rapidjson::Value(btn->onClickChannel.c_str(), a), a);
+		jb.AddMember("onHoverChannel", rapidjson::Value(btn->onHoverChannel.c_str(), a), a);
+		comps.AddMember("Button", jb, a);
 	}
 }
 
