@@ -644,6 +644,15 @@ void InspectorWindow::renderRender(GameObject* selected) {
                 ImGui::Spacing();
                 ImGui::Separator();
                 ImGui::Spacing();
+
+                ImGui::SliderFloat("Alpha", &render->clr.w, 0.f, 1.f);
+                if (ImGui::IsItemActivated())
+                    if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
+                if (ImGui::IsItemDeactivatedAfterEdit())
+                    if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
+
+                ImGui::Spacing();
+
                 if (ImGui::Button("Clear Texture")) {
                     if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
 
