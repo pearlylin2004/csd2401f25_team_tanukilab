@@ -676,6 +676,63 @@ void VisualLogicSystem::executeActionNode(GameObject* obj, VisualLC* logic, Logi
 			collision->enabled = true;
 		}
 	}*/
+	else if (node.imp == NodeImplementation::IS_SINLE_PHYSICS) {
+		if (obj->hasComponent<Physics>())
+		{
+			Physics* physics = obj->getComponent<Physics>();
+			physics->sinlePersonalBool = true;
+			std::cout << "\n\n Is SinLe Physics\n";
+			std::cout << "sinle bool is now true\n";
+		}
+		}
+	else if (node.imp == NodeImplementation::ENABLE_PHYSICS) {
+		if (obj->hasComponent<Physics>())
+		{
+			Physics* physics = obj->getComponent<Physics>();
+			physics->sinleFlag = true;
+			std::cout << "sinle flag is now true\n";
+		}
+	}
+	else if(node.imp == NodeImplementation::DISABLE_PHYSICS) {
+		if (obj->hasComponent<Physics>())
+		{
+			Physics* physics = obj->getComponent<Physics>();
+			physics->sinleFlag = false;
+		}
+	}
+	else if (node.imp == NodeImplementation::ENTER_WATER)
+	{
+		if (obj->hasComponent<Physics>())
+		{
+			Physics* physics = obj->getComponent<Physics>();
+			physics->hitWater = true;
+			std::cout << "obj has entered water\n";
+		}
+	}
+	else if (node.imp == NodeImplementation::EXIT_WATER)
+	{
+		if (obj->hasComponent<Physics>())
+		{
+			Physics* physics = obj->getComponent<Physics>();
+			physics->inWater = false;
+		}
+	}
+	else if(node.imp == NodeImplementation::HIT_GROUND)
+		{
+		if (obj->hasComponent<Physics>())
+		{
+			Physics* physics = obj->getComponent<Physics>();
+			physics->hitground = true;
+		}
+	}
+	else if(node.imp == NodeImplementation::NOT_ON_GROUND)
+	{
+		if (obj->hasComponent<Physics>())
+		{
+			Physics* physics = obj->getComponent<Physics>();
+			physics->onGround = false;
+		}
+	}
 }
 
 bool VisualLogicSystem::executeConditionNode(GameObject* obj, VisualLC* logic, LogicNode& node, float dt) {

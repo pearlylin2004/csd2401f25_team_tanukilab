@@ -324,6 +324,13 @@ namespace JsonIO {
         if (str == "Restart Level") return NodeImplementation::RESTART_LEVEL;
         if (str == "Load Level") return NodeImplementation::LOAD_LEVEL;
         if (str == "Disable Collision") return NodeImplementation::DISABLE_COLLISION;
+		if (str == "Is Sinle Physics") return NodeImplementation::IS_SINLE_PHYSICS;
+		if (str == "Enable Physics") return NodeImplementation::ENABLE_PHYSICS;
+		if (str == "Disable Physics") return NodeImplementation::DISABLE_PHYSICS;
+		if (str == "Enter Water") return NodeImplementation::ENTER_WATER;
+		if (str == "Exit Water") return NodeImplementation::EXIT_WATER;
+		if (str == "Hit Ground") return NodeImplementation::HIT_GROUND;
+		if (str == "Not On Ground") return NodeImplementation::NOT_ON_GROUND;
 
 		if (str == "Check Key Held") return NodeImplementation::CHECK_KEY_HELD;
 		if (str == "Compare Value") return NodeImplementation::COMPARE_VALUE;
@@ -373,6 +380,13 @@ namespace JsonIO {
 			case NodeImplementation::RESTART_LEVEL: return "Restart Level";
 			case NodeImplementation::LOAD_LEVEL: return "Load Level";
 			case NodeImplementation::DISABLE_COLLISION: return "Disable Collision";
+			case NodeImplementation::IS_SINLE_PHYSICS: return "Is Sinle Physics";
+			case NodeImplementation::ENABLE_PHYSICS: return "Enable Physics";
+			case NodeImplementation::DISABLE_PHYSICS: return "Disable Physics";
+			case NodeImplementation::ENTER_WATER: return "Enter Water";
+			case NodeImplementation::EXIT_WATER: return "Exit Water";
+			case NodeImplementation::HIT_GROUND: return "Hit Ground";
+			case NodeImplementation::NOT_ON_GROUND: return "Not On Ground";
 
             case NodeImplementation::CHECK_KEY_HELD: return "Check Key Held";
             case NodeImplementation::COMPARE_VALUE: return "Compare Value";
