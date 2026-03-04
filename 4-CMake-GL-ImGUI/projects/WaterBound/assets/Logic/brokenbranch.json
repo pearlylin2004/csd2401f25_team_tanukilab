@@ -100,7 +100,7 @@
       "implementation": "Check Timer",
       "type": 2,
       "position": [
-        -233.0001220703125,
+        -233.000244140625,
         73.0001220703125
       ],
       "hasInput": true,
@@ -108,7 +108,7 @@
       "hasTrueOutput": true,
       "hasFalseOutput": true,
       "parameters": {
-        "threshold": "0.8",
+        "threshold": "0.5",
         "timerName": "timer_0"
       }
     },
@@ -184,7 +184,7 @@
       "type": 2,
       "position": [
         -582.0,
-        56.0
+        56.000022888183594
       ],
       "hasInput": true,
       "hasOutput": false,
@@ -202,7 +202,7 @@
       "type": 2,
       "position": [
         -354.0,
-        206.0
+        205.99993896484375
       ],
       "hasInput": true,
       "hasOutput": false,
@@ -236,7 +236,7 @@
       "implementation": "Modify Global Float",
       "type": 1,
       "position": [
-        92.0,
+        92.00004577636719,
         72.0
       ],
       "hasInput": true,
@@ -534,6 +534,40 @@
       "hasOutput": true,
       "hasTrueOutput": false,
       "hasFalseOutput": false
+    },
+    {
+      "id": 66,
+      "implementation": "Compare Variable",
+      "type": 2,
+      "position": [
+        -1457.4287109375,
+        360.0001220703125
+      ],
+      "hasInput": true,
+      "hasOutput": false,
+      "hasTrueOutput": true,
+      "hasFalseOutput": true,
+      "parameters": {
+        "comparison": "equal",
+        "threshold": "0.000000",
+        "variable": "waterHold"
+      }
+    },
+    {
+      "id": 67,
+      "implementation": "Reset Timer",
+      "type": 1,
+      "position": [
+        -1109.4287109375,
+        378.857177734375
+      ],
+      "hasInput": true,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false,
+      "parameters": {
+        "timerName": "timer_0"
+      }
     }
   ],
   "connections": [
@@ -697,6 +731,18 @@
       "fromNodeId": 3,
       "outputPin": "Out",
       "toNodeId": 65,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 66,
+      "outputPin": "True",
+      "toNodeId": 67,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 6,
+      "outputPin": "Out",
+      "toNodeId": 66,
       "inputPin": "In"
     }
   ]
