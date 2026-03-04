@@ -48,13 +48,15 @@ GUISystem::~GUISystem() {
 void GUISystem::init(GameObjectManager& manager, LuaSystem& luaSystem, VisualLogicSystem& vlSystem) {
     std::cout << "[GUI] GUISystem::init started" << std::endl;
 
-    // Load the menu scene - this will populate button data in the manager
-    loadScreen(manager, "menu_scene.json");
-
     g_manager = &manager;
     g_luaSystem = &luaSystem;
     g_visualLogicSystem = &vlSystem;
     std::cout << "[GUI] GUISystem::init completed successfully" << std::endl;
+
+    // Load the menu scene - this will populate button data in the manager
+    loadScreen(manager, "menu_scene.json");
+
+    
 }
 
 //update function to check for button clicking
@@ -167,13 +169,13 @@ void GUISystem::update() {
 }
 
 //creation of buttons
-void GUISystem::createButtons(GameObjectManager& manager) {
+void GUISystem::createButtons(/*GameObjectManager& manager*/) {
     //clear previous references
     removeButtons();
 
     //get all game objects from manager
     std::vector<GameObject*> allObjs;
-    manager.getAllGameObjects(allObjs);
+    g_manager->getAllGameObjects(allObjs);
 
     if (allObjs.empty()) return; //check if its empty
 
@@ -390,7 +392,7 @@ void GUISystem::loadScreen(GameObjectManager& manager, const std::string& sceneN
     manager.loadScene(runtimeScenePath(sceneName));
     manager.initializeSceneResources();
 
-    createButtons(manager);
+    createButtons(/*manager*/);
 }
 
 //no buttons

@@ -769,10 +769,10 @@ void VisualLogicEditor::renderNodeProperties() {
 				}
 			}
 		}
-		else if (node.imp == NodeImplementation::ON_CLICK_ENTER || node.imp == NodeImplementation::WHILE_CLICKING || node.imp == NodeImplementation::ON_CLICK_EXIT) {
+		/*else if (node.imp == NodeImplementation::ON_CLICK_ENTER || node.imp == NodeImplementation::WHILE_CLICKING || node.imp == NodeImplementation::ON_CLICK_EXIT) {
 			ImGui::TextWrapped("Do not use this for object that will transit to another scene.");
 			ImGui::TextWrapped("e.g. object with button component");
-		}
+		}*/
 
 		else if (node.imp == NodeImplementation::ON_BULLET_SHOOT) {
 			ImGui::TextWrapped("This event triggers once bullet is fired.");

@@ -22,6 +22,7 @@ Technology is prohibited.
 #include "JsonIO.h"
 #include "Editor/editorState.h"
 #include "Editor/undoRedo.h"
+#include "GUISystem.h"
 
 #ifndef RUNTIME_SCENE_DIR_R
 #define RUNTIME_SCENE_DIR_R "./assets/Scene"
@@ -1146,6 +1147,8 @@ void GameObjectManager::loadSceneFromJson(const std::string& filename) {
 		createBulletPool(templateBullet->getObjectName(), 10);
 	}
 	/* ---- END ---- */
+
+	GUISystem::getInstance().createButtons();
 
 	std::cout << "Total game objects loaded: " << m_gameObjects.size() << std::endl;
 

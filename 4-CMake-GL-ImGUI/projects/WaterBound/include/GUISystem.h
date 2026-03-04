@@ -69,7 +69,7 @@ public:
 	void loadLevel(const std::string& levelSceneName); // load next level
     void resetAllObjectsToSpawn(); // helper for restart
 
-    void createButtons(GameObjectManager& manager); //create menu buttons
+    void createButtons(/*GameObjectManager& manager*/); //create menu buttons
 
 
     ButtonAction m_pendingAction = ButtonAction::NONE;
