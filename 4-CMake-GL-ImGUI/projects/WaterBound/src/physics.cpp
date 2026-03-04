@@ -137,6 +137,11 @@ void PhysicsForces::shoot(GameObject* bullet, const Transform* origin, const Vec
     if (!bullet->hasComponent<Physics>() || !bullet->hasComponent<Transform>())
         return;
 
+	//reactivate bullet if it was previously used
+    if (bullet->hasComponent<Render>()) {
+        bullet->getComponent<Render>()->clr.a = 1.0f;
+    }
+
     Transform* t = bullet->getComponent<Transform>();
     Physics* p = bullet->getComponent<Physics>();
 
@@ -239,7 +244,7 @@ void PhysicsForces::deactivateBullet(GameObject* bullet) {
     // Store original state when first deactivated
     if (!p->isOriginalStateSet) {
         p->originalPos = { t->x, t->y };
-        p->originalVel = { p->dynamics.velocity.x, p->dynamics.velocity.y };
+        //p->originalVel = { p->dynamics.velocity.x, p->dynamics.velocity.y };
         p->isOriginalStateSet = true;
     }
 
@@ -249,13 +254,18 @@ void PhysicsForces::deactivateBullet(GameObject* bullet) {
 
     p->dynamics.position.x = p->originalPos.x;
     p->dynamics.position.y = p->originalPos.y;
-    p->dynamics.velocity.x = p->originalVel.x;
-    p->dynamics.velocity.y = p->originalVel.y;
+    //p->dynamics.velocity.x = p->originalVel.x;
+    //p->dynamics.velocity.y = p->originalVel.y;
+    p->dynamics.velocity.x = 0.0f;
+    p->dynamics.velocity.y = 0.0f;
 
     p->dynamics.forces.clear();
 
     p->lifeTimer = 0.0f;
     p->alive = false;
+    if (bullet->hasComponent<Render>()) {
+        bullet->getComponent<Render>()->clr.a = 0.0f;  // make fully transparent
+    }
 
     DebugLog::addMessage("Bullet deactivated and returned to pool", DebugMode::PlaySimul);
 }
