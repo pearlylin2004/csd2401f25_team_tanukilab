@@ -2816,11 +2816,28 @@ void InspectorWindow::renderLayerControls(GameObject* selected) {
         ImGui::Spacing();
 
         if (layer && ImGui::TreeNode("Layer Info")) {
-            if (layer) {
-                ImGui::Text("Name: %s", layer->getLayerName().c_str());
-                ImGui::Text("ID: %d", currentLayer);
-                ImGui::Text("Objects in layer: %zu", layer->getObjectCount());
+            // Rename field — commits on Enter or focus loss (Unity-style)
+            static char layerNameBuf[64] = {};
+            static int  lastEditedLayerID = -1;
+
+            // Sync buffer if we switched to a different layer
+            if (lastEditedLayerID != currentLayer) {
+                strncpy_s(layerNameBuf, layer->getLayerName().c_str(), sizeof(layerNameBuf) - 1);
+                lastEditedLayerID = currentLayer;
             }
+
+            ImGui::SetNextItemWidth(160.f);
+            ImGui::InputText("Name##layerRename", layerNameBuf, sizeof(layerNameBuf));
+            if (ImGui::IsItemDeactivatedAfterEdit()) {
+                std::string newName(layerNameBuf);
+                if (!newName.empty() && newName != layer->getLayerName()) {
+                    m_manager.getLayerManager().renameLayer(currentLayer, newName);
+                    DebugLog::addMessage("Layer " + std::to_string(currentLayer) + " renamed to: " + newName);
+                }
+            }
+
+            ImGui::Text("ID: %d", currentLayer);
+            ImGui::Text("Objects in layer: %zu", layer->getObjectCount());
             ImGui::TreePop();
         }
 

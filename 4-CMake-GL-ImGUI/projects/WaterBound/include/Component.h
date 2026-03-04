@@ -276,6 +276,13 @@ public:
 
     //const float waterBounce = 60.0f;   // upward velocity when entering water
 
+    bool sinlePersonalBool = false; //used to ignore Physics other then the one i made, to be integrated
+	bool sinleFlag = false; // used to toggle when sinle's physics starts, to be integrated
+	bool hitWater = false; // to determine whether obj just hit the water, to apply bounce in the next frame
+	bool hitground = false; // to determine whether obj just hit the ground, to reset coyote jump and jump buffer
+	float sinleGravity = -10.f; // personal gravity for sinle, to be integrated
+	float waterBounce = 14.f; // upward velocity when entering water, to be integrated
+	Vector2D acceleration{ 0,0 };
 };
 
 // Input component to store input-related properties
@@ -784,6 +791,13 @@ enum class NodeImplementation {
     RESTART_LEVEL,
     LOAD_LEVEL,
 	DISABLE_COLLISION,
+    IS_SINLE_PHYSICS,
+    ENABLE_PHYSICS,
+	DISABLE_PHYSICS,
+	ENTER_WATER,
+    EXIT_WATER,
+    HIT_GROUND,
+	NOT_ON_GROUND,
 
     // DEFAULT
     DEFAULT // nothing happen :)

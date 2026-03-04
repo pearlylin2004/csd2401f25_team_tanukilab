@@ -24,7 +24,7 @@ Technology is prohibited.
  * Calculates gravity force using F = m * g and adds force
  * to the dynamics, the force has infinite lifetime (-1.0f).
  */
-//void PhysicsForces::applyGravity(Physics* physics, float deltaTime) {
+ //void PhysicsForces::applyGravity(Physics* physics, float deltaTime) {
 void PhysicsForces::applyGravity(Physics* physics) {
     // Gravity as a constant downward force: F = m * g
     Vector3D gravityForce = { 0.0f, physics->gravity * physics->dynamics.mass, 0.0f };
@@ -39,10 +39,10 @@ void PhysicsForces::applyDamping(Physics* physics, float friction, float targetV
     //physics->damping; // instead of 0.99f
 
     //physics->dynamics.velocity.x *= physics->damping;
-	physics->dynamics.angularVelocity *= physics->dynamics.angularDrag;
-   // physics->dynamics.velocity.y *= physics->damping;
+    physics->dynamics.angularVelocity *= physics->dynamics.angularDrag;
+    // physics->dynamics.velocity.y *= physics->damping;
 
-    // accel when moving, decel when stopping
+     // accel when moving, decel when stopping
     if (targetVelX != 0.f) {
         float accel = physics->onGround ? (physics->groundAccelForce / physics->dynamics.mass) : (physics->airAccelForce / physics->dynamics.mass);
 
@@ -60,7 +60,7 @@ void PhysicsForces::applyDamping(Physics* physics, float friction, float targetV
 }
 /**
  * @brief Updates object position based on physics
- * Integrates physics forces and updates transform position. 
+ * Integrates physics forces and updates transform position.
  */
 void PhysicsForces::updatePosition(Transform* transform, Physics* physics, float deltaTime) {
     DynamicsSystem::UpdateForces(physics->dynamics, deltaTime);
@@ -106,7 +106,7 @@ void PhysicsForces::updatePosition(Transform* transform, Physics* physics, float
 /**
  * @brief Applies jump force to make an object jump
  *
- * Applies an upward force to the object's dynamics system 
+ * Applies an upward force to the object's dynamics system
  */
 void PhysicsForces::jump(GameObject* object) {
     if (!object->hasComponent<Physics>() || !object->hasComponent<Transform>())
@@ -140,26 +140,25 @@ void PhysicsForces::shoot(GameObject* bullet, const Transform* origin, const Vec
     Transform* t = bullet->getComponent<Transform>();
     Physics* p = bullet->getComponent<Physics>();
 
-    // Spawn at bullet position
-    float dx = targetPos.x - origin->x;
-    float dy = targetPos.y - origin->y;
-    float magnitude = sqrtf(dx * dx + dy * dy);
+    //adjust spawn X based on flip
+    float barrelX = origin->x;
+    float barrelY = origin->y;
 
-    // Normalize direction
+    // Spawn at bullet position
+    float dx = targetPos.x - barrelX;
+    float dy = targetPos.y - barrelY;
+
+    //normalize direction
+    float magnitude = sqrtf(dx * dx + dy * dy);
     float dirX = dx / magnitude;
     float dirY = dy / magnitude;
 
-    float barrelOffset = origin->scaleX * 0.5f;
-    float spawnX = origin->x + dirX * barrelOffset;
-    float spawnY = origin->y + dirY * barrelOffset;
-
     // Spawn at barrel tip
-    t->x = spawnX;
-    t->y = spawnY;
+    t->x = barrelX;
+    t->y = barrelY;
     t->z = 0.0f;
-
-    p->dynamics.position.x = spawnX;
-    p->dynamics.position.y = spawnY;
+    p->dynamics.position.x = barrelX;
+    p->dynamics.position.y = barrelY;
 
     float bulletSpeed = p->moveSpeed * 2.0f;  // Adjust multiplier as needed
     p->dynamics.velocity.x = dirX * bulletSpeed;
@@ -183,7 +182,7 @@ void PhysicsForces::shoot(GameObject* bullet, const Transform* origin, const Vec
  * following the naming pattern "bullet" followed by numbers.
  */
 
-GameObject* PhysicsForces::findAvailableBullet(GameObjectManager& manager) { 
+GameObject* PhysicsForces::findAvailableBullet(GameObjectManager& manager) {
 
     std::vector<GameObject*> gameObjects;
     manager.getAllGameObjects(gameObjects);
@@ -229,7 +228,7 @@ GameObject* PhysicsForces::findAvailableBullet(GameObjectManager& manager) {
  * Resets bullet to its original state (position and velocity) and
  * marks it as available for reuse
  */
-void PhysicsForces::deactivateBullet(GameObject* bullet) { 
+void PhysicsForces::deactivateBullet(GameObject* bullet) {
 
     if (!bullet || !bullet->hasComponent<Physics>() || !bullet->hasComponent<Transform>())
         return;

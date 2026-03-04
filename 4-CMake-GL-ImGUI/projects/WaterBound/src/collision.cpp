@@ -660,7 +660,9 @@ namespace Collision {
         float dist = sqrtf(distSq);
 
         //settings
-        float restDistance = 1.0f; //particle radius spacing
+        float r1 = obj1->getComponent<CollisionInfo>()->colliderSize.x * 0.5f;
+        float r2 = obj2->getComponent<CollisionInfo>()->colliderSize.x * 0.5f;
+        float restDistance = r1 + r2;
         float stiffness = 6.0f; //pressure strength
         float viscosity = 0.008f; //smoothing
         float correctionPercent = 0.5f; //positional correction

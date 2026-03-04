@@ -1061,6 +1061,15 @@ void FontSystem::RenderText(GLuint& s, std::string text, float x, float y, float
 //	}
 //}
 
+void PhysicsSystem::onEnterWater(Physics* physics, const float deltaTime) {
+	(void) deltaTime;
+	physics->hitWater = false; // reset the flag after handling water entry
+	physics->inWater = true;
+	physics->velX *= 0.5f; // Reduce horizontal speed
+	physics->velY *= 0.5f; // Reduce vertical speed
+	//physics->gravity = 9.8f * 0.5f; // Reduce gravity effect
+}
+
 void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime, MessageBus& messageBus) {
 	auto start = std::chrono::high_resolution_clock::now();
 
@@ -1073,7 +1082,6 @@ void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime, M
 		return;
 	if (m_stepReq)
 		m_stepReq = false;*/
-
 
 	std::vector<GameObject*> gameObjects;
 	manager.getAllGameObjects(gameObjects);
@@ -1114,10 +1122,37 @@ void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime, M
 			continue;
 
 		Physics* physics = object->getComponent<Physics>();
+		
 		if (object->getObjectName() == "bullet") continue;
-		if (!physics->physicsFlag) continue;
+		
 		Transform* transform = object->getComponent<Transform>();
 
+		//sinle's personal physics for his one and only character, dont touch it
+		if (physics->sinlePersonalBool)
+		{
+			//std::cout << "hregoesrbgiubgiubgbiguwbiub";
+			physics->physicsFlag = false;
+			if (physics->sinleFlag)
+			{
+				if (physics->inWater)
+					physics->acceleration.y = physics->waterBounce;
+				else
+					physics->acceleration.y = 0;
+				physics->velX += physics->acceleration.x * deltaTime;
+				physics->velY += (physics->acceleration.y + physics->sinleGravity) * deltaTime;
+				if(physics->hitWater)
+					onEnterWater(physics, deltaTime);
+				if (physics->hitground)
+					physics->velY = 0;
+				transform->x += physics->velX * deltaTime;
+				transform->y += physics->velY * deltaTime;
+				std::cout << "acceleration: (" << physics->acceleration.x << ", " << physics->acceleration.y << ")\n";
+				std::cout << "velocity: (" << physics->velX << ", " << physics->velY << ")\n";
+				std::cout << "position: (" << transform->x << ", " << transform->y << ")\n";
+			}
+			continue;
+		}
+		if (!physics->physicsFlag) continue;
 		if (physics->autoUpdate) {
 			// Apply gravity when not in water -- future ref
 			if (!physics->inWater) {
@@ -1383,8 +1418,9 @@ void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime, M
 
 				/*for water to move*/
 				//flow force
+				float flowDir = (p->dynamics.velocity.x >= 0.0f) ? 1.0f : -1.0f;
 				float flowStrength = 25.0f * expf(-p->lifeTimer * 0.6f);
-				p->dynamics.velocity.x += flowStrength * deltaTime;
+				p->dynamics.velocity.x += flowStrength * flowDir * deltaTime;
 				p->dynamics.velocity.y += 0.0f;
 				//strong gravity
 				p->dynamics.velocity.y += -25.0f * deltaTime;
@@ -1511,9 +1547,7 @@ void WeaponSystem::update(GameObjectManager& manager, const float& deltaTime)
 		const float aimAngleRad = ownerFacingLeft
 			? std::atan2(-dy, -dx)  
 			: std::atan2(dy, dx); 
-
 		weaponTransform->flipX = ownerFacingLeft;
-
 
 		const float aimAngleDeg = glm::degrees(aimAngleRad);
 		weaponTransform->rotation = aimAngleDeg;

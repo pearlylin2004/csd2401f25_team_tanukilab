@@ -292,7 +292,14 @@ namespace Editor {
 		{"Trigger Bullet Refill Event", NodeType::ACTION, NodeImplementation::TRIGGER_BULLET_REFILL_EVENT},
 		{"Restart Level", NodeType::ACTION, NodeImplementation::RESTART_LEVEL},
 		{"Load Level", NodeType::ACTION, NodeImplementation::LOAD_LEVEL},
+		{"Is Sinle Physics", NodeType::ACTION, NodeImplementation::IS_SINLE_PHYSICS},
 		{"Disable Collision", NodeType::ACTION, NodeImplementation::DISABLE_COLLISION},
+		{"Enable Physics", NodeType::ACTION, NodeImplementation::ENABLE_PHYSICS},
+		{"Disable Physics", NodeType::ACTION, NodeImplementation::DISABLE_PHYSICS},
+		{"Enter Water", NodeType::ACTION, NodeImplementation::ENTER_WATER},
+		{"Exit Water", NodeType::ACTION, NodeImplementation::EXIT_WATER},
+		{"Hit Ground", NodeType::ACTION, NodeImplementation::HIT_GROUND},
+		{"Not on Ground", NodeType::ACTION, NodeImplementation::NOT_ON_GROUND},
 	};
 	/* ----------------- Logic End ---------------- */
 
