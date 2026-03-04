@@ -1381,8 +1381,9 @@ void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime, M
 
 				/*for water to move*/
 				//flow force
+				float flowDir = (p->dynamics.velocity.x >= 0.0f) ? 1.0f : -1.0f;
 				float flowStrength = 25.0f * expf(-p->lifeTimer * 0.6f);
-				p->dynamics.velocity.x += flowStrength * deltaTime;
+				p->dynamics.velocity.x += flowStrength * flowDir * deltaTime;
 				p->dynamics.velocity.y += 0.0f;
 				//strong gravity
 				p->dynamics.velocity.y += -25.0f * deltaTime;
