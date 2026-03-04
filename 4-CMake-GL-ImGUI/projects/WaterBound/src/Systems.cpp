@@ -1061,6 +1061,7 @@ void FontSystem::RenderText(GLuint& s, std::string text, float x, float y, float
 //}
 
 void PhysicsSystem::onEnterWater(Physics* physics, const float deltaTime) {
+	(void)deltaTime;
 	physics->hitWater = false; // reset the flag after handling water entry
 	physics->inWater = true;
 	physics->velX *= 0.5f; // Reduce horizontal speed
