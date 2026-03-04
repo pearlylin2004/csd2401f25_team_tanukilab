@@ -1081,7 +1081,6 @@ void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime, M
 	if (m_stepReq)
 		m_stepReq = false;*/
 
-
 	std::vector<GameObject*> gameObjects;
 	manager.getAllGameObjects(gameObjects);
 
@@ -1417,8 +1416,9 @@ void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime, M
 
 				/*for water to move*/
 				//flow force
+				float flowDir = (p->dynamics.velocity.x >= 0.0f) ? 1.0f : -1.0f;
 				float flowStrength = 25.0f * expf(-p->lifeTimer * 0.6f);
-				p->dynamics.velocity.x += flowStrength * deltaTime;
+				p->dynamics.velocity.x += flowStrength * flowDir * deltaTime;
 				p->dynamics.velocity.y += 0.0f;
 				//strong gravity
 				p->dynamics.velocity.y += -25.0f * deltaTime;
@@ -1545,9 +1545,7 @@ void WeaponSystem::update(GameObjectManager& manager, const float& deltaTime)
 		const float aimAngleRad = ownerFacingLeft
 			? std::atan2(-dy, -dx)  
 			: std::atan2(dy, dx); 
-
 		weaponTransform->flipX = ownerFacingLeft;
-
 
 		const float aimAngleDeg = glm::degrees(aimAngleRad);
 		weaponTransform->rotation = aimAngleDeg;

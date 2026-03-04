@@ -141,31 +141,24 @@ void PhysicsForces::shoot(GameObject* bullet, const Transform* origin, const Vec
     Physics* p = bullet->getComponent<Physics>();
 
     //adjust spawn X based on flip
-    float barrelX = origin->x + (origin->flipX ? -std::abs(origin->localOffset.x) : std::abs(origin->localOffset.x));
-    float barrelY = origin->y + origin->localOffset.y;
+    float barrelX = origin->x;
+    float barrelY = origin->y;
 
     // Spawn at bullet position
     float dx = targetPos.x - barrelX;
     float dy = targetPos.y - barrelY;
-
-    //mirror dx if weapon is flipped
-    //if (origin->flipX) dx = -dx;
 
     //normalize direction
     float magnitude = sqrtf(dx * dx + dy * dy);
     float dirX = dx / magnitude;
     float dirY = dy / magnitude;
 
-    float barrelOffset = origin->scaleX * 0.5f;
-    float spawnX = origin->x + dirX * barrelOffset;
-    float spawnY = origin->y + dirY * barrelOffset;
-
     // Spawn at barrel tip
-    t->x = spawnX;
-    t->y = spawnY;
+    t->x = barrelX;
+    t->y = barrelY;
     t->z = 0.0f;
-    p->dynamics.position.x = spawnX;
-    p->dynamics.position.y = spawnY;
+    p->dynamics.position.x = barrelX;
+    p->dynamics.position.y = barrelY;
 
     float bulletSpeed = p->moveSpeed * 2.0f;  // Adjust multiplier as needed
     p->dynamics.velocity.x = dirX * bulletSpeed;
