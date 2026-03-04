@@ -1129,7 +1129,7 @@ void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime, M
 		//sinle's personal physics for his one and only character, dont touch it
 		if (physics->sinlePersonalBool)
 		{
-			std::cout << "hregoesrbgiubgiubgbiguwbiub";
+			//std::cout << "hregoesrbgiubgiubgbiguwbiub";
 			physics->physicsFlag = false;
 			if (physics->sinleFlag)
 			{
