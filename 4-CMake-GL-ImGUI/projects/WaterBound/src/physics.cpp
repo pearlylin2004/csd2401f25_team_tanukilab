@@ -148,9 +148,6 @@ void PhysicsForces::shoot(GameObject* bullet, const Transform* origin, const Vec
     float dx = targetPos.x - barrelX;
     float dy = targetPos.y - barrelY;
 
-    //mirror dx if weapon is flipped
-    //if (origin->flipX) dx = -dx;
-
     //normalize direction
     float magnitude = sqrtf(dx * dx + dy * dy);
     float dirX = dx / magnitude;
