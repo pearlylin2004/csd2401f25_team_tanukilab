@@ -16,7 +16,7 @@
       ]
     },
     "Render": {
-      "shape": "square",
+      "shape": "circle",
       "hasTex": 1,
       "texture": "assets/Texture/water_texture.png",
       "hasAnimation": 0
