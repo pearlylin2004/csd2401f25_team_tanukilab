@@ -263,6 +263,8 @@ void PhysicsForces::deactivateBullet(GameObject* bullet) {
 
     p->lifeTimer = 0.0f;
     p->alive = false;
+
+	//transparent bullet when deactivated
     if (bullet->hasComponent<Render>()) {
         bullet->getComponent<Render>()->clr.a = 0.0f;  // make fully transparent
     }
