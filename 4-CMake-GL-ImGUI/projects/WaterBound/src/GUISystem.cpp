@@ -86,7 +86,7 @@ void GUISystem::update() {
     }
 
     if (EditorManager::isEditingMode()) return;
-    if (m_currentState == GameState::PLAYING) return;
+    //if (m_currentState == GameState::PLAYING) return;
     if (UISystem::isShowUI()) return; // skip if UI is shown
     //if (m_buttons.empty()) return;
 
@@ -384,7 +384,7 @@ void GUISystem::loadScreen(GameObjectManager& manager, const std::string& sceneN
     std::cout << "[GUI] Loading screen: " << sceneName << "\n";
 
     removeButtons(); // clear references
-    //AudioHandler::getInstance().stopAll(manager);
+    AudioHandler::getInstance().stopAll(manager);
     manager.clearScene(); //delete al scene object
 
     manager.loadScene(runtimeScenePath(sceneName));
@@ -397,7 +397,7 @@ void GUISystem::loadScreen(GameObjectManager& manager, const std::string& sceneN
 void GUISystem::loadScreenNoButton(GameObjectManager& manager, const std::string& sceneName) {
     std::cout << "[GUI] Loading screen: " << sceneName << "\n";
 
-    //AudioHandler::getInstance().stopAll(manager);
+    AudioHandler::getInstance().stopAll(manager);
     manager.clearScene(); //delete al scene object
     manager.init();
     manager.loadScene(runtimeScenePath(sceneName));
