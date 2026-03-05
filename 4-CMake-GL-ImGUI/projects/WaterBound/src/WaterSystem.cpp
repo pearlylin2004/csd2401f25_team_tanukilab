@@ -15,7 +15,7 @@ Technology is prohibited.
 */
 /* End Header **************************************************************************/
 
-#include "WaterSystem.h"
+#include "Systems.h"
 #include "ResourceManager.h"
 #include <iostream>
 #include <vector>
@@ -73,7 +73,8 @@ void WaterSystem::update(GameObjectManager& manager, float deltaTime) {
     for (GameObject* obj : allObjects) {
         WaterBody* water = obj->getComponent<WaterBody>();
         if (water && water->renderWaves) {
-            water->waveTime += deltaTime;
+            if (!EditorManager::isEditingMode() && !EditorManager::isPaused())
+                water->waveTime += deltaTime;
         }
     }
 
@@ -95,8 +96,9 @@ void WaterSystem::render(GameObjectManager& manager) {
     glUseProgram(m_waterShaderProgram);
 
     // Set view and projection matrices
-    glUniformMatrix4fv(m_viewMatrixLocation, 1, GL_FALSE, &renderer::cam.view[0][0]);
-    glUniformMatrix4fv(m_projMatrixLocation, 1, GL_FALSE, &renderer::cam.proj[0][0]);
+    auto& activeCam = EditorManager::isEditingMode() ? renderer::editorCam : renderer::cam;
+    glUniformMatrix4fv(m_viewMatrixLocation, 1, GL_FALSE, &activeCam.view[0][0]);
+    glUniformMatrix4fv(m_projMatrixLocation, 1, GL_FALSE, &activeCam.proj[0][0]);
 
     // Render each water body
     for (GameObject* obj : allObjects) {
