@@ -264,7 +264,7 @@ void InspectorWindow::render() {
         /* ------------------- END ------------------- */
 
         /* ------------------- Camera ------------------- */
-        if(selected->hasComponent<camera>()) {
+        if (selected->hasComponent<camera>()) {
             renderCamera(selected);
             ImGui::Spacing();
             ImGui::Separator();
@@ -273,7 +273,7 @@ void InspectorWindow::render() {
 		/* ------------------- END ------------------- */
 
         /* ------------------- Layer Controls ------------------- */
-        renderLayerControls(selected);
+        if (selected == m_objSelectionState.selectedObject) renderLayerControls(selected);
         /* ------------------- END ------------------- */
 
 
@@ -313,6 +313,11 @@ void InspectorWindow::addComponent(GameObject* selected) {
         // skip if selected obj alr has this component
         if (comp.hasComp(selected)) continue;
         if (comp.name == "Animation") continue;
+
+        // skip tilemap/camera for prefab because they have special conditions
+        if (selected == m_objSelectionState.selectedPrefab.get()) {
+            if (comp.name == "Camera" || comp.name == "Tile Map") continue;
+        }
 
         // only one camera component may exist in one scene
         if (Editor::hasCam && comp.name == "Camera") continue;
