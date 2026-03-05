@@ -488,8 +488,8 @@ void InspectorWindow::renderTransform(GameObject* selected) {
             if (!m_objSelectionState.aspectRatioLock) m_objSelectionState.ratioSet = false;
 
             // clamp scale to be non-negative
-            if (ImGui::DragFloat("X1", &transform->scaleX, 0.1f, 0.f)) {
-                transform->scaleX = std::max(transform->scaleX, 0.f);
+            if (ImGui::DragFloat("X1", &transform->scaleX, 0.1f)) {
+                //->scaleX = std::max(transform->scaleX, 0.f);
 
                 if (!m_isEditingScale) {
                     UndoRedoManager::Instance().beginTransformEdit(selected);
@@ -500,8 +500,8 @@ void InspectorWindow::renderTransform(GameObject* selected) {
             scaleActive |= ImGui::IsItemActive();
 
             ImGui::BeginDisabled(m_objSelectionState.aspectRatioLock);
-            if (ImGui::DragFloat("Y1", &transform->scaleY, 0.1f, 0.f)) {
-                transform->scaleY = std::max(transform->scaleY, 0.f);
+            if (ImGui::DragFloat("Y1", &transform->scaleY, 0.1f)) {
+                //transform->scaleY = std::max(transform->scaleY, 0.f);
 
                 if (!m_isEditingScale) {
                     UndoRedoManager::Instance().beginTransformEdit(selected);
@@ -511,8 +511,8 @@ void InspectorWindow::renderTransform(GameObject* selected) {
             }
             scaleActive |= ImGui::IsItemActive();
 
-            if (ImGui::DragFloat("Z1", &transform->scaleZ, 0.1f, 0.f)) {
-                transform->scaleZ = std::max(transform->scaleZ, 0.f);
+            if (ImGui::DragFloat("Z1", &transform->scaleZ, 0.1f)) {
+                //transform->scaleZ = std::max(transform->scaleZ, 0.f);
 
 
                 if (!m_isEditingScale) {
