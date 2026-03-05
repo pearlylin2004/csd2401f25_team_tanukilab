@@ -327,6 +327,15 @@ void WaterSystem::applyWaterPhysics(GameObjectManager& manager) {
         if (!physics || !transform) continue;
         if (obj->hasComponent<WaterBody>()) continue;
 
+        if (EditorManager::isEditingMode() || EditorManager::isPaused()) {
+            physics->velY = 0.f;
+            physics->velX = 0.f;
+            physics->dynamics.velocity.y = 0.f;
+            physics->dynamics.velocity.x = 0.f;
+
+            continue;
+        }
+
         physics->inWater = false;
 
         // Check if object is in any water body

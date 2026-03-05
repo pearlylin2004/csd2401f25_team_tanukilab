@@ -1155,17 +1155,19 @@ void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime, M
 		if (!physics->physicsFlag) continue;
 		if (physics->autoUpdate) {
 			// Apply gravity when not in water -- future ref
-			if (!physics->inWater) {
-				physics->velY += physics->gravity * deltaTime;
+			if (!EditorManager::isEditingMode() && !EditorManager::isPaused()) {
+				if (!physics->inWater) {
+					physics->velY += physics->gravity * deltaTime;
+				}
+
+				transform->y += physics->velY * deltaTime;
+				transform->x += physics->velX * deltaTime;
+
+				physics->dynamics.position.y = transform->y;
+				physics->dynamics.position.x = transform->x;
+				physics->dynamics.velocity.y = physics->velY;
+				physics->dynamics.velocity.x = physics->velX;
 			}
-
-			transform->y += physics->velY * deltaTime;
-			transform->x += physics->velX * deltaTime;
-
-			physics->dynamics.position.y = transform->y;
-			physics->dynamics.position.x = transform->x;
-			physics->dynamics.velocity.y = physics->velY;
-			physics->dynamics.velocity.x = physics->velX;
 		}
 
 		// Handle player input
