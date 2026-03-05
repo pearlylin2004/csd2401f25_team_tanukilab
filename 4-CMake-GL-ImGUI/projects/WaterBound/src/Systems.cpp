@@ -1264,9 +1264,8 @@ void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime, M
 			if (!object->checkAutoMove() && !physics->ledgeClimb) {
 
 				if (CollisionInfo* collision = object->getComponent<CollisionInfo>()) {
-					Render* render = object->hasComponent<Render>() ? object->getComponent<Render>() : nullptr;
 					PhysicsForces::applyDamping(physics, collision->material.friction, targetVelX, deltaTime);
-					PhysicsForces::updatePosition(transform, physics, deltaTime, render);
+					PhysicsForces::updatePosition(transform, physics, deltaTime);
 				}
 			}
 
@@ -1450,19 +1449,17 @@ void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime, M
 			// Update life timer
 			p->lifeTimer += deltaTime;
 
-			//shrink and fade over lifetime
-			float lifePercent = p->lifeTimer / p->maxLifetime;
-			float newScale = p->initialScale * (1.0f - lifePercent);
-			newScale = std::max(newScale, p->minScale);
-			t->scaleX = newScale;
-			t->scaleY = newScale;
-
 			// Deactivate if lifetime exceeded or fell too far
 			if (!EditorManager::isEditingMode()) {
-				/*alpha part if want*/
-				//if (obj->hasComponent<Render>()) {
-				//	obj->getComponent<Render>()->clr.a = std::max(0.0f, 1.0f - lifePercent);
-				//}
+				//shrink and fade over lifetime
+				if (p->lifeTimer > 2.0f) {
+					float shrinkTimer = p->lifeTimer - 2.0f;  // starts from 0 after 5s
+					float lifePercent = shrinkTimer / p->maxLifetime;
+					float newScale = p->initialScale * (1.0f - lifePercent);
+					newScale = std::max(newScale, p->minScale);
+					t->scaleX = newScale;
+					t->scaleY = newScale;
+				}
 				if (p->lifeTimer >= p->maxLifetime || p->dynamics.position.y < -20.0f) {
 					PhysicsForces::deactivateBullet(obj);
 				}
@@ -1906,7 +1903,7 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 									// small downward bias so it stays on ground but can slide
 									p1->dynamics.velocity.y = -0.01f; // tiny downward motion
 
-									// apply sliding friction
+									//apply sliding friction
 									float slideFriction = -0.10f;
 									p1->dynamics.velocity.x *= (1.0f - slideFriction);
 

@@ -32,10 +32,10 @@
       "freezeRotation": true,
       "angularDrag": 0.9800000190734863,
       "inertiaOverride": 0.0,
-      "initialScale": 0.3,
-      "minScale": 0.05,
-      "shrinkRate": 0.15,
-      "fadeRate": 0.4
+      "initialScale": 0.4,
+      "minScale": 0.1,
+      "shrinkRate": 0.3,
+      "fadeRate": 0.5
     },
     "CollisionInfo": {
       "collisionFlag": 1,

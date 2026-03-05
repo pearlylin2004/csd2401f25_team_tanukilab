@@ -43,7 +43,7 @@ struct PhysicsForces {
     /**
      * @brief Updates transform position based on physics simulation
      */
-    static void updatePosition(Transform* transform, Physics* physics, float deltaTime, Render* render);
+    static void updatePosition(Transform* transform, Physics* physics, float deltaTime);
     /**
      * @brief Applies jump force to object
      */
