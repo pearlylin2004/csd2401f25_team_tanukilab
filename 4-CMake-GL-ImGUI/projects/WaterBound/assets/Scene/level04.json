@@ -36,6 +36,7 @@
           ]
         },
         "Render": {
+          "shape": "square",
           "colorR": 1.0,
           "colorG": 1.0,
           "colorB": 1.0,
@@ -61,7 +62,8 @@
             0.0
           ],
           "colliderRot": 0.0,
-          "colliderType": "circle",
+          "colliderType": "square",
+          "colliderType": "square",
           "ignoreCollisionsWith": [
             "player",
             "hazards"
@@ -84,7 +86,7 @@
         "Transform": {
           "pos": [
             -17.38416862487793,
-            -0.11850576847791672,
+            -0.11850574612617493,
             0.9980000257492065
           ],
           "scale": [
@@ -596,7 +598,7 @@
           "rotation": 0.0,
           "scale": [
             7.300000190734863,
-            1.100000023841858,
+            1.2000000476837158,
             0.0
           ]
         },
@@ -632,19 +634,19 @@
         },
         "CollisionInfo": {
           "collisionFlag": 1,
-          "autoFitScale": 1,
+          "autoFitScale": 0,
           "colliderSize": [
             7.300000190734863,
-            1.100000023841858
+            2.799999952316284
           ],
           "colliderPos": [
             0.0,
-            0.0
+            -0.800000011920929
           ],
           "colliderRot": 0.0,
           "colliderType": "square",
           "collisionRes": "StopWhenCollide",
-          "collisionTag": "default",
+          "collisionTag": "environment",
           "bounciness": 0.0,
           "friction": 0.0,
           "colliderType": "square"
@@ -711,7 +713,7 @@
           "colliderRot": 0.0,
           "colliderType": "square",
           "collisionRes": "StopWhenCollide",
-          "collisionTag": "default",
+          "collisionTag": "environment",
           "bounciness": 0.0,
           "friction": 0.0,
           "colliderType": "square"
@@ -910,7 +912,7 @@
         "Transform": {
           "pos": [
             -6.253969192504883,
-            -6.020153999328613,
+            -6.0186767578125,
             0.0
           ],
           "rotation": 0.0,
@@ -1163,11 +1165,11 @@
       "components": {
         "Transform": {
           "pos": [
-            0.5256339311599731,
-            -3.2148303985595703,
+            -16.553733825683594,
+            -0.9765769839286804,
             0.0010000000474974513
           ],
-          "rotation": 60.4913444519043,
+          "rotation": 12.815719604492188,
           "scale": [
             3.200000047683716,
             1.2999999523162842,

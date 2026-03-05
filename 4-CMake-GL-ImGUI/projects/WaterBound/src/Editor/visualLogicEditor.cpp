@@ -1331,7 +1331,6 @@ void VisualLogicEditor::renderNodeProperties() {
 			ImGui::BulletText("Set all states to IDLE");
 			ImGui::BulletText("Reset animations to idle");
 		}
-
 		else if (node.imp == NodeImplementation::LOAD_LEVEL) {
 			ImGui::Text("Load Level");
 			ImGui::Separator();
@@ -1377,8 +1376,41 @@ void VisualLogicEditor::renderNodeProperties() {
 					"No level specified!");
 			}
 		}
+		else if (node.imp == NodeImplementation::CHANGE_ACCEL_DIRECTION) {
+			ImGui::Text("Change Acceleration Direction");
+			/*ImGui::Separator();
+			int currentDir = node.parameters.count("direction") ?
+				std::stoi(node.parameters["direction"]) : 1;
+			int selectedIdx = (currentDir == 1) ? 0 : 1;
+			const char* dirOptions[] = { "Right", "Left" };
+			if (ImGui::Combo("Direction##accelDir", &selectedIdx, dirOptions, 2)) {
+				node.parameters["direction"] = (selectedIdx == 0) ? "1" : "-1";
+			}
+			ImGui::Spacing();*/
+			ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f),
+				"Flip the direction of movement in Sinle Physics/Normal Physics");
+		}
+		else if (node.imp == NodeImplementation::SET_SINLE_ACCEL) {
+			ImGui::Text("Set Acceleration");
+			ImGui::Separator();
+
+			// Axis selector
+			const char* axisOptions[] = { "X", "Y" };
+			int currentAxis = (node.parameters.count("axis") && node.parameters["axis"] == "y") ? 1 : 0;
+			if (ImGui::Combo("Axis##accelAxis", &currentAxis, axisOptions, 2)) {
+				node.parameters["axis"] = (currentAxis == 0) ? "x" : "y";
+			}
+
+			// Value input
+			float currentVal = node.parameters.count("value") ? std::stof(node.parameters["value"]) : 1.0f;
+			if (ImGui::DragFloat("Value##accelVal", &currentVal, 0.1f)) {
+				node.parameters["value"] = std::to_string(currentVal);
+			}
+
+			ImGui::Spacing();
+			ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "Set acceleration on one axis");
+}
 	}
-	
 	/* ---------- END ---------- */
 
 
@@ -1898,6 +1930,10 @@ void VisualLogicEditor::addNode(NodeType type, NodeImplementation imp) {
 		}
 		else if (imp == NodeImplementation::LOAD_LEVEL) {
 			node.parameters["levelName"] = "level01.json";
+		}
+		else if (imp == NodeImplementation::SET_SINLE_ACCEL) {
+			node.parameters["axis"] = "x";
+			node.parameters["value"] = "1.0";
 		}
 	}
 	// CONDITION nodes

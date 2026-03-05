@@ -1146,9 +1146,9 @@ void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime, M
 					physics->velY = 0;
 				transform->x += physics->velX * deltaTime;
 				transform->y += physics->velY * deltaTime;
-				std::cout << "acceleration: (" << physics->acceleration.x << ", " << physics->acceleration.y << ")\n";
+				/*std::cout << "acceleration: (" << physics->acceleration.x << ", " << physics->acceleration.y << ")\n";
 				std::cout << "velocity: (" << physics->velX << ", " << physics->velY << ")\n";
-				std::cout << "position: (" << transform->x << ", " << transform->y << ")\n";
+				std::cout << "position: (" << transform->x << ", " << transform->y << ")\n";*/
 			}
 			continue;
 		}

@@ -819,6 +819,32 @@ void VisualLogicSystem::executeActionNode(GameObject* obj, VisualLC* logic, Logi
 			physics->onGround = false;
 		}
 	}
+	else if (node.imp == NodeImplementation::CHANGE_ACCEL_DIRECTION) {
+		Physics* physics = obj->getComponent<Physics>();
+		if (!physics) return;
+
+		if (physics->sinlePersonalBool) {
+			physics->acceleration.x *= -1.f;
+		}
+		else {
+			physics->dynamics.velocity.x *= -1.f;
+			physics->velX *= -1.f;
+		}
+	}
+	else if (node.imp == NodeImplementation::SET_SINLE_ACCEL) {
+		Physics* physics = obj->getComponent<Physics>();
+		if (!physics) return;
+
+		float val = node.parameters.count("value") ? std::stof(node.parameters["value"]) : 1.0f;
+		std::string axis = node.parameters.count("axis") ? node.parameters["axis"] : "x";
+		
+		if (axis == "x") {
+			physics->acceleration.x = val;
+		}
+		else {
+			physics->acceleration.y = val;
+		}
+	}
 }
 
 bool VisualLogicSystem::executeConditionNode(GameObject* obj, VisualLC* logic, LogicNode& node, float dt) {
