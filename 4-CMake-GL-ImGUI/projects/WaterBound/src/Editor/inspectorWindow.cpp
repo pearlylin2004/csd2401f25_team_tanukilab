@@ -70,14 +70,17 @@ void InspectorWindow::render() {
             std::string oldObjName = objName;
             std::string newObjName = buffer;
 
-            if (selected == m_objSelectionState.selectedObject) {
-                if (m_manager.renameGameObject(m_objSelectionState.selectedObject, newObjName)) {
-                    // update obj new name jic redo/undo
-                    UndoRedoManager::Instance().updateObjName(oldObjName, newObjName);
+            UndoRedoManager::Instance().beginRenameObject(m_objSelectionState.selectedObject);
 
+            if (selected == m_objSelectionState.selectedObject) {
+                UndoRedoManager::Instance().beginRenameObject(m_objSelectionState.selectedObject);
+                if (m_manager.renameGameObject(m_objSelectionState.selectedObject, newObjName)) {
+                    UndoRedoManager::Instance().updateObjName(oldObjName, newObjName);
+                    UndoRedoManager::Instance().endRenameObject(m_manager, m_objSelectionState.selectedObject);
                     DebugLog::addMessage("Object renamed to " + newObjName + "\n");
                 }
                 else {
+                    UndoRedoManager::Instance().endRenameObject(m_manager, m_objSelectionState.selectedObject);
                     DebugLog::addMessage("Failed to rename: name already exists\n");
                 }
             }

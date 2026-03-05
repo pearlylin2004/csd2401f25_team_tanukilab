@@ -428,6 +428,26 @@ void VLGraphCmd::apply(const VLGraphSnapshot& snap) {
 /* ---------------- END ---------------- */
 
 
+/* ---------------- RENAME ---------------- */
+RenameObjectCmd::RenameObjectCmd(GameObjectManager& manager, const std::string& oldName, const std::string& newName)
+    : m_manager(manager), m_oldName(oldName), m_newName(newName) {
+}
+
+void RenameObjectCmd::execute() {
+    GameObject* obj = m_manager.getGameObject(m_oldName);
+    if (obj) m_manager.renameGameObject(obj, m_newName);
+}
+void RenameObjectCmd::undo() {
+    GameObject* obj = m_manager.getGameObject(m_newName);
+    if (obj) m_manager.renameGameObject(obj, m_oldName);
+}
+void RenameObjectCmd::updateObjName(const std::string& oldName, const std::string& newName) {
+    if (m_oldName == oldName) m_oldName = newName;
+    if (m_newName == oldName) m_newName = newName;
+}
+/* ---------------- END ---------------- */
+
+
 /* ---------------- UNDO/REDO ---------------- */
 void UndoRedoManager::executeCmd(std::unique_ptr<CmdInterface> cmd) {
     // execute the command (transform/create/delete)
@@ -804,6 +824,29 @@ void UndoRedoManager::clearVL() {
     m_vlUndoDeque.clear();
     m_vlRedoDeque.clear();
     m_isEditingVL = false;
+}
+
+void UndoRedoManager::beginRenameObject(GameObject* obj) {
+    if (!obj) return;
+    m_isRenamingObject = true;
+    m_renameBefore = obj->getObjectName();
+}
+
+void UndoRedoManager::endRenameObject(GameObjectManager& manager, GameObject* obj) {
+    if (!m_isRenamingObject || !obj) {
+        m_isRenamingObject = false;
+        return;
+    }
+
+    std::string after = obj->getObjectName();
+    if (m_renameBefore != after) {
+        auto cmd = std::make_unique<RenameObjectCmd>(manager, m_renameBefore, after);
+        m_undoDeque.push_back(std::move(cmd));
+        m_redoDeque.clear();
+        if (m_undoDeque.size() > MAX_UNDO_STEPS)
+            m_undoDeque.pop_front();
+    }
+    m_isRenamingObject = false;
 }
 /* ---------------- END ---------------- */
 

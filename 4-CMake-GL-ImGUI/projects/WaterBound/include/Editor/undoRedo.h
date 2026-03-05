@@ -319,6 +319,19 @@ private:
 	VLGraphSnapshot			m_after;
 };
 
+// for rename
+class RenameObjectCmd : public CmdInterface {
+public:
+	RenameObjectCmd(GameObjectManager& manager, const std::string& oldName, const std::string& newName);
+	void execute() override;
+	void undo() override;
+	void updateObjName(const std::string& oldName, const std::string& newName) override;
+private:
+	GameObjectManager& m_manager;
+	std::string m_oldName;
+	std::string m_newName;
+};
+
 
 // big boss for undo/redo operation (singleton)
 class UndoRedoManager {
@@ -407,6 +420,11 @@ public:
 	void clearVL();
 	/* ---- END ----*/
 
+	/* ---- RENAME OBJECT ---- */
+	void beginRenameObject(GameObject* obj);
+	void endRenameObject(GameObjectManager& manager, GameObject* obj);
+	/* ---- END ---- */
+
 
 	// max steps to undo/redo
 	static constexpr size_t MAX_UNDO_STEPS{ 30 };
@@ -448,6 +466,10 @@ private:
 	VLGraphSnapshot			m_vlBefore;
 	std::deque<std::unique_ptr<VLGraphCmd>> m_vlUndoDeque;
 	std::deque<std::unique_ptr<VLGraphCmd>> m_vlRedoDeque;
+
+	// for rename object
+	bool					m_isRenamingObject = false;
+	std::string				m_renameBefore;
 };
 
 // take a snapshot of an object's transform state
