@@ -365,6 +365,13 @@ void WaterSystem::applyWaterPhysics(GameObjectManager& manager) {
                 //    physics->velX *= water->waterDrag;
                 //}
 
+                // check for buoyancy flag here so inwater flag can still be set
+                if (!physics->buoyancy) {
+                    physics->velY *= water->waterDrag;
+                    physics->velX *= water->waterDrag;
+                    break;
+                } 
+
                 float waterSurfaceY = waterTransform->y + (water->height * waterTransform->scaleY * 0.5f);
                 float depth = waterSurfaceY - transform->y;
 

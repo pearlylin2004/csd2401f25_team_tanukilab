@@ -1489,6 +1489,9 @@ void InspectorWindow::renderPhysics(GameObject* selected, bool canMove) {
                     ImGui::TreePop();
                 }
             }
+            else {
+                ImGui::Text("No Input Control Component found.");
+            }
             ImGui::TreePop();
         }
 

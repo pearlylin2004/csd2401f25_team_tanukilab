@@ -1289,7 +1289,19 @@ void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime, M
 
 								if (bullet != nullptr) {
 									// Get mouse position in world coordinates
-									Vector2D mouseWorldPos = InputHandler::getWorldMousePosition();
+									Vector2D mouseWorldPos;
+#ifdef _DEBUG
+									if (UISystem::isShowUI() && !EditorManager::isEditingMode()) {
+										ImVec2 scenePos, sceneSize;
+										EditorManager::getScenePosNSize(scenePos, sceneSize);
+										mouseWorldPos = InputHandler::getMousePositionInImGuiViewport(scenePos, sceneSize);
+									}
+									else {
+										mouseWorldPos = InputHandler::getWorldMousePosition();
+									}
+#else
+									mouseWorldPos = InputHandler::getWorldMousePosition();
+#endif
 
 									Transform* spawnTransform = transform;
 									{
