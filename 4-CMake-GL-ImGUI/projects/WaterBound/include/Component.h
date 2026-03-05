@@ -251,6 +251,12 @@ public:
     Vector2D originalVel{ 0, 0 };
     bool isOriginalStateSet = false;
 
+    //for evaporating
+    float initialScale = 0.5f;
+    float minScale = 0.1f;
+    float shrinkRate = 0.3f;   //how fast it shrinks
+    float fadeRate = 0.5f;
+
     //bool inWaterTriggered; // true only when W is pressed
 
     //Shooting parameters

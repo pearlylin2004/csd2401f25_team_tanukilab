@@ -62,7 +62,7 @@ void PhysicsForces::applyDamping(Physics* physics, float friction, float targetV
  * @brief Updates object position based on physics
  * Integrates physics forces and updates transform position.
  */
-void PhysicsForces::updatePosition(Transform* transform, Physics* physics, float deltaTime) {
+void PhysicsForces::updatePosition(Transform* transform, Physics* physics, float deltaTime, Render* render) {
     DynamicsSystem::UpdateForces(physics->dynamics, deltaTime);
     if (!physics->onGround) {
         //DynamicsSystem::Integrate(physics->dynamics, deltaTime, physics->gravity, false);
@@ -101,6 +101,19 @@ void PhysicsForces::updatePosition(Transform* transform, Physics* physics, float
 
     physics->velX = physics->dynamics.velocity.x;
     physics->velY = physics->dynamics.velocity.y;
+
+    //shrink and fade bullet over lifetime
+    if (physics->alive) {
+        physics->lifeTimer += deltaTime;
+        float newScale = std::max(physics->minScale, physics->initialScale - (physics->shrinkRate * physics->lifeTimer));
+        transform->scaleX = newScale;
+        transform->scaleY = newScale;
+
+        if (render) {
+            float alpha = std::max(0.0f, 1.0f - (physics->fadeRate * physics->lifeTimer));
+            render->clr.a = alpha;
+        }
+    }
 }
 
 /**
@@ -176,6 +189,11 @@ void PhysicsForces::shoot(GameObject* bullet, const Transform* origin, const Vec
 
     // Reset timers
     p->lifeTimer = 0.0f;
+
+    //reset scale on shoot
+    t->scaleX = p->initialScale;
+    t->scaleY = p->initialScale;
+
     p->gravityDelayTimer = p->gravityDelay;  // Initialize gravity immunity
     p->alive = true;
 
@@ -256,8 +274,6 @@ void PhysicsForces::deactivateBullet(GameObject* bullet) {
 
     p->dynamics.position.x = p->originalPos.x;
     p->dynamics.position.y = p->originalPos.y;
-    //p->dynamics.velocity.x = p->originalVel.x;
-    //p->dynamics.velocity.y = p->originalVel.y;
     p->dynamics.velocity.x = 0.0f;
     p->dynamics.velocity.y = 0.0f;
 
