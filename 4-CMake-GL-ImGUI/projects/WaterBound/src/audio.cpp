@@ -313,15 +313,19 @@ void AudioHandler::resumeSound(AudioChannel* audio) {
 
 // check whether sound is paused
 bool AudioHandler::isSoundPaused(AudioChannel* audio) {
-	//size_t pos = static_cast<size_t>(id);
 	bool isPaused = false;
-
-	/*if (channels[pos]) {*/
 	if (audio->channel) {
-		FMODErrorCheck(audio->channel->getPaused(&isPaused));
+		FMOD_RESULT result = audio->channel->getPaused(&isPaused);
+		// Fmod returns invalid handle if channel expired naturally (sound finished)
+		// So this is just to clean up our cmd prompt so there isnt this error every time a sound finishes playing.
+		if (result == FMOD_ERR_INVALID_HANDLE) {
+			audio->channel = nullptr;
+			return false;
+		}
+
+		FMODErrorCheck(result);
 		return isPaused;
 	}
-
 	return false;
 }
 
@@ -339,12 +343,15 @@ void AudioHandler::stopSound(AudioChannel* audio) {
 
 // check whether channel still alive (ie. sound finished playing)
 bool AudioHandler::isSoundPlaying(AudioChannel* audio) {
-	//size_t pos = static_cast<size_t>(id);
-
-	/*if (channels[pos]) {*/
 	if (audio->channel) {
 		bool isPlaying = false;
-		FMODErrorCheck(audio->channel->isPlaying(&isPlaying));
+		FMOD_RESULT result = audio->channel->isPlaying(&isPlaying);
+		if (result == FMOD_ERR_INVALID_HANDLE) {
+			// Channel expired naturally (sound finished) clean up silently
+			audio->channel = nullptr;
+			return false;
+		}
+		FMODErrorCheck(result); // still report genuinely unexpected errors
 		return isPlaying;
 	}
 	return false;
