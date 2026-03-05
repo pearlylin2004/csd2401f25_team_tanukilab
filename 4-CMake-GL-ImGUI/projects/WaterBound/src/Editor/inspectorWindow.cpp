@@ -567,35 +567,39 @@ void InspectorWindow::renderTransform(GameObject* selected) {
 
         if (ImGui::TreeNode("Hierarchy")) {
             Transform* t = selected->getComponent<Transform>();
+        if (selected == m_objSelectionState.selectedPrefab.get()) {
+            if (ImGui::TreeNode("Hierarchy")) {
+                Transform* t = selected->getComponent<Transform>();
 
-            // Assign parent via drag-drop from hierarchy window
-            std::string currentParent = t->parentName.empty() ? "(none)" : t->parentName;
-            ImGui::Text("Parent: %s", currentParent.c_str());
-            ImGui::TextDisabled("(set parent by dragging in Hierarchy)");
-            
+                // Assign parent via drag-drop from hierarchy window
+                std::string currentParent = t->parentName.empty() ? "(none)" : t->parentName;
+                ImGui::Text("Parent: %s", currentParent.c_str());
+                ImGui::TextDisabled("(set parent by dragging in Hierarchy)");
 
-            // Local offset display (read-only — managed by TransformSystem)
-            if (!t->parentName.empty()) {
-                ImGui::Spacing();
-                ImGui::Text("Local Offset: (%.2f, %.2f)", t->localOffset.x, t->localOffset.y);
-                ImGui::Text("Local Rotation: %.2f deg", t->localRotation);
 
-                ImGui::Spacing();
-                if (ImGui::Button("Unparent", ImVec2(-1, 0))) {
-                    auto cmd = std::make_unique<ReparentCmd>(m_manager, selected->getObjectName(),
-                        t->parentName, t->localOffset, t->localRotation,  // old state
-                        "", Vector2D{ 0.f, 0.f }, 0.f);                     // new state (no parent)
-                    UndoRedoManager::Instance().executeCmd(std::move(cmd));
+                // Local offset display (read-only — managed by TransformSystem)
+                if (!t->parentName.empty()) {
+                    ImGui::Spacing();
+                    ImGui::Text("Local Offset: (%.2f, %.2f)", t->localOffset.x, t->localOffset.y);
+                    ImGui::Text("Local Rotation: %.2f deg", t->localRotation);
 
-                    t->parentName.clear();
-                    t->localOffset = { 0.f, 0.f };
-                    t->localRotation = 0.f;
-                    CachedGameObjects::Instance().refresh();
-                    DebugLog::addMessage(selected->getObjectName() + " unparented");
+                    ImGui::Spacing();
+                    if (ImGui::Button("Unparent", ImVec2(-1, 0))) {
+                        auto cmd = std::make_unique<ReparentCmd>(m_manager, selected->getObjectName(),
+                            t->parentName, t->localOffset, t->localRotation,  // old state
+                            "", Vector2D{ 0.f, 0.f }, 0.f);                     // new state (no parent)
+                        UndoRedoManager::Instance().executeCmd(std::move(cmd));
+
+                        t->parentName.clear();
+                        t->localOffset = { 0.f, 0.f };
+                        t->localRotation = 0.f;
+                        CachedGameObjects::Instance().refresh();
+                        DebugLog::addMessage(selected->getObjectName() + " unparented");
+                    }
                 }
-            }
 
-            ImGui::TreePop();
+                ImGui::TreePop();
+            }
         }
     }
 }
