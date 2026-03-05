@@ -2825,13 +2825,20 @@ void InspectorWindow::renderLayerControls(GameObject* selected) {
                 strncpy_s(layerNameBuf, layer->getLayerName().c_str(), sizeof(layerNameBuf) - 1);
                 lastEditedLayerID = currentLayer;
             }
+            else if (!ImGui::IsItemActive()) {
+                strncpy_s(layerNameBuf, layer->getLayerName().c_str(), sizeof(layerNameBuf) - 1);
+            }
 
             ImGui::SetNextItemWidth(160.f);
             ImGui::InputText("Name##layerRename", layerNameBuf, sizeof(layerNameBuf));
+            if (ImGui::IsItemActivated()) {
+                UndoRedoManager::Instance().beginLayerEdit(currentLayer, layer);
+            }
             if (ImGui::IsItemDeactivatedAfterEdit()) {
                 std::string newName(layerNameBuf);
                 if (!newName.empty() && newName != layer->getLayerName()) {
                     m_manager.getLayerManager().renameLayer(currentLayer, newName);
+                    UndoRedoManager::Instance().endLayerEdit(m_manager, layer);
                     DebugLog::addMessage("Layer " + std::to_string(currentLayer) + " renamed to: " + newName);
                 }
             }

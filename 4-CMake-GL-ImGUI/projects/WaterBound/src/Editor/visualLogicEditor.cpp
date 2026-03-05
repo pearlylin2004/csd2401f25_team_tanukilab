@@ -1355,18 +1355,13 @@ void VisualLogicEditor::renderNodeProperties() {
 			// Optional: Quick select dropdown for existing levels
 			ImGui::Spacing();
 			if (ImGui::BeginCombo("##quickSelectLevel", "Quick Select")) {
-				// List common level files
-				const char* commonLevels[] = {
-					"level01.json",
-					"level02.json",
-					"level03.json",
-					"level04.json",
-					"menu_scene.json"
-				};
+				const auto& assets = Editor::assetBrowserState.assets;
 
-				for (const char* level : commonLevels) {
-					if (ImGui::Selectable(level)) {
-						node.parameters["levelName"] = level;
+				for (const auto& asset : assets) {
+					// only show files from the Scene folder
+					if (std::filesystem::path(asset.folder).filename().string() != "Scene") continue;
+					if (ImGui::Selectable(asset.name.c_str())) {
+						node.parameters["levelName"] = asset.name;
 					}
 				}
 				ImGui::EndCombo();

@@ -22,7 +22,8 @@ Technology is prohibited.
 AssetBrowser::AssetBrowser(Editor::AssetBrowserState& Astate, Editor::ObjSelectionState& Ostate, Editor::MenuBarState& Mstate) :
     m_AssetBrowserState(Astate),
     m_objSelectionState(Ostate),
-    m_menuBarState(Mstate)
+    m_menuBarState(Mstate),
+    m_assets(Editor::assetBrowserState.assets)
 {}
 
 void AssetBrowser::render() {

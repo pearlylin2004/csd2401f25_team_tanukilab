@@ -385,6 +385,8 @@ void LayerPropertyCmd::applySnapshot(const LayerSnapshot& snap) {
     layer->setEnabled(snap.enabled);
     layer->setVisible(snap.visible);
     layer->setUpdatable(snap.updatable);
+    if (!snap.name.empty() && snap.name != layer->getLayerName())
+        m_manager.getLayerManager().renameLayer(m_layerID, snap.name);
 }
 /* ---------------- END ---------------- */
 
@@ -692,7 +694,7 @@ void UndoRedoManager::beginLayerEdit(int layerID, Layer* layer) {
 
     m_isEditingLayer = true;
     m_editingLayerID = layerID;
-    m_layerBefore = { layer->isEnabled(), layer->isVisible(), layer->isUpdatable() };
+    m_layerBefore = { layer->isEnabled(), layer->isVisible(), layer->isUpdatable(), layer->getLayerName() };
 }
 
 void UndoRedoManager::endLayerEdit(GameObjectManager& manager, Layer* layer) {
@@ -701,11 +703,12 @@ void UndoRedoManager::endLayerEdit(GameObjectManager& manager, Layer* layer) {
         return;
     }
 
-    LayerSnapshot after = { layer->isEnabled(), layer->isVisible(), layer->isUpdatable() };
+    LayerSnapshot after = { layer->isEnabled(), layer->isVisible(), layer->isUpdatable(), layer->getLayerName() };
 
     bool changed = (m_layerBefore.enabled != after.enabled ||
         m_layerBefore.visible != after.visible ||
-        m_layerBefore.updatable != after.updatable);
+        m_layerBefore.updatable != after.updatable ||
+        m_layerBefore.name != after.name);
 
     if (changed) {
         auto cmd = std::make_unique<LayerPropertyCmd>(manager, m_editingLayerID, m_layerBefore, after);

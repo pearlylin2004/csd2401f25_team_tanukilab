@@ -272,6 +272,8 @@ struct LayerSnapshot {
 	bool enabled;
 	bool visible;
 	bool updatable;
+
+	std::string name;
 };
 
 class LayerPropertyCmd : public CmdInterface {

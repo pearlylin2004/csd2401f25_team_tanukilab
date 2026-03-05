@@ -94,6 +94,7 @@ namespace Editor {
 		std::string currentViewFolder;
 		std::vector<std::string> subFolders;
 		std::vector<PrefabUsageInfo> prefabUsageInfo; // for tracking prefab usage info in delete popup
+		std::vector<Editor::Asset> assets;
 
 		// creating subfolder
 		bool showCreateSubfolderPopup = false;
