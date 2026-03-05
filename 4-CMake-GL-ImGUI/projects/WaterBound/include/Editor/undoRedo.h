@@ -357,6 +357,10 @@ public:
 	bool canUndo() const { return !m_undoDeque.empty(); }
 	bool canRedo() const { return !m_redoDeque.empty(); }
 
+	// save/restore editor history
+	void saveEditorHistory();
+	void restoreEditorHistory();
+
 	// clear all history (i.e. load scene, stop simulation)
 	void clear();
 
@@ -434,6 +438,10 @@ private:
 
 	std::deque<std::unique_ptr<CmdInterface>> m_undoDeque;
 	std::deque<std::unique_ptr<CmdInterface>> m_redoDeque;
+
+	// save editor history when playing simulation
+	std::deque<std::unique_ptr<CmdInterface>> m_savedEditorUndoDeque;
+	std::deque<std::unique_ptr<CmdInterface>> m_savedEditorRedoDeque;
 
 	// for transform
 	bool				m_isEditingTransform = false;

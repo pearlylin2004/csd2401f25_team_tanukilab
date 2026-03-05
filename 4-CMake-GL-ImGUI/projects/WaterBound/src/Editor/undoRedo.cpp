@@ -500,6 +500,19 @@ void UndoRedoManager::redo() {
     m_undoDeque.push_back(std::move(cmd));
 }
 
+void UndoRedoManager::saveEditorHistory() {
+    m_savedEditorUndoDeque = std::move(m_undoDeque);
+    m_savedEditorRedoDeque = std::move(m_redoDeque);
+    m_undoDeque.clear();
+    m_redoDeque.clear();
+}
+void UndoRedoManager::restoreEditorHistory() {
+    m_undoDeque = std::move(m_savedEditorUndoDeque);
+    m_redoDeque = std::move(m_savedEditorRedoDeque);
+    m_savedEditorUndoDeque.clear();
+    m_savedEditorRedoDeque.clear();
+}
+
 void UndoRedoManager::clear() {
     m_undoDeque.clear();
     m_redoDeque.clear();
