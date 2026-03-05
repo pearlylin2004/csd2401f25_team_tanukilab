@@ -30,6 +30,18 @@ namespace Collision {
     using f64 = double;
     extern f64 g_dt;
 
+    //settings
+    float r1 = obj1->getComponent<CollisionInfo>()->colliderSize.x * 0.5f;
+    float r2 = obj2->getComponent<CollisionInfo>()->colliderSize.x * 0.5f;
+    float restDistance = r1 + r2;
+    float stiffness = 6.0f; //pressure strength
+    float viscosity = 0.008f; //smoothing
+    float correctionPercent = 0.5f; //positional correction
+    float damping = 0.05f; //damping
+    float flowStrength = 0.02f; //flow strength for water like behavior
+    float gravity = 0.002f; // tiny gravity to keep flow
+    float antiStick = 0.002f; // slide over neighbors
+
     //Hash
     int HashCell(int, int);
 

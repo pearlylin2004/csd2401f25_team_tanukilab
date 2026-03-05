@@ -167,7 +167,6 @@ void PhysicsForces::shoot(GameObject* bullet, const Transform* origin, const Vec
 
     //float bulletSpeed = p->moveSpeed * 2.0f;  // Adjust multiplier as needed
     float bulletSpeed = p->moveSpeed * 3.0f;
-    //p->maxLifetime = bulletSpeed / (p->moveSpeed * 2.0f) * p->maxLifetime; // scale lifetime with speed
     p->dynamics.velocity.x = dirX * bulletSpeed;
     p->dynamics.velocity.y = dirY * bulletSpeed;
 
