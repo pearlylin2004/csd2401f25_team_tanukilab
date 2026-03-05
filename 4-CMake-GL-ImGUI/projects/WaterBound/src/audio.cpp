@@ -255,6 +255,11 @@ void AudioHandler::stopAll(GameObjectManager& manager) {
 		AudioComponent* ac = obj->getComponent<AudioComponent>();
 
 		for (auto& [name, ch] : ac->audioChannels) {
+			if (ch.persistOnSceneChange) {
+				ch.persistOnSceneChange = false; // reset after one transition
+				continue;
+			}
+
 			if (ch.channel) {
 				stopSound(&ch);
 			}

@@ -17,8 +17,8 @@ void Camera::update(GameObjectManager& manager)
 			const Transform* transform = obj->getComponent<Transform>();
 			if (camInfo->useScreenSize)
 			{
-				renderer::cam.width = static_cast<float>(screenWidth);
-				renderer::cam.ar = static_cast<float>(screenWidth) / screenHeight;
+				renderer::cam.width = (screenWidth);
+				renderer::cam.ar = (screenWidth) / screenHeight;
 			}
 			else
 			{
@@ -54,8 +54,8 @@ void Camera::update(GameObjectManager& manager)
 void Camera::camDefault()
 {
 	
-	renderer::cam.ar = static_cast<float>(screenWidth) / screenHeight;
-	renderer::cam.width = static_cast<float>(screenWidth);
+	renderer::cam.ar = (screenWidth) / screenHeight;
+	renderer::cam.width = (screenWidth);
 	renderer::cam.rot = 0;
 	renderer::cam.zoom = 10;
 	renderer::cam.campos = glm::vec3(0, 0, 0);

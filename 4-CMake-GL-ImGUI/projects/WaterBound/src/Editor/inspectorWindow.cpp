@@ -230,6 +230,36 @@ void InspectorWindow::render() {
         }
         /* ------------------- END ------------------- */
 
+        /* ------------------- Visual LC ------------------- */
+        if (selected->hasComponent<WaterBody>()) {
+            renderWaterBody(selected);
+
+            ImGui::Spacing();
+            ImGui::Separator();
+            ImGui::Spacing();
+        }
+        /* ------------------- END ------------------- */
+
+        /* ------------------- Visual LC ------------------- */
+        if (selected->hasComponent<WeaponComponent>()) {
+            renderWeapon(selected);
+
+            ImGui::Spacing();
+            ImGui::Separator();
+            ImGui::Spacing();
+        }
+        /* ------------------- END ------------------- */
+
+        /* ------------------- Visual LC ------------------- */
+        if (selected->hasComponent<Button>()) {
+            renderButton(selected);
+
+            ImGui::Spacing();
+            ImGui::Separator();
+            ImGui::Spacing();
+        }
+        /* ------------------- END ------------------- */
+
         /* ------------------- Camera ------------------- */
         if(selected->hasComponent<camera>()) {
             renderCamera(selected);
@@ -624,6 +654,15 @@ void InspectorWindow::renderRender(GameObject* selected) {
                 ImGui::Spacing();
                 ImGui::Separator();
                 ImGui::Spacing();
+
+                ImGui::SliderFloat("Alpha", &render->clr.w, 0.f, 1.f);
+                if (ImGui::IsItemActivated())
+                    if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
+                if (ImGui::IsItemDeactivatedAfterEdit())
+                    if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
+
+                ImGui::Spacing();
+
                 if (ImGui::Button("Clear Texture")) {
                     if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
 
@@ -658,8 +697,6 @@ void InspectorWindow::renderRender(GameObject* selected) {
         }
 
         if (ImGui::TreeNode("Colour")) {
-            // cannot edit colour if obj has a texture
-            ImGui::BeginDisabled(render->hasTex);
 
             ImGui::ColorEdit4("##Colour", &render->clr.x); // pass pointer of the first float cuz imgui want that
 
@@ -681,7 +718,6 @@ void InspectorWindow::renderRender(GameObject* selected) {
                 if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
             }
 
-            ImGui::EndDisabled();
             ImGui::TreePop();
         }
 
@@ -1453,18 +1489,6 @@ void InspectorWindow::renderPhysics(GameObject* selected, bool canMove) {
             ImGui::TreePop();
         }
 
-        //ImGui::Checkbox("Buoyancy", &physic->buoyancy);
-
-        // --- input movement (only shown if object has Input component) ---
-        /*if (canMove && ImGui::TreeNode("Movement")) {
-            if (ImGui::InputFloat("Speed", &physic->moveSpeed, 1.f))
-                physic->moveSpeed = std::max(physic->moveSpeed, 0.f);
-
-            if (ImGui::InputFloat("Jump Force", &physic->jumpForce, 1.f))
-                physic->jumpForce = std::max(physic->jumpForce, 0.f);
-
-            ImGui::TreePop();
-        }*/
 
         // --- Constraints ---
         if (ImGui::TreeNode("Constraints")) {
@@ -1519,13 +1543,6 @@ void InspectorWindow::renderPhysics(GameObject* selected, bool canMove) {
             if (ImGui::IsItemDeactivatedAfterEdit())
                 if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
 
-            /*if (ImGui::DragFloat("Friction (Ground)", &physic->friction, 0.1f))
-                physic->friction = std::clamp(physic->friction, 0.f, 1.f);
-            if (ImGui::IsItemActivated())
-                if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
-            if (ImGui::IsItemDeactivatedAfterEdit())
-                if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);*/
-
             if (ImGui::DragFloat("Angular Drag", &physic->dynamics.angularDrag, 0.1f, 0.f))
                 physic->dynamics.angularDrag = std::clamp(physic->dynamics.angularDrag, 0.f, 1.0f);
             if (ImGui::IsItemActivated())
@@ -1547,7 +1564,7 @@ void InspectorWindow::renderPhysics(GameObject* selected, bool canMove) {
             ImGui::TreePop();
         }
 
-        if (ImGui::TreeNode("Debug Info")) {
+        if (ImGui::TreeNode("Physics Info")) {
             
             ImGui::Text("Velocity: (%.2f, %.2f)", physic->dynamics.velocity.x, physic->dynamics.velocity.y);
             Vector2D vel2D{ physic->dynamics.velocity.x, physic->dynamics.velocity.y };
@@ -2459,6 +2476,242 @@ void InspectorWindow::renderVisualLogic(GameObject* selected) {
                 UndoRedoManager::Instance().executeCmd(std::make_unique<RemoveComponentCmd>(m_manager, selected, *entry));
 
                 DebugLog::addMessage("Removed Visual Logic\n");
+            }
+        }
+    }
+}
+
+void InspectorWindow::renderButton(GameObject* selected) {
+    Button* b = selected->getComponent<Button>();
+    const Editor::ComponentEntry* entry = Editor::findEntry("Button");
+    if (ImGui::CollapsingHeader("Button")) {
+        // action Name dropdown
+        /*const char* actionNames[] = {
+            "NONE", "START_GAME", "OPEN_CONTROL", "OPEN_AUDIO", "EXIT_GAME",
+            "RESUME_GAME", "YES_EXIT", "NO_EXIT", "BACK", "MENU",
+            "MUSIC_VOL_UP", "MUSIC_VOL_DOWN", "SFX_VOL_UP", "SFX_VOL_DOWN"
+        };
+        int currentAction = static_cast<int>(b->actionName);
+        if (ImGui::Combo("Action", &currentAction, actionNames, IM_ARRAYSIZE(actionNames))) {
+            if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
+            b->actionName = static_cast<ButtonAction>(currentAction);
+            if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
+        }*/
+
+        // audio channel dropdowns
+        AudioComponent* audio = selected->getComponent<AudioComponent>();
+        if (audio && !audio->audioChannels.empty()) {
+            // build channel list with "None" as first option
+            std::vector<std::string> channelKeys;
+            channelKeys.push_back("");
+            for (auto& pair : audio->audioChannels)
+                channelKeys.push_back(pair.first);
+
+            std::vector<const char*> channelNames;
+            channelNames.push_back("None");
+            for (int i = 1; i < (int)channelKeys.size(); i++)
+                channelNames.push_back(channelKeys[i].c_str());
+
+            // On Click Channel
+            int clickIdx = 0;
+            for (int i = 0; i < (int)channelKeys.size(); i++)
+                if (channelKeys[i] == b->onClickChannel) { clickIdx = i; break; }
+
+            if (ImGui::Combo("On Click Channel", &clickIdx, channelNames.data(), (int)channelNames.size())) {
+                if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
+                b->onClickChannel = channelKeys[clickIdx];
+                if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
+            }
+
+            // On Hover Channel
+            int hoverIdx = 0;
+            for (int i = 0; i < (int)channelKeys.size(); i++)
+                if (channelKeys[i] == b->onHoverChannel) { hoverIdx = i; break; }
+
+            if (ImGui::Combo("On Hover Channel", &hoverIdx, channelNames.data(), (int)channelNames.size())) {
+                if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
+                b->onHoverChannel = channelKeys[hoverIdx];
+                if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
+            }
+        }
+        else {
+            ImGui::TextDisabled("No AudioComponent / channels found on this object");
+        }
+
+        ImGui::Spacing();
+        ImGui::Separator();
+        ImGui::Spacing();
+
+        if (entry) {
+            if (ImGui::Button("Remove Button", ImVec2(-1, 0))) {
+                UndoRedoManager::Instance().executeCmd(
+                    std::make_unique<RemoveComponentCmd>(m_manager, selected, *entry));
+                DebugLog::addMessage("Removed Button\n");
+            }
+        }
+    }
+}
+
+void InspectorWindow::renderWaterBody(GameObject* selected) {
+    WaterBody* w = selected->getComponent<WaterBody>();
+    const Editor::ComponentEntry* entry = Editor::findEntry("Water Body");
+
+    if (ImGui::CollapsingHeader("Water Body")) {
+
+        if (ImGui::TreeNode("Waves")) {
+            ImGui::DragFloat("Amplitude", &w->waveAmplitude, 0.01f, 0.f, 10.f);
+            if (ImGui::IsItemActivated())            if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
+            if (ImGui::IsItemDeactivatedAfterEdit()) if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
+
+            ImGui::DragFloat("Frequency", &w->waveFrequency, 0.01f, 0.f, 20.f);
+            if (ImGui::IsItemActivated())            if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
+            if (ImGui::IsItemDeactivatedAfterEdit()) if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
+
+            ImGui::DragFloat("Speed", &w->waveSpeed, 0.01f, 0.f, 20.f);
+            if (ImGui::IsItemActivated())            if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
+            if (ImGui::IsItemDeactivatedAfterEdit()) if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
+
+            bool renderChanged = ImGui::Checkbox("Render Waves", &w->renderWaves);
+            if (renderChanged) {
+                w->renderWaves = !w->renderWaves;
+                if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
+                w->renderWaves = !w->renderWaves;
+                if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
+            }
+
+            ImGui::TreePop();
+        }
+
+        if (ImGui::TreeNode("Appearance")) {
+            ImGui::ColorEdit4("Water Colour", &w->waterColor.r);
+            if (ImGui::IsItemActivated())            if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
+            if (ImGui::IsItemDeactivatedAfterEdit()) if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
+
+            static bool colourPickerWasOpen = false;
+            bool colourPickerOpen = ImGui::IsPopupOpen("", ImGuiPopupFlags_AnyPopup);
+            if (colourPickerOpen && !colourPickerWasOpen)
+                if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
+            if (!colourPickerOpen && colourPickerWasOpen)
+                if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
+            colourPickerWasOpen = colourPickerOpen;
+
+            ImGui::DragFloat("Alpha", &w->waterAlpha, 0.01f, 0.f, 1.f);
+            if (ImGui::IsItemActivated())            if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
+            if (ImGui::IsItemDeactivatedAfterEdit()) if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
+
+            bool texChanged = ImGui::Checkbox("Use Texture", &w->useTexture);
+            if (texChanged) {
+                w->useTexture = !w->useTexture;
+                if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
+                w->useTexture = !w->useTexture;
+                if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
+            }
+
+            ImGui::TreePop();
+        }
+
+        if (ImGui::TreeNode("Dimensions")) {
+            ImGui::DragFloat("Width", &w->width, 0.1f, 0.f, 1000.f);
+            if (ImGui::IsItemActivated())            if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
+            if (ImGui::IsItemDeactivatedAfterEdit()) if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
+
+            ImGui::DragFloat("Height", &w->height, 0.1f, 0.f, 1000.f);
+            if (ImGui::IsItemActivated())            if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
+            if (ImGui::IsItemDeactivatedAfterEdit()) if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
+
+            ImGui::DragInt("Subdivisions", &w->subdivisions, 1, 2, 200);
+            if (ImGui::IsItemActivated())            if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
+            if (ImGui::IsItemDeactivatedAfterEdit()) if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
+
+            ImGui::TreePop();
+        }
+
+        if (ImGui::TreeNode("Physics")) {
+            bool triggerChanged = ImGui::Checkbox("Is Trigger", &w->isTrigger);
+            if (triggerChanged) {
+                w->isTrigger = !w->isTrigger;
+                if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
+                w->isTrigger = !w->isTrigger;
+                if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
+            }
+
+            ImGui::DragFloat("Buoyancy Force", &w->buoyancyForce, 0.5f, 0.f, 500.f);
+            if (ImGui::IsItemActivated())            if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
+            if (ImGui::IsItemDeactivatedAfterEdit()) if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
+
+            ImGui::DragFloat("Water Drag", &w->waterDrag, 0.001f, 0.f, 1.f);
+            if (ImGui::IsItemActivated())            if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
+            if (ImGui::IsItemDeactivatedAfterEdit()) if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
+
+            ImGui::TreePop();
+        }
+
+        ImGui::Spacing();
+        ImGui::Separator();
+        ImGui::Spacing();
+
+        if (ImGui::TreeNode("Water Info")) {
+            ImGui::Text("Wave Time: %.3f", w->waveTime);
+            ImGui::Text("Water Texture ID: %u", w->waterTexture);
+            ImGui::TreePop();
+        }
+
+        ImGui::Spacing();
+        ImGui::Separator();
+        ImGui::Spacing();
+
+        if (entry) {
+            if (ImGui::Button("Remove Water Body", ImVec2(-1, 0))) {
+                UndoRedoManager::Instance().executeCmd(
+                    std::make_unique<RemoveComponentCmd>(m_manager, selected, *entry));
+                DebugLog::addMessage("Removed Water Body\n");
+            }
+        }
+    }
+}
+
+
+void InspectorWindow::renderWeapon(GameObject* selected) {
+    WeaponComponent* w = selected->getComponent<WeaponComponent>();
+    const Editor::ComponentEntry* entry = Editor::findEntry("Weapon");
+
+    if (ImGui::CollapsingHeader("Weapon")) {
+
+        bool aimChanged = ImGui::Checkbox("Aim At Mouse", &w->aimAtMouse);
+        if (aimChanged) {
+            w->aimAtMouse = !w->aimAtMouse;
+            if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
+            w->aimAtMouse = !w->aimAtMouse;
+            if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
+        }
+
+        ImGui::DragFloat("Barrel Offset X", &w->barrelOffset.x, 0.05f);
+        if (ImGui::IsItemActivated())            if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
+        if (ImGui::IsItemDeactivatedAfterEdit()) if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
+
+        ImGui::DragFloat("Barrel Offset Y", &w->barrelOffset.y, 0.05f);
+        if (ImGui::IsItemActivated())            if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
+        if (ImGui::IsItemDeactivatedAfterEdit()) if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
+
+        ImGui::Spacing();
+        ImGui::Separator();
+        ImGui::Spacing();
+
+        // debug info
+        if (ImGui::TreeNode("Weapon Info")) {
+            ImGui::Text("Current Angle: %.2f", w->currentAngle);
+            ImGui::TreePop();
+        }
+
+        ImGui::Spacing();
+        ImGui::Separator();
+        ImGui::Spacing();
+
+        if (entry) {
+            if (ImGui::Button("Remove Weapon", ImVec2(-1, 0))) {
+                UndoRedoManager::Instance().executeCmd(
+                    std::make_unique<RemoveComponentCmd>(m_manager, selected, *entry));
+                DebugLog::addMessage("Removed Weapon\n");
             }
         }
     }

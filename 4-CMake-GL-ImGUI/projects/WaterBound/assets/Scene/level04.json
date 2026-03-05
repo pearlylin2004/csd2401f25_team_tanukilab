@@ -31,7 +31,7 @@
         "Transform": {
           "pos": [
             -1000.0,
-            -1002.5213623046875,
+            -862.3761596679688,
             1.0
           ]
         },
@@ -41,7 +41,7 @@
           "colorB": 1.0,
           "colorA": 1.0,
           "hasTex": 1,
-          "texture": "assets/Texture/water_texture.png",
+          "texture": "assets/Texture\\water_texture.png",
           "hasAnimation": 0
         },
         "Physics": {
@@ -61,8 +61,19 @@
             0.0
           ],
           "colliderRot": 0.0,
-          "colliderType": "square",
-          "colliderType": "square"
+          "colliderType": "circle",
+          "ignoreCollisionsWith": [
+            "player",
+            "hazards"
+          ]
+        },
+        "LuaScript": {
+          "scripts": [
+            {
+              "filename": "./assets/scripting\\bullet.lua",
+              "scriptName": "bullet"
+            }
+          ]
         }
       }
     },
@@ -72,8 +83,8 @@
       "components": {
         "Transform": {
           "pos": [
-            -17.334003448486328,
-            -0.11850577592849731,
+            -17.38416862487793,
+            -0.11850576847791672,
             0.9980000257492065
           ],
           "scale": [
@@ -123,6 +134,21 @@
         },
         "AudioComponent": {
           "channels": {
+            "footstep": {
+              "audioFile": "assets/audio/Footsteps2_Gravel-Dirt_far-small_4.wav",
+              "volume": 0.4158000946044922,
+              "pitch": 1.0934213399887085,
+              "loop": 0,
+              "playOnStart": 0,
+              "muted": 0,
+              "fadeInOnStart": 0,
+              "fadeInDuration": 1.0,
+              "fadeOutOnStop": 0,
+              "fadeOutDuration": 1.0,
+              "isSpatial": 0,
+              "minDistance": 1.0,
+              "maxDistance": 100.0
+            },
             "footsteps": {
               "audioFile": "assets/audio/footsteps.wav",
               "volume": 0.5,
@@ -140,8 +166,8 @@
             },
             "landing": {
               "audioFile": "assets/audio/landing.wav",
-              "volume": 1.0,
-              "pitch": 1.0,
+              "volume": 0.8302910327911377,
+              "pitch": 1.0411056280136108,
               "loop": 0,
               "playOnStart": 0,
               "muted": 0,
@@ -224,6 +250,7 @@
           ]
         },
         "Render": {
+          "shape": "square",
           "colorR": 1.0,
           "colorG": 1.0,
           "colorB": 1.0,
@@ -426,6 +453,11 @@
             6.588000774383545,
             6.588000774383545
           ],
+          "colliderPos": [
+            0.0,
+            0.0
+          ],
+          "colliderRot": 0.0,
           "colliderType": "square",
           "collisionRes": "StopWhenCollide",
           "collisionTag": "inventory",
@@ -694,7 +726,7 @@
           "pos": [
             5.400000095367432,
             4.724492073059082,
-            0.0
+            -0.0010000000474974513
           ],
           "scale": [
             17.5939998626709,
@@ -766,6 +798,7 @@
           "hasAnimation": 0
         },
         "Physics": {
+          "physicsFlag": 0,
           "autoUpdate": 0,
           "maxFallSpeed": -30.0,
           "groundAccelForce": 20.0,
@@ -877,7 +910,7 @@
         "Transform": {
           "pos": [
             -6.253969192504883,
-            -6.032975673675537,
+            -6.020153999328613,
             0.0
           ],
           "rotation": 0.0,
@@ -1130,11 +1163,11 @@
       "components": {
         "Transform": {
           "pos": [
-            -6.090872764587402,
-            -4.611270904541016,
-            0.0
+            0.5256339311599731,
+            -3.2148303985595703,
+            0.0010000000474974513
           ],
-          "rotation": 29.51104164123535,
+          "rotation": 60.4913444519043,
           "scale": [
             3.200000047683716,
             1.2999999523162842,
@@ -1149,9 +1182,12 @@
         },
         "Render": {
           "shape": "square",
+          "colorR": 1.0,
+          "colorG": 1.0,
+          "colorB": 1.0,
+          "colorA": 1.0,
           "hasTex": 1,
           "texture": "assets/Texture\\Water_Gun.png",
-          "hasTex": 1,
           "hasAnimation": 0
         },
         "WeaponComponent": {

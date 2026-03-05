@@ -137,8 +137,11 @@ private:
 	void renderParticles(GameObject* selected);
 	void renderLua(GameObject* selected);
 	void renderVisualLogic(GameObject* selected);
-	void renderLayerControls(GameObject* selected);
+	void renderWaterBody(GameObject* selected);
+	void renderWeapon(GameObject* selected);
+	void renderButton(GameObject* selected);
 	void renderCamera(GameObject* selected);
+	void renderLayerControls(GameObject* selected);
 
 	void wrongFileTypePopup(const std::string& filename);
 

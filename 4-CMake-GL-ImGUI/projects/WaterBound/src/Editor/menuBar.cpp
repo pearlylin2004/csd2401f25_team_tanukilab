@@ -185,6 +185,8 @@ void MenuBar::playSimulation(GameObjectManager& manager) {
     // refresh cached object vector
     CachedGameObjects::Instance().refresh();
 
+    GUISystem::getInstance().createButtons();
+
     DebugLog::addMessage("Simulation started.\n");
 }
 

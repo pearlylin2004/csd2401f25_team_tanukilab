@@ -67,8 +67,8 @@
       "implementation": "Play Sound",
       "type": 1,
       "position": [
-        280.0,
-        -42.0
+        390.00006103515625,
+        -248.66673278808594
       ],
       "hasInput": true,
       "hasOutput": true,
@@ -340,18 +340,6 @@
       "inputPin": "In"
     },
     {
-      "fromNodeId": 15,
-      "outputPin": "True",
-      "toNodeId": 27,
-      "inputPin": "In"
-    },
-    {
-      "fromNodeId": 27,
-      "outputPin": "Out",
-      "toNodeId": 40,
-      "inputPin": "In"
-    },
-    {
       "fromNodeId": 40,
       "outputPin": "Out",
       "toNodeId": 41,
@@ -421,6 +409,12 @@
       "fromNodeId": 26,
       "outputPin": "Out",
       "toNodeId": 60,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 15,
+      "outputPin": "True",
+      "toNodeId": 40,
       "inputPin": "In"
     }
   ]

@@ -53,6 +53,7 @@ public:
 class PhysicsSystem {
 public:
 	void update(GameObjectManager& manager, const float& deltaTime, MessageBus& messageBus);
+	void onEnterWater(Physics* obj, const float deltaTime);
 
 private:
 	bool m_stepMode = false;

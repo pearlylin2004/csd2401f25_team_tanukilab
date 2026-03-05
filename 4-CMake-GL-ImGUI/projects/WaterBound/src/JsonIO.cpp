@@ -297,6 +297,9 @@ namespace JsonIO {
 		if (str == "On Hover Enter") return NodeImplementation::ON_HOVER_ENTER;
 		if (str == "While Hovering") return NodeImplementation::WHILE_HOVERING;
 		if (str == "On Hover Exit") return NodeImplementation::ON_HOVER_EXIT;
+        if (str == "On Click Enter") return NodeImplementation::ON_CLICK_ENTER;
+        if (str == "While Clicking") return NodeImplementation::WHILE_CLICKING;
+        if (str == "On Click Exit") return NodeImplementation::ON_CLICK_EXIT;
         if (str == "On Bullet Shoot") return NodeImplementation::ON_BULLET_SHOOT;
 		if (str == "On Bullet Refill") return NodeImplementation::ON_BULLET_REFILL;
 
@@ -324,6 +327,13 @@ namespace JsonIO {
         if (str == "Restart Level") return NodeImplementation::RESTART_LEVEL;
         if (str == "Load Level") return NodeImplementation::LOAD_LEVEL;
         if (str == "Disable Collision") return NodeImplementation::DISABLE_COLLISION;
+		if (str == "Is Sinle Physics") return NodeImplementation::IS_SINLE_PHYSICS;
+		if (str == "Enable Physics") return NodeImplementation::ENABLE_PHYSICS;
+		if (str == "Disable Physics") return NodeImplementation::DISABLE_PHYSICS;
+		if (str == "Enter Water") return NodeImplementation::ENTER_WATER;
+		if (str == "Exit Water") return NodeImplementation::EXIT_WATER;
+		if (str == "Hit Ground") return NodeImplementation::HIT_GROUND;
+		if (str == "Not On Ground") return NodeImplementation::NOT_ON_GROUND;
 
 		if (str == "Check Key Held") return NodeImplementation::CHECK_KEY_HELD;
 		if (str == "Compare Value") return NodeImplementation::COMPARE_VALUE;
@@ -346,6 +356,9 @@ namespace JsonIO {
             case NodeImplementation::ON_HOVER_ENTER: return "On Hover Enter";
             case NodeImplementation::WHILE_HOVERING: return "While Hovering";
             case NodeImplementation::ON_HOVER_EXIT: return "On Hover Exit";
+            case NodeImplementation::ON_CLICK_ENTER: return "On Click Enter";
+            case NodeImplementation::WHILE_CLICKING: return "While Clicking";
+            case NodeImplementation::ON_CLICK_EXIT: return "On Click Exit";
             case NodeImplementation::ON_BULLET_SHOOT: return "On Bullet Shoot";
 			case NodeImplementation::ON_BULLET_REFILL: return "On Bullet Refill";
 
@@ -373,6 +386,13 @@ namespace JsonIO {
 			case NodeImplementation::RESTART_LEVEL: return "Restart Level";
 			case NodeImplementation::LOAD_LEVEL: return "Load Level";
 			case NodeImplementation::DISABLE_COLLISION: return "Disable Collision";
+			case NodeImplementation::IS_SINLE_PHYSICS: return "Is Sinle Physics";
+			case NodeImplementation::ENABLE_PHYSICS: return "Enable Physics";
+			case NodeImplementation::DISABLE_PHYSICS: return "Disable Physics";
+			case NodeImplementation::ENTER_WATER: return "Enter Water";
+			case NodeImplementation::EXIT_WATER: return "Exit Water";
+			case NodeImplementation::HIT_GROUND: return "Hit Ground";
+			case NodeImplementation::NOT_ON_GROUND: return "Not On Ground";
 
             case NodeImplementation::CHECK_KEY_HELD: return "Check Key Held";
             case NodeImplementation::COMPARE_VALUE: return "Compare Value";
@@ -1244,6 +1264,7 @@ namespace JsonIO {
             channelObj.AddMember("isSpatial", ch.isSpatial, a);
             channelObj.AddMember("minDistance", ch.minDistance, a);
             channelObj.AddMember("maxDistance", ch.maxDistance, a);
+            channelObj.AddMember("persistOnSceneChange", ch.persistOnSceneChange, a);
             channels.AddMember(Value(channelName.c_str(), a), channelObj, a);
         }
         ja.AddMember("channels", channels, a);
@@ -1289,6 +1310,7 @@ namespace JsonIO {
                 if (co.HasMember("isSpatial"))       ch->isSpatial = co["isSpatial"].GetBool();
                 if (co.HasMember("minDistance"))     ch->minDistance = co["minDistance"].GetFloat();
                 if (co.HasMember("maxDistance"))     ch->maxDistance = co["maxDistance"].GetFloat();
+                if (co.HasMember("persistOnSceneChange"))     ch->persistOnSceneChange = co["persistOnSceneChange"].GetBool();
             }
         }
     }
@@ -1648,6 +1670,97 @@ namespace JsonIO {
         }
     }
 
+    std::string serializeWaterBody(GameObject* obj) {
+        WaterBody* w = obj ? obj->getComponent<WaterBody>() : nullptr;
+        if (!w) return "";
+
+        using namespace rapidjson;
+        Document doc; doc.SetObject();
+        auto& a = doc.GetAllocator();
+
+        Value jw(kObjectType);
+        jw.AddMember("waveAmplitude", w->waveAmplitude, a);
+        jw.AddMember("waveFrequency", w->waveFrequency, a);
+        jw.AddMember("waveSpeed", w->waveSpeed, a);
+        jw.AddMember("waterAlpha", w->waterAlpha, a);
+        jw.AddMember("subdivisions", w->subdivisions, a);
+        jw.AddMember("width", w->width, a);
+        jw.AddMember("height", w->height, a);
+        jw.AddMember("isTrigger", w->isTrigger, a);
+        jw.AddMember("buoyancyForce", w->buoyancyForce, a);
+        jw.AddMember("waterDrag", w->waterDrag, a);
+        jw.AddMember("renderWaves", w->renderWaves, a);
+        jw.AddMember("useTexture", w->useTexture, a);
+        WriteVec4(jw, "waterColor", w->waterColor.r, w->waterColor.g, w->waterColor.b, w->waterColor.a, a);
+        doc.AddMember("WaterBody", jw, a);
+
+        StringBuffer buf; Writer<StringBuffer> w2(buf); doc.Accept(w2);
+        return buf.GetString();
+    }
+
+    void deserializeWaterBody(GameObject* obj, const std::string& json) {
+        if (!obj || json.empty()) return;
+        using namespace rapidjson;
+        Document doc; doc.Parse(json.c_str());
+        if (doc.HasParseError() || !doc.HasMember("WaterBody")) return;
+
+        const Value& jw = doc["WaterBody"];
+        WaterBody* w = obj->hasComponent<WaterBody>()
+            ? obj->getComponent<WaterBody>()
+            : obj->addComponent<WaterBody>();
+
+        if (jw.HasMember("waveAmplitude"))  w->waveAmplitude = jw["waveAmplitude"].GetFloat();
+        if (jw.HasMember("waveFrequency"))  w->waveFrequency = jw["waveFrequency"].GetFloat();
+        if (jw.HasMember("waveSpeed"))      w->waveSpeed = jw["waveSpeed"].GetFloat();
+        if (jw.HasMember("waterAlpha"))     w->waterAlpha = jw["waterAlpha"].GetFloat();
+        if (jw.HasMember("subdivisions"))   w->subdivisions = jw["subdivisions"].GetInt();
+        if (jw.HasMember("width"))          w->width = jw["width"].GetFloat();
+        if (jw.HasMember("height"))         w->height = jw["height"].GetFloat();
+        if (jw.HasMember("isTrigger"))      w->isTrigger = jw["isTrigger"].GetBool();
+        if (jw.HasMember("buoyancyForce"))  w->buoyancyForce = jw["buoyancyForce"].GetFloat();
+        if (jw.HasMember("waterDrag"))      w->waterDrag = jw["waterDrag"].GetFloat();
+        if (jw.HasMember("renderWaves"))    w->renderWaves = jw["renderWaves"].GetBool();
+        if (jw.HasMember("useTexture"))     w->useTexture = jw["useTexture"].GetBool();
+        ReadVec4(jw, "waterColor", w->waterColor.r, w->waterColor.g, w->waterColor.b, w->waterColor.a);
+    }
+
+    std::string serializeButton(GameObject* obj) {
+        Button* b = obj ? obj->getComponent<Button>() : nullptr;
+        if (!b) return "";
+
+        using namespace rapidjson;
+        Document doc; doc.SetObject();
+        auto& a = doc.GetAllocator();
+        Value jb(kObjectType);
+
+        jb.AddMember("actionName", static_cast<int>(b->actionName), a);
+        jb.AddMember("isHovered", b->isHovered, a);
+        jb.AddMember("isPressed", b->isPressed, a);
+        jb.AddMember("onClickChannel", Value(b->onClickChannel.c_str(), a), a);
+        jb.AddMember("onHoverChannel", Value(b->onHoverChannel.c_str(), a), a);
+        doc.AddMember("Button", jb, a);
+        StringBuffer buf; Writer<StringBuffer> w(buf); doc.Accept(w);
+        return buf.GetString();
+    }
+
+    void deserializeButton(GameObject* obj, const std::string& json) {
+        if (!obj || json.empty()) return;
+        using namespace rapidjson;
+
+        Document doc; doc.Parse(json.c_str());
+        if (doc.HasParseError() || !doc.HasMember("Button")) return;
+
+        const Value& jb = doc["Button"];
+        Button* b = obj->hasComponent<Button>()
+            ? obj->getComponent<Button>()
+            : obj->addComponent<Button>();
+
+        if (jb.HasMember("actionName"))     b->actionName = static_cast<ButtonAction>(jb["actionName"].GetInt());
+        if (jb.HasMember("isHovered"))      b->isHovered = jb["isHovered"].GetBool();
+        if (jb.HasMember("isPressed"))      b->isPressed = jb["isPressed"].GetBool();
+        if (jb.HasMember("onClickChannel")) b->onClickChannel = jb["onClickChannel"].GetString();
+        if (jb.HasMember("onHoverChannel")) b->onHoverChannel = jb["onHoverChannel"].GetString();
+    }
 
     std::string serializeGameObj(GameObject* obj) {
         if (!obj) return "";
@@ -1688,15 +1801,18 @@ namespace JsonIO {
         merge(serializeTileMap(obj));
         merge(serializeLuaScript(obj));
         merge(serializeVisualLC(obj));
+        merge(serializeWaterBody(obj));
+        merge(serializeWeapon(obj));
+        merge(serializeButton(obj));
 
-        if (Button* b = obj->getComponent<Button>()) {
+        /*if (Button* b = obj->getComponent<Button>()) {
             Value jb(kObjectType);
             Value actionStr(ButtonActionToStr(b->actionName), a);
             jb.AddMember("action", actionStr, a);
             jb.AddMember("isHovered", b->isHovered, a);
             jb.AddMember("isPressed", b->isPressed, a);
             doc.AddMember("Button", jb, a);
-        }
+        }*/
 
         StringBuffer buf; Writer<StringBuffer> w(buf); doc.Accept(w);
         return buf.GetString();
@@ -1733,6 +1849,9 @@ namespace JsonIO {
             deserializeTileMap(obj, jsonStr);
             deserializeLuaScript(obj, jsonStr);
             deserializeVisualLC(obj, jsonStr);
+            deserializeWaterBody(obj, jsonStr);
+            deserializeWeapon(obj, jsonStr);
+            deserializeButton(obj, jsonStr);
 
             return obj;
         }
