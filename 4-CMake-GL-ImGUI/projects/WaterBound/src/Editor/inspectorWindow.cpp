@@ -565,9 +565,8 @@ void InspectorWindow::renderTransform(GameObject* selected) {
         ImGui::Spacing();
         ImGui::Separator();
 
-        if (ImGui::TreeNode("Hierarchy")) {
-            Transform* t = selected->getComponent<Transform>();
-        if (selected == m_objSelectionState.selectedPrefab.get()) {
+        // only show for normal obj (not prefab)
+        if (selected == m_objSelectionState.selectedObject) {
             if (ImGui::TreeNode("Hierarchy")) {
                 Transform* t = selected->getComponent<Transform>();
 
