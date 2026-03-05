@@ -436,8 +436,10 @@ void CoreEngine::windowIconifyCallback(GLFWwindow* window, int iconified) {
             //window was restored maximized or simply returned to normal state
             //resume the background music or other necessary sounds
             //engine->audio.playSound(soundID::bg, 0.2f);
-            AudioHandler::getInstance().resumeAll(*engine->m_manager);
-            engine->resumeBGM();
+            if (!EditorManager::isEditingMode()) {
+                AudioHandler::getInstance().resumeAll(*engine->m_manager);
+                engine->resumeBGM();
+            }
             engine->m_isPaused = false; //clear paused flag
             
         }
@@ -457,8 +459,10 @@ void CoreEngine::windowFocusCallback(GLFWwindow* window, int focused) {
         else {
             engine->m_isPaused = false; //clear paused flag
             //window regained focus
-            AudioHandler::getInstance().resumeAll(*engine->m_manager);
-            engine->resumeBGM();
+            if (!EditorManager::isEditingMode()) {
+                AudioHandler::getInstance().resumeAll(*engine->m_manager);
+                engine->resumeBGM();
+            }
         }
     }
 }
