@@ -1337,26 +1337,6 @@ void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime, M
 					}
 #endif // _DEBUG
 				}
-				//else if (InputHandler::isMouseLeftClicked()) { /// to shoot only one bullet at a time
-				//	// Single shot mode: Only fire once on click (if autoFire is disabled)
-				//	if (!physics->autoFire && physics->shootTimer >= physics->fireRate) {
-				//		GameObject* bullet = PhysicsForces::findAvailableBullet(manager);
-
-				//		if (bullet != nullptr) {
-				//			Vector2D mouseWorldPos = InputHandler::getWorldMousePosition();
-				//			PhysicsForces::shoot(bullet, transform, mouseWorldPos);
-				//			messageBus.publish(Message("KeyPressed", nullptr, KeyEvent{ "LEFT_CLICK", true }));
-
-				//			if (bullet->hasComponent<AudioComponent>()) {
-				//				AudioComponent* audio = bullet->getComponent<AudioComponent>();
-				//				AudioChannel* ch = audio->getDefaultChannel();
-				//				ch->isPendingPlay = true;
-				//			}
-
-				//			physics->shootTimer = 0.0f;
-				//		}
-				//	}
-				//}
 				else {
 					physics->shootTimer = physics->fireRate;
 				}
@@ -1382,7 +1362,6 @@ void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime, M
 	for (GameObject* obj : gameObjects) {
 		std::string name = obj->getObjectName();
 		// Skip if not a numbered bullet
-		//if (name.find("bullet") != 0 || name.length() <= 6) continue;
 		if (name.find("bullet") != 0) continue;
 
 		bool isNumberedBullet = true;
@@ -1806,7 +1785,6 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 								p2->dynamics.velocity.y = (p2->dynamics.velocity.y - 2.0f * dot2 * (-info.normal.y)) * combined;
 							}
 							if (c1->material.bounciness > 0.0f || c2->material.bounciness > 0.0f) {
-								//std::cout << "CASE1 bounce: " << obj1->getObjectName() << " vs " << obj2->getObjectName() << std::endl;
 								ApplyBounce(p1, c1, info.normal, false);
 								ApplyBounce(p2, c2, { -info.normal.x, -info.normal.y }, false);
 							}
@@ -1891,24 +1869,9 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 								p1->dynamics.position.y = t1->y;
 
 								if (c1->collisionTag == "bullet") { // water
-									float spread = 10.f; // horizontal spread for flow
-									float flowSpeed = 0.2f; // constant lateral push
-									float direction = (rand() % 2 == 0 ? 1.f : -1.f);
-
-									//p1->dynamics.velocity.x += flowSpeed * deltaTime + spread * direction;
-									//p1->dynamics.velocity.y += 0.f;
-
-									p1->dynamics.velocity.x += flowSpeed + spread * direction;
-									
-									// small downward bias so it stays on ground but can slide
-									p1->dynamics.velocity.y = -0.01f; // tiny downward motion
-
-									//apply sliding friction
-									float slideFriction = -0.10f;
-									p1->dynamics.velocity.x *= (1.0f - slideFriction);
-
-									// keep onGround true for other logic if needed
-									p1->onGround = true;
+									float direction = (p1->dynamics.velocity.x >= 0.f) ? 1.f : -1.f;
+									p1->dynamics.velocity.x = 8.0f * direction;
+									p1->dynamics.velocity.y = -0.5f;
 								}
 								else {
 									//normal objects
@@ -1942,8 +1905,6 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 							}
 
 							if (c1->material.bounciness > 0.0f) {
-								//float b = std::min(p1->bounciness, 0.05f); //tiny bounce
-								//std::cout << "CASE2 bounce: " << obj1->getObjectName() << " vs " << obj2->getObjectName() << std::endl;
 								ApplyBounce(p1, c1, info.normal, true);
 							}
 							else {
@@ -1975,17 +1936,8 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 									float distToTop = platAABB.getMax().y - playerAABB.getMin().y;
 
 									if (distToTop > 0.0f && distToTop < p2->ledgeAssistRange) {
-										/*t2->y += distToTop;
-										p2->dynamics.position.y = t2->y;
-										p2->dynamics.velocity.y = 0.0f;
-										p2->velY = 0.0f;
-										p2->onGround = true;
-										p2->coyoteAvailable = true;
-										p2->coyoteTimer = p2->coyoteTime;
-										return;*/
 										p2->ledgeClimb = true;
 										p2->ledgeTargetY = t2->y + distToTop;
-
 										continue;
 									}
 								}
@@ -1993,13 +1945,9 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 								t2->x -= info.normal.x * info.penetration;
 
 								if (c2->collisionTag == "bullet") {
-									// FLOWING BULLET: slide horizontally
-									float spread = 10.f;
-									float flowSpeed = 20.f;
-									float direction = (rand() % 2 == 0 ? 1.f : -1.f);
-
-									p2->dynamics.velocity.x += flowSpeed * deltaTime + spread * direction;
-									p2->dynamics.velocity.y += 0.f; // optional slight downward movement
+									float direction = (p2->dynamics.velocity.x >= 0.f) ? 1.f : -1.f;
+									p2->dynamics.velocity.x = 8.0f * direction;
+									p2->dynamics.velocity.y = -0.5f;
 								}
 								else {
 									// normal object stops horizontally
