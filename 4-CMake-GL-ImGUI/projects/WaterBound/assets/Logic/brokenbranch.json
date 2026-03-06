@@ -253,8 +253,8 @@
       "implementation": "On Collision Enter",
       "type": 0,
       "position": [
-        -756.0,
-        546.0
+        -848.8571166992188,
+        553.142822265625
       ],
       "hasInput": false,
       "hasOutput": true,
@@ -568,15 +568,39 @@
       "parameters": {
         "timerName": "timer_0"
       }
+    },
+    {
+      "id": 68,
+      "implementation": "Change Acceleration Direction",
+      "type": 1,
+      "position": [
+        -555.7142333984375,
+        300.607177734375
+      ],
+      "hasInput": true,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false
+    },
+    {
+      "id": 70,
+      "implementation": "Set Sinle Acceleration",
+      "type": 1,
+      "position": [
+        -574.28564453125,
+        676.0
+      ],
+      "hasInput": true,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false,
+      "parameters": {
+        "axis": "x",
+        "value": "1.000000"
+      }
     }
   ],
   "connections": [
-    {
-      "fromNodeId": 10,
-      "outputPin": "Out",
-      "toNodeId": 11,
-      "inputPin": "In"
-    },
     {
       "fromNodeId": 1,
       "outputPin": "Out",
@@ -629,12 +653,6 @@
       "fromNodeId": 20,
       "outputPin": "Out",
       "toNodeId": 54,
-      "inputPin": "In"
-    },
-    {
-      "fromNodeId": 35,
-      "outputPin": "Out",
-      "toNodeId": 36,
       "inputPin": "In"
     },
     {
@@ -743,6 +761,30 @@
       "fromNodeId": 6,
       "outputPin": "Out",
       "toNodeId": 66,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 35,
+      "outputPin": "Out",
+      "toNodeId": 70,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 70,
+      "outputPin": "Out",
+      "toNodeId": 36,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 10,
+      "outputPin": "Out",
+      "toNodeId": 68,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 68,
+      "outputPin": "Out",
+      "toNodeId": 11,
       "inputPin": "In"
     }
   ]

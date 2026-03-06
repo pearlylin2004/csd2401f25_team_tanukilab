@@ -87,7 +87,7 @@ private:
 	Editor::AssetBrowserState& m_AssetBrowserState;
 	Editor::ObjSelectionState& m_objSelectionState;
 	Editor::MenuBarState& m_menuBarState;
-	std::vector<Editor::Asset> m_assets;
+	std::vector<Editor::Asset>& m_assets;
 };
 
 // Debug console

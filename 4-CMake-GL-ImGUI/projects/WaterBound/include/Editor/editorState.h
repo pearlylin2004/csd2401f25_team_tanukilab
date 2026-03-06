@@ -94,6 +94,7 @@ namespace Editor {
 		std::string currentViewFolder;
 		std::vector<std::string> subFolders;
 		std::vector<PrefabUsageInfo> prefabUsageInfo; // for tracking prefab usage info in delete popup
+		std::vector<Editor::Asset> assets;
 
 		// creating subfolder
 		bool showCreateSubfolderPopup = false;
@@ -300,6 +301,9 @@ namespace Editor {
 		{"Exit Water", NodeType::ACTION, NodeImplementation::EXIT_WATER},
 		{"Hit Ground", NodeType::ACTION, NodeImplementation::HIT_GROUND},
 		{"Not on Ground", NodeType::ACTION, NodeImplementation::NOT_ON_GROUND},
+		{"Change Acceleration Direction", NodeType::ACTION, NodeImplementation::CHANGE_ACCEL_DIRECTION},
+		{"Set Sinle Acceleration", NodeType::ACTION, NodeImplementation::SET_SINLE_ACCEL}
+
 	};
 	/* ----------------- Logic End ---------------- */
 

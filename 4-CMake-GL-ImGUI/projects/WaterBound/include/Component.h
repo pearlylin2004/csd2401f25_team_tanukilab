@@ -804,6 +804,8 @@ enum class NodeImplementation {
     EXIT_WATER,
     HIT_GROUND,
 	NOT_ON_GROUND,
+    CHANGE_ACCEL_DIRECTION,
+    SET_SINLE_ACCEL,
 
     // DEFAULT
     DEFAULT // nothing happen :)
