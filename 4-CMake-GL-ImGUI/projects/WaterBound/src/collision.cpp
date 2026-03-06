@@ -648,10 +648,13 @@ namespace Collision {
         Physics* phys2 = obj2->getComponent<Physics>();
         Transform* trans1 = obj1->getComponent<Transform>();
         Transform* trans2 = obj2->getComponent<Transform>();
+        float r1 = obj1->getComponent<CollisionInfo>()->colliderSize.x * 0.5f;
+        float r2 = obj2->getComponent<CollisionInfo>()->colliderSize.x * 0.5f;
 
         if (!phys1->alive || !phys2->alive) return false;
 
         //vector from obj1 to obj2
+        float restDistance = r1 + r2;
         float dx = trans2->x - trans1->x;
         float dy = trans2->y - trans1->y;
         float distSq = dx * dx + dy * dy;
