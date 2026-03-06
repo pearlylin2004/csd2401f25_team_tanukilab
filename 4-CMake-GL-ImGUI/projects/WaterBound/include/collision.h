@@ -31,13 +31,13 @@ namespace Collision {
     extern f64 g_dt;
 
     //settings
-    float stiffness = 6.0f; //pressure strength
-    float viscosity = 0.008f; //smoothing
-    float correctionPercent = 0.5f; //positional correction
-    float damping = 0.05f; //damping
-    float flowStrength = 0.02f; //flow strength for water like behavior
-    float gravity = 0.002f; // tiny gravity to keep flow
-    float antiStick = 0.002f; // slide over neighbors
+    inline float stiffness = 6.0f; //pressure strength
+    inline float viscosity = 0.008f; //smoothing
+    inline float correctionPercent = 0.5f; //positional correction
+    inline float damping = 0.05f; //damping
+    inline float flowStrength = 0.02f; //flow strength for water like behavior
+    inline float gravity = 0.002f; // tiny gravity to keep flow
+    inline float antiStick = 0.002f; // slide over neighbors
 
     //Hash
     int HashCell(int, int);
