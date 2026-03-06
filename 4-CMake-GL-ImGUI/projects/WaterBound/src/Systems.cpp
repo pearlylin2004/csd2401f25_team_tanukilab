@@ -1438,6 +1438,13 @@ void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime, M
 					newScale = std::max(newScale, p->minScale);
 					t->scaleX = newScale;
 					t->scaleY = newScale;
+
+					//shrink collider to match visual size
+					if (obj->hasComponent<CollisionInfo>()) {
+						CollisionInfo* col = obj->getComponent<CollisionInfo>();
+						col->colliderSize.x = newScale;
+						col->colliderSize.y = newScale;
+					}
 				}
 				if (p->lifeTimer >= p->maxLifetime || p->dynamics.position.y < -20.0f) {
 					PhysicsForces::deactivateBullet(obj);
