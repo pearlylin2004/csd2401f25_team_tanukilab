@@ -1891,7 +1891,7 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 
 								if (c1->collisionTag == "bullet") { // water
 									float direction = (p1->dynamics.velocity.x >= 0.f) ? 1.f : -1.f;
-									p1->dynamics.velocity.x = 8.0f * direction;
+									p1->dynamics.velocity.x = 12.0f * direction;
 									p1->dynamics.velocity.y = -0.5f;
 								}
 								else {
@@ -1967,7 +1967,7 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 
 								if (c2->collisionTag == "bullet") {
 									float direction = (p2->dynamics.velocity.x >= 0.f) ? 1.f : -1.f;
-									p2->dynamics.velocity.x = 8.0f * direction;
+									p2->dynamics.velocity.x = 12.0f * direction;
 									p2->dynamics.velocity.y = -0.5f;
 								}
 								else {
