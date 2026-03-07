@@ -336,6 +336,7 @@ namespace JsonIO {
         if (str == "Not On Ground") return NodeImplementation::NOT_ON_GROUND;
         if (str == "Change Acceleration Direction") return NodeImplementation::CHANGE_ACCEL_DIRECTION;
         if (str == "Set Sinle Acceleration") return NodeImplementation::SET_SINLE_ACCEL;
+        if (str == "Play Random Sound") return NodeImplementation::PLAY_RANDOM_SOUND;
 
 		if (str == "Check Key Held") return NodeImplementation::CHECK_KEY_HELD;
 		if (str == "Compare Value") return NodeImplementation::COMPARE_VALUE;
@@ -397,6 +398,7 @@ namespace JsonIO {
             case NodeImplementation::NOT_ON_GROUND: return "Not On Ground";
             case NodeImplementation::CHANGE_ACCEL_DIRECTION: return "Change Acceleration Direction";
             case NodeImplementation::SET_SINLE_ACCEL: return "Set Sinle Acceleration";
+            case NodeImplementation::PLAY_RANDOM_SOUND: return "Play Random Sound";
 
             case NodeImplementation::CHECK_KEY_HELD: return "Check Key Held";
             case NodeImplementation::COMPARE_VALUE: return "Compare Value";
