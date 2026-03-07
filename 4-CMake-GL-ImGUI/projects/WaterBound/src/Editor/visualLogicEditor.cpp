@@ -1412,7 +1412,10 @@ void VisualLogicEditor::renderNodeProperties() {
 		}
 		// play randon audio
 		else if (node.imp == NodeImplementation::PLAY_RANDOM_SOUND) {
-			ImGui::TextDisabled("Plays a random clip each trigger (no repeat). Cooldown prevents audio spam.");
+			ImGui::PushStyleColor(ImGuiCol_Text, ImGui::GetStyleColorVec4(ImGuiCol_TextDisabled));
+			ImGui::TextWrapped("Plays a random clip each trigger (no repeat). Cooldown prevents audio spam.");
+
+			ImGui::PopStyleColor();
 
 			AudioComponent* audio = nullptr;
 			if (Editor::visualLogicState.targetObj) {
@@ -1537,17 +1540,19 @@ void VisualLogicEditor::renderNodeProperties() {
 
 			// Add channel (max 8)
 			ImGui::Spacing();
-			if (audioCount < 8) {
-				if (ImGui::Button("+ Add Audio Slot")) {
-					// just mark the next slot as pending — user selects channel from dropdown
-					node.parameters["audio_" + std::to_string(audioCount)] = "(none)";
+			if (audio && !audio->audioChannels.empty()) {
+				if (audioCount < 8) {
+					if (ImGui::Button("+ Add Audio Slot")) {
+						// just mark the next slot as pending — user selects channel from dropdown
+						node.parameters["audio_" + std::to_string(audioCount)] = "(none)";
+					}
+				}
+				else {
+					ImGui::TextDisabled("Max 8 audio slots reached");
 				}
 			}
-			else {
-				ImGui::TextDisabled("Max 8 audio slots reached");
-			}
-
-			ImGui::TextDisabled("Plays a random clip each trigger (no repeat). Cooldown prevents audio spam.");
+			
+			ImGui::Spacing();
 		}
 	}
 	/* ---------- END ---------- */
