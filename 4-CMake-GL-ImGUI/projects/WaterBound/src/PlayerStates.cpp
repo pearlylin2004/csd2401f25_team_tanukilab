@@ -195,7 +195,7 @@ void WalkingState::onExit(GameObject& obj) {
 void JumpingState::onEnter(GameObject& obj) {
     resetAnimationFrame(obj, PlayerState::Jumping);
 
-    if (AudioComponent* audio = obj.getComponent<AudioComponent>()) {
+    /*if (AudioComponent* audio = obj.getComponent<AudioComponent>()) {
         AudioChannel* jump = audio->getOrCreateChannel("jump");
         if (jump) {
             jump->audioFile = "assets/audio/jump.wav";
@@ -203,7 +203,7 @@ void JumpingState::onEnter(GameObject& obj) {
             jump->volume = 0.7f;
             jump->isPendingPlay = true;
         }
-    }
+    }*/
 
     std::string msg = "[FSM] " + obj.getObjectName() + " -> Jumping";
     DebugLog::addMessage(msg, DebugMode::PlaySimul);
