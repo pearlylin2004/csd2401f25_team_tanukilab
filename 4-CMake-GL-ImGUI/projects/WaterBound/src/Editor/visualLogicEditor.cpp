@@ -1414,7 +1414,6 @@ void VisualLogicEditor::renderNodeProperties() {
 		else if (node.imp == NodeImplementation::PLAY_RANDOM_SOUND) {
 			ImGui::PushStyleColor(ImGuiCol_Text, ImGui::GetStyleColorVec4(ImGuiCol_TextDisabled));
 			ImGui::TextWrapped("Plays a random clip each trigger (no repeat). Cooldown prevents audio spam.");
-
 			ImGui::PopStyleColor();
 
 			AudioComponent* audio = nullptr;
