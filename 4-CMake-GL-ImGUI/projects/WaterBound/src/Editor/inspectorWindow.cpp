@@ -2340,7 +2340,7 @@ void InspectorWindow::renderLua(GameObject* selected) {
             ImGui::PopID();
         }
 
-        // Remove script if requested (do this after the loop)
+        // Remove script if requested
         if (scriptIndex >= 0) {
             if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
 
@@ -2351,6 +2351,7 @@ void InspectorWindow::renderLua(GameObject* selected) {
 
             DebugLog::addMessage("Removed script slot " + std::to_string(scriptIndex + 1) + "\n");
         }
+
 
         /* ---------- Add new script button ---------- */
         if (ImGui::Button("+ Add Script", ImVec2(-1, 0))) {
