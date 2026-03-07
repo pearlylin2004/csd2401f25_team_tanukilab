@@ -1440,13 +1440,14 @@ void VisualLogicEditor::renderNodeProperties() {
 			ImGui::Spacing();
 
 			int audioCount = 0;
-			for (int i = 0; i < 8; ++i) {
+			int MAX_AUDIO = 12;
+			for (int i = 0; i < MAX_AUDIO; ++i) {
 				if (node.parameters.count("audio_" + std::to_string(i))) ++audioCount;
 				else break;
 			}
 			if (audioCount == 0) audioCount = 1;
-
-			ImGui::Text("Audio Channels: (%d/8)", audioCount);
+			
+			ImGui::Text("Audio Channels : (% d / % d)", audioCount, MAX_AUDIO);
 			ImGui::Spacing();
 
 			int slotToRemove = -1;
@@ -1537,17 +1538,17 @@ void VisualLogicEditor::renderNodeProperties() {
 				node.parameters.erase("audio_" + std::to_string(audioCount - 1));
 			}
 
-			// Add channel (max 8)
+			// Add channel (max 12)
 			ImGui::Spacing();
 			if (audio && !audio->audioChannels.empty()) {
-				if (audioCount < 8) {
+				if (audioCount < MAX_AUDIO) {
 					if (ImGui::Button("+ Add Audio Slot")) {
 						// just mark the next slot as pending — user selects channel from dropdown
 						node.parameters["audio_" + std::to_string(audioCount)] = "(none)";
 					}
 				}
 				else {
-					ImGui::TextDisabled("Max 8 audio slots reached");
+					ImGui::TextDisabled("Max %d audio slots reached", MAX_AUDIO);
 				}
 			}
 			
