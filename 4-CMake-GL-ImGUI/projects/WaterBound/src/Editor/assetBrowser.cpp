@@ -166,12 +166,7 @@ void AssetBrowser::render() {
 
                                 if (!prefabID.empty()) {
                                     // build new path relative to assets folder: "/Prefab/subfolder/filename.json"
-                                    std::string newRelativePath = "/" +
-                                        (std::filesystem::path(m_AssetBrowserState.currentViewFolder)
-                                            / subFolder
-                                            / src.filename()).string();
-
-                                    std::replace(newRelativePath.begin(), newRelativePath.end(), '\\', '/');
+                                    std::string newRelativePath = toRegistryPath(dest.string());
 
                                     // update in prefab registry
                                     PrefabManager::Instance().setPrefabPath(prefabID, newRelativePath);
@@ -806,7 +801,7 @@ void AssetBrowser::assetRenamePopup() {
                     std::string prefabID = PrefabManager::Instance().findPrefabIDByFilename(toRegistryPath(old.string()));
                     if (!prefabID.empty()) {
                         // change prefab name and save
-                        PrefabManager::Instance().setPrefabPath(prefabID, newPath.string());
+                        PrefabManager::Instance().setPrefabPath(prefabID, toRegistryPath(newPath.string()));
                     }
 
                     /* ------- END ------- */
