@@ -93,7 +93,8 @@
               "fadeOutDuration": 0.5,
               "isSpatial": 0,
               "minDistance": 1.0,
-              "maxDistance": 100.0
+              "maxDistance": 100.0,
+              "persistOnSceneChange": 0
             },
             "on_click": {
               "audioFile": "assets/Audio\\Confirm UI.wav",
@@ -108,7 +109,8 @@
               "fadeOutDuration": 1.0,
               "isSpatial": 0,
               "minDistance": 1.0,
-              "maxDistance": 100.0
+              "maxDistance": 100.0,
+              "persistOnSceneChange": 0
             }
           }
         },
@@ -163,7 +165,8 @@
               "fadeOutDuration": 0.5,
               "isSpatial": 0,
               "minDistance": 1.0,
-              "maxDistance": 100.0
+              "maxDistance": 100.0,
+              "persistOnSceneChange": 0
             },
             "on_click": {
               "audioFile": "assets/Audio\\Confirm UI.wav",
@@ -178,7 +181,8 @@
               "fadeOutDuration": 1.0,
               "isSpatial": 0,
               "minDistance": 1.0,
-              "maxDistance": 100.0
+              "maxDistance": 100.0,
+              "persistOnSceneChange": 0
             }
           }
         },
@@ -233,7 +237,8 @@
               "fadeOutDuration": 0.5,
               "isSpatial": 0,
               "minDistance": 1.0,
-              "maxDistance": 100.0
+              "maxDistance": 100.0,
+              "persistOnSceneChange": 0
             },
             "on_click": {
               "audioFile": "assets/Audio\\Confirm UI.wav",
@@ -248,7 +253,8 @@
               "fadeOutDuration": 1.0,
               "isSpatial": 0,
               "minDistance": 1.0,
-              "maxDistance": 100.0
+              "maxDistance": 100.0,
+              "persistOnSceneChange": 0
             }
           }
         },
@@ -303,7 +309,8 @@
               "fadeOutDuration": 0.5,
               "isSpatial": 0,
               "minDistance": 1.0,
-              "maxDistance": 100.0
+              "maxDistance": 100.0,
+              "persistOnSceneChange": 0
             },
             "on_click": {
               "audioFile": "assets/Audio\\Confirm UI.wav",
@@ -318,7 +325,8 @@
               "fadeOutDuration": 1.0,
               "isSpatial": 0,
               "minDistance": 1.0,
-              "maxDistance": 100.0
+              "maxDistance": 100.0,
+              "persistOnSceneChange": 0
             }
           }
         },
@@ -363,7 +371,8 @@
               "fadeOutDuration": 1.0,
               "isSpatial": 0,
               "minDistance": 1.0,
-              "maxDistance": 100.0
+              "maxDistance": 100.0,
+              "persistOnSceneChange": 1
             }
           }
         }
