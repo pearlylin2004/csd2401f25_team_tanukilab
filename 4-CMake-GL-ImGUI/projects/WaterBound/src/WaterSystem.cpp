@@ -77,6 +77,7 @@ void WaterSystem::update(GameObjectManager& manager, float deltaTime) {
             water->waveTime += deltaTime;
         }
 
+        if (water && water->pendingHeightIncrease > 0.0f) {
             float rise = water->heightRiseSpeed * deltaTime;
             rise = Math_Min(rise, water->pendingHeightIncrease);
 
