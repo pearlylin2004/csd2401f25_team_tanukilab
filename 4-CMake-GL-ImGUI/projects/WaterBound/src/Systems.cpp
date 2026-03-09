@@ -2557,8 +2557,11 @@ void AudioSystem::update(GameObjectManager& manager, float deltaTime) {
 			for (auto& pair : audio->audioChannels) {
 				AudioChannel& ch = pair.second;
 
+				// Process audio (isPendingPlay, isPendingStop, etc.)
+				processAudio(obj, &ch, deltaTime);
+
 				// Background music restart logic
-				if (ch.playOnStart && ch.loop) {
+				if (ch.playOnStart && ch.loop && ch.state != AudioState::Stopped) {
 					if (!ch.channel || !audioHandler.isSoundPlaying(&ch)) {
 						// Restart background music if not playing
 						ch.channel = audioHandler.playSound(&ch);
@@ -2571,9 +2574,7 @@ void AudioSystem::update(GameObjectManager& manager, float deltaTime) {
 						}
 					}
 				}
-
-				// Process audio (isPendingPlay, isPendingStop, etc.)
-				processAudio(obj, &ch, deltaTime);
+				
 
 				// Check if channel is still playing
 				if (ch.channel) {

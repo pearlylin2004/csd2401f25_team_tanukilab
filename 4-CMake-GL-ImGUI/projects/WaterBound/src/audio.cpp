@@ -192,7 +192,6 @@ FMOD::Channel* AudioHandler::playSound(AudioChannel* audio) {
 				std::cerr << "Warning: Failed to set 3D distance for: " << audio->audioFile << std::endl;
 			}
 		}
-
 		audio->channel = channel;
 		audio->fadeInfo.isFading = false;
 		std::cout << "[AUDIO] Playing: " << audio->audioFile
@@ -316,13 +315,10 @@ bool AudioHandler::isSoundPaused(AudioChannel* audio) {
 	bool isPaused = false;
 	if (audio->channel) {
 		FMOD_RESULT result = audio->channel->getPaused(&isPaused);
-		// Fmod returns invalid handle if channel expired naturally (sound finished)
-		// So this is just to clean up our cmd prompt so there isnt this error every time a sound finishes playing.
 		if (result == FMOD_ERR_INVALID_HANDLE) {
 			audio->channel = nullptr;
 			return false;
 		}
-
 		FMODErrorCheck(result);
 		return isPaused;
 	}
@@ -347,7 +343,7 @@ bool AudioHandler::isSoundPlaying(AudioChannel* audio) {
 		bool isPlaying = false;
 		FMOD_RESULT result = audio->channel->isPlaying(&isPlaying);
 		if (result == FMOD_ERR_INVALID_HANDLE) {
-			// Channel expired naturally (sound finished) clean up silently
+			// Channel expired naturally (sound finished) — clean up silently
 			audio->channel = nullptr;
 			return false;
 		}
