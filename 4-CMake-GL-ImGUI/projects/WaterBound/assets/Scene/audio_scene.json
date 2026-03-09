@@ -17,7 +17,6 @@
         }
       }
     },
-
     {
       "name": "audio_title",
       "components": {
@@ -34,7 +33,6 @@
         }
       }
     },
-
     {
       "name": "music_label",
       "components": {
@@ -51,7 +49,6 @@
         }
       }
     },
-
     {
       "name": "music_down_btn",
       "components": {
@@ -71,7 +68,6 @@
         }
       }
     },
-
     {
       "name": "music_down_text",
       "components": {
@@ -88,7 +84,6 @@
         }
       }
     },
-
     {
       "name": "music_vol_text",
       "components": {
@@ -105,7 +100,6 @@
         }
       }
     },
-
     {
       "name": "music_up_btn",
       "components": {
@@ -125,7 +119,6 @@
         }
       }
     },
-
     {
       "name": "music_up_text",
       "components": {
@@ -142,7 +135,6 @@
         }
       }
     },
-
     {
       "name": "back_text",
       "components": {
@@ -159,7 +151,6 @@
         }
       }
     },
-
     {
       "name": "back_button",
       "components": {
@@ -185,7 +176,7 @@
         "Transform": {
           "pos": [-2, -2.5, 0.0],
           "rotation": 0.0,
-          "scale": [3.0, 2.0, 0.0]
+          "scale": [3.5, 2.0, 0.0]
         },
         "Render": {
           "shape": "square",
@@ -195,6 +186,57 @@
         },
         "Button": {
           "action": "mute"
+        }
+      }
+    },
+    {
+      "name": "mute_text",
+      "components": {
+        "Transform": {
+          "pos": [-2.9, -2.8, 1.0],
+          "rotation": 0.0,
+          "scale": [20.0, 20.0, 0.0]
+        },
+        "FontComponent": {
+          "word": "MUTE",
+          "color": [0.0, 0.0, 0.0],
+          "scale": 0.6,
+          "fontType": 1
+        }
+      }
+    },
+    {
+      "name": "unmute_btn",
+      "components": {
+        "Transform": {
+          "pos": [5, -2.5, 0.0],
+          "rotation": 0.0,
+          "scale": [3.5, 2.0, 0.0]
+        },
+        "Render": {
+          "shape": "square",
+          "hasTex": 1,
+          "texture": "assets/button.png",
+          "clr": [1.0, 1.0, 1.0]
+        },
+        "Button": {
+          "action": "unmute"
+        }
+      }
+    },
+    {
+      "name": "unmute_text",
+      "components": {
+        "Transform": {
+          "pos": [3.5, -2.8, 1.0],
+          "rotation": 0.0,
+          "scale": [20.0, 20.0, 0.0]
+        },
+        "FontComponent": {
+          "word": "UNMUTE",
+          "color": [0.0, 0.0, 0.0],
+          "scale": 0.6,
+          "fontType": 1
         }
       }
     }

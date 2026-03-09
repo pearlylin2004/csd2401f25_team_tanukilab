@@ -106,4 +106,6 @@ private:
 
     std::unordered_map<std::string, Vector2D> m_spawnPositions;
     std::string m_currentLevel = "";
+
+    float m_previousVolume = 100;
 };

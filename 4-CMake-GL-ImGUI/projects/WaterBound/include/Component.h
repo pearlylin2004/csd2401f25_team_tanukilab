@@ -327,7 +327,9 @@ enum class ButtonAction {
     MUSIC_VOL_UP,
     MUSIC_VOL_DOWN,
     SFX_VOL_UP,
-    SFX_VOL_DOWN
+    SFX_VOL_DOWN,
+    MUTE,
+    UNMUTE
 };
 
 //Button component
