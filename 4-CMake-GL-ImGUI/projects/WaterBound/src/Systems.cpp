@@ -1691,6 +1691,20 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 							}
 						}
 
+						bool bulletIsObj1 = (c1->collisionTag == "bullet" && c2->collisionTag == "water");
+						bool bulletIsObj2 = (c2->collisionTag == "bullet" && c1->collisionTag == "water");
+
+						if (bulletIsObj1 || bulletIsObj2) {
+							PhysicsForces::deactivateBullet(bulletIsObj1 ? obj1 : obj2);
+							WaterBody* water = (bulletIsObj1 ? obj2 : obj1)->getComponent<WaterBody>();
+							Transform* waterT = bulletIsObj1 ? t2 : t1;
+							if (water) {
+								water->height += water->heightIncrease;
+								waterT->y += water->heightIncrease * water->heightIncrease;
+							}
+							continue;
+						}
+
 						// Visual logic events (if needed)
 						if (obj1->hasComponent<VisualLC>()) {
 							VisualLC* logic1 = obj1->getComponent<VisualLC>();
