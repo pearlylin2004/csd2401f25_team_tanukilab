@@ -70,14 +70,17 @@ void InspectorWindow::render() {
             std::string oldObjName = objName;
             std::string newObjName = buffer;
 
-            if (selected == m_objSelectionState.selectedObject) {
-                if (m_manager.renameGameObject(m_objSelectionState.selectedObject, newObjName)) {
-                    // update obj new name jic redo/undo
-                    UndoRedoManager::Instance().updateObjName(oldObjName, newObjName);
+            UndoRedoManager::Instance().beginRenameObject(m_objSelectionState.selectedObject);
 
+            if (selected == m_objSelectionState.selectedObject) {
+                UndoRedoManager::Instance().beginRenameObject(m_objSelectionState.selectedObject);
+                if (m_manager.renameGameObject(m_objSelectionState.selectedObject, newObjName)) {
+                    UndoRedoManager::Instance().updateObjName(oldObjName, newObjName);
+                    UndoRedoManager::Instance().endRenameObject(m_manager, m_objSelectionState.selectedObject);
                     DebugLog::addMessage("Object renamed to " + newObjName + "\n");
                 }
                 else {
+                    UndoRedoManager::Instance().endRenameObject(m_manager, m_objSelectionState.selectedObject);
                     DebugLog::addMessage("Failed to rename: name already exists\n");
                 }
             }
@@ -261,7 +264,7 @@ void InspectorWindow::render() {
         /* ------------------- END ------------------- */
 
         /* ------------------- Camera ------------------- */
-        if(selected->hasComponent<camera>()) {
+        if (selected->hasComponent<camera>()) {
             renderCamera(selected);
             ImGui::Spacing();
             ImGui::Separator();
@@ -270,7 +273,7 @@ void InspectorWindow::render() {
 		/* ------------------- END ------------------- */
 
         /* ------------------- Layer Controls ------------------- */
-        renderLayerControls(selected);
+        if (selected == m_objSelectionState.selectedObject) renderLayerControls(selected);
         /* ------------------- END ------------------- */
 
 
@@ -310,6 +313,11 @@ void InspectorWindow::addComponent(GameObject* selected) {
         // skip if selected obj alr has this component
         if (comp.hasComp(selected)) continue;
         if (comp.name == "Animation") continue;
+
+        // skip tilemap/camera for prefab because they have special conditions
+        if (selected == m_objSelectionState.selectedPrefab.get()) {
+            if (comp.name == "Camera" || comp.name == "Tile Map") continue;
+        }
 
         // only one camera component may exist in one scene
         if (Editor::hasCam && comp.name == "Camera") continue;
@@ -488,8 +496,8 @@ void InspectorWindow::renderTransform(GameObject* selected) {
             if (!m_objSelectionState.aspectRatioLock) m_objSelectionState.ratioSet = false;
 
             // clamp scale to be non-negative
-            if (ImGui::DragFloat("X1", &transform->scaleX, 0.1f, 0.f)) {
-                transform->scaleX = std::max(transform->scaleX, 0.f);
+            if (ImGui::DragFloat("X1", &transform->scaleX, 0.1f)) {
+                //->scaleX = std::max(transform->scaleX, 0.f);
 
                 if (!m_isEditingScale) {
                     UndoRedoManager::Instance().beginTransformEdit(selected);
@@ -500,8 +508,8 @@ void InspectorWindow::renderTransform(GameObject* selected) {
             scaleActive |= ImGui::IsItemActive();
 
             ImGui::BeginDisabled(m_objSelectionState.aspectRatioLock);
-            if (ImGui::DragFloat("Y1", &transform->scaleY, 0.1f, 0.f)) {
-                transform->scaleY = std::max(transform->scaleY, 0.f);
+            if (ImGui::DragFloat("Y1", &transform->scaleY, 0.1f)) {
+                //transform->scaleY = std::max(transform->scaleY, 0.f);
 
                 if (!m_isEditingScale) {
                     UndoRedoManager::Instance().beginTransformEdit(selected);
@@ -511,8 +519,8 @@ void InspectorWindow::renderTransform(GameObject* selected) {
             }
             scaleActive |= ImGui::IsItemActive();
 
-            if (ImGui::DragFloat("Z1", &transform->scaleZ, 0.1f, 0.f)) {
-                transform->scaleZ = std::max(transform->scaleZ, 0.f);
+            if (ImGui::DragFloat("Z1", &transform->scaleZ, 0.1f)) {
+                //transform->scaleZ = std::max(transform->scaleZ, 0.f);
 
 
                 if (!m_isEditingScale) {
@@ -557,37 +565,40 @@ void InspectorWindow::renderTransform(GameObject* selected) {
         ImGui::Spacing();
         ImGui::Separator();
 
-        if (ImGui::TreeNode("Hierarchy")) {
-            Transform* t = selected->getComponent<Transform>();
+        // only show for normal obj (not prefab)
+        if (selected == m_objSelectionState.selectedObject) {
+            if (ImGui::TreeNode("Hierarchy")) {
+                Transform* t = selected->getComponent<Transform>();
 
-            // Assign parent via drag-drop from hierarchy window
-            std::string currentParent = t->parentName.empty() ? "(none)" : t->parentName;
-            ImGui::Text("Parent: %s", currentParent.c_str());
-            ImGui::TextDisabled("(set parent by dragging in Hierarchy)");
-            
+                // Assign parent via drag-drop from hierarchy window
+                std::string currentParent = t->parentName.empty() ? "(none)" : t->parentName;
+                ImGui::Text("Parent: %s", currentParent.c_str());
+                ImGui::TextDisabled("(set parent by dragging in Hierarchy)");
 
-            // Local offset display (read-only — managed by TransformSystem)
-            if (!t->parentName.empty()) {
-                ImGui::Spacing();
-                ImGui::Text("Local Offset: (%.2f, %.2f)", t->localOffset.x, t->localOffset.y);
-                ImGui::Text("Local Rotation: %.2f deg", t->localRotation);
 
-                ImGui::Spacing();
-                if (ImGui::Button("Unparent", ImVec2(-1, 0))) {
-                    auto cmd = std::make_unique<ReparentCmd>(m_manager, selected->getObjectName(),
-                        t->parentName, t->localOffset, t->localRotation,  // old state
-                        "", Vector2D{ 0.f, 0.f }, 0.f);                     // new state (no parent)
-                    UndoRedoManager::Instance().executeCmd(std::move(cmd));
+                // Local offset display (read-only — managed by TransformSystem)
+                if (!t->parentName.empty()) {
+                    ImGui::Spacing();
+                    ImGui::Text("Local Offset: (%.2f, %.2f)", t->localOffset.x, t->localOffset.y);
+                    ImGui::Text("Local Rotation: %.2f deg", t->localRotation);
 
-                    t->parentName.clear();
-                    t->localOffset = { 0.f, 0.f };
-                    t->localRotation = 0.f;
-                    CachedGameObjects::Instance().refresh();
-                    DebugLog::addMessage(selected->getObjectName() + " unparented");
+                    ImGui::Spacing();
+                    if (ImGui::Button("Unparent", ImVec2(-1, 0))) {
+                        auto cmd = std::make_unique<ReparentCmd>(m_manager, selected->getObjectName(),
+                            t->parentName, t->localOffset, t->localRotation,  // old state
+                            "", Vector2D{ 0.f, 0.f }, 0.f);                     // new state (no parent)
+                        UndoRedoManager::Instance().executeCmd(std::move(cmd));
+
+                        t->parentName.clear();
+                        t->localOffset = { 0.f, 0.f };
+                        t->localRotation = 0.f;
+                        CachedGameObjects::Instance().refresh();
+                        DebugLog::addMessage(selected->getObjectName() + " unparented");
+                    }
                 }
-            }
 
-            ImGui::TreePop();
+                ImGui::TreePop();
+            }
         }
     }
 }
@@ -1486,6 +1497,9 @@ void InspectorWindow::renderPhysics(GameObject* selected, bool canMove) {
                     ImGui::TreePop();
                 }
             }
+            else {
+                ImGui::Text("No Input Control Component found.");
+            }
             ImGui::TreePop();
         }
 
@@ -2326,7 +2340,7 @@ void InspectorWindow::renderLua(GameObject* selected) {
             ImGui::PopID();
         }
 
-        // Remove script if requested (do this after the loop)
+        // Remove script if requested
         if (scriptIndex >= 0) {
             if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
 
@@ -2337,6 +2351,7 @@ void InspectorWindow::renderLua(GameObject* selected) {
 
             DebugLog::addMessage("Removed script slot " + std::to_string(scriptIndex + 1) + "\n");
         }
+
 
         /* ---------- Add new script button ---------- */
         if (ImGui::Button("+ Add Script", ImVec2(-1, 0))) {
@@ -2825,13 +2840,20 @@ void InspectorWindow::renderLayerControls(GameObject* selected) {
                 strncpy_s(layerNameBuf, layer->getLayerName().c_str(), sizeof(layerNameBuf) - 1);
                 lastEditedLayerID = currentLayer;
             }
+            else if (!ImGui::IsItemActive()) {
+                strncpy_s(layerNameBuf, layer->getLayerName().c_str(), sizeof(layerNameBuf) - 1);
+            }
 
             ImGui::SetNextItemWidth(160.f);
             ImGui::InputText("Name##layerRename", layerNameBuf, sizeof(layerNameBuf));
+            if (ImGui::IsItemActivated()) {
+                UndoRedoManager::Instance().beginLayerEdit(currentLayer, layer);
+            }
             if (ImGui::IsItemDeactivatedAfterEdit()) {
                 std::string newName(layerNameBuf);
                 if (!newName.empty() && newName != layer->getLayerName()) {
                     m_manager.getLayerManager().renameLayer(currentLayer, newName);
+                    UndoRedoManager::Instance().endLayerEdit(m_manager, layer);
                     DebugLog::addMessage("Layer " + std::to_string(currentLayer) + " renamed to: " + newName);
                 }
             }

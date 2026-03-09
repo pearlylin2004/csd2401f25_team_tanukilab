@@ -36,6 +36,7 @@
           ]
         },
         "Render": {
+          "shape": "square",
           "colorR": 1.0,
           "colorG": 1.0,
           "colorB": 1.0,
@@ -61,7 +62,8 @@
             0.0
           ],
           "colliderRot": 0.0,
-          "colliderType": "circle",
+          "colliderType": "square",
+          "colliderType": "square",
           "ignoreCollisionsWith": [
             "player",
             "hazards"
@@ -84,13 +86,8 @@
         "Transform": {
           "pos": [
             -17.38416862487793,
-            -0.11850576847791672,
+            -0.11850574612617493,
             0.9980000257492065
-          ],
-          "scale": [
-            4.0,
-            4.0,
-            0.0
           ]
         },
         "Render": {
@@ -105,94 +102,16 @@
         "Physics": {
           "autoUpdate": 0
         },
-        "CollisionInfo": {
-          "colliderPos": [
-            0.0,
-            0.0
-          ],
-          "colliderRot": 0.0,
-          "collisionTag": "player",
-          "ignoreCollisionsWith": [
-            "bullet"
-          ]
-        },
-        "StateMachine": {
-          "Falling": {
-            "animState": {
-              "texture": "assets/Texture/Kinuta_Fall_SS.png",
-              "loop": 0,
-              "play": 0,
-              "totalColumn": 4,
-              "totalRow": 1,
-              "frameTime": 0.10000000149011612,
-              "initialFramCol": 0.0,
-              "initialFramRow": 0.0,
-              "lastFramCol": 0.0,
-              "lastFramRow": 0.0
-            }
-          }
-        },
         "AudioComponent": {
           "channels": {
             "footstep": {
               "audioFile": "assets/audio/Footsteps2_Gravel-Dirt_far-small_4.wav",
               "volume": 0.4158000946044922,
-              "pitch": 1.0934213399887085,
-              "loop": 0,
-              "playOnStart": 0,
-              "muted": 0,
-              "fadeInOnStart": 0,
-              "fadeInDuration": 1.0,
-              "fadeOutOnStop": 0,
-              "fadeOutDuration": 1.0,
-              "isSpatial": 0,
-              "minDistance": 1.0,
-              "maxDistance": 100.0
-            },
-            "footsteps": {
-              "audioFile": "assets/audio/footsteps.wav",
-              "volume": 0.5,
-              "pitch": 1.0,
-              "loop": 1,
-              "playOnStart": 0,
-              "muted": 0,
-              "fadeInOnStart": 0,
-              "fadeInDuration": 1.0,
-              "fadeOutOnStop": 1,
-              "fadeOutDuration": 0.15000000596046448,
-              "isSpatial": 0,
-              "minDistance": 1.0,
-              "maxDistance": 100.0
+              "pitch": 1.0934213399887085
             },
             "landing": {
-              "audioFile": "assets/audio/landing.wav",
               "volume": 0.8302910327911377,
-              "pitch": 1.0411056280136108,
-              "loop": 0,
-              "playOnStart": 0,
-              "muted": 0,
-              "fadeInOnStart": 0,
-              "fadeInDuration": 1.0,
-              "fadeOutOnStop": 0,
-              "fadeOutDuration": 1.0,
-              "isSpatial": 0,
-              "minDistance": 1.0,
-              "maxDistance": 100.0
-            },
-            "refill": {
-              "audioFile": "assets/Audio\\collect_water.wav",
-              "volume": 1.0,
-              "pitch": 1.0,
-              "loop": 0,
-              "playOnStart": 0,
-              "muted": 0,
-              "fadeInOnStart": 1,
-              "fadeInDuration": 0.5400000214576721,
-              "fadeOutOnStop": 1,
-              "fadeOutDuration": 0.7799999713897705,
-              "isSpatial": 0,
-              "minDistance": 1.0,
-              "maxDistance": 100.0
+              "pitch": 1.0411056280136108
             }
           }
         },
@@ -203,9 +122,6 @@
               "scriptName": "player"
             }
           ]
-        },
-        "VisualLC": {
-          "filename": "player_logic.json"
         }
       }
     },
@@ -373,6 +289,53 @@
       }
     },
     {
+      "name": "water balance back",
+      "components": {
+        "Transform": {
+          "pos": [
+            17.0,
+            7.5,
+            0.9900000095367432
+          ],
+          "rotation": 0.0,
+          "scale": [
+            6.588000774383545,
+            6.588000774383545,
+            0.0
+          ]
+        },
+        "Render": {
+          "shape": "square",
+          "colorR": 1.0,
+          "colorG": 1.0,
+          "colorB": 1.0,
+          "colorA": 1.0,
+          "hasTex": 1,
+          "texture": "assets/Texture\\Water_ContainerRim.png",
+          "hasAnimation": 0
+        },
+        "CollisionInfo": {
+          "collisionFlag": 1,
+          "autoFitScale": 1,
+          "colliderSize": [
+            6.588000774383545,
+            6.588000774383545
+          ],
+          "colliderPos": [
+            0.0,
+            0.0
+          ],
+          "colliderRot": 0.0,
+          "colliderType": "square",
+          "collisionRes": "StopWhenCollide",
+          "collisionTag": "inventory",
+          "bounciness": 0.0,
+          "friction": 0.0,
+          "colliderType": "square"
+        }
+      }
+    },
+    {
       "prefabid": "8b8d44fa-ed22-4288-98ee-c476958f5b5b",
       "name": "endgoal(23)",
       "components": {
@@ -417,53 +380,6 @@
         },
         "VisualLC": {
           "filename": "endgoal04.json"
-        }
-      }
-    },
-    {
-      "name": "water balance back",
-      "components": {
-        "Transform": {
-          "pos": [
-            17.0,
-            7.5,
-            0.9900000095367432
-          ],
-          "rotation": 0.0,
-          "scale": [
-            6.588000774383545,
-            6.588000774383545,
-            0.0
-          ]
-        },
-        "Render": {
-          "shape": "square",
-          "colorR": 1.0,
-          "colorG": 1.0,
-          "colorB": 1.0,
-          "colorA": 1.0,
-          "hasTex": 1,
-          "texture": "assets/Texture\\Water_ContainerRim.png",
-          "hasAnimation": 0
-        },
-        "CollisionInfo": {
-          "collisionFlag": 1,
-          "autoFitScale": 1,
-          "colliderSize": [
-            6.588000774383545,
-            6.588000774383545
-          ],
-          "colliderPos": [
-            0.0,
-            0.0
-          ],
-          "colliderRot": 0.0,
-          "colliderType": "square",
-          "collisionRes": "StopWhenCollide",
-          "collisionTag": "inventory",
-          "bounciness": 0.0,
-          "friction": 0.0,
-          "colliderType": "square"
         }
       }
     },
@@ -596,7 +512,7 @@
           "rotation": 0.0,
           "scale": [
             7.300000190734863,
-            1.100000023841858,
+            1.2000000476837158,
             0.0
           ]
         },
@@ -632,19 +548,19 @@
         },
         "CollisionInfo": {
           "collisionFlag": 1,
-          "autoFitScale": 1,
+          "autoFitScale": 0,
           "colliderSize": [
             7.300000190734863,
-            1.100000023841858
+            2.799999952316284
           ],
           "colliderPos": [
             0.0,
-            0.0
+            -0.800000011920929
           ],
           "colliderRot": 0.0,
           "colliderType": "square",
           "collisionRes": "StopWhenCollide",
-          "collisionTag": "default",
+          "collisionTag": "environment",
           "bounciness": 0.0,
           "friction": 0.0,
           "colliderType": "square"
@@ -711,7 +627,7 @@
           "colliderRot": 0.0,
           "colliderType": "square",
           "collisionRes": "StopWhenCollide",
-          "collisionTag": "default",
+          "collisionTag": "environment",
           "bounciness": 0.0,
           "friction": 0.0,
           "colliderType": "square"
@@ -910,7 +826,7 @@
         "Transform": {
           "pos": [
             -6.253969192504883,
-            -6.020153999328613,
+            -6.0186767578125,
             0.0
           ],
           "rotation": 0.0,
@@ -1163,11 +1079,11 @@
       "components": {
         "Transform": {
           "pos": [
-            0.5256339311599731,
-            -3.2148303985595703,
+            -16.553733825683594,
+            -0.9765769839286804,
             0.0010000000474974513
           ],
-          "rotation": 60.4913444519043,
+          "rotation": 12.815719604492188,
           "scale": [
             3.200000047683716,
             1.2999999523162842,

@@ -119,7 +119,7 @@ void EditorManager::handleShortcutKeys(GameObjectManager& manager) {
     /* ------------- "CTRL" + "Z" -> Undo ------------- */
     if (InputHandler::isComboKeyTriggered(GLFW_KEY_Z) ||
         InputHandler::isComboKeyTriggered(GLFW_KEY_Z, GLFW_KEY_RIGHT_CONTROL)) {
-        if (isEditingMode() && UndoRedoManager::Instance().canUndo()) {
+        if (/*isEditingMode() && */UndoRedoManager::Instance().canUndo()) {
             UndoRedoManager::Instance().undo();
         }
     }
@@ -129,7 +129,7 @@ void EditorManager::handleShortcutKeys(GameObjectManager& manager) {
     /* ------------- "CTRL" + "Y" -> Redo ------------- */
     if (InputHandler::isComboKeyTriggered(GLFW_KEY_Y) ||
         InputHandler::isComboKeyTriggered(GLFW_KEY_Y, GLFW_KEY_RIGHT_CONTROL)) {
-        if (isEditingMode() && UndoRedoManager::Instance().canRedo()) {
+        if (/*isEditingMode() && */UndoRedoManager::Instance().canRedo()) {
             UndoRedoManager::Instance().redo();
         }
     }

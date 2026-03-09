@@ -64,6 +64,7 @@
           ]
         },
         "Render": {
+          "shape": "square",
           "colorR": 1.0,
           "colorG": 1.0,
           "colorB": 1.0,
@@ -89,7 +90,8 @@
             0.0
           ],
           "colliderRot": 0.0,
-          "colliderType": "circle",
+          "colliderType": "square",
+          "colliderType": "square",
           "ignoreCollisionsWith": [
             "player",
             "hazards"
@@ -137,18 +139,6 @@
       "prefabid": "dd60e1e1-641c-4ed5-b69d-ffadfa02fb7a",
       "name": "player",
       "components": {
-        "Transform": {
-          "pos": [
-            -17.767385482788086,
-            -4.7280683517456055,
-            0.9980000257492065
-          ],
-          "scale": [
-            4.0,
-            4.0,
-            0.0
-          ]
-        },
         "Render": {
           "colorR": 1.0,
           "colorG": 1.0,
@@ -161,112 +151,6 @@
         "Physics": {
           "autoUpdate": 0
         },
-        "CollisionInfo": {
-          "colliderPos": [
-            0.0,
-            0.0
-          ],
-          "colliderRot": 0.0,
-          "collisionTag": "player",
-          "ignoreCollisionsWith": [
-            "bullet"
-          ]
-        },
-        "StateMachine": {
-          "Falling": {
-            "animState": {
-              "texture": "assets/Texture/Kinuta_Fall_SS.png",
-              "loop": 0,
-              "play": 0,
-              "totalColumn": 4,
-              "totalRow": 1,
-              "frameTime": 0.10000000149011612,
-              "initialFramCol": 0.0,
-              "initialFramRow": 0.0,
-              "lastFramCol": 0.0,
-              "lastFramRow": 0.0
-            }
-          }
-        },
-        "AudioComponent": {
-          "channels": {
-            "footstep": {
-              "audioFile": "assets/audio/Footsteps2_Gravel-Dirt_far-small_2.wav",
-              "volume": 0.3857349157333374,
-              "pitch": 0.985999345779419,
-              "loop": 0,
-              "playOnStart": 0,
-              "muted": 0,
-              "fadeInOnStart": 0,
-              "fadeInDuration": 1.0,
-              "fadeOutOnStop": 0,
-              "fadeOutDuration": 1.0,
-              "isSpatial": 0,
-              "minDistance": 1.0,
-              "maxDistance": 100.0
-            },
-            "footsteps": {
-              "audioFile": "assets/audio/footsteps.wav",
-              "volume": 0.5,
-              "pitch": 1.0,
-              "loop": 1,
-              "playOnStart": 0,
-              "muted": 0,
-              "fadeInOnStart": 0,
-              "fadeInDuration": 1.0,
-              "fadeOutOnStop": 1,
-              "fadeOutDuration": 0.15000000596046448,
-              "isSpatial": 0,
-              "minDistance": 1.0,
-              "maxDistance": 100.0
-            },
-            "jump": {
-              "audioFile": "assets/audio/jump.wav",
-              "volume": 0.699999988079071,
-              "pitch": 1.0,
-              "loop": 0,
-              "playOnStart": 0,
-              "muted": 0,
-              "fadeInOnStart": 0,
-              "fadeInDuration": 1.0,
-              "fadeOutOnStop": 0,
-              "fadeOutDuration": 1.0,
-              "isSpatial": 0,
-              "minDistance": 1.0,
-              "maxDistance": 100.0
-            },
-            "landing": {
-              "audioFile": "assets/audio/landing.wav",
-              "volume": 1.0,
-              "pitch": 1.0,
-              "loop": 0,
-              "playOnStart": 0,
-              "muted": 0,
-              "fadeInOnStart": 0,
-              "fadeInDuration": 1.0,
-              "fadeOutOnStop": 0,
-              "fadeOutDuration": 1.0,
-              "isSpatial": 0,
-              "minDistance": 1.0,
-              "maxDistance": 100.0
-            },
-            "refill": {
-              "audioFile": "assets/Audio\\collect_water.wav",
-              "volume": 1.0,
-              "pitch": 1.0,
-              "loop": 0,
-              "playOnStart": 0,
-              "muted": 0,
-              "fadeInOnStart": 1,
-              "fadeInDuration": 0.5400000214576721,
-              "fadeOutOnStop": 1,
-              "fadeOutDuration": 0.7799999713897705,
-              "isSpatial": 0,
-              "minDistance": 1.0,
-              "maxDistance": 100.0
-            }
-          }
-        },
         "LuaScript": {
           "scripts": [
             {
@@ -274,9 +158,6 @@
               "scriptName": "player"
             }
           ]
-        },
-        "VisualLC": {
-          "filename": "player_logic.json"
         }
       }
     },
@@ -493,7 +374,7 @@
             -5.58579158782959,
             0.0
           ],
-          "rotation": 6.190947532653809,
+          "rotation": 11.117803573608398,
           "scale": [
             3.200000047683716,
             1.2999999523162842,
@@ -579,17 +460,17 @@
               "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
             },
             {
+              "x": -4,
+              "y": -4,
+              "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
+            },
+            {
               "x": 6,
               "y": -2,
               "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
             },
             {
               "x": 7,
-              "y": -4,
-              "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
-            },
-            {
-              "x": -4,
               "y": -4,
               "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
             },
@@ -873,8 +754,8 @@
       "components": {
         "Transform": {
           "pos": [
-            13.595999717712402,
-            -0.04527680575847626,
+            15.43726634979248,
+            -0.04527687281370163,
             0.0
           ]
         },

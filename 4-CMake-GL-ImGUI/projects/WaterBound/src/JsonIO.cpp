@@ -333,7 +333,10 @@ namespace JsonIO {
 		if (str == "Enter Water") return NodeImplementation::ENTER_WATER;
 		if (str == "Exit Water") return NodeImplementation::EXIT_WATER;
 		if (str == "Hit Ground") return NodeImplementation::HIT_GROUND;
-		if (str == "Not On Ground") return NodeImplementation::NOT_ON_GROUND;
+        if (str == "Not On Ground") return NodeImplementation::NOT_ON_GROUND;
+        if (str == "Change Acceleration Direction") return NodeImplementation::CHANGE_ACCEL_DIRECTION;
+        if (str == "Set Sinle Acceleration") return NodeImplementation::SET_SINLE_ACCEL;
+        if (str == "Play Random Sound") return NodeImplementation::PLAY_RANDOM_SOUND;
 
 		if (str == "Check Key Held") return NodeImplementation::CHECK_KEY_HELD;
 		if (str == "Compare Value") return NodeImplementation::COMPARE_VALUE;
@@ -392,7 +395,10 @@ namespace JsonIO {
 			case NodeImplementation::ENTER_WATER: return "Enter Water";
 			case NodeImplementation::EXIT_WATER: return "Exit Water";
 			case NodeImplementation::HIT_GROUND: return "Hit Ground";
-			case NodeImplementation::NOT_ON_GROUND: return "Not On Ground";
+            case NodeImplementation::NOT_ON_GROUND: return "Not On Ground";
+            case NodeImplementation::CHANGE_ACCEL_DIRECTION: return "Change Acceleration Direction";
+            case NodeImplementation::SET_SINLE_ACCEL: return "Set Sinle Acceleration";
+            case NodeImplementation::PLAY_RANDOM_SOUND: return "Play Random Sound";
 
             case NodeImplementation::CHECK_KEY_HELD: return "Check Key Held";
             case NodeImplementation::COMPARE_VALUE: return "Compare Value";

@@ -38,10 +38,14 @@ namespace {
 		else if (compName == "StateMachine") obj->removeComponent<StateMachine>();
 		else if (compName == "AudioComponent") obj->removeComponent<AudioComponent>();
 		else if (compName == "FontComponent") obj->removeComponent<FontComponent>();
-		else if (compName == "TileMap") obj->removeComponent<TileMap>();
+		//else if (compName == "TileMap") obj->removeComponent<TileMap>();
 		else if (compName == "Particle") obj->removeComponent<Particle>();
 		else if (compName == "LuaScript") obj->removeComponent<LuaScript>();
 		else if (compName == "VisualLC") obj->removeComponent<VisualLC>();
+		else if (compName == "Button") obj->removeComponent<Button>();
+		else if (compName == "WeaponComponent") obj->removeComponent<WeaponComponent>();
+		else if (compName == "WaterBody") obj->removeComponent<WaterBody>();
+
 	}
 
 	void removeAllComponents(GameObject* obj) {
@@ -54,10 +58,13 @@ namespace {
 		obj->removeComponent<StateMachine>();
 		obj->removeComponent<AudioComponent>();
 		obj->removeComponent<FontComponent>();
-		obj->removeComponent<TileMap>();
+		//obj->removeComponent<TileMap>();
 		obj->removeComponent<Particle>();
 		obj->removeComponent<LuaScript>();
 		obj->removeComponent<VisualLC>();
+		obj->removeComponent<Button>();
+		obj->removeComponent<WeaponComponent>();
+		obj->removeComponent<WaterBody>();
 	}
 
 	void applyComponentFromJson(GameObject* obj, const char* compName, const rapidjson::Value& compData, rapidjson::Document::AllocatorType& allocator, const std::function<void(GameObject*, const rapidjson::Value&)>& func) {
@@ -970,50 +977,50 @@ void PrefabManager::applyPrefabComponents(GameObject* go, const rapidjson::Value
 		}
 	}
 
-	// ---- TileMapComponent ----
-	if (comps.HasMember("TileMap") && comps["TileMap"].IsObject())
-	{
-		const auto& tmj = comps["TileMap"];
-		auto* tm = go->addComponent<TileMap>();
+	//// ---- TileMapComponent ----
+	//if (comps.HasMember("TileMap") && comps["TileMap"].IsObject())
+	//{
+	//	const auto& tmj = comps["TileMap"];
+	//	auto* tm = go->addComponent<TileMap>();
 
-		if (tmj.HasMember("tileW") && tmj["tileW"].IsNumber())
-			tm->tileW = tmj["tileW"].GetFloat();
+	//	if (tmj.HasMember("tileW") && tmj["tileW"].IsNumber())
+	//		tm->tileW = tmj["tileW"].GetFloat();
 
-		if (tmj.HasMember("tileH") && tmj["tileH"].IsNumber())
-			tm->tileH = tmj["tileH"].GetFloat();
+	//	if (tmj.HasMember("tileH") && tmj["tileH"].IsNumber())
+	//		tm->tileH = tmj["tileH"].GetFloat();
 
-		if (tmj.HasMember("columns") && tmj["columns"].IsNumber())
-			tm->columns = tmj["columns"].GetInt();
+	//	if (tmj.HasMember("columns") && tmj["columns"].IsNumber())
+	//		tm->columns = tmj["columns"].GetInt();
 
-		if (tmj.HasMember("rows") && tmj["rows"].IsNumber())
-			tm->rows = tmj["rows"].GetInt();
+	//	if (tmj.HasMember("rows") && tmj["rows"].IsNumber())
+	//		tm->rows = tmj["rows"].GetInt();
 
-		if (tmj.HasMember("enableCol")) {
-			tm->enableCol = tmj["enableCol"].IsBool()
-				? tmj["enableCol"].GetBool()
-				: (tmj["enableCol"].GetInt() != 0);
-		}
+	//	if (tmj.HasMember("enableCol")) {
+	//		tm->enableCol = tmj["enableCol"].IsBool()
+	//			? tmj["enableCol"].GetBool()
+	//			: (tmj["enableCol"].GetInt() != 0);
+	//	}
 
-		// --- IMPORTANT: Deserialize actual tile data ---
-		tm->tiles.clear();  // wipe previous tile data
+	//	// --- IMPORTANT: Deserialize actual tile data ---
+	//	tm->tiles.clear();  // wipe previous tile data
 
-		if (tmj.HasMember("tiles") && tmj["tiles"].IsArray())
-		{
-			for (const auto& tile : tmj["Tiles"].GetArray())
-			{
-				if (!tile.IsObject()) continue;
+	//	if (tmj.HasMember("tiles") && tmj["tiles"].IsArray())
+	//	{
+	//		for (const auto& tile : tmj["Tiles"].GetArray())
+	//		{
+	//			if (!tile.IsObject()) continue;
 
-				int x = tile.HasMember("x") ? tile["x"].GetInt() : 0;
-				int y = tile.HasMember("y") ? tile["y"].GetInt() : 0;
-				std::string id = tile["id"].GetString();
+	//			int x = tile.HasMember("x") ? tile["x"].GetInt() : 0;
+	//			int y = tile.HasMember("y") ? tile["y"].GetInt() : 0;
+	//			std::string id = tile["id"].GetString();
 
-				tm->setTile(x, y, id);
-			}
-		}
-	}
+	//			tm->setTile(x, y, id);
+	//		}
+	//	}
+	//}
 
 	// ---- Camera ----
-	if (comps.HasMember("Camera") && comps["Camera"].IsObject())
+	/*if (comps.HasMember("Camera") && comps["Camera"].IsObject())
 	{
 		const auto& jcam = comps["Camera"];
 		auto* cam = go->addComponent<camera>();
@@ -1043,7 +1050,7 @@ void PrefabManager::applyPrefabComponents(GameObject* go, const rapidjson::Value
 
 		if (jcam.HasMember("mapHeight") && jcam["mapHeight"].IsNumber())
 			cam->mapHeight = jcam["mapHeight"].GetFloat();
-	}
+	}*/
 
 	// ---- AudioComponent - Multi-Channel with Backwards Compatibility ----
 	if (comps.HasMember("AudioComponent") && comps["AudioComponent"].IsObject()) {
@@ -1198,6 +1205,73 @@ void PrefabManager::applyPrefabComponents(GameObject* go, const rapidjson::Value
 		if (jb.HasMember("onHoverChannel") && jb["onHoverChannel"].IsString())
 			b->onHoverChannel = jb["onHoverChannel"].GetString();
 	}
+
+	// ---- Water Body ----
+	if (comps.HasMember("WaterBody") && comps["WaterBody"].IsObject()) {
+		const auto& jw = comps["WaterBody"];
+
+		auto* wb = go->getComponent<WaterBody>();
+		if (!wb)
+			wb = go->addComponent<WaterBody>();
+
+		// Wave animation parameters
+		if (jw.HasMember("waveAmplitude") && jw["waveAmplitude"].IsNumber())
+			wb->waveAmplitude = jw["waveAmplitude"].GetFloat();
+
+		if (jw.HasMember("waveFrequency") && jw["waveFrequency"].IsNumber())
+			wb->waveFrequency = jw["waveFrequency"].GetFloat();
+
+		if (jw.HasMember("waveSpeed") && jw["waveSpeed"].IsNumber())
+			wb->waveSpeed = jw["waveSpeed"].GetFloat();
+
+		// Water visual properties
+		if (jw.HasMember("waterColor") && jw["waterColor"].IsArray() && jw["waterColor"].Size() == 4) {
+			wb->waterColor.r = jw["waterColor"][0].GetFloat();
+			wb->waterColor.g = jw["waterColor"][1].GetFloat();
+			wb->waterColor.b = jw["waterColor"][2].GetFloat();
+			wb->waterColor.a = jw["waterColor"][3].GetFloat();
+		}
+
+		if (jw.HasMember("waterAlpha") && jw["waterAlpha"].IsNumber())
+			wb->waterAlpha = jw["waterAlpha"].GetFloat();
+
+		// Subdivision for wave mesh
+		if (jw.HasMember("subdivisions") && jw["subdivisions"].IsInt())
+			wb->subdivisions = jw["subdivisions"].GetInt();
+
+		// Water body dimensions
+		if (jw.HasMember("width") && jw["width"].IsNumber())
+			wb->width = jw["width"].GetFloat();
+
+		if (jw.HasMember("height") && jw["height"].IsNumber())
+			wb->height = jw["height"].GetFloat();
+
+		// Physics properties
+		if (jw.HasMember("isTrigger")) {
+			wb->isTrigger = jw["isTrigger"].IsBool()
+				? jw["isTrigger"].GetBool()
+				: (jw["isTrigger"].GetInt() != 0);
+		}
+
+		if (jw.HasMember("buoyancyForce") && jw["buoyancyForce"].IsNumber())
+			wb->buoyancyForce = jw["buoyancyForce"].GetFloat();
+
+		if (jw.HasMember("waterDrag") && jw["waterDrag"].IsNumber())
+			wb->waterDrag = jw["waterDrag"].GetFloat();
+
+		// Rendering flags
+		if (jw.HasMember("renderWaves")) {
+			wb->renderWaves = jw["renderWaves"].IsBool()
+				? jw["renderWaves"].GetBool()
+				: (jw["renderWaves"].GetInt() != 0);
+		}
+
+		if (jw.HasMember("useTexture")) {
+			wb->useTexture = jw["useTexture"].IsBool()
+				? jw["useTexture"].GetBool()
+				: (jw["useTexture"].GetInt() != 0);
+		}
+	}
 }
 
 void PrefabManager::serializeComponents(const GameObject* obj, rapidjson::Value& comps, rapidjson::Document::AllocatorType& a) {
@@ -1261,7 +1335,7 @@ void PrefabManager::serializeComponents(const GameObject* obj, rapidjson::Value&
 		}
 	}
 
-	if (auto cam = obj->getComponent<camera>()) {
+	/*if (auto cam = obj->getComponent<camera>()) {
 		rapidjson::Value jcam(rapidjson::kObjectType);
 		jcam.AddMember("useScreenSize", cam->useScreenSize ? 1 : 0, a);
 		jcam.AddMember("height", cam->height, a);
@@ -1272,7 +1346,7 @@ void PrefabManager::serializeComponents(const GameObject* obj, rapidjson::Value&
 		jcam.AddMember("mapWidth", cam->mapWidth, a);
 		jcam.AddMember("mapHeight", cam->mapHeight, a);
 		comps.AddMember("Camera", jcam, a);
-	}
+	}*/
 
 	if (auto i = obj->getComponent<Input>()) {
 		comps.AddMember("Input", rapidjson::Value(rapidjson::kObjectType), a);
@@ -1424,34 +1498,34 @@ void PrefabManager::serializeComponents(const GameObject* obj, rapidjson::Value&
 	}
 
 	// TileMapComponent
-	if (auto tm = obj->getComponent<TileMap>())
-	{
-		rapidjson::Value jt(rapidjson::kObjectType);
-		jt.AddMember("tileW", tm->tileW, a);
-		jt.AddMember("tileH", tm->tileH, a);
-		jt.AddMember("columns", tm->columns, a);
-		jt.AddMember("rows", tm->rows, a);
-		jt.AddMember("enableCol", rapidjson::Value(tm->enableCol ? 1 : 0), a);
+	//if (auto tm = obj->getComponent<TileMap>())
+	//{
+	//	rapidjson::Value jt(rapidjson::kObjectType);
+	//	jt.AddMember("tileW", tm->tileW, a);
+	//	jt.AddMember("tileH", tm->tileH, a);
+	//	jt.AddMember("columns", tm->columns, a);
+	//	jt.AddMember("rows", tm->rows, a);
+	//	jt.AddMember("enableCol", rapidjson::Value(tm->enableCol ? 1 : 0), a);
 
-		// Create tiles array
-		rapidjson::Value tileArray(rapidjson::kArrayType);
+	//	// Create tiles array
+	//	rapidjson::Value tileArray(rapidjson::kArrayType);
 
-		for (const auto& [key, id] : tm->tiles)
-		{
-			rapidjson::Value tileObj(rapidjson::kObjectType);
+	//	for (const auto& [key, id] : tm->tiles)
+	//	{
+	//		rapidjson::Value tileObj(rapidjson::kObjectType);
 
-			tileObj.AddMember("x", key.x, a);
-			tileObj.AddMember("y", key.y, a);
-			tileObj.AddMember("id", rapidjson::Value(id.c_str(), a), a);
+	//		tileObj.AddMember("x", key.x, a);
+	//		tileObj.AddMember("y", key.y, a);
+	//		tileObj.AddMember("id", rapidjson::Value(id.c_str(), a), a);
 
-			tileArray.PushBack(tileObj, a);
-		}
+	//		tileArray.PushBack(tileObj, a);
+	//	}
 
-		jt.AddMember("tiles", tileArray, a);
+	//	jt.AddMember("tiles", tileArray, a);
 
-		// IMPORTANT: Add TileMap to components JSON
-		comps.AddMember("TileMap", jt, a);
-	}
+	//	// IMPORTANT: Add TileMap to components JSON
+	//	comps.AddMember("TileMap", jt, a);
+	//}
 
 	// ---- LuaScript ----
 	if (auto ls = obj->getComponent<LuaScript>()) {
@@ -1468,10 +1542,8 @@ void PrefabManager::serializeComponents(const GameObject* obj, rapidjson::Value&
 			scriptsArray.PushBack(entry, a);
 		}
 
-		if (!scriptsArray.Empty()) {
-			jl.AddMember("scripts", scriptsArray, a);
-			comps.AddMember("LuaScript", jl, a);
-		}
+		jl.AddMember("scripts", scriptsArray, a);
+		comps.AddMember("LuaScript", jl, a);
 	}
 
 	// ---- Visual Logic Component ----
@@ -1510,6 +1582,30 @@ void PrefabManager::serializeComponents(const GameObject* obj, rapidjson::Value&
 		jb.AddMember("onClickChannel", rapidjson::Value(btn->onClickChannel.c_str(), a), a);
 		jb.AddMember("onHoverChannel", rapidjson::Value(btn->onHoverChannel.c_str(), a), a);
 		comps.AddMember("Button", jb, a);
+	}
+
+	// ---- WaterBody Component ----
+	if (auto wb = obj->getComponent<WaterBody>()) {
+		rapidjson::Value jw(rapidjson::kObjectType);
+		jw.AddMember("waveAmplitude", wb->waveAmplitude, a);
+		jw.AddMember("waveFrequency", wb->waveFrequency, a);
+		jw.AddMember("waveSpeed", wb->waveSpeed, a);
+		rapidjson::Value colorArr(rapidjson::kArrayType);
+		colorArr.PushBack(wb->waterColor.r, a);
+		colorArr.PushBack(wb->waterColor.g, a);
+		colorArr.PushBack(wb->waterColor.b, a);
+		colorArr.PushBack(wb->waterColor.a, a);
+		jw.AddMember("waterColor", colorArr, a);
+		jw.AddMember("waterAlpha", wb->waterAlpha, a);
+		jw.AddMember("subdivisions", wb->subdivisions, a);
+		jw.AddMember("width", wb->width, a);
+		jw.AddMember("height", wb->height, a);
+		jw.AddMember("isTrigger", wb->isTrigger ? 1 : 0, a);
+		jw.AddMember("buoyancyForce", wb->buoyancyForce, a);
+		jw.AddMember("waterDrag", wb->waterDrag, a);
+		jw.AddMember("renderWaves", wb->renderWaves ? 1 : 0, a);
+		jw.AddMember("useTexture", wb->useTexture ? 1 : 0, a);
+		comps.AddMember("WaterBody", jw, a);
 	}
 }
 

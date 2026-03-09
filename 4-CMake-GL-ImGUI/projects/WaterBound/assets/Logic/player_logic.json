@@ -206,6 +206,101 @@
       "hasOutput": true,
       "hasTrueOutput": false,
       "hasFalseOutput": false
+    },
+    {
+      "id": 14,
+      "implementation": "Check State",
+      "type": 2,
+      "position": [
+        34.0,
+        336.0
+      ],
+      "hasInput": true,
+      "hasOutput": false,
+      "hasTrueOutput": true,
+      "hasFalseOutput": true,
+      "parameters": {
+        "state": "Jumping"
+      }
+    },
+    {
+      "id": 15,
+      "implementation": "Play Random Sound",
+      "type": 1,
+      "position": [
+        660.0,
+        336.0
+      ],
+      "hasInput": true,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false,
+      "parameters": {
+        "audio_0": "jump-audio-1",
+        "audio_1": "jump-audio-2",
+        "audio_10": "jump-audio-11",
+        "audio_2": "jump-audio-3",
+        "audio_3": "jump-audio-4",
+        "audio_4": "jump-audio-5",
+        "audio_5": "jump-audio-6",
+        "audio_6": "jump-audio-7",
+        "audio_7": "jump-audio-8",
+        "audio_8": "jump-audio-9",
+        "audio_9": "jump-audio-10",
+        "cooldown": "0.700000"
+      }
+    },
+    {
+      "id": 17,
+      "implementation": "Compare Variable",
+      "type": 2,
+      "position": [
+        330.0,
+        336.0
+      ],
+      "hasInput": true,
+      "hasOutput": false,
+      "hasTrueOutput": true,
+      "hasFalseOutput": false,
+      "parameters": {
+        "comparison": "less",
+        "threshold": "1",
+        "variable": "jumpPlayed"
+      }
+    },
+    {
+      "id": 18,
+      "implementation": "Set Float",
+      "type": 1,
+      "position": [
+        330.0,
+        450.0
+      ],
+      "hasInput": true,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false,
+      "parameters": {
+        "value": "0",
+        "variable": "jumpPlayed"
+      }
+    },
+    {
+      "id": 19,
+      "implementation": "Set Float",
+      "type": 1,
+      "position": [
+        960.0,
+        336.0
+      ],
+      "hasInput": true,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false,
+      "parameters": {
+        "value": "1",
+        "variable": "jumpPlayed"
+      }
     }
   ],
   "connections": [
@@ -261,6 +356,36 @@
       "fromNodeId": 12,
       "outputPin": "True",
       "toNodeId": 13,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 11,
+      "outputPin": "Out",
+      "toNodeId": 14,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 14,
+      "outputPin": "True",
+      "toNodeId": 17,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 14,
+      "outputPin": "False",
+      "toNodeId": 18,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 17,
+      "outputPin": "True",
+      "toNodeId": 15,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 15,
+      "outputPin": "Out",
+      "toNodeId": 19,
       "inputPin": "In"
     }
   ]

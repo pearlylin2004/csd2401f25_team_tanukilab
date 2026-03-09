@@ -401,6 +401,22 @@ void HierarchyWindow::createPrefabPopup() {
     if (ImGui::BeginPopupModal("Confirm Create Prefab", NULL, ImGuiWindowFlags_AlwaysAutoResize)) {
         ImGui::Text("Do you want to pack this object into the new prefab?");
 
+        if (m_objSelectionState.selectedObject) {
+            bool hasTileMap = m_objSelectionState.selectedObject->hasComponent<TileMap>();
+            bool hasCamera = m_objSelectionState.selectedObject->hasComponent<camera>();
+            if (hasTileMap || hasCamera) {
+                ImGui::Spacing();
+                ImGui::TextColored(ImVec4(1.f, 0.8f, 0.f, 1.f), "Warning:");
+                if (hasTileMap)
+                    ImGui::TextColored(ImVec4(1.f, 0.8f, 0.f, 1.f), "  - TileMap is a special component and will not be saved to the prefab.");
+                if (hasCamera)
+                    ImGui::TextColored(ImVec4(1.f, 0.8f, 0.f, 1.f), "  - Camera is a special component and will not be saved to the prefab.");
+                ImGui::Spacing();
+            }
+
+            ImGui::TextColored(ImVec4(1.f, 0.8f, 0.f, 1.f), "  - Layer is a special component and will not be saved to the prefab.");
+        }
+
         if (ImGui::Button("Create and Pack")) {
 
             if (PrefabManager::Instance().createPrefabFromGameObj(m_objSelectionState.selectedObject, "", true))

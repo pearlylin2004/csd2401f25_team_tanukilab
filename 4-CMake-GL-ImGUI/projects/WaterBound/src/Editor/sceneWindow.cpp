@@ -353,40 +353,68 @@ void SceneWindow::renderObjectHighlight() {
         return ImVec2(screenX, screenY);
         };
 
-    // get corners of the AABB
-    ImVec2 topLeft = worldToScreen(aabb.getMin().x, aabb.getMax().y);
-    ImVec2 topRight = worldToScreen(aabb.getMax().x, aabb.getMax().y);
-    ImVec2 bottomLeft = worldToScreen(aabb.getMin().x, aabb.getMin().y);
-    ImVec2 bottomRight = worldToScreen(aabb.getMax().x, aabb.getMin().y);
-
-    // draw highlight box
     ImDrawList* drawList = ImGui::GetWindowDrawList();
+    ImU32 highlightColor = (m_objSelectionState.draggedObject == obj && InputHandler::isMouseDragging())
+        ? IM_COL32(255, 255, 0, 200)
+        : IM_COL32(255, 255, 255, 150);
+    ImU32 fillColor = IM_COL32(255, 255, 0, 20);
+    float thickness = 3.5f;
 
-    ImU32 highlightColor;
-    if (m_objSelectionState.draggedObject == obj && InputHandler::isMouseDragging()) {
-        highlightColor = IM_COL32(255, 255, 0, 200); // yellow while dragging
+    // check if circle
+    Render* render = obj->getComponent<Render>();
+    bool isCircle = render && render->modelRef.shape == shape::circle;
+
+    if (isCircle) {
+        // draw circle highlight
+        ImVec2 center = worldToScreen(transform->x, transform->y);
+
+        float worldRadius = (transform->scaleX);
+        ImVec2 edgePoint = worldToScreen(transform->x + worldRadius, transform->y);
+        float screenRadius = std::abs(edgePoint.x - center.x);
+
+        drawList->AddCircle(center, screenRadius, highlightColor, 32, thickness);
+        drawList->AddCircleFilled(center, screenRadius, fillColor, 32);
+
+        // center marker
+        float markerSize = 2.5f;
+        drawList->AddCircleFilled(center, markerSize, highlightColor);
     }
     else {
-        highlightColor = IM_COL32(255, 255, 255, 150); // white when selected
+        // draw rotated rectangle highlight using OBB corners
+        float cosR = cosf(glm::radians(transform->rotation));
+        float sinR = sinf(glm::radians(transform->rotation));
+        float hw = transform->scaleX * 0.5f;
+        float hh = transform->scaleY * 0.5f;
+
+        // local corners, rotated
+        glm::vec2 localCorners[4] = {
+            { -hw, +hh }, // top left
+            { +hw, +hh }, // top right
+            { +hw, -hh }, // bottom right
+            { -hw, -hh }  // bottom left
+        };
+
+        ImVec2 screenCorners[4];
+        for (int i = 0; i < 4; i++) {
+            float wx = transform->x + localCorners[i].x * cosR - localCorners[i].y * sinR;
+            float wy = transform->y + localCorners[i].x * sinR + localCorners[i].y * cosR;
+            screenCorners[i] = worldToScreen(wx, wy);
+        }
+
+        // box outline
+        drawList->AddLine(screenCorners[0], screenCorners[1], highlightColor, thickness);
+        drawList->AddLine(screenCorners[1], screenCorners[2], highlightColor, thickness);
+        drawList->AddLine(screenCorners[2], screenCorners[3], highlightColor, thickness);
+        drawList->AddLine(screenCorners[3], screenCorners[0], highlightColor, thickness);
+
+        // corner markers
+        float markerSize = 2.5f;
+        for (int i = 0; i < 4; i++)
+            drawList->AddCircleFilled(screenCorners[i], markerSize, highlightColor);
+
+        // fill
+        drawList->AddQuadFilled(screenCorners[0], screenCorners[1], screenCorners[2], screenCorners[3], fillColor);
     }
-
-    // box outline
-    float thickness = 2.f;
-    drawList->AddLine(topLeft, topRight, highlightColor, thickness);
-    drawList->AddLine(topRight, bottomRight, highlightColor, thickness);
-    drawList->AddLine(bottomRight, bottomLeft, highlightColor, thickness);
-    drawList->AddLine(bottomLeft, topLeft, highlightColor, thickness);
-
-    // corner markers
-    float markerSize = 2.5f;
-    drawList->AddCircleFilled(topLeft, markerSize, highlightColor);
-    drawList->AddCircleFilled(topRight, markerSize, highlightColor);
-    drawList->AddCircleFilled(bottomLeft, markerSize, highlightColor);
-    drawList->AddCircleFilled(bottomRight, markerSize, highlightColor);
-
-    // semi-transparent fill
-    ImU32 fillColor = IM_COL32(255, 255, 0, 20); // yellow
-    drawList->AddQuadFilled(topLeft, topRight, bottomRight, bottomLeft, fillColor);
 }
 
 void SceneWindow::renderObjCollider(GameObject* obj) {
@@ -822,6 +850,16 @@ void SceneWindow::objPicking() {
         m_objSelectionState.selectedPrefab = nullptr;
         m_objSelectionState.selectedObject = selected;
         m_objSelectionState.draggedObject = selected;
+
+        // auto check aspect ratio if x == y == z
+        Transform* t = selected->getComponent<Transform>();
+        if (t) {
+            m_objSelectionState.aspectRatioLock = (t->scaleX == t->scaleY && t->scaleY == t->scaleZ);
+        }
+        else {
+            m_objSelectionState.aspectRatioLock = false;
+        }
+        m_objSelectionState.ratioSet = false;
 
         UndoRedoManager::Instance().beginTransformEdit(selected);
 

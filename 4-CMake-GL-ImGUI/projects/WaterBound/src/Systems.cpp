@@ -1146,26 +1146,28 @@ void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime, M
 					physics->velY = 0;
 				transform->x += physics->velX * deltaTime;
 				transform->y += physics->velY * deltaTime;
-				std::cout << "acceleration: (" << physics->acceleration.x << ", " << physics->acceleration.y << ")\n";
+				/*std::cout << "acceleration: (" << physics->acceleration.x << ", " << physics->acceleration.y << ")\n";
 				std::cout << "velocity: (" << physics->velX << ", " << physics->velY << ")\n";
-				std::cout << "position: (" << transform->x << ", " << transform->y << ")\n";
+				std::cout << "position: (" << transform->x << ", " << transform->y << ")\n";*/
 			}
 			continue;
 		}
 		if (!physics->physicsFlag) continue;
 		if (physics->autoUpdate) {
 			// Apply gravity when not in water -- future ref
-			if (!physics->inWater) {
-				physics->velY += physics->gravity * deltaTime;
+			if (!EditorManager::isEditingMode() && !EditorManager::isPaused()) {
+				if (!physics->inWater) {
+					physics->velY += physics->gravity * deltaTime;
+				}
+
+				transform->y += physics->velY * deltaTime;
+				transform->x += physics->velX * deltaTime;
+
+				physics->dynamics.position.y = transform->y;
+				physics->dynamics.position.x = transform->x;
+				physics->dynamics.velocity.y = physics->velY;
+				physics->dynamics.velocity.x = physics->velX;
 			}
-
-			transform->y += physics->velY * deltaTime;
-			transform->x += physics->velX * deltaTime;
-
-			physics->dynamics.position.y = transform->y;
-			physics->dynamics.position.x = transform->x;
-			physics->dynamics.velocity.y = physics->velY;
-			physics->dynamics.velocity.x = physics->velX;
 		}
 
 		// Handle player input
@@ -1287,7 +1289,19 @@ void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime, M
 
 								if (bullet != nullptr) {
 									// Get mouse position in world coordinates
-									Vector2D mouseWorldPos = InputHandler::getWorldMousePosition();
+									Vector2D mouseWorldPos;
+#ifdef _DEBUG
+									if (UISystem::isShowUI() && !EditorManager::isEditingMode()) {
+										ImVec2 scenePos, sceneSize;
+										EditorManager::getScenePosNSize(scenePos, sceneSize);
+										mouseWorldPos = InputHandler::getMousePositionInImGuiViewport(scenePos, sceneSize);
+									}
+									else {
+										mouseWorldPos = InputHandler::getWorldMousePosition();
+									}
+#else
+									mouseWorldPos = InputHandler::getWorldMousePosition();
+#endif
 
 									Transform* spawnTransform = transform;
 									{

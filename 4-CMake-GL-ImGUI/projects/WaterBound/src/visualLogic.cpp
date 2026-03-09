@@ -819,6 +819,95 @@ void VisualLogicSystem::executeActionNode(GameObject* obj, VisualLC* logic, Logi
 			physics->onGround = false;
 		}
 	}
+	else if (node.imp == NodeImplementation::CHANGE_ACCEL_DIRECTION) {
+		Physics* physics = obj->getComponent<Physics>();
+		if (!physics) return;
+
+		if (physics->sinlePersonalBool) {
+			physics->acceleration.x *= -1.f;
+		}
+		else {
+			physics->dynamics.velocity.x *= -1.f;
+			physics->velX *= -1.f;
+		}
+	}
+	else if (node.imp == NodeImplementation::SET_SINLE_ACCEL) {
+		Physics* physics = obj->getComponent<Physics>();
+		if (!physics) return;
+
+		float val = node.parameters.count("value") ? std::stof(node.parameters["value"]) : 1.0f;
+		std::string axis = node.parameters.count("axis") ? node.parameters["axis"] : "x";
+		
+		if (axis == "x") {
+			physics->acceleration.x = val;
+		}
+		else {
+			physics->acceleration.y = val;
+		}
+	}
+	else if (node.imp == NodeImplementation::PLAY_RANDOM_SOUND) {
+		AudioComponent* audio = obj->getComponent<AudioComponent>();
+		if (!audio) {
+			std::cerr << "[VisualLogic] Object has no AudioComponent!" << std::endl;
+			return;
+		}
+
+		// COOLDOWN check
+		float cooldown = node.parameters.count("cooldown") ? std::stof(node.parameters["cooldown"]) : 0.f;
+		std::string cooldownKey = "rndSnd_cd_" + std::to_string(node.id);
+		
+		// first play
+		if (!logic->timers.count(cooldownKey)) logic->timers[cooldownKey] = cooldown + 1.f;
+		
+		// still on cooldown
+		if (logic->timers[cooldownKey] < cooldown) return;
+
+
+		// COLLECT AUDIO
+		std::vector<std::string> channels;
+		for (int i = 0; ; ++i) {
+			std::string key = "audio_" + std::to_string(i);
+
+			if (!node.parameters.count(key)) break;
+
+			channels.push_back(node.parameters.at(key));
+		}
+
+		if (channels.empty()) {
+			std::cerr << "[VisualLogic] PLAY_RANDOM_SOUND has no audio channels listed!" << std::endl;
+			return;
+		}
+
+		// GENERATE a random index there is dff from last played
+		std::string lastKey = "rndSnd_last_" + std::to_string(node.id);
+		int lastIndex = logic->intVar.count(lastKey) ? logic->intVar[lastKey] : -1;
+
+		int newIndex = lastIndex;
+		if (channels.size() > 1) {
+			while (newIndex == lastIndex) {
+				newIndex = std::rand() % static_cast<int>(channels.size());
+			}
+		}
+		else {
+			newIndex = 0;
+		}
+
+		// PLAY channel
+		std::string channelName = channels[newIndex];
+		AudioChannel* channel = audio->getChannel(channelName);
+		if (!channel) {
+			std::cerr << "[VisualLogic] Channel " << channelName << " not found!" << std::endl;
+			return;
+		}
+
+		if (channel->state == AudioState::Playing || channel->isPendingPlay) return;
+
+		channel->isPendingPlay = true;
+		channel->persistOnSceneChange = true;
+
+		logic->intVar[lastKey] = newIndex;
+		logic->timers[cooldownKey] = 0.f;
+	}
 }
 
 bool VisualLogicSystem::executeConditionNode(GameObject* obj, VisualLC* logic, LogicNode& node, float dt) {

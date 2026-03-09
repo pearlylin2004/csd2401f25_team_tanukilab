@@ -36,6 +36,7 @@
           ]
         },
         "Render": {
+          "shape": "square",
           "colorR": 1.0,
           "colorG": 1.0,
           "colorB": 1.0,
@@ -87,11 +88,6 @@
             -17.205570220947266,
             -4.728067874908447,
             0.9980000257492065
-          ],
-          "scale": [
-            4.0,
-            4.0,
-            0.0
           ]
         },
         "Render": {
@@ -106,97 +102,6 @@
         "Physics": {
           "autoUpdate": 0
         },
-        "CollisionInfo": {
-          "colliderPos": [
-            0.0,
-            0.0
-          ],
-          "colliderRot": 0.0,
-          "collisionTag": "player",
-          "ignoreCollisionsWith": [
-            "bullet"
-          ]
-        },
-        "StateMachine": {
-          "Falling": {
-            "animState": {
-              "texture": "assets/Texture/Kinuta_Fall_SS.png",
-              "loop": 0,
-              "play": 0,
-              "totalColumn": 4,
-              "totalRow": 1,
-              "frameTime": 0.10000000149011612,
-              "initialFramCol": 0.0,
-              "initialFramRow": 0.0,
-              "lastFramCol": 0.0,
-              "lastFramRow": 0.0
-            }
-          }
-        },
-        "AudioComponent": {
-          "channels": {
-            "footsteps": {
-              "audioFile": "assets/audio/footsteps.wav",
-              "volume": 0.5,
-              "pitch": 1.0,
-              "loop": 1,
-              "playOnStart": 0,
-              "muted": 0,
-              "fadeInOnStart": 0,
-              "fadeInDuration": 1.0,
-              "fadeOutOnStop": 1,
-              "fadeOutDuration": 0.15000000596046448,
-              "isSpatial": 0,
-              "minDistance": 1.0,
-              "maxDistance": 100.0
-            },
-            "jump": {
-              "audioFile": "assets/audio/jump.wav",
-              "volume": 0.699999988079071,
-              "pitch": 1.0,
-              "loop": 0,
-              "playOnStart": 0,
-              "muted": 0,
-              "fadeInOnStart": 0,
-              "fadeInDuration": 1.0,
-              "fadeOutOnStop": 0,
-              "fadeOutDuration": 1.0,
-              "isSpatial": 0,
-              "minDistance": 1.0,
-              "maxDistance": 100.0
-            },
-            "landing": {
-              "audioFile": "assets/audio/landing.wav",
-              "volume": 1.0,
-              "pitch": 1.0,
-              "loop": 0,
-              "playOnStart": 0,
-              "muted": 0,
-              "fadeInOnStart": 0,
-              "fadeInDuration": 1.0,
-              "fadeOutOnStop": 0,
-              "fadeOutDuration": 1.0,
-              "isSpatial": 0,
-              "minDistance": 1.0,
-              "maxDistance": 100.0
-            },
-            "refill": {
-              "audioFile": "assets/Audio\\collect_water.wav",
-              "volume": 1.0,
-              "pitch": 1.0,
-              "loop": 0,
-              "playOnStart": 0,
-              "muted": 0,
-              "fadeInOnStart": 1,
-              "fadeInDuration": 0.5400000214576721,
-              "fadeOutOnStop": 1,
-              "fadeOutDuration": 0.7799999713897705,
-              "isSpatial": 0,
-              "minDistance": 1.0,
-              "maxDistance": 100.0
-            }
-          }
-        },
         "LuaScript": {
           "scripts": [
             {
@@ -204,9 +109,6 @@
               "scriptName": "player"
             }
           ]
-        },
-        "VisualLC": {
-          "filename": "player_logic.json"
         }
       }
     },
@@ -251,6 +153,7 @@
           ]
         },
         "Render": {
+          "shape": "square",
           "colorR": 1.0,
           "colorG": 1.0,
           "colorB": 1.0,
@@ -471,70 +374,6 @@
     },
     {
       "prefabid": "eaa2ba42-971a-413b-b8c4-99b2f5ab674d",
-      "name": "fire(21)22",
-      "components": {
-        "Transform": {
-          "pos": [
-            -7.897176742553711,
-            -4.819326400756836,
-            0.019999999552965164
-          ]
-        },
-        "Render": {
-          "colorR": 1.0,
-          "colorG": 1.0,
-          "colorB": 1.0,
-          "colorA": 1.0,
-          "hasTex": 1,
-          "texture": "assets/Texture/Smoke_Sprite_Sheet.jpg",
-          "hasAnimation": 1
-        },
-        "Physics": {
-          "autoUpdate": 0,
-          "maxFallSpeed": -30.0,
-          "groundAccelForce": 20.0,
-          "airAccelForce": 8.0,
-          "apexHangMul": 0.20000000298023224,
-          "jumpBufferTime": 0.15000000596046448,
-          "coyoteTime": 0.15000000596046448,
-          "ledgeAssistRange": 0.800000011920929,
-          "ledgeClimbSpeed": 8.0,
-          "freezeRotation": 1,
-          "angularDrag": 0.9800000190734863,
-          "inertiaOverride": 0.0
-        },
-        "CollisionInfo": {
-          "colliderPos": [
-            0.0,
-            0.0
-          ],
-          "colliderRot": 0.0,
-          "bounciness": 0.0,
-          "friction": 0.0
-        },
-        "AudioComponent": {
-          "channels": {
-            "fire_loop": {
-              "audioFile": "assets/audio/fire_crackle.wav",
-              "volume": 0.5,
-              "pitch": 1.0,
-              "loop": 1,
-              "playOnStart": 0,
-              "muted": 0,
-              "fadeInOnStart": 0,
-              "fadeInDuration": 1.0,
-              "fadeOutOnStop": 0,
-              "fadeOutDuration": 1.0,
-              "isSpatial": 1,
-              "minDistance": 1.0,
-              "maxDistance": 100.0
-            }
-          }
-        }
-      }
-    },
-    {
-      "prefabid": "eaa2ba42-971a-413b-b8c4-99b2f5ab674d",
       "name": "fire(21)",
       "components": {
         "Transform": {
@@ -614,6 +453,70 @@
       }
     },
     {
+      "prefabid": "eaa2ba42-971a-413b-b8c4-99b2f5ab674d",
+      "name": "fire(21)22",
+      "components": {
+        "Transform": {
+          "pos": [
+            -7.897176742553711,
+            -4.819326400756836,
+            0.019999999552965164
+          ]
+        },
+        "Render": {
+          "colorR": 1.0,
+          "colorG": 1.0,
+          "colorB": 1.0,
+          "colorA": 1.0,
+          "hasTex": 1,
+          "texture": "assets/Texture/Smoke_Sprite_Sheet.jpg",
+          "hasAnimation": 1
+        },
+        "Physics": {
+          "autoUpdate": 0,
+          "maxFallSpeed": -30.0,
+          "groundAccelForce": 20.0,
+          "airAccelForce": 8.0,
+          "apexHangMul": 0.20000000298023224,
+          "jumpBufferTime": 0.15000000596046448,
+          "coyoteTime": 0.15000000596046448,
+          "ledgeAssistRange": 0.800000011920929,
+          "ledgeClimbSpeed": 8.0,
+          "freezeRotation": 1,
+          "angularDrag": 0.9800000190734863,
+          "inertiaOverride": 0.0
+        },
+        "CollisionInfo": {
+          "colliderPos": [
+            0.0,
+            0.0
+          ],
+          "colliderRot": 0.0,
+          "bounciness": 0.0,
+          "friction": 0.0
+        },
+        "AudioComponent": {
+          "channels": {
+            "fire_loop": {
+              "audioFile": "assets/audio/fire_crackle.wav",
+              "volume": 0.5,
+              "pitch": 1.0,
+              "loop": 1,
+              "playOnStart": 0,
+              "muted": 0,
+              "fadeInOnStart": 0,
+              "fadeInDuration": 1.0,
+              "fadeOutOnStop": 0,
+              "fadeOutDuration": 1.0,
+              "isSpatial": 1,
+              "minDistance": 1.0,
+              "maxDistance": 100.0
+            }
+          }
+        }
+      }
+    },
+    {
       "name": "watergun",
       "components": {
         "Transform": {
@@ -678,7 +581,7 @@
           "enableCol": 1,
           "tiles": [
             {
-              "x": -7,
+              "x": 6,
               "y": -4,
               "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
             },
@@ -688,12 +591,12 @@
               "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
             },
             {
-              "x": 6,
+              "x": -3,
               "y": -4,
               "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
             },
             {
-              "x": -3,
+              "x": -7,
               "y": -4,
               "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
             },
@@ -708,8 +611,8 @@
               "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
             },
             {
-              "x": 6,
-              "y": -2,
+              "x": -4,
+              "y": -4,
               "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
             },
             {
@@ -718,8 +621,8 @@
               "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
             },
             {
-              "x": -4,
-              "y": -4,
+              "x": 6,
+              "y": -2,
               "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
             },
             {
@@ -743,11 +646,6 @@
               "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
             },
             {
-              "x": -4,
-              "y": -3,
-              "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
-            },
-            {
               "x": 6,
               "y": -1,
               "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
@@ -755,6 +653,21 @@
             {
               "x": 7,
               "y": -3,
+              "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
+            },
+            {
+              "x": -4,
+              "y": -3,
+              "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
+            },
+            {
+              "x": 6,
+              "y": -3,
+              "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
+            },
+            {
+              "x": 7,
+              "y": -1,
               "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
             },
             {
@@ -763,26 +676,6 @@
               "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
             },
             {
-              "x": 6,
-              "y": -3,
-              "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
-            },
-            {
-              "x": 7,
-              "y": -1,
-              "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
-            },
-            {
-              "x": -2,
-              "y": -2,
-              "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
-            },
-            {
-              "x": -1,
-              "y": -4,
-              "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
-            },
-            {
               "x": 4,
               "y": -4,
               "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
@@ -794,7 +687,12 @@
             },
             {
               "x": -2,
-              "y": -3,
+              "y": -2,
+              "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
+            },
+            {
+              "x": -1,
+              "y": -4,
               "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
             },
             {
@@ -804,12 +702,7 @@
             },
             {
               "x": -2,
-              "y": -4,
-              "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
-            },
-            {
-              "x": -1,
-              "y": -2,
+              "y": -3,
               "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
             },
             {
@@ -823,8 +716,13 @@
               "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
             },
             {
+              "x": -2,
+              "y": -4,
+              "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
+            },
+            {
               "x": -1,
-              "y": -3,
+              "y": -2,
               "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
             },
             {
@@ -835,6 +733,11 @@
             {
               "x": 5,
               "y": -1,
+              "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
+            },
+            {
+              "x": -1,
+              "y": -3,
               "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
             },
             {

@@ -32,14 +32,14 @@
       "path": "/Prefab/tile_platform.json"
     },
     {
-      "id": "0d16ad75-981d-4d14-ae8b-90c2d2cb38d5",
-      "name": "branch",
-      "path": "/Prefab/branch.json"
-    },
-    {
       "id": "8b8d44fa-ed22-4288-98ee-c476958f5b5b",
       "name": "endgoal",
       "path": "/Prefab/endgoal.json"
+    },
+    {
+      "id": "0d16ad75-981d-4d14-ae8b-90c2d2cb38d5",
+      "name": "branch",
+      "path": "/Prefab/branch.json"
     },
     {
       "id": "979be788-8fb0-42b0-831a-273a92bc89a8",
