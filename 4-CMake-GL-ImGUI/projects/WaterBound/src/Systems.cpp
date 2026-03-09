@@ -1404,7 +1404,7 @@ void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime, M
 				p->gravityDelayTimer -= deltaTime;
 
 				// apply weak gravity even during delay so it doesn't slam on expiry
-				p->dynamics.velocity.y += -3 * (1.0f - (p->gravityDelayTimer / p->gravityDelay)) * deltaTime;
+				p->dynamics.velocity.y += -15.8f * (1.0f - (p->gravityDelayTimer / p->gravityDelay)) * deltaTime;
 
 				Vector3D deltaPos = Vec3_Scale(&p->dynamics.velocity, deltaTime);
 				p->dynamics.position = Vec3_Add(&p->dynamics.position, &deltaPos);
@@ -1419,9 +1419,8 @@ void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime, M
 					float flowDir = (p->dynamics.velocity.x >= 0.0f) ? 1.0f : -1.0f;
 					float flowStrength = 25.0f * expf(-p->lifeTimer * 0.6f);
 					p->dynamics.velocity.x += flowStrength * flowDir * deltaTime;
-					p->dynamics.velocity.y += 0.0f;
 					//strong gravity
-					p->dynamics.velocity.y += -3 * deltaTime;
+					p->dynamics.velocity.y += -15.8f * deltaTime;
 					//turbulence that decays over time
 					float turbulence = sin(p->lifeTimer * 8.0f) * 2.0f * expf(-p->lifeTimer);
 					p->dynamics.velocity.y += turbulence * deltaTime;
