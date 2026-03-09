@@ -1699,8 +1699,7 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 							WaterBody* water = (bulletIsObj1 ? obj2 : obj1)->getComponent<WaterBody>();
 							Transform* waterT = bulletIsObj1 ? t2 : t1;
 							if (water) {
-								water->height += water->heightIncrease;
-								waterT->y += water->heightIncrease * water->heightIncrease;
+								water->pendingHeightIncrease += water->heightIncrease;
 							}
 							continue;
 						}

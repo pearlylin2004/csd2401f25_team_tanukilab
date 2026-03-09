@@ -19,6 +19,7 @@ Technology is prohibited.
 #include "ResourceManager.h"
 #include <iostream>
 #include <vector>
+#include "Component.h"
 
 WaterSystem::WaterSystem()
     : m_waterShaderProgram(0),
@@ -74,6 +75,18 @@ void WaterSystem::update(GameObjectManager& manager, float deltaTime) {
         WaterBody* water = obj->getComponent<WaterBody>();
         if (water && water->renderWaves) {
             water->waveTime += deltaTime;
+        }
+
+            float rise = water->heightRiseSpeed * deltaTime;
+            rise = Math_Min(rise, water->pendingHeightIncrease);
+
+            water->height += rise;
+            water->pendingHeightIncrease -= rise;
+
+            Transform* transform = obj->getComponent<Transform>();
+            if (transform) {
+                transform->y += rise * 0.5f;
+            }
         }
     }
 
