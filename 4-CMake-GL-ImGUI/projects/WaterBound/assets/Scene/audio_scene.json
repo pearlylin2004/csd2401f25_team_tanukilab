@@ -178,6 +178,25 @@
           "action": "back"
         }
       }
+    },
+    {
+      "name": "mute_btn",
+      "components": {
+        "Transform": {
+          "pos": [-2, -2.5, 0.0],
+          "rotation": 0.0,
+          "scale": [3.0, 2.0, 0.0]
+        },
+        "Render": {
+          "shape": "square",
+          "hasTex": 1,
+          "texture": "assets/button.png",
+          "clr": [1.0, 1.0, 1.0]
+        },
+        "Button": {
+          "action": "mute"
+        }
+      }
     }
   ]
 }
