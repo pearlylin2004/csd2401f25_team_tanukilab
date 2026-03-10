@@ -1417,7 +1417,7 @@ void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime, M
 					/*for water to move*/
 					//flow force
 					float flowDir = (p->dynamics.velocity.x >= 0.0f) ? 1.0f : -1.0f;
-					float flowStrength = 25.0f * expf(-p->lifeTimer * 0.6f);
+					float flowStrength = 5.0f * expf(-p->lifeTimer * 0.6f);
 					p->dynamics.velocity.x += flowStrength * flowDir * deltaTime;
 					//strong gravity
 					p->dynamics.velocity.y += -15.8f * deltaTime;
@@ -1869,8 +1869,8 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 							float pushPercent = (c1->collisionTag == "bullet") ? 1.0f : 0.3f;
 							// Push out of collision
 							if (info.normal.x != 0) {
+								if (c1->collisionTag == "bullet") continue;
 								t1->x += info.normal.x * info.penetration * pushPercent;
-
 								// ledge assistance
 								if (p1->dynamics.velocity.y > 0.0f) {
 									Collision::AABB playerAABB = Collision::getObjectAABBbyCollider(t1, c1);
@@ -1957,6 +1957,7 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 						else if (obj1IsStatic && !obj2IsStatic) {
 							// Push out of collision
 							if (info.normal.x != 0) {
+								if (c2->collisionTag == "bullet") continue;
 								if (p2->dynamics.velocity.y > 0.0f) {
 									Collision::AABB playerAABB = Collision::getObjectAABBbyCollider(t2, c2);
 									Collision::AABB platAABB = Collision::getObjectAABBbyCollider(t1, c1);

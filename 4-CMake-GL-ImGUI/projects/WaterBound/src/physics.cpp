@@ -180,7 +180,7 @@ void PhysicsForces::shoot(GameObject* bullet, const Transform* origin, const Vec
     t->scaleX = p->initialScale;
     t->scaleY = p->initialScale;
 
-    p->gravityDelayTimer = p->gravityDelay;  // Initialize gravity immunity
+    p->gravityDelayTimer = 0;  // Initialize gravity immunity
     p->alive = true;
 	p->onGround = false;
 
