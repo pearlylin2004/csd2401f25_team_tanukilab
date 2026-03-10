@@ -315,6 +315,7 @@ bool AudioHandler::isSoundPaused(AudioChannel* audio) {
 	bool isPaused = false;
 	if (audio->channel) {
 		FMOD_RESULT result = audio->channel->getPaused(&isPaused);
+		//if sound finished naturally, the channel handle becomes invalid, so treat it as not paused and clean up the handle
 		if (result == FMOD_ERR_INVALID_HANDLE) {
 			audio->channel = nullptr;
 			return false;
