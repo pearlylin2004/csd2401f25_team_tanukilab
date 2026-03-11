@@ -1,0 +1,248 @@
+{
+  "version": 1,
+  "objects": [
+    {
+      "name": "background",
+      "components": {
+        "Transform": {
+          "pos": [0.0, 0.0, 0.0],
+          "rotation": 0.0,
+          "scale": [45.0, 25.0, 0.0]
+        },
+        "Render": {
+          "shape": "square",
+          "hasTex": 1,
+          "texture": "assets/menu_background.png",
+          "clr": [1.0, 1.0, 1.0]
+        }
+      }
+    },
+    {
+      "name": "lb_title",
+      "components": {
+        "Transform": {
+          "pos": [-6.0, 8.0, 1.0],
+          "rotation": 0.0,
+          "scale": [20.0, 20.0, 0.0]
+        },
+        "FontComponent": {
+          "word": "LEADERBOARD",
+          "color": [1.0, 0.85, 0.2],
+          "scale": 0.7,
+          "fontType": 1
+        }
+      }
+    },
+    {
+      "name": "lb_header",
+      "components": {
+        "Transform": {
+          "pos": [-8.0, 5.5, 1.0],
+          "rotation": 0.0,
+          "scale": [20.0, 20.0, 0.0]
+        },
+        "FontComponent": {
+          "word": "RANK   NAME          TIME",
+          "color": [0.8, 0.8, 0.8],
+          "scale": 0.35,
+          "fontType": 1
+        }
+      }
+    },
+    {
+      "name": "lb_entry_1",
+      "components": {
+        "Transform": {
+          "pos": [-8.0, 4.0, 1.0],
+          "rotation": 0.0,
+          "scale": [20.0, 20.0, 0.0]
+        },
+        "FontComponent": {
+          "word": "1. ---",
+          "color": [1.0, 0.84, 0.0],
+          "scale": 0.4,
+          "fontType": 0
+        }
+      }
+    },
+    {
+      "name": "lb_entry_2",
+      "components": {
+        "Transform": {
+          "pos": [-8.0, 2.8, 1.0],
+          "rotation": 0.0,
+          "scale": [20.0, 20.0, 0.0]
+        },
+        "FontComponent": {
+          "word": "2. ---",
+          "color": [0.75, 0.75, 0.75],
+          "scale": 0.4,
+          "fontType": 0
+        }
+      }
+    },
+    {
+      "name": "lb_entry_3",
+      "components": {
+        "Transform": {
+          "pos": [-8.0, 1.6, 1.0],
+          "rotation": 0.0,
+          "scale": [20.0, 20.0, 0.0]
+        },
+        "FontComponent": {
+          "word": "3. ---",
+          "color": [0.8, 0.5, 0.2],
+          "scale": 0.4,
+          "fontType": 0
+        }
+      }
+    },
+    {
+      "name": "lb_entry_4",
+      "components": {
+        "Transform": {
+          "pos": [-8.0, 0.4, 1.0],
+          "rotation": 0.0,
+          "scale": [20.0, 20.0, 0.0]
+        },
+        "FontComponent": {
+          "word": "4. ---",
+          "color": [1.0, 1.0, 1.0],
+          "scale": 0.35,
+          "fontType": 0
+        }
+      }
+    },
+    {
+      "name": "lb_entry_5",
+      "components": {
+        "Transform": {
+          "pos": [-8.0, -0.8, 1.0],
+          "rotation": 0.0,
+          "scale": [20.0, 20.0, 0.0]
+        },
+        "FontComponent": {
+          "word": "5. ---",
+          "color": [1.0, 1.0, 1.0],
+          "scale": 0.35,
+          "fontType": 0
+        }
+      }
+    },
+    {
+      "name": "lb_entry_6",
+      "components": {
+        "Transform": {
+          "pos": [-8.0, -2.0, 1.0],
+          "rotation": 0.0,
+          "scale": [20.0, 20.0, 0.0]
+        },
+        "FontComponent": {
+          "word": "6. ---",
+          "color": [1.0, 1.0, 1.0],
+          "scale": 0.35,
+          "fontType": 0
+        }
+      }
+    },
+    {
+      "name": "lb_entry_7",
+      "components": {
+        "Transform": {
+          "pos": [-8.0, -3.2, 1.0],
+          "rotation": 0.0,
+          "scale": [20.0, 20.0, 0.0]
+        },
+        "FontComponent": {
+          "word": "7. ---",
+          "color": [1.0, 1.0, 1.0],
+          "scale": 0.35,
+          "fontType": 0
+        }
+      }
+    },
+    {
+      "name": "lb_entry_8",
+      "components": {
+        "Transform": {
+          "pos": [-8.0, -4.4, 1.0],
+          "rotation": 0.0,
+          "scale": [20.0, 20.0, 0.0]
+        },
+        "FontComponent": {
+          "word": "8. ---",
+          "color": [1.0, 1.0, 1.0],
+          "scale": 0.35,
+          "fontType": 0
+        }
+      }
+    },
+    {
+      "name": "lb_entry_9",
+      "components": {
+        "Transform": {
+          "pos": [-8.0, -5.6, 1.0],
+          "rotation": 0.0,
+          "scale": [20.0, 20.0, 0.0]
+        },
+        "FontComponent": {
+          "word": "9. ---",
+          "color": [1.0, 1.0, 1.0],
+          "scale": 0.35,
+          "fontType": 0
+        }
+      }
+    },
+    {
+      "name": "lb_entry_10",
+      "components": {
+        "Transform": {
+          "pos": [-8.0, -6.8, 1.0],
+          "rotation": 0.0,
+          "scale": [20.0, 20.0, 0.0]
+        },
+        "FontComponent": {
+          "word": "10. ---",
+          "color": [1.0, 1.0, 1.0],
+          "scale": 0.35,
+          "fontType": 0
+        }
+      }
+    },
+    {
+      "name": "back_text",
+      "components": {
+        "Transform": {
+          "pos": [-16.5, 8.3, 1.0],
+          "rotation": 0.0,
+          "scale": [20.0, 20.0, 0.0]
+        },
+        "FontComponent": {
+          "word": "BACK",
+          "color": [0.0, 0.0, 0.0],
+          "scale": 0.5,
+          "fontType": 1
+        }
+      }
+    },
+    {
+      "name": "back_button",
+      "components": {
+        "Transform": {
+          "pos": [-15.5, 8.5, 0.0],
+          "rotation": 0.0,
+          "scale": [6.0, 2.0, 0.0]
+        },
+        "Render": {
+          "shape": "square",
+          "hasTex": 1,
+          "texture": "assets/button.png",
+          "clr": [1.0, 1.0, 1.0]
+        },
+        "Button": {
+          "action": "back"
+        }
+      }
+    }
+  ]
+}

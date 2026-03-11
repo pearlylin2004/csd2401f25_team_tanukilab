@@ -94,9 +94,9 @@ void LeaderboardSystem::load() {
         m_entries.push_back(e);
     }
 
-    // Ensure sorted descending by score
+    // Ensure sorted ascending by score (fastest time first)
     std::sort(m_entries.begin(), m_entries.end(),
-        [](const LeaderboardEntry& a, const LeaderboardEntry& b) { return a.score > b.score; });
+        [](const LeaderboardEntry& a, const LeaderboardEntry& b) { return a.score < b.score; });
 }
 
 // ---------------------------------------------------------------------------
@@ -137,9 +137,9 @@ void LeaderboardSystem::addEntry(const std::string& name, int score) {
 
     m_entries.push_back(entry);
 
-    // Sort descending by score
+    // Sort ascending by score (fastest time first)
     std::sort(m_entries.begin(), m_entries.end(),
-        [](const LeaderboardEntry& a, const LeaderboardEntry& b) { return a.score > b.score; });
+        [](const LeaderboardEntry& a, const LeaderboardEntry& b) { return a.score < b.score; });
 
     // Trim to MAX_ENTRIES
     if (static_cast<int>(m_entries.size()) > MAX_ENTRIES) {

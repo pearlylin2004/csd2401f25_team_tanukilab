@@ -73,6 +73,12 @@ void GUISystem::update() {
         std::string levelToLoad = m_pendingLevelName;
         m_pendingLevelName = "";
         if (levelToLoad == "win_scene.json") {
+            // Stop timer and save completion time to leaderboard
+            m_levelTimerRunning = false;
+            int completionTimeMs = static_cast<int>(m_levelTimer * 1000.0);
+            LeaderboardSystem::getInstance().addEntry("Player", completionTimeMs);
+            std::cout << "[GUI] Level completed in " << m_levelTimer << "s (" << completionTimeMs << "ms)\n";
+
             loadScreen(*g_manager, levelToLoad);
         }
         else {
@@ -357,7 +363,14 @@ void GUISystem::updateLeaderboardDisplay() {
 
         FontComponent* font = textObj->getComponent<FontComponent>();
         if (i < static_cast<int>(entries.size())) {
-            font->word = std::to_string(i + 1) + ". " + entries[i].name + "  " + std::to_string(entries[i].score);
+            // Format time from milliseconds: M:SS.mmm
+            int totalMs = entries[i].score;
+            int minutes = totalMs / 60000;
+            int seconds = (totalMs % 60000) / 1000;
+            int ms = totalMs % 1000;
+            char timeBuf[32];
+            std::snprintf(timeBuf, sizeof(timeBuf), "%d:%02d.%03d", minutes, seconds, ms);
+            font->word = std::to_string(i + 1) + ". " + entries[i].name + "  " + timeBuf;
         }
         else {
             font->word = std::to_string(i + 1) + ". ---";
@@ -371,6 +384,10 @@ void GUISystem::startGame() {
     //change state to playing
 	m_currentState = GameState::PLAYING;
     level = 1;
+
+    // Reset and start the level timer
+    m_levelTimer = 0.0;
+    m_levelTimerRunning = true;
 
     removeButtons(); //remove menu buttons
 
@@ -501,6 +518,10 @@ void GUISystem::restartLevel() {
     g_visualLogicSystem->initAll(*g_manager);
     resetAllObjectsToSpawn();
     m_currentState = GameState::PLAYING;
+
+    // Reset and start the level timer
+    m_levelTimer = 0.0;
+    m_levelTimerRunning = true;
 }
 
 void GUISystem::loadLevel(const std::string& levelName) {
@@ -533,6 +554,16 @@ void GUISystem::loadLevel(const std::string& levelName) {
     }
 
     m_currentState = GameState::PLAYING;
+
+    // Reset and start the level timer
+    m_levelTimer = 0.0;
+    m_levelTimerRunning = true;
+}
+
+void GUISystem::tickLevelTimer(double dt) {
+    if (m_levelTimerRunning && m_currentState == GameState::PLAYING) {
+        m_levelTimer += dt;
+    }
 }
 
 void GUISystem::resetAllObjectsToSpawn() {

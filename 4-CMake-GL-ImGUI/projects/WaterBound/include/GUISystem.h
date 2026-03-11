@@ -71,6 +71,9 @@ public:
 
     void createButtons(/*GameObjectManager& manager*/); //create menu buttons
 
+    // Level timer for leaderboard
+    double getLevelTime() const { return m_levelTimer; }
+    void tickLevelTimer(double dt);
 
     ButtonAction m_pendingAction = ButtonAction::NONE;
     bool m_pendingRestart = false;
@@ -109,4 +112,8 @@ private:
     std::string m_currentLevel = "";
 
     float m_previousVolume = 100;
+
+    // Level timer for leaderboard (tracks seconds elapsed since level start)
+    double m_levelTimer = 0.0;
+    bool m_levelTimerRunning = false;
 };

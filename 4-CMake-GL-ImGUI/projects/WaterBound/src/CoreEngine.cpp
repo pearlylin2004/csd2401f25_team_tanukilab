@@ -249,6 +249,9 @@ void CoreEngine::Update(float deltaTime) {
         GUISystem::getInstance().update();
     }
 
+    // Tick the level timer for leaderboard
+    GUISystem::getInstance().tickLevelTimer(deltaTime);
+
 	//for other systems to update even in editor mode
     if (!EditorManager::isEditingMode() && !EditorManager::isPaused()) {
         m_luaSystem->update(*m_manager, deltaTime);

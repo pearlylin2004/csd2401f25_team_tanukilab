@@ -328,7 +328,7 @@ enum class ButtonAction {
     MUSIC_VOL_DOWN,
     SFX_VOL_UP,
     SFX_VOL_DOWN,
-    OPEN_LEADERBOARD
+    OPEN_LEADERBOARD,
     MUTE,
     UNMUTE
 };
