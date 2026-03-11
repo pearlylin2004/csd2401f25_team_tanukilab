@@ -1761,15 +1761,6 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 							continue;
 						}
 
-						bool obj1IsFloating = (c1->collisionTag == "floatingObject") && obj2->hasComponent<WaterBody>();
-						bool obj2IsFloating = (c2->collisionTag == "floatingObject") && obj1->hasComponent<WaterBody>();
-
-						if (obj1IsFloating) {
-							p1->inWater = true;
-						}
-						else if (obj2IsFloating) {
-							p2->inWater = true;
-						}
 
 						// Visual logic events (if needed)
 						if (obj1->hasComponent<VisualLC>()) {
@@ -1786,7 +1777,9 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 
 						bool obj1IsStatic = (c1->collisionRes == CollisionResponseMode::StopWhenCollide);
 						bool obj2IsStatic = (c2->collisionRes == CollisionResponseMode::StopWhenCollide);
-
+						bool obj1IsFloating = (c1->collisionTag == "floatingObject") && obj2->hasComponent<WaterBody>();
+						bool obj2IsFloating = (c2->collisionTag == "floatingObject") && obj1->hasComponent<WaterBody>();
+					
 						//helper lambda for bounce calculation
 						auto ApplyBounce = [](Physics* p, CollisionInfo* c, const Vector2D& normal, bool isStatic) {
 							//get current velocity
@@ -2075,6 +2068,13 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 									}
 								}
 							}
+						}
+						else if (obj1IsFloating && !obj1IsStatic){
+								p1->inWater = true;
+						}
+						else if (obj2IsFloating && !obj2IsStatic) {
+							p2->inWater = true;
+							
 						}
 					}
 				}
