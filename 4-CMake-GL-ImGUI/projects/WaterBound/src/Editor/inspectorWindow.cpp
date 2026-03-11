@@ -1810,7 +1810,14 @@ void InspectorWindow::renderAudio(GameObject* selected) {
                         else if (!ch.audioFile.empty()) {
                             // Not playing but has audio file - show Play button
                             if (ImGui::Button("Play", ImVec2(-1, 0))) {
-                                ch.isPendingPlay = true;
+                                if (EditorManager::isEditingMode()) {
+                                    // Bypass the game group — plays under master so editor pause doesn't block it.
+                                    FMOD::Channel* previewCh = AudioHandler::getInstance().playPreviewSound(&ch);
+                                    if (previewCh) ch.state = AudioState::Playing;
+                                }
+                                else {
+                                    ch.isPendingPlay = true;  // in-game path, goes through AudioSystem::processAudio normally
+                                }
                                 DebugLog::addMessage("Manually started channel: " + channelName + "\n");
                             }
                         }

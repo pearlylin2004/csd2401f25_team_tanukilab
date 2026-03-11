@@ -2544,7 +2544,7 @@ void AudioSystem::update(GameObjectManager& manager, float deltaTime) {
 				processAudio(obj, &ch, deltaTime);
 
 				// Background music restart logic - skip in editor mode to honour pause/resume
-				if (!EditorManager::isEditingMode() && ch.playOnStart && ch.loop && ch.state != AudioState::Stopped) {
+				if (!EditorManager::isEditingMode() && ch.playOnStart && ch.loop) {
 					if (!ch.channel || !audioHandler.isSoundPlaying(&ch)) {
 						// Restart audio if not playing
 						ch.channel = audioHandler.playSound(&ch);
