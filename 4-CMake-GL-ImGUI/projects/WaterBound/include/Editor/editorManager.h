@@ -111,7 +111,7 @@ private:
 	void showContextMenu(GameObjectManager& manager, GameObject* obj, int objIndex);
 
 	void objDeletePopup(GameObjectManager& manager);
-	void createPrefabPopup();
+	void createPrefabPopup(GameObjectManager& manager);
 
 	Editor::ObjSelectionState& m_objSelectionState;
 };

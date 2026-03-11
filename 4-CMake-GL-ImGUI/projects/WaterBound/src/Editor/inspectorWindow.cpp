@@ -36,8 +36,33 @@ void InspectorWindow::render() {
         if (ImGui::Button("Save")) {
             const std::string& prefabID = selected->getObjectPrefabID();
 
+            // snapshot prefab BEFORE
+            const rapidjson::Document* docBefore = PrefabManager::Instance().getPrefabJson(prefabID);
+            std::string prefabBefore = docBefore ? docToString(*docBefore) : "";
+
+            // snapshot instances BEFORE
+            std::unordered_map<std::string, std::string> instancesBefore;
+            for (GameObject* obj : CachedGameObjects::Instance().getCachedObjects()) {
+                if (obj->getObjectPrefabID() == prefabID)
+                    instancesBefore[obj->getObjectName()] = JsonIO::serializeGameObj(obj);
+            }
+
             if (PrefabManager::Instance().savePrefab(selected)) {
                 int count = PrefabManager::Instance().applyToAllInstances(prefabID, m_manager);
+                CachedGameObjects::Instance().refresh();
+
+                // snapshot prefab AFTER
+                std::string prefabAfter = docToString(*PrefabManager::Instance().getPrefabJson(prefabID));
+
+                // snapshot instances AFTER
+                std::unordered_map<std::string, std::string> instancesAfter;
+                for (GameObject* obj : CachedGameObjects::Instance().getCachedObjects()) {
+                    if (obj->getObjectPrefabID() == prefabID)
+                        instancesAfter[obj->getObjectName()] = JsonIO::serializeGameObj(obj);
+                }
+
+                UndoRedoManager::Instance().executeCmd(std::make_unique<PrefabPropagateCmd>(m_manager, prefabID, prefabBefore, prefabAfter, std::move(instancesBefore), std::move(instancesAfter)));
+
                 DebugLog::addMessage("Applied prefab changes to " + std::to_string(count) + " instances\n");
             }
             else {

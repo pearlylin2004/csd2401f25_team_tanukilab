@@ -100,6 +100,8 @@ public:
 	bool deletePrefab(const std::string prefabID);
 	/* -------- END -------- */
 
+	void loadPrefabFromString(const std::string& prefabID, const std::string& jsonStr);
+
 private:
 	struct PrefabInfo {
 		std::string name;

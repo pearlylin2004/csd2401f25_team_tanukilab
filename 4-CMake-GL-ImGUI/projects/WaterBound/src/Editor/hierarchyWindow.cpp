@@ -189,7 +189,7 @@ void HierarchyWindow::render(GameObjectManager& manager) {
 
     /* ---------- Popup Modal Call --------- */
     objDeletePopup(manager);
-    createPrefabPopup();
+    createPrefabPopup(manager);
     /* ---------- END --------- */
 }
 
@@ -295,13 +295,18 @@ void HierarchyWindow::showContextMenu(GameObjectManager& manager, GameObject* ob
             }
 
             if (ImGui::MenuItem("Revert to Prefab")) {
-                obj = PrefabManager::Instance().revertToPrefab(obj, manager);
+                /*obj = PrefabManager::Instance().revertToPrefab(obj, manager);*/
+                UndoRedoManager::Instance().executeCmd(
+                    std::make_unique<RevertToPrefabCmd>(manager, obj));
 
                 DebugLog::addMessage("Reverted " + obj->getObjectName() + " to its prefab" + obj->getObjectPrefabID() + ".");
             }
 
             if (ImGui::MenuItem("Unpack Prefab")) {
-                obj->getObjectPrefabID().clear();
+                //obj->getObjectPrefabID().clear();
+                UndoRedoManager::Instance().executeCmd(
+                    std::make_unique<UnpackPrefabCmd>(manager, obj));
+
                 DebugLog::addMessage("Unpacked prefab: " + obj->getObjectName() + " is now a regular object.");
             }
         }
@@ -386,7 +391,7 @@ void HierarchyWindow::objDeletePopup(GameObjectManager& manager) {
     }
 }
 
-void HierarchyWindow::createPrefabPopup() {
+void HierarchyWindow::createPrefabPopup(GameObjectManager& manager) {
     // open popup if flagged
     if (m_objSelectionState.showCreatePrefabPopup) {
         ImGui::OpenPopup("Confirm Create Prefab");
@@ -419,8 +424,12 @@ void HierarchyWindow::createPrefabPopup() {
 
         if (ImGui::Button("Create and Pack")) {
 
-            if (PrefabManager::Instance().createPrefabFromGameObj(m_objSelectionState.selectedObject, "", true))
+            if (PrefabManager::Instance().createPrefabFromGameObj(m_objSelectionState.selectedObject, "", true)) {
+                UndoRedoManager::Instance().executeCmd(
+                    std::make_unique<PackPrefabCmd>(manager, m_objSelectionState.selectedObject));
+
                 DebugLog::addMessage("Prefab created.\n");
+            }
             else DebugLog::addMessage("Prefab not created.\n");
 
             // attach the prefab id to the obj in json (auto save)
