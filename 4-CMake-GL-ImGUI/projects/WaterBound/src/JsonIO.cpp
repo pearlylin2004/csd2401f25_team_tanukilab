@@ -254,6 +254,7 @@ namespace JsonIO {
         case ButtonAction::MUSIC_VOL_DOWN: return "music_vol_down";
         case ButtonAction::SFX_VOL_UP:     return "sfx_vol_up";
         case ButtonAction::SFX_VOL_DOWN:   return "sfx_vol_down";
+        case ButtonAction::OPEN_LEADERBOARD: return "open_leaderboard";
         default:                           return "none";
         }
 	}
@@ -273,6 +274,7 @@ namespace JsonIO {
         if (s == "music_vol_down") return ButtonAction::MUSIC_VOL_DOWN;
         if (s == "sfx_vol_up") return ButtonAction::SFX_VOL_UP;
         if (s == "sfx_vol_down") return ButtonAction::SFX_VOL_DOWN;
+        if (s == "open_leaderboard") return ButtonAction::OPEN_LEADERBOARD;
         return ButtonAction::NONE;
 	}
 

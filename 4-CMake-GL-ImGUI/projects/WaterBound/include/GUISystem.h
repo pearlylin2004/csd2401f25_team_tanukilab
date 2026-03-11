@@ -87,6 +87,7 @@ private:
     void startGame(); //start game
     void stopGame(); //stop game	
     void updateVolumeDisplay(); //update volume % text on audio page
+    void updateLeaderboardDisplay(); //populate leaderboard font objects with scores
 
     bool isPointInButton(const Vector2D& point, GameObject* button);
     void createButtonActions(); //create button actions

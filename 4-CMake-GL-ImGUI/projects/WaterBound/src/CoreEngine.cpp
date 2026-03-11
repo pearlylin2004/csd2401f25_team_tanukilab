@@ -25,6 +25,7 @@ Technology is prohibited.
 #define STB_IMAGE_IMPLEMENTATION
 #include "CoreEngine.h"
 #include "GUISystem.h"  // Add this include
+#include "LeaderboardSystem.h"
 
 CoreEngine::CoreEngine()
     : m_window(nullptr),
@@ -168,6 +169,9 @@ void CoreEngine::Init(bool forceWindowed) {
 
     // load global settings
     GlobalRegistry::Instance().init();
+
+    // Initialize leaderboard (loads scores from disk)
+    LeaderboardSystem::getInstance().init();
 
     glfwPollEvents();
     m_isRunning = true;

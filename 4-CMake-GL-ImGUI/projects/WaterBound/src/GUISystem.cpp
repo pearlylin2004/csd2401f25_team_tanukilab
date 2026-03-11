@@ -25,6 +25,7 @@ Technology is prohibited.
 #include "Systems.h"
 #include "input.h"
 #include "CoreEngine.h"
+#include "LeaderboardSystem.h"
 #include <iostream>
 #include <fstream>
 
@@ -200,6 +201,11 @@ void GUISystem::createButtons(/*GameObjectManager& manager*/) {
     if (m_currentState == GameState::AUDIO) {
         updateVolumeDisplay();
     }
+
+    // Populate leaderboard text objects when entering the leaderboard screen
+    if (m_currentState == GameState::LEADERBOARD) {
+        updateLeaderboardDisplay();
+    }
 }
 
 //removing of buttons 
@@ -263,6 +269,9 @@ void GUISystem::createButtonActions() {
         case GameState::EXITCONFIRMATION:
             changeState(GameState::EXITCONFIRMATION, "confirmation_scene.json");
             break;
+        case GameState::LEADERBOARD:
+            changeState(GameState::LEADERBOARD, "leaderboard_scene.json");
+            break;
         default:
             changeState(GameState::MENU, "menu_scene.json");
             break;
@@ -302,6 +311,11 @@ void GUISystem::createButtonActions() {
         updateVolumeDisplay();
     };
 
+    // leaderboard screen
+    m_buttonActions[ButtonAction::OPEN_LEADERBOARD] = [this]() {
+        changeState(GameState::LEADERBOARD, "leaderboard_scene.json");
+    };
+
     std::cout << "[GUI] Menu buttons created successfully" << std::endl;
 }
 
@@ -313,6 +327,26 @@ void GUISystem::updateVolumeDisplay() {
     if (volText && volText->hasComponent<FontComponent>()) {
         int pct = static_cast<int>(ah.getMasterVolume() * 100.0f + 0.5f);
         volText->getComponent<FontComponent>()->word = std::to_string(pct) + "%";
+    }
+}
+
+void GUISystem::updateLeaderboardDisplay() {
+    auto& lb = LeaderboardSystem::getInstance();
+    auto entries = lb.getAll();
+
+    // Populate up to 10 text slots named "lb_entry_1" .. "lb_entry_10"
+    for (int i = 0; i < LeaderboardSystem::MAX_ENTRIES; ++i) {
+        std::string objName = "lb_entry_" + std::to_string(i + 1);
+        GameObject* textObj = g_manager->getGameObject(objName);
+        if (!textObj || !textObj->hasComponent<FontComponent>()) continue;
+
+        FontComponent* font = textObj->getComponent<FontComponent>();
+        if (i < static_cast<int>(entries.size())) {
+            font->word = std::to_string(i + 1) + ". " + entries[i].name + "  " + std::to_string(entries[i].score);
+        }
+        else {
+            font->word = std::to_string(i + 1) + ". ---";
+        }
     }
 }
 
@@ -427,6 +461,9 @@ GameState GUISystem::sceneToState(const std::string& sceneName) {
     }
     if (sceneName == "confirmation_scene.json") {
         return GameState::EXITCONFIRMATION;
+    }
+    if (sceneName == "leaderboard_scene.json") {
+        return GameState::LEADERBOARD;
     }
     return GameState::MENU; //fallback
 }
