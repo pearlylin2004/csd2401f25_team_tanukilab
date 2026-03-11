@@ -63,6 +63,9 @@ void GUISystem::init(GameObjectManager& manager, LuaSystem& luaSystem, VisualLog
 
 //update function to check for button clicking
 void GUISystem::update() {
+    // Update in-game HUD every frame during gameplay
+    updateInGameHUD();
+
     if (m_pendingRestart) {
         // Ignore restarts during replay viewer
         if (m_currentState == GameState::REPLAY) {
@@ -460,6 +463,47 @@ void GUISystem::updateLeaderboardDisplay() {
     }
 }
 
+void GUISystem::initInGameHUD() {
+    auto& lb = LeaderboardSystem::getInstance();
+    auto entries = lb.getTopN(3);
+
+    for (int i = 0; i < 3; ++i) {
+        std::string idx = std::to_string(i + 1);
+        GameObject* scoreObj = g_manager->getGameObject("hud_lb_" + idx);
+        if (!scoreObj || !scoreObj->hasComponent<FontComponent>()) continue;
+
+        FontComponent* fc = scoreObj->getComponent<FontComponent>();
+        if (i < static_cast<int>(entries.size())) {
+            int totalMs = entries[i].score;
+            int minutes = totalMs / 60000;
+            int seconds = (totalMs % 60000) / 1000;
+            int ms = totalMs % 1000;
+            char timeBuf[32];
+            std::snprintf(timeBuf, sizeof(timeBuf), "%d:%02d.%03d", minutes, seconds, ms);
+            fc->word = idx + ". " + entries[i].name + "  " + timeBuf;
+        }
+        else {
+            fc->word = idx + ". ---  ---";
+        }
+    }
+}
+
+void GUISystem::updateInGameHUD() {
+    if (m_currentState != GameState::PLAYING) return;
+
+    // Update timer text every frame
+    GameObject* timerObj = g_manager->getGameObject("hud_timer");
+    if (timerObj && timerObj->hasComponent<FontComponent>()) {
+        int totalMs = static_cast<int>(m_gameTimer * 1000.0);
+        int minutes = totalMs / 60000;
+        int seconds = (totalMs % 60000) / 1000;
+        int ms = totalMs % 1000;
+        char timeBuf[32];
+        std::snprintf(timeBuf, sizeof(timeBuf), "TIME: %d:%02d.%03d", minutes, seconds, ms);
+        timerObj->getComponent<FontComponent>()->word = timeBuf;
+    }
+}
+
 void GUISystem::startGame() {
     std::cout << "[GUI] Starting game" << std::endl;
 
@@ -512,9 +556,10 @@ void GUISystem::startGame() {
     auto& replay = ReplaySystem::getInstance();
     replay.startRecording(m_currentLevel);
     replay.startPlayback(m_currentLevel, *g_manager);
-}
 
-//stop game and quit
+    // Populate in-game HUD with leaderboard top 3
+    initInGameHUD();
+}
 void GUISystem::stopGame() {
     std::cout << "[GUI] Stop button clicked - quitting application" << std::endl;
 
@@ -625,6 +670,9 @@ void GUISystem::restartLevel() {
     // Start fresh recording and ghost playback
     replay.startRecording(m_currentLevel);
     replay.startPlayback(m_currentLevel, *g_manager);
+
+    // Populate in-game HUD with leaderboard top 3
+    initInGameHUD();
 }
 
 void GUISystem::loadLevel(const std::string& levelName) {
@@ -666,6 +714,9 @@ void GUISystem::loadLevel(const std::string& levelName) {
     auto& replay = ReplaySystem::getInstance();
     replay.startRecording(m_currentLevel);
     replay.startPlayback(m_currentLevel, *g_manager);
+
+    // Populate in-game HUD with leaderboard top 3
+    initInGameHUD();
 }
 
 void GUISystem::startReplayViewer() {

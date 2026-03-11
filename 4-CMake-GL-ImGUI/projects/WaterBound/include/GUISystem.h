@@ -94,6 +94,8 @@ private:
     void stopGame(); //stop game	
     void updateVolumeDisplay(); //update volume % text on audio page
     void updateLeaderboardDisplay(); //populate leaderboard font objects with scores
+    void updateInGameHUD(); // update timer + top 3 leaderboard on in-game HUD
+    void initInGameHUD();   // populate leaderboard portion of in-game HUD
     void loadReplayLevel(int levelIndex); // load a level in replay viewer mode
 
     bool isPointInButton(const Vector2D& point, GameObject* button);
