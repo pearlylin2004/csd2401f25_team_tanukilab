@@ -191,6 +191,10 @@ FMOD::Channel* AudioHandler::playSound(AudioChannel* audio) {
 			if (distResult != FMOD_OK) {
 				std::cerr << "Warning: Failed to set 3D distance for: " << audio->audioFile << std::endl;
 			}
+
+			// Spread: 0 = point source (hard pan), 360 = full both ears.
+			// 180 means you still hear it from both ears, but it's more directional than the default 360.
+			channel->set3DSpread(audio->spread);
 		}
 		audio->channel = channel;
 		audio->fadeInfo.isFading = false;

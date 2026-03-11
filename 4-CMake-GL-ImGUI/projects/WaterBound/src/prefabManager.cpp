@@ -1083,7 +1083,7 @@ void PrefabManager::applyPrefabComponents(GameObject* go, const rapidjson::Value
 				ch->isSpatial = JsonIO::GetBoolOr(channelObj, "isSpatial", false);
 				ch->minDistance = JsonIO::GetFloatOr(channelObj, "minDistance", 1.0f);
 				ch->maxDistance = JsonIO::GetFloatOr(channelObj, "maxDistance", 100.0f);
-
+				ch->spread = JsonIO::GetFloatOr(channelObj, "spread", 180.0f);
 				ch->persistOnSceneChange = JsonIO::GetBoolOr(channelObj, "persistOnSceneChange", false);
 			}
 		}
@@ -1106,6 +1106,8 @@ void PrefabManager::applyPrefabComponents(GameObject* go, const rapidjson::Value
 			ac->isSpatial = JsonIO::GetBoolOr(ja, "isSpatial", false);
 			ac->minDistance = JsonIO::GetFloatOr(ja, "minDistance", 1.0f);
 			ac->maxDistance = JsonIO::GetFloatOr(ja, "maxDistance", 100.0f);
+			ac->spread = JsonIO::GetFloatOr(ja, "spread", 180.0f);
+
 		}
 	}
 
@@ -1479,7 +1481,8 @@ void PrefabManager::serializeComponents(const GameObject* obj, rapidjson::Value&
 			channelObj.AddMember("isSpatial", channel.isSpatial, a);
 			channelObj.AddMember("minDistance", channel.minDistance, a);
 			channelObj.AddMember("maxDistance", channel.maxDistance, a);
-			
+			channelObj.AddMember("spread", channel.spread, a);
+
 			channelObj.AddMember("persistOnSceneChange", channel.persistOnSceneChange, a);
 
 			channels.AddMember(rapidjson::Value(channelName.c_str(), a), channelObj, a);

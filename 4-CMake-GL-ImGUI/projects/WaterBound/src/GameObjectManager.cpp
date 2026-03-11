@@ -948,6 +948,9 @@ void GameObjectManager::loadSceneFromJson(const std::string& filename) {
 						? chJson["persistOnSceneChange"].GetBool()
 						: (chJson["persistOnSceneChange"].GetInt() != 0);
 
+					if (chJson.HasMember("spread") && chJson["spread"].IsNumber()) {
+						ch->spread = chJson["spread"].GetFloat();
+					}
 				}
 			}
 		}
@@ -1788,6 +1791,7 @@ doc.AddMember("layers", layersArr, a);
 					pushIfDiffBool("isSpatial", channel.isSpatial);
 					pushIfDiffFloat("minDistance", channel.minDistance);
 					pushIfDiffFloat("maxDistance", channel.maxDistance);
+					pushIfDiffFloat("spread", channel.spread);
 					pushIfDiffBool("persistOnSceneChange", channel.persistOnSceneChange);
 
 					// If this channel has overrides OR doesn't exist in prefab, save it

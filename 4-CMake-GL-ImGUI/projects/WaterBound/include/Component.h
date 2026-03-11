@@ -522,6 +522,7 @@ struct AudioChannel {
 	bool isSpatial = false;
 	float minDistance = 1.0f;
 	float maxDistance = 100.0f;
+    float spread = 180.0f; // degrees: 0 = hard-pan point source(only hear from the direction of source, 360 = full spread
 
     // run-time data
     bool persistOnSceneChange = false;

@@ -1881,6 +1881,16 @@ void InspectorWindow::renderAudio(GameObject* selected) {
                             if (ImGui::DragFloat("Max Distance", &ch.maxDistance, 1.0f, 1.0f, 10000.0f)) {
                                 ch.maxDistance = std::clamp(ch.maxDistance, 1.0f, 10000.0f);
                             }
+
+                            if (ImGui::SliderFloat("Spread", &ch.spread, 0.0f, 360.0f)) {
+								ch.channel->set3DSpread(ch.spread);
+                            }
+                            ImGui::SameLine();
+                            ImGui::TextDisabled("(?)");
+                            if (ImGui::IsItemHovered())
+                                ImGui::SetTooltip("0 = only from source direction\n180 = both-ear audio\n360 = full spread");
+
+
                             if (ImGui::IsItemActivated())
                                 if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
                             if (ImGui::IsItemDeactivatedAfterEdit())

@@ -1270,6 +1270,7 @@ namespace JsonIO {
             channelObj.AddMember("isSpatial", ch.isSpatial, a);
             channelObj.AddMember("minDistance", ch.minDistance, a);
             channelObj.AddMember("maxDistance", ch.maxDistance, a);
+            channelObj.AddMember("spread", ch.spread, a);
             channelObj.AddMember("persistOnSceneChange", ch.persistOnSceneChange, a);
             channels.AddMember(Value(channelName.c_str(), a), channelObj, a);
         }
@@ -1316,6 +1317,7 @@ namespace JsonIO {
                 if (co.HasMember("isSpatial"))       ch->isSpatial = co["isSpatial"].GetBool();
                 if (co.HasMember("minDistance"))     ch->minDistance = co["minDistance"].GetFloat();
                 if (co.HasMember("maxDistance"))     ch->maxDistance = co["maxDistance"].GetFloat();
+                if (co.HasMember("spread"))     ch->spread = co["spread"].GetFloat();
                 if (co.HasMember("persistOnSceneChange"))     ch->persistOnSceneChange = co["persistOnSceneChange"].GetBool();
             }
         }
