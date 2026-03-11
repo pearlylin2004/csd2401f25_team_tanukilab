@@ -355,7 +355,7 @@
           "colorB": 1.0,
           "colorA": 1.0,
           "hasTex": 1,
-          "texture": "assets/button.png",
+          "texture": "assets/leaderboard_button.png",
           "hasAnimation": 0
         },
         "AudioComponent": {
@@ -399,30 +399,6 @@
           "action": "open_leaderboard",
           "onClickChannel": "on_click",
           "onHoverChannel": "button_hover"
-        }
-      }
-    },
-    {
-      "name": "leaderboard_btn_text",
-      "components": {
-        "Transform": {
-          "pos": [
-            -14.0,
-            -4.9,
-            2.0
-          ],
-          "rotation": 0.0,
-          "scale": [
-            0.5,
-            0.5,
-            0.0
-          ]
-        },
-        "FontComponent": {
-          "word": "LEADERBOARD",
-          "color": [0.0, 0.0, 0.0],
-          "scale": 0.5,
-          "fontType": 0
         }
       }
     }

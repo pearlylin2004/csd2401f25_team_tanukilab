@@ -71,8 +71,6 @@ public:
 
     // Replay viewer
     void startReplayViewer();
-    void pauseReplayViewer();  // pause without clearing the scene
-    void resumeReplayViewer(); // resume from where it was paused
 
     void createButtons(/*GameObjectManager& manager*/); //create menu buttons
 
@@ -133,5 +131,4 @@ private:
     bool m_replayViewerActive = false;
     std::string m_replayRunId;  // which run folder to replay from
     std::string m_lastRunId;    // the run ID of the most recently completed game
-    std::vector<std::string> m_pauseOverlayObjects; // objects added during replay pause
 };

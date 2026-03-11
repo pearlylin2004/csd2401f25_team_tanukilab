@@ -29,7 +29,6 @@ Technology is prohibited.
 #include "ReplaySystem.h"
 #include <iostream>
 #include <fstream>
-#include <set>
 
 static std::string runtimeScenePath(std::string const& name) {
     return std::string(RUNTIME_SCENE_DIR_R) + "/" + name;
@@ -140,6 +139,13 @@ void GUISystem::update() {
                 m_replayViewerActive = false;
                 changeState(GameState::MENU, "menu_scene.json");
             }
+        }
+
+        // ESC exits replay viewer back to menu
+        if (InputHandler::isKeyTriggered(GLFW_KEY_ESCAPE)) {
+            replay.stopViewer();
+            m_replayViewerActive = false;
+            changeState(GameState::MENU, "menu_scene.json");
         }
         return;
     }
@@ -322,10 +328,6 @@ void GUISystem::createButtonActions() {
         case GameState::PLAYING:
             startGame(); // resume the game
             break;
-        case GameState::REPLAY:
-            // Resume replay viewer from where it was paused (no scene reload)
-            resumeReplayViewer();
-            break;
         case GameState::EXITCONFIRMATION:
             changeState(GameState::EXITCONFIRMATION, "confirmation_scene.json");
             break;
@@ -350,13 +352,6 @@ void GUISystem::createButtonActions() {
             replay.stopViewer();
             m_replayViewerActive = false;
         }
-
-        // Clean up pause overlay objects if any
-        for (const auto& name : m_pauseOverlayObjects) {
-            GameObject* obj = g_manager->getGameObject(name);
-            if (obj) g_manager->deleteGameObject(obj);
-        }
-        m_pauseOverlayObjects.clear();
 
         changeState(GameState::MENU, "menu_scene.json");
     };
@@ -711,56 +706,6 @@ void GUISystem::startReplayViewer() {
     m_replayViewerActive = true;
     m_currentState = GameState::REPLAY;
     loadReplayLevel(0);
-}
-
-void GUISystem::pauseReplayViewer() {
-    std::cout << "[GUI] Pausing replay viewer (overlay)\n";
-
-    // Record which objects currently exist so we know what was added
-    std::vector<GameObject*> beforeObjs;
-    g_manager->getAllGameObjects(beforeObjs);
-    std::set<std::string> existingNames;
-    for (auto* obj : beforeObjs) {
-        if (obj) existingNames.insert(obj->getObjectName());
-    }
-
-    // Set state to PAUSED without clearing the scene
-    m_previousState = m_currentState;
-    m_currentState = GameState::PAUSED;
-
-    // Load pause scene objects additively on top of the game scene
-    removeButtons();
-    g_manager->loadScene(runtimeScenePath("pause_scene.json"));
-    g_manager->initializeSceneResources();
-
-    // Track which objects were newly added (pause overlay)
-    m_pauseOverlayObjects.clear();
-    std::vector<GameObject*> afterObjs;
-    g_manager->getAllGameObjects(afterObjs);
-    for (auto* obj : afterObjs) {
-        if (obj && existingNames.find(obj->getObjectName()) == existingNames.end()) {
-            m_pauseOverlayObjects.push_back(obj->getObjectName());
-        }
-    }
-
-    createButtons();
-}
-
-void GUISystem::resumeReplayViewer() {
-    std::cout << "[GUI] Resuming replay viewer\n";
-
-    // Remove pause overlay objects
-    removeButtons();
-    for (const auto& name : m_pauseOverlayObjects) {
-        GameObject* obj = g_manager->getGameObject(name);
-        if (obj) {
-            g_manager->deleteGameObject(obj);
-        }
-    }
-    m_pauseOverlayObjects.clear();
-
-    // Restore REPLAY state — viewer time/frame are untouched, so it continues
-    m_currentState = GameState::REPLAY;
 }
 
 void GUISystem::loadReplayLevel(int levelIndex) {
