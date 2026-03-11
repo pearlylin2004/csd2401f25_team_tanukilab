@@ -1813,3 +1813,17 @@ void PrefabManager::applyPrefabComponentsSelective(GameObject* obj, const rapidj
 		applyPrefabComponents(obj, temp);
 	}
 }
+
+void PrefabManager::loadPrefabFromString(const std::string& prefabID, const std::string& jsonStr) {
+	rapidjson::Document doc;
+	doc.Parse(jsonStr.c_str());
+	if (doc.HasParseError()) return;
+
+	m_prefabCache[prefabID].CopyFrom(doc, m_prefabCache[prefabID].GetAllocator());
+	m_prefabBeforeEdit[prefabID].CopyFrom(doc, m_prefabBeforeEdit[prefabID].GetAllocator());
+
+	// match savePrefab's write pattern
+	std::string err;
+	JsonIO::WriteDocumentToFile(std::string(RUNTIME_DIR_R) + getPrefabPath(prefabID), doc, true, &err);
+	JsonIO::WriteDocumentToFile(std::string(SOURCE_DIR_R) + getPrefabPath(prefabID), doc, true, &err);
+}

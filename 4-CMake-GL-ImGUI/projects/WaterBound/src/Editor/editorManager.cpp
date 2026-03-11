@@ -121,6 +121,21 @@ void EditorManager::handleShortcutKeys(GameObjectManager& manager) {
         InputHandler::isComboKeyTriggered(GLFW_KEY_Z, GLFW_KEY_RIGHT_CONTROL)) {
         if (/*isEditingMode() && */UndoRedoManager::Instance().canUndo()) {
             UndoRedoManager::Instance().undo();
+
+            // update prefab data in inspector
+            if (Editor::objSelectionState.selectedPrefab) {
+                const std::string& prefabID = Editor::objSelectionState.selectedPrefab->getObjectPrefabID();
+                Editor::objSelectionState.selectedPrefab = PrefabManager::Instance().createTempPrefabObj(prefabID);
+            }
+
+            if (Editor::objSelectionState.selectedObject) {
+                // check if the pointer is still valid in the manager
+                if (!m_manager.getGameObject(Editor::objSelectionState.selectedObject->getObjectName())) {
+                    Editor::objSelectionState.selectedObject = nullptr;
+                    Editor::objSelectionState.draggedObject = nullptr;
+                    Editor::objSelectionState.selectedIndex = -1;
+                }
+            }
         }
     }
     /* --------------- END --------------- */
@@ -131,6 +146,21 @@ void EditorManager::handleShortcutKeys(GameObjectManager& manager) {
         InputHandler::isComboKeyTriggered(GLFW_KEY_Y, GLFW_KEY_RIGHT_CONTROL)) {
         if (/*isEditingMode() && */UndoRedoManager::Instance().canRedo()) {
             UndoRedoManager::Instance().redo();
+
+            // update prefab data in inspector
+            if (Editor::objSelectionState.selectedPrefab) {
+                const std::string& prefabID = Editor::objSelectionState.selectedPrefab->getObjectPrefabID();
+                Editor::objSelectionState.selectedPrefab = PrefabManager::Instance().createTempPrefabObj(prefabID);
+            }
+
+            if (Editor::objSelectionState.selectedObject) {
+                // check if the pointer is still valid in the manager
+                if (!m_manager.getGameObject(Editor::objSelectionState.selectedObject->getObjectName())) {
+                    Editor::objSelectionState.selectedObject = nullptr;
+                    Editor::objSelectionState.draggedObject = nullptr;
+                    Editor::objSelectionState.selectedIndex = -1;
+                }
+            }
         }
     }
     /* --------------- END --------------- */

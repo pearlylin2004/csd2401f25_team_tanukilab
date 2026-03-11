@@ -107,19 +107,20 @@ TransformSnapshot captureTransform(GameObject* obj) {
     return snap;
 }
 
-TransformCmd::TransformCmd(GameObjectManager& manager, const std::string& objName, const TransformSnapshot& before, const TransformSnapshot& after)
-    : m_manager(manager), m_objectName(objName), m_before(before), m_after(after) {
+TransformCmd::TransformCmd(GameObjectManager& manager, const std::string& objName, const TransformSnapshot& before, const TransformSnapshot& after, const std::unordered_map<std::string, TransformSnapshot>& bystandersBefore,
+    const std::unordered_map<std::string, TransformSnapshot>& bystandersAfter)
+    : m_manager(manager), m_objectName(objName), m_before(before), m_after(after), m_bystandersBefore(bystandersBefore), m_bystandersAfter(bystandersAfter) {
 }
 
 void TransformCmd::execute() {
-    applySnapshot(m_after);
+    applySnapshot(m_after, false);
 }
 
 void TransformCmd::undo() {
-    applySnapshot(m_before);
+    applySnapshot(m_before, true);
 }
 
-void TransformCmd::applySnapshot(const TransformSnapshot& snap) {
+void TransformCmd::applySnapshot(const TransformSnapshot& snap, bool isUndo) {
     GameObject* obj = m_manager.getGameObject(m_objectName);
     if (!obj) return;
 
@@ -138,6 +139,14 @@ void TransformCmd::applySnapshot(const TransformSnapshot& snap) {
 		// recalculate tilemap collision
         if (TileMap* tm = obj->getComponent<TileMap>())
             tm->colChanged = true;
+    }
+
+    auto& bystanders = isUndo ? m_bystandersBefore : m_bystandersAfter;
+    for (auto& [name, bSnap] : bystanders) {
+        GameObject* other = m_manager.getGameObject(name);
+        if (!other) continue;
+        Transform* otherT = other->getComponent<Transform>();
+        if (otherT) { otherT->x = bSnap.x; otherT->y = bSnap.y; }
     }
 }
 
@@ -448,6 +457,191 @@ void RenameObjectCmd::updateObjName(const std::string& oldName, const std::strin
 /* ---------------- END ---------------- */
 
 
+/* ---------------- PREFAB PROPOGATE ---------------- */
+PrefabPropagateCmd::PrefabPropagateCmd(GameObjectManager& manager, const std::string& prefabID,
+    std::string prefabBefore, std::string prefabAfter,
+    std::unordered_map<std::string, std::string> instancesBefore,
+    std::unordered_map<std::string, std::string> instancesAfter)
+    : m_manager(manager), m_prefabID(prefabID),
+    m_prefabBefore(std::move(prefabBefore)),
+    m_prefabAfter(std::move(prefabAfter)),
+    m_instancesBefore(std::move(instancesBefore)),
+    m_instancesAfter(std::move(instancesAfter))
+{
+}
+
+void PrefabPropagateCmd::execute() { apply(m_prefabAfter, m_instancesAfter); }
+
+void PrefabPropagateCmd::undo() { apply(m_prefabBefore, m_instancesBefore); }
+
+void PrefabPropagateCmd::apply(const std::string& prefabStr,
+    const std::unordered_map<std::string, std::string>& snapshots) {
+    PrefabManager::Instance().loadPrefabFromString(m_prefabID, prefabStr);
+    std::string selectedObj;
+
+    // phase 1: delete all first
+    for (auto& [name, data] : snapshots) {
+        GameObject* obj = m_manager.getGameObject(name);
+        if (obj) {
+            if (Editor::objSelectionState.selectedObject == obj) {
+                selectedObj = name;
+                Editor::objSelectionState.selectedObject = nullptr;
+                Editor::objSelectionState.draggedObject = nullptr;
+                Editor::objSelectionState.selectedIndex = -1;
+            }
+            m_manager.deleteGameObject(obj);
+        }
+    }
+
+    // refresh before recreating so nothing iterates stale ptrs
+    CachedGameObjects::Instance().refresh();
+
+    // phase 2: recreate all
+    for (auto& [name, data] : snapshots) {
+        GameObject* restored = JsonIO::deserializeGameObj(m_manager, data);
+        if (restored) {
+            restored->getObjectName() = name;
+
+            if (name == selectedObj) {
+                Editor::objSelectionState.selectedObject = restored;
+            }
+        }
+    }
+
+    CachedGameObjects::Instance().refresh();
+    m_manager.initializeSceneResources();
+}
+std::string docToString(const rapidjson::Document& doc) {
+    rapidjson::StringBuffer buf;
+    rapidjson::Writer<rapidjson::StringBuffer> writer(buf);
+    doc.Accept(writer);
+    return buf.GetString();
+}
+/* ---------------- END ---------------- */
+
+
+/* ---------------- Unpack Prefab ---------------- */
+UnpackPrefabCmd::UnpackPrefabCmd(GameObjectManager& manager, GameObject* obj)
+    : m_manager(manager) {
+    if (obj) {
+        m_objectName = obj->getObjectName();
+        m_prefabID = obj->getObjectPrefabID();
+    }
+}
+
+void UnpackPrefabCmd::execute() {
+    GameObject* obj = m_manager.getGameObject(m_objectName);
+    if (obj) obj->getObjectPrefabID().clear();
+}
+
+void UnpackPrefabCmd::undo() {
+    GameObject* obj = m_manager.getGameObject(m_objectName);
+    if (obj) obj->getObjectPrefabID() = m_prefabID;
+}
+
+void UnpackPrefabCmd::updateObjName(const std::string& oldName, const std::string& newName) {
+    if (m_objectName == oldName) m_objectName = newName;
+}
+/* ---------------- END ---------------- */
+
+
+/* ---------------- Revert To Prefab ---------------- */
+RevertToPrefabCmd::RevertToPrefabCmd(GameObjectManager& manager, GameObject* obj)
+    : m_manager(manager) {
+    if (obj) {
+        m_objectName = obj->getObjectName();
+        m_prefabID = obj->getObjectPrefabID();
+        m_before = JsonIO::serializeGameObj(obj); // capture before state
+    }
+}
+
+void RevertToPrefabCmd::execute() {
+    if (m_after.empty()) {
+        // first execute — revert does it, capture after state
+        GameObject* obj = m_manager.getGameObject(m_objectName);
+        if (!obj) return;
+
+        PrefabManager::Instance().revertToPrefab(obj, m_manager);
+        m_after = JsonIO::serializeGameObj(m_manager.getGameObject(m_objectName));
+    }
+    else {
+        // redo — delete and recreate from after snapshot
+        GameObject* obj = m_manager.getGameObject(m_objectName);
+        if (obj) {
+            if (Editor::objSelectionState.selectedObject == obj) {
+                Editor::objSelectionState.selectedObject = nullptr;
+                Editor::objSelectionState.draggedObject = nullptr;
+                Editor::objSelectionState.selectedIndex = -1;
+            }
+            m_manager.deleteGameObject(obj);
+        }
+
+        CachedGameObjects::Instance().refresh();
+
+        GameObject* restored = JsonIO::deserializeGameObj(m_manager, m_after);
+        if (restored) {
+            restored->getObjectName() = m_objectName;
+            Editor::objSelectionState.selectedObject = restored;
+        }
+
+        CachedGameObjects::Instance().refresh();
+        m_manager.initializeSceneResources();
+    }
+}
+
+void RevertToPrefabCmd::undo() {
+    GameObject* obj = m_manager.getGameObject(m_objectName);
+    if (obj) {
+        if (Editor::objSelectionState.selectedObject == obj) {
+            Editor::objSelectionState.selectedObject = nullptr;
+            Editor::objSelectionState.draggedObject = nullptr;
+            Editor::objSelectionState.selectedIndex = -1;
+        }
+        m_manager.deleteGameObject(obj);
+    }
+
+    CachedGameObjects::Instance().refresh();
+    GameObject* restored = JsonIO::deserializeGameObj(m_manager, m_before);
+    if (restored) {
+        restored->getObjectName() = m_objectName;
+        Editor::objSelectionState.selectedObject = restored;
+    }
+
+    CachedGameObjects::Instance().refresh();
+    m_manager.initializeSceneResources();
+}
+
+void RevertToPrefabCmd::updateObjName(const std::string& oldName, const std::string& newName) {
+    if (m_objectName == oldName) m_objectName = newName;
+}
+/* ---------------- END ---------------- */
+
+
+/* ---------------- Pack Prefab ---------------- */
+PackPrefabCmd::PackPrefabCmd(GameObjectManager& manager, GameObject* obj)
+    : m_manager(manager) {
+    if (obj) {
+        m_objectName = obj->getObjectName();
+        m_prefabID = obj->getObjectPrefabID();
+    }
+}
+
+void PackPrefabCmd::execute() {
+    GameObject* obj = m_manager.getGameObject(m_objectName);
+    if (obj) obj->getObjectPrefabID() = m_prefabID;
+}
+
+void PackPrefabCmd::undo() {
+    GameObject* obj = m_manager.getGameObject(m_objectName);
+    if (obj) obj->getObjectPrefabID().clear();
+}
+
+void PackPrefabCmd::updateObjName(const std::string& oldName, const std::string& newName) {
+    if (m_objectName == oldName) m_objectName = newName;
+}
+/* ---------------- END ---------------- */
+
+
 /* ---------------- UNDO/REDO ---------------- */
 void UndoRedoManager::executeCmd(std::unique_ptr<CmdInterface> cmd) {
     // execute the command (transform/create/delete)
@@ -527,6 +721,16 @@ void UndoRedoManager::beginTransformEdit(GameObject* obj) {
     m_isEditingTransform = true;
     m_editingObjName = obj->getObjectName();
     m_transformBefore = captureTransform(obj);
+
+    m_bystandersBefore.clear();
+    if (obj->getComponent<Physics>() && obj->getComponent<CollisionInfo>()) {
+        for (GameObject* other : CachedGameObjects::Instance().getCachedObjects()) {
+            if (!other || other->getObjectName() == obj->getObjectName()) continue;
+            if (!other->getComponent<Physics>() || !other->getComponent<CollisionInfo>()) continue;
+
+            m_bystandersBefore[other->getObjectName()] = captureTransform(other);
+        }
+    }
 }
 
 void UndoRedoManager::endTransformEdit(GameObjectManager& manager, GameObject* obj) {
@@ -553,7 +757,16 @@ void UndoRedoManager::endTransformEdit(GameObjectManager& manager, GameObject* o
             tm->colChanged = true;
         }
 
-        auto cmd = std::make_unique<TransformCmd>(manager, m_editingObjName, m_transformBefore, after);
+        std::unordered_map<std::string, TransformSnapshot> bystandersAfter;
+        for (auto& [name, snapBefore] : m_bystandersBefore) {
+            GameObject* other = manager.getGameObject(name);
+            if (!other) continue;
+            TransformSnapshot snapAfter = captureTransform(other);
+            if (snapBefore.x != snapAfter.x || snapBefore.y != snapAfter.y)
+                bystandersAfter[name] = snapAfter;  // only store ones that moved
+        }
+
+        auto cmd = std::make_unique<TransformCmd>(manager, m_editingObjName, m_transformBefore, after, m_bystandersBefore, bystandersAfter);
 
         // add to undo deque
         m_undoDeque.push_back(std::move(cmd));

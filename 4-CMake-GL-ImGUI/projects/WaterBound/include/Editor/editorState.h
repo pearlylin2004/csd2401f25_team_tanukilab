@@ -409,6 +409,7 @@ namespace Editor {
 		{"Font",
 			[](GameObject* obj) {
 			obj->addComponent<FontComponent>();
+			obj->getComponent<FontComponent>()->mdl = Font::fontMdls[0];
 			DebugLog::addMessage("Added Font component for " + obj->getObjectName());
 			},
 			[](const GameObject* obj) { return obj->hasComponent<FontComponent>(); },

@@ -102,7 +102,9 @@ private:
 class TransformCmd : public CmdInterface {
 public:
 	// ctor with before/other state
-	TransformCmd(GameObjectManager& manager, const std::string& objName, const TransformSnapshot& before, const TransformSnapshot& after);
+	TransformCmd(GameObjectManager& manager, const std::string& objName, const TransformSnapshot& before, const TransformSnapshot& after,
+		const std::unordered_map<std::string, TransformSnapshot>& bystandersBefore,
+		const std::unordered_map<std::string, TransformSnapshot>& bystandersAfter);
 
 	// apply AFTER transform snapshot (final position aft transform changed)
 	void execute() override;
@@ -115,12 +117,16 @@ public:
 
 private:
 	// helper to write transform data to a game obj
-	void applySnapshot(const TransformSnapshot& snap);
+	void applySnapshot(const TransformSnapshot& snap, bool isUndo);
 
 	GameObjectManager&		m_manager;
 	std::string				m_objectName;
 	TransformSnapshot		m_before;
 	TransformSnapshot		m_after;
+
+	// when other obj is affected cuz of the moved obj (due to collision etc)
+	std::unordered_map<std::string, TransformSnapshot> m_bystandersBefore;
+	std::unordered_map<std::string, TransformSnapshot> m_bystandersAfter;
 };
 
 // store obj creation
@@ -332,6 +338,69 @@ private:
 	std::string m_newName;
 };
 
+// for prefab aft saving propagate
+class PrefabPropagateCmd : public CmdInterface {
+public:
+	PrefabPropagateCmd(GameObjectManager& manager, const std::string& prefabID,
+		std::string prefabBefore, std::string prefabAfter,
+		std::unordered_map<std::string, std::string> instancesBefore,
+		std::unordered_map<std::string, std::string> instancesAfter);
+
+	void execute() override;
+	void undo() override;
+	void updateObjName(const std::string&, const std::string&) override {}
+
+private:
+	void apply(const std::string& prefabStr, const std::unordered_map<std::string, std::string>& snapshots);
+
+	GameObjectManager&	m_manager;
+	std::string			m_prefabID;
+	std::string m_prefabBefore;
+	std::string m_prefabAfter;
+	std::unordered_map<std::string, std::string> m_instancesBefore;
+	std::unordered_map<std::string, std::string> m_instancesAfter;
+};
+
+// for unpack prefab
+class UnpackPrefabCmd : public CmdInterface {
+public:
+	UnpackPrefabCmd(GameObjectManager& manager, GameObject* obj);
+	void execute() override;
+	void undo() override;
+	void updateObjName(const std::string& oldName, const std::string& newName) override;
+private:
+	GameObjectManager& m_manager;
+	std::string m_objectName;
+	std::string m_prefabID;
+};
+
+// for revert to match prefab
+class RevertToPrefabCmd : public CmdInterface {
+public:
+	RevertToPrefabCmd(GameObjectManager& manager, GameObject* obj);
+	void execute() override;
+	void undo() override;
+	void updateObjName(const std::string& oldName, const std::string& newName) override;
+private:
+	GameObjectManager& m_manager;
+	std::string m_objectName;
+	std::string m_prefabID;
+	std::string m_before; // serialized state before revert
+	std::string m_after;  // serialized state after revert
+};
+
+// for packing prefab with obj (doesnt delete created prefab, but remove reference)
+class PackPrefabCmd : public CmdInterface {
+public:
+	PackPrefabCmd(GameObjectManager& manager, GameObject* obj);
+	void execute() override;
+	void undo() override;
+	void updateObjName(const std::string& oldName, const std::string& newName) override;
+private:
+	GameObjectManager& m_manager;
+	std::string m_objectName;
+	std::string m_prefabID;
+};
 
 // big boss for undo/redo operation (singleton)
 class UndoRedoManager {
@@ -447,6 +516,7 @@ private:
 	bool				m_isEditingTransform = false;
 	std::string			m_editingObjName;
 	TransformSnapshot	m_transformBefore;
+	std::unordered_map<std::string, TransformSnapshot> m_bystandersBefore;
 
 	// for tilemap
 	bool				m_isEditingTilemap = false;
@@ -482,4 +552,5 @@ private:
 
 // take a snapshot of an object's transform state
 TransformSnapshot captureTransform(GameObject* obj);
+std::string docToString(const rapidjson::Document& doc);
 #endif
