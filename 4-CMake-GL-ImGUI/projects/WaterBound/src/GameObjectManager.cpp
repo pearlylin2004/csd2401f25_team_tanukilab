@@ -2248,7 +2248,7 @@ void GameObjectManager::cleanupSimulationResources() {
 
 			for (auto& [channelName, channel] : audio->audioChannels) {
 				if (channel.channel) {
-					//channel.state = AudioState::Stopped;
+					channel.state = AudioState::Stopped;
 					channel.isPendingStop = true;
 					channel.channel = nullptr;
 				}

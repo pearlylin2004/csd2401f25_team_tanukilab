@@ -25,30 +25,122 @@
   ],
   "objects": [
     {
-      "name": "background6",
+      "prefabid": "eaa2ba42-971a-413b-b8c4-99b2f5ab674d",
+      "name": "fire(21)",
       "components": {
         "Transform": {
           "pos": [
+            1000.0,
             0.0,
-            0.0,
-            -0.0010000000474974513
-          ],
-          "rotation": 0.0,
-          "scale": [
-            45.0,
-            45.0,
-            0.0
+            0.019999999552965164
           ]
         },
         "Render": {
-          "shape": "square",
           "colorR": 1.0,
           "colorG": 1.0,
           "colorB": 1.0,
           "colorA": 1.0,
           "hasTex": 1,
-          "texture": "assets/Texture\\game_bg_layer_6.png",
-          "hasAnimation": 0
+          "texture": "assets/Texture/Smoke_Sprite_Sheet.jpg",
+          "hasAnimation": 1
+        },
+        "Physics": {
+          "autoUpdate": 0,
+          "maxFallSpeed": -30.0,
+          "groundAccelForce": 20.0,
+          "airAccelForce": 8.0,
+          "apexHangMul": 0.20000000298023224,
+          "jumpBufferTime": 0.15000000596046448,
+          "coyoteTime": 0.15000000596046448,
+          "ledgeAssistRange": 0.800000011920929,
+          "ledgeClimbSpeed": 8.0,
+          "freezeRotation": 1,
+          "angularDrag": 0.9800000190734863,
+          "inertiaOverride": 0.0
+        },
+        "CollisionInfo": {
+          "colliderPos": [
+            0.0,
+            0.0
+          ],
+          "colliderRot": 0.0,
+          "bounciness": 0.0,
+          "friction": 0.0
+        },
+        "AudioComponent": {
+          "channels": {
+            "default": {
+              "persistOnSceneChange": 0
+            }
+          }
+        }
+      }
+    },
+    {
+      "prefabid": "eaa2ba42-971a-413b-b8c4-99b2f5ab674d",
+      "name": "fire(21)22",
+      "components": {
+        "Transform": {
+          "pos": [
+            1000.0,
+            0.0,
+            0.019999999552965164
+          ]
+        },
+        "Render": {
+          "colorR": 1.0,
+          "colorG": 1.0,
+          "colorB": 1.0,
+          "colorA": 1.0,
+          "hasTex": 1,
+          "texture": "assets/Texture/Smoke_Sprite_Sheet.jpg",
+          "hasAnimation": 1
+        },
+        "Physics": {
+          "autoUpdate": 0,
+          "maxFallSpeed": -30.0,
+          "groundAccelForce": 20.0,
+          "airAccelForce": 8.0,
+          "apexHangMul": 0.20000000298023224,
+          "jumpBufferTime": 0.15000000596046448,
+          "coyoteTime": 0.15000000596046448,
+          "ledgeAssistRange": 0.800000011920929,
+          "ledgeClimbSpeed": 8.0,
+          "freezeRotation": 1,
+          "angularDrag": 0.9800000190734863,
+          "inertiaOverride": 0.0
+        },
+        "CollisionInfo": {
+          "colliderPos": [
+            0.0,
+            0.0
+          ],
+          "colliderRot": 0.0,
+          "bounciness": 0.0,
+          "friction": 0.0
+        },
+        "AudioComponent": {
+          "channels": {
+            "default": {
+              "persistOnSceneChange": 0
+            },
+            "fire_loop": {
+              "audioFile": "assets/audio/fire_crackle.wav",
+              "volume": 0.5,
+              "pitch": 1.0,
+              "loop": 1,
+              "playOnStart": 0,
+              "muted": 0,
+              "fadeInOnStart": 0,
+              "fadeInDuration": 1.0,
+              "fadeOutOnStop": 0,
+              "fadeOutDuration": 1.0,
+              "isSpatial": 1,
+              "minDistance": 1.0,
+              "maxDistance": 100.0,
+              "persistOnSceneChange": 0
+            }
+          }
         }
       }
     },
@@ -59,8 +151,8 @@
         "Transform": {
           "pos": [
             -1000.0,
-            -1002.7711181640625,
-            1.0
+            -997.2265625,
+            0.0
           ]
         },
         "Render": {
@@ -97,6 +189,13 @@
             "hazards"
           ]
         },
+        "AudioComponent": {
+          "channels": {
+            "default": {
+              "persistOnSceneChange": 0
+            }
+          }
+        },
         "LuaScript": {
           "scripts": [
             {
@@ -104,6 +203,102 @@
               "scriptName": "bullet"
             }
           ]
+        }
+      }
+    },
+    {
+      "prefabid": "eaa2ba42-971a-413b-b8c4-99b2f5ab674d",
+      "name": "fire(21)222325",
+      "components": {
+        "Transform": {
+          "pos": [
+            -4.151661396026611,
+            -2.819326639175415,
+            0.019999999552965164
+          ]
+        },
+        "Render": {
+          "colorR": 1.0,
+          "colorG": 1.0,
+          "colorB": 1.0,
+          "colorA": 1.0,
+          "hasTex": 1,
+          "texture": "assets/Texture/Smoke_Sprite_Sheet.jpg",
+          "hasAnimation": 1
+        },
+        "Physics": {
+          "autoUpdate": 0,
+          "maxFallSpeed": -30.0,
+          "groundAccelForce": 20.0,
+          "airAccelForce": 8.0,
+          "apexHangMul": 0.20000000298023224,
+          "jumpBufferTime": 0.15000000596046448,
+          "coyoteTime": 0.15000000596046448,
+          "ledgeAssistRange": 0.800000011920929,
+          "ledgeClimbSpeed": 8.0,
+          "freezeRotation": 1,
+          "angularDrag": 0.9800000190734863,
+          "inertiaOverride": 0.0
+        },
+        "CollisionInfo": {
+          "colliderPos": [
+            0.0,
+            0.0
+          ],
+          "colliderRot": 0.0,
+          "bounciness": 0.0,
+          "friction": 0.0
+        },
+        "AudioComponent": {
+          "channels": {
+            "default": {
+              "persistOnSceneChange": 0
+            },
+            "fire_loop": {
+              "audioFile": "assets/audio/fire_crackle.wav",
+              "volume": 0.5,
+              "pitch": 1.0,
+              "loop": 1,
+              "playOnStart": 0,
+              "muted": 0,
+              "fadeInOnStart": 0,
+              "fadeInDuration": 1.0,
+              "fadeOutOnStop": 0,
+              "fadeOutDuration": 1.0,
+              "isSpatial": 1,
+              "minDistance": 1.0,
+              "maxDistance": 100.0,
+              "persistOnSceneChange": 0
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "background6",
+      "components": {
+        "Transform": {
+          "pos": [
+            2.0317461490631104,
+            0.0,
+            -0.0010000000474974513
+          ],
+          "rotation": 0.0,
+          "scale": [
+            45.0,
+            45.0,
+            0.0
+          ]
+        },
+        "Render": {
+          "shape": "square",
+          "colorR": 1.0,
+          "colorG": 1.0,
+          "colorB": 1.0,
+          "colorA": 1.0,
+          "hasTex": 1,
+          "texture": "assets/Texture\\game_bg_layer_6.png",
+          "hasAnimation": 0
         }
       }
     },
@@ -150,6 +345,55 @@
         },
         "Physics": {
           "autoUpdate": 0
+        },
+        "AudioComponent": {
+          "channels": {
+            "footstep": {
+              "persistOnSceneChange": 0
+            },
+            "footsteps": {
+              "persistOnSceneChange": 0
+            },
+            "jump-audio-1": {
+              "persistOnSceneChange": 0
+            },
+            "jump-audio-10": {
+              "persistOnSceneChange": 0
+            },
+            "jump-audio-11": {
+              "persistOnSceneChange": 0
+            },
+            "jump-audio-2": {
+              "persistOnSceneChange": 0
+            },
+            "jump-audio-3": {
+              "persistOnSceneChange": 0
+            },
+            "jump-audio-4": {
+              "persistOnSceneChange": 0
+            },
+            "jump-audio-5": {
+              "persistOnSceneChange": 0
+            },
+            "jump-audio-6": {
+              "persistOnSceneChange": 0
+            },
+            "jump-audio-7": {
+              "persistOnSceneChange": 0
+            },
+            "jump-audio-8": {
+              "persistOnSceneChange": 0
+            },
+            "jump-audio-9": {
+              "persistOnSceneChange": 0
+            },
+            "landing": {
+              "persistOnSceneChange": 0
+            },
+            "refill": {
+              "persistOnSceneChange": 0
+            }
+          }
         },
         "LuaScript": {
           "scripts": [
@@ -367,134 +611,6 @@
     },
     {
       "prefabid": "eaa2ba42-971a-413b-b8c4-99b2f5ab674d",
-      "name": "fire(21)22",
-      "components": {
-        "Transform": {
-          "pos": [
-            -7.897176742553711,
-            -4.819326400756836,
-            0.019999999552965164
-          ]
-        },
-        "Render": {
-          "colorR": 1.0,
-          "colorG": 1.0,
-          "colorB": 1.0,
-          "colorA": 1.0,
-          "hasTex": 1,
-          "texture": "assets/Texture/Smoke_Sprite_Sheet.jpg",
-          "hasAnimation": 1
-        },
-        "Physics": {
-          "autoUpdate": 0,
-          "maxFallSpeed": -30.0,
-          "groundAccelForce": 20.0,
-          "airAccelForce": 8.0,
-          "apexHangMul": 0.20000000298023224,
-          "jumpBufferTime": 0.15000000596046448,
-          "coyoteTime": 0.15000000596046448,
-          "ledgeAssistRange": 0.800000011920929,
-          "ledgeClimbSpeed": 8.0,
-          "freezeRotation": 1,
-          "angularDrag": 0.9800000190734863,
-          "inertiaOverride": 0.0
-        },
-        "CollisionInfo": {
-          "colliderPos": [
-            0.0,
-            0.0
-          ],
-          "colliderRot": 0.0,
-          "bounciness": 0.0,
-          "friction": 0.0
-        },
-        "AudioComponent": {
-          "channels": {
-            "fire_loop": {
-              "audioFile": "assets/audio/fire_crackle.wav",
-              "volume": 0.5,
-              "pitch": 1.0,
-              "loop": 1,
-              "playOnStart": 0,
-              "muted": 0,
-              "fadeInOnStart": 0,
-              "fadeInDuration": 1.0,
-              "fadeOutOnStop": 0,
-              "fadeOutDuration": 1.0,
-              "isSpatial": 1,
-              "minDistance": 1.0,
-              "maxDistance": 100.0
-            }
-          }
-        }
-      }
-    },
-    {
-      "prefabid": "eaa2ba42-971a-413b-b8c4-99b2f5ab674d",
-      "name": "fire(21)",
-      "components": {
-        "Transform": {
-          "pos": [
-            1000.0,
-            0.0,
-            0.019999999552965164
-          ]
-        },
-        "Render": {
-          "colorR": 1.0,
-          "colorG": 1.0,
-          "colorB": 1.0,
-          "colorA": 1.0,
-          "hasTex": 1,
-          "texture": "assets/Texture/Smoke_Sprite_Sheet.jpg",
-          "hasAnimation": 1
-        },
-        "Physics": {
-          "autoUpdate": 0,
-          "maxFallSpeed": -30.0,
-          "groundAccelForce": 20.0,
-          "airAccelForce": 8.0,
-          "apexHangMul": 0.20000000298023224,
-          "jumpBufferTime": 0.15000000596046448,
-          "coyoteTime": 0.15000000596046448,
-          "ledgeAssistRange": 0.800000011920929,
-          "ledgeClimbSpeed": 8.0,
-          "freezeRotation": 1,
-          "angularDrag": 0.9800000190734863,
-          "inertiaOverride": 0.0
-        },
-        "CollisionInfo": {
-          "colliderPos": [
-            0.0,
-            0.0
-          ],
-          "colliderRot": 0.0,
-          "bounciness": 0.0,
-          "friction": 0.0
-        },
-        "AudioComponent": {
-          "channels": {
-            "fire_loop": {
-              "audioFile": "assets/audio/fire_crackle.wav",
-              "volume": 0.5,
-              "pitch": 1.0,
-              "loop": 1,
-              "playOnStart": 0,
-              "muted": 0,
-              "fadeInOnStart": 0,
-              "fadeInDuration": 1.0,
-              "fadeOutOnStop": 0,
-              "fadeOutDuration": 1.0,
-              "isSpatial": 1,
-              "minDistance": 1.0,
-              "maxDistance": 100.0
-            }
-          }
-        }
-      }
-    },
-    {
-      "prefabid": "eaa2ba42-971a-413b-b8c4-99b2f5ab674d",
       "name": "fire(21)2223",
       "components": {
         "Transform": {
@@ -538,6 +654,9 @@
         },
         "AudioComponent": {
           "channels": {
+            "default": {
+              "persistOnSceneChange": 0
+            },
             "fire_loop": {
               "audioFile": "assets/audio/fire_crackle.wav",
               "volume": 0.5,
@@ -551,7 +670,8 @@
               "fadeOutDuration": 1.0,
               "isSpatial": 1,
               "minDistance": 1.0,
-              "maxDistance": 100.0
+              "maxDistance": 100.0,
+              "persistOnSceneChange": 0
             }
           }
         }
@@ -562,11 +682,11 @@
       "components": {
         "Transform": {
           "pos": [
-            -3.0980653762817383,
-            -3.6029999256134033,
+            -16.93695068359375,
+            -5.585791110992432,
             0.0
           ],
-          "rotation": 12.18714714050293,
+          "rotation": 13.69485092163086,
           "scale": [
             3.200000047683716,
             1.2999999523162842,
@@ -622,7 +742,7 @@
           "enableCol": 1,
           "tiles": [
             {
-              "x": -7,
+              "x": 6,
               "y": -4,
               "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
             },
@@ -632,12 +752,12 @@
               "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
             },
             {
-              "x": 6,
+              "x": -3,
               "y": -4,
               "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
             },
             {
-              "x": -3,
+              "x": -7,
               "y": -4,
               "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
             },
@@ -652,11 +772,6 @@
               "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
             },
             {
-              "x": -4,
-              "y": -4,
-              "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
-            },
-            {
               "x": 7,
               "y": -4,
               "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
@@ -664,6 +779,11 @@
             {
               "x": 6,
               "y": -2,
+              "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
+            },
+            {
+              "x": -4,
+              "y": -4,
               "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
             },
             {
@@ -687,11 +807,6 @@
               "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
             },
             {
-              "x": -4,
-              "y": -3,
-              "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
-            },
-            {
               "x": 6,
               "y": -1,
               "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
@@ -699,6 +814,21 @@
             {
               "x": 7,
               "y": -3,
+              "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
+            },
+            {
+              "x": -4,
+              "y": -3,
+              "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
+            },
+            {
+              "x": 6,
+              "y": -3,
+              "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
+            },
+            {
+              "x": 7,
+              "y": -1,
               "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
             },
             {
@@ -707,26 +837,6 @@
               "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
             },
             {
-              "x": 6,
-              "y": -3,
-              "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
-            },
-            {
-              "x": 7,
-              "y": -1,
-              "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
-            },
-            {
-              "x": -2,
-              "y": -2,
-              "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
-            },
-            {
-              "x": -1,
-              "y": -4,
-              "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
-            },
-            {
               "x": 4,
               "y": -4,
               "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
@@ -738,7 +848,12 @@
             },
             {
               "x": -2,
-              "y": -3,
+              "y": -2,
+              "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
+            },
+            {
+              "x": -1,
+              "y": -4,
               "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
             },
             {
@@ -748,12 +863,7 @@
             },
             {
               "x": -2,
-              "y": -4,
-              "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
-            },
-            {
-              "x": -1,
-              "y": -2,
+              "y": -3,
               "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
             },
             {
@@ -767,8 +877,13 @@
               "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
             },
             {
+              "x": -2,
+              "y": -4,
+              "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
+            },
+            {
               "x": -1,
-              "y": -3,
+              "y": -2,
               "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
             },
             {
@@ -779,6 +894,11 @@
             {
               "x": 5,
               "y": -1,
+              "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
+            },
+            {
+              "x": -1,
+              "y": -3,
               "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
             },
             {
@@ -1090,76 +1210,13 @@
               "fadeOutDuration": 1.0,
               "isSpatial": 0,
               "minDistance": 1.0,
-              "maxDistance": 100.0
+              "maxDistance": 100.0,
+              "persistOnSceneChange": 0
             }
           }
         },
         "VisualLC": {
           "filename": "endgoal02.json"
-        }
-      }
-    },
-    {
-      "prefabid": "eaa2ba42-971a-413b-b8c4-99b2f5ab674d",
-      "name": "fire(21)222325",
-      "components": {
-        "Transform": {
-          "pos": [
-            -4.151661396026611,
-            -2.819326639175415,
-            0.019999999552965164
-          ]
-        },
-        "Render": {
-          "colorR": 1.0,
-          "colorG": 1.0,
-          "colorB": 1.0,
-          "colorA": 1.0,
-          "hasTex": 1,
-          "texture": "assets/Texture/Smoke_Sprite_Sheet.jpg",
-          "hasAnimation": 1
-        },
-        "Physics": {
-          "autoUpdate": 0,
-          "maxFallSpeed": -30.0,
-          "groundAccelForce": 20.0,
-          "airAccelForce": 8.0,
-          "apexHangMul": 0.20000000298023224,
-          "jumpBufferTime": 0.15000000596046448,
-          "coyoteTime": 0.15000000596046448,
-          "ledgeAssistRange": 0.800000011920929,
-          "ledgeClimbSpeed": 8.0,
-          "freezeRotation": 1,
-          "angularDrag": 0.9800000190734863,
-          "inertiaOverride": 0.0
-        },
-        "CollisionInfo": {
-          "colliderPos": [
-            0.0,
-            0.0
-          ],
-          "colliderRot": 0.0,
-          "bounciness": 0.0,
-          "friction": 0.0
-        },
-        "AudioComponent": {
-          "channels": {
-            "fire_loop": {
-              "audioFile": "assets/audio/fire_crackle.wav",
-              "volume": 0.5,
-              "pitch": 1.0,
-              "loop": 1,
-              "playOnStart": 0,
-              "muted": 0,
-              "fadeInOnStart": 0,
-              "fadeInDuration": 1.0,
-              "fadeOutOnStop": 0,
-              "fadeOutDuration": 1.0,
-              "isSpatial": 1,
-              "minDistance": 1.0,
-              "maxDistance": 100.0
-            }
-          }
         }
       }
     }

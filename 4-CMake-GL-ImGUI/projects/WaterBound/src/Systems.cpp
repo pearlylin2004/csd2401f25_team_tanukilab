@@ -59,8 +59,13 @@ void InputSystem::update(GameObjectManager& manager, const float& deltaTime, Mes
 
         messageBus.publish(Message("KeyPressed", nullptr, KeyEvent{ "0", true }));
 
-        if (EditorManager::isEditingMode()) EditorManager::toggleEditing(false);
-        else EditorManager::toggleEditing(true);
+        if (EditorManager::isEditingMode()) {
+            EditorManager::toggleEditing(false);
+            AudioHandler::getInstance().resumeAll(manager);
+        } else {
+            AudioHandler::getInstance().pauseAll(manager);
+            EditorManager::toggleEditing(true);
+        }
     }
 
     // ============ LAYER TESTING CODE ============
@@ -2516,7 +2521,7 @@ void AudioSystem::update(GameObjectManager& manager, float deltaTime) {
 		AudioHandler::getInstance().updateListener(
 			playerTransform->x,
 			playerTransform->y,
-			playerTransform->z,
+			0.0f,
 			0.0f, 0.0f, 1.0f,  // forward: looking into screen
 			0.0f, 1.0f, 0.0f   // up: Y-axis is up
 		);
@@ -2560,10 +2565,10 @@ void AudioSystem::update(GameObjectManager& manager, float deltaTime) {
 				// Process audio (isPendingPlay, isPendingStop, etc.)
 				processAudio(obj, &ch, deltaTime);
 
-				// Background music restart logic
-				if (ch.playOnStart && ch.loop && ch.state != AudioState::Stopped) {
+				// Background music restart logic - skip in editor mode to honour pause/resume
+				if (!EditorManager::isEditingMode() && ch.playOnStart && ch.loop && ch.state != AudioState::Stopped) {
 					if (!ch.channel || !audioHandler.isSoundPlaying(&ch)) {
-						// Restart background music if not playing
+						// Restart audio if not playing
 						ch.channel = audioHandler.playSound(&ch);
 						if (ch.channel) {
 							ch.state = AudioState::Playing;
@@ -2774,7 +2779,7 @@ void AudioSystem::updateSpatialAudio(GameObjectManager& manager) {
 			FMOD_VECTOR soundPos = {
 				transform->x,
 				transform->y,
-				transform->z
+				0.0f
 			};
 			FMOD_VECTOR soundVel = { 0.0f, 0.0f, 0.0f };  // No doppler effect
 			
