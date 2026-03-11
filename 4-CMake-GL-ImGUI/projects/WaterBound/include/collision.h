@@ -30,6 +30,15 @@ namespace Collision {
     using f64 = double;
     extern f64 g_dt;
 
+    //settings
+    inline float stiffness = 1.5f; //pressure strength
+    inline float viscosity = 0.008f; //smoothing
+    inline float correctionPercent = 0.1f; //positional correction
+    inline float damping = 0.05f; //damping
+    inline float flowStrength = 0.02f; //flow strength for water like behavior
+    inline float gravity = 0.002f; // tiny gravity to keep flow
+    inline float antiStick = 0.002f; // slide over neighbors
+
     //Hash
     int HashCell(int, int);
 
