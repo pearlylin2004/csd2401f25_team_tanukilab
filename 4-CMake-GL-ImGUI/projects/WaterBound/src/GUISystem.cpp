@@ -418,7 +418,7 @@ GameState GUISystem::sceneToState(const std::string& sceneName) {
     if (sceneName == "audio_scene.json") {
         return GameState::AUDIO;
     }
-    if (sceneName == "level01.json" || sceneName == "level02.json") {
+    if (sceneName == "level01.json" || sceneName == "level02.json" || sceneName == "level03.json" || sceneName == "level04.json") {
 		//if (!m_buttons.empty()) removeButtons();
         return GameState::PLAYING;
     }
