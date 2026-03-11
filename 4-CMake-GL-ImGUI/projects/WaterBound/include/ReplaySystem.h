@@ -33,6 +33,15 @@ struct ReplayFrame {
     bool  flipX = false;
     int   animState = 0;   // PlayerState enum cast to int
     bool  facingRight = true;
+
+    // Recorded input state for full replay viewer
+    bool  inputKeyA = false;
+    bool  inputKeyD = false;
+    bool  inputSpaceTriggered = false;
+    bool  inputSpaceReleased = false;
+    bool  inputMouseLeftHeld = false;
+    float inputMouseX = 0.f;
+    float inputMouseY = 0.f;
 };
 
 // Full recording of a single run
@@ -65,6 +74,25 @@ public:
     // Stops playback and destroys the ghost entity
     void stopPlayback(GameObjectManager& manager);
 
+    // --- Viewer mode (full input replay, no ghost) ---
+    void startViewerPlayback(const std::string& levelName);
+    void updateViewer(float deltaTime);
+    void stopViewer();
+    bool isViewerMode() const { return m_isViewerMode; }
+    bool isViewerFinished() const { return m_viewerFinished; }
+
+    // Query recorded inputs during viewer playback
+    bool getReplayKeyA() const;
+    bool getReplayKeyD() const;
+    bool getReplaySpaceTriggered() const;
+    bool getReplaySpaceReleased() const;
+    bool getReplayMouseLeftHeld() const;
+    float getReplayMouseX() const;
+    float getReplayMouseY() const;
+    // Position from recording for periodic correction
+    float getReplayX() const;
+    float getReplayY() const;
+
     // --- State queries ---
     bool isRecording() const { return m_isRecording; }
     bool isPlaying()   const { return m_isPlaying; }
@@ -95,4 +123,6 @@ private:
     float       m_recordingElapsed = 0.f;  // seconds elapsed during recording
     float       m_playbackElapsed = 0.f;   // seconds elapsed during playback
     bool        m_initialized = false;
+    bool        m_isViewerMode = false;
+    bool        m_viewerFinished = false;
 };

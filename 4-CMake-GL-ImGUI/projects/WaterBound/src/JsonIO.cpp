@@ -257,6 +257,7 @@ namespace JsonIO {
         case ButtonAction::OPEN_LEADERBOARD: return "open_leaderboard";
         case ButtonAction::MUTE:   return "mute";
         case ButtonAction::UNMUTE:   return "unmute";
+        case ButtonAction::WATCH_REPLAY: return "watch_replay";
         default:                           return "none";
         }
 	}
@@ -279,6 +280,7 @@ namespace JsonIO {
         if (s == "open_leaderboard") return ButtonAction::OPEN_LEADERBOARD;
         if (s == "mute") return ButtonAction::MUTE;
         if (s == "unmute") return ButtonAction::UNMUTE;
+        if (s == "watch_replay") return ButtonAction::WATCH_REPLAY;
         return ButtonAction::NONE;
 	}
 
@@ -425,6 +427,7 @@ namespace JsonIO {
 		if (stateStr == "PAUSED") return GameState::PAUSED;
         if (stateStr == "EXIT") return GameState::EXIT;
         if (stateStr == "EXITCONFIRMATION") return GameState::EXITCONFIRMATION;
+        if (stateStr == "REPLAY") return GameState::REPLAY;
         //if (stateStr == "LEVELS") return GameState::LEVELS;
 		return GameState::NONE;
 	}
@@ -437,6 +440,7 @@ namespace JsonIO {
 		case GameState::PAUSED: return "PAUSED";
 		case GameState::EXIT: return "EXIT";
 		case GameState::EXITCONFIRMATION: return "EXITCONFIRMATION";
+		case GameState::REPLAY: return "REPLAY";
 		//case GameState::LEVELS: return "LEVELS";
 		default: return "NONE";
 		}

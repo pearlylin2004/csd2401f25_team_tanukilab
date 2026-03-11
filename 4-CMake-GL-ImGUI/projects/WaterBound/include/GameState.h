@@ -27,5 +27,6 @@ enum class GameState {
     EXITCONFIRMATION,
     LEVELS,//maybe for future use
     WIN,
-    LEADERBOARD
+    LEADERBOARD,
+    REPLAY
 };

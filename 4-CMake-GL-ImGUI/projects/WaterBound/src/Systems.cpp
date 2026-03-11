@@ -25,6 +25,8 @@ Technology is prohibited.
 
 #include "Systems.h"
 #include "Physics.h"
+#include "GUISystem.h"
+#include "ReplaySystem.h"
 
 std::string TileMapSystem::filename{};
 std::vector<Particle::UID> Particle::UIDs;
@@ -1173,6 +1175,33 @@ void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime, M
 
 		// Handle player input
 		if (object->hasComponent<Input>() && !EditorManager::isEditingMode() && !EditorManager::isPaused()) {
+			// Input replay helpers — use recorded inputs in REPLAY state
+			bool isReplay = (GUISystem::getInstance().getCurrentState() == GameState::REPLAY);
+			auto& replaySys = ReplaySystem::getInstance();
+			auto rKeyHeld = [&](int key) -> bool {
+				if (!isReplay) return InputHandler::isKeyHeld(key);
+				if (key == GLFW_KEY_A) return replaySys.getReplayKeyA();
+				if (key == GLFW_KEY_D) return replaySys.getReplayKeyD();
+				return false;
+			};
+			auto rKeyTriggered = [&](int key) -> bool {
+				if (!isReplay) return InputHandler::isKeyTriggered(key);
+				if (key == GLFW_KEY_SPACE) return replaySys.getReplaySpaceTriggered();
+				return false;
+			};
+			auto rKeyReleased = [&](int key) -> bool {
+				if (!isReplay) return InputHandler::isKeyReleased(key);
+				if (key == GLFW_KEY_SPACE) return replaySys.getReplaySpaceReleased();
+				return false;
+			};
+			auto rMouseLeftHeld = [&]() -> bool {
+				return isReplay ? replaySys.getReplayMouseLeftHeld() : InputHandler::isMouseLeftHeld();
+			};
+			auto rMouseWorldPos = [&]() -> Vector2D {
+				if (isReplay) return Vector2D(replaySys.getReplayMouseX(),
+				                              replaySys.getReplayMouseY());
+				return InputHandler::getWorldMousePosition();
+			};
 			// STEP 1: Ground check FIRST
 			if (transform->y <= physics->floorY && !object->checkAutoMove()) {
 				transform->y = physics->floorY;
@@ -1225,7 +1254,7 @@ void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime, M
 
 			// STEP 2: Jump input
 			// when space pressed, store the intention
-			if (InputHandler::isKeyTriggered(GLFW_KEY_SPACE))
+			if (rKeyTriggered(GLFW_KEY_SPACE))
 				physics->jumpBufferTimer = physics->jumpBufferTime;
 
 			// jump if buffer is active AND player is grounded or coyote available
@@ -1237,28 +1266,28 @@ void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime, M
 			}
 
 			// tap for small jump, hold for big jump
-			if (InputHandler::isKeyReleased(GLFW_KEY_SPACE)) {
+			if (rKeyReleased(GLFW_KEY_SPACE)) {
 				if (physics->dynamics.velocity.y > 0.0f)
 					physics->dynamics.velocity.y *= 0.8f;
 			}
 
 			// STEP 3: Movement
 			float targetVelX = 0.0f;
-			if (InputHandler::isKeyHeld(GLFW_KEY_A)) {
+			if (rKeyHeld(GLFW_KEY_A)) {
 				physics->canMove = true;
 				targetVelX = -physics->moveSpeed;
 				transform->flipX = true;
 				messageBus.publish(Message("KeyPressed", nullptr, KeyEvent{ "A", true }));
 			}
-			else if (InputHandler::isKeyHeld(GLFW_KEY_D) && physics->canMove) {
+			else if (rKeyHeld(GLFW_KEY_D) && physics->canMove) {
 				targetVelX = physics->moveSpeed;
 				transform->flipX = false;
 				messageBus.publish(Message("KeyPressed", nullptr, KeyEvent{ "D", true }));
 			}
 
 			// Flip player to face mouse direction (only when no movement keys override)
-			if (!InputHandler::isKeyHeld(GLFW_KEY_A) && !InputHandler::isKeyHeld(GLFW_KEY_D)) {
-				Vector2D mouseWorldPos = InputHandler::getWorldMousePosition();
+			if (!rKeyHeld(GLFW_KEY_A) && !rKeyHeld(GLFW_KEY_D)) {
+				Vector2D mouseWorldPos = rMouseWorldPos();
 				transform->flipX = (mouseWorldPos.x < transform->x);
 			}
 
@@ -1279,7 +1308,7 @@ void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime, M
 				physics->shootTimer += deltaTime;
 
 				// Check if mouse button is being held down
-				if (InputHandler::isMouseLeftHeld()) {
+				if (rMouseLeftHeld()) {
 #ifdef _DEBUG
 					if ((!UISystem::isShowUI() || (SceneWindow::isSceneHovered() && !EditorManager::isEditingMode()))) {
 #endif // _DEBUG
@@ -1291,18 +1320,22 @@ void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime, M
 								if (bullet != nullptr) {
 									// Get mouse position in world coordinates
 									Vector2D mouseWorldPos;
+									if (isReplay) {
+										mouseWorldPos = rMouseWorldPos();
+									} else {
 #ifdef _DEBUG
-									if (UISystem::isShowUI() && !EditorManager::isEditingMode()) {
-										ImVec2 scenePos, sceneSize;
-										EditorManager::getScenePosNSize(scenePos, sceneSize);
-										mouseWorldPos = InputHandler::getMousePositionInImGuiViewport(scenePos, sceneSize);
-									}
-									else {
-										mouseWorldPos = InputHandler::getWorldMousePosition();
-									}
+										if (UISystem::isShowUI() && !EditorManager::isEditingMode()) {
+											ImVec2 scenePos, sceneSize;
+											EditorManager::getScenePosNSize(scenePos, sceneSize);
+											mouseWorldPos = InputHandler::getMousePositionInImGuiViewport(scenePos, sceneSize);
+										}
+										else {
+											mouseWorldPos = InputHandler::getWorldMousePosition();
+										}
 #else
-									mouseWorldPos = InputHandler::getWorldMousePosition();
+										mouseWorldPos = InputHandler::getWorldMousePosition();
 #endif
+									}
 
 									Transform* spawnTransform = transform;
 									{

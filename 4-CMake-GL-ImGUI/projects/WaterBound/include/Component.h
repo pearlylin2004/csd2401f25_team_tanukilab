@@ -330,7 +330,8 @@ enum class ButtonAction {
     SFX_VOL_DOWN,
     OPEN_LEADERBOARD,
     MUTE,
-    UNMUTE
+    UNMUTE,
+    WATCH_REPLAY
 };
 
 //Button component

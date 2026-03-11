@@ -69,6 +69,9 @@ public:
 	void loadLevel(const std::string& levelSceneName); // load next level
     void resetAllObjectsToSpawn(); // helper for restart
 
+    // Replay viewer
+    void startReplayViewer();
+
     void createButtons(/*GameObjectManager& manager*/); //create menu buttons
 
     // Level timer for leaderboard
@@ -91,6 +94,7 @@ private:
     void stopGame(); //stop game	
     void updateVolumeDisplay(); //update volume % text on audio page
     void updateLeaderboardDisplay(); //populate leaderboard font objects with scores
+    void loadReplayLevel(int levelIndex); // load a level in replay viewer mode
 
     bool isPointInButton(const Vector2D& point, GameObject* button);
     void createButtonActions(); //create button actions
@@ -113,7 +117,16 @@ private:
 
     float m_previousVolume = 100;
 
-    // Level timer for leaderboard (tracks seconds elapsed since level start)
+    // Level timer for replay ghosts (resets each level)
     double m_levelTimer = 0.0;
     bool m_levelTimerRunning = false;
+
+    // Total game timer for leaderboard (start to win, never resets between levels)
+    double m_gameTimer = 0.0;
+    bool m_gameTimerRunning = false;
+
+    // Replay viewer state
+    std::vector<std::string> m_replayLevels; // ordered list of levels to replay
+    int m_replayLevelIndex = 0;
+    bool m_replayViewerActive = false;
 };

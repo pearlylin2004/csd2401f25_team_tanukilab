@@ -21,6 +21,7 @@ Technology is prohibited.
 #include "GameObject.h"
 #include "Component.h"
 #include "JsonIO.h"
+#include "input.h"
 #include <filesystem>
 #include <iostream>
 #include <algorithm>
@@ -102,6 +103,16 @@ void ReplaySystem::recordFrame(GameObjectManager& manager, float deltaTime) {
         frame.animState = static_cast<int>(sm->state);
         frame.facingRight = sm->facingRight;
     }
+
+    // Capture input state for full replay viewer
+    frame.inputKeyA = InputHandler::isKeyHeld(GLFW_KEY_A);
+    frame.inputKeyD = InputHandler::isKeyHeld(GLFW_KEY_D);
+    frame.inputSpaceTriggered = InputHandler::isKeyTriggered(GLFW_KEY_SPACE);
+    frame.inputSpaceReleased = InputHandler::isKeyReleased(GLFW_KEY_SPACE);
+    frame.inputMouseLeftHeld = InputHandler::isMouseLeftHeld();
+    Vector2D mousePos = InputHandler::getWorldMousePosition();
+    frame.inputMouseX = static_cast<float>(mousePos.x);
+    frame.inputMouseY = static_cast<float>(mousePos.y);
 
     m_currentRecording.frames.push_back(frame);
 }
@@ -304,6 +315,100 @@ void ReplaySystem::stopPlayback(GameObjectManager& manager) {
 }
 
 // ============================================================================
+// Viewer mode (full input replay, no ghost)
+// ============================================================================
+
+void ReplaySystem::startViewerPlayback(const std::string& levelName) {
+    std::string shortName = extractLevelName(levelName);
+
+    if (!loadReplay(shortName, m_playbackData)) {
+        std::cout << "[Replay] No replay found for " << shortName << " — viewer skipped.\n";
+        m_viewerFinished = true;
+        return;
+    }
+
+    if (m_playbackData.frames.empty()) {
+        std::cout << "[Replay] Replay has no frames — viewer skipped.\n";
+        m_viewerFinished = true;
+        return;
+    }
+
+    m_playbackFrame = 0;
+    m_playbackElapsed = 0.f;
+    m_isViewerMode = true;
+    m_viewerFinished = false;
+
+    std::cout << "[Replay] Viewer started — " << m_playbackData.frames.size()
+              << " frames for " << shortName << ".\n";
+}
+
+void ReplaySystem::updateViewer(float deltaTime) {
+    if (!m_isViewerMode || m_viewerFinished) return;
+
+    m_playbackElapsed += deltaTime;
+
+    const auto& frames = m_playbackData.frames;
+    const int totalFrames = static_cast<int>(frames.size());
+
+    if (m_playbackElapsed >= frames.back().timestamp) {
+        m_viewerFinished = true;
+        std::cout << "[Replay] Viewer playback finished.\n";
+        return;
+    }
+
+    // Advance frame index to match elapsed time
+    while (m_playbackFrame < totalFrames - 1 &&
+           frames[m_playbackFrame + 1].timestamp <= m_playbackElapsed) {
+        ++m_playbackFrame;
+    }
+}
+
+void ReplaySystem::stopViewer() {
+    m_isViewerMode = false;
+    m_viewerFinished = false;
+    m_playbackFrame = 0;
+    m_playbackElapsed = 0.f;
+    std::cout << "[Replay] Viewer stopped.\n";
+}
+
+// Helper to get the current viewer frame safely
+static const ReplayFrame s_emptyFrame{};
+
+const ReplayFrame& ReplaySystem_currentFrame(const ReplaySystem& r, const ReplayData& data, int frame) {
+    if (frame >= 0 && frame < static_cast<int>(data.frames.size()))
+        return data.frames[frame];
+    return s_emptyFrame;
+}
+
+bool ReplaySystem::getReplayKeyA() const {
+    return m_isViewerMode ? m_playbackData.frames[m_playbackFrame].inputKeyA : false;
+}
+bool ReplaySystem::getReplayKeyD() const {
+    return m_isViewerMode ? m_playbackData.frames[m_playbackFrame].inputKeyD : false;
+}
+bool ReplaySystem::getReplaySpaceTriggered() const {
+    return m_isViewerMode ? m_playbackData.frames[m_playbackFrame].inputSpaceTriggered : false;
+}
+bool ReplaySystem::getReplaySpaceReleased() const {
+    return m_isViewerMode ? m_playbackData.frames[m_playbackFrame].inputSpaceReleased : false;
+}
+bool ReplaySystem::getReplayMouseLeftHeld() const {
+    return m_isViewerMode ? m_playbackData.frames[m_playbackFrame].inputMouseLeftHeld : false;
+}
+float ReplaySystem::getReplayMouseX() const {
+    return m_isViewerMode ? m_playbackData.frames[m_playbackFrame].inputMouseX : 0.f;
+}
+float ReplaySystem::getReplayMouseY() const {
+    return m_isViewerMode ? m_playbackData.frames[m_playbackFrame].inputMouseY : 0.f;
+}
+float ReplaySystem::getReplayX() const {
+    return m_isViewerMode ? m_playbackData.frames[m_playbackFrame].x : 0.f;
+}
+float ReplaySystem::getReplayY() const {
+    return m_isViewerMode ? m_playbackData.frames[m_playbackFrame].y : 0.f;
+}
+
+// ============================================================================
 // File I/O — RapidJSON
 // ============================================================================
 
@@ -328,6 +433,14 @@ bool ReplaySystem::saveReplay(const ReplayData& data) const {
         obj.AddMember("fl", f.flipX ? 1 : 0, a);
         obj.AddMember("st", f.animState, a);
         obj.AddMember("fr", f.facingRight ? 1 : 0, a);
+        // Input state for replay viewer
+        obj.AddMember("kA", f.inputKeyA ? 1 : 0, a);
+        obj.AddMember("kD", f.inputKeyD ? 1 : 0, a);
+        obj.AddMember("kST", f.inputSpaceTriggered ? 1 : 0, a);
+        obj.AddMember("kSR", f.inputSpaceReleased ? 1 : 0, a);
+        obj.AddMember("mL", f.inputMouseLeftHeld ? 1 : 0, a);
+        obj.AddMember("mX", f.inputMouseX, a);
+        obj.AddMember("mY", f.inputMouseY, a);
         framesArr.PushBack(obj, a);
     }
     doc.AddMember("frames", framesArr, a);
@@ -379,6 +492,14 @@ bool ReplaySystem::loadReplay(const std::string& levelName, ReplayData& outData)
             if (obj.HasMember("fl")) f.flipX = obj["fl"].GetInt() != 0;
             if (obj.HasMember("st")) f.animState = obj["st"].GetInt();
             if (obj.HasMember("fr")) f.facingRight = obj["fr"].GetInt() != 0;
+            // Input state (backward-compatible: defaults to false/0 if absent)
+            if (obj.HasMember("kA"))  f.inputKeyA = obj["kA"].GetInt() != 0;
+            if (obj.HasMember("kD"))  f.inputKeyD = obj["kD"].GetInt() != 0;
+            if (obj.HasMember("kST")) f.inputSpaceTriggered = obj["kST"].GetInt() != 0;
+            if (obj.HasMember("kSR")) f.inputSpaceReleased = obj["kSR"].GetInt() != 0;
+            if (obj.HasMember("mL"))  f.inputMouseLeftHeld = obj["mL"].GetInt() != 0;
+            if (obj.HasMember("mX"))  f.inputMouseX = obj["mX"].GetFloat();
+            if (obj.HasMember("mY"))  f.inputMouseY = obj["mY"].GetFloat();
 
             outData.frames.push_back(f);
         }

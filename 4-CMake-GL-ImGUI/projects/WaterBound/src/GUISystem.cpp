@@ -64,26 +64,40 @@ void GUISystem::init(GameObjectManager& manager, LuaSystem& luaSystem, VisualLog
 //update function to check for button clicking
 void GUISystem::update() {
     if (m_pendingRestart) {
+        // Ignore restarts during replay viewer
+        if (m_currentState == GameState::REPLAY) {
+            m_pendingRestart = false;
+            return;
+        }
         m_pendingRestart = false;
         restartLevel();
         return;
     }
 
     if (m_pendingLevelLoad && !UISystem::isShowUI()) {
+        // Ignore visual-logic level transitions during replay viewer
+        if (m_currentState == GameState::REPLAY) {
+            m_pendingLevelLoad = false;
+            m_pendingLevelName = "";
+            return;
+        }
         m_pendingLevelLoad = false;
         std::string levelToLoad = m_pendingLevelName;
         m_pendingLevelName = "";
         if (levelToLoad == "win_scene.json") {
-            // Stop timer and save completion time to leaderboard
+            // Stop timers
             m_levelTimerRunning = false;
-            int completionTimeMs = static_cast<int>(m_levelTimer * 1000.0);
-            LeaderboardSystem::getInstance().addEntry("Player", completionTimeMs);
-            std::cout << "[GUI] Level completed in " << m_levelTimer << "s (" << completionTimeMs << "ms)\n";
+            m_gameTimerRunning = false;
 
-            // Stop replay recording and save if best time
-            ReplaySystem::getInstance().stopRecording(completionTimeMs);
-            // Stop ghost playback before scene transition
+            // Use per-level timer for the replay ghost save
+            int levelTimeMs = static_cast<int>(m_levelTimer * 1000.0);
+            ReplaySystem::getInstance().stopRecording(levelTimeMs);
             ReplaySystem::getInstance().stopPlayback(*g_manager);
+
+            // Use total game timer for the leaderboard entry
+            int totalTimeMs = static_cast<int>(m_gameTimer * 1000.0);
+            LeaderboardSystem::getInstance().addEntry("Player", totalTimeMs);
+            std::cout << "[GUI] Game completed in " << m_gameTimer << "s (" << totalTimeMs << "ms)\n";
 
             loadScreen(*g_manager, levelToLoad);
         }
@@ -102,6 +116,33 @@ void GUISystem::update() {
         auto actionIt = m_buttonActions.find(m_pendingAction);
         m_pendingAction = ButtonAction::NONE;
         if (actionIt != m_buttonActions.end()) actionIt->second();
+        return;
+    }
+
+    // Replay viewer: feed recorded inputs through the game simulation
+    if (m_replayViewerActive && m_currentState == GameState::REPLAY) {
+        auto& replay = ReplaySystem::getInstance();
+
+        // When the viewer finishes the current level, advance to the next
+        if (replay.isViewerFinished()) {
+            replay.stopViewer();
+            m_replayLevelIndex++;
+            if (m_replayLevelIndex < static_cast<int>(m_replayLevels.size())) {
+                loadReplayLevel(m_replayLevelIndex);
+            }
+            else {
+                // All levels replayed — return to menu
+                m_replayViewerActive = false;
+                changeState(GameState::MENU, "menu_scene.json");
+            }
+        }
+
+        // ESC exits replay viewer
+        if (InputHandler::isKeyTriggered(GLFW_KEY_ESCAPE)) {
+            replay.stopViewer();
+            m_replayViewerActive = false;
+            changeState(GameState::MENU, "menu_scene.json");
+        }
         return;
     }
 
@@ -353,6 +394,11 @@ void GUISystem::createButtonActions() {
         changeState(GameState::LEADERBOARD, "leaderboard_scene.json");
     };
 
+    // replay viewer
+    m_buttonActions[ButtonAction::WATCH_REPLAY] = [this]() {
+        startReplayViewer();
+    };
+
     std::cout << "[GUI] Menu buttons created successfully" << std::endl;
 }
 
@@ -371,30 +417,35 @@ void GUISystem::updateLeaderboardDisplay() {
     auto& lb = LeaderboardSystem::getInstance();
     auto entries = lb.getAll();
 
-    // Populate up to 10 text slots named "lb_entry_1" .. "lb_entry_10"
     for (int i = 0; i < LeaderboardSystem::MAX_ENTRIES; ++i) {
-        std::string objName = "lb_entry_" + std::to_string(i + 1);
-        GameObject* textObj = g_manager->getGameObject(objName);
-        if (!textObj || !textObj->hasComponent<FontComponent>()) continue;
+        std::string idx = std::to_string(i + 1);
 
-        FontComponent* font = textObj->getComponent<FontComponent>();
+        GameObject* rankObj = g_manager->getGameObject("lb_rank_" + idx);
+        GameObject* nameObj = g_manager->getGameObject("lb_name_" + idx);
+        GameObject* timeObj = g_manager->getGameObject("lb_time_" + idx);
+
         if (i < static_cast<int>(entries.size())) {
-            // Format time from milliseconds: M:SS.mmm
             int totalMs = entries[i].score;
             int minutes = totalMs / 60000;
             int seconds = (totalMs % 60000) / 1000;
             int ms = totalMs % 1000;
             char timeBuf[32];
             std::snprintf(timeBuf, sizeof(timeBuf), "%d:%02d.%03d", minutes, seconds, ms);
-            char entryBuf[64];
-            std::snprintf(entryBuf, sizeof(entryBuf), "%-2d. %-10s %s",
-                i + 1, entries[i].name.c_str(), timeBuf);
-            font->word = entryBuf;
+
+            if (rankObj && rankObj->hasComponent<FontComponent>())
+                rankObj->getComponent<FontComponent>()->word = idx + ".";
+            if (nameObj && nameObj->hasComponent<FontComponent>())
+                nameObj->getComponent<FontComponent>()->word = entries[i].name;
+            if (timeObj && timeObj->hasComponent<FontComponent>())
+                timeObj->getComponent<FontComponent>()->word = timeBuf;
         }
         else {
-            char entryBuf[64];
-            std::snprintf(entryBuf, sizeof(entryBuf), "%-2d. ---", i + 1);
-            font->word = entryBuf;
+            if (rankObj && rankObj->hasComponent<FontComponent>())
+                rankObj->getComponent<FontComponent>()->word = idx + ".";
+            if (nameObj && nameObj->hasComponent<FontComponent>())
+                nameObj->getComponent<FontComponent>()->word = "---";
+            if (timeObj && timeObj->hasComponent<FontComponent>())
+                timeObj->getComponent<FontComponent>()->word = "---";
         }
     }
 }
@@ -409,6 +460,10 @@ void GUISystem::startGame() {
     // Reset and start the level timer
     m_levelTimer = 0.0;
     m_levelTimerRunning = true;
+
+    // Reset and start the total game timer (runs from start to win)
+    m_gameTimer = 0.0;
+    m_gameTimerRunning = true;
 
     removeButtons(); //remove menu buttons
 
@@ -600,9 +655,70 @@ void GUISystem::loadLevel(const std::string& levelName) {
     replay.startPlayback(m_currentLevel, *g_manager);
 }
 
+void GUISystem::startReplayViewer() {
+    auto& replay = ReplaySystem::getInstance();
+
+    // Build ordered list of levels that have saved replays
+    m_replayLevels.clear();
+    const std::vector<std::string> allLevels = {
+        "level01", "level02", "level03", "level04"
+    };
+    for (const auto& lvl : allLevels) {
+        if (replay.hasReplay(lvl)) {
+            m_replayLevels.push_back(lvl);
+        }
+    }
+
+    if (m_replayLevels.empty()) {
+        std::cout << "[GUI] No replays available to watch.\n";
+        return;
+    }
+
+    m_replayLevelIndex = 0;
+    m_replayViewerActive = true;
+    m_currentState = GameState::REPLAY;
+    loadReplayLevel(0);
+}
+
+void GUISystem::loadReplayLevel(int levelIndex) {
+    const std::string& levelName = m_replayLevels[levelIndex];
+    std::string sceneName = levelName + ".json";
+    std::string fullPath = std::string(RUNTIME_SCENE_DIR_R) + "/" + sceneName;
+
+    std::cout << "[GUI] Replay viewer: loading " << levelName << "\n";
+
+    removeButtons();
+    AudioHandler::getInstance().stopAll(*g_manager);
+
+    g_manager->clearScene();
+    g_manager->loadScene(fullPath);
+    g_manager->initializeSceneResources();
+    g_visualLogicSystem->resetLogicState();
+    g_visualLogicSystem->initAll(*g_manager);
+
+    // Initialize Lua scripts for this level
+    for (const auto& file : std::filesystem::directory_iterator("./assets/scripting")) {
+        if (file.path().extension() != ".lua") continue;
+        std::string filename = file.path().filename().string();
+        std::string objectName = filename.substr(0, filename.size() - 4);
+        GameObject* obj = g_manager->getGameObject(objectName);
+        if (obj) {
+            obj->addComponent<LuaScript>(file.path().string());
+            g_luaSystem->loadScriptForObject(file.path().string(), objectName);
+        }
+    }
+
+    // Start viewer playback (feeds recorded inputs, no ghost spawned)
+    auto& replay = ReplaySystem::getInstance();
+    replay.startViewerPlayback(fullPath);
+}
+
 void GUISystem::tickLevelTimer(double dt) {
     if (m_levelTimerRunning && m_currentState == GameState::PLAYING) {
         m_levelTimer += dt;
+    }
+    if (m_gameTimerRunning && m_currentState == GameState::PLAYING) {
+        m_gameTimer += dt;
     }
 }
 

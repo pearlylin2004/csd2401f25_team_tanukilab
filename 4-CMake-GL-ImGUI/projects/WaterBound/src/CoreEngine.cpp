@@ -198,7 +198,7 @@ void CoreEngine::GameLoop() {
     //pause checking, and set it to paused state if escape is held
     if (InputHandler::isKeyTriggered(GLFW_KEY_ESCAPE)) {
         auto current = GUISystem::getInstance().getCurrentState(); //get current state
-        if (current != GameState::PAUSED && current != GameState::MENU) {
+        if (current != GameState::PAUSED && current != GameState::MENU && current != GameState::REPLAY) {
             GUISystem::getInstance().setStateBeforePause(current); //store state before pausing
             GUISystem::getInstance().changeState(GameState::PAUSED, "pause_scene.json");
         }
@@ -285,6 +285,9 @@ void CoreEngine::Update(float deltaTime) {
     }
     if (replay.isPlaying()) {
         replay.updateGhost(*m_manager, deltaTime);
+    }
+    if (replay.isViewerMode()) {
+        replay.updateViewer(deltaTime);
     }
 
     m_renderSystem->update(*m_manager, deltaTime);
