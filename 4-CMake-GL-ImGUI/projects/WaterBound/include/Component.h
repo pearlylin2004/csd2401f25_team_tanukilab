@@ -487,6 +487,13 @@ struct StateMachine : public Component {
     }
 };
 
+// Marker component for ghost replay entity (no physics/collision, purely visual)
+struct GhostComponent : public Component {
+    std::unique_ptr<Component> clone() const override {
+        return std::make_unique<GhostComponent>(*this);
+    }
+};
+
 //Audio component
 struct FadeInfo {
     bool isFading = false;

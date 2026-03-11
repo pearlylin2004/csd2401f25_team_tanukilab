@@ -12,7 +12,7 @@
         "Render": {
           "shape": "square",
           "hasTex": 1,
-          "texture": "assets/menu_background.png",
+          "texture": "assets/black.png",
           "clr": [1.0, 1.0, 1.0]
         }
       }
@@ -61,7 +61,7 @@
           "word": "1. ---",
           "color": [1.0, 0.84, 0.0],
           "scale": 0.4,
-          "fontType": 0
+          "fontType": 1
         }
       }
     },
@@ -77,7 +77,7 @@
           "word": "2. ---",
           "color": [0.75, 0.75, 0.75],
           "scale": 0.4,
-          "fontType": 0
+          "fontType": 1
         }
       }
     },
@@ -93,7 +93,7 @@
           "word": "3. ---",
           "color": [0.8, 0.5, 0.2],
           "scale": 0.4,
-          "fontType": 0
+          "fontType": 1
         }
       }
     },
@@ -109,7 +109,7 @@
           "word": "4. ---",
           "color": [1.0, 1.0, 1.0],
           "scale": 0.35,
-          "fontType": 0
+          "fontType": 1
         }
       }
     },
@@ -125,7 +125,7 @@
           "word": "5. ---",
           "color": [1.0, 1.0, 1.0],
           "scale": 0.35,
-          "fontType": 0
+          "fontType": 1
         }
       }
     },
@@ -141,7 +141,7 @@
           "word": "6. ---",
           "color": [1.0, 1.0, 1.0],
           "scale": 0.35,
-          "fontType": 0
+          "fontType": 1
         }
       }
     },
@@ -157,7 +157,7 @@
           "word": "7. ---",
           "color": [1.0, 1.0, 1.0],
           "scale": 0.35,
-          "fontType": 0
+          "fontType": 1
         }
       }
     },
@@ -173,7 +173,7 @@
           "word": "8. ---",
           "color": [1.0, 1.0, 1.0],
           "scale": 0.35,
-          "fontType": 0
+          "fontType": 1
         }
       }
     },
@@ -189,7 +189,7 @@
           "word": "9. ---",
           "color": [1.0, 1.0, 1.0],
           "scale": 0.35,
-          "fontType": 0
+          "fontType": 1
         }
       }
     },
@@ -205,7 +205,7 @@
           "word": "10. ---",
           "color": [1.0, 1.0, 1.0],
           "scale": 0.35,
-          "fontType": 0
+          "fontType": 1
         }
       }
     },

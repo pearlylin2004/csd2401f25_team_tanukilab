@@ -26,6 +26,7 @@ Technology is prohibited.
 #include "input.h"
 #include "CoreEngine.h"
 #include "LeaderboardSystem.h"
+#include "ReplaySystem.h"
 #include <iostream>
 #include <fstream>
 
@@ -79,9 +80,19 @@ void GUISystem::update() {
             LeaderboardSystem::getInstance().addEntry("Player", completionTimeMs);
             std::cout << "[GUI] Level completed in " << m_levelTimer << "s (" << completionTimeMs << "ms)\n";
 
+            // Stop replay recording and save if best time
+            ReplaySystem::getInstance().stopRecording(completionTimeMs);
+            // Stop ghost playback before scene transition
+            ReplaySystem::getInstance().stopPlayback(*g_manager);
+
             loadScreen(*g_manager, levelToLoad);
         }
         else {
+            // Save replay for the current level before moving to the next level
+            int completionTimeMs = static_cast<int>(m_levelTimer * 1000.0);
+            ReplaySystem::getInstance().stopRecording(completionTimeMs);
+            ReplaySystem::getInstance().stopPlayback(*g_manager);
+
             loadLevel(levelToLoad);
         }
         return;
@@ -286,6 +297,11 @@ void GUISystem::createButtonActions() {
 
     //menu button
     m_buttonActions[ButtonAction::MENU] = [this]() {
+        // Clean up replay/ghost when leaving gameplay
+        auto& replay = ReplaySystem::getInstance();
+        replay.discardRecording();
+        replay.stopPlayback(*g_manager);
+
         changeState(GameState::MENU, "menu_scene.json");
     };
 
@@ -370,10 +386,15 @@ void GUISystem::updateLeaderboardDisplay() {
             int ms = totalMs % 1000;
             char timeBuf[32];
             std::snprintf(timeBuf, sizeof(timeBuf), "%d:%02d.%03d", minutes, seconds, ms);
-            font->word = std::to_string(i + 1) + ". " + entries[i].name + "  " + timeBuf;
+            char entryBuf[64];
+            std::snprintf(entryBuf, sizeof(entryBuf), "%-2d. %-10s %s",
+                i + 1, entries[i].name.c_str(), timeBuf);
+            font->word = entryBuf;
         }
         else {
-            font->word = std::to_string(i + 1) + ". ---";
+            char entryBuf[64];
+            std::snprintf(entryBuf, sizeof(entryBuf), "%-2d. ---", i + 1);
+            font->word = entryBuf;
         }
     }
 }
@@ -418,6 +439,11 @@ void GUISystem::startGame() {
         }
     }
     std::cout << "[GUI] Game started - loaded json" << std::endl;
+
+    // Start replay recording and ghost playback for this level
+    auto& replay = ReplaySystem::getInstance();
+    replay.startRecording(m_currentLevel);
+    replay.startPlayback(m_currentLevel, *g_manager);
 }
 
 //stop game and quit
@@ -508,6 +534,11 @@ void GUISystem::restartLevel() {
         return;
     }
 
+    // Stop any in-progress replay recording/playback before clearing scene
+    auto& replay = ReplaySystem::getInstance();
+    replay.discardRecording();
+    replay.stopPlayback(*g_manager);
+
     removeButtons();
     AudioHandler::getInstance().stopAll(*g_manager);
 
@@ -522,6 +553,10 @@ void GUISystem::restartLevel() {
     // Reset and start the level timer
     m_levelTimer = 0.0;
     m_levelTimerRunning = true;
+
+    // Start fresh recording and ghost playback
+    replay.startRecording(m_currentLevel);
+    replay.startPlayback(m_currentLevel, *g_manager);
 }
 
 void GUISystem::loadLevel(const std::string& levelName) {
@@ -558,6 +593,11 @@ void GUISystem::loadLevel(const std::string& levelName) {
     // Reset and start the level timer
     m_levelTimer = 0.0;
     m_levelTimerRunning = true;
+
+    // Start replay recording and ghost playback for this level
+    auto& replay = ReplaySystem::getInstance();
+    replay.startRecording(m_currentLevel);
+    replay.startPlayback(m_currentLevel, *g_manager);
 }
 
 void GUISystem::tickLevelTimer(double dt) {

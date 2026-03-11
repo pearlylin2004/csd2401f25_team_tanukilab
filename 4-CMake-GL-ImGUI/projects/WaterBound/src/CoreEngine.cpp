@@ -26,6 +26,7 @@ Technology is prohibited.
 #include "CoreEngine.h"
 #include "GUISystem.h"  // Add this include
 #include "LeaderboardSystem.h"
+#include "ReplaySystem.h"
 
 CoreEngine::CoreEngine()
     : m_window(nullptr),
@@ -149,6 +150,7 @@ void CoreEngine::Init(bool forceWindowed) {
 	m_particleSystem = std::make_unique<ParticleSystem>();
 	m_visualLCSystem = std::make_unique<VisualLogicSystem>();
 	m_transformSystem = std::make_unique<TransformSystem>();
+	m_cameraSystem = std::make_unique<Camera>();
 
 
     PrefabManager::Instance().loadPrefabRegistry();
@@ -172,6 +174,9 @@ void CoreEngine::Init(bool forceWindowed) {
 
     // Initialize leaderboard (loads scores from disk)
     LeaderboardSystem::getInstance().init();
+
+    // Initialize replay system (creates replays directory)
+    ReplaySystem::getInstance().init();
 
     glfwPollEvents();
     m_isRunning = true;
@@ -272,6 +277,16 @@ void CoreEngine::Update(float deltaTime) {
     m_tileMapSystem->update(*m_manager);
     m_particleSystem->update(*m_manager, deltaTime);;
     m_waterSystem->update(*m_manager, deltaTime);
+
+    // Record player state for replay and update ghost playback
+    auto& replay = ReplaySystem::getInstance();
+    if (replay.isRecording()) {
+        replay.recordFrame(*m_manager, deltaTime);
+    }
+    if (replay.isPlaying()) {
+        replay.updateGhost(*m_manager, deltaTime);
+    }
+
     m_renderSystem->update(*m_manager, deltaTime);
     m_waterSystem->render(*m_manager);
     m_fontSystem->update(*m_manager, m_fps);
