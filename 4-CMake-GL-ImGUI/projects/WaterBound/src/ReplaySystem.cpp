@@ -126,18 +126,9 @@ void ReplaySystem::stopRecording(int completionTimeMs) {
     std::cout << "[Replay] Recording stopped — " << m_currentRecording.frames.size()
               << " frames, " << completionTimeMs << "ms\n";
 
-    // Only save if this is the best (fastest) run for this level
-    ReplayData existing;
-    bool hasPrevious = loadReplay(m_currentRecording.levelName, existing);
-
-    if (!hasPrevious || completionTimeMs < existing.completionTimeMs) {
-        saveReplay(m_currentRecording);
-        std::cout << "[Replay] New best time! Saved replay.\n";
-    }
-    else {
-        std::cout << "[Replay] Not a new best time (" << completionTimeMs
-                  << "ms vs " << existing.completionTimeMs << "ms). Replay not saved.\n";
-    }
+    // Always save the latest run so the replay viewer shows the most recent attempt
+    saveReplay(m_currentRecording);
+    std::cout << "[Replay] Saved replay for " << m_currentRecording.levelName << ".\n";
 }
 
 void ReplaySystem::discardRecording() {
