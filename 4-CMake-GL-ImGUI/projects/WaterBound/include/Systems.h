@@ -251,7 +251,7 @@ public:
 class CollisionSystem {
 public:
 	void update(GameObjectManager& manager, const float& deltaTime);
-	bool CheckTileCollision(GameObject* obj, TileMap& map); //for tile map collision
+	//bool CheckTileCollision(GameObject* obj, TileMap& map); //for tile map collision
 	void HandleTilemapCollisions(const std::unordered_map<int, Collision::Cell>& grid, const std::vector<std::pair<TileMap*, Transform*>>& tilemaps);
 };
 

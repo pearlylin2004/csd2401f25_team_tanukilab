@@ -294,11 +294,26 @@ void GUISystem::createButtonActions() {
     m_buttonActions[ButtonAction::MUSIC_VOL_UP] = [this]() {
         AudioHandler& ah = AudioHandler::getInstance();
         ah.setMasterVolume(ah.getMasterVolume() + 0.1f);
+        m_previousVolume = ah.getMasterVolume();
         updateVolumeDisplay();
     };
     m_buttonActions[ButtonAction::MUSIC_VOL_DOWN] = [this]() {
         AudioHandler& ah = AudioHandler::getInstance();
         ah.setMasterVolume(ah.getMasterVolume() - 0.1f);
+        m_previousVolume = ah.getMasterVolume();
+        updateVolumeDisplay();
+    };
+    //mute
+    m_buttonActions[ButtonAction::MUTE] = [this]() {
+        AudioHandler& ah = AudioHandler::getInstance();
+        m_previousVolume = ah.getMasterVolume();
+        ah.setMasterVolume(ah.getMasterVolume() * 0);
+        updateVolumeDisplay();
+    };
+    //unmute
+    m_buttonActions[ButtonAction::UNMUTE] = [this]() {
+        AudioHandler& ah = AudioHandler::getInstance();
+        ah.setMasterVolume(m_previousVolume);
         updateVolumeDisplay();
     };
 
