@@ -18,7 +18,7 @@ void Camera::update(GameObjectManager& manager)
 			if (camInfo->useScreenSize)
 			{
 				renderer::cam.width = (screenWidth);
-				renderer::cam.ar = (screenWidth) / screenHeight;
+				renderer::cam.ar = static_cast<GLfloat>(screenWidth) / screenHeight;
 			}
 			else
 			{
@@ -54,7 +54,7 @@ void Camera::update(GameObjectManager& manager)
 void Camera::camDefault()
 {
 	
-	renderer::cam.ar = (screenWidth) / screenHeight;
+	renderer::cam.ar = static_cast<GLfloat>(screenWidth) / screenHeight;
 	renderer::cam.width = (screenWidth);
 	renderer::cam.rot = 0;
 	renderer::cam.zoom = 10;

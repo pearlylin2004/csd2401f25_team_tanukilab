@@ -53,6 +53,7 @@ public:
 class PhysicsSystem {
 public:
 	void update(GameObjectManager& manager, const float& deltaTime, MessageBus& messageBus);
+	//logic for when object enters water, to be called in update function when checking for water collision
 	void onEnterWater(Physics* obj, const float deltaTime);
 
 private:
@@ -455,7 +456,9 @@ class Camera
 {
 public:
 	void update(GameObjectManager& manager);
+	//set default camera params when no camera component is present
 	void camDefault();
+	//resize the viewport when the window size changes
 	static void onResize(int w, int h);
 	static bool camPresent;
 	static int screenWidth;
