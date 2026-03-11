@@ -66,16 +66,23 @@ public:
     void stopRecording(int completionTimeMs);
     void discardRecording();
 
+    // --- Run management ---
+    // Moves current/ folder to a folder named by totalTimeMs (e.g. "45230")
+    void finalizeRun(int totalTimeMs);
+    // Clears the current/ folder for a fresh run
+    void clearCurrentRun();
+    // Returns the run ID (folder name) of the fastest completed run, or "" if none
+    std::string findBestRunId() const;
+    // Returns all completed run IDs sorted by time (ascending)
+    std::vector<std::string> getAllRunIds() const;
+
     // --- Playback & Ghost ---
-    // Loads the best replay for the given level, spawns the ghost entity
     void startPlayback(const std::string& levelName, GameObjectManager& manager);
-    // Advances the ghost using elapsed time; call once per update tick
     void updateGhost(GameObjectManager& manager, float deltaTime);
-    // Stops playback and destroys the ghost entity
     void stopPlayback(GameObjectManager& manager);
 
     // --- Viewer mode (full input replay, no ghost) ---
-    void startViewerPlayback(const std::string& levelName);
+    void startViewerPlayback(const std::string& levelName, const std::string& runId = "");
     void updateViewer(float deltaTime);
     void stopViewer();
     bool isViewerMode() const { return m_isViewerMode; }
@@ -89,7 +96,6 @@ public:
     bool getReplayMouseLeftHeld() const;
     float getReplayMouseX() const;
     float getReplayMouseY() const;
-    // Position from recording for periodic correction
     float getReplayX() const;
     float getReplayY() const;
 
@@ -99,8 +105,10 @@ public:
 
     // --- File I/O ---
     bool saveReplay(const ReplayData& data) const;
-    bool loadReplay(const std::string& levelName, ReplayData& outData) const;
+    bool loadReplay(const std::string& levelName, ReplayData& outData,
+                    const std::string& runId = "current") const;
     bool hasReplay(const std::string& levelName) const;
+    bool hasReplayForRun(const std::string& levelName, const std::string& runId) const;
 
     static constexpr const char* GHOST_OBJECT_NAME = "__ghost__";
 
@@ -111,8 +119,9 @@ private:
     ReplaySystem& operator=(const ReplaySystem&) = delete;
 
     std::string getReplayDir() const;
-    std::string getReplayPath(const std::string& levelName) const;
-    // Extract short level name from full path (e.g. "level01" from "./assets/Scene/level01.json")
+    std::string getRunDir(const std::string& runId) const;
+    std::string getReplayPath(const std::string& levelName,
+                              const std::string& runId = "current") const;
     static std::string extractLevelName(const std::string& fullPath);
 
     bool        m_isRecording = false;
@@ -120,9 +129,10 @@ private:
     ReplayData  m_currentRecording;
     ReplayData  m_playbackData;
     int         m_playbackFrame = 0;
-    float       m_recordingElapsed = 0.f;  // seconds elapsed during recording
-    float       m_playbackElapsed = 0.f;   // seconds elapsed during playback
+    float       m_recordingElapsed = 0.f;
+    float       m_playbackElapsed = 0.f;
     bool        m_initialized = false;
     bool        m_isViewerMode = false;
     bool        m_viewerFinished = false;
+    std::string m_viewerRunId;  // which run folder the viewer is reading from
 };

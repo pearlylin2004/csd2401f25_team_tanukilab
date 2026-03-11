@@ -1305,10 +1305,9 @@ void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime, M
 			if (isReplay && replaySys.isViewerMode()) {
 				float recX = replaySys.getReplayX();
 				float recY = replaySys.getReplayY();
-				// Lerp toward recorded position to stay on track
-				float correctionStrength = 0.3f;
-				transform->x += (recX - transform->x) * correctionStrength;
-				transform->y += (recY - transform->y) * correctionStrength;
+				// Use near-exact positioning in viewer mode for faithful replay
+				transform->x = recX;
+				transform->y = recY;
 				physics->dynamics.position.x = transform->x;
 				physics->dynamics.position.y = transform->y;
 			}

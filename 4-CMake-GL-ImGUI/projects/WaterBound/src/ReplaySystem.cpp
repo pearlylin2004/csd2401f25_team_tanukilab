@@ -38,8 +38,13 @@ std::string ReplaySystem::getReplayDir() const {
     return std::string(RUNTIME_ASSETS_DIR_R) + "/replays";
 }
 
-std::string ReplaySystem::getReplayPath(const std::string& levelName) const {
-    return getReplayDir() + "/" + levelName + "_best.json";
+std::string ReplaySystem::getRunDir(const std::string& runId) const {
+    return getReplayDir() + "/" + runId;
+}
+
+std::string ReplaySystem::getReplayPath(const std::string& levelName,
+                                         const std::string& runId) const {
+    return getRunDir(runId) + "/" + levelName + ".json";
 }
 
 std::string ReplaySystem::extractLevelName(const std::string& fullPath) {
@@ -58,8 +63,7 @@ std::string ReplaySystem::extractLevelName(const std::string& fullPath) {
 // ============================================================================
 
 void ReplaySystem::init() {
-    // Ensure replays directory exists
-    std::filesystem::create_directories(getReplayDir());
+    std::filesystem::create_directories(getRunDir("current"));
     m_initialized = true;
     std::cout << "[Replay] Initialized — replay dir: " << getReplayDir() << "\n";
 }
@@ -146,7 +150,9 @@ void ReplaySystem::discardRecording() {
 void ReplaySystem::startPlayback(const std::string& levelName, GameObjectManager& manager) {
     std::string shortName = extractLevelName(levelName);
 
-    if (!loadReplay(shortName, m_playbackData)) {
+    // Load from the best completed run (not current/)
+    std::string bestRun = findBestRunId();
+    if (bestRun.empty() || !loadReplay(shortName, m_playbackData, bestRun)) {
         std::cout << "[Replay] No replay found for " << shortName << " — no ghost.\n";
         return;
     }
@@ -309,10 +315,19 @@ void ReplaySystem::stopPlayback(GameObjectManager& manager) {
 // Viewer mode (full input replay, no ghost)
 // ============================================================================
 
-void ReplaySystem::startViewerPlayback(const std::string& levelName) {
+void ReplaySystem::startViewerPlayback(const std::string& levelName, const std::string& runId) {
     std::string shortName = extractLevelName(levelName);
 
-    if (!loadReplay(shortName, m_playbackData)) {
+    // Determine which run to load from
+    std::string useRunId = runId;
+    if (useRunId.empty()) {
+        // Default to the most recent (latest) run
+        auto allRuns = getAllRunIds();
+        if (!allRuns.empty()) useRunId = allRuns.back();
+    }
+    m_viewerRunId = useRunId;
+
+    if (useRunId.empty() || !loadReplay(shortName, m_playbackData, useRunId)) {
         std::cout << "[Replay] No replay found for " << shortName << " — viewer skipped.\n";
         m_viewerFinished = true;
         return;
@@ -436,7 +451,9 @@ bool ReplaySystem::saveReplay(const ReplayData& data) const {
     }
     doc.AddMember("frames", framesArr, a);
 
-    const std::string path = getReplayPath(data.levelName);
+    const std::string path = getReplayPath(data.levelName, "current");
+    // Ensure current/ dir exists
+    std::filesystem::create_directories(getRunDir("current"));
     std::string err;
     if (!JsonIO::WriteDocumentToFile(path, doc, false, &err)) {
         std::cerr << "[Replay] Failed to save replay: " << err << "\n";
@@ -447,8 +464,9 @@ bool ReplaySystem::saveReplay(const ReplayData& data) const {
     return true;
 }
 
-bool ReplaySystem::loadReplay(const std::string& levelName, ReplayData& outData) const {
-    const std::string path = getReplayPath(levelName);
+bool ReplaySystem::loadReplay(const std::string& levelName, ReplayData& outData,
+                              const std::string& runId) const {
+    const std::string path = getReplayPath(levelName, runId);
 
     if (!std::filesystem::exists(path)) return false;
 
@@ -483,7 +501,6 @@ bool ReplaySystem::loadReplay(const std::string& levelName, ReplayData& outData)
             if (obj.HasMember("fl")) f.flipX = obj["fl"].GetInt() != 0;
             if (obj.HasMember("st")) f.animState = obj["st"].GetInt();
             if (obj.HasMember("fr")) f.facingRight = obj["fr"].GetInt() != 0;
-            // Input state (backward-compatible: defaults to false/0 if absent)
             if (obj.HasMember("kA"))  f.inputKeyA = obj["kA"].GetInt() != 0;
             if (obj.HasMember("kD"))  f.inputKeyD = obj["kD"].GetInt() != 0;
             if (obj.HasMember("kST")) f.inputSpaceTriggered = obj["kST"].GetInt() != 0;
@@ -497,10 +514,104 @@ bool ReplaySystem::loadReplay(const std::string& levelName, ReplayData& outData)
     }
 
     std::cout << "[Replay] Loaded replay for " << outData.levelName
-              << " — " << outData.frames.size() << " frames\n";
+              << " from run " << runId << " — " << outData.frames.size() << " frames\n";
     return true;
 }
 
 bool ReplaySystem::hasReplay(const std::string& levelName) const {
-    return std::filesystem::exists(getReplayPath(extractLevelName(levelName)));
+    std::string shortName = extractLevelName(levelName);
+    // Check any completed run (not current/)
+    std::string bestRun = findBestRunId();
+    if (!bestRun.empty()) {
+        return std::filesystem::exists(getReplayPath(shortName, bestRun));
+    }
+    return false;
+}
+
+bool ReplaySystem::hasReplayForRun(const std::string& levelName, const std::string& runId) const {
+    return std::filesystem::exists(getReplayPath(extractLevelName(levelName), runId));
+}
+
+// ============================================================================
+// Run management
+// ============================================================================
+
+void ReplaySystem::finalizeRun(int totalTimeMs) {
+    std::string currentDir = getRunDir("current");
+    if (!std::filesystem::exists(currentDir) || std::filesystem::is_empty(currentDir)) {
+        std::cout << "[Replay] No current run to finalize.\n";
+        return;
+    }
+
+    std::string runId = std::to_string(totalTimeMs);
+    std::string destDir = getRunDir(runId);
+
+    // If a run with the exact same time exists, remove it first
+    if (std::filesystem::exists(destDir)) {
+        std::filesystem::remove_all(destDir);
+    }
+
+    std::filesystem::rename(currentDir, destDir);
+    // Recreate current/ for next run
+    std::filesystem::create_directories(currentDir);
+
+    std::cout << "[Replay] Finalized run as " << runId << "ms\n";
+}
+
+void ReplaySystem::clearCurrentRun() {
+    std::string currentDir = getRunDir("current");
+    if (std::filesystem::exists(currentDir)) {
+        std::filesystem::remove_all(currentDir);
+    }
+    std::filesystem::create_directories(currentDir);
+    std::cout << "[Replay] Cleared current run.\n";
+}
+
+std::string ReplaySystem::findBestRunId() const {
+    std::string replayDir = getReplayDir();
+    if (!std::filesystem::exists(replayDir)) return "";
+
+    int bestTime = INT_MAX;
+    std::string bestId;
+
+    for (const auto& entry : std::filesystem::directory_iterator(replayDir)) {
+        if (!entry.is_directory()) continue;
+        std::string name = entry.path().filename().string();
+        if (name == "current") continue;
+
+        // Folder names are total time in ms (e.g. "45230")
+        try {
+            int timeMs = std::stoi(name);
+            if (timeMs < bestTime) {
+                bestTime = timeMs;
+                bestId = name;
+            }
+        } catch (...) {
+            continue; // skip non-numeric folder names
+        }
+    }
+    return bestId;
+}
+
+std::vector<std::string> ReplaySystem::getAllRunIds() const {
+    std::vector<std::string> ids;
+    std::string replayDir = getReplayDir();
+    if (!std::filesystem::exists(replayDir)) return ids;
+
+    for (const auto& entry : std::filesystem::directory_iterator(replayDir)) {
+        if (!entry.is_directory()) continue;
+        std::string name = entry.path().filename().string();
+        if (name == "current") continue;
+        try {
+            std::stoi(name); // validate it's numeric
+            ids.push_back(name);
+        } catch (...) {
+            continue;
+        }
+    }
+    // Sort ascending by time
+    std::sort(ids.begin(), ids.end(), [](const std::string& a, const std::string& b) {
+        return std::stoi(a) < std::stoi(b);
+    });
+    return ids;
 }

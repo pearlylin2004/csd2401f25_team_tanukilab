@@ -16,6 +16,8 @@ Technology is prohibited.
 
 #include "Systems.h"
 #include "JsonIO.h"
+#include "GUISystem.h"
+#include "GameState.h"
 
 std::map<std::string, float> VisualLC::globalFloatVar;
 GameObjectManager* VisualLogicSystem::m_manager = nullptr;
@@ -592,6 +594,9 @@ void VisualLogicSystem::executeActionNode(GameObject* obj, VisualLC* logic, Logi
 
 		std::string stateName = node.parameters.count("state") ? node.parameters["state"] : JsonIO::stateNames[0];
 
+		// Block setting Dead state during replay to prevent spurious deaths
+		if (stateName == "Dead" && GUISystem::getInstance().getCurrentState() == GameState::REPLAY) return;
+
 		sm->state = JsonIO::parsePlayerState(stateName);
 		sm->stateTime = 0.f;
 	}
@@ -645,6 +650,9 @@ void VisualLogicSystem::executeActionNode(GameObject* obj, VisualLC* logic, Logi
 		if (!collidedSM) return;
 
 		std::string stateName = node.parameters.count("targetStateCollided") ? node.parameters["targetStateCollided"] : JsonIO::stateNames[0];
+
+		// Block setting Dead state during replay to prevent spurious deaths
+		if (stateName == "Dead" && GUISystem::getInstance().getCurrentState() == GameState::REPLAY) return;
 
 		collidedSM->state = JsonIO::parsePlayerState(stateName);
 		collidedSM->stateTime = 0.f;

@@ -29,6 +29,7 @@ Technology is prohibited.
 #include "ReplaySystem.h"
 #include <iostream>
 #include <fstream>
+#include <set>
 
 static std::string runtimeScenePath(std::string const& name) {
     return std::string(RUNTIME_SCENE_DIR_R) + "/" + name;
@@ -99,6 +100,10 @@ void GUISystem::update() {
             LeaderboardSystem::getInstance().addEntry("Player", totalTimeMs);
             std::cout << "[GUI] Game completed in " << m_gameTimer << "s (" << totalTimeMs << "ms)\n";
 
+            // Finalize the run: move current/ to <totalTimeMs>/
+            ReplaySystem::getInstance().finalizeRun(totalTimeMs);
+            m_lastRunId = std::to_string(totalTimeMs);
+
             loadScreen(*g_manager, levelToLoad);
         }
         else {
@@ -135,13 +140,6 @@ void GUISystem::update() {
                 m_replayViewerActive = false;
                 changeState(GameState::MENU, "menu_scene.json");
             }
-        }
-
-        // ESC exits replay viewer
-        if (InputHandler::isKeyTriggered(GLFW_KEY_ESCAPE)) {
-            replay.stopViewer();
-            m_replayViewerActive = false;
-            changeState(GameState::MENU, "menu_scene.json");
         }
         return;
     }
@@ -324,6 +322,10 @@ void GUISystem::createButtonActions() {
         case GameState::PLAYING:
             startGame(); // resume the game
             break;
+        case GameState::REPLAY:
+            // Resume replay viewer from where it was paused (no scene reload)
+            resumeReplayViewer();
+            break;
         case GameState::EXITCONFIRMATION:
             changeState(GameState::EXITCONFIRMATION, "confirmation_scene.json");
             break;
@@ -342,6 +344,19 @@ void GUISystem::createButtonActions() {
         auto& replay = ReplaySystem::getInstance();
         replay.discardRecording();
         replay.stopPlayback(*g_manager);
+
+        // Clean up replay viewer if active
+        if (m_replayViewerActive) {
+            replay.stopViewer();
+            m_replayViewerActive = false;
+        }
+
+        // Clean up pause overlay objects if any
+        for (const auto& name : m_pauseOverlayObjects) {
+            GameObject* obj = g_manager->getGameObject(name);
+            if (obj) g_manager->deleteGameObject(obj);
+        }
+        m_pauseOverlayObjects.clear();
 
         changeState(GameState::MENU, "menu_scene.json");
     };
@@ -464,6 +479,9 @@ void GUISystem::startGame() {
     // Reset and start the total game timer (runs from start to win)
     m_gameTimer = 0.0;
     m_gameTimerRunning = true;
+
+    // Clear any in-progress replay data for a fresh run
+    ReplaySystem::getInstance().clearCurrentRun();
 
     removeButtons(); //remove menu buttons
 
@@ -658,19 +676,34 @@ void GUISystem::loadLevel(const std::string& levelName) {
 void GUISystem::startReplayViewer() {
     auto& replay = ReplaySystem::getInstance();
 
-    // Build ordered list of levels that have saved replays
+    // Use the most recent completed run (or the one just finished)
+    std::string runId = m_lastRunId;
+    if (runId.empty()) {
+        auto allRuns = replay.getAllRunIds();
+        if (!allRuns.empty()) runId = allRuns.back();
+    }
+
+    if (runId.empty()) {
+        std::cout << "[GUI] No completed runs available to watch.\n";
+        return;
+    }
+
+    m_replayRunId = runId;
+    std::cout << "[GUI] Starting replay viewer for run " << runId << "ms\n";
+
+    // Build ordered list of levels that have replays in this run
     m_replayLevels.clear();
     const std::vector<std::string> allLevels = {
         "level01", "level02", "level03", "level04"
     };
     for (const auto& lvl : allLevels) {
-        if (replay.hasReplay(lvl)) {
+        if (replay.hasReplayForRun(lvl, runId)) {
             m_replayLevels.push_back(lvl);
         }
     }
 
     if (m_replayLevels.empty()) {
-        std::cout << "[GUI] No replays available to watch.\n";
+        std::cout << "[GUI] No replays in run " << runId << ".\n";
         return;
     }
 
@@ -678,6 +711,56 @@ void GUISystem::startReplayViewer() {
     m_replayViewerActive = true;
     m_currentState = GameState::REPLAY;
     loadReplayLevel(0);
+}
+
+void GUISystem::pauseReplayViewer() {
+    std::cout << "[GUI] Pausing replay viewer (overlay)\n";
+
+    // Record which objects currently exist so we know what was added
+    std::vector<GameObject*> beforeObjs;
+    g_manager->getAllGameObjects(beforeObjs);
+    std::set<std::string> existingNames;
+    for (auto* obj : beforeObjs) {
+        if (obj) existingNames.insert(obj->getObjectName());
+    }
+
+    // Set state to PAUSED without clearing the scene
+    m_previousState = m_currentState;
+    m_currentState = GameState::PAUSED;
+
+    // Load pause scene objects additively on top of the game scene
+    removeButtons();
+    g_manager->loadScene(runtimeScenePath("pause_scene.json"));
+    g_manager->initializeSceneResources();
+
+    // Track which objects were newly added (pause overlay)
+    m_pauseOverlayObjects.clear();
+    std::vector<GameObject*> afterObjs;
+    g_manager->getAllGameObjects(afterObjs);
+    for (auto* obj : afterObjs) {
+        if (obj && existingNames.find(obj->getObjectName()) == existingNames.end()) {
+            m_pauseOverlayObjects.push_back(obj->getObjectName());
+        }
+    }
+
+    createButtons();
+}
+
+void GUISystem::resumeReplayViewer() {
+    std::cout << "[GUI] Resuming replay viewer\n";
+
+    // Remove pause overlay objects
+    removeButtons();
+    for (const auto& name : m_pauseOverlayObjects) {
+        GameObject* obj = g_manager->getGameObject(name);
+        if (obj) {
+            g_manager->deleteGameObject(obj);
+        }
+    }
+    m_pauseOverlayObjects.clear();
+
+    // Restore REPLAY state — viewer time/frame are untouched, so it continues
+    m_currentState = GameState::REPLAY;
 }
 
 void GUISystem::loadReplayLevel(int levelIndex) {
@@ -710,7 +793,7 @@ void GUISystem::loadReplayLevel(int levelIndex) {
 
     // Start viewer playback (feeds recorded inputs, no ghost spawned)
     auto& replay = ReplaySystem::getInstance();
-    replay.startViewerPlayback(fullPath);
+    replay.startViewerPlayback(fullPath, m_replayRunId);
 }
 
 void GUISystem::tickLevelTimer(double dt) {
