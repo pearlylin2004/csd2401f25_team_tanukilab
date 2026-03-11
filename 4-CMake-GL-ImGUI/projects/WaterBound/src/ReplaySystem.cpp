@@ -321,9 +321,8 @@ void ReplaySystem::startViewerPlayback(const std::string& levelName, const std::
     // Determine which run to load from
     std::string useRunId = runId;
     if (useRunId.empty()) {
-        // Default to the most recent (latest) run
-        auto allRuns = getAllRunIds();
-        if (!allRuns.empty()) useRunId = allRuns.back();
+        // Default to the best (fastest) run
+        useRunId = findBestRunId();
     }
     m_viewerRunId = useRunId;
 
@@ -387,31 +386,40 @@ const ReplayFrame& ReplaySystem_currentFrame(const ReplaySystem& r, const Replay
 }
 
 bool ReplaySystem::getReplayKeyA() const {
-    return m_isViewerMode ? m_playbackData.frames[m_playbackFrame].inputKeyA : false;
+    if (!m_isViewerMode || m_playbackFrame < 0 || m_playbackFrame >= static_cast<int>(m_playbackData.frames.size())) return false;
+    return m_playbackData.frames[m_playbackFrame].inputKeyA;
 }
 bool ReplaySystem::getReplayKeyD() const {
-    return m_isViewerMode ? m_playbackData.frames[m_playbackFrame].inputKeyD : false;
+    if (!m_isViewerMode || m_playbackFrame < 0 || m_playbackFrame >= static_cast<int>(m_playbackData.frames.size())) return false;
+    return m_playbackData.frames[m_playbackFrame].inputKeyD;
 }
 bool ReplaySystem::getReplaySpaceTriggered() const {
-    return m_isViewerMode ? m_playbackData.frames[m_playbackFrame].inputSpaceTriggered : false;
+    if (!m_isViewerMode || m_playbackFrame < 0 || m_playbackFrame >= static_cast<int>(m_playbackData.frames.size())) return false;
+    return m_playbackData.frames[m_playbackFrame].inputSpaceTriggered;
 }
 bool ReplaySystem::getReplaySpaceReleased() const {
-    return m_isViewerMode ? m_playbackData.frames[m_playbackFrame].inputSpaceReleased : false;
+    if (!m_isViewerMode || m_playbackFrame < 0 || m_playbackFrame >= static_cast<int>(m_playbackData.frames.size())) return false;
+    return m_playbackData.frames[m_playbackFrame].inputSpaceReleased;
 }
 bool ReplaySystem::getReplayMouseLeftHeld() const {
-    return m_isViewerMode ? m_playbackData.frames[m_playbackFrame].inputMouseLeftHeld : false;
+    if (!m_isViewerMode || m_playbackFrame < 0 || m_playbackFrame >= static_cast<int>(m_playbackData.frames.size())) return false;
+    return m_playbackData.frames[m_playbackFrame].inputMouseLeftHeld;
 }
 float ReplaySystem::getReplayMouseX() const {
-    return m_isViewerMode ? m_playbackData.frames[m_playbackFrame].inputMouseX : 0.f;
+    if (!m_isViewerMode || m_playbackFrame < 0 || m_playbackFrame >= static_cast<int>(m_playbackData.frames.size())) return 0.f;
+    return m_playbackData.frames[m_playbackFrame].inputMouseX;
 }
 float ReplaySystem::getReplayMouseY() const {
-    return m_isViewerMode ? m_playbackData.frames[m_playbackFrame].inputMouseY : 0.f;
+    if (!m_isViewerMode || m_playbackFrame < 0 || m_playbackFrame >= static_cast<int>(m_playbackData.frames.size())) return 0.f;
+    return m_playbackData.frames[m_playbackFrame].inputMouseY;
 }
 float ReplaySystem::getReplayX() const {
-    return m_isViewerMode ? m_playbackData.frames[m_playbackFrame].x : 0.f;
+    if (!m_isViewerMode || m_playbackFrame < 0 || m_playbackFrame >= static_cast<int>(m_playbackData.frames.size())) return 0.f;
+    return m_playbackData.frames[m_playbackFrame].x;
 }
 float ReplaySystem::getReplayY() const {
-    return m_isViewerMode ? m_playbackData.frames[m_playbackFrame].y : 0.f;
+    if (!m_isViewerMode || m_playbackFrame < 0 || m_playbackFrame >= static_cast<int>(m_playbackData.frames.size())) return 0.f;
+    return m_playbackData.frames[m_playbackFrame].y;
 }
 
 // ============================================================================
