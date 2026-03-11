@@ -15,7 +15,7 @@ Technology is prohibited.
 */
 /* End Header **************************************************************************/
 
-#include "WaterSystem.h"
+#include "Systems.h"
 #include "ResourceManager.h"
 #include <iostream>
 #include <vector>
@@ -95,6 +95,9 @@ void WaterSystem::update(GameObjectManager& manager, float deltaTime) {
             else {
                 water->lastFrameRise = 0.0f; 
             }
+        if (water && water->renderWaves) {
+            if (!EditorManager::isEditingMode() && !EditorManager::isPaused())
+                water->waveTime += deltaTime;
         }
     }
 
@@ -116,8 +119,9 @@ void WaterSystem::render(GameObjectManager& manager) {
     glUseProgram(m_waterShaderProgram);
 
     // Set view and projection matrices
-    glUniformMatrix4fv(m_viewMatrixLocation, 1, GL_FALSE, &renderer::cam.view[0][0]);
-    glUniformMatrix4fv(m_projMatrixLocation, 1, GL_FALSE, &renderer::cam.proj[0][0]);
+    auto& activeCam = EditorManager::isEditingMode() ? renderer::editorCam : renderer::cam;
+    glUniformMatrix4fv(m_viewMatrixLocation, 1, GL_FALSE, &activeCam.view[0][0]);
+    glUniformMatrix4fv(m_projMatrixLocation, 1, GL_FALSE, &activeCam.proj[0][0]);
 
     // Render each water body
     for (GameObject* obj : allObjects) {
@@ -323,6 +327,16 @@ void WaterSystem::applyWaterPhysics(GameObjectManager& manager, float deltaTime)
         
         CollisionInfo* col = obj->getComponent<CollisionInfo>();
         bool isFloatingObject = col && (col->collisionTag == "floatingObject");
+        if (EditorManager::isEditingMode() || EditorManager::isPaused()) {
+            physics->velY = 0.f;
+            physics->velX = 0.f;
+            physics->dynamics.velocity.y = 0.f;
+            physics->dynamics.velocity.x = 0.f;
+
+            continue;
+        }
+
+        physics->inWater = false;
 
 
         if (isFloatingObject) {
@@ -355,6 +369,24 @@ void WaterSystem::applyWaterPhysics(GameObjectManager& manager, float deltaTime)
                     break;
                 }
 
+                //    // submergedFraction
+                //    float halfObjHeight = transform->scaleY * 0.5f;
+                //    float submergedFraction = glm::clamp(depth / (halfObjHeight * 2.0f + 0.001f), 0.0f, 1.0f);
+
+                //    physics->velY += water->buoyancyForce * submergedFraction * 0.016f * 2.0f;
+                //    float verticalDrag = glm::mix(water->waterDrag, water->waterDrag, submergedFraction);
+                //    physics->velY *= verticalDrag;
+                //    physics->velX *= water->waterDrag;
+                //}
+
+                // check for buoyancy flag here so inwater flag can still be set
+                // if (!physics->buoyancy) {
+                //     physics->velY *= water->waterDrag;
+                //     physics->velX *= water->waterDrag;
+                //     break;
+                // } 
+
+                // float waterSurfaceY = waterTransform->y + (water->height * waterTransform->scaleY * 0.5f);
                 float depth = waterSurfaceY - transform->y;
                 float halfObjHeight = transform->scaleY * 0.5f;
                 float submergedFraction = glm::clamp(depth / (halfObjHeight * 2.0f + 0.001f), 0.0f, 1.0f);

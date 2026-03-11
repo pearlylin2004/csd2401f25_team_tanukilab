@@ -246,11 +246,17 @@ public:
     //water bullet
     bool alive = false;
     float lifeTimer = 0.0f;
-    float maxLifetime = 3.0f;
+    float maxLifetime = 10.0f;
     Vector2D originalPos{ 0, 0 };
     Vector2D originalVel{ 0, 0 };
     bool isOriginalStateSet = false;
 
+    //for evaporating
+    float initialScale = 0.4f;
+    float minScale = 0.1f;
+    float shrinkRate = 0.3f;   //how fast it shrinks
+    float fadeRate = 0.5f;
+    
     //bool inWaterTriggered; // true only when W is pressed
 
     //Shooting parameters
@@ -276,6 +282,13 @@ public:
 
     //const float waterBounce = 60.0f;   // upward velocity when entering water
 
+    bool sinlePersonalBool = false; //used to ignore Physics other then the one i made, to be integrated
+	bool sinleFlag = false; // used to toggle when sinle's physics starts, to be integrated
+	bool hitWater = false; // to determine whether obj just hit the water, to apply bounce in the next frame
+	bool hitground = false; // to determine whether obj just hit the ground, to reset coyote jump and jump buffer
+	float sinleGravity = -10.f; // personal gravity for sinle, to be integrated
+	float waterBounce = 14.f; // upward velocity when entering water, to be integrated
+	Vector2D acceleration{ 0,0 };
 };
 
 // Input component to store input-related properties
@@ -314,7 +327,9 @@ enum class ButtonAction {
     MUSIC_VOL_UP,
     MUSIC_VOL_DOWN,
     SFX_VOL_UP,
-    SFX_VOL_DOWN
+    SFX_VOL_DOWN,
+    MUTE,
+    UNMUTE
 };
 
 //Button component
@@ -322,6 +337,9 @@ struct Button : public Component {
     ButtonAction actionName = ButtonAction::NONE;   //action this button triggers
     bool isHovered = false;   //hover state
     bool isPressed = false;   //pressed state
+
+    std::string onClickChannel = "";
+    std::string onHoverChannel = "";
 
     Button() = default;
     Button(ButtonAction action) : actionName(action) {} 
@@ -512,6 +530,9 @@ struct AudioChannel {
 	bool isSpatial = false;
 	float minDistance = 1.0f;
 	float maxDistance = 100.0f;
+
+    // run-time data
+    bool persistOnSceneChange = false;
 };
 
 //enum class soundID : int;
@@ -738,6 +759,9 @@ enum class NodeImplementation {
     ON_HOVER_ENTER,
     WHILE_HOVERING,
 	ON_HOVER_EXIT,
+    ON_CLICK_ENTER,
+    WHILE_CLICKING,
+    ON_CLICK_EXIT,
     ON_BULLET_SHOOT,
     ON_BULLET_REFILL,
 
@@ -775,6 +799,16 @@ enum class NodeImplementation {
     RESTART_LEVEL,
     LOAD_LEVEL,
 	DISABLE_COLLISION,
+    IS_SINLE_PHYSICS,
+    ENABLE_PHYSICS,
+	DISABLE_PHYSICS,
+	ENTER_WATER,
+    EXIT_WATER,
+    HIT_GROUND,
+	NOT_ON_GROUND,
+    CHANGE_ACCEL_DIRECTION,
+    SET_SINLE_ACCEL,
+    PLAY_RANDOM_SOUND,
 
     // DEFAULT
     DEFAULT // nothing happen :)
@@ -830,10 +864,15 @@ public:
 	static std::map<std::string, float> globalFloatVar;
 
 	bool wasHoveredLastFrame = false; // for hover event detection
+    bool wasClickedLastFrame = false; // on click event detection
 
-    // for caching
+    // for on hover events (caching only)
     bool hasHoverNodes = false;
 	bool hoverNodesChecked = false;
+
+    // for on click events (caching only)
+    bool hasClickNodes = false;
+    bool clickNodesChecked = false;
 
     // collision 
     std::unordered_set<GameObject*> curCollision;

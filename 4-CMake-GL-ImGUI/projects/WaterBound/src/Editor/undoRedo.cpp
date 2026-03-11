@@ -385,6 +385,8 @@ void LayerPropertyCmd::applySnapshot(const LayerSnapshot& snap) {
     layer->setEnabled(snap.enabled);
     layer->setVisible(snap.visible);
     layer->setUpdatable(snap.updatable);
+    if (!snap.name.empty() && snap.name != layer->getLayerName())
+        m_manager.getLayerManager().renameLayer(m_layerID, snap.name);
 }
 /* ---------------- END ---------------- */
 
@@ -422,6 +424,26 @@ void VLGraphCmd::apply(const VLGraphSnapshot& snap) {
 
     if (!conStillExists)
         Editor::visualLogicState.selectedConIndex = -1;
+}
+/* ---------------- END ---------------- */
+
+
+/* ---------------- RENAME ---------------- */
+RenameObjectCmd::RenameObjectCmd(GameObjectManager& manager, const std::string& oldName, const std::string& newName)
+    : m_manager(manager), m_oldName(oldName), m_newName(newName) {
+}
+
+void RenameObjectCmd::execute() {
+    GameObject* obj = m_manager.getGameObject(m_oldName);
+    if (obj) m_manager.renameGameObject(obj, m_newName);
+}
+void RenameObjectCmd::undo() {
+    GameObject* obj = m_manager.getGameObject(m_newName);
+    if (obj) m_manager.renameGameObject(obj, m_oldName);
+}
+void RenameObjectCmd::updateObjName(const std::string& oldName, const std::string& newName) {
+    if (m_oldName == oldName) m_oldName = newName;
+    if (m_newName == oldName) m_newName = newName;
 }
 /* ---------------- END ---------------- */
 
@@ -476,6 +498,19 @@ void UndoRedoManager::redo() {
     cmd->execute();
 
     m_undoDeque.push_back(std::move(cmd));
+}
+
+void UndoRedoManager::saveEditorHistory() {
+    m_savedEditorUndoDeque = std::move(m_undoDeque);
+    m_savedEditorRedoDeque = std::move(m_redoDeque);
+    m_undoDeque.clear();
+    m_redoDeque.clear();
+}
+void UndoRedoManager::restoreEditorHistory() {
+    m_undoDeque = std::move(m_savedEditorUndoDeque);
+    m_redoDeque = std::move(m_savedEditorRedoDeque);
+    m_savedEditorUndoDeque.clear();
+    m_savedEditorRedoDeque.clear();
 }
 
 void UndoRedoManager::clear() {
@@ -692,7 +727,7 @@ void UndoRedoManager::beginLayerEdit(int layerID, Layer* layer) {
 
     m_isEditingLayer = true;
     m_editingLayerID = layerID;
-    m_layerBefore = { layer->isEnabled(), layer->isVisible(), layer->isUpdatable() };
+    m_layerBefore = { layer->isEnabled(), layer->isVisible(), layer->isUpdatable(), layer->getLayerName() };
 }
 
 void UndoRedoManager::endLayerEdit(GameObjectManager& manager, Layer* layer) {
@@ -701,11 +736,12 @@ void UndoRedoManager::endLayerEdit(GameObjectManager& manager, Layer* layer) {
         return;
     }
 
-    LayerSnapshot after = { layer->isEnabled(), layer->isVisible(), layer->isUpdatable() };
+    LayerSnapshot after = { layer->isEnabled(), layer->isVisible(), layer->isUpdatable(), layer->getLayerName() };
 
     bool changed = (m_layerBefore.enabled != after.enabled ||
         m_layerBefore.visible != after.visible ||
-        m_layerBefore.updatable != after.updatable);
+        m_layerBefore.updatable != after.updatable ||
+        m_layerBefore.name != after.name);
 
     if (changed) {
         auto cmd = std::make_unique<LayerPropertyCmd>(manager, m_editingLayerID, m_layerBefore, after);
@@ -801,6 +837,29 @@ void UndoRedoManager::clearVL() {
     m_vlUndoDeque.clear();
     m_vlRedoDeque.clear();
     m_isEditingVL = false;
+}
+
+void UndoRedoManager::beginRenameObject(GameObject* obj) {
+    if (!obj) return;
+    m_isRenamingObject = true;
+    m_renameBefore = obj->getObjectName();
+}
+
+void UndoRedoManager::endRenameObject(GameObjectManager& manager, GameObject* obj) {
+    if (!m_isRenamingObject || !obj) {
+        m_isRenamingObject = false;
+        return;
+    }
+
+    std::string after = obj->getObjectName();
+    if (m_renameBefore != after) {
+        auto cmd = std::make_unique<RenameObjectCmd>(manager, m_renameBefore, after);
+        m_undoDeque.push_back(std::move(cmd));
+        m_redoDeque.clear();
+        if (m_undoDeque.size() > MAX_UNDO_STEPS)
+            m_undoDeque.pop_front();
+    }
+    m_isRenamingObject = false;
 }
 /* ---------------- END ---------------- */
 

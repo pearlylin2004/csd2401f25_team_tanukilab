@@ -19,23 +19,6 @@
       }
     },
     {
-      "id": 2,
-      "implementation": "Set Float",
-      "type": 1,
-      "position": [
-        78.75,
-        -153.75
-      ],
-      "hasInput": true,
-      "hasOutput": true,
-      "hasTrueOutput": false,
-      "hasFalseOutput": false,
-      "parameters": {
-        "value": "0.000000",
-        "variable": "waterHold"
-      }
-    },
-    {
       "id": 3,
       "implementation": "On Start",
       "type": 0,
@@ -49,23 +32,6 @@
       "hasFalseOutput": false
     },
     {
-      "id": 5,
-      "implementation": "Set Float",
-      "type": 1,
-      "position": [
-        422.5,
-        -157.5
-      ],
-      "hasInput": true,
-      "hasOutput": true,
-      "hasTrueOutput": false,
-      "hasFalseOutput": false,
-      "parameters": {
-        "value": "0.000000",
-        "variable": "touchGround"
-      }
-    },
-    {
       "id": 6,
       "implementation": "On Update",
       "type": 0,
@@ -77,41 +43,6 @@
       "hasOutput": true,
       "hasTrueOutput": false,
       "hasFalseOutput": false
-    },
-    {
-      "id": 8,
-      "implementation": "Compare Variable",
-      "type": 2,
-      "position": [
-        360.0951843261719,
-        164.99998474121094
-      ],
-      "hasInput": true,
-      "hasOutput": false,
-      "hasTrueOutput": true,
-      "hasFalseOutput": true,
-      "parameters": {
-        "comparison": "less",
-        "threshold": "1.000000",
-        "variable": "touchGround"
-      }
-    },
-    {
-      "id": 9,
-      "implementation": "Move Object",
-      "type": 1,
-      "position": [
-        986.1389770507813,
-        121.19444274902344
-      ],
-      "hasInput": true,
-      "hasOutput": true,
-      "hasTrueOutput": false,
-      "hasFalseOutput": false,
-      "parameters": {
-        "x": "0",
-        "y": "-10.000000"
-      }
     },
     {
       "id": 10,
@@ -152,8 +83,8 @@
       "implementation": "On Collision Exit",
       "type": 0,
       "position": [
-        942.920654296875,
-        -116.00001525878906
+        438.920654296875,
+        -186.0
       ],
       "hasInput": false,
       "hasOutput": true,
@@ -169,7 +100,7 @@
       "implementation": "Check Timer",
       "type": 2,
       "position": [
-        -233.0001220703125,
+        -233.000244140625,
         73.0001220703125
       ],
       "hasInput": true,
@@ -177,7 +108,7 @@
       "hasTrueOutput": true,
       "hasFalseOutput": true,
       "parameters": {
-        "threshold": "0.8",
+        "threshold": "0.5",
         "timerName": "timer_0"
       }
     },
@@ -187,7 +118,7 @@
       "type": 1,
       "position": [
         429.72216796875,
-        67.91665649414063
+        67.9166259765625
       ],
       "hasInput": true,
       "hasOutput": true,
@@ -202,8 +133,8 @@
       "implementation": "Rotate Object",
       "type": 1,
       "position": [
-        976.4443969726563,
-        236.0
+        338.4443359375,
+        258.0
       ],
       "hasInput": true,
       "hasOutput": true,
@@ -235,8 +166,8 @@
       "implementation": "Modify Float Variable",
       "type": 1,
       "position": [
-        1264.22216796875,
-        -119.77781677246094
+        748.22216796875,
+        -163.77783203125
       ],
       "hasInput": true,
       "hasOutput": true,
@@ -253,7 +184,7 @@
       "type": 2,
       "position": [
         -582.0,
-        56.0
+        56.000022888183594
       ],
       "hasInput": true,
       "hasOutput": false,
@@ -271,7 +202,7 @@
       "type": 2,
       "position": [
         -354.0,
-        206.0
+        205.99993896484375
       ],
       "hasInput": true,
       "hasOutput": false,
@@ -305,7 +236,7 @@
       "implementation": "Modify Global Float",
       "type": 1,
       "position": [
-        92.0,
+        92.00004577636719,
         72.0
       ],
       "hasInput": true,
@@ -322,8 +253,8 @@
       "implementation": "On Collision Enter",
       "type": 0,
       "position": [
-        -756.0,
-        546.0
+        -848.8571166992188,
+        553.142822265625
       ],
       "hasInput": false,
       "hasOutput": true,
@@ -352,28 +283,11 @@
       }
     },
     {
-      "id": 37,
-      "implementation": "Set Float",
-      "type": 1,
-      "position": [
-        -236.0,
-        -414.0
-      ],
-      "hasInput": true,
-      "hasOutput": true,
-      "hasTrueOutput": false,
-      "hasFalseOutput": false,
-      "parameters": {
-        "value": "0.000000",
-        "variable": "touchWater"
-      }
-    },
-    {
       "id": 38,
       "implementation": "Compare Variable",
       "type": 2,
       "position": [
-        197.9999542236328,
+        198.0,
         446.0
       ],
       "hasInput": true,
@@ -391,8 +305,8 @@
       "implementation": "Compare Value",
       "type": 2,
       "position": [
-        609.9999389648438,
-        338.0000305175781
+        560.0,
+        420.0
       ],
       "hasInput": true,
       "hasOutput": false,
@@ -409,8 +323,8 @@
       "implementation": "Rotate Object",
       "type": 1,
       "position": [
-        909.9999389648438,
-        384.0000305175781
+        834.0,
+        486.0
       ],
       "hasInput": true,
       "hasOutput": true,
@@ -425,7 +339,7 @@
       "implementation": "Compare Variable",
       "type": 2,
       "position": [
-        -27.999963760375977,
+        -28.0,
         277.99993896484375
       ],
       "hasInput": true,
@@ -461,7 +375,7 @@
       "type": 1,
       "position": [
         -414.0,
-        786.0000610351563
+        786.0
       ],
       "hasInput": true,
       "hasOutput": true,
@@ -476,8 +390,8 @@
       "implementation": "Set Float",
       "type": 1,
       "position": [
-        807.4999389648438,
-        26.805553436279297
+        807.5,
+        28.8055419921875
       ],
       "hasInput": true,
       "hasOutput": true,
@@ -487,27 +401,206 @@
         "value": "0.000000",
         "variable": "waterHold"
       }
+    },
+    {
+      "id": 56,
+      "implementation": "Set Float",
+      "type": 1,
+      "position": [
+        -192.0,
+        -416.0
+      ],
+      "hasInput": true,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false,
+      "parameters": {
+        "value": "0.000000",
+        "variable": "waterHold"
+      }
+    },
+    {
+      "id": 57,
+      "implementation": "Reset Timer",
+      "type": 1,
+      "position": [
+        90.0,
+        -362.0
+      ],
+      "hasInput": true,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false,
+      "parameters": {
+        "timerName": "timer_0"
+      }
+    },
+    {
+      "id": 58,
+      "implementation": "Enable Physics",
+      "type": 1,
+      "position": [
+        338.0,
+        156.0
+      ],
+      "hasInput": true,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false
+    },
+    {
+      "id": 59,
+      "implementation": "Set Float",
+      "type": 1,
+      "position": [
+        414.0,
+        -352.0
+      ],
+      "hasInput": true,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false,
+      "parameters": {
+        "value": "0.000000",
+        "variable": "touchGround"
+      }
+    },
+    {
+      "id": 60,
+      "implementation": "Compare Variable",
+      "type": 2,
+      "position": [
+        8.0,
+        166.0
+      ],
+      "hasInput": true,
+      "hasOutput": false,
+      "hasTrueOutput": true,
+      "hasFalseOutput": true,
+      "parameters": {
+        "comparison": "equal",
+        "threshold": "0",
+        "variable": "touchGround"
+      }
+    },
+    {
+      "id": 62,
+      "implementation": "Hit Ground",
+      "type": 2,
+      "position": [
+        -92.0,
+        434.0
+      ],
+      "hasInput": true,
+      "hasOutput": false,
+      "hasTrueOutput": true,
+      "hasFalseOutput": true
+    },
+    {
+      "id": 63,
+      "implementation": "Enter Water",
+      "type": 1,
+      "position": [
+        -62.0,
+        556.0
+      ],
+      "hasInput": true,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false
+    },
+    {
+      "id": 64,
+      "implementation": "Exit Water",
+      "type": 1,
+      "position": [
+        -14.0,
+        776.0
+      ],
+      "hasInput": true,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false
+    },
+    {
+      "id": 65,
+      "implementation": "Is Sinle Physics",
+      "type": 1,
+      "position": [
+        -60.0,
+        -166.0
+      ],
+      "hasInput": true,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false
+    },
+    {
+      "id": 66,
+      "implementation": "Compare Variable",
+      "type": 2,
+      "position": [
+        -1457.4287109375,
+        360.0001220703125
+      ],
+      "hasInput": true,
+      "hasOutput": false,
+      "hasTrueOutput": true,
+      "hasFalseOutput": true,
+      "parameters": {
+        "comparison": "equal",
+        "threshold": "0.000000",
+        "variable": "waterHold"
+      }
+    },
+    {
+      "id": 67,
+      "implementation": "Reset Timer",
+      "type": 1,
+      "position": [
+        -1109.4287109375,
+        378.857177734375
+      ],
+      "hasInput": true,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false,
+      "parameters": {
+        "timerName": "timer_0"
+      }
+    },
+    {
+      "id": 68,
+      "implementation": "Change Acceleration Direction",
+      "type": 1,
+      "position": [
+        -555.7142333984375,
+        300.607177734375
+      ],
+      "hasInput": true,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false
+    },
+    {
+      "id": 70,
+      "implementation": "Set Sinle Acceleration",
+      "type": 1,
+      "position": [
+        -574.28564453125,
+        676.0
+      ],
+      "hasInput": true,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false,
+      "parameters": {
+        "axis": "x",
+        "value": "1.000000"
+      }
     }
   ],
   "connections": [
-    {
-      "fromNodeId": 8,
-      "outputPin": "True",
-      "toNodeId": 9,
-      "inputPin": "In"
-    },
-    {
-      "fromNodeId": 10,
-      "outputPin": "Out",
-      "toNodeId": 11,
-      "inputPin": "In"
-    },
-    {
-      "fromNodeId": 2,
-      "outputPin": "Out",
-      "toNodeId": 5,
-      "inputPin": "In"
-    },
     {
       "fromNodeId": 1,
       "outputPin": "Out",
@@ -539,21 +632,9 @@
       "inputPin": "In"
     },
     {
-      "fromNodeId": 32,
-      "outputPin": "True",
-      "toNodeId": 8,
-      "inputPin": "In"
-    },
-    {
       "fromNodeId": 3,
       "outputPin": "Out",
       "toNodeId": 33,
-      "inputPin": "In"
-    },
-    {
-      "fromNodeId": 3,
-      "outputPin": "Out",
-      "toNodeId": 2,
       "inputPin": "In"
     },
     {
@@ -572,18 +653,6 @@
       "fromNodeId": 20,
       "outputPin": "Out",
       "toNodeId": 54,
-      "inputPin": "In"
-    },
-    {
-      "fromNodeId": 35,
-      "outputPin": "Out",
-      "toNodeId": 36,
-      "inputPin": "In"
-    },
-    {
-      "fromNodeId": 3,
-      "outputPin": "Out",
-      "toNodeId": 37,
       "inputPin": "In"
     },
     {
@@ -623,9 +692,99 @@
       "inputPin": "In"
     },
     {
-      "fromNodeId": 8,
+      "fromNodeId": 3,
+      "outputPin": "Out",
+      "toNodeId": 56,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 3,
+      "outputPin": "Out",
+      "toNodeId": 57,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 57,
+      "outputPin": "Out",
+      "toNodeId": 59,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 32,
+      "outputPin": "True",
+      "toNodeId": 60,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 60,
+      "outputPin": "True",
+      "toNodeId": 58,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 60,
       "outputPin": "True",
       "toNodeId": 23,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 11,
+      "outputPin": "Out",
+      "toNodeId": 62,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 36,
+      "outputPin": "Out",
+      "toNodeId": 63,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 53,
+      "outputPin": "Out",
+      "toNodeId": 64,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 3,
+      "outputPin": "Out",
+      "toNodeId": 65,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 66,
+      "outputPin": "True",
+      "toNodeId": 67,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 6,
+      "outputPin": "Out",
+      "toNodeId": 66,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 35,
+      "outputPin": "Out",
+      "toNodeId": 70,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 70,
+      "outputPin": "Out",
+      "toNodeId": 36,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 10,
+      "outputPin": "Out",
+      "toNodeId": 68,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 68,
+      "outputPin": "Out",
+      "toNodeId": 11,
       "inputPin": "In"
     }
   ]

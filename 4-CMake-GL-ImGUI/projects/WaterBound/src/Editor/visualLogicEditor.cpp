@@ -769,6 +769,11 @@ void VisualLogicEditor::renderNodeProperties() {
 				}
 			}
 		}
+		/*else if (node.imp == NodeImplementation::ON_CLICK_ENTER || node.imp == NodeImplementation::WHILE_CLICKING || node.imp == NodeImplementation::ON_CLICK_EXIT) {
+			ImGui::TextWrapped("Do not use this for object that will transit to another scene.");
+			ImGui::TextWrapped("e.g. object with button component");
+		}*/
+
 		else if (node.imp == NodeImplementation::ON_BULLET_SHOOT) {
 			ImGui::TextWrapped("This event triggers once bullet is fired.");
 		}
@@ -1326,7 +1331,6 @@ void VisualLogicEditor::renderNodeProperties() {
 			ImGui::BulletText("Set all states to IDLE");
 			ImGui::BulletText("Reset animations to idle");
 		}
-
 		else if (node.imp == NodeImplementation::LOAD_LEVEL) {
 			ImGui::Text("Load Level");
 			ImGui::Separator();
@@ -1350,18 +1354,13 @@ void VisualLogicEditor::renderNodeProperties() {
 			// Optional: Quick select dropdown for existing levels
 			ImGui::Spacing();
 			if (ImGui::BeginCombo("##quickSelectLevel", "Quick Select")) {
-				// List common level files
-				const char* commonLevels[] = {
-					"level01.json",
-					"level02.json",
-					"level03.json",
-					"level04.json",
-					"menu_scene.json"
-				};
+				const auto& assets = Editor::assetBrowserState.assets;
 
-				for (const char* level : commonLevels) {
-					if (ImGui::Selectable(level)) {
-						node.parameters["levelName"] = level;
+				for (const auto& asset : assets) {
+					// only show files from the Scene folder
+					if (std::filesystem::path(asset.folder).filename().string() != "Scene") continue;
+					if (ImGui::Selectable(asset.name.c_str())) {
+						node.parameters["levelName"] = asset.name;
 					}
 				}
 				ImGui::EndCombo();
@@ -1376,9 +1375,186 @@ void VisualLogicEditor::renderNodeProperties() {
 				ImGui::TextColored(ImVec4(1.0f, 0.5f, 0.5f, 1.0f),
 					"No level specified!");
 			}
+		}
+		else if (node.imp == NodeImplementation::CHANGE_ACCEL_DIRECTION) {
+			ImGui::Text("Change Acceleration Direction");
+			/*ImGui::Separator();
+			int currentDir = node.parameters.count("direction") ?
+				std::stoi(node.parameters["direction"]) : 1;
+			int selectedIdx = (currentDir == 1) ? 0 : 1;
+			const char* dirOptions[] = { "Right", "Left" };
+			if (ImGui::Combo("Direction##accelDir", &selectedIdx, dirOptions, 2)) {
+				node.parameters["direction"] = (selectedIdx == 0) ? "1" : "-1";
 			}
+			ImGui::Spacing();*/
+			ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f),
+				"Flip the direction of movement in Sinle Physics/Normal Physics");
+		}
+		else if (node.imp == NodeImplementation::SET_SINLE_ACCEL) {
+			ImGui::Text("Set Acceleration");
+			ImGui::Separator();
+
+			// Axis selector
+			const char* axisOptions[] = { "X", "Y" };
+			int currentAxis = (node.parameters.count("axis") && node.parameters["axis"] == "y") ? 1 : 0;
+			if (ImGui::Combo("Axis##accelAxis", &currentAxis, axisOptions, 2)) {
+				node.parameters["axis"] = (currentAxis == 0) ? "x" : "y";
+			}
+
+			// Value input
+			float currentVal = node.parameters.count("value") ? std::stof(node.parameters["value"]) : 1.0f;
+			if (ImGui::DragFloat("Value##accelVal", &currentVal, 0.1f)) {
+				node.parameters["value"] = std::to_string(currentVal);
+			}
+
+			ImGui::Spacing();
+			ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "Set acceleration on one axis");
+		}
+		// play randon audio
+		else if (node.imp == NodeImplementation::PLAY_RANDOM_SOUND) {
+			ImGui::PushStyleColor(ImGuiCol_Text, ImGui::GetStyleColorVec4(ImGuiCol_TextDisabled));
+			ImGui::TextWrapped("Plays a random clip each trigger (no repeat). Cooldown prevents audio spam.");
+			ImGui::PopStyleColor();
+
+			AudioComponent* audio = nullptr;
+			if (Editor::visualLogicState.targetObj) {
+				audio = Editor::visualLogicState.targetObj->getComponent<AudioComponent>();
+			}
+
+			// cooldown timer
+			float cooldown = node.parameters.count("cooldown") ? std::stof(node.parameters["cooldown"]) : 0.f;
+			ImGui::Text("Cooldown (s):");
+			ImGui::SameLine();
+			ImGui::SetNextItemWidth(80.f);
+			if (ImGui::DragFloat("##cooldown", &cooldown, 0.05f, 0.f, 30.f, "%.2f")) {
+				node.parameters["cooldown"] = std::to_string(cooldown);
+			}
+			ImGui::SameLine();
+			ImGui::TextDisabled("(?)");
+			if (ImGui::IsItemHovered()) {
+				ImGui::SetTooltip("Minimum time (seconds) between plays.\nPrevents audio spam on rapid triggers.");
+			}
+
+			ImGui::Spacing();
+			ImGui::Separator();
+			ImGui::Spacing();
+
+			int audioCount = 0;
+			int MAX_AUDIO = 12;
+			for (int i = 0; i < MAX_AUDIO; ++i) {
+				if (node.parameters.count("audio_" + std::to_string(i))) ++audioCount;
+				else break;
+			}
+			if (audioCount == 0) audioCount = 1;
+			
+			ImGui::Text("Audio Channels : (% d / % d)", audioCount, MAX_AUDIO);
+			ImGui::Spacing();
+
+			int slotToRemove = -1;
+
+			for (int i = 0; i < audioCount; ++i) {
+				std::string paramKey = "audio_" + std::to_string(i);
+				std::string currentChannel = node.parameters.count(paramKey) ? node.parameters[paramKey] : "(none)";
+
+				ImGui::PushID(i);
+
+				// slot label
+				ImGui::Text("Slot %d:", i + 1);
+				ImGui::SameLine();
+
+				if (audio && !audio->audioChannels.empty()) {
+					if (!audio->getChannel(currentChannel)) currentChannel = "(none)";
+
+					ImGui::SetNextItemWidth(160.f);
+					if (ImGui::BeginCombo("##chan", currentChannel.c_str())) {
+						bool noneSelected = (currentChannel == "(none)");
+						if (ImGui::Selectable("(none)", noneSelected)) {
+							node.parameters.erase(paramKey);
+							currentChannel = "(none)";
+						}
+
+						for (const auto& [channelName, ch] : audio->audioChannels) {
+							bool isSelected = (currentChannel == channelName);
+							std::string label = channelName;
+
+							if (!ch.audioFile.empty()) {
+								label += " (" + std::filesystem::path(ch.audioFile).filename().string() + ")";
+							}
+
+							if (ImGui::Selectable(label.c_str(), isSelected)) {
+								node.parameters[paramKey] = channelName;
+								currentChannel = channelName;
+							}
+
+							if (isSelected) ImGui::SetItemDefaultFocus();
+						}
+						ImGui::EndCombo();
+					}
+
+					// remove button (only show if more than 1 slot)
+					if (audioCount > 1) {
+						ImGui::SameLine();
+						if (ImGui::SmallButton("X")) {
+							slotToRemove = i;
+						}
+					}
+
+					// show file info
+					if (currentChannel != "(none)" && audio->hasChannel(currentChannel)) {
+						const AudioChannel* ch = audio->getChannel(currentChannel);
+						ImGui::Spacing();
+
+						if (ch && !ch->audioFile.empty()) {
+							ImGui::TextDisabled("Will play: %s",
+								std::filesystem::path(ch->audioFile).filename().string().c_str());
+							ImGui::TextDisabled("Loop: %s | Volume: %.2f",
+								ch->loop ? "Yes" : "No", ch->volume);
+						}
+						else {
+							ImGui::TextColored(ImVec4(1.f, 0.5f, 0.f, 1.f),
+								"Warning: Channel has no audio file!");
+						}
+					}
+				}
+				else {
+					ImGui::TextColored(ImVec4(1.f, 0.3f, 0.3f, 1.f), "No channels in Audio Component!");
+				}
+
+				ImGui::Spacing();
+				ImGui::Separator();
+				ImGui::Spacing();
+								
+				ImGui::PopID();
+			}
+
+			// Audio slot remove (actual removal)
+			if (slotToRemove >= 0) {
+				for (int i = slotToRemove; i < audioCount - 1; ++i) {
+					std::string curr = "audio_" + std::to_string(i);
+					std::string next = "audio_" + std::to_string(i + 1);
+					if (node.parameters.count(next)) node.parameters[curr] = node.parameters[next];
+					else node.parameters.erase(curr);
+				}
+				node.parameters.erase("audio_" + std::to_string(audioCount - 1));
+			}
+
+			// Add channel (max 12)
+			ImGui::Spacing();
+			if (audio && !audio->audioChannels.empty()) {
+				if (audioCount < MAX_AUDIO) {
+					if (ImGui::Button("+ Add Audio Slot")) {
+						// just mark the next slot as pending — user selects channel from dropdown
+						node.parameters["audio_" + std::to_string(audioCount)] = "(none)";
+					}
+				}
+				else {
+					ImGui::TextDisabled("Max %d audio slots reached", MAX_AUDIO);
+				}
+			}
+			
+			ImGui::Spacing();
+		}
 	}
-	
 	/* ---------- END ---------- */
 
 
@@ -1898,6 +2074,14 @@ void VisualLogicEditor::addNode(NodeType type, NodeImplementation imp) {
 		}
 		else if (imp == NodeImplementation::LOAD_LEVEL) {
 			node.parameters["levelName"] = "level01.json";
+		}
+		else if (imp == NodeImplementation::SET_SINLE_ACCEL) {
+			node.parameters["axis"] = "x";
+			node.parameters["value"] = "1.0";
+		}
+		else if (imp == NodeImplementation::PLAY_RANDOM_SOUND) {
+			node.parameters["cooldown"] = "0.0";
+			node.parameters["audio_0"] = "(none)";
 		}
 	}
 	// CONDITION nodes

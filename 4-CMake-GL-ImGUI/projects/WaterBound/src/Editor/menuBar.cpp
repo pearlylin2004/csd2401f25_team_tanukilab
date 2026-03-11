@@ -177,6 +177,8 @@ void MenuBar::drawFontMenu() {
 void MenuBar::playSimulation(GameObjectManager& manager) {
     EditorManager::toggleEditing(false);
 
+    UndoRedoManager::Instance().saveEditorHistory();
+
     // save current state to a temp scene file
     manager.saveScene(JsonIO::runtimeScenePath(m_sceneState.tempSceneName));
 
@@ -184,6 +186,8 @@ void MenuBar::playSimulation(GameObjectManager& manager) {
 
     // refresh cached object vector
     CachedGameObjects::Instance().refresh();
+
+    GUISystem::getInstance().createButtons();
 
     DebugLog::addMessage("Simulation started.\n");
 }
@@ -201,8 +205,9 @@ void MenuBar::stopSimulation(GameObjectManager& manager) {
     // refresh cached object vector
     CachedGameObjects::Instance().refresh();
 
-    // clear all undo/redo
+    // clear all undo/redo and restore editor undo history
     UndoRedoManager::Instance().clear();
+    UndoRedoManager::Instance().restoreEditorHistory();
 
     m_objSelectionState.selectedObject = nullptr;
     m_objSelectionState.draggedObject = nullptr;

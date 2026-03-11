@@ -22,7 +22,8 @@ Technology is prohibited.
 AssetBrowser::AssetBrowser(Editor::AssetBrowserState& Astate, Editor::ObjSelectionState& Ostate, Editor::MenuBarState& Mstate) :
     m_AssetBrowserState(Astate),
     m_objSelectionState(Ostate),
-    m_menuBarState(Mstate)
+    m_menuBarState(Mstate),
+    m_assets(Editor::assetBrowserState.assets)
 {}
 
 void AssetBrowser::render() {
@@ -103,8 +104,8 @@ void AssetBrowser::render() {
         for (const std::string& subFolder : m_AssetBrowserState.currentViewSubFolders) {
             ImGui::PushID(("subfolder_" + subFolder).c_str());
             ImGui::BeginGroup();
-            //ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(100, 40));
-            //ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.25f, 0.45f, 0.65f, 1.0f)); // blue tint to distinguish
+            ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(100, 40));
+            ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.15f, 0.25f, 0.55f, 1.0f)); // blue tint to distinguish
 
             // subfolder button
             if (ImGui::Button(subFolder.c_str(), ImVec2(m_AssetBrowserState.iconSize, m_AssetBrowserState.iconSize))) {
@@ -113,8 +114,8 @@ void AssetBrowser::render() {
                 EditorManager::assetChanged();
             }
 
-            /*ImGui::PopStyleColor();
-            ImGui::PopStyleVar();*/
+            ImGui::PopStyleColor();
+            ImGui::PopStyleVar();
 
             ImGui::PushTextWrapPos(ImGui::GetCursorPosX() + m_AssetBrowserState.iconSize);
             ImGui::Text("%s", subFolder.c_str());
@@ -165,12 +166,7 @@ void AssetBrowser::render() {
 
                                 if (!prefabID.empty()) {
                                     // build new path relative to assets folder: "/Prefab/subfolder/filename.json"
-                                    std::string newRelativePath = "/" +
-                                        (std::filesystem::path(m_AssetBrowserState.currentViewFolder)
-                                            / subFolder
-                                            / src.filename()).string();
-
-                                    std::replace(newRelativePath.begin(), newRelativePath.end(), '\\', '/');
+                                    std::string newRelativePath = toRegistryPath(dest.string());
 
                                     // update in prefab registry
                                     PrefabManager::Instance().setPrefabPath(prefabID, newRelativePath);
@@ -805,7 +801,7 @@ void AssetBrowser::assetRenamePopup() {
                     std::string prefabID = PrefabManager::Instance().findPrefabIDByFilename(toRegistryPath(old.string()));
                     if (!prefabID.empty()) {
                         // change prefab name and save
-                        PrefabManager::Instance().setPrefabPath(prefabID, newPath.string());
+                        PrefabManager::Instance().setPrefabPath(prefabID, toRegistryPath(newPath.string()));
                     }
 
                     /* ------- END ------- */

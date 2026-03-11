@@ -94,6 +94,7 @@ namespace Editor {
 		std::string currentViewFolder;
 		std::vector<std::string> subFolders;
 		std::vector<PrefabUsageInfo> prefabUsageInfo; // for tracking prefab usage info in delete popup
+		std::vector<Editor::Asset> assets;
 
 		// creating subfolder
 		bool showCreateSubfolderPopup = false;
@@ -253,6 +254,9 @@ namespace Editor {
 		{"On Hover Enter", NodeType::EVENT, NodeImplementation::ON_HOVER_ENTER},
 		{"While Hovering", NodeType::EVENT, NodeImplementation::WHILE_HOVERING},
 		{"On Hover Exit", NodeType::EVENT, NodeImplementation::ON_HOVER_EXIT},
+		{"On Click Enter", NodeType::EVENT, NodeImplementation::ON_CLICK_ENTER},
+		{"While Clicking", NodeType::EVENT, NodeImplementation::WHILE_CLICKING},
+		{"On Click Exit", NodeType::EVENT, NodeImplementation::ON_CLICK_EXIT},
 		{"On Bullet Shoot", NodeType::EVENT, NodeImplementation::ON_BULLET_SHOOT},
 		{"On Bullet Refill", NodeType::EVENT, NodeImplementation::ON_BULLET_REFILL},
 
@@ -289,7 +293,18 @@ namespace Editor {
 		{"Trigger Bullet Refill Event", NodeType::ACTION, NodeImplementation::TRIGGER_BULLET_REFILL_EVENT},
 		{"Restart Level", NodeType::ACTION, NodeImplementation::RESTART_LEVEL},
 		{"Load Level", NodeType::ACTION, NodeImplementation::LOAD_LEVEL},
+		{"Is Sinle Physics", NodeType::ACTION, NodeImplementation::IS_SINLE_PHYSICS},
 		{"Disable Collision", NodeType::ACTION, NodeImplementation::DISABLE_COLLISION},
+		{"Enable Physics", NodeType::ACTION, NodeImplementation::ENABLE_PHYSICS},
+		{"Disable Physics", NodeType::ACTION, NodeImplementation::DISABLE_PHYSICS},
+		{"Enter Water", NodeType::ACTION, NodeImplementation::ENTER_WATER},
+		{"Exit Water", NodeType::ACTION, NodeImplementation::EXIT_WATER},
+		{"Hit Ground", NodeType::ACTION, NodeImplementation::HIT_GROUND},
+		{"Not on Ground", NodeType::ACTION, NodeImplementation::NOT_ON_GROUND},
+		{"Change Acceleration Direction", NodeType::ACTION, NodeImplementation::CHANGE_ACCEL_DIRECTION},
+		{"Set Sinle Acceleration", NodeType::ACTION, NodeImplementation::SET_SINLE_ACCEL},
+		{"Play Random Sound", NodeType::ACTION, NodeImplementation::PLAY_RANDOM_SOUND}
+
 	};
 	/* ----------------- Logic End ---------------- */
 
@@ -462,6 +477,27 @@ namespace Editor {
 			[](GameObject* obj) { obj->removeComponent<Animation>(); },
 			[](GameObject* obj) { return JsonIO::serializeAnimation(obj); },
 			[](GameObject* obj, std::string data) { JsonIO::deserializeAnimation(obj, data); }
+		},
+		{ "Water Body",
+			[](GameObject* obj) { obj->addComponent<WaterBody>(); },
+			[](const GameObject* obj) { return obj->hasComponent<WaterBody>(); },
+			[](GameObject* obj) { obj->removeComponent<WaterBody>(); },
+			[](GameObject* obj) { return JsonIO::serializeWaterBody(obj); },
+			[](GameObject* obj, std::string data) { JsonIO::deserializeWaterBody(obj, data); }
+		},
+		{ "Weapon",
+			[](GameObject* obj) { obj->addComponent<WeaponComponent>(); },
+			[](const GameObject* obj) { return obj->hasComponent<WeaponComponent>(); },
+			[](GameObject* obj) { obj->removeComponent<WeaponComponent>(); },
+			[](GameObject* obj) { return JsonIO::serializeWeapon(obj); },
+			[](GameObject* obj, std::string data) { JsonIO::deserializeWeapon(obj, data); }
+		},
+		{ "Button",
+			[](GameObject* obj) { obj->addComponent<Button>(); },
+			[](const GameObject* obj) { return obj->hasComponent<Button>(); },
+			[](GameObject* obj) { obj->removeComponent<Button>(); },
+			[](GameObject* obj) { return JsonIO::serializeButton(obj); },
+			[](GameObject* obj, std::string data) { JsonIO::deserializeButton(obj, data); }
 		},
 		{ "Camera",
 			[](GameObject* obj) {

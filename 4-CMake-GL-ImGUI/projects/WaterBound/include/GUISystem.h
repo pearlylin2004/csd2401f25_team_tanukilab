@@ -69,6 +69,10 @@ public:
 	void loadLevel(const std::string& levelSceneName); // load next level
     void resetAllObjectsToSpawn(); // helper for restart
 
+    void createButtons(/*GameObjectManager& manager*/); //create menu buttons
+
+
+    ButtonAction m_pendingAction = ButtonAction::NONE;
     bool m_pendingRestart = false;
     bool m_pendingLevelLoad = false;
     std::string m_pendingLevelName = "";
@@ -79,7 +83,6 @@ private:
     GUISystem(const GUISystem&) = delete; // prevent copying
     GUISystem& operator=(const GUISystem&) = delete; // prevent assignment
 
-    void createButtons(GameObjectManager& manager); //create menu buttons
     void removeButtons(); //remove menu buttons
     void startGame(); //start game
     void stopGame(); //stop game	
@@ -103,4 +106,6 @@ private:
 
     std::unordered_map<std::string, Vector2D> m_spawnPositions;
     std::string m_currentLevel = "";
+
+    float m_previousVolume = 100;
 };

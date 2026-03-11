@@ -31,16 +31,21 @@ void HierarchyWindow::render(GameObjectManager& manager) {
 
     // Build parent → children map
     std::unordered_map<std::string, std::vector<GameObject*>> childrenOf;
-    std::vector<GameObject*> rootObjects;
+    std::map<int, std::vector<GameObject*>> layerRoots; // layerID -> root objects
 
     for (GameObject* obj : gameObjects) {
         Transform* t = obj->getComponent<Transform>();
         if (!t || t->parentName.empty()) {
-            rootObjects.push_back(obj);
+            layerRoots[obj->getLayer()].push_back(obj);
         }
         else {
             childrenOf[t->parentName].push_back(obj);
         }
+    }
+
+    // Sort alphabetically within each layer
+    for (auto& [layerID, objs] : layerRoots) {
+        std::sort(objs.begin(), objs.end(), [](const GameObject* a, const GameObject* b) { return a->getObjectName() < b->getObjectName();} );
     }
 
     // Recursive lambda to render an object and its children
@@ -130,9 +135,27 @@ void HierarchyWindow::render(GameObjectManager& manager) {
         }
     };
 
-    // Render all root objects (children render recursively inside)
-    for (GameObject* root : rootObjects) {
-        renderNode(root);
+    // Render root objects grouped by layer under collapsible headers
+    LayerManager& layerMgr = manager.getLayerManager();
+    for (auto& [layerID, objs] : layerRoots) {
+        Layer* layer = layerMgr.getLayer(layerID);
+        std::string headerLabel = layer
+            ? layer->getLayerName() + "  (" + std::to_string(objs.size()) + ")"
+            : "Layer " + std::to_string(layerID);
+
+        bool layerEnabled = layer ? layer->isEnabled() : true;
+        if (!layerEnabled)
+            ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.55f, 0.55f, 0.55f, 1.0f));
+
+        bool open = ImGui::CollapsingHeader(headerLabel.c_str(), ImGuiTreeNodeFlags_DefaultOpen);
+
+        if (!layerEnabled) ImGui::PopStyleColor();
+
+        if (open) {
+            for (GameObject* root : objs) {
+                renderNode(root);
+            }
+        }
     }
 
     if (gameObjects.empty()) {
@@ -377,6 +400,22 @@ void HierarchyWindow::createPrefabPopup() {
     // delete confirm popup
     if (ImGui::BeginPopupModal("Confirm Create Prefab", NULL, ImGuiWindowFlags_AlwaysAutoResize)) {
         ImGui::Text("Do you want to pack this object into the new prefab?");
+
+        if (m_objSelectionState.selectedObject) {
+            bool hasTileMap = m_objSelectionState.selectedObject->hasComponent<TileMap>();
+            bool hasCamera = m_objSelectionState.selectedObject->hasComponent<camera>();
+            if (hasTileMap || hasCamera) {
+                ImGui::Spacing();
+                ImGui::TextColored(ImVec4(1.f, 0.8f, 0.f, 1.f), "Warning:");
+                if (hasTileMap)
+                    ImGui::TextColored(ImVec4(1.f, 0.8f, 0.f, 1.f), "  - TileMap is a special component and will not be saved to the prefab.");
+                if (hasCamera)
+                    ImGui::TextColored(ImVec4(1.f, 0.8f, 0.f, 1.f), "  - Camera is a special component and will not be saved to the prefab.");
+                ImGui::Spacing();
+            }
+
+            ImGui::TextColored(ImVec4(1.f, 0.8f, 0.f, 1.f), "  - Layer is a special component and will not be saved to the prefab.");
+        }
 
         if (ImGui::Button("Create and Pack")) {
 

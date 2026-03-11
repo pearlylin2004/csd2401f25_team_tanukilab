@@ -272,6 +272,8 @@ struct LayerSnapshot {
 	bool enabled;
 	bool visible;
 	bool updatable;
+
+	std::string name;
 };
 
 class LayerPropertyCmd : public CmdInterface {
@@ -317,6 +319,19 @@ private:
 	VLGraphSnapshot			m_after;
 };
 
+// for rename
+class RenameObjectCmd : public CmdInterface {
+public:
+	RenameObjectCmd(GameObjectManager& manager, const std::string& oldName, const std::string& newName);
+	void execute() override;
+	void undo() override;
+	void updateObjName(const std::string& oldName, const std::string& newName) override;
+private:
+	GameObjectManager& m_manager;
+	std::string m_oldName;
+	std::string m_newName;
+};
+
 
 // big boss for undo/redo operation (singleton)
 class UndoRedoManager {
@@ -341,6 +356,10 @@ public:
 	// boolean to check if undo/redo is doable
 	bool canUndo() const { return !m_undoDeque.empty(); }
 	bool canRedo() const { return !m_redoDeque.empty(); }
+
+	// save/restore editor history
+	void saveEditorHistory();
+	void restoreEditorHistory();
 
 	// clear all history (i.e. load scene, stop simulation)
 	void clear();
@@ -405,6 +424,11 @@ public:
 	void clearVL();
 	/* ---- END ----*/
 
+	/* ---- RENAME OBJECT ---- */
+	void beginRenameObject(GameObject* obj);
+	void endRenameObject(GameObjectManager& manager, GameObject* obj);
+	/* ---- END ---- */
+
 
 	// max steps to undo/redo
 	static constexpr size_t MAX_UNDO_STEPS{ 30 };
@@ -414,6 +438,10 @@ private:
 
 	std::deque<std::unique_ptr<CmdInterface>> m_undoDeque;
 	std::deque<std::unique_ptr<CmdInterface>> m_redoDeque;
+
+	// save editor history when playing simulation
+	std::deque<std::unique_ptr<CmdInterface>> m_savedEditorUndoDeque;
+	std::deque<std::unique_ptr<CmdInterface>> m_savedEditorRedoDeque;
 
 	// for transform
 	bool				m_isEditingTransform = false;
@@ -446,6 +474,10 @@ private:
 	VLGraphSnapshot			m_vlBefore;
 	std::deque<std::unique_ptr<VLGraphCmd>> m_vlUndoDeque;
 	std::deque<std::unique_ptr<VLGraphCmd>> m_vlRedoDeque;
+
+	// for rename object
+	bool					m_isRenamingObject = false;
+	std::string				m_renameBefore;
 };
 
 // take a snapshot of an object's transform state

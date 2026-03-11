@@ -31,11 +31,12 @@
         "Transform": {
           "pos": [
             -1000.0,
-            -862.3761596679688,
+            -854.0381469726563,
             1.0
           ]
         },
         "Render": {
+          "shape": "square",
           "colorR": 1.0,
           "colorG": 1.0,
           "colorB": 1.0,
@@ -56,8 +57,11 @@
           "ledgeClimbSpeed": 8.0
         },
         "CollisionInfo": {
-          "colliderType": "square",
-          "colliderType": "square",
+          "colliderPos": [
+            0.0,
+            0.0
+          ],
+          "colliderRot": 0.0,
           "ignoreCollisionsWith": [
             "player",
             "hazards"
@@ -107,14 +111,9 @@
       "components": {
         "Transform": {
           "pos": [
-            -16.084232330322266,
-            -4.745276927947998,
+            -5.615406513214111,
+            -2.278172016143799,
             0.9980000257492065
-          ],
-          "scale": [
-            4.0,
-            4.0,
-            0.0
           ]
         },
         "Render": {
@@ -129,89 +128,15 @@
         "Physics": {
           "autoUpdate": 0
         },
-        "CollisionInfo": {
-          "collisionTag": "player",
-          "ignoreCollisionsWith": [
-            "bullet"
-          ]
-        },
-        "StateMachine": {
-          "Falling": {
-            "animState": {
-              "texture": "assets/Texture/Kinuta_Fall_SS.png",
-              "loop": 0,
-              "play": 0,
-              "totalColumn": 4,
-              "totalRow": 1,
-              "frameTime": 0.10000000149011612,
-              "initialFramCol": 0.0,
-              "initialFramRow": 0.0,
-              "lastFramCol": 0.0,
-              "lastFramRow": 0.0
-            }
-          }
-        },
         "AudioComponent": {
           "channels": {
-            "footsteps": {
-              "audioFile": "assets/audio/footsteps.wav",
-              "volume": 0.5,
-              "pitch": 1.0,
-              "loop": 1,
-              "playOnStart": 0,
-              "muted": 0,
-              "fadeInOnStart": 0,
-              "fadeInDuration": 1.0,
-              "fadeOutOnStop": 1,
-              "fadeOutDuration": 0.15000000596046448,
-              "isSpatial": 0,
-              "minDistance": 1.0,
-              "maxDistance": 100.0
-            },
-            "jump": {
-              "audioFile": "assets/audio/jump.wav",
-              "volume": 0.699999988079071,
-              "pitch": 1.0,
-              "loop": 0,
-              "playOnStart": 0,
-              "muted": 0,
-              "fadeInOnStart": 0,
-              "fadeInDuration": 1.0,
-              "fadeOutOnStop": 0,
-              "fadeOutDuration": 1.0,
-              "isSpatial": 0,
-              "minDistance": 1.0,
-              "maxDistance": 100.0
+            "footstep": {
+              "volume": 0.4467008709907532,
+              "pitch": 1.0633548498153687
             },
             "landing": {
-              "audioFile": "assets/audio/landing.wav",
-              "volume": 1.0,
-              "pitch": 1.0,
-              "loop": 0,
-              "playOnStart": 0,
-              "muted": 0,
-              "fadeInOnStart": 0,
-              "fadeInDuration": 1.0,
-              "fadeOutOnStop": 0,
-              "fadeOutDuration": 1.0,
-              "isSpatial": 0,
-              "minDistance": 1.0,
-              "maxDistance": 100.0
-            },
-            "refill": {
-              "audioFile": "assets/Audio\\collect_water.wav",
-              "volume": 1.0,
-              "pitch": 1.0,
-              "loop": 0,
-              "playOnStart": 0,
-              "muted": 0,
-              "fadeInOnStart": 1,
-              "fadeInDuration": 0.5400000214576721,
-              "fadeOutOnStop": 1,
-              "fadeOutDuration": 0.7799999713897705,
-              "isSpatial": 0,
-              "minDistance": 1.0,
-              "maxDistance": 100.0
+              "volume": 0.8824200630187988,
+              "pitch": 0.926619827747345
             }
           }
         },
@@ -222,9 +147,6 @@
               "scriptName": "player"
             }
           ]
-        },
-        "VisualLC": {
-          "filename": "player_logic.json"
         }
       }
     },
@@ -396,6 +318,11 @@
             6.588000774383545,
             6.588000774383545
           ],
+          "colliderPos": [
+            0.0,
+            0.0
+          ],
+          "colliderRot": 0.0,
           "colliderType": "square",
           "collisionRes": "StopWhenCollide",
           "collisionTag": "inventory",
@@ -438,6 +365,11 @@
             6.588000774383545,
             6.588000774383545
           ],
+          "colliderPos": [
+            0.0,
+            0.0
+          ],
+          "colliderRot": 0.0,
           "colliderType": "square",
           "collisionRes": "StopWhenCollide",
           "collisionTag": "inventory",
@@ -455,11 +387,11 @@
       "components": {
         "Transform": {
           "pos": [
-            -3.0980653762817383,
-            -3.6029999256134033,
+            -4.784971237182617,
+            -3.5857913494110107,
             0.0
           ],
-          "rotation": 12.18714714050293,
+          "rotation": 41.263832092285156,
           "scale": [
             3.200000047683716,
             1.2999999523162842,
@@ -474,9 +406,12 @@
         },
         "Render": {
           "shape": "square",
+          "colorR": 1.0,
+          "colorG": 1.0,
+          "colorB": 1.0,
+          "colorA": 1.0,
           "hasTex": 1,
           "texture": "assets/Texture\\Water_Gun.png",
-          "hasTex": 1,
           "hasAnimation": 0
         },
         "WeaponComponent": {
@@ -542,11 +477,6 @@
               "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
             },
             {
-              "x": 6,
-              "y": -2,
-              "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
-            },
-            {
               "x": 7,
               "y": -4,
               "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
@@ -554,6 +484,11 @@
             {
               "x": -4,
               "y": -4,
+              "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
+            },
+            {
+              "x": 6,
+              "y": -2,
               "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
             },
             {
@@ -836,8 +771,8 @@
       "components": {
         "Transform": {
           "pos": [
-            13.595999717712402,
-            -0.04527680575847626,
+            15.43726634979248,
+            -0.04527687281370163,
             0.0
           ]
         },
@@ -865,6 +800,11 @@
           "inertiaOverride": 0.0
         },
         "CollisionInfo": {
+          "colliderPos": [
+            0.0,
+            0.0
+          ],
+          "colliderRot": 0.0,
           "bounciness": 0.0,
           "friction": 0.0
         }

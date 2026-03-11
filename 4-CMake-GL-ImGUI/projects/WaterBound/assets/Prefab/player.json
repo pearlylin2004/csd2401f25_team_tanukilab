@@ -4,14 +4,14 @@
   "components": {
     "Transform": {
       "pos": [
-        0.0,
-        0.0,
-        0.029999999329447746
+        -17.767385482788086,
+        -4.7280683517456055,
+        0.9980000257492065
       ],
       "rotation": 1.0,
       "scale": [
-        5.0,
-        5.0,
+        4.0,
+        4.0,
         0.0
       ]
     },
@@ -24,7 +24,6 @@
     "Input": {},
     "Physics": {
       "physicsFlag": 1,
-      "autoUpdate": 1,
       "moveSpeed": 5.0,
       "jumpForce": 12.5,
       "damping": 0.9800000190734863,
@@ -47,15 +46,22 @@
       "autoFitScale": 0,
       "colliderSize": [
         2.0,
-        3.200000047683716,
+        3.200000047683716
+      ],
+      "colliderPos": [
+        0.0,
         0.0
       ],
+      "colliderRot": 0.0,
       "colliderType": "square",
       "collisionRes": "MoveWhenCollide",
-      "collisionTag": "default",
+      "collisionTag": "player",
       "bounciness": 0.0,
       "friction": 0.20000000298023224,
-      "ignoreCollisionsWith": []
+      "colliderType": "square",
+      "ignoreCollisionsWith": [
+        "bullet"
+      ]
     },
     "StateMachine": {
       "state": "Idle",
@@ -106,7 +112,7 @@
         "animState": {
           "texture": "assets/Texture/Kinuta_Fall_SS.png",
           "loop": 0,
-          "play": 1,
+          "play": 0,
           "totalColumn": 4,
           "totalRow": 1,
           "frameTime": 0.10000000149011612,
@@ -144,6 +150,246 @@
           "lastFramRow": 0.0
         }
       }
+    },
+    "AudioComponent": {
+      "channels": {
+        "footstep": {
+          "audioFile": "assets/audio/Footsteps2_Gravel-Dirt_far-small_2.wav",
+          "volume": 0.3857349157333374,
+          "pitch": 0.985999345779419,
+          "loop": 0,
+          "playOnStart": 0,
+          "muted": 0,
+          "fadeInOnStart": 0,
+          "fadeInDuration": 1.0,
+          "fadeOutOnStop": 0,
+          "fadeOutDuration": 1.0,
+          "isSpatial": false,
+          "minDistance": 1.0,
+          "maxDistance": 100.0
+        },
+        "footsteps": {
+          "audioFile": "assets/audio/footsteps.wav",
+          "volume": 0.5,
+          "pitch": 1.0,
+          "loop": 1,
+          "playOnStart": 0,
+          "muted": 0,
+          "fadeInOnStart": 0,
+          "fadeInDuration": 1.0,
+          "fadeOutOnStop": 1,
+          "fadeOutDuration": 0.15000000596046448,
+          "isSpatial": false,
+          "minDistance": 1.0,
+          "maxDistance": 100.0
+        },
+        "jump-audio-1": {
+          "audioFile": "assets/Audio\\SFX\\Tanuki Jump_1.wav",
+          "volume": 0.6800000071525574,
+          "pitch": 1.0,
+          "loop": 0,
+          "playOnStart": 0,
+          "muted": 0,
+          "fadeInOnStart": 1,
+          "fadeInDuration": 0.38999998569488525,
+          "fadeOutOnStop": 1,
+          "fadeOutDuration": 0.33000001311302185,
+          "isSpatial": false,
+          "minDistance": 1.0,
+          "maxDistance": 100.0
+        },
+        "jump-audio-10": {
+          "audioFile": "assets/Audio\\SFX\\Tanuki Jump_10.wav",
+          "volume": 0.6800000071525574,
+          "pitch": 1.0,
+          "loop": 0,
+          "playOnStart": 0,
+          "muted": 0,
+          "fadeInOnStart": 1,
+          "fadeInDuration": 0.38999998569488525,
+          "fadeOutOnStop": 1,
+          "fadeOutDuration": 0.33000001311302185,
+          "isSpatial": false,
+          "minDistance": 1.0,
+          "maxDistance": 100.0
+        },
+        "jump-audio-11": {
+          "audioFile": "assets/Audio\\SFX\\Tanuki Jump_11.wav",
+          "volume": 0.6800000071525574,
+          "pitch": 1.0,
+          "loop": 0,
+          "playOnStart": 0,
+          "muted": 0,
+          "fadeInOnStart": 1,
+          "fadeInDuration": 0.38999998569488525,
+          "fadeOutOnStop": 1,
+          "fadeOutDuration": 0.33000001311302185,
+          "isSpatial": false,
+          "minDistance": 1.0,
+          "maxDistance": 100.0
+        },
+        "jump-audio-2": {
+          "audioFile": "assets/Audio\\SFX\\Tanuki Jump_2.wav",
+          "volume": 0.6800000071525574,
+          "pitch": 1.0,
+          "loop": 0,
+          "playOnStart": 0,
+          "muted": 0,
+          "fadeInOnStart": 1,
+          "fadeInDuration": 0.38999998569488525,
+          "fadeOutOnStop": 1,
+          "fadeOutDuration": 0.33000001311302185,
+          "isSpatial": false,
+          "minDistance": 1.0,
+          "maxDistance": 100.0
+        },
+        "jump-audio-3": {
+          "audioFile": "assets/Audio\\SFX\\Tanuki Jump_3.wav",
+          "volume": 0.6800000071525574,
+          "pitch": 1.0,
+          "loop": 0,
+          "playOnStart": 0,
+          "muted": 0,
+          "fadeInOnStart": 1,
+          "fadeInDuration": 0.38999998569488525,
+          "fadeOutOnStop": 1,
+          "fadeOutDuration": 0.33000001311302185,
+          "isSpatial": false,
+          "minDistance": 1.0,
+          "maxDistance": 100.0
+        },
+        "jump-audio-4": {
+          "audioFile": "assets/Audio\\SFX\\Tanuki Jump_4.wav",
+          "volume": 0.6800000071525574,
+          "pitch": 1.0,
+          "loop": 0,
+          "playOnStart": 0,
+          "muted": 0,
+          "fadeInOnStart": 1,
+          "fadeInDuration": 0.38999998569488525,
+          "fadeOutOnStop": 1,
+          "fadeOutDuration": 0.33000001311302185,
+          "isSpatial": false,
+          "minDistance": 1.0,
+          "maxDistance": 100.0
+        },
+        "jump-audio-5": {
+          "audioFile": "assets/Audio\\SFX\\Tanuki Jump_5.wav",
+          "volume": 0.6800000071525574,
+          "pitch": 1.0,
+          "loop": 0,
+          "playOnStart": 0,
+          "muted": 0,
+          "fadeInOnStart": 1,
+          "fadeInDuration": 0.38999998569488525,
+          "fadeOutOnStop": 1,
+          "fadeOutDuration": 0.33000001311302185,
+          "isSpatial": false,
+          "minDistance": 1.0,
+          "maxDistance": 100.0
+        },
+        "jump-audio-6": {
+          "audioFile": "assets/Audio\\SFX\\Tanuki Jump_6.wav",
+          "volume": 0.6800000071525574,
+          "pitch": 1.0,
+          "loop": 0,
+          "playOnStart": 0,
+          "muted": 0,
+          "fadeInOnStart": 1,
+          "fadeInDuration": 0.38999998569488525,
+          "fadeOutOnStop": 1,
+          "fadeOutDuration": 0.33000001311302185,
+          "isSpatial": false,
+          "minDistance": 1.0,
+          "maxDistance": 100.0
+        },
+        "jump-audio-7": {
+          "audioFile": "assets/Audio\\SFX\\Tanuki Jump_7.wav",
+          "volume": 0.6800000071525574,
+          "pitch": 1.0,
+          "loop": 0,
+          "playOnStart": 0,
+          "muted": 0,
+          "fadeInOnStart": 1,
+          "fadeInDuration": 0.38999998569488525,
+          "fadeOutOnStop": 1,
+          "fadeOutDuration": 0.33000001311302185,
+          "isSpatial": false,
+          "minDistance": 1.0,
+          "maxDistance": 100.0
+        },
+        "jump-audio-8": {
+          "audioFile": "assets/Audio\\SFX\\Tanuki Jump_8.wav",
+          "volume": 0.6800000071525574,
+          "pitch": 1.0,
+          "loop": 0,
+          "playOnStart": 0,
+          "muted": 0,
+          "fadeInOnStart": 1,
+          "fadeInDuration": 0.38999998569488525,
+          "fadeOutOnStop": 1,
+          "fadeOutDuration": 0.33000001311302185,
+          "isSpatial": false,
+          "minDistance": 1.0,
+          "maxDistance": 100.0
+        },
+        "jump-audio-9": {
+          "audioFile": "assets/Audio\\SFX\\Tanuki Jump_9.wav",
+          "volume": 0.6800000071525574,
+          "pitch": 1.0,
+          "loop": 0,
+          "playOnStart": 0,
+          "muted": 0,
+          "fadeInOnStart": 1,
+          "fadeInDuration": 0.38999998569488525,
+          "fadeOutOnStop": 1,
+          "fadeOutDuration": 0.33000001311302185,
+          "isSpatial": false,
+          "minDistance": 1.0,
+          "maxDistance": 100.0
+        },
+        "landing": {
+          "audioFile": "assets/audio/landing.wav",
+          "volume": 1.0,
+          "pitch": 1.0,
+          "loop": 0,
+          "playOnStart": 0,
+          "muted": 0,
+          "fadeInOnStart": 0,
+          "fadeInDuration": 1.0,
+          "fadeOutOnStop": 0,
+          "fadeOutDuration": 1.0,
+          "isSpatial": false,
+          "minDistance": 1.0,
+          "maxDistance": 100.0
+        },
+        "refill": {
+          "audioFile": "assets/Audio\\collect_water.wav",
+          "volume": 1.0,
+          "pitch": 1.0,
+          "loop": 0,
+          "playOnStart": 0,
+          "muted": 0,
+          "fadeInOnStart": 1,
+          "fadeInDuration": 0.5400000214576721,
+          "fadeOutOnStop": 1,
+          "fadeOutDuration": 0.7799999713897705,
+          "isSpatial": false,
+          "minDistance": 1.0,
+          "maxDistance": 100.0
+        }
+      }
+    },
+    "LuaScript": {
+      "scripts": [
+        {
+          "filename": "./assets/scripting\\player.lua",
+          "scriptName": "player"
+        }
+      ]
+    },
+    "VisualLC": {
+      "filename": "player_logic.json"
     }
   }
 }
