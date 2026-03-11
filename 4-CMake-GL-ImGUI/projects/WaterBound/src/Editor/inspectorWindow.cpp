@@ -691,7 +691,7 @@ void InspectorWindow::renderRender(GameObject* selected) {
                 ImGui::Separator();
                 ImGui::Spacing();
 
-                ImGui::SliderFloat("Alpha", &render->clr.w, 0.f, 1.f);
+                ImGui::DragFloat("Alpha", &render->clr.w, 0.01f, 0.f, 1.f);
                 if (ImGui::IsItemActivated())
                     if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
                 if (ImGui::IsItemDeactivatedAfterEdit())
@@ -1487,7 +1487,7 @@ void InspectorWindow::renderPhysics(GameObject* selected, bool canMove) {
                 }
 
                 if (ImGui::TreeNode("Jump Buffer")) {
-                    ImGui::SliderFloat("Buffer Time", &physic->jumpBufferTime, 0.0f, 10.f);
+                    ImGui::DragFloat("Buffer Time", &physic->jumpBufferTime, 0.01f , 0.0f, 10.f);
                     if (ImGui::IsItemActivated())
                         if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
                     if (ImGui::IsItemDeactivatedAfterEdit())
@@ -1497,7 +1497,7 @@ void InspectorWindow::renderPhysics(GameObject* selected, bool canMove) {
                 }
 
                 if (ImGui::TreeNode("Coyote Jump")) {
-                    ImGui::SliderFloat("Coyote Time", &physic->coyoteTime, 0.0f, 10.f);
+                    ImGui::DragFloat("Coyote Time", &physic->coyoteTime, 0.01f, 0.0f, 10.f);
                     if (ImGui::IsItemActivated())
                         if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
                     if (ImGui::IsItemDeactivatedAfterEdit())
