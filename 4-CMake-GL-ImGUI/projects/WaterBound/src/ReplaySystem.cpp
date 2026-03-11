@@ -26,8 +26,8 @@ Technology is prohibited.
 #include <iostream>
 #include <algorithm>
 
-#ifndef RUNTIME_DIR_R
-#define RUNTIME_DIR_R "./assets"
+#ifndef RUNTIME_ASSETS_DIR_R
+#define RUNTIME_ASSETS_DIR_R "./assets"
 #endif
 
 // ============================================================================
@@ -35,7 +35,7 @@ Technology is prohibited.
 // ============================================================================
 
 std::string ReplaySystem::getReplayDir() const {
-    return std::string(RUNTIME_DIR_R) + "/replays";
+    return std::string(RUNTIME_ASSETS_DIR_R) + "/replays";
 }
 
 std::string ReplaySystem::getReplayPath(const std::string& levelName) const {

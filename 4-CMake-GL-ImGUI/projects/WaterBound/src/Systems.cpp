@@ -1301,6 +1301,18 @@ void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime, M
 				}
 			}
 
+			// Position correction during replay to prevent drift
+			if (isReplay && replaySys.isViewerMode()) {
+				float recX = replaySys.getReplayX();
+				float recY = replaySys.getReplayY();
+				// Lerp toward recorded position to stay on track
+				float correctionStrength = 0.3f;
+				transform->x += (recX - transform->x) * correctionStrength;
+				transform->y += (recY - transform->y) * correctionStrength;
+				physics->dynamics.position.x = transform->x;
+				physics->dynamics.position.y = transform->y;
+			}
+
 
 			// Continuous shooting system
 			if (physics->canShoot) {
