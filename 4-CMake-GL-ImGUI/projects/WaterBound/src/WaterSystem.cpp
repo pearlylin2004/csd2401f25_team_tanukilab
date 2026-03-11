@@ -74,7 +74,7 @@ void WaterSystem::update(GameObjectManager& manager, float deltaTime) {
     for (GameObject* obj : allObjects) {
         WaterBody* water = obj->getComponent<WaterBody>();
 
-        if (water) {  
+        if (water) {
             if (water->renderWaves) {
                 water->waveTime += deltaTime;
             }
@@ -85,7 +85,7 @@ void WaterSystem::update(GameObjectManager& manager, float deltaTime) {
 
                 water->height += rise;
                 water->pendingHeightIncrease -= rise;
-                water->lastFrameRise = rise; 
+                water->lastFrameRise = rise;
 
                 Transform* transform = obj->getComponent<Transform>();
                 if (transform) {
@@ -93,11 +93,12 @@ void WaterSystem::update(GameObjectManager& manager, float deltaTime) {
                 }
             }
             else {
-                water->lastFrameRise = 0.0f; 
+                water->lastFrameRise = 0.0f;
             }
-        if (water && water->renderWaves) {
-            if (!EditorManager::isEditingMode() && !EditorManager::isPaused())
-                water->waveTime += deltaTime;
+            if (water && water->renderWaves) {
+                if (!EditorManager::isEditingMode() && !EditorManager::isPaused())
+                    water->waveTime += deltaTime;
+            }
         }
     }
 
