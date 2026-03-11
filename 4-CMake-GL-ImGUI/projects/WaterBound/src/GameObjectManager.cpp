@@ -1170,7 +1170,7 @@ void GameObjectManager::loadSceneFromJson(const std::string& filename) {
 	if (!templateBullet) templateBullet = getGameObject("bullet");
 
 	if (templateBullet) {
-		createBulletPool(templateBullet->getObjectName(), 10);
+		createBulletPool(templateBullet->getObjectName(), 20);
 	}
 	/* ---- END ---- */
 

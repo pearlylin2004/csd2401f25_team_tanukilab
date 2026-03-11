@@ -648,28 +648,19 @@ namespace Collision {
         Physics* phys2 = obj2->getComponent<Physics>();
         Transform* trans1 = obj1->getComponent<Transform>();
         Transform* trans2 = obj2->getComponent<Transform>();
+        float r1 = obj1->getComponent<CollisionInfo>()->colliderSize.x * 0.5f;
+        float r2 = obj2->getComponent<CollisionInfo>()->colliderSize.x * 0.5f;
 
         if (!phys1->alive || !phys2->alive) return false;
 
         //vector from obj1 to obj2
+        float restDistance = r1 + r2;
         float dx = trans2->x - trans1->x;
         float dy = trans2->y - trans1->y;
         float distSq = dx * dx + dy * dy;
         if (distSq < 1e-8f) return false; //avoid division by zero
 
         float dist = sqrtf(distSq);
-
-        //settings
-        float r1 = obj1->getComponent<CollisionInfo>()->colliderSize.x * 0.5f;
-        float r2 = obj2->getComponent<CollisionInfo>()->colliderSize.x * 0.5f;
-        float restDistance = r1 + r2;
-        float stiffness = 6.0f; //pressure strength
-        float viscosity = 0.008f; //smoothing
-        float correctionPercent = 0.5f; //positional correction
-        float damping = 0.05f; //damping
-		float flowStrength = 0.02f; //flow strength for water like behavior
-        float gravity = 0.002f; // tiny gravity to keep flow
-        float antiStick = 0.002f; // slide over neighbors
 
         //only interact if close
         float penetration = restDistance - dist;

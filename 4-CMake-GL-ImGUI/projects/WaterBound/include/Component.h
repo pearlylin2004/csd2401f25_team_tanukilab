@@ -246,11 +246,17 @@ public:
     //water bullet
     bool alive = false;
     float lifeTimer = 0.0f;
-    float maxLifetime = 3.0f;
+    float maxLifetime = 10.0f;
     Vector2D originalPos{ 0, 0 };
     Vector2D originalVel{ 0, 0 };
     bool isOriginalStateSet = false;
 
+    //for evaporating
+    float initialScale = 0.4f;
+    float minScale = 0.1f;
+    float shrinkRate = 0.3f;   //how fast it shrinks
+    float fadeRate = 0.5f;
+    
     //bool inWaterTriggered; // true only when W is pressed
 
     //Shooting parameters
@@ -321,7 +327,9 @@ enum class ButtonAction {
     MUSIC_VOL_UP,
     MUSIC_VOL_DOWN,
     SFX_VOL_UP,
-    SFX_VOL_DOWN
+    SFX_VOL_DOWN,
+    MUTE,
+    UNMUTE
 };
 
 //Button component
