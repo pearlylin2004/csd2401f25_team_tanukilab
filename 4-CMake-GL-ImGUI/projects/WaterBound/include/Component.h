@@ -878,6 +878,7 @@ public:
     float heightIncrease = 0.25f;
     float pendingHeightIncrease = 0.0f; 
     float heightRiseSpeed = 0.5f;
+    float lastFrameRise = 0.0f;
 
 
     // Rendering flags

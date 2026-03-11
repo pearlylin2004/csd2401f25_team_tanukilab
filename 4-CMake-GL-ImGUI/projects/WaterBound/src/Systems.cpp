@@ -1537,6 +1537,13 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 	(void)deltaTime;
 	double ms = 0.0;
 
+	std::vector<GameObject*> allObjs;
+	manager.getAllGameObjects(allObjs);
+	for (GameObject* obj : allObjs) {
+		Physics* p = obj->getComponent<Physics>();
+		if (p) p->inWater = false;
+	}
+
 	LayerManager& layerManager = manager.getLayerManager();
 	std::vector<Layer*> layers = layerManager.getAllLayers();
 
@@ -1702,6 +1709,16 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 								water->pendingHeightIncrease += water->heightIncrease;
 							}
 							continue;
+						}
+
+						bool obj1IsFloating = (c1->collisionTag == "floatingObject") && obj2->hasComponent<WaterBody>();
+						bool obj2IsFloating = (c2->collisionTag == "floatingObject") && obj1->hasComponent<WaterBody>();
+
+						if (obj1IsFloating) {
+							p1->inWater = true;
+						}
+						else if (obj2IsFloating) {
+							p2->inWater = true;
 						}
 
 						// Visual logic events (if needed)

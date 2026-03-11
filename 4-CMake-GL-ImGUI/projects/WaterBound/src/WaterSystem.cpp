@@ -73,26 +73,33 @@ void WaterSystem::update(GameObjectManager& manager, float deltaTime) {
     // Update water animation time
     for (GameObject* obj : allObjects) {
         WaterBody* water = obj->getComponent<WaterBody>();
-        if (water && water->renderWaves) {
-            water->waveTime += deltaTime;
-        }
 
-        if (water && water->pendingHeightIncrease > 0.0f) {
-            float rise = water->heightRiseSpeed * deltaTime;
-            rise = Math_Min(rise, water->pendingHeightIncrease);
+        if (water) {  
+            if (water->renderWaves) {
+                water->waveTime += deltaTime;
+            }
 
-            water->height += rise;
-            water->pendingHeightIncrease -= rise;
+            if (water->pendingHeightIncrease > 0.0f) {
+                float rise = water->heightRiseSpeed * deltaTime;
+                rise = Math_Min(rise, water->pendingHeightIncrease);
 
-            Transform* transform = obj->getComponent<Transform>();
-            if (transform) {
-                transform->y += rise * 0.5f;
+                water->height += rise;
+                water->pendingHeightIncrease -= rise;
+                water->lastFrameRise = rise; 
+
+                Transform* transform = obj->getComponent<Transform>();
+                if (transform) {
+                    transform->y += rise * 0.5f;
+                }
+            }
+            else {
+                water->lastFrameRise = 0.0f; 
             }
         }
     }
 
     // Apply water physics to objects
-    applyWaterPhysics(manager);
+    applyWaterPhysics(manager, deltaTime);
 }
 
 void WaterSystem::render(GameObjectManager& manager) {
@@ -295,35 +302,10 @@ void WaterSystem::renderWaterBody(GameObject* waterObj) {
     glBindVertexArray(0);
 }
 
-bool WaterSystem::isPointInWater(GameObject* waterObj, const Vector2D& point) {
-    WaterBody* water = waterObj->getComponent<WaterBody>();
-    Transform* transform = waterObj->getComponent<Transform>();
-
-    if (!water || !transform) return false;
-
-    // Simple AABB check
-    float halfWidth = water->width * transform->scaleX * 0.5f;
-    float halfHeight = water->height * transform->scaleY * 0.5f;
-
-    float minX = transform->x - halfWidth;
-    float maxX = transform->x + halfWidth;
-    float minY = transform->y - halfHeight;
-    float maxY = transform->y + halfHeight;
-
-    bool inWater = (point.x >= minX &&
-        point.x <= maxX &&
-        point.y >= minY &&
-        point.y <= maxY);
-
-
-    return inWater;
-}
-
-void WaterSystem::applyWaterPhysics(GameObjectManager& manager) {
+void WaterSystem::applyWaterPhysics(GameObjectManager& manager, float deltaTime) {
     std::vector<GameObject*> allObjects;
     manager.getAllGameObjects(allObjects);
 
-    // Find all water bodies
     std::vector<GameObject*> waterBodies;
     for (GameObject* obj : allObjects) {
         if (obj->hasComponent<WaterBody>()) {
@@ -331,65 +313,53 @@ void WaterSystem::applyWaterPhysics(GameObjectManager& manager) {
         }
     }
 
-    // Check each object against water
     for (GameObject* obj : allObjects) {
         Physics* physics = obj->getComponent<Physics>();
         Transform* transform = obj->getComponent<Transform>();
 
         if (!physics || !transform) continue;
         if (obj->hasComponent<WaterBody>()) continue;
+        if (!physics->inWater) continue;
 
-        physics->inWater = false;
-
-        // Check if object is in any water body
         for (GameObject* waterObj : waterBodies) {
             WaterBody* water = waterObj->getComponent<WaterBody>();
             Transform* waterTransform = waterObj->getComponent<Transform>();
-            if (!waterTransform) continue;
+            if (!water || !waterTransform) continue;
 
-            Vector2D objPos = { transform->x, transform->y };
+            float waterSurfaceY = waterTransform->y + (water->height * waterTransform->scaleY * 0.5f);
 
-            if (isPointInWater(waterObj, objPos)) {
-                physics->inWater = true;
+            if (water->lastFrameRise > 0.0f) {
+                transform->y += water->lastFrameRise * 0.5f; 
+                physics->velY = 0.0f;
+            }
 
-                //if (physics->buoyancy || water->isTrigger) {
-                //   
+            float depth = waterSurfaceY - transform->y;
 
-                //    float waterSurfaceY = waterTransform->y + (water->height * waterTransform->scaleY * 0.5f);
-                //    float depth = waterSurfaceY - transform->y;
+            CollisionInfo* col = obj->getComponent<CollisionInfo>();
+            float halfObjHeight = col ? (col->colliderSize.y * 0.5f) : (transform->scaleY * 0.5f);
+            float submergedFraction = glm::clamp(depth / (halfObjHeight * 1.5f + 0.001f), 0.0f, 1.0f);
 
-                //    // submergedFraction
-                //    float halfObjHeight = transform->scaleY * 0.5f;
-                //    float submergedFraction = glm::clamp(depth / (halfObjHeight * 2.0f + 0.001f), 0.0f, 1.0f);
+            float safeMass = (physics->dynamics.mass > 0.0f) ? physics->dynamics.mass : 1.0f;
+            float gravityMag = std::abs(physics->gravity);
+            float netUpAccel = ((water->buoyancyForce / safeMass) * 2.5f - gravityMag) * submergedFraction;
+            physics->velY += netUpAccel * deltaTime;
 
-                //    physics->velY += water->buoyancyForce * submergedFraction * 0.016f * 2.0f;
-                //    float verticalDrag = glm::mix(water->waterDrag, water->waterDrag, submergedFraction);
-                //    physics->velY *= verticalDrag;
-                //    physics->velX *= water->waterDrag;
-                //}
+            physics->velY = glm::clamp(physics->velY, physics->maxFallSpeed, 6.0f);
 
-                float waterSurfaceY = waterTransform->y + (water->height * waterTransform->scaleY * 0.5f);
-                float depth = waterSurfaceY - transform->y;
-
-                //// submergedFraction
-                float halfObjHeight = transform->scaleY * 0.5f;
-                float submergedFraction = glm::clamp(depth / (halfObjHeight * 2.0f + 0.001f), 0.0f, 1.0f);
-
-                //// Mass-based 
-                float safeMass = (physics->dynamics.mass > 0.0f) ? physics->dynamics.mass : 1.0f;
-                float buoyancyAccel = (water->buoyancyForce / safeMass) * submergedFraction * 0.016f * 2.0f;
-                physics->velY += buoyancyAccel;
-
-                float verticalDrag = glm::mix(water->waterDrag * 0.9999f, water->waterDrag, submergedFraction);
+            if (submergedFraction > 0.1f) {
+                float verticalDrag = glm::mix(water->waterDrag * 0.999f, water->waterDrag * 0.995f, submergedFraction);
                 physics->velY *= verticalDrag;
                 physics->velX *= water->waterDrag;
-
-                break; // Object can only be in one water body at a time
             }
+            else {
+                physics->velY *= 0.9999f;
+                physics->velX *= 0.9999f;
+            }
+
+            break;
         }
     }
 }
-
 void WaterSystem::cleanup() {
 
     // Delete all water meshes
