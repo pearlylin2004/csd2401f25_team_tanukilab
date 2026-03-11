@@ -319,44 +319,61 @@ void WaterSystem::applyWaterPhysics(GameObjectManager& manager, float deltaTime)
 
         if (!physics || !transform) continue;
         if (obj->hasComponent<WaterBody>()) continue;
-        if (!physics->inWater) continue;
 
-        for (GameObject* waterObj : waterBodies) {
-            WaterBody* water = waterObj->getComponent<WaterBody>();
-            Transform* waterTransform = waterObj->getComponent<Transform>();
-            if (!water || !waterTransform) continue;
+        
+        CollisionInfo* col = obj->getComponent<CollisionInfo>();
+        bool isFloatingObject = col && (col->collisionTag == "floatingObject");
 
-            float waterSurfaceY = waterTransform->y + (water->height * waterTransform->scaleY * 0.5f);
 
-            if (water->lastFrameRise > 0.0f) {
-                transform->y += water->lastFrameRise * 0.5f; 
-                physics->velY = 0.0f;
-            }
+        if (isFloatingObject) {
+            for (GameObject* waterObj : waterBodies) {
+                WaterBody* water = waterObj->getComponent<WaterBody>();
+                Transform* waterTransform = waterObj->getComponent<Transform>();
+                if (!water || !waterTransform) continue;
 
-            float depth = waterSurfaceY - transform->y;
 
-            CollisionInfo* col = obj->getComponent<CollisionInfo>();
-            float halfObjHeight = col ? (col->colliderSize.y * 0.5f) : (transform->scaleY * 0.5f);
-            float submergedFraction = glm::clamp(depth / (halfObjHeight * 1.5f + 0.001f), 0.0f, 1.0f);
+                float waterHalfW = water->width * 0.5f;
+                float waterHalfH = water->height * 0.5f;
+                float waterMinX = waterTransform->x - waterHalfW;
+                float waterMaxX = waterTransform->x + waterHalfW;
+                float waterMinY = waterTransform->y - waterHalfH;
+                float waterMaxY = waterTransform->y + waterHalfH;
 
-            float safeMass = (physics->dynamics.mass > 0.0f) ? physics->dynamics.mass : 1.0f;
-            float gravityMag = std::abs(physics->gravity);
-            float netUpAccel = ((water->buoyancyForce / safeMass) * 2.5f - gravityMag) * submergedFraction;
-            physics->velY += netUpAccel * deltaTime;
+                bool insideWater = (transform->x >= waterMinX && transform->x <= waterMaxX &&
+                    transform->y >= waterMinY && transform->y <= waterMaxY);
 
-            physics->velY = glm::clamp(physics->velY, physics->maxFallSpeed, 6.0f);
+                if (!insideWater && !physics->inWater) continue;
 
-            if (submergedFraction > 0.1f) {
-                float verticalDrag = glm::mix(water->waterDrag * 0.999f, water->waterDrag * 0.995f, submergedFraction);
+                physics->inWater = true;
+
+                float waterSurfaceY = waterTransform->y + waterHalfH;
+
+                if (water->lastFrameRise > 0.0f) {
+                    transform->y += water->lastFrameRise;
+                    physics->velY = 0.0f;
+                    physics->dynamics.position.y = transform->y;
+                    break;
+                }
+
+                float depth = waterSurfaceY - transform->y;
+                float halfObjHeight = transform->scaleY * 0.5f;
+                float submergedFraction = glm::clamp(depth / (halfObjHeight * 2.0f + 0.001f), 0.0f, 1.0f);
+
+                float safeMass = physics->dynamics.mass;
+                float buoyancyAccel = (water->buoyancyForce / safeMass) * submergedFraction * 0.016f * 12.0f;
+
+                physics->velY += buoyancyAccel;
+
+
+                physics->velY = glm::clamp(physics->velY, physics->maxFallSpeed, 7.0f);
+
+                float strongDrag = 0.999f;
+                float verticalDrag = glm::mix(strongDrag * 0.999f, strongDrag, submergedFraction);
                 physics->velY *= verticalDrag;
                 physics->velX *= water->waterDrag;
-            }
-            else {
-                physics->velY *= 0.9999f;
-                physics->velX *= 0.9999f;
-            }
 
-            break;
+                break;
+            }
         }
     }
 }
