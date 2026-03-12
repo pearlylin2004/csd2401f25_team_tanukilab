@@ -27,6 +27,8 @@ Technology is prohibited.
 #include "Systems.h"
 #include "Component.h"
 #include "GameObjectManager.h"
+#include "GUISystem.h"
+#include "ReplaySystem.h"
 #include "FireStates.h"
 #include "RefillStates.h"
 #include <iostream>
@@ -37,6 +39,10 @@ Technology is prohibited.
 // ============================================================================
 
 static inline bool anyMoveHeld() {
+    if (GUISystem::getInstance().getCurrentState() == GameState::REPLAY) {
+        auto& replay = ReplaySystem::getInstance();
+        return replay.getReplayKeyA() || replay.getReplayKeyD();
+    }
     return InputHandler::isKeyHeld(GLFW_KEY_A) ||
         InputHandler::isKeyHeld(GLFW_KEY_D);
 }

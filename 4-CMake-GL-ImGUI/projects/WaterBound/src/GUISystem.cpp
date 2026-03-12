@@ -808,6 +808,22 @@ void GUISystem::loadReplayLevel(int levelIndex) {
     // Start viewer playback (feeds recorded inputs, no ghost spawned)
     auto& replay = ReplaySystem::getInstance();
     replay.startViewerPlayback(fullPath, m_replayRunId);
+
+    // Snap player to the first replay frame position to prevent a visible
+    // teleport on the first frame before the position-correction code runs
+    if (replay.isViewerMode()) {
+        GameObject* player = g_manager->getGameObject("player");
+        if (player && player->hasComponent<Transform>()) {
+            Transform* t = player->getComponent<Transform>();
+            t->x = replay.getReplayX();
+            t->y = replay.getReplayY();
+            if (player->hasComponent<Physics>()) {
+                Physics* p = player->getComponent<Physics>();
+                p->dynamics.position.x = t->x;
+                p->dynamics.position.y = t->y;
+            }
+        }
+    }
 }
 
 void GUISystem::tickLevelTimer(double dt) {

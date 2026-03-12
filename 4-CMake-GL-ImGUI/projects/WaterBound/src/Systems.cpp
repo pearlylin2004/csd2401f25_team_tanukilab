@@ -1548,7 +1548,12 @@ void WeaponSystem::update(GameObjectManager& manager, const float& deltaTime)
 	std::vector<GameObject*> gameObjects;
 	manager.getAllGameObjects(gameObjects);
 
-	const Vector2D mouseWorld = InputHandler::getWorldMousePosition();
+	// During replay, use recorded mouse position instead of live cursor
+	bool isReplay = (GUISystem::getInstance().getCurrentState() == GameState::REPLAY);
+	const Vector2D mouseWorld = isReplay
+		? Vector2D(ReplaySystem::getInstance().getReplayMouseX(),
+		           ReplaySystem::getInstance().getReplayMouseY())
+		: InputHandler::getWorldMousePosition();
 
 	for (GameObject* obj : gameObjects)
 	{
