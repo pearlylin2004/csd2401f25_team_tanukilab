@@ -540,6 +540,7 @@ struct AudioChannel {
 	bool isSpatial = false;
 	float minDistance = 1.0f;
 	float maxDistance = 100.0f;
+    float spread = 180.0f; // degrees: 0 = hard-pan point source(only hear from the direction of source, 360 = full spread
 
     // run-time data
     bool persistOnSceneChange = false;
@@ -666,6 +667,7 @@ public:
                 if (!ch.fadeInfo.isFadingIn && ch.fadeInfo.targetVolume == 0.0f) {
                     ch.channel->stop();
                     ch.channel = nullptr;
+					ch.state = AudioState::Stopped;
                 }
             }
 
@@ -783,6 +785,7 @@ enum class NodeImplementation {
     CHECK_TIMER,
     COMPARE_GLOBAL_FLOAT,
     CHECK_COLLIDED_STATE,
+    CHECK_ANIMATION_END,
 
     // ACTION
     PRINT_MESSAGE,
@@ -924,6 +927,11 @@ public:
     bool isTrigger = true;            // If objects can pass through
     float buoyancyForce = 50.0f;      // Upward force applied to objects in water
     float waterDrag = 0.95f;          // Velocity damping when in water
+    float heightIncrease = 0.25f;
+    float pendingHeightIncrease = 0.0f; 
+    float heightRiseSpeed = 0.5f;
+    float lastFrameRise = 0.0f;
+
 
     // Rendering flags
     bool renderWaves = true;

@@ -35,11 +35,9 @@ public:
     // Render all water bodies
     void render(GameObjectManager& manager);
 
-    // Check if a point is inside water
-    bool isPointInWater(GameObject* waterObj, const Vector2D& point);
 
     // Apply water physics to objects
-    void applyWaterPhysics(GameObjectManager& manager);
+    void applyWaterPhysics(GameObjectManager& manager, float deltaTime);
 
     // Cleanup
     void cleanup();

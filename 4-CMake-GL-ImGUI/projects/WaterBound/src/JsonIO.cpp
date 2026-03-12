@@ -347,6 +347,7 @@ namespace JsonIO {
         if (str == "Change Acceleration Direction") return NodeImplementation::CHANGE_ACCEL_DIRECTION;
         if (str == "Set Sinle Acceleration") return NodeImplementation::SET_SINLE_ACCEL;
         if (str == "Play Random Sound") return NodeImplementation::PLAY_RANDOM_SOUND;
+        if (str == "Check Animation End") return NodeImplementation::CHECK_ANIMATION_END;
 
 		if (str == "Check Key Held") return NodeImplementation::CHECK_KEY_HELD;
 		if (str == "Compare Value") return NodeImplementation::COMPARE_VALUE;
@@ -409,6 +410,7 @@ namespace JsonIO {
             case NodeImplementation::CHANGE_ACCEL_DIRECTION: return "Change Acceleration Direction";
             case NodeImplementation::SET_SINLE_ACCEL: return "Set Sinle Acceleration";
             case NodeImplementation::PLAY_RANDOM_SOUND: return "Play Random Sound";
+            case NodeImplementation::CHECK_ANIMATION_END: return "Check Animation End";
 
             case NodeImplementation::CHECK_KEY_HELD: return "Check Key Held";
             case NodeImplementation::COMPARE_VALUE: return "Compare Value";
@@ -1282,6 +1284,7 @@ namespace JsonIO {
             channelObj.AddMember("isSpatial", ch.isSpatial, a);
             channelObj.AddMember("minDistance", ch.minDistance, a);
             channelObj.AddMember("maxDistance", ch.maxDistance, a);
+            channelObj.AddMember("spread", ch.spread, a);
             channelObj.AddMember("persistOnSceneChange", ch.persistOnSceneChange, a);
             channels.AddMember(Value(channelName.c_str(), a), channelObj, a);
         }
@@ -1328,6 +1331,7 @@ namespace JsonIO {
                 if (co.HasMember("isSpatial"))       ch->isSpatial = co["isSpatial"].GetBool();
                 if (co.HasMember("minDistance"))     ch->minDistance = co["minDistance"].GetFloat();
                 if (co.HasMember("maxDistance"))     ch->maxDistance = co["maxDistance"].GetFloat();
+                if (co.HasMember("spread"))     ch->spread = co["spread"].GetFloat();
                 if (co.HasMember("persistOnSceneChange"))     ch->persistOnSceneChange = co["persistOnSceneChange"].GetBool();
             }
         }

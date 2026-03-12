@@ -183,6 +183,8 @@ void MenuBar::playSimulation(GameObjectManager& manager) {
     manager.saveScene(JsonIO::runtimeScenePath(m_sceneState.tempSceneName));
 
     manager.initializeSimulationResources();
+    //AudioHandler::getInstance().stopAllPreviews();
+    AudioHandler::getInstance().resumeAll(manager);
 
     // refresh cached object vector
     CachedGameObjects::Instance().refresh();
@@ -193,6 +195,8 @@ void MenuBar::playSimulation(GameObjectManager& manager) {
 }
 
 void MenuBar::stopSimulation(GameObjectManager& manager) {
+    AudioHandler::getInstance().pauseAll(manager);
+    AudioHandler::getInstance().stopAllPreviews();
     EditorManager::toggleEditing(true);
     manager.cleanupSimulationResources();
 	VisualLogicEditor::Instance().clear();

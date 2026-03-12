@@ -61,8 +61,15 @@ void InputSystem::update(GameObjectManager& manager, const float& deltaTime, Mes
 
         messageBus.publish(Message("KeyPressed", nullptr, KeyEvent{ "0", true }));
 
-        if (EditorManager::isEditingMode()) EditorManager::toggleEditing(false);
-        else EditorManager::toggleEditing(true);
+        if (EditorManager::isEditingMode()) {
+            EditorManager::toggleEditing(false);
+            AudioHandler::getInstance().resumeAll(manager);
+			AudioHandler::getInstance().stopAllPreviews();
+        } else {
+            AudioHandler::getInstance().pauseAll(manager);
+			AudioHandler::getInstance().stopAllPreviews();
+            EditorManager::toggleEditing(true);
+        }
     }
 
     // ============ LAYER TESTING CODE ============
@@ -1565,7 +1572,8 @@ void WeaponSystem::update(GameObjectManager& manager, const float& deltaTime)
 
 		Transform* weaponTransform = obj->getComponent<Transform>();
 
-
+		//original local X offset
+		//owner flips direction
 		if (!weapon->baseLocalOffsetInitialised)
 		{
 			weapon->baseLocalOffsetX = weaponTransform->localOffset.x;
@@ -1586,16 +1594,17 @@ void WeaponSystem::update(GameObjectManager& manager, const float& deltaTime)
 		weaponTransform->localOffset.x = ownerFacingLeft
 			? -std::abs(weapon->baseLocalOffsetX)
 			: std::abs(weapon->baseLocalOffsetX);
-
+		// Check the weapon's parent 
 		if (!weaponTransform->parentName.empty())
 		{
 			GameObject* owner = manager.getGameObject(weaponTransform->parentName);
 			if (owner && owner->hasComponent<Transform>())
 			{
 				Transform* pt = owner->getComponent<Transform>();
-				const float parentRad = glm::radians(pt->rotation);
+				const float parentRad = DegToRad(pt->rotation);
 				const float cosA = cosf(parentRad);
 				const float sinA = sinf(parentRad);
+				// Rotate local offset around the parent
 				const float rotatedX = weaponTransform->localOffset.x * cosA
 					- weaponTransform->localOffset.y * sinA;
 				const float rotatedY = weaponTransform->localOffset.x * sinA
@@ -1607,13 +1616,14 @@ void WeaponSystem::update(GameObjectManager& manager, const float& deltaTime)
 
 		const float dx = mouseWorld.x - weaponTransform->x;
 		const float dy = mouseWorld.y - weaponTransform->y;
-		
+
+		// Calculate the aiming angle
 		const float aimAngleRad = ownerFacingLeft
 			? std::atan2(-dy, -dx)  
 			: std::atan2(dy, dx); 
 		weaponTransform->flipX = ownerFacingLeft;
 
-		const float aimAngleDeg = glm::degrees(aimAngleRad);
+		const float aimAngleDeg = RadToDeg(aimAngleRad);
 		weaponTransform->rotation = aimAngleDeg;
 
 		weapon->currentAngle = aimAngleDeg;
@@ -1635,6 +1645,13 @@ static uint64_t MakePairKey(GameObject* a, GameObject* b)
 void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime) {
 	(void)deltaTime;
 	double ms = 0.0;
+
+	std::vector<GameObject*> allObjs;
+	manager.getAllGameObjects(allObjs);
+	for (GameObject* obj : allObjs) {
+		Physics* p = obj->getComponent<Physics>();
+		if (p) p->inWater = false;
+	}
 
 	LayerManager& layerManager = manager.getLayerManager();
 	std::vector<Layer*> layers = layerManager.getAllLayers();
@@ -1790,6 +1807,20 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 							}
 						}
 
+						bool bulletIsObj1 = (c1->collisionTag == "bullet" && c2->collisionTag == "water");
+						bool bulletIsObj2 = (c2->collisionTag == "bullet" && c1->collisionTag == "water");
+
+						if (bulletIsObj1 || bulletIsObj2) {
+							PhysicsForces::deactivateBullet(bulletIsObj1 ? obj1 : obj2);
+							WaterBody* water = (bulletIsObj1 ? obj2 : obj1)->getComponent<WaterBody>();
+							Transform* waterT = bulletIsObj1 ? t2 : t1;
+							if (water) {
+								water->pendingHeightIncrease += water->heightIncrease;
+							}
+							continue;
+						}
+
+
 						// Visual logic events (if needed)
 						if (obj1->hasComponent<VisualLC>()) {
 							VisualLC* logic1 = obj1->getComponent<VisualLC>();
@@ -1805,7 +1836,9 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 
 						bool obj1IsStatic = (c1->collisionRes == CollisionResponseMode::StopWhenCollide);
 						bool obj2IsStatic = (c2->collisionRes == CollisionResponseMode::StopWhenCollide);
-
+						bool obj1IsFloating = (c1->collisionTag == "floatingObject") && obj2->hasComponent<WaterBody>();
+						bool obj2IsFloating = (c2->collisionTag == "floatingObject") && obj1->hasComponent<WaterBody>();
+					
 						//helper lambda for bounce calculation
 						auto ApplyBounce = [](Physics* p, CollisionInfo* c, const Vector2D& normal, bool isStatic) {
 							//get current velocity
@@ -2094,6 +2127,13 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 									}
 								}
 							}
+						}
+						else if (obj1IsFloating && !obj1IsStatic){
+								p1->inWater = true;
+						}
+						else if (obj2IsFloating && !obj2IsStatic) {
+							p2->inWater = true;
+							
 						}
 					}
 				}
@@ -2543,7 +2583,7 @@ void AudioSystem::update(GameObjectManager& manager, float deltaTime) {
 		AudioHandler::getInstance().updateListener(
 			playerTransform->x,
 			playerTransform->y,
-			playerTransform->z,
+			0.0f,
 			0.0f, 0.0f, 1.0f,  // forward: looking into screen
 			0.0f, 1.0f, 0.0f   // up: Y-axis is up
 		);
@@ -2584,10 +2624,13 @@ void AudioSystem::update(GameObjectManager& manager, float deltaTime) {
 			for (auto& pair : audio->audioChannels) {
 				AudioChannel& ch = pair.second;
 
-				// Background music restart logic
-				if (ch.playOnStart && ch.loop) {
+				// Process audio (isPendingPlay, isPendingStop, etc.)
+				processAudio(obj, &ch, deltaTime);
+
+				// Background music restart logic - skip in editor mode to honour pause/resume
+				if (!EditorManager::isEditingMode() && ch.playOnStart && ch.loop) {
 					if (!ch.channel || !audioHandler.isSoundPlaying(&ch)) {
-						// Restart background music if not playing
+						// Restart audio if not playing
 						ch.channel = audioHandler.playSound(&ch);
 						if (ch.channel) {
 							ch.state = AudioState::Playing;
@@ -2598,9 +2641,6 @@ void AudioSystem::update(GameObjectManager& manager, float deltaTime) {
 						}
 					}
 				}
-
-				// Process audio (isPendingPlay, isPendingStop, etc.)
-				processAudio(obj, &ch, deltaTime);
 
 				// Check if channel is still playing
 				if (ch.channel) {
@@ -2800,7 +2840,7 @@ void AudioSystem::updateSpatialAudio(GameObjectManager& manager) {
 			FMOD_VECTOR soundPos = {
 				transform->x,
 				transform->y,
-				transform->z
+				0.0f
 			};
 			FMOD_VECTOR soundVel = { 0.0f, 0.0f, 0.0f };  // No doppler effect
 			
@@ -2816,7 +2856,7 @@ void AudioSystem::updateSpatialAudio(GameObjectManager& manager) {
 
 void TransformSystem::update(GameObjectManager& manager, const float& deltaTime) {
 	(void)deltaTime;
-	if (EditorManager::isEditingMode()) return;
+	//if (EditorManager::isEditingMode()) return;
 
 	std::vector<GameObject*> gameObjects;
 	manager.getAllGameObjects(gameObjects);

@@ -41,42 +41,15 @@ AudioHandler& AudioHandler::getInstance() {
 // initialize the audio system and load sounds
 void AudioHandler::init() {
 	FMODErrorCheck(FMOD::System_Create(&system));
-
 	FMODErrorCheck(system->init(36, FMOD_INIT_NORMAL, nullptr));
-
 	FMODErrorCheck(system->set3DSettings(0.0f, 1.0f, 1.0f));
 
-	ResourceManager::getInstance().init(system); // initialize resource manager with fmod system
+	// Create the game channel group — all gameplay audio routes through here.
+	// Editor preview audio plays directly under master and is unaffected by this group's pause state.
+	FMODErrorCheck(system->createChannelGroup("game", &m_gameGroup));
+	FMODErrorCheck(system->createChannelGroup("preview", &m_previewGroup));
 
-
-	//sounds.resize(static_cast<size_t>(soundID::count), nullptr);
-	//channels.resize(static_cast<size_t>(soundID::count), nullptr);
-	//fadeInfo.resize(static_cast<size_t>(soundID::count));
-
-	// only load bg for now
-	//FMOD::Sound* sound = ResourceManager::getInstance().getSound("assets/audio/bg.wav", true);
-
-	//for (int i = 0; i < static_cast<int>(soundID::count); ++i) {
-	//	soundID id = static_cast<soundID>(i);	
-	//	std::string path = soundIDToFilePath(id);
-
-	//	/*if (id == soundID::bg && !path.empty() && !loadSound(id, path, true)) {
-	//		std::cerr << "Failed to load sound: " << path << std::endl;
-	//	}
-	//	else if (!path.empty() && !loadSound(id, path)) {
-	//		std::cerr << "Failed to load sound: " << path << std::endl;
-	//	}*/
-
-	//	// loading sounds now handled in ResourceManager
-	//	if (!path.empty()) {
-	//		bool loop = (id == soundID::bg);
-	//		FMOD::Sound* sound = ResourceManager::getInstance().getSound(path, loop);
-	//		if (!sound) {
-	//			std::cerr << "Failed to load sound: " << path << std::endl;
-	//		}
-	//	}
-
-	//}
+	ResourceManager::getInstance().init(system);
 }
 
 // update the audio system each frame and set inactive channel to nullptr
@@ -176,7 +149,7 @@ FMOD::Channel* AudioHandler::playSound(AudioChannel* audio) {
 	// For 3D sounds, override default min/max distance with channel-specific values
 
 	FMOD::Channel* channel = nullptr;
-	FMODErrorCheck(system->playSound(sound, nullptr, false, &channel));
+	FMODErrorCheck(system->playSound(sound, m_gameGroup, false, &channel));
 
 	if (channel) {
 		channel->setVolume(audio->volume);
@@ -191,8 +164,11 @@ FMOD::Channel* AudioHandler::playSound(AudioChannel* audio) {
 			if (distResult != FMOD_OK) {
 				std::cerr << "Warning: Failed to set 3D distance for: " << audio->audioFile << std::endl;
 			}
-		}
 
+			// Spread: 0 = point source (hard pan), 360 = full both ears.
+			// 180 means you still hear it from both ears, but it's more directional than the default 360.
+			channel->set3DSpread(audio->spread);
+		}
 		audio->channel = channel;
 		audio->fadeInfo.isFading = false;
 		std::cout << "[AUDIO] Playing: " << audio->audioFile
@@ -203,46 +179,40 @@ FMOD::Channel* AudioHandler::playSound(AudioChannel* audio) {
 }
 
 void AudioHandler::pauseAll(GameObjectManager& manager) {
+	// Pause the entire game group — catches ghost channels (e.g. menu BGM)
+	// that no longer have a live GameObject.
+	if (m_gameGroup) m_gameGroup->setPaused(true);
+
+
+	// Sync AudioState so the component layer stays accurate.
 	std::vector<GameObject*> gameObjects;
 	manager.getAllGameObjects(gameObjects);
 
 	for (GameObject* obj : gameObjects) {
 		if (!obj->hasComponent<AudioComponent>()) continue;
 		AudioComponent* ac = obj->getComponent<AudioComponent>();
-
 		for (auto& pair : ac->audioChannels) {
-
 			AudioChannel& ch = pair.second;
-
-			if (ch.state == AudioState::Playing && ch.channel) {
-				pauseSound(&ch);
-				ch.state = AudioState::Paused;
-			}
-
+			if (ch.state == AudioState::Playing && ch.channel)
+				ch.state = AudioState::Paused;  // FMOD already paused by group above
 		}
-
 	}
 }
 
 void AudioHandler::resumeAll(GameObjectManager& manager) {
+	if (m_gameGroup) m_gameGroup->setPaused(false);
+
 	std::vector<GameObject*> gameObjects;
 	manager.getAllGameObjects(gameObjects);
 
 	for (GameObject* obj : gameObjects) {
 		if (!obj->hasComponent<AudioComponent>()) continue;
 		AudioComponent* ac = obj->getComponent<AudioComponent>();
-
 		for (auto& pair : ac->audioChannels) {
-
 			AudioChannel& ch = pair.second;
-
-			if (ch.state == AudioState::Paused && ch.channel) {
-				resumeSound(&ch);
-				ch.state = AudioState::Playing;
-			}
-
+			if (ch.state == AudioState::Paused && ch.channel)
+				ch.state = AudioState::Playing;  // FMOD already resumed by group above
 		}
-
 	}
 }
 
@@ -313,15 +283,17 @@ void AudioHandler::resumeSound(AudioChannel* audio) {
 
 // check whether sound is paused
 bool AudioHandler::isSoundPaused(AudioChannel* audio) {
-	//size_t pos = static_cast<size_t>(id);
 	bool isPaused = false;
-
-	/*if (channels[pos]) {*/
 	if (audio->channel) {
-		FMODErrorCheck(audio->channel->getPaused(&isPaused));
+		FMOD_RESULT result = audio->channel->getPaused(&isPaused);
+		//if sound finished naturally, the channel handle becomes invalid, so treat it as not paused and clean up the handle
+		if (result == FMOD_ERR_INVALID_HANDLE) {
+			audio->channel = nullptr;
+			return false;
+		}
+		FMODErrorCheck(result);
 		return isPaused;
 	}
-
 	return false;
 }
 
@@ -339,12 +311,15 @@ void AudioHandler::stopSound(AudioChannel* audio) {
 
 // check whether channel still alive (ie. sound finished playing)
 bool AudioHandler::isSoundPlaying(AudioChannel* audio) {
-	//size_t pos = static_cast<size_t>(id);
-
-	/*if (channels[pos]) {*/
 	if (audio->channel) {
 		bool isPlaying = false;
-		FMODErrorCheck(audio->channel->isPlaying(&isPlaying));
+		FMOD_RESULT result = audio->channel->isPlaying(&isPlaying);
+		if (result == FMOD_ERR_INVALID_HANDLE) {
+			// Channel expired naturally (sound finished) — clean up silently
+			audio->channel = nullptr;
+			return false;
+		}
+		FMODErrorCheck(result); // still report genuinely unexpected errors
 		return isPlaying;
 	}
 	return false;
@@ -689,4 +664,39 @@ void AudioHandler::setMasterVolume(float vol) {
             masterGroup->setVolume(m_masterVolume);
         }
     }
+}
+
+FMOD::Channel* AudioHandler::playPreviewSound(AudioChannel* audio) {
+	if (!system || audio->audioFile.empty()) return nullptr;
+
+	// Stop whatever was playing on this channel before starting a new preview.
+	// This handles: clicking Play twice, changing the audio file, switching selected objects.
+	if (audio->channel) {
+		audio->channel->stop();
+		audio->channel = nullptr;
+		audio->state = AudioState::Stopped;
+	}
+
+	FMOD::Sound* sound = ResourceManager::getInstance().getSound(
+		audio->audioFile, audio->loop, audio->isSpatial
+	);
+	if (!sound) return nullptr;
+
+	FMOD::Channel* channel = nullptr;
+	FMODErrorCheck(system->playSound(sound, m_previewGroup, false, &channel));
+
+	if (channel) {
+		channel->setVolume(audio->volume);
+		channel->setPitch(audio->pitch);
+		audio->channel = channel;
+		audio->fadeInfo.isFading = false;
+	}
+
+	return channel;
+}
+
+void AudioHandler::stopAllPreviews() {
+	if (m_previewGroup) {
+		m_previewGroup->stop();  // atomically kills every preview channel
+	}
 }
