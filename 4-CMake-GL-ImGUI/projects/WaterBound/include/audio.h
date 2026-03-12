@@ -155,7 +155,11 @@ public:
 	// Register the BGM channel so setMusicVolume can update it live
 	void registerBGMChannel(FMOD::Channel* channel) { m_bgmChannel = channel; }
 
-	FMOD::Channel* playPreviewSound(AudioChannel* audio);  // editor preview — bypasses game group
+	FMOD::Channel* playPreviewSound(AudioChannel* audio);
+	void stopAllPreviews();  // stops the entire preview group atomically — no iteration needed
+
+	// In private, alongside m_gameGroup:
+	FMOD::ChannelGroup* m_previewGroup = nullptr;  // editor preview audio lives here
 
 private:
 	AudioHandler() : system(nullptr) {}
