@@ -775,6 +775,7 @@ enum class NodeImplementation {
     CHECK_TIMER,
     COMPARE_GLOBAL_FLOAT,
     CHECK_COLLIDED_STATE,
+    CHECK_ANIMATION_END,
 
     // ACTION
     PRINT_MESSAGE,

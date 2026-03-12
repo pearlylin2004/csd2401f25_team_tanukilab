@@ -741,14 +741,14 @@ void PrefabManager::applyPrefabComponents(GameObject* go, const rapidjson::Value
 			//std::cout << t->scaleX << " " << t->scaleY << " " << t->scaleZ << "scale\n\n";
 		}
 
-		if (jt.HasMember("parentName") && jt["parentName"].IsString())
+		/*if (jt.HasMember("parentName") && jt["parentName"].IsString())
 			t->parentName = jt["parentName"].GetString();
 		if (jt.HasMember("localOffset") && jt["localOffset"].IsArray() && jt["localOffset"].Size() == 2) {
 			t->localOffset.x = jt["localOffset"][0].GetFloat();
 			t->localOffset.y = jt["localOffset"][1].GetFloat();
 		}
 		if (jt.HasMember("localRotation") && jt["localRotation"].IsNumber())
-			t->localRotation = jt["localRotation"].GetFloat();
+			t->localRotation = jt["localRotation"].GetFloat();*/
 	}
 
 	// ---- Render ----
@@ -1287,13 +1287,13 @@ void PrefabManager::serializeComponents(const GameObject* obj, rapidjson::Value&
 		jt.AddMember("rotation", t->rotation, a);
 		JsonIO::WriteVec3(jt, "scale", t->scaleX, t->scaleY, t->scaleZ, a);
 
-		if (!t->parentName.empty()) {
+		/*if (!t->parentName.empty()) {
 			jt.AddMember("parentName", rapidjson::Value(t->parentName.c_str(), a), a);
 			rapidjson::Value lo(rapidjson::kArrayType);
 			lo.PushBack(t->localOffset.x, a).PushBack(t->localOffset.y, a);
 			jt.AddMember("localOffset", lo, a);
 			jt.AddMember("localRotation", t->localRotation, a);
-		}
+		}*/
 
 		comps.AddMember("Transform", jt, a);
 	}
