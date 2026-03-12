@@ -351,6 +351,9 @@ void GUISystem::createButtonActions() {
         case GameState::LEADERBOARD:
             changeState(GameState::LEADERBOARD, "leaderboard_scene.json");
             break;
+        case GameState::REPLAY:
+            changeState(GameState::MENU, "menu_scene.json");
+            break;
         default:
             changeState(GameState::MENU, "menu_scene.json");
             break;
@@ -978,6 +981,17 @@ void GUISystem::populateReplaySelection() {
 void GUISystem::handleReplaySelectInput() {
     const int entriesPerPage = 5;
     int totalRuns = static_cast<int>(m_availableRuns.size());
+
+    // Handle back button mouse click (button processing is skipped by
+    // the early return in update(), so we detect clicks here directly)
+    if (InputHandler::isMouseButtonClicked(GLFW_MOUSE_BUTTON_LEFT)) {
+        GameObject* backBtn = g_manager->getGameObject("back_button");
+        if (backBtn && isPointInButton(InputHandler::getWorldMousePosition(), backBtn)) {
+            m_replaySelectActive = false;
+            changeState(GameState::MENU, "menu_scene.json");
+            return;
+        }
+    }
 
     // ESC goes back to menu
     if (InputHandler::isKeyTriggered(GLFW_KEY_ESCAPE)) {

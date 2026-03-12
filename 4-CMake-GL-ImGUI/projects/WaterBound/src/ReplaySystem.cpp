@@ -109,11 +109,17 @@ void ReplaySystem::recordFrame(GameObjectManager& manager, float deltaTime) {
     }
 
     // Capture input state for full replay viewer
+    // Suppress mouse input during a brief grace period at the start of
+    // recording to prevent the UI button click that triggered gameplay
+    // from bleeding into the first recorded frames.
+    constexpr float kInputGracePeriod = 0.15f;
+    bool suppressMouse = (m_recordingElapsed < kInputGracePeriod);
+
     frame.inputKeyA = InputHandler::isKeyHeld(GLFW_KEY_A);
     frame.inputKeyD = InputHandler::isKeyHeld(GLFW_KEY_D);
     frame.inputSpaceTriggered = InputHandler::isKeyTriggered(GLFW_KEY_SPACE);
     frame.inputSpaceReleased = InputHandler::isKeyReleased(GLFW_KEY_SPACE);
-    frame.inputMouseLeftHeld = InputHandler::isMouseLeftHeld();
+    frame.inputMouseLeftHeld = suppressMouse ? false : InputHandler::isMouseLeftHeld();
     Vector2D mousePos = InputHandler::getWorldMousePosition();
     frame.inputMouseX = static_cast<float>(mousePos.x);
     frame.inputMouseY = static_cast<float>(mousePos.y);
