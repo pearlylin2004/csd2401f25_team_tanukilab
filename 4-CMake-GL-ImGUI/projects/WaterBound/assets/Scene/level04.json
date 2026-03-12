@@ -798,6 +798,9 @@
           "friction": 0.0,
           "colliderType": "square"
         },
+        "VisualLC": {
+          "filename": "waterbody_logic.json"
+        },
         "WaterBody": {
           "waveAmplitude": 0.15000000596046448,
           "waveFrequency": 1.0,
@@ -814,7 +817,7 @@
           "height": 8.0,
           "isTrigger": 1,
           "buoyancyForce": 200.0,
-          "waterDrag": 0.99,
+          "waterDrag": 0.9990000128746033,
           "renderWaves": 1,
           "useTexture": 0
         }

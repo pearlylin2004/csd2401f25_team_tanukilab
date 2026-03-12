@@ -300,7 +300,7 @@ void WaterSystem::renderWaterBody(GameObject* waterObj) {
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, water->waterTexture);
     }
-
+        
     // Draw
     glBindVertexArray(mesh.vao);
     glDrawElements(GL_TRIANGLES, mesh.elementCount, GL_UNSIGNED_INT, nullptr);
@@ -370,38 +370,20 @@ void WaterSystem::applyWaterPhysics(GameObjectManager& manager, float deltaTime)
                     break;
                 }
 
-                //    // submergedFraction
-                //    float halfObjHeight = transform->scaleY * 0.5f;
-                //    float submergedFraction = glm::clamp(depth / (halfObjHeight * 2.0f + 0.001f), 0.0f, 1.0f);
-
-                //    physics->velY += water->buoyancyForce * submergedFraction * 0.016f * 2.0f;
-                //    float verticalDrag = glm::mix(water->waterDrag, water->waterDrag, submergedFraction);
-                //    physics->velY *= verticalDrag;
-                //    physics->velX *= water->waterDrag;
-                //}
-
-                // check for buoyancy flag here so inwater flag can still be set
-                // if (!physics->buoyancy) {
-                //     physics->velY *= water->waterDrag;
-                //     physics->velX *= water->waterDrag;
-                //     break;
-                // } 
-
-                // float waterSurfaceY = waterTransform->y + (water->height * waterTransform->scaleY * 0.5f);
                 float depth = waterSurfaceY - transform->y;
                 float halfObjHeight = transform->scaleY * 0.5f;
                 float submergedFraction = glm::clamp(depth / (halfObjHeight * 2.0f + 0.001f), 0.0f, 1.0f);
 
                 float safeMass = physics->dynamics.mass;
-                float buoyancyAccel = (water->buoyancyForce / safeMass) * submergedFraction * 0.016f * 12.0f;
+                float buoyancyAccel = (water->buoyancyForce / safeMass) * submergedFraction * 0.016f * 16.0f;
 
                 physics->velY += buoyancyAccel;
 
 
-                physics->velY = glm::clamp(physics->velY, physics->maxFallSpeed, 7.0f);
+                physics->velY = glm::clamp(physics->velY, physics->maxFallSpeed, 8.0f);
 
-                float strongDrag = 0.999f;
-                float verticalDrag = glm::mix(strongDrag * 0.999f, strongDrag, submergedFraction);
+                /*float strongDrag = 0.999f;*/
+                float verticalDrag = glm::mix(water->waterDrag * 0.999f, water->waterDrag, submergedFraction);
                 physics->velY *= verticalDrag;
                 physics->velX *= water->waterDrag;
 
