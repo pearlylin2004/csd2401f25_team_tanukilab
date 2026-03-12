@@ -217,6 +217,10 @@ void AudioHandler::resumeAll(GameObjectManager& manager) {
 }
 
 void AudioHandler::stopAll(GameObjectManager& manager) {
+	// Stop the entire game group first to catch orphaned FMOD channels
+	// (e.g. persistent BGM whose GameObject was already destroyed by clearScene)
+	if (m_gameGroup) m_gameGroup->stop();
+
 	std::vector<GameObject*> gameObjects;
 	manager.getAllGameObjects(gameObjects);
 
