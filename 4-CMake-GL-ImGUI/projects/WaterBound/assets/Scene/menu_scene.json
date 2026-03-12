@@ -392,6 +392,11 @@
               "persistOnSceneChange": 1
             }
           }
+        },
+        "Button": {
+          "action": "open_leaderboard",
+          "onClickChannel": "on_click",
+          "onHoverChannel": "button_hover"
         }
       }
     },
@@ -433,11 +438,6 @@
         },
         "VisualLC": {
           "filename": "shakeWhenHover.json"
-        },
-        "Button": {
-          "action": "open_leaderboard",
-          "onClickChannel": "on_click",
-          "onHoverChannel": "button_hover"
         }
       }
     },
