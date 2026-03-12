@@ -62,8 +62,10 @@ void InputSystem::update(GameObjectManager& manager, const float& deltaTime, Mes
         if (EditorManager::isEditingMode()) {
             EditorManager::toggleEditing(false);
             AudioHandler::getInstance().resumeAll(manager);
+			AudioHandler::getInstance().stopAllPreviews();
         } else {
             AudioHandler::getInstance().pauseAll(manager);
+			AudioHandler::getInstance().stopAllPreviews();
             EditorManager::toggleEditing(true);
         }
     }
@@ -2590,7 +2592,6 @@ void AudioSystem::update(GameObjectManager& manager, float deltaTime) {
 						}
 					}
 				}
-				
 
 				// Check if channel is still playing
 				if (ch.channel) {
@@ -2806,7 +2807,7 @@ void AudioSystem::updateSpatialAudio(GameObjectManager& manager) {
 
 void TransformSystem::update(GameObjectManager& manager, const float& deltaTime) {
 	(void)deltaTime;
-	if (EditorManager::isEditingMode()) return;
+	//if (EditorManager::isEditingMode()) return;
 
 	std::vector<GameObject*> gameObjects;
 	manager.getAllGameObjects(gameObjects);

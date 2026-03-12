@@ -47,6 +47,7 @@ void AudioHandler::init() {
 	// Create the game channel group — all gameplay audio routes through here.
 	// Editor preview audio plays directly under master and is unaffected by this group's pause state.
 	FMODErrorCheck(system->createChannelGroup("game", &m_gameGroup));
+	FMODErrorCheck(system->createChannelGroup("preview", &m_previewGroup));
 
 	ResourceManager::getInstance().init(system);
 }
@@ -181,6 +182,7 @@ void AudioHandler::pauseAll(GameObjectManager& manager) {
 	// Pause the entire game group — catches ghost channels (e.g. menu BGM)
 	// that no longer have a live GameObject.
 	if (m_gameGroup) m_gameGroup->setPaused(true);
+
 
 	// Sync AudioState so the component layer stays accurate.
 	std::vector<GameObject*> gameObjects;
@@ -667,14 +669,21 @@ void AudioHandler::setMasterVolume(float vol) {
 FMOD::Channel* AudioHandler::playPreviewSound(AudioChannel* audio) {
 	if (!system || audio->audioFile.empty()) return nullptr;
 
+	// Stop whatever was playing on this channel before starting a new preview.
+	// This handles: clicking Play twice, changing the audio file, switching selected objects.
+	if (audio->channel) {
+		audio->channel->stop();
+		audio->channel = nullptr;
+		audio->state = AudioState::Stopped;
+	}
+
 	FMOD::Sound* sound = ResourceManager::getInstance().getSound(
 		audio->audioFile, audio->loop, audio->isSpatial
 	);
 	if (!sound) return nullptr;
 
 	FMOD::Channel* channel = nullptr;
-	// nullptr = master group directly, bypasses m_gameGroup pause
-	FMODErrorCheck(system->playSound(sound, nullptr, false, &channel));
+	FMODErrorCheck(system->playSound(sound, m_previewGroup, false, &channel));
 
 	if (channel) {
 		channel->setVolume(audio->volume);
@@ -684,4 +693,10 @@ FMOD::Channel* AudioHandler::playPreviewSound(AudioChannel* audio) {
 	}
 
 	return channel;
+}
+
+void AudioHandler::stopAllPreviews() {
+	if (m_previewGroup) {
+		m_previewGroup->stop();  // atomically kills every preview channel
+	}
 }

@@ -1803,6 +1803,12 @@ void InspectorWindow::renderAudio(GameObject* selected) {
                             if (ext == ".wav" || ext == ".ogg" || ext == ".mp3") {
                                 if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
 
+                                // Stop the old channel before reassigning — prevents both sounds playing simultaneously.
+                                if (ch.channel) {
+                                    AudioHandler::getInstance().stopSound(&ch);
+                                    ch.state = AudioState::Stopped;
+                                }
+
                                 ch.audioFile = path;
 
                                 if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
