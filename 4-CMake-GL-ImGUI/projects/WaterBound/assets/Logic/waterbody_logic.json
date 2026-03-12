@@ -2,104 +2,63 @@
   "version": 1,
   "nodes": [
     {
-      "id": 16,
+      "id": 1,
       "implementation": "On Collision Enter",
       "type": 0,
       "position": [
-        -95.0,
-        336.0
+        -104.0,
+        330.0
       ],
       "hasInput": false,
       "hasOutput": true,
       "hasTrueOutput": false,
       "hasFalseOutput": false,
       "parameters": {
-        "colFilterType": "tag",
+        "colFilterType": "name",
         "colFilterValue": "player"
       }
     },
     {
-      "id": 17,
-      "implementation": "Check State",
-      "type": 2,
-      "position": [
-        208.0,
-        345.0
-      ],
-      "hasInput": true,
-      "hasOutput": false,
-      "hasTrueOutput": true,
-      "hasFalseOutput": true,
-      "parameters": {
-        "state": "Idle"
-      }
-    },
-    {
-      "id": 18,
-      "implementation": "Set State On Collided",
+      "id": 2,
+      "implementation": "Print Message",
       "type": 1,
       "position": [
-        518.0,
-        240.0
+        224.0,
+        330.0
       ],
       "hasInput": true,
       "hasOutput": true,
       "hasTrueOutput": false,
       "hasFalseOutput": false,
       "parameters": {
-        "targetStateCollided": "Dead"
+        "message": "COLLIDED"
       }
     },
     {
-      "id": 20,
-      "implementation": "Apply Force On Collided",
+      "id": 3,
+      "implementation": "Restart Level",
       "type": 1,
       "position": [
-        521.0,
-        370.0000305175781
+        626.0,
+        330.0
       ],
       "hasInput": true,
       "hasOutput": true,
       "hasTrueOutput": false,
-      "hasFalseOutput": false,
-      "parameters": {
-        "forceY": "15.000000"
-      }
-    },
-    {
-      "id": 21,
-      "implementation": "Play Sound",
-      "type": 1,
-      "position": [
-        1224.857177734375,
-        -168.57144165039063
-      ],
-      "hasInput": true,
-      "hasOutput": true,
-      "hasTrueOutput": false,
-      "hasFalseOutput": false,
-      "parameters": {
-        "channel": "default"
-      }
+      "hasFalseOutput": false
     }
   ],
   "connections": [
     {
-      "fromNodeId": 16,
+      "fromNodeId": 1,
       "outputPin": "Out",
-      "toNodeId": 17,
+      "toNodeId": 2,
       "inputPin": "In"
     },
     {
-      "fromNodeId": 17,
-      "outputPin": "True",
-      "toNodeId": 18,
-      "inputPin": "In"
-    },
-    {
-      "fromNodeId": 17,
-      "outputPin": "False",
-      "toNodeId": 20,
+      "fromNodeId": 2,
+      "outputPin": "Out",
+      "toNodeId": 3,
       "inputPin": "In"
     }
   ]
