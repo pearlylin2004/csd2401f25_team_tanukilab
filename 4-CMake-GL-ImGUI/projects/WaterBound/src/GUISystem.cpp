@@ -27,6 +27,8 @@ Technology is prohibited.
 #include "CoreEngine.h"
 #include "LeaderboardSystem.h"
 #include "ReplaySystem.h"
+#include "LogicContainer.h"
+#include "Physics.h"
 #include <iostream>
 #include <fstream>
 
@@ -1049,6 +1051,7 @@ void GUISystem::handleReplayViewerControls() {
     // LEFT arrow: Seek backward 2 seconds
     if (InputHandler::isKeyTriggered(GLFW_KEY_LEFT)) {
         replay.seekViewer(-2.0f);
+        resetReplayWorldState();
     }
 
     // RIGHT arrow: Seek forward 2 seconds
@@ -1059,6 +1062,7 @@ void GUISystem::handleReplayViewerControls() {
     // Comma: Step back 1 frame (when paused)
     if (InputHandler::isKeyTriggered(GLFW_KEY_COMMA) && replay.isViewerPaused()) {
         replay.stepViewerFrame(-1);
+        resetReplayWorldState();
     }
 
     // Period: Step forward 1 frame (when paused)
@@ -1095,6 +1099,41 @@ void GUISystem::handleReplayViewerControls() {
             changeState(GameState::MENU, "menu_scene.json");
         }
     }
+}
+
+void GUISystem::resetReplayWorldState() {
+    if (!g_manager) return;
+
+    std::vector<GameObject*> allObjs;
+    g_manager->getAllGameObjects(allObjs);
+
+    for (GameObject* obj : allObjs) {
+        if (!obj) continue;
+
+        // Deactivate all alive bullets
+        std::string name = obj->getObjectName();
+        if (name.rfind("bullet", 0) == 0 && obj->hasComponent<Physics>()) {
+            Physics* p = obj->getComponent<Physics>();
+            if (p->alive) {
+                PhysicsForces::deactivateBullet(obj);
+            }
+        }
+
+        // Reset extinguished fire objects so the fire FSM can be recreated
+        if (obj->hasComponent<CollisionInfo>()) {
+            CollisionInfo* col = obj->getComponent<CollisionInfo>();
+            if (col->collisionTag == "steam") {
+                col->collisionTag = "fire";
+            }
+        }
+    }
+
+    // Request FSM reset — all machines are recreated in their initial state
+    LogicContainer::s_replayResetNeeded = true;
+
+    // Reset visual logic state (collision tracking, timers, variables)
+    g_visualLogicSystem->resetLogicState();
+    g_visualLogicSystem->initAll(*g_manager);
 }
 
 void GUISystem::updateReplayHUD() {

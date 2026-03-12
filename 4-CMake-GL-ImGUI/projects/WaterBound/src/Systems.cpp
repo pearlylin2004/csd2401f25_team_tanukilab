@@ -2420,6 +2420,12 @@ void LogicSystem::update(GameObjectManager& manager, float const& dt) {
 	manager.getAllGameObjects(objs);
 
 	static LogicContainer container;
+
+	// Replay rewind: destroy all cached FSMs so they are recreated in initial state
+	if (LogicContainer::s_replayResetNeeded) {
+		container.clearAllMachines();
+		LogicContainer::s_replayResetNeeded = false;
+	}
 	
 	// DEBUG: Run once to show what objects exist
 	static bool debugOnce = true;

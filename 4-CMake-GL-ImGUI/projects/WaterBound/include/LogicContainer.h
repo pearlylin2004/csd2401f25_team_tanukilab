@@ -38,6 +38,15 @@ class GameObjectManager;
 class LogicContainer {
 public:
 
+    // Set to true to clear all FSM machines on the next update (used by replay rewind)
+    static bool s_replayResetNeeded;
+
+    /*!
+     * \brief Destroys all cached FSM machines so they are recreated in
+     *        their initial state on the next update tick.
+     */
+    void clearAllMachines() { m_machines.clear(); }
+
     /*!
      * \brief Main per-frame update function for a GameObject.
      *

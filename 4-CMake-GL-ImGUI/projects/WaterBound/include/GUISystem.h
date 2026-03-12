@@ -78,6 +78,7 @@ public:
     void handleReplaySelectInput();
     void handleReplayViewerControls();
     void updateReplayHUD();
+    void resetReplayWorldState();
 
     void createButtons(/*GameObjectManager& manager*/); //create menu buttons
 
