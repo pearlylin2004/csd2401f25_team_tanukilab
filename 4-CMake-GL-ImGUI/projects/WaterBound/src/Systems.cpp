@@ -1545,7 +1545,7 @@ void WeaponSystem::update(GameObjectManager& manager, const float& deltaTime)
 			if (owner && owner->hasComponent<Transform>())
 			{
 				Transform* pt = owner->getComponent<Transform>();
-				const float parentRad = glm::radians(pt->rotation);
+				const float parentRad = DegToRad(pt->rotation);
 				const float cosA = cosf(parentRad);
 				const float sinA = sinf(parentRad);
 				// Rotate local offset around the parent
@@ -1567,7 +1567,7 @@ void WeaponSystem::update(GameObjectManager& manager, const float& deltaTime)
 			: std::atan2(dy, dx); 
 		weaponTransform->flipX = ownerFacingLeft;
 
-		const float aimAngleDeg = glm::degrees(aimAngleRad);
+		const float aimAngleDeg = RadToDeg(aimAngleRad);
 		weaponTransform->rotation = aimAngleDeg;
 
 		weapon->currentAngle = aimAngleDeg;
