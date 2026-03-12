@@ -1084,6 +1084,17 @@ bool VisualLogicSystem::executeConditionNode(GameObject* obj, VisualLC* logic, L
 
 		return JsonIO::parsePlayerState(target) == collidedSM->state;
 	}
+	else if (node.imp == NodeImplementation::CHECK_ANIMATION_END) {
+		Animation* animation = obj->getComponent<Animation>();
+		StateMachine* sm = obj->getComponent<StateMachine>();
+		if (!animation || !sm) return false;
+
+		AnimateState& as = animation->animState[static_cast<int>(sm->state)];
+
+		// true when the current frame has reached the last frame of the animation
+		return (as.currentFrameColumn >= (int)as.lastFrame.x &&
+			as.currentFrameRow >= (int)as.lastFrame.y);
+	}
 
 	return true;
 }

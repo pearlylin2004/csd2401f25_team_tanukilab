@@ -1875,6 +1875,15 @@ void VisualLogicEditor::renderNodeProperties() {
 
 			ImGui::TextDisabled("Remember to add StateMachine to target collided object");
 		}
+		else if (node.imp == NodeImplementation::CHECK_ANIMATION_END) {
+			ImGui::TextWrapped("Returns True when the current animation reaches its last frame.");
+
+			ImGui::Spacing();
+			ImGui::TextDisabled("Requires Animation + StateMachine components.");
+			ImGui::Spacing();
+			ImGui::TextColored(ImVec4(1.f, 0.8f, 0.2f, 1.f),
+				"Tip: Pair with a non-looping animation state.");
+		}
 	}
 	/* ---------- END ---------- */
 
