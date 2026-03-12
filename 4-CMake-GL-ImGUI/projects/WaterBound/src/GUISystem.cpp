@@ -1119,19 +1119,21 @@ void GUISystem::resetReplayWorldState() {
             }
         }
 
-        // Reset extinguished fire objects so the fire FSM can be recreated
-        if (obj->hasComponent<CollisionInfo>()) {
+        // Stop fire-related audio on rewind to avoid lingering sounds
+        if (obj->hasComponent<AudioComponent>()) {
             CollisionInfo* col = obj->getComponent<CollisionInfo>();
-            if (col->collisionTag == "steam") {
-                col->collisionTag = "fire";
+            if (col && (col->collisionTag == "fire" || col->collisionTag == "steam")) {
+                AudioComponent* audio = obj->getComponent<AudioComponent>();
+                if (AudioChannel* steam = audio->getChannel("steam"))
+                    steam->isPendingStop = true;
+                if (AudioChannel* fire = audio->getChannel("fire_loop"))
+                    fire->isPendingStop = true;
             }
         }
     }
 
-    // Request FSM reset — all machines are recreated in their initial state
-    LogicContainer::s_replayResetNeeded = true;
-
     // Reset visual logic state (collision tracking, timers, variables)
+    // World object visuals are restored by applyWorldSnapshot() each frame
     g_visualLogicSystem->resetLogicState();
     g_visualLogicSystem->initAll(*g_manager);
 }

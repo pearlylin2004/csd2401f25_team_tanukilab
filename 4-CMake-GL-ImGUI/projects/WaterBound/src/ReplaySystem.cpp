@@ -118,7 +118,37 @@ void ReplaySystem::recordFrame(GameObjectManager& manager, float deltaTime) {
     frame.inputMouseX = static_cast<float>(mousePos.x);
     frame.inputMouseY = static_cast<float>(mousePos.y);
 
+    // Capture world object state (fire, etc.)
+    recordWorldObjects(manager, frame);
+
     m_currentRecording.frames.push_back(frame);
+}
+
+void ReplaySystem::recordWorldObjects(GameObjectManager& manager, ReplayFrame& frame) {
+    std::vector<GameObject*> allObjs;
+    manager.getAllGameObjects(allObjs);
+
+    for (GameObject* obj : allObjs) {
+        if (!obj) continue;
+        CollisionInfo* col = obj->getComponent<CollisionInfo>();
+        if (!col) continue;
+        // Capture fire objects (active or extinguished)
+        if (col->collisionTag != "fire" && col->collisionTag != "steam") continue;
+
+        WorldObjectSnapshot snap;
+        snap.objectName = obj->getObjectName();
+        snap.collisionTag = col->collisionTag;
+        snap.collisionFlag = col->collisionFlag;
+        if (StateMachine* sm = obj->getComponent<StateMachine>())
+            snap.smState = static_cast<int>(sm->state);
+        if (Render* r = obj->getComponent<Render>())
+            snap.alpha = r->clr.a;
+        if (Transform* t = obj->getComponent<Transform>()) {
+            snap.posX = t->x;
+            snap.posY = t->y;
+        }
+        frame.worldObjects.push_back(snap);
+    }
 }
 
 void ReplaySystem::stopRecording(int completionTimeMs) {
@@ -490,6 +520,34 @@ float ReplaySystem::getReplayY() const {
 }
 
 // ============================================================================
+// World snapshot application (viewer mode)
+// ============================================================================
+
+void ReplaySystem::applyWorldSnapshot(GameObjectManager& manager) {
+    if (!m_isViewerMode) return;
+    if (m_playbackFrame < 0 || m_playbackFrame >= static_cast<int>(m_playbackData.frames.size())) return;
+
+    const ReplayFrame& frame = m_playbackData.frames[m_playbackFrame];
+    for (const auto& snap : frame.worldObjects) {
+        GameObject* obj = manager.getGameObject(snap.objectName);
+        if (!obj) continue;
+
+        if (StateMachine* sm = obj->getComponent<StateMachine>())
+            sm->state = static_cast<PlayerState>(snap.smState);
+        if (CollisionInfo* col = obj->getComponent<CollisionInfo>()) {
+            col->collisionTag = snap.collisionTag;
+            col->collisionFlag = snap.collisionFlag;
+        }
+        if (Render* r = obj->getComponent<Render>())
+            r->clr.a = snap.alpha;
+        if (Transform* t = obj->getComponent<Transform>()) {
+            t->x = snap.posX;
+            t->y = snap.posY;
+        }
+    }
+}
+
+// ============================================================================
 // File I/O — RapidJSON
 // ============================================================================
 
@@ -522,6 +580,22 @@ bool ReplaySystem::saveReplay(const ReplayData& data) const {
         obj.AddMember("mL", f.inputMouseLeftHeld ? 1 : 0, a);
         obj.AddMember("mX", f.inputMouseX, a);
         obj.AddMember("mY", f.inputMouseY, a);
+        // World object snapshots
+        if (!f.worldObjects.empty()) {
+            rapidjson::Value woArr(rapidjson::kArrayType);
+            for (const auto& wo : f.worldObjects) {
+                rapidjson::Value woObj(rapidjson::kObjectType);
+                woObj.AddMember("n", rapidjson::Value(wo.objectName.c_str(), a), a);
+                woObj.AddMember("sm", wo.smState, a);
+                woObj.AddMember("ct", rapidjson::Value(wo.collisionTag.c_str(), a), a);
+                woObj.AddMember("cf", wo.collisionFlag ? 1 : 0, a);
+                woObj.AddMember("al", wo.alpha, a);
+                woObj.AddMember("px", wo.posX, a);
+                woObj.AddMember("py", wo.posY, a);
+                woArr.PushBack(woObj, a);
+            }
+            obj.AddMember("wo", woArr, a);
+        }
         framesArr.PushBack(obj, a);
     }
     doc.AddMember("frames", framesArr, a);
@@ -583,6 +657,23 @@ bool ReplaySystem::loadReplay(const std::string& levelName, ReplayData& outData,
             if (obj.HasMember("mL"))  f.inputMouseLeftHeld = obj["mL"].GetInt() != 0;
             if (obj.HasMember("mX"))  f.inputMouseX = obj["mX"].GetFloat();
             if (obj.HasMember("mY"))  f.inputMouseY = obj["mY"].GetFloat();
+
+            // World object snapshots (backward compatible — absent in old files)
+            if (obj.HasMember("wo") && obj["wo"].IsArray()) {
+                for (const auto& woVal : obj["wo"].GetArray()) {
+                    WorldObjectSnapshot snap;
+                    if (woVal.HasMember("n") && woVal["n"].IsString())
+                        snap.objectName = woVal["n"].GetString();
+                    if (woVal.HasMember("sm"))  snap.smState = woVal["sm"].GetInt();
+                    if (woVal.HasMember("ct") && woVal["ct"].IsString())
+                        snap.collisionTag = woVal["ct"].GetString();
+                    if (woVal.HasMember("cf"))  snap.collisionFlag = woVal["cf"].GetInt() != 0;
+                    if (woVal.HasMember("al"))  snap.alpha = woVal["al"].GetFloat();
+                    if (woVal.HasMember("px"))  snap.posX = woVal["px"].GetFloat();
+                    if (woVal.HasMember("py"))  snap.posY = woVal["py"].GetFloat();
+                    f.worldObjects.push_back(snap);
+                }
+            }
 
             outData.frames.push_back(f);
         }

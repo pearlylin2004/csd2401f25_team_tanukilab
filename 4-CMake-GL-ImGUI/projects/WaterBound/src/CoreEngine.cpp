@@ -290,6 +290,10 @@ void CoreEngine::Update(float deltaTime) {
     if (replay.isViewerMode() && currentGS != GameState::PAUSED) {
         replay.updateViewer(deltaTime);
     }
+    // Apply recorded world object state every frame in viewer mode
+    if (replay.isViewerMode()) {
+        replay.applyWorldSnapshot(*m_manager);
+    }
 
     m_renderSystem->update(*m_manager, deltaTime);
     m_waterSystem->render(*m_manager);

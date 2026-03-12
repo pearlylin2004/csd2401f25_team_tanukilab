@@ -18,10 +18,6 @@ Technology is prohibited.
 #include "GameObject.h"
 #include "Component.h"
 #include "Systems.h"
-#include <unordered_map>
-
-// Caches the original fire texture per object so it can be restored after extinguishing
-static std::unordered_map<std::string, std::string> s_originalFireTex;
 
 // ============================================================================
 // FIRE ACTIVE STATE
@@ -34,19 +30,9 @@ void FireActiveState::onEnter(GameObject& obj) {
         c->collisionTag = "fire";  // Ensure tag is "fire" for death logic
     }
 
-    // Restore fire texture and full opacity
+    // Restore full opacity (undoes extinguished fade)
     if (Render* r = obj.getComponent<Render>()) {
-        r->clr.a = 1.0f;  // Restore full opacity (undoes extinguished fade)
-
-        std::string objName = obj.getObjectName();
-        if (s_originalFireTex.find(objName) == s_originalFireTex.end()) {
-            // First time in Active state — save the original texture
-            s_originalFireTex[objName] = r->texFile;
-        } else {
-            // Re-entering Active after reset — restore the saved texture
-            r->texFile = s_originalFireTex[objName];
-            r->texChanged = true;
-        }
+        r->clr.a = 1.0f;
     }
 
     // Stop any lingering steam audio, then start fire crackling sound

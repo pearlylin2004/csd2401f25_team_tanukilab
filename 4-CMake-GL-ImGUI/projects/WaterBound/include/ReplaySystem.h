@@ -22,6 +22,17 @@ Technology is prohibited.
 
 class GameObjectManager;
 
+// Per-frame snapshot of a world object's replay-relevant state
+struct WorldObjectSnapshot {
+    std::string objectName;
+    int   smState = 0;           // StateMachine::state (controls animation texture)
+    std::string collisionTag;    // "fire" or "steam"
+    bool  collisionFlag = true;  // collision enabled
+    float alpha = 1.0f;          // Render alpha
+    float posX = 0.f;
+    float posY = 0.f;
+};
+
 // Per-frame snapshot of the player's visible state
 struct ReplayFrame {
     float timestamp = 0.f; // seconds elapsed since recording started
@@ -42,6 +53,9 @@ struct ReplayFrame {
     bool  inputMouseLeftHeld = false;
     float inputMouseX = 0.f;
     float inputMouseY = 0.f;
+
+    // World object state snapshots (fire, etc.)
+    std::vector<WorldObjectSnapshot> worldObjects;
 };
 
 // Full recording of a single run
@@ -111,6 +125,9 @@ public:
     float getReplayX() const;
     float getReplayY() const;
 
+    // Apply recorded world object state for the current viewer frame
+    void applyWorldSnapshot(GameObjectManager& manager);
+
     // --- State queries ---
     bool isRecording() const { return m_isRecording; }
     bool isPlaying()   const { return m_isPlaying; }
@@ -135,6 +152,7 @@ private:
     std::string getReplayPath(const std::string& levelName,
                               const std::string& runId = "current") const;
     static std::string extractLevelName(const std::string& fullPath);
+    void recordWorldObjects(GameObjectManager& manager, ReplayFrame& frame);
 
     bool        m_isRecording = false;
     bool        m_isPlaying = false;
