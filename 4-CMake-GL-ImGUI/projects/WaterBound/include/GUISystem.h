@@ -70,7 +70,14 @@ public:
     void resetAllObjectsToSpawn(); // helper for restart
 
     // Replay viewer
-    void startReplayViewer();
+    void startReplayViewer(const std::string& runId = "");
+
+    // Replay selection screen
+    void openReplaySelect();
+    void populateReplaySelection();
+    void handleReplaySelectInput();
+    void handleReplayViewerControls();
+    void updateReplayHUD();
 
     void createButtons(/*GameObjectManager& manager*/); //create menu buttons
 
@@ -133,4 +140,10 @@ private:
     bool m_replayViewerActive = false;
     std::string m_replayRunId;  // which run folder to replay from
     std::string m_lastRunId;    // the run ID of the most recently completed game
+
+    // Replay selection screen state
+    std::vector<std::string> m_availableRuns; // all completed run IDs
+    int m_replaySelectIndex = 0;  // currently highlighted entry
+    int m_replaySelectPage = 0;   // current page (5 entries per page)
+    bool m_replaySelectActive = false; // true when on selection screen
 };

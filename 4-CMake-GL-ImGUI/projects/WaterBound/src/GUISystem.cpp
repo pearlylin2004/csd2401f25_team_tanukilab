@@ -126,12 +126,24 @@ void GUISystem::update() {
         return;
     }
 
+    // Replay selection screen: handle navigation
+    if (m_replaySelectActive && m_currentState == GameState::REPLAY) {
+        handleReplaySelectInput();
+        return;
+    }
+
     // Replay viewer: feed recorded inputs through the game simulation
     if (m_replayViewerActive && m_currentState == GameState::REPLAY) {
         auto& replay = ReplaySystem::getInstance();
 
+        // Handle playback controls (pause, seek, speed, frame step)
+        handleReplayViewerControls();
+
+        // Update replay HUD overlay
+        updateReplayHUD();
+
         // When the viewer finishes the current level, advance to the next
-        if (replay.isViewerFinished()) {
+        if (replay.isViewerFinished() && !replay.isViewerPaused()) {
             replay.stopViewer();
             m_replayLevelIndex++;
             if (m_replayLevelIndex < static_cast<int>(m_replayLevels.size())) {
@@ -412,6 +424,11 @@ void GUISystem::createButtonActions() {
         startReplayViewer();
     };
 
+    // replay selection screen
+    m_buttonActions[ButtonAction::OPEN_REPLAY_SELECT] = [this]() {
+        openReplaySelect();
+    };
+
     std::cout << "[GUI] Menu buttons created successfully" << std::endl;
 }
 
@@ -636,6 +653,9 @@ GameState GUISystem::sceneToState(const std::string& sceneName) {
     if (sceneName == "leaderboard_scene.json") {
         return GameState::LEADERBOARD;
     }
+    if (sceneName == "replay_select_scene.json") {
+        return GameState::REPLAY;
+    }
     return GameState::MENU; //fallback
 }
 
@@ -719,15 +739,13 @@ void GUISystem::loadLevel(const std::string& levelName) {
     initInGameHUD();
 }
 
-void GUISystem::startReplayViewer() {
+void GUISystem::startReplayViewer(const std::string& requestedRunId) {
     auto& replay = ReplaySystem::getInstance();
 
-    // Use the most recent completed run (or the one just finished)
-    std::string runId = m_lastRunId;
-    if (runId.empty()) {
-        auto allRuns = replay.getAllRunIds();
-        if (!allRuns.empty()) runId = allRuns.back();
-    }
+    // Use provided run ID, or fall back to last completed run, or best run
+    std::string runId = requestedRunId;
+    if (runId.empty()) runId = m_lastRunId;
+    if (runId.empty()) runId = replay.findBestRunId();
 
     if (runId.empty()) {
         std::cout << "[GUI] No completed runs available to watch.\n";
@@ -859,5 +877,268 @@ void GUISystem::resetAllObjectsToSpawn() {
                 Collision::buildTileCollisionBox(tileMap, tmTransform);
             }
         }
+    }
+}
+
+// ============================================================================
+// Replay Selection Screen
+// ============================================================================
+
+void GUISystem::openReplaySelect() {
+    auto& replay = ReplaySystem::getInstance();
+    m_availableRuns = replay.getAllRunIds();
+    m_replaySelectIndex = 0;
+    m_replaySelectPage = 0;
+    m_replaySelectActive = true;
+    m_replayViewerActive = false;
+
+    changeState(GameState::REPLAY, "replay_select_scene.json");
+    populateReplaySelection();
+}
+
+void GUISystem::populateReplaySelection() {
+    const int entriesPerPage = 5;
+    int startIdx = m_replaySelectPage * entriesPerPage;
+    int totalRuns = static_cast<int>(m_availableRuns.size());
+
+    for (int i = 0; i < entriesPerPage; ++i) {
+        std::string objName = "replay_entry_" + std::to_string(i + 1);
+        GameObject* obj = g_manager->getGameObject(objName);
+        if (!obj || !obj->hasComponent<FontComponent>()) continue;
+        FontComponent* fc = obj->getComponent<FontComponent>();
+
+        int runIdx = startIdx + i;
+        if (runIdx < totalRuns) {
+            const std::string& runId = m_availableRuns[runIdx];
+            int timeMs = 0;
+            try { timeMs = std::stoi(runId); } catch (...) {}
+            int minutes = timeMs / 60000;
+            int seconds = (timeMs % 60000) / 1000;
+            int ms = timeMs % 1000;
+            char timeBuf[32];
+            std::snprintf(timeBuf, sizeof(timeBuf), "%d:%02d.%03d", minutes, seconds, ms);
+            fc->word = "Run " + std::to_string(runIdx + 1) + " - " + std::string(timeBuf);
+
+            // Highlight selected entry
+            if (runIdx == m_replaySelectIndex) {
+                fc->clr = glm::vec3(1.0f, 0.84f, 0.0f); // gold
+            } else {
+                fc->clr = glm::vec3(1.0f, 1.0f, 1.0f); // white
+            }
+        } else {
+            fc->word = "---";
+            fc->clr = glm::vec3(0.4f, 0.4f, 0.4f);
+        }
+    }
+
+    // Update selector arrow position
+    GameObject* selector = g_manager->getGameObject("replay_selector");
+    if (selector && selector->hasComponent<Transform>()) {
+        int localIdx = m_replaySelectIndex - startIdx;
+        if (localIdx >= 0 && localIdx < entriesPerPage) {
+            float yPos = 4.5f - localIdx * 2.0f;
+            Transform* t = selector->getComponent<Transform>();
+            t->y = yPos;
+        }
+    }
+
+    // Update page info
+    int totalPages = (totalRuns + entriesPerPage - 1) / entriesPerPage;
+    if (totalPages < 1) totalPages = 1;
+    GameObject* pageObj = g_manager->getGameObject("replay_page_info");
+    if (pageObj && pageObj->hasComponent<FontComponent>()) {
+        FontComponent* fc = pageObj->getComponent<FontComponent>();
+        if (totalRuns == 0) {
+            fc->word = "No replays found";
+        } else {
+            fc->word = "Page " + std::to_string(m_replaySelectPage + 1) + "/" + std::to_string(totalPages)
+                     + "  (" + std::to_string(totalRuns) + " runs)";
+        }
+    }
+}
+
+void GUISystem::handleReplaySelectInput() {
+    const int entriesPerPage = 5;
+    int totalRuns = static_cast<int>(m_availableRuns.size());
+
+    // ESC goes back to menu
+    if (InputHandler::isKeyTriggered(GLFW_KEY_ESCAPE)) {
+        m_replaySelectActive = false;
+        changeState(GameState::MENU, "menu_scene.json");
+        return;
+    }
+
+    if (totalRuns == 0) return;
+
+    bool changed = false;
+
+    // UP/DOWN navigate entries
+    if (InputHandler::isKeyTriggered(GLFW_KEY_UP)) {
+        if (m_replaySelectIndex > 0) {
+            m_replaySelectIndex--;
+            int page = m_replaySelectIndex / entriesPerPage;
+            if (page != m_replaySelectPage) m_replaySelectPage = page;
+            changed = true;
+        }
+    }
+    if (InputHandler::isKeyTriggered(GLFW_KEY_DOWN)) {
+        if (m_replaySelectIndex < totalRuns - 1) {
+            m_replaySelectIndex++;
+            int page = m_replaySelectIndex / entriesPerPage;
+            if (page != m_replaySelectPage) m_replaySelectPage = page;
+            changed = true;
+        }
+    }
+
+    // LEFT/RIGHT change pages
+    if (InputHandler::isKeyTriggered(GLFW_KEY_LEFT)) {
+        if (m_replaySelectPage > 0) {
+            m_replaySelectPage--;
+            m_replaySelectIndex = m_replaySelectPage * entriesPerPage;
+            changed = true;
+        }
+    }
+    if (InputHandler::isKeyTriggered(GLFW_KEY_RIGHT)) {
+        int totalPages = (totalRuns + entriesPerPage - 1) / entriesPerPage;
+        if (m_replaySelectPage < totalPages - 1) {
+            m_replaySelectPage++;
+            m_replaySelectIndex = m_replaySelectPage * entriesPerPage;
+            changed = true;
+        }
+    }
+
+    if (changed) populateReplaySelection();
+
+    // ENTER selects replay and starts viewer
+    if (InputHandler::isKeyTriggered(GLFW_KEY_ENTER)) {
+        if (m_replaySelectIndex >= 0 && m_replaySelectIndex < totalRuns) {
+            m_replaySelectActive = false;
+            startReplayViewer(m_availableRuns[m_replaySelectIndex]);
+        }
+    }
+}
+
+// ============================================================================
+// Replay Viewer Playback Controls
+// ============================================================================
+
+void GUISystem::handleReplayViewerControls() {
+    auto& replay = ReplaySystem::getInstance();
+
+    // F2: Toggle pause/resume
+    if (InputHandler::isKeyTriggered(GLFW_KEY_F2)) {
+        replay.toggleViewerPause();
+    }
+
+    // LEFT arrow: Seek backward 2 seconds
+    if (InputHandler::isKeyTriggered(GLFW_KEY_LEFT)) {
+        replay.seekViewer(-2.0f);
+    }
+
+    // RIGHT arrow: Seek forward 2 seconds
+    if (InputHandler::isKeyTriggered(GLFW_KEY_RIGHT)) {
+        replay.seekViewer(2.0f);
+    }
+
+    // Comma: Step back 1 frame (when paused)
+    if (InputHandler::isKeyTriggered(GLFW_KEY_COMMA) && replay.isViewerPaused()) {
+        replay.stepViewerFrame(-1);
+    }
+
+    // Period: Step forward 1 frame (when paused)
+    if (InputHandler::isKeyTriggered(GLFW_KEY_PERIOD) && replay.isViewerPaused()) {
+        replay.stepViewerFrame(1);
+    }
+
+    // Minus: Decrease speed (cycle: 2.0 -> 1.0 -> 0.5 -> 0.25)
+    if (InputHandler::isKeyTriggered(GLFW_KEY_MINUS)) {
+        float spd = replay.getViewerSpeed();
+        if (spd > 1.0f) spd = 1.0f;
+        else if (spd > 0.5f) spd = 0.5f;
+        else spd = 0.25f;
+        replay.setViewerSpeed(spd);
+    }
+
+    // Equals/Plus: Increase speed (cycle: 0.25 -> 0.5 -> 1.0 -> 2.0)
+    if (InputHandler::isKeyTriggered(GLFW_KEY_EQUAL)) {
+        float spd = replay.getViewerSpeed();
+        if (spd < 0.5f) spd = 0.5f;
+        else if (spd < 1.0f) spd = 1.0f;
+        else spd = 2.0f;
+        replay.setViewerSpeed(spd);
+    }
+
+    // N: Skip to next level in the replay
+    if (InputHandler::isKeyTriggered(GLFW_KEY_N)) {
+        replay.stopViewer();
+        m_replayLevelIndex++;
+        if (m_replayLevelIndex < static_cast<int>(m_replayLevels.size())) {
+            loadReplayLevel(m_replayLevelIndex);
+        } else {
+            m_replayViewerActive = false;
+            changeState(GameState::MENU, "menu_scene.json");
+        }
+    }
+}
+
+void GUISystem::updateReplayHUD() {
+    auto& replay = ReplaySystem::getInstance();
+
+    // Update hud_timer to show replay progress
+    GameObject* timerObj = g_manager->getGameObject("hud_timer");
+    if (timerObj && timerObj->hasComponent<FontComponent>()) {
+        FontComponent* fc = timerObj->getComponent<FontComponent>();
+        float elapsed = replay.getViewerElapsed();
+        float duration = replay.getViewerDuration();
+        int eMin = static_cast<int>(elapsed) / 60;
+        int eSec = static_cast<int>(elapsed) % 60;
+        int eMs  = static_cast<int>(elapsed * 1000) % 1000;
+        int dMin = static_cast<int>(duration) / 60;
+        int dSec = static_cast<int>(duration) % 60;
+        int dMs  = static_cast<int>(duration * 1000) % 1000;
+
+        char buf[96];
+        std::snprintf(buf, sizeof(buf), "[REPLAY] %d:%02d.%03d / %d:%02d.%03d",
+                       eMin, eSec, eMs, dMin, dSec, dMs);
+
+        std::string status(buf);
+        if (replay.isViewerPaused()) status += "  PAUSED";
+        float spd = replay.getViewerSpeed();
+        if (spd != 1.0f) {
+            char spdBuf[16];
+            std::snprintf(spdBuf, sizeof(spdBuf), "  %.2fx", spd);
+            status += spdBuf;
+        }
+        fc->word = status;
+    }
+
+    // Show controls in leaderboard header area
+    GameObject* headerObj = g_manager->getGameObject("hud_lb_header");
+    if (headerObj && headerObj->hasComponent<FontComponent>()) {
+        FontComponent* fc = headerObj->getComponent<FontComponent>();
+        fc->word = "F2:Pause </>:Seek -/+:Speed";
+    }
+
+    // Show level info and frame count
+    GameObject* lb1Obj = g_manager->getGameObject("hud_lb_1");
+    if (lb1Obj && lb1Obj->hasComponent<FontComponent>()) {
+        FontComponent* fc = lb1Obj->getComponent<FontComponent>();
+        std::string lvl = (m_replayLevelIndex < static_cast<int>(m_replayLevels.size()))
+            ? m_replayLevels[m_replayLevelIndex] : "???";
+        fc->word = "Level: " + lvl + " (" + std::to_string(m_replayLevelIndex + 1)
+                 + "/" + std::to_string(m_replayLevels.size()) + ")";
+    }
+
+    GameObject* lb2Obj = g_manager->getGameObject("hud_lb_2");
+    if (lb2Obj && lb2Obj->hasComponent<FontComponent>()) {
+        FontComponent* fc = lb2Obj->getComponent<FontComponent>();
+        fc->word = "Frame: " + std::to_string(replay.getViewerFrameIndex())
+                 + "/" + std::to_string(replay.getViewerFrameCount());
+    }
+
+    GameObject* lb3Obj = g_manager->getGameObject("hud_lb_3");
+    if (lb3Obj && lb3Obj->hasComponent<FontComponent>()) {
+        FontComponent* fc = lb3Obj->getComponent<FontComponent>();
+        fc->word = ",/.:FrameStep  N:NextLvl  ESC:Exit";
     }
 }

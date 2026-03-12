@@ -331,7 +331,8 @@ enum class ButtonAction {
     OPEN_LEADERBOARD,
     MUTE,
     UNMUTE,
-    WATCH_REPLAY
+    WATCH_REPLAY,
+    OPEN_REPLAY_SELECT
 };
 
 //Button component

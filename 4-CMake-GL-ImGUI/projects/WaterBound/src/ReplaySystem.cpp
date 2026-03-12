@@ -348,9 +348,9 @@ void ReplaySystem::startViewerPlayback(const std::string& levelName, const std::
 }
 
 void ReplaySystem::updateViewer(float deltaTime) {
-    if (!m_isViewerMode || m_viewerFinished) return;
+    if (!m_isViewerMode || m_viewerFinished || m_viewerPaused) return;
 
-    m_playbackElapsed += deltaTime;
+    m_playbackElapsed += deltaTime * m_viewerSpeed;
 
     const auto& frames = m_playbackData.frames;
     const int totalFrames = static_cast<int>(frames.size());
@@ -366,14 +366,81 @@ void ReplaySystem::updateViewer(float deltaTime) {
            frames[m_playbackFrame + 1].timestamp <= m_playbackElapsed) {
         ++m_playbackFrame;
     }
+    // If seeking backward, rewind frame index
+    while (m_playbackFrame > 0 &&
+           frames[m_playbackFrame].timestamp > m_playbackElapsed) {
+        --m_playbackFrame;
+    }
 }
 
 void ReplaySystem::stopViewer() {
     m_isViewerMode = false;
     m_viewerFinished = false;
+    m_viewerPaused = false;
+    m_viewerSpeed = 1.0f;
     m_playbackFrame = 0;
     m_playbackElapsed = 0.f;
     std::cout << "[Replay] Viewer stopped.\n";
+}
+
+void ReplaySystem::toggleViewerPause() {
+    if (!m_isViewerMode) return;
+    m_viewerPaused = !m_viewerPaused;
+    std::cout << "[Replay] Viewer " << (m_viewerPaused ? "paused" : "resumed")
+              << " at " << m_playbackElapsed << "s\n";
+}
+
+void ReplaySystem::seekViewer(float deltaSeconds) {
+    if (!m_isViewerMode) return;
+    const auto& frames = m_playbackData.frames;
+    if (frames.empty()) return;
+
+    m_playbackElapsed += deltaSeconds;
+    if (m_playbackElapsed < 0.f) m_playbackElapsed = 0.f;
+
+    float maxTime = frames.back().timestamp;
+    if (m_playbackElapsed > maxTime) {
+        m_playbackElapsed = maxTime;
+        m_viewerFinished = true;
+        return;
+    }
+    m_viewerFinished = false;
+
+    // Rewind or advance frame index to match new elapsed time
+    const int totalFrames = static_cast<int>(frames.size());
+    while (m_playbackFrame > 0 &&
+           frames[m_playbackFrame].timestamp > m_playbackElapsed) {
+        --m_playbackFrame;
+    }
+    while (m_playbackFrame < totalFrames - 1 &&
+           frames[m_playbackFrame + 1].timestamp <= m_playbackElapsed) {
+        ++m_playbackFrame;
+    }
+}
+
+void ReplaySystem::stepViewerFrame(int delta) {
+    if (!m_isViewerMode) return;
+    const auto& frames = m_playbackData.frames;
+    if (frames.empty()) return;
+
+    int newFrame = m_playbackFrame + delta;
+    if (newFrame < 0) newFrame = 0;
+    if (newFrame >= static_cast<int>(frames.size()))
+        newFrame = static_cast<int>(frames.size()) - 1;
+
+    m_playbackFrame = newFrame;
+    m_playbackElapsed = frames[m_playbackFrame].timestamp;
+    m_viewerFinished = false;
+}
+
+void ReplaySystem::setViewerSpeed(float speed) {
+    m_viewerSpeed = speed;
+    std::cout << "[Replay] Viewer speed set to " << speed << "x\n";
+}
+
+float ReplaySystem::getViewerDuration() const {
+    if (m_playbackData.frames.empty()) return 0.f;
+    return m_playbackData.frames.back().timestamp;
 }
 
 // Helper to get the current viewer frame safely

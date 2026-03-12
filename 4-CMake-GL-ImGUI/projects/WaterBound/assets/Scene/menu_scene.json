@@ -401,6 +401,47 @@
           "onHoverChannel": "button_hover"
         }
       }
+    },
+    {
+      "name": "replay_text",
+      "components": {
+        "Transform": {
+          "pos": [12.0, -7.5, 2.0],
+          "rotation": 0.0,
+          "scale": [1.0, 1.0, 1.0]
+        },
+        "FontComponent": {
+          "word": "REPLAYS",
+          "color": [0.0, 0.0, 0.0],
+          "scale": 0.4,
+          "fontType": 1
+        }
+      }
+    },
+    {
+      "name": "replay_button",
+      "components": {
+        "Transform": {
+          "pos": [14.0, -7.5, 1.0],
+          "rotation": 0.0,
+          "scale": [7.0, 2.5, 0.0]
+        },
+        "Render": {
+          "shape": "square",
+          "colorR": 1.0,
+          "colorG": 1.0,
+          "colorB": 1.0,
+          "colorA": 1.0,
+          "hasTex": 1,
+          "texture": "assets/button.png",
+          "hasAnimation": 0
+        },
+        "Button": {
+          "action": "open_replay_select",
+          "onClickChannel": "",
+          "onHoverChannel": ""
+        }
+      }
     }
   ]
 }

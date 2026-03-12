@@ -258,6 +258,7 @@ namespace JsonIO {
         case ButtonAction::MUTE:   return "mute";
         case ButtonAction::UNMUTE:   return "unmute";
         case ButtonAction::WATCH_REPLAY: return "watch_replay";
+        case ButtonAction::OPEN_REPLAY_SELECT: return "open_replay_select";
         default:                           return "none";
         }
 	}
@@ -281,6 +282,7 @@ namespace JsonIO {
         if (s == "mute") return ButtonAction::MUTE;
         if (s == "unmute") return ButtonAction::UNMUTE;
         if (s == "watch_replay") return ButtonAction::WATCH_REPLAY;
+        if (s == "open_replay_select") return ButtonAction::OPEN_REPLAY_SELECT;
         return ButtonAction::NONE;
 	}
 

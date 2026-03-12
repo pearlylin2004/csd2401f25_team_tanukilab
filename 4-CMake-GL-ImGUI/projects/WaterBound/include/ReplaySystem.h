@@ -88,6 +88,18 @@ public:
     bool isViewerMode() const { return m_isViewerMode; }
     bool isViewerFinished() const { return m_viewerFinished; }
 
+    // --- Viewer playback controls ---
+    void toggleViewerPause();
+    bool isViewerPaused() const { return m_viewerPaused; }
+    void seekViewer(float deltaSeconds);
+    void stepViewerFrame(int delta);
+    void setViewerSpeed(float speed);
+    float getViewerSpeed() const { return m_viewerSpeed; }
+    float getViewerElapsed() const { return m_playbackElapsed; }
+    float getViewerDuration() const;
+    int   getViewerFrameIndex() const { return m_playbackFrame; }
+    int   getViewerFrameCount() const { return static_cast<int>(m_playbackData.frames.size()); }
+
     // Query recorded inputs during viewer playback
     bool getReplayKeyA() const;
     bool getReplayKeyD() const;
@@ -134,5 +146,7 @@ private:
     bool        m_initialized = false;
     bool        m_isViewerMode = false;
     bool        m_viewerFinished = false;
+    bool        m_viewerPaused = false;
+    float       m_viewerSpeed = 1.0f;
     std::string m_viewerRunId;  // which run folder the viewer is reading from
 };
