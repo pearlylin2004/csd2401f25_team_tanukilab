@@ -453,23 +453,23 @@ const ReplayFrame& ReplaySystem_currentFrame(const ReplaySystem& r, const Replay
 }
 
 bool ReplaySystem::getReplayKeyA() const {
-    if (!m_isViewerMode || m_playbackFrame < 0 || m_playbackFrame >= static_cast<int>(m_playbackData.frames.size())) return false;
+    if (!m_isViewerMode || m_viewerPaused || m_playbackFrame < 0 || m_playbackFrame >= static_cast<int>(m_playbackData.frames.size())) return false;
     return m_playbackData.frames[m_playbackFrame].inputKeyA;
 }
 bool ReplaySystem::getReplayKeyD() const {
-    if (!m_isViewerMode || m_playbackFrame < 0 || m_playbackFrame >= static_cast<int>(m_playbackData.frames.size())) return false;
+    if (!m_isViewerMode || m_viewerPaused || m_playbackFrame < 0 || m_playbackFrame >= static_cast<int>(m_playbackData.frames.size())) return false;
     return m_playbackData.frames[m_playbackFrame].inputKeyD;
 }
 bool ReplaySystem::getReplaySpaceTriggered() const {
-    if (!m_isViewerMode || m_playbackFrame < 0 || m_playbackFrame >= static_cast<int>(m_playbackData.frames.size())) return false;
+    if (!m_isViewerMode || m_viewerPaused || m_playbackFrame < 0 || m_playbackFrame >= static_cast<int>(m_playbackData.frames.size())) return false;
     return m_playbackData.frames[m_playbackFrame].inputSpaceTriggered;
 }
 bool ReplaySystem::getReplaySpaceReleased() const {
-    if (!m_isViewerMode || m_playbackFrame < 0 || m_playbackFrame >= static_cast<int>(m_playbackData.frames.size())) return false;
+    if (!m_isViewerMode || m_viewerPaused || m_playbackFrame < 0 || m_playbackFrame >= static_cast<int>(m_playbackData.frames.size())) return false;
     return m_playbackData.frames[m_playbackFrame].inputSpaceReleased;
 }
 bool ReplaySystem::getReplayMouseLeftHeld() const {
-    if (!m_isViewerMode || m_playbackFrame < 0 || m_playbackFrame >= static_cast<int>(m_playbackData.frames.size())) return false;
+    if (!m_isViewerMode || m_viewerPaused || m_playbackFrame < 0 || m_playbackFrame >= static_cast<int>(m_playbackData.frames.size())) return false;
     return m_playbackData.frames[m_playbackFrame].inputMouseLeftHeld;
 }
 float ReplaySystem::getReplayMouseX() const {
@@ -678,7 +678,7 @@ std::vector<std::string> ReplaySystem::getAllRunIds() const {
         std::string name = entry.path().filename().string();
         if (name == "current") continue;
         try {
-            std::stoi(name); // validate it's numeric
+            (void)std::stoi(name); // validate it's numeric
             ids.push_back(name);
         } catch (...) {
             continue;
