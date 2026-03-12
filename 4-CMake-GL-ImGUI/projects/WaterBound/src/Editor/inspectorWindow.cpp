@@ -36,8 +36,33 @@ void InspectorWindow::render() {
         if (ImGui::Button("Save")) {
             const std::string& prefabID = selected->getObjectPrefabID();
 
+            // snapshot prefab BEFORE
+            const rapidjson::Document* docBefore = PrefabManager::Instance().getPrefabJson(prefabID);
+            std::string prefabBefore = docBefore ? docToString(*docBefore) : "";
+
+            // snapshot instances BEFORE
+            std::unordered_map<std::string, std::string> instancesBefore;
+            for (GameObject* obj : CachedGameObjects::Instance().getCachedObjects()) {
+                if (obj->getObjectPrefabID() == prefabID)
+                    instancesBefore[obj->getObjectName()] = JsonIO::serializeGameObj(obj);
+            }
+
             if (PrefabManager::Instance().savePrefab(selected)) {
                 int count = PrefabManager::Instance().applyToAllInstances(prefabID, m_manager);
+                CachedGameObjects::Instance().refresh();
+
+                // snapshot prefab AFTER
+                std::string prefabAfter = docToString(*PrefabManager::Instance().getPrefabJson(prefabID));
+
+                // snapshot instances AFTER
+                std::unordered_map<std::string, std::string> instancesAfter;
+                for (GameObject* obj : CachedGameObjects::Instance().getCachedObjects()) {
+                    if (obj->getObjectPrefabID() == prefabID)
+                        instancesAfter[obj->getObjectName()] = JsonIO::serializeGameObj(obj);
+                }
+
+                UndoRedoManager::Instance().executeCmd(std::make_unique<PrefabPropagateCmd>(m_manager, prefabID, prefabBefore, prefabAfter, std::move(instancesBefore), std::move(instancesAfter)));
+
                 DebugLog::addMessage("Applied prefab changes to " + std::to_string(count) + " instances\n");
             }
             else {
@@ -666,7 +691,7 @@ void InspectorWindow::renderRender(GameObject* selected) {
                 ImGui::Separator();
                 ImGui::Spacing();
 
-                ImGui::SliderFloat("Alpha", &render->clr.w, 0.f, 1.f);
+                ImGui::DragFloat("Alpha", &render->clr.w, 0.01f, 0.f, 1.f);
                 if (ImGui::IsItemActivated())
                     if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
                 if (ImGui::IsItemDeactivatedAfterEdit())
@@ -1462,7 +1487,7 @@ void InspectorWindow::renderPhysics(GameObject* selected, bool canMove) {
                 }
 
                 if (ImGui::TreeNode("Jump Buffer")) {
-                    ImGui::SliderFloat("Buffer Time", &physic->jumpBufferTime, 0.0f, 10.f);
+                    ImGui::DragFloat("Buffer Time", &physic->jumpBufferTime, 0.01f , 0.0f, 10.f);
                     if (ImGui::IsItemActivated())
                         if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
                     if (ImGui::IsItemDeactivatedAfterEdit())
@@ -1472,7 +1497,7 @@ void InspectorWindow::renderPhysics(GameObject* selected, bool canMove) {
                 }
 
                 if (ImGui::TreeNode("Coyote Jump")) {
-                    ImGui::SliderFloat("Coyote Time", &physic->coyoteTime, 0.0f, 10.f);
+                    ImGui::DragFloat("Coyote Time", &physic->coyoteTime, 0.01f, 0.0f, 10.f);
                     if (ImGui::IsItemActivated())
                         if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
                     if (ImGui::IsItemDeactivatedAfterEdit())
@@ -1802,14 +1827,22 @@ void InspectorWindow::renderAudio(GameObject* selected) {
                         if (ch.channel && ch.state == AudioState::Playing) {
                             // Currently playing - show Stop button
                             if (ImGui::Button("Stop", ImVec2(-1, 0))) {
-                                ch.isPendingStop = true;
                                 DebugLog::addMessage("Manually stopped channel: " + channelName + "\n");
+                                ch.isPendingStop = true;
+								//AudioHandler::getInstance().stopSound(&ch);
                             }
                         }
                         else if (!ch.audioFile.empty()) {
                             // Not playing but has audio file - show Play button
                             if (ImGui::Button("Play", ImVec2(-1, 0))) {
-                                ch.isPendingPlay = true;
+                                if (EditorManager::isEditingMode()) {
+                                    // Bypass the game group — plays under master so editor pause doesn't block it.
+                                    FMOD::Channel* previewCh = AudioHandler::getInstance().playPreviewSound(&ch);
+                                    if (previewCh) ch.state = AudioState::Playing;
+                                }
+                                else {
+                                    ch.isPendingPlay = true;  // in-game path, goes through AudioSystem::processAudio normally
+                                }
                                 DebugLog::addMessage("Manually started channel: " + channelName + "\n");
                             }
                         }
@@ -1817,7 +1850,7 @@ void InspectorWindow::renderAudio(GameObject* selected) {
                             // No audio file assigned
                             ImGui::BeginDisabled();
                             ImGui::Button("Play (No Audio)", ImVec2(-1, 0));
-                            ImGui::EndDisabled();
+                            ImGui::EndDisabled();   
                         }
 
                         ImGui::Spacing();
@@ -1842,6 +1875,12 @@ void InspectorWindow::renderAudio(GameObject* selected) {
 
                             if (ch.channel) ch.isPendingStop = true;
                         }
+                        if (ImGui::Checkbox("Persist On Scene Change", &ch.persistOnSceneChange)) {
+                            ch.persistOnSceneChange = !ch.persistOnSceneChange;
+                            if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
+                            ch.persistOnSceneChange = !ch.persistOnSceneChange;
+                            if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
+                        }
                         if (ImGui::Checkbox("Muted", &ch.muted)) {
                             ch.muted = !ch.muted;
                             if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
@@ -1849,7 +1888,7 @@ void InspectorWindow::renderAudio(GameObject* selected) {
                             ch.muted = !ch.muted;
                             if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
 
-                            if (ch.channel) ch.isPendingStop = true;
+                            ch.channel->setMute(ch.muted);
                         }
                         if (ImGui::Checkbox("Spatial Audio", &ch.isSpatial)) {
                             ch.isSpatial = !ch.isSpatial;
@@ -1874,6 +1913,16 @@ void InspectorWindow::renderAudio(GameObject* selected) {
                             if (ImGui::DragFloat("Max Distance", &ch.maxDistance, 1.0f, 1.0f, 10000.0f)) {
                                 ch.maxDistance = std::clamp(ch.maxDistance, 1.0f, 10000.0f);
                             }
+
+                            if (ImGui::SliderFloat("Spread", &ch.spread, 0.0f, 360.0f)) {
+								ch.channel->set3DSpread(ch.spread);
+                            }
+                            ImGui::SameLine();
+                            ImGui::TextDisabled("(?)");
+                            if (ImGui::IsItemHovered())
+                                ImGui::SetTooltip("0 = only from source direction\n180 = both-ear audio\n360 = full spread");
+
+
                             if (ImGui::IsItemActivated())
                                 if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
                             if (ImGui::IsItemDeactivatedAfterEdit())
@@ -1889,6 +1938,7 @@ void InspectorWindow::renderAudio(GameObject* selected) {
                         if (ImGui::TreeNode("Volume & Pitch")) {
                             if (ImGui::DragFloat("Volume", &ch.volume, 0.01f, 0.0f, 1.0f)) {
                                 ch.volume = std::clamp(ch.volume, 0.f, 1.f);
+                                if (ch.channel) ch.channel->setVolume(ch.volume); // live update volume while dragging
                             }
                             if (ImGui::IsItemActivated())
                                 if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
@@ -1901,9 +1951,10 @@ void InspectorWindow::renderAudio(GameObject* selected) {
                             }
                             if (ImGui::IsItemActivated())
                                 if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
-                            if (ImGui::IsItemDeactivatedAfterEdit())
+                            if (ImGui::IsItemDeactivatedAfterEdit()) {
                                 if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
-
+                                ch.channel->setPitch(ch.pitch); // Update pitch immediately if channel is active
+                            }
 
                             ImGui::TreePop();
                         }
