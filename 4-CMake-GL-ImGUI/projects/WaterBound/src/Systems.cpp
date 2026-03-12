@@ -1516,7 +1516,8 @@ void WeaponSystem::update(GameObjectManager& manager, const float& deltaTime)
 
 		Transform* weaponTransform = obj->getComponent<Transform>();
 
-
+		//original local X offset
+		//owner flips direction
 		if (!weapon->baseLocalOffsetInitialised)
 		{
 			weapon->baseLocalOffsetX = weaponTransform->localOffset.x;
@@ -1537,7 +1538,7 @@ void WeaponSystem::update(GameObjectManager& manager, const float& deltaTime)
 		weaponTransform->localOffset.x = ownerFacingLeft
 			? -std::abs(weapon->baseLocalOffsetX)
 			: std::abs(weapon->baseLocalOffsetX);
-
+		// Check the weapon's parent 
 		if (!weaponTransform->parentName.empty())
 		{
 			GameObject* owner = manager.getGameObject(weaponTransform->parentName);
@@ -1547,6 +1548,7 @@ void WeaponSystem::update(GameObjectManager& manager, const float& deltaTime)
 				const float parentRad = glm::radians(pt->rotation);
 				const float cosA = cosf(parentRad);
 				const float sinA = sinf(parentRad);
+				// Rotate local offset around the parent
 				const float rotatedX = weaponTransform->localOffset.x * cosA
 					- weaponTransform->localOffset.y * sinA;
 				const float rotatedY = weaponTransform->localOffset.x * sinA
@@ -1558,7 +1560,8 @@ void WeaponSystem::update(GameObjectManager& manager, const float& deltaTime)
 
 		const float dx = mouseWorld.x - weaponTransform->x;
 		const float dy = mouseWorld.y - weaponTransform->y;
-		
+
+		// Calculate the aiming angle
 		const float aimAngleRad = ownerFacingLeft
 			? std::atan2(-dy, -dx)  
 			: std::atan2(dy, dx); 
