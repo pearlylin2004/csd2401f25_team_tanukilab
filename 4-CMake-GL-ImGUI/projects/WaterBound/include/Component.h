@@ -917,6 +917,11 @@ public:
     bool isTrigger = true;            // If objects can pass through
     float buoyancyForce = 50.0f;      // Upward force applied to objects in water
     float waterDrag = 0.95f;          // Velocity damping when in water
+    float heightIncrease = 0.25f;
+    float pendingHeightIncrease = 0.0f; 
+    float heightRiseSpeed = 0.5f;
+    float lastFrameRise = 0.0f;
+
 
     // Rendering flags
     bool renderWaves = true;

@@ -798,6 +798,9 @@
           "friction": 0.0,
           "colliderType": "square"
         },
+        "VisualLC": {
+          "filename": "waterbody_logic.json"
+        },
         "WaterBody": {
           "waveAmplitude": 0.15000000596046448,
           "waveFrequency": 1.0,
@@ -813,8 +816,8 @@
           "width": 40.0,
           "height": 8.0,
           "isTrigger": 1,
-          "buoyancyForce": 25.0,
-          "waterDrag": 0.9890000224113464,
+          "buoyancyForce": 200.0,
+          "waterDrag": 0.9990000128746033,
           "renderWaves": 1,
           "useTexture": 0
         }
@@ -854,7 +857,7 @@
           "jumpForce": 100.0,
           "mass": 5.0,
           "damping": 0.9850000143051147,
-          "maxFallSpeed": -20.0,
+          "maxFallSpeed": -5.0,
           "groundAccelForce": 20.0,
           "airAccelForce": 8.0,
           "apexHangMul": 0.20000000298023224,
