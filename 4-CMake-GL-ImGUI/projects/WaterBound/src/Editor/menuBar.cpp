@@ -17,6 +17,7 @@ Technology is prohibited.
 
 #ifdef _DEBUG
 #include "Editor/editorManager.h"
+#include "ReplaySystem.h"
 #include "Systems.h"
 
 MenuBar::MenuBar(AssetBrowser& aBrowser, Editor::AssetBrowserState& Astate, Editor::MenuBarState& Mstate, Editor::ObjSelectionState& Ostate, Editor::SceneState& sceneState):
@@ -197,6 +198,14 @@ void MenuBar::playSimulation(GameObjectManager& manager) {
 void MenuBar::stopSimulation(GameObjectManager& manager) {
     AudioHandler::getInstance().pauseAll(manager);
     AudioHandler::getInstance().stopAllPreviews();
+
+    // Replay state owns transient runtime objects such as the ghost.
+    // Shut it down before restoring the editor scene.
+    auto& replay = ReplaySystem::getInstance();
+    replay.discardRecording();
+    replay.stopPlayback(manager);
+    replay.stopViewer();
+
     EditorManager::toggleEditing(true);
     manager.cleanupSimulationResources();
 	VisualLogicEditor::Instance().clear();
