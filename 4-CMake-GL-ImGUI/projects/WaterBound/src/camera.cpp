@@ -1,3 +1,18 @@
+/* Start Header ************************************************************************/
+/*!
+\file       camera.cpp
+\author     Seow Sin Le, s.sinle, 2401084
+			- 100% of the file
+\par        s.sinle@digipen.edu
+\date       March, 8th, 2026
+\brief      Used for camera component, which is used to set up the camera's position, zoom, and aspect ratio. The camera system updates the camera's view and projection matrices based on the camera component attached to game objects. If no camera component is present, it sets up a default camera.
+Copyright (C) 2026 DigiPen Institute of Technology.
+Reproduction or disclosure of this file or its contents
+without the prior written consent of DigiPen Institute of
+Technology is prohibited.
+*/
+/* End Header **************************************************************************/
+
 #include "Systems.h"
 
 bool Camera::camPresent = false;
@@ -18,7 +33,7 @@ void Camera::update(GameObjectManager& manager)
 			if (camInfo->useScreenSize)
 			{
 				renderer::cam.width = (screenWidth);
-				renderer::cam.ar = (screenWidth) / screenHeight;
+				renderer::cam.ar = static_cast<GLfloat>(screenWidth) / screenHeight;
 			}
 			else
 			{
@@ -54,7 +69,7 @@ void Camera::update(GameObjectManager& manager)
 void Camera::camDefault()
 {
 	
-	renderer::cam.ar = (screenWidth) / screenHeight;
+	renderer::cam.ar = static_cast<GLfloat>(screenWidth) / screenHeight;
 	renderer::cam.width = (screenWidth);
 	renderer::cam.rot = 0;
 	renderer::cam.zoom = 10;
