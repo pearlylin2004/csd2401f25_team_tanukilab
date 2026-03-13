@@ -206,7 +206,7 @@
         "Transform": {
           "pos": [
             -11.0,
-            -1.063492298126221,
+            -1.0634922981262207,
             1.0
           ],
           "rotation": 0.0,
@@ -389,7 +389,9 @@
               "fadeOutDuration": 0.5,
               "isSpatial": 0,
               "minDistance": 1.0,
-              "maxDistance": 100.0
+              "maxDistance": 100.0,
+              "spread": 180.0,
+              "persistOnSceneChange": 0
             },
             "on_click": {
               "audioFile": "assets/Audio\\Confirm UI.wav",
@@ -397,6 +399,15 @@
               "pitch": 1.0,
               "loop": 0,
               "playOnStart": 0,
+              "muted": 0,
+              "fadeInOnStart": 0,
+              "fadeInDuration": 1.0,
+              "fadeOutOnStop": 0,
+              "fadeOutDuration": 1.0,
+              "isSpatial": 0,
+              "minDistance": 1.0,
+              "maxDistance": 100.0,
+              "spread": 180.0,
               "persistOnSceneChange": 1
             }
           }
@@ -409,69 +420,20 @@
       }
     },
     {
-      "name": "main_menu_bgm",
-      "components": {
-        "Transform": {
-          "pos": [
-            0.0,
-            0.0,
-            0.0
-          ],
-          "rotation": 0.0,
-          "scale": [
-            1.0,
-            1.0,
-            0.0
-          ]
-        },
-        "AudioComponent": {
-          "channels": {
-            "main_menu_bgm": {
-              "audioFile": "assets/Audio\\bg.wav",
-              "volume": 0.20000000298023224,
-              "pitch": 1.0,
-              "loop": 1,
-              "playOnStart": 1,
-              "muted": 0,
-              "fadeInOnStart": 0,
-              "fadeInDuration": 1.0,
-              "fadeOutOnStop": 0,
-              "fadeOutDuration": 1.0,
-              "isSpatial": 0,
-              "minDistance": 1.0,
-              "maxDistance": 100.0,
-              "persistOnSceneChange": 1
-            }
-          }
-        },
-        "VisualLC": {
-          "filename": "shakeWhenHover.json"
-        }
-      }
-    },
-    {
-      "name": "replay_text",
-      "components": {
-        "Transform": {
-          "pos": [12.0, -7.5, 2.0],
-          "rotation": 0.0,
-          "scale": [1.0, 1.0, 1.0]
-        },
-        "FontComponent": {
-          "word": "REPLAYS",
-          "color": [0.0, 0.0, 0.0],
-          "scale": 0.4,
-          "fontType": 1
-        }
-      }
-    },
-    {
       "name": "replay_button",
       "components": {
         "Transform": {
-          "pos": [14.0, -7.5, 1.0],
+          "pos": [
+            14.0,
+            -7.5,
+            1.0
+          ],
           "rotation": 0.0,
-          "scale": [7.0, 2.5, 0.0]
+          "scale": [
+            7.0,
+            2.5,
+            0.0
+          ]
         },
         "Render": {
           "shape": "square",
@@ -487,6 +449,34 @@
           "action": "open_replay_select",
           "onClickChannel": "",
           "onHoverChannel": ""
+        }
+      }
+    },
+    {
+      "name": "replay_text",
+      "components": {
+        "Transform": {
+          "pos": [
+            12.0,
+            -7.5,
+            2.0
+          ],
+          "rotation": 0.0,
+          "scale": [
+            1.0,
+            1.0,
+            1.0
+          ]
+        },
+        "FontComponent": {
+          "word": "REPLAYS",
+          "color": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "scale": 0.4000000059604645,
+          "fontType": 1
         }
       }
     }

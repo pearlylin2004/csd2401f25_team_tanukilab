@@ -220,21 +220,35 @@ void AudioHandler::resumeAll(GameObjectManager& manager) {
 }
 
 void AudioHandler::stopAll(GameObjectManager& manager) {
-	// Stop the entire game group first to catch orphaned FMOD channels
-	// (e.g. persistent BGM whose GameObject was already destroyed by clearScene)
-	if (m_gameGroup) m_gameGroup->stop();
-
 	std::vector<GameObject*> gameObjects;
 	manager.getAllGameObjects(gameObjects);
 
+	// Before stopping the game group, rescue any persist-flagged channels
+	// by moving them into the BGM group so they keep playing through the scene change.
 	for (GameObject* obj : gameObjects) {
 		if (!obj->hasComponent<AudioComponent>()) continue;
 		AudioComponent* ac = obj->getComponent<AudioComponent>();
 		for (auto& [name, ch] : ac->audioChannels) {
-			ch.channel = nullptr;
-			ch.state = AudioState::Stopped;
-			ch.isPendingPlay = false;
-			ch.isPendingStop = false;
+			if (ch.persistOnSceneChange && ch.channel && m_bgmGroup) {
+				ch.channel->setChannelGroup(m_bgmGroup);
+			}
+		}
+	}
+
+	// Stop the entire game group to catch all non-persist and orphaned FMOD channels.
+	if (m_gameGroup) m_gameGroup->stop();
+
+	// Reset channel state, but leave persist channels alone so their FMOD channel stays valid.
+	for (GameObject* obj : gameObjects) {
+		if (!obj->hasComponent<AudioComponent>()) continue;
+		AudioComponent* ac = obj->getComponent<AudioComponent>();
+		for (auto& [name, ch] : ac->audioChannels) {
+			if (!ch.persistOnSceneChange) {
+				ch.channel = nullptr;
+				ch.state = AudioState::Stopped;
+				ch.isPendingPlay = false;
+				ch.isPendingStop = false;
+			}
 		}
 	}
 }
