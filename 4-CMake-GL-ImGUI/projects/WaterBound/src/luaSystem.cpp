@@ -15,6 +15,8 @@ Technology is prohibited.
 /* End Header **************************************************************************/
 
 #include "luaSystem.h"
+#include "GUISystem.h"
+#include "GameState.h"
 
 void LuaSystem::init() {
     L = luaL_newstate();
@@ -39,6 +41,12 @@ void LuaSystem::cleanup() {
 
 //function exposed to Lua
 int LuaSystem::Lua_IsKeyHeld(lua_State* L) {
+    // Block all Lua input queries during replay viewer
+    if (GUISystem::getInstance().getCurrentState() == GameState::REPLAY) {
+        lua_pushboolean(L, false);
+        return 1;
+    }
+
     const char* keyStr = lua_tostring(L, 1); //get string from Lua
 
     //convert string to GLFW key code

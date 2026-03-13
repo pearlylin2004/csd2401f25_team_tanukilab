@@ -30,8 +30,16 @@ void FireActiveState::onEnter(GameObject& obj) {
         c->collisionTag = "fire";  // Ensure tag is "fire" for death logic
     }
 
-    // Start fire crackling sound
+    // Restore full opacity (undoes extinguished fade)
+    if (Render* r = obj.getComponent<Render>()) {
+        r->clr.a = 1.0f;
+    }
+
+    // Stop any lingering steam audio, then start fire crackling sound
     if (AudioComponent* audio = obj.getComponent<AudioComponent>()) {
+        if (AudioChannel* steam = audio->getChannel("steam")) {
+            steam->isPendingStop = true;
+        }
         AudioChannel* fire = audio->getOrCreateChannel("fire_loop");
         if (fire) {
             fire->audioFile = "assets/audio/fire_crackle.wav";
