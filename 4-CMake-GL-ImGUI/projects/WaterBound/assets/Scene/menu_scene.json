@@ -94,6 +94,7 @@
               "isSpatial": 0,
               "minDistance": 1.0,
               "maxDistance": 100.0,
+              "spread": 180.0,
               "persistOnSceneChange": 0
             },
             "on_click": {
@@ -110,6 +111,7 @@
               "isSpatial": 0,
               "minDistance": 1.0,
               "maxDistance": 100.0,
+              "spread": 180.0,
               "persistOnSceneChange": 0
             }
           }
@@ -166,6 +168,7 @@
               "isSpatial": 0,
               "minDistance": 1.0,
               "maxDistance": 100.0,
+              "spread": 180.0,
               "persistOnSceneChange": 0
             },
             "on_click": {
@@ -182,6 +185,7 @@
               "isSpatial": 0,
               "minDistance": 1.0,
               "maxDistance": 100.0,
+              "spread": 180.0,
               "persistOnSceneChange": 0
             }
           }
@@ -238,6 +242,7 @@
               "isSpatial": 0,
               "minDistance": 1.0,
               "maxDistance": 100.0,
+              "spread": 180.0,
               "persistOnSceneChange": 0
             },
             "on_click": {
@@ -254,6 +259,7 @@
               "isSpatial": 0,
               "minDistance": 1.0,
               "maxDistance": 100.0,
+              "spread": 180.0,
               "persistOnSceneChange": 0
             }
           }
@@ -310,6 +316,7 @@
               "isSpatial": 0,
               "minDistance": 1.0,
               "maxDistance": 100.0,
+              "spread": 180.0,
               "persistOnSceneChange": 0
             },
             "on_click": {
@@ -326,6 +333,7 @@
               "isSpatial": 0,
               "minDistance": 1.0,
               "maxDistance": 100.0,
+              "spread": 180.0,
               "persistOnSceneChange": 0
             }
           }
@@ -337,44 +345,6 @@
           "action": "exit_game",
           "onClickChannel": "on_click",
           "onHoverChannel": "button_hover"
-        }
-      }
-    },
-    {
-      "name": "main_menu_bgm",
-      "components": {
-        "Transform": {
-          "pos": [
-            0.0,
-            0.0,
-            0.0
-          ],
-          "rotation": 0.0,
-          "scale": [
-            1.0,
-            1.0,
-            0.0
-          ]
-        },
-        "AudioComponent": {
-          "channels": {
-            "main_menu_bgm": {
-              "audioFile": "assets/Audio\\bg.wav",
-              "volume": 0.20000000298023224,
-              "pitch": 1.0,
-              "loop": 1,
-              "playOnStart": 1,
-              "muted": 0,
-              "fadeInOnStart": 0,
-              "fadeInDuration": 1.0,
-              "fadeOutOnStop": 0,
-              "fadeOutDuration": 1.0,
-              "isSpatial": 0,
-              "minDistance": 1.0,
-              "maxDistance": 100.0,
-              "persistOnSceneChange": 1
-            }
-          }
         }
       }
     }

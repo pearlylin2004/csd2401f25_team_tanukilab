@@ -48,6 +48,7 @@ void AudioHandler::init() {
 	// Editor preview audio plays directly under master and is unaffected by this group's pause state.
 	FMODErrorCheck(system->createChannelGroup("game", &m_gameGroup));
 	FMODErrorCheck(system->createChannelGroup("preview", &m_previewGroup));
+	FMODErrorCheck(system->createChannelGroup("bgm", &m_bgmGroup));
 
 	ResourceManager::getInstance().init(system);
 }
@@ -182,6 +183,7 @@ void AudioHandler::pauseAll(GameObjectManager& manager) {
 	// Pause the entire game group — catches ghost channels (e.g. menu BGM)
 	// that no longer have a live GameObject.
 	if (m_gameGroup) m_gameGroup->setPaused(true);
+	if (m_bgmGroup) m_bgmGroup->setPaused(true);
 
 
 	// Sync AudioState so the component layer stays accurate.
@@ -201,6 +203,7 @@ void AudioHandler::pauseAll(GameObjectManager& manager) {
 
 void AudioHandler::resumeAll(GameObjectManager& manager) {
 	if (m_gameGroup) m_gameGroup->setPaused(false);
+	if (m_bgmGroup) m_bgmGroup->setPaused(false);
 
 	std::vector<GameObject*> gameObjects;
 	manager.getAllGameObjects(gameObjects);
@@ -217,28 +220,20 @@ void AudioHandler::resumeAll(GameObjectManager& manager) {
 }
 
 void AudioHandler::stopAll(GameObjectManager& manager) {
+	if (m_gameGroup) m_gameGroup->stop();
+
 	std::vector<GameObject*> gameObjects;
 	manager.getAllGameObjects(gameObjects);
 
 	for (GameObject* obj : gameObjects) {
 		if (!obj->hasComponent<AudioComponent>()) continue;
 		AudioComponent* ac = obj->getComponent<AudioComponent>();
-
 		for (auto& [name, ch] : ac->audioChannels) {
-			if (ch.persistOnSceneChange) {
-				ch.persistOnSceneChange = false; // reset after one transition
-				continue;
-			}
-
-			if (ch.channel) {
-				stopSound(&ch);
-			}
-
+			ch.channel = nullptr;
 			ch.state = AudioState::Stopped;
 			ch.isPendingPlay = false;
 			ch.isPendingStop = false;
 		}
-
 	}
 }
 
@@ -699,4 +694,13 @@ void AudioHandler::stopAllPreviews() {
 	if (m_previewGroup) {
 		m_previewGroup->stop();  // atomically kills every preview channel
 	}
+}
+
+FMOD::Channel* AudioHandler::playBGMSound(AudioChannel* audio) {
+	FMOD::Sound* sound = ResourceManager::getInstance().getSound(audio->audioFile, audio->loop, false);
+	if (!sound) return nullptr;
+	FMOD::Channel* channel = nullptr;
+	FMODErrorCheck(system->playSound(sound, m_bgmGroup, false, &channel));
+	if (channel) channel->setVolume(audio->volume);
+	return channel;
 }

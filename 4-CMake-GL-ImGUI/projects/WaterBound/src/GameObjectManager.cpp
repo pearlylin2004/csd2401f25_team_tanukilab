@@ -289,27 +289,9 @@ void GameObjectManager::loadSceneFromJson(const std::string& filename) {
 
 	//std::cerr << "Cleared textures before loading scene.\n";
 
-	// Rescue persistent objects before clearing
-	std::vector<std::unique_ptr<GameObject>> persistentObjects;
-	for (auto& [name, obj] : m_gameObjects) {
-		if (!obj->hasComponent<AudioComponent>()) continue;
-		AudioComponent* ac = obj->getComponent<AudioComponent>();
-		bool shouldPersist = false;
-		for (auto& [channelName, ch] : ac->audioChannels) {
-			if (ch.persistOnSceneChange) { shouldPersist = true; break; }
-		}
-		if (shouldPersist) persistentObjects.push_back(std::move(obj));
-	}
-
 	//clear all old objects and textures
 	m_layerManager.clearAllLayers();
 	m_gameObjects.clear();
-
-	// Reinsert persistent objects after clear
-	for (auto& obj : persistentObjects) {
-		std::string name = obj->getObjectName();
-		m_gameObjects[name] = std::move(obj);
-	}
 
 	// Clear existing layers and recreate from JSON
 	if (doc.HasMember("layers") && doc["layers"].IsArray()) {

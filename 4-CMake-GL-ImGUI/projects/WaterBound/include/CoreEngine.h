@@ -53,6 +53,12 @@ public:
     static void windowIconifyCallback(GLFWwindow* window, int iconified);
     static void windowFocusCallback(GLFWwindow* window, int focused);
 
+    //hardcoded bgm again
+    void startBGM();
+    void stopBGM();
+    void pauseBGM();
+    void resumeBGM();
+
 private:
     void GameLoop();
     void Update(float deltaTime);
