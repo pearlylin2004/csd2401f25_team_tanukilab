@@ -1813,7 +1813,7 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 						if (bulletIsObj1 || bulletIsObj2) {
 							PhysicsForces::deactivateBullet(bulletIsObj1 ? obj1 : obj2);
 							WaterBody* water = (bulletIsObj1 ? obj2 : obj1)->getComponent<WaterBody>();
-							Transform* waterT = bulletIsObj1 ? t2 : t1;
+							//Transform* waterT = bulletIsObj1 ? t2 : t1;
 							if (water) {
 								water->pendingHeightIncrease += water->heightIncrease;
 							}

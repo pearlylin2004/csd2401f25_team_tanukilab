@@ -483,6 +483,7 @@ float ReplaySystem::getViewerDuration() const {
 static const ReplayFrame s_emptyFrame{};
 
 const ReplayFrame& ReplaySystem_currentFrame(const ReplaySystem& r, const ReplayData& data, int frame) {
+    (void)r;
     if (frame >= 0 && frame < static_cast<int>(data.frames.size()))
         return data.frames[frame];
     return s_emptyFrame;

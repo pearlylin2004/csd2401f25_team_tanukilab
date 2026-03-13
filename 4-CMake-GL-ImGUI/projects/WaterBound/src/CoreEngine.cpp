@@ -314,13 +314,14 @@ void CoreEngine::Update(float deltaTime) {
     bool isEditingNow = EditorManager::isEditingMode();
 
     wasEditingMode = isEditingNow;
-#endif
+
     if (wasEditingMode && !isEditingNow) {
         resumeBGM();
     }
     if (!wasEditingMode && isEditingNow) {
         pauseBGM();
     }
+#endif
 }
 
 // ============================================================================

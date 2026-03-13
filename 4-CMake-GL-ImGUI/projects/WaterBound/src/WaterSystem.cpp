@@ -308,6 +308,7 @@ void WaterSystem::renderWaterBody(GameObject* waterObj) {
 }
 
 void WaterSystem::applyWaterPhysics(GameObjectManager& manager, float deltaTime) {
+    (void)deltaTime;
     std::vector<GameObject*> allObjects;
     manager.getAllGameObjects(allObjects);
 
