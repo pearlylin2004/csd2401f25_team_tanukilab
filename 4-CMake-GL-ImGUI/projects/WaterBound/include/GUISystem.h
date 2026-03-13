@@ -69,8 +69,22 @@ public:
 	void loadLevel(const std::string& levelSceneName); // load next level
     void resetAllObjectsToSpawn(); // helper for restart
 
+    // Replay viewer
+    void startReplayViewer(const std::string& runId = "");
+
+    // Replay selection screen
+    void openReplaySelect();
+    void populateReplaySelection();
+    void handleReplaySelectInput();
+    void handleReplayViewerControls();
+    void updateReplayHUD();
+    void resetReplayWorldState();
+
     void createButtons(/*GameObjectManager& manager*/); //create menu buttons
 
+    // Level timer for leaderboard
+    double getLevelTime() const { return m_levelTimer; }
+    void tickLevelTimer(double dt);
 
     ButtonAction m_pendingAction = ButtonAction::NONE;
     bool m_pendingRestart = false;
@@ -87,6 +101,10 @@ private:
     void startGame(); //start game
     void stopGame(); //stop game	
     void updateVolumeDisplay(); //update volume % text on audio page
+    void updateLeaderboardDisplay(); //populate leaderboard font objects with scores
+    void updateInGameHUD(); // update timer + top 3 leaderboard on in-game HUD
+    void initInGameHUD();   // populate leaderboard portion of in-game HUD
+    void loadReplayLevel(int levelIndex); // load a level in replay viewer mode
 
     bool isPointInButton(const Vector2D& point, GameObject* button);
     void createButtonActions(); //create button actions
@@ -108,4 +126,25 @@ private:
     std::string m_currentLevel = "";
 
     float m_previousVolume = 100;
+
+    // Level timer for replay ghosts (resets each level)
+    double m_levelTimer = 0.0;
+    bool m_levelTimerRunning = false;
+
+    // Total game timer for leaderboard (start to win, never resets between levels)
+    double m_gameTimer = 0.0;
+    bool m_gameTimerRunning = false;
+
+    // Replay viewer state
+    std::vector<std::string> m_replayLevels; // ordered list of levels to replay
+    int m_replayLevelIndex = 0;
+    bool m_replayViewerActive = false;
+    std::string m_replayRunId;  // which run folder to replay from
+    std::string m_lastRunId;    // the run ID of the most recently completed game
+
+    // Replay selection screen state
+    std::vector<std::string> m_availableRuns; // all completed run IDs
+    int m_replaySelectIndex = 0;  // currently highlighted entry
+    int m_replaySelectPage = 0;   // current page (5 entries per page)
+    bool m_replaySelectActive = false; // true when on selection screen
 };
