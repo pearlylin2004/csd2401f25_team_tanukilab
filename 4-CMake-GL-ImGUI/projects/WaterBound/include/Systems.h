@@ -417,7 +417,7 @@ public:
 	\param[in] manager
 		Game object manager containing all objects
 	*************************************************************************/
-	void applyWaterPhysics(GameObjectManager& manager);
+	void applyWaterPhysics(GameObjectManager& manager, float deltaTime);
 
 	/*!***********************************************************************
 	\brief

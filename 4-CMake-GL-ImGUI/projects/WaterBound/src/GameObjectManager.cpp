@@ -289,8 +289,27 @@ void GameObjectManager::loadSceneFromJson(const std::string& filename) {
 
 	//std::cerr << "Cleared textures before loading scene.\n";
 
+	// Rescue persistent objects before clearing
+	std::vector<std::unique_ptr<GameObject>> persistentObjects;
+	for (auto& [name, obj] : m_gameObjects) {
+		if (!obj->hasComponent<AudioComponent>()) continue;
+		AudioComponent* ac = obj->getComponent<AudioComponent>();
+		bool shouldPersist = false;
+		for (auto& [channelName, ch] : ac->audioChannels) {
+			if (ch.persistOnSceneChange) { shouldPersist = true; break; }
+		}
+		if (shouldPersist) persistentObjects.push_back(std::move(obj));
+	}
+
+	//clear all old objects and textures
 	m_layerManager.clearAllLayers();
 	m_gameObjects.clear();
+
+	// Reinsert persistent objects after clear
+	for (auto& obj : persistentObjects) {
+		std::string name = obj->getObjectName();
+		m_gameObjects[name] = std::move(obj);
+	}
 
 	// Clear existing layers and recreate from JSON
 	if (doc.HasMember("layers") && doc["layers"].IsArray()) {
@@ -924,7 +943,14 @@ void GameObjectManager::loadSceneFromJson(const std::string& filename) {
 					if (chJson.HasMember("maxDistance") && chJson["maxDistance"].IsNumber()) {
 						ch->maxDistance = chJson["maxDistance"].GetFloat();
 					}
+					if (chJson.HasMember("persistOnSceneChange"))
+						ch->persistOnSceneChange = chJson["persistOnSceneChange"].IsBool()
+						? chJson["persistOnSceneChange"].GetBool()
+						: (chJson["persistOnSceneChange"].GetInt() != 0);
 
+					if (chJson.HasMember("spread") && chJson["spread"].IsNumber()) {
+						ch->spread = chJson["spread"].GetFloat();
+					}
 				}
 			}
 		}
@@ -1765,6 +1791,8 @@ doc.AddMember("layers", layersArr, a);
 					pushIfDiffBool("isSpatial", channel.isSpatial);
 					pushIfDiffFloat("minDistance", channel.minDistance);
 					pushIfDiffFloat("maxDistance", channel.maxDistance);
+					pushIfDiffFloat("spread", channel.spread);
+					pushIfDiffBool("persistOnSceneChange", channel.persistOnSceneChange);
 
 					// If this channel has overrides OR doesn't exist in prefab, save it
 					if (!channelOverride.ObjectEmpty() || !prefabChannel) {
@@ -2224,9 +2252,9 @@ void GameObjectManager::cleanupSimulationResources() {
 
 			for (auto& [channelName, channel] : audio->audioChannels) {
 				if (channel.channel) {
-					//channel.state = AudioState::Stopped;
-					channel.isPendingStop = true;
-					channel.channel = nullptr;
+					channel.state = AudioState::Stopped;
+					channel.channel->stop();
+					channel.isPendingStop = false;
 				}
 			}
 		}

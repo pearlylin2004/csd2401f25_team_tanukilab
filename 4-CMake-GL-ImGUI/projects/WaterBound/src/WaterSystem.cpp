@@ -19,6 +19,7 @@ Technology is prohibited.
 #include "ResourceManager.h"
 #include <iostream>
 #include <vector>
+#include "Component.h"
 
 WaterSystem::WaterSystem()
     : m_waterShaderProgram(0),
@@ -72,14 +73,37 @@ void WaterSystem::update(GameObjectManager& manager, float deltaTime) {
     // Update water animation time
     for (GameObject* obj : allObjects) {
         WaterBody* water = obj->getComponent<WaterBody>();
-        if (water && water->renderWaves) {
-            if (!EditorManager::isEditingMode() && !EditorManager::isPaused())
+
+        if (water) {
+            if (water->renderWaves) {
                 water->waveTime += deltaTime;
+            }
+
+            if (water->pendingHeightIncrease > 0.0f) {
+                float rise = water->heightRiseSpeed * deltaTime;
+                rise = Math_Min(rise, water->pendingHeightIncrease);
+
+                water->height += rise;
+                water->pendingHeightIncrease -= rise;
+                water->lastFrameRise = rise;
+
+                Transform* transform = obj->getComponent<Transform>();
+                if (transform) {
+                    transform->y += rise * 0.5f;
+                }
+            }
+            else {
+                water->lastFrameRise = 0.0f;
+            }
+            if (water && water->renderWaves) {
+                if (!EditorManager::isEditingMode() && !EditorManager::isPaused())
+                    water->waveTime += deltaTime;
+            }
         }
     }
 
     // Apply water physics to objects
-    applyWaterPhysics(manager);
+    applyWaterPhysics(manager, deltaTime);
 }
 
 void WaterSystem::render(GameObjectManager& manager) {
@@ -276,42 +300,17 @@ void WaterSystem::renderWaterBody(GameObject* waterObj) {
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, water->waterTexture);
     }
-
+        
     // Draw
     glBindVertexArray(mesh.vao);
     glDrawElements(GL_TRIANGLES, mesh.elementCount, GL_UNSIGNED_INT, nullptr);
     glBindVertexArray(0);
 }
 
-bool WaterSystem::isPointInWater(GameObject* waterObj, const Vector2D& point) {
-    WaterBody* water = waterObj->getComponent<WaterBody>();
-    Transform* transform = waterObj->getComponent<Transform>();
-
-    if (!water || !transform) return false;
-
-    // Simple AABB check
-    float halfWidth = water->width * transform->scaleX * 0.5f;
-    float halfHeight = water->height * transform->scaleY * 0.5f;
-
-    float minX = transform->x - halfWidth;
-    float maxX = transform->x + halfWidth;
-    float minY = transform->y - halfHeight;
-    float maxY = transform->y + halfHeight;
-
-    bool inWater = (point.x >= minX &&
-        point.x <= maxX &&
-        point.y >= minY &&
-        point.y <= maxY);
-
-
-    return inWater;
-}
-
-void WaterSystem::applyWaterPhysics(GameObjectManager& manager) {
+void WaterSystem::applyWaterPhysics(GameObjectManager& manager, float deltaTime) {
     std::vector<GameObject*> allObjects;
     manager.getAllGameObjects(allObjects);
 
-    // Find all water bodies
     std::vector<GameObject*> waterBodies;
     for (GameObject* obj : allObjects) {
         if (obj->hasComponent<WaterBody>()) {
@@ -319,7 +318,6 @@ void WaterSystem::applyWaterPhysics(GameObjectManager& manager) {
         }
     }
 
-    // Check each object against water
     for (GameObject* obj : allObjects) {
         Physics* physics = obj->getComponent<Physics>();
         Transform* transform = obj->getComponent<Transform>();
@@ -327,6 +325,9 @@ void WaterSystem::applyWaterPhysics(GameObjectManager& manager) {
         if (!physics || !transform) continue;
         if (obj->hasComponent<WaterBody>()) continue;
 
+        
+        CollisionInfo* col = obj->getComponent<CollisionInfo>();
+        bool isFloatingObject = col && (col->collisionTag == "floatingObject");
         if (EditorManager::isEditingMode() || EditorManager::isPaused()) {
             physics->velY = 0.f;
             physics->velX = 0.f;
@@ -338,62 +339,59 @@ void WaterSystem::applyWaterPhysics(GameObjectManager& manager) {
 
         physics->inWater = false;
 
-        // Check if object is in any water body
-        for (GameObject* waterObj : waterBodies) {
-            WaterBody* water = waterObj->getComponent<WaterBody>();
-            Transform* waterTransform = waterObj->getComponent<Transform>();
-            if (!waterTransform) continue;
 
-            Vector2D objPos = { transform->x, transform->y };
+        if (isFloatingObject) {
+            for (GameObject* waterObj : waterBodies) {
+                WaterBody* water = waterObj->getComponent<WaterBody>();
+                Transform* waterTransform = waterObj->getComponent<Transform>();
+                if (!water || !waterTransform) continue;
 
-            if (isPointInWater(waterObj, objPos)) {
+
+                float waterHalfW = water->width * 0.5f;
+                float waterHalfH = water->height * 0.5f;
+                float waterMinX = waterTransform->x - waterHalfW;
+                float waterMaxX = waterTransform->x + waterHalfW;
+                float waterMinY = waterTransform->y - waterHalfH;
+                float waterMaxY = waterTransform->y + waterHalfH;
+
+                bool insideWater = (transform->x >= waterMinX && transform->x <= waterMaxX &&
+                    transform->y >= waterMinY && transform->y <= waterMaxY);
+
+                if (!insideWater && !physics->inWater) continue;
+
                 physics->inWater = true;
 
-                //if (physics->buoyancy || water->isTrigger) {
-                //   
+                float waterSurfaceY = waterTransform->y + waterHalfH;
 
-                //    float waterSurfaceY = waterTransform->y + (water->height * waterTransform->scaleY * 0.5f);
-                //    float depth = waterSurfaceY - transform->y;
-
-                //    // submergedFraction
-                //    float halfObjHeight = transform->scaleY * 0.5f;
-                //    float submergedFraction = glm::clamp(depth / (halfObjHeight * 2.0f + 0.001f), 0.0f, 1.0f);
-
-                //    physics->velY += water->buoyancyForce * submergedFraction * 0.016f * 2.0f;
-                //    float verticalDrag = glm::mix(water->waterDrag, water->waterDrag, submergedFraction);
-                //    physics->velY *= verticalDrag;
-                //    physics->velX *= water->waterDrag;
-                //}
-
-                // check for buoyancy flag here so inwater flag can still be set
-                if (!physics->buoyancy) {
-                    physics->velY *= water->waterDrag;
-                    physics->velX *= water->waterDrag;
+                if (water->lastFrameRise > 0.0f) {
+                    transform->y += water->lastFrameRise;
+                    physics->velY = 0.0f;
+                    physics->dynamics.position.y = transform->y;
                     break;
-                } 
+                }
 
-                float waterSurfaceY = waterTransform->y + (water->height * waterTransform->scaleY * 0.5f);
                 float depth = waterSurfaceY - transform->y;
-
-                //// submergedFraction
                 float halfObjHeight = transform->scaleY * 0.5f;
                 float submergedFraction = glm::clamp(depth / (halfObjHeight * 2.0f + 0.001f), 0.0f, 1.0f);
 
-                //// Mass-based 
-                float safeMass = (physics->dynamics.mass > 0.0f) ? physics->dynamics.mass : 1.0f;
-                float buoyancyAccel = (water->buoyancyForce / safeMass) * submergedFraction * 0.016f * 2.0f;
+                float safeMass = physics->dynamics.mass;
+                float buoyancyAccel = (water->buoyancyForce / safeMass) * submergedFraction * 0.016f * 16.0f;
+
                 physics->velY += buoyancyAccel;
 
-                float verticalDrag = glm::mix(water->waterDrag * 0.9999f, water->waterDrag, submergedFraction);
+
+                physics->velY = glm::clamp(physics->velY, physics->maxFallSpeed, 8.0f);
+
+                /*float strongDrag = 0.999f;*/
+                float verticalDrag = glm::mix(water->waterDrag * 0.999f, water->waterDrag, submergedFraction);
                 physics->velY *= verticalDrag;
                 physics->velX *= water->waterDrag;
 
-                break; // Object can only be in one water body at a time
+                break;
             }
         }
     }
 }
-
 void WaterSystem::cleanup() {
 
     // Delete all water meshes

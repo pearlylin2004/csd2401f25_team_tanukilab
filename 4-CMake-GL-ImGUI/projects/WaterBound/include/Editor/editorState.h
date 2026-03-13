@@ -268,6 +268,7 @@ namespace Editor {
 		{"Check Timer", NodeType::CONDITION, NodeImplementation::CHECK_TIMER},
 		{"Compare Global Float", NodeType::CONDITION, NodeImplementation::COMPARE_GLOBAL_FLOAT},
 		{"Check Collided State", NodeType::CONDITION, NodeImplementation::CHECK_COLLIDED_STATE},
+		{ "Check Animation End", NodeType::CONDITION, NodeImplementation::CHECK_ANIMATION_END },
 		
 		// ACTIONS
 		{"Print Message", NodeType::ACTION, NodeImplementation::PRINT_MESSAGE},
@@ -409,6 +410,7 @@ namespace Editor {
 		{"Font",
 			[](GameObject* obj) {
 			obj->addComponent<FontComponent>();
+			obj->getComponent<FontComponent>()->mdl = Font::fontMdls[0];
 			DebugLog::addMessage("Added Font component for " + obj->getObjectName());
 			},
 			[](const GameObject* obj) { return obj->hasComponent<FontComponent>(); },

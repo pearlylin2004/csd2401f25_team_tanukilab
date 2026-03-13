@@ -741,14 +741,14 @@ void PrefabManager::applyPrefabComponents(GameObject* go, const rapidjson::Value
 			//std::cout << t->scaleX << " " << t->scaleY << " " << t->scaleZ << "scale\n\n";
 		}
 
-		if (jt.HasMember("parentName") && jt["parentName"].IsString())
+		/*if (jt.HasMember("parentName") && jt["parentName"].IsString())
 			t->parentName = jt["parentName"].GetString();
 		if (jt.HasMember("localOffset") && jt["localOffset"].IsArray() && jt["localOffset"].Size() == 2) {
 			t->localOffset.x = jt["localOffset"][0].GetFloat();
 			t->localOffset.y = jt["localOffset"][1].GetFloat();
 		}
 		if (jt.HasMember("localRotation") && jt["localRotation"].IsNumber())
-			t->localRotation = jt["localRotation"].GetFloat();
+			t->localRotation = jt["localRotation"].GetFloat();*/
 	}
 
 	// ---- Render ----
@@ -1083,6 +1083,8 @@ void PrefabManager::applyPrefabComponents(GameObject* go, const rapidjson::Value
 				ch->isSpatial = JsonIO::GetBoolOr(channelObj, "isSpatial", false);
 				ch->minDistance = JsonIO::GetFloatOr(channelObj, "minDistance", 1.0f);
 				ch->maxDistance = JsonIO::GetFloatOr(channelObj, "maxDistance", 100.0f);
+				ch->spread = JsonIO::GetFloatOr(channelObj, "spread", 180.0f);
+				ch->persistOnSceneChange = JsonIO::GetBoolOr(channelObj, "persistOnSceneChange", false);
 			}
 		}
 		// OLD FORMAT: Single channel (backwards compatibility)
@@ -1104,6 +1106,8 @@ void PrefabManager::applyPrefabComponents(GameObject* go, const rapidjson::Value
 			ac->isSpatial = JsonIO::GetBoolOr(ja, "isSpatial", false);
 			ac->minDistance = JsonIO::GetFloatOr(ja, "minDistance", 1.0f);
 			ac->maxDistance = JsonIO::GetFloatOr(ja, "maxDistance", 100.0f);
+			ac->spread = JsonIO::GetFloatOr(ja, "spread", 180.0f);
+
 		}
 	}
 
@@ -1283,13 +1287,13 @@ void PrefabManager::serializeComponents(const GameObject* obj, rapidjson::Value&
 		jt.AddMember("rotation", t->rotation, a);
 		JsonIO::WriteVec3(jt, "scale", t->scaleX, t->scaleY, t->scaleZ, a);
 
-		if (!t->parentName.empty()) {
+		/*if (!t->parentName.empty()) {
 			jt.AddMember("parentName", rapidjson::Value(t->parentName.c_str(), a), a);
 			rapidjson::Value lo(rapidjson::kArrayType);
 			lo.PushBack(t->localOffset.x, a).PushBack(t->localOffset.y, a);
 			jt.AddMember("localOffset", lo, a);
 			jt.AddMember("localRotation", t->localRotation, a);
-		}
+		}*/
 
 		comps.AddMember("Transform", jt, a);
 	}
@@ -1477,6 +1481,9 @@ void PrefabManager::serializeComponents(const GameObject* obj, rapidjson::Value&
 			channelObj.AddMember("isSpatial", channel.isSpatial, a);
 			channelObj.AddMember("minDistance", channel.minDistance, a);
 			channelObj.AddMember("maxDistance", channel.maxDistance, a);
+			channelObj.AddMember("spread", channel.spread, a);
+
+			channelObj.AddMember("persistOnSceneChange", channel.persistOnSceneChange, a);
 
 			channels.AddMember(rapidjson::Value(channelName.c_str(), a), channelObj, a);
 		}
@@ -1805,4 +1812,18 @@ void PrefabManager::applyPrefabComponentsSelective(GameObject* obj, const rapidj
 		temp.AddMember(rapidjson::Value(compName, a), finalCompData, a);
 		applyPrefabComponents(obj, temp);
 	}
+}
+
+void PrefabManager::loadPrefabFromString(const std::string& prefabID, const std::string& jsonStr) {
+	rapidjson::Document doc;
+	doc.Parse(jsonStr.c_str());
+	if (doc.HasParseError()) return;
+
+	m_prefabCache[prefabID].CopyFrom(doc, m_prefabCache[prefabID].GetAllocator());
+	m_prefabBeforeEdit[prefabID].CopyFrom(doc, m_prefabBeforeEdit[prefabID].GetAllocator());
+
+	// match savePrefab's write pattern
+	std::string err;
+	JsonIO::WriteDocumentToFile(std::string(RUNTIME_DIR_R) + getPrefabPath(prefabID), doc, true, &err);
+	JsonIO::WriteDocumentToFile(std::string(SOURCE_DIR_R) + getPrefabPath(prefabID), doc, true, &err);
 }

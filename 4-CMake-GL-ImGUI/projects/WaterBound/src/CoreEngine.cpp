@@ -172,8 +172,6 @@ void CoreEngine::Init(bool forceWindowed) {
     glfwPollEvents();
     m_isRunning = true;
 
-    startBGM();
-
     //AudioHandler::getInstance().playSound(soundID::bg, 0.2f);
 }
 
@@ -280,13 +278,6 @@ void CoreEngine::Update(float deltaTime) {
 #ifdef _DEBUG
     static bool wasEditingMode = true;
     bool isEditingNow = EditorManager::isEditingMode();
-
-    if (wasEditingMode && !isEditingNow) {
-        resumeBGM();  // Start when entering simulation
-    }
-    if (!wasEditingMode && isEditingNow) {
-        pauseBGM();   // Stop when returning to editor
-    }
 
     wasEditingMode = isEditingNow;
 #endif
@@ -428,7 +419,6 @@ void CoreEngine::windowIconifyCallback(GLFWwindow* window, int iconified) {
             //window was minimized
             //engine->audio.pauseAll();
             AudioHandler::getInstance().pauseAll(*engine->m_manager);
-            engine->pauseBGM();//pause bgm
             engine->m_isPaused = true; //set paused flag
             
         }
@@ -438,7 +428,6 @@ void CoreEngine::windowIconifyCallback(GLFWwindow* window, int iconified) {
             //engine->audio.playSound(soundID::bg, 0.2f);
             if (!EditorManager::isEditingMode()) {
                 AudioHandler::getInstance().resumeAll(*engine->m_manager);
-                engine->resumeBGM();
             }
             engine->m_isPaused = false; //clear paused flag
             
@@ -454,44 +443,13 @@ void CoreEngine::windowFocusCallback(GLFWwindow* window, int focused) {
             engine->m_isPaused = true; //set paused flag
             //window lost focus
             AudioHandler::getInstance().pauseAll(*engine->m_manager);
-            engine->pauseBGM();
         }
         else {
             engine->m_isPaused = false; //clear paused flag
             //window regained focus
             if (!EditorManager::isEditingMode()) {
                 AudioHandler::getInstance().resumeAll(*engine->m_manager);
-                engine->resumeBGM();
             }
         }
     }
-}
-
-void CoreEngine::startBGM() {
-    if (m_bgmChannel) return;  // Already playing
-
-    AudioChannel bgm;
-    bgm.audioFile = m_bgmFilePath;
-    bgm.loop = true;
-    bgm.volume = 0.125f;
-
-    m_bgmChannel = AudioHandler::getInstance().playSound(&bgm);
-
-    // Register so setMusicVolume() can update it live
-    AudioHandler::getInstance().registerBGMChannel(m_bgmChannel);
-}
-
-void CoreEngine::stopBGM() {
-    if (m_bgmChannel) {
-        m_bgmChannel->stop();
-        m_bgmChannel = nullptr;
-    }
-}
-
-void CoreEngine::pauseBGM() {
-    if (m_bgmChannel) m_bgmChannel->setPaused(true);
-}
-
-void CoreEngine::resumeBGM() {
-    if (m_bgmChannel) m_bgmChannel->setPaused(false);
 }
