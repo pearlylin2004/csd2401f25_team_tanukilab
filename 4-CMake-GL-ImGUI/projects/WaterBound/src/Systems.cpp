@@ -475,7 +475,11 @@ void RenderSystem::batchingSetUp(GameObjectManager& manager, float const& deltaT
 			{
 				Animation* animation = obj->getComponent<Animation>();
 				StateMachine* sm = obj->getComponent<StateMachine>();
-				AnimateState& as = animation->animState[static_cast<int>(sm->state)];
+				const int stateIndex = static_cast<int>(sm->state);
+				if (stateIndex < 0 || stateIndex >= static_cast<int>(animation->animState.size())) {
+					continue;
+				}
+				AnimateState& as = animation->animState[stateIndex];
 
 				if (render->hasAnimation && !as.texFile.empty()) {
 					glm::vec2 texOffSet{ as.currentFrameColumn / static_cast<float>(as.totalColumn), 1.f - ((as.currentFrameRow + 1) / static_cast<float>(as.totalRow)) };

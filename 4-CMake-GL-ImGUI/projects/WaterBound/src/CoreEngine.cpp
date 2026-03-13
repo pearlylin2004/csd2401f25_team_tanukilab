@@ -283,17 +283,18 @@ void CoreEngine::Update(float deltaTime) {
     // Record player state for replay and update ghost playback
     auto& replay = ReplaySystem::getInstance();
     auto currentGS = GUISystem::getInstance().getCurrentState();
-    if (replay.isRecording() && currentGS != GameState::PAUSED) {
+    const bool allowReplayRuntime = !EditorManager::isEditingMode();
+    if (allowReplayRuntime && replay.isRecording() && currentGS != GameState::PAUSED) {
         replay.recordFrame(*m_manager, deltaTime);
     }
-    if (replay.isPlaying() && currentGS != GameState::PAUSED) {
+    if (allowReplayRuntime && replay.isPlaying() && currentGS != GameState::PAUSED) {
         replay.updateGhost(*m_manager, deltaTime);
     }
-    if (replay.isViewerMode() && currentGS != GameState::PAUSED) {
+    if (allowReplayRuntime && replay.isViewerMode() && currentGS != GameState::PAUSED) {
         replay.updateViewer(deltaTime);
     }
     // Apply recorded world object state every frame in viewer mode
-    if (replay.isViewerMode()) {
+    if (allowReplayRuntime && replay.isViewerMode()) {
         replay.applyWorldSnapshot(*m_manager);
     }
 
