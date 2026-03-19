@@ -1,0 +1,392 @@
+{
+  "version": 1,
+  "nodes": [
+    {
+      "id": 1,
+      "implementation": "On Collision Enter",
+      "type": 0,
+      "position": [
+        -200.0,
+        0.0
+      ],
+      "hasInput": false,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false,
+      "parameters": {
+        "colFilterType": "tag",
+        "colFilterValue": "water"
+      }
+    },
+    {
+      "id": 2,
+      "implementation": "Compare Global Float",
+      "type": 2,
+      "position": [
+        401.0,
+        4.0
+      ],
+      "hasInput": true,
+      "hasOutput": false,
+      "hasTrueOutput": true,
+      "hasFalseOutput": false,
+      "parameters": {
+        "comparison": "less",
+        "threshold": "100",
+        "variable": "bullets"
+      }
+    },
+    {
+      "id": 3,
+      "implementation": "Set Global Float",
+      "type": 1,
+      "position": [
+        710.0,
+        -7.0
+      ],
+      "hasInput": true,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false,
+      "parameters": {
+        "value": "100",
+        "variable": "bullets"
+      }
+    },
+    {
+      "id": 4,
+      "implementation": "Play Sound",
+      "type": 1,
+      "position": [
+        1006.0,
+        -10.0
+      ],
+      "hasInput": true,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false,
+      "parameters": {
+        "channel": "refill"
+      }
+    },
+    {
+      "id": 5,
+      "implementation": "Trigger Bullet Refill Event",
+      "type": 1,
+      "position": [
+        1319.0,
+        -14.0
+      ],
+      "hasInput": true,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false,
+      "parameters": {
+        "targetType": "collided",
+        "targetValue": ""
+      }
+    },
+    {
+      "id": 6,
+      "implementation": "Check Collided State",
+      "type": 2,
+      "position": [
+        109.0,
+        -2.0
+      ],
+      "hasInput": true,
+      "hasOutput": false,
+      "hasTrueOutput": true,
+      "hasFalseOutput": true,
+      "parameters": {
+        "state": "Idle"
+      }
+    },
+    {
+      "id": 7,
+      "implementation": "Trigger Bullet Refill Event",
+      "type": 1,
+      "position": [
+        1685.0,
+        -16.0
+      ],
+      "hasInput": true,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false,
+      "parameters": {
+        "targetType": "tag",
+        "targetValue": "inventory"
+      }
+    },
+    {
+      "id": 8,
+      "implementation": "On Start",
+      "type": 0,
+      "position": [
+        -244.0,
+        -115.0
+      ],
+      "hasInput": false,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false
+    },
+    {
+      "id": 9,
+      "implementation": "Set Position",
+      "type": 1,
+      "position": [
+        77.0,
+        -116.0
+      ],
+      "hasInput": true,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false,
+      "parameters": {
+        "x": "-20",
+        "y": "0"
+      }
+    },
+    {
+      "id": 10,
+      "implementation": "Print Message",
+      "type": 1,
+      "position": [
+        393.0,
+        -118.0
+      ],
+      "hasInput": true,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false,
+      "parameters": {
+        "message": "I love GAM"
+      }
+    },
+    {
+      "id": 11,
+      "implementation": "On Update",
+      "type": 0,
+      "position": [
+        -238.0,
+        186.0
+      ],
+      "hasInput": false,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false
+    },
+    {
+      "id": 12,
+      "implementation": "Check State",
+      "type": 2,
+      "position": [
+        81.0,
+        175.0
+      ],
+      "hasInput": true,
+      "hasOutput": false,
+      "hasTrueOutput": true,
+      "hasFalseOutput": true,
+      "parameters": {
+        "state": "Dead"
+      }
+    },
+    {
+      "id": 13,
+      "implementation": "Restart Level",
+      "type": 1,
+      "position": [
+        375.0,
+        206.0
+      ],
+      "hasInput": true,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false
+    },
+    {
+      "id": 14,
+      "implementation": "Check State",
+      "type": 2,
+      "position": [
+        34.0,
+        336.0
+      ],
+      "hasInput": true,
+      "hasOutput": false,
+      "hasTrueOutput": true,
+      "hasFalseOutput": true,
+      "parameters": {
+        "state": "Jumping"
+      }
+    },
+    {
+      "id": 15,
+      "implementation": "Play Random Sound",
+      "type": 1,
+      "position": [
+        660.0,
+        336.0
+      ],
+      "hasInput": true,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false,
+      "parameters": {
+        "audio_0": "jump-audio-1",
+        "audio_1": "jump-audio-2",
+        "audio_10": "jump-audio-11",
+        "audio_2": "jump-audio-3",
+        "audio_3": "jump-audio-4",
+        "audio_4": "jump-audio-5",
+        "audio_5": "jump-audio-6",
+        "audio_6": "jump-audio-7",
+        "audio_7": "jump-audio-8",
+        "audio_8": "jump-audio-9",
+        "audio_9": "jump-audio-10",
+        "cooldown": "0.700000"
+      }
+    },
+    {
+      "id": 17,
+      "implementation": "Compare Variable",
+      "type": 2,
+      "position": [
+        330.0,
+        336.0
+      ],
+      "hasInput": true,
+      "hasOutput": false,
+      "hasTrueOutput": true,
+      "hasFalseOutput": false,
+      "parameters": {
+        "comparison": "less",
+        "threshold": "1",
+        "variable": "jumpPlayed"
+      }
+    },
+    {
+      "id": 18,
+      "implementation": "Set Float",
+      "type": 1,
+      "position": [
+        330.0,
+        450.0
+      ],
+      "hasInput": true,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false,
+      "parameters": {
+        "value": "0",
+        "variable": "jumpPlayed"
+      }
+    },
+    {
+      "id": 19,
+      "implementation": "Set Float",
+      "type": 1,
+      "position": [
+        960.0,
+        336.0
+      ],
+      "hasInput": true,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false,
+      "parameters": {
+        "value": "1",
+        "variable": "jumpPlayed"
+      }
+    }
+  ],
+  "connections": [
+    {
+      "fromNodeId": 2,
+      "outputPin": "True",
+      "toNodeId": 3,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 3,
+      "outputPin": "Out",
+      "toNodeId": 4,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 4,
+      "outputPin": "Out",
+      "toNodeId": 5,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 1,
+      "outputPin": "Out",
+      "toNodeId": 6,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 6,
+      "outputPin": "True",
+      "toNodeId": 2,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 5,
+      "outputPin": "Out",
+      "toNodeId": 7,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 9,
+      "outputPin": "Out",
+      "toNodeId": 10,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 11,
+      "outputPin": "Out",
+      "toNodeId": 12,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 12,
+      "outputPin": "True",
+      "toNodeId": 13,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 11,
+      "outputPin": "Out",
+      "toNodeId": 14,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 14,
+      "outputPin": "True",
+      "toNodeId": 17,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 14,
+      "outputPin": "False",
+      "toNodeId": 18,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 17,
+      "outputPin": "True",
+      "toNodeId": 15,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 15,
+      "outputPin": "Out",
+      "toNodeId": 19,
+      "inputPin": "In"
+    }
+  ]
+}

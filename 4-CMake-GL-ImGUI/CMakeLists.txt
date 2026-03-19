@@ -1,6 +1,6 @@
 # ======================= Project Configuration =========================
-cmake_minimum_required(VERSION 3.20)          # Updated to avoid policy warnings
-project(WaterBound)
+cmake_minimum_required(VERSION 3.20)
+project(TanukiEngine)
 
 set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 include(ImportDependencies)
@@ -9,123 +9,200 @@ importDependencies()
 add_definitions(-DGLEW_STATIC)
 add_definitions(-DUSE_CSD3151_AUTOMATION=0)
 
-set(ALL_LIBS
-  PRIVATE glfw
-  PRIVATE libglew_static
-  PRIVATE imgui
-  PRIVATE ImGuizmo
-  PRIVATE stb
-  PRIVATE lua
-  PRIVATE rapidjson
-  PRIVATE freetype
+set(PROJECTS_DIR "${CMAKE_CURRENT_LIST_DIR}/projects")
+set(ENGINE_DIR   "${PROJECTS_DIR}/TanukiEngine")
+set(EDITOR_DIR   "${PROJECTS_DIR}/TanukiEditor")
+set(GAMES_DIR    "${PROJECTS_DIR}/Games")
+set(FMOD_LIB_DIR "${ENGINE_DIR}/lib")
+set(FMOD_DIR     "${ENGINE_DIR}/lib/FMOD")
+
+set(TANUKI_THIRD_PARTY
+    glfw
+    libglew_static
+    imgui
+    ImGuizmo
+    stb
+    lua
+    rapidjson
+    freetype
 )
 
-include_directories(${CMAKE_CURRENT_LIST_DIR}/lib/glm)
+# ======================= [1] TANUKI ENGINE (Static Lib) ================
 
-# ======================= AUTO PROJECT DISCOVERY =========================
-file(GLOB children RELATIVE "${CMAKE_CURRENT_LIST_DIR}/projects"
-     "${CMAKE_CURRENT_LIST_DIR}/projects/*")
-
-foreach(child ${children})
-  if(IS_DIRECTORY "${CMAKE_CURRENT_LIST_DIR}/projects/${child}")
-    message(STATUS "Configuring project: ${child}")
-
-    file(GLOB_RECURSE ${child}_source_files
-         ${CMAKE_CURRENT_LIST_DIR}/projects/${child}/src/*.cpp
-         ${CMAKE_CURRENT_LIST_DIR}/projects/${child}/include/*.h
-         ${CMAKE_CURRENT_LIST_DIR}/projects/${child}/include/*.hpp)
-
-# ===================== Filter for editor files in VS =====================
-    file(GLOB_RECURSE ${child}_editor_headers
-        ${CMAKE_CURRENT_LIST_DIR}/projects/${child}/include/Editor/*.h
-        ${CMAKE_CURRENT_LIST_DIR}/projects/${child}/include/Editor/*.hpp
-    )
-
-    file(GLOB_RECURSE ${child}_editor_sources
-        ${CMAKE_CURRENT_LIST_DIR}/projects/${child}/src/Editor/*.cpp
-    )
-
-    source_group("Header Files\\Editor" FILES ${${child}_editor_headers})
-    source_group("Source Files\\Editor" FILES ${${child}_editor_sources})
-
-    list(APPEND ${child}_source_files
-        ${${child}_editor_headers}
-        ${${child}_editor_sources}
-    )
-# ========================================================================
-
-    add_executable(${child} ${${child}_source_files})
-    target_link_libraries(${child} ${ALL_LIBS})
-    set_property(TARGET ${child} PROPERTY CXX_STANDARD 20)
-
-    if (CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
-      target_compile_options(${child} PRIVATE -Wall ${DisableWarnings})
-    elseif (MSVC)
-      target_compile_options(${child} PRIVATE /W4 /WX-)
-    endif()
-
-    target_include_directories(${child} PRIVATE
-      ${CMAKE_CURRENT_LIST_DIR}/projects/${child}/include
-      ${lua_SOURCE_DIR}
-    )
-  endif()
-endforeach()
-
-# ======================= WaterBound-specific config ====================
-set(WB_DIR        "${CMAKE_CURRENT_LIST_DIR}/projects/WaterBound")
-set(WB_ASSETS_DIR "${WB_DIR}/assets")
-
-# Include + link (FMOD)
-target_include_directories(WaterBound PRIVATE
-  "${WB_DIR}/assets"
-  "${WB_DIR}/lib/FMOD"
-)
-target_link_directories(WaterBound PRIVATE "${WB_DIR}/lib")
-target_link_libraries(WaterBound PRIVATE fmod_vc.lib fmodL_vc.lib lua)
-
-# FMOD DLLs next to exe
-add_custom_command(TARGET WaterBound POST_BUILD
-  COMMAND ${CMAKE_COMMAND} -E copy
-          "${WB_DIR}/lib/fmod.dll"  "$<TARGET_FILE_DIR:WaterBound>/fmod.dll"
-  COMMAND ${CMAKE_COMMAND} -E copy
-          "${WB_DIR}/lib/fmodL.dll" "$<TARGET_FILE_DIR:WaterBound>/fmodL.dll"
+file(GLOB_RECURSE ENGINE_SOURCES
+    "${ENGINE_DIR}/src/*.cpp"
+    "${ENGINE_DIR}/include/*.h"
+    "${ENGINE_DIR}/include/*.hpp"
 )
 
-# Make shaders visible in IDE (not compiled)
-file(GLOB_RECURSE WB_SHADER_FILES
-     "${WB_ASSETS_DIR}/shaders/*.vert"
-     "${WB_ASSETS_DIR}/shaders/*.frag"
-     "${WB_ASSETS_DIR}/shaders/*.glsl")
-if(WB_SHADER_FILES)
-  set_source_files_properties(${WB_SHADER_FILES} PROPERTIES HEADER_FILE_ONLY TRUE)
-  target_sources(WaterBound PRIVATE ${WB_SHADER_FILES})
-endif()
+file(GLOB_RECURSE ENGINE_EDITOR_HEADERS "${ENGINE_DIR}/include/Editor/*.h")
+file(GLOB_RECURSE ENGINE_EDITOR_SOURCES "${ENGINE_DIR}/src/Editor/*.cpp")
+source_group("Header Files\\Editor" FILES ${ENGINE_EDITOR_HEADERS})
+source_group("Source Files\\Editor" FILES ${ENGINE_EDITOR_SOURCES})
 
-# FIXED: No more cyclic custom target!
-# Assets copied using POST_BUILD instead of a separate target
-add_custom_command(TARGET WaterBound POST_BUILD
-  COMMAND ${CMAKE_COMMAND} -E copy_directory "${WB_ASSETS_DIR}" "$<TARGET_FILE_DIR:WaterBound>/assets"
-  COMMAND ${CMAKE_COMMAND} -E copy_directory "${WB_ASSETS_DIR}" "${CMAKE_BINARY_DIR}/assets"
-  COMMENT "Copying WaterBound assets to runtime and build directories"
+add_library(TanukiEngine STATIC ${ENGINE_SOURCES})
+
+set_property(TARGET TanukiEngine PROPERTY CXX_STANDARD 20)
+
+target_include_directories(TanukiEngine PUBLIC
+    "${ENGINE_DIR}/include"
+    "${ENGINE_DIR}/include/Core"
+    "${ENGINE_DIR}/include/Editor"
+    "${ENGINE_DIR}/include/Logic"
+    "${ENGINE_DIR}/include/Support"
+    "${ENGINE_DIR}/include/Systems"
+    "${FMOD_DIR}"
+    "${lua_SOURCE_DIR}"
 )
 
-# Compile-time path macros used by your C++ code
-target_compile_definitions(WaterBound PRIVATE
-  RUNTIME_ASSETS_DIR_R="./assets"
-  RUNTIME_SHADER_DIR_R="./assets/shaders"
-  RUNTIME_SCENE_DIR_R="./assets/Scene"
-  RUNTIME_PREFAB_DIR_R="./assets/Prefab"
-  RUNTIME_AUDIO_DIR_R="./assets/Audio"
-  RUNTIME_SCRIPT_DIR_R="./assets/scripting"
-  RUNTIME_RES_DIR_R="./assets/resources"
-  SOURCE_ASSETS_DIR_R="${WB_ASSETS_DIR}"
+target_link_directories(TanukiEngine PUBLIC "${FMOD_LIB_DIR}")
+
+target_link_libraries(TanukiEngine PUBLIC
+    ${TANUKI_THIRD_PARTY}
+    fmod_vc.lib
+    fmodL_vc.lib
+)
+
+# Path macros — PUBLIC so engine, editor and games all get them
+target_compile_definitions(TanukiEngine PUBLIC
+    RUNTIME_ASSETS_DIR_R="./assets"
+    RUNTIME_SHADER_DIR_R="./assets/shaders"
+    RUNTIME_SCENE_DIR_R="./assets/Scene"
+    RUNTIME_PREFAB_DIR_R="./assets/Prefab"
+    RUNTIME_AUDIO_DIR_R="./assets/Audio"
+    RUNTIME_SCRIPT_DIR_R="./assets/scripting"
+    RUNTIME_RES_DIR_R="./assets/resources"
 )
 
 if(MSVC)
-    set_target_properties(WaterBound PROPERTIES
+    target_compile_options(TanukiEngine PRIVATE /W4 /WX- /FS)
+else()
+    target_compile_options(TanukiEngine PRIVATE -Wall)
+endif()
+
+# Helper — copies FMOD DLLs next to any exe that links TanukiEngine
+macro(copy_fmod_dlls TARGET_NAME)
+    add_custom_command(TARGET ${TARGET_NAME} POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy
+            "${FMOD_LIB_DIR}/fmod.dll"  "$<TARGET_FILE_DIR:${TARGET_NAME}>/fmod.dll"
+        COMMAND ${CMAKE_COMMAND} -E copy
+            "${FMOD_LIB_DIR}/fmodL.dll" "$<TARGET_FILE_DIR:${TARGET_NAME}>/fmodL.dll"
+        COMMENT "Copying FMOD DLLs to ${TARGET_NAME} output"
+    )
+endmacro()
+
+# Helper — copies engine assets (shaders etc.) next to any exe
+macro(copy_engine_assets TARGET_NAME)
+    add_custom_command(TARGET ${TARGET_NAME} POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
+            "${ENGINE_DIR}/assets" "$<TARGET_FILE_DIR:${TARGET_NAME}>/assets"
+        COMMENT "Copying engine assets to ${TARGET_NAME} output"
+    )
+endmacro()
+
+# ======================= [2] TANUKI EDITOR (Executable) ================
+
+file(GLOB_RECURSE EDITOR_SOURCES
+    "${EDITOR_DIR}/src/*.cpp"
+    "${EDITOR_DIR}/include/*.h"
+    "${EDITOR_DIR}/include/*.hpp"
+)
+
+add_executable(TanukiEditor ${EDITOR_SOURCES})
+
+set_property(TARGET TanukiEditor PROPERTY CXX_STANDARD 20)
+
+target_link_libraries(TanukiEditor PRIVATE TanukiEngine)
+
+copy_fmod_dlls(TanukiEditor)
+copy_engine_assets(TanukiEditor)
+
+if(MSVC)
+    set_target_properties(TanukiEditor PROPERTIES
         LINK_FLAGS_DEBUG   "/SUBSYSTEM:CONSOLE"
         LINK_FLAGS_RELEASE "/SUBSYSTEM:WINDOWS"
+        VS_DEBUGGER_WORKING_DIRECTORY "$<TARGET_FILE_DIR:TanukiEditor>"
     )
 endif()
 
-# ======================= END AUTO CONFIGURATION =========================
+# ======================= [3] GAMES (Auto-discovered) ===================
+# Every subfolder under projects/Games/ becomes a game executable.
+# To add a new game: create projects/Games/NewGame/ with src/ include/ assets/
+# No CMake edits needed — it gets picked up automatically.
+
+file(GLOB game_candidates
+    RELATIVE "${GAMES_DIR}"
+    "${GAMES_DIR}/*"
+)
+
+foreach(game ${game_candidates})
+    set(GAME_DIR "${GAMES_DIR}/${game}")
+
+    if(NOT IS_DIRECTORY "${GAME_DIR}")
+        continue()
+    endif()
+
+    message(STATUS "Configuring game: ${game}")
+
+    file(GLOB_RECURSE ${game}_sources
+        "${GAME_DIR}/src/*.cpp"
+        "${GAME_DIR}/include/*.h"
+        "${GAME_DIR}/include/*.hpp"
+    )
+
+    add_executable(${game} ${${game}_sources})
+
+    set_property(TARGET ${game} PROPERTY CXX_STANDARD 20)
+
+    target_include_directories(${game} PRIVATE
+        "${GAME_DIR}/include"
+    )
+
+    target_link_libraries(${game} PRIVATE TanukiEngine)
+
+    copy_fmod_dlls(${game})
+    copy_engine_assets(${game})
+
+    if(MSVC)
+        target_compile_options(${game} PRIVATE /W4 /WX-)
+    else()
+        target_compile_options(${game} PRIVATE -Wall)
+    endif()
+
+    # SOURCE_ASSETS_DIR_R is game-specific — each game points to its own assets
+    target_compile_definitions(${game} PRIVATE
+        SOURCE_ASSETS_DIR_R="${GAME_DIR}/assets"
+    )
+
+    if(MSVC)
+        set_target_properties(${game} PROPERTIES
+            LINK_FLAGS_DEBUG   "/SUBSYSTEM:CONSOLE"
+            LINK_FLAGS_RELEASE "/SUBSYSTEM:WINDOWS"
+            VS_DEBUGGER_WORKING_DIRECTORY "$<TARGET_FILE_DIR:${game}>"
+        )
+    endif()
+
+    # -------------------------------------------------------------------
+    # WaterBound-specific extras
+    # -------------------------------------------------------------------
+    if(game STREQUAL "WaterBound")
+        # Copy game assets on top of engine assets
+        add_custom_command(TARGET WaterBound POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy_directory
+                "${GAME_DIR}/assets" "$<TARGET_FILE_DIR:WaterBound>/assets"
+            COMMENT "Copying WaterBound assets to output"
+        )
+
+        # Make shaders visible in VS IDE
+        file(GLOB_RECURSE WB_SHADERS
+            "${GAME_DIR}/assets/shaders/*.vert"
+            "${GAME_DIR}/assets/shaders/*.frag"
+            "${GAME_DIR}/assets/shaders/*.glsl"
+        )
+        if(WB_SHADERS)
+            set_source_files_properties(${WB_SHADERS} PROPERTIES HEADER_FILE_ONLY TRUE)
+            target_sources(WaterBound PRIVATE ${WB_SHADERS})
+        endif()
+    endif()
+
+endforeach()

@@ -1,0 +1,348 @@
+{
+  "version": 1,
+  "nodes": [
+    {
+      "id": 6,
+      "implementation": "On Collision Enter",
+      "type": 0,
+      "position": [
+        -84.0,
+        -59.0
+      ],
+      "hasInput": false,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false,
+      "parameters": {
+        "colFilterType": "tag",
+        "colFilterValue": "bullet"
+      }
+    },
+    {
+      "id": 7,
+      "implementation": "Reset Timer",
+      "type": 1,
+      "position": [
+        519.0,
+        -53.0
+      ],
+      "hasInput": true,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false,
+      "parameters": {
+        "timerName": "timer_3"
+      }
+    },
+    {
+      "id": 9,
+      "implementation": "Set Float",
+      "type": 1,
+      "position": [
+        814.0,
+        -52.0
+      ],
+      "hasInput": true,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false,
+      "parameters": {
+        "value": "1",
+        "variable": "bulletHit"
+      }
+    },
+    {
+      "id": 8,
+      "implementation": "On Update",
+      "type": 0,
+      "position": [
+        -92.0,
+        100.0
+      ],
+      "hasInput": false,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false
+    },
+    {
+      "id": 10,
+      "implementation": "Compare Variable",
+      "type": 2,
+      "position": [
+        203.0,
+        105.0
+      ],
+      "hasInput": true,
+      "hasOutput": false,
+      "hasTrueOutput": true,
+      "hasFalseOutput": true,
+      "parameters": {
+        "comparison": "equal",
+        "threshold": "1",
+        "variable": "bulletHit"
+      }
+    },
+    {
+      "id": 3,
+      "implementation": "Check Timer",
+      "type": 2,
+      "position": [
+        826.0,
+        91.0
+      ],
+      "hasInput": true,
+      "hasOutput": false,
+      "hasTrueOutput": true,
+      "hasFalseOutput": true,
+      "parameters": {
+        "threshold": "7.0",
+        "timerName": "timer_3"
+      }
+    },
+    {
+      "id": 2,
+      "implementation": "Set State",
+      "type": 1,
+      "position": [
+        510.0,
+        94.0
+      ],
+      "hasInput": true,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false,
+      "parameters": {
+        "state": "Walking"
+      }
+    },
+    {
+      "id": 11,
+      "implementation": "Set Float",
+      "type": 1,
+      "position": [
+        1425.0,
+        84.0
+      ],
+      "hasInput": true,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false,
+      "parameters": {
+        "value": "0",
+        "variable": "bulletHit"
+      }
+    },
+    {
+      "id": 12,
+      "implementation": "Set Position",
+      "type": 1,
+      "position": [
+        1127.0,
+        93.0
+      ],
+      "hasInput": true,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false,
+      "parameters": {
+        "x": "1000",
+        "y": "0"
+      }
+    },
+    {
+      "id": 14,
+      "implementation": "Scale Proportional",
+      "type": 1,
+      "position": [
+        1130.0,
+        -46.0
+      ],
+      "hasInput": true,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false,
+      "parameters": {
+        "scale": "2.500000"
+      }
+    },
+    {
+      "id": 15,
+      "implementation": "Compare Variable",
+      "type": 2,
+      "position": [
+        220.0,
+        -59.0
+      ],
+      "hasInput": true,
+      "hasOutput": false,
+      "hasTrueOutput": true,
+      "hasFalseOutput": true,
+      "parameters": {
+        "comparison": "equal",
+        "threshold": "1",
+        "variable": "bulletHit"
+      }
+    },
+    {
+      "id": 16,
+      "implementation": "On Collision Enter",
+      "type": 0,
+      "position": [
+        -95.0,
+        336.0
+      ],
+      "hasInput": false,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false,
+      "parameters": {
+        "colFilterType": "tag",
+        "colFilterValue": "player"
+      }
+    },
+    {
+      "id": 17,
+      "implementation": "Check State",
+      "type": 2,
+      "position": [
+        194.0,
+        335.0
+      ],
+      "hasInput": true,
+      "hasOutput": false,
+      "hasTrueOutput": true,
+      "hasFalseOutput": true,
+      "parameters": {
+        "state": "Idle"
+      }
+    },
+    {
+      "id": 18,
+      "implementation": "Set State On Collided",
+      "type": 1,
+      "position": [
+        518.0,
+        240.0
+      ],
+      "hasInput": true,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false,
+      "parameters": {
+        "targetStateCollided": "Dead"
+      }
+    },
+    {
+      "id": 20,
+      "implementation": "Apply Force On Collided",
+      "type": 1,
+      "position": [
+        521.0,
+        370.0000305175781
+      ],
+      "hasInput": true,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false,
+      "parameters": {
+        "forceY": "15.000000"
+      }
+    },
+    {
+      "id": 21,
+      "implementation": "Play Sound",
+      "type": 1,
+      "position": [
+        1224.857177734375,
+        -168.57144165039063
+      ],
+      "hasInput": true,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false,
+      "parameters": {
+        "channel": "default"
+      }
+    }
+  ],
+  "connections": [
+    {
+      "fromNodeId": 7,
+      "outputPin": "Out",
+      "toNodeId": 9,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 8,
+      "outputPin": "Out",
+      "toNodeId": 10,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 10,
+      "outputPin": "True",
+      "toNodeId": 2,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 2,
+      "outputPin": "Out",
+      "toNodeId": 3,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 3,
+      "outputPin": "True",
+      "toNodeId": 12,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 12,
+      "outputPin": "Out",
+      "toNodeId": 11,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 6,
+      "outputPin": "Out",
+      "toNodeId": 15,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 15,
+      "outputPin": "False",
+      "toNodeId": 7,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 17,
+      "outputPin": "True",
+      "toNodeId": 18,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 16,
+      "outputPin": "Out",
+      "toNodeId": 17,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 17,
+      "outputPin": "False",
+      "toNodeId": 20,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 14,
+      "outputPin": "Out",
+      "toNodeId": 21,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 9,
+      "outputPin": "Out",
+      "toNodeId": 21,
+      "inputPin": "In"
+    }
+  ]
+}

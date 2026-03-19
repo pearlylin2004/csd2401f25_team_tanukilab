@@ -1,0 +1,164 @@
+{
+  "version": 1,
+  "nodes": [
+    {
+      "id": 1,
+      "implementation": "On Collision Enter",
+      "type": 0,
+      "position": [
+        -101.00003051757813,
+        -22.999980926513672
+      ],
+      "hasInput": false,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false,
+      "parameters": {
+        "colFilterType": "tag",
+        "colFilterValue": "bullet"
+      }
+    },
+    {
+      "id": 2,
+      "implementation": "On Start",
+      "type": 0,
+      "position": [
+        -91.9999771118164,
+        -154.25
+      ],
+      "hasInput": false,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false
+    },
+    {
+      "id": 3,
+      "implementation": "Set Float",
+      "type": 1,
+      "position": [
+        235.00001525878906,
+        -145.00001525878906
+      ],
+      "hasInput": true,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false,
+      "parameters": {
+        "value": "0.000000",
+        "variable": "waterHold"
+      }
+    },
+    {
+      "id": 4,
+      "implementation": "Modify Float Variable",
+      "type": 1,
+      "position": [
+        238.25006103515625,
+        -21.11107063293457
+      ],
+      "hasInput": true,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false,
+      "parameters": {
+        "value": "1.000000",
+        "variable": "waterHold"
+      }
+    },
+    {
+      "id": 5,
+      "implementation": "On Collision Exit",
+      "type": 0,
+      "position": [
+        -102.5,
+        105.0
+      ],
+      "hasInput": false,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false,
+      "parameters": {
+        "colFilterType": "tag",
+        "colFilterValue": "bullet"
+      }
+    },
+    {
+      "id": 6,
+      "implementation": "Modify Float Variable",
+      "type": 1,
+      "position": [
+        222.00006103515625,
+        97.50000762939453
+      ],
+      "hasInput": true,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false,
+      "parameters": {
+        "value": "-1.000000",
+        "variable": "waterHold"
+      }
+    },
+    {
+      "id": 9,
+      "implementation": "Set Texture",
+      "type": 1,
+      "position": [
+        652.7777709960938,
+        288.1944580078125
+      ],
+      "hasInput": true,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false,
+      "parameters": {
+        "textureFile": "assets/Texture\\Tree_Broken.png"
+      }
+    },
+    {
+      "id": 10,
+      "implementation": "On Update",
+      "type": 0,
+      "position": [
+        -242.50001525878906,
+        292.5000305175781
+      ],
+      "hasInput": false,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false
+    },
+    {
+      "id": 13,
+      "implementation": "Compare Global Float",
+      "type": 2,
+      "position": [
+        63.75,
+        288.75
+      ],
+      "hasInput": true,
+      "hasOutput": false,
+      "hasTrueOutput": true,
+      "hasFalseOutput": true,
+      "parameters": {
+        "comparison": "greater",
+        "threshold": "0.000000",
+        "variable": "broken"
+      }
+    }
+  ],
+  "connections": [
+    {
+      "fromNodeId": 10,
+      "outputPin": "Out",
+      "toNodeId": 13,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 13,
+      "outputPin": "True",
+      "toNodeId": 9,
+      "inputPin": "In"
+    }
+  ]
+}
