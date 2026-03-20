@@ -1,18 +1,24 @@
 --player
 
 local player = {}
- 
--- coyote time
-local coyoteTimer     = 0.0
-local wasOnGround     = false
 
--- jump buffer
-local jumpBufferTimer = 0.0
-
--- jump
-local prevOnGround = false
-local landingTimer = 0.0
 local landingGrace = 0.1
+
+-- per-object state table (fixes hot reload nil issue)
+local objState = {}
+local function getS(obj)
+    if not objState[obj] then
+        objState[obj] = {
+            coyoteTimer     = 0.0,
+            wasOnGround     = false,
+            jumpBufferTimer = 0.0,
+            prevOnGround    = false,
+            landingTimer    = 0.0,
+            initialized     = false,
+        }
+    end
+    return objState[obj]
+end
 
 -- helper func to find bullet
 local function findBullet()
@@ -36,52 +42,57 @@ local function changeState(obj, newState)
     setPlayerState(obj, newState)
     setStateTime(obj, 0.0)
 end
- 
+
 function player.Update(obj, dt)
     if not hasPhysics(obj) or not hasTransform(obj) then return end
 
-    coyoteTimer     = coyoteTimer     or 0.0
-    wasOnGround     = wasOnGround     or false
-    jumpBufferTimer = jumpBufferTimer or 0.0
-    prevOnGround    = prevOnGround    or false
-    landingTimer    = landingTimer    or 0.0
- 
+    local s = getS(obj)
+
+    if not s.initialized then
+        local px, py = getPosition(obj)
+        setDynVelX(obj, 0)
+        setDynVelY(obj, 0)
+        setVelX(obj, 0)
+        setVelY(obj, 0)
+        s.initialized = true
+        return
+    end
+
     -- coyote time update
     local onGround = isOnGround(obj)
-    prevOnGround = wasOnGround
- 
+    s.prevOnGround = s.wasOnGround
+
     if onGround then
-        coyoteTimer = getCoyoteTime(obj)
-        wasOnGround = true
-        landingTimer = landingGrace
+        s.coyoteTimer  = getCoyoteTime(obj)
+        s.wasOnGround  = true
+        s.landingTimer = landingGrace
     else
-        coyoteTimer = coyoteTimer - dt
-        if coyoteTimer < 0 then coyoteTimer = 0 end
-        wasOnGround = false
+        s.coyoteTimer = s.coyoteTimer - dt
+        if s.coyoteTimer < 0 then s.coyoteTimer = 0 end
+        s.wasOnGround = false
     end
- 
-    local canCoyoteJump = coyoteTimer > 0
- 
+
+    local canCoyoteJump = s.coyoteTimer > 0
+
     -- jump buffer
     if isKeyTriggered("SPACE") then
-        jumpBufferTimer = getJumpBufferTime(obj)
+        s.jumpBufferTimer = getJumpBufferTime(obj)
     end
-    if jumpBufferTimer > 0 then
-        jumpBufferTimer = jumpBufferTimer - dt
-        if jumpBufferTimer < 0 then jumpBufferTimer = 0 end
+    if s.jumpBufferTimer > 0 then
+        s.jumpBufferTimer = s.jumpBufferTimer - dt
+        if s.jumpBufferTimer < 0 then s.jumpBufferTimer = 0 end
     end
 
     -- SPACE to jump (tap for small jump, hold for big jump)
-    if jumpBufferTimer > 0 and canCoyoteJump and getCanMove(obj) then
+    if s.jumpBufferTimer > 0 and canCoyoteJump and getCanMove(obj) then
         local jumpVel = getJumpForce(obj) / getDynMass(obj)
         local px, py = getPosition(obj)
-        
         setDynPos(obj, px, py)
         setVelY(obj, jumpVel)
         setDynVelY(obj, jumpVel)
         setOnGround(obj, false)
-        coyoteTimer = 0
-        jumpBufferTimer = 0
+        s.coyoteTimer     = 0
+        s.jumpBufferTimer = 0
         SendInputEvent("SPACE", 0, 0)
     end
 
@@ -105,7 +116,7 @@ function player.Update(obj, dt)
             setDynVelY(obj, 0)
             setOnGround(obj, true)
             setLedgeClimb(obj, false)
-            coyoteTimer = getCoyoteTime(obj)
+            s.coyoteTimer = getCoyoteTime(obj)
         else
             local step = getLedgeClimbSpeed(obj) * dt
             local newY = y + math.min(step, diff)
@@ -116,10 +127,10 @@ function player.Update(obj, dt)
             setOnGround(obj, false)
         end
     end
- 
+
     -- movement (left and right)
     local targetVelX = 0.0
- 
+
     if Input_isKeyHeld("A") and getCanMove(obj) then
         targetVelX = -getMoveSpeed(obj)
         setFlipX(obj, true)
@@ -129,19 +140,20 @@ function player.Update(obj, dt)
         setFlipX(obj, false)
         SendInputEvent("D", 0, 0)
     end
- 
+
     -- flip to face mouse when not moving
     if not Input_isKeyHeld("A") and not Input_isKeyHeld("D") then
         local mx = getMouseWorldX()
         local x, y = getPosition(obj)
         setFlipX(obj, mx < x)
     end
- 
-    -- set velocity
+
+    -- damping + position
     local friction = getFriction(obj)
     applyDamping(obj, friction, targetVelX, dt)
     if not getLedgeClimb(obj) then
         updatePosition(obj, dt)
+        local px, py = getPosition(obj)
     end
 
     -- FSM state update
@@ -159,7 +171,7 @@ function player.Update(obj, dt)
             changeState(obj, "Idle")
         elseif velY > 0 then
             changeState(obj, "Jumping")
-        elseif not isOnGround(obj) and velY < 0 and landingTimer <= 0 then
+        elseif not isOnGround(obj) and velY < 0 and s.landingTimer <= 0 then
             changeState(obj, "Falling")
         end
     elseif state == "Jumping" then
@@ -178,33 +190,33 @@ function player.Update(obj, dt)
 
     setStateTime(obj, getStateTime(obj) + dt)
 
-    if landingTimer > 0 then
-        landingTimer = landingTimer - dt
+    if s.landingTimer > 0 then
+        s.landingTimer = s.landingTimer - dt
     end
- 
+
     -- shoot
     if not canShoot(obj) then return end
- 
+
     local shootTimer = getShootTimer(obj)
     shootTimer = shootTimer + dt
     setShootTimer(obj, shootTimer)
- 
+
     if not isMouseLeftHeld() then
         setShootTimer(obj, getFireRate(obj))
         return
     end
- 
+
     -- check bullet count
     if not hasVSGlobalFloat("bullets") or getVSGlobalFloat("bullets") <= 0 then
         debugLogPlay("Out of bullets!")
         return
     end
- 
+
     if shootTimer < getFireRate(obj) then return end
- 
+
     local bullet = findBullet()
     if not bullet then return end
- 
+
     -- find weapon child
     local spawnObj = obj
     local allObjs = getAllObjects()
@@ -215,10 +227,10 @@ function player.Update(obj, dt)
             break
         end
     end
- 
+
     local mx = getMouseWorldX()
     local my = getMouseWorldY()
- 
+
     -- shoot
     playSound(bullet, "shoot")
     local bx, by = getPosition(spawnObj)
@@ -244,7 +256,7 @@ function player.Update(obj, dt)
     debugLogPlay("Bullet fired!")
     SendInputEvent("LEFT_CLICK", mx, my)
 end
- 
+
 return player
 
 -- --for jumping
