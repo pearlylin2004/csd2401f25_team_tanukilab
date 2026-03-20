@@ -159,7 +159,7 @@ void CoreEngine::Init(bool forceWindowed) {
     PrefabManager::Instance().loadPrefabRegistry();
     //m_guiSystem->init(*m_manager, *m_luaSystem);
     GUISystem::getInstance().init(*m_manager, *m_luaSystem, *m_visualLCSystem);
-    m_luaSystem->init();
+    m_luaSystem->init(*m_manager);
     m_renderSystem->init(*m_manager, winWidth, winHeight);
     m_waterSystem->init();
 #ifdef _DEBUG
