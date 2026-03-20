@@ -406,6 +406,7 @@ void GUISystem::loadScreen(GameObjectManager& manager, const std::string& sceneN
 
     manager.loadScene(runtimeScenePath(sceneName));
     manager.initializeSceneResources();
+    if (m_onSceneLoadCallback) m_onSceneLoadCallback(*g_manager);
 
     createButtons(/*manager*/);
 }
@@ -419,6 +420,7 @@ void GUISystem::loadScreenNoButton(GameObjectManager& manager, const std::string
     manager.init();
     manager.loadScene(runtimeScenePath(sceneName));
     manager.initializeSceneResources();
+    if (m_onSceneLoadCallback) m_onSceneLoadCallback(*g_manager);
 }
 
 
@@ -460,6 +462,9 @@ void GUISystem::restartLevel() {
     g_manager->clearScene();
     g_manager->loadScene(m_currentLevel);
     g_manager->initializeSceneResources();
+
+    if (m_onSceneLoadCallback) m_onSceneLoadCallback(*g_manager);
+
     g_visualLogicSystem->resetLogicState();
     g_visualLogicSystem->initAll(*g_manager);
     resetAllObjectsToSpawn();
@@ -480,6 +485,9 @@ void GUISystem::loadLevel(const std::string& levelName) {
 
     g_manager->loadScene(fullPath);
     g_manager->initializeSceneResources();
+
+    if (m_onSceneLoadCallback) m_onSceneLoadCallback(*g_manager);
+
     g_visualLogicSystem->resetLogicState();
     g_visualLogicSystem->initAll(*g_manager);
 

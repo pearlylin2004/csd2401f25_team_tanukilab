@@ -47,6 +47,10 @@ public:
 	void setMessageBus(MessageBus* bus) { messageBus = bus; } //set message bus
 	void update(GameObjectManager& manager, float deltaTime); //update all Lua scripts
 
+
+	/* -------- On Scene Load ---- */
+	void callSceneLoad(GameObjectManager& manager);
+
 	/* -------- Register Game Script -------- */
 	void registerGameBinding(const std::string& name, lua_CFunction fn);
 	lua_State* getLuaState() { return L; }
@@ -213,6 +217,9 @@ public:
 	static int Lua_hasComponent_Transform(lua_State* L);
 	static int Lua_hasWeaponComponent(lua_State* L);
 	static int Lua_getParentName(lua_State* L);
+	static int Lua_cloneGameObject(lua_State* L);
+	static int Lua_renameGameObject(lua_State* L);
+	static int Lua_setActive(lua_State* L);
 
 
 private:

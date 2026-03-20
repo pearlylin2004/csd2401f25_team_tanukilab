@@ -61,6 +61,10 @@ public:
         m_gameScript = script;
         if (m_luaSystem && m_gameScript)
             m_gameScript->registerLuaBindings(*m_luaSystem);
+
+        GUISystem::getInstance().setOnSceneLoadCallback([this](GameObjectManager& mgr) {
+            if (m_gameScript) m_gameScript->onSceneLoad(mgr);
+            });
     }
 
     //hardcoded bgm again

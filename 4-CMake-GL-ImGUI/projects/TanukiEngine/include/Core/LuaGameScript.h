@@ -22,6 +22,10 @@ class LuaGameScript : public GameScript {
 public:
     LuaGameScript(LuaSystem& lua) : m_lua(lua) {}
 
+    void onSceneLoad(GameObjectManager& manager) override {
+        m_lua.callSceneLoad(manager);
+    }
+
     void update(GameObject& obj, float dt) override {
         (void)obj; (void)dt;if (obj.hasComponent<Input>()) return; // handled by onPlayerInput
         if (!obj.hasComponent<LuaScript>()) return;

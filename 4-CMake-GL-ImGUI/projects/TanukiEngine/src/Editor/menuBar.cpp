@@ -206,6 +206,8 @@ void MenuBar::stopSimulation(GameObjectManager& manager) {
 
     manager.initializeSceneResources();
 
+    GUISystem::getInstance().triggerSceneLoad(manager);
+
     // refresh cached object vector
     CachedGameObjects::Instance().refresh();
 

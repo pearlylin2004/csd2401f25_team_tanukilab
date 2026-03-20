@@ -71,6 +71,15 @@ public:
 
     void createButtons(/*GameObjectManager& manager*/); //create menu buttons
 
+    // for on scene load
+    std::function<void(GameObjectManager&)> m_onSceneLoadCallback;
+    void setOnSceneLoadCallback(std::function<void(GameObjectManager&)> cb) {
+        m_onSceneLoadCallback = cb;
+    }
+    void triggerSceneLoad(GameObjectManager& manager) {
+        if (m_onSceneLoadCallback) m_onSceneLoadCallback(manager);
+    }
+
 
     ButtonAction m_pendingAction = ButtonAction::NONE;
     bool m_pendingRestart = false;

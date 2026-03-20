@@ -1346,6 +1346,46 @@ int LuaSystem::Lua_getParentName(lua_State* L) {
     return 1;
 }
 
+int LuaSystem::Lua_cloneGameObject(lua_State* L) {
+    GameObjectManager* mgr = static_cast<GameObjectManager*>(lua_touserdata(L, lua_upvalueindex(1)));
+    if (!mgr) { lua_pushnil(L); return 1; }
+
+    const char* srcName = lua_tostring(L, 1);
+    const char* dstName = lua_tostring(L, 2);
+
+    if (!srcName || !dstName) { lua_pushnil(L); return 1; }
+    GameObject* cloned = mgr->CloneGameObject(srcName, dstName);
+
+    if (cloned) lua_pushlightuserdata(L, cloned);
+    else lua_pushnil(L);
+
+    return 1;
+}
+
+int LuaSystem::Lua_renameGameObject(lua_State* L) {
+    GameObjectManager* mgr = static_cast<GameObjectManager*>(lua_touserdata(L, lua_upvalueindex(1)));
+    if (!mgr) return 0;
+
+    GameObject* obj = static_cast<GameObject*>(lua_touserdata(L, 1));
+    const char* name = lua_tostring(L, 2);
+
+    if (!obj || !name) return 0;
+    mgr->renameGameObject(obj, name);
+
+    return 0;
+}
+
+int LuaSystem::Lua_setActive(lua_State* L) {
+    GameObject* obj = static_cast<GameObject*>(lua_touserdata(L, 1));
+    if (!obj) return 0;
+
+    obj->active = lua_toboolean(L, 2) != 0;
+
+    return 0;
+}
+
+
+
 void LuaSystem::registerManagerBindings(GameObjectManager& manager) {
     if (!L) return;
 
@@ -1358,6 +1398,14 @@ void LuaSystem::registerManagerBindings(GameObjectManager& manager) {
     lua_pushcclosure(L, Lua_getAllObjects, 1);
     lua_setglobal(L, "getAllObjects");
 
+    lua_pushlightuserdata(L, &manager);
+    lua_pushcclosure(L, Lua_cloneGameObject, 1);
+    lua_setglobal(L, "cloneGameObject");
+
+    lua_pushlightuserdata(L, &manager);
+    lua_pushcclosure(L, Lua_renameGameObject, 1);
+    lua_setglobal(L, "renameGameObject");
+
     // things that doesnt need manager
     lua_register(L, "getObjectName", Lua_getObjectName);
     lua_register(L, "getCollisionTag", Lua_getCollisionTag);
@@ -1365,6 +1413,7 @@ void LuaSystem::registerManagerBindings(GameObjectManager& manager) {
     lua_register(L, "hasTransform", Lua_hasComponent_Transform);
     lua_register(L, "getParentName", Lua_getParentName);
     lua_register(L, "hasWeaponComponent", Lua_hasWeaponComponent);
+    lua_register(L, "setActive", Lua_setActive);
 }
 
 
@@ -1467,5 +1516,17 @@ void LuaSystem::update(GameObjectManager& manager, float deltaTime) {
 
 			scriptComp->scriptsChanged = false;
         }
+    }
+}
+
+void LuaSystem::callSceneLoad(GameObjectManager& manager) {
+    if (!L) return;
+    std::string path = std::string(RUNTIME_SCRIPT_DIR_R) + "/scene.lua";
+    luaL_dofile(L, path.c_str());
+    lua_getglobal(L, "onSceneLoad");
+    if (!lua_isfunction(L, -1)) { lua_pop(L, 1); return; }
+    if (lua_pcall(L, 0, 0, 0) != LUA_OK) {
+        std::cerr << "Lua onSceneLoad error: " << lua_tostring(L, -1) << std::endl;
+        lua_pop(L, 1);
     }
 }
