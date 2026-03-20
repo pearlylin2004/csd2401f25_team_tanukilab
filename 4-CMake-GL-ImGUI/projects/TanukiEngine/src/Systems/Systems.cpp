@@ -770,12 +770,11 @@ void ParticleSystem::activateParticle(GameObjectManager& manager)
 				//static int pid = 0;
 				size_t UID = IDGenerator();
 				Particle::UIDs.push_back(Particle::UID(UID, particleData->master.particleAmt));
-				std::cout << "UID made is: " << UID << std::endl;
+
 				for (size_t i = 0; i < particleData->master.particleAmt; ++i)
 				{
 					std::string name = "Particle_" + std::to_string(UID) + "_" + std::to_string(i);
 					GameObject* newObj = manager.createGameObject(name);
-					std::cout << "Created Particle Object: " << name << std::endl;
 
 					Transform* transform = newObj->addComponent<Transform>();
 					Render* render = newObj->addComponent<Render>();
@@ -1119,20 +1118,24 @@ void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime, M
 
 	manager.getAllGameObjects(gameObjects);
 
-	// reset on ground for all physics obj
-	for (auto* object : gameObjects) {
-        if (!object->hasComponent<Physics>()) continue;
-        object->getComponent<Physics>()->onGround = false;
-    }
-
 	for (auto* object : gameObjects) {
         if (!object->hasComponent<Transform>() || !object->hasComponent<Physics>())
             continue;
  
-        Physics*   physics   = object->getComponent<Physics>();
+        Physics* physics = object->getComponent<Physics>();
         Transform* transform = object->getComponent<Transform>();
  
         if (!physics->physicsFlag) continue;
+
+		// Player input — fully delegated to game
+		if (object->hasComponent<Input>() &&
+			!EditorManager::isEditingMode() &&
+			!EditorManager::isPaused()) {
+
+			if (m_gameScript)
+				m_gameScript->onPlayerInput(*object, manager, messageBus, deltaTime);
+		}
+
  
         if (physics->autoUpdate) {
             if (!EditorManager::isEditingMode() && !EditorManager::isPaused()) {
@@ -1148,27 +1151,25 @@ void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime, M
                 physics->dynamics.velocity.x = physics->velX;
             }
         }
- 
-        // Player input — fully delegated to game
-        if (object->hasComponent<Input>() &&
-            !EditorManager::isEditingMode() &&
-            !EditorManager::isPaused()) {
-            if (m_gameScript)
-                m_gameScript->onPlayerInput(*object, manager, messageBus, deltaTime);
-        }
- 
-        // Auto-move objects (cutscene / scripted movement)
+
+        // auto-move
         if (object->checkAutoMove()) {
             transform->y += physics->dynamics.velocity.y * deltaTime;
             transform->x += physics->dynamics.velocity.x * deltaTime;
         }
  
-        // Angular integration
+        // angular integration
         if (!physics->freezeRotation) {
             DynamicsSystem::IntegrateAngular(physics->dynamics, deltaTime);
             transform->rotation += physics->dynamics.angularVelocity * deltaTime;
         }
     }
+
+	// reset on ground for all physics obj
+	for (auto* object : gameObjects) {
+		if (!object->hasComponent<Physics>()) continue;
+		object->getComponent<Physics>()->onGround = false;
+	}
 
 	if(m_gameScript)
 		m_gameScript->onPhysicsUpdate(manager, deltaTime);

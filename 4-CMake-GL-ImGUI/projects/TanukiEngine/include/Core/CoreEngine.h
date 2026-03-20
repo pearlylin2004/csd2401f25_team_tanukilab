@@ -69,6 +69,8 @@ public:
     void pauseBGM();
     void resumeBGM();
 
+    LuaSystem& getLuaSystem() { return *m_luaSystem; }
+
 private:
     void GameLoop();
     void Update(float deltaTime);

@@ -59,6 +59,8 @@ void LuaSystem::init(GameObjectManager& manager) {
     lua_register(L, "getDynPosX", Lua_getDynPosX);
     lua_register(L, "getDynPosY", Lua_getDynPosY);
     lua_register(L, "getDynMass", Lua_getDynMass);
+    lua_register(L, "getCoyoteTime", Lua_getCoyoteTime);
+
 
     // physics setters
     lua_register(L, "setVelX", Lua_setVelX);
@@ -113,6 +115,8 @@ void LuaSystem::init(GameObjectManager& manager) {
     lua_register(L, "setFixState", Lua_setFixState);
     lua_register(L, "getFacingRight", Lua_getFacingRight);
     lua_register(L, "setFacingRight", Lua_setFacingRight);
+    lua_register(L, "getStateTime", Lua_getStateTime);
+    lua_register(L, "setStateTime", Lua_setStateTime);
 
     // Audio
     lua_register(L, "playSound", Lua_playSound);
@@ -149,6 +153,7 @@ void LuaSystem::init(GameObjectManager& manager) {
     lua_register(L, "setLedgeClimb", Lua_setLedgeClimb);
     lua_register(L, "getLedgeTargetY", Lua_getLedgeTargetY);
     lua_register(L, "getLedgeClimbSpeed", Lua_getLedgeClimbSpeed);
+    lua_register(L, "getJumpBufferTime", Lua_getJumpBufferTime);
 
     // Editor State
     lua_register(L, "isEditingMode", Lua_isEditingMode);
@@ -516,6 +521,15 @@ int LuaSystem::Lua_getDynMass(lua_State* L) {
     if (!obj || !obj->hasComponent<Physics>()) { lua_pushnumber(L, 1); return 1; }
 
     lua_pushnumber(L, obj->getComponent<Physics>()->dynamics.mass);
+
+    return 1;
+}
+
+int LuaSystem::Lua_getCoyoteTime(lua_State* L) {
+    GameObject* obj = static_cast<GameObject*>(lua_touserdata(L, 1));
+    if (!obj || !obj->hasComponent<Physics>()) { lua_pushnumber(L, 0.12); return 1; }
+
+    lua_pushnumber(L, obj->getComponent<Physics>()->coyoteTime);
 
     return 1;
 }
@@ -948,6 +962,24 @@ int LuaSystem::Lua_setFacingRight(lua_State* L) {
     return 0;
 }
 
+int LuaSystem::Lua_getStateTime(lua_State* L) {
+    GameObject* obj = static_cast<GameObject*>(lua_touserdata(L, 1));
+    if (!obj || !obj->hasComponent<StateMachine>()) { lua_pushnumber(L, 0); return 1; }
+
+    lua_pushnumber(L, obj->getComponent<StateMachine>()->stateTime);
+
+    return 1;
+}
+
+int LuaSystem::Lua_setStateTime(lua_State* L) {
+    GameObject* obj = static_cast<GameObject*>(lua_touserdata(L, 1));
+    if (!obj || !obj->hasComponent<StateMachine>()) return 0;
+
+    obj->getComponent<StateMachine>()->stateTime = static_cast<float>(lua_tonumber(L, 2));
+
+    return 0;
+}
+
 
 /* ---- audio ---- */
 int LuaSystem::Lua_playSound(lua_State* L) {
@@ -1203,6 +1235,15 @@ int LuaSystem::Lua_getLedgeClimbSpeed(lua_State* L) {
     if (!obj || !obj->hasComponent<Physics>()) { lua_pushnumber(L, 0); return 1; }
 
     lua_pushnumber(L, obj->getComponent<Physics>()->ledgeClimbSpeed);
+
+    return 1;
+}
+
+int LuaSystem::Lua_getJumpBufferTime(lua_State* L) {
+    GameObject* obj = static_cast<GameObject*>(lua_touserdata(L, 1));
+    if (!obj || !obj->hasComponent<Physics>()) { lua_pushnumber(L, 0.1); return 1; }
+
+    lua_pushnumber(L, obj->getComponent<Physics>()->jumpBufferTime);
 
     return 1;
 }

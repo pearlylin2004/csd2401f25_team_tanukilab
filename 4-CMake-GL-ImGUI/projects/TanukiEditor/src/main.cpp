@@ -1,4 +1,5 @@
 #include "CoreEngine.h"
+#include "LuaGameScript.h"
 
 #ifdef _WIN32
 #include <windows.h>
@@ -30,9 +31,14 @@ int main(int argc, char** argv) {
 
     // Create the engine using a smart pointer for automatic cleanup
     auto engine = std::make_unique<CoreEngine>();
+    std::unique_ptr<LuaGameScript> luaScript;
 
     try {
         engine->Init(forceWindowed);
+
+        luaScript = std::make_unique<LuaGameScript>(engine->getLuaSystem());
+        engine->setGameScript(luaScript.get());
+
         engine->Run();
     }
     catch (const std::exception& e) {

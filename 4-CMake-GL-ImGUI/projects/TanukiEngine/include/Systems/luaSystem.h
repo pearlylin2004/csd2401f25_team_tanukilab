@@ -23,6 +23,8 @@ Technology is prohibited.
 #include "messageBus.h"
 #include "GameObjectManager.h"
 #include "GUISystem.h"
+#include "Physics.h"
+#include "Editor/editorManager.h"
 
 extern "C" {
 #include "lua.h"
@@ -57,6 +59,12 @@ public:
 	static int Lua_SendInputEvent(lua_State* L);
 
 
+	/* -------- Render -------- */
+	static int Lua_setRenderAlpha(lua_State* L);
+	static int Lua_setTexture(lua_State* L);
+	static int Lua_setColliderSize(lua_State* L);
+
+
 	/* -------- Physics Getters -------- */
 	static int Lua_getVelX(lua_State* L);
 	static int Lua_getVelY(lua_State* L);
@@ -68,8 +76,21 @@ public:
 	static int Lua_getGravity(lua_State* L);
 	static int Lua_canShoot(lua_State* L);
 	static int Lua_getShootTimer(lua_State* L);
+	static int Lua_isAlive(lua_State* L);
 	static int Lua_getFireRate(lua_State* L);
-	
+	static int Lua_getLifeTimer(lua_State* L);
+	static int Lua_getMaxLifetime(lua_State* L);
+	static int Lua_getGravityDelayTimer(lua_State* L);
+	static int Lua_getGravityDelay(lua_State* L);
+	static int Lua_getInitialScale(lua_State* L);
+	static int Lua_getMinScale(lua_State* L);
+	static int Lua_getDynVelX(lua_State* L);
+	static int Lua_getDynVelY(lua_State* L);
+	static int Lua_getDynPosX(lua_State* L);
+	static int Lua_getDynPosY(lua_State* L);
+	static int Lua_getDynMass(lua_State* L);
+	static int Lua_getCoyoteTime(lua_State* L);
+
 
 	/* -------- Physics Setters -------- */
 	static int Lua_setVelX(lua_State* L);
@@ -79,21 +100,40 @@ public:
 	static int Lua_setGravity(lua_State* L);
 	static int Lua_setShootTimer(lua_State* L);
 	static int Lua_setPhysicsFlag(lua_State* L);
+	static int Lua_applyDamping(lua_State* L);
+	static int Lua_updatePosition(lua_State* L);
+	static int Lua_setAlive(lua_State* L);
+	static int Lua_setLifeTimer(lua_State* L);
+	static int Lua_setGravityDelayTimer(lua_State* L);
+	static int Lua_setDynVelX(lua_State* L);
+	static int Lua_setDynVelY(lua_State* L);
+	static int Lua_setDynPos(lua_State* L);
+	static int Lua_updateForces(lua_State* L);
+	static int Lua_advanceDynamics(lua_State* L);
 
 
 	/* -------- Collision -------- */
 	static int Lua_getCollisionFlag(lua_State* L);
 	static int Lua_setCollisionFlag(lua_State* L);
 	static int Lua_setCollisionTag(lua_State* L);
+	static int Lua_getFriction(lua_State* L);
 
 
 	/* -------- Transform Getters -------- */
+	static int Lua_getRotation(lua_State* L);
+	static int Lua_setRotation(lua_State* L);
+	static int Lua_setScale(lua_State* L);
+	static int Lua_getScaleX(lua_State* L);
+	static int Lua_getScaleY(lua_State* L);
+	static int Lua_getLocalOffsetX(lua_State* L);
+	static int Lua_setLocalOffsetX(lua_State* L);
 	static int Lua_setFlipX(lua_State* L);
 	static int Lua_getFlipX(lua_State* L);
 
 
 	/* -------- Input Bindings -------- */
 	static int Lua_isKeyTriggered(lua_State* L);
+	static int Lua_isKeyReleased(lua_State* L);
 	static int Lua_isMouseLeftHeld(lua_State* L);
 	static int Lua_isMouseRightHeld(lua_State* L);
 	static int Lua_isMouseLeftTriggered(lua_State* L);
@@ -108,6 +148,8 @@ public:
 	static int Lua_setFixState(lua_State* L);
 	static int Lua_getFacingRight(lua_State* L);
 	static int Lua_setFacingRight(lua_State* L);
+	static int Lua_getStateTime(lua_State* L);
+	static int Lua_setStateTime(lua_State* L);
 
 
 	/* -------- Audio -------- */
@@ -121,6 +163,40 @@ public:
 	static int Lua_getVSGlobalFloat(lua_State* L);
 	static int Lua_setVSGlobalFloat(lua_State* L);
 	static int Lua_hasVSGlobalFloat(lua_State* L);
+	static int Lua_getNumCurCollisions(lua_State* L);
+	static int Lua_getCurCollision(lua_State* L);
+
+
+	/* -------- Weapon -------- */
+	static int Lua_getAimAtMouse(lua_State* L);
+	static int Lua_getWeaponBaseOffsetX(lua_State* L);
+	static int Lua_setWeaponBaseOffsetX(lua_State* L);
+	static int Lua_isWeaponOffsetInitialised(lua_State* L);
+	static int Lua_setWeaponOffsetInitialised(lua_State* L);
+	static int Lua_getWeaponCurrentAngle(lua_State* L);
+	static int Lua_setWeaponCurrentAngle(lua_State* L);
+
+
+	/* -------- WaterBody -------- */
+	static int Lua_hasWaterBody(lua_State* L);
+	static int Lua_getWaterWidth(lua_State* L);
+	static int Lua_getWaterHeight(lua_State* L);
+	static int Lua_getWaterBuoyancyForce(lua_State* L);
+	static int Lua_getWaterDrag(lua_State* L);
+	static int Lua_getWaterLastFrameRise(lua_State* L);
+
+
+	/* -------- Editor State -------- */
+	static int Lua_isEditingMode(lua_State* L);
+	static int Lua_isPaused(lua_State* L);
+
+
+	/* -------- Ledge Climb -------- */
+	static int Lua_getLedgeClimb(lua_State* L);
+	static int Lua_setLedgeClimb(lua_State* L);
+	static int Lua_getLedgeTargetY(lua_State* L);
+	static int Lua_getLedgeClimbSpeed(lua_State* L);
+	static int Lua_getJumpBufferTime(lua_State* L);
 
 
 	/* -------- Debug -------- */
@@ -129,11 +205,14 @@ public:
 
 
 	/* -------- Object Things ---- */
+	static int Lua_getAllObjects(lua_State* L);
 	static int Lua_getGameObject(lua_State* L);
 	static int Lua_getObjectName(lua_State* L);
 	static int Lua_getCollisionTag(lua_State* L);
 	static int Lua_hasComponent_Physics(lua_State* L);
 	static int Lua_hasComponent_Transform(lua_State* L);
+	static int Lua_hasWeaponComponent(lua_State* L);
+	static int Lua_getParentName(lua_State* L);
 
 
 private:

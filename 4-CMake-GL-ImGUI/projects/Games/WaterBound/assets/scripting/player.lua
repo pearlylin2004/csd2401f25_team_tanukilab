@@ -1,63 +1,310 @@
---player(leave)
-
---for jumping
-local isJumping = false
-local velocityY = 0
-local gravity = -9.8
-local jumpForce = 5.0
-local floorY = 0.0  
+--player
 
 local player = {}
-function player.Update(obj, deltaTime)
-    local speed = 5
-    local x, y = getPosition(obj)
-    --for going up
-    if Input_isKeyHeld("W") then
-        y = y + speed * deltaTime
-        setPosition(obj, x, y)
-        print(string.format("input W, x: %.2f, y: %.2f", x, y))
-        SendInputEvent("W", x, y)
-    end
-    --for going down
-    if Input_isKeyHeld("S") then
-        y = y - speed * deltaTime
-        setPosition(obj, x, y)
-        print(string.format("input S, x: %.2f, y: %.2f", x, y))
-        SendInputEvent("S", x, y)
-    end
-    --for going left
-    if Input_isKeyHeld("A") then
-        x = x - speed * deltaTime
-        setPosition(obj, x, y)
-        print(string.format("input A, x: %.2f, y: %.2f", x, y))
-        SendInputEvent("A", x, y)
-    end
-    --for going right
-    if Input_isKeyHeld("D") then
-        x = x + speed * deltaTime
-        setPosition(obj, x, y)
-        print(string.format("input D, x: %.2f, y: %.2f", x, y))
-        SendInputEvent("D", x, y)
-    end
-    --for jumping
-    if Input_isKeyHeld("B") and not isJumping then
-        isJumping = true
-        velocityY = jumpForce
-        print(string.format("input B, x: %.2f, y: %.2f", x, y))
-        SendInputEvent("B", x, y)
-    end
-    --check for landing
-    if isJumping then
-        velocityY = velocityY + gravity * deltaTime
-        y = y + velocityY * deltaTime
-        -- stop at floor
-        if y <= floorY then
-            y = floorY
-            velocityY = 0
-            isJumping = false
-            print("Landed!")
+ 
+-- coyote time
+local coyoteTimer     = 0.0
+local wasOnGround     = false
+
+-- jump buffer
+local jumpBufferTimer = 0.0
+
+-- jump
+local prevOnGround = false
+local landingTimer = 0.0
+local landingGrace = 0.1
+
+-- helper func to find bullet
+local function findBullet()
+    local objs = getAllObjects()
+    for i = 1, #objs do
+        local o = objs[i]
+        local name = getObjectName(o)
+        if name:sub(1,6) == "bullet" and #name > 6 then
+            if name:sub(7):match("^%d+$") then
+                if hasPhysics(o) and not isAlive(o) then
+                    return o
+                end
+            end
         end
-        setPosition(obj, x, y)
     end
+    return nil
 end
+
+-- helper func to change state
+local function changeState(obj, newState)
+    setPlayerState(obj, newState)
+    setStateTime(obj, 0.0)
+end
+ 
+function player.Update(obj, dt)
+    if not hasPhysics(obj) or not hasTransform(obj) then return end
+
+    coyoteTimer     = coyoteTimer     or 0.0
+    wasOnGround     = wasOnGround     or false
+    jumpBufferTimer = jumpBufferTimer or 0.0
+    prevOnGround    = prevOnGround    or false
+    landingTimer    = landingTimer    or 0.0
+ 
+    -- coyote time update
+    local onGround = isOnGround(obj)
+    prevOnGround = wasOnGround
+ 
+    if onGround then
+        coyoteTimer = getCoyoteTime(obj)
+        wasOnGround = true
+        landingTimer = landingGrace
+    else
+        coyoteTimer = coyoteTimer - dt
+        if coyoteTimer < 0 then coyoteTimer = 0 end
+        wasOnGround = false
+    end
+ 
+    local canCoyoteJump = coyoteTimer > 0
+ 
+    -- jump buffer
+    if isKeyTriggered("SPACE") then
+        jumpBufferTimer = getJumpBufferTime(obj)
+    end
+    if jumpBufferTimer > 0 then
+        jumpBufferTimer = jumpBufferTimer - dt
+        if jumpBufferTimer < 0 then jumpBufferTimer = 0 end
+    end
+
+    -- SPACE to jump (tap for small jump, hold for big jump)
+    if jumpBufferTimer > 0 and canCoyoteJump and getCanMove(obj) then
+        local jumpVel = getJumpForce(obj) / getDynMass(obj)
+        local px, py = getPosition(obj)
+        
+        setDynPos(obj, px, py)
+        setVelY(obj, jumpVel)
+        setDynVelY(obj, jumpVel)
+        setOnGround(obj, false)
+        coyoteTimer = 0
+        jumpBufferTimer = 0
+        SendInputEvent("SPACE", 0, 0)
+    end
+
+    if isKeyReleased("SPACE") then
+        local vy = getVelY(obj)
+        if vy > 0 then
+            setVelY(obj, vy * 0.8)
+            setDynVelY(obj, vy * 0.8)
+        end
+    end
+
+    -- ledge climb
+    if getLedgeClimb(obj) then
+        local x, y = getPosition(obj)
+        local targetY = getLedgeTargetY(obj)
+        local diff = targetY - y
+        if math.abs(diff) < 0.05 then
+            setPosition(obj, x, targetY)
+            setDynPos(obj, x, targetY)
+            setVelY(obj, 0)
+            setDynVelY(obj, 0)
+            setOnGround(obj, true)
+            setLedgeClimb(obj, false)
+            coyoteTimer = getCoyoteTime(obj)
+        else
+            local step = getLedgeClimbSpeed(obj) * dt
+            local newY = y + math.min(step, diff)
+            setPosition(obj, x, newY)
+            setDynPos(obj, x, newY)
+            setVelY(obj, 0)
+            setDynVelY(obj, 0)
+            setOnGround(obj, false)
+        end
+    end
+ 
+    -- movement (left and right)
+    local targetVelX = 0.0
+ 
+    if Input_isKeyHeld("A") and getCanMove(obj) then
+        targetVelX = -getMoveSpeed(obj)
+        setFlipX(obj, true)
+        SendInputEvent("A", 0, 0)
+    elseif Input_isKeyHeld("D") and getCanMove(obj) then
+        targetVelX = getMoveSpeed(obj)
+        setFlipX(obj, false)
+        SendInputEvent("D", 0, 0)
+    end
+ 
+    -- flip to face mouse when not moving
+    if not Input_isKeyHeld("A") and not Input_isKeyHeld("D") then
+        local mx = getMouseWorldX()
+        local x, y = getPosition(obj)
+        setFlipX(obj, mx < x)
+    end
+ 
+    -- set velocity
+    local friction = getFriction(obj)
+    applyDamping(obj, friction, targetVelX, dt)
+    if not getLedgeClimb(obj) then
+        updatePosition(obj, dt)
+    end
+
+    -- FSM state update
+    local velY = getVelY(obj)
+    local state = getPlayerState(obj)
+
+    if state == "Idle" then
+        if Input_isKeyHeld("A") or Input_isKeyHeld("D") then
+            changeState(obj, "Walking")
+        elseif velY > 0 then
+            changeState(obj, "Jumping")
+        end
+    elseif state == "Walking" then
+        if not Input_isKeyHeld("A") and not Input_isKeyHeld("D") then
+            changeState(obj, "Idle")
+        elseif velY > 0 then
+            changeState(obj, "Jumping")
+        elseif not isOnGround(obj) and velY < 0 and landingTimer <= 0 then
+            changeState(obj, "Falling")
+        end
+    elseif state == "Jumping" then
+        if velY <= 0 then
+            changeState(obj, "Falling")
+        end
+    elseif state == "Falling" then
+        if isOnGround(obj) then
+            if Input_isKeyHeld("A") or Input_isKeyHeld("D") then
+                changeState(obj, "Walking")
+            else
+                changeState(obj, "Idle")
+            end
+        end
+    end
+
+    setStateTime(obj, getStateTime(obj) + dt)
+
+    if landingTimer > 0 then
+        landingTimer = landingTimer - dt
+    end
+ 
+    -- shoot
+    if not canShoot(obj) then return end
+ 
+    local shootTimer = getShootTimer(obj)
+    shootTimer = shootTimer + dt
+    setShootTimer(obj, shootTimer)
+ 
+    if not isMouseLeftHeld() then
+        setShootTimer(obj, getFireRate(obj))
+        return
+    end
+ 
+    -- check bullet count
+    if not hasVSGlobalFloat("bullets") or getVSGlobalFloat("bullets") <= 0 then
+        debugLogPlay("Out of bullets!")
+        return
+    end
+ 
+    if shootTimer < getFireRate(obj) then return end
+ 
+    local bullet = findBullet()
+    if not bullet then return end
+ 
+    -- find weapon child
+    local spawnObj = obj
+    local allObjs = getAllObjects()
+    for i = 1, #allObjs do
+        local candidate = allObjs[i]
+        if hasWeaponComponent(candidate) and getParentName(candidate) == getObjectName(obj) then
+            spawnObj = candidate
+            break
+        end
+    end
+ 
+    local mx = getMouseWorldX()
+    local my = getMouseWorldY()
+ 
+    -- shoot
+    playSound(bullet, "shoot")
+    local bx, by = getPosition(spawnObj)
+    local dx = mx - bx
+    local dy = my - by
+    local mag = math.sqrt(dx*dx + dy*dy)
+    if mag > 0 then dx = dx/mag; dy = dy/mag end
+    local speed = getMoveSpeed(bullet) * 3.0
+    setDynVelX(bullet, dx * speed)
+    setDynVelY(bullet, dy * speed)
+    setDynPos(bullet, bx, by)
+    setPosition(bullet, bx, by)
+    setFlipX(bullet, dx < 0)
+    setLifeTimer(bullet, 0.0)
+    setScale(bullet, getInitialScale(bullet), getInitialScale(bullet))
+    setGravityDelayTimer(bullet, getGravityDelay(bullet))
+    setAlive(bullet, true)
+    setOnGround(bullet, false)
+    setRenderAlpha(bullet, 1.0)
+
+    setShootTimer(obj, 0.0)
+    setVSGlobalFloat("bullets", getVSGlobalFloat("bullets") - 1)
+    debugLogPlay("Bullet fired!")
+    SendInputEvent("LEFT_CLICK", mx, my)
+end
+ 
 return player
+
+-- --for jumping
+-- local isJumping = false
+-- local velocityY = 0
+-- local gravity = -9.8
+-- local jumpForce = 5.0
+-- local floorY = 0.0  
+
+-- local player = {}
+-- function player.Update(obj, deltaTime)
+--     local speed = 5
+--     local x, y = getPosition(obj)
+--     --for going up
+--     if Input_isKeyHeld("W") then
+--         y = y + speed * deltaTime
+--         setPosition(obj, x, y)
+--         print(string.format("input W, x: %.2f, y: %.2f", x, y))
+--         SendInputEvent("W", x, y)
+--     end
+--     --for going down
+--     if Input_isKeyHeld("S") then
+--         y = y - speed * deltaTime
+--         setPosition(obj, x, y)
+--         print(string.format("input S, x: %.2f, y: %.2f", x, y))
+--         SendInputEvent("S", x, y)
+--     end
+--     --for going left
+--     if Input_isKeyHeld("A") then
+--         x = x - speed * deltaTime
+--         setPosition(obj, x, y)
+--         print(string.format("input A, x: %.2f, y: %.2f", x, y))
+--         SendInputEvent("A", x, y)
+--     end
+--     --for going right
+--     if Input_isKeyHeld("D") then
+--         x = x + speed * deltaTime
+--         setPosition(obj, x, y)
+--         print(string.format("input D, x: %.2f, y: %.2f", x, y))
+--         SendInputEvent("D", x, y)
+--     end
+--     --for jumping
+--     if Input_isKeyHeld("B") and not isJumping then
+--         isJumping = true
+--         velocityY = jumpForce
+--         print(string.format("input B, x: %.2f, y: %.2f", x, y))
+--         SendInputEvent("B", x, y)
+--     end
+--     --check for landing
+--     if isJumping then
+--         velocityY = velocityY + gravity * deltaTime
+--         y = y + velocityY * deltaTime
+--         -- stop at floor
+--         if y <= floorY then
+--             y = floorY
+--             velocityY = 0
+--             isJumping = false
+--             print("Landed!")
+--         end
+--         setPosition(obj, x, y)
+--     end
+-- end
+-- return player
