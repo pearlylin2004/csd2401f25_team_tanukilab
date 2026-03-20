@@ -59,13 +59,11 @@ void CoreEngine::Init(bool forceWindowed) {
     bool wantFullscreen = cfg.fullscreen && !m_forceWindowed;
     m_isFullscreen = wantFullscreen;
 
-    std::cout << "About to call glfwInit..." << std::endl;
     // --- GLFW/GLEW Initialization ---
     if (!glfwInit()) {
         std::cerr << "glfwInit FAILED" << std::endl;
         abort();
     }
-    std::cout << "glfwInit succeeded" << std::endl;
 
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 5);

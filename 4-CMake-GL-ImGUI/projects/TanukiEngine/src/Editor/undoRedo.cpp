@@ -185,7 +185,7 @@ void CreateObjectCmd::execute() {
 
 void CreateObjectCmd::undo() {
     GameObject* obj = m_manager.getGameObject(m_objectName);
-    std::cout << "\nfuck" << m_objectName << "\n\n";
+
     if (obj) {
         m_serializedData = JsonIO::serializeGameObj(obj);
 
@@ -1030,8 +1030,6 @@ void UndoRedoManager::vlUndo() {
     cmd->undo();
     m_vlRedoDeque.push_back(std::move(cmd));
     m_vlUndoDeque.pop_back();
-
-    std::cout << "undo queue: " << m_vlUndoDeque.size() << "\n\n";
 }
 
 void UndoRedoManager::vlRedo() {
@@ -1041,9 +1039,6 @@ void UndoRedoManager::vlRedo() {
     cmd->execute();
     m_vlUndoDeque.push_back(std::move(cmd));
     m_vlRedoDeque.pop_back();
-
-    std::cout << "undo queue: " << m_vlUndoDeque.size() << "\n\n";
-
 }
 
 void UndoRedoManager::clearVL() {

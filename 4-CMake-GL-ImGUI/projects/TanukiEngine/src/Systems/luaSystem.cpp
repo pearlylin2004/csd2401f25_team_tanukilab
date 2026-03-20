@@ -30,6 +30,11 @@ void LuaSystem::init(GameObjectManager& manager) {
     lua_setglobal(L, "SendInputEvent");
     //manager = std::make_unique<GameObjectManager>();
 
+    // Render
+    lua_register(L, "setRenderAlpha", Lua_setRenderAlpha);
+    lua_register(L, "setTexture", Lua_setTexture);
+    lua_register(L, "setColliderSize", Lua_setColliderSize);
+
     // physics getters
     lua_register(L, "getVelX", Lua_getVelX);
     lua_register(L, "getVelY", Lua_getVelY);
@@ -41,7 +46,19 @@ void LuaSystem::init(GameObjectManager& manager) {
     lua_register(L, "getGravity", Lua_getGravity);
     lua_register(L, "canShoot", Lua_canShoot);
     lua_register(L, "getShootTimer", Lua_getShootTimer);
+    lua_register(L, "isAlive", Lua_isAlive);
     lua_register(L, "getFireRate", Lua_getFireRate);
+    lua_register(L, "getLifeTimer", Lua_getLifeTimer);
+    lua_register(L, "getMaxLifetime", Lua_getMaxLifetime);
+    lua_register(L, "getGravityDelayTimer", Lua_getGravityDelayTimer);
+    lua_register(L, "getGravityDelay", Lua_getGravityDelay);
+    lua_register(L, "getInitialScale", Lua_getInitialScale);
+    lua_register(L, "getMinScale", Lua_getMinScale);
+    lua_register(L, "getDynVelX", Lua_getDynVelX);
+    lua_register(L, "getDynVelY", Lua_getDynVelY);
+    lua_register(L, "getDynPosX", Lua_getDynPosX);
+    lua_register(L, "getDynPosY", Lua_getDynPosY);
+    lua_register(L, "getDynMass", Lua_getDynMass);
 
     // physics setters
     lua_register(L, "setVelX", Lua_setVelX);
@@ -51,18 +68,38 @@ void LuaSystem::init(GameObjectManager& manager) {
     lua_register(L, "setGravity", Lua_setGravity);
     lua_register(L, "setShootTimer", Lua_setShootTimer);
     lua_register(L, "setPhysicsFlag", Lua_setPhysicsFlag);
+    lua_register(L, "applyDamping", Lua_applyDamping);
+    lua_register(L, "updatePosition", Lua_updatePosition);
+    lua_register(L, "setAlive", Lua_setAlive);
+    lua_register(L, "setLifeTimer", Lua_setLifeTimer);
+    lua_register(L, "setGravityDelayTimer", Lua_setGravityDelayTimer);
+    lua_register(L, "setDynVelX", Lua_setDynVelX);
+    lua_register(L, "setDynVelY", Lua_setDynVelY);
+    lua_register(L, "setDynPos", Lua_setDynPos);
+    lua_register(L, "updateForces", Lua_updateForces);
+    lua_register(L, "advanceDynamics", Lua_advanceDynamics);
 
     // collision
     lua_register(L, "getCollisionFlag", Lua_getCollisionFlag);
     lua_register(L, "setCollisionFlag", Lua_setCollisionFlag);
     lua_register(L, "setCollisionTag", Lua_setCollisionTag);
+    lua_register(L, "getFriction", Lua_getFriction);
+
 
     // transform
+    lua_register(L, "getRotation", Lua_getRotation);
+    lua_register(L, "setRotation", Lua_setRotation);
+    lua_register(L, "setScale", Lua_setScale);
+    lua_register(L, "getScaleX", Lua_getScaleX);
+    lua_register(L, "getScaleY", Lua_getScaleY);
+    lua_register(L, "getLocalOffsetX", Lua_getLocalOffsetX);
+    lua_register(L, "setLocalOffsetX", Lua_setLocalOffsetX);
     lua_register(L, "setFlipX", Lua_setFlipX);
     lua_register(L, "getFlipX", Lua_getFlipX);
 
     // input bindings
     lua_register(L, "isKeyTriggered", Lua_isKeyTriggered);
+    lua_register(L, "isKeyReleased", Lua_isKeyReleased);
     lua_register(L, "isMouseLeftHeld", Lua_isMouseLeftHeld);
     lua_register(L, "isMouseRightHeld", Lua_isMouseRightHeld);
     lua_register(L, "isMouseLeftTriggered", Lua_isMouseLeftTriggered);
@@ -87,6 +124,35 @@ void LuaSystem::init(GameObjectManager& manager) {
     lua_register(L, "getVSGlobalFloat", Lua_getVSGlobalFloat);
     lua_register(L, "setVSGlobalFloat", Lua_setVSGlobalFloat);
     lua_register(L, "hasVSGlobalFloat", Lua_hasVSGlobalFloat);
+    lua_register(L, "getNumCurCollisions", Lua_getNumCurCollisions);
+    lua_register(L, "getCurCollision", Lua_getCurCollision);
+
+    // Weapon
+    lua_register(L, "getAimAtMouse", Lua_getAimAtMouse);
+    lua_register(L, "getWeaponBaseOffsetX", Lua_getWeaponBaseOffsetX);
+    lua_register(L, "setWeaponBaseOffsetX", Lua_setWeaponBaseOffsetX);
+    lua_register(L, "isWeaponOffsetInitialised", Lua_isWeaponOffsetInitialised);
+    lua_register(L, "setWeaponOffsetInitialised", Lua_setWeaponOffsetInitialised);
+    lua_register(L, "getWeaponCurrentAngle", Lua_getWeaponCurrentAngle);
+    lua_register(L, "setWeaponCurrentAngle", Lua_setWeaponCurrentAngle);
+
+    // WaterBody
+    lua_register(L, "hasWaterBody", Lua_hasWaterBody);
+    lua_register(L, "getWaterWidth", Lua_getWaterWidth);
+    lua_register(L, "getWaterHeight", Lua_getWaterHeight);
+    lua_register(L, "getWaterBuoyancyForce", Lua_getWaterBuoyancyForce);
+    lua_register(L, "getWaterDrag", Lua_getWaterDrag);
+    lua_register(L, "getWaterLastFrameRise", Lua_getWaterLastFrameRise);
+
+    // ledge climb
+    lua_register(L, "getLedgeClimb", Lua_getLedgeClimb);
+    lua_register(L, "setLedgeClimb", Lua_setLedgeClimb);
+    lua_register(L, "getLedgeTargetY", Lua_getLedgeTargetY);
+    lua_register(L, "getLedgeClimbSpeed", Lua_getLedgeClimbSpeed);
+
+    // Editor State
+    lua_register(L, "isEditingMode", Lua_isEditingMode);
+    lua_register(L, "isPaused", Lua_isPaused);
 
     // debug
     lua_register(L, "debugLog", Lua_debugLog);
@@ -208,6 +274,44 @@ int LuaSystem::Lua_SendInputEvent(lua_State* L) {
     return 0;
 }
 
+/* ---- render ---- */
+int LuaSystem::Lua_setRenderAlpha(lua_State* L) {
+    GameObject* obj = static_cast<GameObject*>(lua_touserdata(L, 1));
+    if (!obj || !obj->hasComponent<Render>()) return 0;
+
+    obj->getComponent<Render>()->clr.a = static_cast<float>(lua_tonumber(L, 2));
+
+    return 0;
+}
+
+int LuaSystem::Lua_setTexture(lua_State* L) {
+    GameObject* obj = static_cast<GameObject*>(lua_touserdata(L, 1));
+    if (!obj || !obj->hasComponent<Render>()) return 0;
+
+    const char* tex = lua_tostring(L, 2);
+
+    if (!tex) return 0;
+
+    Render* r = obj->getComponent<Render>();
+
+    r->texFile = tex;
+    r->texChanged = true;
+    return 0;
+}
+
+int LuaSystem::Lua_setColliderSize(lua_State* L) {
+    GameObject* obj = static_cast<GameObject*>(lua_touserdata(L, 1));
+    if (!obj || !obj->hasComponent<CollisionInfo>()) return 0;
+
+    CollisionInfo* c = obj->getComponent<CollisionInfo>();
+
+    c->colliderSize.x = static_cast<float>(lua_tonumber(L, 2));
+    c->colliderSize.y = static_cast<float>(lua_tonumber(L, 3));
+
+    return 0;
+}
+
+
 /* ---- physics getters ---- */
 int LuaSystem::Lua_getVelX(lua_State* L) {
     GameObject* obj = static_cast<GameObject*>(lua_touserdata(L, 1));
@@ -308,6 +412,114 @@ int LuaSystem::Lua_getFireRate(lua_State* L) {
     return 1;
 }
 
+int LuaSystem::Lua_isAlive(lua_State* L) {
+    GameObject* obj = static_cast<GameObject*>(lua_touserdata(L, 1));
+    if (!obj || !obj->hasComponent<Physics>()) { lua_pushboolean(L, 0); return 1; }
+
+    lua_pushboolean(L, obj->getComponent<Physics>()->alive ? 1 : 0);
+
+    return 1;
+}
+
+int LuaSystem::Lua_getLifeTimer(lua_State* L) {
+    GameObject* obj = static_cast<GameObject*>(lua_touserdata(L, 1));
+    if (!obj || !obj->hasComponent<Physics>()) { lua_pushnumber(L, 0); return 1; }
+
+    lua_pushnumber(L, obj->getComponent<Physics>()->lifeTimer);
+
+    return 1;
+}
+
+int LuaSystem::Lua_getMaxLifetime(lua_State* L) {
+    GameObject* obj = static_cast<GameObject*>(lua_touserdata(L, 1));
+    if (!obj || !obj->hasComponent<Physics>()) { lua_pushnumber(L, 0); return 1; }
+
+    lua_pushnumber(L, obj->getComponent<Physics>()->maxLifetime);
+
+    return 1;
+}
+
+int LuaSystem::Lua_getGravityDelayTimer(lua_State* L) {
+    GameObject* obj = static_cast<GameObject*>(lua_touserdata(L, 1));
+    if (!obj || !obj->hasComponent<Physics>()) { lua_pushnumber(L, 0); return 1; }
+
+    lua_pushnumber(L, obj->getComponent<Physics>()->gravityDelayTimer);
+
+    return 1;
+}
+
+int LuaSystem::Lua_getGravityDelay(lua_State* L) {
+    GameObject* obj = static_cast<GameObject*>(lua_touserdata(L, 1));
+    if (!obj || !obj->hasComponent<Physics>()) { lua_pushnumber(L, 0); return 1; }
+
+    lua_pushnumber(L, obj->getComponent<Physics>()->gravityDelay);
+
+    return 1;
+}
+
+int LuaSystem::Lua_getInitialScale(lua_State* L) {
+    GameObject* obj = static_cast<GameObject*>(lua_touserdata(L, 1));
+    if (!obj || !obj->hasComponent<Physics>()) { lua_pushnumber(L, 1); return 1; }
+
+    lua_pushnumber(L, obj->getComponent<Physics>()->initialScale);
+
+    return 1;
+}
+
+int LuaSystem::Lua_getMinScale(lua_State* L) {
+    GameObject* obj = static_cast<GameObject*>(lua_touserdata(L, 1));
+    if (!obj || !obj->hasComponent<Physics>()) { lua_pushnumber(L, 0); return 1; }
+
+    lua_pushnumber(L, obj->getComponent<Physics>()->minScale);
+
+    return 1;
+}
+
+int LuaSystem::Lua_getDynVelX(lua_State* L) {
+    GameObject* obj = static_cast<GameObject*>(lua_touserdata(L, 1));
+    if (!obj || !obj->hasComponent<Physics>()) { lua_pushnumber(L, 0); return 1; }
+
+    lua_pushnumber(L, obj->getComponent<Physics>()->dynamics.velocity.x);
+
+    return 1;
+}
+
+int LuaSystem::Lua_getDynVelY(lua_State* L) {
+    GameObject* obj = static_cast<GameObject*>(lua_touserdata(L, 1));
+    if (!obj || !obj->hasComponent<Physics>()) { lua_pushnumber(L, 0); return 1; }
+
+    lua_pushnumber(L, obj->getComponent<Physics>()->dynamics.velocity.y);
+
+    return 1;
+}
+
+int LuaSystem::Lua_getDynPosX(lua_State* L) {
+    GameObject* obj = static_cast<GameObject*>(lua_touserdata(L, 1));
+    if (!obj || !obj->hasComponent<Physics>()) { lua_pushnumber(L, 0); return 1; }
+
+    lua_pushnumber(L, obj->getComponent<Physics>()->dynamics.position.x);
+
+    return 1;
+}
+
+int LuaSystem::Lua_getDynPosY(lua_State* L) {
+    GameObject* obj = static_cast<GameObject*>(lua_touserdata(L, 1));
+    if (!obj || !obj->hasComponent<Physics>()) { lua_pushnumber(L, 0); return 1; }
+
+    lua_pushnumber(L, obj->getComponent<Physics>()->dynamics.position.y);
+
+    return 1;
+}
+
+int LuaSystem::Lua_getDynMass(lua_State* L) {
+    GameObject* obj = static_cast<GameObject*>(lua_touserdata(L, 1));
+    if (!obj || !obj->hasComponent<Physics>()) { lua_pushnumber(L, 1); return 1; }
+
+    lua_pushnumber(L, obj->getComponent<Physics>()->dynamics.mass);
+
+    return 1;
+}
+
 
 /* ---- physics setters ---- */
 int LuaSystem::Lua_setVelX(lua_State* L) {
@@ -378,8 +590,175 @@ int LuaSystem::Lua_setPhysicsFlag(lua_State* L) {
     return 0;
 }
 
+int LuaSystem::Lua_applyDamping(lua_State* L) {
+    GameObject* obj = static_cast<GameObject*>(lua_touserdata(L, 1));
+    if (!obj || !obj->hasComponent<Physics>()) return 0;
+
+    float friction = static_cast<float>(lua_tonumber(L, 2));
+    float targetVelX = static_cast<float>(lua_tonumber(L, 3));
+    float dt = static_cast<float>(lua_tonumber(L, 4));
+
+    PhysicsForces::applyDamping(obj->getComponent<Physics>(), friction, targetVelX, dt);
+
+    return 0;
+}
+
+int LuaSystem::Lua_updatePosition(lua_State* L) {
+    GameObject* obj = static_cast<GameObject*>(lua_touserdata(L, 1));
+    if (!obj) return 0;
+
+    Transform* t = obj->getComponent<Transform>();
+    Physics* p = obj->getComponent<Physics>();
+    if (!t || !p) return 0;
+
+    float dt = static_cast<float>(lua_tonumber(L, 2));
+
+    PhysicsForces::updatePosition(t, p, dt);
+
+    return 0;
+}
+
+int LuaSystem::Lua_setAlive(lua_State* L) {
+    GameObject* obj = static_cast<GameObject*>(lua_touserdata(L, 1));
+    if (!obj || !obj->hasComponent<Physics>()) return 0;
+
+    obj->getComponent<Physics>()->alive = lua_toboolean(L, 2) != 0;
+
+    return 0;
+}
+int LuaSystem::Lua_setLifeTimer(lua_State* L) {
+    GameObject* obj = static_cast<GameObject*>(lua_touserdata(L, 1));
+    if (!obj || !obj->hasComponent<Physics>()) return 0;
+
+    obj->getComponent<Physics>()->lifeTimer = static_cast<float>(lua_tonumber(L, 2));
+
+    return 0;
+}
+int LuaSystem::Lua_setGravityDelayTimer(lua_State* L) {
+    GameObject* obj = static_cast<GameObject*>(lua_touserdata(L, 1));
+    if (!obj || !obj->hasComponent<Physics>()) return 0;
+
+    obj->getComponent<Physics>()->gravityDelayTimer = static_cast<float>(lua_tonumber(L, 2));
+
+    return 0;
+}
+int LuaSystem::Lua_setDynVelX(lua_State* L) {
+    GameObject* obj = static_cast<GameObject*>(lua_touserdata(L, 1));
+    if (!obj || !obj->hasComponent<Physics>()) return 0;
+
+    obj->getComponent<Physics>()->dynamics.velocity.x = static_cast<float>(lua_tonumber(L, 2));
+
+    return 0;
+}
+
+int LuaSystem::Lua_setDynVelY(lua_State* L) {
+    GameObject* obj = static_cast<GameObject*>(lua_touserdata(L, 1));
+    if (!obj || !obj->hasComponent<Physics>()) return 0;
+
+    obj->getComponent<Physics>()->dynamics.velocity.y = static_cast<float>(lua_tonumber(L, 2));
+
+    return 0;
+}
+
+int LuaSystem::Lua_setDynPos(lua_State* L) {
+    GameObject* obj = static_cast<GameObject*>(lua_touserdata(L, 1));
+    if (!obj || !obj->hasComponent<Physics>()) return 0;
+    Physics* p = obj->getComponent<Physics>();
+
+    p->dynamics.position.x = static_cast<float>(lua_tonumber(L, 2));
+    p->dynamics.position.y = static_cast<float>(lua_tonumber(L, 3));
+
+    return 0;
+}
+
+int LuaSystem::Lua_updateForces(lua_State* L) {
+    GameObject* obj = static_cast<GameObject*>(lua_touserdata(L, 1));
+    if (!obj || !obj->hasComponent<Physics>()) return 0;
+
+    float dt = static_cast<float>(lua_tonumber(L, 2));
+
+    DynamicsSystem::UpdateForces(obj->getComponent<Physics>()->dynamics, dt);
+    return 0;
+}
+
+int LuaSystem::Lua_advanceDynamics(lua_State* L) {
+    GameObject* obj = static_cast<GameObject*>(lua_touserdata(L, 1));
+    if (!obj || !obj->hasComponent<Physics>()) return 0;
+
+    Physics* p = obj->getComponent<Physics>();
+    float dt = static_cast<float>(lua_tonumber(L, 2));
+    Vector3D deltaPos = Vec3_Scale(&p->dynamics.velocity, dt);
+
+    p->dynamics.position = Vec3_Add(&p->dynamics.position, &deltaPos);
+
+    Transform* t = obj->getComponent<Transform>();
+    if (t) { t->x = p->dynamics.position.x; t->y = p->dynamics.position.y; }
+
+    return 0;
+}
 
 /* ---- transform ---- */
+int LuaSystem::Lua_getRotation(lua_State* L) {
+    GameObject* obj = static_cast<GameObject*>(lua_touserdata(L, 1));
+    if (!obj || !obj->hasComponent<Transform>()) { lua_pushnumber(L, 0); return 1; }
+
+    lua_pushnumber(L, obj->getComponent<Transform>()->rotation);
+    return 1;
+}
+
+int LuaSystem::Lua_setRotation(lua_State* L) {
+    GameObject* obj = static_cast<GameObject*>(lua_touserdata(L, 1));
+    if (!obj || !obj->hasComponent<Transform>()) return 0;
+
+    obj->getComponent<Transform>()->rotation = static_cast<float>(lua_tonumber(L, 2));
+    return 0;
+}
+
+int LuaSystem::Lua_setScale(lua_State* L) {
+    GameObject* obj = static_cast<GameObject*>(lua_touserdata(L, 1));
+    if (!obj || !obj->hasComponent<Transform>()) return 0;
+
+    Transform* t = obj->getComponent<Transform>();
+    t->scaleX = static_cast<float>(lua_tonumber(L, 2));
+    t->scaleY = static_cast<float>(lua_tonumber(L, 3));
+
+    return 0;
+}
+
+int LuaSystem::Lua_getScaleX(lua_State* L) {
+    GameObject* obj = static_cast<GameObject*>(lua_touserdata(L, 1));
+    if (!obj || !obj->hasComponent<Transform>()) { lua_pushnumber(L, 1); return 1; }
+
+    lua_pushnumber(L, obj->getComponent<Transform>()->scaleX);
+
+    return 1;
+}
+
+int LuaSystem::Lua_getScaleY(lua_State* L) {
+    GameObject* obj = static_cast<GameObject*>(lua_touserdata(L, 1));
+    if (!obj || !obj->hasComponent<Transform>()) { lua_pushnumber(L, 1); return 1; }
+
+    lua_pushnumber(L, obj->getComponent<Transform>()->scaleY);
+
+    return 1;
+}
+int LuaSystem::Lua_getLocalOffsetX(lua_State* L) {
+    GameObject* obj = static_cast<GameObject*>(lua_touserdata(L, 1));
+    if (!obj || !obj->hasComponent<Transform>()) { lua_pushnumber(L, 0); return 1; }
+
+    lua_pushnumber(L, obj->getComponent<Transform>()->localOffset.x);
+
+    return 1;
+}
+int LuaSystem::Lua_setLocalOffsetX(lua_State* L) {
+    GameObject* obj = static_cast<GameObject*>(lua_touserdata(L, 1));
+    if (!obj || !obj->hasComponent<Transform>()) return 0;
+
+    obj->getComponent<Transform>()->localOffset.x = static_cast<float>(lua_tonumber(L, 2));
+
+    return 0;
+}
+
 int LuaSystem::Lua_setFlipX(lua_State* L) {
     GameObject* obj = static_cast<GameObject*>(lua_touserdata(L, 1));
     if (!obj || !obj->hasComponent<Transform>()) return 0;
@@ -429,6 +808,13 @@ int LuaSystem::Lua_setCollisionTag(lua_State* L) {
     return 0;
 }
 
+int LuaSystem::Lua_getFriction(lua_State* L) {
+    GameObject* obj = static_cast<GameObject*>(lua_touserdata(L, 1));
+    if (!obj || !obj->hasComponent<CollisionInfo>()) { lua_pushnumber(L, 0); return 1; }
+    lua_pushnumber(L, obj->getComponent<CollisionInfo>()->material.friction);
+    return 1;
+}
+
 
 /* ---- input bindings ---- */
 int LuaSystem::Lua_isKeyTriggered(lua_State* L) {
@@ -446,6 +832,19 @@ int LuaSystem::Lua_isKeyTriggered(lua_State* L) {
     else if (strcmp(keyStr, "R") == 0) key = GLFW_KEY_R;
 
     lua_pushboolean(L, key != -1 && InputHandler::isKeyTriggered(key) ? 1 : 0);
+    return 1;
+}
+
+int LuaSystem::Lua_isKeyReleased(lua_State* L) {
+    const char* keyStr = lua_tostring(L, 1);
+    if (!keyStr) { lua_pushboolean(L, 0); return 1; }
+    int key = -1;
+    if (strcmp(keyStr, "SPACE") == 0) key = GLFW_KEY_SPACE;
+    else if (strcmp(keyStr, "A") == 0) key = GLFW_KEY_A;
+    else if (strcmp(keyStr, "D") == 0) key = GLFW_KEY_D;
+    else if (strcmp(keyStr, "W") == 0) key = GLFW_KEY_W;
+    else if (strcmp(keyStr, "S") == 0) key = GLFW_KEY_S;
+    lua_pushboolean(L, key != -1 && InputHandler::isKeyReleased(key) ? 1 : 0);
     return 1;
 }
 
@@ -556,20 +955,15 @@ int LuaSystem::Lua_playSound(lua_State* L) {
     if (!obj || !obj->hasComponent<AudioComponent>()) return 0;
 
     const char* channelName = lua_tostring(L, 2);
-    const char* file = lua_tostring(L, 3);
+    if (!channelName) return 0;
 
-    bool loop = lua_toboolean(L, 4) != 0;
-    if (!channelName || !file) return 0;
-
-    AudioComponent* audio = obj->getComponent<AudioComponent>();
-    AudioChannel* ch = audio->getOrCreateChannel(channelName);
-
+    AudioChannel* ch = obj->getComponent<AudioComponent>()->getChannel(channelName);
     if (!ch) return 0;
+    if (ch->audioFile.empty()) return 0;
+    // dont play if alr playing
+    if (ch->state == AudioState::Playing || ch->isPendingPlay) return 0;
 
-    ch->audioFile = file;
-    ch->loop = loop;
     ch->isPendingPlay = true;
-
     return 0;
 }
 
@@ -639,11 +1033,181 @@ int LuaSystem::Lua_setVSGlobalFloat(lua_State* L) {
 int LuaSystem::Lua_hasVSGlobalFloat(lua_State* L) {
     const char* key = lua_tostring(L, 1);
     if (!key) { lua_pushboolean(L, 0); return 1; }
+
     lua_pushboolean(L, VisualLC::globalFloatVar.count(key) ? 1 : 0);
+
     return 1;
 }
 
-// debug
+int LuaSystem::Lua_getNumCurCollisions(lua_State* L) {
+    GameObject* obj = static_cast<GameObject*>(lua_touserdata(L, 1));
+    if (!obj || !obj->hasComponent<VisualLC>()) { lua_pushinteger(L, 0); return 1; }
+
+    lua_pushinteger(L, (int)obj->getComponent<VisualLC>()->curCollision.size());
+
+    return 1;
+}
+
+int LuaSystem::Lua_getCurCollision(lua_State* L) {
+    GameObject* obj = static_cast<GameObject*>(lua_touserdata(L, 1));
+    int idx = (int)lua_tointeger(L, 2) - 1; // 1-based
+    if (!obj || !obj->hasComponent<VisualLC>()) { lua_pushnil(L); return 1; }
+
+    auto& col = obj->getComponent<VisualLC>()->curCollision;
+    if (idx < 0 || idx >= (int)col.size()) { lua_pushnil(L); return 1; }
+
+    auto it = col.begin();
+    std::advance(it, idx);
+    lua_pushlightuserdata(L, *it);
+
+    return 1;
+}
+
+
+/* ---- weapon ---- */
+int LuaSystem::Lua_getAimAtMouse(lua_State* L) {
+    GameObject* obj = static_cast<GameObject*>(lua_touserdata(L, 1));
+    if (!obj || !obj->hasComponent<WeaponComponent>()) { lua_pushboolean(L, 0); return 1; }
+    lua_pushboolean(L, obj->getComponent<WeaponComponent>()->aimAtMouse ? 1 : 0);
+    return 1;
+}
+int LuaSystem::Lua_getWeaponBaseOffsetX(lua_State* L) {
+    GameObject* obj = static_cast<GameObject*>(lua_touserdata(L, 1));
+    if (!obj || !obj->hasComponent<WeaponComponent>()) { lua_pushnumber(L, 0); return 1; }
+    lua_pushnumber(L, obj->getComponent<WeaponComponent>()->baseLocalOffsetX);
+    return 1;
+}
+int LuaSystem::Lua_setWeaponBaseOffsetX(lua_State* L) {
+    GameObject* obj = static_cast<GameObject*>(lua_touserdata(L, 1));
+    if (!obj || !obj->hasComponent<WeaponComponent>()) return 0;
+    obj->getComponent<WeaponComponent>()->baseLocalOffsetX = static_cast<float>(lua_tonumber(L, 2));
+    return 0;
+}
+int LuaSystem::Lua_isWeaponOffsetInitialised(lua_State* L) {
+    GameObject* obj = static_cast<GameObject*>(lua_touserdata(L, 1));
+    if (!obj || !obj->hasComponent<WeaponComponent>()) { lua_pushboolean(L, 0); return 1; }
+    lua_pushboolean(L, obj->getComponent<WeaponComponent>()->baseLocalOffsetInitialised ? 1 : 0);
+    return 1;
+}
+int LuaSystem::Lua_setWeaponOffsetInitialised(lua_State* L) {
+    GameObject* obj = static_cast<GameObject*>(lua_touserdata(L, 1));
+    if (!obj || !obj->hasComponent<WeaponComponent>()) return 0;
+    obj->getComponent<WeaponComponent>()->baseLocalOffsetInitialised = lua_toboolean(L, 2) != 0;
+    return 0;
+}
+int LuaSystem::Lua_getWeaponCurrentAngle(lua_State* L) {
+    GameObject* obj = static_cast<GameObject*>(lua_touserdata(L, 1));
+    if (!obj || !obj->hasComponent<WeaponComponent>()) { lua_pushnumber(L, 0); return 1; }
+    lua_pushnumber(L, obj->getComponent<WeaponComponent>()->currentAngle);
+    return 1;
+}
+int LuaSystem::Lua_setWeaponCurrentAngle(lua_State* L) {
+    GameObject* obj = static_cast<GameObject*>(lua_touserdata(L, 1));
+    if (!obj || !obj->hasComponent<WeaponComponent>()) return 0;
+    obj->getComponent<WeaponComponent>()->currentAngle = static_cast<float>(lua_tonumber(L, 2));
+    return 0;
+}
+
+
+/* ---- water body ---- */
+int LuaSystem::Lua_hasWaterBody(lua_State* L) {
+    GameObject* obj = static_cast<GameObject*>(lua_touserdata(L, 1));
+
+    lua_pushboolean(L, (obj && obj->hasComponent<WaterBody>()) ? 1 : 0);
+    return 1;
+}
+
+int LuaSystem::Lua_getWaterWidth(lua_State* L) {
+    GameObject* obj = static_cast<GameObject*>(lua_touserdata(L, 1));
+    if (!obj || !obj->hasComponent<WaterBody>()) { lua_pushnumber(L, 0); return 1; }
+
+    lua_pushnumber(L, obj->getComponent<WaterBody>()->width);
+    return 1;
+}
+
+int LuaSystem::Lua_getWaterHeight(lua_State* L) {
+    GameObject* obj = static_cast<GameObject*>(lua_touserdata(L, 1));
+    if (!obj || !obj->hasComponent<WaterBody>()) { lua_pushnumber(L, 0); return 1; }
+
+    lua_pushnumber(L, obj->getComponent<WaterBody>()->height);
+    return 1;
+}
+
+int LuaSystem::Lua_getWaterBuoyancyForce(lua_State* L) {
+    GameObject* obj = static_cast<GameObject*>(lua_touserdata(L, 1));
+    if (!obj || !obj->hasComponent<WaterBody>()) { lua_pushnumber(L, 0); return 1; }
+
+    lua_pushnumber(L, obj->getComponent<WaterBody>()->buoyancyForce);
+    return 1;
+}
+
+int LuaSystem::Lua_getWaterDrag(lua_State* L) {
+    GameObject* obj = static_cast<GameObject*>(lua_touserdata(L, 1));
+    if (!obj || !obj->hasComponent<WaterBody>()) { lua_pushnumber(L, 0); return 1; }
+
+    lua_pushnumber(L, obj->getComponent<WaterBody>()->waterDrag);
+    return 1;
+}
+
+int LuaSystem::Lua_getWaterLastFrameRise(lua_State* L) {
+    GameObject* obj = static_cast<GameObject*>(lua_touserdata(L, 1));
+    if (!obj || !obj->hasComponent<WaterBody>()) { lua_pushnumber(L, 0); return 1; }
+
+    lua_pushnumber(L, obj->getComponent<WaterBody>()->lastFrameRise);
+    return 1;
+}
+
+
+/* ---- editor ---- */
+int LuaSystem::Lua_isEditingMode(lua_State* L) {
+    lua_pushboolean(L, EditorManager::isEditingMode() ? 1 : 0);
+    return 1;
+}
+
+int LuaSystem::Lua_isPaused(lua_State* L) {
+    lua_pushboolean(L, EditorManager::isPaused() ? 1 : 0);
+    return 1;
+}
+
+
+/* ---- ledge climb ---- */
+int LuaSystem::Lua_getLedgeClimb(lua_State* L) {
+    GameObject* obj = static_cast<GameObject*>(lua_touserdata(L, 1));
+    if (!obj || !obj->hasComponent<Physics>()) { lua_pushboolean(L, 0); return 1; }
+
+    lua_pushboolean(L, obj->getComponent<Physics>()->ledgeClimb ? 1 : 0);
+
+    return 1;
+}
+
+int LuaSystem::Lua_setLedgeClimb(lua_State* L) {
+    GameObject* obj = static_cast<GameObject*>(lua_touserdata(L, 1));
+    if (!obj || !obj->hasComponent<Physics>()) return 0;
+
+    obj->getComponent<Physics>()->ledgeClimb = lua_toboolean(L, 2) != 0;
+
+    return 0;
+}
+
+int LuaSystem::Lua_getLedgeTargetY(lua_State* L) {
+    GameObject* obj = static_cast<GameObject*>(lua_touserdata(L, 1));
+    if (!obj || !obj->hasComponent<Physics>()) { lua_pushnumber(L, 0); return 1; }
+
+    lua_pushnumber(L, obj->getComponent<Physics>()->ledgeTargetY);
+
+    return 1;
+}
+
+int LuaSystem::Lua_getLedgeClimbSpeed(lua_State* L) {
+    GameObject* obj = static_cast<GameObject*>(lua_touserdata(L, 1));
+    if (!obj || !obj->hasComponent<Physics>()) { lua_pushnumber(L, 0); return 1; }
+
+    lua_pushnumber(L, obj->getComponent<Physics>()->ledgeClimbSpeed);
+
+    return 1;
+}
+
+/* ---- debug ---- */
 int LuaSystem::Lua_debugLog(lua_State* L) {
     const char* msg = lua_tostring(L, 1);
     if (!msg) return 0;
@@ -663,6 +1227,22 @@ int LuaSystem::Lua_debugLogPlay(lua_State* L) {
 }
 
 /* ---- object things ---- */
+int LuaSystem::Lua_getAllObjects(lua_State* L) {
+    GameObjectManager* mgr = static_cast<GameObjectManager*>(lua_touserdata(L, lua_upvalueindex(1)));
+    if (!mgr) { lua_newtable(L); return 1; }
+
+    std::vector<GameObject*> gameObjects;
+    mgr->getAllGameObjects(gameObjects);
+
+    lua_newtable(L);
+    for (int i = 0; i < (int)gameObjects.size(); ++i) {
+        lua_pushlightuserdata(L, gameObjects[i]);
+        lua_rawseti(L, -2, i + 1);
+    }
+
+    return 1;
+}
+
 int LuaSystem::Lua_getGameObject(lua_State* L) {
     GameObjectManager* mgr = static_cast<GameObjectManager*>(lua_touserdata(L, lua_upvalueindex(1)));
     const char* name = lua_tostring(L, 1);
@@ -710,6 +1290,21 @@ int LuaSystem::Lua_hasComponent_Transform(lua_State* L) {
     return 1;
 }
 
+int LuaSystem::Lua_hasWeaponComponent(lua_State* L) {
+    GameObject* obj = static_cast<GameObject*>(lua_touserdata(L, 1));
+
+    lua_pushboolean(L, (obj && obj->hasComponent<WeaponComponent>()) ? 1 : 0);
+
+    return 1;
+}
+
+int LuaSystem::Lua_getParentName(lua_State* L) {
+    GameObject* obj = static_cast<GameObject*>(lua_touserdata(L, 1));
+    if (!obj || !obj->hasComponent<Transform>()) { lua_pushstring(L, ""); return 1; }
+    lua_pushstring(L, obj->getComponent<Transform>()->parentName.c_str());
+    return 1;
+}
+
 void LuaSystem::registerManagerBindings(GameObjectManager& manager) {
     if (!L) return;
 
@@ -718,11 +1313,17 @@ void LuaSystem::registerManagerBindings(GameObjectManager& manager) {
     lua_pushcclosure(L, Lua_getGameObject, 1);
     lua_setglobal(L, "getGameObject");
 
+    lua_pushlightuserdata(L, &manager);
+    lua_pushcclosure(L, Lua_getAllObjects, 1);
+    lua_setglobal(L, "getAllObjects");
+
     // things that doesnt need manager
     lua_register(L, "getObjectName", Lua_getObjectName);
     lua_register(L, "getCollisionTag", Lua_getCollisionTag);
     lua_register(L, "hasPhysics", Lua_hasComponent_Physics);
     lua_register(L, "hasTransform", Lua_hasComponent_Transform);
+    lua_register(L, "getParentName", Lua_getParentName);
+    lua_register(L, "hasWeaponComponent", Lua_hasWeaponComponent);
 }
 
 
@@ -804,6 +1405,9 @@ void LuaSystem::update(GameObjectManager& manager, float deltaTime) {
     manager.getAllGameObjects(gameObjects);
 
     for (GameObject* obj : gameObjects) {
+        // skip player update (its handled by onPlayerInput in luagamescript)
+        if (obj->hasComponent<Input>()) continue;
+
         if (obj->hasComponent<LuaScript>()) {
             LuaScript* scriptComp = obj->getComponent<LuaScript>();
 
