@@ -33,6 +33,8 @@ public:
 
     Vector2D getAudioListenerPos(GameObjectManager& manager) override;
 
+    void registerLuaBindings(LuaSystem& lua) override;
+
     // Direct access for CoreEngine to call WaterSystem::render()
     WaterSystem& getWaterSystem() { return m_waterSystem; }
  
@@ -41,4 +43,6 @@ private:
     WaterSystem    m_waterSystem;
     BuoyancySystem m_buoyancy;
     WeaponSystem m_weaponSystem;
+
+    GameObjectManager* m_manager = nullptr;
 };

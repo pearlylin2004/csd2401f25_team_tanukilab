@@ -19,6 +19,7 @@ Technology is prohibited.
 void LuaSystem::init(GameObjectManager& manager) {
     L = luaL_newstate();
     luaL_openlibs(L);
+
     lua_register(L, "Input_isKeyHeld", Lua_IsKeyHeld);
     lua_register(L, "getPosition", Lua_getPosition);
     lua_register(L, "setPosition", Lua_setPosition);
@@ -51,6 +52,11 @@ void LuaSystem::init(GameObjectManager& manager) {
     lua_register(L, "setShootTimer", Lua_setShootTimer);
     lua_register(L, "setPhysicsFlag", Lua_setPhysicsFlag);
 
+    // collision
+    lua_register(L, "getCollisionFlag", Lua_getCollisionFlag);
+    lua_register(L, "setCollisionFlag", Lua_setCollisionFlag);
+    lua_register(L, "setCollisionTag", Lua_setCollisionTag);
+
     // transform
     lua_register(L, "setFlipX", Lua_setFlipX);
     lua_register(L, "getFlipX", Lua_getFlipX);
@@ -62,6 +68,29 @@ void LuaSystem::init(GameObjectManager& manager) {
     lua_register(L, "isMouseLeftTriggered", Lua_isMouseLeftTriggered);
     lua_register(L, "getMouseWorldX", Lua_getMouseWorldX);
     lua_register(L, "getMouseWorldY", Lua_getMouseWorldY);
+
+    // FSM
+    lua_register(L, "getPlayerState", Lua_getPlayerState);
+    lua_register(L, "setPlayerState", Lua_setPlayerState);
+    lua_register(L, "isFixState", Lua_isFixState);
+    lua_register(L, "setFixState", Lua_setFixState);
+    lua_register(L, "getFacingRight", Lua_getFacingRight);
+    lua_register(L, "setFacingRight", Lua_setFacingRight);
+
+    // Audio
+    lua_register(L, "playSound", Lua_playSound);
+    lua_register(L, "stopSound", Lua_stopSound);
+    lua_register(L, "setSoundVolume", Lua_setSoundVolume);
+    lua_register(L, "isSoundPlaying", Lua_isSoundPlaying);
+
+    // visual script
+    lua_register(L, "getVSGlobalFloat", Lua_getVSGlobalFloat);
+    lua_register(L, "setVSGlobalFloat", Lua_setVSGlobalFloat);
+    lua_register(L, "hasVSGlobalFloat", Lua_hasVSGlobalFloat);
+
+    // debug
+    lua_register(L, "debugLog", Lua_debugLog);
+    lua_register(L, "debugLogPlay", Lua_debugLogPlay);
 
     registerManagerBindings(manager);
 }
@@ -369,6 +398,37 @@ int LuaSystem::Lua_getFlipX(lua_State* L) {
     return 1;
 }
 
+/* ---- collision ---- */
+int LuaSystem::Lua_getCollisionFlag(lua_State* L) {
+    GameObject* obj = static_cast<GameObject*>(lua_touserdata(L, 1));
+    if (!obj || !obj->hasComponent<CollisionInfo>()) { lua_pushboolean(L, 0); return 1; }
+
+    lua_pushboolean(L, obj->getComponent<CollisionInfo>()->collisionFlag ? 1 : 0);
+
+    return 1;
+}
+
+int LuaSystem::Lua_setCollisionFlag(lua_State* L) {
+    GameObject* obj = static_cast<GameObject*>(lua_touserdata(L, 1));
+    if (!obj || !obj->hasComponent<CollisionInfo>()) return 0;
+
+    obj->getComponent<CollisionInfo>()->collisionFlag = lua_toboolean(L, 2) != 0;
+
+    return 0;
+}
+
+int LuaSystem::Lua_setCollisionTag(lua_State* L) {
+    GameObject* obj = static_cast<GameObject*>(lua_touserdata(L, 1));
+    if (!obj || !obj->hasComponent<CollisionInfo>()) return 0;
+
+    const char* tag = lua_tostring(L, 2);
+    if (!tag) return 0;
+
+    obj->getComponent<CollisionInfo>()->collisionTag = tag;
+
+    return 0;
+}
+
 
 /* ---- input bindings ---- */
 int LuaSystem::Lua_isKeyTriggered(lua_State* L) {
@@ -414,6 +474,193 @@ int LuaSystem::Lua_getMouseWorldY(lua_State* L) {
     return 1;
 }
 
+
+/* ---- FSM ---- */
+int LuaSystem::Lua_getPlayerState(lua_State* L) {
+    GameObject* obj = static_cast<GameObject*>(lua_touserdata(L, 1));
+    if (!obj || !obj->hasComponent<StateMachine>()) {
+        lua_pushstring(L, ""); return 1;
+    }
+
+    StateMachine* sm = obj->getComponent<StateMachine>();
+
+    switch (sm->state) {
+        case PlayerState::Idle:     lua_pushstring(L, "Idle");     break;
+        case PlayerState::Walking:  lua_pushstring(L, "Walking");  break;
+        case PlayerState::Jumping:  lua_pushstring(L, "Jumping");  break;
+        case PlayerState::Falling:  lua_pushstring(L, "Falling");  break;
+        case PlayerState::Dead:     lua_pushstring(L, "Dead");     break;
+        default:                    lua_pushstring(L, "Idle");     break;
+    }
+
+    return 1;
+}
+
+int LuaSystem::Lua_setPlayerState(lua_State* L) {
+    GameObject* obj = static_cast<GameObject*>(lua_touserdata(L, 1));
+    if (!obj || !obj->hasComponent<StateMachine>()) return 0;
+
+    const char* state = lua_tostring(L, 2);
+
+    StateMachine* sm = obj->getComponent<StateMachine>();
+
+    if (strcmp(state, "Idle") == 0) sm->state = PlayerState::Idle;
+    else if (strcmp(state, "Walking") == 0) sm->state = PlayerState::Walking;
+    else if (strcmp(state, "Jumping") == 0) sm->state = PlayerState::Jumping;
+    else if (strcmp(state, "Falling") == 0) sm->state = PlayerState::Falling;
+    else if (strcmp(state, "Dead") == 0) sm->state = PlayerState::Dead;
+
+    return 0;
+}
+
+int LuaSystem::Lua_isFixState(lua_State* L) {
+    GameObject* obj = static_cast<GameObject*>(lua_touserdata(L, 1));
+    if (!obj || !obj->hasComponent<StateMachine>()) { lua_pushboolean(L, 0); return 1; }
+
+    lua_pushboolean(L, obj->getComponent<StateMachine>()->fixState ? 1 : 0);
+
+    return 1;
+}
+
+int LuaSystem::Lua_setFixState(lua_State* L) {
+    GameObject* obj = static_cast<GameObject*>(lua_touserdata(L, 1));
+    if (!obj || !obj->hasComponent<StateMachine>()) return 0;
+
+    obj->getComponent<StateMachine>()->fixState = lua_toboolean(L, 2) != 0;
+
+    return 0;
+}
+
+int LuaSystem::Lua_getFacingRight(lua_State* L) {
+    GameObject* obj = static_cast<GameObject*>(lua_touserdata(L, 1));
+    if (!obj || !obj->hasComponent<StateMachine>()) { lua_pushboolean(L, 1); return 1; }
+
+    lua_pushboolean(L, obj->getComponent<StateMachine>()->facingRight ? 1 : 0);
+
+    return 1;
+}
+
+int LuaSystem::Lua_setFacingRight(lua_State* L) {
+    GameObject* obj = static_cast<GameObject*>(lua_touserdata(L, 1));
+    if (!obj || !obj->hasComponent<StateMachine>()) return 0;
+
+    obj->getComponent<StateMachine>()->facingRight = lua_toboolean(L, 2) != 0;
+
+    return 0;
+}
+
+
+/* ---- audio ---- */
+int LuaSystem::Lua_playSound(lua_State* L) {
+    GameObject* obj = static_cast<GameObject*>(lua_touserdata(L, 1));
+    if (!obj || !obj->hasComponent<AudioComponent>()) return 0;
+
+    const char* channelName = lua_tostring(L, 2);
+    const char* file = lua_tostring(L, 3);
+
+    bool loop = lua_toboolean(L, 4) != 0;
+    if (!channelName || !file) return 0;
+
+    AudioComponent* audio = obj->getComponent<AudioComponent>();
+    AudioChannel* ch = audio->getOrCreateChannel(channelName);
+
+    if (!ch) return 0;
+
+    ch->audioFile = file;
+    ch->loop = loop;
+    ch->isPendingPlay = true;
+
+    return 0;
+}
+
+int LuaSystem::Lua_stopSound(lua_State* L) {
+    GameObject* obj = static_cast<GameObject*>(lua_touserdata(L, 1));
+    if (!obj || !obj->hasComponent<AudioComponent>()) return 0;
+
+    const char* channelName = lua_tostring(L, 2);
+    if (!channelName) return 0;
+
+    AudioChannel* ch = obj->getComponent<AudioComponent>()->getChannel(channelName);
+
+    if (ch) ch->isPendingStop = true;
+
+    return 0;
+}
+
+int LuaSystem::Lua_setSoundVolume(lua_State* L) {
+    GameObject* obj = static_cast<GameObject*>(lua_touserdata(L, 1));
+    if (!obj || !obj->hasComponent<AudioComponent>()) return 0;
+
+    const char* channelName = lua_tostring(L, 2);
+    float volume = static_cast<float>(lua_tonumber(L, 3));
+
+    if (!channelName) return 0;
+
+    AudioChannel* ch = obj->getComponent<AudioComponent>()->getChannel(channelName);
+
+    if (ch) ch->volume = volume;
+
+    return 0;
+}
+
+int LuaSystem::Lua_isSoundPlaying(lua_State* L) {
+    GameObject* obj = static_cast<GameObject*>(lua_touserdata(L, 1));
+    if (!obj || !obj->hasComponent<AudioComponent>()) {
+        lua_pushboolean(L, 0); return 1;
+    }
+
+    const char* channelName = lua_tostring(L, 2);
+    if (!channelName) { lua_pushboolean(L, 0); return 1; }
+
+    AudioChannel* ch = obj->getComponent<AudioComponent>()->getChannel(channelName);
+
+    lua_pushboolean(L, (ch && ch->state == AudioState::Playing) ? 1 : 0);
+
+    return 1;
+}
+
+
+/* ---- visual script ---- */
+int LuaSystem::Lua_getVSGlobalFloat(lua_State* L) {
+    const char* key = lua_tostring(L, 1);
+    if (!key) { lua_pushnumber(L, 0); return 1; }
+    auto it = VisualLC::globalFloatVar.find(key);
+    lua_pushnumber(L, it != VisualLC::globalFloatVar.end() ? it->second : 0.f);
+    return 1;
+}
+
+int LuaSystem::Lua_setVSGlobalFloat(lua_State* L) {
+    const char* key = lua_tostring(L, 1);
+    if (!key) return 0;
+    VisualLC::globalFloatVar[key] = static_cast<float>(lua_tonumber(L, 2));
+    return 0;
+}
+
+int LuaSystem::Lua_hasVSGlobalFloat(lua_State* L) {
+    const char* key = lua_tostring(L, 1);
+    if (!key) { lua_pushboolean(L, 0); return 1; }
+    lua_pushboolean(L, VisualLC::globalFloatVar.count(key) ? 1 : 0);
+    return 1;
+}
+
+// debug
+int LuaSystem::Lua_debugLog(lua_State* L) {
+    const char* msg = lua_tostring(L, 1);
+    if (!msg) return 0;
+
+    DebugLog::addMessage(msg);
+
+    return 0;
+}
+
+int LuaSystem::Lua_debugLogPlay(lua_State* L) {
+    const char* msg = lua_tostring(L, 1);
+    if (!msg) return 0;
+
+    DebugLog::addMessage(msg, DebugMode::PlaySimul);
+
+    return 0;
+}
 
 /* ---- object things ---- */
 int LuaSystem::Lua_getGameObject(lua_State* L) {
@@ -476,6 +723,12 @@ void LuaSystem::registerManagerBindings(GameObjectManager& manager) {
     lua_register(L, "getCollisionTag", Lua_getCollisionTag);
     lua_register(L, "hasPhysics", Lua_hasComponent_Physics);
     lua_register(L, "hasTransform", Lua_hasComponent_Transform);
+}
+
+
+void LuaSystem::registerGameBinding(const std::string& name, lua_CFunction fn) {
+    if (!L) return;
+    lua_register(L, name.c_str(), fn);
 }
 
 

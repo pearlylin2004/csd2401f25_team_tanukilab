@@ -7,13 +7,16 @@
 #include "messageBus.h"
 #include "message.h"
 #include "Physics.h"
+#include "luaSystem.h"
 // #include "editorManager.h"
 // #include "sceneWindow.h"
 #include <iostream>
 #include <vector>
 
 void GameApp::onSceneLoad(GameObjectManager& manager) {
-    // Build bullet pool from the "bullet" template object in the scene
+    m_manager = &manager;
+
+    // build bullet pool
     PlayerScript::createBulletPool(manager, "bullet", 20);
  
     m_waterSystem.init();
@@ -176,6 +179,50 @@ Vector2D GameApp::getAudioListenerPos(GameObjectManager& manager) {
         return { t->x, t->y };
     }
     return { 0.f, 0.f };
+}
+
+void GameApp::registerLuaBindings(LuaSystem& lua) {
+    lua.registerGameBinding("doJump", [](lua_State* L) -> int {
+        GameObject* obj = static_cast<GameObject*>(lua_touserdata(L, 1));
+        if (obj) PlayerScript::jump(obj);
+        return 0;
+        });
+
+    lua.registerGameBinding("doShoot", [](lua_State* L) -> int {
+        GameObject* bullet = static_cast<GameObject*>(lua_touserdata(L, 1));
+        GameObject* origin = static_cast<GameObject*>(lua_touserdata(L, 2));
+
+        if (!bullet || !origin) return 0;
+        Transform* t = origin->getComponent<Transform>();
+        if (!t) return 0;
+
+        float tx = static_cast<float>(lua_tonumber(L, 3));
+        float ty = static_cast<float>(lua_tonumber(L, 4));
+
+        PlayerScript::shoot(bullet, t, { tx, ty });
+        return 0;
+        });
+
+    lua.registerGameBinding("deactivateBullet", [](lua_State* L) -> int {
+        GameObject* obj = static_cast<GameObject*>(lua_touserdata(L, 1));
+        if (obj) PlayerScript::deactivateBullet(obj);
+        return 0;
+        });
+
+    if (m_manager) {
+        lua_State* L = lua.getLuaState();
+        lua_pushlightuserdata(L, m_manager);
+        lua_pushcclosure(L, [](lua_State* L) -> int {
+            GameObjectManager* mgr = static_cast<GameObjectManager*>(
+                lua_touserdata(L, lua_upvalueindex(1)));
+            if (!mgr) { lua_pushnil(L); return 1; }
+            GameObject* bullet = PlayerScript::findAvailableBullet(*mgr);
+            if (bullet) lua_pushlightuserdata(L, bullet);
+            else        lua_pushnil(L);
+            return 1;
+            }, 1);
+        lua_setglobal(L, "findAvailableBullet");
+    }
 }
 
 void GameApp::onPlayerInput(GameObject&        obj,

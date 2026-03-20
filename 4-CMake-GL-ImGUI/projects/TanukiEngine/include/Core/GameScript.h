@@ -38,4 +38,6 @@ public:
         (void)manager; 
         return { 0.f, 0.f };
     }
+
+    virtual void registerLuaBindings(class LuaSystem& lua) { (void)lua; }
 };

@@ -57,6 +57,10 @@ public:
         m_logicSystem->setGameScript(script);
         m_physicsSystem->setGameScript(script);
         m_collisionSystem->setGameScript(script);
+
+        m_gameScript = script;
+        if (m_luaSystem && m_gameScript)
+            m_gameScript->registerLuaBindings(*m_luaSystem);
     }
 
     //hardcoded bgm again
