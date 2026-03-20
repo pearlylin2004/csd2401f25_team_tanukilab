@@ -175,6 +175,7 @@ public:
 	static int Lua_getAimAtMouse(lua_State* L);
 	static int Lua_getWeaponBaseOffsetX(lua_State* L);
 	static int Lua_setWeaponBaseOffsetX(lua_State* L);
+	static int Lua_getLocalOffsetY(lua_State* L);
 	static int Lua_isWeaponOffsetInitialised(lua_State* L);
 	static int Lua_setWeaponOffsetInitialised(lua_State* L);
 	static int Lua_getWeaponCurrentAngle(lua_State* L);

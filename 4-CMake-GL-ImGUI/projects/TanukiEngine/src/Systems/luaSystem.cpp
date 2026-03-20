@@ -135,6 +135,7 @@ void LuaSystem::init(GameObjectManager& manager) {
     lua_register(L, "getAimAtMouse", Lua_getAimAtMouse);
     lua_register(L, "getWeaponBaseOffsetX", Lua_getWeaponBaseOffsetX);
     lua_register(L, "setWeaponBaseOffsetX", Lua_setWeaponBaseOffsetX);
+    lua_register(L, "getLocalOffsetY", Lua_getLocalOffsetY);
     lua_register(L, "isWeaponOffsetInitialised", Lua_isWeaponOffsetInitialised);
     lua_register(L, "setWeaponOffsetInitialised", Lua_setWeaponOffsetInitialised);
     lua_register(L, "getWeaponCurrentAngle", Lua_getWeaponCurrentAngle);
@@ -1100,43 +1101,72 @@ int LuaSystem::Lua_getCurCollision(lua_State* L) {
 int LuaSystem::Lua_getAimAtMouse(lua_State* L) {
     GameObject* obj = static_cast<GameObject*>(lua_touserdata(L, 1));
     if (!obj || !obj->hasComponent<WeaponComponent>()) { lua_pushboolean(L, 0); return 1; }
+
     lua_pushboolean(L, obj->getComponent<WeaponComponent>()->aimAtMouse ? 1 : 0);
+
     return 1;
 }
+
 int LuaSystem::Lua_getWeaponBaseOffsetX(lua_State* L) {
     GameObject* obj = static_cast<GameObject*>(lua_touserdata(L, 1));
     if (!obj || !obj->hasComponent<WeaponComponent>()) { lua_pushnumber(L, 0); return 1; }
+
     lua_pushnumber(L, obj->getComponent<WeaponComponent>()->baseLocalOffsetX);
+
     return 1;
 }
+
 int LuaSystem::Lua_setWeaponBaseOffsetX(lua_State* L) {
     GameObject* obj = static_cast<GameObject*>(lua_touserdata(L, 1));
     if (!obj || !obj->hasComponent<WeaponComponent>()) return 0;
+
     obj->getComponent<WeaponComponent>()->baseLocalOffsetX = static_cast<float>(lua_tonumber(L, 2));
+
     return 0;
 }
+
+int LuaSystem::Lua_getLocalOffsetY(lua_State* L) {
+    GameObject* obj = static_cast<GameObject*>(lua_touserdata(L, 1));
+    if (!obj || !obj->hasComponent<Transform>()) { lua_pushnumber(L, 0); return 1; }
+
+    lua_pushnumber(L, obj->getComponent<Transform>()->localOffset.y);
+
+    return 1;
+}
+
 int LuaSystem::Lua_isWeaponOffsetInitialised(lua_State* L) {
     GameObject* obj = static_cast<GameObject*>(lua_touserdata(L, 1));
     if (!obj || !obj->hasComponent<WeaponComponent>()) { lua_pushboolean(L, 0); return 1; }
+
     lua_pushboolean(L, obj->getComponent<WeaponComponent>()->baseLocalOffsetInitialised ? 1 : 0);
+
     return 1;
 }
+
 int LuaSystem::Lua_setWeaponOffsetInitialised(lua_State* L) {
     GameObject* obj = static_cast<GameObject*>(lua_touserdata(L, 1));
     if (!obj || !obj->hasComponent<WeaponComponent>()) return 0;
+
     obj->getComponent<WeaponComponent>()->baseLocalOffsetInitialised = lua_toboolean(L, 2) != 0;
+
     return 0;
 }
+
 int LuaSystem::Lua_getWeaponCurrentAngle(lua_State* L) {
     GameObject* obj = static_cast<GameObject*>(lua_touserdata(L, 1));
     if (!obj || !obj->hasComponent<WeaponComponent>()) { lua_pushnumber(L, 0); return 1; }
+
     lua_pushnumber(L, obj->getComponent<WeaponComponent>()->currentAngle);
+
     return 1;
 }
+
 int LuaSystem::Lua_setWeaponCurrentAngle(lua_State* L) {
     GameObject* obj = static_cast<GameObject*>(lua_touserdata(L, 1));
     if (!obj || !obj->hasComponent<WeaponComponent>()) return 0;
+
     obj->getComponent<WeaponComponent>()->currentAngle = static_cast<float>(lua_tonumber(L, 2));
+
     return 0;
 }
 

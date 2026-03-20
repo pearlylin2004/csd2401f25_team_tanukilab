@@ -420,6 +420,14 @@
             0.0
           ],
           "aimAtMouse": 1
+        },
+        "LuaScript": {
+          "scripts": [
+            {
+              "filename": "./assets/scripting\\weapon.lua",
+              "scriptName": "weapon"
+            }
+          ]
         }
       }
     },
