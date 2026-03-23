@@ -115,6 +115,23 @@ public:
 	static std::map<BatchKey, std::vector<renderer::InstanceData>> objectWithoutTex;
 };
 
+class VideoSystem {
+public:
+	static void update(GameObject* obj, float const deltaTime);
+	
+	void pause(Video* video) { video->isPaused = true; }
+	void resume(Video* video) { video->isPaused = false; }
+
+	void stop(Video* video) {
+		cleanup(video);
+		video->isPlaying = false;
+		video->isPaused = false;
+	}
+private:
+	static bool loadVideo(Video* video);
+	static void cleanup(Video* video);
+};
+
 class ParticleSystem
 {
 public:
