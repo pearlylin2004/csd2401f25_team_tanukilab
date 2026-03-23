@@ -205,6 +205,21 @@ macro(import_freetype)
     endif()
 endmacro()
 
+# ===================== Import plmpeg =====================
+macro(import_plmpeg)
+    if(NOT TARGET plmpeg)
+        FetchContent_Declare(
+            plmpeg
+            GIT_REPOSITORY https://github.com/phoboslab/pl_mpeg.git
+            GIT_TAG master
+        )
+        FetchContent_MakeAvailable(plmpeg)
+
+        add_library(plmpeg INTERFACE)
+        target_include_directories(plmpeg INTERFACE ${plmpeg_SOURCE_DIR})
+    endif()
+endmacro()
+
 # ===================== Import All Dependencies =====================
 macro(importDependencies)
     message(STATUS "Starting to import dependencies...")
@@ -240,6 +255,10 @@ macro(importDependencies)
     message(STATUS "Importing FreeType...")
     import_freetype()
     message(STATUS "FreeType imported successfully.")
+
+    message(STATUS "Importing plmpeg...")
+    import_plmpeg()
+    message(STATUS "plmpeg imported successfully.")
 
     message(STATUS "All dependencies have been imported successfully.")
 endmacro()

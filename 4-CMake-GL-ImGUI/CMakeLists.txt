@@ -18,6 +18,7 @@ set(ALL_LIBS
   PRIVATE lua
   PRIVATE rapidjson
   PRIVATE freetype
+  PRIVATE plmpeg
 )
 
 include_directories(${CMAKE_CURRENT_LIST_DIR}/lib/glm)
