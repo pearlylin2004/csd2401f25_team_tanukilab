@@ -25,6 +25,10 @@ Technology is prohibited.
 #include "Systems.h"
 #include "input.h"
 #include "CoreEngine.h"
+#include "LeaderboardSystem.h"
+#include "ReplaySystem.h"
+#include "LogicContainer.h"
+#include "Physics.h"
 #include <iostream>
 #include <fstream>
 
@@ -61,20 +65,57 @@ void GUISystem::init(GameObjectManager& manager, LuaSystem& luaSystem, VisualLog
 
 //update function to check for button clicking
 void GUISystem::update() {
+    // Update in-game HUD every frame during gameplay
+    updateInGameHUD();
+
     if (m_pendingRestart) {
+        // Ignore restarts during replay viewer
+        if (m_currentState == GameState::REPLAY) {
+            m_pendingRestart = false;
+            return;
+        }
         m_pendingRestart = false;
         restartLevel();
         return;
     }
 
     if (m_pendingLevelLoad && !UISystem::isShowUI()) {
+        // Ignore visual-logic level transitions during replay viewer
+        if (m_currentState == GameState::REPLAY) {
+            m_pendingLevelLoad = false;
+            m_pendingLevelName = "";
+            return;
+        }
         m_pendingLevelLoad = false;
         std::string levelToLoad = m_pendingLevelName;
         m_pendingLevelName = "";
         if (levelToLoad == "win_scene.json") {
+            // Stop timers
+            m_levelTimerRunning = false;
+            m_gameTimerRunning = false;
+
+            // Use per-level timer for the replay ghost save
+            int levelTimeMs = static_cast<int>(m_levelTimer * 1000.0);
+            ReplaySystem::getInstance().stopRecording(levelTimeMs);
+            ReplaySystem::getInstance().stopPlayback(*g_manager);
+
+            // Use total game timer for the leaderboard entry
+            int totalTimeMs = static_cast<int>(m_gameTimer * 1000.0);
+            LeaderboardSystem::getInstance().addEntry("Player", totalTimeMs);
+            std::cout << "[GUI] Game completed in " << m_gameTimer << "s (" << totalTimeMs << "ms)\n";
+
+            // Finalize the run: move current/ to <totalTimeMs>/
+            ReplaySystem::getInstance().finalizeRun(totalTimeMs);
+            m_lastRunId = std::to_string(totalTimeMs);
+
             loadScreen(*g_manager, levelToLoad);
         }
         else {
+            // Save replay for the current level before moving to the next level
+            int completionTimeMs = static_cast<int>(m_levelTimer * 1000.0);
+            ReplaySystem::getInstance().stopRecording(completionTimeMs);
+            ReplaySystem::getInstance().stopPlayback(*g_manager);
+
             loadLevel(levelToLoad);
         }
         return;
@@ -84,6 +125,45 @@ void GUISystem::update() {
         auto actionIt = m_buttonActions.find(m_pendingAction);
         m_pendingAction = ButtonAction::NONE;
         if (actionIt != m_buttonActions.end()) actionIt->second();
+        return;
+    }
+
+    // Replay selection screen: handle navigation
+    if (m_replaySelectActive && m_currentState == GameState::REPLAY) {
+        handleReplaySelectInput();
+        return;
+    }
+
+    // Replay viewer: feed recorded inputs through the game simulation
+    if (m_replayViewerActive && m_currentState == GameState::REPLAY) {
+        auto& replay = ReplaySystem::getInstance();
+
+        // Handle playback controls (pause, seek, speed, frame step)
+        handleReplayViewerControls();
+
+        // Update replay HUD overlay
+        updateReplayHUD();
+
+        // When the viewer finishes the current level, advance to the next
+        if (replay.isViewerFinished() && !replay.isViewerPaused()) {
+            replay.stopViewer();
+            m_replayLevelIndex++;
+            if (m_replayLevelIndex < static_cast<int>(m_replayLevels.size())) {
+                loadReplayLevel(m_replayLevelIndex);
+            }
+            else {
+                // All levels replayed — return to menu
+                m_replayViewerActive = false;
+                changeState(GameState::MENU, "menu_scene.json");
+            }
+        }
+
+        // ESC exits replay viewer back to menu
+        if (InputHandler::isKeyTriggered(GLFW_KEY_ESCAPE)) {
+            replay.stopViewer();
+            m_replayViewerActive = false;
+            changeState(GameState::MENU, "menu_scene.json");
+        }
         return;
     }
 
@@ -200,6 +280,11 @@ void GUISystem::createButtons(/*GameObjectManager& manager*/) {
     if (m_currentState == GameState::AUDIO) {
         updateVolumeDisplay();
     }
+
+    // Populate leaderboard text objects when entering the leaderboard screen
+    if (m_currentState == GameState::LEADERBOARD) {
+        updateLeaderboardDisplay();
+    }
 }
 
 //removing of buttons 
@@ -263,6 +348,12 @@ void GUISystem::createButtonActions() {
         case GameState::EXITCONFIRMATION:
             changeState(GameState::EXITCONFIRMATION, "confirmation_scene.json");
             break;
+        case GameState::LEADERBOARD:
+            changeState(GameState::LEADERBOARD, "leaderboard_scene.json");
+            break;
+        case GameState::REPLAY:
+            changeState(GameState::MENU, "menu_scene.json");
+            break;
         default:
             changeState(GameState::MENU, "menu_scene.json");
             break;
@@ -271,6 +362,17 @@ void GUISystem::createButtonActions() {
 
     //menu button
     m_buttonActions[ButtonAction::MENU] = [this]() {
+        // Clean up replay/ghost when leaving gameplay
+        auto& replay = ReplaySystem::getInstance();
+        replay.discardRecording();
+        replay.stopPlayback(*g_manager);
+
+        // Clean up replay viewer if active
+        if (m_replayViewerActive) {
+            replay.stopViewer();
+            m_replayViewerActive = false;
+        }
+
         changeState(GameState::MENU, "menu_scene.json");
     };
 
@@ -317,6 +419,21 @@ void GUISystem::createButtonActions() {
         updateVolumeDisplay();
     };
 
+    // leaderboard screen
+    m_buttonActions[ButtonAction::OPEN_LEADERBOARD] = [this]() {
+        changeState(GameState::LEADERBOARD, "leaderboard_scene.json");
+    };
+
+    // replay viewer
+    m_buttonActions[ButtonAction::WATCH_REPLAY] = [this]() {
+        startReplayViewer();
+    };
+
+    // replay selection screen
+    m_buttonActions[ButtonAction::OPEN_REPLAY_SELECT] = [this]() {
+        openReplaySelect();
+    };
+
     std::cout << "[GUI] Menu buttons created successfully" << std::endl;
 }
 
@@ -331,12 +448,101 @@ void GUISystem::updateVolumeDisplay() {
     }
 }
 
+void GUISystem::updateLeaderboardDisplay() {
+    auto& lb = LeaderboardSystem::getInstance();
+    auto entries = lb.getAll();
+
+    for (int i = 0; i < LeaderboardSystem::MAX_ENTRIES; ++i) {
+        std::string idx = std::to_string(i + 1);
+
+        GameObject* rankObj = g_manager->getGameObject("lb_rank_" + idx);
+        GameObject* nameObj = g_manager->getGameObject("lb_name_" + idx);
+        GameObject* timeObj = g_manager->getGameObject("lb_time_" + idx);
+
+        if (i < static_cast<int>(entries.size())) {
+            int totalMs = entries[i].score;
+            int minutes = totalMs / 60000;
+            int seconds = (totalMs % 60000) / 1000;
+            int ms = totalMs % 1000;
+            char timeBuf[32];
+            std::snprintf(timeBuf, sizeof(timeBuf), "%d:%02d.%03d", minutes, seconds, ms);
+
+            if (rankObj && rankObj->hasComponent<FontComponent>())
+                rankObj->getComponent<FontComponent>()->word = idx + ".";
+            if (nameObj && nameObj->hasComponent<FontComponent>())
+                nameObj->getComponent<FontComponent>()->word = entries[i].name;
+            if (timeObj && timeObj->hasComponent<FontComponent>())
+                timeObj->getComponent<FontComponent>()->word = timeBuf;
+        }
+        else {
+            if (rankObj && rankObj->hasComponent<FontComponent>())
+                rankObj->getComponent<FontComponent>()->word = idx + ".";
+            if (nameObj && nameObj->hasComponent<FontComponent>())
+                nameObj->getComponent<FontComponent>()->word = "---";
+            if (timeObj && timeObj->hasComponent<FontComponent>())
+                timeObj->getComponent<FontComponent>()->word = "---";
+        }
+    }
+}
+
+void GUISystem::initInGameHUD() {
+    auto& lb = LeaderboardSystem::getInstance();
+    auto entries = lb.getTopN(3);
+
+    for (int i = 0; i < 3; ++i) {
+        std::string idx = std::to_string(i + 1);
+        GameObject* scoreObj = g_manager->getGameObject("hud_lb_" + idx);
+        if (!scoreObj || !scoreObj->hasComponent<FontComponent>()) continue;
+
+        FontComponent* fc = scoreObj->getComponent<FontComponent>();
+        if (i < static_cast<int>(entries.size())) {
+            int totalMs = entries[i].score;
+            int minutes = totalMs / 60000;
+            int seconds = (totalMs % 60000) / 1000;
+            int ms = totalMs % 1000;
+            char timeBuf[32];
+            std::snprintf(timeBuf, sizeof(timeBuf), "%d:%02d.%03d", minutes, seconds, ms);
+            fc->word = idx + ". " + entries[i].name + "  " + timeBuf;
+        }
+        else {
+            fc->word = idx + ". ---  ---";
+        }
+    }
+}
+
+void GUISystem::updateInGameHUD() {
+    if (m_currentState != GameState::PLAYING) return;
+
+    // Update timer text every frame
+    GameObject* timerObj = g_manager->getGameObject("hud_timer");
+    if (timerObj && timerObj->hasComponent<FontComponent>()) {
+        int totalMs = static_cast<int>(m_gameTimer * 1000.0);
+        int minutes = totalMs / 60000;
+        int seconds = (totalMs % 60000) / 1000;
+        int ms = totalMs % 1000;
+        char timeBuf[32];
+        std::snprintf(timeBuf, sizeof(timeBuf), "TIME: %d:%02d.%03d", minutes, seconds, ms);
+        timerObj->getComponent<FontComponent>()->word = timeBuf;
+    }
+}
+
 void GUISystem::startGame() {
     std::cout << "[GUI] Starting game" << std::endl;
 
     //change state to playing
 	m_currentState = GameState::PLAYING;
     level = 1;
+
+    // Reset and start the level timer
+    m_levelTimer = 0.0;
+    m_levelTimerRunning = true;
+
+    // Reset and start the total game timer (runs from start to win)
+    m_gameTimer = 0.0;
+    m_gameTimerRunning = true;
+
+    // Clear any in-progress replay data for a fresh run
+    ReplaySystem::getInstance().clearCurrentRun();
 
     removeButtons(); //remove menu buttons
 
@@ -367,9 +573,15 @@ void GUISystem::startGame() {
         }
     }
     std::cout << "[GUI] Game started - loaded json" << std::endl;
-}
 
-//stop game and quit
+    // Start replay recording and ghost playback for this level
+    auto& replay = ReplaySystem::getInstance();
+    replay.startRecording(m_currentLevel);
+    replay.startPlayback(m_currentLevel, *g_manager);
+
+    // Populate in-game HUD with leaderboard top 3
+    initInGameHUD();
+}
 void GUISystem::stopGame() {
     std::cout << "[GUI] Stop button clicked - quitting application" << std::endl;
 
@@ -443,6 +655,12 @@ GameState GUISystem::sceneToState(const std::string& sceneName) {
     if (sceneName == "confirmation_scene.json") {
         return GameState::EXITCONFIRMATION;
     }
+    if (sceneName == "leaderboard_scene.json") {
+        return GameState::LEADERBOARD;
+    }
+    if (sceneName == "replay_select_scene.json") {
+        return GameState::REPLAY;
+    }
     return GameState::MENU; //fallback
 }
 
@@ -454,6 +672,11 @@ void GUISystem::restartLevel() {
         return;
     }
 
+    // Stop any in-progress replay recording/playback before clearing scene
+    auto& replay = ReplaySystem::getInstance();
+    replay.discardRecording();
+    replay.stopPlayback(*g_manager);
+
     removeButtons();
     AudioHandler::getInstance().stopAll(*g_manager);
 
@@ -464,6 +687,17 @@ void GUISystem::restartLevel() {
     g_visualLogicSystem->initAll(*g_manager);
     resetAllObjectsToSpawn();
     m_currentState = GameState::PLAYING;
+
+    // Reset and start the level timer
+    m_levelTimer = 0.0;
+    m_levelTimerRunning = true;
+
+    // Start fresh recording and ghost playback
+    replay.startRecording(m_currentLevel);
+    replay.startPlayback(m_currentLevel, *g_manager);
+
+    // Populate in-game HUD with leaderboard top 3
+    initInGameHUD();
 }
 
 void GUISystem::loadLevel(const std::string& levelName) {
@@ -496,6 +730,114 @@ void GUISystem::loadLevel(const std::string& levelName) {
     }
 
     m_currentState = GameState::PLAYING;
+
+    // Reset and start the level timer
+    m_levelTimer = 0.0;
+    m_levelTimerRunning = true;
+
+    // Start replay recording and ghost playback for this level
+    auto& replay = ReplaySystem::getInstance();
+    replay.startRecording(m_currentLevel);
+    replay.startPlayback(m_currentLevel, *g_manager);
+
+    // Populate in-game HUD with leaderboard top 3
+    initInGameHUD();
+}
+
+void GUISystem::startReplayViewer(const std::string& requestedRunId) {
+    auto& replay = ReplaySystem::getInstance();
+
+    // Use provided run ID, or fall back to last completed run, or best run
+    std::string runId = requestedRunId;
+    if (runId.empty()) runId = m_lastRunId;
+    if (runId.empty()) runId = replay.findBestRunId();
+
+    if (runId.empty()) {
+        std::cout << "[GUI] No completed runs available to watch.\n";
+        return;
+    }
+
+    m_replayRunId = runId;
+    std::cout << "[GUI] Starting replay viewer for run " << runId << "ms\n";
+
+    // Build ordered list of levels that have replays in this run
+    m_replayLevels.clear();
+    const std::vector<std::string> allLevels = {
+        "level01", "level02", "level03", "level04"
+    };
+    for (const auto& lvl : allLevels) {
+        if (replay.hasReplayForRun(lvl, runId)) {
+            m_replayLevels.push_back(lvl);
+        }
+    }
+
+    if (m_replayLevels.empty()) {
+        std::cout << "[GUI] No replays in run " << runId << ".\n";
+        return;
+    }
+
+    m_replayLevelIndex = 0;
+    m_replayViewerActive = true;
+    m_currentState = GameState::REPLAY;
+    loadReplayLevel(0);
+}
+
+void GUISystem::loadReplayLevel(int levelIndex) {
+    const std::string& levelName = m_replayLevels[levelIndex];
+    std::string sceneName = levelName + ".json";
+    std::string fullPath = std::string(RUNTIME_SCENE_DIR_R) + "/" + sceneName;
+
+    std::cout << "[GUI] Replay viewer: loading " << levelName << "\n";
+
+    removeButtons();
+    AudioHandler::getInstance().stopAll(*g_manager);
+
+    g_manager->clearScene();
+    g_manager->loadScene(fullPath);
+    g_manager->initializeSceneResources();
+    g_visualLogicSystem->resetLogicState();
+    g_visualLogicSystem->initAll(*g_manager);
+
+    // Initialize Lua scripts for this level
+    for (const auto& file : std::filesystem::directory_iterator("./assets/scripting")) {
+        if (file.path().extension() != ".lua") continue;
+        std::string filename = file.path().filename().string();
+        std::string objectName = filename.substr(0, filename.size() - 4);
+        GameObject* obj = g_manager->getGameObject(objectName);
+        if (obj) {
+            obj->addComponent<LuaScript>(file.path().string());
+            g_luaSystem->loadScriptForObject(file.path().string(), objectName);
+        }
+    }
+
+    // Start viewer playback (feeds recorded inputs, no ghost spawned)
+    auto& replay = ReplaySystem::getInstance();
+    replay.startViewerPlayback(fullPath, m_replayRunId);
+
+    // Snap player to the first replay frame position to prevent a visible
+    // teleport on the first frame before the position-correction code runs
+    if (replay.isViewerMode()) {
+        GameObject* player = g_manager->getGameObject("player");
+        if (player && player->hasComponent<Transform>()) {
+            Transform* t = player->getComponent<Transform>();
+            t->x = replay.getReplayX();
+            t->y = replay.getReplayY();
+            if (player->hasComponent<Physics>()) {
+                Physics* p = player->getComponent<Physics>();
+                p->dynamics.position.x = t->x;
+                p->dynamics.position.y = t->y;
+            }
+        }
+    }
+}
+
+void GUISystem::tickLevelTimer(double dt) {
+    if (m_levelTimerRunning && m_currentState == GameState::PLAYING) {
+        m_levelTimer += dt;
+    }
+    if (m_gameTimerRunning && m_currentState == GameState::PLAYING) {
+        m_gameTimer += dt;
+    }
 }
 
 void GUISystem::resetAllObjectsToSpawn() {
@@ -556,5 +898,318 @@ void GUISystem::resetAllObjectsToSpawn() {
                 Collision::buildTileCollisionBox(tileMap, tmTransform);
             }
         }
+    }
+}
+
+// ============================================================================
+// Replay Selection Screen
+// ============================================================================
+
+void GUISystem::openReplaySelect() {
+    auto& replay = ReplaySystem::getInstance();
+    m_availableRuns = replay.getAllRunIds();
+    m_replaySelectIndex = 0;
+    m_replaySelectPage = 0;
+    m_replaySelectActive = true;
+    m_replayViewerActive = false;
+
+    changeState(GameState::REPLAY, "replay_select_scene.json");
+    populateReplaySelection();
+}
+
+void GUISystem::populateReplaySelection() {
+    const int entriesPerPage = 5;
+    int startIdx = m_replaySelectPage * entriesPerPage;
+    int totalRuns = static_cast<int>(m_availableRuns.size());
+
+    for (int i = 0; i < entriesPerPage; ++i) {
+        std::string objName = "replay_entry_" + std::to_string(i + 1);
+        GameObject* obj = g_manager->getGameObject(objName);
+        if (!obj || !obj->hasComponent<FontComponent>()) continue;
+        FontComponent* fc = obj->getComponent<FontComponent>();
+
+        int runIdx = startIdx + i;
+        if (runIdx < totalRuns) {
+            const std::string& runId = m_availableRuns[runIdx];
+            int timeMs = 0;
+            try { timeMs = std::stoi(runId); } catch (...) {}
+            int minutes = timeMs / 60000;
+            int seconds = (timeMs % 60000) / 1000;
+            int ms = timeMs % 1000;
+            char timeBuf[32];
+            std::snprintf(timeBuf, sizeof(timeBuf), "%d:%02d.%03d", minutes, seconds, ms);
+            fc->word = "Run " + std::to_string(runIdx + 1) + " - " + std::string(timeBuf);
+
+            // Highlight selected entry
+            if (runIdx == m_replaySelectIndex) {
+                fc->clr = glm::vec3(1.0f, 0.84f, 0.0f); // gold
+            } else {
+                fc->clr = glm::vec3(1.0f, 1.0f, 1.0f); // white
+            }
+        } else {
+            fc->word = "---";
+            fc->clr = glm::vec3(0.4f, 0.4f, 0.4f);
+        }
+    }
+
+    // Update selector arrow position
+    GameObject* selector = g_manager->getGameObject("replay_selector");
+    if (selector && selector->hasComponent<Transform>()) {
+        int localIdx = m_replaySelectIndex - startIdx;
+        if (localIdx >= 0 && localIdx < entriesPerPage) {
+            float yPos = 4.5f - localIdx * 2.0f;
+            Transform* t = selector->getComponent<Transform>();
+            t->y = yPos;
+        }
+    }
+
+    // Update page info
+    int totalPages = (totalRuns + entriesPerPage - 1) / entriesPerPage;
+    if (totalPages < 1) totalPages = 1;
+    GameObject* pageObj = g_manager->getGameObject("replay_page_info");
+    if (pageObj && pageObj->hasComponent<FontComponent>()) {
+        FontComponent* fc = pageObj->getComponent<FontComponent>();
+        if (totalRuns == 0) {
+            fc->word = "No replays found";
+        } else {
+            fc->word = "Page " + std::to_string(m_replaySelectPage + 1) + "/" + std::to_string(totalPages)
+                     + "  (" + std::to_string(totalRuns) + " runs)";
+        }
+    }
+}
+
+void GUISystem::handleReplaySelectInput() {
+    const int entriesPerPage = 5;
+    int totalRuns = static_cast<int>(m_availableRuns.size());
+
+    // Handle back button mouse click (button processing is skipped by
+    // the early return in update(), so we detect clicks here directly)
+    if (InputHandler::isMouseButtonClicked(GLFW_MOUSE_BUTTON_LEFT)) {
+        GameObject* backBtn = g_manager->getGameObject("back_button");
+        if (backBtn && isPointInButton(InputHandler::getWorldMousePosition(), backBtn)) {
+            m_replaySelectActive = false;
+            changeState(GameState::MENU, "menu_scene.json");
+            return;
+        }
+    }
+
+    // ESC goes back to menu
+    if (InputHandler::isKeyTriggered(GLFW_KEY_ESCAPE)) {
+        m_replaySelectActive = false;
+        changeState(GameState::MENU, "menu_scene.json");
+        return;
+    }
+
+    if (totalRuns == 0) return;
+
+    bool changed = false;
+
+    // UP/DOWN navigate entries
+    if (InputHandler::isKeyTriggered(GLFW_KEY_UP)) {
+        if (m_replaySelectIndex > 0) {
+            m_replaySelectIndex--;
+            int page = m_replaySelectIndex / entriesPerPage;
+            if (page != m_replaySelectPage) m_replaySelectPage = page;
+            changed = true;
+        }
+    }
+    if (InputHandler::isKeyTriggered(GLFW_KEY_DOWN)) {
+        if (m_replaySelectIndex < totalRuns - 1) {
+            m_replaySelectIndex++;
+            int page = m_replaySelectIndex / entriesPerPage;
+            if (page != m_replaySelectPage) m_replaySelectPage = page;
+            changed = true;
+        }
+    }
+
+    // LEFT/RIGHT change pages
+    if (InputHandler::isKeyTriggered(GLFW_KEY_LEFT)) {
+        if (m_replaySelectPage > 0) {
+            m_replaySelectPage--;
+            m_replaySelectIndex = m_replaySelectPage * entriesPerPage;
+            changed = true;
+        }
+    }
+    if (InputHandler::isKeyTriggered(GLFW_KEY_RIGHT)) {
+        int totalPages = (totalRuns + entriesPerPage - 1) / entriesPerPage;
+        if (m_replaySelectPage < totalPages - 1) {
+            m_replaySelectPage++;
+            m_replaySelectIndex = m_replaySelectPage * entriesPerPage;
+            changed = true;
+        }
+    }
+
+    if (changed) populateReplaySelection();
+
+    // ENTER selects replay and starts viewer
+    if (InputHandler::isKeyTriggered(GLFW_KEY_ENTER)) {
+        if (m_replaySelectIndex >= 0 && m_replaySelectIndex < totalRuns) {
+            m_replaySelectActive = false;
+            startReplayViewer(m_availableRuns[m_replaySelectIndex]);
+        }
+    }
+}
+
+// ============================================================================
+// Replay Viewer Playback Controls
+// ============================================================================
+
+void GUISystem::handleReplayViewerControls() {
+    auto& replay = ReplaySystem::getInstance();
+
+    // F2: Toggle pause/resume
+    if (InputHandler::isKeyTriggered(GLFW_KEY_F2)) {
+        replay.toggleViewerPause();
+    }
+
+    // LEFT arrow: Seek backward 2 seconds
+    if (InputHandler::isKeyTriggered(GLFW_KEY_LEFT)) {
+        replay.seekViewer(-2.0f);
+        resetReplayWorldState();
+    }
+
+    // RIGHT arrow: Seek forward 2 seconds
+    if (InputHandler::isKeyTriggered(GLFW_KEY_RIGHT)) {
+        replay.seekViewer(2.0f);
+    }
+
+    // Comma: Step back 1 frame (when paused)
+    if (InputHandler::isKeyTriggered(GLFW_KEY_COMMA) && replay.isViewerPaused()) {
+        replay.stepViewerFrame(-1);
+        resetReplayWorldState();
+    }
+
+    // Period: Step forward 1 frame (when paused)
+    if (InputHandler::isKeyTriggered(GLFW_KEY_PERIOD) && replay.isViewerPaused()) {
+        replay.stepViewerFrame(1);
+    }
+
+    // Minus: Decrease speed (cycle: 2.0 -> 1.0 -> 0.5 -> 0.25)
+    if (InputHandler::isKeyTriggered(GLFW_KEY_MINUS)) {
+        float spd = replay.getViewerSpeed();
+        if (spd > 1.0f) spd = 1.0f;
+        else if (spd > 0.5f) spd = 0.5f;
+        else spd = 0.25f;
+        replay.setViewerSpeed(spd);
+    }
+
+    // Equals/Plus: Increase speed (cycle: 0.25 -> 0.5 -> 1.0 -> 2.0)
+    if (InputHandler::isKeyTriggered(GLFW_KEY_EQUAL)) {
+        float spd = replay.getViewerSpeed();
+        if (spd < 0.5f) spd = 0.5f;
+        else if (spd < 1.0f) spd = 1.0f;
+        else spd = 2.0f;
+        replay.setViewerSpeed(spd);
+    }
+
+    // N: Skip to next level in the replay
+    if (InputHandler::isKeyTriggered(GLFW_KEY_N)) {
+        replay.stopViewer();
+        m_replayLevelIndex++;
+        if (m_replayLevelIndex < static_cast<int>(m_replayLevels.size())) {
+            loadReplayLevel(m_replayLevelIndex);
+        } else {
+            m_replayViewerActive = false;
+            changeState(GameState::MENU, "menu_scene.json");
+        }
+    }
+}
+
+void GUISystem::resetReplayWorldState() {
+    if (!g_manager) return;
+
+    std::vector<GameObject*> allObjs;
+    g_manager->getAllGameObjects(allObjs);
+
+    for (GameObject* obj : allObjs) {
+        if (!obj) continue;
+
+        // Deactivate all alive bullets
+        std::string name = obj->getObjectName();
+        if (name.rfind("bullet", 0) == 0 && obj->hasComponent<Physics>()) {
+            Physics* p = obj->getComponent<Physics>();
+            if (p->alive) {
+                PhysicsForces::deactivateBullet(obj);
+            }
+        }
+
+        // Stop fire-related audio on rewind to avoid lingering sounds
+        if (obj->hasComponent<AudioComponent>()) {
+            CollisionInfo* col = obj->getComponent<CollisionInfo>();
+            if (col && (col->collisionTag == "fire" || col->collisionTag == "steam")) {
+                AudioComponent* audio = obj->getComponent<AudioComponent>();
+                if (AudioChannel* steam = audio->getChannel("steam"))
+                    steam->isPendingStop = true;
+                if (AudioChannel* fire = audio->getChannel("fire_loop"))
+                    fire->isPendingStop = true;
+            }
+        }
+    }
+
+    // Reset visual logic state (collision tracking, timers, variables)
+    // World object visuals are restored by applyWorldSnapshot() each frame
+    g_visualLogicSystem->resetLogicState();
+    g_visualLogicSystem->initAll(*g_manager);
+}
+
+void GUISystem::updateReplayHUD() {
+    auto& replay = ReplaySystem::getInstance();
+
+    // Update hud_timer to show replay progress
+    GameObject* timerObj = g_manager->getGameObject("hud_timer");
+    if (timerObj && timerObj->hasComponent<FontComponent>()) {
+        FontComponent* fc = timerObj->getComponent<FontComponent>();
+        float elapsed = replay.getViewerElapsed();
+        float duration = replay.getViewerDuration();
+        int eMin = static_cast<int>(elapsed) / 60;
+        int eSec = static_cast<int>(elapsed) % 60;
+        int eMs  = static_cast<int>(elapsed * 1000) % 1000;
+        int dMin = static_cast<int>(duration) / 60;
+        int dSec = static_cast<int>(duration) % 60;
+        int dMs  = static_cast<int>(duration * 1000) % 1000;
+
+        char buf[96];
+        std::snprintf(buf, sizeof(buf), "[REPLAY] %d:%02d.%03d / %d:%02d.%03d",
+                       eMin, eSec, eMs, dMin, dSec, dMs);
+
+        std::string status(buf);
+        if (replay.isViewerPaused()) status += "  PAUSED";
+        float spd = replay.getViewerSpeed();
+        if (spd != 1.0f) {
+            char spdBuf[16];
+            std::snprintf(spdBuf, sizeof(spdBuf), "  %.2fx", spd);
+            status += spdBuf;
+        }
+        fc->word = status;
+    }
+
+    // Show controls in leaderboard header area
+    GameObject* headerObj = g_manager->getGameObject("hud_lb_header");
+    if (headerObj && headerObj->hasComponent<FontComponent>()) {
+        FontComponent* fc = headerObj->getComponent<FontComponent>();
+        fc->word = "F2:Pause </>:Seek -/+:Speed";
+    }
+
+    // Show level info and frame count
+    GameObject* lb1Obj = g_manager->getGameObject("hud_lb_1");
+    if (lb1Obj && lb1Obj->hasComponent<FontComponent>()) {
+        FontComponent* fc = lb1Obj->getComponent<FontComponent>();
+        std::string lvl = (m_replayLevelIndex < static_cast<int>(m_replayLevels.size()))
+            ? m_replayLevels[m_replayLevelIndex] : "???";
+        fc->word = "Level: " + lvl + " (" + std::to_string(m_replayLevelIndex + 1)
+                 + "/" + std::to_string(m_replayLevels.size()) + ")";
+    }
+
+    GameObject* lb2Obj = g_manager->getGameObject("hud_lb_2");
+    if (lb2Obj && lb2Obj->hasComponent<FontComponent>()) {
+        FontComponent* fc = lb2Obj->getComponent<FontComponent>();
+        fc->word = "Frame: " + std::to_string(replay.getViewerFrameIndex())
+                 + "/" + std::to_string(replay.getViewerFrameCount());
+    }
+
+    GameObject* lb3Obj = g_manager->getGameObject("hud_lb_3");
+    if (lb3Obj && lb3Obj->hasComponent<FontComponent>()) {
+        FontComponent* fc = lb3Obj->getComponent<FontComponent>();
+        fc->word = ",/.:FrameStep  N:NextLvl  ESC:Exit";
     }
 }
