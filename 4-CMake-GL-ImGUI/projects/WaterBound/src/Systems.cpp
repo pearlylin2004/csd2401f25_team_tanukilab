@@ -22,8 +22,10 @@ Technology is prohibited.
 */
 /* End Header **************************************************************************/
 #pragma once
+#pragma warning(push, 0)
 #define PL_MPEG_IMPLEMENTATION
 #include "Systems.h"
+#pragma warning(pop)
 #include "Physics.h"
 #include "GUISystem.h"
 #include "ReplaySystem.h"
@@ -616,12 +618,13 @@ void VideoSystem::update(GameObject* obj, float const deltaTime)
 
 	if (!video->plm)
 	{
-		if (!loadVideo(video)) 
+		if (!loadVideo(video))
 		{
 			std::cerr << "Failed to load video: " << video->videoFile << std::endl;
 			video->isPlaying = false;
 			return;
 		}
+		video->accumTime = 0.f; // reset accum time so if we start playing again it doesn't immediately skip frames
 		// if first frame lags, return this immediately so we don't have a frozen frame until the next update
 		//return;
 	}
@@ -632,17 +635,16 @@ void VideoSystem::update(GameObject* obj, float const deltaTime)
 		// Decode and update texture
 		plm_frame_t* frame = plm_decode_video(video->plm);
 		if (frame) {
-			uint8_t* pixels = new uint8_t[video->videoWidth * video->videoHeight * 4];
-			plm_frame_to_rgba(frame, pixels, video->videoWidth * 4);
+			std::vector<uint8_t> pixels(video->videoWidth * video->videoHeight * 4);
+			plm_frame_to_rgba(frame, pixels.data(), video->videoWidth * 4);
 			glBindTexture(GL_TEXTURE_2D, video->videoTexID);
 			glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, video->videoWidth, video->videoHeight,
-				GL_RGBA, GL_UNSIGNED_BYTE, pixels);
-			delete[] pixels;
+				GL_RGBA, GL_UNSIGNED_BYTE, pixels.data());
 		}
 	}
 	if (plm_has_ended(video->plm)) {
 		cleanup(video);
-		video->accumTime = 0.0;
+		video->accumTime = 0.f;
 
 		if (video->loop) {
 			video->isPlaying = true;  // next iteration reloads plm

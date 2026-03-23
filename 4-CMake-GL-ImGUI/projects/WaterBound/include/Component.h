@@ -31,7 +31,9 @@ Technology is prohibited.
 #include "font.h"
 #include "dynamics.h"
 #include "queue"
+#pragma warning(push, 0)
 #include "pl_mpeg.h"
+#pragma warning(pop)
 
 
 // at least it works!!!

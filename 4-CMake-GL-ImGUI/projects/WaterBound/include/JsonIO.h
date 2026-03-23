@@ -28,7 +28,7 @@ Technology is prohibited.
 #include <glm/vec3.hpp> 
 #include <glm/vec4.hpp>
 
-
+#pragma warning(push, 0)
 #include <rapidjson/istreamwrapper.h>
 #include <rapidjson/ostreamwrapper.h>
 #include <rapidjson/document.h>
@@ -37,6 +37,7 @@ Technology is prohibited.
 #include <rapidjson/writer.h>
 #include <rapidjson/prettywriter.h>
 #include <rapidjson/filewritestream.h>
+#pragma warning(pop)
 
 #include "GameObjectManager.h"
 #include "Component.h"
