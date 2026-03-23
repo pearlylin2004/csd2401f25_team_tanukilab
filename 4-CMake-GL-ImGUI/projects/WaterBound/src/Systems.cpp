@@ -22,7 +22,7 @@ Technology is prohibited.
 */
 /* End Header **************************************************************************/
 #pragma once
-
+#define PL_MPEG_IMPLEMENTATION
 #include "Systems.h"
 #include "Physics.h"
 #include "GUISystem.h"
@@ -628,7 +628,7 @@ void VideoSystem::update(GameObject* obj, float const deltaTime)
 	video->accumTime += deltaTime;
 	if (video->accumTime >= 1.0 / video->fps) 
 	{
-		video->accumTime -= 1.0 / video->fps;
+		video->accumTime -= 1.f / video->fps;
 			// Decode and update texture
 			plm_frame_t* frame = plm_decode_video(video->plm);
 			if (frame) {
@@ -672,7 +672,7 @@ bool VideoSystem::loadVideo(Video* video) {
 
 	video->videoWidth = plm_get_width(video->plm);
 	video->videoHeight = plm_get_height(video->plm);
-	video->fps = plm_get_framerate(video->plm);
+	video->fps = static_cast<float>(plm_get_framerate(video->plm));
 
 	glGenTextures(1, &video->videoTexID);
 	glBindTexture(GL_TEXTURE_2D, video->videoTexID);

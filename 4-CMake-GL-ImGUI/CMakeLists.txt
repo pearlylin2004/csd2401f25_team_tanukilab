@@ -19,6 +19,7 @@ set(ALL_LIBS
   PRIVATE rapidjson
   PRIVATE freetype
   PRIVATE plmpeg
+  PRIVATE glm::glm
 )
 
 include_directories(${CMAKE_CURRENT_LIST_DIR}/lib/glm)
@@ -123,6 +124,13 @@ target_compile_definitions(WaterBound PRIVATE
 )
 
 if(MSVC)
+    target_compile_options(WaterBound PRIVATE
+        /W4
+        /WX-
+        /external:anglebrackets
+        /external:W0
+	/analyze-
+    )
     set_target_properties(WaterBound PROPERTIES
         LINK_FLAGS_DEBUG   "/SUBSYSTEM:CONSOLE"
         LINK_FLAGS_RELEASE "/SUBSYSTEM:WINDOWS"

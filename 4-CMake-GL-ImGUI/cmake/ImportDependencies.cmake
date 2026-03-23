@@ -16,7 +16,7 @@ macro(import_glfw)
         endif()
 
         add_subdirectory(${glfw_SOURCE_DIR})
-        include_directories(${GLFW_SOURCE_DIR}/include)
+        target_include_directories(glfw SYSTEM INTERFACE ${glfw_SOURCE_DIR}/include)
     endif()
 endmacro()
 
@@ -28,8 +28,9 @@ macro(import_glm)
             GIT_REPOSITORY https://github.com/g-truc/glm.git
             GIT_TAG master
         )
+        set(GLM_QUIET ON CACHE BOOL "" FORCE)
         FetchContent_MakeAvailable(glm)
-        include_directories(${glm_SOURCE_DIR})
+        #target_include_directories(glm SYSTEM INTERFACE ${glm_SOURCE_DIR})
     endif()
 endmacro()
 
@@ -43,7 +44,7 @@ macro(import_glew)
         )
         set(BUILD_SHARED_LIBS OFF CACHE BOOL "Build shared libs" FORCE)
         FetchContent_MakeAvailable(glew)
-        include_directories(${glew_SOURCE_DIR}/include)
+        target_include_directories(libglew_static SYSTEM INTERFACE ${glew_SOURCE_DIR}/include)
     endif()
 endmacro()
 
@@ -70,7 +71,7 @@ macro(import_imgui)
         )
 
         add_library(imgui STATIC ${IMGUI_SOURCES})
-        target_include_directories(imgui PUBLIC 
+        target_include_directories(imgui SYSTEM PUBLIC 
             ${imgui_SOURCE_DIR}
             ${imgui_SOURCE_DIR}/backends
         )
@@ -93,7 +94,7 @@ macro(import_imgui)
         )
 
         add_library(ImGuizmo STATIC ${IMGUIZMO_SOURCES})
-        target_include_directories(ImGuizmo PUBLIC ${imguizmo_SOURCE_DIR})
+        target_include_directories(ImGuizmo SYSTEM PUBLIC ${imguizmo_SOURCE_DIR})
         target_link_libraries(ImGuizmo PUBLIC imgui)
     endif()
 endmacro()
@@ -108,7 +109,7 @@ macro(import_stb)
         )
         FetchContent_MakeAvailable(stb)
         add_library(stb INTERFACE)
-        target_include_directories(stb INTERFACE ${stb_SOURCE_DIR})
+        target_include_directories(stb SYSTEM INTERFACE ${stb_SOURCE_DIR})
     endif()
 endmacro()
 
@@ -185,7 +186,7 @@ macro(import_rapidjson)
         add_library(rapidjson INTERFACE)
 
         # 4. Point that target at the include/ directory inside RapidJSON
-        target_include_directories(rapidjson INTERFACE
+        target_include_directories(rapidjson SYSTEM INTERFACE
             ${rapidjson_src_SOURCE_DIR}/include
         )
     endif()
@@ -216,7 +217,7 @@ macro(import_plmpeg)
         FetchContent_MakeAvailable(plmpeg)
 
         add_library(plmpeg INTERFACE)
-        target_include_directories(plmpeg INTERFACE ${plmpeg_SOURCE_DIR})
+        target_include_directories(plmpeg SYSTEM INTERFACE ${plmpeg_SOURCE_DIR})
     endif()
 endmacro()
 

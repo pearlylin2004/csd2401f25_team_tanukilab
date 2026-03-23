@@ -23,7 +23,6 @@ Technology is prohibited.
 /* End Header **************************************************************************/
 
 #pragma once
-#define PL_MPEG_IMPLEMENTATION
 #include <string>
 #include <memory> //for unique_ptr
 #include <unordered_set>
