@@ -3,20 +3,16 @@ include(FetchContent)
 # ===================== Import GLFW =====================
 macro(import_glfw)
     if(NOT TARGET glfw)
+        set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
+        set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+        set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
+        set(BUILD_SHARED_LIBS OFF CACHE BOOL "" FORCE)
         FetchContent_Declare(
             glfw
             GIT_REPOSITORY https://github.com/glfw/glfw.git
             GIT_TAG 3.3.8
         )
-        if(NOT glfw_POPULATED)
-            set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
-            set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
-            set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
-            FetchContent_Populate(glfw)
-        endif()
-
-        add_subdirectory(${glfw_SOURCE_DIR})
-        target_include_directories(glfw SYSTEM INTERFACE ${glfw_SOURCE_DIR}/include)
+        FetchContent_MakeAvailable(glfw)
     endif()
 endmacro()
 
@@ -37,14 +33,13 @@ endmacro()
 # ===================== Import GLEW =====================
 macro(import_glew)
     if(NOT TARGET glew_s)
+        set(BUILD_SHARED_LIBS OFF CACHE BOOL "Build shared libs" FORCE)
         FetchContent_Declare(
             glew
             GIT_REPOSITORY https://github.com/Perlmint/glew-cmake.git
             GIT_TAG d06782b910213d675925e6e51a69ad0fd1fe1f23
         )
-        set(BUILD_SHARED_LIBS OFF CACHE BOOL "Build shared libs" FORCE)
         FetchContent_MakeAvailable(glew)
-        target_include_directories(libglew_static SYSTEM INTERFACE ${glew_SOURCE_DIR}/include)
     endif()
 endmacro()
 
@@ -74,6 +69,7 @@ macro(import_imgui)
         target_include_directories(imgui SYSTEM PUBLIC 
             ${imgui_SOURCE_DIR}
             ${imgui_SOURCE_DIR}/backends
+	    ${glfw_SOURCE_DIR}/include
         )
         target_link_libraries(imgui PUBLIC glfw libglew_static)
         set_property(TARGET imgui PROPERTY CXX_STANDARD 11)

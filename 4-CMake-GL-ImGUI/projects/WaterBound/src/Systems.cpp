@@ -626,19 +626,19 @@ void VideoSystem::update(GameObject* obj, float const deltaTime)
 		//return;
 	}
 	video->accumTime += deltaTime;
-	if (video->accumTime >= 1.0 / video->fps) 
+	while (video->accumTime >= 1.f / video->fps)
 	{
 		video->accumTime -= 1.f / video->fps;
-			// Decode and update texture
-			plm_frame_t* frame = plm_decode_video(video->plm);
-			if (frame) {
-				uint8_t* pixels = new uint8_t[video->videoWidth * video->videoHeight * 4];
-				plm_frame_to_rgba(frame, pixels, video->videoWidth * 4);
-				glBindTexture(GL_TEXTURE_2D, video->videoTexID);
-				glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, video->videoWidth, video->videoHeight,
-					GL_RGBA, GL_UNSIGNED_BYTE, pixels);
-				delete[] pixels;
-			}
+		// Decode and update texture
+		plm_frame_t* frame = plm_decode_video(video->plm);
+		if (frame) {
+			uint8_t* pixels = new uint8_t[video->videoWidth * video->videoHeight * 4];
+			plm_frame_to_rgba(frame, pixels, video->videoWidth * 4);
+			glBindTexture(GL_TEXTURE_2D, video->videoTexID);
+			glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, video->videoWidth, video->videoHeight,
+				GL_RGBA, GL_UNSIGNED_BYTE, pixels);
+			delete[] pixels;
+		}
 	}
 	if (plm_has_ended(video->plm)) {
 		cleanup(video);
