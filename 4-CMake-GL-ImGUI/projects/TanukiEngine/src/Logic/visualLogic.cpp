@@ -603,7 +603,7 @@ void VisualLogicSystem::executeActionNode(GameObject* obj, VisualLC* logic, Logi
 		// Reset timer to 0
 		logic->timers[timerName] = 0.f;
 
-		std::cout << "after reset: " << logic->timers[timerName] << std::endl;
+		//std::cout << "after reset: " << logic->timers[timerName] << std::endl;
 	}
 	else if (node.imp == NodeImplementation::SET_TEXTURE) {
 		Render* render = obj->getComponent<Render>();

@@ -53,19 +53,7 @@ public:
     static void windowIconifyCallback(GLFWwindow* window, int iconified);
     static void windowFocusCallback(GLFWwindow* window, int focused);
 
-    void setGameScript(GameScript* script) {
-        m_logicSystem->setGameScript(script);
-        m_physicsSystem->setGameScript(script);
-        m_collisionSystem->setGameScript(script);
-
-        m_gameScript = script;
-        if (m_luaSystem && m_gameScript)
-            m_gameScript->registerLuaBindings(*m_luaSystem);
-
-        GUISystem::getInstance().setOnSceneLoadCallback([this](GameObjectManager& mgr) {
-            if (m_gameScript) m_gameScript->onSceneLoad(mgr);
-            });
-    }
+    void setGameScript(GameScript* script);
 
     //hardcoded bgm again
     void startBGM();

@@ -5,11 +5,14 @@
 class GameObject;
 class GameObjectManager;
 class MessageBus;
+class LuaSystem;
 struct CollisionInfo;
 
 class GameScript {
 public:
     virtual ~GameScript() = default;
+
+    virtual void setLuaSystem(LuaSystem* lua) { (void)lua; }
 
     virtual void onSceneLoad(GameObjectManager& manager) { (void)manager; }
     virtual void onSceneUnload(GameObjectManager& manager) { (void)manager; }
