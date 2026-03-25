@@ -60,6 +60,7 @@ void LuaSystem::init(GameObjectManager& manager) {
     lua_register(L, "getDynPosY", Lua_getDynPosY);
     lua_register(L, "getDynMass", Lua_getDynMass);
     lua_register(L, "getCoyoteTime", Lua_getCoyoteTime);
+    lua_register(L, "getMaxFallSpeed", Lua_getMaxFallSpeed);
 
 
     // physics setters
@@ -80,6 +81,12 @@ void LuaSystem::init(GameObjectManager& manager) {
     lua_register(L, "setDynPos", Lua_setDynPos);
     lua_register(L, "updateForces", Lua_updateForces);
     lua_register(L, "advanceDynamics", Lua_advanceDynamics);
+    lua_register(L, "setInWater", Lua_setInWater);
+    lua_register(L, "clearDynForces", Lua_clearDynForces);
+    lua_register(L, "setOriginalPos", Lua_setOriginalPos);
+    lua_register(L, "isOriginalStateSet", Lua_isOriginalStateSet);
+    lua_register(L, "setAutoUpdate", Lua_setAutoUpdate);
+
 
     // collision
     lua_register(L, "getCollisionFlag", Lua_getCollisionFlag);
@@ -148,6 +155,7 @@ void LuaSystem::init(GameObjectManager& manager) {
     lua_register(L, "getWaterBuoyancyForce", Lua_getWaterBuoyancyForce);
     lua_register(L, "getWaterDrag", Lua_getWaterDrag);
     lua_register(L, "getWaterLastFrameRise", Lua_getWaterLastFrameRise);
+    lua_register(L, "addWaterHeight", Lua_addWaterHeight);
 
     // ledge climb
     lua_register(L, "getLedgeClimb", Lua_getLedgeClimb);
@@ -535,6 +543,13 @@ int LuaSystem::Lua_getCoyoteTime(lua_State* L) {
     return 1;
 }
 
+int LuaSystem::Lua_getMaxFallSpeed(lua_State* L) {
+    GameObject* obj = static_cast<GameObject*>(lua_touserdata(L, 1));
+    if (!obj || !obj->hasComponent<Physics>()) { lua_pushnumber(L, -20); return 1; }
+    lua_pushnumber(L, obj->getComponent<Physics>()->maxFallSpeed);
+    return 1;
+}
+
 
 /* ---- physics setters ---- */
 int LuaSystem::Lua_setVelX(lua_State* L) {
@@ -790,6 +805,56 @@ int LuaSystem::Lua_getFlipX(lua_State* L) {
     lua_pushboolean(L, obj->getComponent<Transform>()->flipX ? 1 : 0);
 
     return 1;
+}
+
+int LuaSystem::Lua_setInWater(lua_State* L) {
+    GameObject* obj = static_cast<GameObject*>(lua_touserdata(L, 1));
+    if (!obj || !obj->hasComponent<Physics>()) return 0;
+
+    obj->getComponent<Physics>()->inWater = lua_toboolean(L, 2) != 0;
+
+    return 0;
+}
+
+int LuaSystem::Lua_clearDynForces(lua_State* L) {
+    GameObject* obj = static_cast<GameObject*>(lua_touserdata(L, 1));
+    if (!obj || !obj->hasComponent<Physics>()) return 0;
+
+    obj->getComponent<Physics>()->dynamics.forces.clear();
+
+    return 0;
+}
+
+int LuaSystem::Lua_setOriginalPos(lua_State* L) {
+    GameObject* obj = static_cast<GameObject*>(lua_touserdata(L, 1));
+    if (!obj || !obj->hasComponent<Physics>()) return 0;
+
+    Physics* p = obj->getComponent<Physics>();
+    Transform* t = obj->getComponent<Transform>();
+
+    if (!t) return 0;
+    p->originalPos = { t->x, t->y };
+    p->isOriginalStateSet = true;
+
+    return 0;
+}
+
+int LuaSystem::Lua_isOriginalStateSet(lua_State* L) {
+    GameObject* obj = static_cast<GameObject*>(lua_touserdata(L, 1));
+    if (!obj || !obj->hasComponent<Physics>()) { lua_pushboolean(L, 0); return 1; }
+
+    lua_pushboolean(L, obj->getComponent<Physics>()->isOriginalStateSet ? 1 : 0);
+
+    return 1;
+}
+
+int LuaSystem::Lua_setAutoUpdate(lua_State* L) {
+    GameObject* obj = static_cast<GameObject*>(lua_touserdata(L, 1));
+    if (!obj || !obj->hasComponent<Physics>()) return 0;
+
+    obj->getComponent<Physics>()->autoUpdate = lua_toboolean(L, 2) != 0;
+
+    return 0;
 }
 
 /* ---- collision ---- */
@@ -1219,6 +1284,14 @@ int LuaSystem::Lua_getWaterLastFrameRise(lua_State* L) {
     return 1;
 }
 
+int LuaSystem::Lua_addWaterHeight(lua_State* L) {
+    GameObject* obj = static_cast<GameObject*>(lua_touserdata(L, 1));
+    if (!obj || !obj->hasComponent<WaterBody>()) return 0;
+    WaterBody* w = obj->getComponent<WaterBody>();
+    w->pendingHeightIncrease += w->heightIncrease;
+    return 0;
+}
+
 
 /* ---- editor ---- */
 int LuaSystem::Lua_isEditingMode(lua_State* L) {
@@ -1499,6 +1572,7 @@ bool LuaSystem::updateObjectScript(const std::string& tableName, GameObject* obj
     if (!L || !obj) return false;
 
     lua_getglobal(L, tableName.c_str()); //get table
+
     lua_getfield(L, -1, "Update");       //get table.Update from lua script
     if (!lua_isfunction(L, -1)) {
         lua_pop(L, 2);

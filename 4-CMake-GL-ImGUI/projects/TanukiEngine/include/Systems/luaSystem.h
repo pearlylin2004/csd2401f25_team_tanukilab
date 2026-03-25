@@ -94,6 +94,7 @@ public:
 	static int Lua_getDynPosY(lua_State* L);
 	static int Lua_getDynMass(lua_State* L);
 	static int Lua_getCoyoteTime(lua_State* L);
+	static int Lua_getMaxFallSpeed(lua_State* L);
 
 
 	/* -------- Physics Setters -------- */
@@ -114,6 +115,11 @@ public:
 	static int Lua_setDynPos(lua_State* L);
 	static int Lua_updateForces(lua_State* L);
 	static int Lua_advanceDynamics(lua_State* L);
+	static int Lua_setInWater(lua_State* L);
+	static int Lua_clearDynForces(lua_State* L);
+	static int Lua_setOriginalPos(lua_State* L);
+	static int Lua_isOriginalStateSet(lua_State* L);
+	static int Lua_setAutoUpdate(lua_State* L);
 
 
 	/* -------- Collision -------- */
@@ -189,6 +195,7 @@ public:
 	static int Lua_getWaterBuoyancyForce(lua_State* L);
 	static int Lua_getWaterDrag(lua_State* L);
 	static int Lua_getWaterLastFrameRise(lua_State* L);
+	static int Lua_addWaterHeight(lua_State* L);
 
 
 	/* -------- Editor State -------- */

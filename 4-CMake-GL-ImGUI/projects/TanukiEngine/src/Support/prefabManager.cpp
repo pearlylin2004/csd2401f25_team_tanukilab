@@ -91,7 +91,7 @@ namespace {
 //	if (s == "Falling")  return PlayerState::Falling;
 //	if (s == "Shooting") return PlayerState::Shooting;
 //	if (s == "Dead")     return PlayerState::Dead;
-//	return PlayerState::Idle; // default/fallback
+//	return PlayerState::Idle; // default/fallback 
 //}
 
 static const char* playerStateToStr(PlayerState state) {
@@ -177,7 +177,7 @@ void PrefabManager::savePrefabRegistry() {
 	std::string err;
 	// write to run time file
 	std::string runtime = getPrefabBasePath() + registryFile;
-	std::string dir = PathManager::Instance().getSourcePrefabPath() + registryFile;
+	std::string dir = PathManager::Instance().getSourcePath() + "/assets" + registryFile;
 
 	JsonIO::WriteDocumentToFile(runtime, doc, true, &err);
 	if (!PathManager::Instance().getSourcePath().empty())

@@ -199,7 +199,7 @@ void InputSystem::update(GameObjectManager& manager, const float& deltaTime, Mes
             std::cout << "\n[DEBUG] WARNING: No object named 'player' found!\n";
         }*/
         
-        std::cout << "[DEBUG KEY 8] ======================================\n\n";
+        //std::cout << "[DEBUG KEY 8] ======================================\n\n";
     }
 
     auto end = std::chrono::high_resolution_clock::now();

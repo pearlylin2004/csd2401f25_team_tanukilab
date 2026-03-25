@@ -1,3 +1,7 @@
+
+-- load collision handlers
+dofile("./assets/scripting/collision.lua")
+
 function onSceneLoad()
     -- bullet creation
     local template = getGameObject("bullet")

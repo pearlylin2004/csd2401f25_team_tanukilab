@@ -264,7 +264,7 @@ void CoreEngine::Update(float deltaTime) {
 
 	//for other systems to update even in editor mode
     if (!EditorManager::isEditingMode() && !EditorManager::isPaused()) {
-        m_luaSystem->update(*m_manager, deltaTime);
+        //m_luaSystem->update(*m_manager, deltaTime);
         m_visualLCSystem->initAll(*m_manager);
         m_visualLCSystem->updateAll(*m_manager, deltaTime);
     }
@@ -276,6 +276,9 @@ void CoreEngine::Update(float deltaTime) {
     renderer::cam.update();
     m_inputSystem->update(*m_manager, deltaTime, *m_messageBus);
     m_physicsSystem->update(*m_manager, deltaTime, *m_messageBus);
+
+    
+
     m_collisionSystem->update(*m_manager, deltaTime);
 	m_transformSystem->update(*m_manager, deltaTime);//for parent->child transform
     //m_weaponSystem->update(*m_manager, deltaTime);
@@ -287,6 +290,9 @@ void CoreEngine::Update(float deltaTime) {
     m_waterSystem->render(*m_manager);
     m_fontSystem->update(*m_manager, m_fps);
     m_audioSystem->update(*m_manager, deltaTime);
+    if (!EditorManager::isEditingMode() && !EditorManager::isPaused()) {
+        m_luaSystem->update(*m_manager, deltaTime);
+    }
     //m_waterSystem->render(*m_manager);
 #ifdef _DEBUG
     m_uiSystem->update();
