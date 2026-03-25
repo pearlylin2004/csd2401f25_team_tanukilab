@@ -36,18 +36,31 @@ int main(int argc, char** argv) {
     try {
         engine->Init(forceWindowed);
 
+        // enable editor by default
+        UISystem::toggleUI();
+        EditorManager::toggleEditing(true); 
+        EditorManager::setCanToggleEditor(false); // cannot ctrl-0 to hide editor
+
         // run launcher
         //engine->runLauncher([&]() {return EditorLaunch::Instance().render();});
         engine->setLauncher([&]() { 
             bool done = EditorLaunch::Instance().render();
             if (done) {
                 PathManager::Instance().setSourcePath(EditorLaunch::Instance().getGamePath());
-                std::cout << "gamepath: " << EditorLaunch::Instance().getGamePath() << std::endl;
+
                 Editor::assetBrowserState.currentFolder = PathManager::Instance().getSourcePath() + "/assets/";
-                std::cout << "currentFolder: " << Editor::assetBrowserState.currentFolder << std::endl;
+                Editor::scriptState.scriptDir = PathManager::Instance().getSourceScriptPath();
+
+                std::string defaultScene = EditorLaunch::Instance().getDefaultScene();
+                Editor::sceneState.currentSceneName = defaultScene;
+
+                PrefabManager::Instance().loadPrefabRegistry();
+
+                if (!defaultScene.empty())
+                    engine->loadInitialScene(defaultScene);
             }
             return done;
-            });
+        });
 
         // set project filepath
         //PathManager::Instance().setSourcePath(
@@ -57,9 +70,9 @@ int main(int argc, char** argv) {
         engine->setGameScript(luaScript.get());
 
         // open first scene in scene folder
-        std::string defaultScene = EditorLaunch::Instance().getDefaultScene();
+        /*std::string defaultScene = EditorLaunch::Instance().getDefaultScene();
         if (!defaultScene.empty())
-            engine->loadInitialScene(defaultScene);
+            engine->loadInitialScene(defaultScene);*/
 
         engine->Run();
     }

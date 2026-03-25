@@ -50,7 +50,7 @@ void InputSystem::update(GameObjectManager& manager, const float& deltaTime, Mes
     manager.getAllGameObjects(gameObjects);
 
 #ifdef _DEBUG
-    if (InputHandler::isComboKeyTriggered(GLFW_KEY_0)) {
+    if (EditorManager::canToggleEditor() && InputHandler::isComboKeyTriggered(GLFW_KEY_0)) {
         UISystem::toggleUI();
 
         // refresh cached object vector

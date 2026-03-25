@@ -36,8 +36,13 @@ int main(int argc, char** argv) {
 
     try {
         engine->Init(forceWindowed);
+
+        // load menu
         GUISystem::getInstance().loadScreen(engine->getManager(), "menu_scene.json");
+
+        // register gamescript
         engine->setGameScript(gameApp.get());
+
         engine->Run();
     }
     catch (const std::exception& e) {

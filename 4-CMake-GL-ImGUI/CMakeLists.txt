@@ -35,11 +35,6 @@ file(GLOB_RECURSE ENGINE_SOURCES
     "${ENGINE_DIR}/include/*.hpp"
 )
 
-##file(GLOB_RECURSE ENGINE_EDITOR_HEADERS "${ENGINE_DIR}/include/Editor/*.h")
-##file(GLOB_RECURSE ENGINE_EDITOR_SOURCES "${ENGINE_DIR}/src/Editor/*.cpp")
-##source_group("Header Files\\Editor" FILES ${ENGINE_EDITOR_HEADERS})
-##source_group("Source Files\\Editor" FILES ${ENGINE_EDITOR_SOURCES})
-
 add_library(TanukiEngine STATIC ${ENGINE_SOURCES})
 
 file(GLOB_RECURSE ENGINE_CPP "${ENGINE_DIR}/src/*.cpp")
@@ -134,6 +129,7 @@ copy_engine_assets(TanukiEditor)
 target_compile_definitions(TanukiEditor PRIVATE
     TANUKI_GAMES_ROOT_R="${GAMES_DIR}"
     TANUKI_ENGINE_ASSETS_R="${ENGINE_DIR}/assets"
+    #TANUKI_EDITOR
 )
 
 if(MSVC)
@@ -144,11 +140,9 @@ if(MSVC)
     )
 endif()
 
-# ======================= [3] GAMES (Auto-discovered) ===================
-# Every subfolder under projects/Games/ becomes a game executable.
-# To add a new game: create projects/Games/NewGame/ with src/ include/ assets/
-# No CMake edits needed — it gets picked up automatically.
-
+# ======================= [3] GAMES ===================
+# Every subfolder under projects/Games/ becomes a game executable
+# No CMake changes needed
 file(GLOB game_candidates
     RELATIVE "${GAMES_DIR}"
     "${GAMES_DIR}/*"
@@ -206,27 +200,22 @@ foreach(game ${game_candidates})
         )
     endif()
 
-    # -------------------------------------------------------------------
-    # WaterBound-specific extras
-    # -------------------------------------------------------------------
-    if(game STREQUAL "WaterBound")
-        # Copy game assets on top of engine assets
-        add_custom_command(TARGET WaterBound POST_BUILD
-            COMMAND ${CMAKE_COMMAND} -E copy_directory
-                "${GAME_DIR}/assets" "$<TARGET_FILE_DIR:WaterBound>/assets"
-            COMMENT "Copying WaterBound assets to output"
-        )
+    # Copy game assets on top of engine assets
+    add_custom_command(TARGET ${game} POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
+            "${GAME_DIR}/assets" "$<TARGET_FILE_DIR:${game}>/assets"
+        COMMENT "Copying ${game} assets to output"
+    )
 
-        # Make shaders visible in VS IDE
-        file(GLOB_RECURSE WB_SHADERS
-            "${GAME_DIR}/assets/shaders/*.vert"
-            "${GAME_DIR}/assets/shaders/*.frag"
-            "${GAME_DIR}/assets/shaders/*.glsl"
-        )
-        if(WB_SHADERS)
-            set_source_files_properties(${WB_SHADERS} PROPERTIES HEADER_FILE_ONLY TRUE)
-            target_sources(WaterBound PRIVATE ${WB_SHADERS})
-        endif()
+    # Make shaders visible in VS IDE
+    file(GLOB_RECURSE ${game}_shaders
+        "${GAME_DIR}/assets/shaders/*.vert"
+        "${GAME_DIR}/assets/shaders/*.frag"
+        "${GAME_DIR}/assets/shaders/*.glsl"
+    )
+    if(${game}_shaders)
+        set_source_files_properties(${${game}_shaders} PROPERTIES HEADER_FILE_ONLY TRUE)
+        target_sources(${game} PRIVATE ${${game}_shaders})
     endif()
 
 endforeach()

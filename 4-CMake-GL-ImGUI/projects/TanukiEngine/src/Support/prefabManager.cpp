@@ -78,6 +78,11 @@ namespace {
 
 		func(obj, temp);
 	}
+
+	static std::string getPrefabBasePath() {
+		const std::string& src = PathManager::Instance().getSourcePath();
+		return src.empty() ? std::string(RUNTIME_DIR_R) : src + "/assets";
+	}
 }
 
 //static PlayerState parsePlayerState(const std::string& s) {
@@ -109,7 +114,7 @@ void PrefabManager::loadPrefabRegistry() {
 	rapidjson::Document doc;
 	std::string err;
 
-	std::string filename = std::string(RUNTIME_DIR_R) + registryFile;
+	std::string filename = getPrefabBasePath() + registryFile;
 
 	if (!JsonIO::ReadFileToDocument(filename, doc, &err)) {
 		DebugLog::addMessage("Prefab registry load failed: " + err);
@@ -171,11 +176,12 @@ void PrefabManager::savePrefabRegistry() {
 
 	std::string err;
 	// write to run time file
-	std::string runtime = std::string(RUNTIME_DIR_R) + registryFile;
+	std::string runtime = getPrefabBasePath() + registryFile;
 	std::string dir = PathManager::Instance().getSourcePrefabPath() + registryFile;
 
 	JsonIO::WriteDocumentToFile(runtime, doc, true, &err);
-	JsonIO::WriteDocumentToFile(dir, doc, true, &err);
+	if (!PathManager::Instance().getSourcePath().empty())
+		JsonIO::WriteDocumentToFile(dir, doc, true, &err);
 
 	std::cout << "Prefab registry saved at " << registryFile << "\n";
 }
@@ -263,7 +269,7 @@ GameObject* PrefabManager::instantiate(GameObject* go, GameObjectManager& manage
 	}
 
 	//const std::string& path = iterator->second.path;
-	const std::string& path = std::string(RUNTIME_DIR_R) + iterator->second.path;
+	const std::string& path = getPrefabBasePath() + iterator->second.path;
 
 	rapidjson::Document doc;
 	auto cacheIterator = m_prefabCache.find(id);
@@ -301,7 +307,7 @@ std::unique_ptr<GameObject> PrefabManager::createTempPrefabObj(const std::string
 		return nullptr;
 	}
 
-	const std::string& path = std::string(RUNTIME_DIR_R) + iterator->second.path;
+	const std::string& path = getPrefabBasePath() + iterator->second.path;
 
 	rapidjson::Document doc;
 	auto cacheIterator = m_prefabCache.find(prefabID);
@@ -372,8 +378,9 @@ bool PrefabManager::savePrefab(const GameObject* prefabObj) {
 
 	// save to runtime & source
 	std::string err;
-	JsonIO::WriteDocumentToFile(std::string(RUNTIME_DIR_R) + getPrefabPath(prefabID), doc, true, &err);
-	JsonIO::WriteDocumentToFile(PathManager::Instance().getSourcePath() + "/assets" + getPrefabPath(prefabID), doc, true, &err);
+	JsonIO::WriteDocumentToFile(getPrefabBasePath() + getPrefabPath(prefabID), doc, true, &err);
+	if (!PathManager::Instance().getSourcePath().empty())
+		JsonIO::WriteDocumentToFile(PathManager::Instance().getSourcePath() + "/assets" + getPrefabPath(prefabID), doc, true, &err);
 
 	// update cache
 	m_prefabCache[prefabID].CopyFrom(doc, m_prefabCache[prefabID].GetAllocator());
@@ -433,7 +440,7 @@ int PrefabManager::applyToAllInstances(const std::string& prefabID, GameObjectMa
 		}
 		else {
 			// load from disk as fallback
-			const std::string& path = std::string(RUNTIME_DIR_R) + getPrefabPath(prefabID);
+			const std::string& path = getPrefabBasePath() + getPrefabPath(prefabID);
 			rapidjson::Document diskDoc;
 			std::string err;
 
@@ -602,8 +609,9 @@ bool PrefabManager::createPrefabFromGameObj(GameObject* go, const std::string& n
 
 	/* -------- Save new prefab to a new .json file ------- */
 	std::string err;
-	JsonIO::WriteDocumentToFile(std::string(RUNTIME_DIR_R) + filename, doc, true, &err);
-	JsonIO::WriteDocumentToFile(PathManager::Instance().getSourcePath() + "/assets/" + filename, doc, true, &err);
+	JsonIO::WriteDocumentToFile(getPrefabBasePath() + filename, doc, true, &err);
+	if (!PathManager::Instance().getSourcePath().empty())
+		JsonIO::WriteDocumentToFile(PathManager::Instance().getSourcePath() + "/assets" + filename, doc, true, &err);
 	/* -------- END ------- */
 
 	// save in prefab registry file
@@ -1825,6 +1833,7 @@ void PrefabManager::loadPrefabFromString(const std::string& prefabID, const std:
 
 	// match savePrefab's write pattern
 	std::string err;
-	JsonIO::WriteDocumentToFile(std::string(RUNTIME_DIR_R) + getPrefabPath(prefabID), doc, true, &err);
-	JsonIO::WriteDocumentToFile(PathManager::Instance().getSourcePath() + "/assets" + getPrefabPath(prefabID), doc, true, &err);
+	JsonIO::WriteDocumentToFile(getPrefabBasePath() + getPrefabPath(prefabID), doc, true, &err);
+	if (!PathManager::Instance().getSourcePath().empty())
+		JsonIO::WriteDocumentToFile(PathManager::Instance().getSourcePath() + "/assets" + getPrefabPath(prefabID), doc, true, &err);
 }

@@ -495,23 +495,6 @@ void CoreEngine::setGameScript(GameScript* script) {
         m_gameScript->setLuaSystem(m_luaSystem.get());
 }
 
-//void CoreEngine::runLauncher(std::function<bool()> launcherFn) {
-//    bool done = false;
-//    while (!done) {
-//        glfwPollEvents();
-//        ImGui_ImplOpenGL3_NewFrame();
-//        ImGui_ImplGlfw_NewFrame();
-//        ImGui::NewFrame();
-//
-//        done = launcherFn();
-//
-//        ImGui::Render();
-//        glClear(GL_COLOR_BUFFER_BIT);
-//        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-//        glfwSwapBuffers(m_window);
-//    }
-//}
-
 void CoreEngine::loadInitialScene(const std::string& sceneName) {
     Editor::assetBrowserState.currentFolder = PathManager::Instance().getSourcePath() + "/assets/";
 
