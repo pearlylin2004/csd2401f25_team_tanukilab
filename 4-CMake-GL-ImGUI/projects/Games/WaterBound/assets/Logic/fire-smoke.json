@@ -254,14 +254,14 @@
       "type": 1,
       "position": [
         1224.857177734375,
-        -168.57144165039063
+        -168.5714111328125
       ],
       "hasInput": true,
       "hasOutput": true,
       "hasTrueOutput": false,
       "hasFalseOutput": false,
       "parameters": {
-        "channel": "default"
+        "channel": "steam"
       }
     }
   ],

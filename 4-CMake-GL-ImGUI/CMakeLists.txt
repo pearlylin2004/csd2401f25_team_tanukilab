@@ -1,5 +1,6 @@
 # ======================= Project Configuration =========================
 cmake_minimum_required(VERSION 3.20)
+set(FETCHCONTENT_UPDATES_DISCONNECTED ON)
 project(TanukiEngine)
 
 set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
@@ -75,10 +76,22 @@ target_compile_definitions(TanukiEngine PUBLIC
 )
 
 if(MSVC)
-    target_compile_options(TanukiEngine PRIVATE /W4 /WX- /FS)
+    target_compile_options(TanukiEngine PRIVATE /W4 /WX- /FS /MP)
 else()
     target_compile_options(TanukiEngine PRIVATE -Wall)
 endif()
+
+# PCH woohoowoohoo
+target_precompile_headers(TanukiEngine PRIVATE
+    <string>
+    <vector>
+    <unordered_map>
+    <memory>
+    <functional>
+    <iostream>
+    <algorithm>
+    <chrono>
+)
 
 # Helper — copies FMOD DLLs next to any exe that links TanukiEngine
 macro(copy_fmod_dlls TARGET_NAME)
@@ -120,6 +133,10 @@ set_property(TARGET TanukiEditor PROPERTY CXX_STANDARD 20)
 target_include_directories(TanukiEditor PRIVATE
     "${EDITOR_DIR}/include"
 )
+
+if(MSVC)
+    target_compile_options(TanukiEditor PRIVATE /W4 /WX- /MP)
+endif()
 
 target_link_libraries(TanukiEditor PRIVATE TanukiEngine)
 
@@ -182,7 +199,7 @@ foreach(game ${game_candidates})
     copy_engine_assets(${game})
 
     if(MSVC)
-        target_compile_options(${game} PRIVATE /W4 /WX-)
+        target_compile_options(${game} PRIVATE /W4 /WX- /MP)
     else()
         target_compile_options(${game} PRIVATE -Wall)
     endif()
@@ -216,6 +233,16 @@ foreach(game ${game_candidates})
     if(${game}_shaders)
         set_source_files_properties(${${game}_shaders} PROPERTIES HEADER_FILE_ONLY TRUE)
         target_sources(${game} PRIVATE ${${game}_shaders})
+    endif()
+
+    # Make Lua scripts visible in VS IDE
+    file(GLOB_RECURSE ${game}_lua
+        "${GAME_DIR}/assets/scripting/*.lua"
+    )
+    if(${game}_lua)
+        set_source_files_properties(${${game}_lua} PROPERTIES HEADER_FILE_ONLY TRUE)
+        target_sources(${game} PRIVATE ${${game}_lua})
+        source_group("Lua Scripts" FILES ${${game}_lua})
     endif()
 
 endforeach()

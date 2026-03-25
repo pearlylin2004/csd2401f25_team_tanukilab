@@ -98,6 +98,22 @@
         "value": "1.000000",
         "variable": "wheelSpin"
       }
+    },
+    {
+      "id": 7,
+      "implementation": "Play Sound",
+      "type": 1,
+      "position": [
+        628.0,
+        120.0
+      ],
+      "hasInput": true,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false,
+      "parameters": {
+        "channel": "Spin"
+      }
     }
   ],
   "connections": [
@@ -123,6 +139,12 @@
       "fromNodeId": 3,
       "outputPin": "Out",
       "toNodeId": 6,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 1,
+      "outputPin": "Out",
+      "toNodeId": 7,
       "inputPin": "In"
     }
   ]

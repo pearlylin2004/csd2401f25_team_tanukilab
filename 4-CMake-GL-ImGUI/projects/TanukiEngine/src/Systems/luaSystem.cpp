@@ -61,6 +61,13 @@ void LuaSystem::init(GameObjectManager& manager) {
     lua_register(L, "getDynMass", Lua_getDynMass);
     lua_register(L, "getCoyoteTime", Lua_getCoyoteTime);
     lua_register(L, "getMaxFallSpeed", Lua_getMaxFallSpeed);
+    lua_register(L, "getSinlePersonalBool", Lua_getSinlePersonalBool);
+    lua_register(L, "getSinleFlag", Lua_getSinleFlag);
+    lua_register(L, "getHitground", Lua_getHitground);
+    lua_register(L, "getSinleGravity", Lua_getSinleGravity);
+    lua_register(L, "getWaterBounce", Lua_getWaterBounce);
+    lua_register(L, "getAccelX", Lua_getAccelX);
+    lua_register(L, "getAccelY", Lua_getAccelY);
 
 
     // physics setters
@@ -86,6 +93,9 @@ void LuaSystem::init(GameObjectManager& manager) {
     lua_register(L, "setOriginalPos", Lua_setOriginalPos);
     lua_register(L, "isOriginalStateSet", Lua_isOriginalStateSet);
     lua_register(L, "setAutoUpdate", Lua_setAutoUpdate);
+    lua_register(L, "setAccelX", Lua_setAccelX);
+    lua_register(L, "setAccelY", Lua_setAccelY);
+    lua_register(L, "setHitground", Lua_setHitground);
 
 
     // collision
@@ -550,6 +560,64 @@ int LuaSystem::Lua_getMaxFallSpeed(lua_State* L) {
     return 1;
 }
 
+int LuaSystem::Lua_getSinlePersonalBool(lua_State* L) {
+    GameObject* obj = static_cast<GameObject*>(lua_touserdata(L, 1));
+    if (!obj || !obj->hasComponent<Physics>()) { lua_pushboolean(L, 0); return 1; }
+
+    lua_pushboolean(L, obj->getComponent<Physics>()->sinlePersonalBool ? 1 : 0);
+
+    return 1;
+}
+
+int LuaSystem::Lua_getSinleFlag(lua_State* L) {
+    GameObject* obj = static_cast<GameObject*>(lua_touserdata(L, 1));
+    if (!obj || !obj->hasComponent<Physics>()) { lua_pushboolean(L, 0); return 1; }
+
+    lua_pushboolean(L, obj->getComponent<Physics>()->sinleFlag ? 1 : 0);
+
+    return 1;
+}
+
+int LuaSystem::Lua_getHitground(lua_State* L) {
+    GameObject* obj = static_cast<GameObject*>(lua_touserdata(L, 1));
+    if (!obj || !obj->hasComponent<Physics>()) { lua_pushboolean(L, 0); return 1; }
+
+    lua_pushboolean(L, obj->getComponent<Physics>()->hitground ? 1 : 0);
+    return 1;
+}
+
+int LuaSystem::Lua_getSinleGravity(lua_State* L) {
+    GameObject* obj = static_cast<GameObject*>(lua_touserdata(L, 1));
+    if (!obj || !obj->hasComponent<Physics>()) { lua_pushnumber(L, 0); return 1; }
+
+    lua_pushnumber(L, obj->getComponent<Physics>()->sinleGravity);
+    return 1;
+}
+
+int LuaSystem::Lua_getWaterBounce(lua_State* L) {
+    GameObject* obj = static_cast<GameObject*>(lua_touserdata(L, 1));
+    if (!obj || !obj->hasComponent<Physics>()) { lua_pushnumber(L, 0); return 1; }
+
+    lua_pushnumber(L, obj->getComponent<Physics>()->waterBounce);
+    return 1;
+}
+
+int LuaSystem::Lua_getAccelX(lua_State* L) {
+    GameObject* obj = static_cast<GameObject*>(lua_touserdata(L, 1));
+    if (!obj || !obj->hasComponent<Physics>()) { lua_pushnumber(L, 0); return 1; }
+
+    lua_pushnumber(L, obj->getComponent<Physics>()->acceleration.x);
+    return 1;
+}
+
+int LuaSystem::Lua_getAccelY(lua_State* L) {
+    GameObject* obj = static_cast<GameObject*>(lua_touserdata(L, 1));
+    if (!obj || !obj->hasComponent<Physics>()) { lua_pushnumber(L, 0); return 1; }
+
+    lua_pushnumber(L, obj->getComponent<Physics>()->acceleration.y);
+    return 1;
+}
+
 
 /* ---- physics setters ---- */
 int LuaSystem::Lua_setVelX(lua_State* L) {
@@ -724,6 +792,30 @@ int LuaSystem::Lua_advanceDynamics(lua_State* L) {
     Transform* t = obj->getComponent<Transform>();
     if (t) { t->x = p->dynamics.position.x; t->y = p->dynamics.position.y; }
 
+    return 0;
+}
+
+int LuaSystem::Lua_setAccelX(lua_State* L) {
+    GameObject* obj = static_cast<GameObject*>(lua_touserdata(L, 1));
+    if (!obj || !obj->hasComponent<Physics>()) return 0;
+
+    obj->getComponent<Physics>()->acceleration.x = (float)lua_tonumber(L, 2);
+    return 0;
+}
+
+int LuaSystem::Lua_setAccelY(lua_State* L) {
+    GameObject* obj = static_cast<GameObject*>(lua_touserdata(L, 1));
+    if (!obj || !obj->hasComponent<Physics>()) return 0;
+
+    obj->getComponent<Physics>()->acceleration.y = (float)lua_tonumber(L, 2);
+    return 0;
+}
+
+int LuaSystem::Lua_setHitground(lua_State* L) {
+    GameObject* obj = static_cast<GameObject*>(lua_touserdata(L, 1));
+    if (!obj || !obj->hasComponent<Physics>()) return 0;
+
+    obj->getComponent<Physics>()->hitground = lua_toboolean(L, 2) != 0;
     return 0;
 }
 

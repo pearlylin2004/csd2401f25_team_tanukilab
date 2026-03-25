@@ -1,0 +1,147 @@
+{
+  "version": 1,
+  "layers": [
+    {
+      "id": 0,
+      "name": "Background",
+      "enabled": 1,
+      "visible": 1,
+      "updatable": 1
+    },
+    {
+      "id": 1,
+      "name": "Game",
+      "enabled": 1,
+      "visible": 1,
+      "updatable": 1
+    },
+    {
+      "id": 2,
+      "name": "UI",
+      "enabled": 1,
+      "visible": 1,
+      "updatable": 1
+    }
+  ],
+  "objects": [
+    {
+      "name": "background",
+      "components": {
+        "Transform": {
+          "pos": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "rotation": 0.0,
+          "scale": [
+            40.0,
+            22.5,
+            33.333335876464844
+          ]
+        },
+        "Render": {
+          "shape": "square",
+          "colorR": 1.0,
+          "colorG": 1.0,
+          "colorB": 1.0,
+          "colorA": 1.0,
+          "hasTex": 1,
+          "texture": "assets/menu_background.png",
+          "hasAnimation": 1
+        },
+        "StateMachine": {
+          "state": "Idle",
+          "facingRight": 1,
+          "Idle": {
+            "animState": {
+              "texture": "assets/Texture\\Cutscenes\\Opening_SS1.png",
+              "loop": 0,
+              "play": 1,
+              "totalColumn": 5,
+              "totalRow": 2,
+              "frameTime": 1.5,
+              "initialFramCol": 0.0,
+              "initialFramRow": 0.0,
+              "lastFramCol": 4.0,
+              "lastFramRow": 1.0
+            }
+          },
+          "Walking": {
+            "animState": {
+              "texture": "assets/Texture\\Cutscenes\\Opening_SS2.png",
+              "loop": 0,
+              "play": 1,
+              "totalColumn": 3,
+              "totalRow": 3,
+              "frameTime": 1.5,
+              "initialFramCol": 0.0,
+              "initialFramRow": 0.0,
+              "lastFramCol": 2.0,
+              "lastFramRow": 2.0
+            }
+          },
+          "Jumping": {
+            "animState": {
+              "texture": "",
+              "loop": 1,
+              "play": 0,
+              "totalColumn": 1,
+              "totalRow": 1,
+              "frameTime": 0.10000000149011612,
+              "initialFramCol": 0.0,
+              "initialFramRow": 0.0,
+              "lastFramCol": 0.0,
+              "lastFramRow": 0.0
+            }
+          },
+          "Falling": {
+            "animState": {
+              "texture": "",
+              "loop": 1,
+              "play": 0,
+              "totalColumn": 1,
+              "totalRow": 1,
+              "frameTime": 0.10000000149011612,
+              "initialFramCol": 0.0,
+              "initialFramRow": 0.0,
+              "lastFramCol": 0.0,
+              "lastFramRow": 0.0
+            }
+          },
+          "Shooting": {
+            "animState": {
+              "texture": "",
+              "loop": 1,
+              "play": 0,
+              "totalColumn": 1,
+              "totalRow": 1,
+              "frameTime": 0.10000000149011612,
+              "initialFramCol": 0.0,
+              "initialFramRow": 0.0,
+              "lastFramCol": 0.0,
+              "lastFramRow": 0.0
+            }
+          },
+          "Dead": {
+            "animState": {
+              "texture": "",
+              "loop": 1,
+              "play": 0,
+              "totalColumn": 1,
+              "totalRow": 1,
+              "frameTime": 0.10000000149011612,
+              "initialFramCol": 0.0,
+              "initialFramRow": 0.0,
+              "lastFramCol": 0.0,
+              "lastFramRow": 0.0
+            }
+          }
+        },
+        "VisualLC": {
+          "filename": "Opening Cutscene.json"
+        }
+      }
+    }
+  ]
+}

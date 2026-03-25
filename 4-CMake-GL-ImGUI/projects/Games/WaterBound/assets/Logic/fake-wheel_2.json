@@ -1,0 +1,151 @@
+{
+  "version": 1,
+  "nodes": [
+    {
+      "id": 1,
+      "implementation": "Rotate Object",
+      "type": 1,
+      "position": [
+        224.0,
+        81.0
+      ],
+      "hasInput": true,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false,
+      "parameters": {
+        "angle": "50.000000"
+      }
+    },
+    {
+      "id": 2,
+      "implementation": "On Collision Enter",
+      "type": 0,
+      "position": [
+        -190.0,
+        -64.0
+      ],
+      "hasInput": false,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false,
+      "parameters": {
+        "colFilterType": "tag",
+        "colFilterValue": "bullet"
+      }
+    },
+    {
+      "id": 3,
+      "implementation": "Set Float",
+      "type": 1,
+      "position": [
+        132.0,
+        -74.0
+      ],
+      "hasInput": true,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false,
+      "parameters": {
+        "value": "1",
+        "variable": "spin"
+      }
+    },
+    {
+      "id": 4,
+      "implementation": "On Update",
+      "type": 0,
+      "position": [
+        -422.0,
+        81.0
+      ],
+      "hasInput": false,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false
+    },
+    {
+      "id": 5,
+      "implementation": "Compare Variable",
+      "type": 2,
+      "position": [
+        -92.0,
+        77.0
+      ],
+      "hasInput": true,
+      "hasOutput": false,
+      "hasTrueOutput": true,
+      "hasFalseOutput": true,
+      "parameters": {
+        "comparison": "greater",
+        "threshold": "0",
+        "variable": "spin"
+      }
+    },
+    {
+      "id": 6,
+      "implementation": "Set Global Float",
+      "type": 1,
+      "position": [
+        443.0,
+        -71.0
+      ],
+      "hasInput": true,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false,
+      "parameters": {
+        "value": "1.000000",
+        "variable": "wheelSpin2"
+      }
+    },
+    {
+      "id": 7,
+      "implementation": "Play Sound",
+      "type": 1,
+      "position": [
+        250.0,
+        216.0
+      ],
+      "hasInput": true,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false,
+      "parameters": {
+        "channel": "Spin"
+      }
+    }
+  ],
+  "connections": [
+    {
+      "fromNodeId": 2,
+      "outputPin": "Out",
+      "toNodeId": 3,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 4,
+      "outputPin": "Out",
+      "toNodeId": 5,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 5,
+      "outputPin": "True",
+      "toNodeId": 1,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 3,
+      "outputPin": "Out",
+      "toNodeId": 6,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 5,
+      "outputPin": "True",
+      "toNodeId": 7,
+      "inputPin": "In"
+    }
+  ]
+}

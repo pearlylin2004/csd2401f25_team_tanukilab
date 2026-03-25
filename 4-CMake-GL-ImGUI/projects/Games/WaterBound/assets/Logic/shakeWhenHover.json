@@ -67,7 +67,7 @@
       "implementation": "Play Sound",
       "type": 1,
       "position": [
-        390.00006103515625,
+        390.0,
         -248.66673278808594
       ],
       "hasInput": true,
@@ -324,6 +324,35 @@
         "value": "0",
         "variable": "isShaking"
       }
+    },
+    {
+      "id": 61,
+      "implementation": "On Click Exit",
+      "type": 0,
+      "position": [
+        -175.0,
+        471.875
+      ],
+      "hasInput": false,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false
+    },
+    {
+      "id": 62,
+      "implementation": "Play Sound",
+      "type": 1,
+      "position": [
+        167.0,
+        487.0
+      ],
+      "hasInput": true,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false,
+      "parameters": {
+        "channel": "on_click"
+      }
     }
   ],
   "connections": [
@@ -415,6 +444,18 @@
       "fromNodeId": 15,
       "outputPin": "True",
       "toNodeId": 40,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 61,
+      "outputPin": "Out",
+      "toNodeId": 62,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 15,
+      "outputPin": "True",
+      "toNodeId": 27,
       "inputPin": "In"
     }
   ]

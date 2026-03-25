@@ -1,18 +1,87 @@
 {
   "version": 1,
+  "layers": [
+    {
+      "id": 0,
+      "name": "Background",
+      "enabled": 1,
+      "visible": 1,
+      "updatable": 1
+    },
+    {
+      "id": 1,
+      "name": "Game",
+      "enabled": 1,
+      "visible": 1,
+      "updatable": 1
+    },
+    {
+      "id": 2,
+      "name": "UI",
+      "enabled": 1,
+      "visible": 1,
+      "updatable": 1
+    }
+  ],
   "objects": [
+    {
+      "name": "back_button",
+      "components": {
+        "Transform": {
+          "pos": [
+            -15.5,
+            8.5,
+            0.0
+          ],
+          "rotation": 0.0,
+          "scale": [
+            6.0,
+            2.0,
+            0.0
+          ]
+        },
+        "Render": {
+          "shape": "square",
+          "colorR": 1.0,
+          "colorG": 1.0,
+          "colorB": 1.0,
+          "colorA": 1.0,
+          "hasTex": 1,
+          "texture": "assets/button.png",
+          "hasAnimation": 0
+        },
+        "Button": {
+          "action": "back",
+          "onClickChannel": "",
+          "onHoverChannel": ""
+        }
+      }
+    },
     {
       "name": "control_background",
       "components": {
         "Transform": {
-          "pos": [0.0, 0.0, 0.0],
-          "scale": [30.0, 25.0, 0.0] 
+          "pos": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "rotation": 0.0,
+          "scale": [
+            30.0,
+            25.0,
+            0.0
+          ]
         },
         "Render": {
           "shape": "square",
+          "colorR": 1.0,
+          "colorG": 1.0,
+          "colorB": 1.0,
+          "colorA": 1.0,
           "hasTex": 1,
           "texture": "assets/control_background.png",
-          "clr": [ 1.0, 1.0, 1.0 ]
+          "hasAnimation": 0
         }
       }
     },
@@ -20,33 +89,27 @@
       "name": "back_text",
       "components": {
         "Transform": {
-          "pos": [-16.5, 8.1, 1.0],
+          "pos": [
+            -16.5,
+            8.100000381469727,
+            1.0
+          ],
           "rotation": 0.0,
-          "scale": [20.0, 20.0, 0.0]
+          "scale": [
+            20.0,
+            20.0,
+            0.0
+          ]
         },
         "FontComponent": {
           "word": "BACK",
-          "color": [0.0, 0.0, 0.0],
+          "color": [
+            0.0,
+            0.0,
+            0.0
+          ],
           "scale": 0.5,
           "fontType": 1
-        }
-      }
-    },
-    {
-      "name": "back_button",
-      "components": {
-        "Transform": {
-          "pos": [-15.5, 8.5, 0.0],
-          "scale": [6.0, 2.0, 0.0]
-        },
-        "Render": {
-          "shape": "square",
-          "hasTex": 1,
-          "texture": "assets/button.png",
-          "clr": [ 1.0, 1.0, 1.0 ]
-        },
-        "Button" : {
-          "action" : "back"
         }
       }
     }

@@ -15,6 +15,7 @@ end
 function weapon.Update(obj, dt)
 
     if not hasTransform(obj) or not getAimAtMouse(obj) then return end
+    if isEditingMode() then return end
 
     local s = getS(obj)
 

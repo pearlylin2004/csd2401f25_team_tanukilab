@@ -1,16 +1,53 @@
 {
   "version": 1,
+  "layers": [
+    {
+      "id": 0,
+      "name": "Background",
+      "enabled": 1,
+      "visible": 1,
+      "updatable": 1
+    },
+    {
+      "id": 1,
+      "name": "Game",
+      "enabled": 1,
+      "visible": 1,
+      "updatable": 1
+    },
+    {
+      "id": 2,
+      "name": "UI",
+      "enabled": 1,
+      "visible": 1,
+      "updatable": 1
+    }
+  ],
   "objects": [
     {
       "name": "confirmation_background",
       "components": {
         "Transform": {
-          "pos": [0.0, 0.0, 0.0],
-          "scale": [10.0, 5.0, 0.0] 
+          "pos": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "rotation": 0.0,
+          "scale": [
+            10.0,
+            5.0,
+            0.0
+          ]
         },
         "Render": {
           "shape": "square",
-          "hasTex": 0
+          "colorR": 1.0,
+          "colorG": 1.0,
+          "colorB": 1.0,
+          "colorA": 1.0,
+          "hasTex": 0,
+          "hasAnimation": 0
         }
       }
     },
@@ -18,17 +55,27 @@
       "name": "yes_button",
       "components": {
         "Transform": {
-          "pos": [-2.5, -1.5, 1.0],
-          "scale": [3.0, 1.0, 0.0]
+          "pos": [
+            -2.5,
+            -1.5,
+            1.0
+          ],
+          "rotation": 0.0,
+          "scale": [
+            3.0,
+            1.0,
+            0.0
+          ]
         },
         "Render": {
           "shape": "square",
+          "colorR": 1.0,
+          "colorG": 1.0,
+          "colorB": 1.0,
+          "colorA": 1.0,
           "hasTex": 1,
           "texture": "assets/button.png",
-          "clr": [ 1.0, 1.0, 1.0 ]
-        },
-        "Button" : {
-          "action" : "yes_exit"
+          "hasAnimation": 0
         }
       }
     },
@@ -36,13 +83,25 @@
       "name": "yes_text",
       "components": {
         "Transform": {
-          "pos": [-3.0, -1.7, 1.0],
+          "pos": [
+            -3.0,
+            -1.7000000476837158,
+            1.0
+          ],
           "rotation": 0.0,
-          "scale": [20.0, 20.0, 0.0]
+          "scale": [
+            20.0,
+            20.0,
+            0.0
+          ]
         },
         "FontComponent": {
           "word": "YES",
-          "color": [0.0, 0.0, 0.0],
+          "color": [
+            0.0,
+            0.0,
+            0.0
+          ],
           "scale": 0.5,
           "fontType": 1
         }
@@ -52,13 +111,25 @@
       "name": "no_text",
       "components": {
         "Transform": {
-          "pos": [2.0, -1.7, 1.0],
+          "pos": [
+            2.0,
+            -1.7000000476837158,
+            1.0
+          ],
           "rotation": 0.0,
-          "scale": [20.0, 20.0, 0.0]
+          "scale": [
+            20.0,
+            20.0,
+            0.0
+          ]
         },
         "FontComponent": {
           "word": "NO",
-          "color": [0.0, 0.0, 0.0],
+          "color": [
+            0.0,
+            0.0,
+            0.0
+          ],
           "scale": 0.5,
           "fontType": 1
         }
@@ -68,17 +139,27 @@
       "name": "no_button",
       "components": {
         "Transform": {
-          "pos": [2.5, -1.5, 1.0],
-          "scale": [3.0, 1.0, 0.0]
+          "pos": [
+            2.5,
+            -1.5,
+            1.0
+          ],
+          "rotation": 0.0,
+          "scale": [
+            3.0,
+            1.0,
+            0.0
+          ]
         },
         "Render": {
           "shape": "square",
+          "colorR": 1.0,
+          "colorG": 1.0,
+          "colorB": 1.0,
+          "colorA": 1.0,
           "hasTex": 1,
           "texture": "assets/button.png",
-          "clr": [ 1.0, 1.0, 1.0 ]
-        },
-        "Button" : {
-          "action" : "no_exit"
+          "hasAnimation": 0
         }
       }
     },
@@ -86,13 +167,25 @@
       "name": "confirmation_text",
       "components": {
         "Transform": {
-          "pos": [-3.5, 0.0, 1.0],
+          "pos": [
+            -3.5,
+            0.0,
+            1.0
+          ],
           "rotation": 0.0,
-          "scale": [20.0, 20.0, 0.0]
+          "scale": [
+            20.0,
+            20.0,
+            0.0
+          ]
         },
         "FontComponent": {
           "word": "Confirm Quit",
-          "color": [0.0, 0.0, 0.0],
+          "color": [
+            0.0,
+            0.0,
+            0.0
+          ],
           "scale": 1.0,
           "fontType": 1
         }

@@ -1,0 +1,68 @@
+{
+  "version": 1,
+  "nodes": [
+    {
+      "id": 1,
+      "implementation": "On Collision Enter",
+      "type": 0,
+      "position": [
+        -100.0,
+        24.0
+      ],
+      "hasInput": false,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false,
+      "parameters": {
+        "colFilterType": "tag",
+        "colFilterValue": "player"
+      }
+    },
+    {
+      "id": 2,
+      "implementation": "Play Sound",
+      "type": 1,
+      "position": [
+        224.0,
+        31.0
+      ],
+      "hasInput": true,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false,
+      "parameters": {
+        "channel": "change"
+      }
+    },
+    {
+      "id": 3,
+      "implementation": "Load Level",
+      "type": 1,
+      "position": [
+        537.0,
+        20.0
+      ],
+      "hasInput": true,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false,
+      "parameters": {
+        "levelName": "Game_Level_1.json"
+      }
+    }
+  ],
+  "connections": [
+    {
+      "fromNodeId": 1,
+      "outputPin": "Out",
+      "toNodeId": 2,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 2,
+      "outputPin": "Out",
+      "toNodeId": 3,
+      "inputPin": "In"
+    }
+  ]
+}

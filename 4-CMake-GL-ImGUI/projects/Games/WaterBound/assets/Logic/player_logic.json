@@ -170,8 +170,8 @@
       "implementation": "On Update",
       "type": 0,
       "position": [
-        -238.0,
-        186.0
+        -238.00001525878906,
+        186.00001525878906
       ],
       "hasInput": false,
       "hasOutput": true,
@@ -183,8 +183,8 @@
       "implementation": "Check State",
       "type": 2,
       "position": [
-        81.0,
-        175.0
+        55.181884765625,
+        206.727294921875
       ],
       "hasInput": true,
       "hasOutput": false,
@@ -199,8 +199,8 @@
       "implementation": "Restart Level",
       "type": 1,
       "position": [
-        375.0,
-        206.0
+        893.13623046875,
+        711.977294921875
       ],
       "hasInput": true,
       "hasOutput": true,
@@ -301,6 +301,122 @@
         "value": "1",
         "variable": "jumpPlayed"
       }
+    },
+    {
+      "id": 24,
+      "implementation": "Load Level",
+      "type": 1,
+      "position": [
+        793.45458984375,
+        157.818115234375
+      ],
+      "hasInput": true,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false,
+      "parameters": {
+        "levelName": "Game_Level_1.json"
+      }
+    },
+    {
+      "id": 25,
+      "implementation": "On Collision Enter",
+      "type": 0,
+      "position": [
+        -290.0,
+        640.0
+      ],
+      "hasInput": false,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false,
+      "parameters": {
+        "colFilterType": "tag",
+        "colFilterValue": "water"
+      }
+    },
+    {
+      "id": 31,
+      "implementation": "Check Animation End",
+      "type": 2,
+      "position": [
+        518.0,
+        198.0
+      ],
+      "hasInput": true,
+      "hasOutput": false,
+      "hasTrueOutput": true,
+      "hasFalseOutput": true
+    },
+    {
+      "id": 32,
+      "implementation": "Play Random Sound",
+      "type": 1,
+      "position": [
+        322.0,
+        126.0
+      ],
+      "hasInput": true,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false,
+      "parameters": {
+        "audio_0": "Fire_Death_1",
+        "audio_1": "Fire_Death_2",
+        "audio_2": "Fire_Death_3",
+        "audio_3": "Fire_Death_4",
+        "audio_4": "Fire_Death_5",
+        "audio_5": "Fire_Death_6",
+        "cooldown": "1.200000"
+      }
+    },
+    {
+      "id": 33,
+      "implementation": "Set State",
+      "type": 1,
+      "position": [
+        80.0,
+        720.0
+      ],
+      "hasInput": true,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false,
+      "parameters": {
+        "state": "Dead"
+      }
+    },
+    {
+      "id": 34,
+      "implementation": "Play Random Sound",
+      "type": 1,
+      "position": [
+        28.0,
+        590.0
+      ],
+      "hasInput": true,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false,
+      "parameters": {
+        "audio_0": "Water_Death_",
+        "audio_1": "Water_Death_2",
+        "audio_2": "Water_Death_3",
+        "cooldown": "1.200000"
+      }
+    },
+    {
+      "id": 35,
+      "implementation": "Check Animation End",
+      "type": 2,
+      "position": [
+        434.0,
+        714.0
+      ],
+      "hasInput": true,
+      "hasOutput": false,
+      "hasTrueOutput": true,
+      "hasFalseOutput": true
     }
   ],
   "connections": [
@@ -349,18 +465,6 @@
     {
       "fromNodeId": 11,
       "outputPin": "Out",
-      "toNodeId": 12,
-      "inputPin": "In"
-    },
-    {
-      "fromNodeId": 12,
-      "outputPin": "True",
-      "toNodeId": 13,
-      "inputPin": "In"
-    },
-    {
-      "fromNodeId": 11,
-      "outputPin": "Out",
       "toNodeId": 14,
       "inputPin": "In"
     },
@@ -386,6 +490,54 @@
       "fromNodeId": 15,
       "outputPin": "Out",
       "toNodeId": 19,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 11,
+      "outputPin": "Out",
+      "toNodeId": 12,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 12,
+      "outputPin": "True",
+      "toNodeId": 31,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 31,
+      "outputPin": "True",
+      "toNodeId": 24,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 12,
+      "outputPin": "True",
+      "toNodeId": 32,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 25,
+      "outputPin": "Out",
+      "toNodeId": 33,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 25,
+      "outputPin": "Out",
+      "toNodeId": 34,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 33,
+      "outputPin": "Out",
+      "toNodeId": 35,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 35,
+      "outputPin": "True",
+      "toNodeId": 13,
       "inputPin": "In"
     }
   ]

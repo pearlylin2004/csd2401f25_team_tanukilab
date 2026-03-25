@@ -95,6 +95,13 @@ public:
 	static int Lua_getDynMass(lua_State* L);
 	static int Lua_getCoyoteTime(lua_State* L);
 	static int Lua_getMaxFallSpeed(lua_State* L);
+	static int Lua_getSinlePersonalBool(lua_State* L);
+	static int Lua_getSinleFlag(lua_State* L);
+	static int Lua_getHitground(lua_State* L);
+	static int Lua_getSinleGravity(lua_State* L);
+	static int Lua_getWaterBounce(lua_State* L);
+	static int Lua_getAccelX(lua_State* L);
+	static int Lua_getAccelY(lua_State* L);
 
 
 	/* -------- Physics Setters -------- */
@@ -120,6 +127,9 @@ public:
 	static int Lua_setOriginalPos(lua_State* L);
 	static int Lua_isOriginalStateSet(lua_State* L);
 	static int Lua_setAutoUpdate(lua_State* L);
+	static int Lua_setAccelX(lua_State* L);
+	static int Lua_setAccelY(lua_State* L);
+	static int Lua_setHitground(lua_State* L);
 
 
 	/* -------- Collision -------- */

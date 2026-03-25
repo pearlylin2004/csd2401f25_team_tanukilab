@@ -1,0 +1,210 @@
+{
+  "id": "1cf017e5-1c34-47f6-8056-6c92723f25ad",
+  "name": "fire_game",
+  "components": {
+    "Transform": {
+      "pos": [
+        -6.8783278465271,
+        -3.819049835205078,
+        2.020000457763672
+      ],
+      "rotation": 1.0,
+      "scale": [
+        3.0,
+        3.0,
+        0.0
+      ]
+    },
+    "Render": {
+      "shape": "square",
+      "hasTex": 1,
+      "texture": "assets/textures/steam.png",
+      "hasAnimation": 1
+    },
+    "Physics": {
+      "physicsFlag": 1,
+      "moveSpeed": 1.0,
+      "jumpForce": 100.0,
+      "damping": 0.9800000190734864,
+      "maxFallSpeed": -30.0,
+      "groundAccelForce": 20.0,
+      "airAccelForce": 8.0,
+      "apexHangMul": 0.20000000298023224,
+      "jumpBufferTime": 0.15000000596046448,
+      "coyoteTime": 0.15000000596046448,
+      "ledgeAssistRange": 0.800000011920929,
+      "ledgeClimbSpeed": 8.0,
+      "mass": 1.0,
+      "buoyancy": 0,
+      "freezeRotation": true,
+      "angularDrag": 0.9800000190734864,
+      "inertiaOverride": 0.0
+    },
+    "CollisionInfo": {
+      "collisionFlag": 1,
+      "autoFitScale": 1,
+      "colliderSize": [
+        3.0,
+        3.0
+      ],
+      "colliderPos": [
+        0.0,
+        0.0
+      ],
+      "colliderRot": 0.0,
+      "colliderType": "square",
+      "collisionRes": "NoResponse",
+      "collisionTag": "steam",
+      "bounciness": 0.0,
+      "friction": 0.0,
+      "colliderType": "square",
+      "ignoreCollisionsWith": []
+    },
+    "StateMachine": {
+      "state": "Idle",
+      "facingRight": 1,
+      "Idle": {
+        "animState": {
+          "texture": "assets/Texture\\Small Fire Sprite Sheet.png",
+          "loop": 1,
+          "play": 1,
+          "totalColumn": 4,
+          "totalRow": 2,
+          "frameTime": 0.07000000029802322,
+          "initialFramCol": 0.0,
+          "initialFramRow": 0.0,
+          "lastFramCol": 3.0,
+          "lastFramRow": 1.0
+        }
+      },
+      "Walking": {
+        "animState": {
+          "texture": "assets/Texture\\Smoke_Sprite_Sheet.png",
+          "loop": 1,
+          "play": 1,
+          "totalColumn": 6,
+          "totalRow": 4,
+          "frameTime": 0.1469999998807907,
+          "initialFramCol": 0.0,
+          "initialFramRow": 0.0,
+          "lastFramCol": 5.0,
+          "lastFramRow": 3.0
+        }
+      },
+      "Jumping": {
+        "animState": {
+          "texture": "",
+          "loop": 1,
+          "play": 0,
+          "totalColumn": 1,
+          "totalRow": 1,
+          "frameTime": 0.10000000149011612,
+          "initialFramCol": 0.0,
+          "initialFramRow": 0.0,
+          "lastFramCol": 0.0,
+          "lastFramRow": 0.0
+        }
+      },
+      "Falling": {
+        "animState": {
+          "texture": "",
+          "loop": 1,
+          "play": 0,
+          "totalColumn": 1,
+          "totalRow": 1,
+          "frameTime": 0.10000000149011612,
+          "initialFramCol": 0.0,
+          "initialFramRow": 0.0,
+          "lastFramCol": 0.0,
+          "lastFramRow": 0.0
+        }
+      },
+      "Shooting": {
+        "animState": {
+          "texture": "",
+          "loop": 1,
+          "play": 0,
+          "totalColumn": 1,
+          "totalRow": 1,
+          "frameTime": 0.10000000149011612,
+          "initialFramCol": 0.0,
+          "initialFramRow": 0.0,
+          "lastFramCol": 0.0,
+          "lastFramRow": 0.0
+        }
+      },
+      "Dead": {
+        "animState": {
+          "texture": "",
+          "loop": 1,
+          "play": 0,
+          "totalColumn": 1,
+          "totalRow": 1,
+          "frameTime": 0.10000000149011612,
+          "initialFramCol": 0.0,
+          "initialFramRow": 0.0,
+          "lastFramCol": 0.0,
+          "lastFramRow": 0.0
+        }
+      }
+    },
+    "AudioComponent": {
+      "channels": {
+        "default": {
+          "audioFile": "assets/Audio\\steam.wav",
+          "volume": 1.0,
+          "pitch": 1.0,
+          "loop": 0,
+          "playOnStart": 0,
+          "muted": 0,
+          "fadeInOnStart": 0,
+          "fadeInDuration": 1.0,
+          "fadeOutOnStop": 0,
+          "fadeOutDuration": 1.0,
+          "isSpatial": false,
+          "minDistance": 5.0,
+          "maxDistance": 50.0,
+          "spread": 180.0,
+          "persistOnSceneChange": false
+        },
+        "fire_loop": {
+          "audioFile": "assets/Audio\\SFX\\Small-Fire_Loop.wav",
+          "volume": 0.10000000149011612,
+          "pitch": 1.0,
+          "loop": 1,
+          "playOnStart": 1,
+          "muted": 0,
+          "fadeInOnStart": 0,
+          "fadeInDuration": 1.0,
+          "fadeOutOnStop": 1,
+          "fadeOutDuration": 0.30000001192092896,
+          "isSpatial": true,
+          "minDistance": 0.10000000149011612,
+          "maxDistance": 15.0,
+          "spread": 180.0,
+          "persistOnSceneChange": false
+        },
+        "steam": {
+          "audioFile": "assets/Audio\\SFX\\Fire Extinguish_2.wav",
+          "volume": 0.10000000149011612,
+          "pitch": 1.0,
+          "loop": 0,
+          "playOnStart": 0,
+          "muted": 0,
+          "fadeInOnStart": 0,
+          "fadeInDuration": 1.0,
+          "fadeOutOnStop": 0,
+          "fadeOutDuration": 1.0,
+          "isSpatial": true,
+          "minDistance": 0.10000000149011612,
+          "maxDistance": 15.0,
+          "spread": 180.0,
+          "persistOnSceneChange": false
+        }
+      }
+    },
+    "VisualLC": {
+      "filename": "fire-smoke.json"
+    }
+  }
+}
