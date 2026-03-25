@@ -1,6 +1,6 @@
 
 #include "CoreEngine.h"
-#include "GameApp.h"
+//#include "GameApp.h"
 #include "LuaGameScript.h"
 
 #ifdef _WIN32
