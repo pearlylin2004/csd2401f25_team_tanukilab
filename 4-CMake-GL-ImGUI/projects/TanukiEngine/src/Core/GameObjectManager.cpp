@@ -27,9 +27,9 @@ Technology is prohibited.
 #ifndef RUNTIME_SCENE_DIR_R
 #define RUNTIME_SCENE_DIR_R "./assets/Scene"
 #endif
-#ifndef SOURCE_ASSETS_DIR_R
-#define SOURCE_ASSETS_DIR_R "./projects/WaterBound/assets"
-#endif
+//#ifndef SOURCE_ASSETS_DIR_R
+//#define SOURCE_ASSETS_DIR_R "./projects/WaterBound/assets"
+//#endif
 
 namespace {
 	inline bool ends_with(const std::string& s, const char* suf) {

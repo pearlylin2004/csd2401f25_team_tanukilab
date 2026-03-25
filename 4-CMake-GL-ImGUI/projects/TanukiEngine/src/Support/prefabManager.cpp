@@ -19,11 +19,12 @@ Technology is prohibited.
 #ifndef RUNTIME_DIR_R
 #define RUNTIME_DIR_R "./assets"
 #endif
-#ifndef SOURCE_DIR_R
-#define SOURCE_DIR_R "../projects/WaterBound/assets"
-#endif
+//#ifndef SOURCE_DIR_R
+//#define SOURCE_DIR_R "../projects/WaterBound/assets"
+//#endif
 #include "prefabManager.h"
 #include "JsonIO.h"
+#include "PathManager.h"
 
 // -- helpers --
 namespace {
@@ -171,7 +172,7 @@ void PrefabManager::savePrefabRegistry() {
 	std::string err;
 	// write to run time file
 	std::string runtime = std::string(RUNTIME_DIR_R) + registryFile;
-	std::string dir = std::string(SOURCE_DIR_R) + registryFile;
+	std::string dir = PathManager::Instance().getSourcePrefabPath() + registryFile;
 
 	JsonIO::WriteDocumentToFile(runtime, doc, true, &err);
 	JsonIO::WriteDocumentToFile(dir, doc, true, &err);
@@ -372,7 +373,7 @@ bool PrefabManager::savePrefab(const GameObject* prefabObj) {
 	// save to runtime & source
 	std::string err;
 	JsonIO::WriteDocumentToFile(std::string(RUNTIME_DIR_R) + getPrefabPath(prefabID), doc, true, &err);
-	JsonIO::WriteDocumentToFile(std::string(SOURCE_DIR_R) + getPrefabPath(prefabID), doc, true, &err);
+	JsonIO::WriteDocumentToFile(PathManager::Instance().getSourcePath() + "/assets" + getPrefabPath(prefabID), doc, true, &err);
 
 	// update cache
 	m_prefabCache[prefabID].CopyFrom(doc, m_prefabCache[prefabID].GetAllocator());
@@ -550,7 +551,7 @@ bool PrefabManager::createPrefabFromGameObj(GameObject* go, const std::string& n
 	std::string prefabID = generateUUID();
 
 	// if Prefab folder not created yet, create one
-	std::filesystem::path preFabDir = SOURCE_DIR_R + prefabFolder;
+	std::filesystem::path preFabDir = PathManager::Instance().getSourcePath() + "/assets/" + prefabFolder;
 	if (!std::filesystem::exists(preFabDir)) {
 		std::filesystem::create_directories(preFabDir);
 	}
@@ -602,7 +603,7 @@ bool PrefabManager::createPrefabFromGameObj(GameObject* go, const std::string& n
 	/* -------- Save new prefab to a new .json file ------- */
 	std::string err;
 	JsonIO::WriteDocumentToFile(std::string(RUNTIME_DIR_R) + filename, doc, true, &err);
-	JsonIO::WriteDocumentToFile(std::string(SOURCE_DIR_R) + filename, doc, true, &err);
+	JsonIO::WriteDocumentToFile(PathManager::Instance().getSourcePath() + "/assets/" + filename, doc, true, &err);
 	/* -------- END ------- */
 
 	// save in prefab registry file
@@ -637,7 +638,7 @@ bool PrefabManager::deletePrefab(const std::string prefabID) {
 bool PrefabManager::isPrefabUsedInAnyScene(const std::string& prefabID, std::vector<PrefabUsageInfo>& usageInfo) const {
 	usageInfo.clear();
 
-	std::string scenePath = std::string(SOURCE_DIR_R) + "/Scene";
+	std::string scenePath = PathManager::Instance().getSourceScenePath();
 	if (!std::filesystem::exists(scenePath)) {
 		return false;
 	}
@@ -1825,5 +1826,5 @@ void PrefabManager::loadPrefabFromString(const std::string& prefabID, const std:
 	// match savePrefab's write pattern
 	std::string err;
 	JsonIO::WriteDocumentToFile(std::string(RUNTIME_DIR_R) + getPrefabPath(prefabID), doc, true, &err);
-	JsonIO::WriteDocumentToFile(std::string(SOURCE_DIR_R) + getPrefabPath(prefabID), doc, true, &err);
+	JsonIO::WriteDocumentToFile(PathManager::Instance().getSourcePath() + "/assets" + getPrefabPath(prefabID), doc, true, &err);
 }

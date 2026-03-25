@@ -31,11 +31,12 @@ int main(int argc, char** argv) {
 
     // Create the engine using a smart pointer for automatic cleanup
     auto engine = std::make_unique<CoreEngine>();
-    auto gameApp   = std::make_unique<GameApp>();
+    auto gameApp = std::make_unique<GameApp>();
 
 
     try {
         engine->Init(forceWindowed);
+        GUISystem::getInstance().loadScreen(engine->getManager(), "menu_scene.json");
         engine->setGameScript(gameApp.get());
         engine->Run();
     }

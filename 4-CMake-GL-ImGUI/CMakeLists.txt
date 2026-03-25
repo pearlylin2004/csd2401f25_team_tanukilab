@@ -35,12 +35,17 @@ file(GLOB_RECURSE ENGINE_SOURCES
     "${ENGINE_DIR}/include/*.hpp"
 )
 
-file(GLOB_RECURSE ENGINE_EDITOR_HEADERS "${ENGINE_DIR}/include/Editor/*.h")
-file(GLOB_RECURSE ENGINE_EDITOR_SOURCES "${ENGINE_DIR}/src/Editor/*.cpp")
-source_group("Header Files\\Editor" FILES ${ENGINE_EDITOR_HEADERS})
-source_group("Source Files\\Editor" FILES ${ENGINE_EDITOR_SOURCES})
+##file(GLOB_RECURSE ENGINE_EDITOR_HEADERS "${ENGINE_DIR}/include/Editor/*.h")
+##file(GLOB_RECURSE ENGINE_EDITOR_SOURCES "${ENGINE_DIR}/src/Editor/*.cpp")
+##source_group("Header Files\\Editor" FILES ${ENGINE_EDITOR_HEADERS})
+##source_group("Source Files\\Editor" FILES ${ENGINE_EDITOR_SOURCES})
 
 add_library(TanukiEngine STATIC ${ENGINE_SOURCES})
+
+file(GLOB_RECURSE ENGINE_CPP "${ENGINE_DIR}/src/*.cpp")
+file(GLOB_RECURSE ENGINE_HDR "${ENGINE_DIR}/include/*.h" "${ENGINE_DIR}/include/*.hpp")
+source_group(TREE "${ENGINE_DIR}/src"     PREFIX "Source Files" FILES ${ENGINE_CPP})
+source_group(TREE "${ENGINE_DIR}/include" PREFIX "Header Files" FILES ${ENGINE_HDR})
 
 set_property(TARGET TanukiEngine PROPERTY CXX_STANDARD 20)
 
@@ -110,12 +115,26 @@ file(GLOB_RECURSE EDITOR_SOURCES
 
 add_executable(TanukiEditor ${EDITOR_SOURCES})
 
+file(GLOB_RECURSE EDITOR_CPP "${EDITOR_DIR}/src/*.cpp")
+file(GLOB_RECURSE EDITOR_HDR "${EDITOR_DIR}/include/*.h" "${EDITOR_DIR}/include/*.hpp")
+source_group(TREE "${EDITOR_DIR}/src"     PREFIX "Source Files" FILES ${EDITOR_CPP})
+source_group(TREE "${EDITOR_DIR}/include" PREFIX "Header Files" FILES ${EDITOR_HDR})
+
 set_property(TARGET TanukiEditor PROPERTY CXX_STANDARD 20)
+
+target_include_directories(TanukiEditor PRIVATE
+    "${EDITOR_DIR}/include"
+)
 
 target_link_libraries(TanukiEditor PRIVATE TanukiEngine)
 
 copy_fmod_dlls(TanukiEditor)
 copy_engine_assets(TanukiEditor)
+
+target_compile_definitions(TanukiEditor PRIVATE
+    TANUKI_GAMES_ROOT_R="${GAMES_DIR}"
+    TANUKI_ENGINE_ASSETS_R="${ENGINE_DIR}/assets"
+)
 
 if(MSVC)
     set_target_properties(TanukiEditor PROPERTIES
@@ -151,6 +170,11 @@ foreach(game ${game_candidates})
     )
 
     add_executable(${game} ${${game}_sources})
+
+    file(GLOB_RECURSE ${game}_cpp "${GAME_DIR}/src/*.cpp")
+    file(GLOB_RECURSE ${game}_hdr "${GAME_DIR}/include/*.h" "${GAME_DIR}/include/*.hpp")
+    source_group(TREE "${GAME_DIR}/src"     PREFIX "Source Files" FILES ${${game}_cpp})
+    source_group(TREE "${GAME_DIR}/include" PREFIX "Header Files" FILES ${${game}_hdr})
 
     set_property(TARGET ${game} PROPERTY CXX_STANDARD 20)
 

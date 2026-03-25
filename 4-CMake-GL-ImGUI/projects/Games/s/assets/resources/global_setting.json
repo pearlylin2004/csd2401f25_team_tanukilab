@@ -1,0 +1,13 @@
+{
+  "collisionTags": [
+    "default",
+    "player",
+    "bullet",
+    "water",
+    "inventory",
+    "fire",
+    "hazards",
+    "platform",
+    "environment"
+  ]
+}

@@ -34,6 +34,7 @@ Technology is prohibited.
 #include "JsonIO.h"
 #include "globalRegistry.h"
 #include "GameScript.h"
+#include "PathManager.h"
 
 class CoreEngine {
 public:
@@ -61,7 +62,12 @@ public:
     void pauseBGM();
     void resumeBGM();
 
+    GameObjectManager& getManager() { return *m_manager; }
     LuaSystem& getLuaSystem() { return *m_luaSystem; }
+    GLFWwindow* getWindow() const { return m_window; }
+    void setLauncher(std::function<bool()> fn) { m_launcherFn = fn; }
+    /*void runLauncher(std::function<bool()> launcherFn);*/
+    void loadInitialScene(const std::string& sceneName);
 
 private:
     void GameLoop();
@@ -114,4 +120,7 @@ private:
 	std::unique_ptr<TransformSystem> m_transformSystem;
     std::unique_ptr<Camera> m_cameraSystem;
     //std::unique_ptr<WeaponSystem> m_weaponSystem;
+
+    std::function<bool()> m_launcherFn;
+
 };

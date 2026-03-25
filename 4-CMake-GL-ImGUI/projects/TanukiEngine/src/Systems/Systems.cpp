@@ -2348,7 +2348,7 @@ void UISystem::init(GLFWwindow* window, RenderSystem* renderer, GameObjectManage
 	io.FontGlobalScale = 1.5f;
 	io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard
 			| ImGuiConfigFlags_DockingEnable
-			| ImGuiConfigFlags_ViewportsEnable;
+			/*| ImGuiConfigFlags_ViewportsEnable*/;
 	ImGui::StyleColorsClassic();
 	//ImGui::StyleColorsDark();
 	// io.IniFilename = "imgui_layout.ini";
@@ -2427,6 +2427,15 @@ void UISystem::update() {
 	auto end = std::chrono::high_resolution_clock::now();
 	double ms = std::chrono::duration<double, std::milli>(end - start).count(); //get elapse time in ms
 	g_SystemTimers.push_back({"IMGUI", ms }); //saving timing for UI output
+}
+
+void UISystem::runImGuiFrame(std::function<void()> content) {
+	ImGui_ImplOpenGL3_NewFrame();
+	ImGui_ImplGlfw_NewFrame();
+	ImGui::NewFrame();
+	content();
+	ImGui::Render();
+	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 }
 
 void UISystem::dockingSetUp() {

@@ -178,8 +178,8 @@ void AssetBrowser::render() {
                             size_t pos = srcPath.find("assets/");
                             if (pos != std::string::npos) relative = srcPath.substr(pos + strlen("assets/"));
                             if (!relative.empty()) {
-                                std::filesystem::path projectSrc = std::filesystem::path(std::string(SOURCE_DIR_R)) / relative;
-                                std::filesystem::path projectDest = std::filesystem::path(std::string(SOURCE_DIR_R))
+                                std::filesystem::path projectSrc = std::filesystem::path(std::string(PathManager::Instance().getSourcePath() + "/assets")) / relative;
+                                std::filesystem::path projectDest = std::filesystem::path(std::string(PathManager::Instance().getSourcePath() + "/assets"))
                                     / m_AssetBrowserState.currentViewFolder / subFolder / src.filename();
 
                                 if (std::filesystem::exists(projectSrc))
@@ -633,7 +633,7 @@ void AssetBrowser::assetDeletePopup() {
 
                         // delete from project folder
                         if (!relativePath.empty()) {
-                            std::filesystem::path projectPath = std::string(SOURCE_DIR_R) + "/" + relativePath;
+                            std::filesystem::path projectPath = std::string(PathManager::Instance().getSourcePath() + "/assets") + "/" + relativePath;
                             if (std::filesystem::exists(projectPath)) {
                                 std::filesystem::remove(projectPath);
                             }
@@ -775,7 +775,7 @@ void AssetBrowser::assetRenamePopup() {
                     EditorManager::assetChanged(); // reload assets to reflect new name
 
                     // change in the project folder as well
-                    std::filesystem::path sourceDir(SOURCE_DIR_R);
+                    std::filesystem::path sourceDir(PathManager::Instance().getSourcePath() + "/assets");
 
                     // split the "assets/" part to get relative path
                     std::string relative;
@@ -896,7 +896,7 @@ void AssetBrowser::createSubfolderPopup() {
 
                 // Create in project source folder too
                 std::filesystem::path newDirSource =
-                    std::filesystem::path(std::string(SOURCE_DIR_R))
+                    std::filesystem::path(std::string(PathManager::Instance().getSourcePath() + "/assets"))
                     / m_AssetBrowserState.currentViewFolder
                     / folderName;
 
@@ -951,7 +951,7 @@ void AssetBrowser::renameSubfolderPopup() {
                         if (pos != std::string::npos)
                             relative = m_AssetBrowserState.folderToRename.substr(pos + strlen("assets/"));
                         if (!relative.empty()) {
-                            std::filesystem::path projectOld = std::filesystem::path(std::string(SOURCE_DIR_R)) / relative;
+                            std::filesystem::path projectOld = std::filesystem::path(std::string(PathManager::Instance().getSourcePath() + "/assets")) / relative;
                             std::filesystem::path projectNew = projectOld.parent_path() / newName;
                             if (std::filesystem::exists(projectOld))
                                 std::filesystem::rename(projectOld, projectNew);
@@ -1006,7 +1006,7 @@ void AssetBrowser::deleteSubfolderPopup() {
                     if (pos != std::string::npos)
                         relative = m_AssetBrowserState.folderToDelete.substr(pos + strlen("assets/"));
                     if (!relative.empty()) {
-                        std::filesystem::path projectPath = std::filesystem::path(std::string(SOURCE_DIR_R)) / relative;
+                        std::filesystem::path projectPath = std::filesystem::path(std::string(PathManager::Instance().getSourcePath() + "/assets")) / relative;
                         if (std::filesystem::exists(projectPath))
                             std::filesystem::remove_all(projectPath);
                     }

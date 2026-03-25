@@ -19,6 +19,7 @@ Technology is prohibited.
 #include "editor/editorManager.h"
 #include "renderer.h"
 #include "input.h"
+#include "PathManager.h"
 
 GLFWwindow* InputHandler::m_window = nullptr;
 AppConfig InputHandler::m_cfg;
@@ -407,7 +408,7 @@ void InputHandler::dropCallback(GLFWwindow* window, int count, const char** path
 	(void)window;
 
     std::filesystem::path buildDir(RUNTIME_DIR_R); // "./assets"
-    std::filesystem::path projectDir(SOURCE_DIR_R);  // "./projects/WaterBound/assets"
+    std::filesystem::path projectDir(PathManager::Instance().getSourcePath() + "/assets");  // "./projects/WaterBound/assets"
 
 	// check if dropping onto a specific folder in editor
 	std::string targetFolder = Editor::assetBrowserState.hoverFolder;

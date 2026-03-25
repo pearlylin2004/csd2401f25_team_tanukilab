@@ -278,6 +278,8 @@ public:
 	static void toggleUI() { showUI = !showUI; } // temp toggle function
 	static bool isShowUI() { return showUI; }
 
+	void runImGuiFrame(std::function<void()> content);
+
 
 	enum FontType {
 		FONT_DEFAULT,

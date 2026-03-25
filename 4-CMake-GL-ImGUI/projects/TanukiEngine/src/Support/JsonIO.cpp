@@ -18,19 +18,20 @@ Technology is prohibited.
 #include "JsonIO.h"
 #include "GameObjectManager.h"
 #include "renderer.h"
+#include "PathManager.h"
 
 #ifndef RUNTIME_SCENE_DIR_R
 #define RUNTIME_SCENE_DIR_R "./assets/Scene"
 #endif
-#ifndef SOURCE_ASSETS_DIR_R
-#define SOURCE_ASSETS_DIR_R "./projects/WaterBound/assets"
-#endif
+//#ifndef SOURCE_ASSETS_DIR_R
+//#define SOURCE_ASSETS_DIR_R "./projects/WaterBound/assets"
+//#endif
 #ifndef RUNTIME_DIR_R
 #define RUNTIME_DIR_R "./assets"
 #endif
-#ifndef SOURCE_DIR_R
-#define SOURCE_DIR_R "./projects/WaterBound/assets"
-#endif
+//#ifndef SOURCE_DIR_R
+//#define SOURCE_DIR_R "./projects/WaterBound/assets"
+//#endif
 //==============================================================================
 // Paths
 //==============================================================================
@@ -138,7 +139,8 @@ namespace JsonIO {
      * \return Absolute/relative path into \c SOURCE_SCENE_DIR_R .
      */
     std::string JsonIO::sourceScenePath(const std::string& name) {
-        return std::string(SOURCE_ASSETS_DIR_R) + "/Scene/" + name;
+        //return std::string(SOURCE_ASSETS_DIR_R) + "/Scene/" + name;
+        return PathManager::Instance().getSourceScenePath() + name;
     }
 
     /**
@@ -146,7 +148,8 @@ namespace JsonIO {
      * \return Value of \c SOURCE_DIR_R .
      */
     std::string projectSourceRoot() {
-        return std::string(SOURCE_DIR_R);
+        //return std::string(SOURCE_DIR_R);
+        return PathManager::Instance().getSourcePath() + "/assets";
     }
 
     /// @}
@@ -906,7 +909,7 @@ namespace JsonIO {
         doc.AddMember("collisionTags", tagArray, a);
 
         bool runtime = WriteDocumentToFile(RUNTIME_DIR_R + filepath, doc, true, err);
-        bool proj = WriteDocumentToFile(SOURCE_ASSETS_DIR_R + filepath, doc, true, err);
+        bool proj = WriteDocumentToFile(PathManager::Instance().getSourcePath() + "/assets" + filepath, doc, true, err);
 
         return (runtime && proj);
     }
@@ -1938,7 +1941,7 @@ namespace JsonIO {
         
         // write to file
         bool runtime = WriteDocumentToFile(RUNTIME_DIR_R+filepath, doc, true, err);
-        bool proj = WriteDocumentToFile(SOURCE_ASSETS_DIR_R +filepath, doc, true, err);
+        bool proj = WriteDocumentToFile(PathManager::Instance().getSourcePath() + "/assets" + filepath, doc, true, err);
 
 		return (runtime && proj);
     }

@@ -1,12 +1,14 @@
+
 #include "CoreEngine.h"
 #include "LuaGameScript.h"
+#include "editorLaunch.h"
+#include "PathManager.h"
 
 #ifdef _WIN32
 #include <windows.h>
 #pragma comment(linker, "/ENTRY:mainCRTStartup")
 #endif
 
-// This allows for memory leak detection in debug builds
 #if defined(DEBUG) | defined(_DEBUG)
 #include <crtdbg.h>
 #endif
@@ -24,9 +26,7 @@ int main(int argc, char** argv) {
     for (int i = 1; i < argc; ++i)
     {
         if (std::string(argv[i]) == "--windowed")
-        {
             forceWindowed = true;
-        }
     }
 
     // Create the engine using a smart pointer for automatic cleanup
@@ -36,8 +36,30 @@ int main(int argc, char** argv) {
     try {
         engine->Init(forceWindowed);
 
+        // run launcher
+        //engine->runLauncher([&]() {return EditorLaunch::Instance().render();});
+        engine->setLauncher([&]() { 
+            bool done = EditorLaunch::Instance().render();
+            if (done) {
+                PathManager::Instance().setSourcePath(EditorLaunch::Instance().getGamePath());
+                std::cout << "gamepath: " << EditorLaunch::Instance().getGamePath() << std::endl;
+                Editor::assetBrowserState.currentFolder = PathManager::Instance().getSourcePath() + "/assets/";
+                std::cout << "currentFolder: " << Editor::assetBrowserState.currentFolder << std::endl;
+            }
+            return done;
+            });
+
+        // set project filepath
+        //PathManager::Instance().setSourcePath(
+           // EditorLaunch::Instance().getGamePath());
+
         luaScript = std::make_unique<LuaGameScript>(engine->getLuaSystem());
         engine->setGameScript(luaScript.get());
+
+        // open first scene in scene folder
+        std::string defaultScene = EditorLaunch::Instance().getDefaultScene();
+        if (!defaultScene.empty())
+            engine->loadInitialScene(defaultScene);
 
         engine->Run();
     }

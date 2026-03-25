@@ -35,13 +35,14 @@ Technology is prohibited.
 #include "prefabManager.h"
 #include "performance.h"
 #include "GUISystem.h"
+#include "PathManager.h"
 
 #ifndef RUNTIME_DIR_R
 #define RUNTIME_DIR_R "./assets"
 #endif
-#ifndef SOURCE_DIR_R
-#define SOURCE_DIR_R "../projects/WaterBound/assets"
-#endif
+//#ifndef SOURCE_DIR_R
+//#define SOURCE_DIR_R "../projects/WaterBound/assets"
+//#endif
 
 // add obj window & obj creation+deletion func
 class AddObjWindow {
