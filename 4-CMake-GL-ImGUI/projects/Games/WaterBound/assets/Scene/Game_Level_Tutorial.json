@@ -2326,7 +2326,7 @@
           "tileH": 1.5,
           "columns": 100,
           "rows": 100,
-          "enableCol": 0,
+          "enableCol": 1,
           "tiles": [
             {
               "x": -10,

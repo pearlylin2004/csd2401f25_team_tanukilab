@@ -2346,7 +2346,7 @@ void InspectorWindow::renderLua(GameObject* selected) {
                         if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
 
                         scriptEntry.scriptName = nameWithoutExt;
-                        scriptEntry.filename = Editor::scriptState.scriptDir + scriptFile;
+                        scriptEntry.filename = "assets/scripting/" + scriptFile;
                         scriptEntry.changed = true;
                         script->scriptsChanged = true;
 

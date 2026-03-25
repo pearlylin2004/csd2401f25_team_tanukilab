@@ -62,8 +62,8 @@ function weapon.Update(obj, dt)
 
     -- aim at mouse
     local wx, wy = getPosition(obj)
-    local mx = getMouseWorldX()
-    local my = getMouseWorldY()
+    local mx = isEditorOpen() and getEditorMouseWorldX() or getMouseWorldX()
+    local my = isEditorOpen() and getEditorMouseWorldY() or getMouseWorldY()
     local dx = mx - wx
     local dy = my - wy
 

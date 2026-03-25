@@ -15,6 +15,7 @@ Technology is prohibited.
 /* End Header **************************************************************************/
 
 #include "luaSystem.h"
+#include "Systems.h"
 
 void LuaSystem::init(GameObjectManager& manager) {
     L = luaL_newstate();
@@ -124,6 +125,8 @@ void LuaSystem::init(GameObjectManager& manager) {
     lua_register(L, "isMouseLeftTriggered", Lua_isMouseLeftTriggered);
     lua_register(L, "getMouseWorldX", Lua_getMouseWorldX);
     lua_register(L, "getMouseWorldY", Lua_getMouseWorldY);
+    lua_register(L, "getEditorMouseWorldX", Lua_getEditorMouseWorldX);
+    lua_register(L, "getEditorMouseWorldY", Lua_getEditorMouseWorldY);
 
     // FSM
     lua_register(L, "getPlayerState", Lua_getPlayerState);
@@ -177,6 +180,8 @@ void LuaSystem::init(GameObjectManager& manager) {
     // Editor State
     lua_register(L, "isEditingMode", Lua_isEditingMode);
     lua_register(L, "isPaused", Lua_isPaused);
+    lua_register(L, "isEditorOpen", Lua_isEditorOpen);
+    lua_register(L, "isSceneHovered", Lua_isSceneHovered);
 
     // debug
     lua_register(L, "debugLog", Lua_debugLog);
@@ -1045,6 +1050,28 @@ int LuaSystem::Lua_getMouseWorldY(lua_State* L) {
     return 1;
 }
 
+int LuaSystem::Lua_getEditorMouseWorldX(lua_State* L) {
+#ifdef _DEBUG
+    ImVec2 scenePos, sceneSize;
+    EditorManager::getScenePosNSize(scenePos, sceneSize);
+    lua_pushnumber(L, InputHandler::getMousePositionInImGuiViewport(scenePos, sceneSize).x);
+#else
+    lua_pushnumber(L, InputHandler::getWorldMousePosition().x);
+#endif
+    return 1;
+}
+
+int LuaSystem::Lua_getEditorMouseWorldY(lua_State* L) {
+#ifdef _DEBUG
+    ImVec2 scenePos, sceneSize;
+    EditorManager::getScenePosNSize(scenePos, sceneSize);
+    lua_pushnumber(L, InputHandler::getMousePositionInImGuiViewport(scenePos, sceneSize).y);
+#else
+    lua_pushnumber(L, InputHandler::getWorldMousePosition().y);
+#endif
+    return 1;
+}
+
 
 /* ---- FSM ---- */
 int LuaSystem::Lua_getPlayerState(lua_State* L) {
@@ -1393,6 +1420,24 @@ int LuaSystem::Lua_isEditingMode(lua_State* L) {
 
 int LuaSystem::Lua_isPaused(lua_State* L) {
     lua_pushboolean(L, EditorManager::isPaused() ? 1 : 0);
+    return 1;
+}
+
+int LuaSystem::Lua_isEditorOpen(lua_State* L) {
+#ifdef _DEBUG
+    lua_pushboolean(L, UISystem::isShowUI() ? 1 : 0);
+#else
+    lua_pushboolean(L, 0);
+#endif
+    return 1;
+}
+
+int LuaSystem::Lua_isSceneHovered(lua_State* L) {
+#ifdef _DEBUG
+    lua_pushboolean(L, SceneWindow::isSceneHovered() ? 1 : 0);
+#else
+    lua_pushboolean(L, 1); // in release, always true (no editor panels)
+#endif
     return 1;
 }
 

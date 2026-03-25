@@ -272,8 +272,7 @@ void CoreEngine::Update(float deltaTime) {
     
 
     // Update all systems in order
-	m_cameraSystem->update(*m_manager);
-    renderer::cam.update();
+	
     m_inputSystem->update(*m_manager, deltaTime, *m_messageBus);
     m_physicsSystem->update(*m_manager, deltaTime, *m_messageBus);
 
@@ -281,6 +280,8 @@ void CoreEngine::Update(float deltaTime) {
 
     m_collisionSystem->update(*m_manager, deltaTime);
 	m_transformSystem->update(*m_manager, deltaTime);//for parent->child transform
+    m_cameraSystem->update(*m_manager);
+    renderer::cam.update();
     //m_weaponSystem->update(*m_manager, deltaTime);
     m_logicSystem->update(*m_manager, deltaTime);
     m_tileMapSystem->update(*m_manager);

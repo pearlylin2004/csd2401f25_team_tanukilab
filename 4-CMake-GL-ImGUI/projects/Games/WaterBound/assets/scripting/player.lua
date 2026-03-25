@@ -55,7 +55,7 @@ function player.Update(obj, dt)
         setVelX(obj, 0)
         setVelY(obj, 0)
         s.initialized = true
-        return
+        
     end
 
     -- coyote time update
@@ -143,9 +143,11 @@ function player.Update(obj, dt)
 
     -- flip to face mouse when not moving
     if not Input_isKeyHeld("A") and not Input_isKeyHeld("D") then
-        local mx = getMouseWorldX()
-        local x, y = getPosition(obj)
-        setFlipX(obj, mx < x)
+        if not isEditorOpen() or isSceneHovered() then
+            local mx = isEditorOpen() and getEditorMouseWorldX() or getMouseWorldX()
+            local x, y = getPosition(obj)
+            setFlipX(obj, mx < x)
+        end
     end
 
     -- damping + position
@@ -201,7 +203,7 @@ function player.Update(obj, dt)
     shootTimer = shootTimer + dt
     setShootTimer(obj, shootTimer)
 
-    if not isMouseLeftHeld() then
+    if not isMouseLeftHeld() or not isSceneHovered() then
         setShootTimer(obj, getFireRate(obj))
         return
     end
@@ -228,8 +230,8 @@ function player.Update(obj, dt)
         end
     end
 
-    local mx = getMouseWorldX()
-    local my = getMouseWorldY()
+    local mx = isEditorOpen() and getEditorMouseWorldX() or getMouseWorldX()
+    local my = isEditorOpen() and getEditorMouseWorldY() or getMouseWorldY()
 
     -- shoot
     playSound(bullet, "shoot")

@@ -2279,8 +2279,9 @@ void CollisionSystem::HandleTilemapCollisions(const std::unordered_map<int, Coll
 										break;
 									}
 								}
-								//t->x += info.normal.x * info.penetration;
-								//p->dynamics.position.x = t->x;
+
+								t->x += info.normal.x * info.penetration;
+								p->dynamics.position.x = t->x;
 								p->dynamics.velocity.x = 0.f;
 								p->velX = 0.f;
 								//}

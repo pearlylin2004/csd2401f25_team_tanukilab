@@ -159,6 +159,8 @@ public:
 	static int Lua_isMouseLeftTriggered(lua_State* L);
 	static int Lua_getMouseWorldX(lua_State* L);
 	static int Lua_getMouseWorldY(lua_State* L);
+	static int Lua_getEditorMouseWorldX(lua_State* L);
+	static int Lua_getEditorMouseWorldY(lua_State* L);
 
 
 	/* -------- FSM -------- */
@@ -211,6 +213,8 @@ public:
 	/* -------- Editor State -------- */
 	static int Lua_isEditingMode(lua_State* L);
 	static int Lua_isPaused(lua_State* L);
+	static int Lua_isEditorOpen(lua_State* L);
+	static int Lua_isSceneHovered(lua_State* L);
 
 
 	/* -------- Ledge Climb -------- */
