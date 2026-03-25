@@ -93,8 +93,8 @@
       "components": {
         "Transform": {
           "pos": [
-            -17.297943115234375,
-            -0.05594981461763382,
+            -17.292049407958984,
+            -0.11850576847791672,
             0.9980000257492065
           ]
         },
@@ -352,6 +352,53 @@
       }
     },
     {
+      "name": "water balance back",
+      "components": {
+        "Transform": {
+          "pos": [
+            17.0,
+            7.5,
+            0.9900000095367432
+          ],
+          "rotation": 0.0,
+          "scale": [
+            6.588000774383545,
+            6.588000774383545,
+            0.0
+          ]
+        },
+        "Render": {
+          "shape": "square",
+          "colorR": 1.0,
+          "colorG": 1.0,
+          "colorB": 1.0,
+          "colorA": 1.0,
+          "hasTex": 1,
+          "texture": "assets/Texture\\Water_ContainerRim.png",
+          "hasAnimation": 0
+        },
+        "CollisionInfo": {
+          "collisionFlag": 1,
+          "autoFitScale": 1,
+          "colliderSize": [
+            6.588000774383545,
+            6.588000774383545
+          ],
+          "colliderPos": [
+            0.0,
+            0.0
+          ],
+          "colliderRot": 0.0,
+          "colliderType": "square",
+          "collisionRes": "StopWhenCollide",
+          "collisionTag": "inventory",
+          "bounciness": 0.0,
+          "friction": 0.0,
+          "colliderType": "square"
+        }
+      }
+    },
+    {
       "prefabid": "8b8d44fa-ed22-4288-98ee-c476958f5b5b",
       "name": "endgoal(23)",
       "components": {
@@ -404,53 +451,6 @@
         },
         "VisualLC": {
           "filename": "endgoal04.json"
-        }
-      }
-    },
-    {
-      "name": "water balance back",
-      "components": {
-        "Transform": {
-          "pos": [
-            17.0,
-            7.5,
-            0.9900000095367432
-          ],
-          "rotation": 0.0,
-          "scale": [
-            6.588000774383545,
-            6.588000774383545,
-            0.0
-          ]
-        },
-        "Render": {
-          "shape": "square",
-          "colorR": 1.0,
-          "colorG": 1.0,
-          "colorB": 1.0,
-          "colorA": 1.0,
-          "hasTex": 1,
-          "texture": "assets/Texture\\Water_ContainerRim.png",
-          "hasAnimation": 0
-        },
-        "CollisionInfo": {
-          "collisionFlag": 1,
-          "autoFitScale": 1,
-          "colliderSize": [
-            6.588000774383545,
-            6.588000774383545
-          ],
-          "colliderPos": [
-            0.0,
-            0.0
-          ],
-          "colliderRot": 0.0,
-          "colliderType": "square",
-          "collisionRes": "StopWhenCollide",
-          "collisionTag": "inventory",
-          "bounciness": 0.0,
-          "friction": 0.0,
-          "colliderType": "square"
         }
       }
     },
@@ -828,7 +828,7 @@
         "Transform": {
           "pos": [
             0.0,
-            -10.0,
+            -9.874999046325684,
             0.4000000059604645
           ],
           "rotation": 0.0,
@@ -893,7 +893,7 @@
           "waterAlpha": 0.699999988079071,
           "subdivisions": 40,
           "width": 40.0,
-          "height": 8.0,
+          "height": 8.25,
           "isTrigger": 1,
           "buoyancyForce": 200.0,
           "waterDrag": 0.9990000128746033,
@@ -907,8 +907,8 @@
       "components": {
         "Transform": {
           "pos": [
-            -6.253969192504883,
-            -6.0186767578125,
+            -5.710330963134766,
+            -5.064756393432617,
             0.0
           ],
           "rotation": 0.0,
@@ -966,6 +966,14 @@
           "bounciness": 0.0,
           "friction": 0.0,
           "colliderType": "square"
+        },
+        "LuaScript": {
+          "scripts": [
+            {
+              "filename": "assets/scripting/buoyancy.lua",
+              "scriptName": "buoyancy"
+            }
+          ]
         }
       }
     },
@@ -1161,11 +1169,11 @@
       "components": {
         "Transform": {
           "pos": [
-            -16.46750831604004,
-            -0.9136728644371033,
+            -16.46161460876465,
+            -0.9762288331985474,
             0.0
           ],
-          "rotation": 13.84044075012207,
+          "rotation": 3.967897891998291,
           "scale": [
             3.200000047683716,
             1.2999999523162842,
@@ -1210,8 +1218,8 @@
       "components": {
         "Transform": {
           "pos": [
-            -17.272998809814453,
-            -0.0009372979402542114,
+            -17.267105102539063,
+            -0.06349325180053711,
             0.0
           ],
           "rotation": 0.0,
