@@ -69,6 +69,14 @@
             "hazards"
           ]
         },
+        "AudioComponent": {
+          "channels": {
+            "default": {
+              "spread": 180.0,
+              "persistOnSceneChange": 0
+            }
+          }
+        },
         "LuaScript": {
           "scripts": [
             {
@@ -85,8 +93,8 @@
       "components": {
         "Transform": {
           "pos": [
-            -17.38416862487793,
-            -0.11850574612617493,
+            -17.297943115234375,
+            -0.05594981461763382,
             0.9980000257492065
           ]
         },
@@ -105,13 +113,68 @@
         "AudioComponent": {
           "channels": {
             "footstep": {
-              "audioFile": "assets/audio/Footsteps2_Gravel-Dirt_far-small_4.wav",
-              "volume": 0.4158000946044922,
-              "pitch": 1.0934213399887085
+              "volume": 0.4467008709907532,
+              "pitch": 1.0633548498153687,
+              "spread": 180.0,
+              "persistOnSceneChange": 0
+            },
+            "footsteps": {
+              "spread": 180.0,
+              "persistOnSceneChange": 0
+            },
+            "jump-audio-1": {
+              "spread": 180.0,
+              "persistOnSceneChange": 0
+            },
+            "jump-audio-10": {
+              "spread": 180.0,
+              "persistOnSceneChange": 0
+            },
+            "jump-audio-11": {
+              "spread": 180.0,
+              "persistOnSceneChange": 0
+            },
+            "jump-audio-2": {
+              "spread": 180.0,
+              "persistOnSceneChange": 0
+            },
+            "jump-audio-3": {
+              "spread": 180.0,
+              "persistOnSceneChange": 0
+            },
+            "jump-audio-4": {
+              "spread": 180.0,
+              "persistOnSceneChange": 0
+            },
+            "jump-audio-5": {
+              "spread": 180.0,
+              "persistOnSceneChange": 0
+            },
+            "jump-audio-6": {
+              "spread": 180.0,
+              "persistOnSceneChange": 0
+            },
+            "jump-audio-7": {
+              "spread": 180.0,
+              "persistOnSceneChange": 0
+            },
+            "jump-audio-8": {
+              "spread": 180.0,
+              "persistOnSceneChange": 0
+            },
+            "jump-audio-9": {
+              "spread": 180.0,
+              "persistOnSceneChange": 0
             },
             "landing": {
-              "volume": 0.8302910327911377,
-              "pitch": 1.0411056280136108
+              "volume": 0.8824200630187988,
+              "pitch": 0.926619827747345,
+              "spread": 180.0,
+              "persistOnSceneChange": 0
+            },
+            "refill": {
+              "spread": 180.0,
+              "persistOnSceneChange": 0
             }
           }
         },
@@ -289,6 +352,62 @@
       }
     },
     {
+      "prefabid": "8b8d44fa-ed22-4288-98ee-c476958f5b5b",
+      "name": "endgoal(23)",
+      "components": {
+        "Transform": {
+          "pos": [
+            18.251070022583008,
+            -3.3468639850616455,
+            0.0
+          ]
+        },
+        "Render": {
+          "colorR": 1.0,
+          "colorG": 1.0,
+          "colorB": 1.0,
+          "colorA": 1.0,
+          "hasTex": 1,
+          "texture": "assets/Texture\\endgoal.png",
+          "hasAnimation": 0
+        },
+        "Physics": {
+          "autoUpdate": 0,
+          "maxFallSpeed": -30.0,
+          "groundAccelForce": 20.0,
+          "airAccelForce": 8.0,
+          "apexHangMul": 0.20000000298023224,
+          "jumpBufferTime": 0.15000000596046448,
+          "coyoteTime": 0.15000000596046448,
+          "ledgeAssistRange": 0.800000011920929,
+          "ledgeClimbSpeed": 8.0,
+          "freezeRotation": 1,
+          "angularDrag": 0.9800000190734863,
+          "inertiaOverride": 0.0
+        },
+        "CollisionInfo": {
+          "colliderPos": [
+            0.0,
+            0.0
+          ],
+          "colliderRot": 0.0,
+          "bounciness": 0.0,
+          "friction": 0.0
+        },
+        "AudioComponent": {
+          "channels": {
+            "change": {
+              "spread": 180.0,
+              "persistOnSceneChange": 0
+            }
+          }
+        },
+        "VisualLC": {
+          "filename": "endgoal04.json"
+        }
+      }
+    },
+    {
       "name": "water balance back",
       "components": {
         "Transform": {
@@ -332,54 +451,6 @@
           "bounciness": 0.0,
           "friction": 0.0,
           "colliderType": "square"
-        }
-      }
-    },
-    {
-      "prefabid": "8b8d44fa-ed22-4288-98ee-c476958f5b5b",
-      "name": "endgoal(23)",
-      "components": {
-        "Transform": {
-          "pos": [
-            18.251070022583008,
-            -3.3468639850616455,
-            0.0
-          ]
-        },
-        "Render": {
-          "colorR": 1.0,
-          "colorG": 1.0,
-          "colorB": 1.0,
-          "colorA": 1.0,
-          "hasTex": 1,
-          "texture": "assets/Texture\\endgoal.png",
-          "hasAnimation": 0
-        },
-        "Physics": {
-          "autoUpdate": 0,
-          "maxFallSpeed": -30.0,
-          "groundAccelForce": 20.0,
-          "airAccelForce": 8.0,
-          "apexHangMul": 0.20000000298023224,
-          "jumpBufferTime": 0.15000000596046448,
-          "coyoteTime": 0.15000000596046448,
-          "ledgeAssistRange": 0.800000011920929,
-          "ledgeClimbSpeed": 8.0,
-          "freezeRotation": 1,
-          "angularDrag": 0.9800000190734863,
-          "inertiaOverride": 0.0
-        },
-        "CollisionInfo": {
-          "colliderPos": [
-            0.0,
-            0.0
-          ],
-          "colliderRot": 0.0,
-          "bounciness": 0.0,
-          "friction": 0.0
-        },
-        "VisualLC": {
-          "filename": "endgoal04.json"
         }
       }
     },
@@ -740,6 +811,14 @@
           "colliderRot": 0.0,
           "bounciness": 0.0,
           "friction": 0.0
+        },
+        "AudioComponent": {
+          "channels": {
+            "drop": {
+              "spread": 180.0,
+              "persistOnSceneChange": 0
+            }
+          }
         }
       }
     },
@@ -1082,11 +1161,11 @@
       "components": {
         "Transform": {
           "pos": [
-            -16.553733825683594,
-            -0.9765769839286804,
-            0.0010000000474974513
+            -16.46750831604004,
+            -0.9136728644371033,
+            0.0
           ],
-          "rotation": 12.815719604492188,
+          "rotation": 13.84044075012207,
           "scale": [
             3.200000047683716,
             1.2999999523162842,
@@ -1109,6 +1188,14 @@
           "texture": "assets/Texture\\Water_Gun.png",
           "hasAnimation": 0
         },
+        "LuaScript": {
+          "scripts": [
+            {
+              "filename": "./assets/scripting\\weapon.lua",
+              "scriptName": "weapon"
+            }
+          ]
+        },
         "WeaponComponent": {
           "barrelOffset": [
             1.0,
@@ -1123,8 +1210,8 @@
       "components": {
         "Transform": {
           "pos": [
-            -15.873016357421875,
-            -0.06349322944879532,
+            -17.272998809814453,
+            -0.0009372979402542114,
             0.0
           ],
           "rotation": 0.0,
