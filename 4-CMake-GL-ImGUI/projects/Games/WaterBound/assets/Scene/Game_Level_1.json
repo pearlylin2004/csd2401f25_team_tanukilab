@@ -254,7 +254,7 @@
     },
     {
       "prefabid": "b766d355-2b28-4a0d-b54e-6e4407e18596",
-      "name": "player(24)",
+      "name": "player",
       "components": {
         "Transform": {
           "pos": [
@@ -453,7 +453,7 @@
             1.0,
             0.0
           ],
-          "parentName": "player(24)",
+          "parentName": "player",
           "localOffset": [
             0.5424397587776184,
             -0.5367889404296875

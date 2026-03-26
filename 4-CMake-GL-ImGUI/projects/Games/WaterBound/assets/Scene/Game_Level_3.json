@@ -426,12 +426,12 @@
     },
     {
       "prefabid": "b766d355-2b28-4a0d-b54e-6e4407e18596",
-      "name": "player(38)",
+      "name": "player",
       "components": {
         "Transform": {
           "pos": [
-            -16.50691795349121,
-            -5.077738285064697,
+            -17.495912551879883,
+            -4.2259697914123535,
             0.9980000257492065
           ]
         },
@@ -446,9 +446,6 @@
         },
         "Physics": {
           "autoUpdate": 0
-        },
-        "StateMachine": {
-          "facingRight": 0
         },
         "LuaScript": {
           "scripts": [
@@ -656,7 +653,7 @@
             1.0,
             0.0
           ],
-          "parentName": "player(38)",
+          "parentName": "player",
           "localOffset": [
             0.5494471192359924,
             -0.46986818313598633
