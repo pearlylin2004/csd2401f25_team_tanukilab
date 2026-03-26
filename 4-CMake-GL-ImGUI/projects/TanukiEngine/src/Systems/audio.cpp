@@ -593,22 +593,16 @@ void AudioHandler::requestBGM(const std::string& channelName, GameObjectManager&
 	std::vector<GameObject*> objs;
 	manager.getAllGameObjects(objs);
 
-	std::cout << "\n\nrequesting bgm - total objs: " << objs.size() << std::endl;
 
 	for (GameObject* obj : objs) {
 		if (!obj->hasComponent<AudioComponent>()) continue;
 		AudioComponent* ac = obj->getComponent<AudioComponent>();
-		std::cout << "checking if has " << channelName << "\n\n";
 		if (!ac->hasChannel(channelName)) continue;
-
-		std::cout << "has and get or create " << channelName << "\n\n";
 
 		AudioChannel* ch = ac->getOrCreateChannel(channelName);
 
 		// skip if alr playing this channel
 		if (ch->channel && ch->channel == m_bgmChannel) return;
-		std::cout << "not playing " << channelName << "\n\n";
-
 
 		if (m_bgmChannel) {
 			bool isPlaying = false;
@@ -676,7 +670,6 @@ FMOD::Channel* AudioHandler::playBGMSound(AudioChannel* audio) {
 	FMODErrorCheck(system->playSound(sound, m_bgmGroup, false, &channel));
 	if (channel) {
 		channel->setVolume(audio->volume);
-		std::cerr << "\n\n[BGM] Playing: " << audio->audioFile << " vol=" << audio->volume << std::endl;
 	}
 	return channel;
 }
