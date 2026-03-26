@@ -478,96 +478,7 @@ void AudioHandler::stopFade(AudioChannel* audio) {
 	audio->fadeInfo.isFading = false;
 }
 
-//void AudioHandler::updateFades(float deltaTime) {
-//
-//	//if (system) {
-//	//	system->getSoftwareFormat(&rate, nullptr, nullptr);
-//	//}
-//
-//	for (size_t i = 0; i < fadeInfo.size(); ++i) {
-//		if (!fadeInfo[i].isFading || !channels[i]) {
-//			continue;
-//		}
-//
-//
-//		fadeInfo[i].fadeTimer += deltaTime;
-//
-//		float progress = fadeInfo[i].fadeTimer / fadeInfo[i].fadeDuration;
-//		if (progress > 1.0f) progress = 1.0f;
-//
-//		float currentVolume;
-//		if (fadeInfo[i].isFadingIn) {
-//			currentVolume = fadeInfo[i].startVolume + (fadeInfo[i].targetVolume - fadeInfo[i].startVolume) * progress;
-//			std::cerr << "sound fading" << currentVolume << std::endl;
-//		}
-//		else {
-//			currentVolume = fadeInfo[i].startVolume + (fadeInfo[i].targetVolume - fadeInfo[i].startVolume) * progress;
-//		}
-//
-//		FMODErrorCheck(channels[i]->setVolume(currentVolume));
-//
-//		if (progress >= 1.0f) {
-//			fadeInfo[i].isFading = false;
-//
-//			if (!fadeInfo[i].isFadingIn && fadeInfo[i].targetVolume == 0.0f) {
-//				channels[i]->stop();
-//				channels[i] = nullptr;
-//			}
-//		}
-//	}
-//}
-
-/* HELPER FUNCTION */
-// helper function to convert soundID to file path
-//std::string AudioHandler::soundIDToFilePath(soundID id) {
-//	// for now file paths are hardcoded, to change once deserialization is implemented
-//	switch (id) {
-//	case soundID::water:
-//		return "assets/audio/water.wav";
-//	case soundID::shoot:
-//		return "assets/audio/underwater.wav";
-//	case soundID::fire:
-//		return "assets/audio/fire.wav";
-//	case soundID::bg:
-//		return "assets/audio/bg.wav";
-//	default:
-//		return "";
-//	}
-//}
-
-//pause all sounds
-//void AudioHandler::pauseAll()
-//{
-//	if (!system) return;
-//
-//	for (auto channel : channels) {
-//		if (channel) {
-//			bool isPlaying = false;
-//			channel->isPlaying(&isPlaying);
-//			if (isPlaying) {
-//				channel->setPaused(true);
-//			}
-//		}
-//	}
-//}
-
-//resume all sounds
-//void AudioHandler::resumeAll() {
-//	if (!system) return;
-//
-//	for (auto channel : channels) {
-//		if (channel) {
-//			bool isPaused = false;
-//			channel->getPaused(&isPaused);
-//			if (isPaused) {
-//				channel->setPaused(false);
-//			}
-//		}
-//	}
-//}
-
-
-// Setters for audiio fading
+// Setters for audio fading
 void AudioHandler::setFadeInDuration(AudioChannel* audio, float duration) {
 	//size_t pos = static_cast<size_t>(id);
 
@@ -682,32 +593,34 @@ void AudioHandler::requestBGM(const std::string& channelName, GameObjectManager&
 	std::vector<GameObject*> objs;
 	manager.getAllGameObjects(objs);
 
+	std::cout << "\n\nrequesting bgm - total objs: " << objs.size() << std::endl;
+
 	for (GameObject* obj : objs) {
 		if (!obj->hasComponent<AudioComponent>()) continue;
 		AudioComponent* ac = obj->getComponent<AudioComponent>();
+		std::cout << "checking if has " << channelName << "\n\n";
 		if (!ac->hasChannel(channelName)) continue;
+
+		std::cout << "has and get or create " << channelName << "\n\n";
 
 		AudioChannel* ch = ac->getOrCreateChannel(channelName);
 
 		// skip if alr playing this channel
-		if (m_bgmChannel && ch->channel == m_bgmChannel) return;
+		if (ch->channel && ch->channel == m_bgmChannel) return;
+		std::cout << "not playing " << channelName << "\n\n";
 
-		// fade out current bgm
-		//if (m_bgmChannel) {
-		//	bool isPaused = false;
-		//	m_bgmChannel->getPaused(&isPaused);
-		//	if (!isPaused) {
-		//		// fade out over 1 sec then stop
-		//		m_bgmChannel->setVolume(0.f);
-		//		m_bgmChannel->stop();
-		//	}
-		//	m_bgmChannel = nullptr;
-		//}
+
+		if (m_bgmChannel) {
+			bool isPlaying = false;
+			m_bgmChannel->isPlaying(&isPlaying);
+			if (isPlaying && m_currentBGMFile == ch->audioFile) return;  // ← check by file
+		}
 
 		resetBGM();
 
 		// play new bgm under bgm group
 		m_bgmChannel = playBGMSound(ch);
+		m_currentBGMFile = ch->audioFile;
 		return;
 	}
 }
@@ -717,6 +630,8 @@ void AudioHandler::resetBGM() {
 		m_bgmChannel->stop();
 		m_bgmChannel = nullptr;
 	}
+
+	m_currentBGMFile.clear();
 }
 
 FMOD::Channel* AudioHandler::playPreviewSound(AudioChannel* audio) {
@@ -759,6 +674,9 @@ FMOD::Channel* AudioHandler::playBGMSound(AudioChannel* audio) {
 	if (!sound) return nullptr;
 	FMOD::Channel* channel = nullptr;
 	FMODErrorCheck(system->playSound(sound, m_bgmGroup, false, &channel));
-	if (channel) channel->setVolume(audio->volume);
+	if (channel) {
+		channel->setVolume(audio->volume);
+		std::cerr << "\n\n[BGM] Playing: " << audio->audioFile << " vol=" << audio->volume << std::endl;
+	}
 	return channel;
 }

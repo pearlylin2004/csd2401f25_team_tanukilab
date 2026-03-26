@@ -1791,3 +1791,24 @@ void LuaSystem::callSceneLoad(GameObjectManager& manager, const std::string& scr
         lua_pop(L, 1);
     }
 }
+
+void LuaSystem::initializeScripts(GameObjectManager& manager) {
+    if (!L) return;
+
+    std::vector<GameObject*> gameObjects;
+    manager.getAllGameObjects(gameObjects);
+
+    for (GameObject* obj : gameObjects) {
+        if (!obj->hasComponent<LuaScript>()) continue;
+
+        LuaScript* scriptComp = obj->getComponent<LuaScript>();
+
+        for (auto& entry : scriptComp->scripts) {
+            if (!entry.filename.empty() && !entry.scriptName.empty()) {
+                loadScriptForObject(entry.filename, entry.scriptName);
+                entry.changed = false;
+            }
+        }
+        scriptComp->scriptsChanged = false;
+    }
+}

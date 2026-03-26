@@ -421,6 +421,9 @@ void GUISystem::loadScreenNoButton(GameObjectManager& manager, const std::string
     manager.loadScene(runtimeScenePath(sceneName));
     manager.initializeSceneResources();
     if (m_onSceneLoadCallback) m_onSceneLoadCallback(*g_manager);
+
+    g_visualLogicSystem->resetLogicState();
+    g_visualLogicSystem->initAll(*g_manager);
 }
 
 

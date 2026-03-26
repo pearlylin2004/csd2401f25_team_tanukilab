@@ -508,6 +508,7 @@ void CoreEngine::loadInitialScene(const std::string& sceneName) {
     std::string fullPath = PathManager::Instance().getSourceScenePath() + sceneName;
     m_manager->loadScene(fullPath);
     m_manager->initializeSceneResources();
+    GUISystem::getInstance().triggerSceneLoad(*m_manager);
 }
 
 //void CoreEngine::startBGM() {

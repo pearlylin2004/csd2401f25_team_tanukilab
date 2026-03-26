@@ -23,6 +23,7 @@
       "updatable": 1
     }
   ],
+  "onLoadScript": "assets/scripting\\game_level_load.lua",
   "objects": [
     {
       "name": "Game_BGM",

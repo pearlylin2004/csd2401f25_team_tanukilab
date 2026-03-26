@@ -203,7 +203,7 @@ function player.Update(obj, dt)
     shootTimer = shootTimer + dt
     setShootTimer(obj, shootTimer)
 
-    if not isMouseLeftHeld() or not isSceneHovered() then
+    if not isMouseLeftHeld() or (isEditorOpen() and not isSceneHovered()) then
         setShootTimer(obj, getFireRate(obj))
         return
     end

@@ -50,6 +50,7 @@ public:
 
 	/* -------- On Scene Load ---- */
 	void callSceneLoad(GameObjectManager& manager, const std::string& scriptFile);
+	void initializeScripts(GameObjectManager& manager);
 
 	/* -------- Register Game Script -------- */
 	void registerGameBinding(const std::string& name, lua_CFunction fn);

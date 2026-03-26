@@ -367,7 +367,7 @@
               "volume": 0.14000000059604645,
               "pitch": 1.0,
               "loop": 1,
-              "playOnStart": 1,
+              "playOnStart": 0,
               "muted": 0,
               "fadeInOnStart": 1,
               "fadeInDuration": 1.909999966621399,

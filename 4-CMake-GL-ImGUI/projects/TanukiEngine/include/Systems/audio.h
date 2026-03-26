@@ -173,6 +173,8 @@ private:
 	FMOD::ChannelGroup* m_gameGroup = nullptr;  // all gameplay audio goes here
 	FMOD::ChannelGroup* m_bgmGroup = nullptr;
 
+	std::string m_currentBGMFile = "";
+
 	float m_musicVolume = 1.0f;
 	float m_sfxVolume = 1.0f;
 	float m_bgmBaseVolume = 0.125f;

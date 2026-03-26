@@ -24,6 +24,7 @@ public:
 
     void onSceneLoad(GameObjectManager& manager) override {
         m_lua.callSceneLoad(manager, manager.getOnLoadScript());
+        m_lua.initializeScripts(manager);
     }
 
     void update(GameObject& obj, float dt) override {
