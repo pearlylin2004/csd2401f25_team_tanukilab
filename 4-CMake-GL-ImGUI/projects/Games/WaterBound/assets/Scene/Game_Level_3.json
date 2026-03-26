@@ -649,7 +649,7 @@
             -5.537945747375488,
             0.0
           ],
-          "rotation": 17.828067779541016,
+          "rotation": 29.884000778198242,
           "scale": [
             2.0,
             1.0,
@@ -675,7 +675,7 @@
         "LuaScript": {
           "scripts": [
             {
-              "filename": "C:\\Users\\Kelly\\Documents\\GitHub\\csd2401f25_team_tanukilab\\4-CMake-GL-ImGUI\\projects\\Games\\WaterBound/assets/scripting/weapon.lua",
+              "filename": "assets/scripting/weapon.lua",
               "scriptName": "weapon"
             }
           ]
@@ -748,13 +748,13 @@
               "id": "assets/Texture\\Tilemap\\Sakura\\tile009.png"
             },
             {
-              "x": 7,
-              "y": -4,
+              "x": 6,
+              "y": -2,
               "id": "assets/Texture\\Tilemap\\Sakura\\tile009.png"
             },
             {
-              "x": 6,
-              "y": -2,
+              "x": 7,
+              "y": -4,
               "id": "assets/Texture\\Tilemap\\Sakura\\tile009.png"
             },
             {
@@ -1366,13 +1366,13 @@
               "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
             },
             {
-              "x": 6,
-              "y": -2,
+              "x": 7,
+              "y": -4,
               "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
             },
             {
-              "x": 7,
-              "y": -4,
+              "x": 6,
+              "y": -2,
               "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
             },
             {

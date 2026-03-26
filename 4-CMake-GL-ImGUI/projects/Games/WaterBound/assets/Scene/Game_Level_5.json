@@ -258,7 +258,7 @@
             -1.6520887613296509,
             0.0
           ],
-          "rotation": -23.745845794677734,
+          "rotation": 0.0,
           "scale": [
             1.5,
             0.75,
@@ -284,7 +284,7 @@
         "LuaScript": {
           "scripts": [
             {
-              "filename": "C:\\Users\\Kelly\\Documents\\GitHub\\csd2401f25_team_tanukilab\\4-CMake-GL-ImGUI\\projects\\Games\\WaterBound/assets/scripting/weapon.lua",
+              "filename": "assets/scripting/weapon.lua",
               "scriptName": "weapon"
             }
           ]

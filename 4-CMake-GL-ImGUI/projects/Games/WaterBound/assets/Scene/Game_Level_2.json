@@ -552,7 +552,7 @@
         "LuaScript": {
           "scripts": [
             {
-              "filename": "C:\\Users\\Kelly\\Documents\\GitHub\\csd2401f25_team_tanukilab\\4-CMake-GL-ImGUI\\projects\\Games\\WaterBound/assets/scripting/weapon.lua",
+              "filename": "assets/scripting/weapon.lua",
               "scriptName": "weapon"
             }
           ]
@@ -1023,13 +1023,13 @@
               "id": "assets/Texture\\Tilemap\\Forest\\tile005.png"
             },
             {
-              "x": 2,
-              "y": -1,
+              "x": 12,
+              "y": -5,
               "id": "assets/Texture\\Tilemap\\Forest\\tile005.png"
             },
             {
-              "x": 12,
-              "y": -5,
+              "x": 2,
+              "y": -1,
               "id": "assets/Texture\\Tilemap\\Forest\\tile005.png"
             },
             {
@@ -1539,7 +1539,6 @@
           "hasAnimation": 0
         },
         "Physics": {
-          "physicsFlag": 1,
           "autoUpdate": 1,
           "maxFallSpeed": -30.0,
           "groundAccelForce": 20.0,
