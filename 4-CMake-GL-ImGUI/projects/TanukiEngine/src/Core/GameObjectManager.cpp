@@ -1218,7 +1218,7 @@ void GameObjectManager::saveSceneToJson(const std::string& filename, bool isNew)
 
 		doc.AddMember("layers", layersArr, a);
 	
-		bool bulletSerialized = false;
+		//bool bulletSerialized = false;
 		// objects array
 		rapidjson::Value objects(rapidjson::kArrayType);
 
@@ -1229,19 +1229,21 @@ void GameObjectManager::saveSceneToJson(const std::string& filename, bool isNew)
 		for (auto const& kv : m_gameObjects) {
 			const GameObject* obj = kv.second.get();
 
+			if (obj->isExcludeFromSave()) continue;
+
 			std::string objName = obj->getObjectName();
 
 			// if its a clone of bullet, serialize only the first one
-			if (obj->getObjectPrefabID() == "b1a12273-a692-4ce0-8072-156da2c70842") {
-				// if its a bullet, change name to bullet
-				if (!bulletSerialized) {
-					objName = "bullet";
-					bulletSerialized = true;
-				}
-				else {
-					continue;
-				}
-			}
+			//if (obj->getObjectPrefabID() == "b1a12273-a692-4ce0-8072-156da2c70842") {
+			//	// if its a bullet, change name to bullet
+			//	if (!bulletSerialized) {
+			//		objName = "bullet";
+			//		bulletSerialized = true;
+			//	}
+			//	else {
+			//		continue;
+			//	}
+			//}
 
 			rapidjson::Value jObj(rapidjson::kObjectType);
 

@@ -245,6 +245,7 @@ public:
 	static int Lua_cloneGameObject(lua_State* L);
 	static int Lua_renameGameObject(lua_State* L);
 	static int Lua_setActive(lua_State* L);
+	static int Lua_setExcludeFromSave(lua_State* L);
 
 
 private:

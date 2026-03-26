@@ -14,6 +14,8 @@ function onSceneLoad()
         if not getGameObject(name) then
             local cloned = cloneGameObject("bullet", name)
             if cloned then
+                setExcludeFromSave(cloned, true) --do not serialize cloned bullet obj
+
                 setActive(cloned, false)
                 setPosition(cloned, -1000, -1000)
                 setDynPos(cloned, -1000, -1000)

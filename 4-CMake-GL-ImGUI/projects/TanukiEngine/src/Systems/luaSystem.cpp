@@ -1652,6 +1652,15 @@ int LuaSystem::Lua_setActive(lua_State* L) {
     return 0;
 }
 
+int LuaSystem::Lua_setExcludeFromSave(lua_State* L) {
+    GameObject* obj = static_cast<GameObject*>(lua_touserdata(L, 1));
+    if (!obj) return 0;
+
+    obj->setExcludeFromSave(lua_toboolean(L, 2) != 0);
+
+    return 0;
+}
+
 
 
 void LuaSystem::registerManagerBindings(GameObjectManager& manager) {
@@ -1686,6 +1695,7 @@ void LuaSystem::registerManagerBindings(GameObjectManager& manager) {
     lua_register(L, "getParentName", Lua_getParentName);
     lua_register(L, "hasWeaponComponent", Lua_hasWeaponComponent);
     lua_register(L, "setActive", Lua_setActive);
+    lua_register(L, "setExcludeFromSave", Lua_setExcludeFromSave);
 }
 
 

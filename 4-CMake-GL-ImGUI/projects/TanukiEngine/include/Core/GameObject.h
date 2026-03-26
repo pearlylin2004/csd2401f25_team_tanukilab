@@ -104,6 +104,9 @@ public:
     bool checkAutoMove() { return autoMove;  }
     void changeAutoMove(bool temp) { autoMove = temp; }
 
+    bool isExcludeFromSave() const { return excludeFromSave; }
+    void setExcludeFromSave(bool e) { excludeFromSave = e; }
+
 	//remove component of type T
     template <typename T>
     bool removeComponent() {
@@ -119,6 +122,7 @@ private:
     std::string m_name;//name of object
     std::string m_prefabID; // optional, empty if created without prefab
     bool autoMove;
+    bool excludeFromSave = false; // true means do not serialize
 
 	// Map of components attached to the game object
     std::unordered_map<std::type_index, std::unique_ptr<Component>> m_components;
