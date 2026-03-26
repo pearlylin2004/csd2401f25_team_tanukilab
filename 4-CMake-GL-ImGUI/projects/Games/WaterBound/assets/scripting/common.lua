@@ -4,3 +4,5 @@
 
 -- load collision handlers
 dofile("./assets/scripting/collision.lua")
+
+return {}

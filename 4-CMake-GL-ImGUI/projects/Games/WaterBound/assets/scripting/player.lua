@@ -23,13 +23,15 @@ local function getS(obj)
             landingTimer    = 0.0,
             initialized     = false,
             lastFrame       = -1,
-            lastSoundIdx    = -1
+            lastSoundIdx    = -1,
+            lastPlatformX = nil,
+            lastPlatformY = nil
         }
     end
     return objState[obj]
 end
 
--- helper func to find bullet
+-- helper func to find bullet 
 local function findBullet()
     local objs = getAllObjects()
     for i = 1, #objs do
@@ -113,6 +115,7 @@ function player.Update(obj, dt)
         end
     end
 
+
     -- ledge climb
     if getLedgeClimb(obj) then
         local x, y = getPosition(obj)
@@ -137,6 +140,7 @@ function player.Update(obj, dt)
         end
     end
 
+
     -- movement (left and right)
     local targetVelX = 0.0
 
@@ -150,6 +154,7 @@ function player.Update(obj, dt)
         SendInputEvent("D", 0, 0)
     end
 
+
     -- flip to face mouse when not moving
     if not Input_isKeyHeld("A") and not Input_isKeyHeld("D") then
         if not isEditorOpen() or isSceneHovered() then
@@ -159,6 +164,7 @@ function player.Update(obj, dt)
         end
     end
 
+
     -- damping + position
     local friction = getFriction(obj)
     applyDamping(obj, friction, targetVelX, dt)
@@ -166,6 +172,42 @@ function player.Update(obj, dt)
         updatePosition(obj, dt)
         local px, py = getPosition(obj)
     end
+
+
+    -- moving platform detection
+    local platform = nil
+    if isOnGround(obj) then
+        local allObjs = getAllObjects()
+        local px, py = getPosition(obj)
+        for i = 1, #allObjs do
+            local o = allObjs[i]
+            if getCollisionTag(o) == "platform" then
+                local ox, oy = getPosition(o)
+                local dx = math.abs(ox - px)
+                local dy = (oy - py)
+                local px2, py2 = getPosition(obj)
+
+                if dx < 4.0 and dy > -3.0 and dy < 0.5 then
+                    platform = o
+                    break
+                end
+            end
+        end
+    end
+
+    if platform then
+        local ox, oy = getPosition(platform)
+        if s.lastPlatformX ~= nil then
+            local pdx = ox - s.lastPlatformX
+            local x, y = getPosition(obj)
+            setPosition(obj, x + pdx, y)
+            setDynPos(obj, x + pdx, y)
+        end
+        s.lastPlatformX = ox
+    else
+        s.lastPlatformX = nil
+    end
+
 
     -- FSM state update
     local velY = getVelY(obj)
@@ -258,7 +300,7 @@ function player.Update(obj, dt)
         local candidate = allObjs[i]
         if hasWeaponComponent(candidate) and getParentName(candidate) == getObjectName(obj) then
             spawnObj = candidate
-            break
+            break 
         end
     end
 

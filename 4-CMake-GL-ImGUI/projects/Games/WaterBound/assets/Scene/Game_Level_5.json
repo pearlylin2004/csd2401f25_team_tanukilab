@@ -156,7 +156,19 @@
             "footstep": {
               "audioFile": "assets/audio/Footsteps2_Gravel-Dirt_far-small_1.wav",
               "volume": 0.4089653789997101,
-              "pitch": 1.0366997718811035
+              "pitch": 1.0366997718811035,
+              "loop": 0,
+              "playOnStart": 0,
+              "muted": 0,
+              "fadeInOnStart": 0,
+              "fadeInDuration": 1.0,
+              "fadeOutOnStop": 0,
+              "fadeOutDuration": 1.0,
+              "isSpatial": 0,
+              "minDistance": 1.0,
+              "maxDistance": 100.0,
+              "spread": 180.0,
+              "persistOnSceneChange": 0
             },
             "jump-audio-10": {
               "persistOnSceneChange": 1
@@ -1351,7 +1363,7 @@
           "colliderRot": 0.0,
           "colliderType": "square",
           "collisionRes": "StopWhenCollide",
-          "collisionTag": "default",
+          "collisionTag": "platform",
           "bounciness": 0.0,
           "friction": 0.0,
           "colliderType": "square"

@@ -25,3 +25,5 @@ function onSceneLoad()
         end
     end
 end
+
+return {}
