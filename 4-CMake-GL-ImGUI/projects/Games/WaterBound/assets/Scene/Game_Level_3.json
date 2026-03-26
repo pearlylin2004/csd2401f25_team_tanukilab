@@ -71,7 +71,7 @@
         "Transform": {
           "pos": [
             -1000.0,
-            -1001.4071044921875,
+            -1002.85791015625,
             0.0
           ]
         },
@@ -430,8 +430,8 @@
       "components": {
         "Transform": {
           "pos": [
-            -17.495912551879883,
-            -4.2259697914123535,
+            -18.257816314697266,
+            -5.2259697914123535,
             0.9980000257492065
           ]
         },
@@ -637,8 +637,7 @@
           "hasAnimation": 0
         }
       }
-    },
-    {
+    },{
       "name": "watergun",
       "components": {
         "Transform": {
@@ -746,13 +745,13 @@
               "id": "assets/Texture\\Tilemap\\Sakura\\tile009.png"
             },
             {
-              "x": 6,
-              "y": -2,
+              "x": 7,
+              "y": -4,
               "id": "assets/Texture\\Tilemap\\Sakura\\tile009.png"
             },
             {
-              "x": 7,
-              "y": -4,
+              "x": 6,
+              "y": -2,
               "id": "assets/Texture\\Tilemap\\Sakura\\tile009.png"
             },
             {
@@ -1364,13 +1363,13 @@
               "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
             },
             {
-              "x": 7,
-              "y": -4,
+              "x": 6,
+              "y": -2,
               "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
             },
             {
-              "x": 6,
-              "y": -2,
+              "x": 7,
+              "y": -4,
               "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
             },
             {
