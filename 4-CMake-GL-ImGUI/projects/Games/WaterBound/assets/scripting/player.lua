@@ -266,7 +266,7 @@ function player.Update(obj, dt)
     local my = isEditorOpen() and getEditorMouseWorldY() or getMouseWorldY()
 
     -- shoot
-    playSound(bullet, "shoot")
+    playSound(bullet, "default")
     local bx, by = getPosition(spawnObj)
     local dx = mx - bx
     local dy = my - by
