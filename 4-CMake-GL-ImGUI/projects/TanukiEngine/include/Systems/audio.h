@@ -155,6 +155,10 @@ public:
 	// Register the BGM channel so setMusicVolume can update it live
 	void registerBGMChannel(FMOD::Channel* channel) { m_bgmChannel = channel; }
 
+	void requestBGM(const std::string& channelName, GameObjectManager& manager);
+
+	void resetBGM();
+
 	FMOD::Channel* playPreviewSound(AudioChannel* audio);
 	void stopAllPreviews();  // stops the entire preview group atomically — no iteration needed
 

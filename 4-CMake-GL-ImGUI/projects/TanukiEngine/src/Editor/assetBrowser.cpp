@@ -150,7 +150,9 @@ void AssetBrowser::render() {
             if (ImGui::BeginDragDropTarget()) {
                 if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("ASSET")) {
                     std::string srcPath(static_cast<const char*>(payload->Data));
-                    std::filesystem::path src(srcPath);
+                    //std::filesystem::path src(srcPath);
+                    std::filesystem::path src = std::filesystem::path(m_AssetBrowserState.currentFolder).parent_path() / srcPath;
+
                     std::filesystem::path destDir =
                         std::filesystem::path(m_AssetBrowserState.currentFolder)
                         / m_AssetBrowserState.currentViewFolder

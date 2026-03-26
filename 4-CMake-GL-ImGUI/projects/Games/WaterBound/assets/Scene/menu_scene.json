@@ -23,6 +23,7 @@
       "updatable": 1
     }
   ],
+  "onLoadScript": "assets/scripting\\menu_scene_load.lua",
   "objects": [
     {
       "name": "audio_button",
@@ -376,7 +377,7 @@
               "minDistance": 1.0,
               "maxDistance": 100.0,
               "spread": 180.0,
-              "persistOnSceneChange": 0
+              "persistOnSceneChange": 1
             }
           }
         }

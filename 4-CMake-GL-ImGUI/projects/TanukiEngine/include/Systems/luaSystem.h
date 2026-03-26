@@ -49,7 +49,7 @@ public:
 
 
 	/* -------- On Scene Load ---- */
-	void callSceneLoad(GameObjectManager& manager);
+	void callSceneLoad(GameObjectManager& manager, const std::string& scriptFile);
 
 	/* -------- Register Game Script -------- */
 	void registerGameBinding(const std::string& name, lua_CFunction fn);
@@ -179,6 +179,7 @@ public:
 	static int Lua_stopSound(lua_State* L);
 	static int Lua_setSoundVolume(lua_State* L);
 	static int Lua_isSoundPlaying(lua_State* L);
+	static int Lua_requestBGM(lua_State* L);
 
 
 	/* -------- Visual Script -------- */

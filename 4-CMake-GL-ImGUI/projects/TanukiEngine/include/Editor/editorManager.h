@@ -362,7 +362,16 @@ private:
 	static bool s_isSceneHovered;
 };
 
+class ScenePropertiesWindow {
+public:
+	ScenePropertiesWindow(GameObjectManager& manager, Editor::SceneState& sceneState)
+		: m_manager(manager), m_sceneState(sceneState) {}
 
+	void render();
+private:
+	GameObjectManager& m_manager;
+	Editor::SceneState& m_sceneState;
+};
 
 
 
@@ -403,6 +412,7 @@ private:
 	MenuBar menuBar;
 	PerformanceWindow performanceWindow;
 	SceneWindow sceneWindow;
+	ScenePropertiesWindow scenePropertiesWindow;
 
 	GameObjectManager& m_manager;
 

@@ -1230,6 +1230,17 @@ int LuaSystem::Lua_isSoundPlaying(lua_State* L) {
     return 1;
 }
 
+int LuaSystem::Lua_requestBGM(lua_State* L) {
+    const char* channelName = lua_tostring(L, 1);
+    if (!channelName) return 0;
+
+    GameObjectManager* mgr = static_cast<GameObjectManager*>(lua_touserdata(L, lua_upvalueindex(1)));
+    if (mgr)
+        AudioHandler::getInstance().requestBGM(channelName, *mgr);
+
+    return 0;
+}
+
 
 /* ---- visual script ---- */
 int LuaSystem::Lua_getVSGlobalFloat(lua_State* L) {
@@ -1646,6 +1657,10 @@ void LuaSystem::registerManagerBindings(GameObjectManager& manager) {
     lua_pushcclosure(L, Lua_renameGameObject, 1);
     lua_setglobal(L, "renameGameObject");
 
+    lua_pushlightuserdata(L, &manager);
+    lua_pushcclosure(L, Lua_requestBGM, 1);
+    lua_setglobal(L, "requestBGM");
+
     // things that doesnt need manager
     lua_register(L, "getObjectName", Lua_getObjectName);
     lua_register(L, "getCollisionTag", Lua_getCollisionTag);
@@ -1760,10 +1775,15 @@ void LuaSystem::update(GameObjectManager& manager, float deltaTime) {
     }
 }
 
-void LuaSystem::callSceneLoad(GameObjectManager& manager) {
-    if (!L) return;
-    std::string path = std::string(RUNTIME_SCRIPT_DIR_R) + "/scene.lua";
-    luaL_dofile(L, path.c_str());
+void LuaSystem::callSceneLoad(GameObjectManager& manager, const std::string& scriptFile) {
+    if (!L || scriptFile.empty()) return;
+    std::string path = "./" + scriptFile;
+    if (luaL_dofile(L, path.c_str()) != LUA_OK) {
+        std::cerr << "Lua scene load error: " << lua_tostring(L, -1) << std::endl;
+        lua_pop(L, 1);
+        return;
+    }
+
     lua_getglobal(L, "onSceneLoad");
     if (!lua_isfunction(L, -1)) { lua_pop(L, 1); return; }
     if (lua_pcall(L, 0, 0, 0) != LUA_OK) {

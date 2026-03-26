@@ -677,6 +677,48 @@ void AudioHandler::setMasterVolume(float vol) {
     }
 }
 
+void AudioHandler::requestBGM(const std::string& channelName, GameObjectManager& manager) {
+	// find the object that has this channel
+	std::vector<GameObject*> objs;
+	manager.getAllGameObjects(objs);
+
+	for (GameObject* obj : objs) {
+		if (!obj->hasComponent<AudioComponent>()) continue;
+		AudioComponent* ac = obj->getComponent<AudioComponent>();
+		if (!ac->hasChannel(channelName)) continue;
+
+		AudioChannel* ch = ac->getOrCreateChannel(channelName);
+
+		// skip if alr playing this channel
+		if (m_bgmChannel && ch->channel == m_bgmChannel) return;
+
+		// fade out current bgm
+		//if (m_bgmChannel) {
+		//	bool isPaused = false;
+		//	m_bgmChannel->getPaused(&isPaused);
+		//	if (!isPaused) {
+		//		// fade out over 1 sec then stop
+		//		m_bgmChannel->setVolume(0.f);
+		//		m_bgmChannel->stop();
+		//	}
+		//	m_bgmChannel = nullptr;
+		//}
+
+		resetBGM();
+
+		// play new bgm under bgm group
+		m_bgmChannel = playBGMSound(ch);
+		return;
+	}
+}
+
+void AudioHandler::resetBGM() {
+	if (m_bgmChannel) {
+		m_bgmChannel->stop();
+		m_bgmChannel = nullptr;
+	}
+}
+
 FMOD::Channel* AudioHandler::playPreviewSound(AudioChannel* audio) {
 	if (!system || audio->audioFile.empty()) return nullptr;
 

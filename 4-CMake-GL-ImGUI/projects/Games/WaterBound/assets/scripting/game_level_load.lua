@@ -1,16 +1,15 @@
 
--- load collision handlers
-dofile("./assets/scripting/collision.lua")
+dofile("./assets/scripting/common.lua")
 
 function onSceneLoad()
-    -- bullet creation
+    print("oiooi\n\n")
+    requestBGM("BGM")
+
+    -- bullet pool setup
     local template = getGameObject("bullet")
     if not template then return end
-
-    renameGameObject(template, "bullet")
     setCollisionTag(template, "bullet")
     setActive(template, false)
-
     for i = 1, 20 do
         local name = "bullet" .. i
         if not getGameObject(name) then

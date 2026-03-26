@@ -275,6 +275,10 @@ void GameObjectManager::loadSceneFromJson(const std::string& filename) {
 	if (version != 1)
 		std::cerr << "Warning: unsupported scene version " << version << "\n";
 
+	m_onLoadScript.clear();
+	if (doc.HasMember("onLoadScript") && doc["onLoadScript"].IsString())
+		m_onLoadScript = doc["onLoadScript"].GetString();
+
 	/*for (auto& pair : m_gameObjects) {
 		GameObject* obj = pair.second.get();
 		if (obj && obj->hasComponent<Render>()) {
@@ -1199,24 +1203,28 @@ void GameObjectManager::saveSceneToJson(const std::string& filename, bool isNew)
 
 		rapidjson::Value layersArr(rapidjson::kArrayType);
 
-for (Layer* layer : m_layerManager.getAllLayers()) {
-    if (!layer) continue;
+		for (Layer* layer : m_layerManager.getAllLayers()) {
+			if (!layer) continue;
 
-    rapidjson::Value layerObj(rapidjson::kObjectType);
-    layerObj.AddMember("id", layer->getLayerID(), a);
-    layerObj.AddMember("name", rapidjson::Value(layer->getLayerName().c_str(), a), a);
-    layerObj.AddMember("enabled", layer->isEnabled() ? 1 : 0, a);  // Use 1/0 for consistency
-    layerObj.AddMember("visible", layer->isVisible() ? 1 : 0, a);
-    layerObj.AddMember("updatable", layer->isUpdatable() ? 1 : 0, a);
+			rapidjson::Value layerObj(rapidjson::kObjectType);
+			layerObj.AddMember("id", layer->getLayerID(), a);
+			layerObj.AddMember("name", rapidjson::Value(layer->getLayerName().c_str(), a), a);
+			layerObj.AddMember("enabled", layer->isEnabled() ? 1 : 0, a);  // Use 1/0 for consistency
+			layerObj.AddMember("visible", layer->isVisible() ? 1 : 0, a);
+			layerObj.AddMember("updatable", layer->isUpdatable() ? 1 : 0, a);
 
-    layersArr.PushBack(layerObj, a);
-}
+			layersArr.PushBack(layerObj, a);
+		}
 
-doc.AddMember("layers", layersArr, a);
+		doc.AddMember("layers", layersArr, a);
 	
 		bool bulletSerialized = false;
 		// objects array
 		rapidjson::Value objects(rapidjson::kArrayType);
+
+		if (!m_onLoadScript.empty())
+			doc.AddMember("onLoadScript",
+				rapidjson::Value(m_onLoadScript.c_str(), a), a);
 
 		for (auto const& kv : m_gameObjects) {
 			const GameObject* obj = kv.second.get();

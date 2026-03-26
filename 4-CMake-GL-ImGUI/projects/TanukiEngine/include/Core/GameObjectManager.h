@@ -65,6 +65,10 @@ public:
 
 	void saveScene(const std::string& path, bool isNew = false) const;
 
+	// for onload script
+	std::string getOnLoadScript() const { return m_onLoadScript; }
+	void setOnLoadScript(const std::string& s) { m_onLoadScript = s; }
+
 	//void createBulletPool(const std::string& templateBulletName, int poolSize = 10);
 
 	//memory manager ...
@@ -87,4 +91,6 @@ private:
 	std::unordered_map<std::string, std::unique_ptr<GameObject>> m_gameObjects;
 
 	LayerManager m_layerManager;
+
+	std::string m_onLoadScript = "";
 };

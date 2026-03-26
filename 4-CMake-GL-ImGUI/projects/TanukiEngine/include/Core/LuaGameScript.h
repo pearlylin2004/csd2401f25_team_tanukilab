@@ -23,7 +23,7 @@ public:
     LuaGameScript(LuaSystem& lua) : m_lua(lua) {}
 
     void onSceneLoad(GameObjectManager& manager) override {
-        m_lua.callSceneLoad(manager);
+        m_lua.callSceneLoad(manager, manager.getOnLoadScript());
     }
 
     void update(GameObject& obj, float dt) override {

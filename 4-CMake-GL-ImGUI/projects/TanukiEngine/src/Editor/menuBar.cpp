@@ -191,12 +191,16 @@ void MenuBar::playSimulation(GameObjectManager& manager) {
 
     GUISystem::getInstance().createButtons();
 
+    GUISystem::getInstance().triggerSceneLoad(manager);
+
     DebugLog::addMessage("Simulation started.\n");
 }
 
 void MenuBar::stopSimulation(GameObjectManager& manager) {
     AudioHandler::getInstance().pauseAll(manager);
+    AudioHandler::getInstance().resetBGM();
     AudioHandler::getInstance().stopAllPreviews();
+
     EditorManager::toggleEditing(true);
     manager.cleanupSimulationResources();
 	VisualLogicEditor::Instance().clear();
