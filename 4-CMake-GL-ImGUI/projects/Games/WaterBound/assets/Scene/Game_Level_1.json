@@ -32,7 +32,7 @@
         "Transform": {
           "pos": [
             -1000.0,
-            -998.0304565429688,
+            -997.005126953125,
             0.0
           ],
           "scale": [
@@ -233,10 +233,10 @@
           "channels": {
             "BGM": {
               "audioFile": "assets/Audio\\Menu BGM.wav",
-              "volume": 0.009999999776482582,
+              "volume": 0.1899999976158142,
               "pitch": 1.0,
               "loop": 1,
-              "playOnStart": 1,
+              "playOnStart": 0,
               "muted": 0,
               "fadeInOnStart": 0,
               "fadeInDuration": 1.0,

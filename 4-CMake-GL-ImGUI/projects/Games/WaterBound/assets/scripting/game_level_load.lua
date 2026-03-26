@@ -2,7 +2,9 @@
 dofile("./assets/scripting/common.lua")
 
 function onSceneLoad()
-    --requestBGM("BGM")
+    requestBGM("BGM")
+
+    print("heihei\n\n")
 
     -- bullet pool setup
     local template = getGameObject("bullet")
