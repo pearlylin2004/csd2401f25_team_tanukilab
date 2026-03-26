@@ -167,7 +167,7 @@ void CoreEngine::Init(bool forceWindowed) {
     m_audioSystem->init(*m_manager);
 
     //hardcoded bgm again
-    startBGM();
+    //startBGM();
 
     //advance messaging 
     m_messageBus->subscribe("KeyPressed", m_playerController.get());
@@ -308,12 +308,12 @@ void CoreEngine::Update(float deltaTime) {
 
     wasEditingMode = isEditingNow;
 #endif
-    if (wasEditingMode && !isEditingNow) {
+    /*if (wasEditingMode && !isEditingNow) {
         resumeBGM();
     }
     if (!wasEditingMode && isEditingNow) {
         pauseBGM();
-    }
+    }*/
 }
 
 // ============================================================================
@@ -452,7 +452,7 @@ void CoreEngine::windowIconifyCallback(GLFWwindow* window, int iconified) {
             //engine->audio.pauseAll();
             AudioHandler::getInstance().pauseAll(*engine->m_manager);
             engine->m_isPaused = true; //set paused flag
-            engine->pauseBGM();
+            //engine->pauseBGM();
         }
         else {
             //window was restored maximized or simply returned to normal state
@@ -460,7 +460,7 @@ void CoreEngine::windowIconifyCallback(GLFWwindow* window, int iconified) {
             //engine->audio.playSound(soundID::bg, 0.2f);
             if (!EditorManager::isEditingMode()) {
                 AudioHandler::getInstance().resumeAll(*engine->m_manager);
-                engine->resumeBGM();
+                //engine->resumeBGM();
             }
             engine->m_isPaused = false; //clear paused flag
         }
@@ -510,27 +510,27 @@ void CoreEngine::loadInitialScene(const std::string& sceneName) {
     m_manager->initializeSceneResources();
 }
 
-void CoreEngine::startBGM() {
-    if (m_bgmChannel) return;
-    AudioChannel bgm;
-    bgm.audioFile = m_bgmFilePath;
-    bgm.loop = true;
-    bgm.volume = 0.125f;
-    m_bgmChannel = AudioHandler::getInstance().playBGMSound(&bgm);
-    AudioHandler::getInstance().registerBGMChannel(m_bgmChannel);
-}
-
-void CoreEngine::stopBGM() {
-    if (m_bgmChannel) {
-        m_bgmChannel->stop();
-        m_bgmChannel = nullptr;
-    }
-}
-
-void CoreEngine::pauseBGM() {
-    if (m_bgmChannel) m_bgmChannel->setPaused(true);
-}
-
-void CoreEngine::resumeBGM() {
-    if (m_bgmChannel) m_bgmChannel->setPaused(false);
-}
+//void CoreEngine::startBGM() {
+//    if (m_bgmChannel) return;
+//    AudioChannel bgm;
+//    bgm.audioFile = m_bgmFilePath;
+//    bgm.loop = true;
+//    bgm.volume = 0.125f;
+//    m_bgmChannel = AudioHandler::getInstance().playBGMSound(&bgm);
+//    AudioHandler::getInstance().registerBGMChannel(m_bgmChannel);
+//}
+//
+//void CoreEngine::stopBGM() {
+//    if (m_bgmChannel) {
+//        m_bgmChannel->stop();
+//        m_bgmChannel = nullptr;
+//    }
+//}
+//
+//void CoreEngine::pauseBGM() {
+//    if (m_bgmChannel) m_bgmChannel->setPaused(true);
+//}
+//
+//void CoreEngine::resumeBGM() {
+//    if (m_bgmChannel) m_bgmChannel->setPaused(false);
+//}

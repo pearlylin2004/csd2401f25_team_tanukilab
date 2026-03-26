@@ -57,10 +57,10 @@ public:
     void setGameScript(GameScript* script);
 
     //hardcoded bgm again
-    void startBGM();
+    /*void startBGM();
     void stopBGM();
     void pauseBGM();
-    void resumeBGM();
+    void resumeBGM();*/
 
     GameObjectManager& getManager() { return *m_manager; }
     LuaSystem& getLuaSystem() { return *m_luaSystem; }
@@ -90,8 +90,8 @@ private:
 	bool m_isPaused; //for alt-tab pause
 
     //hardcoded bgm player
-    FMOD::Channel* m_bgmChannel = nullptr;
-    std::string m_bgmFilePath = "assets/audio/bg.wav";
+    /*FMOD::Channel* m_bgmChannel = nullptr;
+    std::string m_bgmFilePath = "assets/audio/bg.wav";*/
     
     void toggleFullscreen();
 

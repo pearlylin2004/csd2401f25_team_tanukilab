@@ -664,7 +664,13 @@ void InspectorWindow::renderRender(GameObject* selected) {
                     if (ext == ".png" || ext == ".jpg" || ext == ".jpeg") {
                         if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
 
-                        render->texFile = path;
+                        //render->texFile = path;
+                        // normalize filepath to save relative filepath in scene
+                        std::string normalizedPath = fsPath.string();
+                        size_t pos = normalizedPath.find("assets");
+                        if (pos != std::string::npos)
+                            normalizedPath = normalizedPath.substr(pos);
+                        render->texFile = normalizedPath;
                         render->hasTex = true;
                         render->texChanged = true;
 
@@ -946,7 +952,13 @@ void InspectorWindow::renderStateMachine(GameObject* selected) {
                             if (ext == ".png" || ext == ".jpg" || ext == ".jpeg") {
                                 if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
 
-                                currentState.texFile = path;
+                                //currentState.texFile = path;
+                                // normalize filepath to save as relative filepath in scene
+                                std::string normalizedPath = fsPath.string();
+                                size_t pos = normalizedPath.find("assets");
+                                if (pos != std::string::npos)
+                                    normalizedPath = normalizedPath.substr(pos);
+                                currentState.texFile = normalizedPath;
                                 currentState.texChanged = true;
 
                                 if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
@@ -1809,7 +1821,13 @@ void InspectorWindow::renderAudio(GameObject* selected) {
                                     ch.state = AudioState::Stopped;
                                 }
 
-                                ch.audioFile = path;
+                                //ch.audioFile = path;
+                                // normalize file path to save relative filepath in scene
+                                std::string normalizedPath = fsPath.string();
+                                size_t pos = normalizedPath.find("assets");
+                                if (pos != std::string::npos)
+                                    normalizedPath = normalizedPath.substr(pos);
+                                ch.audioFile = normalizedPath;
 
                                 if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
 
@@ -2120,7 +2138,12 @@ void InspectorWindow::renderTileMap(GameObject* selected)
                     if (ext == ".png" || ext == ".jpg" || ext == ".jpeg") {
                         UndoRedoManager::Instance().beginTileMapToolEdit(m_gizmoState.showGrid);
 
-                        TileMapSystem::filename = path;
+                        //TileMapSystem::filename = path;
+                        std::string normalizedPath = fsPath.string();
+                        size_t pos = normalizedPath.find("assets");
+                        if (pos != std::string::npos)
+                            normalizedPath = normalizedPath.substr(pos);
+                        TileMapSystem::filename = normalizedPath;
 
                         UndoRedoManager::Instance().endTileMapToolEdit(m_gizmoState.showGrid);
 

@@ -363,14 +363,14 @@
           "channels": {
             "main_menu_bgm": {
               "audioFile": "assets/Audio\\BGM\\Main_Menu_BGM.wav",
-              "volume": 0.009999999776482582,
+              "volume": 0.14000000059604645,
               "pitch": 1.0,
               "loop": 1,
               "playOnStart": 1,
               "muted": 0,
-              "fadeInOnStart": 0,
-              "fadeInDuration": 1.0,
-              "fadeOutOnStop": 0,
+              "fadeInOnStart": 1,
+              "fadeInDuration": 1.909999966621399,
+              "fadeOutOnStop": 1,
               "fadeOutDuration": 1.0,
               "isSpatial": 0,
               "minDistance": 1.0,
