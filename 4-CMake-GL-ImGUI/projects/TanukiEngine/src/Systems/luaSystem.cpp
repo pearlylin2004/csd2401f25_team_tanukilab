@@ -35,6 +35,7 @@ void LuaSystem::init(GameObjectManager& manager) {
     lua_register(L, "setRenderAlpha", Lua_setRenderAlpha);
     lua_register(L, "setTexture", Lua_setTexture);
     lua_register(L, "setColliderSize", Lua_setColliderSize);
+    lua_register(L, "getAnimationFrame", Lua_getAnimationFrame);
 
     // physics getters
     lua_register(L, "getVelX", Lua_getVelX);
@@ -340,6 +341,22 @@ int LuaSystem::Lua_setColliderSize(lua_State* L) {
     return 0;
 }
 
+int LuaSystem::Lua_getAnimationFrame(lua_State* L) {
+    GameObject* obj = static_cast<GameObject*>(lua_touserdata(L, 1));
+    if (!obj || !obj->hasComponent<Animation>() || !obj->hasComponent<StateMachine>()) {
+        lua_pushinteger(L, -1); return 1;
+    }
+
+    StateMachine* sm = obj->getComponent<StateMachine>();
+    Animation* anim = obj->getComponent<Animation>();
+    int idx = static_cast<int>(sm->state);
+
+    if (idx < 0 || idx >= (int)anim->animState.size()) { lua_pushinteger(L, -1); return 1; }
+
+    lua_pushinteger(L, anim->animState[idx].currentFrameColumn);
+
+    return 1;
+}
 
 /* ---- physics getters ---- */
 int LuaSystem::Lua_getVelX(lua_State* L) {

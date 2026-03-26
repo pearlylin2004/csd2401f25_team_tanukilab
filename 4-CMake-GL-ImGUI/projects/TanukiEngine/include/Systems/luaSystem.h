@@ -68,6 +68,7 @@ public:
 	static int Lua_setRenderAlpha(lua_State* L);
 	static int Lua_setTexture(lua_State* L);
 	static int Lua_setColliderSize(lua_State* L);
+	static int Lua_getAnimationFrame(lua_State* L);
 
 
 	/* -------- Physics Getters -------- */

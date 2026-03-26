@@ -4,6 +4,13 @@ local player = {}
 
 local landingGrace = 0.1
 
+local footContactFrames = { 1, 4 }
+
+local footstepChannels = {
+    "footstep1", "footstep2", "footstep3",
+    "footstep4", "footstep5", "footstep6"
+}
+
 -- per-object state table (fixes hot reload nil issue)
 local objState = {}
 local function getS(obj)
@@ -15,6 +22,8 @@ local function getS(obj)
             prevOnGround    = false,
             landingTimer    = 0.0,
             initialized     = false,
+            lastFrame       = -1,
+            lastSoundIdx    = -1
         }
     end
     return objState[obj]
@@ -191,6 +200,29 @@ function player.Update(obj, dt)
     end
 
     setStateTime(obj, getStateTime(obj) + dt)
+
+    -- footstep sync to animation
+    if state == "Walking" then
+        local frame = getAnimationFrame(obj)
+        if frame ~= s.lastFrame then
+            s.lastFrame = frame
+            for _, contactFrame in ipairs(footContactFrames) do
+                if frame == contactFrame then
+                    local idx = math.random(1, #footstepChannels)
+                    if #footstepChannels > 1 then
+                        while idx == s.lastSoundIdx do
+                            idx = math.random(1, #footstepChannels)
+                        end
+                    end
+                    s.lastSoundIdx = idx
+                    playSound(obj, footstepChannels[idx])
+                    break
+                end
+            end
+        end
+    else
+        s.lastFrame = -1
+    end
 
     if s.landingTimer > 0 then
         s.landingTimer = s.landingTimer - dt
