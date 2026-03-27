@@ -31,17 +31,6 @@ Technology is prohibited.
 #include <functional> //for std::function to store button actions
 
 class LuaSystem;
-
-//enum for button actions
-namespace std {
-    template <>
-    struct hash<ButtonAction> {
-        size_t operator()(const ButtonAction& b) const noexcept {
-            return std::hash<int>()(static_cast<int>(b));
-        }
-    };
-}
-
 class VisualLogicSystem; // forward decla that save my life
 
 class GUISystem {

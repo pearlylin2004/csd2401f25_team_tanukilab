@@ -33,3 +33,13 @@ enum class ButtonAction {
     MUTE,
     UNMUTE
 };
+
+//enum for button actions
+namespace std {
+    template <>
+    struct hash<ButtonAction> {
+        size_t operator()(const ButtonAction& b) const noexcept {
+            return std::hash<int>()(static_cast<int>(b));
+        }
+    };
+}
