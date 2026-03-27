@@ -17,20 +17,19 @@ Technology is prohibited.
 
 enum class ButtonAction {
     NONE,
-
-    // --- Navigation / scene ---
-    LOAD_SCENE,     // load the scene stored in Button::scenePath
-    GO_BACK,        // return to previous scene / resume gameplay
-    EXIT_GAME,      // go to exit-confirmation scene
-    YES_EXIT,       // confirm quit
-    NO_EXIT,        // cancel quit, return to menu
-
-    // --- Audio ---
+    START_GAME,
+    OPEN_CONTROL,
+    OPEN_AUDIO,
+    EXIT_GAME,
+    RESUME_GAME,
+    YES_EXIT,
+    NO_EXIT,
+    BACK,
+    MENU,
     MUSIC_VOL_UP,
     MUSIC_VOL_DOWN,
+    SFX_VOL_UP,
+    SFX_VOL_DOWN,
     MUTE,
-    UNMUTE,
-
-    // --- Gameplay ---
-    RESTART_LEVEL,  // restart current level (deferred to next frame)
+    UNMUTE
 };
