@@ -31,6 +31,7 @@ Technology is prohibited.
 #include "font.h"
 #include "dynamics.h"
 #include "queue"
+#include "ButtonSystem.h"
 
 
 // at least it works!!!
@@ -310,26 +311,6 @@ enum class CollisionResponseMode {
     StopWhenCollide, // if collide by another obj, just stop
     MoveWhenCollide, // if collide by another obj, apply "fake" force and kena push
     NoResponse
-};
-
-//button action 
-enum class ButtonAction {
-    NONE,
-    START_GAME,
-    OPEN_CONTROL,
-	OPEN_AUDIO,
-    EXIT_GAME,
-    RESUME_GAME,
-	YES_EXIT,
-	NO_EXIT,
-    BACK,
-    MENU,
-    MUSIC_VOL_UP,
-    MUSIC_VOL_DOWN,
-    SFX_VOL_UP,
-    SFX_VOL_DOWN,
-    MUTE,
-    UNMUTE
 };
 
 //Button component
