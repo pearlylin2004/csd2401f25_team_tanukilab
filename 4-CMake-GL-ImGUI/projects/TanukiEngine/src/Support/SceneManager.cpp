@@ -26,18 +26,12 @@ Technology is prohibited.
     return std::string(RUNTIME_SCENE_DIR_R) + "/" + name;
 }
 
-// ---------------------------------------------------------------------------
-// init
-// ---------------------------------------------------------------------------
 void SceneManager::init(GameObjectManager& manager, VisualLogicSystem& vlSystem) {
     g_manager = &manager;
     g_visualLogicSystem = &vlSystem;
     std::cout << "[SceneManager] init complete\n";
 }
 
-// ---------------------------------------------------------------------------
-// update  – flush deferred requests
-// ---------------------------------------------------------------------------
 void SceneManager::update() {
     if (m_pendingRestart) {
         m_pendingRestart = false;
@@ -53,9 +47,6 @@ void SceneManager::update() {
     }
 }
 
-// ---------------------------------------------------------------------------
-// requestRestart / requestLevelLoad – deferred one-frame requests
-// ---------------------------------------------------------------------------
 void SceneManager::requestRestart() {
     m_pendingRestart = true;
 }
@@ -65,9 +56,6 @@ void SceneManager::requestLevelLoad(const std::string& levelSceneName) {
     m_pendingLevelName = levelSceneName;
 }
 
-// ---------------------------------------------------------------------------
-// loadScene  – immediate scene load (clears old scene, loads new one)
-// ---------------------------------------------------------------------------
 void SceneManager::loadScene(const std::string& sceneName) {
     std::cout << "[SceneManager] Loading scene: " << sceneName << "\n";
 
@@ -76,11 +64,9 @@ void SceneManager::loadScene(const std::string& sceneName) {
     g_manager->init();
     g_manager->loadScene(buildScenePath(sceneName));
     g_manager->initializeSceneResources();
+    if (m_onSceneLoad) m_onSceneLoad(*g_manager);
 }
 
-// ---------------------------------------------------------------------------
-// changeState
-// ---------------------------------------------------------------------------
 void SceneManager::changeState(GameState newState, const std::string& sceneName) {
     m_previousState = m_currentState;
     m_currentState = newState;
@@ -90,9 +76,6 @@ void SceneManager::changeState(GameState newState, const std::string& sceneName)
     }
 }
 
-// ---------------------------------------------------------------------------
-// sceneToState
-// ---------------------------------------------------------------------------
 GameState SceneManager::sceneToState(const std::string& sceneName) const {
     if (sceneName == "menu_scene.json")         return GameState::MENU;
     if (sceneName == "control_scene.json")      return GameState::CONTROL;
@@ -106,9 +89,6 @@ GameState SceneManager::sceneToState(const std::string& sceneName) const {
     return GameState::MENU; // fallback
 }
 
-// ---------------------------------------------------------------------------
-// Spawn-position capture
-// ---------------------------------------------------------------------------
 void SceneManager::captureSpawnPositions() {
     m_spawnPositions.clear();
     std::vector<GameObject*> all;
@@ -122,9 +102,6 @@ void SceneManager::captureSpawnPositions() {
     }
 }
 
-// ---------------------------------------------------------------------------
-// resetAllObjectsToSpawn
-// ---------------------------------------------------------------------------
 void SceneManager::resetAllObjectsToSpawn() {
     std::cout << "[SceneManager] Resetting objects to spawn positions\n";
 
@@ -183,9 +160,6 @@ void SceneManager::resetAllObjectsToSpawn() {
     }
 }
 
-// ---------------------------------------------------------------------------
-// executeRestart  (private)
-// ---------------------------------------------------------------------------
 void SceneManager::executeRestart() {
     std::cout << "[SceneManager] Restarting level\n";
 
@@ -206,9 +180,6 @@ void SceneManager::executeRestart() {
     m_currentState = GameState::PLAYING;
 }
 
-// ---------------------------------------------------------------------------
-// executeLevelLoad  (private)
-// ---------------------------------------------------------------------------
 void SceneManager::executeLevelLoad(const std::string& levelSceneName) {
     std::cout << "[SceneManager] Loading level: " << levelSceneName << "\n";
 
