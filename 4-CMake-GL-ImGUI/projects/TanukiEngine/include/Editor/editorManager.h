@@ -252,7 +252,7 @@ public:
 	MenuBar(AssetBrowser& aBrowser, Editor::AssetBrowserState& Astate, Editor::MenuBarState& Mstate, Editor::ObjSelectionState& Ostate, Editor::SceneState& sceneState);
 	void render(GameObjectManager& manager);
 	void toggleSimulation(GameObjectManager& manager); // play/stop simulation
-	void pauseResumeSimul();
+	void pauseResumeSimul(GameObjectManager& manager);
 
 private:
 	void drawFileMenu(GameObjectManager& manager);
@@ -263,8 +263,8 @@ private:
 
 	void playSimulation(GameObjectManager& manager);
 	void stopSimulation(GameObjectManager& manager);
-	void pauseSimulation();
-	void resumeSimulation();
+	void pauseSimulation(GameObjectManager& manager);
+	void resumeSimulation(GameObjectManager& manager);
 
 	void themeSinLeDark();
 	void themeSinLeLight();

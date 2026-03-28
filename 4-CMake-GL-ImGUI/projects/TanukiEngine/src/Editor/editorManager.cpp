@@ -194,7 +194,7 @@ void EditorManager::handleShortcutKeys(GameObjectManager& manager) {
     /* ------------- "F5" -> Play/Stop Simulation ------------- */
     if (InputHandler::isComboKeyTriggered(GLFW_KEY_F5) ||
         InputHandler::isComboKeyTriggered(GLFW_KEY_F5, GLFW_KEY_RIGHT_CONTROL)) {
-        if (!isEditing) menuBar.pauseResumeSimul();
+        if (!isEditing) menuBar.pauseResumeSimul(manager);
     }
     else if (InputHandler::isKeyTriggered(GLFW_KEY_F5)) {
         menuBar.toggleSimulation(manager);
