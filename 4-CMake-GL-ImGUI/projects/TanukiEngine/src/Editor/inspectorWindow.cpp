@@ -2721,7 +2721,7 @@ void InspectorWindow::renderWaterBody(GameObject* selected) {
             ImGui::TreePop();
         }
 
-        if (ImGui::TreeNode("Physics")) {
+        if (ImGui::TreeNode("Water Physics")) {
             bool triggerChanged = ImGui::Checkbox("Is Trigger", &w->isTrigger);
             if (triggerChanged) {
                 w->isTrigger = !w->isTrigger;
