@@ -17,69 +17,117 @@ Technology is prohibited.
 #include "GameObjectManager.h"
 #include "GameState.h"
 #include <string>
-#include <functional>
 #include <unordered_map>
 
-class LuaSystem;
-class VisualLogicSystem;
+class VisualLogicSystem; // forward declaration
 
+// ---------------------------------------------------------------------------
+// SceneManager  (singleton)
+// ---------------------------------------------------------------------------
+// Owns everything to do with *loading scenes* and *tracking game state*.
+// It does NOT know about buttons or input – that is ButtonSystem's job.
+// ---------------------------------------------------------------------------
 class SceneManager {
 public:
+    // -----------------------------------------------------------------------
+    // Singleton
+    // -----------------------------------------------------------------------
     static SceneManager& getInstance() {
         static SceneManager instance;
         return instance;
     }
 
-    void init(GameObjectManager& manager, LuaSystem& luaSystem, VisualLogicSystem& vlSystem);
+    // -----------------------------------------------------------------------
+    // Initialisation
+    // -----------------------------------------------------------------------
+    void init(GameObjectManager& manager, VisualLogicSystem& vlSystem);
 
-    void loadScreen(GameObjectManager& manager, const std::string& sceneName);
-    void loadScreenNoButton(GameObjectManager& manager, const std::string& sceneName);
+    // -----------------------------------------------------------------------
+    // Scene loading
+    // -----------------------------------------------------------------------
+
+    // Load a scene by file name (e.g. "menu_scene.json").
+    // Stops all audio, clears the current scene, loads the new one, and
+    // initialises resources.  After the call the caller should re-register
+    // any buttons with ButtonSystem.
+    void loadScene(const std::string& sceneName);
+
+    // -----------------------------------------------------------------------
+    // Level management  (deferred – applied at start of next frame)
+    // -----------------------------------------------------------------------
+
+    // Request a full level reload.  Applied at the start of the next update().
+    void requestRestart();
+
+    // Request loading a different level scene next frame.
+    void requestLevelLoad(const std::string& levelSceneName);
+
+    // Call once per frame from the main game loop (or GUISystem::update).
+    // Flushes any pending restart / level-load requests.
+    void update();
+
+    // -----------------------------------------------------------------------
+    // State management
+    // -----------------------------------------------------------------------
     void changeState(GameState newState, const std::string& sceneName = "");
 
-    GameState getCurrentState() const { return m_currentState; }
-    void setCurrentState(GameState state) { m_currentState = state; }
-    void setPreviousState(GameState state) { m_previousState = state; }
-    void setStateBeforePause(GameState state) { m_stateBeforePause = state; }
-    GameState getPreviousState() const { return m_previousState; }
-    GameState getStateBeforePause() const { return m_stateBeforePause; }
+    GameState getCurrentState()    const { return m_currentState; }
+    GameState getPreviousState()   const { return m_previousState; }
+    GameState getStateBeforePause()const { return m_stateBeforePause; }
 
-    GameState sceneToState(const std::string& sceneName);
+    void setCurrentState(GameState s) { m_currentState = s; }
+    void setPreviousState(GameState s) { m_previousState = s; }
+    void setStateBeforePause(GameState s) { m_stateBeforePause = s; }
 
-    void startGame();
-    void stopGame();
-    void restartLevel();
-    void loadLevel(const std::string& levelSceneName);
+    // Convert a scene filename to its corresponding GameState.
+    GameState sceneToState(const std::string& sceneName) const;
+
+    // Current level full path (used for restarts).
+    const std::string& getCurrentLevel() const { return m_currentLevel; }
+    void setCurrentLevel(const std::string& fullPath) { m_currentLevel = fullPath; }
+
+    // -----------------------------------------------------------------------
+    // Spawn-position helpers (for level restart)
+    // -----------------------------------------------------------------------
+    void captureSpawnPositions();
     void resetAllObjectsToSpawn();
 
-    std::function<void(GameObjectManager&)> m_onSceneLoadCallback;
-    void setOnSceneLoadCallback(std::function<void(GameObjectManager&)> cb) {
-        m_onSceneLoadCallback = cb;
-    }
-    void triggerSceneLoad(GameObjectManager& manager) {
-        if (m_onSceneLoadCallback) m_onSceneLoadCallback(manager);
-    }
-
-    bool m_pendingRestart = false;
-    bool m_pendingLevelLoad = false;
-    std::string m_pendingLevelName = "";
-
 private:
+    // -----------------------------------------------------------------------
+    // Private helpers
+    // -----------------------------------------------------------------------
+    void executeRestart();
+    void executeLevelLoad(const std::string& levelSceneName);
+
+    static std::string buildScenePath(const std::string& name);
+
+    // -----------------------------------------------------------------------
+    // Singleton boilerplate
+    // -----------------------------------------------------------------------
     SceneManager() = default;
     ~SceneManager() = default;
     SceneManager(const SceneManager&) = delete;
     SceneManager& operator=(const SceneManager&) = delete;
 
+    // -----------------------------------------------------------------------
+    // Data
+    // -----------------------------------------------------------------------
+    GameObjectManager* g_manager = nullptr;
+    VisualLogicSystem* g_visualLogicSystem = nullptr;
+
     GameState m_currentState = GameState::NONE;
     GameState m_previousState = GameState::MENU;
     GameState m_stateBeforePause = GameState::MENU;
 
-    GameObjectManager* g_manager = nullptr;
-    LuaSystem* g_luaSystem = nullptr;
-    VisualLogicSystem* g_visualLogicSystem = nullptr;
+    std::string m_currentLevel;  // full path to the active level scene
 
-    int level = 0;
-    int max_level = 2;
-
+    // Spawn positions captured when a level first loads (used by restart).
     std::unordered_map<std::string, Vector2D> m_spawnPositions;
-    std::string m_currentLevel = "";
+
+    // -----------------------------------------------------------------------
+    // Pending (deferred) requests
+    // -----------------------------------------------------------------------
+    bool        m_pendingRestart = false;
+    bool        m_pendingLevelLoad = false;
+    std::string m_pendingLevelName;
 };

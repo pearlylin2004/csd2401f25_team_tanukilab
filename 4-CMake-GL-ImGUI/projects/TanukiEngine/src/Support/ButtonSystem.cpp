@@ -56,3 +56,21 @@ void ButtonSystem::refresh() {
 }
 
 //update
+
+
+//clear button
+void ButtonSystem::clearButtons() {
+    m_buttons.clear();
+}
+
+//check if pointing in button
+bool ButtonSystem::isPointInButton(const Vector2D& point, GameObject* button) const {
+    if (!button || !button->hasComponent<Transform>()) return false;
+    Transform* t = button->getComponent<Transform>();
+
+    float hw = t->scaleX * 0.5f;
+    float hh = t->scaleY * 0.5f;
+
+    return (point.x >= t->x - hw && point.x <= t->x + hw &&
+        point.y >= t->y - hh && point.y <= t->y + hh);
+}
