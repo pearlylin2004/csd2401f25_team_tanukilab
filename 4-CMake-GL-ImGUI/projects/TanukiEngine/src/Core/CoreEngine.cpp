@@ -173,8 +173,8 @@ void CoreEngine::Init(bool forceWindowed) {
     m_messageBus->subscribe("KeyPressed", m_playerController.get());
     m_messageBus->subscribe("KeyReleased", m_playerController.get());
 
-    // load global settings
-    GlobalRegistry::Instance().init();
+    //// load global settings
+    //GlobalRegistry::Instance().init();
 
     glfwPollEvents();
     m_isRunning = true;
@@ -509,6 +509,7 @@ void CoreEngine::loadInitialScene(const std::string& sceneName) {
     m_manager->loadScene(fullPath);
     m_manager->initializeSceneResources();
     GUISystem::getInstance().triggerSceneLoad(*m_manager);
+    CachedGameObjects::Instance().refresh();
 }
 
 //void CoreEngine::startBGM() {

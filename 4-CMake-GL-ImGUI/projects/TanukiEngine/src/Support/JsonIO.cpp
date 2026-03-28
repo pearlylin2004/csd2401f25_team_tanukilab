@@ -872,7 +872,7 @@ namespace JsonIO {
     /* ---------- Load/Save collision tags ---------- */
     bool LoadCollisionTags(const std::string& filepath, std::vector<std::string>& outTags, std::string* err) {
         rapidjson::Document doc;
-        if (!ReadFileToDocument(RUNTIME_DIR_R + filepath, doc, err)) return false;
+        if (!ReadFileToDocument(filepath, doc, err)) return false;
 
         if (!doc.IsObject()) {
             if (err) *err = "Collision tag file is not a JSON object";

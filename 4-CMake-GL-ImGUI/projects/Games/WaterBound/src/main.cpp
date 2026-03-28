@@ -41,6 +41,9 @@ int main(int argc, char** argv) {
         luaScript = std::make_unique<LuaGameScript>(engine->getLuaSystem());
         engine->setGameScript(luaScript.get());
 
+        GlobalRegistry::Instance().setBasePath("./assets");
+        GlobalRegistry::Instance().init();
+
         // load menu as fir
         GUISystem::getInstance().loadScreen(engine->getManager(), "menu_scene.json");
 

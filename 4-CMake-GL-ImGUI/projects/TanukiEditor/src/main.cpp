@@ -55,6 +55,8 @@ int main(int argc, char** argv) {
                 Editor::sceneState.currentSceneName = defaultScene;
 
                 PrefabManager::Instance().loadPrefabRegistry();
+                GlobalRegistry::Instance().setBasePath(PathManager::Instance().getSourcePath() + "/assets");
+                GlobalRegistry::Instance().init();
 
                 if (!defaultScene.empty())
                     engine->loadInitialScene(defaultScene);

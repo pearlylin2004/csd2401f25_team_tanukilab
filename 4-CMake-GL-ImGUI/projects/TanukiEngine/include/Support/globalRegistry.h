@@ -37,6 +37,9 @@ public:
 	bool loadCollisionTag();
 	bool saveCollisionTag();
 
+	void setBasePath(const std::string& path) { m_basePath = path; }
+
+
 private:
 	GlobalRegistry() = default;
 	~GlobalRegistry() = default;
@@ -46,5 +49,6 @@ private:
 
 	std::vector<std::string> collisionTags;
 	std::unordered_set<std::string> collisionTagLookup;
+	std::string m_basePath;
 	std::string globalFilepath = "/resources/global_setting.json";
 };
