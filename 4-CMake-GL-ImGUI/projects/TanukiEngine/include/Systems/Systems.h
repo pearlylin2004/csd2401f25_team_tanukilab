@@ -267,7 +267,7 @@ private:
 };
 
 // only allow editor in debug mode
-#ifdef _DEBUG
+//#ifdef _DEBUG
 // UI system - handles UI rendering and interactions using ImGui
 class UISystem {
 public:
@@ -304,15 +304,15 @@ private:
 	static ImFont* m_fontTimes;
 	static FontType m_currentFontType;
 };
-#else
-namespace EditorManager {
-	inline bool isEditingMode() { return false; }
-	inline bool isPaused() { return false; }
-}
-namespace UISystem {
-	inline bool isShowUI() { return false; }
-}
-#endif
+//#else
+//namespace EditorManager {
+//	inline bool isEditingMode() { return false; }
+//	inline bool isPaused() { return false; }
+//}
+//namespace UISystem {
+//	inline bool isShowUI() { return false; }
+//}
+//#endif
 
 class LogicSystem {
 public:

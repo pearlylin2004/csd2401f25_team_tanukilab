@@ -14,7 +14,7 @@ Technology is prohibited.
 */
 /* End Header **************************************************************************/
 
-#ifdef _DEBUG
+//#ifdef _DEBUG
 #include "Editor/editorManager.h"
 
 VisualLogicEditor::VisualLogicEditor() :
@@ -2547,4 +2547,4 @@ std::vector<std::string> VisualLogicEditor::getGlobalVariableNamesFromNodes() {
 	return std::vector<std::string>(uniqueVars.begin(), uniqueVars.end());
 }
 
-#endif
+//#endif

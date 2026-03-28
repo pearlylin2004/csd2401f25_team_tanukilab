@@ -205,7 +205,7 @@ void VisualLogicSystem::update(GameObject* obj, VisualLC* logic, float dt) {
 		if (transform) {
 			Vector2D mouseWorldPos = InputHandler::getWorldMousePosition();
 
-#ifdef _DEBUG
+
 			// if playing in editor then use ImGui viewport mouse pos
 			if (UISystem::isShowUI()) {
 				ImVec2 scenePos; ImVec2 sceneSize;
@@ -213,7 +213,7 @@ void VisualLogicSystem::update(GameObject* obj, VisualLC* logic, float dt) {
 
 				mouseWorldPos = InputHandler::getMousePositionInImGuiViewport(scenePos, sceneSize);
 			}
-#endif
+//#endif
 
 			float halfW = transform->scaleX / 2.f;
 			float halfH = transform->scaleY / 2.f;
@@ -268,13 +268,13 @@ void VisualLogicSystem::update(GameObject* obj, VisualLC* logic, float dt) {
 		if (transform) {
 			Vector2D mouseWorldPos = InputHandler::getWorldMousePosition();
 
-#ifdef _DEBUG
+//#ifdef _DEBUG
 			if (UISystem::isShowUI()) {
 				ImVec2 scenePos; ImVec2 sceneSize;
 				EditorManager::getScenePosNSize(scenePos, sceneSize);
 				mouseWorldPos = InputHandler::getMousePositionInImGuiViewport(scenePos, sceneSize);
 			}
-#endif
+//#endif
 
 			float halfW = transform->scaleX / 2.f;
 			float halfH = transform->scaleY / 2.f;

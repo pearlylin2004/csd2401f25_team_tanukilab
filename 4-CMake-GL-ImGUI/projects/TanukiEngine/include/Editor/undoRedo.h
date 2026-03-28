@@ -16,7 +16,7 @@ without the prior written consent of DigiPen Institute of
 Technology is prohibited.
 */
 /* End Header **************************************************************************/
-#ifdef _DEBUG
+//#ifdef _DEBUG
 #pragma once
 #include <string>
 #include <memory>
@@ -553,4 +553,4 @@ private:
 // take a snapshot of an object's transform state
 TransformSnapshot captureTransform(GameObject* obj);
 std::string docToString(const rapidjson::Document& doc);
-#endif
+//#endif

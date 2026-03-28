@@ -15,7 +15,7 @@ Technology is prohibited.
 */
 /* End Header **************************************************************************/
 
-#ifdef _DEBUG
+//#ifdef _DEBUG
 #include "Editor/editorManager.h"
 #include "Systems.h"
 
@@ -342,4 +342,4 @@ void MenuBar::themeForest() {
     colors[ImGuiCol_FrameBg] = ImVec4(0.12f, 0.18f, 0.12f, 1.00f);
 }
 
-#endif
+//#endif

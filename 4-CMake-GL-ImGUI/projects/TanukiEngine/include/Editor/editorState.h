@@ -15,7 +15,7 @@ without the prior written consent of DigiPen Institute of
 Technology is prohibited.
 */
 /* End Header **************************************************************************/
-#ifdef _DEBUG
+//#ifdef _DEBUG
 #pragma once
 #include <string>
 #include <memory>
@@ -522,4 +522,4 @@ namespace Editor {
 	}
 	/* ----------------- Component End ---------------- */
 }
-#endif
+//#endif

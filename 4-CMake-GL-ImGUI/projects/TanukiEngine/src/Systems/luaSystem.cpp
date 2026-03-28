@@ -1068,13 +1068,13 @@ int LuaSystem::Lua_getMouseWorldY(lua_State* L) {
 }
 
 int LuaSystem::Lua_getEditorMouseWorldX(lua_State* L) {
-#ifdef _DEBUG
+//#ifdef _DEBUG
     ImVec2 scenePos, sceneSize;
     EditorManager::getScenePosNSize(scenePos, sceneSize);
     lua_pushnumber(L, InputHandler::getMousePositionInImGuiViewport(scenePos, sceneSize).x);
-#else
-    lua_pushnumber(L, InputHandler::getWorldMousePosition().x);
-#endif
+//#else
+//    lua_pushnumber(L, InputHandler::getWorldMousePosition().x);
+//#endif
     return 1;
 }
 
@@ -1452,20 +1452,20 @@ int LuaSystem::Lua_isPaused(lua_State* L) {
 }
 
 int LuaSystem::Lua_isEditorOpen(lua_State* L) {
-#ifdef _DEBUG
+//#ifdef _DEBUG
     lua_pushboolean(L, UISystem::isShowUI() ? 1 : 0);
-#else
-    lua_pushboolean(L, 0);
-#endif
+//#else
+//    lua_pushboolean(L, 0);
+//#endif
     return 1;
 }
 
 int LuaSystem::Lua_isSceneHovered(lua_State* L) {
-#ifdef _DEBUG
+//#ifdef _DEBUG
     lua_pushboolean(L, SceneWindow::isSceneHovered() ? 1 : 0);
-#else
-    lua_pushboolean(L, 1); // in release, always true (no editor panels)
-#endif
+//#else
+//    lua_pushboolean(L, 1); // in release, always true (no editor panels)
+//#endif
     return 1;
 }
 

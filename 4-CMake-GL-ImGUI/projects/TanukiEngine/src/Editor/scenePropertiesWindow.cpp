@@ -14,7 +14,7 @@ Technology is prohibited.
 */
 /* End Header **************************************************************************/
 
-#ifdef _DEBUG
+//#ifdef _DEBUG
 #include "Editor/editorManager.h"
 
 void ScenePropertiesWindow::render() {
@@ -65,4 +65,4 @@ void ScenePropertiesWindow::render() {
 
     ImGui::End();
 }
-#endif
+//#endif

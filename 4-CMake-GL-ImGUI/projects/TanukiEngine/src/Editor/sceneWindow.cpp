@@ -16,7 +16,7 @@ Technology is prohibited.
 */
 /* End Header **************************************************************************/
 
-#ifdef _DEBUG
+//#ifdef _DEBUG
 #include "Editor/editorManager.h"
 #include "Systems.h"
 
@@ -912,4 +912,4 @@ void SceneWindow::resetSelection() {
 
 	Editor::visualLogicState.targetObj = nullptr;
 }
-#endif
+//#endif

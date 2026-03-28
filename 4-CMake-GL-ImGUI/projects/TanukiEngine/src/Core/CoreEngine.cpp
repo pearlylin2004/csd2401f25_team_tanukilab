@@ -139,9 +139,10 @@ void CoreEngine::Init(bool forceWindowed) {
     //m_weaponSystem = std::make_unique<WeaponSystem>();
     m_renderSystem = std::make_unique<RenderSystem>();
     m_waterSystem = std::make_unique<WaterSystem>();
-#ifdef _DEBUG
+
+
     m_uiSystem = std::make_unique<UISystem>();
-#endif
+//#endif
     m_luaSystem = std::make_unique<LuaSystem>();
     m_fontSystem = std::make_unique<FontSystem>();
     //m_guiSystem = std::make_unique<GUISystem>();
@@ -160,9 +161,9 @@ void CoreEngine::Init(bool forceWindowed) {
     m_luaSystem->init(*m_manager);
     m_renderSystem->init(*m_manager, winWidth, winHeight);
     m_waterSystem->init();
-#ifdef _DEBUG
+//#ifdef _DEBUG
     m_uiSystem->init(m_window, m_renderSystem.get(), *m_manager);
-#endif
+//#endif
     m_fontSystem->init(*m_manager);
     m_audioSystem->init(*m_manager);
 
@@ -295,19 +296,19 @@ void CoreEngine::Update(float deltaTime) {
         m_luaSystem->update(*m_manager, deltaTime);
     }
     //m_waterSystem->render(*m_manager);
-#ifdef _DEBUG
+//#ifdef _DEBUG
     m_uiSystem->update();
-#endif
+//#endif
 
     //performance update
     LogSystemTimersEveryInterval(deltaTime, 15.0);
 
-#ifdef _DEBUG
+//#ifdef _DEBUG
     static bool wasEditingMode = true;
     bool isEditingNow = EditorManager::isEditingMode();
 
     wasEditingMode = isEditingNow;
-#endif
+//#endif
     /*if (wasEditingMode && !isEditingNow) {
         resumeBGM();
     }

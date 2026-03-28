@@ -17,7 +17,7 @@ without the prior written consent of DigiPen Institute of
 Technology is prohibited.
 */
 /* End Header **************************************************************************/
-#ifdef _DEBUG
+//#ifdef _DEBUG
 #include "Editor/editorManager.h"
 
 AddObjWindow::AddObjWindow(Editor::ShapeControlState& Cshape, Editor::ShapeControlState& Rshape) :
@@ -304,4 +304,4 @@ void AddObjWindow::dupObj(GameObjectManager& manager, GameObject* oriObj) {
 
     DebugLog::addMessage("Object duplicated!");
 }
-#endif
+//#endif

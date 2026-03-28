@@ -2036,7 +2036,7 @@ If the path ends with ".json", loads a JSON scene.
 void GameObjectManager::loadScene(const std::string& path) {
 
 	// PLEASE STOP CRASHING
-#ifdef _DEBUG
+//#ifdef _DEBUG
 	Editor::objSelectionState.selectedObject = nullptr;
 	Editor::objSelectionState.selectedPrefab = nullptr;
 	Editor::objSelectionState.draggedObject = nullptr;
@@ -2047,7 +2047,7 @@ void GameObjectManager::loadScene(const std::string& path) {
 	std::string filename = std::filesystem::path(path).filename().string();
 	if (filename != Editor::sceneState.tempSceneName)
 		Editor::sceneState.currentSceneName = filename;
-#endif
+//#endif
 
 	if (ends_with(path, ".json")) loadSceneFromJson(path);
 	//if (GameObject* p = getGameObject("player")) {

@@ -14,7 +14,7 @@ without the prior written consent of DigiPen Institute of
 Technology is prohibited.
 */
 /* End Header **************************************************************************/
-#ifdef _DEBUG
+//#ifdef _DEBUG
 #include "Editor/editorManager.h"
 
 void PerformanceWindow::render(){
@@ -36,4 +36,4 @@ void PerformanceWindow::render(){
     g_SystemTimers.clear(); // clear timers for next frame
     ImGui::End();
 }
-#endif
+//#endif

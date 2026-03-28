@@ -50,9 +50,10 @@ void InputHandler::init(GLFWwindow* window, const AppConfig& cfg) {
 	glfwSetCursorPosCallback(window, cursorPositionCallback);
 	glfwSetCursorEnterCallback(window, CursorEnterCallback);
 	glfwSetScrollCallback(window, scrollCallback);
-#ifdef _DEBUG
+
+
 	glfwSetDropCallback(window, dropCallback);
-#endif
+//#endif
 }
 
 // update input states (call once per frame)
@@ -403,7 +404,7 @@ void InputHandler::setWindowSize(int width, int height)
 }
 
 
-#ifdef _DEBUG
+//#ifdef _DEBUG
 void InputHandler::dropCallback(GLFWwindow* window, int count, const char** paths) {
 	(void)window;
 
@@ -474,4 +475,4 @@ void InputHandler::dropCallback(GLFWwindow* window, int count, const char** path
 		}
 	}
 }
-#endif
+//#endif

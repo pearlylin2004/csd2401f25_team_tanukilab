@@ -49,7 +49,8 @@ void InputSystem::update(GameObjectManager& manager, const float& deltaTime, Mes
     std::vector<GameObject*> gameObjects;
     manager.getAllGameObjects(gameObjects);
 
-#ifdef _DEBUG
+
+
     if (EditorManager::canToggleEditor() && InputHandler::isComboKeyTriggered(GLFW_KEY_0)) {
         UISystem::toggleUI();
 
@@ -133,7 +134,7 @@ void InputSystem::update(GameObjectManager& manager, const float& deltaTime, Mes
         std::cout << "===================\n" << std::endl;
     }
   
-#endif
+//#endif
 
     // Press F9 to simulate a failure (for crash logger)
     if (InputHandler::isKeyTriggered(GLFW_KEY_F9)) {
@@ -2340,7 +2341,7 @@ void CollisionSystem::HandleTilemapCollisions(const std::unordered_map<int, Coll
 }
 
 
-#ifdef _DEBUG
+//#ifdef _DEBUG
 //UI system - handles ImGui rendering and interaction
 bool UISystem::showUI = false;
 ImFont* UISystem::m_fontDefault = nullptr;
@@ -2546,7 +2547,7 @@ void UISystem::renderMultipleViewPorts() {
 		glfwMakeContextCurrent(backup_current_context);
 	}
 }
-#endif
+//#endif
 
 //void LogicSystem::update(GameObjectManager& manager, float const& dt) {
 //
