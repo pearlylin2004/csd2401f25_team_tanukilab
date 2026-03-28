@@ -193,6 +193,8 @@ void MenuBar::playSimulation(GameObjectManager& manager) {
 
     GUISystem::getInstance().triggerSceneLoad(manager);
 
+	GUISystem::getInstance().resetAndInitVisualLogic(manager);
+
     DebugLog::addMessage("Simulation started.\n");
 }
 

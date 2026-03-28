@@ -768,7 +768,7 @@ void SceneWindow::loadScenePopup(GameObjectManager& manager) {
         // not playing simulation
         if (EditorManager::isEditingMode()) {
             // got unsave changes
-            if (UndoRedoManager::Instance().canUndo() || UndoRedoManager::Instance().canRedo()) {
+            if (UndoRedoManager::Instance().canUndo()) {
                 ImGui::OpenPopup("Confirm Load Scene");
             }
             else {

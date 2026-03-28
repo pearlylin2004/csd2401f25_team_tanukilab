@@ -202,6 +202,17 @@ void GUISystem::createButtons(/*GameObjectManager& manager*/) {
     }
 }
 
+void GUISystem::triggerSceneLoad(GameObjectManager& manager) {
+    if (m_onSceneLoadCallback) m_onSceneLoadCallback(manager);
+}
+
+void GUISystem::resetAndInitVisualLogic(GameObjectManager& manager) {
+    if (g_visualLogicSystem) {
+        VisualLC::globalFloatVar.clear();
+        g_visualLogicSystem->initAll(manager);
+    }
+}
+
 //removing of buttons 
 void GUISystem::removeButtons() {
     m_buttons.clear(); //clear map

@@ -76,9 +76,8 @@ public:
     void setOnSceneLoadCallback(std::function<void(GameObjectManager&)> cb) {
         m_onSceneLoadCallback = cb;
     }
-    void triggerSceneLoad(GameObjectManager& manager) {
-        if (m_onSceneLoadCallback) m_onSceneLoadCallback(manager);
-    }
+    void triggerSceneLoad(GameObjectManager& manager);
+    void resetAndInitVisualLogic(GameObjectManager& manager);
 
 
     ButtonAction m_pendingAction = ButtonAction::NONE;
