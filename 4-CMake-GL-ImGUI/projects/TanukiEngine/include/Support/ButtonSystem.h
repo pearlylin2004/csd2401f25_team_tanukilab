@@ -15,31 +15,4 @@ Technology is prohibited.
 /* End Header **************************************************************************/
 #pragma once
 
-enum class ButtonAction {
-    NONE,
-    START_GAME,
-    OPEN_CONTROL,
-    OPEN_AUDIO,
-    EXIT_GAME,
-    RESUME_GAME,
-    YES_EXIT,
-    NO_EXIT,
-    BACK,
-    MENU,
-    MUSIC_VOL_UP,
-    MUSIC_VOL_DOWN,
-    SFX_VOL_UP,
-    SFX_VOL_DOWN,
-    MUTE,
-    UNMUTE
-};
-
-//enum for button actions
-namespace std {
-    template <>
-    struct hash<ButtonAction> {
-        size_t operator()(const ButtonAction& b) const noexcept {
-            return std::hash<int>()(static_cast<int>(b));
-        }
-    };
-}
+#include "ButtonAction.h"
