@@ -69,7 +69,6 @@ public:
         if (m_onSceneLoadCallback) m_onSceneLoadCallback(manager);
     }
 
-
     ButtonAction m_pendingAction = ButtonAction::NONE;
     bool m_pendingRestart = false;
     bool m_pendingLevelLoad = false;
