@@ -146,6 +146,7 @@ copy_engine_assets(TanukiEditor)
 target_compile_definitions(TanukiEditor PRIVATE
     TANUKI_GAMES_ROOT_R="${GAMES_DIR}"
     TANUKI_ENGINE_ASSETS_R="${ENGINE_DIR}/assets"
+    TANUKI_ENGINE_TEMPLATES_R="${ENGINE_DIR}/templates"
     #TANUKI_EDITOR
 )
 

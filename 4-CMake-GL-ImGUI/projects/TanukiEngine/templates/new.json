@@ -1,0 +1,26 @@
+{
+  "layers": [
+    {
+      "id": 0,
+      "name": "Background",
+      "enabled": 1,
+      "visible": 1,
+      "updatable": 1
+    },
+    {
+      "id": 1,
+      "name": "Game",
+      "enabled": 1,
+      "visible": 1,
+      "updatable": 1
+    },
+    {
+      "id": 2,
+      "name": "UI",
+      "enabled": 1,
+      "visible": 1,
+      "updatable": 1
+    }
+  ],
+  "objects": []
+}
