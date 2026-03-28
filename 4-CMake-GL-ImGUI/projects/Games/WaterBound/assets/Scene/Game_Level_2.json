@@ -95,7 +95,19 @@
             "footstep": {
               "audioFile": "assets/audio/Footsteps2_Gravel-Dirt_far-small_2.wav",
               "volume": 0.3107266128063202,
-              "pitch": 0.9557987451553345
+              "pitch": 0.9557987451553345,
+              "loop": 0,
+              "playOnStart": 0,
+              "muted": 0,
+              "fadeInOnStart": 0,
+              "fadeInDuration": 1.0,
+              "fadeOutOnStop": 0,
+              "fadeOutDuration": 1.0,
+              "isSpatial": 0,
+              "minDistance": 1.0,
+              "maxDistance": 100.0,
+              "spread": 180.0,
+              "persistOnSceneChange": 0
             },
             "jump-audio-1": {
               "persistOnSceneChange": 1
@@ -170,36 +182,17 @@
         },
         "Physics": {
           "physicsFlag": 0,
-          "autoUpdate": 0,
-          "maxFallSpeed": -30.0,
-          "groundAccelForce": 20.0,
-          "airAccelForce": 8.0,
-          "apexHangMul": 0.20000000298023224,
-          "jumpBufferTime": 0.15000000596046448,
-          "coyoteTime": 0.15000000596046448,
-          "ledgeAssistRange": 0.800000011920929,
-          "ledgeClimbSpeed": 8.0,
-          "freezeRotation": 1,
-          "angularDrag": 0.9800000190734863,
-          "inertiaOverride": 0.0
+          "autoUpdate": 0
         },
         "CollisionInfo": {
           "colliderSize": [
             7.372000217437744,
             0.3720000088214874
-          ],
-          "colliderPos": [
-            0.0,
-            0.0
-          ],
-          "colliderRot": 0.0,
-          "bounciness": 0.0,
-          "friction": 0.0
+          ]
         },
         "AudioComponent": {
           "channels": {
             "drop": {
-              "spread": 180.0,
               "persistOnSceneChange": 1
             }
           }
@@ -1061,13 +1054,13 @@
               "id": "assets/Texture\\Tilemap\\Forest\\tile005.png"
             },
             {
-              "x": 12,
-              "y": -5,
+              "x": 2,
+              "y": -1,
               "id": "assets/Texture\\Tilemap\\Forest\\tile005.png"
             },
             {
-              "x": 2,
-              "y": -1,
+              "x": 12,
+              "y": -5,
               "id": "assets/Texture\\Tilemap\\Forest\\tile005.png"
             },
             {
@@ -1370,6 +1363,26 @@
             0.10000000149011612
           ]
         },
+        "Physics": {
+          "physicsFlag": 1,
+          "autoUpdate": 0,
+          "buoyancy": 1,
+          "moveSpeed": 1.0,
+          "jumpForce": 10.0,
+          "mass": 1.0,
+          "damping": 0.9800000190734863,
+          "maxFallSpeed": -20.0,
+          "groundAccelForce": 20.0,
+          "airAccelForce": 8.0,
+          "apexHangMul": 0.20000000298023224,
+          "jumpBufferTime": 0.15000000596046448,
+          "coyoteTime": 0.3499999940395355,
+          "ledgeAssistRange": 0.800000011920929,
+          "ledgeClimbSpeed": 1.0,
+          "freezeRotation": 1,
+          "angularDrag": 0.9800000190734863,
+          "inertiaOverride": 0.0
+        },
         "CollisionInfo": {
           "collisionFlag": 1,
           "autoFitScale": 1,
@@ -1572,39 +1585,13 @@
           "hasAnimation": 0
         },
         "Physics": {
-          "autoUpdate": 1,
-          "maxFallSpeed": -30.0,
-          "groundAccelForce": 20.0,
-          "airAccelForce": 8.0,
-          "apexHangMul": 0.20000000298023224,
-          "jumpBufferTime": 0.15000000596046448,
-          "coyoteTime": 0.15000000596046448,
-          "ledgeAssistRange": 0.800000011920929,
-          "ledgeClimbSpeed": 8.0,
-          "freezeRotation": 1,
-          "angularDrag": 0.9800000190734863,
-          "inertiaOverride": 0.0
+          "autoUpdate": 1
         },
         "CollisionInfo": {
           "colliderSize": [
             3.9719998836517334,
             0.3869999945163727
-          ],
-          "colliderPos": [
-            0.0,
-            0.0
-          ],
-          "colliderRot": 0.0,
-          "bounciness": 0.0,
-          "friction": 0.0
-        },
-        "AudioComponent": {
-          "channels": {
-            "drop": {
-              "spread": 180.0,
-              "persistOnSceneChange": 0
-            }
-          }
+          ]
         },
         "LuaScript": {
           "scripts": [
