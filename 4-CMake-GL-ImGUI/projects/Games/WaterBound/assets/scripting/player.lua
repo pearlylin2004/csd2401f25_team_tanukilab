@@ -187,7 +187,7 @@ function player.Update(obj, dt)
                 local dy = (oy - py)
                 local px2, py2 = getPosition(obj)
 
-                if dx < 4.0 and dy > -3.0 and dy < 0.5 then
+                if dx < 4.0 and dy > -4.0 and dy < 1.0 then
                     platform = o
                     break
                 end
@@ -204,8 +204,14 @@ function player.Update(obj, dt)
             setDynPos(obj, x + pdx, y)
         end
         s.lastPlatformX = ox
+        s.lastPlatformLostTimer = 0.0  -- reset timer when on platform
     else
-        s.lastPlatformX = nil
+        -- keep lastPlatformX for a few frames after losing platform
+        if not s.lastPlatformLostTimer then s.lastPlatformLostTimer = 0.0 end
+        s.lastPlatformLostTimer = s.lastPlatformLostTimer + dt
+        if s.lastPlatformLostTimer > 0.1 then 
+            s.lastPlatformX = nil
+        end
     end
 
 
