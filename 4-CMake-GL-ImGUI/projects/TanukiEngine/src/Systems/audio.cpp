@@ -172,8 +172,7 @@ FMOD::Channel* AudioHandler::playSound(AudioChannel* audio) {
 		}
 		audio->channel = channel;
 		audio->fadeInfo.isFading = false;
-		std::cout << "[AUDIO] Playing: " << audio->audioFile
-			<< (audio->isSpatial ? " (3D)" : " (2D)") << std::endl;
+		//std::cout << "[AUDIO] Playing: " << audio->audioFile << (audio->isSpatial ? " (3D)" : " (2D)") << std::endl;
 	}
 
 	return channel;
