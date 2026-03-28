@@ -25,22 +25,39 @@
       "physicsFlag": 1,
       "moveSpeed": 1.0,
       "jumpForce": 100.0,
-      "damping": 0.9800000190734863,
+      "damping": 0.9800000190734864,
+      "maxFallSpeed": -30.0,
+      "groundAccelForce": 20.0,
+      "airAccelForce": 8.0,
+      "apexHangMul": 0.20000000298023224,
+      "jumpBufferTime": 0.15000000596046448,
+      "coyoteTime": 0.15000000596046448,
+      "ledgeAssistRange": 0.800000011920929,
+      "ledgeClimbSpeed": 8.0,
       "mass": 1.0,
-      "inWater": 0,
-      "buoyancy": 1
+      "buoyancy": 1,
+      "freezeRotation": true,
+      "angularDrag": 0.9800000190734864,
+      "inertiaOverride": 0.0
     },
     "CollisionInfo": {
       "collisionFlag": 1,
       "autoFitScale": 0,
       "colliderSize": [
         3.4719998836517334,
-        0.0020000000949949026,
+        0.0020000000949949026
+      ],
+      "colliderPos": [
+        0.0,
         0.0
       ],
+      "colliderRot": 0.0,
       "colliderType": "square",
       "collisionRes": "StopWhenCollide",
       "collisionTag": "default",
+      "bounciness": 0.0,
+      "friction": 0.0,
+      "colliderType": "square",
       "ignoreCollisionsWith": []
     },
     "AudioComponent": {
@@ -56,11 +73,21 @@
           "fadeInDuration": 0.6299999952316284,
           "fadeOutOnStop": 1,
           "fadeOutDuration": 0.8299999833106995,
-          "isSpatial": 0,
+          "isSpatial": false,
           "minDistance": 1.0,
-          "maxDistance": 100.0
+          "maxDistance": 100.0,
+          "spread": 180.0,
+          "persistOnSceneChange": false
         }
       }
+    },
+    "LuaScript": {
+      "scripts": [
+        {
+          "filename": "assets/scripting/branch.lua",
+          "scriptName": "branch"
+        }
+      ]
     },
     "VisualLC": {
       "filename": "brokenbranch.json"
