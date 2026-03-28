@@ -65,97 +65,6 @@
       }
     },
     {
-      "prefabid": "b766d355-2b28-4a0d-b54e-6e4407e18596",
-      "name": "player(25)",
-      "components": {
-        "Transform": {
-          "pos": [
-            -17.77581787109375,
-            -1.2262463569641113,
-            0.9980000257492065
-          ]
-        },
-        "Render": {
-          "colorR": 1.0,
-          "colorG": 1.0,
-          "colorB": 1.0,
-          "colorA": 1.0,
-          "hasTex": 1,
-          "texture": "assets/Texture/Leaf_Gun_Empty.png",
-          "hasAnimation": 1
-        },
-        "Physics": {
-          "autoUpdate": 0
-        },
-        "StateMachine": {
-          "facingRight": 0
-        },
-        "AudioComponent": {
-          "channels": {
-            "footstep": {
-              "audioFile": "assets/audio/Footsteps2_Gravel-Dirt_far-small_2.wav",
-              "volume": 0.3107266128063202,
-              "pitch": 0.9557987451553345,
-              "loop": 0,
-              "playOnStart": 0,
-              "muted": 0,
-              "fadeInOnStart": 0,
-              "fadeInDuration": 1.0,
-              "fadeOutOnStop": 0,
-              "fadeOutDuration": 1.0,
-              "isSpatial": 0,
-              "minDistance": 1.0,
-              "maxDistance": 100.0,
-              "spread": 180.0,
-              "persistOnSceneChange": 0
-            },
-            "jump-audio-1": {
-              "persistOnSceneChange": 1
-            },
-            "jump-audio-10": {
-              "persistOnSceneChange": 1
-            },
-            "jump-audio-11": {
-              "persistOnSceneChange": 1
-            },
-            "jump-audio-2": {
-              "persistOnSceneChange": 1
-            },
-            "jump-audio-3": {
-              "persistOnSceneChange": 1
-            },
-            "jump-audio-4": {
-              "persistOnSceneChange": 1
-            },
-            "jump-audio-6": {
-              "persistOnSceneChange": 1
-            },
-            "jump-audio-7": {
-              "persistOnSceneChange": 1
-            },
-            "jump-audio-8": {
-              "persistOnSceneChange": 1
-            },
-            "jump-audio-9": {
-              "persistOnSceneChange": 1
-            },
-            "landing": {
-              "volume": 0.7522843480110168,
-              "pitch": 1.0466336011886597
-            }
-          }
-        },
-        "LuaScript": {
-          "scripts": [
-            {
-              "filename": "./assets/scripting\\player.lua",
-              "scriptName": "player"
-            }
-          ]
-        }
-      }
-    },
-    {
       "prefabid": "0d16ad75-981d-4d14-ae8b-90c2d2cb38d5",
       "name": "branch(25)",
       "components": {
@@ -204,97 +113,6 @@
               "scriptName": "branch"
             }
           ]
-        }
-      }
-    },
-    {
-      "name": "Rectangle_24",
-      "components": {
-        "Transform": {
-          "pos": [
-            17.51091194152832,
-            -6.795276641845703,
-            0.0
-          ],
-          "rotation": 0.0,
-          "scale": [
-            2.9000000953674316,
-            2.9000000953674316,
-            0.0
-          ]
-        },
-        "Render": {
-          "shape": "square",
-          "colorR": 1.0,
-          "colorG": 1.0,
-          "colorB": 1.0,
-          "colorA": 1.0,
-          "hasTex": 1,
-          "texture": "assets/Texture\\endgoal.png",
-          "hasAnimation": 0
-        },
-        "Physics": {
-          "physicsFlag": 1,
-          "autoUpdate": 0,
-          "buoyancy": 1,
-          "moveSpeed": 1.0,
-          "jumpForce": 100.0,
-          "mass": 1.0,
-          "damping": 0.9800000190734863,
-          "maxFallSpeed": -20.0,
-          "groundAccelForce": 20.0,
-          "airAccelForce": 8.0,
-          "apexHangMul": 0.20000000298023224,
-          "jumpBufferTime": 0.15000000596046448,
-          "coyoteTime": 0.3499999940395355,
-          "ledgeAssistRange": 0.800000011920929,
-          "ledgeClimbSpeed": 1.0,
-          "freezeRotation": 1,
-          "angularDrag": 0.9800000190734863,
-          "inertiaOverride": 0.0
-        },
-        "CollisionInfo": {
-          "collisionFlag": 1,
-          "autoFitScale": 0,
-          "colliderSize": [
-            3.0999999046325684,
-            3.0999999046325684
-          ],
-          "colliderPos": [
-            0.0,
-            0.0
-          ],
-          "colliderRot": 0.0,
-          "colliderType": "square",
-          "collisionRes": "StopWhenCollide",
-          "collisionTag": "default",
-          "bounciness": 0.0,
-          "friction": 0.0,
-          "colliderType": "square"
-        },
-        "AudioComponent": {
-          "channels": {
-            "change": {
-              "audioFile": "assets/Audio\\SFX\\Japanese-CheckPoint-C_YAAY_SFX.wav",
-              "volume": 0.10000000149011612,
-              "pitch": 1.0,
-              "loop": 0,
-              "playOnStart": 0,
-              "muted": 0,
-              "fadeInOnStart": 0,
-              "fadeInDuration": 1.0,
-              "fadeOutOnStop": 0,
-              "fadeOutDuration": 1.0,
-              "isSpatial": 0,
-              "minDistance": 1.0,
-              "maxDistance": 100.0,
-              "spread": 180.0,
-              "persistOnSceneChange": 0
-            }
-          }
-        },
-        "VisualLC": {
-          "filename": "endgoal02.json"
         }
       }
     },
@@ -419,6 +237,75 @@
       }
     },
     {
+      "name": "player-head-collider",
+      "components": {
+        "Transform": {
+          "pos": [
+            -17.693397521972656,
+            -0.9074442386627197,
+            5.0
+          ],
+          "rotation": 0.0,
+          "scale": [
+            1.100000023841858,
+            0.6000000238418579,
+            0.0
+          ],
+          "parentName": "Player",
+          "localOffset": [
+            0.08797165751457214,
+            0.31731513142585754
+          ],
+          "localRotation": -1.0
+        },
+        "Physics": {
+          "physicsFlag": 1,
+          "autoUpdate": 0,
+          "buoyancy": 1,
+          "moveSpeed": 1.0,
+          "jumpForce": 10.0,
+          "mass": 1.0,
+          "damping": 0.9800000190734863,
+          "maxFallSpeed": -20.0,
+          "groundAccelForce": 20.0,
+          "airAccelForce": 8.0,
+          "apexHangMul": 0.20000000298023224,
+          "jumpBufferTime": 0.15000000596046448,
+          "coyoteTime": 0.3499999940395355,
+          "ledgeAssistRange": 0.800000011920929,
+          "ledgeClimbSpeed": 1.0,
+          "freezeRotation": 1,
+          "angularDrag": 0.9800000190734863,
+          "inertiaOverride": 0.0
+        },
+        "CollisionInfo": {
+          "collisionFlag": 1,
+          "autoFitScale": 1,
+          "colliderSize": [
+            1.100000023841858,
+            0.6000000238418579
+          ],
+          "colliderPos": [
+            0.0,
+            0.0
+          ],
+          "colliderRot": 0.0,
+          "colliderType": "square",
+          "collisionRes": "MoveWhenCollide",
+          "collisionTag": "default",
+          "bounciness": 0.0,
+          "friction": 0.0,
+          "colliderType": "square",
+          "ignoreCollisionsWith": [
+            "player"
+          ]
+        },
+        "VisualLC": {
+          "filename": "player_head.json"
+        }
+      }
+    },
+    {
       "name": "water balance",
       "components": {
         "Transform": {
@@ -465,34 +352,6 @@
         },
         "VisualLC": {
           "filename": "bullet-inventory.json"
-        }
-      }
-    },
-    {
-      "name": "Clouds",
-      "components": {
-        "Transform": {
-          "pos": [
-            -0.5,
-            0.8999999761581421,
-            -0.800000011920929
-          ],
-          "rotation": 0.0,
-          "scale": [
-            39.599998474121094,
-            18.069000244140625,
-            0.0
-          ]
-        },
-        "Render": {
-          "shape": "square",
-          "colorR": 1.0,
-          "colorG": 1.0,
-          "colorB": 1.0,
-          "colorA": 1.0,
-          "hasTex": 1,
-          "texture": "assets/Texture\\BG\\Clouds.png",
-          "hasAnimation": 0
         }
       }
     },
@@ -544,6 +403,34 @@
       }
     },
     {
+      "name": "Clouds",
+      "components": {
+        "Transform": {
+          "pos": [
+            -0.5,
+            0.8999999761581421,
+            -0.800000011920929
+          ],
+          "rotation": 0.0,
+          "scale": [
+            39.599998474121094,
+            18.069000244140625,
+            0.0
+          ]
+        },
+        "Render": {
+          "shape": "square",
+          "colorR": 1.0,
+          "colorG": 1.0,
+          "colorB": 1.0,
+          "colorA": 1.0,
+          "hasTex": 1,
+          "texture": "assets/Texture\\BG\\Clouds.png",
+          "hasAnimation": 0
+        }
+      }
+    },
+    {
       "name": "watergun",
       "components": {
         "Transform": {
@@ -558,10 +445,10 @@
             1.0,
             0.0
           ],
-          "parentName": "player(25)",
+          "parentName": "Player",
           "localOffset": [
             0.5854809284210205,
-            -0.4642741084098816
+            -0.46427422761917114
           ],
           "localRotation": 11.218864440917969
         },
@@ -621,22 +508,22 @@
               "id": "assets/Texture\\Tilemap\\Forest\\tile001.png"
             },
             {
-              "x": 2,
-              "y": -5,
-              "id": "assets/Texture\\Tilemap\\Forest\\tile005.png"
-            },
-            {
-              "x": -9,
-              "y": -1,
-              "id": "assets/Texture\\Tilemap\\Forest\\tile001.png"
-            },
-            {
               "x": 10,
               "y": -5,
               "id": "assets/Texture\\Tilemap\\Forest\\tile001.png"
             },
             {
               "x": -1,
+              "y": -1,
+              "id": "assets/Texture\\Tilemap\\Forest\\tile001.png"
+            },
+            {
+              "x": 2,
+              "y": -5,
+              "id": "assets/Texture\\Tilemap\\Forest\\tile005.png"
+            },
+            {
+              "x": -9,
               "y": -1,
               "id": "assets/Texture\\Tilemap\\Forest\\tile001.png"
             },
@@ -656,17 +543,22 @@
               "id": "assets/Texture\\Tilemap\\Forest\\tile001.png"
             },
             {
-              "x": 14,
-              "y": -5,
-              "id": "assets/Texture\\Tilemap\\Forest\\tile001.png"
-            },
-            {
               "x": 0,
               "y": -1,
               "id": "assets/Texture\\Tilemap\\Forest\\tile001.png"
             },
             {
+              "x": 14,
+              "y": -5,
+              "id": "assets/Texture\\Tilemap\\Forest\\tile001.png"
+            },
+            {
               "x": 1,
+              "y": -1,
+              "id": "assets/Texture\\Tilemap\\Forest\\tile001.png"
+            },
+            {
+              "x": 2,
               "y": -1,
               "id": "assets/Texture\\Tilemap\\Forest\\tile001.png"
             },
@@ -676,22 +568,12 @@
               "id": "assets/Texture\\Tilemap\\Forest\\tile001.png"
             },
             {
-              "x": 2,
-              "y": -1,
-              "id": "assets/Texture\\Tilemap\\Forest\\tile001.png"
-            },
-            {
-              "x": 2,
-              "y": -3,
-              "id": "assets/Texture\\Tilemap\\Forest\\tile005.png"
-            },
-            {
               "x": 13,
               "y": -5,
               "id": "assets/Texture\\Tilemap\\Forest\\tile001.png"
             },
             {
-              "x": -1,
+              "x": 2,
               "y": -3,
               "id": "assets/Texture\\Tilemap\\Forest\\tile005.png"
             },
@@ -699,6 +581,11 @@
               "x": 11,
               "y": -5,
               "id": "assets/Texture\\Tilemap\\Forest\\tile001.png"
+            },
+            {
+              "x": -1,
+              "y": -3,
+              "id": "assets/Texture\\Tilemap\\Forest\\tile005.png"
             },
             {
               "x": 9,
@@ -726,14 +613,14 @@
               "id": "assets/Texture\\Tilemap\\Forest\\tile001.png"
             },
             {
-              "x": -1,
-              "y": -5,
-              "id": "assets/Texture\\Tilemap\\Forest\\tile005.png"
-            },
-            {
               "x": 4,
               "y": -5,
               "id": "assets/Texture\\Tilemap\\Forest\\tile001.png"
+            },
+            {
+              "x": -1,
+              "y": -5,
+              "id": "assets/Texture\\Tilemap\\Forest\\tile005.png"
             },
             {
               "x": 2,
@@ -756,13 +643,13 @@
               "id": "assets/Texture\\Tilemap\\Forest\\tile005.png"
             },
             {
-              "x": -1,
-              "y": -6,
+              "x": -8,
+              "y": -4,
               "id": "assets/Texture\\Tilemap\\Forest\\tile005.png"
             },
             {
-              "x": -8,
-              "y": -4,
+              "x": -1,
+              "y": -6,
               "id": "assets/Texture\\Tilemap\\Forest\\tile005.png"
             },
             {
@@ -771,13 +658,13 @@
               "id": "assets/Texture\\Tilemap\\Forest\\tile005.png"
             },
             {
-              "x": -1,
-              "y": -4,
+              "x": -8,
+              "y": -6,
               "id": "assets/Texture\\Tilemap\\Forest\\tile005.png"
             },
             {
-              "x": -8,
-              "y": -6,
+              "x": -1,
+              "y": -4,
               "id": "assets/Texture\\Tilemap\\Forest\\tile005.png"
             },
             {
@@ -796,66 +683,6 @@
               "id": "assets/Texture\\Tilemap\\Forest\\tile001.png"
             }
           ]
-        }
-      }
-    },
-    {
-      "name": "branch collision 2",
-      "components": {
-        "Transform": {
-          "pos": [
-            5.189889907836914,
-            -3.6780998706817627,
-            0.0
-          ],
-          "rotation": 0.0,
-          "scale": [
-            3.299999952316284,
-            1.7600001096725464,
-            0.0
-          ]
-        },
-        "Physics": {
-          "physicsFlag": 1,
-          "autoUpdate": 0,
-          "buoyancy": 1,
-          "moveSpeed": 1.0,
-          "jumpForce": 10.0,
-          "mass": 1.0,
-          "damping": 0.9800000190734863,
-          "maxFallSpeed": -20.0,
-          "groundAccelForce": 20.0,
-          "airAccelForce": 8.0,
-          "apexHangMul": 0.20000000298023224,
-          "jumpBufferTime": 0.15000000596046448,
-          "coyoteTime": 0.3499999940395355,
-          "ledgeAssistRange": 0.800000011920929,
-          "ledgeClimbSpeed": 1.0,
-          "freezeRotation": 1,
-          "angularDrag": 0.9800000190734863,
-          "inertiaOverride": 0.0
-        },
-        "CollisionInfo": {
-          "collisionFlag": 0,
-          "autoFitScale": 1,
-          "colliderSize": [
-            3.299999952316284,
-            1.7600001096725464
-          ],
-          "colliderPos": [
-            0.0,
-            0.0
-          ],
-          "colliderRot": 0.0,
-          "colliderType": "square",
-          "collisionRes": "StopWhenCollide",
-          "collisionTag": "default",
-          "bounciness": 0.0,
-          "friction": 0.0,
-          "colliderType": "square"
-        },
-        "VisualLC": {
-          "filename": "branch collision 2_Logic.json"
         }
       }
     },
@@ -996,6 +823,66 @@
       }
     },
     {
+      "name": "branch collision 2",
+      "components": {
+        "Transform": {
+          "pos": [
+            5.189889907836914,
+            -3.6780998706817627,
+            0.0
+          ],
+          "rotation": 0.0,
+          "scale": [
+            3.299999952316284,
+            1.7600001096725464,
+            0.0
+          ]
+        },
+        "Physics": {
+          "physicsFlag": 1,
+          "autoUpdate": 0,
+          "buoyancy": 1,
+          "moveSpeed": 1.0,
+          "jumpForce": 10.0,
+          "mass": 1.0,
+          "damping": 0.9800000190734863,
+          "maxFallSpeed": -20.0,
+          "groundAccelForce": 20.0,
+          "airAccelForce": 8.0,
+          "apexHangMul": 0.20000000298023224,
+          "jumpBufferTime": 0.15000000596046448,
+          "coyoteTime": 0.3499999940395355,
+          "ledgeAssistRange": 0.800000011920929,
+          "ledgeClimbSpeed": 1.0,
+          "freezeRotation": 1,
+          "angularDrag": 0.9800000190734863,
+          "inertiaOverride": 0.0
+        },
+        "CollisionInfo": {
+          "collisionFlag": 0,
+          "autoFitScale": 1,
+          "colliderSize": [
+            3.299999952316284,
+            1.7600001096725464
+          ],
+          "colliderPos": [
+            0.0,
+            0.0
+          ],
+          "colliderRot": 0.0,
+          "colliderType": "square",
+          "collisionRes": "StopWhenCollide",
+          "collisionTag": "default",
+          "bounciness": 0.0,
+          "friction": 0.0,
+          "colliderType": "square"
+        },
+        "VisualLC": {
+          "filename": "branch collision 2_Logic.json"
+        }
+      }
+    },
+    {
       "name": "BG Tile",
       "components": {
         "Transform": {
@@ -1024,13 +911,13 @@
               "id": "assets/Texture\\Tilemap\\Forest\\tile005.png"
             },
             {
-              "x": -10,
-              "y": -3,
+              "x": -9,
+              "y": -1,
               "id": "assets/Texture\\Tilemap\\Forest\\tile005.png"
             },
             {
-              "x": -9,
-              "y": -1,
+              "x": -10,
+              "y": -3,
               "id": "assets/Texture\\Tilemap\\Forest\\tile005.png"
             },
             {
@@ -1039,18 +926,13 @@
               "id": "assets/Texture\\Tilemap\\Forest\\tile005.png"
             },
             {
-              "x": -10,
-              "y": -1,
-              "id": "assets/Texture\\Tilemap\\Forest\\tile005.png"
-            },
-            {
               "x": -9,
               "y": -3,
               "id": "assets/Texture\\Tilemap\\Forest\\tile005.png"
             },
             {
-              "x": -9,
-              "y": -5,
+              "x": -10,
+              "y": -1,
               "id": "assets/Texture\\Tilemap\\Forest\\tile005.png"
             },
             {
@@ -1064,7 +946,7 @@
               "id": "assets/Texture\\Tilemap\\Forest\\tile005.png"
             },
             {
-              "x": 0,
+              "x": -9,
               "y": -5,
               "id": "assets/Texture\\Tilemap\\Forest\\tile005.png"
             },
@@ -1079,6 +961,11 @@
               "id": "assets/Texture\\Tilemap\\Forest\\tile005.png"
             },
             {
+              "x": 0,
+              "y": -5,
+              "id": "assets/Texture\\Tilemap\\Forest\\tile005.png"
+            },
+            {
               "x": -10,
               "y": -4,
               "id": "assets/Texture\\Tilemap\\Forest\\tile005.png"
@@ -1096,6 +983,11 @@
             {
               "x": -9,
               "y": -4,
+              "id": "assets/Texture\\Tilemap\\Forest\\tile005.png"
+            },
+            {
+              "x": -9,
+              "y": -6,
               "id": "assets/Texture\\Tilemap\\Forest\\tile005.png"
             },
             {
@@ -1104,7 +996,7 @@
               "id": "assets/Texture\\Tilemap\\Forest\\tile005.png"
             },
             {
-              "x": -9,
+              "x": -10,
               "y": -6,
               "id": "assets/Texture\\Tilemap\\Forest\\tile005.png"
             },
@@ -1115,16 +1007,11 @@
             },
             {
               "x": -10,
-              "y": -6,
-              "id": "assets/Texture\\Tilemap\\Forest\\tile005.png"
-            },
-            {
-              "x": 13,
               "y": -5,
               "id": "assets/Texture\\Tilemap\\Forest\\tile005.png"
             },
             {
-              "x": -10,
+              "x": 13,
               "y": -5,
               "id": "assets/Texture\\Tilemap\\Forest\\tile005.png"
             },
@@ -1136,11 +1023,6 @@
             {
               "x": -11,
               "y": -2,
-              "id": "assets/Texture\\Tilemap\\Forest\\tile005.png"
-            },
-            {
-              "x": 1,
-              "y": -5,
               "id": "assets/Texture\\Tilemap\\Forest\\tile005.png"
             },
             {
@@ -1154,6 +1036,11 @@
               "id": "assets/Texture\\Tilemap\\Forest\\tile005.png"
             },
             {
+              "x": 1,
+              "y": -5,
+              "id": "assets/Texture\\Tilemap\\Forest\\tile005.png"
+            },
+            {
               "x": -12,
               "y": -2,
               "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
@@ -1161,6 +1048,11 @@
             {
               "x": -11,
               "y": -4,
+              "id": "assets/Texture\\Tilemap\\Forest\\tile005.png"
+            },
+            {
+              "x": -11,
+              "y": -5,
               "id": "assets/Texture\\Tilemap\\Forest\\tile005.png"
             },
             {
@@ -1171,16 +1063,6 @@
             {
               "x": 0,
               "y": -1,
-              "id": "assets/Texture\\Tilemap\\Forest\\tile005.png"
-            },
-            {
-              "x": -11,
-              "y": -5,
-              "id": "assets/Texture\\Tilemap\\Forest\\tile005.png"
-            },
-            {
-              "x": -11,
-              "y": -6,
               "id": "assets/Texture\\Tilemap\\Forest\\tile005.png"
             },
             {
@@ -1189,8 +1071,8 @@
               "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
             },
             {
-              "x": 10,
-              "y": -5,
+              "x": -11,
+              "y": -6,
               "id": "assets/Texture\\Tilemap\\Forest\\tile005.png"
             },
             {
@@ -1199,9 +1081,9 @@
               "id": "assets/Texture\\Tilemap\\Forest\\tile005.png"
             },
             {
-              "x": -12,
+              "x": 10,
               "y": -5,
-              "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
+              "id": "assets/Texture\\Tilemap\\Forest\\tile005.png"
             },
             {
               "x": 0,
@@ -1212,6 +1094,11 @@
               "x": 1,
               "y": -1,
               "id": "assets/Texture\\Tilemap\\Forest\\tile005.png"
+            },
+            {
+              "x": -12,
+              "y": -5,
+              "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
             },
             {
               "x": 4,
@@ -1396,7 +1283,7 @@
           ],
           "colliderRot": 0.0,
           "colliderType": "square",
-          "collisionRes": "StopWhenCollide",
+          "collisionRes": "NoResponse",
           "collisionTag": "water",
           "bounciness": 0.0,
           "friction": 0.0,
@@ -1598,6 +1485,188 @@
             {
               "filename": "assets/scripting/buoyancy.lua",
               "scriptName": "buoyancy"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "endgoal end",
+      "components": {
+        "Transform": {
+          "pos": [
+            17.51091194152832,
+            -6.795276641845703,
+            0.0
+          ],
+          "rotation": 0.0,
+          "scale": [
+            2.9000000953674316,
+            2.9000000953674316,
+            0.0
+          ]
+        },
+        "Render": {
+          "shape": "square",
+          "colorR": 1.0,
+          "colorG": 1.0,
+          "colorB": 1.0,
+          "colorA": 1.0,
+          "hasTex": 1,
+          "texture": "assets/Texture\\endgoal.png",
+          "hasAnimation": 0
+        },
+        "Physics": {
+          "physicsFlag": 1,
+          "autoUpdate": 0,
+          "buoyancy": 1,
+          "moveSpeed": 1.0,
+          "jumpForce": 100.0,
+          "mass": 1.0,
+          "damping": 0.9800000190734863,
+          "maxFallSpeed": -20.0,
+          "groundAccelForce": 20.0,
+          "airAccelForce": 8.0,
+          "apexHangMul": 0.20000000298023224,
+          "jumpBufferTime": 0.15000000596046448,
+          "coyoteTime": 0.3499999940395355,
+          "ledgeAssistRange": 0.800000011920929,
+          "ledgeClimbSpeed": 1.0,
+          "freezeRotation": 1,
+          "angularDrag": 0.9800000190734863,
+          "inertiaOverride": 0.0
+        },
+        "CollisionInfo": {
+          "collisionFlag": 1,
+          "autoFitScale": 0,
+          "colliderSize": [
+            3.0999999046325684,
+            3.0999999046325684
+          ],
+          "colliderPos": [
+            0.0,
+            0.0
+          ],
+          "colliderRot": 0.0,
+          "colliderType": "square",
+          "collisionRes": "StopWhenCollide",
+          "collisionTag": "default",
+          "bounciness": 0.0,
+          "friction": 0.0,
+          "colliderType": "square"
+        },
+        "AudioComponent": {
+          "channels": {
+            "change": {
+              "audioFile": "assets/Audio\\SFX\\Japanese-CheckPoint-C_YAAY_SFX.wav",
+              "volume": 0.10000000149011612,
+              "pitch": 1.0,
+              "loop": 0,
+              "playOnStart": 0,
+              "muted": 0,
+              "fadeInOnStart": 0,
+              "fadeInDuration": 1.0,
+              "fadeOutOnStop": 0,
+              "fadeOutDuration": 1.0,
+              "isSpatial": 0,
+              "minDistance": 1.0,
+              "maxDistance": 100.0,
+              "spread": 180.0,
+              "persistOnSceneChange": 0
+            }
+          }
+        },
+        "VisualLC": {
+          "filename": "endgoal02.json"
+        }
+      }
+    },
+    {
+      "prefabid": "b766d355-2b28-4a0d-b54e-6e4407e18596",
+      "name": "Player",
+      "components": {
+        "Transform": {
+          "pos": [
+            -17.77581787109375,
+            -1.2262463569641113,
+            0.9980000257492065
+          ]
+        },
+        "Render": {
+          "colorR": 1.0,
+          "colorG": 1.0,
+          "colorB": 1.0,
+          "colorA": 1.0,
+          "hasTex": 1,
+          "texture": "assets/Texture/Leaf_Gun_Empty.png",
+          "hasAnimation": 1
+        },
+        "Physics": {
+          "autoUpdate": 0
+        },
+        "StateMachine": {
+          "facingRight": 0
+        },
+        "AudioComponent": {
+          "channels": {
+            "footstep": {
+              "audioFile": "assets/audio/Footsteps2_Gravel-Dirt_far-small_2.wav",
+              "volume": 0.3107266128063202,
+              "pitch": 0.9557987451553345,
+              "loop": 0,
+              "playOnStart": 0,
+              "muted": 0,
+              "fadeInOnStart": 0,
+              "fadeInDuration": 1.0,
+              "fadeOutOnStop": 0,
+              "fadeOutDuration": 1.0,
+              "isSpatial": 0,
+              "minDistance": 1.0,
+              "maxDistance": 100.0,
+              "spread": 180.0,
+              "persistOnSceneChange": 0
+            },
+            "jump-audio-1": {
+              "persistOnSceneChange": 1
+            },
+            "jump-audio-10": {
+              "persistOnSceneChange": 1
+            },
+            "jump-audio-11": {
+              "persistOnSceneChange": 1
+            },
+            "jump-audio-2": {
+              "persistOnSceneChange": 1
+            },
+            "jump-audio-3": {
+              "persistOnSceneChange": 1
+            },
+            "jump-audio-4": {
+              "persistOnSceneChange": 1
+            },
+            "jump-audio-6": {
+              "persistOnSceneChange": 1
+            },
+            "jump-audio-7": {
+              "persistOnSceneChange": 1
+            },
+            "jump-audio-8": {
+              "persistOnSceneChange": 1
+            },
+            "jump-audio-9": {
+              "persistOnSceneChange": 1
+            },
+            "landing": {
+              "volume": 0.7522843480110168,
+              "pitch": 1.0466336011886597
+            }
+          }
+        },
+        "LuaScript": {
+          "scripts": [
+            {
+              "filename": "./assets/scripting\\player.lua",
+              "scriptName": "player"
             }
           ]
         }
