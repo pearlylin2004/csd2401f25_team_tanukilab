@@ -14,5 +14,37 @@ Technology is prohibited.
 */
 /* End Header **************************************************************************/
 #pragma once
-
+#include "GameObjectManager.h"
 #include "ButtonAction.h"
+#include <string>
+#include <unordered_map>
+
+class ButtonSystem {
+public:
+    static ButtonSystem& getInstance() {
+        static ButtonSystem instance;
+        return instance;
+    }
+
+    void init(GameObjectManager& manager);
+    void refresh();
+    void update();
+
+private:
+    void clearButtons();
+    void dispatchAction(ButtonAction action, const std::string& scenePath);
+    bool isPointInButton(const Vector2D& point, GameObject* button) const;
+    void updateVolumeDisplay() const;
+
+    ButtonSystem() = default;
+    ~ButtonSystem() = default;
+    ButtonSystem(const ButtonSystem&) = delete;
+    ButtonSystem& operator=(const ButtonSystem&) = delete;
+
+    GameObjectManager* g_manager = nullptr;
+    std::unordered_map<ButtonAction, GameObject*> m_buttons;
+    ButtonAction m_pendingAction = ButtonAction::NONE;
+    std::string  m_pendingScenePath = "";
+
+    float m_previousVolume = 1.0f;
+};

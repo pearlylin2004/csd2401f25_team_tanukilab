@@ -15,3 +15,44 @@ Technology is prohibited.
 /* End Header **************************************************************************/
 
 #include "ButtonSystem.h"
+#include "SceneManager.h"
+#include "Systems.h"      // UISystem, EditorManager
+#include "input.h"        // InputHandler
+#include "audio.h"        // AudioHandler, AudioComponent
+#include "Component.h"    // Button, Transform, FontComponent
+#include "GameState.h"
+#include <iostream>
+#include <unordered_map>
+
+//init
+void ButtonSystem::init(GameObjectManager& manager) {
+    g_manager = &manager;
+}
+
+//refresh
+void ButtonSystem::refresh() {
+    clearButtons();
+    if (!g_manager) return;
+
+    std::vector<GameObject*> all;
+    g_manager->getAllGameObjects(all);
+
+    for (GameObject* obj : all) {
+        if (!obj) continue;
+        if (!obj->hasComponent<Button>() || !obj->hasComponent<Transform>()) continue;
+
+        Button* btn = obj->getComponent<Button>();
+        m_buttons[btn->actionName] = obj;
+    }
+
+    if (m_buttons.empty())
+        std::cout << "[ButtonSystem] No buttons found in current scene.\n";
+    else
+        std::cout << "[ButtonSystem] Registered " << m_buttons.size() << " button(s).\n";
+
+    // Refresh volume text if we are on the audio page.
+    if (SceneManager::getInstance().getCurrentState() == GameState::AUDIO)
+        updateVolumeDisplay();
+}
+
+//update
