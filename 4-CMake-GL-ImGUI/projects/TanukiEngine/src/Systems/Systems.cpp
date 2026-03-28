@@ -948,6 +948,7 @@ void FontSystem::update(GameObjectManager& manager, double fps)
 				fc->word = "FPS: " + std::to_string(fps);
 				t->x = -15.f;
 				t->y = 9.f;
+				fc->mdl = Font::fontMdls[0];
 				RenderText(Font::fontShaders, fc->word, t->x, t->y, fc->scale, fc->clr, fpsText.get());
 			}
 		}

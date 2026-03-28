@@ -1803,6 +1803,7 @@ void LuaSystem::update(GameObjectManager& manager, float deltaTime) {
 }
 
 void LuaSystem::callSceneLoad(GameObjectManager& manager, const std::string& scriptFile) {
+    (void)manager;
     if (!L || scriptFile.empty()) return;
     std::string path = "./" + scriptFile;
     if (luaL_dofile(L, path.c_str()) != LUA_OK) {

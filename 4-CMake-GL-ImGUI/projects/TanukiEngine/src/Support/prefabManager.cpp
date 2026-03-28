@@ -1316,7 +1316,7 @@ void PrefabManager::serializeComponents(const GameObject* obj, rapidjson::Value&
 		if (r->hasTex && !r->texFile.empty())
 			jr.AddMember("texture", rapidjson::Value(r->texFile.c_str(), a), a);
 		jr.AddMember("hasAnimation", r->hasAnimation ? 1 : 0, a);
-		if (r->clr.r != 1.f || r->clr.g != 1.f || r->clr.b != 1.f) {
+		if (r->clr.r != 1.f || r->clr.g != 1.f || r->clr.b != 1.f || r->clr.a != 1.f) {
 			JsonIO::WriteVec4(jr, "clr", r->clr.r, r->clr.g, r->clr.b, r->clr.a, a);
 		}
 

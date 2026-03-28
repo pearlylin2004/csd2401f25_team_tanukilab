@@ -28,7 +28,7 @@ public:
     }
 
     void update(GameObject& obj, float dt) override {
-        (void)obj; (void)dt;if (obj.hasComponent<Input>()) return; // handled by onPlayerInput
+        if (obj.hasComponent<Input>()) return; // handled by onPlayerInput
         if (!obj.hasComponent<LuaScript>()) return;
 
         LuaScript* script = obj.getComponent<LuaScript>();
@@ -101,6 +101,7 @@ public:
     }
 
     Vector2D getAudioListenerPos(GameObjectManager& manager) override {
+        (void)manager;
         lua_State* L = m_lua.getLuaState();
         lua_getglobal(L, "getAudioListenerPos");
         if (!lua_isfunction(L, -1)) { lua_pop(L, 1); return { 0.f, 0.f }; }
