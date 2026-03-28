@@ -15,7 +15,7 @@ Technology is prohibited.
 /* End Header **************************************************************************/
 #pragma once
 #include "GameObjectManager.h"
-#include "GameState.h"
+#include "ButtonAction.h"
 #include <string>
 #include <unordered_map>
 
