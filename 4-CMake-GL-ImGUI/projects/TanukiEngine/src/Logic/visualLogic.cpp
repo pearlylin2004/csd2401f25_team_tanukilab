@@ -908,6 +908,23 @@ void VisualLogicSystem::executeActionNode(GameObject* obj, VisualLC* logic, Logi
 		logic->intVar[lastKey] = newIndex;
 		logic->timers[cooldownKey] = 0.f;
 	}
+	else if (node.imp == NodeImplementation::LOCK_POSITION) {
+		Physics* physics = obj->getComponent<Physics>();
+
+		if (physics) {
+			physics->canMove = false;
+			physics->dynamics.velocity.x = 0.f;
+			physics->dynamics.velocity.y = 0.f;
+			physics->velX = 0.f;
+			physics->velY = 0.f;
+		}
+	}
+	else if (node.imp == NodeImplementation::UNLOCK_POSITION) {
+		Physics* physics = obj->getComponent<Physics>();
+
+		if (physics)
+			physics->canMove = true;
+	}
 }
 
 bool VisualLogicSystem::executeConditionNode(GameObject* obj, VisualLC* logic, LogicNode& node, float dt) {

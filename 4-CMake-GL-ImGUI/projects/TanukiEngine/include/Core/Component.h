@@ -812,6 +812,8 @@ enum class NodeImplementation {
     CHANGE_ACCEL_DIRECTION,
     SET_SINLE_ACCEL,
     PLAY_RANDOM_SOUND,
+    LOCK_POSITION,
+    UNLOCK_POSITION,
 
     // DEFAULT
     DEFAULT // nothing happen :)

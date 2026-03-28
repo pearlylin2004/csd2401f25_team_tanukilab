@@ -1554,6 +1554,14 @@ void VisualLogicEditor::renderNodeProperties() {
 			
 			ImGui::Spacing();
 		}
+		else if (node.imp == NodeImplementation::LOCK_POSITION) {
+			ImGui::Text("Lock Position");
+			ImGui::TextDisabled("Stops object movement and velocity");
+		}
+		else if (node.imp == NodeImplementation::UNLOCK_POSITION) {
+			ImGui::Text("Unlock Position");
+			ImGui::TextDisabled("Re-enables object movement");
+		}
 	}
 	/* ---------- END ---------- */
 

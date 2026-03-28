@@ -344,7 +344,8 @@ namespace JsonIO {
         if (str == "Change Acceleration Direction") return NodeImplementation::CHANGE_ACCEL_DIRECTION;
         if (str == "Set Sinle Acceleration") return NodeImplementation::SET_SINLE_ACCEL;
         if (str == "Play Random Sound") return NodeImplementation::PLAY_RANDOM_SOUND;
-        if (str == "Check Animation End") return NodeImplementation::CHECK_ANIMATION_END;
+        if (str == "Lock Position") return NodeImplementation::LOCK_POSITION;
+        if (str == "Unlock Position") return NodeImplementation::UNLOCK_POSITION;
 
 		if (str == "Check Key Held") return NodeImplementation::CHECK_KEY_HELD;
 		if (str == "Compare Value") return NodeImplementation::COMPARE_VALUE;
@@ -353,6 +354,7 @@ namespace JsonIO {
 		if (str == "Check Timer") return NodeImplementation::CHECK_TIMER;
         if (str == "Compare Global Float") return NodeImplementation::COMPARE_GLOBAL_FLOAT;
 		if (str == "Check Collided State") return NodeImplementation::CHECK_COLLIDED_STATE;
+        if (str == "Check Animation End") return NodeImplementation::CHECK_ANIMATION_END;
 
         return NodeImplementation::DEFAULT;
     }
@@ -407,7 +409,8 @@ namespace JsonIO {
             case NodeImplementation::CHANGE_ACCEL_DIRECTION: return "Change Acceleration Direction";
             case NodeImplementation::SET_SINLE_ACCEL: return "Set Sinle Acceleration";
             case NodeImplementation::PLAY_RANDOM_SOUND: return "Play Random Sound";
-            case NodeImplementation::CHECK_ANIMATION_END: return "Check Animation End";
+            case NodeImplementation::LOCK_POSITION: return "Lock Position";
+            case NodeImplementation::UNLOCK_POSITION: return "Unlock Position";
 
             case NodeImplementation::CHECK_KEY_HELD: return "Check Key Held";
             case NodeImplementation::COMPARE_VALUE: return "Compare Value";
@@ -415,6 +418,7 @@ namespace JsonIO {
 			case NodeImplementation::CHECK_STATE: return "Check State";
 			case NodeImplementation::CHECK_TIMER: return "Check Timer";
 			case NodeImplementation::COMPARE_GLOBAL_FLOAT: return "Compare Global Float";
+            case NodeImplementation::CHECK_ANIMATION_END: return "Check Animation End";
 			case NodeImplementation::CHECK_COLLIDED_STATE: return "Check Collided State";
 
             default: return "Default";

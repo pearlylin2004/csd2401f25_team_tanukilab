@@ -304,7 +304,9 @@ namespace Editor {
 		{"Not on Ground", NodeType::ACTION, NodeImplementation::NOT_ON_GROUND},
 		{"Change Acceleration Direction", NodeType::ACTION, NodeImplementation::CHANGE_ACCEL_DIRECTION},
 		{"Set Sinle Acceleration", NodeType::ACTION, NodeImplementation::SET_SINLE_ACCEL},
-		{"Play Random Sound", NodeType::ACTION, NodeImplementation::PLAY_RANDOM_SOUND}
+		{"Play Random Sound", NodeType::ACTION, NodeImplementation::PLAY_RANDOM_SOUND},
+		{"Lock Position", NodeType::ACTION, NodeImplementation::LOCK_POSITION},
+		{"Unlock Position", NodeType::ACTION, NodeImplementation::UNLOCK_POSITION}
 
 	};
 	/* ----------------- Logic End ---------------- */
