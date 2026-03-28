@@ -187,7 +187,7 @@ function player.Update(obj, dt)
                 local dy = (oy - py)
                 local px2, py2 = getPosition(obj)
 
-                if dx < 4.0 and dy > -4.0 and dy < 1.0 then
+                if dx < 4.0 and dy > -2.0 and dy < 1.0 then
                     platform = o
                     break
                 end
