@@ -1850,7 +1850,7 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 						bool obj2IsStatic = (c2->collisionRes == CollisionResponseMode::StopWhenCollide);
 						// bool obj1IsFloating = (c1->collisionTag == "floatingObject") && obj2->hasComponent<WaterBody>();
 						// bool obj2IsFloating = (c2->collisionTag == "floatingObject") && obj1->hasComponent<WaterBody>();
-					
+
 						//helper lambda for bounce calculation
 						auto ApplyBounce = [](Physics* p, CollisionInfo* c, const Vector2D& normal, bool isStatic) {
 							//get current velocity
@@ -2003,8 +2003,13 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 									}
 								}
 
-								p1->dynamics.velocity.x = 0.f;
-								p1->velX = 0.f;
+								if (p1->dynamics.velocity.x * info.normal.x < 0) {
+									p1->dynamics.velocity.x = 0.f;
+									p1->velX = 0.f;
+								}
+
+								/*p1->dynamics.velocity.x = 0.f;
+								p1->velX = 0.f;*/
 
 								//stop horizontal motion for non-bullet objects
 								// if (c1->collisionTag != "bullet") { 
@@ -2013,14 +2018,15 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 								// }
 							}
 							if (info.normal.y != 0) {
-								//t1->y += info.normal.y * info.penetration * pushPercent;
-								t1->y += info.normal.y * info.penetration * 0.3f;
-								p1->dynamics.position.y = t1->y;
-
 								if (m_gameScript) {
 									if (m_gameScript->onCollisionResponse(obj1, c1, info, true, c2))
 										continue;
 								}
+
+								//t1->y += info.normal.y * info.penetration * pushPercent;
+								t1->y += info.normal.y * info.penetration * 0.3f;
+								p1->dynamics.position.y = t1->y;
+								p1->dynamics.velocity.y = 0.f;
 
 								// if (c1->collisionTag == "bullet") { // water
 								// 	float direction = (p1->dynamics.velocity.x >= 0.f) ? 1.f : -1.f;
@@ -2030,7 +2036,6 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 								// }
 								// else {
 								// 	//normal objects
-								p1->dynamics.velocity.y = 0.f;
 
 								if (info.normal.y > 0) {
 									p1->onGround         = true;
@@ -2069,13 +2074,19 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 								ApplyBounce(p1, c1, info.normal, true);
 							}
 							else {
-								if (info.normal.x != 0) { p1->dynamics.velocity.x = 0.f; p1->velX = 0.f; }
+								if (info.normal.x != 0) {
+									if (p1->dynamics.velocity.x * info.normal.x < 0) {
+										p1->dynamics.velocity.x = 0.f;
+										p1->velX = 0.f;
+									}
+								}
+
 								if (info.normal.y != 0) {
 									p1->dynamics.velocity.y = 0.f;
 									if (info.normal.y > 0) {
-										p1->onGround        = true;
+										p1->onGround = true;
 										p1->coyoteAvailable = true;
-										p1->coyoteTimer     = p1->coyoteTime;
+										p1->coyoteTimer = p1->coyoteTime;
 									}
 								}
 								//original stop behaviors
@@ -2119,6 +2130,11 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 								t2->x -= info.normal.x * info.penetration;
 								p2->dynamics.position.x = t2->x;
 
+								if (p2->dynamics.velocity.x * (-info.normal.x) < 0) {
+									p2->dynamics.velocity.x = 0.f;
+									p2->velX = 0.f;
+								}
+
 								// if (c2->collisionTag == "bullet") {
 								// 	float direction = (p2->dynamics.velocity.x >= 0.f) ? 1.f : -1.f;
 								// 	p2->dynamics.velocity.x = 12.0f * direction;
@@ -2127,20 +2143,21 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 								// }
 								// else {
 									// normal object stops horizontally
-								p2->dynamics.velocity.x = 0.f;
-								p2->velX = 0.f;
+								/*p2->dynamics.velocity.x = 0.f;
+								p2->velX = 0.f;*/
 								//}
 							}
 
 							if (info.normal.y != 0) {
+								if (m_gameScript && m_gameScript->onCollisionResponse(obj2, c2, info, true, c1))
+									continue;
+
 								t2->y -= info.normal.y * info.penetration;
 								p2->dynamics.position.y = t2->y;
+								p2->dynamics.velocity.y = 0.f;
 
-								if (m_gameScript && m_gameScript->onCollisionResponse(obj2, c2, info, true, c1))
-    								continue;
 
 								//if (c2->collisionTag != "bullet") {
-								p2->dynamics.velocity.y = 0.f;
 								if (info.normal.y < 0) {
 									p2->onGround = true;
 									p2->coyoteAvailable = true;
@@ -2179,10 +2196,11 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 								ApplyBounce(p2, c2, { -info.normal.x, -info.normal.y }, true);
 							}
 							else {
-								// Original stop behavior (only when NOT bouncing)
 								if (info.normal.x != 0) {
-									p2->dynamics.velocity.x = 0.f;
-									p2->velX = 0.f;
+									if (p2->dynamics.velocity.x * (-info.normal.x) < 0) {
+										p2->dynamics.velocity.x = 0.f;
+										p2->velX = 0.f;
+									}
 								}
 								if (info.normal.y != 0) {
 									p2->dynamics.velocity.y = 0.f;

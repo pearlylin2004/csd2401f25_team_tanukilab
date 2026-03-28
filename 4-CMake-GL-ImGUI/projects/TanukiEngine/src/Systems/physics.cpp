@@ -87,7 +87,9 @@ void PhysicsForces::updatePosition(Transform* transform, Physics* physics, float
     }
     else {
         // sync dynamics from transform
-        physics->dynamics.position.x = transform->x;
+        physics->dynamics.position.x = transform->x;physics->dynamics.position.x += physics->dynamics.velocity.x * deltaTime;
+        transform->x = physics->dynamics.position.x;
+
         physics->dynamics.position.y = transform->y;
         physics->dynamics.velocity.y = 0.0f;
         //physics->velY = 0.0f;
