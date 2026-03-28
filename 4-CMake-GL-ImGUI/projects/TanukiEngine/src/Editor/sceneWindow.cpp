@@ -765,7 +765,16 @@ void SceneWindow::duplicateScenePopup(GameObjectManager& manager) {
 void SceneWindow::loadScenePopup(GameObjectManager& manager) {
     if (m_menuBarState.showLoadScenePopup) {
         m_menuBarState.showLoadScenePopup = false;
-        if (EditorManager::isEditingMode()) ImGui::OpenPopup("Confirm Load Scene"); // only load scene when not playing simulation
+        // not playing simulation
+        if (EditorManager::isEditingMode()) {
+            // got unsave changes
+            if (UndoRedoManager::Instance().canUndo() || UndoRedoManager::Instance().canRedo()) {
+                ImGui::OpenPopup("Confirm Load Scene");
+            }
+            else {
+                loadScene(manager);
+            }
+        }
         else {
             DebugLog::addMessage("Playing simulation, cannot load scene.\n");
             DebugLog::addMessage("Playing simulation, cannot load scene.\n", DebugMode::PlaySimul);
