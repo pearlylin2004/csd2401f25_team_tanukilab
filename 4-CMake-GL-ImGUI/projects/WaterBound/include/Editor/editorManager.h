@@ -141,6 +141,7 @@ private:
 	void renderWeapon(GameObject* selected);
 	void renderButton(GameObject* selected);
 	void renderCamera(GameObject* selected);
+	void renderVideo(GameObject* selected);
 	void renderLayerControls(GameObject* selected);
 
 	void wrongFileTypePopup(const std::string& filename);

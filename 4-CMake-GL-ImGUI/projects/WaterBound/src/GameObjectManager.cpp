@@ -548,6 +548,18 @@ void GameObjectManager::loadSceneFromJson(const std::string& filename) {
 				cam->mapHeight = jcam["mapHeight"].GetFloat();
 		}
 
+		//----- Video -----
+		if (comps.HasMember("Video") && comps["Video"].IsObject()) {
+			const auto& jvid = comps["Video"];
+			auto* vid = go->getComponent<Video>();
+			if (!vid) vid = go->addComponent<Video>();
+
+			if (jvid.HasMember("videoFile") && jvid["videoFile"].IsString())
+				vid->videoFile = jvid["videoFile"].GetString();
+			if (jvid.HasMember("loop") && jvid["loop"].IsNumber())
+				vid->loop = jvid["loop"].GetInt() != 0;
+		}
+
 		// ---- Input (presence only) ----
 		if (comps.HasMember("Input") && comps["Input"].IsObject()) {
 			auto* i = go->getComponent<Input>();
@@ -1444,6 +1456,32 @@ doc.AddMember("layers", layersArr, a);
 				pushIfDiffFloat("mapHeight", cam->mapHeight);
 
 				if (!jcam.ObjectEmpty()) comps.AddMember("Camera", jcam, a);
+			}
+
+			//---- Video -------
+			if (auto vid = obj->getComponent<Video>()) {
+				rapidjson::Value jvid(rapidjson::kObjectType);
+				const rapidjson::Value* prefabVid = PM.getPrefabJsonComp(prefabDoc, "Video");
+
+				auto pushIfDiffString = [&](const char* key, const std::string& val) {
+					if (!prefabVid || !prefabVid->HasMember(key) ||
+						!(*prefabVid)[key].IsString() ||
+						((*prefabVid)[key].GetString() != val)) {
+						jvid.AddMember(rapidjson::Value(key, a), rapidjson::Value(val.c_str(), a), a);
+					}
+					};
+				auto pushIfDiffBool = [&](const char* key, bool val) {
+					if (!prefabVid || !prefabVid->HasMember(key) ||
+						!(*prefabVid)[key].IsNumber() ||
+						((*prefabVid)[key].GetInt() != (val ? 1 : 0))) {
+						jvid.AddMember(rapidjson::Value(key, a), rapidjson::Value(val ? 1 : 0), a);
+					}
+					};
+
+				pushIfDiffString("videoFile", vid->videoFile);
+				pushIfDiffBool("loop", vid->loop);
+
+				if (!jvid.ObjectEmpty()) comps.AddMember("Video", jvid, a);
 			}
 
 			// ---- Physics ----

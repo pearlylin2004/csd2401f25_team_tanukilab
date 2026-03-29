@@ -108,7 +108,7 @@ public:
 public:
     std::string videoFile = "";
     plm_t* plm = nullptr;
-    bool isPlaying = false;
+    bool isPlaying = true;
     bool isPaused = false;
 	bool loop = false;
     GLuint videoTexID = 0;

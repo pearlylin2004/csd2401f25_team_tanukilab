@@ -297,6 +297,15 @@ void InspectorWindow::render() {
 		}
 		/* ------------------- END ------------------- */
 
+        /* ------------------- Video ------------------- */
+        if (selected->hasComponent<Video>()) {
+            renderVideo(selected);
+            ImGui::Spacing();
+            ImGui::Separator();
+            ImGui::Spacing();
+        }
+        /* ------------------- END ------------------- */
+
         /* ------------------- Layer Controls ------------------- */
         if (selected == m_objSelectionState.selectedObject) renderLayerControls(selected);
         /* ------------------- END ------------------- */
@@ -1385,6 +1394,136 @@ void InspectorWindow::renderInput(GameObject* selected) {
                     std::make_unique<RemoveComponentCmd>(m_manager, selected, *entry)
                 );
                 DebugLog::addMessage("Removed Input Control\n");
+            }
+        }
+    }
+}
+
+void InspectorWindow::renderVideo(GameObject* selected)
+{
+    Video* video = selected->getComponent<Video>();
+    const Editor::ComponentEntry* entry = Editor::findEntry("Video");
+
+    if (ImGui::CollapsingHeader("Video")) {
+
+        // Video file drag and drop button (same pattern as animation texture)
+        std::string displayName = video->videoFile.empty() ? "(Drop video file here)" : video->videoFile;
+        ImGui::Button(displayName.c_str(), ImVec2(-1, 0));
+
+        if (ImGui::BeginDragDropTarget()) {
+            if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("ASSET")) {
+                const char* droppedPath = (const char*)payload->Data;
+                std::string path = droppedPath;
+
+                const std::string debugPrefix = "Debug/";
+                std::filesystem::path fsPath(path);
+                if (fsPath.string().find(debugPrefix) == 0) {
+                    fsPath = fsPath.string().substr(debugPrefix.size());
+                }
+
+                std::string ext = fsPath.extension().string();
+                std::transform(ext.begin(), ext.end(), ext.begin(), ::tolower);
+
+                if (ext == ".mpg" || ext == ".mpeg") {
+                    if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
+
+                    // cleanup old video if one was already loaded
+                    if (video->plm) VideoSystem::cleanup(video);
+                    video->videoFile = path;
+
+                    if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
+
+                    DebugLog::addMessage("Changed video file to " + path + "\n");
+                }
+                else {
+                    Editor::popupState.textureFileTypePopup = true;
+                    Editor::popupState.filename = fsPath.filename().string();
+                    DebugLog::addMessage("Invalid video format: " + path + "\n");
+                }
+            }
+            ImGui::EndDragDropTarget();
+        }
+
+        // Clear video file button
+        if (!video->videoFile.empty()) {
+            if (ImGui::Button("Clear Video")) {
+                if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
+
+                if (video->plm) VideoSystem::cleanup(video);
+                video->videoFile.clear();
+                video->isPlaying = false;
+                video->isPaused = false;
+                video->accumTime = 0.f;
+
+                if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
+            }
+        }
+
+        ImGui::Spacing();
+        ImGui::Separator();
+
+        // Playback controls
+        if (ImGui::Checkbox("Loop", &video->loop)) {
+            video->loop = !video->loop;
+            if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
+            video->loop = !video->loop;
+            if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
+        }
+
+        ImGui::Spacing();
+
+        // Only show play/pause/stop during play mode
+        ImGui::BeginDisabled(EditorManager::isEditingMode() || video->videoFile.empty());
+
+        if (!video->isPlaying) {
+            if (ImGui::Button("Play", ImVec2(-1, 0))) {
+                video->isPlaying = true;
+                video->isPaused = false;
+            }
+        }
+        else {
+            if (video->isPaused) {
+                if (ImGui::Button("Resume", ImVec2(-1, 0))) {
+                    video->isPaused = false;
+                }
+            }
+            else {
+                if (ImGui::Button("Pause", ImVec2(-1, 0))) {
+                    video->isPaused = true;
+                }
+            }
+
+            if (ImGui::Button("Stop", ImVec2(-1, 0))) {
+                VideoSystem::cleanup(video);
+                video->isPlaying = false;
+                video->isPaused = false;
+                video->accumTime = 0.f;
+            }
+        }
+
+        ImGui::EndDisabled();
+
+        ImGui::Spacing();
+
+        // Read-only info
+        if (video->plm) {
+            ImGui::LabelText("FPS", "%.2f", video->fps);
+            ImGui::LabelText("Resolution", "%d x %d", video->videoWidth, video->videoHeight);
+        }
+        else {
+            ImGui::TextDisabled("No video loaded");
+        }
+
+        ImGui::Spacing();
+
+        // Remove button
+        if (entry) {
+            if (ImGui::Button("Remove Video", ImVec2(-1, 0))) {
+                if (video->plm) VideoSystem::cleanup(video);
+                UndoRedoManager::Instance().executeCmd(
+                    std::make_unique<RemoveComponentCmd>(m_manager, selected, *entry)
+                );
+                DebugLog::addMessage("Removed Video component\n");
             }
         }
     }

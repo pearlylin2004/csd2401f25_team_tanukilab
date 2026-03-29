@@ -221,6 +221,9 @@ namespace JsonIO {
 	std::string serializeButton(GameObject* obj);
 	void deserializeButton(GameObject* obj, const std::string& json);
 
+	std::string serializeVideo(GameObject* obj);
+	void deserializeVideo(GameObject* obj, const std::string& json);
+
 
 	std::string serializeGameObj(GameObject* obj);
 	GameObject* deserializeGameObj(GameObjectManager& manager, const std::string& jsonStr);

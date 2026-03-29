@@ -314,9 +314,12 @@ void RenderSystem::update(GameObjectManager& manager, float const& deltaTime)
 	instancePerBatch(objectWithTex);
 	for (std::pair<const BatchKey, std::vector<renderer::InstanceData>>& pair : objectWithTex)
 	{
+		
 		const BatchKey& key = pair.first;
 		//std::vector<renderer::InstanceData>& instances = pair.second;
 		glBindTextureUnit(0, key.texID);
+		GLuint isVid = glGetUniformLocation(renderer::shdr_pgm[0], "isVid");
+		glUniform1i(isVid, key.vid ? 1 : 0);
 		GLint uTexLoc = glGetUniformLocation(renderer::shdr_pgm[0], "uTex2d");
 		if (uTexLoc != -1) 
 			glUniform1i(uTexLoc, 0);
@@ -478,7 +481,11 @@ void RenderSystem::batchingSetUp(GameObjectManager& manager, float const& deltaT
 			//video has highest priority for texture, if video is present, it will override the render component's texture
 			if (obj->hasComponent<Video>())
 			{
+					
 				Video* video = obj->getComponent<Video>();
+				std::cerr << "[VIDEO] found video obj, isPlaying=" << video->isPlaying
+					<< " plm=" << video->plm
+					<< " texID=" << video->videoTexID << "\n";
 				if (video->isPlaying)
 				{
 					VideoSystem::update(obj, deltaTime); // Update video frame and texture
@@ -634,12 +641,23 @@ void VideoSystem::update(GameObject* obj, float const deltaTime)
 		video->accumTime -= 1.f / video->fps;
 		// Decode and update texture
 		plm_frame_t* frame = plm_decode_video(video->plm);
+		//std::cerr << "[VIDEO] decode attempt, frame=" << frame << "\n";
 		if (frame) {
 			std::vector<uint8_t> pixels(video->videoWidth * video->videoHeight * 4);
 			plm_frame_to_rgba(frame, pixels.data(), video->videoWidth * 4);
+			for (int i = 3; i < (int)pixels.size(); i += 4)
+				pixels[i] = 255;
+			std::vector<uint8_t> flipped(pixels.size());
+			int rowSize = video->videoWidth * 4;
+			for (int y = 0; y < video->videoHeight; y++) {
+				memcpy(flipped.data() + y * rowSize,
+					pixels.data() + (video->videoHeight - 1 - y) * rowSize,
+					rowSize);
+			}
 			glBindTexture(GL_TEXTURE_2D, video->videoTexID);
 			glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, video->videoWidth, video->videoHeight,
-				GL_RGBA, GL_UNSIGNED_BYTE, pixels.data());
+				GL_RGBA, GL_UNSIGNED_BYTE, flipped.data());
+			//std::cerr << "[VIDEO] uploaded frame to texID=" << video->videoTexID << "\n";
 		}
 	}
 	if (plm_has_ended(video->plm)) {
@@ -684,6 +702,25 @@ bool VideoSystem::loadVideo(Video* video) {
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	plm_frame_t* firstFrame = plm_decode_video(video->plm);
+	if (firstFrame) {
+		std::vector<uint8_t> pixels(video->videoWidth * video->videoHeight * 4);
+		plm_frame_to_rgba(firstFrame, pixels.data(), video->videoWidth * 4);
+
+		for (int i = 3; i < (int)pixels.size(); i += 4)
+			pixels[i] = 255;
+
+		std::vector<uint8_t> flipped(pixels.size());
+		int rowSize = video->videoWidth * 4;
+		for (int y = 0; y < video->videoHeight; y++) {
+			memcpy(flipped.data() + y * rowSize,
+				pixels.data() + (video->videoHeight - 1 - y) * rowSize,
+				rowSize);
+		}
+
+		glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, video->videoWidth, video->videoHeight,
+			GL_RGBA, GL_UNSIGNED_BYTE, flipped.data());
+	}
 
 	return true;
 }

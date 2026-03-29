@@ -1055,6 +1055,35 @@ namespace JsonIO {
         if (jp.HasMember("particleAmt") && jp["particleAmt"].IsInt())   p->master.particleAmt = jp["particleAmt"].GetInt();
     }
 
+    std::string serializeVideo(GameObject* obj) {
+        Video* v = obj ? obj->getComponent<Video>() : nullptr;
+        if (!v) return "";
+        using namespace rapidjson;
+        Document doc; doc.SetObject();
+        auto& a = doc.GetAllocator();
+        Value jv(kObjectType);
+        jv.AddMember("videoFile", Value(v->videoFile.c_str(), a), a);
+        jv.AddMember("loop", Value(v->loop ? 1 : 0), a);
+        doc.AddMember("Video", jv, a);
+        StringBuffer buf; Writer<StringBuffer> w(buf); doc.Accept(w);
+        return buf.GetString();
+    }
+
+    void deserializeVideo(GameObject* obj, const std::string& json) {
+        if (!obj || json.empty()) return;
+        using namespace rapidjson;
+        Document doc; doc.Parse(json.c_str());
+        if (doc.HasParseError() || !doc.HasMember("Video")) return;
+        const Value& jv = doc["Video"];
+        Video* v = obj->hasComponent<Video>()
+            ? obj->getComponent<Video>()
+            : obj->addComponent<Video>();
+        if (jv.HasMember("videoFile") && jv["videoFile"].IsString())
+            v->videoFile = jv["videoFile"].GetString();
+        if (jv.HasMember("loop") && jv["loop"].IsNumber())
+            v->loop = jv["loop"].GetInt() != 0;
+    }
+
     std::string serializePhysics(GameObject* obj) {
         Physics* p = obj ? obj->getComponent<Physics>() : nullptr;
         if (!p) return "";
