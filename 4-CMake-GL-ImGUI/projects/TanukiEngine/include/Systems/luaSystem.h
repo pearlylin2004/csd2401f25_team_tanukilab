@@ -166,6 +166,10 @@ public:
 	static int Lua_getEditorMouseWorldY(lua_State* L);
 	static int Lua_isGamepadConnected(lua_State* L);
 	static int Lua_isComboKeyTriggered(lua_State* L);
+	static int Lua_isGamepadButtonHeld(lua_State* L);
+	static int Lua_isGamepadButtonTriggered(lua_State* L);
+	static int Lua_getGamepadAxisRX(lua_State* L);
+	static int Lua_getGamepadAxisRY(lua_State* L);
 
 
 	/* -------- FSM -------- */

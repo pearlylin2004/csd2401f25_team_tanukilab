@@ -131,6 +131,10 @@ void LuaSystem::init(GameObjectManager& manager) {
     lua_register(L, "getEditorMouseWorldY", Lua_getEditorMouseWorldY);
     lua_register(L, "isGamepadConnected", Lua_isGamepadConnected);
     lua_register(L, "isComboKeyTriggered", Lua_isComboKeyTriggered);
+    lua_register(L, "isGamepadButtonHeld", Lua_isGamepadButtonHeld);
+    lua_register(L, "isGamepadButtonTriggered", Lua_isGamepadButtonTriggered);
+    lua_register(L, "getGamepadAxisRX", Lua_getGamepadAxisRX);
+    lua_register(L, "getGamepadAxisRY", Lua_getGamepadAxisRY);
 
     // FSM
     lua_register(L, "getPlayerState", Lua_getPlayerState);
@@ -1085,11 +1089,11 @@ int LuaSystem::Lua_isKeyReleased(lua_State* L) {
 }
 
 int LuaSystem::Lua_isMouseLeftHeld(lua_State* L) {
-    bool result = InputHandler::isMouseLeftHeld();
-    if (!result)
-        result = InputHandler::isGamepadButtonHeld(GLFW_GAMEPAD_BUTTON_RIGHT_BUMPER); // R1 = left held
+    //bool result = InputHandler::isMouseLeftHeld();
+    //if (!result)
+    //    result = InputHandler::isGamepadButtonHeld(GLFW_GAMEPAD_BUTTON_RIGHT_BUMPER); // R1 = left held
 
-    lua_pushboolean(L, result ? 1 : 0);
+    lua_pushboolean(L, InputHandler::isMouseLeftHeld() ? 1 : 0);
     return 1;
 }
 
@@ -1210,6 +1214,60 @@ int LuaSystem::Lua_isComboKeyTriggered(lua_State* L) {
     int k1 = toGLFW(key1Str);
     int k2 = toGLFW(key2Str);
     lua_pushboolean(L, (k1 != -1 && k2 != -1 && InputHandler::isComboKeyTriggered(k1, k2)) ? 1 : 0);
+    return 1;
+}
+
+int LuaSystem::Lua_isGamepadButtonHeld(lua_State* L) {
+    const char* btnStr = lua_tostring(L, 1);
+    if (!btnStr) { lua_pushboolean(L, 0); return 1; }
+
+    int btn = -1;
+    if (strcmp(btnStr, "A") == 0) btn = GLFW_GAMEPAD_BUTTON_A;          // Cross
+    else if (strcmp(btnStr, "B") == 0) btn = GLFW_GAMEPAD_BUTTON_B;     // Circle
+    else if (strcmp(btnStr, "X") == 0) btn = GLFW_GAMEPAD_BUTTON_X;     // Square
+    else if (strcmp(btnStr, "Y") == 0) btn = GLFW_GAMEPAD_BUTTON_Y;     // Triangle
+    else if (strcmp(btnStr, "L1") == 0) btn = GLFW_GAMEPAD_BUTTON_LEFT_BUMPER;
+    else if (strcmp(btnStr, "R1") == 0) btn = GLFW_GAMEPAD_BUTTON_RIGHT_BUMPER;
+    else if (strcmp(btnStr, "START") == 0) btn = GLFW_GAMEPAD_BUTTON_START;
+    else if (strcmp(btnStr, "SELECT") == 0) btn = GLFW_GAMEPAD_BUTTON_BACK;
+    else if (strcmp(btnStr, "DPAD_UP") == 0) btn = GLFW_GAMEPAD_BUTTON_DPAD_UP;
+    else if (strcmp(btnStr, "DPAD_DOWN") == 0) btn = GLFW_GAMEPAD_BUTTON_DPAD_DOWN;
+    else if (strcmp(btnStr, "DPAD_LEFT") == 0) btn = GLFW_GAMEPAD_BUTTON_DPAD_LEFT;
+    else if (strcmp(btnStr, "DPAD_RIGHT") == 0) btn = GLFW_GAMEPAD_BUTTON_DPAD_RIGHT;
+
+    lua_pushboolean(L, (btn != -1 && InputHandler::isGamepadButtonHeld(btn)) ? 1 : 0);
+    return 1;
+}
+
+int LuaSystem::Lua_isGamepadButtonTriggered(lua_State* L) {
+    const char* btnStr = lua_tostring(L, 1);
+    if (!btnStr) { lua_pushboolean(L, 0); return 1; }
+
+    int btn = -1;
+    if (strcmp(btnStr, "A") == 0) btn = GLFW_GAMEPAD_BUTTON_A;
+    else if (strcmp(btnStr, "B") == 0) btn = GLFW_GAMEPAD_BUTTON_B;
+    else if (strcmp(btnStr, "X") == 0) btn = GLFW_GAMEPAD_BUTTON_X;
+    else if (strcmp(btnStr, "Y") == 0) btn = GLFW_GAMEPAD_BUTTON_Y;
+    else if (strcmp(btnStr, "L1") == 0) btn = GLFW_GAMEPAD_BUTTON_LEFT_BUMPER;
+    else if (strcmp(btnStr, "R1") == 0) btn = GLFW_GAMEPAD_BUTTON_RIGHT_BUMPER;
+    else if (strcmp(btnStr, "START") == 0) btn = GLFW_GAMEPAD_BUTTON_START;
+    else if (strcmp(btnStr, "SELECT") == 0) btn = GLFW_GAMEPAD_BUTTON_BACK;
+    else if (strcmp(btnStr, "DPAD_UP") == 0) btn = GLFW_GAMEPAD_BUTTON_DPAD_UP;
+    else if (strcmp(btnStr, "DPAD_DOWN") == 0) btn = GLFW_GAMEPAD_BUTTON_DPAD_DOWN;
+    else if (strcmp(btnStr, "DPAD_LEFT") == 0) btn = GLFW_GAMEPAD_BUTTON_DPAD_LEFT;
+    else if (strcmp(btnStr, "DPAD_RIGHT") == 0) btn = GLFW_GAMEPAD_BUTTON_DPAD_RIGHT;
+
+    lua_pushboolean(L, (btn != -1 && InputHandler::isGamepadButtonTriggered(btn)) ? 1 : 0);
+    return 1;
+}
+
+int LuaSystem::Lua_getGamepadAxisRX(lua_State* L) {
+    lua_pushnumber(L, InputHandler::getGamepadAxis(GLFW_GAMEPAD_AXIS_RIGHT_X));
+    return 1;
+}
+
+int LuaSystem::Lua_getGamepadAxisRY(lua_State* L) {
+    lua_pushnumber(L, InputHandler::getGamepadAxis(GLFW_GAMEPAD_AXIS_RIGHT_Y));
     return 1;
 }
 

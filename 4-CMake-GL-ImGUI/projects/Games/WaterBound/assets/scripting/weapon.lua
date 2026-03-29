@@ -60,7 +60,9 @@ function weapon.Update(obj, dt)
 
     -- aim at mouse
     local wx, wy = getPosition(obj)
-    local shouldAim = not isEditorOpen() or isSceneHovered() or isGamepadConnected()
+    local rightStickUsed = isGamepadConnected() and
+        (math.abs(getGamepadAxisRX()) > 0.15 or math.abs(getGamepadAxisRY()) > 0.15)
+    local shouldAim = not isEditorOpen() or isSceneHovered() or rightStickUsed
 
     if shouldAim then
         local aimOrigin = parent or obj

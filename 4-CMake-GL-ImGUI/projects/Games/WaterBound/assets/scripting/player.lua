@@ -157,7 +157,10 @@ function player.Update(obj, dt)
 
     -- flip to face mouse when not moving
     if not Input_isKeyHeld("A") and not Input_isKeyHeld("D") then
-        if not isEditorOpen() or isSceneHovered() or isGamepadConnected()  then
+        local rightStickUsed = isGamepadConnected() and
+            (math.abs(getGamepadAxisRX()) > 0.15 or math.abs(getGamepadAxisRY()) > 0.15)
+
+        if not isEditorOpen() or isSceneHovered() or rightStickUsed then
             local mx = isEditorOpen() and getEditorMouseWorldX(obj) or getMouseWorldX(obj)
             local x, y = getPosition(obj)
             setFlipX(obj, mx < x)
@@ -283,7 +286,9 @@ function player.Update(obj, dt)
     shootTimer = shootTimer + dt
     setShootTimer(obj, shootTimer)
 
-    if not isMouseLeftHeld() or (isEditorOpen() and not isSceneHovered() and not isGamepadConnected()) then
+    local canShootNow = (isMouseLeftHeld() and (not isEditorOpen() or isSceneHovered()))
+                 or (isGamepadConnected() and isGamepadButtonHeld("R1"))
+    if not canShootNow then
         setShootTimer(obj, getFireRate(obj))
         return
     end
