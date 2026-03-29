@@ -603,9 +603,6 @@ void AudioHandler::setLowPassFilter(bool enable, float cutoff) {
 			m_lowPassDSP->setParameterFloat(FMOD_DSP_LOWPASS_CUTOFF, cutoff);
 			m_lowPassDSP->setParameterFloat(FMOD_DSP_LOWPASS_RESONANCE, 1.f);
 			m_lowPassDSP->setActive(true);
-
-			std::cout << "yes set liao\n\n";
-
 		}
 	}
 	else {

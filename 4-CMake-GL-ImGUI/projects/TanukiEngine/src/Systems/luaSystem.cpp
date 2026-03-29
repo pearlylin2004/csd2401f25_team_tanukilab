@@ -1383,7 +1383,7 @@ int LuaSystem::Lua_requestBGM(lua_State* L) {
 int LuaSystem::Lua_setLowPassFilter(lua_State* L) {
     bool enable = lua_toboolean(L, 1) != 0;
     float cutoff = lua_isnumber(L, 2) ? (float)lua_tonumber(L, 2) : 500.f;
-    std::cout << "yes called\n\n";
+
     AudioHandler::getInstance().setLowPassFilter(enable, cutoff);
     return 0;
 }
