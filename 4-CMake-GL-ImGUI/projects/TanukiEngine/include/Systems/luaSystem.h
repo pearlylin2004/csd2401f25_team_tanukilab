@@ -164,6 +164,7 @@ public:
 	static int Lua_getEditorMouseWorldX(lua_State* L);
 	static int Lua_getEditorMouseWorldY(lua_State* L);
 	static int Lua_isGamepadConnected(lua_State* L);
+	static int Lua_isComboKeyTriggered(lua_State* L);
 
 
 	/* -------- FSM -------- */
@@ -232,6 +233,11 @@ public:
 	/* -------- Debug -------- */
 	static int Lua_debugLog(lua_State* L); // print message in play simulation debug log
 	static int Lua_debugLogPlay(lua_State* L);
+
+
+	/* -------- Scene Stuff -------- */
+	static int Lua_loadLevel(lua_State* L);
+	static int Lua_getCurrentScene(lua_State* L);
 
 
 	/* -------- Object Things ---- */

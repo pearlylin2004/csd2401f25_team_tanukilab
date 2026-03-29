@@ -129,6 +129,7 @@ void LuaSystem::init(GameObjectManager& manager) {
     lua_register(L, "getEditorMouseWorldX", Lua_getEditorMouseWorldX);
     lua_register(L, "getEditorMouseWorldY", Lua_getEditorMouseWorldY);
     lua_register(L, "isGamepadConnected", Lua_isGamepadConnected);
+    lua_register(L, "isComboKeyTriggered", Lua_isComboKeyTriggered);
 
     // FSM
     lua_register(L, "getPlayerState", Lua_getPlayerState);
@@ -188,6 +189,10 @@ void LuaSystem::init(GameObjectManager& manager) {
     // debug
     lua_register(L, "debugLog", Lua_debugLog);
     lua_register(L, "debugLogPlay", Lua_debugLogPlay);
+
+    // scene stuff
+    lua_register(L, "loadLevel", Lua_loadLevel);
+    lua_register(L, "getCurrentScene", Lua_getCurrentScene);
 
     registerManagerBindings(manager);
 }
@@ -1172,6 +1177,30 @@ int LuaSystem::Lua_isGamepadConnected(lua_State* L) {
     return 1;
 }
 
+int LuaSystem::Lua_isComboKeyTriggered(lua_State* L) {
+    const char* key1Str = lua_tostring(L, 1);
+    const char* key2Str = lua_tostring(L, 2);
+    if (!key1Str || !key2Str) { lua_pushboolean(L, 0); return 1; }
+
+    auto toGLFW = [](const char* s) -> int {
+        if (strcmp(s, "A") == 0) return GLFW_KEY_A;
+        if (strcmp(s, "D") == 0) return GLFW_KEY_D;
+        if (strcmp(s, "W") == 0) return GLFW_KEY_W;
+        if (strcmp(s, "S") == 0) return GLFW_KEY_S;
+        if (strcmp(s, "N") == 0) return GLFW_KEY_N;
+        if (strcmp(s, "E") == 0) return GLFW_KEY_E;
+        if (strcmp(s, "G") == 0) return GLFW_KEY_G;
+        if (strcmp(s, "CTRL") == 0) return GLFW_KEY_LEFT_CONTROL;
+        if (strcmp(s, "SHIFT") == 0) return GLFW_KEY_LEFT_SHIFT;
+        return -1;
+        };
+
+    int k1 = toGLFW(key1Str);
+    int k2 = toGLFW(key2Str);
+    lua_pushboolean(L, (k1 != -1 && k2 != -1 && InputHandler::isComboKeyTriggered(k1, k2)) ? 1 : 0);
+    return 1;
+}
+
 /* ---- FSM ---- */
 int LuaSystem::Lua_getPlayerState(lua_State* L) {
     GameObject* obj = static_cast<GameObject*>(lua_touserdata(L, 1));
@@ -1616,6 +1645,27 @@ int LuaSystem::Lua_debugLogPlay(lua_State* L) {
 
     return 0;
 }
+
+
+/* --- scene stuff ---- */
+int LuaSystem::Lua_loadLevel(lua_State* L) {
+    const char* sceneName = lua_tostring(L, 1);
+    if (!sceneName) return 0;
+
+    GUISystem::getInstance().m_pendingLevelLoad = true;
+    GUISystem::getInstance().m_pendingLevelName = std::string(sceneName);
+    return 0;
+}
+
+int LuaSystem::Lua_getCurrentScene(lua_State* L) {
+    std::string scene = GUISystem::getInstance().getCurrentLevel();
+    // strip path, just return filename
+    std::filesystem::path p(scene);
+
+    lua_pushstring(L, p.filename().string().c_str());
+    return 1;
+}
+
 
 /* ---- object things ---- */
 int LuaSystem::Lua_getAllObjects(lua_State* L) {

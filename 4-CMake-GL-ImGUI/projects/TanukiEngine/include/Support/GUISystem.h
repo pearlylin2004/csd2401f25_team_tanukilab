@@ -63,6 +63,8 @@ public:
     void setPreviousState(GameState state) { m_previousState = state; } //set previous state
     void setStateBeforePause(GameState state) { m_stateBeforePause = state; } //set state before pause
 
+    const std::string& getCurrentLevel() const { return m_currentLevel; }
+
 	GameState sceneToState(const std::string& sceneName); //convert scene name to game state
 
     void restartLevel(); // restart current level

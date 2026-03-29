@@ -761,7 +761,7 @@ void VisualLogicSystem::executeActionNode(GameObject* obj, VisualLC* logic, Logi
 	}
 	else if (node.imp == NodeImplementation::LOAD_LEVEL) {
 		std::string levelName = node.parameters.count("levelName") ?
-			node.parameters["levelName"] : "level01.json";
+			node.parameters["levelName"] : "";
 		GUISystem::getInstance().m_pendingLevelLoad = true;
 		GUISystem::getInstance().m_pendingLevelName = levelName;
 	}
