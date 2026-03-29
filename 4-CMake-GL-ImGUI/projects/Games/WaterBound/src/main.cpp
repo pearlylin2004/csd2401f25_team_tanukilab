@@ -41,6 +41,23 @@ int main(int argc, char** argv) {
         luaScript = std::make_unique<LuaGameScript>(engine->getLuaSystem());
         engine->setGameScript(luaScript.get());
 
+        // only work for game build
+        engine->setOnUpdate([&]() {
+            // F1 to quit
+            if (InputHandler::isKeyTriggered(GLFW_KEY_F1))
+                engine->stop();
+
+            // ESC or OPTION on gamepad to pause
+            if (InputHandler::isKeyTriggered(GLFW_KEY_ESCAPE) ||
+                InputHandler::isGamepadButtonTriggered(GLFW_GAMEPAD_BUTTON_START)) {
+                auto current = GUISystem::getInstance().getCurrentState();
+                if (current != GameState::PAUSED && current != GameState::MENU) {
+                    GUISystem::getInstance().setStateBeforePause(current);
+                    GUISystem::getInstance().changeState(GameState::PAUSED, "pause_scene.json");
+                }
+            }
+            });
+
         GlobalRegistry::Instance().setBasePath("./assets");
         GlobalRegistry::Instance().init();
 

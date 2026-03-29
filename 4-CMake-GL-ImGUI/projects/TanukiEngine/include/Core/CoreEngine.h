@@ -69,6 +69,9 @@ public:
     /*void runLauncher(std::function<bool()> launcherFn);*/
     void loadInitialScene(const std::string& sceneName);
 
+    void setOnUpdate(std::function<void()> fn) { m_onUpdate = fn; }
+    void stop() { m_isRunning = false; }
+
 private:
     void GameLoop();
     void Update(float deltaTime);
@@ -122,5 +125,5 @@ private:
     //std::unique_ptr<WeaponSystem> m_weaponSystem;
 
     std::function<bool()> m_launcherFn;
-
+    std::function<void()> m_onUpdate = nullptr;
 };

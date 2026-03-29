@@ -202,16 +202,19 @@ void CoreEngine::Run() {
 }
 
 void CoreEngine::GameLoop() {
+    if (m_onUpdate) m_onUpdate();
+
+    if (glfwWindowShouldClose(m_window)) { m_isRunning = false; return; }
     //change to fn because Q will affect the editor
-    if (glfwWindowShouldClose(m_window) || InputHandler::isKeyTriggered(GLFW_KEY_F1)) { m_isRunning = false; return; }
-    //pause checking, and set it to paused state if escape is held
-    if (InputHandler::isKeyTriggered(GLFW_KEY_ESCAPE)) {
-        auto current = GUISystem::getInstance().getCurrentState(); //get current state
-        if (current != GameState::PAUSED && current != GameState::MENU) {
-            GUISystem::getInstance().setStateBeforePause(current); //store state before pausing
-            GUISystem::getInstance().changeState(GameState::PAUSED, "pause_scene.json");
-        }
-    }
+    //if (glfwWindowShouldClose(m_window) || InputHandler::isKeyTriggered(GLFW_KEY_F1)) { m_isRunning = false; return; }
+    ////pause checking, and set it to paused state if escape is held
+    //if (InputHandler::isKeyTriggered(GLFW_KEY_ESCAPE)) {
+    //    auto current = GUISystem::getInstance().getCurrentState(); //get current state
+    //    if (current != GameState::PAUSED && current != GameState::MENU) {
+    //        GUISystem::getInstance().setStateBeforePause(current); //store state before pausing
+    //        GUISystem::getInstance().changeState(GameState::PAUSED, "pause_scene.json");
+    //    }
+    //}
 
     //use glfwGetWindowAttrib to check the GLFW_ICONIFIED status for efficient waiting
     int status = glfwGetWindowAttrib(m_window, GLFW_ICONIFIED);
