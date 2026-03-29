@@ -587,6 +587,41 @@ void AudioHandler::setMasterVolume(float vol) {
     }
 }
 
+void AudioHandler::setLowPassFilter(bool enable, float cutoff) {
+	if (!system) return;
+
+	if (enable) {
+		if (!m_lowPassDSP) {
+			system->createDSPByType(FMOD_DSP_TYPE_LOWPASS, &m_lowPassDSP);
+		}
+
+		// add to master channel group
+		FMOD::ChannelGroup* masterGroup = nullptr;
+		system->getMasterChannelGroup(&masterGroup);
+		if (masterGroup) {
+			masterGroup->addDSP(0, m_lowPassDSP);
+			m_lowPassDSP->setParameterFloat(FMOD_DSP_LOWPASS_CUTOFF, cutoff);
+			m_lowPassDSP->setParameterFloat(FMOD_DSP_LOWPASS_RESONANCE, 1.f);
+			m_lowPassDSP->setActive(true);
+
+			std::cout << "yes set liao\n\n";
+
+		}
+	}
+	else {
+		if (m_lowPassDSP) {
+			FMOD::ChannelGroup* masterGroup = nullptr;
+
+			system->getMasterChannelGroup(&masterGroup);
+			if (masterGroup)
+				masterGroup->removeDSP(m_lowPassDSP);
+
+			m_lowPassDSP->release();
+			m_lowPassDSP = nullptr;
+		}
+	}
+}
+
 void AudioHandler::requestBGM(const std::string& channelName, GameObjectManager& manager) {
 	// find the object that has this channel
 	std::vector<GameObject*> objs;
