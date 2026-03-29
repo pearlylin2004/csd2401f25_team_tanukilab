@@ -5,12 +5,24 @@
       "name": "pause_background",
       "components": {
         "Transform": {
-          "pos": [0.0, 0.0, 0.0],
-          "scale": [10.0, 8.0, 0.0] 
+          "pos": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "rotation": 0.0,
+          "scale": [
+            12.600000381469727,
+            10.080000877380371,
+            0.0
+          ]
         },
         "Render": {
           "shape": "square",
-          "hasTex": 0
+          "hasTex": 1,
+          "texture": "assets/Texture\\Pause_Sign_Base_V2.png",
+          "hasTex": 1,
+          "hasAnimation": 0
         }
       }
     },
@@ -18,14 +30,28 @@
       "name": "control_button",
       "components": {
         "Transform": {
-          "pos": [0.0, 2.0, 1.0],
-          "scale": [7.0, 1.5, 0.0]
+          "pos": [
+            0.0,
+            0.800000011920929,
+            1.0
+          ],
+          "rotation": 0.0,
+          "scale": [
+            7.0,
+            1.5,
+            0.0
+          ]
         },
         "Render": {
           "shape": "square",
           "hasTex": 1,
           "texture": "assets/button.png",
-          "clr": [ 1.0, 1.0, 1.0 ]
+          "hasTex": 1,
+          "hasAnimation": 0
+        },
+        "Button": {
+          "action": "load_scene",
+          "scenePath": "control_scene.json"
         }
       }
     },
@@ -33,42 +59,27 @@
       "name": "control_text",
       "components": {
         "Transform": {
-          "pos": [-1.5, 1.8, 1.0]
+          "pos": [
+            -2.200000047683716,
+            0.5,
+            1.0
+          ],
+          "rotation": 0.0,
+          "scale": [
+            1.0,
+            1.0,
+            0.0
+          ]
         },
         "FontComponent": {
-          "word": "HOW TO PLAY",
-          "color": [0.0, 0.0, 0.0],
-          "scale": 0.5,
-          "fontType": 1
-        }
-      }
-    },
-    {
-      "name": "resume_text",
-      "components": {
-        "Transform": {
-          "pos": [-2.0, -0.3, 1.0]
-        },
-        "FontComponent": {
-          "word": "RESUME GAME",
-          "color": [0.0, 0.0, 0.0],
-          "scale": 0.5,
-          "fontType": 1
-        }
-      }
-    },
-    {
-      "name": "resume_button",
-      "components": {
-        "Transform": {
-          "pos": [0.0, 0.0, 1.0],
-          "scale": [7.0, 1.5, 0.0]
-        },
-        "Render": {
-          "shape": "square",
-          "hasTex": 1,
-          "texture": "assets/button.png",
-          "clr": [ 1.0, 1.0, 1.0 ]
+          "word": "HOw to play",
+          "color": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "scale": 0.8999999761581421,
+          "fontType": 0
         }
       }
     },
@@ -76,13 +87,55 @@
       "name": "menu_text",
       "components": {
         "Transform": {
-          "pos": [-1.5, -2.3, 1.0]
+          "pos": [
+            -2.200000047683716,
+            -2.700000047683716,
+            1.0
+          ],
+          "rotation": 0.0,
+          "scale": [
+            1.0,
+            1.0,
+            0.0
+          ]
         },
         "FontComponent": {
           "word": "MAIN MENU",
-          "color": [0.0, 0.0, 0.0],
-          "scale": 0.5,
-          "fontType": 1
+          "color": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "scale": 0.8999999761581421,
+          "fontType": 0
+        }
+      }
+    },
+    {
+      "name": "resume_text",
+      "components": {
+        "Transform": {
+          "pos": [
+            -2.4000000953674316,
+            -1.0,
+            1.0
+          ],
+          "rotation": 0.0,
+          "scale": [
+            1.0,
+            1.0,
+            0.0
+          ]
+        },
+        "FontComponent": {
+          "word": "RESUME GAME",
+          "color": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "scale": 0.8999999761581421,
+          "fontType": 0
         }
       }
     },
@@ -90,14 +143,255 @@
       "name": "menu_button",
       "components": {
         "Transform": {
-          "pos": [0.0, -2.0, 1.0],
-          "scale": [7.0, 1.5, 0.0]
+          "pos": [
+            0.0,
+            -2.4000000953674316,
+            1.0
+          ],
+          "rotation": 0.0,
+          "scale": [
+            7.0,
+            1.5,
+            0.0
+          ]
         },
         "Render": {
           "shape": "square",
           "hasTex": 1,
           "texture": "assets/button.png",
-          "clr": [ 1.0, 1.0, 1.0 ]
+          "hasTex": 1,
+          "hasAnimation": 0
+        },
+        "Button": {
+          "action": "load_scene",
+          "scenePath": "menu_scene.json"
+        }
+      }
+    },
+    {
+      "name": "resume_button",
+      "components": {
+        "Transform": {
+          "pos": [
+            0.0,
+            -0.699999988079071,
+            1.0
+          ],
+          "rotation": 0.0,
+          "scale": [
+            7.0,
+            1.5,
+            0.0
+          ]
+        },
+        "Render": {
+          "shape": "square",
+          "hasTex": 1,
+          "texture": "assets/button.png",
+          "hasTex": 1,
+          "hasAnimation": 0
+        },
+        "Button": {
+          "action": "resume_game"
+        }
+      }
+    }
+  ]
+}{
+  "version": 1,
+  "objects": [
+    {
+      "name": "pause_background",
+      "components": {
+        "Transform": {
+          "pos": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "rotation": 0.0,
+          "scale": [
+            12.600000381469727,
+            10.080000877380371,
+            0.0
+          ]
+        },
+        "Render": {
+          "shape": "square",
+          "hasTex": 1,
+          "texture": "assets/Texture\\Pause_Sign_Base_V2.png",
+          "hasTex": 1,
+          "hasAnimation": 0
+        }
+      }
+    },
+    {
+      "name": "control_button",
+      "components": {
+        "Transform": {
+          "pos": [
+            0.0,
+            0.800000011920929,
+            1.0
+          ],
+          "rotation": 0.0,
+          "scale": [
+            7.0,
+            1.5,
+            0.0
+          ]
+        },
+        "Render": {
+          "shape": "square",
+          "hasTex": 1,
+          "texture": "assets/button.png",
+          "hasTex": 1,
+          "hasAnimation": 0
+        },
+        "Button": {
+          "action": "load_scene",
+          "scenePath": "control_scene.json"
+        }
+      }
+    },
+    {
+      "name": "control_text",
+      "components": {
+        "Transform": {
+          "pos": [
+            -2.200000047683716,
+            0.5,
+            1.0
+          ],
+          "rotation": 0.0,
+          "scale": [
+            1.0,
+            1.0,
+            0.0
+          ]
+        },
+        "FontComponent": {
+          "word": "HOw to play",
+          "color": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "scale": 0.8999999761581421,
+          "fontType": 0
+        }
+      }
+    },
+    {
+      "name": "menu_text",
+      "components": {
+        "Transform": {
+          "pos": [
+            -2.200000047683716,
+            -2.700000047683716,
+            1.0
+          ],
+          "rotation": 0.0,
+          "scale": [
+            1.0,
+            1.0,
+            0.0
+          ]
+        },
+        "FontComponent": {
+          "word": "MAIN MENU",
+          "color": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "scale": 0.8999999761581421,
+          "fontType": 0
+        }
+      }
+    },
+    {
+      "name": "resume_text",
+      "components": {
+        "Transform": {
+          "pos": [
+            -2.4000000953674316,
+            -1.0,
+            1.0
+          ],
+          "rotation": 0.0,
+          "scale": [
+            1.0,
+            1.0,
+            0.0
+          ]
+        },
+        "FontComponent": {
+          "word": "RESUME GAME",
+          "color": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "scale": 0.8999999761581421,
+          "fontType": 0
+        }
+      }
+    },
+    {
+      "name": "menu_button",
+      "components": {
+        "Transform": {
+          "pos": [
+            0.0,
+            -2.4000000953674316,
+            1.0
+          ],
+          "rotation": 0.0,
+          "scale": [
+            7.0,
+            1.5,
+            0.0
+          ]
+        },
+        "Render": {
+          "shape": "square",
+          "hasTex": 1,
+          "texture": "assets/button.png",
+          "hasTex": 1,
+          "hasAnimation": 0
+        },
+        "Button": {
+          "action": "load_scene",
+          "scenePath": "menu_scene.json"
+        }
+      }
+    },
+    {
+      "name": "resume_button",
+      "components": {
+        "Transform": {
+          "pos": [
+            0.0,
+            -0.699999988079071,
+            1.0
+          ],
+          "rotation": 0.0,
+          "scale": [
+            7.0,
+            1.5,
+            0.0
+          ]
+        },
+        "Render": {
+          "shape": "square",
+          "hasTex": 1,
+          "texture": "assets/button.png",
+          "hasTex": 1,
+          "hasAnimation": 0
+        },
+        "Button": {
+          "action": "resume_game"
         }
       }
     }
