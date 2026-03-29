@@ -106,7 +106,6 @@ function buoyancy.Update(obj, dt)
 
         ::continue::
     end
-    print("obj: " .. getObjectName(obj) .. " inWater: " .. tostring(inWater))
 
     setInWater(obj, inWater)
 end
