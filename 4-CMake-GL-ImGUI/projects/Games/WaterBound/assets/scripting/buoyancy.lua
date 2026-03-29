@@ -25,9 +25,12 @@ function buoyancy.Update(obj, dt)
         local wx, wy = getPosition(waterObj)
         local waterMinX = wx - waterW * 0.5
         local waterMaxX = wx + waterW * 0.5
+        local waterMinY = wy - waterH * 0.5
+        local waterMaxY = wy + waterH * 0.5
 
         local ox, oy = getPosition(obj)
         if ox < waterMinX or ox > waterMaxX then goto continue end
+        if oy < waterMinY or oy > waterMaxY then goto continue end
 
         inWater = true
 
