@@ -17,15 +17,12 @@ Technology is prohibited.
 
 enum class ButtonAction {
     NONE,
-    START_GAME,
-    OPEN_CONTROL,
-    OPEN_AUDIO,
+    LOAD_SCENE,
     EXIT_GAME,
     RESUME_GAME,
     YES_EXIT,
     NO_EXIT,
     BACK,
-    MENU,
     MUSIC_VOL_UP,
     MUSIC_VOL_DOWN,
     SFX_VOL_UP,

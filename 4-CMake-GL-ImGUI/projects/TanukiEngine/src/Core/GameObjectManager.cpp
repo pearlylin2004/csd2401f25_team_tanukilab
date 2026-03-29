@@ -1160,7 +1160,7 @@ void GameObjectManager::loadSceneFromJson(const std::string& filename) {
 	// }
 	/* ---- END ---- */
 
-	GUISystem::getInstance().createButtons();
+	ButtonSystem::getInstance().refresh();
 
 	std::cout << "Total game objects loaded: " << m_gameObjects.size() << std::endl;
 

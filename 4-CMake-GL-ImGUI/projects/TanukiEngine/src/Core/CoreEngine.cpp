@@ -509,28 +509,3 @@ void CoreEngine::loadInitialScene(const std::string& sceneName) {
     m_manager->loadScene(fullPath);
     m_manager->initializeSceneResources();
 }
-
-//void CoreEngine::startBGM() {
-//    if (m_bgmChannel) return;
-//    AudioChannel bgm;
-//    bgm.audioFile = m_bgmFilePath;
-//    bgm.loop = true;
-//    bgm.volume = 0.125f;
-//    m_bgmChannel = AudioHandler::getInstance().playBGMSound(&bgm);
-//    AudioHandler::getInstance().registerBGMChannel(m_bgmChannel);
-//}
-//
-//void CoreEngine::stopBGM() {
-//    if (m_bgmChannel) {
-//        m_bgmChannel->stop();
-//        m_bgmChannel = nullptr;
-//    }
-//}
-//
-//void CoreEngine::pauseBGM() {
-//    if (m_bgmChannel) m_bgmChannel->setPaused(true);
-//}
-//
-//void CoreEngine::resumeBGM() {
-//    if (m_bgmChannel) m_bgmChannel->setPaused(false);
-//}

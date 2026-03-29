@@ -32,19 +32,6 @@ static std::string runtimeScenePath(std::string const& name) {
     return std::string(RUNTIME_SCENE_DIR_R) + "/" + name;
 }
 
-/*GUISystem::GUISystem() :
-    m_currentState(GameState::NONE),
-    m_previousState(GameState::MENU),
-    m_stateBeforePause(GameState::MENU),
-    g_manager(nullptr),
-    g_luaSystem(nullptr) {
-    std::cout << "[GUI] GUISystem constructor called" << std::endl;
-}
-
-GUISystem::~GUISystem() {
-    std::cout << "[GUI] GUISystem destructor called" << std::endl;
-}*/
-
 void GUISystem::init(GameObjectManager& manager, LuaSystem& luaSystem, VisualLogicSystem& vlSystem) {
     std::cout << "[GUI] GUISystem::init started" << std::endl;
 
@@ -64,142 +51,18 @@ void GUISystem::update() {
 
     if (m_pendingLevelLoad && !UISystem::isShowUI()) {
         m_pendingLevelLoad = false;
+
         std::string levelToLoad = m_pendingLevelName;
         m_pendingLevelName = "";
-        if (levelToLoad == "win_scene.json") {
+
+        if (levelToLoad == "win_scene.json")
             loadScreen(*g_manager, levelToLoad);
-        }
-        else {
+        else
             loadLevel(levelToLoad);
-        }
+
         return;
     }
-
-    if (m_pendingAction != ButtonAction::NONE) {
-        auto actionIt = m_buttonActions.find(m_pendingAction);
-        m_pendingAction = ButtonAction::NONE;
-        if (actionIt != m_buttonActions.end()) actionIt->second();
-        return;
-    }
-
-    if (EditorManager::isEditingMode()) return;
-    //if (m_currentState == GameState::PLAYING) return;
-    if (UISystem::isShowUI()) return; // skip if UI is shown
-    //if (m_buttons.empty()) return;
-
-    Vector2D worldMousePos = InputHandler::getWorldMousePosition();
-
-    //if (InputHandler::isMouseButtonClicked(GLFW_MOUSE_BUTTON_LEFT)) {
-    //    //iterate with iterator to safely remove invalid buttons
-    //    for (auto it = m_buttons.begin(); it != m_buttons.end(); ) {
-    //        GameObject* btn = it->second;
-    //        if (isPointInButton(worldMousePos, btn)) {
-    //            Button* btnComp = btn->getComponent<Button>(); //get button component
-    //            if (btnComp) {
-    //                auto actionIt = m_buttonActions.find(btnComp->actionName); //find action by name
-    //                if (actionIt != m_buttonActions.end()) actionIt->second(); //execute action
-    //            }
-    //            return; //stop checking after a click
-    //        }
-    //        ++it;
-    //    }
-    //}
-
-    // on hover
-    for (auto it = m_buttons.begin(); it != m_buttons.end(); ++it) {
-        GameObject* btnObj = it->second;
-        Button* btnComp = btnObj->getComponent<Button>();
-        if (!btnComp) continue;
-
-        bool isOver = isPointInButton(worldMousePos, btnObj);
-
-        // hover sound
-        if (isOver && !btnComp->isHovered && !btnComp->onHoverChannel.empty()) {
-            AudioComponent* audio = btnObj->getComponent<AudioComponent>();
-            if (audio) {
-                AudioChannel* ch = audio->getChannel(btnComp->onHoverChannel);
-                if (ch) ch->isPendingPlay = true;
-            }
-        }
-
-        // hover exit
-        if (!isOver && btnComp->isHovered && !btnComp->onHoverChannel.empty()) {
-            AudioComponent* audio = btnObj->getComponent<AudioComponent>();
-            if (audio) {
-                AudioChannel* ch = audio->getChannel(btnComp->onHoverChannel);
-                if (ch) ch->isPendingStop = true;
-            }
-        }
-
-        btnComp->isHovered = isOver;
-    }
-
-    // on audio
-    if (InputHandler::isMouseButtonClicked(GLFW_MOUSE_BUTTON_LEFT)) {
-        for (auto it = m_buttons.begin(); it != m_buttons.end(); ) {
-            GameObject* btnObj = it->second;
-            if (isPointInButton(worldMousePos, btnObj)) {
-                Button* btnComp = btnObj->getComponent<Button>();
-                if (btnComp) {
-                    // play click sounda
-                    if (!btnComp->onClickChannel.empty()) {
-                        AudioComponent* audio = btnObj->getComponent<AudioComponent>();
-                        if (audio) {
-                            AudioChannel* ch = audio->getChannel(btnComp->onClickChannel);
-                            if (ch) {
-                                ch->isPendingPlay = true;
-                                ch->persistOnSceneChange = true;
-                            }
-                        }
-                    }
-
-                    m_pendingAction = btnComp->actionName; // run action next frame so we can play audio first
-
-                }
-                return;
-            }
-            ++it;
-        }
-    }
-}
-
-//creation of buttons
-void GUISystem::createButtons(/*GameObjectManager& manager*/) {
-    //clear previous references
-    removeButtons();
-
-    //get all game objects from manager
-    std::vector<GameObject*> allObjs;
-    g_manager->getAllGameObjects(allObjs);
-
-    if (allObjs.empty()) return; //check if its empty
-
-    //iterate through all objects to find buttons
-    for (GameObject* obj : allObjs) {
-        if (!obj) continue; //safety check
-        if (!obj->hasComponent<Button>() || !obj->hasComponent<Transform>()) continue; //check if it has button and transform component
-
-        Button* btnComp = obj->getComponent<Button>(); //get button component
-        m_buttons[btnComp->actionName] = obj; //store button in map with action name as key
-    }
-
-    if(m_buttons.empty()) {
-        std::cout << "[GUI] No buttons found in the current scene." << std::endl;
-	}
-    else {
-        createButtonActions(); //create button actions
-        std::cout << "[GUI] Menu buttons created successfully" << std::endl;
-    }   
-
-    // Safe to update volume display here, after all buttons/actions are set up
-    if (m_currentState == GameState::AUDIO) {
-        updateVolumeDisplay();
-    }
-}
-
-//removing of buttons 
-void GUISystem::removeButtons() {
-    m_buttons.clear(); //clear map
+	ButtonSystem::getInstance().update(); //check for button clicking and handle actions
 }
 
 //to update state
@@ -210,109 +73,6 @@ void GUISystem::changeState(GameState newState, const std::string& sceneName) {
     if (!sceneName.empty()) {
         loadScreen(*g_manager, sceneName);
     }
-}
-
-//create button actions
-void GUISystem::createButtonActions() {
-    m_buttonActions.clear();
-
-    //play
-    m_buttonActions[ButtonAction::START_GAME] = [this]() {
-        changeState(GameState::PLAYING);
-        startGame();
-     };
-
-    //exit confirmation
-    m_buttonActions[ButtonAction::EXIT_GAME] = [this]() {
-        changeState(GameState::EXITCONFIRMATION, "confirmation_scene.json");
-     };
-
-    //control screen
-    m_buttonActions[ButtonAction::OPEN_CONTROL] = [this]() {
-        changeState(GameState::CONTROL, "control_scene.json");
-     };
-
-    // audio scene
-    m_buttonActions[ButtonAction::OPEN_AUDIO] = [this]() {
-        changeState(GameState::AUDIO, "audio_scene.json");
-        //updateVolumeDisplay();
-    };
-
-    m_buttonActions[ButtonAction::BACK] = [this]() {
-        switch (m_previousState) {
-        case GameState::MENU:
-            changeState(GameState::MENU, "menu_scene.json");
-            break;
-        case GameState::CONTROL:
-            changeState(GameState::CONTROL, "control_scene.json");
-            break;
-        case GameState::AUDIO:
-            changeState(GameState::AUDIO, "audio_scene.json");
-            break;
-        case GameState::PAUSED:
-            changeState(GameState::PAUSED, "pause_scene.json");
-            break;
-        case GameState::PLAYING:
-            startGame(); // resume the game
-            break;
-        case GameState::EXITCONFIRMATION:
-            changeState(GameState::EXITCONFIRMATION, "confirmation_scene.json");
-            break;
-        default:
-            changeState(GameState::MENU, "menu_scene.json");
-            break;
-        }
-    };
-
-    //menu button
-    m_buttonActions[ButtonAction::MENU] = [this]() {
-        changeState(GameState::MENU, "menu_scene.json");
-    };
-
-    //resume
-    m_buttonActions[ButtonAction::RESUME_GAME] = [this]() {
-        m_buttonActions[ButtonAction::BACK](); //uses logic from back
-    };
-
-    //exit confirmation screen yes/no
-    m_buttonActions[ButtonAction::YES_EXIT] = [this]() {
-        m_currentState = GameState::EXIT;
-        stopGame();
-    };
-
-    m_buttonActions[ButtonAction::NO_EXIT] = [this]() {
-        m_currentState = GameState::MENU;
-        loadScreen(*g_manager, "menu_scene.json");
-    };
-
-    // Single master volume controls
-    m_buttonActions[ButtonAction::MUSIC_VOL_UP] = [this]() {
-        AudioHandler& ah = AudioHandler::getInstance();
-        ah.setMasterVolume(ah.getMasterVolume() + 0.1f);
-        m_previousVolume = ah.getMasterVolume();
-        updateVolumeDisplay();
-    };
-    m_buttonActions[ButtonAction::MUSIC_VOL_DOWN] = [this]() {
-        AudioHandler& ah = AudioHandler::getInstance();
-        ah.setMasterVolume(ah.getMasterVolume() - 0.1f);
-        m_previousVolume = ah.getMasterVolume();
-        updateVolumeDisplay();
-    };
-    //mute
-    m_buttonActions[ButtonAction::MUTE] = [this]() {
-        AudioHandler& ah = AudioHandler::getInstance();
-        m_previousVolume = ah.getMasterVolume();
-        ah.setMasterVolume(ah.getMasterVolume() * 0);
-        updateVolumeDisplay();
-    };
-    //unmute
-    m_buttonActions[ButtonAction::UNMUTE] = [this]() {
-        AudioHandler& ah = AudioHandler::getInstance();
-        ah.setMasterVolume(m_previousVolume);
-        updateVolumeDisplay();
-    };
-
-    std::cout << "[GUI] Menu buttons created successfully" << std::endl;
 }
 
 void GUISystem::updateVolumeDisplay() {
@@ -332,8 +92,6 @@ void GUISystem::startGame() {
     //change state to playing
 	m_currentState = GameState::PLAYING;
     level = 1;
-
-    removeButtons(); //remove menu buttons
 
 	loadScreenNoButton(*g_manager, "level01.json");
 
@@ -375,35 +133,17 @@ void GUISystem::stopGame() {
     }
 }
 
-//check if mouse is pointing the button
-bool GUISystem::isPointInButton(const Vector2D& point, GameObject* button) {
-    if (!button || !button->hasComponent<Transform>()) return false;
-
-    Transform* transform = button->getComponent<Transform>();
-
-    // Simple AABB collision check for button
-    float halfWidth = transform->scaleX * 0.5f;
-    float halfHeight = transform->scaleY * 0.5f;
-
-    return (point.x >= transform->x - halfWidth &&
-        point.x <= transform->x + halfWidth &&
-        point.y >= transform->y - halfHeight &&
-        point.y <= transform->y + halfHeight);
-}
-
 //buttons
 void GUISystem::loadScreen(GameObjectManager& manager, const std::string& sceneName) {
     std::cout << "[GUI] Loading screen: " << sceneName << "\n";
 
-    removeButtons(); // clear references
     AudioHandler::getInstance().stopAll(manager);
     manager.clearScene(); //delete al scene object
 
     manager.loadScene(runtimeScenePath(sceneName));
     manager.initializeSceneResources();
+    ButtonSystem::getInstance().refresh();
     if (m_onSceneLoadCallback) m_onSceneLoadCallback(*g_manager);
-
-    createButtons(/*manager*/);
 }
 
 //no buttons
@@ -451,13 +191,12 @@ void GUISystem::restartLevel() {
         return;
     }
 
-    removeButtons();
     AudioHandler::getInstance().stopAll(*g_manager);
 
     g_manager->clearScene();
     g_manager->loadScene(m_currentLevel);
     g_manager->initializeSceneResources();
-
+    ButtonSystem::getInstance().refresh();
     if (m_onSceneLoadCallback) m_onSceneLoadCallback(*g_manager);
 
     g_visualLogicSystem->resetLogicState();
@@ -472,15 +211,13 @@ void GUISystem::loadLevel(const std::string& levelName) {
     std::string fullPath = std::string(RUNTIME_SCENE_DIR_R) + "/" + levelName;
     m_currentLevel = fullPath;
 
-    //m_currentLevel = levelName;
-    removeButtons();
     AudioHandler::getInstance().stopAll(*g_manager);
 
     g_manager->clearScene();
 
     g_manager->loadScene(fullPath);
     g_manager->initializeSceneResources();
-
+    ButtonSystem::getInstance().refresh();
     if (m_onSceneLoadCallback) m_onSceneLoadCallback(*g_manager);
 
     g_visualLogicSystem->resetLogicState();

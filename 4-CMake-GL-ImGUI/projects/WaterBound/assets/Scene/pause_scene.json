@@ -50,7 +50,8 @@
           "hasAnimation": 0
         },
         "Button": {
-          "action": "open_control"
+          "action": "load_scene",
+          "scenePath": "control_scene.json"
         }
       }
     },
@@ -162,7 +163,8 @@
           "hasAnimation": 0
         },
         "Button": {
-          "action": "menu"
+          "action": "load_scene",
+          "scenePath": "menu_scene.json"
         }
       }
     },

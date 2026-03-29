@@ -32,9 +32,10 @@ public:
 
 private:
     void clearButtons();
-    void dispatchAction(ButtonAction action, const std::string& scenePath);
+    //void dispatchAction(ButtonAction action, const std::string& scenePath);
     bool isPointInButton(const Vector2D& point, GameObject* button) const;
     void updateVolumeDisplay() const;
+    void handleAction(const Button& btn);
 
     ButtonSystem() = default;
     ~ButtonSystem() = default;
@@ -42,7 +43,7 @@ private:
     ButtonSystem& operator=(const ButtonSystem&) = delete;
 
     GameObjectManager* g_manager = nullptr;
-    std::unordered_map<ButtonAction, GameObject*> m_buttons;
+    std::vector<GameObject*> m_buttons;
     ButtonAction m_pendingAction = ButtonAction::NONE;
     std::string  m_pendingScenePath = "";
 

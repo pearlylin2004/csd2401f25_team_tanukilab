@@ -58,8 +58,6 @@ public:
 	void loadLevel(const std::string& levelSceneName); // load next level
     void resetAllObjectsToSpawn(); // helper for restart
 
-    void createButtons(/*GameObjectManager& manager*/); //create menu buttons
-
     // for on scene load
     std::function<void(GameObjectManager&)> m_onSceneLoadCallback;
     void setOnSceneLoadCallback(std::function<void(GameObjectManager&)> cb) {
@@ -69,7 +67,6 @@ public:
         if (m_onSceneLoadCallback) m_onSceneLoadCallback(manager);
     }
 
-    ButtonAction m_pendingAction = ButtonAction::NONE;
     bool m_pendingRestart = false;
     bool m_pendingLevelLoad = false;
     std::string m_pendingLevelName = "";
@@ -80,16 +77,9 @@ private:
     GUISystem(const GUISystem&) = delete; // prevent copying
     GUISystem& operator=(const GUISystem&) = delete; // prevent assignment
 
-    void removeButtons(); //remove menu buttons
     void startGame(); //start game
     void stopGame(); //stop game	
     void updateVolumeDisplay(); //update volume % text on audio page
-
-    bool isPointInButton(const Vector2D& point, GameObject* button);
-    void createButtonActions(); //create button actions
-
-    std::unordered_map<ButtonAction, GameObject*> m_buttons; //for storing buttons 
-	std::unordered_map<ButtonAction, std::function<void()>> m_buttonActions; //map of button actions
 
     GameState m_currentState = GameState::NONE;
     GameState m_previousState = GameState::MENU;

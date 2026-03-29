@@ -189,7 +189,7 @@ void MenuBar::playSimulation(GameObjectManager& manager) {
     // refresh cached object vector
     CachedGameObjects::Instance().refresh();
 
-    GUISystem::getInstance().createButtons();
+    ButtonSystem::getInstance().refresh();
 
     GUISystem::getInstance().triggerSceneLoad(manager);
 

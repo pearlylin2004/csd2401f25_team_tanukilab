@@ -1,4 +1,4 @@
-/* Start Header ************************************************************************/
+﻿/* Start Header ************************************************************************/
 /*!
 \file       ButtonSystem.cpp
 \author     Pearly Lin Lee Ying, p.lin, 2401591
@@ -29,7 +29,7 @@ void ButtonSystem::init(GameObjectManager& manager) {
     g_manager = &manager;
 }
 
-//refresh
+//refresh -- the old createButtons from GUI
 void ButtonSystem::refresh() {
     clearButtons();
     if (!g_manager) return;
@@ -40,9 +40,7 @@ void ButtonSystem::refresh() {
     for (GameObject* obj : all) {
         if (!obj) continue;
         if (!obj->hasComponent<Button>() || !obj->hasComponent<Transform>()) continue;
-
-        Button* btn = obj->getComponent<Button>();
-        m_buttons[btn->actionName] = obj;
+        m_buttons.push_back(obj);
     }
 
     if (m_buttons.empty())
@@ -55,8 +53,90 @@ void ButtonSystem::refresh() {
         updateVolumeDisplay();
 }
 
-//update
+//update -- the old createButtonAction from GUI
+void ButtonSystem::update() {
+    if (!g_manager) return;
+    if (UISystem::isShowUI()) return;
+    if (EditorManager::isEditingMode()) return;
 
+    Vector2D mouse = InputHandler::getWorldMousePosition();
+    for (GameObject* obj : m_buttons) {
+        Button* btn = obj->getComponent<Button>();
+        if (!btn) continue;
+        bool isOver = isPointInButton(mouse, obj);
+        if (isOver && !btn->isHovered && !btn->onHoverChannel.empty()) {
+            if (auto* audio = obj->getComponent<AudioComponent>()) {
+                if (auto* ch = audio->getChannel(btn->onHoverChannel)) {
+                    ch->isPendingPlay = true;
+                }
+            }
+        }
+        if (!isOver && btn->isHovered && !btn->onHoverChannel.empty()) {
+            if (auto* audio = obj->getComponent<AudioComponent>()) {
+                if (auto* ch = audio->getChannel(btn->onHoverChannel)) {
+                    ch->isPendingStop = true;
+                }
+            }
+        }
+        btn->isHovered = isOver;
+        if (isOver && InputHandler::isMouseButtonClicked(GLFW_MOUSE_BUTTON_LEFT)) {
+            handleAction(*btn);
+			std::cout << "[ButtonSystem] Button '" << obj->getObjectName() << "' clicked. Action: " << static_cast<int>(btn->actionName) << "\n";
+            // play click sound
+            if (!btn->onClickChannel.empty()) {
+                if (auto* audio = obj->getComponent<AudioComponent>()) {
+                    if (auto* ch = audio->getChannel(btn->onClickChannel)) {
+                        ch->isPendingPlay = true;
+                    }
+                }
+            }
+            handleAction(*btn);
+            return;
+        }
+    }
+}
+
+//handle button action
+void ButtonSystem::handleAction(const Button& btn) {
+    auto& sceneMgr = SceneManager::getInstance();
+
+    switch (btn.actionName) {
+
+    case ButtonAction::LOAD_SCENE:
+        if (!btn.scenePath.empty()) {
+            sceneMgr.loadScene(btn.scenePath);
+        }
+        break;
+
+    case ButtonAction::EXIT_GAME:
+        glfwSetWindowShouldClose(glfwGetCurrentContext(), true);
+        break;
+
+    case ButtonAction::MUSIC_VOL_UP: {
+        auto& ah = AudioHandler::getInstance();
+        ah.setMasterVolume(ah.getMasterVolume() + 0.1f);
+        updateVolumeDisplay();
+        break;
+    }
+
+    case ButtonAction::MUSIC_VOL_DOWN: {
+        auto& ah = AudioHandler::getInstance();
+        ah.setMasterVolume(ah.getMasterVolume() - 0.1f);
+        updateVolumeDisplay();
+        break;
+    }
+
+    default:
+        break;
+    }
+}
+
+//update volume display (for audio settings page)
+void ButtonSystem::updateVolumeDisplay() const{
+    // TODO: implement the actual volume display update
+    // For now, you can leave it empty to get a successful build:
+    // (or add debug logging)
+}
 
 //clear button
 void ButtonSystem::clearButtons() {

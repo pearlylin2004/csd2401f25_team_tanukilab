@@ -120,7 +120,8 @@
           "filename": "shakeWhenHover.json"
         },
         "Button": {
-          "action": "start_game",
+          "action": "load_scene",
+          "scenePath": "level01.json",
           "onClickChannel": "on_click",
           "onHoverChannel": "button_hover"
         }
@@ -194,7 +195,8 @@
           "filename": "shakeWhenHover.json"
         },
         "Button": {
-          "action": "open_control",
+          "action": "load_scene",
+          "scenePath": "control_scene.json",
           "onClickChannel": "on_click",
           "onHoverChannel": "button_hover"
         }
@@ -268,7 +270,8 @@
           "filename": "shakeWhenHover.json"
         },
         "Button": {
-          "action": "open_audio",
+          "action": "load_scene",
+          "scenePath": "audio_scene.json",
           "onClickChannel": "on_click",
           "onHoverChannel": "button_hover"
         }
