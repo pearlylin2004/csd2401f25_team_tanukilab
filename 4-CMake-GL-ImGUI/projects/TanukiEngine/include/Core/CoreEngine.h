@@ -35,6 +35,7 @@ Technology is prohibited.
 #include "globalRegistry.h"
 #include "GameScript.h"
 #include "PathManager.h"
+#include "SceneManager.h"
 
 class CoreEngine {
 public:
