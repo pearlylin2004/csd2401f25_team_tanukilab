@@ -1751,7 +1751,7 @@ namespace JsonIO {
         auto& a = doc.GetAllocator();
         Value jb(kObjectType);
 
-        jb.AddMember("action", rapidjson::Value(static_cast<int>(b->actionName)), a);
+        jb.AddMember("action", static_cast<int>(b->actionName), a);
         jb.AddMember("isHovered", b->isHovered, a);
         jb.AddMember("isPressed", b->isPressed, a);
         jb.AddMember("onClickChannel", Value(b->onClickChannel.c_str(), a), a);
@@ -1777,11 +1777,14 @@ namespace JsonIO {
             ? obj->getComponent<Button>()
             : obj->addComponent<Button>();
 
-        if (jb.HasMember("actionName"))     b->actionName = static_cast<ButtonAction>(jb["actionName"].GetInt());
-        if (jb.HasMember("isHovered"))      b->isHovered = jb["isHovered"].GetBool();
-        if (jb.HasMember("isPressed"))      b->isPressed = jb["isPressed"].GetBool();
+        if (jb.HasMember("action") && jb["action"].IsString()) {
+            b->actionName = JsonIO::StrToButtonAction(jb["action"].GetString());
+        }
+        if (jb.HasMember("isHovered")) b->isHovered = jb["isHovered"].GetBool();
+        if (jb.HasMember("isPressed")) b->isPressed = jb["isPressed"].GetBool();
         if (jb.HasMember("onClickChannel")) b->onClickChannel = jb["onClickChannel"].GetString();
         if (jb.HasMember("onHoverChannel")) b->onHoverChannel = jb["onHoverChannel"].GetString();
+        if (jb.HasMember("scenePath")) b->scenePath = jb["scenePath"].GetString();
     }
 
     std::string serializeGameObj(GameObject* obj) {
@@ -1826,15 +1829,6 @@ namespace JsonIO {
         merge(serializeWaterBody(obj));
         merge(serializeWeapon(obj));
         merge(serializeButton(obj));
-
-        /*if (Button* b = obj->getComponent<Button>()) {
-            Value jb(kObjectType);
-            Value actionStr(ButtonActionToStr(b->actionName), a);
-            jb.AddMember("action", actionStr, a);
-            jb.AddMember("isHovered", b->isHovered, a);
-            jb.AddMember("isPressed", b->isPressed, a);
-            doc.AddMember("Button", jb, a);
-        }*/
 
         StringBuffer buf; Writer<StringBuffer> w(buf); doc.Accept(w);
         return buf.GetString();
@@ -2328,40 +2322,19 @@ void GameObjectManager::loadFromJson(const std::string& filename) {
 			const auto& jb = comps["Button"];
 			auto* b = go->addComponent<Button>();
 
-            if (jb.HasMember("action") && jb["action"].IsString()) {
-                std::string actionStr = jb["action"].GetString();
-                b->actionName = JsonIO::StrToButtonAction(actionStr);
+            if (jb.HasMember("action") && jb["action"].IsInt()) {
+                b->actionName = static_cast<ButtonAction>(jb["action"].GetInt());
             }
 
             if (jb.HasMember("scenePath") && jb["scenePath"].IsString()) {
                 b->scenePath = jb["scenePath"].GetString();
             }
         }
-
-        // ---- Animation ----
-        /*if (comps.HasMember("Animation") && comps["Animation"].IsObject()) {
-            const auto& ja = comps["Animation"];
-            auto* a = go->addComponent<Animation>();
-            if (ja.HasMember("loop")) {
-                a->loop = ja["loop"].IsBool()
-                    ? ja["loop"].GetBool()
-                    : (ja["loop"].GetInt() != 0);
-            }
-            if (ja.HasMember("currentFrameColumn") && ja["currentFrameColumn"].IsInt())
-                a->currentFrameColumn = ja["currentFrameColumn"].GetInt();
-            if (ja.HasMember("currentFrameRow") && ja["currentFrameRow"].IsInt())
-                a->currentFrameRow = ja["currentFrameRow"].GetInt();
-            if (ja.HasMember("totalColumn") && ja["totalColumn"].IsInt())
-                a->totalColumn = ja["totalColumn"].GetInt();
-            if (ja.HasMember("totalRow") && ja["totalRow"].IsInt())
-                a->totalRow = ja["totalRow"].GetInt();
-            if (ja.HasMember("frameTime") && ja["frameTime"].IsNumber())
-                a->frameTime = ja["frameTime"].GetFloat();
-        }*/
     }
 
     std::cout << "Scene loaded (JSON): " << filename << "\n";
 }
+
 /**
  * \brief Serializes a layer reference with both ID and name.
  * \param parent The JSON object to add the layer data to.
