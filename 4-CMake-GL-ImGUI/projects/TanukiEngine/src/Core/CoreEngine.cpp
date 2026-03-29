@@ -186,6 +186,12 @@ void CoreEngine::Init(bool forceWindowed) {
 void CoreEngine::Run() {
     // run launcher first if set
     while (m_launcherFn) {
+        if (glfwWindowShouldClose(m_window)) {
+            m_isRunning = false;
+            m_launcherFn = nullptr;
+            return;
+        }
+
         glfwPollEvents();
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
