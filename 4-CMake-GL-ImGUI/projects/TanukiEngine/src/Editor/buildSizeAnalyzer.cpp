@@ -175,15 +175,48 @@ void BuildSizeAnalyzer::render(const std::vector<Editor::Asset>& assets) {
 		ImGuiTableFlags_ScrollY |
 		ImGuiTableFlags_SizingStretchProp)) {
 
+		/* -- Table Header -- */
 		// headers
 		ImGui::TableSetupColumn("", ImGuiTableColumnFlags_WidthFixed, 30.f);  // checkbox
 		ImGui::TableSetupColumn("Asset Name", ImGuiTableColumnFlags_WidthStretch, 1.f);  // asset name
 		ImGui::TableSetupColumn("Size", ImGuiTableColumnFlags_WidthFixed, 80.f); // size
-		ImGui::TableHeadersRow();
 
-		for (BuildAssetEntry& entry : m_entries) {
+		ImGui::TableNextRow(ImGuiTableRowFlags_Headers);
+		ImGui::TableSetColumnIndex(0);
+		ImGui::TableHeader("");
+		ImGui::TableSetColumnIndex(1);
+		ImGui::TableHeader("Asset Name");
+		ImGui::TableSetColumnIndex(2);
+
+		// clickable size header
+		std::string sizeHeader = std::string("Size ") + (m_sortBySize ? (m_sortAscending ? "^" : "v") : "");
+		if (ImGui::Selectable(sizeHeader.c_str(), m_sortBySize, ImGuiSelectableFlags_SpanAllColumns)) {
+			if (!m_sortBySize) {
+				m_sortBySize = true; // first click -> sort ascending
+				m_sortAscending = true;
+			}
+			else if (m_sortAscending) {
+				m_sortAscending = false; // second click -> sort descending
+			}
+			else {
+				m_sortBySize = false; // third click -> clear sort
+				m_sortAscending = true;
+			}
+		}
+
+		// sort by size
+		std::vector<BuildAssetEntry*> sorted;
+		for (BuildAssetEntry& e : m_entries) sorted.push_back(&e);
+		if (m_sortBySize) {
+			std::sort(sorted.begin(), sorted.end(), [this](BuildAssetEntry* a, BuildAssetEntry* b) {
+				return m_sortAscending ? a->size < b->size : a->size > b->size;
+				});
+		}
+
+
+		for (BuildAssetEntry* entry : sorted) {
 			if (m_folderFilter != "All") {
-				std::string entryFolder = std::filesystem::path(entry.path).parent_path().filename().string();
+				std::string entryFolder = std::filesystem::path(entry->path).parent_path().filename().string();
 				if (entryFolder != m_folderFilter) continue;
 			}
 
@@ -191,19 +224,19 @@ void BuildSizeAnalyzer::render(const std::vector<Editor::Asset>& assets) {
 
 			// checkbox column
 			ImGui::TableSetColumnIndex(0);
-			bool sel = entry.selected;
-			if (ImGui::Checkbox(("##chk" + entry.path).c_str(), &sel)) {
-				entry.selected = sel;
-				m_savedSelections[entry.path] = sel;
+			bool sel = entry->selected;
+			if (ImGui::Checkbox(("##chk" + entry->path).c_str(), &sel)) {
+				entry->selected = sel;
+				m_savedSelections[entry->path] = sel;
 			}
 
 			// name column
 			ImGui::TableSetColumnIndex(1);
-			ImGui::TextUnformatted(entry.name.c_str());
+			ImGui::TextUnformatted(entry->name.c_str());
 
 			// size column
 			ImGui::TableSetColumnIndex(2);
-			ImGui::TextUnformatted(formatSize(entry.size).c_str());
+			ImGui::TextUnformatted(formatSize(entry->size).c_str());
 		}
 
 		ImGui::EndTable();
@@ -242,10 +275,21 @@ void BuildSizeAnalyzer::render(const std::vector<Editor::Asset>& assets) {
 	}
 
 
-	/* ---- Export UI ---- */
 	float buttonWidth = 100.f;
 	float buttonHeight = ImGui::GetFrameHeight();
 	ImVec2 windowSize = ImGui::GetWindowSize();
+
+
+	/* ---- Export Success Notification ---- */
+	if (m_exportSuccessTimer > 0.f) {
+		m_exportSuccessTimer -= ImGui::GetIO().DeltaTime;
+
+		ImGui::SetCursorPos(ImVec2(10.f, windowSize.y - buttonHeight - 10.f));
+		ImGui::TextColored(ImVec4(0.f, 1.f, 0.f, 1.f), "Export successful!");
+	}
+
+
+	/* ---- Export UI ---- */
 	ImGui::SetCursorPos(ImVec2(windowSize.x - buttonWidth - 10.f, windowSize.y - buttonHeight - 10.f));
 
 	// can only export if assets selected
@@ -261,6 +305,7 @@ void BuildSizeAnalyzer::render(const std::vector<Editor::Asset>& assets) {
 	}
 
 	if (!hasSelection) ImGui::EndDisabled();
+
 
 	ImGui::End();
 }
@@ -309,4 +354,6 @@ void BuildSizeAnalyzer::exportSelected() {
 			std::cerr << "[Build Size Analyzer] Failed to export " << entry.name << ": " << ec.message() << std::endl;
 		}
 	}
+
+	m_exportSuccessTimer = 5.f;
 }

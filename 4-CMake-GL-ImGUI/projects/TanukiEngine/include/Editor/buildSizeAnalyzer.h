@@ -41,6 +41,8 @@ private:
 	bool m_show = false;
 	bool m_dirty = true;
 	bool m_wasClosed = true;
+	bool m_sortBySize = false;
+	bool m_sortAscending = true;
 
 	std::vector<BuildAssetEntry> m_entries;
 	std::unordered_map<std::string, bool> m_savedSelections; // ensure persist across open/close
@@ -53,4 +55,7 @@ private:
 
 	// export folder dialog state
 	char m_exportPath[512] = "";
+
+	// for export success notification
+	float m_exportSuccessTimer = 0.f;
 };
