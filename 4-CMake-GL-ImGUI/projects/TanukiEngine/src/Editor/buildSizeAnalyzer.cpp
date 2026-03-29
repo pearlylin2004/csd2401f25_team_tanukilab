@@ -20,7 +20,6 @@ Technology is prohibited.
 #include <windows.h>
 #include <shlobj.h>
 #include <algorithm>
-#include <numeric>
 
 // helper func to format bytes nicely
 static std::string formatSize(uintmax_t bytes) {
@@ -246,14 +245,14 @@ void BuildSizeAnalyzer::render(const std::vector<Editor::Asset>& assets) {
 
 
 	/* ---- Total Size ---- */
-	m_totalSelectedSize = 0;
+	uintmax_t totalSelectedSize = 0;
 	uintmax_t filteredSelectedSize = 0;
 	size_t filteredSelectedCount = 0;
 	size_t totalSelectedCount = 0;
 
 	for (const BuildAssetEntry& e : m_entries) {
 		if (e.selected) {
-			m_totalSelectedSize += e.size;
+			totalSelectedSize += e.size;
 			totalSelectedCount++;
 		}
 		if (m_folderFilter != "All") {
@@ -268,10 +267,10 @@ void BuildSizeAnalyzer::render(const std::vector<Editor::Asset>& assets) {
 	ImGui::Separator();
 	if (m_folderFilter != "All") {
 		ImGui::Text("Current Filter: %s  (%zu selected)", formatSize(filteredSelectedSize).c_str(), filteredSelectedCount);
-		ImGui::Text("Total Selected: %s  (%zu selected)", formatSize(m_totalSelectedSize).c_str(), totalSelectedCount);
+		ImGui::Text("Total Selected: %s  (%zu selected)", formatSize(totalSelectedSize).c_str(), totalSelectedCount);
 	}
 	else {
-		ImGui::Text("Total Selected: %s  (%zu selected)", formatSize(m_totalSelectedSize).c_str(), totalSelectedCount);
+		ImGui::Text("Total Selected: %s  (%zu selected)", formatSize(totalSelectedSize).c_str(), totalSelectedCount);
 	}
 
 
@@ -281,11 +280,36 @@ void BuildSizeAnalyzer::render(const std::vector<Editor::Asset>& assets) {
 
 
 	/* ---- Export Success Notification ---- */
-	if (m_exportSuccessTimer > 0.f) {
-		m_exportSuccessTimer -= ImGui::GetIO().DeltaTime;
+	if (m_showExportResult) {
+
+		if (m_exportSuccessTimer > 0.f) {
+			m_exportSuccessTimer -= ImGui::GetIO().DeltaTime;
+
+			if (m_exportSuccessTimer <= 0.f)
+				m_showExportResult = false;
+		}
 
 		ImGui::SetCursorPos(ImVec2(10.f, windowSize.y - buttonHeight - 10.f));
-		ImGui::TextColored(ImVec4(0.f, 1.f, 0.f, 1.f), "Export successful!");
+
+		bool hadOverwrites = !m_overwrittenFiles.empty();
+
+		ImVec4 color = hadOverwrites ? ImVec4(1.f, 1.f, 0.f, 1.f) : ImVec4(0.f, 1.f, 0.f, 1.f);
+		ImGui::TextColored(color, "%s", m_exportResultMsg.c_str());
+
+		// show overwritten files + dismiss button
+		if (hadOverwrites) {
+			if (ImGui::CollapsingHeader("Overwritten Files")) {
+				ImGui::BeginChild("OverwrittenList", ImVec2(0, 80), true);
+
+				for (const std::string& name : m_overwrittenFiles)
+					ImGui::TextColored(ImVec4(1.f, 0.8f, 0.f, 1.f), "%s", name.c_str());
+
+				ImGui::EndChild();
+			}
+
+			if (ImGui::Button("Dismiss"))
+				m_showExportResult = false;
+		}
 	}
 
 
@@ -343,17 +367,35 @@ void BuildSizeAnalyzer::exportSelected() {
 	std::error_code ec;
 	std::filesystem::create_directories(dest, ec);
 
+	int exportedCount = 0;
+	m_overwrittenFiles.clear();
+
 	for (const BuildAssetEntry& entry : m_entries) {
 		if (!entry.selected) continue;
 
 		std::filesystem::path src(entry.path);
 		std::filesystem::path dst = dest / src.filename();
 
+		// file already exists -> track it
+		if (std::filesystem::exists(dst))
+			m_overwrittenFiles.push_back(entry.name);
+
 		std::filesystem::copy_file(src, dst, std::filesystem::copy_options::overwrite_existing, ec);
-		if (ec) {
+		if (ec)
 			std::cerr << "[Build Size Analyzer] Failed to export " << entry.name << ": " << ec.message() << std::endl;
-		}
+		else
+			exportedCount++;
 	}
 
-	m_exportSuccessTimer = 5.f;
+	size_t count = m_overwrittenFiles.size();
+	if (count > 0)
+		m_exportResultMsg = "Exported " + std::to_string(exportedCount) + " files (" + std::to_string(count) + " overwritten)";
+	else
+		m_exportResultMsg = "Export successful! (" + std::to_string(exportedCount) + " files)";
+
+	m_showExportResult = true;
+	if (count == 0)
+		m_exportSuccessTimer = 5.f;
+	else
+		m_exportSuccessTimer = -1.f;
 }

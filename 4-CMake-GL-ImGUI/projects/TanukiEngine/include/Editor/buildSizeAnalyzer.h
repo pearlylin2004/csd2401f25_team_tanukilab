@@ -43,6 +43,7 @@ private:
 	bool m_wasClosed = true;
 	bool m_sortBySize = false;
 	bool m_sortAscending = true;
+	bool m_showExportResult = false;
 
 	std::vector<BuildAssetEntry> m_entries;
 	std::unordered_map<std::string, bool> m_savedSelections; // ensure persist across open/close
@@ -51,11 +52,11 @@ private:
 	std::string m_folderFilter = "All";
 	std::vector<std::string> m_availableFolders;
 
-	uintmax_t m_totalSelectedSize = 0;
-
 	// export folder dialog state
 	char m_exportPath[512] = "";
 
-	// for export success notification
+	// for export notification
 	float m_exportSuccessTimer = 0.f;
+	std::string m_exportResultMsg = "";
+	std::vector<std::string> m_overwrittenFiles;
 };
