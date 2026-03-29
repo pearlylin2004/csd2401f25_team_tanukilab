@@ -315,15 +315,17 @@ enum class CollisionResponseMode {
 
 //Button component
 struct Button : public Component {
-    ButtonAction actionName = ButtonAction::NONE;   //action this button triggers
-    bool isHovered = false;   //hover state
-    bool isPressed = false;   //pressed state
+    ButtonAction actionName = ButtonAction::NONE;
+    std::string  scenePath = "";   // target scene filename for LOAD_SCENE buttons
+
+    bool isHovered = false;
+    bool isPressed = false;
 
     std::string onClickChannel = "";
     std::string onHoverChannel = "";
 
     Button() = default;
-    Button(ButtonAction action) : actionName(action) {} 
+    explicit Button(ButtonAction action) : actionName(action) {}
 
     std::unique_ptr<Component> clone() const override {
         return std::make_unique<Button>(*this);
