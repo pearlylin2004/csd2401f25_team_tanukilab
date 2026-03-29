@@ -165,6 +165,11 @@
         },
         "VisualLC": {
           "filename": "PlayButton.json"
+        },
+        "Button": {
+          "action": "none",
+          "onClickChannel": "",
+          "onHoverChannel": ""
         }
       }
     },

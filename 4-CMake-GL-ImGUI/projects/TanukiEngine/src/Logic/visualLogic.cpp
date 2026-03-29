@@ -223,6 +223,13 @@ void VisualLogicSystem::update(GameObject* obj, VisualLC* logic, float dt) {
 				mouseWorldPos.y >= transform->y - halfH &&
 				mouseWorldPos.y <= transform->y + halfH);
 
+			// gamepad selection hovering
+			if (!isHoveringNow && InputHandler::isGamepadConnected()) {
+				if (Button* btn = obj->getComponent<Button>()) {
+					isHoveringNow = btn->isHovered;
+				}
+			}
+
 			// ON HOVER ENTER
 			if (isHoveringNow && !logic->wasHoveredLastFrame) {
 				for (LogicNode& node : logic->nodes) {
@@ -285,6 +292,13 @@ void VisualLogicSystem::update(GameObject* obj, VisualLC* logic, float dt) {
 				mouseWorldPos.y <= transform->y + halfH);
 
 			bool isClickedNow = isOverObject && InputHandler::isMouseLeftHeld();
+
+			// gamepad selection click (CROSS X button)
+			if (!isClickedNow && InputHandler::isGamepadConnected()) {
+				if (Button* btn = obj->getComponent<Button>()) {
+					isClickedNow = btn->isHovered && InputHandler::isGamepadButtonHeld(GLFW_GAMEPAD_BUTTON_A);
+				}
+			}
 
 			// ON CLICK ENTER
 			if (isClickedNow && !logic->wasClickedLastFrame) {

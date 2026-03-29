@@ -116,4 +116,7 @@ private:
     std::string m_currentLevel = "";
 
     float m_previousVolume = 100;
+
+    // for gamepad control
+    int m_selectedButtonIdx = -1;
 };
