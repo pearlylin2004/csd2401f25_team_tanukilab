@@ -1201,6 +1201,7 @@ int LuaSystem::Lua_isComboKeyTriggered(lua_State* L) {
         if (strcmp(s, "N") == 0) return GLFW_KEY_N;
         if (strcmp(s, "E") == 0) return GLFW_KEY_E;
         if (strcmp(s, "G") == 0) return GLFW_KEY_G;
+        if (strcmp(s, "R") == 0) return GLFW_KEY_R;
         if (strcmp(s, "CTRL") == 0) return GLFW_KEY_LEFT_CONTROL;
         if (strcmp(s, "SHIFT") == 0) return GLFW_KEY_LEFT_SHIFT;
         return -1;
