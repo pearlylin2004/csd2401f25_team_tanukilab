@@ -141,7 +141,7 @@ void GUISystem::update() {
         }
     }
 
-    // on audio
+    // on click
     if (InputHandler::isMouseButtonClicked(GLFW_MOUSE_BUTTON_LEFT)) {
         for (auto it = m_buttons.begin(); it != m_buttons.end(); ) {
             GameObject* btnObj = it->second;
@@ -197,41 +197,43 @@ void GUISystem::update() {
         }
 
         // update hover state for all buttons
-        for (int i = 0; i < btnCount; ++i) {
-            GameObject* btnObj = sortedButtons[i].second;
-            Button* btnComp = btnObj->getComponent<Button>();
-            Render* render = btnObj->getComponent<Render>();
-            if (!btnComp) continue;
+        if (m_selectedButtonIdx != -1) {
+            for (int i = 0; i < btnCount; ++i) {
+                GameObject* btnObj = sortedButtons[i].second;
+                Button* btnComp = btnObj->getComponent<Button>();
+                Render* render = btnObj->getComponent<Render>();
+                if (!btnComp) continue;
 
-            bool isSelected = (m_selectedButtonIdx != -1 && i == m_selectedButtonIdx);
+                bool isSelected = (m_selectedButtonIdx != -1 && i == m_selectedButtonIdx);
 
-            // visual tint for gamepad selection
-            if (render) {
-                if (isSelected)
-                    render->clr = glm::vec4(1.f, 1.f, 0.f, 1.f); // yellow tint
-                else
-                    render->clr = glm::vec4(1.f, 1.f, 1.f, 1.f); // restore white
-            }
-
-            // trigger hover sound
-            if (isSelected && !btnComp->isHovered && !btnComp->onHoverChannel.empty()) {
-                AudioComponent* audio = btnObj->getComponent<AudioComponent>();
-                if (audio) {
-                    AudioChannel* ch = audio->getChannel(btnComp->onHoverChannel);
-                    if (ch) ch->isPendingPlay = true;
+                // visual tint for gamepad selection
+                if (render) {
+                    if (isSelected)
+                        render->clr = glm::vec4(1.f, 1.f, 0.f, 1.f); // yellow tint
+                    else
+                        render->clr = glm::vec4(1.f, 1.f, 1.f, 1.f); // restore white
                 }
-            }
 
-            // trigger hover exit sound
-            if (!isSelected && btnComp->isHovered && !btnComp->onHoverChannel.empty()) {
-                AudioComponent* audio = btnObj->getComponent<AudioComponent>();
-                if (audio) {
-                    AudioChannel* ch = audio->getChannel(btnComp->onHoverChannel);
-                    if (ch) ch->isPendingStop = true;
+                // trigger hover sound
+                if (isSelected && !btnComp->isHovered && !btnComp->onHoverChannel.empty()) {
+                    AudioComponent* audio = btnObj->getComponent<AudioComponent>();
+                    if (audio) {
+                        AudioChannel* ch = audio->getChannel(btnComp->onHoverChannel);
+                        if (ch) ch->isPendingPlay = true;
+                    }
                 }
-            }
 
-            btnComp->isHovered = isSelected;
+                // trigger hover exit sound
+                if (!isSelected && btnComp->isHovered && !btnComp->onHoverChannel.empty()) {
+                    AudioComponent* audio = btnObj->getComponent<AudioComponent>();
+                    if (audio) {
+                        AudioChannel* ch = audio->getChannel(btnComp->onHoverChannel);
+                        if (ch) ch->isPendingStop = true;
+                    }
+                }
+
+                btnComp->isHovered = isSelected;
+            }
         }
 
         // Cross button (X) to confirm
