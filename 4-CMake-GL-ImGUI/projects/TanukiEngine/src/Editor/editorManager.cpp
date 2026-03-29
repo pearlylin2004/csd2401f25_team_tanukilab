@@ -50,6 +50,7 @@ void EditorManager::update() {
     performanceWindow.render();
     scenePropertiesWindow.render();
     VisualLogicEditor::Instance().render();
+    s_buildAnalyzer.render(assetBrowser.getAssets());
 
     // only show play info when not editing
     if (!isEditing) playDebugWindow.render();

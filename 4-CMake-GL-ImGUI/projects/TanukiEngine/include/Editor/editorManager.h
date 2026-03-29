@@ -28,6 +28,7 @@ Technology is prohibited.
 #include "Editor/editorState.h"
 #include "Editor/gameDebugLog.h"
 #include "Editor/undoRedo.h"
+#include "Editor/buildSizeAnalyzer.h"
 #include "globalRegistry.h"
 #include "collision.h"
 #include "GameObjectManager.h"
@@ -260,6 +261,7 @@ private:
 	void drawSimulationMenu(GameObjectManager& manager);
 	void drawThemeMenu();
 	void drawFontMenu();
+	void drawToolMenu();
 
 	void playSimulation(GameObjectManager& manager);
 	void stopSimulation(GameObjectManager& manager);
@@ -400,6 +402,8 @@ public:
 	static void togglePause(bool e) { pausedSimul = e; }
 	static bool canToggleEditor() { return cantoggleEditor; }
 
+	static BuildSizeAnalyzer& getBuildAnalyzer() { return s_buildAnalyzer; }
+	
 private:
 	void handleShortcutKeys(GameObjectManager& manager);
 
@@ -413,6 +417,7 @@ private:
 	PerformanceWindow performanceWindow;
 	SceneWindow sceneWindow;
 	ScenePropertiesWindow scenePropertiesWindow;
+	static inline BuildSizeAnalyzer s_buildAnalyzer;
 
 	GameObjectManager& m_manager;
 

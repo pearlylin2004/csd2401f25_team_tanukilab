@@ -41,6 +41,9 @@ void MenuBar::render(GameObjectManager& manager){
     /* ------------------- Editor Theme ------------------- */
     drawThemeMenu(); // change theme
 
+    /* ------------------- Tool ------------------- */
+	drawToolMenu(); // build size analyzer
+
     ImGui::EndMainMenuBar();
 }
 
@@ -171,6 +174,14 @@ void MenuBar::drawFontMenu() {
     if (ImGui::MenuItem("Default ImGui Font", nullptr,
         UISystem::getCurrentFontType() == UISystem::FONT_DEFAULT)) {
         UISystem::setFont(UISystem::FONT_DEFAULT);
+    }
+}
+
+void MenuBar::drawToolMenu() {
+    if (ImGui::BeginMenu("Tools")) {
+        if (ImGui::MenuItem("Build Size Analyzer"))
+            EditorManager::getBuildAnalyzer().getShowWindow() = true; // need reference passed in
+        ImGui::EndMenu();
     }
 }
 

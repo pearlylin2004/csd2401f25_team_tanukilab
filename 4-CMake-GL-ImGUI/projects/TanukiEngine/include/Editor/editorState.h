@@ -84,7 +84,7 @@ namespace Editor {
 	struct Asset {
 		std::string name;
 		std::string path;
-		std::string folder; // in case there is a parent folder (e.g. textures/) for filtering in the future
+		std::string folder; // in case there is a parent folder (e.g. textures/) for filtering
 	};
 
 	struct AssetBrowserState {
