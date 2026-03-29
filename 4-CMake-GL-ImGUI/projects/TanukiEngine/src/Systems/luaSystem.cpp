@@ -70,6 +70,7 @@ void LuaSystem::init(GameObjectManager& manager) {
     lua_register(L, "getWaterBounce", Lua_getWaterBounce);
     lua_register(L, "getAccelX", Lua_getAccelX);
     lua_register(L, "getAccelY", Lua_getAccelY);
+    lua_register(L, "getBuoyancy", Lua_getBuoyancy);
 
 
     // physics setters
@@ -146,6 +147,7 @@ void LuaSystem::init(GameObjectManager& manager) {
     lua_register(L, "stopSound", Lua_stopSound);
     lua_register(L, "setSoundVolume", Lua_setSoundVolume);
     lua_register(L, "isSoundPlaying", Lua_isSoundPlaying);
+    lua_register(L, "setLowPassFilter", Lua_setLowPassFilter);
 
     // visual script
     lua_register(L, "getVSGlobalFloat", Lua_getVSGlobalFloat);
@@ -653,6 +655,15 @@ int LuaSystem::Lua_getAccelY(lua_State* L) {
     if (!obj || !obj->hasComponent<Physics>()) { lua_pushnumber(L, 0); return 1; }
 
     lua_pushnumber(L, obj->getComponent<Physics>()->acceleration.y);
+    return 1;
+}
+
+int LuaSystem::Lua_getBuoyancy(lua_State* L) {
+    GameObject* obj = static_cast<GameObject*>(lua_touserdata(L, 1));
+    if (!obj || !obj->hasComponent<Physics>()) { lua_pushboolean(L, 0); return 1; }
+
+    lua_pushboolean(L, obj->getComponent<Physics>()->buoyancy ? 1 : 0);
+
     return 1;
 }
 
@@ -1366,6 +1377,14 @@ int LuaSystem::Lua_requestBGM(lua_State* L) {
     if (mgr)
         AudioHandler::getInstance().requestBGM(channelName, *mgr);
 
+    return 0;
+}
+
+int LuaSystem::Lua_setLowPassFilter(lua_State* L) {
+    bool enable = lua_toboolean(L, 1) != 0;
+    float cutoff = lua_isnumber(L, 2) ? (float)lua_tonumber(L, 2) : 500.f;
+    std::cout << "yes called\n\n";
+    AudioHandler::getInstance().setLowPassFilter(enable, cutoff);
     return 0;
 }
 

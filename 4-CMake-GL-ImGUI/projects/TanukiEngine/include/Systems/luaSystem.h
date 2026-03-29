@@ -104,6 +104,7 @@ public:
 	static int Lua_getWaterBounce(lua_State* L);
 	static int Lua_getAccelX(lua_State* L);
 	static int Lua_getAccelY(lua_State* L);
+	static int Lua_getBuoyancy(lua_State* L);
 
 
 	/* -------- Physics Setters -------- */
@@ -184,6 +185,7 @@ public:
 	static int Lua_setSoundVolume(lua_State* L);
 	static int Lua_isSoundPlaying(lua_State* L);
 	static int Lua_requestBGM(lua_State* L);
+	static int Lua_setLowPassFilter(lua_State* L);
 
 
 	/* -------- Visual Script -------- */

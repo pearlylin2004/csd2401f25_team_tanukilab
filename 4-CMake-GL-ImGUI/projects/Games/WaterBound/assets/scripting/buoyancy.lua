@@ -31,75 +31,79 @@ function buoyancy.Update(obj, dt)
 
         inWater = true
 
-        local s = getS(obj)
-        local scaleY = getScaleY(obj)
-        local waterSurfaceY = wy + waterH * 0.5
+        if getBuoyancy(obj) then
+            local s = getS(obj)
+            local scaleY = getScaleY(obj)
+            local waterSurfaceY = wy + waterH * 0.5
 
-        -- follow water rise instantly
-        local lastRise = getWaterLastFrameRise(waterObj)
-        if lastRise > 0.0 then
-            oy = oy + lastRise
-            --s.vy = s.vy + lastRise / dt  -- give upward impulse
-        end
-
-        -- rest position = sit on water surface
-        local restY = waterSurfaceY - scaleY * 0.5 + 0.1
-
-        -- player landing impulse
-        local allObjs2 = getAllObjects()
-        for j = 1, #allObjs2 do
-            local other = allObjs2[j]
-            if getCollisionTag(other) == "player" then
-                local px, py = getPosition(other)
-                local platformTop = oy + scaleY * 0.5
-
-                local onPlatform = math.abs(px - ox) < getScaleX(obj) * 0.5 and
-                                math.abs(py - platformTop) < 1.5
-
-                s.landCooldown = math.max(0.0, s.landCooldown - dt)
-
-                if onPlatform then
-                    -- continuous downward pressure while player is on
-                    s.vy = s.vy - 1.5 * dt
-                    -- first landing impulse
-                    if not s.playerWasOn and s.landCooldown <= 0.0 then
-                        s.vy = s.vy - 1.5
-                        s.landCooldown = 0.5
-                    end
-                end
-                s.playerWasOn = onPlatform
+            -- follow water rise instantly
+            local lastRise = getWaterLastFrameRise(waterObj)
+            if lastRise > 0.0 then
+                oy = oy + lastRise
+                --s.vy = s.vy + lastRise / dt  -- give upward impulse
             end
+
+            -- rest position = sit on water surface
+            local restY = waterSurfaceY - scaleY * 0.5 + 0.1
+
+            -- player landing impulse
+            local allObjs2 = getAllObjects()
+            for j = 1, #allObjs2 do
+                local other = allObjs2[j]
+                if getCollisionTag(other) == "player" then
+                    local px, py = getPosition(other)
+                    local platformTop = oy + scaleY * 0.5
+
+                    local onPlatform = math.abs(px - ox) < getScaleX(obj) * 0.5 and
+                                    math.abs(py - platformTop) < 1.5
+
+                    s.landCooldown = math.max(0.0, s.landCooldown - dt)
+
+                    if onPlatform then
+                        -- continuous downward pressure while player is on
+                        s.vy = s.vy - 1.5 * dt
+                        -- first landing impulse
+                        if not s.playerWasOn and s.landCooldown <= 0.0 then
+                            s.vy = s.vy - 1.5
+                            s.landCooldown = 0.5
+                        end
+                    end
+                    s.playerWasOn = onPlatform
+                end
+            end
+
+            -- spring force
+            local springK = 12.0   -- stiffness
+            local damping = 1.5    -- damping (higher = less oscillation)
+            local displacement = restY - oy
+            local springAccel = displacement * springK
+            s.vy = s.vy + springAccel * dt
+            s.vy = s.vy - s.vy * damping * dt
+
+            -- constant bob
+            local bobFreq = 1.5
+            local bobAmp  = 0.008
+            s.vy = s.vy + math.sin(s.time * bobFreq * math.pi * 2) * bobAmp
+            s.time = s.time + dt
+
+            -- clamp velocity
+            s.vy = math.max(-8.0, math.min(s.vy, 8.0))
+
+            -- integrate position
+            local newY = oy + s.vy * dt
+
+            setPosition(obj, ox, newY)
+            setDynPos(obj, ox, newY)
+            -- zero out physics velocity so collision system doesnt fight us
+            setVelY(obj, 0)
+            setDynVelY(obj, 0)
+
+            break
         end
 
-        -- spring force
-        local springK = 12.0   -- stiffness
-        local damping = 1.5    -- damping (higher = less oscillation)
-        local displacement = restY - oy
-        local springAccel = displacement * springK
-        s.vy = s.vy + springAccel * dt
-        s.vy = s.vy - s.vy * damping * dt
-
-        -- constant bob
-        local bobFreq = 1.5
-        local bobAmp  = 0.008
-        s.vy = s.vy + math.sin(s.time * bobFreq * math.pi * 2) * bobAmp
-        s.time = s.time + dt
-
-        -- clamp velocity
-        s.vy = math.max(-8.0, math.min(s.vy, 8.0))
-
-        -- integrate position
-        local newY = oy + s.vy * dt
-
-        setPosition(obj, ox, newY)
-        setDynPos(obj, ox, newY)
-        -- zero out physics velocity so collision system doesnt fight us
-        setVelY(obj, 0)
-        setDynVelY(obj, 0)
-
-        break
         ::continue::
     end
+    print("obj: " .. getObjectName(obj) .. " inWater: " .. tostring(inWater))
 
     setInWater(obj, inWater)
 end
