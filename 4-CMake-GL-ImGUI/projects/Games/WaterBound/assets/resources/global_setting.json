@@ -9,6 +9,7 @@
     "hazards",
     "platform",
     "environment",
-    "floatingObject"
+    "floatingObject",
+    "player-body"
   ]
 }
