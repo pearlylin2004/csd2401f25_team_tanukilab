@@ -71,137 +71,140 @@ void InputSystem::update(GameObjectManager& manager, const float& deltaTime, Mes
         }
     }
 
+
     // ============ LAYER TESTING CODE ============
-    // Press Ctrl+1 to toggle Background layer (layer 0)
-    if (InputHandler::isComboKeyTriggered(GLFW_KEY_1)) {
-        LayerManager& lm = manager.getLayerManager();
-        bool currentState = lm.isLayerEnabled(0);
-        lm.setLayerEnabled(0, !currentState);
-        std::cout << "Background layer " << (!currentState ? "ENABLED" : "DISABLED") << std::endl;
-    }
+	if (UISystem::isShowUI()) {
+		// Press Ctrl+1 to toggle Background layer (layer 0)
+		if (InputHandler::isComboKeyTriggered(GLFW_KEY_1)) {
+			LayerManager& lm = manager.getLayerManager();
+			bool currentState = lm.isLayerEnabled(0);
+			lm.setLayerEnabled(0, !currentState);
+			std::cout << "Background layer " << (!currentState ? "ENABLED" : "DISABLED") << std::endl;
+		}
 
-    // Press Ctrl+2 to toggle Game layer (layer 1)
-    if (InputHandler::isComboKeyTriggered(GLFW_KEY_2)) {
-        LayerManager& lm = manager.getLayerManager();
-        bool currentState = lm.isLayerEnabled(1);
-        lm.setLayerEnabled(1, !currentState);
-        std::cout << "Game layer " << (!currentState ? "ENABLED" : "DISABLED") << std::endl;
-    }
+		// Press Ctrl+2 to toggle Game layer (layer 1)
+		if (InputHandler::isComboKeyTriggered(GLFW_KEY_2)) {
+			LayerManager& lm = manager.getLayerManager();
+			bool currentState = lm.isLayerEnabled(1);
+			lm.setLayerEnabled(1, !currentState);
+			std::cout << "Game layer " << (!currentState ? "ENABLED" : "DISABLED") << std::endl;
+		}
 
-    // Press Ctrl+3 to toggle UI layer (layer 2)
-    if (InputHandler::isComboKeyTriggered(GLFW_KEY_3)) {
-        LayerManager& lm = manager.getLayerManager();
-        bool currentState = lm.isLayerEnabled(2);
-        lm.setLayerEnabled(2, !currentState);
-        std::cout << "UI layer " << (!currentState ? "ENABLED" : "DISABLED") << std::endl;
-    }
+		// Press Ctrl+3 to toggle UI layer (layer 2)
+		if (InputHandler::isComboKeyTriggered(GLFW_KEY_3)) {
+			LayerManager& lm = manager.getLayerManager();
+			bool currentState = lm.isLayerEnabled(2);
+			lm.setLayerEnabled(2, !currentState);
+			std::cout << "UI layer " << (!currentState ? "ENABLED" : "DISABLED") << std::endl;
+		}
 
-    // Press Ctrl+4 to toggle Game layer visibility only (still updates, just invisible)
-    if (InputHandler::isComboKeyTriggered(GLFW_KEY_4)) {
-        LayerManager& lm = manager.getLayerManager();
-        Layer* gameLayer = lm.getLayer(1);
-        if (gameLayer) {
-            bool currentVisible = gameLayer->isVisible();
-            gameLayer->setVisible(!currentVisible);
-            std::cout << "Game layer visibility " << (!currentVisible ? "ON" : "OFF") << std::endl;
-        }
-    }
+		// Press Ctrl+4 to toggle Game layer visibility only (still updates, just invisible)
+		if (InputHandler::isComboKeyTriggered(GLFW_KEY_4)) {
+			LayerManager& lm = manager.getLayerManager();
+			Layer* gameLayer = lm.getLayer(1);
+			if (gameLayer) {
+				bool currentVisible = gameLayer->isVisible();
+				gameLayer->setVisible(!currentVisible);
+				std::cout << "Game layer visibility " << (!currentVisible ? "ON" : "OFF") << std::endl;
+			}
+		}
 
-    // Press Ctrl+5 to toggle Game layer updates only (visible but frozen)
-    if (InputHandler::isComboKeyTriggered(GLFW_KEY_5)) {
-        LayerManager& lm = manager.getLayerManager();
-        Layer* gameLayer = lm.getLayer(1);
-        if (gameLayer) {
-            bool currentUpdatable = gameLayer->isUpdatable();
-            gameLayer->setUpdatable(!currentUpdatable);
-            std::cout << "Game layer updates " << (!currentUpdatable ? "ON" : "OFF") << std::endl;
-        }
-    }
+		// Press Ctrl+5 to toggle Game layer updates only (visible but frozen)
+		if (InputHandler::isComboKeyTriggered(GLFW_KEY_5)) {
+			LayerManager& lm = manager.getLayerManager();
+			Layer* gameLayer = lm.getLayer(1);
+			if (gameLayer) {
+				bool currentUpdatable = gameLayer->isUpdatable();
+				gameLayer->setUpdatable(!currentUpdatable);
+				std::cout << "Game layer updates " << (!currentUpdatable ? "ON" : "OFF") << std::endl;
+			}
+		}
 
-    // Press Ctrl+6 to print layer status
-    if (InputHandler::isComboKeyTriggered(GLFW_KEY_6)) {
-        LayerManager& lm = manager.getLayerManager();
-        std::cout << "\n=== LAYER STATUS ===" << std::endl;
-        for (Layer* layer : lm.getAllLayers()) {
-            if (layer) {
-                std::cout << "Layer " << layer->getLayerID() << " (" << layer->getLayerName() << "): "
-                          << "Enabled=" << (layer->isEnabled() ? "YES" : "NO")
-                          << ", Visible=" << (layer->isVisible() ? "YES" : "NO")
-                          << ", Updatable=" << (layer->isUpdatable() ? "YES" : "NO")
-                          << ", Objects=" << layer->getObjectCount() << std::endl;
-            }
-        }
-        std::cout << "===================\n" << std::endl;
-    }
-  
-//#endif
+		// Press Ctrl+6 to print layer status
+		if (InputHandler::isComboKeyTriggered(GLFW_KEY_6)) {
+			LayerManager& lm = manager.getLayerManager();
+			std::cout << "\n=== LAYER STATUS ===" << std::endl;
+			for (Layer* layer : lm.getAllLayers()) {
+				if (layer) {
+					std::cout << "Layer " << layer->getLayerID() << " (" << layer->getLayerName() << "): "
+						<< "Enabled=" << (layer->isEnabled() ? "YES" : "NO")
+						<< ", Visible=" << (layer->isVisible() ? "YES" : "NO")
+						<< ", Updatable=" << (layer->isUpdatable() ? "YES" : "NO")
+						<< ", Objects=" << layer->getObjectCount() << std::endl;
+				}
+			}
+			std::cout << "===================\n" << std::endl;
+		}
 
-    // Press F9 to simulate a failure (for crash logger)
-    if (InputHandler::isKeyTriggered(GLFW_KEY_F9)) {
-        throw std::runtime_error("F9 test: simulated failure in update()");
-    }
+		//#endif
 
-    /* --- for showing fps scuffed scuffed ---- */
-    if (InputHandler::isKeyTriggered(GLFW_KEY_F8)) {
-        FontSystem::showFPS = !FontSystem::showFPS;
-    }
-    /* ---- END ---- */
+			// Press F9 to simulate a failure (for crash logger)
+		if (InputHandler::isKeyTriggered(GLFW_KEY_F9)) {
+			throw std::runtime_error("F9 test: simulated failure in update()");
+		}
 
-    // Press 8 to manually run FSM assignment check
-	if (InputHandler::isComboKeyTriggered(GLFW_KEY_8)) {
-        std::cout << "\n[DEBUG KEY 8] ====== MANUAL FSM ASSIGNMENT CHECK ======\n";
-        
-        std::vector<GameObject*> allObjects;
-        manager.getAllGameObjects(allObjects);
-        
-        for (GameObject* obj : allObjects) {
-            if (!obj) continue;
-            
-            std::string name = obj->getObjectName();
-            CollisionInfo* col = obj->getComponent<CollisionInfo>();
-            StateMachine* sm = obj->getComponent<StateMachine>();
-            Input* inp = obj->getComponent<Input>();
-            Physics* phys = obj->getComponent<Physics>();
-            Animation* anim = obj->getComponent<Animation>();
-            
-            std::string tag = col ? col->collisionTag : "(no CollisionInfo)";
-            
-            std::cout << "[DEBUG] Object: " << name 
-                      << " | Layer: " << obj->getLayer()
-                      << " | Tag: " << tag
-                      << " | StateMachine: " << (sm ? "YES" : "NO")
-                      << " | Input: " << (inp ? "YES" : "NO")
-                      << " | Physics: " << (phys ? "YES" : "NO")
-                      << " | Animation: " << (anim ? "YES" : "NO")
-                      << "\n";
-            
-            // Check if this object SHOULD have an FSM
-            // if (col && col->collisionTag == "player") {
-            //     std::cout << "       -> Player object detected!\n";
-            //     if (!sm) std::cout << "       -> WARNING: Missing StateMachine component!\n";
-            //     if (!inp) std::cout << "       -> WARNING: Missing Input component!\n";
-            // }
-        }
+		// Press 8 to manually run FSM assignment check
+		if (InputHandler::isComboKeyTriggered(GLFW_KEY_8)) {
+			std::cout << "\n[DEBUG KEY 8] ====== MANUAL FSM ASSIGNMENT CHECK ======\n";
 
-        // Specifically check for player
-       /* GameObject* player = manager.getGameObject("player");
-        if (player) {
-            std::cout << "\n[DEBUG] PLAYER FOUND!\n";
-            std::cout << "  - Has StateMachine: " << (player->hasComponent<StateMachine>() ? "YES" : "NO") << "\n";
-            std::cout << "  - Has Input: " << (player->hasComponent<Input>() ? "YES" : "NO") << "\n";
-            std::cout << "  - Has Physics: " << (player->hasComponent<Physics>() ? "YES" : "NO") << "\n";
-            std::cout << "  - Has Animation: " << (player->hasComponent<Animation>() ? "YES" : "NO") << "\n";
-            
-            CollisionInfo* col = player->getComponent<CollisionInfo>();
-            if (col) {
-                std::cout << "  - Collision Tag: " << col->collisionTag << "\n";
-            }
-        } else {
-            std::cout << "\n[DEBUG] WARNING: No object named 'player' found!\n";
-        }*/
-        
-        //std::cout << "[DEBUG KEY 8] ======================================\n\n";
-    }
+			std::vector<GameObject*> allObjects;
+			manager.getAllGameObjects(allObjects);
+
+			for (GameObject* obj : allObjects) {
+				if (!obj) continue;
+
+				std::string name = obj->getObjectName();
+				CollisionInfo* col = obj->getComponent<CollisionInfo>();
+				StateMachine* sm = obj->getComponent<StateMachine>();
+				Input* inp = obj->getComponent<Input>();
+				Physics* phys = obj->getComponent<Physics>();
+				Animation* anim = obj->getComponent<Animation>();
+
+				std::string tag = col ? col->collisionTag : "(no CollisionInfo)";
+
+				std::cout << "[DEBUG] Object: " << name
+					<< " | Layer: " << obj->getLayer()
+					<< " | Tag: " << tag
+					<< " | StateMachine: " << (sm ? "YES" : "NO")
+					<< " | Input: " << (inp ? "YES" : "NO")
+					<< " | Physics: " << (phys ? "YES" : "NO")
+					<< " | Animation: " << (anim ? "YES" : "NO")
+					<< "\n";
+
+				// Check if this object SHOULD have an FSM
+				// if (col && col->collisionTag == "player") {
+				//     std::cout << "       -> Player object detected!\n";
+				//     if (!sm) std::cout << "       -> WARNING: Missing StateMachine component!\n";
+				//     if (!inp) std::cout << "       -> WARNING: Missing Input component!\n";
+				// }
+			}
+
+			// Specifically check for player
+		   /* GameObject* player = manager.getGameObject("player");
+			if (player) {
+				std::cout << "\n[DEBUG] PLAYER FOUND!\n";
+				std::cout << "  - Has StateMachine: " << (player->hasComponent<StateMachine>() ? "YES" : "NO") << "\n";
+				std::cout << "  - Has Input: " << (player->hasComponent<Input>() ? "YES" : "NO") << "\n";
+				std::cout << "  - Has Physics: " << (player->hasComponent<Physics>() ? "YES" : "NO") << "\n";
+				std::cout << "  - Has Animation: " << (player->hasComponent<Animation>() ? "YES" : "NO") << "\n";
+
+				CollisionInfo* col = player->getComponent<CollisionInfo>();
+				if (col) {
+					std::cout << "  - Collision Tag: " << col->collisionTag << "\n";
+				}
+			} else {
+				std::cout << "\n[DEBUG] WARNING: No object named 'player' found!\n";
+			}*/
+
+			//std::cout << "[DEBUG KEY 8] ======================================\n\n";
+		}
+	}
+
+	/* --- for showing fps scuffed scuffed ---- */
+	if (InputHandler::isKeyTriggered(GLFW_KEY_F8)) {
+		FontSystem::showFPS = !FontSystem::showFPS;
+	}
+	/* ---- END ---- */
 
     auto end = std::chrono::high_resolution_clock::now();
     double ms = std::chrono::duration<double, std::milli>(end - start).count();
