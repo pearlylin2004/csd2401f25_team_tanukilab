@@ -43,8 +43,8 @@ int main(int argc, char** argv) {
 
         // only work for game build
         engine->setOnUpdate([&]() {
-            // F1 to quit
-            if (InputHandler::isKeyTriggered(GLFW_KEY_F1))
+            // F1 or SHARE on gamepad to quit
+            if (InputHandler::isKeyTriggered(GLFW_KEY_F1) || InputHandler::isGamepadButtonTriggered(GLFW_GAMEPAD_BUTTON_BACK))
                 engine->stop();
 
             // ESC or OPTION on gamepad to pause
