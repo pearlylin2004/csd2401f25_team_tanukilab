@@ -52,11 +52,6 @@ void GUISystem::init(GameObjectManager& manager, LuaSystem& luaSystem, VisualLog
     g_luaSystem = &luaSystem;
     g_visualLogicSystem = &vlSystem;
     std::cout << "[GUI] GUISystem::init completed successfully" << std::endl;
-
-    // Load the menu scene - this will populate button data in the manager
-    //loadScreen(manager, "menu_scene.json");
-
-    
 }
 
 //update function to check for button clicking
