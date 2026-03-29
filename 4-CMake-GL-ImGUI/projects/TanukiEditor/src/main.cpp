@@ -64,17 +64,14 @@ int main(int argc, char** argv) {
             return done;
         });
 
-        // set project filepath
-        //PathManager::Instance().setSourcePath(
-           // EditorLaunch::Instance().getGamePath());
-
         luaScript = std::make_unique<LuaGameScript>(engine->getLuaSystem());
         engine->setGameScript(luaScript.get());
 
-        // open first scene in scene folder
-        /*std::string defaultScene = EditorLaunch::Instance().getDefaultScene();
-        if (!defaultScene.empty())
-            engine->loadInitialScene(defaultScene);*/
+        engine->setOnUpdate([&]() {
+            // F1 to quit
+            if (InputHandler::isKeyTriggered(GLFW_KEY_F1))
+                engine->stop();
+            });
 
         engine->Run();
     }
