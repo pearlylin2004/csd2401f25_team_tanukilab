@@ -48,4 +48,7 @@ private:
     std::string  m_pendingScenePath = "";
 
     float m_previousVolume = 1.0f;
+
+    bool m_pendingSceneChange = false;
+    GameState m_pendingState;
 };

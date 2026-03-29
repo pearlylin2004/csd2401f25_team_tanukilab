@@ -1053,9 +1053,13 @@ void GameObjectManager::loadSceneFromJson(const std::string& filename) {
 
 			//parse action string
 			if (jb.HasMember("action") && jb["action"].IsString()) {
+				std::cout << "---------------------Button name: " << go->getObjectName() << ", Action string: " << jb["action"].GetString() << std::endl;
 				std::string actionStr = jb["action"].GetString();
 				b->actionName = JsonIO::StrToButtonAction(actionStr);
 			}
+
+			if (jb.HasMember("scenePath") && jb["scenePath"].IsString())
+				b->scenePath = jb["scenePath"].GetString();
 		}
 		// ---- WaterBody ----
 		if (comps.HasMember("WaterBody") && comps["WaterBody"].IsObject()) {
@@ -1988,6 +1992,15 @@ void GameObjectManager::saveSceneToJson(const std::string& filename, bool isNew)
 
 			std::string actionStr = JsonIO::ButtonActionToStr(btn->actionName);
 			jb.AddMember("action", rapidjson::Value(actionStr.c_str(), a), a);
+
+			//for scene path
+			if (!btn->scenePath.empty()) {
+				const rapidjson::Value* prefabBtn = PM.getPrefabJsonComp(prefabDoc, "Button");
+				if (!prefabBtn || !prefabBtn->HasMember("scenePath") ||
+					btn->scenePath != (*prefabBtn)["scenePath"].GetString()) {
+					jb.AddMember("scenePath", rapidjson::Value(btn->scenePath.c_str(), a), a);
+				}
+			}
 
 			// onClickChannel
 			if (!prefabBtn || !prefabBtn->HasMember("onClickChannel") ||

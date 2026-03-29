@@ -156,6 +156,8 @@ void CoreEngine::Init(bool forceWindowed) {
 
     PrefabManager::Instance().loadPrefabRegistry();
     //m_guiSystem->init(*m_manager, *m_luaSystem);
+	ButtonSystem::getInstance().init(*m_manager);
+    SceneManager::getInstance().init(*m_manager, *m_visualLCSystem);
     GUISystem::getInstance().init(*m_manager, *m_luaSystem, *m_visualLCSystem);
     m_luaSystem->init(*m_manager);
     m_renderSystem->init(*m_manager, winWidth, winHeight);
@@ -262,22 +264,17 @@ void CoreEngine::Update(float deltaTime) {
         GUISystem::getInstance().update();
     }
 
+    SceneManager::getInstance().update();
+
 	//for other systems to update even in editor mode
     if (!EditorManager::isEditingMode() && !EditorManager::isPaused()) {
-        //m_luaSystem->update(*m_manager, deltaTime);
         m_visualLCSystem->initAll(*m_manager);
         m_visualLCSystem->updateAll(*m_manager, deltaTime);
     }
 
-    
-
     // Update all systems in order
-	
     m_inputSystem->update(*m_manager, deltaTime, *m_messageBus);
     m_physicsSystem->update(*m_manager, deltaTime, *m_messageBus);
-
-    
-
     m_collisionSystem->update(*m_manager, deltaTime);
 	m_transformSystem->update(*m_manager, deltaTime);//for parent->child transform
     m_cameraSystem->update(*m_manager);
@@ -308,12 +305,6 @@ void CoreEngine::Update(float deltaTime) {
 
     wasEditingMode = isEditingNow;
 #endif
-    /*if (wasEditingMode && !isEditingNow) {
-        resumeBGM();
-    }
-    if (!wasEditingMode && isEditingNow) {
-        pauseBGM();
-    }*/
 }
 
 // ============================================================================

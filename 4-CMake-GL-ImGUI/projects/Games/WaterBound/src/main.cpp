@@ -41,8 +41,8 @@ int main(int argc, char** argv) {
         engine->Init(forceWindowed);
 
         // load menu as fir
-        GUISystem::getInstance().loadScreen(engine->getManager(), "menu_scene.json");
-
+        //GUISystem::getInstance().loadScreen(engine->getManager(), "menu_scene.json");
+        SceneManager::getInstance().executeLevelLoad("menu_scene.json");
         // register gamescript
         //engine->setGameScript(gameApp.get());
 

@@ -26,6 +26,7 @@ Technology is prohibited.
 #include "GameState.h"
 #include "input.h"
 #include "Component.h"
+#include "SceneManager.h"
 #include <string>
 #include <unordered_map>
 #include <functional> //for std::function to store button actions
@@ -54,8 +55,6 @@ public:
 
 	GameState sceneToState(const std::string& sceneName); //convert scene name to game state
 
-    void restartLevel(); // restart current level
-	void loadLevel(const std::string& levelSceneName); // load next level
     void resetAllObjectsToSpawn(); // helper for restart
 
     // for on scene load

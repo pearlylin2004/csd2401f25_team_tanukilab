@@ -1,4 +1,4 @@
-/* Start Header ************************************************************************/
+﻿/* Start Header ************************************************************************/
 /*!
 \file       SceneManager.cpp
 \author     Pearly Lin Lee Ying, p.lin, 2401591
@@ -181,19 +181,28 @@ void SceneManager::executeRestart() {
 }
 
 void SceneManager::executeLevelLoad(const std::string& levelSceneName) {
-    std::cout << "[SceneManager] Loading level: " << levelSceneName << "\n";
+    std::cout << "[SceneManager] Loading scene: " << levelSceneName << "\n";
 
     std::string fullPath = buildScenePath(levelSceneName);
-    m_currentLevel = fullPath;
 
     AudioHandler::getInstance().stopAll(*g_manager);
     g_manager->clearScene();
     g_manager->loadScene(fullPath);
     g_manager->initializeSceneResources();
+    ButtonSystem::getInstance().refresh();
 
-    g_visualLogicSystem->resetLogicState();
-    g_visualLogicSystem->initAll(*g_manager);
+    GameState newState = sceneToState(levelSceneName);
+    m_currentState = newState;
 
-    captureSpawnPositions();
-    m_currentState = GameState::PLAYING;
+    // Only run gameplay systems for actual levels
+    if (newState == GameState::PLAYING) {
+        if (g_visualLogicSystem) {
+            g_visualLogicSystem->resetLogicState();
+            g_visualLogicSystem->initAll(*g_manager);
+        }
+        m_currentLevel = fullPath;
+        captureSpawnPositions();
+    }
+
+    if (m_onSceneLoad) m_onSceneLoad(*g_manager);
 }

@@ -80,8 +80,8 @@ void ButtonSystem::update() {
         }
         btn->isHovered = isOver;
         if (isOver && InputHandler::isMouseButtonClicked(GLFW_MOUSE_BUTTON_LEFT)) {
-            handleAction(*btn);
 			std::cout << "[ButtonSystem] Button '" << obj->getObjectName() << "' clicked. Action: " << static_cast<int>(btn->actionName) << "\n";
+			std::cout << "[ButtonSystem] Button scene path " << btn->scenePath << "'\n";
             // play click sound
             if (!btn->onClickChannel.empty()) {
                 if (auto* audio = obj->getComponent<AudioComponent>()) {
@@ -98,13 +98,11 @@ void ButtonSystem::update() {
 
 //handle button action
 void ButtonSystem::handleAction(const Button& btn) {
-    auto& sceneMgr = SceneManager::getInstance();
-
     switch (btn.actionName) {
 
     case ButtonAction::LOAD_SCENE:
         if (!btn.scenePath.empty()) {
-            sceneMgr.loadScene(btn.scenePath);
+            SceneManager::getInstance().requestLevelLoad(btn.scenePath);
         }
         break;
 
@@ -131,11 +129,13 @@ void ButtonSystem::handleAction(const Button& btn) {
     }
 }
 
-//update volume display (for audio settings page)
-void ButtonSystem::updateVolumeDisplay() const{
-    // TODO: implement the actual volume display update
-    // For now, you can leave it empty to get a successful build:
-    // (or add debug logging)
+void ButtonSystem::updateVolumeDisplay() const {
+    AudioHandler& ah = AudioHandler::getInstance();
+    GameObject* volText = g_manager->getGameObject("music_vol_text");
+    if (volText && volText->hasComponent<FontComponent>()) {
+        int pct = static_cast<int>(ah.getMasterVolume() * 100.0f + 0.5f);
+        volText->getComponent<FontComponent>()->word = std::to_string(pct) + "%";
+    }
 }
 
 //clear button

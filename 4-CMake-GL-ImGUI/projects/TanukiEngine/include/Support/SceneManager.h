@@ -50,13 +50,13 @@ public:
     void captureSpawnPositions();
     void resetAllObjectsToSpawn();
 
+    void executeRestart();
+    void executeLevelLoad(const std::string& levelSceneName);
+
     void setOnSceneLoadCallback(std::function<void(GameObjectManager&)> cb) {
         m_onSceneLoad = cb;
     }
 private:
-    void executeRestart();
-    void executeLevelLoad(const std::string& levelSceneName);
-
     static std::string buildScenePath(const std::string& name);
     SceneManager() = default;
     ~SceneManager() = default;
