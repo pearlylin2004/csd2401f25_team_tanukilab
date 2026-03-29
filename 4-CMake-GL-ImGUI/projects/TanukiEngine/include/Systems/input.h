@@ -77,7 +77,7 @@ public:
 	// get mouse position when drag started
 	static Vector2D getMouseDragStartPos(int button = GLFW_MOUSE_BUTTON_LEFT);
 
-	static Vector2D getMouseDeltaWorld();
+	//static Vector2D getMouseDeltaWorld();
 
 	/* Cursor Position */
 	// get current cursor position
@@ -127,6 +127,15 @@ public:
 	//static bool isMouseButtonClicked(int button);
 	//static Vector2D getMousePosition();
 
+	// gamepad
+	static bool isGamepadConnected();
+	static bool isGamepadButtonTriggered(int button); // GLFW_GAMEPAD_BUTTON_*
+	static bool isGamepadButtonReleased(int button);
+	static bool isGamepadButtonHeld(int button);
+	static float getGamepadAxis(int axis, float deadZone = 0.15f); // GLFW_GAMEPAD_AXIS_*
+	static float getGamepadLeftTrigger();
+	static float getGamepadRightTrigger();
+
 private:
 	static GLFWwindow* m_window;
 	static AppConfig m_cfg;
@@ -148,4 +157,11 @@ private:
 	static float m_scrollOffset;
 	static double m_doubleClickThreshold;
 
+	// gamepad
+	static constexpr int GAMEPAD_BUTTON_COUNT = GLFW_GAMEPAD_BUTTON_LAST + 1; // 15
+	static constexpr int GAMEPAD_AXIS_COUNT = GLFW_GAMEPAD_AXIS_LAST + 1;  // 6
+	static bool m_gamepadButtons[GAMEPAD_BUTTON_COUNT];
+	static bool m_gamepadButtonsPrevious[GAMEPAD_BUTTON_COUNT];
+	static float m_gamepadAxes[GAMEPAD_AXIS_COUNT];
+	static int m_activeGamepadId; // -1 if no gamepad
 };

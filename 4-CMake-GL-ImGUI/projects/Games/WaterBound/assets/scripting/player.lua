@@ -157,8 +157,8 @@ function player.Update(obj, dt)
 
     -- flip to face mouse when not moving
     if not Input_isKeyHeld("A") and not Input_isKeyHeld("D") then
-        if not isEditorOpen() or isSceneHovered() then
-            local mx = isEditorOpen() and getEditorMouseWorldX() or getMouseWorldX()
+        if not isEditorOpen() or isSceneHovered() or isGamepadConnected()  then
+            local mx = isEditorOpen() and getEditorMouseWorldX(obj) or getMouseWorldX(obj)
             local x, y = getPosition(obj)
             setFlipX(obj, mx < x)
         end
@@ -283,7 +283,7 @@ function player.Update(obj, dt)
     shootTimer = shootTimer + dt
     setShootTimer(obj, shootTimer)
 
-    if not isMouseLeftHeld() or (isEditorOpen() and not isSceneHovered()) then
+    if not isMouseLeftHeld() or (isEditorOpen() and not isSceneHovered() and not isGamepadConnected()) then
         setShootTimer(obj, getFireRate(obj))
         return
     end
@@ -310,8 +310,8 @@ function player.Update(obj, dt)
         end
     end
 
-    local mx = isEditorOpen() and getEditorMouseWorldX() or getMouseWorldX()
-    local my = isEditorOpen() and getEditorMouseWorldY() or getMouseWorldY()
+    local mx = isEditorOpen() and getEditorMouseWorldX(obj) or getMouseWorldX(obj)
+    local my = isEditorOpen() and getEditorMouseWorldY(obj) or getMouseWorldY(obj)
 
     -- shoot
     playSound(bullet, "default")
