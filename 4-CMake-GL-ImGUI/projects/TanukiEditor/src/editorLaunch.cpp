@@ -334,6 +334,7 @@ bool EditorLaunch::createNewGame(const std::string& name) {
         "assets/scripting",
         //"assets/shaders",
         "assets/Texture",
+        "assets/video"
     };
 
     std::error_code ec;

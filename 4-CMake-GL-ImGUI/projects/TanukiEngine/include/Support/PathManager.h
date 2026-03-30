@@ -29,6 +29,8 @@ public:
     std::string getSourceAudioPath()  const { return m_sourcePath + "/assets/Audio/"; }
     std::string getSourceLogicPath() const { return m_sourcePath + "/assets/Logic/"; }
     std::string getSourceTexturePath() const { return m_sourcePath + "/assets/Texture/"; }
+    std::string getSourceVideoPath() const { return m_sourcePath + "/assets/video/"; }
+
 
 private:
     std::string m_sourcePath;
