@@ -123,11 +123,25 @@ void ButtonSystem::handleAction(const Button& btn) {
         updateVolumeDisplay();
         break;
     }
-    case ButtonAction::BACK:
+    case ButtonAction::BACK: {
         SceneManager::getInstance().requestLevelLoad(
             SceneManager::getInstance().getPreviousSceneName()
         );
         break;
+    }
+    case ButtonAction::MUTE: {
+        auto& ah = AudioHandler::getInstance();
+		m_previousVolume = ah.getMasterVolume();
+        ah.setMasterVolume(0);
+        updateVolumeDisplay();
+        break;
+    }
+    case ButtonAction::UNMUTE: {
+        auto& ah = AudioHandler::getInstance();
+        ah.setMasterVolume(m_previousVolume);
+        updateVolumeDisplay();
+        break;
+    }
 
     default:
         break;
