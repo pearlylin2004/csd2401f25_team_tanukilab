@@ -500,7 +500,7 @@ void CoreEngine::setGameScript(GameScript* script) {
     m_logicSystem->setGameScript(script);
     m_physicsSystem->setGameScript(script);
     m_collisionSystem->setGameScript(script);
-    m_logicSystem->setGameScript(script);
+	m_audioSystem->setGameScript(script);
 
     m_gameScript = script;
     /*if (m_luaSystem && m_gameScript)
