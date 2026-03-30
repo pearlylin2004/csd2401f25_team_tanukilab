@@ -71,7 +71,7 @@
         "Transform": {
           "pos": [
             -1000.0,
-            -1002.85791015625,
+            -1003.0306396484375,
             0.0
           ]
         },
@@ -86,37 +86,15 @@
           "hasAnimation": 0
         },
         "Physics": {
-          "autoUpdate": 0,
-          "maxFallSpeed": -30.0,
-          "groundAccelForce": 20.0,
-          "airAccelForce": 8.0,
-          "apexHangMul": 0.20000000298023224,
-          "jumpBufferTime": 0.15000000596046448,
-          "coyoteTime": 0.15000000596046448,
-          "ledgeAssistRange": 0.800000011920929,
-          "ledgeClimbSpeed": 8.0
+          "autoUpdate": 0
         },
         "CollisionInfo": {
-          "colliderPos": [
-            0.0,
-            0.0
-          ],
-          "colliderRot": 0.0,
           "colliderType": "square",
           "colliderType": "square",
           "ignoreCollisionsWith": [
             "player",
             "hazards"
           ]
-        },
-        "AudioComponent": {
-          "channels": {
-            "default": {
-              "audioFile": "assets/Audio\\SFX\\Water Shoot.wav",
-              "spread": 180.0,
-              "persistOnSceneChange": 0
-            }
-          }
         },
         "LuaScript": {
           "scripts": [
@@ -149,35 +127,17 @@
           "hasAnimation": 1
         },
         "Physics": {
-          "autoUpdate": 0,
-          "maxFallSpeed": -30.0,
-          "groundAccelForce": 20.0,
-          "airAccelForce": 8.0,
-          "apexHangMul": 0.20000000298023224,
-          "jumpBufferTime": 0.15000000596046448,
-          "coyoteTime": 0.15000000596046448,
-          "ledgeAssistRange": 0.800000011920929,
-          "ledgeClimbSpeed": 8.0,
-          "freezeRotation": 1,
-          "angularDrag": 0.9800000190734863,
-          "inertiaOverride": 0.0
+          "autoUpdate": 0
         },
         "CollisionInfo": {
           "colliderPos": [
             0.0,
             0.0
           ],
-          "colliderRot": 0.0,
-          "collisionTag": "steam",
-          "bounciness": 0.0,
-          "friction": 0.0
+          "collisionTag": "steam"
         },
         "AudioComponent": {
           "channels": {
-            "default": {
-              "spread": 180.0,
-              "persistOnSceneChange": 0
-            },
             "fire_loop": {
               "audioFile": "assets/audio/fire_crackle.wav",
               "volume": 0.5,
@@ -237,28 +197,10 @@
           "hasAnimation": 1
         },
         "Physics": {
-          "autoUpdate": 0,
-          "maxFallSpeed": -30.0,
-          "groundAccelForce": 20.0,
-          "airAccelForce": 8.0,
-          "apexHangMul": 0.20000000298023224,
-          "jumpBufferTime": 0.15000000596046448,
-          "coyoteTime": 0.15000000596046448,
-          "ledgeAssistRange": 0.800000011920929,
-          "ledgeClimbSpeed": 8.0,
-          "freezeRotation": 1,
-          "angularDrag": 0.9800000190734863,
-          "inertiaOverride": 0.0
+          "autoUpdate": 0
         },
         "CollisionInfo": {
-          "colliderPos": [
-            0.0,
-            0.0
-          ],
-          "colliderRot": 0.0,
-          "collisionTag": "steam",
-          "bounciness": 0.0,
-          "friction": 0.0
+          "collisionTag": "steam"
         },
         "StateMachine": {
           "Idle": {
@@ -278,10 +220,6 @@
         },
         "AudioComponent": {
           "channels": {
-            "default": {
-              "spread": 180.0,
-              "persistOnSceneChange": 0
-            },
             "fire_loop": {
               "audioFile": "assets/Audio\\SFX\\Fire.wav",
               "volume": 0.5,
@@ -341,28 +279,10 @@
           "hasAnimation": 1
         },
         "Physics": {
-          "autoUpdate": 0,
-          "maxFallSpeed": -30.0,
-          "groundAccelForce": 20.0,
-          "airAccelForce": 8.0,
-          "apexHangMul": 0.20000000298023224,
-          "jumpBufferTime": 0.15000000596046448,
-          "coyoteTime": 0.15000000596046448,
-          "ledgeAssistRange": 0.800000011920929,
-          "ledgeClimbSpeed": 8.0,
-          "freezeRotation": 1,
-          "angularDrag": 0.9800000190734863,
-          "inertiaOverride": 0.0
+          "autoUpdate": 0
         },
         "CollisionInfo": {
-          "colliderPos": [
-            0.0,
-            0.0
-          ],
-          "colliderRot": 0.0,
-          "collisionTag": "steam",
-          "bounciness": 0.0,
-          "friction": 0.0
+          "collisionTag": "steam"
         },
         "StateMachine": {
           "Idle": {
@@ -382,10 +302,6 @@
         },
         "AudioComponent": {
           "channels": {
-            "default": {
-              "spread": 180.0,
-              "persistOnSceneChange": 0
-            },
             "fire_loop": {
               "audioFile": "assets/Audio\\SFX\\Fire.wav",
               "volume": 0.5,
