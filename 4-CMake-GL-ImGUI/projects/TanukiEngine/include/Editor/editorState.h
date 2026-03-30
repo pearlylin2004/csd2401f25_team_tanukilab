@@ -49,10 +49,10 @@ namespace Editor {
 
 		GameObject* draggedObject = nullptr; // currently dragged object
 
-		bool aspectRatioLock = true; // lock aspect ratio for resizing
-		bool ratioSet = false;
-		float ratioY = 1.0f;
-		float ratioZ = 1.0f;
+		//bool aspectRatioLock = false; // lock aspect ratio for resizing
+		//bool ratioSet = false;
+		//float ratioY = 1.0f;
+		//float ratioZ = 1.0f;
 
 		bool showDeletePopup = false;
 		bool showCreatePrefabPopup = false;

@@ -861,14 +861,14 @@ void SceneWindow::objPicking() {
         m_objSelectionState.draggedObject = selected;
 
         // auto check aspect ratio if x == y == z
-        Transform* t = selected->getComponent<Transform>();
+        /*Transform* t = selected->getComponent<Transform>();
         if (t) {
             m_objSelectionState.aspectRatioLock = (t->scaleX == t->scaleY && t->scaleY == t->scaleZ);
         }
         else {
             m_objSelectionState.aspectRatioLock = false;
         }
-        m_objSelectionState.ratioSet = false;
+        m_objSelectionState.ratioSet = false;*/
 
         UndoRedoManager::Instance().beginTransformEdit(selected);
 

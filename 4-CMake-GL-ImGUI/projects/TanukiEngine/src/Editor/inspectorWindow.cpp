@@ -519,15 +519,12 @@ void InspectorWindow::renderTransform(GameObject* selected) {
         if (ImGui::TreeNode("Scale")) {
             bool scaleActive = false;
 
-            ImGui::Checkbox("Aspect Ratio", &m_objSelectionState.aspectRatioLock);
-
-            if (m_objSelectionState.aspectRatioLock && !m_objSelectionState.ratioSet) {
-                m_objSelectionState.ratioY = transform->scaleY / transform->scaleX;
-                m_objSelectionState.ratioZ = transform->scaleZ / transform->scaleX;
-                m_objSelectionState.ratioSet = true;
+            if (ImGui::Checkbox("Aspect Ratio", &transform->aspectRatioLock)) {
+                if (transform->aspectRatioLock && transform->scaleX != 0.f) {
+                    transform->aspectRatioY = transform->scaleY / transform->scaleX;
+                    transform->aspectRatioZ = transform->scaleZ / transform->scaleX;
+                }
             }
-
-            if (!m_objSelectionState.aspectRatioLock) m_objSelectionState.ratioSet = false;
 
             // clamp scale to be non-negative
             if (ImGui::DragFloat("X1", &transform->scaleX, 0.1f)) {
@@ -541,7 +538,7 @@ void InspectorWindow::renderTransform(GameObject* selected) {
             }
             scaleActive |= ImGui::IsItemActive();
 
-            ImGui::BeginDisabled(m_objSelectionState.aspectRatioLock);
+            ImGui::BeginDisabled(transform->aspectRatioLock);
             if (ImGui::DragFloat("Y1", &transform->scaleY, 0.1f)) {
                 //transform->scaleY = std::max(transform->scaleY, 0.f);
 
@@ -567,9 +564,9 @@ void InspectorWindow::renderTransform(GameObject* selected) {
 
             ImGui::EndDisabled();
 
-            if (m_objSelectionState.aspectRatioLock && transform->scaleX != 0.0f) {
-                transform->scaleY = transform->scaleX * m_objSelectionState.ratioY;
-                transform->scaleZ = transform->scaleX * m_objSelectionState.ratioZ;
+            if (transform->aspectRatioLock && transform->scaleX != 0.0f) {
+                transform->scaleY = transform->scaleX * transform->aspectRatioY;
+                transform->scaleZ = transform->scaleX * transform->aspectRatioZ;
             }
 
             // if collision and its set to auto-fit scale, adjust the collider size also

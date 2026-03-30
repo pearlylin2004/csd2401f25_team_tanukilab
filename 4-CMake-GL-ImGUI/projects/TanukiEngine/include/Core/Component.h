@@ -70,6 +70,12 @@ public:
     bool flipX = false; // flip scaleX when change direction, true means flip to left
     glm::mat4 mdlWorld = 1.f;
 
+    // runtime for editor
+    bool aspectRatioLock = false;
+    bool aspectRatioSet = false;
+    float aspectRatioY = 1.f;
+    float aspectRatioZ = 1.f;
+
     // Hierarchy (optional, null = root object)
     std::string parentName = "";   // serialised as name reference
     Vector2D    localOffset{ 0, 0 }; // position relative to parent at bind time
