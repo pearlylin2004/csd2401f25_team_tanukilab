@@ -38,6 +38,12 @@ private:
 	void refreshAssets(const std::vector<Editor::Asset>& assets);
 	void exportSelected();
 
+	// de/serialize selections to ensure persist across open/close of the window
+	void saveSelections() const;
+	void loadSelections();
+
+	static constexpr const char* k_selectionFile = "editor_build_selection.txt";
+
 	bool m_show = false;
 	bool m_dirty = true;
 	bool m_wasClosed = true;
