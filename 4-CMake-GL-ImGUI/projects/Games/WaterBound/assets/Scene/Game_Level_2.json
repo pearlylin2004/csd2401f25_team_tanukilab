@@ -102,6 +102,7 @@
         "AudioComponent": {
           "channels": {
             "drop": {
+              "volume": 0.6700000166893005,
               "persistOnSceneChange": 1
             }
           }
@@ -138,37 +139,15 @@
           "hasAnimation": 0
         },
         "Physics": {
-          "autoUpdate": 0,
-          "maxFallSpeed": -30.0,
-          "groundAccelForce": 20.0,
-          "airAccelForce": 8.0,
-          "apexHangMul": 0.20000000298023224,
-          "jumpBufferTime": 0.15000000596046448,
-          "coyoteTime": 0.15000000596046448,
-          "ledgeAssistRange": 0.800000011920929,
-          "ledgeClimbSpeed": 8.0
+          "autoUpdate": 0
         },
         "CollisionInfo": {
-          "colliderPos": [
-            0.0,
-            0.0
-          ],
-          "colliderRot": 0.0,
           "colliderType": "square",
           "colliderType": "square",
           "ignoreCollisionsWith": [
             "player",
             "hazards"
           ]
-        },
-        "AudioComponent": {
-          "channels": {
-            "default": {
-              "audioFile": "assets/Audio\\SFX\\Water Shoot.wav",
-              "spread": 180.0,
-              "persistOnSceneChange": 0
-            }
-          }
         },
         "LuaScript": {
           "scripts": [
@@ -1310,9 +1289,9 @@
               "fadeInDuration": 1.0,
               "fadeOutOnStop": 0,
               "fadeOutDuration": 1.0,
-              "isSpatial": 0,
+              "isSpatial": 1,
               "minDistance": 1.0,
-              "maxDistance": 100.0,
+              "maxDistance": 64.0,
               "spread": 180.0,
               "persistOnSceneChange": 0
             }
