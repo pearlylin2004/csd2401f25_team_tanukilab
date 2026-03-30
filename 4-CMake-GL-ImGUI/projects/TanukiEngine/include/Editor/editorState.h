@@ -519,7 +519,6 @@ namespace Editor {
 		{ "Video",
 			[](GameObject* obj) {
 			obj->addComponent<Video>();
-			hasCam = true;
 			DebugLog::addMessage("Added Video component for " + obj->getObjectName());
 			},
 			[](const GameObject* obj) { return obj->hasComponent<Video>(); },
