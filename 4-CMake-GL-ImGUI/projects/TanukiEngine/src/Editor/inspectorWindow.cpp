@@ -1448,6 +1448,7 @@ void InspectorWindow::renderVideo(GameObject* selected)
                     if (pos != std::string::npos)
                         normalizedPath = normalizedPath.substr(pos);
                     video->videoFile = normalizedPath;
+                    video->videoTexID = 0;
 
                     if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
 
@@ -1472,6 +1473,7 @@ void InspectorWindow::renderVideo(GameObject* selected)
                 video->isPlaying = false;
                 video->isPaused = false;
                 video->accumTime = 0.f;
+                video->videoTexID = 0;
 
                 if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
             }
