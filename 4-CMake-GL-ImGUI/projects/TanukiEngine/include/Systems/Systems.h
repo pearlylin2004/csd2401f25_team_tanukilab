@@ -493,7 +493,7 @@ public:
 	\return
 		True if point is in water, false otherwise
 	*************************************************************************/
-	bool isPointInWater(GameObject* waterObj, const Vector2D& point);
+	//bool isPointInWater(GameObject* waterObj, const Vector2D& point);
 
 	/*!***********************************************************************
 	\brief
