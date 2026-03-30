@@ -1859,7 +1859,7 @@
           "colorB": 1.0,
           "colorA": 1.0,
           "hasTex": 1,
-          "texture": "assets/textures/steam.png",
+          "texture": "assets/Texture/water_texture.png",
           "hasAnimation": 1
         },
         "Physics": {
@@ -1877,7 +1877,7 @@
           "colorB": 1.0,
           "colorA": 1.0,
           "hasTex": 1,
-          "texture": "assets/textures/steam.png",
+          "texture": "assets/Texture/water_texture.png",
           "hasAnimation": 1
         },
         "Physics": {

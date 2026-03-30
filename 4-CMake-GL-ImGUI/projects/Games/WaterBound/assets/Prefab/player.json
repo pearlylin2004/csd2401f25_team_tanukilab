@@ -124,7 +124,7 @@
       },
       "Shooting": {
         "animState": {
-          "texture": "assets/Texture/Kinuta_Land_SS.png",
+          "texture": "assets/Texture\\Kinuta_Death_SS.png",
           "loop": 0,
           "play": 1,
           "totalColumn": 3,
