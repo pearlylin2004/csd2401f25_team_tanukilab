@@ -620,6 +620,8 @@ void RenderSystem::fboAspectRatio(int& width, int& height) const {
 
 void VideoSystem::update(GameObject* obj, float const deltaTime)
 {
+	if (EditorManager::isEditingMode() || EditorManager::isPaused()) return;
+
 	Video* video = obj->getComponent<Video>();
 	if (!video->isPlaying) return;
 	if (video->isPaused) return;
