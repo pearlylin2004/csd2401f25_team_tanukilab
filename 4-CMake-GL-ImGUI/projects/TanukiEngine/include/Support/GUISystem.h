@@ -77,7 +77,6 @@ private:
 
     void startGame(); //start game
     void stopGame(); //stop game	
-    void updateVolumeDisplay(); //update volume % text on audio page
 
     GameObjectManager* g_manager = nullptr;
     LuaSystem* g_luaSystem = nullptr;

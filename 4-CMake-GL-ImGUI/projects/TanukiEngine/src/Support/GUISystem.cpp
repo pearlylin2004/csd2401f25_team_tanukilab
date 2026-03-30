@@ -76,7 +76,7 @@ void GUISystem::startGame() {
 
 //stop game and quit
 void GUISystem::stopGame() {
-    std::cout << "[GUI] Stop button clicked - quitting application" << std::endl;
+    std::cout << "[GUI] Exit button clicked - quitting application" << std::endl;
 
     //close the GLFW window to exit the application
     GLFWwindow* window = glfwGetCurrentContext();
