@@ -187,140 +187,217 @@ void InputSystem::update(GameObjectManager& manager, const float& deltaTime, Mes
 }
 
 // Render system - draws all game objects with a Render component
-void RenderSystem::update(GameObjectManager& manager, float const& deltaTime) 
-{
-	//record current time for performance tracking
-	auto start = std::chrono::high_resolution_clock::now();
+//void RenderSystem::update(GameObjectManager& manager, float const& deltaTime) 
+//{
+//	//record current time for performance tracking
+//	auto start = std::chrono::high_resolution_clock::now();
+//	batchingSetUp(manager, deltaTime);
+//
+//	//we aint doing this anymore 
+//	//std::vector<GameObject*> gameObjects;
+//	//manager.getAllGameObjects(gameObjects);
+//
+//	LayerManager& layerManager = manager.getLayerManager();
+//	std::vector<Layer*> layers = layerManager.getAllLayers();
+//
+//	glm::mat4 camView, camProj;
+//
+//	// decide where to render
+//	renderFBO();
+//
+//	// Attach texture to FBO and update editor camera if editor is on & update camera
+//	if (UISystem::isShowUI() && EditorManager::isEditingMode())
+//	{
+//		createFBO();
+//		renderer::editorCam.update();
+//
+//		camView = renderer::editorCam.view;
+//		camProj = renderer::editorCam.proj;
+//	}
+//	else
+//	{
+//		renderer::cam.update();
+//
+//		camView = renderer::cam.view;
+//		camProj = renderer::cam.proj;
+//	}
+//
+//	for (Layer* layer : layers) {
+//		if (!layer) continue;
+//		
+//		//gettem objects bro
+//		const std::vector<GameObject*>& gameObjects = layer->getObjects();
+//		for (GameObject* object : gameObjects) {
+//			if (object->hasComponent<Render>()) {
+//				Render* render = object->getComponent<Render>();
+//
+//				if (render->texChanged) {
+//					if (render->hasTex) {
+//						TextureData texData = ResourceManager::getInstance().getTexture(render->texFile);
+//						render->texHDL = texData.id;
+//						render->isTransparent = texData.isTransparent;
+//						render->texChanged = false;
+//					}
+//
+//					TextureData texData = ResourceManager::getInstance().getTexture(render->texFile);
+//					render->texHDL = texData.id;
+//					render->isTransparent = texData.isTransparent;
+//					render->texChanged = false;
+//				}
+//
+//				if (object->hasComponent<Animation>()) {
+//					Animation* animation = object->getComponent<Animation>();
+//					if (!animation->animState.empty())
+//					{
+//						for (AnimateState& as : animation->animState) {
+//							if (as.texChanged && !as.texFile.empty()) {
+//								TextureData textureData = ResourceManager::getInstance().getTexture(as.texFile);
+//								as.texHDL = textureData.id;
+//								as.texChanged = false;
+//							}
+//						}
+//					}
+//				}
+//
+//			}
+//		}
+//
+//
+//	}
+//	//drawing models without texture
+//	glDepthMask(GL_TRUE);
+//	glUseProgram(renderer::shdr_pgm[1]);
+//	GLint uView = glGetUniformLocation(renderer::shdr_pgm[1], "V");
+//	GLint uProj = glGetUniformLocation(renderer::shdr_pgm[1], "P");
+//	glUniformMatrix4fv(uView, 1, GL_FALSE, glm::value_ptr(camView));
+//	glUniformMatrix4fv(uProj, 1, GL_FALSE, glm::value_ptr(camProj));
+//	instancePerBatch(objectWithoutTex);
+//	for (std::pair<const BatchKey, std::vector<renderer::InstanceData>>& pair : objectWithoutTex)
+//	{
+//		renderer::drawInstances(pair);
+//	}
+//	//glDisable(GL_DEPTH_TEST);
+//	//drawing models with texture
+//	glDepthMask(GL_FALSE);  // don't write to depth buffer
+//	glEnable(GL_BLEND);
+//	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+//	glUseProgram(renderer::shdr_pgm[0]); // hasTex shader
+//	uView = glGetUniformLocation(renderer::shdr_pgm[0], "V");
+//	uProj = glGetUniformLocation(renderer::shdr_pgm[0], "P");
+//	glUniformMatrix4fv(uView, 1, GL_FALSE, glm::value_ptr(camView));
+//	glUniformMatrix4fv(uProj, 1, GL_FALSE, glm::value_ptr(camProj));
+//	instancePerBatch(objectWithTex);
+//	for (std::pair<const BatchKey, std::vector<renderer::InstanceData>>& pair : objectWithTex)
+//	{
+//		
+//		const BatchKey& key = pair.first;
+//		//std::vector<renderer::InstanceData>& instances = pair.second;
+//		glBindTextureUnit(0, key.texID);
+//		GLuint isVid = glGetUniformLocation(renderer::shdr_pgm[0], "isVid");
+//		glUniform1i(isVid, key.vid ? 1 : 0);
+//		GLint uTexLoc = glGetUniformLocation(renderer::shdr_pgm[0], "uTex2d");
+//		if (uTexLoc != -1) 
+//			glUniform1i(uTexLoc, 0);
+//		//renderer::model& mdl = renderer::models[(int)key.meshType];
+//		renderer::drawInstances(pair);
+//	}
+//	glDepthMask(GL_TRUE);
+//	//instancePerBatch(objectWithTex2);
+//	//for (std::pair<const BatchKey, std::vector<renderer::InstanceData>>& pair : objectWithTex2)
+//	//{
+//	//	const BatchKey& key = pair.first;
+//	//	//std::vector<renderer::InstanceData>& instances = pair.second;
+//	//	glBindTextureUnit(0, key.texID);
+//	//	GLint uTexLoc = glGetUniformLocation(renderer::shdr_pgm[0], "uTex2d");
+//	//	if (uTexLoc != -1)
+//	//		glUniform1i(uTexLoc, 0);
+//	//	//renderer::model& mdl = renderer::models[(int)key.meshType];
+//	//	renderer::drawInstances(pair);
+//	//}
+//
+//	/*if (UISystem::isShowUI()) glBindFramebuffer(GL_FRAMEBUFFER, 0);*/
+//
+//	//record end time for performance tracking
+//	auto end = std::chrono::high_resolution_clock::now();
+//	double ms = std::chrono::duration<double, std::milli>(end - start).count(); //get elapse time in ms
+//	g_SystemTimers.push_back({"Render", ms }); //saving timing for UI output
+//}
+
+void RenderSystem::renderBelowZ(GameObjectManager& manager, float deltaTime, float zThreshold) {
+	//auto start = std::chrono::high_resolution_clock::now();
 	batchingSetUp(manager, deltaTime);
 
-	//we aint doing this anymore 
-	//std::vector<GameObject*> gameObjects;
-	//manager.getAllGameObjects(gameObjects);
-
+	// texture reload
 	LayerManager& layerManager = manager.getLayerManager();
-	std::vector<Layer*> layers = layerManager.getAllLayers();
-
-	glm::mat4 camView, camProj;
-
-	// decide where to render
-	renderFBO();
-
-	// Attach texture to FBO and update editor camera if editor is on & update camera
-	if (UISystem::isShowUI() && EditorManager::isEditingMode())
-	{
-		createFBO();
-		renderer::editorCam.update();
-
-		camView = renderer::editorCam.view;
-		camProj = renderer::editorCam.proj;
-	}
-	else
-	{
-		renderer::cam.update();
-
-		camView = renderer::cam.view;
-		camProj = renderer::cam.proj;
-	}
-
-	for (Layer* layer : layers) {
+	for (Layer* layer : layerManager.getAllLayers()) {
 		if (!layer) continue;
-		
-		//gettem objects bro
-		const std::vector<GameObject*>& gameObjects = layer->getObjects();
-		for (GameObject* object : gameObjects) {
-			if (object->hasComponent<Render>()) {
-				Render* render = object->getComponent<Render>();
-
-				if (render->texChanged) {
-					if (render->hasTex) {
-						TextureData texData = ResourceManager::getInstance().getTexture(render->texFile);
-						render->texHDL = texData.id;
-						render->isTransparent = texData.isTransparent;
-						render->texChanged = false;
-					}
-
+		for (GameObject* object : layer->getObjects()) {
+			if (!object->hasComponent<Render>()) continue;
+			Render* render = object->getComponent<Render>();
+			if (render->texChanged) {
+				if (render->hasTex) {
 					TextureData texData = ResourceManager::getInstance().getTexture(render->texFile);
 					render->texHDL = texData.id;
 					render->isTransparent = texData.isTransparent;
 					render->texChanged = false;
 				}
-
-				if (object->hasComponent<Animation>()) {
-					Animation* animation = object->getComponent<Animation>();
-					if (!animation->animState.empty())
-					{
-						for (AnimateState& as : animation->animState) {
-							if (as.texChanged && !as.texFile.empty()) {
-								TextureData textureData = ResourceManager::getInstance().getTexture(as.texFile);
-								as.texHDL = textureData.id;
-								as.texChanged = false;
-							}
-						}
+				TextureData texData = ResourceManager::getInstance().getTexture(render->texFile);
+				render->texHDL = texData.id;
+				render->isTransparent = texData.isTransparent;
+				render->texChanged = false;
+			}
+			if (object->hasComponent<Animation>()) {
+				Animation* animation = object->getComponent<Animation>();
+				for (AnimateState& as : animation->animState) {
+					if (as.texChanged && !as.texFile.empty()) {
+						TextureData textureData = ResourceManager::getInstance().getTexture(as.texFile);
+						as.texHDL = textureData.id;
+						as.texChanged = false;
 					}
 				}
-
 			}
 		}
-
-
 	}
-	//drawing models without texture
-	glDepthMask(GL_TRUE);
-	glUseProgram(renderer::shdr_pgm[1]);
-	GLint uView = glGetUniformLocation(renderer::shdr_pgm[1], "V");
-	GLint uProj = glGetUniformLocation(renderer::shdr_pgm[1], "P");
-	glUniformMatrix4fv(uView, 1, GL_FALSE, glm::value_ptr(camView));
-	glUniformMatrix4fv(uProj, 1, GL_FALSE, glm::value_ptr(camProj));
+
+	renderFBO();
+
+	glm::mat4 camView, camProj;
+	if (UISystem::isShowUI() && EditorManager::isEditingMode()) {
+		createFBO();
+		renderer::editorCam.update();
+		camView = renderer::editorCam.view;
+		camProj = renderer::editorCam.proj;
+	}
+	else {
+		renderer::cam.update();
+		camView = renderer::cam.view;
+		camProj = renderer::cam.proj;
+	}
+
 	instancePerBatch(objectWithoutTex);
-	for (std::pair<const BatchKey, std::vector<renderer::InstanceData>>& pair : objectWithoutTex)
-	{
-		renderer::drawInstances(pair);
-	}
-	//glDisable(GL_DEPTH_TEST);
-	//drawing models with texture
-	glDepthMask(GL_FALSE);  // don't write to depth buffer
-	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	glUseProgram(renderer::shdr_pgm[0]); // hasTex shader
-	uView = glGetUniformLocation(renderer::shdr_pgm[0], "V");
-	uProj = glGetUniformLocation(renderer::shdr_pgm[0], "P");
-	glUniformMatrix4fv(uView, 1, GL_FALSE, glm::value_ptr(camView));
-	glUniformMatrix4fv(uProj, 1, GL_FALSE, glm::value_ptr(camProj));
 	instancePerBatch(objectWithTex);
-	for (std::pair<const BatchKey, std::vector<renderer::InstanceData>>& pair : objectWithTex)
-	{
-		
-		const BatchKey& key = pair.first;
-		//std::vector<renderer::InstanceData>& instances = pair.second;
-		glBindTextureUnit(0, key.texID);
-		GLuint isVid = glGetUniformLocation(renderer::shdr_pgm[0], "isVid");
-		glUniform1i(isVid, key.vid ? 1 : 0);
-		GLint uTexLoc = glGetUniformLocation(renderer::shdr_pgm[0], "uTex2d");
-		if (uTexLoc != -1) 
-			glUniform1i(uTexLoc, 0);
-		//renderer::model& mdl = renderer::models[(int)key.meshType];
-		renderer::drawInstances(pair);
+	drawBatches(camView, camProj, [zThreshold](float z) { return z < zThreshold; });
+
+	/*auto end = std::chrono::high_resolution_clock::now();
+	double ms = std::chrono::duration<double, std::milli>(end - start).count();
+	g_SystemTimers.push_back({ "Render", ms });*/
+}
+
+void RenderSystem::renderAboveZ(GameObjectManager& manager, float deltaTime, float zThreshold) {
+	(void)manager; (void)deltaTime;
+
+	if (UISystem::isShowUI()) {
+		glBindFramebuffer(GL_FRAMEBUFFER, fbo);
 	}
-	glDepthMask(GL_TRUE);
-	//instancePerBatch(objectWithTex2);
-	//for (std::pair<const BatchKey, std::vector<renderer::InstanceData>>& pair : objectWithTex2)
-	//{
-	//	const BatchKey& key = pair.first;
-	//	//std::vector<renderer::InstanceData>& instances = pair.second;
-	//	glBindTextureUnit(0, key.texID);
-	//	GLint uTexLoc = glGetUniformLocation(renderer::shdr_pgm[0], "uTex2d");
-	//	if (uTexLoc != -1)
-	//		glUniform1i(uTexLoc, 0);
-	//	//renderer::model& mdl = renderer::models[(int)key.meshType];
-	//	renderer::drawInstances(pair);
-	//}
+	else {
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	}
 
-	/*if (UISystem::isShowUI()) glBindFramebuffer(GL_FRAMEBUFFER, 0);*/
 
-	//record end time for performance tracking
-	auto end = std::chrono::high_resolution_clock::now();
-	double ms = std::chrono::duration<double, std::milli>(end - start).count(); //get elapse time in ms
-	g_SystemTimers.push_back({"Render", ms }); //saving timing for UI output
+	glm::mat4 camView, camProj;
+	getCameraMatrices(camView, camProj);
+
+	drawBatches(camView, camProj, [zThreshold](float z) { return z >= zThreshold; });
 }
 
 void RenderSystem::renderFBO() {
@@ -604,6 +681,51 @@ void RenderSystem::clearBatches() {
 void RenderSystem::fboAspectRatio(int& width, int& height) const {
 	width = fboWidth;
 	height = fboHeight;
+}
+
+void RenderSystem::getCameraMatrices(glm::mat4& camView, glm::mat4& camProj) {
+	if (UISystem::isShowUI() && EditorManager::isEditingMode()) {
+		camView = renderer::editorCam.view;
+		camProj = renderer::editorCam.proj;
+	}
+	else {
+		camView = renderer::cam.view;
+		camProj = renderer::cam.proj;
+	}
+}
+
+void RenderSystem::drawBatches(const glm::mat4& camView, const glm::mat4& camProj, std::function<bool(float)> zFilter) {
+	glDepthMask(GL_TRUE);
+	glUseProgram(renderer::shdr_pgm[1]);
+	GLint uView = glGetUniformLocation(renderer::shdr_pgm[1], "V");
+	GLint uProj = glGetUniformLocation(renderer::shdr_pgm[1], "P");
+	glUniformMatrix4fv(uView, 1, GL_FALSE, glm::value_ptr(camView));
+	glUniformMatrix4fv(uProj, 1, GL_FALSE, glm::value_ptr(camProj));
+	for (auto& pair : objectWithoutTex)
+		if (zFilter(pair.first.z)) renderer::drawInstances(pair);
+
+	glDepthMask(GL_FALSE);
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	glUseProgram(renderer::shdr_pgm[0]);
+	uView = glGetUniformLocation(renderer::shdr_pgm[0], "V");
+	uProj = glGetUniformLocation(renderer::shdr_pgm[0], "P");
+	glUniformMatrix4fv(uView, 1, GL_FALSE, glm::value_ptr(camView));
+	glUniformMatrix4fv(uProj, 1, GL_FALSE, glm::value_ptr(camProj));
+	for (std::pair<const BatchKey, std::vector<renderer::InstanceData>>& pair : objectWithTex) {
+		if (zFilter(pair.first.z)) {
+			glBindTextureUnit(0, pair.first.texID);
+			GLuint isVid = glGetUniformLocation(renderer::shdr_pgm[0], "isVid");
+			glUniform1i(isVid, pair.first.vid ? 1 : 0);
+
+			GLint uTexLoc = glGetUniformLocation(renderer::shdr_pgm[0], "uTex2d");
+			if (uTexLoc != -1) 
+				glUniform1i(uTexLoc, 0);
+			renderer::drawInstances(pair);
+		}
+	}
+
+	glDepthMask(GL_TRUE);
 }
 
 void VideoSystem::update(GameObject* obj, float const deltaTime)
