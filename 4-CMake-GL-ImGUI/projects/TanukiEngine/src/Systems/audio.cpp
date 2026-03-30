@@ -51,6 +51,21 @@ void AudioHandler::update(float deltaTime) {
 		system->update();
 	}
 
+	// fade out previous bgm manually
+	for (auto it = m_fadingOutBGMs.begin(); it != m_fadingOutBGMs.end();) {
+		it->timer += deltaTime;
+		float progress = std::min(it->timer / it->duration, 1.f);
+		it->channel->setVolume(it->startVolume * (1.f - progress));
+
+		if (progress >= 1.f) {
+			it->channel->stop();
+			it = m_fadingOutBGMs.erase(it);
+		}
+		else {
+			++it;
+		}
+	}
+
 	auto end = std::chrono::high_resolution_clock::now();
 	double ms = std::chrono::duration<double, std::milli>(end - start).count(); //get elapse time in ms
 	g_SystemTimers.push_back({ "Audio", ms }); //saving timing for UI output
@@ -300,23 +315,17 @@ void AudioHandler::decreaseSoundVolume(AudioChannel* audio) {
 
 // set volume of a sound to a specific value between 0.0f (muted) to 1.0f (full)
 void AudioHandler::setSoundVolume(AudioChannel* audio, float volume) {
-	//size_t pos = static_cast<size_t>(id);
-
 	if (audio->channel)
 		FMODErrorCheck(audio->channel->setVolume(volume));
 }
 
 // set a specific pitch between 0.5f (half speed) to 2.0f (double speed)
 void AudioHandler::setSoundpitch(AudioChannel* audio, float pitch) {
-	//size_t pos = static_cast<size_t>(id);
-
 	if (audio->channel)
 		FMODErrorCheck(audio->channel->setPitch(pitch));
 }
 
 void AudioHandler::fadeIn(AudioChannel* audio, float targetVolume, float duration) {
-	//size_t pos = static_cast<size_t>(id);
-
 	if (!audio->channel) {
 		std::cerr << "Error! Cannot fade in - channel not active..." << std::endl;
 		return;
@@ -500,19 +509,20 @@ void AudioHandler::requestBGM(const std::string& channelName, GameObjectManager&
 		if (!obj->hasComponent<AudioComponent>()) continue;
 		AudioComponent* ac = obj->getComponent<AudioComponent>();
 		if (!ac->hasChannel(channelName)) continue;
-
 		AudioChannel* ch = ac->getOrCreateChannel(channelName);
 
-		// skip if alr playing this channel
-		if (ch->channel && ch->channel == m_bgmChannel) return;
+		// skip if same bgm requested
+		if (ch->audioFile == m_currentBGMFile) return;
 
 		if (m_bgmChannel) {
-			bool isPlaying = false;
-			m_bgmChannel->isPlaying(&isPlaying);
-			if (isPlaying && m_currentBGMFile == ch->audioFile) return;  // ← check by file
+			float vol = 0.f;
+			m_bgmChannel->getVolume(&vol);
+			float dur = ch->fadeOutDuration > 0.f ? ch->fadeOutDuration : 1.f;
+			m_fadingOutBGMs.push_back({ m_bgmChannel, 0.f, dur, vol });
+			m_bgmChannel = nullptr;
 		}
 
-		resetBGM();
+		//resetBGM();
 
 		// play new bgm under bgm group
 		m_bgmChannel = playBGMSound(ch);
@@ -528,6 +538,25 @@ void AudioHandler::resetBGM() {
 	}
 
 	m_currentBGMFile.clear();
+}
+
+FMOD::Channel* AudioHandler::playBGMSound(AudioChannel* audio) {
+	FMOD::Sound* sound = ResourceManager::getInstance().getSound(audio->audioFile, audio->loop, false);
+	if (!sound) return nullptr;
+	FMOD::Channel* channel = nullptr;
+	FMODErrorCheck(system->playSound(sound, m_bgmGroup, false, &channel));
+
+	if (channel) {
+		audio->channel = channel;
+		if (audio->fadeInOnStart && audio->fadeInDuration > 0.f) {
+			channel->setVolume(0.f);
+			fadeIn(audio, audio->volume, audio->fadeInDuration);
+		}
+		else {
+			channel->setVolume(audio->volume);
+		}
+	}
+	return channel;
 }
 
 FMOD::Channel* AudioHandler::playPreviewSound(AudioChannel* audio) {
@@ -563,15 +592,4 @@ void AudioHandler::stopAllPreviews() {
 	if (m_previewGroup) {
 		m_previewGroup->stop();  // atomically kills every preview channel
 	}
-}
-
-FMOD::Channel* AudioHandler::playBGMSound(AudioChannel* audio) {
-	FMOD::Sound* sound = ResourceManager::getInstance().getSound(audio->audioFile, audio->loop, false);
-	if (!sound) return nullptr;
-	FMOD::Channel* channel = nullptr;
-	FMODErrorCheck(system->playSound(sound, m_bgmGroup, false, &channel));
-	if (channel) {
-		channel->setVolume(audio->volume);
-	}
-	return channel;
 }
