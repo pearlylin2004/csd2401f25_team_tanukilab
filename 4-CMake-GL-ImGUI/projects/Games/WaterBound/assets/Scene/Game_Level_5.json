@@ -71,7 +71,7 @@
         "Transform": {
           "pos": [
             -1000.0,
-            -997.1442260742188,
+            -997.0816650390625,
             0.0
           ]
         },
@@ -1395,11 +1395,11 @@
         },
         "Physics": {
           "physicsFlag": 1,
-          "autoUpdate": 0,
+          "autoUpdate": 1,
           "buoyancy": 1,
           "moveSpeed": 1.0,
           "jumpForce": 100.0,
-          "mass": 1.0,
+          "mass": 20.0,
           "damping": 0.9800000190734863,
           "maxFallSpeed": -20.0,
           "groundAccelForce": 20.0,
