@@ -48,7 +48,7 @@ void ButtonSystem::refresh() {
     else
         std::cout << "[ButtonSystem] Registered " << m_buttons.size() << " button(s).\n";
 
-    // Refresh volume text if we are on the audio page.
+    //refresh volume text if we are on the audio page.
     if (SceneManager::getInstance().getCurrentState() == GameState::AUDIO)
         updateVolumeDisplay();
 }
@@ -123,12 +123,18 @@ void ButtonSystem::handleAction(const Button& btn) {
         updateVolumeDisplay();
         break;
     }
+    case ButtonAction::BACK:
+        SceneManager::getInstance().requestLevelLoad(
+            SceneManager::getInstance().getPreviousSceneName()
+        );
+        break;
 
     default:
         break;
     }
 }
 
+//volume display update
 void ButtonSystem::updateVolumeDisplay() const {
     AudioHandler& ah = AudioHandler::getInstance();
     GameObject* volText = g_manager->getGameObject("music_vol_text");

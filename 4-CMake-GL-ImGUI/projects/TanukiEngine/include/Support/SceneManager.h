@@ -42,6 +42,7 @@ public:
     void setCurrentState(GameState s) { m_currentState = s; }
     void setPreviousState(GameState s) { m_previousState = s; }
     void setStateBeforePause(GameState s) { m_stateBeforePause = s; }
+    const std::string& getPreviousSceneName() const { return m_previousSceneName; }
 
     GameState sceneToState(const std::string& sceneName) const;
 
@@ -69,6 +70,10 @@ private:
     GameState m_currentState = GameState::NONE;
     GameState m_previousState = GameState::MENU;
     GameState m_stateBeforePause = GameState::MENU;
+
+    //for back
+    std::string m_previousSceneName;
+    std::string m_currentSceneName;
 
     std::string m_currentLevel;  // full path to the active level scene
     std::unordered_map<std::string, Vector2D> m_spawnPositions;

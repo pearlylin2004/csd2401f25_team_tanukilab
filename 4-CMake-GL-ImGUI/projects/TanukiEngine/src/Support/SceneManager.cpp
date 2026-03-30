@@ -184,6 +184,8 @@ void SceneManager::executeLevelLoad(const std::string& levelSceneName) {
     std::cout << "[SceneManager] Loading scene: " << levelSceneName << "\n";
 
     std::string fullPath = buildScenePath(levelSceneName);
+    m_previousSceneName = m_currentSceneName; //save current first
+    m_currentSceneName = levelSceneName;
 
     AudioHandler::getInstance().stopAll(*g_manager);
     g_manager->clearScene();
