@@ -928,13 +928,13 @@
               "id": "assets/Texture\\Tilemap\\Forest\\tile005.png"
             },
             {
-              "x": 2,
-              "y": -1,
+              "x": 12,
+              "y": -5,
               "id": "assets/Texture\\Tilemap\\Forest\\tile005.png"
             },
             {
-              "x": 12,
-              "y": -5,
+              "x": 2,
+              "y": -1,
               "id": "assets/Texture\\Tilemap\\Forest\\tile005.png"
             },
             {
@@ -1525,7 +1525,6 @@
       }
     },
     {
-      "prefabid": "0d16ad75-981d-4d14-ae8b-90c2d2cb38d5",
       "name": "Small branch",
       "components": {
         "Transform": {
@@ -1534,6 +1533,7 @@
             -2.7950122356414795,
             8.0
           ],
+          "rotation": 0.0,
           "scale": [
             3.9719998836517334,
             1.2870457172393799,
@@ -1541,6 +1541,7 @@
           ]
         },
         "Render": {
+          "shape": "square",
           "colorR": 1.0,
           "colorG": 1.0,
           "colorB": 1.0,
@@ -1550,13 +1551,64 @@
           "hasAnimation": 0
         },
         "Physics": {
-          "autoUpdate": 1
+          "physicsFlag": 1,
+          "autoUpdate": 1,
+          "buoyancy": 1,
+          "moveSpeed": 1.0,
+          "jumpForce": 100.0,
+          "mass": 1.0,
+          "damping": 0.9800000190734863,
+          "maxFallSpeed": -30.0,
+          "groundAccelForce": 20.0,
+          "airAccelForce": 8.0,
+          "apexHangMul": 0.20000000298023224,
+          "jumpBufferTime": 0.15000000596046448,
+          "coyoteTime": 0.15000000596046448,
+          "ledgeAssistRange": 0.800000011920929,
+          "ledgeClimbSpeed": 8.0,
+          "freezeRotation": 1,
+          "angularDrag": 0.9800000190734863,
+          "inertiaOverride": 0.0
         },
         "CollisionInfo": {
+          "collisionFlag": 1,
+          "autoFitScale": 0,
           "colliderSize": [
             3.9719998836517334,
             0.3869999945163727
-          ]
+          ],
+          "colliderPos": [
+            0.0,
+            0.0
+          ],
+          "colliderRot": 0.0,
+          "colliderType": "square",
+          "collisionRes": "StopWhenCollide",
+          "collisionTag": "default",
+          "bounciness": 0.0,
+          "friction": 0.0,
+          "colliderType": "square"
+        },
+        "AudioComponent": {
+          "channels": {
+            "drop": {
+              "audioFile": "assets/Audio\\Tree Break.wav",
+              "volume": 1.0,
+              "pitch": 1.0,
+              "loop": 0,
+              "playOnStart": 0,
+              "muted": 0,
+              "fadeInOnStart": 1,
+              "fadeInDuration": 0.6299999952316284,
+              "fadeOutOnStop": 1,
+              "fadeOutDuration": 0.8299999833106995,
+              "isSpatial": 0,
+              "minDistance": 1.0,
+              "maxDistance": 100.0,
+              "spread": 180.0,
+              "persistOnSceneChange": 0
+            }
+          }
         },
         "LuaScript": {
           "scripts": [

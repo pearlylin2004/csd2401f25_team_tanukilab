@@ -308,7 +308,7 @@
         },
         "footstep1": {
           "audioFile": "assets/Audio\\SFX\\Footsteps2_Gravel-Dirt_far-small_1.wav",
-          "volume": 0.7200000286102295,
+          "volume": 0.30000001192092896,
           "pitch": 1.0,
           "loop": 0,
           "playOnStart": 0,
@@ -325,7 +325,7 @@
         },
         "footstep2": {
           "audioFile": "assets/Audio\\SFX\\Footsteps2_Gravel-Dirt_far-small_2.wav",
-          "volume": 1.0,
+          "volume": 0.30000001192092896,
           "pitch": 1.0,
           "loop": 0,
           "playOnStart": 0,
@@ -342,7 +342,7 @@
         },
         "footstep3": {
           "audioFile": "assets/Audio\\SFX\\Footsteps2_Gravel-Dirt_far-small_3.wav",
-          "volume": 1.0,
+          "volume": 0.30000001192092896,
           "pitch": 1.0,
           "loop": 0,
           "playOnStart": 0,
@@ -359,7 +359,7 @@
         },
         "footstep4": {
           "audioFile": "assets/Audio\\SFX\\Footsteps2_Gravel-Dirt_far-small_4.wav",
-          "volume": 1.0,
+          "volume": 0.30000001192092896,
           "pitch": 1.0,
           "loop": 0,
           "playOnStart": 0,
@@ -376,7 +376,7 @@
         },
         "footstep5": {
           "audioFile": "assets/Audio\\SFX\\Footsteps2_Gravel-Dirt_far-small_5.wav",
-          "volume": 1.0,
+          "volume": 0.30000001192092896,
           "pitch": 1.0,
           "loop": 0,
           "playOnStart": 0,
@@ -393,7 +393,7 @@
         },
         "footstep6": {
           "audioFile": "assets/Audio\\SFX\\Footsteps2_Gravel-Dirt_far-small_6.wav",
-          "volume": 1.0,
+          "volume": 0.30000001192092896,
           "pitch": 1.0,
           "loop": 0,
           "playOnStart": 0,

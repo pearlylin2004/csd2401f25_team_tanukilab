@@ -26,6 +26,60 @@
   "onLoadScript": "assets/scripting\\game_level_load.lua",
   "objects": [
     {
+      "prefabid": "b1a12273-a692-4ce0-8072-156da2c70842",
+      "name": "bullet2",
+      "components": {
+        "Transform": {
+          "pos": [
+            -1000.0,
+            -1001.361328125,
+            0.0
+          ],
+          "scale": [
+            0.5,
+            0.20676174759864807,
+            0.0
+          ]
+        },
+        "Render": {
+          "shape": "square",
+          "colorR": 1.0,
+          "colorG": 1.0,
+          "colorB": 1.0,
+          "colorA": 1.0,
+          "hasTex": 1,
+          "texture": "assets/Texture\\water_texture.png",
+          "hasAnimation": 0
+        },
+        "Physics": {
+          "autoUpdate": 0
+        },
+        "CollisionInfo": {
+          "colliderType": "square",
+          "colliderType": "square",
+          "ignoreCollisionsWith": [
+            "player",
+            "hazards"
+          ]
+        },
+        "AudioComponent": {
+          "channels": {
+            "default": {
+              "volume": 0.09000000357627869
+            }
+          }
+        },
+        "LuaScript": {
+          "scripts": [
+            {
+              "filename": "./assets/scripting\\bullet.lua",
+              "scriptName": "bullet"
+            }
+          ]
+        }
+      }
+    },
+    {
       "name": "End Goal",
       "components": {
         "Transform": {
@@ -94,7 +148,7 @@
           "channels": {
             "change": {
               "audioFile": "assets/Audio\\SFX\\Japanese-CheckPoint-C_YAAY_SFX.wav",
-              "volume": 0.5,
+              "volume": 0.4000000059604645,
               "pitch": 1.0,
               "loop": 0,
               "playOnStart": 0,
@@ -118,12 +172,12 @@
     },
     {
       "prefabid": "b1a12273-a692-4ce0-8072-156da2c70842",
-      "name": "bullet2",
+      "name": "bullet10",
       "components": {
         "Transform": {
           "pos": [
             -1000.0,
-            -1001.361328125,
+            -1001.058837890625,
             0.0
           ],
           "scale": [
@@ -199,60 +253,6 @@
       }
     },
     {
-      "prefabid": "b1a12273-a692-4ce0-8072-156da2c70842",
-      "name": "bullet10",
-      "components": {
-        "Transform": {
-          "pos": [
-            -1000.0,
-            -1001.0590209960938,
-            0.0
-          ],
-          "scale": [
-            0.5,
-            0.20676174759864807,
-            0.0
-          ]
-        },
-        "Render": {
-          "shape": "square",
-          "colorR": 1.0,
-          "colorG": 1.0,
-          "colorB": 1.0,
-          "colorA": 1.0,
-          "hasTex": 1,
-          "texture": "assets/Texture\\water_texture.png",
-          "hasAnimation": 0
-        },
-        "Physics": {
-          "autoUpdate": 0
-        },
-        "CollisionInfo": {
-          "colliderType": "square",
-          "colliderType": "square",
-          "ignoreCollisionsWith": [
-            "player",
-            "hazards"
-          ]
-        },
-        "AudioComponent": {
-          "channels": {
-            "default": {
-              "volume": 0.09000000357627869
-            }
-          }
-        },
-        "LuaScript": {
-          "scripts": [
-            {
-              "filename": "./assets/scripting\\bullet.lua",
-              "scriptName": "bullet"
-            }
-          ]
-        }
-      }
-    },
-    {
       "name": "Game_BGM",
       "components": {
         "Transform": {
@@ -292,46 +292,13 @@
       }
     },
     {
-      "prefabid": "b766d355-2b28-4a0d-b54e-6e4407e18596",
-      "name": "player",
-      "components": {
-        "Transform": {
-          "pos": [
-            -17.495912551879883,
-            -4.2259697914123535,
-            0.9980000257492065
-          ]
-        },
-        "Render": {
-          "colorR": 1.0,
-          "colorG": 1.0,
-          "colorB": 1.0,
-          "colorA": 1.0,
-          "hasTex": 1,
-          "texture": "assets/Texture/Leaf_Gun_Empty.png",
-          "hasAnimation": 1
-        },
-        "Physics": {
-          "autoUpdate": 0
-        },
-        "LuaScript": {
-          "scripts": [
-            {
-              "filename": "./assets/scripting\\player.lua",
-              "scriptName": "player"
-            }
-          ]
-        }
-      }
-    },
-    {
       "prefabid": "b1a12273-a692-4ce0-8072-156da2c70842",
       "name": "bullet9",
       "components": {
         "Transform": {
           "pos": [
             -1000.0,
-            -999.2449951171875,
+            -999.2453002929688,
             0.0
           ],
           "scale": [
@@ -373,6 +340,39 @@
             {
               "filename": "./assets/scripting\\bullet.lua",
               "scriptName": "bullet"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "prefabid": "b766d355-2b28-4a0d-b54e-6e4407e18596",
+      "name": "player",
+      "components": {
+        "Transform": {
+          "pos": [
+            -17.495912551879883,
+            -4.2259697914123535,
+            0.9980000257492065
+          ]
+        },
+        "Render": {
+          "colorR": 1.0,
+          "colorG": 1.0,
+          "colorB": 1.0,
+          "colorA": 1.0,
+          "hasTex": 1,
+          "texture": "assets/Texture/Leaf_Gun_Empty.png",
+          "hasAnimation": 1
+        },
+        "Physics": {
+          "autoUpdate": 0
+        },
+        "LuaScript": {
+          "scripts": [
+            {
+              "filename": "./assets/scripting\\player.lua",
+              "scriptName": "player"
             }
           ]
         }
@@ -429,41 +429,13 @@
       }
     },
     {
-      "name": "background1",
-      "components": {
-        "Transform": {
-          "pos": [
-            0.0,
-            1.0,
-            -0.47999998927116394
-          ],
-          "rotation": 0.0,
-          "scale": [
-            45.900001525878906,
-            18.980728149414063,
-            0.0
-          ]
-        },
-        "Render": {
-          "shape": "square",
-          "colorR": 1.0,
-          "colorG": 1.0,
-          "colorB": 1.0,
-          "colorA": 1.0,
-          "hasTex": 1,
-          "texture": "assets/Texture\\BG\\Forest Stage\\Forest Stage Layer 2.png",
-          "hasAnimation": 0
-        }
-      }
-    },
-    {
       "prefabid": "b1a12273-a692-4ce0-8072-156da2c70842",
       "name": "bullet14",
       "components": {
         "Transform": {
           "pos": [
             -1000.0,
-            -999.5469970703125,
+            -999.5478515625,
             0.0
           ],
           "scale": [
@@ -511,18 +483,18 @@
       }
     },
     {
-      "name": "Clouds",
+      "name": "background1",
       "components": {
         "Transform": {
           "pos": [
-            -0.5,
-            1.100000023841858,
-            -0.800000011920929
+            0.0,
+            1.0,
+            -0.47999998927116394
           ],
           "rotation": 0.0,
           "scale": [
-            45.0,
-            18.608556747436523,
+            45.900001525878906,
+            18.980728149414063,
             0.0
           ]
         },
@@ -533,8 +505,62 @@
           "colorB": 1.0,
           "colorA": 1.0,
           "hasTex": 1,
-          "texture": "assets/Texture\\BG\\Clouds.png",
+          "texture": "assets/Texture\\BG\\Forest Stage\\Forest Stage Layer 2.png",
           "hasAnimation": 0
+        }
+      }
+    },
+    {
+      "prefabid": "b1a12273-a692-4ce0-8072-156da2c70842",
+      "name": "bullet15",
+      "components": {
+        "Transform": {
+          "pos": [
+            -1000.0,
+            -1000.7562255859375,
+            0.0
+          ],
+          "scale": [
+            0.5,
+            0.20676174759864807,
+            0.0
+          ]
+        },
+        "Render": {
+          "shape": "square",
+          "colorR": 1.0,
+          "colorG": 1.0,
+          "colorB": 1.0,
+          "colorA": 1.0,
+          "hasTex": 1,
+          "texture": "assets/Texture\\water_texture.png",
+          "hasAnimation": 0
+        },
+        "Physics": {
+          "autoUpdate": 0
+        },
+        "CollisionInfo": {
+          "colliderType": "square",
+          "colliderType": "square",
+          "ignoreCollisionsWith": [
+            "player",
+            "hazards"
+          ]
+        },
+        "AudioComponent": {
+          "channels": {
+            "default": {
+              "volume": 0.09000000357627869
+            }
+          }
+        },
+        "LuaScript": {
+          "scripts": [
+            {
+              "filename": "./assets/scripting\\bullet.lua",
+              "scriptName": "bullet"
+            }
+          ]
         }
       }
     },
@@ -586,13 +612,41 @@
       }
     },
     {
+      "name": "Clouds",
+      "components": {
+        "Transform": {
+          "pos": [
+            -0.5,
+            1.100000023841858,
+            -0.800000011920929
+          ],
+          "rotation": 0.0,
+          "scale": [
+            45.0,
+            18.608556747436523,
+            0.0
+          ]
+        },
+        "Render": {
+          "shape": "square",
+          "colorR": 1.0,
+          "colorG": 1.0,
+          "colorB": 1.0,
+          "colorA": 1.0,
+          "hasTex": 1,
+          "texture": "assets/Texture\\BG\\Clouds.png",
+          "hasAnimation": 0
+        }
+      }
+    },
+    {
       "prefabid": "b1a12273-a692-4ce0-8072-156da2c70842",
-      "name": "bullet15",
+      "name": "bullet7",
       "components": {
         "Transform": {
           "pos": [
             -1000.0,
-            -1000.756591796875,
+            -1001.663818359375,
             0.0
           ],
           "scale": [
@@ -689,60 +743,6 @@
       }
     },
     {
-      "prefabid": "b1a12273-a692-4ce0-8072-156da2c70842",
-      "name": "bullet7",
-      "components": {
-        "Transform": {
-          "pos": [
-            -1000.0,
-            -1001.6638793945313,
-            0.0
-          ],
-          "scale": [
-            0.5,
-            0.20676174759864807,
-            0.0
-          ]
-        },
-        "Render": {
-          "shape": "square",
-          "colorR": 1.0,
-          "colorG": 1.0,
-          "colorB": 1.0,
-          "colorA": 1.0,
-          "hasTex": 1,
-          "texture": "assets/Texture\\water_texture.png",
-          "hasAnimation": 0
-        },
-        "Physics": {
-          "autoUpdate": 0
-        },
-        "CollisionInfo": {
-          "colliderType": "square",
-          "colliderType": "square",
-          "ignoreCollisionsWith": [
-            "player",
-            "hazards"
-          ]
-        },
-        "AudioComponent": {
-          "channels": {
-            "default": {
-              "volume": 0.09000000357627869
-            }
-          }
-        },
-        "LuaScript": {
-          "scripts": [
-            {
-              "filename": "./assets/scripting\\bullet.lua",
-              "scriptName": "bullet"
-            }
-          ]
-        }
-      }
-    },
-    {
       "name": "tile",
       "components": {
         "Transform": {
@@ -766,13 +766,13 @@
           "enableCol": 1,
           "tiles": [
             {
-              "x": 7,
-              "y": -2,
+              "x": 6,
+              "y": -4,
               "id": "assets/Texture\\Tilemap\\Forest\\tile005.png"
             },
             {
-              "x": 6,
-              "y": -4,
+              "x": 7,
+              "y": -2,
               "id": "assets/Texture\\Tilemap\\Forest\\tile005.png"
             },
             {
@@ -781,13 +781,13 @@
               "id": "assets/Texture\\Tilemap\\Forest\\tile005.png"
             },
             {
-              "x": 7,
-              "y": -4,
+              "x": 6,
+              "y": -2,
               "id": "assets/Texture\\Tilemap\\Forest\\tile005.png"
             },
             {
-              "x": 6,
-              "y": -2,
+              "x": 7,
+              "y": -4,
               "id": "assets/Texture\\Tilemap\\Forest\\tile005.png"
             },
             {
@@ -796,14 +796,14 @@
               "id": "assets/Texture\\Tilemap\\Forest\\tile005.png"
             },
             {
-              "x": 9,
-              "y": 0,
-              "id": "assets/Texture\\Tilemap\\Forest\\tile005.png"
-            },
-            {
               "x": -7,
               "y": -3,
               "id": "assets/Texture\\Tilemap\\Forest\\tile001.png"
+            },
+            {
+              "x": 9,
+              "y": 0,
+              "id": "assets/Texture\\Tilemap\\Forest\\tile005.png"
             },
             {
               "x": -6,
@@ -816,11 +816,6 @@
               "id": "assets/Texture\\Tilemap\\Forest\\tile001.png"
             },
             {
-              "x": -4,
-              "y": -3,
-              "id": "assets/Texture\\Tilemap\\Forest\\tile001.png"
-            },
-            {
               "x": 6,
               "y": -1,
               "id": "assets/Texture\\Tilemap\\Forest\\tile005.png"
@@ -828,6 +823,21 @@
             {
               "x": 7,
               "y": -3,
+              "id": "assets/Texture\\Tilemap\\Forest\\tile005.png"
+            },
+            {
+              "x": -4,
+              "y": -3,
+              "id": "assets/Texture\\Tilemap\\Forest\\tile001.png"
+            },
+            {
+              "x": 6,
+              "y": -3,
+              "id": "assets/Texture\\Tilemap\\Forest\\tile005.png"
+            },
+            {
+              "x": 7,
+              "y": -1,
               "id": "assets/Texture\\Tilemap\\Forest\\tile005.png"
             },
             {
@@ -836,13 +846,13 @@
               "id": "assets/Texture\\Tilemap\\Forest\\tile001.png"
             },
             {
-              "x": 6,
-              "y": -3,
+              "x": 4,
+              "y": -4,
               "id": "assets/Texture\\Tilemap\\Forest\\tile005.png"
             },
             {
-              "x": 7,
-              "y": -1,
+              "x": 5,
+              "y": -2,
               "id": "assets/Texture\\Tilemap\\Forest\\tile005.png"
             },
             {
@@ -861,21 +871,6 @@
               "id": "assets/Texture\\Tilemap\\Forest\\tile005.png"
             },
             {
-              "x": 4,
-              "y": -4,
-              "id": "assets/Texture\\Tilemap\\Forest\\tile005.png"
-            },
-            {
-              "x": 5,
-              "y": -2,
-              "id": "assets/Texture\\Tilemap\\Forest\\tile005.png"
-            },
-            {
-              "x": -2,
-              "y": -3,
-              "id": "assets/Texture\\Tilemap\\Forest\\tile005.png"
-            },
-            {
               "x": 10,
               "y": -5,
               "id": "assets/Texture\\Tilemap\\Forest\\tile005.png"
@@ -887,13 +882,8 @@
             },
             {
               "x": -2,
-              "y": -4,
+              "y": -3,
               "id": "assets/Texture\\Tilemap\\Forest\\tile005.png"
-            },
-            {
-              "x": -1,
-              "y": -2,
-              "id": "assets/Texture\\Tilemap\\Forest\\tile001.png"
             },
             {
               "x": 4,
@@ -906,9 +896,14 @@
               "id": "assets/Texture\\Tilemap\\Forest\\tile005.png"
             },
             {
-              "x": -1,
-              "y": -3,
+              "x": -2,
+              "y": -4,
               "id": "assets/Texture\\Tilemap\\Forest\\tile005.png"
+            },
+            {
+              "x": -1,
+              "y": -2,
+              "id": "assets/Texture\\Tilemap\\Forest\\tile001.png"
             },
             {
               "x": 11,
@@ -923,6 +918,11 @@
             {
               "x": 5,
               "y": -1,
+              "id": "assets/Texture\\Tilemap\\Forest\\tile005.png"
+            },
+            {
+              "x": -1,
+              "y": -3,
               "id": "assets/Texture\\Tilemap\\Forest\\tile005.png"
             },
             {
@@ -1081,13 +1081,13 @@
               "id": "assets/Texture\\Tilemap\\Forest\\tile005.png"
             },
             {
-              "x": 10,
-              "y": -4,
+              "x": 11,
+              "y": -2,
               "id": "assets/Texture\\Tilemap\\Forest\\tile005.png"
             },
             {
-              "x": 11,
-              "y": -2,
+              "x": 10,
+              "y": -4,
               "id": "assets/Texture\\Tilemap\\Forest\\tile005.png"
             },
             {
@@ -1201,13 +1201,13 @@
               "id": "assets/Texture\\Tilemap\\Forest\\tile005.png"
             },
             {
-              "x": -1,
-              "y": -6,
+              "x": -8,
+              "y": -4,
               "id": "assets/Texture\\Tilemap\\Forest\\tile005.png"
             },
             {
-              "x": -8,
-              "y": -4,
+              "x": -1,
+              "y": -6,
               "id": "assets/Texture\\Tilemap\\Forest\\tile005.png"
             },
             {
@@ -1236,8 +1236,8 @@
               "id": "assets/Texture\\Tilemap\\Forest\\tile005.png"
             },
             {
-              "x": 3,
-              "y": -5,
+              "x": 13,
+              "y": -1,
               "id": "assets/Texture\\Tilemap\\Forest\\tile005.png"
             },
             {
@@ -1246,8 +1246,13 @@
               "id": "assets/Texture\\Tilemap\\Forest\\tile005.png"
             },
             {
+              "x": 3,
+              "y": -5,
+              "id": "assets/Texture\\Tilemap\\Forest\\tile005.png"
+            },
+            {
               "x": 13,
-              "y": -1,
+              "y": -2,
               "id": "assets/Texture\\Tilemap\\Forest\\tile005.png"
             },
             {
@@ -1257,7 +1262,12 @@
             },
             {
               "x": 13,
-              "y": -2,
+              "y": -3,
+              "id": "assets/Texture\\Tilemap\\Forest\\tile005.png"
+            },
+            {
+              "x": 12,
+              "y": -1,
               "id": "assets/Texture\\Tilemap\\Forest\\tile005.png"
             },
             {
@@ -1266,23 +1276,13 @@
               "id": "assets/Texture\\Tilemap\\Forest\\tile005.png"
             },
             {
-              "x": 12,
-              "y": -1,
-              "id": "assets/Texture\\Tilemap\\Forest\\tile005.png"
-            },
-            {
               "x": 13,
-              "y": -3,
+              "y": -4,
               "id": "assets/Texture\\Tilemap\\Forest\\tile005.png"
             },
             {
               "x": 12,
               "y": -2,
-              "id": "assets/Texture\\Tilemap\\Forest\\tile005.png"
-            },
-            {
-              "x": 13,
-              "y": -4,
               "id": "assets/Texture\\Tilemap\\Forest\\tile005.png"
             },
             {
@@ -1681,31 +1681,6 @@
       }
     },
     {
-      "prefabid": "1cf017e5-1c34-47f6-8056-6c92723f25ad",
-      "name": "fire_game(35)36",
-      "components": {
-        "Transform": {
-          "pos": [
-            2.8835790157318115,
-            -2.3190500736236572,
-            2.020000457763672
-          ]
-        },
-        "Render": {
-          "colorR": 1.0,
-          "colorG": 1.0,
-          "colorB": 1.0,
-          "colorA": 1.0,
-          "hasTex": 1,
-          "texture": "assets/textures/steam.png",
-          "hasAnimation": 1
-        },
-        "Physics": {
-          "autoUpdate": 0
-        }
-      }
-    },
-    {
       "name": "bg tile",
       "components": {
         "Transform": {
@@ -1729,17 +1704,12 @@
           "enableCol": 1,
           "tiles": [
             {
-              "x": -12,
-              "y": -3,
-              "id": "assets/Texture\\Tilemap\\Forest\\tile005.png"
-            },
-            {
               "x": -8,
               "y": -3,
               "id": "assets/Texture\\Tilemap\\Forest\\tile005.png"
             },
             {
-              "x": -11,
+              "x": -12,
               "y": -3,
               "id": "assets/Texture\\Tilemap\\Forest\\tile005.png"
             },
@@ -1749,7 +1719,7 @@
               "id": "assets/Texture\\Tilemap\\Forest\\tile005.png"
             },
             {
-              "x": -10,
+              "x": -11,
               "y": -3,
               "id": "assets/Texture\\Tilemap\\Forest\\tile005.png"
             },
@@ -1759,12 +1729,17 @@
               "id": "assets/Texture\\Tilemap\\Forest\\tile005.png"
             },
             {
-              "x": -9,
+              "x": -10,
               "y": -3,
               "id": "assets/Texture\\Tilemap\\Forest\\tile005.png"
             },
             {
               "x": -5,
+              "y": -3,
+              "id": "assets/Texture\\Tilemap\\Forest\\tile005.png"
+            },
+            {
+              "x": -9,
               "y": -3,
               "id": "assets/Texture\\Tilemap\\Forest\\tile005.png"
             },
@@ -1784,12 +1759,12 @@
               "id": "assets/Texture\\Tilemap\\Forest\\tile005.png"
             },
             {
-              "x": -1,
+              "x": 4,
               "y": -2,
               "id": "assets/Texture\\Tilemap\\Forest\\tile005.png"
             },
             {
-              "x": 4,
+              "x": -1,
               "y": -2,
               "id": "assets/Texture\\Tilemap\\Forest\\tile005.png"
             },
@@ -1869,6 +1844,31 @@
     },
     {
       "prefabid": "1cf017e5-1c34-47f6-8056-6c92723f25ad",
+      "name": "fire_game(35)36",
+      "components": {
+        "Transform": {
+          "pos": [
+            2.8835790157318115,
+            -2.3190500736236572,
+            2.020000457763672
+          ]
+        },
+        "Render": {
+          "colorR": 1.0,
+          "colorG": 1.0,
+          "colorB": 1.0,
+          "colorA": 1.0,
+          "hasTex": 1,
+          "texture": "assets/textures/steam.png",
+          "hasAnimation": 1
+        },
+        "Physics": {
+          "autoUpdate": 0
+        }
+      }
+    },
+    {
+      "prefabid": "1cf017e5-1c34-47f6-8056-6c92723f25ad",
       "name": "fire_game(35)",
       "components": {
         "Render": {
@@ -1911,6 +1911,7 @@
           ]
         },
         "Render": {
+          "shape": "square",
           "colorR": 1.0,
           "colorG": 1.0,
           "colorB": 1.0,
@@ -1931,7 +1932,7 @@
         "Transform": {
           "pos": [
             -1000.0,
-            -998.3375854492188,
+            -998.337646484375,
             0.0
           ],
           "scale": [
@@ -1985,7 +1986,7 @@
         "Transform": {
           "pos": [
             -1000.0,
-            -1002.5711059570313,
+            -1002.5714721679688,
             0.0
           ],
           "scale": [
@@ -2093,7 +2094,7 @@
         "Transform": {
           "pos": [
             -1000.0,
-            -1002.8736572265625,
+            -1002.8740234375,
             0.0
           ],
           "scale": [
@@ -2147,61 +2148,7 @@
         "Transform": {
           "pos": [
             -1000.0,
-            -998.942626953125,
-            0.0
-          ],
-          "scale": [
-            0.5,
-            0.20676174759864807,
-            0.0
-          ]
-        },
-        "Render": {
-          "shape": "square",
-          "colorR": 1.0,
-          "colorG": 1.0,
-          "colorB": 1.0,
-          "colorA": 1.0,
-          "hasTex": 1,
-          "texture": "assets/Texture\\water_texture.png",
-          "hasAnimation": 0
-        },
-        "Physics": {
-          "autoUpdate": 0
-        },
-        "CollisionInfo": {
-          "colliderType": "square",
-          "colliderType": "square",
-          "ignoreCollisionsWith": [
-            "player",
-            "hazards"
-          ]
-        },
-        "AudioComponent": {
-          "channels": {
-            "default": {
-              "volume": 0.09000000357627869
-            }
-          }
-        },
-        "LuaScript": {
-          "scripts": [
-            {
-              "filename": "./assets/scripting\\bullet.lua",
-              "scriptName": "bullet"
-            }
-          ]
-        }
-      }
-    },
-    {
-      "prefabid": "b1a12273-a692-4ce0-8072-156da2c70842",
-      "name": "bullet8",
-      "components": {
-        "Transform": {
-          "pos": [
-            -1000.0,
-            -997.1275634765625,
+            -998.9427490234375,
             0.0
           ],
           "scale": [
@@ -2304,12 +2251,66 @@
     },
     {
       "prefabid": "b1a12273-a692-4ce0-8072-156da2c70842",
+      "name": "bullet8",
+      "components": {
+        "Transform": {
+          "pos": [
+            -1000.0,
+            -997.1275634765625,
+            0.0
+          ],
+          "scale": [
+            0.5,
+            0.20676174759864807,
+            0.0
+          ]
+        },
+        "Render": {
+          "shape": "square",
+          "colorR": 1.0,
+          "colorG": 1.0,
+          "colorB": 1.0,
+          "colorA": 1.0,
+          "hasTex": 1,
+          "texture": "assets/Texture\\water_texture.png",
+          "hasAnimation": 0
+        },
+        "Physics": {
+          "autoUpdate": 0
+        },
+        "CollisionInfo": {
+          "colliderType": "square",
+          "colliderType": "square",
+          "ignoreCollisionsWith": [
+            "player",
+            "hazards"
+          ]
+        },
+        "AudioComponent": {
+          "channels": {
+            "default": {
+              "volume": 0.09000000357627869
+            }
+          }
+        },
+        "LuaScript": {
+          "scripts": [
+            {
+              "filename": "./assets/scripting\\bullet.lua",
+              "scriptName": "bullet"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "prefabid": "b1a12273-a692-4ce0-8072-156da2c70842",
       "name": "bullet11",
       "components": {
         "Transform": {
           "pos": [
             -1000.0,
-            -1002.26904296875,
+            -1002.2689208984375,
             0.0
           ],
           "scale": [
@@ -2363,7 +2364,7 @@
         "Transform": {
           "pos": [
             -1000.0,
-            -998.6400146484375,
+            -998.64013671875,
             0.0
           ],
           "scale": [
@@ -2417,7 +2418,7 @@
         "Transform": {
           "pos": [
             -1000.0,
-            -999.849609375,
+            -999.8493041992188,
             0.0
           ],
           "scale": [
@@ -2525,7 +2526,7 @@
         "Transform": {
           "pos": [
             -1000.0,
-            -1001.9664306640625,
+            -1001.96630859375,
             0.0
           ],
           "scale": [
@@ -2579,7 +2580,7 @@
         "Transform": {
           "pos": [
             -1000.0,
-            -1000.151611328125,
+            -1000.1519165039063,
             0.0
           ],
           "scale": [
