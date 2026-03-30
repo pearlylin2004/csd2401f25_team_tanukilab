@@ -377,7 +377,7 @@
               "fadeInOnStart": 1,
               "fadeInDuration": 1.909999966621399,
               "fadeOutOnStop": 1,
-              "fadeOutDuration": 1.0,
+              "fadeOutDuration": 1.2000000476837158,
               "isSpatial": 0,
               "minDistance": 1.0,
               "maxDistance": 100.0,
