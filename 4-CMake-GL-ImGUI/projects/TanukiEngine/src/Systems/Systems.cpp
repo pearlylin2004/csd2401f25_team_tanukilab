@@ -1146,7 +1146,7 @@ void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime, M
 		if (!object->hasComponent<Physics>()) continue;
 		Physics* physics = object->getComponent<Physics>();
 		previousOnGround[object] = physics->onGround;
-		if(object->hasComponent<Particle>()) 
+		if (object->hasComponent<Particle>())
 		{
 			Particle* particle = object->getComponent<Particle>();
 			if (!particle->isMaster)
@@ -1168,13 +1168,13 @@ void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime, M
 	manager.getAllGameObjects(gameObjects);
 
 	for (auto* object : gameObjects) {
-        if (!object->hasComponent<Transform>() || !object->hasComponent<Physics>())
-            continue;
- 
-        Physics* physics = object->getComponent<Physics>();
-        Transform* transform = object->getComponent<Transform>();
- 
-        if (!physics->physicsFlag) continue;
+		if (!object->hasComponent<Transform>() || !object->hasComponent<Physics>())
+			continue;
+
+		Physics* physics = object->getComponent<Physics>();
+		Transform* transform = object->getComponent<Transform>();
+
+		if (!physics->physicsFlag) continue;
 
 		// Player input — fully delegated to game
 		if (object->hasComponent<Input>() &&
@@ -1185,34 +1185,34 @@ void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime, M
 				m_gameScript->onPlayerInput(*object, manager, messageBus, deltaTime);
 		}
 
- 
-        if (physics->autoUpdate) {
-            if (!EditorManager::isEditingMode() && !EditorManager::isPaused()) {
-                if (!physics->inWater) {
-                    physics->velY += physics->gravity * deltaTime;
-                }
-                transform->y += physics->velY * deltaTime;
-                transform->x += physics->velX * deltaTime;
- 
-                physics->dynamics.position.y = transform->y;
-                physics->dynamics.position.x = transform->x;
-                physics->dynamics.velocity.y = physics->velY;
-                physics->dynamics.velocity.x = physics->velX;
-            }
-        }
 
-        // auto-move
-        if (object->checkAutoMove()) {
-            transform->y += physics->dynamics.velocity.y * deltaTime;
-            transform->x += physics->dynamics.velocity.x * deltaTime;
-        }
- 
-        // angular integration
-        if (!physics->freezeRotation) {
-            DynamicsSystem::IntegrateAngular(physics->dynamics, deltaTime);
-            transform->rotation += physics->dynamics.angularVelocity * deltaTime;
-        }
-    }
+		if (physics->autoUpdate) {
+			if (!EditorManager::isEditingMode() && !EditorManager::isPaused()) {
+				if (!physics->inWater) {
+					physics->velY += physics->gravity * deltaTime;
+				}
+				transform->y += physics->velY * deltaTime;
+				transform->x += physics->velX * deltaTime;
+
+				physics->dynamics.position.y = transform->y;
+				physics->dynamics.position.x = transform->x;
+				physics->dynamics.velocity.y = physics->velY;
+				physics->dynamics.velocity.x = physics->velX;
+			}
+		}
+
+		// auto-move
+		if (object->checkAutoMove()) {
+			transform->y += physics->dynamics.velocity.y * deltaTime;
+			transform->x += physics->dynamics.velocity.x * deltaTime;
+		}
+
+		// angular integration
+		if (!physics->freezeRotation) {
+			DynamicsSystem::IntegrateAngular(physics->dynamics, deltaTime);
+			transform->rotation += physics->dynamics.angularVelocity * deltaTime;
+		}
+	}
 
 	// reset on ground for all physics obj
 	for (auto* object : gameObjects) {
@@ -1220,394 +1220,383 @@ void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime, M
 		object->getComponent<Physics>()->onGround = false;
 	}
 
-	if(m_gameScript)
+	if (m_gameScript)
 		m_gameScript->onPhysicsUpdate(manager, deltaTime);
 
-// 	for (auto object : gameObjects) {
-// 		if (!object->hasComponent<Physics>()) continue;
-// 		Physics* physics = object->getComponent<Physics>();
-// 		// don't reset onGround for water particles, collision will update it
-// 		if (object->getObjectName().find("bullet") != 0) physics->onGround = false;
-// 	}
+	// 	for (auto object : gameObjects) {
+	// 		if (!object->hasComponent<Physics>()) continue;
+	// 		Physics* physics = object->getComponent<Physics>();
+	// 		// don't reset onGround for water particles, collision will update it
+	// 		if (object->getObjectName().find("bullet") != 0) physics->onGround = false;
+	// 	}
 
-// 	for (auto object : gameObjects) {
-// 		if (!object->hasComponent<Transform>() || !object->hasComponent<Physics>())
-// 			continue;
+	// 	for (auto object : gameObjects) {
+	// 		if (!object->hasComponent<Transform>() || !object->hasComponent<Physics>())
+	// 			continue;
 
-// 		Physics* physics = object->getComponent<Physics>();
-		
-// 		if (object->getObjectName() == "bullet") continue;
-		
-// 		Transform* transform = object->getComponent<Transform>();
+	// 		Physics* physics = object->getComponent<Physics>();
 
-// 		//sinle's personal physics for his one and only character, dont touch it
-// 		if (physics->sinlePersonalBool)
-// 		{
-// 			//std::cout << "hregoesrbgiubgiubgbiguwbiub";
-// 			physics->physicsFlag = false;
-// 			if (physics->sinleFlag)
-// 			{
-// 				if (physics->inWater)
-// 					physics->acceleration.y = physics->waterBounce;
-// 				else
-// 					physics->acceleration.y = 0;
-// 				physics->velX += physics->acceleration.x * deltaTime;
-// 				physics->velY += (physics->acceleration.y + physics->sinleGravity) * deltaTime;
-// 				if(physics->hitWater)
-// 					onEnterWater(physics, deltaTime);
-// 				if (physics->hitground)
-// 					physics->velY = 0;
-// 				transform->x += physics->velX * deltaTime;
-// 				transform->y += physics->velY * deltaTime;
-// 				/*std::cout << "acceleration: (" << physics->acceleration.x << ", " << physics->acceleration.y << ")\n";
-// 				std::cout << "velocity: (" << physics->velX << ", " << physics->velY << ")\n";
-// 				std::cout << "position: (" << transform->x << ", " << transform->y << ")\n";*/
-// 			}
-// 			continue;
-// 		}
-// 		if (!physics->physicsFlag) continue;
-// 		if (physics->autoUpdate) {
-// 			// Apply gravity when not in water -- future ref
-// 			if (!EditorManager::isEditingMode() && !EditorManager::isPaused()) {
-// 				if (!physics->inWater) {
-// 					physics->velY += physics->gravity * deltaTime;
-// 				}
+	// 		if (object->getObjectName() == "bullet") continue;
 
-// 				transform->y += physics->velY * deltaTime;
-// 				transform->x += physics->velX * deltaTime;
+	// 		Transform* transform = object->getComponent<Transform>();
 
-// 				physics->dynamics.position.y = transform->y;
-// 				physics->dynamics.position.x = transform->x;
-// 				physics->dynamics.velocity.y = physics->velY;
-// 				physics->dynamics.velocity.x = physics->velX;
-// 			}
-// 		}
+	// 		//sinle's personal physics for his one and only character, dont touch it
+	// 		if (physics->sinlePersonalBool)
+	// 		{
+	// 			//std::cout << "hregoesrbgiubgiubgbiguwbiub";
+	// 			physics->physicsFlag = false;
+	// 			if (physics->sinleFlag)
+	// 			{
+	// 				if (physics->inWater)
+	// 					physics->acceleration.y = physics->waterBounce;
+	// 				else
+	// 					physics->acceleration.y = 0;
+	// 				physics->velX += physics->acceleration.x * deltaTime;
+	// 				physics->velY += (physics->acceleration.y + physics->sinleGravity) * deltaTime;
+	// 				if(physics->hitWater)
+	// 					onEnterWater(physics, deltaTime);
+	// 				if (physics->hitground)
+	// 					physics->velY = 0;
+	// 				transform->x += physics->velX * deltaTime;
+	// 				transform->y += physics->velY * deltaTime;
+	// 				/*std::cout << "acceleration: (" << physics->acceleration.x << ", " << physics->acceleration.y << ")\n";
+	// 				std::cout << "velocity: (" << physics->velX << ", " << physics->velY << ")\n";
+	// 				std::cout << "position: (" << transform->x << ", " << transform->y << ")\n";*/
+	// 			}
+	// 			continue;
+	// 		}
+	// 		if (!physics->physicsFlag) continue;
+	// 		if (physics->autoUpdate) {
+	// 			// Apply gravity when not in water -- future ref
+	// 			if (!EditorManager::isEditingMode() && !EditorManager::isPaused()) {
+	// 				if (!physics->inWater) {
+	// 					physics->velY += physics->gravity * deltaTime;
+	// 				}
 
-// 		// Handle player input
-// 		if (object->hasComponent<Input>() && !EditorManager::isEditingMode() && !EditorManager::isPaused()) {
-// 			// STEP 1: Ground check FIRST
-// 			if (transform->y <= physics->floorY && !object->checkAutoMove()) {
-// 				transform->y = physics->floorY;
-// 				physics->dynamics.position.y = physics->floorY;
-// 				physics->dynamics.velocity.y = 0.0f;
-// 				physics->velY = 0.0f;
-// 				physics->onGround = true;
+	// 				transform->y += physics->velY * deltaTime;
+	// 				transform->x += physics->velX * deltaTime;
 
-// 				// coyote
-// 				physics->coyoteAvailable = true; // reset when on ground
-// 				physics->coyoteTimer = physics->coyoteTime;
-// 			}
+	// 				physics->dynamics.position.y = transform->y;
+	// 				physics->dynamics.position.x = transform->x;
+	// 				physics->dynamics.velocity.y = physics->velY;
+	// 				physics->dynamics.velocity.x = physics->velX;
+	// 			}
+	// 		}
 
-// 			// coyote timer update when not on ground
-// 			if (!physics->onGround) {
-// 				if (physics->coyoteTimer > 0.f)
-// 					physics->coyoteTimer -= deltaTime;
-// 				else
-// 					physics->coyoteAvailable = false;
-// 			}
+	// 		// Handle player input
+	// 		if (object->hasComponent<Input>() && !EditorManager::isEditingMode() && !EditorManager::isPaused()) {
+	// 			// STEP 1: Ground check FIRST
+	// 			if (transform->y <= physics->floorY && !object->checkAutoMove()) {
+	// 				transform->y = physics->floorY;
+	// 				physics->dynamics.position.y = physics->floorY;
+	// 				physics->dynamics.velocity.y = 0.0f;
+	// 				physics->velY = 0.0f;
+	// 				physics->onGround = true;
 
-// 			// jump buffer timer update
-// 			if (physics->jumpBufferTimer > 0.f)
-// 				physics->jumpBufferTimer -= deltaTime;
+	// 				// coyote
+	// 				physics->coyoteAvailable = true; // reset when on ground
+	// 				physics->coyoteTimer = physics->coyoteTime;
+	// 			}
 
-// 			if (physics->ledgeClimb) {
-// 				float diff = physics->ledgeTargetY - transform->y;
+	// 			// coyote timer update when not on ground
+	// 			if (!physics->onGround) {
+	// 				if (physics->coyoteTimer > 0.f)
+	// 					physics->coyoteTimer -= deltaTime;
+	// 				else
+	// 					physics->coyoteAvailable = false;
+	// 			}
 
-// 				if (std::abs(diff) < 0.05f) {
-// 					// reach top
-// 					transform->y = physics->ledgeTargetY;
-// 					physics->dynamics.position.y = physics->ledgeTargetY;
-// 					physics->dynamics.velocity.y = 0.0f;
-// 					physics->velY = 0.0f;
-// 					physics->onGround = true;
-// 					physics->ledgeClimb = false;
-// 					physics->coyoteAvailable = true;
-// 					physics->coyoteTimer = physics->coyoteTime;
-// 				}
-// 				else {
-// 					// still climbing
-// 					float step = physics->ledgeClimbSpeed * deltaTime;
-// 					transform->y += std::min(step, diff);
-// 					physics->dynamics.position.y = transform->y;
-// 					physics->dynamics.velocity.y = 0.0f;
-// 					physics->velY = 0.0f;
-// 					physics->onGround = false;
-// 				}
-// 			}
+	// 			// jump buffer timer update
+	// 			if (physics->jumpBufferTimer > 0.f)
+	// 				physics->jumpBufferTimer -= deltaTime;
 
-// 			// STEP 2: Jump input
-// 			// when space pressed, store the intention
-// 			if (InputHandler::isKeyTriggered(GLFW_KEY_SPACE))
-// 				physics->jumpBufferTimer = physics->jumpBufferTime;
+	// 			if (physics->ledgeClimb) {
+	// 				float diff = physics->ledgeTargetY - transform->y;
 
-// 			// jump if buffer is active AND player is grounded or coyote available
-// 			if (physics->jumpBufferTimer > 0.f && (previousOnGround[object] || physics->coyoteAvailable)) {
-// 				PhysicsForces::jump(object);
-// 				physics->jumpBufferTimer = 0.f;
-// 				physics->coyoteAvailable = false;
-// 				messageBus.publish(Message("KeyPressed", nullptr, KeyEvent{ "SPACE", true }));
-// 			}
+	// 				if (std::abs(diff) < 0.05f) {
+	// 					// reach top
+	// 					transform->y = physics->ledgeTargetY;
+	// 					physics->dynamics.position.y = physics->ledgeTargetY;
+	// 					physics->dynamics.velocity.y = 0.0f;
+	// 					physics->velY = 0.0f;
+	// 					physics->onGround = true;
+	// 					physics->ledgeClimb = false;
+	// 					physics->coyoteAvailable = true;
+	// 					physics->coyoteTimer = physics->coyoteTime;
+	// 				}
+	// 				else {
+	// 					// still climbing
+	// 					float step = physics->ledgeClimbSpeed * deltaTime;
+	// 					transform->y += std::min(step, diff);
+	// 					physics->dynamics.position.y = transform->y;
+	// 					physics->dynamics.velocity.y = 0.0f;
+	// 					physics->velY = 0.0f;
+	// 					physics->onGround = false;
+	// 				}
+	// 			}
 
-// 			// tap for small jump, hold for big jump
-// 			if (InputHandler::isKeyReleased(GLFW_KEY_SPACE)) {
-// 				if (physics->dynamics.velocity.y > 0.0f)
-// 					physics->dynamics.velocity.y *= 0.8f;
-// 			}
+	// 			// STEP 2: Jump input
+	// 			// when space pressed, store the intention
+	// 			if (InputHandler::isKeyTriggered(GLFW_KEY_SPACE))
+	// 				physics->jumpBufferTimer = physics->jumpBufferTime;
 
-// 			// STEP 3: Movement
-// 			float targetVelX = 0.0f;
-// 			if (InputHandler::isKeyHeld(GLFW_KEY_A)) {
-// 				physics->canMove = true;
-// 				targetVelX = -physics->moveSpeed;
-// 				transform->flipX = true;
-// 				messageBus.publish(Message("KeyPressed", nullptr, KeyEvent{ "A", true }));
-// 			}
-// 			else if (InputHandler::isKeyHeld(GLFW_KEY_D) && physics->canMove) {
-// 				targetVelX = physics->moveSpeed;
-// 				transform->flipX = false;
-// 				messageBus.publish(Message("KeyPressed", nullptr, KeyEvent{ "D", true }));
-// 			}
+	// 			// jump if buffer is active AND player is grounded or coyote available
+	// 			if (physics->jumpBufferTimer > 0.f && (previousOnGround[object] || physics->coyoteAvailable)) {
+	// 				PhysicsForces::jump(object);
+	// 				physics->jumpBufferTimer = 0.f;
+	// 				physics->coyoteAvailable = false;
+	// 				messageBus.publish(Message("KeyPressed", nullptr, KeyEvent{ "SPACE", true }));
+	// 			}
 
-// 			// Flip player to face mouse direction (only when no movement keys override)
-// 			if (!InputHandler::isKeyHeld(GLFW_KEY_A) && !InputHandler::isKeyHeld(GLFW_KEY_D)) {
-// 				Vector2D mouseWorldPos = InputHandler::getWorldMousePosition();
-// 				transform->flipX = (mouseWorldPos.x < transform->x);
-// 			}
+	// 			// tap for small jump, hold for big jump
+	// 			if (InputHandler::isKeyReleased(GLFW_KEY_SPACE)) {
+	// 				if (physics->dynamics.velocity.y > 0.0f)
+	// 					physics->dynamics.velocity.y *= 0.8f;
+	// 			}
 
+	// 			// STEP 3: Movement
+	// 			float targetVelX = 0.0f;
+	// 			if (InputHandler::isKeyHeld(GLFW_KEY_A)) {
+	// 				physics->canMove = true;
+	// 				targetVelX = -physics->moveSpeed;
+	// 				transform->flipX = true;
+	// 				messageBus.publish(Message("KeyPressed", nullptr, KeyEvent{ "A", true }));
+	// 			}
+	// 			else if (InputHandler::isKeyHeld(GLFW_KEY_D) && physics->canMove) {
+	// 				targetVelX = physics->moveSpeed;
+	// 				transform->flipX = false;
+	// 				messageBus.publish(Message("KeyPressed", nullptr, KeyEvent{ "D", true }));
+	// 			}
 
-// 			// STEP 4: Integrate physics
-// 			if (!object->checkAutoMove() && !physics->ledgeClimb) {
-
-// 				if (CollisionInfo* collision = object->getComponent<CollisionInfo>()) {
-// 					PhysicsForces::applyDamping(physics, collision->material.friction, targetVelX, deltaTime);
-// 					PhysicsForces::updatePosition(transform, physics, deltaTime);
-// 				}
-// 			}
-
-			// Position correction during replay to prevent drift
-			if (isReplay && replaySys.isViewerMode()) {
-				float recX = replaySys.getReplayX();
-				float recY = replaySys.getReplayY();
-				// Use near-exact positioning in viewer mode for faithful replay
-				transform->x = recX;
-				transform->y = recY;
-				physics->dynamics.position.x = transform->x;
-				physics->dynamics.position.y = transform->y;
-			}
+	// 			// Flip player to face mouse direction (only when no movement keys override)
+	// 			if (!InputHandler::isKeyHeld(GLFW_KEY_A) && !InputHandler::isKeyHeld(GLFW_KEY_D)) {
+	// 				Vector2D mouseWorldPos = InputHandler::getWorldMousePosition();
+	// 				transform->flipX = (mouseWorldPos.x < transform->x);
+	// 			}
 
 
-// 			// Continuous shooting system
-// 			if (physics->canShoot) {
-// 				// Update shoot timer
-// 				physics->shootTimer += deltaTime;
+	// 			// STEP 4: Integrate physics
+	// 			if (!object->checkAutoMove() && !physics->ledgeClimb) {
 
-// 				// Check if mouse button is being held down
-// 				if (InputHandler::isMouseLeftHeld()) {
-// #ifdef _DEBUG
-// 					if ((!UISystem::isShowUI() || (SceneWindow::isSceneHovered() && !EditorManager::isEditingMode()))) {
-// #endif // _DEBUG
-// 						if (VisualLC::globalFloatVar.count("bullets") &&
-// 							VisualLC::globalFloatVar["bullets"] > 0) {
-// 							if (physics->shootTimer >= physics->fireRate) {
-// 								GameObject* bullet = PhysicsForces::findAvailableBullet(manager);
-
-// 								if (bullet != nullptr) {
-// 									// Get mouse position in world coordinates
-// 									Vector2D mouseWorldPos;
-// #ifdef _DEBUG
-// 									if (UISystem::isShowUI() && !EditorManager::isEditingMode()) {
-// 										ImVec2 scenePos, sceneSize;
-// 										EditorManager::getScenePosNSize(scenePos, sceneSize);
-// 										mouseWorldPos = InputHandler::getMousePositionInImGuiViewport(scenePos, sceneSize);
-// 									}
-// 									else {
-// 										mouseWorldPos = InputHandler::getWorldMousePosition();
-// 									}
-// #else
-// 									mouseWorldPos = InputHandler::getWorldMousePosition();
-// #endif
-
-// 									Transform* spawnTransform = transform;
-// 									{
-// 										std::vector<GameObject*> allObjs;
-// 										manager.getAllGameObjects(allObjs);
-// 										for (GameObject* candidate : allObjs)
-// 										{
-// 											if (!candidate->hasComponent<WeaponComponent>()) continue;
-// 											if (!candidate->hasComponent<Transform>()) continue;
-// 											Transform* wt = candidate->getComponent<Transform>();
-// 											if (wt->parentName == object->getObjectName())
-// 											{
-// 												spawnTransform = wt;
-// 												//set a flay saying channel is pending to play sound
-// 												if (bullet->hasComponent<AudioComponent>()) {
-// 													AudioComponent* audio = bullet->getComponent<AudioComponent>();
-// 													AudioChannel* ch = audio->getDefaultChannel();
-// 													ch->isPendingPlay = true;
-
-// 													// Shoot bullet toward mouse position
-// 													PhysicsForces::shoot(bullet, spawnTransform, mouseWorldPos);
-// 													messageBus.publish(Message("KeyPressed", nullptr, KeyEvent{ "LEFT_CLICK", true }));
+	// 				if (CollisionInfo* collision = object->getComponent<CollisionInfo>()) {
+	// 					PhysicsForces::applyDamping(physics, collision->material.friction, targetVelX, deltaTime);
+	// 					PhysicsForces::updatePosition(transform, physics, deltaTime);
+	// 				}
+	// 			}
 
 
-// 													VisualLogicSystem::broadcastBulletShoot();
+	// 			// Continuous shooting system
+	// 			if (physics->canShoot) {
+	// 				// Update shoot timer
+	// 				physics->shootTimer += deltaTime;
 
-// 													DebugLog::addMessage("Bullet fired!", DebugMode::PlaySimul);
-// 													physics->shootTimer = 0.0f;
-// 												}
-// 												else {
-// 													physics->shootTimer = physics->fireRate * 0.5f;
-// 													DebugLog::addMessage("No bullets available!", DebugMode::PlaySimul);
-// 												}
-// 												break;
-// 											}
-// 										}
-// 									}
+	// 				// Check if mouse button is being held down
+	// 				if (InputHandler::isMouseLeftHeld()) {
+	// #ifdef _DEBUG
+	// 					if ((!UISystem::isShowUI() || (SceneWindow::isSceneHovered() && !EditorManager::isEditingMode()))) {
+	// #endif // _DEBUG
+	// 						if (VisualLC::globalFloatVar.count("bullets") &&
+	// 							VisualLC::globalFloatVar["bullets"] > 0) {
+	// 							if (physics->shootTimer >= physics->fireRate) {
+	// 								GameObject* bullet = PhysicsForces::findAvailableBullet(manager);
 
-									
-// 								}
-// 							}
-// 						}
-// 						else {
-// 							DebugLog::addMessage("Out of bullets!", DebugMode::PlaySimul);
-// 						}
-// #ifdef _DEBUG
-// 					}
-// #endif // _DEBUG
-// 				}
-// 				else {
-// 					physics->shootTimer = physics->fireRate;
-// 				}
-// 			}
+	// 								if (bullet != nullptr) {
+	// 									// Get mouse position in world coordinates
+	// 									Vector2D mouseWorldPos;
+	// #ifdef _DEBUG
+	// 									if (UISystem::isShowUI() && !EditorManager::isEditingMode()) {
+	// 										ImVec2 scenePos, sceneSize;
+	// 										EditorManager::getScenePosNSize(scenePos, sceneSize);
+	// 										mouseWorldPos = InputHandler::getMousePositionInImGuiViewport(scenePos, sceneSize);
+	// 									}
+	// 									else {
+	// 										mouseWorldPos = InputHandler::getWorldMousePosition();
+	// 									}
+	// #else
+	// 									mouseWorldPos = InputHandler::getWorldMousePosition();
+	// #endif
 
-			
-// 		}
+	// 									Transform* spawnTransform = transform;
+	// 									{
+	// 										std::vector<GameObject*> allObjs;
+	// 										manager.getAllGameObjects(allObjs);
+	// 										for (GameObject* candidate : allObjs)
+	// 										{
+	// 											if (!candidate->hasComponent<WeaponComponent>()) continue;
+	// 											if (!candidate->hasComponent<Transform>()) continue;
+	// 											Transform* wt = candidate->getComponent<Transform>();
+	// 											if (wt->parentName == object->getObjectName())
+	// 											{
+	// 												spawnTransform = wt;
+	// 												//set a flay saying channel is pending to play sound
+	// 												if (bullet->hasComponent<AudioComponent>()) {
+	// 													AudioComponent* audio = bullet->getComponent<AudioComponent>();
+	// 													AudioChannel* ch = audio->getDefaultChannel();
+	// 													ch->isPendingPlay = true;
 
-// 		// Auto-move objects
-// 		if (object->checkAutoMove()) {
-// 			transform->y += physics->dynamics.velocity.y * deltaTime;
-// 			transform->x += physics->dynamics.velocity.x * deltaTime;
-// 		}
-
-// 		// Angular integration for rotatable objects (e.g. water wheel)
-// 		if (!physics->freezeRotation) {
-// 			DynamicsSystem::IntegrateAngular(physics->dynamics, deltaTime);
-// 			transform->rotation += physics->dynamics.angularVelocity * deltaTime;
-// 		}
-// 	}
-
-// 	// Bullet physics
-// 	for (GameObject* obj : gameObjects) {
-// 		std::string name = obj->getObjectName();
-// 		// Skip if not a numbered bullet
-// 		if (name.find("bullet") != 0) continue;
-
-// 		bool isNumberedBullet = true;
-// 		for (size_t i = 6; i < name.length(); i++) {
-// 			if (!std::isdigit(name[i])) {
-// 				isNumberedBullet = false;
-// 				break;
-// 			}
-// 		}
-// 		if (!isNumberedBullet) continue;
-
-// 		if (!obj->hasComponent<Physics>() || !obj->hasComponent<Transform>())
-// 			continue;
-
-// 		Physics* p = obj->getComponent<Physics>();
-// 		Transform* t = obj->getComponent<Transform>();
-
-// 		if (p->alive) {
-// 			// Update forces (non-gravity forces)
-// 			DynamicsSystem::UpdateForces(p->dynamics, deltaTime);
-
-// 			// Check gravity delay
-// 			if (p->gravityDelayTimer > 0.0f) {
-// 				// No gravity yet - just integrate velocity into position
-// 				p->gravityDelayTimer -= deltaTime;
-
-// 				// apply weak gravity even during delay so it doesn't slam on expiry
-// 				p->dynamics.velocity.y += -15.8f * (1.0f - (p->gravityDelayTimer / p->gravityDelay)) * deltaTime;
-
-// 				Vector3D deltaPos = Vec3_Scale(&p->dynamics.velocity, deltaTime);
-// 				p->dynamics.position = Vec3_Add(&p->dynamics.position, &deltaPos);
-// 			}
-// 			else {
-// 				// Gravity delay expired - normal physics with gravity
-// 				//DynamicsSystem::Integrate(p->dynamics, deltaTime, p->gravity, false);
-
-// 				if (!p->onGround) {
-// 					/*for water to move*/
-// 					//flow force
-// 					float flowDir = (p->dynamics.velocity.x >= 0.0f) ? 1.0f : -1.0f;
-// 					float flowStrength = 5.0f * expf(-p->lifeTimer * 0.6f);
-// 					p->dynamics.velocity.x += flowStrength * flowDir * deltaTime;
-// 					//strong gravity
-// 					p->dynamics.velocity.y += -15.8f * deltaTime;
-// 					//turbulence that decays over time
-// 					float turbulence = sin(p->lifeTimer * 8.0f) * 2.0f * expf(-p->lifeTimer);
-// 					p->dynamics.velocity.y += turbulence * deltaTime;
-// 					//quadratic drag
-// 					float speed = sqrt(
-// 						p->dynamics.velocity.x * p->dynamics.velocity.x +
-// 						p->dynamics.velocity.y * p->dynamics.velocity.y);
-
-// 					if (speed > 0.0001f) {
-// 						float dragCoefficient = 0.5f;
-// 						float dragForce = dragCoefficient * speed * speed;
-// 						p->dynamics.velocity.x -= (p->dynamics.velocity.x / speed) * dragForce * deltaTime;
-// 						p->dynamics.velocity.y -= (p->dynamics.velocity.y / speed) * dragForce * deltaTime;
-// 					}
-// 				}
-// 				//integrate
-// 				Vector3D deltaPos = Vec3_Scale(&p->dynamics.velocity, deltaTime);
-// 				p->dynamics.position = Vec3_Add(&p->dynamics.position, &deltaPos);
-// 			}
+	// 													// Shoot bullet toward mouse position
+	// 													PhysicsForces::shoot(bullet, spawnTransform, mouseWorldPos);
+	// 													messageBus.publish(Message("KeyPressed", nullptr, KeyEvent{ "LEFT_CLICK", true }));
 
 
-// 			t->x = p->dynamics.position.x;
-// 			t->y = p->dynamics.position.y;
+	// 													VisualLogicSystem::broadcastBulletShoot();
 
-// 			// Update life timer
-// 			p->lifeTimer += deltaTime;
+	// 													DebugLog::addMessage("Bullet fired!", DebugMode::PlaySimul);
+	// 													physics->shootTimer = 0.0f;
+	// 												}
+	// 												else {
+	// 													physics->shootTimer = physics->fireRate * 0.5f;
+	// 													DebugLog::addMessage("No bullets available!", DebugMode::PlaySimul);
+	// 												}
+	// 												break;
+	// 											}
+	// 										}
+	// 									}
 
-// 			// Deactivate if lifetime exceeded or fell too far
-// 			if (!EditorManager::isEditingMode()) {
-// 				//shrink and fade over lifetime
-// 				if (p->lifeTimer > 2.0f) {
-// 					float shrinkTimer = p->lifeTimer - 2.0f;  // starts from 0 after 5s
-// 					float lifePercent = shrinkTimer / p->maxLifetime;
-// 					float newScale = p->initialScale * (1.0f - lifePercent);
-// 					newScale = std::max(newScale, p->minScale);
-// 					t->scaleX = newScale;
-// 					t->scaleY = newScale;
 
-// 					//shrink collider to match visual size
-// 					if (obj->hasComponent<CollisionInfo>()) {
-// 						CollisionInfo* col = obj->getComponent<CollisionInfo>();
-// 						col->colliderSize.x = newScale;
-// 						col->colliderSize.y = newScale;
-// 					}
-// 				}
-// 				if (p->lifeTimer >= p->maxLifetime || p->dynamics.position.y < -20.0f) {
-// 					PhysicsForces::deactivateBullet(obj);
-// 				}
-// 			}
-// 		}
-// 		else {
-// 			//Haardcoded way-- need fix in future
-// 			if (!EditorManager::isEditingMode()) {
-// 				if (t->y > -100.0f || t->x > -100.0f) {
-// 					t->x = -1000.0f;
-// 					t->y = -1000.0f;
-// 					p->dynamics.position.x = -1000.0f;
-// 					p->dynamics.position.y = -1000.0f;
-// 					p->dynamics.velocity.x = 0.0f;
-// 					p->dynamics.velocity.y = 0.0f;
-// 				}
-// 			}
-// 		}
-// 	}
+	// 								}
+	// 							}
+	// 						}
+	// 						else {
+	// 							DebugLog::addMessage("Out of bullets!", DebugMode::PlaySimul);
+	// 						}
+	// #ifdef _DEBUG
+	// 					}
+	// #endif // _DEBUG
+	// 				}
+	// 				else {
+	// 					physics->shootTimer = physics->fireRate;
+	// 				}
+	// 			}
+
+
+	// 		}
+
+	// 		// Auto-move objects
+	// 		if (object->checkAutoMove()) {
+	// 			transform->y += physics->dynamics.velocity.y * deltaTime;
+	// 			transform->x += physics->dynamics.velocity.x * deltaTime;
+	// 		}
+
+	// 		// Angular integration for rotatable objects (e.g. water wheel)
+	// 		if (!physics->freezeRotation) {
+	// 			DynamicsSystem::IntegrateAngular(physics->dynamics, deltaTime);
+	// 			transform->rotation += physics->dynamics.angularVelocity * deltaTime;
+	// 		}
+	// 	}
+
+	// 	// Bullet physics
+	// 	for (GameObject* obj : gameObjects) {
+	// 		std::string name = obj->getObjectName();
+	// 		// Skip if not a numbered bullet
+	// 		if (name.find("bullet") != 0) continue;
+
+	// 		bool isNumberedBullet = true;
+	// 		for (size_t i = 6; i < name.length(); i++) {
+	// 			if (!std::isdigit(name[i])) {
+	// 				isNumberedBullet = false;
+	// 				break;
+	// 			}
+	// 		}
+	// 		if (!isNumberedBullet) continue;
+
+	// 		if (!obj->hasComponent<Physics>() || !obj->hasComponent<Transform>())
+	// 			continue;
+
+	// 		Physics* p = obj->getComponent<Physics>();
+	// 		Transform* t = obj->getComponent<Transform>();
+
+	// 		if (p->alive) {
+	// 			// Update forces (non-gravity forces)
+	// 			DynamicsSystem::UpdateForces(p->dynamics, deltaTime);
+
+	// 			// Check gravity delay
+	// 			if (p->gravityDelayTimer > 0.0f) {
+	// 				// No gravity yet - just integrate velocity into position
+	// 				p->gravityDelayTimer -= deltaTime;
+
+	// 				// apply weak gravity even during delay so it doesn't slam on expiry
+	// 				p->dynamics.velocity.y += -15.8f * (1.0f - (p->gravityDelayTimer / p->gravityDelay)) * deltaTime;
+
+	// 				Vector3D deltaPos = Vec3_Scale(&p->dynamics.velocity, deltaTime);
+	// 				p->dynamics.position = Vec3_Add(&p->dynamics.position, &deltaPos);
+	// 			}
+	// 			else {
+	// 				// Gravity delay expired - normal physics with gravity
+	// 				//DynamicsSystem::Integrate(p->dynamics, deltaTime, p->gravity, false);
+
+	// 				if (!p->onGround) {
+	// 					/*for water to move*/
+	// 					//flow force
+	// 					float flowDir = (p->dynamics.velocity.x >= 0.0f) ? 1.0f : -1.0f;
+	// 					float flowStrength = 5.0f * expf(-p->lifeTimer * 0.6f);
+	// 					p->dynamics.velocity.x += flowStrength * flowDir * deltaTime;
+	// 					//strong gravity
+	// 					p->dynamics.velocity.y += -15.8f * deltaTime;
+	// 					//turbulence that decays over time
+	// 					float turbulence = sin(p->lifeTimer * 8.0f) * 2.0f * expf(-p->lifeTimer);
+	// 					p->dynamics.velocity.y += turbulence * deltaTime;
+	// 					//quadratic drag
+	// 					float speed = sqrt(
+	// 						p->dynamics.velocity.x * p->dynamics.velocity.x +
+	// 						p->dynamics.velocity.y * p->dynamics.velocity.y);
+
+	// 					if (speed > 0.0001f) {
+	// 						float dragCoefficient = 0.5f;
+	// 						float dragForce = dragCoefficient * speed * speed;
+	// 						p->dynamics.velocity.x -= (p->dynamics.velocity.x / speed) * dragForce * deltaTime;
+	// 						p->dynamics.velocity.y -= (p->dynamics.velocity.y / speed) * dragForce * deltaTime;
+	// 					}
+	// 				}
+	// 				//integrate
+	// 				Vector3D deltaPos = Vec3_Scale(&p->dynamics.velocity, deltaTime);
+	// 				p->dynamics.position = Vec3_Add(&p->dynamics.position, &deltaPos);
+	// 			}
+
+
+	// 			t->x = p->dynamics.position.x;
+	// 			t->y = p->dynamics.position.y;
+
+	// 			// Update life timer
+	// 			p->lifeTimer += deltaTime;
+
+	// 			// Deactivate if lifetime exceeded or fell too far
+	// 			if (!EditorManager::isEditingMode()) {
+	// 				//shrink and fade over lifetime
+	// 				if (p->lifeTimer > 2.0f) {
+	// 					float shrinkTimer = p->lifeTimer - 2.0f;  // starts from 0 after 5s
+	// 					float lifePercent = shrinkTimer / p->maxLifetime;
+	// 					float newScale = p->initialScale * (1.0f - lifePercent);
+	// 					newScale = std::max(newScale, p->minScale);
+	// 					t->scaleX = newScale;
+	// 					t->scaleY = newScale;
+
+	// 					//shrink collider to match visual size
+	// 					if (obj->hasComponent<CollisionInfo>()) {
+	// 						CollisionInfo* col = obj->getComponent<CollisionInfo>();
+	// 						col->colliderSize.x = newScale;
+	// 						col->colliderSize.y = newScale;
+	// 					}
+	// 				}
+	// 				if (p->lifeTimer >= p->maxLifetime || p->dynamics.position.y < -20.0f) {
+	// 					PhysicsForces::deactivateBullet(obj);
+	// 				}
+	// 			}
+	// 		}
+	// 		else {
+	// 			//Haardcoded way-- need fix in future
+	// 			if (!EditorManager::isEditingMode()) {
+	// 				if (t->y > -100.0f || t->x > -100.0f) {
+	// 					t->x = -1000.0f;
+	// 					t->y = -1000.0f;
+	// 					p->dynamics.position.x = -1000.0f;
+	// 					p->dynamics.position.y = -1000.0f;
+	// 					p->dynamics.velocity.x = 0.0f;
+	// 					p->dynamics.velocity.y = 0.0f;
+	// 				}
+	// 			}
+	// 		}
+	// 	}
 
 	auto end = std::chrono::high_resolution_clock::now();
 	double ms = std::chrono::duration<double, std::milli>(end - start).count();

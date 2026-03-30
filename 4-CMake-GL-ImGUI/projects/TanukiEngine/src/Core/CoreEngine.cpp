@@ -280,7 +280,7 @@ void CoreEngine::Update(float deltaTime) {
     }
 
     // Tick the level timer for leaderboard
-    GUISystem::getInstance().tickLevelTimer(deltaTime);
+    //GUISystem::getInstance().tickLevelTimer(deltaTime);
 
 	//for other systems to update even in editor mode
     if (!EditorManager::isEditingMode() && !EditorManager::isPaused()) {
