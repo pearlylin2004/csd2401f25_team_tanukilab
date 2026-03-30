@@ -17,6 +17,7 @@ Technology is prohibited.
 
 //#ifdef _DEBUG
 #include "Editor/editorManager.h"
+#include "ReplaySystem.h"
 #include "Systems.h"
 
 MenuBar::MenuBar(AssetBrowser& aBrowser, Editor::AssetBrowserState& Astate, Editor::MenuBarState& Mstate, Editor::ObjSelectionState& Ostate, Editor::SceneState& sceneState):

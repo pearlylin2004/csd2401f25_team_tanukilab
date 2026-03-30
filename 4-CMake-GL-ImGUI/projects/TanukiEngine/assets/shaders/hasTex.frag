@@ -5,14 +5,16 @@ in vec2 vTexCoord;
 out vec4 FragColor;
 
 uniform sampler2D uTex2d;
+uniform bool video;
 
 void main()
 {
     vec4 texColor1 = texture(uTex2d, vTexCoord);
-    if(texColor1.a <= 0.01)
+    if(texColor1.a <= 0.01 && !video)
     {
         discard;
     }
     FragColor = texColor1 * vColor;
 	//FragColor = vec4(1.0,0.0,1.0,1.0);
+    //FragColor = vec4(1.0, 0.0, 0.0, 1.0);
 }

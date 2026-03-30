@@ -3,20 +3,16 @@ include(FetchContent)
 # ===================== Import GLFW =====================
 macro(import_glfw)
     if(NOT TARGET glfw)
+        set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
+        set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+        set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
+        set(BUILD_SHARED_LIBS OFF CACHE BOOL "" FORCE)
         FetchContent_Declare(
             glfw
             GIT_REPOSITORY https://github.com/glfw/glfw.git
             GIT_TAG 3.3.8
         )
-        if(NOT glfw_POPULATED)
-            set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
-            set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
-            set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
-            FetchContent_Populate(glfw)
-        endif()
-
-        add_subdirectory(${glfw_SOURCE_DIR})
-        include_directories(${GLFW_SOURCE_DIR}/include)
+        FetchContent_MakeAvailable(glfw)
     endif()
 endmacro()
 
@@ -28,22 +24,22 @@ macro(import_glm)
             GIT_REPOSITORY https://github.com/g-truc/glm.git
             GIT_TAG master
         )
+        set(GLM_QUIET ON CACHE BOOL "" FORCE)
         FetchContent_MakeAvailable(glm)
-        include_directories(${glm_SOURCE_DIR})
+        #target_include_directories(glm SYSTEM INTERFACE ${glm_SOURCE_DIR})
     endif()
 endmacro()
 
 # ===================== Import GLEW =====================
 macro(import_glew)
     if(NOT TARGET glew_s)
+        set(BUILD_SHARED_LIBS OFF CACHE BOOL "Build shared libs" FORCE)
         FetchContent_Declare(
             glew
             GIT_REPOSITORY https://github.com/Perlmint/glew-cmake.git
             GIT_TAG d06782b910213d675925e6e51a69ad0fd1fe1f23
         )
-        set(BUILD_SHARED_LIBS OFF CACHE BOOL "Build shared libs" FORCE)
         FetchContent_MakeAvailable(glew)
-        include_directories(${glew_SOURCE_DIR}/include)
     endif()
 endmacro()
 
@@ -70,9 +66,10 @@ macro(import_imgui)
         )
 
         add_library(imgui STATIC ${IMGUI_SOURCES})
-        target_include_directories(imgui PUBLIC 
+        target_include_directories(imgui SYSTEM PUBLIC 
             ${imgui_SOURCE_DIR}
             ${imgui_SOURCE_DIR}/backends
+	    ${glfw_SOURCE_DIR}/include
         )
         target_link_libraries(imgui PUBLIC glfw libglew_static)
         set_property(TARGET imgui PROPERTY CXX_STANDARD 11)
@@ -93,7 +90,7 @@ macro(import_imgui)
         )
 
         add_library(ImGuizmo STATIC ${IMGUIZMO_SOURCES})
-        target_include_directories(ImGuizmo PUBLIC ${imguizmo_SOURCE_DIR})
+        target_include_directories(ImGuizmo SYSTEM PUBLIC ${imguizmo_SOURCE_DIR})
         target_link_libraries(ImGuizmo PUBLIC imgui)
     endif()
 endmacro()
@@ -108,7 +105,7 @@ macro(import_stb)
         )
         FetchContent_MakeAvailable(stb)
         add_library(stb INTERFACE)
-        target_include_directories(stb INTERFACE ${stb_SOURCE_DIR})
+        target_include_directories(stb SYSTEM INTERFACE ${stb_SOURCE_DIR})
     endif()
 endmacro()
 
@@ -185,7 +182,7 @@ macro(import_rapidjson)
         add_library(rapidjson INTERFACE)
 
         # 4. Point that target at the include/ directory inside RapidJSON
-        target_include_directories(rapidjson INTERFACE
+        target_include_directories(rapidjson SYSTEM INTERFACE
             ${rapidjson_src_SOURCE_DIR}/include
         )
     endif()
@@ -202,6 +199,21 @@ macro(import_freetype)
             GIT_TAG VER-2-13-3
         )
         FetchContent_MakeAvailable(freetype)
+    endif()
+endmacro()
+
+# ===================== Import plmpeg =====================
+macro(import_plmpeg)
+    if(NOT TARGET plmpeg)
+        FetchContent_Declare(
+            plmpeg
+            GIT_REPOSITORY https://github.com/phoboslab/pl_mpeg.git
+            GIT_TAG master
+        )
+        FetchContent_MakeAvailable(plmpeg)
+
+        add_library(plmpeg INTERFACE)
+        target_include_directories(plmpeg SYSTEM INTERFACE ${plmpeg_SOURCE_DIR})
     endif()
 endmacro()
 
@@ -240,6 +252,10 @@ macro(importDependencies)
     message(STATUS "Importing FreeType...")
     import_freetype()
     message(STATUS "FreeType imported successfully.")
+
+    message(STATUS "Importing plmpeg...")
+    import_plmpeg()
+    message(STATUS "plmpeg imported successfully.")
 
     message(STATUS "All dependencies have been imported successfully.")
 endmacro()

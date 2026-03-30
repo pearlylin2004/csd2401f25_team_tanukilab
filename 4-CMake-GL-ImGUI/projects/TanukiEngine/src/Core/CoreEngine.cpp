@@ -25,6 +25,8 @@ Technology is prohibited.
 #define STB_IMAGE_IMPLEMENTATION
 #include "CoreEngine.h"
 #include "GUISystem.h"  // Add this include
+#include "LeaderboardSystem.h"
+#include "ReplaySystem.h"
 
 CoreEngine::CoreEngine()
     : m_window(nullptr),
@@ -75,7 +77,10 @@ void CoreEngine::Init(bool forceWindowed) {
     int winHeight = cfg.height;
 
     if (wantFullscreen) {
-       
+        monitor = glfwGetPrimaryMonitor();
+        const GLFWvidmode* mode = glfwGetVideoMode(monitor);
+        winWidth = mode->width;
+        winHeight = mode->height;
 
         // remember windowed size for when we toggle back
         m_windowedWidth = cfg.width;
@@ -83,11 +88,6 @@ void CoreEngine::Init(bool forceWindowed) {
         Camera::onResize(m_windowedWidth, m_windowedHeight);
     }
     else {
-        monitor = glfwGetPrimaryMonitor();
-        const GLFWvidmode* mode = glfwGetVideoMode(monitor);
-        winWidth = mode->width;
-        winHeight = mode->height;
-
         m_windowedWidth = cfg.width;
         m_windowedHeight = cfg.height;
 		Camera::onResize(winWidth, winHeight);
@@ -153,6 +153,7 @@ void CoreEngine::Init(bool forceWindowed) {
 	m_particleSystem = std::make_unique<ParticleSystem>();
 	m_visualLCSystem = std::make_unique<VisualLogicSystem>();
 	m_transformSystem = std::make_unique<TransformSystem>();
+	m_cameraSystem = std::make_unique<Camera>();
 
 
     PrefabManager::Instance().loadPrefabRegistry();
@@ -176,6 +177,12 @@ void CoreEngine::Init(bool forceWindowed) {
 
     //// load global settings
     //GlobalRegistry::Instance().init();
+
+    // Initialize leaderboard (loads scores from disk)
+    LeaderboardSystem::getInstance().init();
+
+    // Initialize replay system (creates replays directory)
+    ReplaySystem::getInstance().init();
 
     glfwPollEvents();
     m_isRunning = true;
@@ -272,6 +279,9 @@ void CoreEngine::Update(float deltaTime) {
         GUISystem::getInstance().update();
     }
 
+    // Tick the level timer for leaderboard
+    GUISystem::getInstance().tickLevelTimer(deltaTime);
+
 	//for other systems to update even in editor mode
     if (!EditorManager::isEditingMode() && !EditorManager::isPaused()) {
         //m_luaSystem->update(*m_manager, deltaTime);
@@ -297,6 +307,25 @@ void CoreEngine::Update(float deltaTime) {
     m_tileMapSystem->update(*m_manager);
     m_particleSystem->update(*m_manager, deltaTime);;
     m_waterSystem->update(*m_manager, deltaTime);
+
+    // Record player state for replay and update ghost playback
+    auto& replay = ReplaySystem::getInstance();
+    auto currentGS = GUISystem::getInstance().getCurrentState();
+    const bool allowReplayRuntime = !EditorManager::isEditingMode();
+    if (allowReplayRuntime && replay.isRecording() && currentGS != GameState::PAUSED) {
+        replay.recordFrame(*m_manager, deltaTime);
+    }
+    if (allowReplayRuntime && replay.isPlaying() && currentGS != GameState::PAUSED) {
+        replay.updateGhost(*m_manager, deltaTime);
+    }
+    if (allowReplayRuntime && replay.isViewerMode() && currentGS != GameState::PAUSED) {
+        replay.updateViewer(deltaTime);
+    }
+    // Apply recorded world object state every frame in viewer mode
+    if (allowReplayRuntime && replay.isViewerMode()) {
+        replay.applyWorldSnapshot(*m_manager);
+    }
+
     m_renderSystem->update(*m_manager, deltaTime);
     m_waterSystem->render(*m_manager);
     m_fontSystem->update(*m_manager, m_fps);

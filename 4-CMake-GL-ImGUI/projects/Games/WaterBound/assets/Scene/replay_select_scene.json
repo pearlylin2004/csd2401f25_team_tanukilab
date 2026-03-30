@@ -1,0 +1,112 @@
+{
+  "version": 1,
+  "layers": [
+    { "id": 0, "name": "Background", "enabled": 1, "visible": 1, "updatable": 1 },
+    { "id": 1, "name": "Game", "enabled": 1, "visible": 1, "updatable": 1 },
+    { "id": 2, "name": "UI", "enabled": 1, "visible": 1, "updatable": 1 }
+  ],
+  "objects": [
+    {
+      "name": "background",
+      "components": {
+        "Transform": { "pos": [0, 0, 0], "rotation": 0, "scale": [45, 25, 0] },
+        "Render": {
+          "shape": "square", "colorR": 1, "colorG": 1, "colorB": 1, "colorA": 1,
+          "hasTex": 1, "texture": "assets/black.png", "hasAnimation": 0
+        }
+      }
+    },
+    {
+      "name": "replay_title",
+      "layer": 2,
+      "components": {
+        "Transform": { "pos": [-7.5, 7.5, 2], "rotation": 0, "scale": [1, 1, 1] },
+        "FontComponent": { "word": "SELECT REPLAY", "color": [1, 1, 1], "scale": 0.6, "fontType": 1 }
+      }
+    },
+    {
+      "name": "replay_selector",
+      "layer": 2,
+      "components": {
+        "Transform": { "pos": [-14, 4.5, 2], "rotation": 0, "scale": [1, 1, 1] },
+        "FontComponent": { "word": ">", "color": [1, 0.84, 0], "scale": 0.4, "fontType": 1 }
+      }
+    },
+    {
+      "name": "replay_entry_1",
+      "layer": 2,
+      "components": {
+        "Transform": { "pos": [-12, 4.5, 2], "rotation": 0, "scale": [1, 1, 1] },
+        "FontComponent": { "word": "---", "color": [1, 1, 1], "scale": 0.35, "fontType": 1 }
+      }
+    },
+    {
+      "name": "replay_entry_2",
+      "layer": 2,
+      "components": {
+        "Transform": { "pos": [-12, 2.5, 2], "rotation": 0, "scale": [1, 1, 1] },
+        "FontComponent": { "word": "---", "color": [1, 1, 1], "scale": 0.35, "fontType": 1 }
+      }
+    },
+    {
+      "name": "replay_entry_3",
+      "layer": 2,
+      "components": {
+        "Transform": { "pos": [-12, 0.5, 2], "rotation": 0, "scale": [1, 1, 1] },
+        "FontComponent": { "word": "---", "color": [1, 1, 1], "scale": 0.35, "fontType": 1 }
+      }
+    },
+    {
+      "name": "replay_entry_4",
+      "layer": 2,
+      "components": {
+        "Transform": { "pos": [-12, -1.5, 2], "rotation": 0, "scale": [1, 1, 1] },
+        "FontComponent": { "word": "---", "color": [1, 1, 1], "scale": 0.35, "fontType": 1 }
+      }
+    },
+    {
+      "name": "replay_entry_5",
+      "layer": 2,
+      "components": {
+        "Transform": { "pos": [-12, -3.5, 2], "rotation": 0, "scale": [1, 1, 1] },
+        "FontComponent": { "word": "---", "color": [1, 1, 1], "scale": 0.35, "fontType": 1 }
+      }
+    },
+    {
+      "name": "replay_page_info",
+      "layer": 2,
+      "components": {
+        "Transform": { "pos": [-6, -5.5, 2], "rotation": 0, "scale": [1, 1, 1] },
+        "FontComponent": { "word": "", "color": [0.7, 0.7, 0.7], "scale": 0.25, "fontType": 1 }
+      }
+    },
+    {
+      "name": "replay_hint",
+      "layer": 2,
+      "components": {
+        "Transform": { "pos": [-15, -7.5, 2], "rotation": 0, "scale": [1, 1, 1] },
+        "FontComponent": { "word": "UP/DOWN:Navigate  ENTER:Watch  LEFT/RIGHT:Page  ESC:Back", "color": [0.6, 0.6, 0.6], "scale": 0.22, "fontType": 1 }
+      }
+    },
+    {
+      "name": "back_text",
+      "layer": 2,
+      "components": {
+        "Transform": { "pos": [-16.5, 8.3, 2], "rotation": 0, "scale": [20, 20, 0] },
+        "FontComponent": { "word": "BACK", "color": [0, 0, 0], "scale": 0.5, "fontType": 1 }
+      }
+    },
+    {
+      "name": "back_button",
+      "layer": 2,
+      "components": {
+        "Transform": { "pos": [-15.5, 8.5, 1], "rotation": 0, "scale": [6, 2, 0] },
+        "Render": {
+          "shape": "square", "colorR": 1, "colorG": 1, "colorB": 1, "colorA": 1,
+          "hasTex": 1, "texture": "assets/button.png", "hasAnimation": 0
+        },
+        "Button": { "action": "back" }
+      }
+    }
+  ]
+}

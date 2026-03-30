@@ -71,6 +71,17 @@ public:
 	void loadLevel(const std::string& levelSceneName); // load next level
     void resetAllObjectsToSpawn(); // helper for restart
 
+    // Replay viewer
+    void startReplayViewer(const std::string& runId = "");
+
+    // Replay selection screen
+    void openReplaySelect();
+    void populateReplaySelection();
+    void handleReplaySelectInput();
+    void handleReplayViewerControls();
+    void updateReplayHUD();
+    void resetReplayWorldState();
+
     void createButtons(/*GameObjectManager& manager*/); //create menu buttons
 
     // for on scene load
@@ -97,6 +108,10 @@ private:
     void startGame(); //start game
     void stopGame(); //stop game	
     void updateVolumeDisplay(); //update volume % text on audio page
+    void updateLeaderboardDisplay(); //populate leaderboard font objects with scores
+    void updateInGameHUD(); // update timer + top 3 leaderboard on in-game HUD
+    void initInGameHUD();   // populate leaderboard portion of in-game HUD
+    void loadReplayLevel(int levelIndex); // load a level in replay viewer mode
 
     bool isPointInButton(const Vector2D& point, GameObject* button);
     void createButtonActions(); //create button actions

@@ -31,6 +31,9 @@ Technology is prohibited.
 #include "font.h"
 #include "dynamics.h"
 #include "queue"
+#pragma warning(push, 0)
+#include "pl_mpeg.h"
+#pragma warning(pop)
 
 
 // at least it works!!!
@@ -95,6 +98,25 @@ public:
     std::string texFile;
     glm::vec4 clr{ 1,1,1,1 };
     renderer::model modelRef;
+};
+
+struct Video : public Component {
+public:
+    std::unique_ptr<Component> clone() const override {
+        return std::make_unique<Video>(*this);
+    }
+public:
+    std::string videoFile = "";
+    plm_t* plm = nullptr;
+    bool isPlaying = true;
+    bool isPaused = false;
+	bool loop = false;
+    GLuint videoTexID = 0;
+    int videoWidth = 0;
+    int videoHeight = 0;
+    float accumTime = 0.0;   // accumulated delta time
+    float fps = 0.0;   // video's fps from plm_get_framerate()
+	std::function<void()> onVideoEnd; //callback function for when video ends, can use lambda to make it change scene etc
 };
 
 struct camera : public Component
@@ -328,8 +350,11 @@ enum class ButtonAction {
     MUSIC_VOL_DOWN,
     SFX_VOL_UP,
     SFX_VOL_DOWN,
+    OPEN_LEADERBOARD,
     MUTE,
-    UNMUTE
+    UNMUTE,
+    WATCH_REPLAY,
+    OPEN_REPLAY_SELECT
 };
 
 //Button component
@@ -483,6 +508,13 @@ struct StateMachine : public Component {
     bool        fixState = false;
     std::unique_ptr<Component> clone() const override {
         return std::make_unique<StateMachine>(*this);
+    }
+};
+
+// Marker component for ghost replay entity (no physics/collision, purely visual)
+struct GhostComponent : public Component {
+    std::unique_ptr<Component> clone() const override {
+        return std::make_unique<GhostComponent>(*this);
     }
 };
 

@@ -53,6 +53,7 @@ struct BatchKey {
 	GLuint texID;
 	shape meshType;
 	mutable GLuint ssboID = 0;
+	bool vid = false;
 
 	bool operator==(const BatchKey& other) const noexcept {
 		return z == other.z && texID == other.texID && meshType == other.meshType;

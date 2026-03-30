@@ -22,9 +22,13 @@ Technology is prohibited.
 */
 /* End Header **************************************************************************/
 #pragma once
-
+#pragma warning(push, 0)
+#define PL_MPEG_IMPLEMENTATION
 #include "Systems.h"
+#pragma warning(pop)
 #include "Physics.h"
+#include "GUISystem.h"
+#include "ReplaySystem.h"
 
 std::string TileMapSystem::filename{};
 std::vector<Particle::UID> Particle::UIDs;
@@ -311,9 +315,12 @@ void RenderSystem::update(GameObjectManager& manager, float const& deltaTime)
 	instancePerBatch(objectWithTex);
 	for (std::pair<const BatchKey, std::vector<renderer::InstanceData>>& pair : objectWithTex)
 	{
+		
 		const BatchKey& key = pair.first;
 		//std::vector<renderer::InstanceData>& instances = pair.second;
 		glBindTextureUnit(0, key.texID);
+		GLuint isVid = glGetUniformLocation(renderer::shdr_pgm[0], "isVid");
+		glUniform1i(isVid, key.vid ? 1 : 0);
 		GLint uTexLoc = glGetUniformLocation(renderer::shdr_pgm[0], "uTex2d");
 		if (uTexLoc != -1) 
 			glUniform1i(uTexLoc, 0);
@@ -457,6 +464,9 @@ void RenderSystem::batchingSetUp(GameObjectManager& manager, float const& deltaT
 			Render* render = obj->getComponent<Render>();
 			Transform* transform = obj->getComponent<Transform>();
 
+			if (!render->visible) continue; // Skip invisible objects
+			
+
 			float scaleX = transform->flipX ? -transform->scaleX : transform->scaleX;
 
 			renderer::InstanceData data;
@@ -469,12 +479,35 @@ void RenderSystem::batchingSetUp(GameObjectManager& manager, float const& deltaT
 			data.color = render->clr;
 			data.texParams = glm::vec4(0, 0, 1, 1);
 
+			//video has highest priority for texture, if video is present, it will override the render component's texture
+			if (obj->hasComponent<Video>())
+			{
+					
+				Video* video = obj->getComponent<Video>();
+				std::cerr << "[VIDEO] found video obj, isPlaying=" << video->isPlaying
+					<< " plm=" << video->plm
+					<< " texID=" << video->videoTexID << "\n";
+				if (video->isPlaying)
+				{
+					VideoSystem::update(obj, deltaTime); // Update video frame and texture
+					if (video->videoTexID)
+					{
+						BatchKey key{ transform->z, video->videoTexID, render->modelRef.shape };
+						objectWithTex[key].push_back(data);
+						continue;
+					}
+				}
+			}
 			// Animation handling (same as before)
 			if (obj->hasComponent<Animation>() && obj->hasComponent<StateMachine>())
 			{
 				Animation* animation = obj->getComponent<Animation>();
 				StateMachine* sm = obj->getComponent<StateMachine>();
-				AnimateState& as = animation->animState[static_cast<int>(sm->state)];
+				const int stateIndex = static_cast<int>(sm->state);
+				if (stateIndex < 0 || stateIndex >= static_cast<int>(animation->animState.size())) {
+					continue;
+				}
+				AnimateState& as = animation->animState[stateIndex];
 
 				if (render->hasAnimation && !as.texFile.empty()) {
 					glm::vec2 texOffSet{ as.currentFrameColumn / static_cast<float>(as.totalColumn), 1.f - ((as.currentFrameRow + 1) / static_cast<float>(as.totalRow)) };
@@ -535,100 +568,6 @@ void RenderSystem::batchingSetUp(GameObjectManager& manager, float const& deltaT
 	}
 }
 
-//void RenderSystem::batchingSetUp(GameObjectManager& manager, float const& deltaTime)
-//{
-//	LayerManager& layerManager = manager.getLayerManager();
-//	
-//	for (std::pair<const BatchKey, std::vector<renderer::InstanceData>>& pair : objectWithTex) pair.second.clear();
-//	for (std::pair<const BatchKey, std::vector<renderer::InstanceData>>& pair : objectWithoutTex) pair.second.clear();
-//
-//	// Process objects layer by layer for efficient visibility check
-//	for (Layer* layer : layerManager.getAllLayers()) {
-//		if (!layer || !layer->isVisible()) continue; // Skip non-visible layers (single flag check)
-//
-//		for (GameObject* obj : layer->getObjects()) {
-//			if (!obj->hasComponent<Render>() || !obj->hasComponent<Transform>())
-//				continue;
-//			
-//			Render* render = obj->getComponent<Render>();
-//			Transform* transform = obj->getComponent<Transform>();
-//
-//			float scaleX = transform->flipX ? -transform->scaleX : transform->scaleX;
-//
-//			renderer::InstanceData data;
-//			float angle = glm::radians(transform->rotation);
-//			transform->mdlWorld = glm::mat4{ 1 };
-//			transform->mdlWorld = glm::translate(transform->mdlWorld, glm::vec3(transform->x, transform->y, transform->z));
-//			transform->mdlWorld = glm::rotate(transform->mdlWorld, angle, glm::vec3(0, 0, 1.f));
-//			transform->mdlWorld = glm::scale(transform->mdlWorld, glm::vec3(scaleX, transform->scaleY, transform->scaleZ));
-//			data.model = transform->mdlWorld;
-//			data.color = render->clr;
-//			data.texParams = glm::vec4(0, 0, 1, 1);
-//
-//			// Animation handling (same as before)
-//			if (obj->hasComponent<Animation>() && obj->hasComponent<StateMachine>())
-//			{
-//				Animation* animation = obj->getComponent<Animation>();
-//				StateMachine* sm = obj->getComponent<StateMachine>();
-//				AnimateState& as = animation->animState[static_cast<int>(sm->state)];
-//					
-//				if (render->hasAnimation && !as.texFile.empty()) {
-//					glm::vec2 texOffSet{ as.currentFrameColumn / static_cast<float>(as.totalColumn), 1.f - ((as.currentFrameRow + 1) / static_cast<float>(as.totalRow)) };
-//					glm::vec2 texScale{ 1.f / as.totalColumn, 1.f / as.totalRow };
-//
-//					// Only update animation if layer is updatable
-//					if (as.play && layer->isUpdatable() && !EditorManager::isEditingMode() && !EditorManager::isPaused())
-//					{
-//						as.frameTimer += deltaTime;
-//						if (as.frameTimer >= as.frameTime)
-//						{
-//							as.frameTimer -= as.frameTime;
-//							if (as.currentFrameColumn >= as.lastFrame.x && as.currentFrameRow >= as.lastFrame.y)
-//							{
-//								if (as.loop) {
-//									as.currentFrameColumn = (int)as.initialFrame.x;
-//									as.currentFrameRow = (int)as.initialFrame.y;
-//									as.frameTimer = 0;
-//								}
-//								else {
-//									as.play = false;
-//								}
-//							}
-//							else {
-//								++as.currentFrameColumn;
-//								if (as.currentFrameColumn >= as.totalColumn) {
-//									as.currentFrameColumn = 0;
-//									++as.currentFrameRow;
-//									if (as.currentFrameRow > as.lastFrame.y) {
-//										as.currentFrameColumn = (int)as.initialFrame.x;
-//										as.currentFrameRow = (int)as.initialFrame.y;
-//									}
-//								}
-//							}
-//							animation->runItBack = true;
-//						}
-//					}
-//					data.texParams = { texOffSet, texScale };
-//					BatchKey key{ render->modelRef.shape, as.texHDL };
-//					objectWithTex[key].push_back(data);
-//				}
-//				else {
-//					BatchKey key{ render->modelRef.shape, 0 };
-//					objectWithoutTex[key].push_back(data);
-//				}
-//			}
-//			else if (render->hasTex) {
-//				BatchKey key{ render->modelRef.shape, render->texHDL };
-//				objectWithTex[key].push_back(data);
-//			}
-//			else {
-//				BatchKey key{ render->modelRef.shape, 0 };
-//				objectWithoutTex[key].push_back(data);
-//			}
-//		}
-//	}
-//}
-
 void RenderSystem::instancePerBatch(std::map<BatchKey, std::vector<renderer::InstanceData>> &batch)
 {
 	for (std::pair<const BatchKey, std::vector<renderer::InstanceData>>& objs : batch)
@@ -677,6 +616,114 @@ void RenderSystem::clearBatches() {
 void RenderSystem::fboAspectRatio(int& width, int& height) const {
 	width = fboWidth;
 	height = fboHeight;
+}
+
+void VideoSystem::update(GameObject* obj, float const deltaTime)
+{
+	Video* video = obj->getComponent<Video>();
+	if (!video->isPlaying) return;
+	if (video->isPaused) return;
+
+	if (!video->plm)
+	{
+		if (!loadVideo(video))
+		{
+			std::cerr << "Failed to load video: " << video->videoFile << std::endl;
+			video->isPlaying = false;
+			return;
+		}
+		video->accumTime = 0.f; // reset accum time so if we start playing again it doesn't immediately skip frames
+		// if first frame lags, return this immediately so we don't have a frozen frame until the next update
+		//return;
+	}
+	video->accumTime += deltaTime;
+	while (video->accumTime >= 1.f / video->fps)
+	{
+		video->accumTime -= 1.f / video->fps;
+		// Decode and update texture
+		plm_frame_t* frame = plm_decode_video(video->plm);
+		//std::cerr << "[VIDEO] decode attempt, frame=" << frame << "\n";
+		if (frame) {
+			std::vector<uint8_t> pixels(video->videoWidth * video->videoHeight * 4);
+			plm_frame_to_rgba(frame, pixels.data(), video->videoWidth * 4);
+			for (int i = 3; i < (int)pixels.size(); i += 4)
+				pixels[i] = 255;
+			std::vector<uint8_t> flipped(pixels.size());
+			int rowSize = video->videoWidth * 4;
+			for (int y = 0; y < video->videoHeight; y++) {
+				memcpy(flipped.data() + y * rowSize,
+					pixels.data() + (video->videoHeight - 1 - y) * rowSize,
+					rowSize);
+			}
+			glBindTexture(GL_TEXTURE_2D, video->videoTexID);
+			glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, video->videoWidth, video->videoHeight,
+				GL_RGBA, GL_UNSIGNED_BYTE, flipped.data());
+			//std::cerr << "[VIDEO] uploaded frame to texID=" << video->videoTexID << "\n";
+		}
+	}
+	if (plm_has_ended(video->plm)) {
+		cleanup(video);
+		video->accumTime = 0.f;
+
+		if (video->loop) {
+			video->isPlaying = true;  // next iteration reloads plm
+		}
+		else {
+			video->isPlaying = false;
+			if (video->onVideoEnd) video->onVideoEnd();
+		}
+	}
+}
+
+void VideoSystem::cleanup(Video* video)
+{
+	if (video->plm) {
+		plm_destroy(video->plm);
+		video->plm = nullptr;
+	}
+	if (video->videoTexID) {
+		glDeleteTextures(1, &video->videoTexID);
+		video->videoTexID = 0;
+	}
+}
+
+bool VideoSystem::loadVideo(Video* video) {
+	video->plm = plm_create_with_filename(video->videoFile.c_str());
+	if (!video->plm) return false;
+
+	video->videoWidth = plm_get_width(video->plm);
+	video->videoHeight = plm_get_height(video->plm);
+	video->fps = static_cast<float>(plm_get_framerate(video->plm));
+
+	glGenTextures(1, &video->videoTexID);
+	glBindTexture(GL_TEXTURE_2D, video->videoTexID);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, video->videoWidth, video->videoHeight,
+		0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	plm_frame_t* firstFrame = plm_decode_video(video->plm);
+	if (firstFrame) {
+		std::vector<uint8_t> pixels(video->videoWidth * video->videoHeight * 4);
+		plm_frame_to_rgba(firstFrame, pixels.data(), video->videoWidth * 4);
+
+		for (int i = 3; i < (int)pixels.size(); i += 4)
+			pixels[i] = 255;
+
+		std::vector<uint8_t> flipped(pixels.size());
+		int rowSize = video->videoWidth * 4;
+		for (int y = 0; y < video->videoHeight; y++) {
+			memcpy(flipped.data() + y * rowSize,
+				pixels.data() + (video->videoHeight - 1 - y) * rowSize,
+				rowSize);
+		}
+
+		glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, video->videoWidth, video->videoHeight,
+			GL_RGBA, GL_UNSIGNED_BYTE, flipped.data());
+	}
+
+	return true;
 }
 
 void ParticleSystem::clearUsedID(size_t ID)
@@ -1336,6 +1383,17 @@ void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime, M
 // 					PhysicsForces::updatePosition(transform, physics, deltaTime);
 // 				}
 // 			}
+
+			// Position correction during replay to prevent drift
+			if (isReplay && replaySys.isViewerMode()) {
+				float recX = replaySys.getReplayX();
+				float recY = replaySys.getReplayY();
+				// Use near-exact positioning in viewer mode for faithful replay
+				transform->x = recX;
+				transform->y = recY;
+				physics->dynamics.position.x = transform->x;
+				physics->dynamics.position.y = transform->y;
+			}
 
 
 // 			// Continuous shooting system

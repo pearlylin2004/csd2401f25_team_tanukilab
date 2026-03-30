@@ -257,8 +257,11 @@ namespace JsonIO {
         case ButtonAction::MUSIC_VOL_DOWN: return "music_vol_down";
         case ButtonAction::SFX_VOL_UP:     return "sfx_vol_up";
         case ButtonAction::SFX_VOL_DOWN:   return "sfx_vol_down";
+        case ButtonAction::OPEN_LEADERBOARD: return "open_leaderboard";
         case ButtonAction::MUTE:   return "mute";
         case ButtonAction::UNMUTE:   return "unmute";
+        case ButtonAction::WATCH_REPLAY: return "watch_replay";
+        case ButtonAction::OPEN_REPLAY_SELECT: return "open_replay_select";
         default:                           return "none";
         }
 	}
@@ -278,8 +281,11 @@ namespace JsonIO {
         if (s == "music_vol_down") return ButtonAction::MUSIC_VOL_DOWN;
         if (s == "sfx_vol_up") return ButtonAction::SFX_VOL_UP;
         if (s == "sfx_vol_down") return ButtonAction::SFX_VOL_DOWN;
+        if (s == "open_leaderboard") return ButtonAction::OPEN_LEADERBOARD;
         if (s == "mute") return ButtonAction::MUTE;
         if (s == "unmute") return ButtonAction::UNMUTE;
+        if (s == "watch_replay") return ButtonAction::WATCH_REPLAY;
+        if (s == "open_replay_select") return ButtonAction::OPEN_REPLAY_SELECT;
         return ButtonAction::NONE;
 	}
 
@@ -432,6 +438,7 @@ namespace JsonIO {
 		if (stateStr == "PAUSED") return GameState::PAUSED;
         if (stateStr == "EXIT") return GameState::EXIT;
         if (stateStr == "EXITCONFIRMATION") return GameState::EXITCONFIRMATION;
+        if (stateStr == "REPLAY") return GameState::REPLAY;
         //if (stateStr == "LEVELS") return GameState::LEVELS;
 		return GameState::NONE;
 	}
@@ -444,6 +451,7 @@ namespace JsonIO {
 		case GameState::PAUSED: return "PAUSED";
 		case GameState::EXIT: return "EXIT";
 		case GameState::EXITCONFIRMATION: return "EXITCONFIRMATION";
+		case GameState::REPLAY: return "REPLAY";
 		//case GameState::LEVELS: return "LEVELS";
 		default: return "NONE";
 		}
@@ -1052,6 +1060,35 @@ namespace JsonIO {
         if (jp.HasMember("timer") && jp["timer"].IsNumber())      p->master.timer = jp["timer"].GetFloat();
         if (jp.HasMember("offset") && jp["offset"].IsNumber())     p->master.offset = jp["offset"].GetFloat();
         if (jp.HasMember("particleAmt") && jp["particleAmt"].IsInt())   p->master.particleAmt = jp["particleAmt"].GetInt();
+    }
+
+    std::string serializeVideo(GameObject* obj) {
+        Video* v = obj ? obj->getComponent<Video>() : nullptr;
+        if (!v) return "";
+        using namespace rapidjson;
+        Document doc; doc.SetObject();
+        auto& a = doc.GetAllocator();
+        Value jv(kObjectType);
+        jv.AddMember("videoFile", Value(v->videoFile.c_str(), a), a);
+        jv.AddMember("loop", Value(v->loop ? 1 : 0), a);
+        doc.AddMember("Video", jv, a);
+        StringBuffer buf; Writer<StringBuffer> w(buf); doc.Accept(w);
+        return buf.GetString();
+    }
+
+    void deserializeVideo(GameObject* obj, const std::string& json) {
+        if (!obj || json.empty()) return;
+        using namespace rapidjson;
+        Document doc; doc.Parse(json.c_str());
+        if (doc.HasParseError() || !doc.HasMember("Video")) return;
+        const Value& jv = doc["Video"];
+        Video* v = obj->hasComponent<Video>()
+            ? obj->getComponent<Video>()
+            : obj->addComponent<Video>();
+        if (jv.HasMember("videoFile") && jv["videoFile"].IsString())
+            v->videoFile = jv["videoFile"].GetString();
+        if (jv.HasMember("loop") && jv["loop"].IsNumber())
+            v->loop = jv["loop"].GetInt() != 0;
     }
 
     std::string serializePhysics(GameObject* obj) {
