@@ -207,18 +207,11 @@ void CoreEngine::GameLoop() {
     if (glfwWindowShouldClose(m_window) || InputHandler::isKeyTriggered(GLFW_KEY_F1)) { m_isRunning = false; return; }
     //pause checking, and set it to paused state if escape is held
     if (InputHandler::isKeyTriggered(GLFW_KEY_ESCAPE)) {
-        auto current = GUISystem::getInstance().getCurrentState();
-
-        if (current == GameState::PAUSED) {
-            SceneManager::getInstance().requestLevelLoad(
-                SceneManager::getInstance().getPreviousSceneName()
-            );
-        }
-        else if (current == GameState::PLAYING) {
-            GUISystem::getInstance().setStateBeforePause(current);
+        auto current = GUISystem::getInstance().getCurrentState(); //get current state
+        if (current == GameState::PLAYING) {
+            GUISystem::getInstance().setStateBeforePause(current); //store state before pausing
             SceneManager::getInstance().requestLevelLoad("pause_scene.json");
         }
-        // do nothing if MENU, CONTROL, AUDIO, etc.
     }
 
     //use glfwGetWindowAttrib to check the GLFW_ICONIFIED status for efficient waiting
@@ -503,7 +496,7 @@ void CoreEngine::setGameScript(GameScript* script) {
 void CoreEngine::loadInitialScene(const std::string& sceneName) {
     Editor::assetBrowserState.currentFolder = PathManager::Instance().getSourcePath() + "/assets/";
 
-    std::string fullPath = PathManager::Instance().getSourceScenePath() + sceneName;
-    m_manager->loadScene(fullPath);
-    m_manager->initializeSceneResources();
+    //use SceneManager so state is tracked correctly from the start
+    SceneManager::getInstance().requestLevelLoad(sceneName);
+    SceneManager::getInstance().update();
 }

@@ -84,7 +84,9 @@ GameState SceneManager::sceneToState(const std::string& sceneName) const {
     if (sceneName == "confirmation_scene.json") return GameState::EXITCONFIRMATION;
 
     // Any level file maps to PLAYING
-    if (sceneName.rfind("level", 0) == 0)       return GameState::PLAYING;
+    if (sceneName.find("level") != std::string::npos ||
+        sceneName.find("Level") != std::string::npos)
+        return GameState::PLAYING;
 
     return GameState::MENU; // fallback
 }
@@ -207,4 +209,17 @@ void SceneManager::executeLevelLoad(const std::string& levelSceneName) {
     }
 
     if (m_onSceneLoad) m_onSceneLoad(*g_manager);
+}
+
+void SceneManager::pauseGame(const std::string& pauseSceneName) {
+    if (m_currentState == GameState::PAUSED) return; 
+
+    m_previousState = m_currentState;
+    m_previousSceneName = m_currentSceneName; 
+    m_currentState = GameState::PAUSED;
+}
+
+void SceneManager::resumeGame() {
+    if (m_currentState != GameState::PAUSED) return;
+    m_currentState = m_previousState;
 }

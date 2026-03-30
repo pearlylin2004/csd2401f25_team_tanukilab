@@ -121,7 +121,7 @@
         },
         "Button": {
           "action": "load_scene",
-          "scenePath": "Game_Level_1.json",
+          "scenePath": "level01.json",
           "onClickChannel": "on_click",
           "onHoverChannel": "button_hover"
         }

@@ -142,6 +142,12 @@ void ButtonSystem::handleAction(const Button& btn) {
         updateVolumeDisplay();
         break;
     }
+    case ButtonAction::RESUME_GAME: {
+        SceneManager::getInstance().requestLevelLoad(
+            SceneManager::getInstance().getPreviousSceneName()
+        );
+        break;
+    }
 
     default:
         break;

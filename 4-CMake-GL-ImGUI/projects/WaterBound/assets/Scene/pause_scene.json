@@ -21,7 +21,7 @@
           "shape": "square",
           "hasTex": 1,
           "texture": "assets/Texture\\Pause_Sign_Base_V2.png",
-          "hasTex": 1,
+          "colorA": 0.0,
           "hasAnimation": 0
         }
       }

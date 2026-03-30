@@ -54,6 +54,10 @@ public:
     void executeRestart();
     void executeLevelLoad(const std::string& levelSceneName);
 
+    void pauseGame(const std::string& pauseSceneName = "pause_scene.json");
+    void resumeGame();
+    bool isPaused() const { return m_currentState == GameState::PAUSED; }
+
     void setOnSceneLoadCallback(std::function<void(GameObjectManager&)> cb) {
         m_onSceneLoad = cb;
     }
@@ -75,7 +79,7 @@ private:
     std::string m_previousSceneName;
     std::string m_currentSceneName;
 
-    std::string m_currentLevel;  // full path to the active level scene
+    std::string m_currentLevel;  //full path to the active level scene
     std::unordered_map<std::string, Vector2D> m_spawnPositions;
     bool        m_pendingRestart = false;
     bool        m_pendingLevelLoad = false;
