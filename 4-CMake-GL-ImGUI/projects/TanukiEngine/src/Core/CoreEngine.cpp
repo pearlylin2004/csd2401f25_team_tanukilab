@@ -277,17 +277,11 @@ void CoreEngine::Update(float deltaTime) {
         //m_luaSystem->update(*m_manager, deltaTime);
         m_visualLCSystem->initAll(*m_manager);
         m_visualLCSystem->updateAll(*m_manager, deltaTime);
-    }
-
-    
+    }    
 
     // Update all systems in order
-	
     m_inputSystem->update(*m_manager, deltaTime, *m_messageBus);
     m_physicsSystem->update(*m_manager, deltaTime, *m_messageBus);
-
-    
-
     m_collisionSystem->update(*m_manager, deltaTime);
 	m_transformSystem->update(*m_manager, deltaTime);//for parent->child transform
     m_cameraSystem->update(*m_manager);
@@ -297,8 +291,19 @@ void CoreEngine::Update(float deltaTime) {
     m_tileMapSystem->update(*m_manager);
     m_particleSystem->update(*m_manager, deltaTime);;
     m_waterSystem->update(*m_manager, deltaTime);
-    m_renderSystem->update(*m_manager, deltaTime);
+
+
+    /* ---- Render ---- */
+    auto renderStart = std::chrono::high_resolution_clock::now();
+	// anyth fall below the z threhold 5 will be drawn before water
+    m_renderSystem->renderBelowZ(*m_manager, deltaTime, 8.f); // draw everything below water
     m_waterSystem->render(*m_manager);
+    m_renderSystem->renderAboveZ(*m_manager, deltaTime, 8.f); // draw nothing above
+    auto renderEnd = std::chrono::high_resolution_clock::now();
+    double renderMs = std::chrono::duration<double, std::milli>(renderEnd - renderStart).count();
+    g_SystemTimers.push_back({ "Render", renderMs });
+    /* ---- END ---- */
+
     m_fontSystem->update(*m_manager, m_fps);
     m_audioSystem->update(*m_manager, deltaTime);
     if (!EditorManager::isEditingMode() && !EditorManager::isPaused()) {
