@@ -23,6 +23,7 @@ Technology is prohibited.
 #include "Editor/editorState.h"
 #include "Editor/undoRedo.h"
 #include "GUISystem.h"
+#include "Systems/Systems.h"
 
 #ifndef RUNTIME_SCENE_DIR_R
 #define RUNTIME_SCENE_DIR_R "./assets/Scene"
@@ -2272,6 +2273,11 @@ void GameObjectManager::initializeSimulationResources() {
 				}
 			}
 		}
+
+		if (obj->hasComponent<Video>()) {
+			VideoSystem::cleanup(obj->getComponent<Video>());
+			obj->getComponent<Video>()->isPlaying = true;
+		}
 	}
 }
 
@@ -2290,6 +2296,10 @@ void GameObjectManager::cleanupSimulationResources() {
 					channel.isPendingStop = false;
 				}
 			}
+		}
+
+		if (obj->hasComponent<Video>()) {
+			VideoSystem::cleanup(obj->getComponent<Video>());
 		}
 	}
 }

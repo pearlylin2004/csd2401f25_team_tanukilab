@@ -19,6 +19,7 @@ Technology is prohibited.
 #include "GameObjectManager.h"
 #include "renderer.h"
 #include "PathManager.h"
+#include "Systems/Systems.h"
 
 #ifndef RUNTIME_SCENE_DIR_R
 #define RUNTIME_SCENE_DIR_R "./assets/Scene"
@@ -1091,6 +1092,12 @@ namespace JsonIO {
             v->videoFile = jv["videoFile"].GetString();
         if (jv.HasMember("loop") && jv["loop"].IsNumber())
             v->loop = jv["loop"].GetInt() != 0;
+
+        if (v->plm) VideoSystem::cleanup(v);
+        v->isPlaying = false;
+        v->isPaused = false;
+        v->accumTime = 0.f;
+        v->videoTexID = 0;
     }
 
     std::string serializePhysics(GameObject* obj) {
