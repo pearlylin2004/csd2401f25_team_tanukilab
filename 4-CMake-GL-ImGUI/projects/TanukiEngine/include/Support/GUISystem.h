@@ -44,14 +44,13 @@ public:
 
     void init(GameObjectManager& manager, LuaSystem& luaSystem, VisualLogicSystem& vlSystem);
     void update(); //update menu system
-    void loadScreen(GameObjectManager& manager, const std::string& sceneName); //load a screen
-    void loadScreenNoButton(GameObjectManager& manager, const std::string& sceneName); //for no buttons
-    void changeState(GameState newState, const std::string& sceneName = ""); //update of state
 
-    GameState getCurrentState() const { return m_currentState; } //check current state
-    void setCurrentState(GameState state) { m_currentState = state; } //set current state
-    void setPreviousState(GameState state) { m_previousState = state; } //set previous state
-    void setStateBeforePause(GameState state) { m_stateBeforePause = state; } //set state before pause
+    //getter and setter for game state from scenemanager
+    GameState getCurrentState()  const { return SceneManager::getInstance().getCurrentState(); }
+    GameState getPreviousState() const { return SceneManager::getInstance().getPreviousState(); }
+    GameState getStateBeforePause() const { return SceneManager::getInstance().getStateBeforePause(); }
+    void setStateBeforePause(GameState s) { SceneManager::getInstance().setStateBeforePause(s); }
+    void setCurrentState(GameState s) { SceneManager::getInstance().setCurrentState(s); }
 
 	GameState sceneToState(const std::string& sceneName); //convert scene name to game state
 
@@ -80,15 +79,11 @@ private:
     void stopGame(); //stop game	
     void updateVolumeDisplay(); //update volume % text on audio page
 
-    GameState m_currentState = GameState::NONE;
-    GameState m_previousState = GameState::MENU;
-    GameState m_stateBeforePause = GameState::MENU;
     GameObjectManager* g_manager = nullptr;
     LuaSystem* g_luaSystem = nullptr;
+    VisualLogicSystem* g_visualLogicSystem = nullptr;
 
     int level = 0;
-    int max_level = 2;
-    VisualLogicSystem* g_visualLogicSystem = nullptr;
 
     std::unordered_map<std::string, Vector2D> m_spawnPositions;
     std::string m_currentLevel = "";

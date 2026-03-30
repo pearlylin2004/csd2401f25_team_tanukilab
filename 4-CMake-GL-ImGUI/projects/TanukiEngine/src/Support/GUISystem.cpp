@@ -47,7 +47,6 @@ void GUISystem::update() {
 
 void GUISystem::startGame() {
     std::cout << "[GUI] Starting game" << std::endl;
-    m_currentState = GameState::PLAYING;
     level = 1;
 
     // Delegate to SceneManager
@@ -79,28 +78,11 @@ void GUISystem::startGame() {
 void GUISystem::stopGame() {
     std::cout << "[GUI] Stop button clicked - quitting application" << std::endl;
 
-    // Close the GLFW window to exit the application
+    //close the GLFW window to exit the application
     GLFWwindow* window = glfwGetCurrentContext();
     if (window) {
         glfwSetWindowShouldClose(window, true);
     }
-}
-
-// Thin wrapper — everything else calls SceneManager directly
-void GUISystem::changeState(GameState newState, const std::string& sceneName) {
-    m_previousState = m_currentState;
-    m_currentState = newState;
-    if (!sceneName.empty())
-        SceneManager::getInstance().requestLevelLoad(sceneName);
-}
-
-// Kept only as a pass-through for any callers that haven't been updated yet
-void GUISystem::loadScreen(GameObjectManager& /*manager*/, const std::string& sceneName) {
-    SceneManager::getInstance().requestLevelLoad(sceneName);
-}
-
-void GUISystem::loadScreenNoButton(GameObjectManager& /*manager*/, const std::string& sceneName) {
-    SceneManager::getInstance().requestLevelLoad(sceneName);
 }
 
 GameState GUISystem::sceneToState(const std::string& sceneName) {

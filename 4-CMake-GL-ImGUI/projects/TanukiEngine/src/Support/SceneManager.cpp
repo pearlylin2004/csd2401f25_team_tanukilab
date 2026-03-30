@@ -196,7 +196,7 @@ void SceneManager::executeLevelLoad(const std::string& levelSceneName) {
     GameState newState = sceneToState(levelSceneName);
     m_currentState = newState;
 
-    // Only run gameplay systems for actual levels
+    //only run gameplay systems for actual levels
     if (newState == GameState::PLAYING) {
         if (g_visualLogicSystem) {
             g_visualLogicSystem->resetLogicState();

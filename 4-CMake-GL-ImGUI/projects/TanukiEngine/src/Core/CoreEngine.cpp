@@ -207,11 +207,18 @@ void CoreEngine::GameLoop() {
     if (glfwWindowShouldClose(m_window) || InputHandler::isKeyTriggered(GLFW_KEY_F1)) { m_isRunning = false; return; }
     //pause checking, and set it to paused state if escape is held
     if (InputHandler::isKeyTriggered(GLFW_KEY_ESCAPE)) {
-        auto current = GUISystem::getInstance().getCurrentState(); //get current state
-        if (current != GameState::PAUSED && current != GameState::MENU) {
-            GUISystem::getInstance().setStateBeforePause(current); //store state before pausing
-            GUISystem::getInstance().changeState(GameState::PAUSED, "pause_scene.json");
+        auto current = GUISystem::getInstance().getCurrentState();
+
+        if (current == GameState::PAUSED) {
+            SceneManager::getInstance().requestLevelLoad(
+                SceneManager::getInstance().getPreviousSceneName()
+            );
         }
+        else if (current == GameState::PLAYING) {
+            GUISystem::getInstance().setStateBeforePause(current);
+            SceneManager::getInstance().requestLevelLoad("pause_scene.json");
+        }
+        // do nothing if MENU, CONTROL, AUDIO, etc.
     }
 
     //use glfwGetWindowAttrib to check the GLFW_ICONIFIED status for efficient waiting
