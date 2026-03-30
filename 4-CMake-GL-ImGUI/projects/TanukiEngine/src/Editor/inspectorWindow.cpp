@@ -1441,14 +1441,20 @@ void InspectorWindow::renderVideo(GameObject* selected)
 
                     // cleanup old video if one was already loaded
                     if (video->plm) VideoSystem::cleanup(video);
-                    video->videoFile = path;
+
+                    // use relative filepath
+                    std::string normalizedPath = fsPath.string();
+                    size_t pos = normalizedPath.find("assets");
+                    if (pos != std::string::npos)
+                        normalizedPath = normalizedPath.substr(pos);
+                    video->videoFile = normalizedPath;
 
                     if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
 
                     DebugLog::addMessage("Changed video file to " + path + "\n");
                 }
                 else {
-                    Editor::popupState.textureFileTypePopup = true;
+                    Editor::popupState.videoFileTypePopup = true;
                     Editor::popupState.filename = fsPath.filename().string();
                     DebugLog::addMessage("Invalid video format: " + path + "\n");
                 }
@@ -3106,6 +3112,12 @@ void InspectorWindow::wrongFileTypePopup(const std::string& filename) {
         Editor::popupState.prefabFileTypePopup = false;
 
         Editor::popupState.message = "Unsupported file type: " + filename + "\nPlease drop a prefab file.";
+    }
+    else if (Editor::popupState.videoFileTypePopup) {
+        ImGui::OpenPopup("Unsupported File Type");
+        Editor::popupState.videoFileTypePopup = false;
+
+        Editor::popupState.message = "Unsupported file type: " + filename + "\nVideo must be .mpg or .mpeg files.";
     }
 
     ImVec2 center = ImGui::GetMainViewport()->GetCenter();

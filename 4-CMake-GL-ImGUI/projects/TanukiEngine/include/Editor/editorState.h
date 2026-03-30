@@ -148,6 +148,7 @@ namespace Editor {
 	struct PopupState {
 		bool audioFileTypePopup = false;
 		bool textureFileTypePopup = false;
+		bool videoFileTypePopup = false;
 		bool prefabFileTypePopup = false;
 		std::string filename;
 		std::string message;
