@@ -234,6 +234,8 @@ void CoreEngine::GameLoop() {
 
     //--- Update Timing --- 
     Perf::UpdateTime(m_delta, m_fps, 0.5);
+    m_delta = std::min(m_delta, 1.0 / 60.0); // clamp delta so its wont be too fast
+
 #if defined(_DEBUG) || defined(DEBUG)
     // Show FPS only in debug builds
     Perf::UpdateWindowTitle(m_window, m_title, m_fps, true);

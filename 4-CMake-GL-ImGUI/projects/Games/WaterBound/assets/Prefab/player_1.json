@@ -43,14 +43,14 @@
     },
     "CollisionInfo": {
       "collisionFlag": 1,
-      "autoFitScale": 1,
+      "autoFitScale": 0,
       "colliderSize": [
-        2.200000047683716,
-        2.200000047683716
+        1.600000023841858,
+        1.600000023841858
       ],
       "colliderPos": [
-        0.0,
-        0.0
+        -0.10000000149011612,
+        -0.10000000149011612
       ],
       "colliderRot": 0.0,
       "colliderType": "square",
