@@ -473,17 +473,16 @@ void AudioHandler::setLowPassFilter(bool enable, float cutoff) {
 	if (enable) {
 		if (!m_lowPassDSP) {
 			system->createDSPByType(FMOD_DSP_TYPE_LOWPASS, &m_lowPassDSP);
+			FMOD::ChannelGroup* masterGroup = nullptr;
+			system->getMasterChannelGroup(&masterGroup);
+			if (masterGroup) {
+				masterGroup->addDSP(0, m_lowPassDSP);
+			}
 		}
 
-		// add to master channel group
-		FMOD::ChannelGroup* masterGroup = nullptr;
-		system->getMasterChannelGroup(&masterGroup);
-		if (masterGroup) {
-			masterGroup->addDSP(0, m_lowPassDSP);
-			m_lowPassDSP->setParameterFloat(FMOD_DSP_LOWPASS_CUTOFF, cutoff);
-			m_lowPassDSP->setParameterFloat(FMOD_DSP_LOWPASS_RESONANCE, 1.f);
-			m_lowPassDSP->setActive(true);
-		}
+		m_lowPassDSP->setParameterFloat(FMOD_DSP_LOWPASS_CUTOFF, cutoff);
+		m_lowPassDSP->setParameterFloat(FMOD_DSP_LOWPASS_RESONANCE, 0.7f);
+		m_lowPassDSP->setActive(true);
 	}
 	else {
 		if (m_lowPassDSP) {
