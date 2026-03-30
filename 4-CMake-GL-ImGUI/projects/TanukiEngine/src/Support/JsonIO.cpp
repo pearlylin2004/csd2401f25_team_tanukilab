@@ -361,6 +361,7 @@ namespace JsonIO {
         if (str == "Compare Global Float") return NodeImplementation::COMPARE_GLOBAL_FLOAT;
 		if (str == "Check Collided State") return NodeImplementation::CHECK_COLLIDED_STATE;
         if (str == "Check Animation End") return NodeImplementation::CHECK_ANIMATION_END;
+        if (str == "Is Video End") return NodeImplementation::IS_VIDEO_END;
 
         return NodeImplementation::DEFAULT;
     }
@@ -426,6 +427,7 @@ namespace JsonIO {
 			case NodeImplementation::COMPARE_GLOBAL_FLOAT: return "Compare Global Float";
             case NodeImplementation::CHECK_ANIMATION_END: return "Check Animation End";
 			case NodeImplementation::CHECK_COLLIDED_STATE: return "Check Collided State";
+            case NodeImplementation::IS_VIDEO_END: return "Is Video End";
 
             default: return "Default";
         }

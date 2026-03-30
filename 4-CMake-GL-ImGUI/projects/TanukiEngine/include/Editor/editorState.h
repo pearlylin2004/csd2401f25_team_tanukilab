@@ -270,6 +270,7 @@ namespace Editor {
 		{"Compare Global Float", NodeType::CONDITION, NodeImplementation::COMPARE_GLOBAL_FLOAT},
 		{"Check Collided State", NodeType::CONDITION, NodeImplementation::CHECK_COLLIDED_STATE},
 		{ "Check Animation End", NodeType::CONDITION, NodeImplementation::CHECK_ANIMATION_END },
+		{ "Is Video End", NodeType::CONDITION, NodeImplementation::IS_VIDEO_END },
 		
 		// ACTIONS
 		{"Print Message", NodeType::ACTION, NodeImplementation::PRINT_MESSAGE},

@@ -736,6 +736,8 @@ void VideoSystem::update(GameObject* obj, float const deltaTime)
 	if (!video->isPlaying) return;
 	if (video->isPaused) return;
 
+	video->videoEnded = false; // reset runtime video end check (for visual logic)
+
 	if (!video->plm)
 	{
 		if (!loadVideo(video))
@@ -776,6 +778,7 @@ void VideoSystem::update(GameObject* obj, float const deltaTime)
 	if (plm_has_ended(video->plm)) {
 		cleanup(video);
 		video->accumTime = 0.f;
+		video->videoEnded = true;
 
 		if (video->loop) {
 			video->isPlaying = true;  // next iteration reloads plm

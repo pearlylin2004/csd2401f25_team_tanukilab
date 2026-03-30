@@ -1132,6 +1132,12 @@ bool VisualLogicSystem::executeConditionNode(GameObject* obj, VisualLC* logic, L
 		return (as.currentFrameColumn >= (int)as.lastFrame.x &&
 			as.currentFrameRow >= (int)as.lastFrame.y);
 	}
+	else if (node.imp == NodeImplementation::IS_VIDEO_END) {
+		if (obj->hasComponent<Video>())
+			return obj->getComponent<Video>()->videoEnded;
+
+		return false;
+	}
 
 	return true;
 }

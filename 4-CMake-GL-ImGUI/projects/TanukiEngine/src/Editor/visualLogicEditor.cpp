@@ -1889,8 +1889,15 @@ void VisualLogicEditor::renderNodeProperties() {
 			ImGui::Spacing();
 			ImGui::TextDisabled("Requires Animation + StateMachine components.");
 			ImGui::Spacing();
-			ImGui::TextColored(ImVec4(1.f, 0.8f, 0.2f, 1.f),
-				"Tip: Pair with a non-looping animation state.");
+			ImGui::TextColored(ImVec4(1.f, 0.8f, 0.2f, 1.f), "Tip: Pair with a non-looping animation state.");
+		}
+		else if (node.imp == NodeImplementation::IS_VIDEO_END) {
+			ImGui::TextWrapped("Returns True when the video ends.");
+
+			ImGui::Spacing();
+			ImGui::TextDisabled("Requires Render + Video components.");
+			ImGui::Spacing();
+			ImGui::TextColored(ImVec4(1.f, 0.8f, 0.2f, 1.f), "Tip: Work with looping/non-looping video.");
 		}
 	}
 	/* ---------- END ---------- */

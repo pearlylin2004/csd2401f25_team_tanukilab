@@ -117,6 +117,7 @@ public:
     bool isPlaying = true;
     bool isPaused = false;
 	bool loop = false;
+    bool videoEnded = false; // runtime value
     GLuint videoTexID = 0;
     int videoWidth = 0;
     int videoHeight = 0;
@@ -864,6 +865,7 @@ enum class NodeImplementation {
     PLAY_RANDOM_SOUND,
     LOCK_POSITION,
     UNLOCK_POSITION,
+    IS_VIDEO_END,
 
     // DEFAULT
     DEFAULT // nothing happen :)
