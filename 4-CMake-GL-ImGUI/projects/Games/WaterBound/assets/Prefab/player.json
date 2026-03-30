@@ -18,7 +18,7 @@
     "Render": {
       "shape": "square",
       "hasTex": 1,
-      "texture": "assets/Texture/Leaf_Gun_Empty.png",
+      "texture": "assets/Texture\\Water_Gun.png",
       "hasAnimation": 1
     },
     "Input": {},

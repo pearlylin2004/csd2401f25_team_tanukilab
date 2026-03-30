@@ -193,7 +193,7 @@
           "colorB": 1.0,
           "colorA": 1.0,
           "hasTex": 1,
-          "texture": "assets/textures/steam.png",
+          "texture": "assets/Texture\\Bell_Heated.png",
           "hasAnimation": 1
         },
         "Physics": {
@@ -275,7 +275,7 @@
           "colorB": 1.0,
           "colorA": 1.0,
           "hasTex": 1,
-          "texture": "assets/textures/steam.png",
+          "texture": "assets/Texture\\Bell_Heated.png",
           "hasAnimation": 1
         },
         "Physics": {
@@ -357,7 +357,7 @@
           "colorB": 1.0,
           "colorA": 1.0,
           "hasTex": 1,
-          "texture": "assets/Texture/Leaf_Gun_Empty.png",
+          "texture": "assets/Texture\\Water_Gun.png",
           "hasAnimation": 1
         },
         "Physics": {
@@ -657,13 +657,13 @@
               "id": "assets/Texture\\Tilemap\\Sakura\\tile009.png"
             },
             {
-              "x": 6,
-              "y": -2,
+              "x": 7,
+              "y": -4,
               "id": "assets/Texture\\Tilemap\\Sakura\\tile009.png"
             },
             {
-              "x": 7,
-              "y": -4,
+              "x": 6,
+              "y": -2,
               "id": "assets/Texture\\Tilemap\\Sakura\\tile009.png"
             },
             {
@@ -1275,13 +1275,13 @@
               "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
             },
             {
-              "x": 7,
-              "y": -4,
+              "x": 6,
+              "y": -2,
               "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
             },
             {
-              "x": 6,
-              "y": -2,
+              "x": 7,
+              "y": -4,
               "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
             },
             {
