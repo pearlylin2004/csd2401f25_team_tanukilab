@@ -70,14 +70,9 @@
       "components": {
         "Transform": {
           "pos": [
-            -21.977895736694336,
-            -4.077738285064697,
+            -22.33210563659668,
+            -3.629551649093628,
             0.9980000257492065
-          ],
-          "scale": [
-            2.5,
-            2.5,
-            0.0
           ]
         },
         "Render": {
@@ -101,137 +96,6 @@
         },
         "Physics": {
           "autoUpdate": 0
-        },
-        "CollisionInfo": {
-          "colliderSize": [
-            2.0,
-            2.5
-          ]
-        },
-        "StateMachine": {
-          "Dead": {
-            "animState": {
-              "texture": "assets/Texture\\Kinuta_Death_SS.png",
-              "loop": 0,
-              "play": 0,
-              "totalColumn": 10,
-              "totalRow": 1,
-              "frameTime": 0.10000000149011612,
-              "initialFramCol": 0.0,
-              "initialFramRow": 0.0,
-              "lastFramCol": 9.0,
-              "lastFramRow": 0.0
-            }
-          }
-        },
-        "AudioComponent": {
-          "channels": {
-            "footstep": {
-              "audioFile": "assets/audio/Footsteps2_Gravel-Dirt_far-small_3.wav",
-              "volume": 0.3343643844127655,
-              "pitch": 1.046860694885254,
-              "loop": 0,
-              "playOnStart": 0,
-              "muted": 0,
-              "fadeInOnStart": 0,
-              "fadeInDuration": 1.0,
-              "fadeOutOnStop": 0,
-              "fadeOutDuration": 1.0,
-              "isSpatial": 0,
-              "minDistance": 1.0,
-              "maxDistance": 100.0,
-              "spread": 180.0,
-              "persistOnSceneChange": 0
-            },
-            "footsteps": {
-              "audioFile": "",
-              "volume": 1.0,
-              "pitch": 1.0,
-              "loop": 0,
-              "playOnStart": 0,
-              "muted": 0,
-              "fadeInOnStart": 0,
-              "fadeInDuration": 1.0,
-              "fadeOutOnStop": 0,
-              "fadeOutDuration": 1.0,
-              "isSpatial": 0,
-              "minDistance": 1.0,
-              "maxDistance": 100.0,
-              "spread": 180.0,
-              "persistOnSceneChange": 0
-            },
-            "jump": {
-              "audioFile": "assets/audio/jump.wav",
-              "volume": 0.699999988079071,
-              "pitch": 1.0,
-              "loop": 0,
-              "playOnStart": 0,
-              "muted": 0,
-              "fadeInOnStart": 0,
-              "fadeInDuration": 1.0,
-              "fadeOutOnStop": 0,
-              "fadeOutDuration": 1.0,
-              "isSpatial": 0,
-              "minDistance": 1.0,
-              "maxDistance": 100.0,
-              "spread": 180.0,
-              "persistOnSceneChange": 0
-            },
-            "jump-audio-1": {
-              "spread": 180.0,
-              "persistOnSceneChange": 0
-            },
-            "jump-audio-10": {
-              "spread": 180.0,
-              "persistOnSceneChange": 0
-            },
-            "jump-audio-11": {
-              "spread": 180.0,
-              "persistOnSceneChange": 0
-            },
-            "jump-audio-2": {
-              "spread": 180.0,
-              "persistOnSceneChange": 0
-            },
-            "jump-audio-3": {
-              "spread": 180.0,
-              "persistOnSceneChange": 0
-            },
-            "jump-audio-4": {
-              "spread": 180.0,
-              "persistOnSceneChange": 0
-            },
-            "jump-audio-5": {
-              "spread": 180.0,
-              "persistOnSceneChange": 0
-            },
-            "jump-audio-6": {
-              "spread": 180.0,
-              "persistOnSceneChange": 0
-            },
-            "jump-audio-7": {
-              "spread": 180.0,
-              "persistOnSceneChange": 0
-            },
-            "jump-audio-8": {
-              "spread": 180.0,
-              "persistOnSceneChange": 0
-            },
-            "jump-audio-9": {
-              "spread": 180.0,
-              "persistOnSceneChange": 0
-            },
-            "landing": {
-              "volume": 0.7742395401000977,
-              "pitch": 0.9242895841598511,
-              "spread": 180.0,
-              "persistOnSceneChange": 0
-            },
-            "refill": {
-              "spread": 180.0,
-              "persistOnSceneChange": 0
-            }
-          }
         },
         "LuaScript": {
           "scripts": [
@@ -332,8 +196,8 @@
       "components": {
         "Transform": {
           "pos": [
-            -21.50900650024414,
-            -4.635462284088135,
+            -21.863216400146484,
+            -4.1872758865356445,
             0.0
           ],
           "rotation": 0.0,
@@ -710,6 +574,11 @@
               "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
             },
             {
+              "x": 7,
+              "y": -4,
+              "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
+            },
+            {
               "x": 24,
               "y": -6,
               "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
@@ -718,11 +587,6 @@
               "x": 6,
               "y": -2,
               "id": "assets/Texture\\Tilemap\\Forest\\tile001.png"
-            },
-            {
-              "x": 7,
-              "y": -4,
-              "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
             },
             {
               "x": -4,
