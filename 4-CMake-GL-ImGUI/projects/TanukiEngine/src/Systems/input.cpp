@@ -465,6 +465,10 @@ void InputHandler::dropCallback(GLFWwindow* window, int count, const char** path
 			else if (ext == ".lua") {
 				targetFolder = "scripting";
 			}
+			// if video, auto add to video
+			else if (ext == ".mpg" || ext == ".mpeg") {
+				targetFolder = "video";
+			}
 		}
 		else if (targetFolder == "Misc") targetFolder.clear();
 
