@@ -67,6 +67,8 @@ void WaterSystem::init() {
 }
 
 void WaterSystem::update(GameObjectManager& manager, float deltaTime) {
+    if (EditorManager::isEditingMode() || EditorManager::isPaused()) return;
+
     std::vector<GameObject*> allObjects;
     manager.getAllGameObjects(allObjects);
 

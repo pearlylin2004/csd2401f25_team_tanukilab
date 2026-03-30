@@ -703,9 +703,11 @@ public:
                 ch.fadeInfo.isFading = false;
 
                 if (!ch.fadeInfo.isFadingIn && ch.fadeInfo.targetVolume == 0.0f) {
-                    ch.channel->stop();
-                    ch.channel = nullptr;
-					ch.state = AudioState::Stopped;
+                    if (ch.channel) {
+                        ch.channel->stop();
+                        ch.channel = nullptr;
+                        ch.state = AudioState::Stopped;
+                    }
                 }
             }
 

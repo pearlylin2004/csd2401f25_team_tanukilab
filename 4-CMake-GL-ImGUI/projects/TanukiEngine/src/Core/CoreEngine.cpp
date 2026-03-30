@@ -241,6 +241,8 @@ void CoreEngine::GameLoop() {
 
     //--- Update Timing --- 
     Perf::UpdateTime(m_delta, m_fps, 0.5);
+    m_delta = std::min(m_delta, 1.0 / 60.0); // clamp delta so its wont be too fast
+
 #if defined(_DEBUG) || defined(DEBUG)
     // Show FPS only in debug builds
     Perf::UpdateWindowTitle(m_window, m_title, m_fps, true);
@@ -287,17 +289,11 @@ void CoreEngine::Update(float deltaTime) {
         //m_luaSystem->update(*m_manager, deltaTime);
         m_visualLCSystem->initAll(*m_manager);
         m_visualLCSystem->updateAll(*m_manager, deltaTime);
-    }
-
-    
+    }    
 
     // Update all systems in order
-	
     m_inputSystem->update(*m_manager, deltaTime, *m_messageBus);
     m_physicsSystem->update(*m_manager, deltaTime, *m_messageBus);
-
-    
-
     m_collisionSystem->update(*m_manager, deltaTime);
 	m_transformSystem->update(*m_manager, deltaTime);//for parent->child transform
     m_cameraSystem->update(*m_manager);
@@ -308,26 +304,35 @@ void CoreEngine::Update(float deltaTime) {
     m_particleSystem->update(*m_manager, deltaTime);;
     m_waterSystem->update(*m_manager, deltaTime);
 
-    // Record player state for replay and update ghost playback
-    auto& replay = ReplaySystem::getInstance();
-    auto currentGS = GUISystem::getInstance().getCurrentState();
-    const bool allowReplayRuntime = !EditorManager::isEditingMode();
-    if (allowReplayRuntime && replay.isRecording() && currentGS != GameState::PAUSED) {
-        replay.recordFrame(*m_manager, deltaTime);
-    }
-    if (allowReplayRuntime && replay.isPlaying() && currentGS != GameState::PAUSED) {
-        replay.updateGhost(*m_manager, deltaTime);
-    }
-    if (allowReplayRuntime && replay.isViewerMode() && currentGS != GameState::PAUSED) {
-        replay.updateViewer(deltaTime);
-    }
-    // Apply recorded world object state every frame in viewer mode
-    if (allowReplayRuntime && replay.isViewerMode()) {
-        replay.applyWorldSnapshot(*m_manager);
-    }
+    // // Record player state for replay and update ghost playback
+    // auto& replay = ReplaySystem::getInstance();
+    // auto currentGS = GUISystem::getInstance().getCurrentState();
+    // const bool allowReplayRuntime = !EditorManager::isEditingMode();
+    // if (allowReplayRuntime && replay.isRecording() && currentGS != GameState::PAUSED) {
+    //     replay.recordFrame(*m_manager, deltaTime);
+    // }
+    // if (allowReplayRuntime && replay.isPlaying() && currentGS != GameState::PAUSED) {
+    //     replay.updateGhost(*m_manager, deltaTime);
+    // }
+    // if (allowReplayRuntime && replay.isViewerMode() && currentGS != GameState::PAUSED) {
+    //     replay.updateViewer(deltaTime);
+    // }
+    // // Apply recorded world object state every frame in viewer mode
+    // if (allowReplayRuntime && replay.isViewerMode()) {
+    //     replay.applyWorldSnapshot(*m_manager);
+    // }
 
-    m_renderSystem->update(*m_manager, deltaTime);
+    /* ---- Render ---- */
+    auto renderStart = std::chrono::high_resolution_clock::now();
+	// anyth fall below the z threhold 8 will be drawn before water
+    m_renderSystem->renderBelowZ(*m_manager, deltaTime, 8.f); // draw everything below water
     m_waterSystem->render(*m_manager);
+    m_renderSystem->renderAboveZ(*m_manager, deltaTime, 8.f); // draw nothing above
+    auto renderEnd = std::chrono::high_resolution_clock::now();
+    double renderMs = std::chrono::duration<double, std::milli>(renderEnd - renderStart).count();
+    g_SystemTimers.push_back({ "Render", renderMs });
+    /* ---- END ---- */
+
     m_fontSystem->update(*m_manager, m_fps);
     m_audioSystem->update(*m_manager, deltaTime);
     if (!EditorManager::isEditingMode() && !EditorManager::isPaused()) {
@@ -529,7 +534,7 @@ void CoreEngine::setGameScript(GameScript* script) {
     m_logicSystem->setGameScript(script);
     m_physicsSystem->setGameScript(script);
     m_collisionSystem->setGameScript(script);
-    m_logicSystem->setGameScript(script);
+	m_audioSystem->setGameScript(script);
 
     m_gameScript = script;
     /*if (m_luaSystem && m_gameScript)

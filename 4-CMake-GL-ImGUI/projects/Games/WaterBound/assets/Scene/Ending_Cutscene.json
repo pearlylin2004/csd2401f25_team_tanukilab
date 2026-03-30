@@ -23,6 +23,7 @@
       "updatable": 1
     }
   ],
+  "onLoadScript": "assets/scripting\\pause_scene_load.lua",
   "objects": [
     {
       "name": "background",

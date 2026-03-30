@@ -46,8 +46,22 @@ function buoyancy.Update(obj, dt)
                 --s.vy = s.vy + lastRise / dt  -- give upward impulse
             end
 
-            -- rest position = sit on water surface
-            local restY = waterSurfaceY - scaleY * 0.5 + 0.1
+            -- physics-based values
+            local mass = getDynMass(obj)
+            local buoyancyForce = getWaterBuoyancyForce(waterObj)
+            local drag = getWaterDrag(waterObj)
+
+            -- rest position based on mass
+            local floatOffset = 0.5 * (1.0 / mass)
+            local restY = waterSurfaceY - scaleY * 0.5 + floatOffset
+
+            -- spring force based on water buoyancy and mass
+            local springK = (buoyancyForce / 50.0) * 12.0 * (1.0 / mass)
+            local damping = 1.5 + (1.0 - drag) * 5.0
+
+            -- constant bob scaled by mass
+            local bobFreq = 1.5
+            local bobAmp  = 0.008 * (1.0 / mass)
 
             -- player landing impulse
             local allObjs2 = getAllObjects()

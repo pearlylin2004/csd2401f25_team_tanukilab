@@ -237,7 +237,7 @@
       "implementation": "Apply Force On Collided",
       "type": 1,
       "position": [
-        521.0,
+        520.9999389648438,
         370.0000305175781
       ],
       "hasInput": true,
@@ -262,6 +262,23 @@
       "hasFalseOutput": false,
       "parameters": {
         "channel": "steam"
+      }
+    },
+    {
+      "id": 22,
+      "implementation": "Set Global Float",
+      "type": 1,
+      "position": [
+        911.6666259765625,
+        243.33331298828125
+      ],
+      "hasInput": true,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false,
+      "parameters": {
+        "value": "1.000000",
+        "variable": "collideFire"
       }
     }
   ],
@@ -315,12 +332,6 @@
       "inputPin": "In"
     },
     {
-      "fromNodeId": 17,
-      "outputPin": "True",
-      "toNodeId": 18,
-      "inputPin": "In"
-    },
-    {
       "fromNodeId": 16,
       "outputPin": "Out",
       "toNodeId": 17,
@@ -342,6 +353,12 @@
       "fromNodeId": 9,
       "outputPin": "Out",
       "toNodeId": 21,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 17,
+      "outputPin": "True",
+      "toNodeId": 22,
       "inputPin": "In"
     }
   ]

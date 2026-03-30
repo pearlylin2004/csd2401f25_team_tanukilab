@@ -10,8 +10,8 @@
       ],
       "rotation": 0.5,
       "scale": [
-        0.3,
-        0.3,
+        0.30000001192092896,
+        0.30000001192092896,
         0.0
       ]
     },
@@ -25,31 +25,39 @@
       "physicsFlag": 0,
       "moveSpeed": 10.0,
       "jumpForce": 100.0,
-      "damping": 0.9800000190734863,
+      "damping": 0.9800000190734864,
+      "maxFallSpeed": -30.0,
+      "groundAccelForce": 20.0,
+      "airAccelForce": 8.0,
+      "apexHangMul": 0.20000000298023224,
+      "jumpBufferTime": 0.15000000596046448,
+      "coyoteTime": 0.15000000596046448,
+      "ledgeAssistRange": 0.800000011920929,
+      "ledgeClimbSpeed": 8.0,
       "mass": 1.0,
-      "inWater": 0,
       "buoyancy": 0,
       "freezeRotation": true,
-      "angularDrag": 0.9800000190734863,
-      "inertiaOverride": 0.0,
-      "initialScale": 0.4,
-      "minScale": 0.1,
-      "shrinkRate": 0.3,
-      "fadeRate": 0.5
+      "angularDrag": 0.9800000190734864,
+      "inertiaOverride": 0.0
     },
     "CollisionInfo": {
       "collisionFlag": 1,
       "autoFitScale": 0,
       "colliderSize": [
-        0.3,
-        0.3,
+        0.30000001192092896,
+        0.30000001192092896
+      ],
+      "colliderPos": [
+        0.0,
         0.0
       ],
+      "colliderRot": 0.0,
       "colliderType": "circle",
       "collisionRes": "MoveWhenCollide",
       "collisionTag": "bullet",
       "bounciness": 0.2980000078678131,
       "friction": 0.0,
+      "colliderType": "circle",
       "ignoreCollisionsWith": [
         "player",
         "platform",
@@ -59,8 +67,8 @@
     "AudioComponent": {
       "channels": {
         "default": {
-          "audioFile": "assets/Audio\\water gun.wav",
-          "volume": 0.800000011920929,
+          "audioFile": "assets/Audio\\SFX\\Water Shoot.wav",
+          "volume": 0.10000000149011612,
           "pitch": 1.0,
           "loop": 0,
           "playOnStart": 0,
@@ -71,7 +79,9 @@
           "fadeOutDuration": 0.5,
           "isSpatial": false,
           "minDistance": 5.0,
-          "maxDistance": 50.0
+          "maxDistance": 50.0,
+          "spread": 180.0,
+          "persistOnSceneChange": false
         }
       }
     }

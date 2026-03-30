@@ -5,7 +5,10 @@
       "id": 1,
       "implementation": "On Collision Enter",
       "type": 0,
-      "position": [-200.0, 0.0],
+      "position": [
+        -200.0,
+        0.0
+      ],
       "hasInput": false,
       "hasOutput": true,
       "hasTrueOutput": false,
@@ -19,7 +22,10 @@
       "id": 2,
       "implementation": "Compare Global Float",
       "type": 2,
-      "position": [401.0, 4.0],
+      "position": [
+        401.0,
+        4.0
+      ],
       "hasInput": true,
       "hasOutput": false,
       "hasTrueOutput": true,
@@ -34,7 +40,10 @@
       "id": 3,
       "implementation": "Set Global Float",
       "type": 1,
-      "position": [710.0, -7.0],
+      "position": [
+        710.0,
+        -7.0
+      ],
       "hasInput": true,
       "hasOutput": true,
       "hasTrueOutput": false,
@@ -48,7 +57,10 @@
       "id": 4,
       "implementation": "Play Sound",
       "type": 1,
-      "position": [1006.0, -10.0],
+      "position": [
+        1006.0,
+        -10.0
+      ],
       "hasInput": true,
       "hasOutput": true,
       "hasTrueOutput": false,
@@ -61,7 +73,10 @@
       "id": 5,
       "implementation": "Trigger Bullet Refill Event",
       "type": 1,
-      "position": [1319.0, -14.0],
+      "position": [
+        1319.0,
+        -14.0
+      ],
       "hasInput": true,
       "hasOutput": true,
       "hasTrueOutput": false,
@@ -75,7 +90,10 @@
       "id": 6,
       "implementation": "Check Collided State",
       "type": 2,
-      "position": [109.0, -2.0],
+      "position": [
+        109.0,
+        -2.0
+      ],
       "hasInput": true,
       "hasOutput": false,
       "hasTrueOutput": true,
@@ -88,7 +106,10 @@
       "id": 7,
       "implementation": "Trigger Bullet Refill Event",
       "type": 1,
-      "position": [1685.0, -16.0],
+      "position": [
+        1685.0,
+        -16.0
+      ],
       "hasInput": true,
       "hasOutput": true,
       "hasTrueOutput": false,
@@ -102,7 +123,10 @@
       "id": 11,
       "implementation": "On Update",
       "type": 0,
-      "position": [-238.0, 186.0],
+      "position": [
+        -238.0,
+        184.0
+      ],
       "hasInput": false,
       "hasOutput": true,
       "hasTrueOutput": false,
@@ -112,7 +136,10 @@
       "id": 12,
       "implementation": "Check State",
       "type": 2,
-      "position": [55.0, 206.0],
+      "position": [
+        55.0,
+        206.0
+      ],
       "hasInput": true,
       "hasOutput": false,
       "hasTrueOutput": true,
@@ -125,7 +152,10 @@
       "id": 13,
       "implementation": "Restart Level",
       "type": 1,
-      "position": [1251.0, 581.0],
+      "position": [
+        1343.0,
+        425.0
+      ],
       "hasInput": true,
       "hasOutput": true,
       "hasTrueOutput": false,
@@ -135,7 +165,10 @@
       "id": 14,
       "implementation": "Check State",
       "type": 2,
-      "position": [34.0, 336.0],
+      "position": [
+        34.0,
+        336.0
+      ],
       "hasInput": true,
       "hasOutput": false,
       "hasTrueOutput": true,
@@ -148,7 +181,10 @@
       "id": 15,
       "implementation": "Play Random Sound",
       "type": 1,
-      "position": [660.0, 336.0],
+      "position": [
+        660.0,
+        336.0
+      ],
       "hasInput": true,
       "hasOutput": true,
       "hasTrueOutput": false,
@@ -172,7 +208,10 @@
       "id": 17,
       "implementation": "Compare Variable",
       "type": 2,
-      "position": [330.0, 336.0],
+      "position": [
+        330.0,
+        336.0
+      ],
       "hasInput": true,
       "hasOutput": false,
       "hasTrueOutput": true,
@@ -187,7 +226,10 @@
       "id": 18,
       "implementation": "Set Float",
       "type": 1,
-      "position": [368.0, 438.0],
+      "position": [
+        368.0,
+        438.0
+      ],
       "hasInput": true,
       "hasOutput": true,
       "hasTrueOutput": false,
@@ -201,7 +243,10 @@
       "id": 19,
       "implementation": "Set Float",
       "type": 1,
-      "position": [960.0, 336.0],
+      "position": [
+        960.0,
+        336.0
+      ],
       "hasInput": true,
       "hasOutput": true,
       "hasTrueOutput": false,
@@ -215,7 +260,10 @@
       "id": 31,
       "implementation": "Check Animation End",
       "type": 2,
-      "position": [518.0, 198.0],
+      "position": [
+        518.0,
+        198.0
+      ],
       "hasInput": true,
       "hasOutput": false,
       "hasTrueOutput": true,
@@ -225,7 +273,10 @@
       "id": 32,
       "implementation": "Play Random Sound",
       "type": 1,
-      "position": [322.0, 126.0],
+      "position": [
+        694.0,
+        1004.0
+      ],
       "hasInput": true,
       "hasOutput": true,
       "hasTrueOutput": false,
@@ -244,7 +295,10 @@
       "id": 40,
       "implementation": "Compare Global Float",
       "type": 2,
-      "position": [-38.0, 682.0],
+      "position": [
+        -38.0,
+        682.0
+      ],
       "hasInput": true,
       "hasOutput": false,
       "hasTrueOutput": true,
@@ -259,7 +313,10 @@
       "id": 41,
       "implementation": "Set Global Float",
       "type": 1,
-      "position": [340.0, 698.0],
+      "position": [
+        340.0,
+        698.0
+      ],
       "hasInput": true,
       "hasOutput": true,
       "hasTrueOutput": false,
@@ -273,7 +330,10 @@
       "id": 42,
       "implementation": "Set State",
       "type": 1,
-      "position": [726.0, 566.0],
+      "position": [
+        726.0,
+        566.0
+      ],
       "hasInput": true,
       "hasOutput": true,
       "hasTrueOutput": false,
@@ -286,7 +346,10 @@
       "id": 43,
       "implementation": "Play Random Sound",
       "type": 1,
-      "position": [754.0, 718.0],
+      "position": [
+        754.0,
+        718.0
+      ],
       "hasInput": true,
       "hasOutput": true,
       "hasTrueOutput": false,
@@ -302,11 +365,65 @@
       "id": 44,
       "implementation": "Check Animation End",
       "type": 2,
-      "position": [1024.0, 496.0],
+      "position": [
+        1072.0,
+        558.0
+      ],
       "hasInput": true,
       "hasOutput": false,
       "hasTrueOutput": true,
       "hasFalseOutput": true
+    },
+    {
+      "id": 45,
+      "implementation": "Compare Global Float",
+      "type": 2,
+      "position": [
+        -72.0,
+        858.0
+      ],
+      "hasInput": true,
+      "hasOutput": false,
+      "hasTrueOutput": true,
+      "hasFalseOutput": true,
+      "parameters": {
+        "comparison": "greater",
+        "threshold": "0",
+        "variable": "collideFire"
+      }
+    },
+    {
+      "id": 46,
+      "implementation": "Set Global Float",
+      "type": 1,
+      "position": [
+        362.0,
+        888.0
+      ],
+      "hasInput": true,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false,
+      "parameters": {
+        "value": "0",
+        "variable": "collideFire"
+      }
+    },
+    {
+      "id": 47,
+      "implementation": "Set State",
+      "type": 1,
+      "position": [
+        724.0,
+        834.0
+      ],
+      "hasInput": true,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false,
+      "parameters": {
+        "state": "Dead"
+      }
     }
   ],
   "connections": [
@@ -428,6 +545,36 @@
       "fromNodeId": 44,
       "outputPin": "True",
       "toNodeId": 13,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 45,
+      "outputPin": "True",
+      "toNodeId": 46,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 46,
+      "outputPin": "Out",
+      "toNodeId": 47,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 46,
+      "outputPin": "Out",
+      "toNodeId": 32,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 47,
+      "outputPin": "Out",
+      "toNodeId": 44,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 11,
+      "outputPin": "Out",
+      "toNodeId": 45,
       "inputPin": "In"
     }
   ]

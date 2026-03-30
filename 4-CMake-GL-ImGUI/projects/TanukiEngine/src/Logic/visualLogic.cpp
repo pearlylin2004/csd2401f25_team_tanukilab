@@ -594,7 +594,6 @@ void VisualLogicSystem::executeActionNode(GameObject* obj, VisualLC* logic, Logi
 
 		if (channel->state == AudioState::Stopped) {
 			channel->isPendingPlay = true;
-			channel->persistOnSceneChange = true;
 			std::cout << "[VisualLogic] Triggering play for channel: " << channelName << std::endl;
 		}
 	}
@@ -925,7 +924,6 @@ void VisualLogicSystem::executeActionNode(GameObject* obj, VisualLC* logic, Logi
 		if (channel->state == AudioState::Playing || channel->isPendingPlay) return;
 
 		channel->isPendingPlay = true;
-		channel->persistOnSceneChange = true;
 
 		logic->intVar[lastKey] = newIndex;
 		logic->timers[cooldownKey] = 0.f;
