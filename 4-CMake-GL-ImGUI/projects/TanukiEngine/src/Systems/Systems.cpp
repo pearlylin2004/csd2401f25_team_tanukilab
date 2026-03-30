@@ -484,9 +484,9 @@ void RenderSystem::batchingSetUp(GameObjectManager& manager, float const& deltaT
 			{
 					
 				Video* video = obj->getComponent<Video>();
-				std::cerr << "[VIDEO] found video obj, isPlaying=" << video->isPlaying
+				/*std::cerr << "[VIDEO] found video obj, isPlaying=" << video->isPlaying
 					<< " plm=" << video->plm
-					<< " texID=" << video->videoTexID << "\n";
+					<< " texID=" << video->videoTexID << "\n";*/
 				if (video->isPlaying)
 				{
 					VideoSystem::update(obj, deltaTime); // Update video frame and texture

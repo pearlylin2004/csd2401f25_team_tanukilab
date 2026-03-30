@@ -117,6 +117,16 @@ public:
     float accumTime = 0.0;   // accumulated delta time
     float fps = 0.0;   // video's fps from plm_get_framerate()
 	std::function<void()> onVideoEnd; //callback function for when video ends, can use lambda to make it change scene etc
+    ~Video() {
+        if (plm) {
+            plm_destroy(plm);
+            plm = nullptr;
+        }
+        if (videoTexID) {
+            glDeleteTextures(1, &videoTexID);
+            videoTexID = 0;
+        }
+    }
 };
 
 struct camera : public Component
