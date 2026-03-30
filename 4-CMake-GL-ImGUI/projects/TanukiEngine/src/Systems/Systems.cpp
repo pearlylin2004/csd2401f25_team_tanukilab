@@ -487,7 +487,21 @@ void RenderSystem::batchingSetUp(GameObjectManager& manager, float const& deltaT
 				/*std::cerr << "[VIDEO] found video obj, isPlaying=" << video->isPlaying
 					<< " plm=" << video->plm
 					<< " texID=" << video->videoTexID << "\n";*/
-				if (video->isPlaying)
+				if (EditorManager::isEditingMode()) {
+					if (!video->videoTexID && !video->videoFile.empty()) {
+						VideoSystem::loadVideo(video);
+						if (video->plm) {
+							plm_destroy(video->plm);
+							video->plm = nullptr;
+						}
+					}
+					if (video->videoTexID) {
+						BatchKey key{ transform->z, video->videoTexID, render->modelRef.shape };
+						objectWithTex[key].push_back(data);
+						continue;
+					}
+				}
+				else if (video->isPlaying)
 				{
 					VideoSystem::update(obj, deltaTime); // Update video frame and texture
 					if (video->videoTexID)

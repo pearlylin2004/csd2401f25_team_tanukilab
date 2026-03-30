@@ -133,9 +133,11 @@ public:
 		video->isPaused = false;
 	}
 	static void cleanup(Video* video);
-private:
+
 	static bool loadVideo(Video* video);
-	
+//private:
+//	
+//	
 };
 
 class ParticleSystem
