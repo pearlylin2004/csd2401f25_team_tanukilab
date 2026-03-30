@@ -387,37 +387,6 @@
           }
         }
       }
-    },
-    {
-      "name": "Rectangle_6",
-      "components": {
-        "Transform": {
-          "pos": [
-            0.0,
-            0.0,
-            0.0
-          ],
-          "rotation": 0.0,
-          "scale": [
-            33.70000076293945,
-            17.700000762939453,
-            0.0
-          ]
-        },
-        "Render": {
-          "shape": "square",
-          "colorR": 1.0,
-          "colorG": 1.0,
-          "colorB": 1.0,
-          "colorA": 1.0,
-          "hasTex": 0,
-          "hasAnimation": 0
-        },
-        "Video": {
-          "videoFile": "assets/video\\output.mpg",
-          "loop": 1
-        }
-      }
     }
   ]
 }
