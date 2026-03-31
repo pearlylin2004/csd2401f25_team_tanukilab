@@ -1630,8 +1630,7 @@ void InspectorWindow::renderPhysics(GameObject* selected, bool canMove) {
                     if (ImGui::IsItemDeactivatedAfterEdit())
                         if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
 
-                    if (ImGui::DragFloat("Max Fall Speed", &physic->maxFallSpeed, 1.0f))
-                        physic->maxFallSpeed = std::max(physic->maxFallSpeed, 0.f); // set the min to 0.f
+                    ImGui::DragFloat("Max Fall Speed", &physic->maxFallSpeed, 1.0f);
                     if (ImGui::IsItemActivated())
                         if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
                     if (ImGui::IsItemDeactivatedAfterEdit())
