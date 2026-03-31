@@ -168,6 +168,14 @@ function player.Update(obj, dt)
     end
 
 
+    -- snap velocity on direction change
+    local velX = getVelX(obj)
+    if (targetVelX > 0 and velX < 0) or (targetVelX < 0 and velX > 0) then
+        setVelX(obj, 0)
+        setDynVelX(obj, 0)
+    end
+
+
     -- damping + position
     local friction = getFriction(obj)
     applyDamping(obj, friction, targetVelX, dt)
