@@ -17,7 +17,7 @@ if [ ! -d "build" ]; then
 fi
 
 # Check if executable exists
-if [ ! -f "build/my-gl-app" ]; then
+if [ ! -f "build/WaterBound" ]; then
     echo "ERROR: Executable not found!"
     echo "Please run ./script_build_and_run.sh first to build the project."
     exit 1
@@ -26,7 +26,7 @@ fi
 echo "Running the application..."
 echo ""
 cd build
-./my-gl-app
+./WaterBound
 if [ $? -ne 0 ]; then
     echo ""
     echo "Application exited with error code: $?"

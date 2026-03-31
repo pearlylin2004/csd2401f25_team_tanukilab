@@ -5,7 +5,7 @@ REM ===============================================
 
 echo.
 echo ===============================================
-echo   Minimal C++ Console Application - Windows
+echo   Tanuki WaterBound - Windows
 echo ===============================================
 echo.
 
@@ -52,7 +52,7 @@ if %errorlevel% neq 0 (
 
 REM Build the project
 echo [4/4] Building project...
-cmake --build . --config Debug
+cmake --build . --config Debug --target WaterBound
 if %errorlevel% neq 0 (
     echo ERROR: Build failed
     cd ..
@@ -69,8 +69,8 @@ echo.
 REM Run the application
 echo Running the application...
 echo.
-cd Sandbox\Debug
-MyGame.exe
+cd Debug
+WaterBound.exe
 if %errorlevel% neq 0 (
     echo.
     echo Application exited with error code: %errorlevel%
