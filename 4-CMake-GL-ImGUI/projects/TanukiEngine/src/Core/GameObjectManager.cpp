@@ -2039,7 +2039,6 @@ void GameObjectManager::saveSceneToJson(const std::string& filename, bool isNew)
 
 			//for scene path
 			if (!btn->scenePath.empty()) {
-				const rapidjson::Value* prefabBtn = PM.getPrefabJsonComp(prefabDoc, "Button");
 				if (!prefabBtn || !prefabBtn->HasMember("scenePath") ||
 					btn->scenePath != (*prefabBtn)["scenePath"].GetString()) {
 					jb.AddMember("scenePath", rapidjson::Value(btn->scenePath.c_str(), a), a);

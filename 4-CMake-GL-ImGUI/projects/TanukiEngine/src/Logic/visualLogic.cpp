@@ -779,8 +779,8 @@ void VisualLogicSystem::executeActionNode(GameObject* obj, VisualLC* logic, Logi
 		SceneManager::getInstance().requestRestart();
 	}
 	else if (node.imp == NodeImplementation::LOAD_LEVEL) {
-		std::string levelName = node.parameters.count("Game_Level_") ?
-			node.parameters["Game_Level_"] : "";
+		std::string levelName = node.parameters.count("levelName") ?
+			node.parameters["levelName"] : "";
 		SceneManager::getInstance().requestLevelLoad(levelName);
 	}
 	else if (node.imp == NodeImplementation::DISABLE_COLLISION) {
