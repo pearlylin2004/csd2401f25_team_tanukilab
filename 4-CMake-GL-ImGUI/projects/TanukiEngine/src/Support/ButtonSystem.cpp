@@ -144,7 +144,7 @@ void ButtonSystem::handleAction(const Button& btn) {
     }
     case ButtonAction::RESUME_GAME: {
         SceneManager::getInstance().requestLevelLoad(
-            SceneManager::getInstance().getPreviousSceneName()
+            SceneManager::getInstance().getLevelSceneName()
         );
         break;
     }

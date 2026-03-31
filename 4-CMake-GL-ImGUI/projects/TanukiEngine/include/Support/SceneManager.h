@@ -57,6 +57,7 @@ public:
     void pauseGame(const std::string& pauseSceneName = "pause_scene.json");
     void resumeGame();
     bool isPaused() const { return m_currentState == GameState::PAUSED; }
+    std::string getLevelSceneName() const { return m_levelSceneName; }
 
     void setOnSceneLoadCallback(std::function<void(GameObjectManager&)> cb) {
         m_onSceneLoad = cb;
@@ -85,4 +86,5 @@ private:
     bool        m_pendingLevelLoad = false;
     std::string m_pendingLevelName;
     std::function<void(GameObjectManager&)> m_onSceneLoad;
+    std::string m_levelSceneName; //only set when PLAYING state
 };

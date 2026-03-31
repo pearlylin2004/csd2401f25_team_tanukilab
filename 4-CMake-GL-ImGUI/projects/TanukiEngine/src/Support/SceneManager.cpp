@@ -203,6 +203,7 @@ void SceneManager::executeLevelLoad(const std::string& levelSceneName) {
         if (g_visualLogicSystem) {
             g_visualLogicSystem->resetLogicState();
             g_visualLogicSystem->initAll(*g_manager);
+            m_levelSceneName = levelSceneName;
         }
         m_currentLevel = fullPath;
         captureSpawnPositions();
