@@ -16,6 +16,7 @@ Technology is prohibited.
 
 #include "luaSystem.h"
 #include "Systems.h"
+#include "toastSystem.h"
 
 void LuaSystem::init(GameObjectManager& manager) {
     L = luaL_newstate();
