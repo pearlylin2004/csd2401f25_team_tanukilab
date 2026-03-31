@@ -26,15 +26,25 @@ struct Toast {
 
 class ToastSystem {
 public:
+    // Access the singleton instance of the ToastSystem
     static ToastSystem& getInstance();
 
+    // Add a new toast message to be displayed
+    // Parameters:
+    //   msg: message to display
+    //   duration: optional custom display duration
     void push(const std::string& msg, float duration = 5.f);
 
+    // Update all active toasts (advance timers and remove expired ones)
+    // Parameter:
+    //   deltaTime: time passed since last frame
     void update(float deltaTime);
 
-    // Call this inside an active ImGui frame
+    // Render all active toast messages using ImGui
+    // Should be called within an active ImGui frame
     void render();
 
 private:
+    // List of active toast notifications
     std::vector<Toast> m_toasts;
 };
