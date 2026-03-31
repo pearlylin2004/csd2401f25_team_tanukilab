@@ -86,7 +86,7 @@ int main(int argc, char** argv) {
         GlobalRegistry::Instance().init();
 
         // load menu as fir
-        GUISystem::getInstance().loadScreen(engine->getManager(), "splash-screen.json");
+        GUISystem::getInstance().loadScreen(engine->getManager(), "menu_scene.json");
 
         engine->Run();
     }
