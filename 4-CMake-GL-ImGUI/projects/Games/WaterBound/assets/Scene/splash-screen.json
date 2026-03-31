@@ -1,0 +1,111 @@
+{
+  "version": 1,
+  "layers": [
+    {
+      "id": 0,
+      "name": "Background",
+      "enabled": 1,
+      "visible": 1,
+      "updatable": 1
+    },
+    {
+      "id": 1,
+      "name": "Game",
+      "enabled": 1,
+      "visible": 1,
+      "updatable": 1
+    },
+    {
+      "id": 2,
+      "name": "UI",
+      "enabled": 1,
+      "visible": 1,
+      "updatable": 1
+    }
+  ],
+  "objects": [
+    {
+      "name": "black bg",
+      "components": {
+        "Transform": {
+          "pos": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "rotation": 0.0,
+          "scale": [
+            40.0,
+            20.0,
+            0.0
+          ]
+        },
+        "Render": {
+          "shape": "square",
+          "colorR": 0.0,
+          "colorG": 0.0,
+          "colorB": 0.0,
+          "colorA": 1.0,
+          "hasTex": 0,
+          "hasAnimation": 0
+        }
+      }
+    },
+    {
+      "name": "digipen",
+      "components": {
+        "Transform": {
+          "pos": [
+            0.0,
+            0.0,
+            1.0
+          ],
+          "rotation": 0.0,
+          "scale": [
+            20.0,
+            10.0,
+            0.0
+          ]
+        },
+        "Render": {
+          "shape": "square",
+          "colorR": 1.0,
+          "colorG": 1.0,
+          "colorB": 1.0,
+          "colorA": 1.0,
+          "hasTex": 1,
+          "texture": "assets/Texture\\credits\\DigiPen_Singapore_WEB_WHITE.png",
+          "hasAnimation": 0
+        }
+      }
+    },
+    {
+      "name": "team",
+      "components": {
+        "Transform": {
+          "pos": [
+            15.03174877166748,
+            -5.031748294830322,
+            2.0
+          ],
+          "rotation": 0.0,
+          "scale": [
+            20.0,
+            10.0,
+            2.0
+          ]
+        },
+        "Render": {
+          "shape": "square",
+          "colorR": 1.0,
+          "colorG": 1.0,
+          "colorB": 1.0,
+          "colorA": 1.0,
+          "hasTex": 1,
+          "texture": "assets/Texture\\credits\\Tanuki_Lab_Logo.png",
+          "hasAnimation": 0
+        }
+      }
+    }
+  ]
+}
