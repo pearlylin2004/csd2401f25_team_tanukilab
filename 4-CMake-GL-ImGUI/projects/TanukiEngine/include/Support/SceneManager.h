@@ -62,6 +62,8 @@ public:
     void setOnSceneLoadCallback(std::function<void(GameObjectManager&)> cb) {
         m_onSceneLoad = cb;
     }
+
+    void requestNextLevel();
 private:
     static std::string buildScenePath(const std::string& name);
     SceneManager() = default;
@@ -87,4 +89,9 @@ private:
     std::string m_pendingLevelName;
     std::function<void(GameObjectManager&)> m_onSceneLoad;
     std::string m_levelSceneName; //only set when PLAYING state
+    bool m_pendingIsWinScene = false;
+
+    //next level
+    std::vector<std::string> m_levelList;
+    int m_currentLevelIndex = 0;
 };

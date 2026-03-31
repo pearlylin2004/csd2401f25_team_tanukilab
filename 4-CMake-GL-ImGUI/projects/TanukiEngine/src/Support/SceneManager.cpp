@@ -29,6 +29,22 @@ Technology is prohibited.
 void SceneManager::init(GameObjectManager& manager, VisualLogicSystem& vlSystem) {
     g_manager = &manager;
     g_visualLogicSystem = &vlSystem;
+
+    //auto discover and sort all level files
+    m_levelList.clear();
+    for (const auto& entry : std::filesystem::directory_iterator(RUNTIME_SCENE_DIR_R)) {
+        std::string filename = entry.path().filename().string();
+        // pick up any file that starts with "level" and ends with ".json"
+        if (filename.rfind("Game_Level_", 0) == 0 && entry.path().extension() == ".json") {
+            m_levelList.push_back(filename);
+        }
+    }
+    std::sort(m_levelList.begin(), m_levelList.end()); // level01, level02... in order
+
+    std::cout << "[SceneManager] Found " << m_levelList.size() << " levels:\n";
+    for (auto& l : m_levelList)
+        std::cout << "  " << l << "\n";
+
     std::cout << "[SceneManager] init complete\n";
 }
 
@@ -39,11 +55,18 @@ void SceneManager::update() {
         return;
     }
 
-    if (m_pendingLevelLoad) {
+    if (m_pendingLevelLoad && !UISystem::isShowUI()) {
         m_pendingLevelLoad = false;
         std::string name = std::move(m_pendingLevelName);
         m_pendingLevelName = "";
-        executeLevelLoad(name);
+
+        if (m_pendingIsWinScene) {
+            m_pendingIsWinScene = false;
+            loadScene(name);
+        }
+        else {
+            executeLevelLoad(name);
+        }
     }
 }
 
@@ -54,6 +77,7 @@ void SceneManager::requestRestart() {
 void SceneManager::requestLevelLoad(const std::string& levelSceneName) {
     m_pendingLevelLoad = true;
     m_pendingLevelName = levelSceneName;
+    m_pendingIsWinScene = (levelSceneName == "win_scene.json"); // ← new flag
 }
 
 void SceneManager::loadScene(const std::string& sceneName) {
@@ -224,4 +248,19 @@ void SceneManager::pauseGame(const std::string& pauseSceneName) {
 void SceneManager::resumeGame() {
     if (m_currentState != GameState::PAUSED) return;
     m_currentState = m_previousState;
+}
+
+//request next level, if no more level, load win scene
+void SceneManager::requestNextLevel() {
+    if (m_pendingLevelLoad || m_pendingRestart) return;
+
+    int nextIndex = m_currentLevelIndex + 1;
+
+    if (nextIndex >= static_cast<int>(m_levelList.size())) {
+        requestLevelLoad("win_scene.json");
+        return;
+    }
+
+    m_currentLevelIndex = nextIndex;
+    requestLevelLoad(m_levelList[m_currentLevelIndex]);
 }

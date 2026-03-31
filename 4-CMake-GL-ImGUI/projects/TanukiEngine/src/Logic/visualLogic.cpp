@@ -16,6 +16,7 @@ Technology is prohibited.
 
 #include "Systems.h"
 #include "JsonIO.h"
+#include "SceneManager.h"
 
 std::map<std::string, float> VisualLC::globalFloatVar;
 GameObjectManager* VisualLogicSystem::m_manager = nullptr;
@@ -743,13 +744,15 @@ void VisualLogicSystem::executeActionNode(GameObject* obj, VisualLC* logic, Logi
 		}
 	}
 	else if (node.imp == NodeImplementation::RESTART_LEVEL) {
-		GUISystem::getInstance().m_pendingRestart = true;
+		//GUISystem::getInstance().m_pendingRestart = true;
+		SceneManager::getInstance().requestRestart();
 	}
 	else if (node.imp == NodeImplementation::LOAD_LEVEL) {
-		std::string levelName = node.parameters.count("levelName") ?
-			node.parameters["levelName"] : "level01.json";
-		GUISystem::getInstance().m_pendingLevelLoad = true;
-		GUISystem::getInstance().m_pendingLevelName = levelName;
+		std::string levelName = node.parameters.count("Game_Level_") ?
+			node.parameters["levelName"] : "Game_Level_1.json";
+		//GUISystem::getInstance().m_pendingLevelLoad = true;
+		//GUISystem::getInstance().m_pendingLevelName = levelName;
+		SceneManager::getInstance().requestLevelLoad(levelName);
 	}
 	else if (node.imp == NodeImplementation::DISABLE_COLLISION) {
 		CollisionInfo* collision = obj->getComponent<CollisionInfo>();
