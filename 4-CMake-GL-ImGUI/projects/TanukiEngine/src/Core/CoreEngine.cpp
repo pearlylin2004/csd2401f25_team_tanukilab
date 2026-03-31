@@ -25,8 +25,6 @@ Technology is prohibited.
 #define STB_IMAGE_IMPLEMENTATION
 #include "CoreEngine.h"
 #include "GUISystem.h"  // Add this include
-#include "LeaderboardSystem.h"
-#include "ReplaySystem.h"
 #include "toastSystem.h"
 
 CoreEngine::CoreEngine()
@@ -180,10 +178,10 @@ void CoreEngine::Init(bool forceWindowed) {
     //GlobalRegistry::Instance().init();
 
     // Initialize leaderboard (loads scores from disk)
-    LeaderboardSystem::getInstance().init();
+    //LeaderboardSystem::getInstance().init();
 
-    // Initialize replay system (creates replays directory)
-    ReplaySystem::getInstance().init();
+    //// Initialize replay system (creates replays directory)
+    //ReplaySystem::getInstance().init();
 
     glfwPollEvents();
     m_isRunning = true;
