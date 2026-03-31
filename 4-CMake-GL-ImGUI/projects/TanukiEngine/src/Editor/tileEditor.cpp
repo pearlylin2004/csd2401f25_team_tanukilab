@@ -86,35 +86,37 @@ void TileMapSystem::update(GameObjectManager& manager)
 			continue;
 
 //#ifdef _DEBUG
-		if (InputHandler::isMouseLeftClicked())
-		{
-			if (!TileMapSystem::filename.empty() && Editor::objSelectionState.selectedObject == obj) {
-				UndoRedoManager::Instance().beginTilemapEdit(obj);
-			}
-		}
-
-		if (InputHandler::isMouseLeftReleased()) {
-			if (!TileMapSystem::filename.empty() && Editor::objSelectionState.selectedObject == obj) {
-				UndoRedoManager::Instance().endTilemapEdit(manager, obj);
-			}
-		}
-//#endif
-
-		if (InputHandler::isMouseLeftHeld())
-		{
-			//Vector2D world = InputHandler::getMousePositionInImGuiViewport(Editor::sceneWindowState.scenePos, Editor::sceneWindowState.sceneSize);
-			//std::cout << world.x << " | " << world.y << std::endl;
-			//DebugLog::addMessage("mouse pos: " + std::to_string(world.x) + " | " + std::to_string(world.y) + "\n");
-//#ifdef _DEBUG
-			if (!TileMapSystem::filename.empty() && Editor::objSelectionState.selectedObject == obj) {
-				tileUpdate(obj);
+		if (EditorManager::isEditingMode()) {
+			if (InputHandler::isMouseLeftClicked())
+			{
+				if (!TileMapSystem::filename.empty() && Editor::objSelectionState.selectedObject == obj) {
+					UndoRedoManager::Instance().beginTilemapEdit(obj);
+				}
 			}
 
-//#else
-//			if (!TileMapSystem::filename.empty()) {
-//				tileUpdate(obj);
-//			}
-//#endif
+			if (InputHandler::isMouseLeftReleased()) {
+				if (!TileMapSystem::filename.empty() && Editor::objSelectionState.selectedObject == obj) {
+					UndoRedoManager::Instance().endTilemapEdit(manager, obj);
+				}
+			}
+			//#endif
+
+			if (InputHandler::isMouseLeftHeld())
+			{
+				//Vector2D world = InputHandler::getMousePositionInImGuiViewport(Editor::sceneWindowState.scenePos, Editor::sceneWindowState.sceneSize);
+				//std::cout << world.x << " | " << world.y << std::endl;
+				//DebugLog::addMessage("mouse pos: " + std::to_string(world.x) + " | " + std::to_string(world.y) + "\n");
+	//#ifdef _DEBUG
+				if (!TileMapSystem::filename.empty() && Editor::objSelectionState.selectedObject == obj) {
+					tileUpdate(obj);
+				}
+
+				//#else
+				//			if (!TileMapSystem::filename.empty()) {
+				//				tileUpdate(obj);
+				//			}
+				//#endif
+			}
 		}
 
 		TileMap* tm = obj->getComponent<TileMap>();
