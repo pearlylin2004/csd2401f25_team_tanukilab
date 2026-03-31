@@ -10,6 +10,8 @@ local FADE_OUT = 2.0
 local SplashController = {}
 
 function SplashController.Update(obj, dt)
+    if isEditingMode() then return end
+
     -- lazy init on first frame
     if logo1 == nil then
         logo1 = getGameObject("digipen")
