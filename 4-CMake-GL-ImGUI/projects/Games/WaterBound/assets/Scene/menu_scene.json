@@ -346,7 +346,6 @@
         },
         "Button": {
           "action": "exit_game",
-          "scenePath": "audio_scene.json",
           "onClickChannel": "on_click",
           "onHoverChannel": "button_hover"
         }
