@@ -4,7 +4,7 @@
     "height": 800,
     "title": "Water Bound",
     "vsync": true,
-    "fullscreen": true
+    "fullscreen": false
   },
   "render": {
     "clear_color": [0.2, 0.2, 0.25, 1.0]

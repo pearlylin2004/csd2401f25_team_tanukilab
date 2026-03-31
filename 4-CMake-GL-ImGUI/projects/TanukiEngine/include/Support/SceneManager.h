@@ -54,7 +54,7 @@ public:
     void executeRestart();
     void executeLevelLoad(const std::string& levelSceneName);
 
-    void pauseGame(const std::string& pauseSceneName = "pause_scene.json");
+    void pauseGame();
     void resumeGame();
     bool isPaused() const { return m_currentState == GameState::PAUSED; }
     std::string getLevelSceneName() const { return m_levelSceneName; }

@@ -28,7 +28,8 @@ enum class ButtonAction {
     SFX_VOL_UP,
     SFX_VOL_DOWN,
     MUTE,
-    UNMUTE
+    UNMUTE,
+    OPEN_LEADERBOARD
 };
 
 //enum for button actions

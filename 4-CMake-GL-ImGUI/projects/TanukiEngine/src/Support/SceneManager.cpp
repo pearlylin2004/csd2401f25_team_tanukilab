@@ -237,7 +237,7 @@ void SceneManager::executeLevelLoad(const std::string& levelSceneName) {
     if (m_onSceneLoad) m_onSceneLoad(*g_manager);
 }
 
-void SceneManager::pauseGame(const std::string& pauseSceneName) {
+void SceneManager::pauseGame() {
     if (m_currentState == GameState::PAUSED) return; 
 
     m_previousState = m_currentState;

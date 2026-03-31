@@ -28,10 +28,6 @@ Technology is prohibited.
 #include <iostream>
 #include <fstream>
 
-static std::string runtimeScenePath(std::string const& name) {
-    return std::string(RUNTIME_SCENE_DIR_R) + "/" + name;
-}
-
 void GUISystem::init(GameObjectManager& manager, LuaSystem& luaSystem, VisualLogicSystem& vlSystem) {
     std::cout << "[GUI] GUISystem::init started" << std::endl;
     g_manager = &manager;
@@ -44,14 +40,15 @@ void GUISystem::init(GameObjectManager& manager, LuaSystem& luaSystem, VisualLog
 void GUISystem::update() {
 	ButtonSystem::getInstance().update(); //check for button clicking and handle actions
 
-
     /* -------- Gamepad Menu Navigation -------- */
-    if (InputHandler::isGamepadConnected() && !m_buttons.empty()) {
+    auto& buttonSystem = ButtonSystem::getInstance();
+    const auto& rawButtons = buttonSystem.getButtons();
+    if (InputHandler::isGamepadConnected() && !rawButtons.empty()) {
         // sort buttons top to bottom by Y position
-        std::vector<std::pair<ButtonAction, GameObject*>> sortedButtons(m_buttons.begin(), m_buttons.end());
+        std::vector<GameObject*> sortedButtons(rawButtons.begin(), rawButtons.end());
         std::sort(sortedButtons.begin(), sortedButtons.end(), [](auto& a, auto& b) {
-            Transform* ta = a.second->getComponent<Transform>();
-            Transform* tb = b.second->getComponent<Transform>();
+            Transform* ta = a->getComponent<Transform>();
+            Transform* tb = b->getComponent<Transform>();
             if (!ta || !tb) return false;
             return ta->y > tb->y; // higher Y go first
             });
@@ -75,7 +72,7 @@ void GUISystem::update() {
         // update hover state for all buttons
         if (m_selectedButtonIdx != -1) {
             for (int i = 0; i < btnCount; ++i) {
-                GameObject* btnObj = sortedButtons[i].second;
+                GameObject* btnObj = sortedButtons[i];
                 Button* btnComp = btnObj->getComponent<Button>();
                 Render* render = btnObj->getComponent<Render>();
                 if (!btnComp) continue;
@@ -114,7 +111,7 @@ void GUISystem::update() {
 
         // Cross button (X) to confirm
         if (m_selectedButtonIdx != -1 && InputHandler::isGamepadButtonTriggered(GLFW_GAMEPAD_BUTTON_A)) {
-            GameObject* btnObj = sortedButtons[m_selectedButtonIdx].second;
+            GameObject* btnObj = sortedButtons[m_selectedButtonIdx];
             Button* btnComp = btnObj->getComponent<Button>();
             if (btnComp) {
                 // play click sound
@@ -126,55 +123,11 @@ void GUISystem::update() {
                     }
                 }
                 // execute action
-                m_pendingAction = btnComp->actionName;
+                ButtonSystem::getInstance().setPendingAction(btnComp->actionName);
             }
         }
     }
 }
-
-//creation of buttons
-void GUISystem::createButtons(/*GameObjectManager& manager*/) {
-    //clear previous references
-    removeButtons();
-    m_selectedButtonIdx = -1;
-
-    //get all game objects from manager
-    std::vector<GameObject*> allObjs;
-    g_manager->getAllGameObjects(allObjs);
-
-    if (allObjs.empty()) return; //check if its empty
-
-    //iterate through all objects to find buttons
-    for (GameObject* obj : allObjs) {
-        if (!obj) continue; //safety check
-        if (!obj->hasComponent<Button>() || !obj->hasComponent<Transform>()) continue; //check if it has button and transform component
-
-        Button* btnComp = obj->getComponent<Button>(); //get button component
-        m_buttons[btnComp->actionName] = obj; //store button in map with action name as key
-
-        if (Render* render = obj->getComponent<Render>())
-            render->clr = glm::vec4(1.f, 1.f, 1.f, 1.f);
-
-        btnComp->isHovered = false;
-
-        if (VisualLC* vlc = obj->getComponent<VisualLC>())
-            vlc->wasHoveredLastFrame = false;
-    }
-
-    if (m_buttons.empty()) {
-        std::cout << "[GUI] No buttons found in the current scene." << std::endl;
-    }
-    else {
-        createButtonActions(); //create button actions
-        std::cout << "[GUI] Menu buttons created successfully" << std::endl;
-    }
-
-    // Safe to update volume display here, after all buttons/actions are set up
-    if (m_currentState == GameState::AUDIO) {
-        updateVolumeDisplay();
-    }
-}
-
 void GUISystem::triggerSceneLoad(GameObjectManager& manager) {
     if (m_onSceneLoadCallback) m_onSceneLoadCallback(manager);
 }
@@ -183,21 +136,6 @@ void GUISystem::resetAndInitVisualLogic(GameObjectManager& manager) {
     if (g_visualLogicSystem) {
         VisualLC::globalFloatVar.clear();
         g_visualLogicSystem->initAll(manager);
-    }
-}
-
-//removing of buttons 
-void GUISystem::removeButtons() {
-    m_buttons.clear(); //clear map
-}
-
-//to update state
-void GUISystem::changeState(GameState newState, const std::string& sceneName) {
-    m_previousState = m_currentState;  // store previous
-    m_currentState = newState;
-
-    if (!sceneName.empty()) {
-        loadScreen(*g_manager, sceneName);
     }
 }
 

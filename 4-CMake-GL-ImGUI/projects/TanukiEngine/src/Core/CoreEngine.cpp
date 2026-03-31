@@ -281,7 +281,7 @@ void CoreEngine::Update(float deltaTime) {
     if (state != GameState::EXIT) {
         GUISystem::getInstance().update();
     }
-    SceneManager::getInstance().update();
+
     // Tick the level timer for leaderboard
     //GUISystem::getInstance().tickLevelTimer(deltaTime);
 
@@ -338,7 +338,7 @@ void CoreEngine::Update(float deltaTime) {
     if (!EditorManager::isEditingMode() && !EditorManager::isPaused()) {
         m_luaSystem->update(*m_manager, deltaTime);
     }
-
+    SceneManager::getInstance().update();
     ToastSystem::getInstance().update(deltaTime);
     m_uiSystem->update();
 

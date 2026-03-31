@@ -25,6 +25,11 @@ public:
         static ButtonSystem instance;
         return instance;
     }
+    
+    //for gamepad
+    ButtonAction getPendingAction() const { return m_pendingAction; }
+    void setPendingAction(ButtonAction s) { m_pendingAction = s; }
+    const std::vector<GameObject*>& getButtons() const { return m_buttons; }
 
     void init(GameObjectManager& manager);
     void refresh();

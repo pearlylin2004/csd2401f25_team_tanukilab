@@ -56,7 +56,7 @@ int main(int argc, char** argv) {
         engine->Init(forceWindowed);
 
         // load menu as fir
-        SceneManager::getInstance().executeLevelLoad("menu_scene.json");
+        //SceneManager::getInstance().executeLevelLoad("menu_scene.json");
         // register gamescript
         //engine->setGameScript(gameApp.get());
 
@@ -75,14 +75,14 @@ int main(int argc, char** argv) {
             if (InputHandler::isKeyTriggered(GLFW_KEY_ESCAPE)) {
                 if (current != GameState::PAUSED && current != GameState::MENU) {
                     GUISystem::getInstance().setStateBeforePause(current);
-                    GUISystem::getInstance().changeState(GameState::PAUSED, "pause_scene.json");
+                    SceneManager::getInstance().changeState(GameState::PAUSED, "pause_scene.json");
                 }
             }
 
             // START (gamepad) -> main menu
             if (InputHandler::isGamepadButtonTriggered(GLFW_GAMEPAD_BUTTON_START)) {
                 if (current != GameState::MENU) {
-                    GUISystem::getInstance().changeState(GameState::MENU, "menu_scene.json");
+                    SceneManager::getInstance().changeState(GameState::MENU, "menu_scene.json");
                 }
             }
             });
@@ -91,7 +91,7 @@ int main(int argc, char** argv) {
         GlobalRegistry::Instance().init();
 
         // load menu as fir
-        GUISystem::getInstance().loadScreen(engine->getManager(), "menu_scene.json");
+        SceneManager::getInstance().executeLevelLoad("menu_scene.json");
 
         engine->Run();
     }
