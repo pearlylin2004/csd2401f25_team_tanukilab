@@ -95,7 +95,7 @@
       }
     },
     {
-      "name": "End Goal",
+      "name": "endgoal",
       "components": {
         "Transform": {
           "pos": [
@@ -182,6 +182,13 @@
         },
         "VisualLC": {
           "filename": "endgoal.json"
+        },
+        "LuaScript": {
+          "scripts": [{
+            "filename": "./assets/scripting/endgoal.lua",
+            "scriptName": "endgoal"
+            }
+          ]
         }
       }
     },

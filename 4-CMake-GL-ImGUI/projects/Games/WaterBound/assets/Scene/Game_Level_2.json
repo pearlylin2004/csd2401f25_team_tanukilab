@@ -119,7 +119,7 @@
       }
     },
     {
-      "name": "Rectangle_24",
+      "name": "endgoal",
       "components": {
         "Transform": {
           "pos": [
@@ -206,6 +206,13 @@
         },
         "VisualLC": {
           "filename": "endgoal02.json"
+        },
+        "LuaScript": {
+          "scripts": [{
+            "filename": "./assets/scripting/endgoal.lua",
+            "scriptName": "endgoal"
+            }
+          ]
         }
       }
     },
