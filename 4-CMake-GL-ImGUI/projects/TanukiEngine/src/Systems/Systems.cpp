@@ -29,6 +29,7 @@ Technology is prohibited.
 #include "Physics.h"
 #include "GUISystem.h"
 #include "ReplaySystem.h"
+#include "toastSystem.h"
 
 std::string TileMapSystem::filename{};
 std::vector<Particle::UID> Particle::UIDs;
@@ -2004,7 +2005,7 @@ UISystem::~UISystem() {
 
 //for imgui
 void UISystem::update() {
-	if (!showUI) return; // skip UI rendering if disabled
+	//if (!showUI) return; // skip UI rendering if disabled
 
 	//record current time for performance tracking
 	auto start = std::chrono::high_resolution_clock::now();
@@ -2016,15 +2017,16 @@ void UISystem::update() {
 	ImGui_ImplGlfw_NewFrame();
 	ImGui::NewFrame();
 
-	dockingSetUp();
+	if (showUI) {
+		dockingSetUp();
+		int fboWidth, fboHeight;
+		m_renderer->fboAspectRatio(fboWidth, fboHeight);
+		m_UI->update();
+		m_UI->renderScene(m_renderer->getTexture(), static_cast<float>(fboWidth) / static_cast<float>(fboHeight));
+	}
 
-	// get the width and height of the SCENE view
-	int fboWidth, fboHeight;
-	m_renderer->fboAspectRatio(fboWidth, fboHeight);
-
-	// all ImGui windows
-	m_UI->update();
-	m_UI->renderScene(m_renderer->getTexture(), static_cast<float>(fboWidth) / static_cast<float>(fboHeight));
+	// toast system
+	ToastSystem::getInstance().render();
 
 	ImGui::Render();
 	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
@@ -2041,6 +2043,7 @@ void UISystem::runImGuiFrame(std::function<void()> content) {
 	ImGui_ImplGlfw_NewFrame();
 	ImGui::NewFrame();
 	content();
+	//ToastSystem::getInstance().render();
 	ImGui::Render();
 	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 }

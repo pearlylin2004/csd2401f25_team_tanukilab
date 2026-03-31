@@ -20,6 +20,7 @@ Technology is prohibited.
 #include "renderer.h"
 #include "input.h"
 #include "PathManager.h"
+#include "toastSystem.h"
 
 GLFWwindow* InputHandler::m_window = nullptr;
 AppConfig InputHandler::m_cfg;
@@ -73,8 +74,10 @@ void InputHandler::update() {
 
 	glfwPollEvents();
 
-	// gamepad polling
+	// gamepad polling — capture previous connection state BEFORE resetting
+	bool wasPreviouslyConnected = (m_activeGamepadId != -1);
 	memcpy(m_gamepadButtonsPrevious, m_gamepadButtons, sizeof(m_gamepadButtons));
+
 	m_activeGamepadId = -1;
 	for (int jid = GLFW_JOYSTICK_1; jid <= GLFW_JOYSTICK_LAST; ++jid) {
 		if (glfwJoystickPresent(jid) && glfwJoystickIsGamepad(jid)) {
@@ -83,6 +86,20 @@ void InputHandler::update() {
 		}
 	}
 
+	bool isNowConnected = (m_activeGamepadId != -1);
+
+	// fire toast on connection change
+	if (!wasPreviouslyConnected && isNowConnected) {
+		const char* name = glfwGetGamepadName(m_activeGamepadId);
+		std::string msg = "Controller connected";
+		if (name) msg += std::string(": ") + name;
+		ToastSystem::getInstance().push(msg, 5.f);
+	}
+	else if (wasPreviouslyConnected && !isNowConnected) {
+		ToastSystem::getInstance().push("Controller disconnected", 5.f);
+	}
+
+	// read button + axis state
 	if (m_activeGamepadId != -1) {
 		GLFWgamepadstate state;
 		if (glfwGetGamepadState(m_activeGamepadId, &state)) {

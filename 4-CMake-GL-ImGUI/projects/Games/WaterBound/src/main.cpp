@@ -64,13 +64,20 @@ int main(int argc, char** argv) {
             if (InputHandler::isKeyTriggered(GLFW_KEY_F1) || InputHandler::isGamepadButtonTriggered(GLFW_GAMEPAD_BUTTON_BACK))
                 engine->stop();
 
-            // ESC or OPTION on gamepad to pause
-            if (InputHandler::isKeyTriggered(GLFW_KEY_ESCAPE) ||
-                InputHandler::isGamepadButtonTriggered(GLFW_GAMEPAD_BUTTON_START)) {
-                auto current = GUISystem::getInstance().getCurrentState();
+            GameState current = GUISystem::getInstance().getCurrentState();
+
+            // ESC (keyboard) -> pause
+            if (InputHandler::isKeyTriggered(GLFW_KEY_ESCAPE)) {
                 if (current != GameState::PAUSED && current != GameState::MENU) {
                     GUISystem::getInstance().setStateBeforePause(current);
                     GUISystem::getInstance().changeState(GameState::PAUSED, "pause_scene.json");
+                }
+            }
+
+            // START (gamepad) -> main menu
+            if (InputHandler::isGamepadButtonTriggered(GLFW_GAMEPAD_BUTTON_START)) {
+                if (current != GameState::MENU) {
+                    GUISystem::getInstance().changeState(GameState::MENU, "menu_scene.json");
                 }
             }
             });

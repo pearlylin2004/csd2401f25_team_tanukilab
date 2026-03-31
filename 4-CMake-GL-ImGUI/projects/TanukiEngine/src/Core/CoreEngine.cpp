@@ -27,6 +27,7 @@ Technology is prohibited.
 #include "GUISystem.h"  // Add this include
 #include "LeaderboardSystem.h"
 #include "ReplaySystem.h"
+#include "toastSystem.h"
 
 CoreEngine::CoreEngine()
     : m_window(nullptr),
@@ -338,10 +339,9 @@ void CoreEngine::Update(float deltaTime) {
     if (!EditorManager::isEditingMode() && !EditorManager::isPaused()) {
         m_luaSystem->update(*m_manager, deltaTime);
     }
-    //m_waterSystem->render(*m_manager);
-//#ifdef _DEBUG
+
+    ToastSystem::getInstance().update(deltaTime);
     m_uiSystem->update();
-//#endif
 
     //performance update
     LogSystemTimersEveryInterval(deltaTime, 15.0);
