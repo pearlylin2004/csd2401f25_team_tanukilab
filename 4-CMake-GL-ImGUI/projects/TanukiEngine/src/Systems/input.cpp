@@ -458,62 +458,56 @@ void InputHandler::dropCallback(GLFWwindow* window, int count, const char** path
     std::filesystem::path projectDir(PathManager::Instance().getSourcePath() + "/assets");  // "./projects/WaterBound/assets"
 
 	// check if dropping onto a specific folder in editor
-	std::string targetFolder = Editor::assetBrowserState.hoverFolder;
+	//std::string hoverFolder = Editor::assetBrowserState.hoverFolder;
+	std::string currentView = Editor::assetBrowserState.currentViewFolder;
 
 	for (int i = 0; i < count; ++i) {
 		std::filesystem::path src(paths[i]);
 		std::string ext = src.extension().string();
-		std::filesystem::path dstBuild = buildDir / src.filename();
-		std::filesystem::path dstProject = projectDir / src.filename();
+		/*std::filesystem::path dstBuild = buildDir / src.filename();
+		std::filesystem::path dstProject = projectDir / src.filename();*/
 
 		std::transform(ext.begin(), ext.end(), ext.begin(), ::tolower);
 
-		// Auto-detect folder based on extension if no hover target
-		if (targetFolder.empty()) {
-			// if audio file, auto add to Audio
-			if (ext == ".wav" || ext == ".ogg" || ext == ".mp3") {
-				targetFolder = "Audio";
-			}
-			// if textures, auto add to textures
-			else if (ext == ".png" || ext == ".jpg" || ext == ".jpeg") {
-				targetFolder = "Texture";
-			}
-			// if lua, auto add to Scripts
-			else if (ext == ".lua") {
-				targetFolder = "scripting";
-			}
-			// if video, auto add to video
-			else if (ext == ".mpg" || ext == ".mpeg") {
-				targetFolder = "video";
-			}
-		}
-		else if (targetFolder == "Misc") targetFolder.clear();
+		std::filesystem::path relTarget;
 
-		if (!targetFolder.empty()) {
+		// Auto-detect folder based on extension if no hover target
+		if (!currentView.empty() && currentView != "Misc") {
+			relTarget = std::filesystem::path(currentView);
+		}
+		else {
+			// Auto-detect from extension
+			if (ext == ".wav" || ext == ".ogg" || ext == ".mp3")
+				relTarget = "Audio";
+			else if (ext == ".png" || ext == ".jpg" || ext == ".jpeg")
+				relTarget = "Texture";
+			else if (ext == ".lua")
+				relTarget = "scripting";
+			else if (ext == ".mpg" || ext == ".mpeg")
+				relTarget = "video";
+		}
+
+		/*if (!targetFolder.empty()) {
 			dstBuild = buildDir / targetFolder / src.filename();
 			dstProject = projectDir / targetFolder / src.filename();
-		}
+		}*/
+
+		std::filesystem::path dstBuild = buildDir / relTarget / src.filename();
+		std::filesystem::path dstProject = projectDir / relTarget / src.filename();
 
 		try {
-			// Copy to build/debug folder
-			if (std::filesystem::exists(dstBuild)) {
-				std::filesystem::remove_all(dstBuild);
-			}
+			std::filesystem::create_directories(dstBuild.parent_path());
+			std::filesystem::create_directories(dstProject.parent_path());
+
+			if (std::filesystem::exists(dstBuild))   std::filesystem::remove_all(dstBuild);
+			if (std::filesystem::exists(dstProject)) std::filesystem::remove_all(dstProject);
+
 			if (std::filesystem::is_directory(src)) {
 				std::filesystem::copy(src, dstBuild, std::filesystem::copy_options::recursive);
-			}
-			else {
-				std::filesystem::copy_file(src, dstBuild, std::filesystem::copy_options::overwrite_existing);
-			}
-
-			// Copy to project folder
-			if (std::filesystem::exists(dstProject)) {
-				std::filesystem::remove_all(dstProject);
-			}
-			if (std::filesystem::is_directory(src)) {
 				std::filesystem::copy(src, dstProject, std::filesystem::copy_options::recursive);
 			}
 			else {
+				std::filesystem::copy_file(src, dstBuild, std::filesystem::copy_options::overwrite_existing);
 				std::filesystem::copy_file(src, dstProject, std::filesystem::copy_options::overwrite_existing);
 			}
 
