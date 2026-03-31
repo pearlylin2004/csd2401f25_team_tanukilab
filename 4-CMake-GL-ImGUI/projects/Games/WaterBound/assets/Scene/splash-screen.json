@@ -76,6 +76,14 @@
           "hasTex": 1,
           "texture": "assets/Texture\\credits\\DigiPen_Singapore_WEB_WHITE.png",
           "hasAnimation": 0
+        },
+        "LuaScript": {
+          "scripts": [
+            {
+              "filename": "assets/scripting/splash.lua",
+              "scriptName": "splash"
+            }
+          ]
         }
       }
     },
@@ -84,8 +92,8 @@
       "components": {
         "Transform": {
           "pos": [
-            15.03174877166748,
-            -5.031748294830322,
+            0.0,
+            0.0,
             2.0
           ],
           "rotation": 0.0,
@@ -104,6 +112,14 @@
           "hasTex": 1,
           "texture": "assets/Texture\\credits\\Tanuki_Lab_Logo.png",
           "hasAnimation": 0
+        },
+        "LuaScript": {
+          "scripts": [
+            {
+              "filename": "assets/scripting/splash.lua",
+              "scriptName": "splash"
+            }
+          ]
         }
       }
     }
