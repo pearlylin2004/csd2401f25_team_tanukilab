@@ -1768,6 +1768,8 @@ void InspectorWindow::renderPhysics(GameObject* selected, bool canMove) {
             ImGui::Text("Coyote Available: %s", physic->coyoteAvailable ? "true" : "false");
             ImGui::Text("Jump Buffer: %.3f", physic->jumpBufferTimer);
             ImGui::Text("Ledge Climbing: %s", physic->ledgeClimb ? "true" : "false");
+            ImGui::Text("Auto update: %s", physic->autoUpdate ? "true" : "false");
+
 
             ImGui::TreePop();
         }

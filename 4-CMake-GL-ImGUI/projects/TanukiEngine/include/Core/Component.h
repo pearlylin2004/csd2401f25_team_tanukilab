@@ -369,9 +369,9 @@ enum class ButtonAction {
     SFX_VOL_DOWN,
     OPEN_LEADERBOARD,
     MUTE,
-    UNMUTE,
+    UNMUTE/*,
     WATCH_REPLAY,
-    OPEN_REPLAY_SELECT
+    OPEN_REPLAY_SELECT*/
 };
 
 //Button component
@@ -529,11 +529,11 @@ struct StateMachine : public Component {
 };
 
 // Marker component for ghost replay entity (no physics/collision, purely visual)
-struct GhostComponent : public Component {
-    std::unique_ptr<Component> clone() const override {
-        return std::make_unique<GhostComponent>(*this);
-    }
-};
+//struct GhostComponent : public Component {
+//    std::unique_ptr<Component> clone() const override {
+//        return std::make_unique<GhostComponent>(*this);
+//    }
+//};
 
 //Audio component
 struct FadeInfo {

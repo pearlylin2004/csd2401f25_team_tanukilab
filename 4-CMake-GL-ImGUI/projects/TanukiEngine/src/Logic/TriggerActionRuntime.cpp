@@ -146,7 +146,7 @@ bool PositionTrigger::check(GameObject& obj) const {
 
 void EnterDeadAction::execute(GameObject& obj) {
     // Player is invulnerable during replay viewer
-    if (GUISystem::getInstance().getCurrentState() == GameState::REPLAY) return;
+    /*if (GUISystem::getInstance().getCurrentState() == GameState::REPLAY) return;*/
 
     if (StateMachine* sm = obj.getComponent<StateMachine>()) {
         sm->state = PlayerState::Dead;
