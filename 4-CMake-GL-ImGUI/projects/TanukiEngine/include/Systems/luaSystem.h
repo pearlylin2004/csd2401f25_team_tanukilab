@@ -492,6 +492,10 @@ public:
 	/*! \brief Returns the name of the current scene. */
 	static int Lua_getCurrentScene(lua_State* L);
 
+	/* -------- Toast -------- */
+	/* \brief Show notification at bottom right corner */
+	static int Lua_showToast(lua_State* L);
+
 
 	/* -------- Object Things ---- */
 	/*! \brief Returns a list of all objects in the current scene. */

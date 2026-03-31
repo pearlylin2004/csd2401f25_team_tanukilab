@@ -200,6 +200,9 @@ void LuaSystem::init(GameObjectManager& manager) {
     lua_register(L, "loadLevel", Lua_loadLevel);
     lua_register(L, "getCurrentScene", Lua_getCurrentScene);
 
+    // toast
+    lua_register(L, "showToast", Lua_showToast);
+
     registerManagerBindings(manager);
 }
 
@@ -1742,6 +1745,17 @@ int LuaSystem::Lua_getCurrentScene(lua_State* L) {
 
     lua_pushstring(L, p.filename().string().c_str());
     return 1;
+}
+
+
+/* ---- toast ---- */
+int LuaSystem::Lua_showToast(lua_State* L) {
+    const char* msg = lua_tostring(L, 1);
+    if (!msg) return 0;
+
+    float duration = lua_isnumber(L, 2) ? static_cast<float>(lua_tonumber(L, 2)) : 5.f;
+    ToastSystem::getInstance().push(msg, duration);
+    return 0;
 }
 
 
