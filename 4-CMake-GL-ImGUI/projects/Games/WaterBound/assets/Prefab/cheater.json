@@ -1,0 +1,27 @@
+{
+  "id": "606ecd11-ffab-4355-8153-36d2ba9a0a0f",
+  "name": "cheater",
+  "components": {
+    "Transform": {
+      "pos": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "rotation": 0.0,
+      "scale": [
+        1.0,
+        1.0,
+        0.0
+      ]
+    },
+    "LuaScript": {
+      "scripts": [
+        {
+          "filename": "assets/scripting/cheat.lua",
+          "scriptName": "cheat"
+        }
+      ]
+    }
+  }
+}

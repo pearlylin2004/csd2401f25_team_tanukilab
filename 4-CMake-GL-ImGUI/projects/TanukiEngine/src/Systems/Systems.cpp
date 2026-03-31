@@ -22,9 +22,13 @@ Technology is prohibited.
 */
 /* End Header **************************************************************************/
 #pragma once
-
+#pragma warning(push, 0)
+#define PL_MPEG_IMPLEMENTATION
 #include "Systems.h"
+#pragma warning(pop)
 #include "Physics.h"
+#include "GUISystem.h"
+#include "toastSystem.h"
 
 std::string TileMapSystem::filename{};
 std::vector<Particle::UID> Particle::UIDs;
@@ -49,7 +53,8 @@ void InputSystem::update(GameObjectManager& manager, const float& deltaTime, Mes
     std::vector<GameObject*> gameObjects;
     manager.getAllGameObjects(gameObjects);
 
-#ifdef _DEBUG
+
+
     if (EditorManager::canToggleEditor() && InputHandler::isComboKeyTriggered(GLFW_KEY_0)) {
         UISystem::toggleUI();
 
@@ -133,7 +138,7 @@ void InputSystem::update(GameObjectManager& manager, const float& deltaTime, Mes
         std::cout << "===================\n" << std::endl;
     }
   
-#endif
+//#endif
 
     // Press F9 to simulate a failure (for crash logger)
     if (InputHandler::isKeyTriggered(GLFW_KEY_F9)) {
@@ -173,33 +178,7 @@ void InputSystem::update(GameObjectManager& manager, const float& deltaTime, Mes
                       << " | Physics: " << (phys ? "YES" : "NO")
                       << " | Animation: " << (anim ? "YES" : "NO")
                       << "\n";
-            
-            // Check if this object SHOULD have an FSM
-            // if (col && col->collisionTag == "player") {
-            //     std::cout << "       -> Player object detected!\n";
-            //     if (!sm) std::cout << "       -> WARNING: Missing StateMachine component!\n";
-            //     if (!inp) std::cout << "       -> WARNING: Missing Input component!\n";
-            // }
         }
-
-        // Specifically check for player
-       /* GameObject* player = manager.getGameObject("player");
-        if (player) {
-            std::cout << "\n[DEBUG] PLAYER FOUND!\n";
-            std::cout << "  - Has StateMachine: " << (player->hasComponent<StateMachine>() ? "YES" : "NO") << "\n";
-            std::cout << "  - Has Input: " << (player->hasComponent<Input>() ? "YES" : "NO") << "\n";
-            std::cout << "  - Has Physics: " << (player->hasComponent<Physics>() ? "YES" : "NO") << "\n";
-            std::cout << "  - Has Animation: " << (player->hasComponent<Animation>() ? "YES" : "NO") << "\n";
-            
-            CollisionInfo* col = player->getComponent<CollisionInfo>();
-            if (col) {
-                std::cout << "  - Collision Tag: " << col->collisionTag << "\n";
-            }
-        } else {
-            std::cout << "\n[DEBUG] WARNING: No object named 'player' found!\n";
-        }*/
-        
-        //std::cout << "[DEBUG KEY 8] ======================================\n\n";
     }
 
     auto end = std::chrono::high_resolution_clock::now();
@@ -208,137 +187,217 @@ void InputSystem::update(GameObjectManager& manager, const float& deltaTime, Mes
 }
 
 // Render system - draws all game objects with a Render component
-void RenderSystem::update(GameObjectManager& manager, float const& deltaTime) 
-{
-	//record current time for performance tracking
-	auto start = std::chrono::high_resolution_clock::now();
+//void RenderSystem::update(GameObjectManager& manager, float const& deltaTime) 
+//{
+//	//record current time for performance tracking
+//	auto start = std::chrono::high_resolution_clock::now();
+//	batchingSetUp(manager, deltaTime);
+//
+//	//we aint doing this anymore 
+//	//std::vector<GameObject*> gameObjects;
+//	//manager.getAllGameObjects(gameObjects);
+//
+//	LayerManager& layerManager = manager.getLayerManager();
+//	std::vector<Layer*> layers = layerManager.getAllLayers();
+//
+//	glm::mat4 camView, camProj;
+//
+//	// decide where to render
+//	renderFBO();
+//
+//	// Attach texture to FBO and update editor camera if editor is on & update camera
+//	if (UISystem::isShowUI() && EditorManager::isEditingMode())
+//	{
+//		createFBO();
+//		renderer::editorCam.update();
+//
+//		camView = renderer::editorCam.view;
+//		camProj = renderer::editorCam.proj;
+//	}
+//	else
+//	{
+//		renderer::cam.update();
+//
+//		camView = renderer::cam.view;
+//		camProj = renderer::cam.proj;
+//	}
+//
+//	for (Layer* layer : layers) {
+//		if (!layer) continue;
+//		
+//		//gettem objects bro
+//		const std::vector<GameObject*>& gameObjects = layer->getObjects();
+//		for (GameObject* object : gameObjects) {
+//			if (object->hasComponent<Render>()) {
+//				Render* render = object->getComponent<Render>();
+//
+//				if (render->texChanged) {
+//					if (render->hasTex) {
+//						TextureData texData = ResourceManager::getInstance().getTexture(render->texFile);
+//						render->texHDL = texData.id;
+//						render->isTransparent = texData.isTransparent;
+//						render->texChanged = false;
+//					}
+//
+//					TextureData texData = ResourceManager::getInstance().getTexture(render->texFile);
+//					render->texHDL = texData.id;
+//					render->isTransparent = texData.isTransparent;
+//					render->texChanged = false;
+//				}
+//
+//				if (object->hasComponent<Animation>()) {
+//					Animation* animation = object->getComponent<Animation>();
+//					if (!animation->animState.empty())
+//					{
+//						for (AnimateState& as : animation->animState) {
+//							if (as.texChanged && !as.texFile.empty()) {
+//								TextureData textureData = ResourceManager::getInstance().getTexture(as.texFile);
+//								as.texHDL = textureData.id;
+//								as.texChanged = false;
+//							}
+//						}
+//					}
+//				}
+//
+//			}
+//		}
+//
+//
+//	}
+//	//drawing models without texture
+//	glDepthMask(GL_TRUE);
+//	glUseProgram(renderer::shdr_pgm[1]);
+//	GLint uView = glGetUniformLocation(renderer::shdr_pgm[1], "V");
+//	GLint uProj = glGetUniformLocation(renderer::shdr_pgm[1], "P");
+//	glUniformMatrix4fv(uView, 1, GL_FALSE, glm::value_ptr(camView));
+//	glUniformMatrix4fv(uProj, 1, GL_FALSE, glm::value_ptr(camProj));
+//	instancePerBatch(objectWithoutTex);
+//	for (std::pair<const BatchKey, std::vector<renderer::InstanceData>>& pair : objectWithoutTex)
+//	{
+//		renderer::drawInstances(pair);
+//	}
+//	//glDisable(GL_DEPTH_TEST);
+//	//drawing models with texture
+//	glDepthMask(GL_FALSE);  // don't write to depth buffer
+//	glEnable(GL_BLEND);
+//	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+//	glUseProgram(renderer::shdr_pgm[0]); // hasTex shader
+//	uView = glGetUniformLocation(renderer::shdr_pgm[0], "V");
+//	uProj = glGetUniformLocation(renderer::shdr_pgm[0], "P");
+//	glUniformMatrix4fv(uView, 1, GL_FALSE, glm::value_ptr(camView));
+//	glUniformMatrix4fv(uProj, 1, GL_FALSE, glm::value_ptr(camProj));
+//	instancePerBatch(objectWithTex);
+//	for (std::pair<const BatchKey, std::vector<renderer::InstanceData>>& pair : objectWithTex)
+//	{
+//		
+//		const BatchKey& key = pair.first;
+//		//std::vector<renderer::InstanceData>& instances = pair.second;
+//		glBindTextureUnit(0, key.texID);
+//		GLuint isVid = glGetUniformLocation(renderer::shdr_pgm[0], "isVid");
+//		glUniform1i(isVid, key.vid ? 1 : 0);
+//		GLint uTexLoc = glGetUniformLocation(renderer::shdr_pgm[0], "uTex2d");
+//		if (uTexLoc != -1) 
+//			glUniform1i(uTexLoc, 0);
+//		//renderer::model& mdl = renderer::models[(int)key.meshType];
+//		renderer::drawInstances(pair);
+//	}
+//	glDepthMask(GL_TRUE);
+//	//instancePerBatch(objectWithTex2);
+//	//for (std::pair<const BatchKey, std::vector<renderer::InstanceData>>& pair : objectWithTex2)
+//	//{
+//	//	const BatchKey& key = pair.first;
+//	//	//std::vector<renderer::InstanceData>& instances = pair.second;
+//	//	glBindTextureUnit(0, key.texID);
+//	//	GLint uTexLoc = glGetUniformLocation(renderer::shdr_pgm[0], "uTex2d");
+//	//	if (uTexLoc != -1)
+//	//		glUniform1i(uTexLoc, 0);
+//	//	//renderer::model& mdl = renderer::models[(int)key.meshType];
+//	//	renderer::drawInstances(pair);
+//	//}
+//
+//	/*if (UISystem::isShowUI()) glBindFramebuffer(GL_FRAMEBUFFER, 0);*/
+//
+//	//record end time for performance tracking
+//	auto end = std::chrono::high_resolution_clock::now();
+//	double ms = std::chrono::duration<double, std::milli>(end - start).count(); //get elapse time in ms
+//	g_SystemTimers.push_back({"Render", ms }); //saving timing for UI output
+//}
+
+void RenderSystem::renderBelowZ(GameObjectManager& manager, float deltaTime, float zThreshold) {
+	//auto start = std::chrono::high_resolution_clock::now();
 	batchingSetUp(manager, deltaTime);
 
-	//we aint doing this anymore 
-	//std::vector<GameObject*> gameObjects;
-	//manager.getAllGameObjects(gameObjects);
-
+	// texture reload
 	LayerManager& layerManager = manager.getLayerManager();
-	std::vector<Layer*> layers = layerManager.getAllLayers();
-
-	glm::mat4 camView, camProj;
-
-	// decide where to render
-	renderFBO();
-
-	// Attach texture to FBO and update editor camera if editor is on & update camera
-	if (UISystem::isShowUI() && EditorManager::isEditingMode())
-	{
-		createFBO();
-		renderer::editorCam.update();
-
-		camView = renderer::editorCam.view;
-		camProj = renderer::editorCam.proj;
-	}
-	else
-	{
-		renderer::cam.update();
-
-		camView = renderer::cam.view;
-		camProj = renderer::cam.proj;
-	}
-
-	for (Layer* layer : layers) {
+	for (Layer* layer : layerManager.getAllLayers()) {
 		if (!layer) continue;
-		
-		//gettem objects bro
-		const std::vector<GameObject*>& gameObjects = layer->getObjects();
-		for (GameObject* object : gameObjects) {
-			if (object->hasComponent<Render>()) {
-				Render* render = object->getComponent<Render>();
-
-				if (render->texChanged) {
-					if (render->hasTex) {
-						TextureData texData = ResourceManager::getInstance().getTexture(render->texFile);
-						render->texHDL = texData.id;
-						render->isTransparent = texData.isTransparent;
-						render->texChanged = false;
-					}
-
+		for (GameObject* object : layer->getObjects()) {
+			if (!object->hasComponent<Render>()) continue;
+			Render* render = object->getComponent<Render>();
+			if (render->texChanged) {
+				if (render->hasTex) {
 					TextureData texData = ResourceManager::getInstance().getTexture(render->texFile);
 					render->texHDL = texData.id;
 					render->isTransparent = texData.isTransparent;
 					render->texChanged = false;
 				}
-
-				if (object->hasComponent<Animation>()) {
-					Animation* animation = object->getComponent<Animation>();
-					if (!animation->animState.empty())
-					{
-						for (AnimateState& as : animation->animState) {
-							if (as.texChanged && !as.texFile.empty()) {
-								TextureData textureData = ResourceManager::getInstance().getTexture(as.texFile);
-								as.texHDL = textureData.id;
-								as.texChanged = false;
-							}
-						}
+				TextureData texData = ResourceManager::getInstance().getTexture(render->texFile);
+				render->texHDL = texData.id;
+				render->isTransparent = texData.isTransparent;
+				render->texChanged = false;
+			}
+			if (object->hasComponent<Animation>()) {
+				Animation* animation = object->getComponent<Animation>();
+				for (AnimateState& as : animation->animState) {
+					if (as.texChanged && !as.texFile.empty()) {
+						TextureData textureData = ResourceManager::getInstance().getTexture(as.texFile);
+						as.texHDL = textureData.id;
+						as.texChanged = false;
 					}
 				}
-
 			}
 		}
-
-
 	}
-	//drawing models without texture
-	glDepthMask(GL_TRUE);
-	glUseProgram(renderer::shdr_pgm[1]);
-	GLint uView = glGetUniformLocation(renderer::shdr_pgm[1], "V");
-	GLint uProj = glGetUniformLocation(renderer::shdr_pgm[1], "P");
-	glUniformMatrix4fv(uView, 1, GL_FALSE, glm::value_ptr(camView));
-	glUniformMatrix4fv(uProj, 1, GL_FALSE, glm::value_ptr(camProj));
+
+	renderFBO();
+
+	glm::mat4 camView, camProj;
+	if (UISystem::isShowUI() && EditorManager::isEditingMode()) {
+		createFBO();
+		renderer::editorCam.update();
+		camView = renderer::editorCam.view;
+		camProj = renderer::editorCam.proj;
+	}
+	else {
+		renderer::cam.update();
+		camView = renderer::cam.view;
+		camProj = renderer::cam.proj;
+	}
+
 	instancePerBatch(objectWithoutTex);
-	for (std::pair<const BatchKey, std::vector<renderer::InstanceData>>& pair : objectWithoutTex)
-	{
-		renderer::drawInstances(pair);
-	}
-	//glDisable(GL_DEPTH_TEST);
-	//drawing models with texture
-	glDepthMask(GL_FALSE);  // don't write to depth buffer
-	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	glUseProgram(renderer::shdr_pgm[0]); // hasTex shader
-	uView = glGetUniformLocation(renderer::shdr_pgm[0], "V");
-	uProj = glGetUniformLocation(renderer::shdr_pgm[0], "P");
-	glUniformMatrix4fv(uView, 1, GL_FALSE, glm::value_ptr(camView));
-	glUniformMatrix4fv(uProj, 1, GL_FALSE, glm::value_ptr(camProj));
 	instancePerBatch(objectWithTex);
-	for (std::pair<const BatchKey, std::vector<renderer::InstanceData>>& pair : objectWithTex)
-	{
-		const BatchKey& key = pair.first;
-		//std::vector<renderer::InstanceData>& instances = pair.second;
-		glBindTextureUnit(0, key.texID);
-		GLint uTexLoc = glGetUniformLocation(renderer::shdr_pgm[0], "uTex2d");
-		if (uTexLoc != -1) 
-			glUniform1i(uTexLoc, 0);
-		//renderer::model& mdl = renderer::models[(int)key.meshType];
-		renderer::drawInstances(pair);
+	drawBatches(camView, camProj, [zThreshold](float z) { return z < zThreshold; });
+
+	/*auto end = std::chrono::high_resolution_clock::now();
+	double ms = std::chrono::duration<double, std::milli>(end - start).count();
+	g_SystemTimers.push_back({ "Render", ms });*/
+}
+
+void RenderSystem::renderAboveZ(GameObjectManager& manager, float deltaTime, float zThreshold) {
+	(void)manager; (void)deltaTime;
+
+	if (UISystem::isShowUI()) {
+		glBindFramebuffer(GL_FRAMEBUFFER, fbo);
 	}
-	glDepthMask(GL_TRUE);
-	//instancePerBatch(objectWithTex2);
-	//for (std::pair<const BatchKey, std::vector<renderer::InstanceData>>& pair : objectWithTex2)
-	//{
-	//	const BatchKey& key = pair.first;
-	//	//std::vector<renderer::InstanceData>& instances = pair.second;
-	//	glBindTextureUnit(0, key.texID);
-	//	GLint uTexLoc = glGetUniformLocation(renderer::shdr_pgm[0], "uTex2d");
-	//	if (uTexLoc != -1)
-	//		glUniform1i(uTexLoc, 0);
-	//	//renderer::model& mdl = renderer::models[(int)key.meshType];
-	//	renderer::drawInstances(pair);
-	//}
+	else {
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	}
 
-	/*if (UISystem::isShowUI()) glBindFramebuffer(GL_FRAMEBUFFER, 0);*/
 
-	//record end time for performance tracking
-	auto end = std::chrono::high_resolution_clock::now();
-	double ms = std::chrono::duration<double, std::milli>(end - start).count(); //get elapse time in ms
-	g_SystemTimers.push_back({"Render", ms }); //saving timing for UI output
+	glm::mat4 camView, camProj;
+	getCameraMatrices(camView, camProj);
+
+	drawBatches(camView, camProj, [zThreshold](float z) { return z >= zThreshold; });
 }
 
 void RenderSystem::renderFBO() {
@@ -456,6 +515,9 @@ void RenderSystem::batchingSetUp(GameObjectManager& manager, float const& deltaT
 			Render* render = obj->getComponent<Render>();
 			Transform* transform = obj->getComponent<Transform>();
 
+			if (!render->visible) continue; // Skip invisible objects
+			
+
 			float scaleX = transform->flipX ? -transform->scaleX : transform->scaleX;
 
 			renderer::InstanceData data;
@@ -468,12 +530,49 @@ void RenderSystem::batchingSetUp(GameObjectManager& manager, float const& deltaT
 			data.color = render->clr;
 			data.texParams = glm::vec4(0, 0, 1, 1);
 
+			//video has highest priority for texture, if video is present, it will override the render component's texture
+			if (obj->hasComponent<Video>())
+			{
+					
+				Video* video = obj->getComponent<Video>();
+				/*std::cerr << "[VIDEO] found video obj, isPlaying=" << video->isPlaying
+					<< " plm=" << video->plm
+					<< " texID=" << video->videoTexID << "\n";*/
+				if (EditorManager::isEditingMode()) {
+					if (!video->videoTexID && !video->videoFile.empty()) {
+						VideoSystem::loadVideo(video);
+						if (video->plm) {
+							plm_destroy(video->plm);
+							video->plm = nullptr;
+						}
+					}
+					if (video->videoTexID) {
+						BatchKey key{ transform->z, video->videoTexID, render->modelRef.shape };
+						objectWithTex[key].push_back(data);
+						continue;
+					}
+				}
+				else if (video->isPlaying)
+				{
+					VideoSystem::update(obj, deltaTime); // Update video frame and texture
+					if (video->videoTexID)
+					{
+						BatchKey key{ transform->z, video->videoTexID, render->modelRef.shape };
+						objectWithTex[key].push_back(data);
+						continue;
+					}
+				}
+			}
 			// Animation handling (same as before)
 			if (obj->hasComponent<Animation>() && obj->hasComponent<StateMachine>())
 			{
 				Animation* animation = obj->getComponent<Animation>();
 				StateMachine* sm = obj->getComponent<StateMachine>();
-				AnimateState& as = animation->animState[static_cast<int>(sm->state)];
+				const int stateIndex = static_cast<int>(sm->state);
+				if (stateIndex < 0 || stateIndex >= static_cast<int>(animation->animState.size())) {
+					continue;
+				}
+				AnimateState& as = animation->animState[stateIndex];
 
 				if (render->hasAnimation && !as.texFile.empty()) {
 					glm::vec2 texOffSet{ as.currentFrameColumn / static_cast<float>(as.totalColumn), 1.f - ((as.currentFrameRow + 1) / static_cast<float>(as.totalRow)) };
@@ -534,100 +633,6 @@ void RenderSystem::batchingSetUp(GameObjectManager& manager, float const& deltaT
 	}
 }
 
-//void RenderSystem::batchingSetUp(GameObjectManager& manager, float const& deltaTime)
-//{
-//	LayerManager& layerManager = manager.getLayerManager();
-//	
-//	for (std::pair<const BatchKey, std::vector<renderer::InstanceData>>& pair : objectWithTex) pair.second.clear();
-//	for (std::pair<const BatchKey, std::vector<renderer::InstanceData>>& pair : objectWithoutTex) pair.second.clear();
-//
-//	// Process objects layer by layer for efficient visibility check
-//	for (Layer* layer : layerManager.getAllLayers()) {
-//		if (!layer || !layer->isVisible()) continue; // Skip non-visible layers (single flag check)
-//
-//		for (GameObject* obj : layer->getObjects()) {
-//			if (!obj->hasComponent<Render>() || !obj->hasComponent<Transform>())
-//				continue;
-//			
-//			Render* render = obj->getComponent<Render>();
-//			Transform* transform = obj->getComponent<Transform>();
-//
-//			float scaleX = transform->flipX ? -transform->scaleX : transform->scaleX;
-//
-//			renderer::InstanceData data;
-//			float angle = glm::radians(transform->rotation);
-//			transform->mdlWorld = glm::mat4{ 1 };
-//			transform->mdlWorld = glm::translate(transform->mdlWorld, glm::vec3(transform->x, transform->y, transform->z));
-//			transform->mdlWorld = glm::rotate(transform->mdlWorld, angle, glm::vec3(0, 0, 1.f));
-//			transform->mdlWorld = glm::scale(transform->mdlWorld, glm::vec3(scaleX, transform->scaleY, transform->scaleZ));
-//			data.model = transform->mdlWorld;
-//			data.color = render->clr;
-//			data.texParams = glm::vec4(0, 0, 1, 1);
-//
-//			// Animation handling (same as before)
-//			if (obj->hasComponent<Animation>() && obj->hasComponent<StateMachine>())
-//			{
-//				Animation* animation = obj->getComponent<Animation>();
-//				StateMachine* sm = obj->getComponent<StateMachine>();
-//				AnimateState& as = animation->animState[static_cast<int>(sm->state)];
-//					
-//				if (render->hasAnimation && !as.texFile.empty()) {
-//					glm::vec2 texOffSet{ as.currentFrameColumn / static_cast<float>(as.totalColumn), 1.f - ((as.currentFrameRow + 1) / static_cast<float>(as.totalRow)) };
-//					glm::vec2 texScale{ 1.f / as.totalColumn, 1.f / as.totalRow };
-//
-//					// Only update animation if layer is updatable
-//					if (as.play && layer->isUpdatable() && !EditorManager::isEditingMode() && !EditorManager::isPaused())
-//					{
-//						as.frameTimer += deltaTime;
-//						if (as.frameTimer >= as.frameTime)
-//						{
-//							as.frameTimer -= as.frameTime;
-//							if (as.currentFrameColumn >= as.lastFrame.x && as.currentFrameRow >= as.lastFrame.y)
-//							{
-//								if (as.loop) {
-//									as.currentFrameColumn = (int)as.initialFrame.x;
-//									as.currentFrameRow = (int)as.initialFrame.y;
-//									as.frameTimer = 0;
-//								}
-//								else {
-//									as.play = false;
-//								}
-//							}
-//							else {
-//								++as.currentFrameColumn;
-//								if (as.currentFrameColumn >= as.totalColumn) {
-//									as.currentFrameColumn = 0;
-//									++as.currentFrameRow;
-//									if (as.currentFrameRow > as.lastFrame.y) {
-//										as.currentFrameColumn = (int)as.initialFrame.x;
-//										as.currentFrameRow = (int)as.initialFrame.y;
-//									}
-//								}
-//							}
-//							animation->runItBack = true;
-//						}
-//					}
-//					data.texParams = { texOffSet, texScale };
-//					BatchKey key{ render->modelRef.shape, as.texHDL };
-//					objectWithTex[key].push_back(data);
-//				}
-//				else {
-//					BatchKey key{ render->modelRef.shape, 0 };
-//					objectWithoutTex[key].push_back(data);
-//				}
-//			}
-//			else if (render->hasTex) {
-//				BatchKey key{ render->modelRef.shape, render->texHDL };
-//				objectWithTex[key].push_back(data);
-//			}
-//			else {
-//				BatchKey key{ render->modelRef.shape, 0 };
-//				objectWithoutTex[key].push_back(data);
-//			}
-//		}
-//	}
-//}
-
 void RenderSystem::instancePerBatch(std::map<BatchKey, std::vector<renderer::InstanceData>> &batch)
 {
 	for (std::pair<const BatchKey, std::vector<renderer::InstanceData>>& objs : batch)
@@ -676,6 +681,164 @@ void RenderSystem::clearBatches() {
 void RenderSystem::fboAspectRatio(int& width, int& height) const {
 	width = fboWidth;
 	height = fboHeight;
+}
+
+void RenderSystem::getCameraMatrices(glm::mat4& camView, glm::mat4& camProj) {
+	if (UISystem::isShowUI() && EditorManager::isEditingMode()) {
+		camView = renderer::editorCam.view;
+		camProj = renderer::editorCam.proj;
+	}
+	else {
+		camView = renderer::cam.view;
+		camProj = renderer::cam.proj;
+	}
+}
+
+void RenderSystem::drawBatches(const glm::mat4& camView, const glm::mat4& camProj, std::function<bool(float)> zFilter) {
+	glDepthMask(GL_TRUE);
+	glUseProgram(renderer::shdr_pgm[1]);
+	GLint uView = glGetUniformLocation(renderer::shdr_pgm[1], "V");
+	GLint uProj = glGetUniformLocation(renderer::shdr_pgm[1], "P");
+	glUniformMatrix4fv(uView, 1, GL_FALSE, glm::value_ptr(camView));
+	glUniformMatrix4fv(uProj, 1, GL_FALSE, glm::value_ptr(camProj));
+	for (auto& pair : objectWithoutTex)
+		if (zFilter(pair.first.z)) renderer::drawInstances(pair);
+
+	glDepthMask(GL_FALSE);
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	glUseProgram(renderer::shdr_pgm[0]);
+	uView = glGetUniformLocation(renderer::shdr_pgm[0], "V");
+	uProj = glGetUniformLocation(renderer::shdr_pgm[0], "P");
+	glUniformMatrix4fv(uView, 1, GL_FALSE, glm::value_ptr(camView));
+	glUniformMatrix4fv(uProj, 1, GL_FALSE, glm::value_ptr(camProj));
+	for (std::pair<const BatchKey, std::vector<renderer::InstanceData>>& pair : objectWithTex) {
+		if (zFilter(pair.first.z)) {
+			glBindTextureUnit(0, pair.first.texID);
+			GLuint isVid = glGetUniformLocation(renderer::shdr_pgm[0], "isVid");
+			glUniform1i(isVid, pair.first.vid ? 1 : 0);
+
+			GLint uTexLoc = glGetUniformLocation(renderer::shdr_pgm[0], "uTex2d");
+			if (uTexLoc != -1) 
+				glUniform1i(uTexLoc, 0);
+			renderer::drawInstances(pair);
+		}
+	}
+
+	glDepthMask(GL_TRUE);
+}
+
+void VideoSystem::update(GameObject* obj, float const deltaTime)
+{
+	if (EditorManager::isEditingMode() || EditorManager::isPaused()) return;
+
+	Video* video = obj->getComponent<Video>();
+	if (!video->isPlaying) return;
+	if (video->isPaused) return;
+
+	video->videoEnded = false; // reset runtime video end check (for visual logic)
+
+	if (!video->plm)
+	{
+		if (!loadVideo(video))
+		{
+			std::cerr << "Failed to load video: " << video->videoFile << std::endl;
+			video->isPlaying = false;
+			return;
+		}
+		video->accumTime = 0.f; // reset accum time so if we start playing again it doesn't immediately skip frames
+		// if first frame lags, return this immediately so we don't have a frozen frame until the next update
+		//return;
+	}
+	video->accumTime += deltaTime;
+	while (video->accumTime >= 1.f / video->fps)
+	{
+		video->accumTime -= 1.f / video->fps;
+		// Decode and update texture
+		plm_frame_t* frame = plm_decode_video(video->plm);
+		//std::cerr << "[VIDEO] decode attempt, frame=" << frame << "\n";
+		if (frame) {
+			std::vector<uint8_t> pixels(video->videoWidth * video->videoHeight * 4);
+			plm_frame_to_rgba(frame, pixels.data(), video->videoWidth * 4);
+			for (int i = 3; i < (int)pixels.size(); i += 4)
+				pixels[i] = 255;
+			std::vector<uint8_t> flipped(pixels.size());
+			int rowSize = video->videoWidth * 4;
+			for (int y = 0; y < video->videoHeight; y++) {
+				memcpy(flipped.data() + y * rowSize,
+					pixels.data() + (video->videoHeight - 1 - y) * rowSize,
+					rowSize);
+			}
+			glBindTexture(GL_TEXTURE_2D, video->videoTexID);
+			glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, video->videoWidth, video->videoHeight,
+				GL_RGBA, GL_UNSIGNED_BYTE, flipped.data());
+			//std::cerr << "[VIDEO] uploaded frame to texID=" << video->videoTexID << "\n";
+		}
+	}
+	if (plm_has_ended(video->plm)) {
+		cleanup(video);
+		video->accumTime = 0.f;
+		video->videoEnded = true;
+
+		if (video->loop) {
+			video->isPlaying = true;  // next iteration reloads plm
+		}
+		else {
+			video->isPlaying = false;
+			if (video->onVideoEnd) video->onVideoEnd();
+		}
+	}
+}
+
+void VideoSystem::cleanup(Video* video)
+{
+	if (video->plm) {
+		plm_destroy(video->plm);
+		video->plm = nullptr;
+	}
+	if (video->videoTexID) {
+		glDeleteTextures(1, &video->videoTexID);
+		video->videoTexID = 0;
+	}
+}
+
+bool VideoSystem::loadVideo(Video* video) {
+	video->plm = plm_create_with_filename(video->videoFile.c_str());
+	if (!video->plm) return false;
+
+	video->videoWidth = plm_get_width(video->plm);
+	video->videoHeight = plm_get_height(video->plm);
+	video->fps = static_cast<float>(plm_get_framerate(video->plm));
+
+	glGenTextures(1, &video->videoTexID);
+	glBindTexture(GL_TEXTURE_2D, video->videoTexID);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, video->videoWidth, video->videoHeight,
+		0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	plm_frame_t* firstFrame = plm_decode_video(video->plm);
+	if (firstFrame) {
+		std::vector<uint8_t> pixels(video->videoWidth * video->videoHeight * 4);
+		plm_frame_to_rgba(firstFrame, pixels.data(), video->videoWidth * 4);
+
+		for (int i = 3; i < (int)pixels.size(); i += 4)
+			pixels[i] = 255;
+
+		std::vector<uint8_t> flipped(pixels.size());
+		int rowSize = video->videoWidth * 4;
+		for (int y = 0; y < video->videoHeight; y++) {
+			memcpy(flipped.data() + y * rowSize,
+				pixels.data() + (video->videoHeight - 1 - y) * rowSize,
+				rowSize);
+		}
+
+		glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, video->videoWidth, video->videoHeight,
+			GL_RGBA, GL_UNSIGNED_BYTE, flipped.data());
+	}
+
+	return true;
 }
 
 void ParticleSystem::clearUsedID(size_t ID)
@@ -817,52 +980,6 @@ void ParticleSystem::update(GameObjectManager& manager, float const& deltaTime)
 		}
 	}
 }
-//void RenderSystem::renderCollision(Collision::AABB const& box, glm::vec3 const& clr)
-//{
-//	{
-//		// Get corners from min and max
-//		glm::vec2 min = box.getMin();
-//		glm::vec2 max = box.getMax();
-//
-//		float vertices[] = {
-//			min.x, min.y, 0.0f, // bottom left
-//			max.x, min.y, 0.0f, // bottom right
-//			max.x, max.y, 0.0f, // top right
-//			min.x, max.y, 0.0f  // top left
-//		};
-//
-//		GLuint VAO, VBO;
-//		glGenVertexArrays(1, &VAO);
-//		glGenBuffers(1, &VBO);
-//
-//		glBindVertexArray(VAO);
-//		glBindBuffer(GL_ARRAY_BUFFER, VBO);
-//		glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-//
-//		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-//		glEnableVertexAttribArray(0);
-//
-//		// Use simple color shader (no texture)
-//		glUseProgram(renderer::shdr_pgm[1]);
-//
-//		GLint vColorLoc = glGetUniformLocation(renderer::shdr_pgm[1], "uColor");
-//		if (vColorLoc != -1)
-//			glUniform3fv(vColorLoc, 1, glm::value_ptr(clr));
-//
-//		GLint vTransformView = glGetUniformLocation(renderer::shdr_pgm[1], "V");
-//		GLint vTransformProj = glGetUniformLocation(renderer::shdr_pgm[1], "P");
-//		glUniformMatrix4fv(vTransformView, 1, GL_FALSE, glm::value_ptr(renderer::cam.view));
-//		glUniformMatrix4fv(vTransformProj, 1, GL_FALSE, glm::value_ptr(renderer::cam.proj));
-//
-//		// Draw as line loop
-//		glLineWidth(2.0f);
-//		glDrawArrays(GL_LINE_LOOP, 0, 4);
-//
-//		glBindVertexArray(0);
-//		glDeleteBuffers(1, &VBO);
-//		glDeleteVertexArrays(1, &VAO);
-//	}
-//}
 
 void FontSystem::init(GameObjectManager& manager)
 {
@@ -947,6 +1064,7 @@ void FontSystem::update(GameObjectManager& manager, double fps)
 				fc->word = "FPS: " + std::to_string(fps);
 				t->x = -15.f;
 				t->y = 9.f;
+				fc->mdl = Font::fontMdls[0];
 				RenderText(Font::fontShaders, fc->word, t->x, t->y, fc->scale, fc->clr, fpsText.get());
 			}
 		}
@@ -1097,7 +1215,7 @@ void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime, M
 		if (!object->hasComponent<Physics>()) continue;
 		Physics* physics = object->getComponent<Physics>();
 		previousOnGround[object] = physics->onGround;
-		if(object->hasComponent<Particle>()) 
+		if (object->hasComponent<Particle>())
 		{
 			Particle* particle = object->getComponent<Particle>();
 			if (!particle->isMaster)
@@ -1119,13 +1237,13 @@ void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime, M
 	manager.getAllGameObjects(gameObjects);
 
 	for (auto* object : gameObjects) {
-        if (!object->hasComponent<Transform>() || !object->hasComponent<Physics>())
-            continue;
- 
-        Physics* physics = object->getComponent<Physics>();
-        Transform* transform = object->getComponent<Transform>();
- 
-        if (!physics->physicsFlag) continue;
+		if (!object->hasComponent<Transform>() || !object->hasComponent<Physics>())
+			continue;
+
+		Physics* physics = object->getComponent<Physics>();
+		Transform* transform = object->getComponent<Transform>();
+
+		if (!physics->physicsFlag) continue;
 
 		// Player input — fully delegated to game
 		if (object->hasComponent<Input>() &&
@@ -1136,34 +1254,34 @@ void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime, M
 				m_gameScript->onPlayerInput(*object, manager, messageBus, deltaTime);
 		}
 
- 
-        if (physics->autoUpdate) {
-            if (!EditorManager::isEditingMode() && !EditorManager::isPaused()) {
-                if (!physics->inWater) {
-                    physics->velY += physics->gravity * deltaTime;
-                }
-                transform->y += physics->velY * deltaTime;
-                transform->x += physics->velX * deltaTime;
- 
-                physics->dynamics.position.y = transform->y;
-                physics->dynamics.position.x = transform->x;
-                physics->dynamics.velocity.y = physics->velY;
-                physics->dynamics.velocity.x = physics->velX;
-            }
-        }
 
-        // auto-move
-        if (object->checkAutoMove()) {
-            transform->y += physics->dynamics.velocity.y * deltaTime;
-            transform->x += physics->dynamics.velocity.x * deltaTime;
-        }
- 
-        // angular integration
-        if (!physics->freezeRotation) {
-            DynamicsSystem::IntegrateAngular(physics->dynamics, deltaTime);
-            transform->rotation += physics->dynamics.angularVelocity * deltaTime;
-        }
-    }
+		if (physics->autoUpdate) {
+			if (!EditorManager::isEditingMode() && !EditorManager::isPaused()) {
+				if (!physics->inWater) {
+					physics->velY += physics->gravity * deltaTime;
+				}
+				transform->y += physics->velY * deltaTime;
+				transform->x += physics->velX * deltaTime;
+
+				physics->dynamics.position.y = transform->y;
+				physics->dynamics.position.x = transform->x;
+				physics->dynamics.velocity.y = physics->velY;
+				physics->dynamics.velocity.x = physics->velX;
+			}
+		}
+
+		// auto-move
+		if (object->checkAutoMove()) {
+			transform->y += physics->dynamics.velocity.y * deltaTime;
+			transform->x += physics->dynamics.velocity.x * deltaTime;
+		}
+
+		// angular integration
+		if (!physics->freezeRotation) {
+			DynamicsSystem::IntegrateAngular(physics->dynamics, deltaTime);
+			transform->rotation += physics->dynamics.angularVelocity * deltaTime;
+		}
+	}
 
 	// reset on ground for all physics obj
 	for (auto* object : gameObjects) {
@@ -1171,475 +1289,13 @@ void PhysicsSystem::update(GameObjectManager& manager, const float& deltaTime, M
 		object->getComponent<Physics>()->onGround = false;
 	}
 
-	if(m_gameScript)
+	if (m_gameScript)
 		m_gameScript->onPhysicsUpdate(manager, deltaTime);
-
-// 	for (auto object : gameObjects) {
-// 		if (!object->hasComponent<Physics>()) continue;
-// 		Physics* physics = object->getComponent<Physics>();
-// 		// don't reset onGround for water particles, collision will update it
-// 		if (object->getObjectName().find("bullet") != 0) physics->onGround = false;
-// 	}
-
-// 	for (auto object : gameObjects) {
-// 		if (!object->hasComponent<Transform>() || !object->hasComponent<Physics>())
-// 			continue;
-
-// 		Physics* physics = object->getComponent<Physics>();
-		
-// 		if (object->getObjectName() == "bullet") continue;
-		
-// 		Transform* transform = object->getComponent<Transform>();
-
-// 		//sinle's personal physics for his one and only character, dont touch it
-// 		if (physics->sinlePersonalBool)
-// 		{
-// 			//std::cout << "hregoesrbgiubgiubgbiguwbiub";
-// 			physics->physicsFlag = false;
-// 			if (physics->sinleFlag)
-// 			{
-// 				if (physics->inWater)
-// 					physics->acceleration.y = physics->waterBounce;
-// 				else
-// 					physics->acceleration.y = 0;
-// 				physics->velX += physics->acceleration.x * deltaTime;
-// 				physics->velY += (physics->acceleration.y + physics->sinleGravity) * deltaTime;
-// 				if(physics->hitWater)
-// 					onEnterWater(physics, deltaTime);
-// 				if (physics->hitground)
-// 					physics->velY = 0;
-// 				transform->x += physics->velX * deltaTime;
-// 				transform->y += physics->velY * deltaTime;
-// 				/*std::cout << "acceleration: (" << physics->acceleration.x << ", " << physics->acceleration.y << ")\n";
-// 				std::cout << "velocity: (" << physics->velX << ", " << physics->velY << ")\n";
-// 				std::cout << "position: (" << transform->x << ", " << transform->y << ")\n";*/
-// 			}
-// 			continue;
-// 		}
-// 		if (!physics->physicsFlag) continue;
-// 		if (physics->autoUpdate) {
-// 			// Apply gravity when not in water -- future ref
-// 			if (!EditorManager::isEditingMode() && !EditorManager::isPaused()) {
-// 				if (!physics->inWater) {
-// 					physics->velY += physics->gravity * deltaTime;
-// 				}
-
-// 				transform->y += physics->velY * deltaTime;
-// 				transform->x += physics->velX * deltaTime;
-
-// 				physics->dynamics.position.y = transform->y;
-// 				physics->dynamics.position.x = transform->x;
-// 				physics->dynamics.velocity.y = physics->velY;
-// 				physics->dynamics.velocity.x = physics->velX;
-// 			}
-// 		}
-
-// 		// Handle player input
-// 		if (object->hasComponent<Input>() && !EditorManager::isEditingMode() && !EditorManager::isPaused()) {
-// 			// STEP 1: Ground check FIRST
-// 			if (transform->y <= physics->floorY && !object->checkAutoMove()) {
-// 				transform->y = physics->floorY;
-// 				physics->dynamics.position.y = physics->floorY;
-// 				physics->dynamics.velocity.y = 0.0f;
-// 				physics->velY = 0.0f;
-// 				physics->onGround = true;
-
-// 				// coyote
-// 				physics->coyoteAvailable = true; // reset when on ground
-// 				physics->coyoteTimer = physics->coyoteTime;
-// 			}
-
-// 			// coyote timer update when not on ground
-// 			if (!physics->onGround) {
-// 				if (physics->coyoteTimer > 0.f)
-// 					physics->coyoteTimer -= deltaTime;
-// 				else
-// 					physics->coyoteAvailable = false;
-// 			}
-
-// 			// jump buffer timer update
-// 			if (physics->jumpBufferTimer > 0.f)
-// 				physics->jumpBufferTimer -= deltaTime;
-
-// 			if (physics->ledgeClimb) {
-// 				float diff = physics->ledgeTargetY - transform->y;
-
-// 				if (std::abs(diff) < 0.05f) {
-// 					// reach top
-// 					transform->y = physics->ledgeTargetY;
-// 					physics->dynamics.position.y = physics->ledgeTargetY;
-// 					physics->dynamics.velocity.y = 0.0f;
-// 					physics->velY = 0.0f;
-// 					physics->onGround = true;
-// 					physics->ledgeClimb = false;
-// 					physics->coyoteAvailable = true;
-// 					physics->coyoteTimer = physics->coyoteTime;
-// 				}
-// 				else {
-// 					// still climbing
-// 					float step = physics->ledgeClimbSpeed * deltaTime;
-// 					transform->y += std::min(step, diff);
-// 					physics->dynamics.position.y = transform->y;
-// 					physics->dynamics.velocity.y = 0.0f;
-// 					physics->velY = 0.0f;
-// 					physics->onGround = false;
-// 				}
-// 			}
-
-// 			// STEP 2: Jump input
-// 			// when space pressed, store the intention
-// 			if (InputHandler::isKeyTriggered(GLFW_KEY_SPACE))
-// 				physics->jumpBufferTimer = physics->jumpBufferTime;
-
-// 			// jump if buffer is active AND player is grounded or coyote available
-// 			if (physics->jumpBufferTimer > 0.f && (previousOnGround[object] || physics->coyoteAvailable)) {
-// 				PhysicsForces::jump(object);
-// 				physics->jumpBufferTimer = 0.f;
-// 				physics->coyoteAvailable = false;
-// 				messageBus.publish(Message("KeyPressed", nullptr, KeyEvent{ "SPACE", true }));
-// 			}
-
-// 			// tap for small jump, hold for big jump
-// 			if (InputHandler::isKeyReleased(GLFW_KEY_SPACE)) {
-// 				if (physics->dynamics.velocity.y > 0.0f)
-// 					physics->dynamics.velocity.y *= 0.8f;
-// 			}
-
-// 			// STEP 3: Movement
-// 			float targetVelX = 0.0f;
-// 			if (InputHandler::isKeyHeld(GLFW_KEY_A)) {
-// 				physics->canMove = true;
-// 				targetVelX = -physics->moveSpeed;
-// 				transform->flipX = true;
-// 				messageBus.publish(Message("KeyPressed", nullptr, KeyEvent{ "A", true }));
-// 			}
-// 			else if (InputHandler::isKeyHeld(GLFW_KEY_D) && physics->canMove) {
-// 				targetVelX = physics->moveSpeed;
-// 				transform->flipX = false;
-// 				messageBus.publish(Message("KeyPressed", nullptr, KeyEvent{ "D", true }));
-// 			}
-
-// 			// Flip player to face mouse direction (only when no movement keys override)
-// 			if (!InputHandler::isKeyHeld(GLFW_KEY_A) && !InputHandler::isKeyHeld(GLFW_KEY_D)) {
-// 				Vector2D mouseWorldPos = InputHandler::getWorldMousePosition();
-// 				transform->flipX = (mouseWorldPos.x < transform->x);
-// 			}
-
-
-// 			// STEP 4: Integrate physics
-// 			if (!object->checkAutoMove() && !physics->ledgeClimb) {
-
-// 				if (CollisionInfo* collision = object->getComponent<CollisionInfo>()) {
-// 					PhysicsForces::applyDamping(physics, collision->material.friction, targetVelX, deltaTime);
-// 					PhysicsForces::updatePosition(transform, physics, deltaTime);
-// 				}
-// 			}
-
-
-// 			// Continuous shooting system
-// 			if (physics->canShoot) {
-// 				// Update shoot timer
-// 				physics->shootTimer += deltaTime;
-
-// 				// Check if mouse button is being held down
-// 				if (InputHandler::isMouseLeftHeld()) {
-// #ifdef _DEBUG
-// 					if ((!UISystem::isShowUI() || (SceneWindow::isSceneHovered() && !EditorManager::isEditingMode()))) {
-// #endif // _DEBUG
-// 						if (VisualLC::globalFloatVar.count("bullets") &&
-// 							VisualLC::globalFloatVar["bullets"] > 0) {
-// 							if (physics->shootTimer >= physics->fireRate) {
-// 								GameObject* bullet = PhysicsForces::findAvailableBullet(manager);
-
-// 								if (bullet != nullptr) {
-// 									// Get mouse position in world coordinates
-// 									Vector2D mouseWorldPos;
-// #ifdef _DEBUG
-// 									if (UISystem::isShowUI() && !EditorManager::isEditingMode()) {
-// 										ImVec2 scenePos, sceneSize;
-// 										EditorManager::getScenePosNSize(scenePos, sceneSize);
-// 										mouseWorldPos = InputHandler::getMousePositionInImGuiViewport(scenePos, sceneSize);
-// 									}
-// 									else {
-// 										mouseWorldPos = InputHandler::getWorldMousePosition();
-// 									}
-// #else
-// 									mouseWorldPos = InputHandler::getWorldMousePosition();
-// #endif
-
-// 									Transform* spawnTransform = transform;
-// 									{
-// 										std::vector<GameObject*> allObjs;
-// 										manager.getAllGameObjects(allObjs);
-// 										for (GameObject* candidate : allObjs)
-// 										{
-// 											if (!candidate->hasComponent<WeaponComponent>()) continue;
-// 											if (!candidate->hasComponent<Transform>()) continue;
-// 											Transform* wt = candidate->getComponent<Transform>();
-// 											if (wt->parentName == object->getObjectName())
-// 											{
-// 												spawnTransform = wt;
-// 												//set a flay saying channel is pending to play sound
-// 												if (bullet->hasComponent<AudioComponent>()) {
-// 													AudioComponent* audio = bullet->getComponent<AudioComponent>();
-// 													AudioChannel* ch = audio->getDefaultChannel();
-// 													ch->isPendingPlay = true;
-
-// 													// Shoot bullet toward mouse position
-// 													PhysicsForces::shoot(bullet, spawnTransform, mouseWorldPos);
-// 													messageBus.publish(Message("KeyPressed", nullptr, KeyEvent{ "LEFT_CLICK", true }));
-
-
-// 													VisualLogicSystem::broadcastBulletShoot();
-
-// 													DebugLog::addMessage("Bullet fired!", DebugMode::PlaySimul);
-// 													physics->shootTimer = 0.0f;
-// 												}
-// 												else {
-// 													physics->shootTimer = physics->fireRate * 0.5f;
-// 													DebugLog::addMessage("No bullets available!", DebugMode::PlaySimul);
-// 												}
-// 												break;
-// 											}
-// 										}
-// 									}
-
-									
-// 								}
-// 							}
-// 						}
-// 						else {
-// 							DebugLog::addMessage("Out of bullets!", DebugMode::PlaySimul);
-// 						}
-// #ifdef _DEBUG
-// 					}
-// #endif // _DEBUG
-// 				}
-// 				else {
-// 					physics->shootTimer = physics->fireRate;
-// 				}
-// 			}
-
-			
-// 		}
-
-// 		// Auto-move objects
-// 		if (object->checkAutoMove()) {
-// 			transform->y += physics->dynamics.velocity.y * deltaTime;
-// 			transform->x += physics->dynamics.velocity.x * deltaTime;
-// 		}
-
-// 		// Angular integration for rotatable objects (e.g. water wheel)
-// 		if (!physics->freezeRotation) {
-// 			DynamicsSystem::IntegrateAngular(physics->dynamics, deltaTime);
-// 			transform->rotation += physics->dynamics.angularVelocity * deltaTime;
-// 		}
-// 	}
-
-// 	// Bullet physics
-// 	for (GameObject* obj : gameObjects) {
-// 		std::string name = obj->getObjectName();
-// 		// Skip if not a numbered bullet
-// 		if (name.find("bullet") != 0) continue;
-
-// 		bool isNumberedBullet = true;
-// 		for (size_t i = 6; i < name.length(); i++) {
-// 			if (!std::isdigit(name[i])) {
-// 				isNumberedBullet = false;
-// 				break;
-// 			}
-// 		}
-// 		if (!isNumberedBullet) continue;
-
-// 		if (!obj->hasComponent<Physics>() || !obj->hasComponent<Transform>())
-// 			continue;
-
-// 		Physics* p = obj->getComponent<Physics>();
-// 		Transform* t = obj->getComponent<Transform>();
-
-// 		if (p->alive) {
-// 			// Update forces (non-gravity forces)
-// 			DynamicsSystem::UpdateForces(p->dynamics, deltaTime);
-
-// 			// Check gravity delay
-// 			if (p->gravityDelayTimer > 0.0f) {
-// 				// No gravity yet - just integrate velocity into position
-// 				p->gravityDelayTimer -= deltaTime;
-
-// 				// apply weak gravity even during delay so it doesn't slam on expiry
-// 				p->dynamics.velocity.y += -15.8f * (1.0f - (p->gravityDelayTimer / p->gravityDelay)) * deltaTime;
-
-// 				Vector3D deltaPos = Vec3_Scale(&p->dynamics.velocity, deltaTime);
-// 				p->dynamics.position = Vec3_Add(&p->dynamics.position, &deltaPos);
-// 			}
-// 			else {
-// 				// Gravity delay expired - normal physics with gravity
-// 				//DynamicsSystem::Integrate(p->dynamics, deltaTime, p->gravity, false);
-
-// 				if (!p->onGround) {
-// 					/*for water to move*/
-// 					//flow force
-// 					float flowDir = (p->dynamics.velocity.x >= 0.0f) ? 1.0f : -1.0f;
-// 					float flowStrength = 5.0f * expf(-p->lifeTimer * 0.6f);
-// 					p->dynamics.velocity.x += flowStrength * flowDir * deltaTime;
-// 					//strong gravity
-// 					p->dynamics.velocity.y += -15.8f * deltaTime;
-// 					//turbulence that decays over time
-// 					float turbulence = sin(p->lifeTimer * 8.0f) * 2.0f * expf(-p->lifeTimer);
-// 					p->dynamics.velocity.y += turbulence * deltaTime;
-// 					//quadratic drag
-// 					float speed = sqrt(
-// 						p->dynamics.velocity.x * p->dynamics.velocity.x +
-// 						p->dynamics.velocity.y * p->dynamics.velocity.y);
-
-// 					if (speed > 0.0001f) {
-// 						float dragCoefficient = 0.5f;
-// 						float dragForce = dragCoefficient * speed * speed;
-// 						p->dynamics.velocity.x -= (p->dynamics.velocity.x / speed) * dragForce * deltaTime;
-// 						p->dynamics.velocity.y -= (p->dynamics.velocity.y / speed) * dragForce * deltaTime;
-// 					}
-// 				}
-// 				//integrate
-// 				Vector3D deltaPos = Vec3_Scale(&p->dynamics.velocity, deltaTime);
-// 				p->dynamics.position = Vec3_Add(&p->dynamics.position, &deltaPos);
-// 			}
-
-
-// 			t->x = p->dynamics.position.x;
-// 			t->y = p->dynamics.position.y;
-
-// 			// Update life timer
-// 			p->lifeTimer += deltaTime;
-
-// 			// Deactivate if lifetime exceeded or fell too far
-// 			if (!EditorManager::isEditingMode()) {
-// 				//shrink and fade over lifetime
-// 				if (p->lifeTimer > 2.0f) {
-// 					float shrinkTimer = p->lifeTimer - 2.0f;  // starts from 0 after 5s
-// 					float lifePercent = shrinkTimer / p->maxLifetime;
-// 					float newScale = p->initialScale * (1.0f - lifePercent);
-// 					newScale = std::max(newScale, p->minScale);
-// 					t->scaleX = newScale;
-// 					t->scaleY = newScale;
-
-// 					//shrink collider to match visual size
-// 					if (obj->hasComponent<CollisionInfo>()) {
-// 						CollisionInfo* col = obj->getComponent<CollisionInfo>();
-// 						col->colliderSize.x = newScale;
-// 						col->colliderSize.y = newScale;
-// 					}
-// 				}
-// 				if (p->lifeTimer >= p->maxLifetime || p->dynamics.position.y < -20.0f) {
-// 					PhysicsForces::deactivateBullet(obj);
-// 				}
-// 			}
-// 		}
-// 		else {
-// 			//Haardcoded way-- need fix in future
-// 			if (!EditorManager::isEditingMode()) {
-// 				if (t->y > -100.0f || t->x > -100.0f) {
-// 					t->x = -1000.0f;
-// 					t->y = -1000.0f;
-// 					p->dynamics.position.x = -1000.0f;
-// 					p->dynamics.position.y = -1000.0f;
-// 					p->dynamics.velocity.x = 0.0f;
-// 					p->dynamics.velocity.y = 0.0f;
-// 				}
-// 			}
-// 		}
-// 	}
 
 	auto end = std::chrono::high_resolution_clock::now();
 	double ms = std::chrono::duration<double, std::milli>(end - start).count();
 	g_SystemTimers.push_back({ "Physics", ms });
 }
-
-// void WeaponSystem::update(GameObjectManager& manager, const float& deltaTime)
-// {
-// 	auto start = std::chrono::high_resolution_clock::now();
-
-// 	(void)deltaTime;
-
-// 	#ifdef _DEBUG
-// 		if (EditorManager::isEditingMode()) return;
-// 	#endif
-
-// 	std::vector<GameObject*> gameObjects;
-// 	manager.getAllGameObjects(gameObjects);
-
-// 	const Vector2D mouseWorld = InputHandler::getWorldMousePosition();
-
-// 	for (GameObject* obj : gameObjects)
-// 	{
-// 		if (!obj->hasComponent<Transform>() || !obj->hasComponent<WeaponComponent>())
-// 			continue;
-
-// 		WeaponComponent* weapon = obj->getComponent<WeaponComponent>();
-// 		if (!weapon->aimAtMouse) continue;
-
-// 		Transform* weaponTransform = obj->getComponent<Transform>();
-
-// 		//original local X offset
-// 		//owner flips direction
-// 		if (!weapon->baseLocalOffsetInitialised)
-// 		{
-// 			weapon->baseLocalOffsetX = weaponTransform->localOffset.x;
-// 			weapon->baseLocalOffsetInitialised = true;
-// 		}
-
-// 		bool ownerFacingLeft = false;
-
-// 		if (!weaponTransform->parentName.empty())
-// 		{
-// 			GameObject* owner = manager.getGameObject(weaponTransform->parentName);
-// 			if (owner && owner->hasComponent<Transform>())
-// 			{
-// 				ownerFacingLeft = owner->getComponent<Transform>()->flipX;
-// 			}
-// 		}
-
-// 		weaponTransform->localOffset.x = ownerFacingLeft
-// 			? -std::abs(weapon->baseLocalOffsetX)
-// 			: std::abs(weapon->baseLocalOffsetX);
-// 		// Check the weapon's parent 
-// 		if (!weaponTransform->parentName.empty())
-// 		{
-// 			GameObject* owner = manager.getGameObject(weaponTransform->parentName);
-// 			if (owner && owner->hasComponent<Transform>())
-// 			{
-// 				Transform* pt = owner->getComponent<Transform>();
-// 				const float parentRad = DegToRad(pt->rotation);
-// 				const float cosA = cosf(parentRad);
-// 				const float sinA = sinf(parentRad);
-// 				// Rotate local offset around the parent
-// 				const float rotatedX = weaponTransform->localOffset.x * cosA
-// 					- weaponTransform->localOffset.y * sinA;
-// 				const float rotatedY = weaponTransform->localOffset.x * sinA
-// 					+ weaponTransform->localOffset.y * cosA;
-// 				weaponTransform->x = pt->x + rotatedX;
-// 				weaponTransform->y = pt->y + rotatedY;
-// 			}
-// 		}
-
-// 		const float dx = mouseWorld.x - weaponTransform->x;
-// 		const float dy = mouseWorld.y - weaponTransform->y;
-
-// 		// Calculate the aiming angle
-// 		const float aimAngleRad = ownerFacingLeft
-// 			? std::atan2(-dy, -dx)  
-// 			: std::atan2(dy, dx); 
-// 		weaponTransform->flipX = ownerFacingLeft;
-
-// 		const float aimAngleDeg = RadToDeg(aimAngleRad);
-// 		weaponTransform->rotation = aimAngleDeg;
-
-// 		weapon->currentAngle = aimAngleDeg;
-// 	}
-
-// 	auto end = std::chrono::high_resolution_clock::now();
-// 	double ms = std::chrono::duration<double, std::milli>(end - start).count();
-// 	g_SystemTimers.push_back({ "Weapon", ms });
-// }
 
 //helper function for collision detection
 static uint64_t MakePairKey(GameObject* a, GameObject* b)
@@ -1850,7 +1506,7 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 						bool obj2IsStatic = (c2->collisionRes == CollisionResponseMode::StopWhenCollide);
 						// bool obj1IsFloating = (c1->collisionTag == "floatingObject") && obj2->hasComponent<WaterBody>();
 						// bool obj2IsFloating = (c2->collisionTag == "floatingObject") && obj1->hasComponent<WaterBody>();
-					
+
 						//helper lambda for bounce calculation
 						auto ApplyBounce = [](Physics* p, CollisionInfo* c, const Vector2D& normal, bool isStatic) {
 							//get current velocity
@@ -1944,18 +1600,6 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 										p1->coyoteTimer = p1->coyoteTime;
 									}
 									else {
-										// obj2 landed on top of obj1 — mirror logic
-										// if (c1->collisionTag == "floatingObject" &&
-										// 	p2->velY < -1.0f)
-										// {
-										// 	float impactFraction = 0.35f;
-										// 	float mass2val = p2->dynamics.mass;
-										// 	float mass1val = p1->dynamics.mass;
-										// 	float massRatio = glm::clamp(mass2val / mass1val, 0.1f, 3.0f);
-										// 	p1->velY += p2->velY * impactFraction * massRatio;
-										// 	p1->velY = glm::max(p1->velY, -15.0f);
-										// 	p1->dynamics.velocity.y = p1->velY;
-										// }
 
 										if (m_gameScript) {
 											// Let game apply special impulses (e.g. floatingObject dip)
@@ -1975,11 +1619,8 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 						}
 						// CASE 2: obj1 is pushable, obj2 is static
 						else if (!obj1IsStatic && obj2IsStatic) {
-							//float pushPercent = (c1->collisionTag == "bullet") ? 1.0f : 0.3f;
 							// Push out of collision
 							if (info.normal.x != 0) {
-								//if (c1->collisionTag == "bullet") continue;
-								//t1->x += info.normal.x * info.penetration * pushPercent;
 
 								if (m_gameScript) {
 									if (m_gameScript->onCollisionResponse(obj1, c1, info, true, c2))
@@ -2003,33 +1644,20 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 									}
 								}
 
-								p1->dynamics.velocity.x = 0.f;
-								p1->velX = 0.f;
+								if (p1->dynamics.velocity.x * info.normal.x < 0) {
+									p1->dynamics.velocity.x = 0.f;
+									p1->velX = 0.f;
+								}
 
-								//stop horizontal motion for non-bullet objects
-								// if (c1->collisionTag != "bullet") { 
-								// 	p1->dynamics.velocity.x = 0.f;
-								// 	p1->velX = 0.f;
-								// }
 							}
 							if (info.normal.y != 0) {
-								//t1->y += info.normal.y * info.penetration * pushPercent;
-								t1->y += info.normal.y * info.penetration * 0.3f;
-								p1->dynamics.position.y = t1->y;
-
 								if (m_gameScript) {
 									if (m_gameScript->onCollisionResponse(obj1, c1, info, true, c2))
 										continue;
 								}
 
-								// if (c1->collisionTag == "bullet") { // water
-								// 	float direction = (p1->dynamics.velocity.x >= 0.f) ? 1.f : -1.f;
-								// 	p1->dynamics.velocity.x = 12.0f * direction;
-								// 	p1->dynamics.velocity.y = 0.0f;
-								// 	p1->onGround = true;
-								// }
-								// else {
-								// 	//normal objects
+								t1->y += info.normal.y * info.penetration * 0.3f;
+								p1->dynamics.position.y = t1->y;
 								p1->dynamics.velocity.y = 0.f;
 
 								if (info.normal.y > 0) {
@@ -2037,7 +1665,6 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 									p1->coyoteAvailable  = true;
 									p1->coyoteTimer      = p1->coyoteTime;
 								}
-								//}
 							}
 							// Apply torque to obj2 if it can rotate (e.g. water wheel hit by bullet)
 							// If obj2 is a child, redirect torque to its parent (e.g. spoke → water wheel)
@@ -2069,30 +1696,21 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 								ApplyBounce(p1, c1, info.normal, true);
 							}
 							else {
-								if (info.normal.x != 0) { p1->dynamics.velocity.x = 0.f; p1->velX = 0.f; }
+								if (info.normal.x != 0) {
+									if (p1->dynamics.velocity.x * info.normal.x < 0) {
+										p1->dynamics.velocity.x = 0.f;
+										p1->velX = 0.f;
+									}
+								}
+
 								if (info.normal.y != 0) {
 									p1->dynamics.velocity.y = 0.f;
 									if (info.normal.y > 0) {
-										p1->onGround        = true;
+										p1->onGround = true;
 										p1->coyoteAvailable = true;
-										p1->coyoteTimer     = p1->coyoteTime;
+										p1->coyoteTimer = p1->coyoteTime;
 									}
 								}
-								//original stop behaviors
-								// if (c1->collisionTag != "bullet") {
-								// 	if (info.normal.x != 0) {
-								// 		p1->dynamics.velocity.x = 0.f;
-								// 		p1->velX = 0.f;
-								// 	}
-								// 	if (info.normal.y != 0) {
-								// 		p1->dynamics.velocity.y = 0.f;
-								// 		if (info.normal.y > 0) {
-								// 			p1->onGround = true;
-								// 			p1->coyoteAvailable = true;
-								// 			p1->coyoteTimer = p1->coyoteTime;
-								// 		}
-								// 	}
-								// }
 							}
 						}
 						// CASE 3: obj1 is static, obj2 is pushable
@@ -2119,28 +1737,22 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 								t2->x -= info.normal.x * info.penetration;
 								p2->dynamics.position.x = t2->x;
 
-								// if (c2->collisionTag == "bullet") {
-								// 	float direction = (p2->dynamics.velocity.x >= 0.f) ? 1.f : -1.f;
-								// 	p2->dynamics.velocity.x = 12.0f * direction;
-								// 	p2->dynamics.velocity.y = 0.0f;
-								// 	p2->onGround = true;
-								// }
-								// else {
-									// normal object stops horizontally
-								p2->dynamics.velocity.x = 0.f;
-								p2->velX = 0.f;
-								//}
+								if (p2->dynamics.velocity.x * (-info.normal.x) < 0) {
+									p2->dynamics.velocity.x = 0.f;
+									p2->velX = 0.f;
+								}
 							}
 
 							if (info.normal.y != 0) {
+								if (m_gameScript && m_gameScript->onCollisionResponse(obj2, c2, info, true, c1))
+									continue;
+
 								t2->y -= info.normal.y * info.penetration;
 								p2->dynamics.position.y = t2->y;
+								p2->dynamics.velocity.y = 0.f;
 
-								if (m_gameScript && m_gameScript->onCollisionResponse(obj2, c2, info, true, c1))
-    								continue;
 
 								//if (c2->collisionTag != "bullet") {
-								p2->dynamics.velocity.y = 0.f;
 								if (info.normal.y < 0) {
 									p2->onGround = true;
 									p2->coyoteAvailable = true;
@@ -2179,10 +1791,11 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 								ApplyBounce(p2, c2, { -info.normal.x, -info.normal.y }, true);
 							}
 							else {
-								// Original stop behavior (only when NOT bouncing)
 								if (info.normal.x != 0) {
-									p2->dynamics.velocity.x = 0.f;
-									p2->velX = 0.f;
+									if (p2->dynamics.velocity.x * (-info.normal.x) < 0) {
+										p2->dynamics.velocity.x = 0.f;
+										p2->velX = 0.f;
+									}
 								}
 								if (info.normal.y != 0) {
 									p2->dynamics.velocity.y = 0.f;
@@ -2197,13 +1810,6 @@ void CollisionSystem::update(GameObjectManager& manager, const float& deltaTime)
 						else if (m_gameScript) {
 							m_gameScript->onCollision(obj1, obj2, info, manager);
 						}
-						// else if (obj1IsFloating && !obj1IsStatic){
-						// 		p1->inWater = true;
-						// }
-						// else if (obj2IsFloating && !obj2IsStatic) {
-						// 	p2->inWater = true;
-							
-						// }
 					}
 				}
 			}
@@ -2322,7 +1928,7 @@ void CollisionSystem::HandleTilemapCollisions(const std::unordered_map<int, Coll
 }
 
 
-#ifdef _DEBUG
+//#ifdef _DEBUG
 //UI system - handles ImGui rendering and interaction
 bool UISystem::showUI = false;
 ImFont* UISystem::m_fontDefault = nullptr;
@@ -2398,7 +2004,7 @@ UISystem::~UISystem() {
 
 //for imgui
 void UISystem::update() {
-	if (!showUI) return; // skip UI rendering if disabled
+	//if (!showUI) return; // skip UI rendering if disabled
 
 	//record current time for performance tracking
 	auto start = std::chrono::high_resolution_clock::now();
@@ -2410,15 +2016,16 @@ void UISystem::update() {
 	ImGui_ImplGlfw_NewFrame();
 	ImGui::NewFrame();
 
-	dockingSetUp();
+	if (showUI) {
+		dockingSetUp();
+		int fboWidth, fboHeight;
+		m_renderer->fboAspectRatio(fboWidth, fboHeight);
+		m_UI->update();
+		m_UI->renderScene(m_renderer->getTexture(), static_cast<float>(fboWidth) / static_cast<float>(fboHeight));
+	}
 
-	// get the width and height of the SCENE view
-	int fboWidth, fboHeight;
-	m_renderer->fboAspectRatio(fboWidth, fboHeight);
-
-	// all ImGui windows
-	m_UI->update();
-	m_UI->renderScene(m_renderer->getTexture(), static_cast<float>(fboWidth) / static_cast<float>(fboHeight));
+	// toast system
+	ToastSystem::getInstance().render();
 
 	ImGui::Render();
 	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
@@ -2435,6 +2042,7 @@ void UISystem::runImGuiFrame(std::function<void()> content) {
 	ImGui_ImplGlfw_NewFrame();
 	ImGui::NewFrame();
 	content();
+	//ToastSystem::getInstance().render();
 	ImGui::Render();
 	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 }
@@ -2505,6 +2113,7 @@ void UISystem::dockingSetUp() {
 		// right top: Inspector
 		ImGui::DockBuilderDockWindow("Inspector", dockRight);
 		ImGui::DockBuilderDockWindow("Editor Camera", dockRight);
+		ImGui::DockBuilderDockWindow("Scene Properties", dockRight);
 
 		// right bottom: Create Object
 		ImGui::DockBuilderDockWindow("Create Object", dockRightBottom);
@@ -2527,7 +2136,7 @@ void UISystem::renderMultipleViewPorts() {
 		glfwMakeContextCurrent(backup_current_context);
 	}
 }
-#endif
+//#endif
 
 //void LogicSystem::update(GameObjectManager& manager, float const& dt) {
 //
@@ -2569,68 +2178,6 @@ void LogicSystem::update(GameObjectManager& manager, float const& dt) {
             m_gameScript->updateEnvironment(*obj, dt);
         }
 	}
-
-	// static LogicContainer container;
-	
-	// // DEBUG: Run once to show what objects exist
-	// static bool debugOnce = true;
-	// if (debugOnce) {
-	// 	debugOnce = false;
-	// 	std::cout << "\n[LogicSystem DEBUG] ====== OBJECT FSM ASSIGNMENT ======" << std::endl;
-	// 	for (auto* go : objs) {
-	// 		if (!go) continue;
-	// 		CollisionInfo* col = go->getComponent<CollisionInfo>();
-	// 		std::string tag = col ? col->collisionTag : "(no CollisionInfo)";
-	// 		bool hasSM = go->hasComponent<StateMachine>();
-	// 		bool hasInput = go->hasComponent<Input>();
-			
-	// 	std::cout << "[DEBUG] Object: " << go->getObjectName() 
-	// 	          << " | Layer: " << go->getLayer()
-	// 	          << " | Tag: " << tag
-	// 		          << " | StateMachine: " << (hasSM ? "YES" : "NO")
-	// 		          << " | Input: " << (hasInput ? "YES" : "NO")
-	// 		          << " | Physics: " << (go->hasComponent<Physics>() ? "YES" : "NO")
-	// 		          << " | Animation: " << (go->hasComponent<Animation>() ? "YES" : "NO")
-	// 		          << "\n";
-			
-	// 		// Check if this object SHOULD have an FSM
-	// 		if (col && col->collisionTag == "player") {
-	// 			std::cout << "       -> Player object detected!\n";
-	// 			if (!hasSM) std::cout << "       -> WARNING: Missing StateMachine component!\n";
-	// 			if (!hasInput) std::cout << "       -> WARNING: Missing Input component!\n";
-	// 		}
-	// 	}
-	// 	std::cout << "[LogicSystem DEBUG] ======================================\n" << std::endl;
-	// }
-
-	// for (auto* go : objs) {
-	// 	if (!go) continue;
-
-	// 	// Get collision tag to determine which FSM to use
-	// 	CollisionInfo* col = go->getComponent<CollisionInfo>();
-	// 	std::string tag = col ? col->collisionTag : "";
-
-	// 	// Player FSM
-	// 	if (go->hasComponent<StateMachine>() && go->hasComponent<Input>()) {
-	// 		if (!go->getComponent<StateMachine>()->fixState) {
-	// 			container.update(*go, dt);
-	// 		}
-	// 	}
-	// 	// Fire FSM
-	// 	else if (tag == "fire" && go->hasComponent<StateMachine>()) {
-	// 		container.updateFire(*go, dt);
-	// 	}
-	// 	// Water Refill FSM
-	// 	else if (tag == "water" && go->hasComponent<StateMachine>()) {
-	// 		// DEBUG: Verify this is being called
-	// 		static bool waterDebugOnce = true;
-	// 		if (waterDebugOnce) {
-	// 			std::cout << "[DEBUG] updateRefill() being called for: " << go->getObjectName() << std::endl;
-	// 			waterDebugOnce = false;
-	// 		}
-	// 		container.updateRefill(*go, dt);
-	// 	}
-	// }
 
 	auto end = std::chrono::high_resolution_clock::now();
 	double ms = std::chrono::duration<double, std::milli>(end - start).count();

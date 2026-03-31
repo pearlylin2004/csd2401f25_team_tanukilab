@@ -120,58 +120,12 @@
       }
     },
     {
-      "id": 8,
-      "implementation": "On Start",
-      "type": 0,
-      "position": [
-        -244.0,
-        -115.0
-      ],
-      "hasInput": false,
-      "hasOutput": true,
-      "hasTrueOutput": false,
-      "hasFalseOutput": false
-    },
-    {
-      "id": 9,
-      "implementation": "Set Position",
-      "type": 1,
-      "position": [
-        77.0,
-        -116.0
-      ],
-      "hasInput": true,
-      "hasOutput": true,
-      "hasTrueOutput": false,
-      "hasFalseOutput": false,
-      "parameters": {
-        "x": "-20",
-        "y": "0"
-      }
-    },
-    {
-      "id": 10,
-      "implementation": "Print Message",
-      "type": 1,
-      "position": [
-        393.0,
-        -118.0
-      ],
-      "hasInput": true,
-      "hasOutput": true,
-      "hasTrueOutput": false,
-      "hasFalseOutput": false,
-      "parameters": {
-        "message": "I love GAM"
-      }
-    },
-    {
       "id": 11,
       "implementation": "On Update",
       "type": 0,
       "position": [
-        -238.00001525878906,
-        186.00001525878906
+        -238.0,
+        184.0
       ],
       "hasInput": false,
       "hasOutput": true,
@@ -183,8 +137,8 @@
       "implementation": "Check State",
       "type": 2,
       "position": [
-        55.181884765625,
-        206.727294921875
+        55.0,
+        206.0
       ],
       "hasInput": true,
       "hasOutput": false,
@@ -199,8 +153,8 @@
       "implementation": "Restart Level",
       "type": 1,
       "position": [
-        893.13623046875,
-        711.977294921875
+        1343.0,
+        425.0
       ],
       "hasInput": true,
       "hasOutput": true,
@@ -273,8 +227,8 @@
       "implementation": "Set Float",
       "type": 1,
       "position": [
-        330.0,
-        450.0
+        368.0,
+        438.0
       ],
       "hasInput": true,
       "hasOutput": true,
@@ -303,39 +257,6 @@
       }
     },
     {
-      "id": 24,
-      "implementation": "Load Level",
-      "type": 1,
-      "position": [
-        793.45458984375,
-        157.818115234375
-      ],
-      "hasInput": true,
-      "hasOutput": true,
-      "hasTrueOutput": false,
-      "hasFalseOutput": false,
-      "parameters": {
-        "levelName": "Game_Level_1.json"
-      }
-    },
-    {
-      "id": 25,
-      "implementation": "On Collision Enter",
-      "type": 0,
-      "position": [
-        -290.0,
-        640.0
-      ],
-      "hasInput": false,
-      "hasOutput": true,
-      "hasTrueOutput": false,
-      "hasFalseOutput": false,
-      "parameters": {
-        "colFilterType": "tag",
-        "colFilterValue": "water"
-      }
-    },
-    {
       "id": 31,
       "implementation": "Check Animation End",
       "type": 2,
@@ -353,8 +274,8 @@
       "implementation": "Play Random Sound",
       "type": 1,
       "position": [
-        322.0,
-        126.0
+        694.0,
+        1004.0
       ],
       "hasInput": true,
       "hasOutput": true,
@@ -371,12 +292,47 @@
       }
     },
     {
-      "id": 33,
+      "id": 40,
+      "implementation": "Compare Global Float",
+      "type": 2,
+      "position": [
+        -38.0,
+        682.0
+      ],
+      "hasInput": true,
+      "hasOutput": false,
+      "hasTrueOutput": true,
+      "hasFalseOutput": true,
+      "parameters": {
+        "comparison": "greater",
+        "threshold": "0",
+        "variable": "playerHitWater"
+      }
+    },
+    {
+      "id": 41,
+      "implementation": "Set Global Float",
+      "type": 1,
+      "position": [
+        340.0,
+        698.0
+      ],
+      "hasInput": true,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false,
+      "parameters": {
+        "value": "0.000000",
+        "variable": "playerHitWater"
+      }
+    },
+    {
+      "id": 42,
       "implementation": "Set State",
       "type": 1,
       "position": [
-        80.0,
-        720.0
+        726.0,
+        566.0
       ],
       "hasInput": true,
       "hasOutput": true,
@@ -387,12 +343,12 @@
       }
     },
     {
-      "id": 34,
+      "id": 43,
       "implementation": "Play Random Sound",
       "type": 1,
       "position": [
-        28.0,
-        590.0
+        754.0,
+        718.0
       ],
       "hasInput": true,
       "hasOutput": true,
@@ -406,17 +362,68 @@
       }
     },
     {
-      "id": 35,
+      "id": 44,
       "implementation": "Check Animation End",
       "type": 2,
       "position": [
-        434.0,
-        714.0
+        1072.0,
+        558.0
       ],
       "hasInput": true,
       "hasOutput": false,
       "hasTrueOutput": true,
       "hasFalseOutput": true
+    },
+    {
+      "id": 45,
+      "implementation": "Compare Global Float",
+      "type": 2,
+      "position": [
+        -72.0,
+        858.0
+      ],
+      "hasInput": true,
+      "hasOutput": false,
+      "hasTrueOutput": true,
+      "hasFalseOutput": true,
+      "parameters": {
+        "comparison": "greater",
+        "threshold": "0",
+        "variable": "collideFire"
+      }
+    },
+    {
+      "id": 46,
+      "implementation": "Set Global Float",
+      "type": 1,
+      "position": [
+        362.0,
+        888.0
+      ],
+      "hasInput": true,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false,
+      "parameters": {
+        "value": "0",
+        "variable": "collideFire"
+      }
+    },
+    {
+      "id": 47,
+      "implementation": "Set State",
+      "type": 1,
+      "position": [
+        724.0,
+        834.0
+      ],
+      "hasInput": true,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false,
+      "parameters": {
+        "state": "Dead"
+      }
     }
   ],
   "connections": [
@@ -454,12 +461,6 @@
       "fromNodeId": 5,
       "outputPin": "Out",
       "toNodeId": 7,
-      "inputPin": "In"
-    },
-    {
-      "fromNodeId": 9,
-      "outputPin": "Out",
-      "toNodeId": 10,
       "inputPin": "In"
     },
     {
@@ -507,37 +508,73 @@
     {
       "fromNodeId": 31,
       "outputPin": "True",
-      "toNodeId": 24,
+      "toNodeId": 13,
       "inputPin": "In"
     },
     {
-      "fromNodeId": 12,
+      "fromNodeId": 11,
+      "outputPin": "Out",
+      "toNodeId": 40,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 40,
       "outputPin": "True",
+      "toNodeId": 41,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 41,
+      "outputPin": "Out",
+      "toNodeId": 42,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 41,
+      "outputPin": "Out",
+      "toNodeId": 43,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 42,
+      "outputPin": "Out",
+      "toNodeId": 44,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 44,
+      "outputPin": "True",
+      "toNodeId": 13,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 45,
+      "outputPin": "True",
+      "toNodeId": 46,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 46,
+      "outputPin": "Out",
+      "toNodeId": 47,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 46,
+      "outputPin": "Out",
       "toNodeId": 32,
       "inputPin": "In"
     },
     {
-      "fromNodeId": 25,
+      "fromNodeId": 47,
       "outputPin": "Out",
-      "toNodeId": 33,
+      "toNodeId": 44,
       "inputPin": "In"
     },
     {
-      "fromNodeId": 25,
+      "fromNodeId": 11,
       "outputPin": "Out",
-      "toNodeId": 34,
-      "inputPin": "In"
-    },
-    {
-      "fromNodeId": 33,
-      "outputPin": "Out",
-      "toNodeId": 35,
-      "inputPin": "In"
-    },
-    {
-      "fromNodeId": 35,
-      "outputPin": "True",
-      "toNodeId": 13,
+      "toNodeId": 45,
       "inputPin": "In"
     }
   ]

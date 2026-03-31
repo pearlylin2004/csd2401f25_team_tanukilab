@@ -14,7 +14,7 @@ Technology is prohibited.
 */
 /* End Header **************************************************************************/
 
-#ifdef _DEBUG
+//#ifdef _DEBUG
 #include "Editor/editorManager.h"
 
 VisualLogicEditor::VisualLogicEditor() :
@@ -1172,6 +1172,20 @@ void VisualLogicEditor::renderNodeProperties() {
 				node.parameters["forceY"] = std::to_string(forceY);
 			}
 		}
+		else if (node.imp == NodeImplementation::LIFT_COLLIDED) {
+
+			ImGui::Text("Lift Object Collided:");
+
+			float liftForce = node.parameters.count("liftForce") ? std::stof(node.parameters["liftForce"]) : 0.f;
+			float liftDuration = node.parameters.count("liftDuration") ? std::stof(node.parameters["liftDuration"]) : 0.f;
+
+			if (ImGui::DragFloat("Lift Force", &liftForce, 0.1f)) {
+				node.parameters["liftForce"] = std::to_string(liftForce);
+			}
+			if (ImGui::DragFloat("Lift Duration", &liftDuration, 0.1f)) {
+				node.parameters["liftDuration"] = std::to_string(liftDuration);
+			}
+			}
 		else if (node.imp == NodeImplementation::SET_GLOBAL_FLOAT) {
 			ImGui::Text("Set Global Float Variable");
 
@@ -1554,6 +1568,14 @@ void VisualLogicEditor::renderNodeProperties() {
 			
 			ImGui::Spacing();
 		}
+		else if (node.imp == NodeImplementation::LOCK_POSITION) {
+			ImGui::Text("Lock Position");
+			ImGui::TextDisabled("Stops object movement and velocity");
+		}
+		else if (node.imp == NodeImplementation::UNLOCK_POSITION) {
+			ImGui::Text("Unlock Position");
+			ImGui::TextDisabled("Re-enables object movement");
+		}
 	}
 	/* ---------- END ---------- */
 
@@ -1881,8 +1903,15 @@ void VisualLogicEditor::renderNodeProperties() {
 			ImGui::Spacing();
 			ImGui::TextDisabled("Requires Animation + StateMachine components.");
 			ImGui::Spacing();
-			ImGui::TextColored(ImVec4(1.f, 0.8f, 0.2f, 1.f),
-				"Tip: Pair with a non-looping animation state.");
+			ImGui::TextColored(ImVec4(1.f, 0.8f, 0.2f, 1.f), "Tip: Pair with a non-looping animation state.");
+		}
+		else if (node.imp == NodeImplementation::IS_VIDEO_END) {
+			ImGui::TextWrapped("Returns True when the video ends.");
+
+			ImGui::Spacing();
+			ImGui::TextDisabled("Requires Render + Video components.");
+			ImGui::Spacing();
+			ImGui::TextColored(ImVec4(1.f, 0.8f, 0.2f, 1.f), "Tip: Work with looping/non-looping video.");
 		}
 	}
 	/* ---------- END ---------- */
@@ -2547,4 +2576,4 @@ std::vector<std::string> VisualLogicEditor::getGlobalVariableNamesFromNodes() {
 	return std::vector<std::string>(uniqueVars.begin(), uniqueVars.end());
 }
 
-#endif
+//#endif

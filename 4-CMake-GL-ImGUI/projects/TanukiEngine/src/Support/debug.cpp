@@ -284,9 +284,9 @@ namespace {
         q.push_back(s);
         while (q.size() > 128) q.pop_front(); // limit buffer size
 
-#ifdef _DEBUG
+//#ifdef _DEBUG
         std::cerr << s << std::endl; // print to console in debug builds
-#endif
+//#endif
         CrashLog::WriteLine(s.c_str()); // write to crash log
     }
 

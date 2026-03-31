@@ -23,6 +23,7 @@
       "updatable": 1
     }
   ],
+  "onLoadScript": "assets/scripting\\pause_scene_load.lua",
   "objects": [
     {
       "name": "background",
@@ -140,6 +141,32 @@
         },
         "VisualLC": {
           "filename": "Opening Cutscene.json"
+        }
+      }
+    },
+    {
+      "name": "cheater",
+      "components": {
+        "Transform": {
+          "pos": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "rotation": 0.0,
+          "scale": [
+            1.0,
+            1.0,
+            0.0
+          ]
+        },
+        "LuaScript": {
+          "scripts": [
+            {
+              "filename": "assets/scripting/cheat.lua",
+              "scriptName": "cheat"
+            }
+          ]
         }
       }
     }

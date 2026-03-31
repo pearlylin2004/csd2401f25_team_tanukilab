@@ -43,14 +43,14 @@
     },
     "CollisionInfo": {
       "collisionFlag": 1,
-      "autoFitScale": 1,
+      "autoFitScale": 0,
       "colliderSize": [
-        2.200000047683716,
-        2.200000047683716
+        1.600000023841858,
+        1.600000023841858
       ],
       "colliderPos": [
-        0.0,
-        0.0
+        -0.10000000149011612,
+        -0.10000000149011612
       ],
       "colliderRot": 0.0,
       "colliderType": "square",
@@ -124,7 +124,7 @@
       },
       "Shooting": {
         "animState": {
-          "texture": "assets/Texture/Kinuta_Land_SS.png",
+          "texture": "assets/Texture\\Kinuta_Death_SS.png",
           "loop": 0,
           "play": 1,
           "totalColumn": 3,
@@ -306,10 +306,10 @@
           "spread": 180.0,
           "persistOnSceneChange": false
         },
-        "footstep": {
-          "audioFile": "assets/audio/Footsteps2_Gravel-Dirt_far-small_6.wav",
-          "volume": 0.302229106426239,
-          "pitch": 0.9732397794723512,
+        "footstep1": {
+          "audioFile": "assets/Audio\\SFX\\Footsteps2_Gravel-Dirt_far-small_1.wav",
+          "volume": 0.30000001192092896,
+          "pitch": 1.0,
           "loop": 0,
           "playOnStart": 0,
           "muted": 0,
@@ -323,17 +323,85 @@
           "spread": 180.0,
           "persistOnSceneChange": false
         },
-        "footsteps": {
-          "audioFile": "assets/audio/footsteps.wav",
-          "volume": 0.5,
+        "footstep2": {
+          "audioFile": "assets/Audio\\SFX\\Footsteps2_Gravel-Dirt_far-small_2.wav",
+          "volume": 0.30000001192092896,
           "pitch": 1.0,
-          "loop": 1,
+          "loop": 0,
           "playOnStart": 0,
           "muted": 0,
           "fadeInOnStart": 0,
           "fadeInDuration": 1.0,
-          "fadeOutOnStop": 1,
-          "fadeOutDuration": 0.15000000596046448,
+          "fadeOutOnStop": 0,
+          "fadeOutDuration": 1.0,
+          "isSpatial": false,
+          "minDistance": 1.0,
+          "maxDistance": 100.0,
+          "spread": 180.0,
+          "persistOnSceneChange": false
+        },
+        "footstep3": {
+          "audioFile": "assets/Audio\\SFX\\Footsteps2_Gravel-Dirt_far-small_3.wav",
+          "volume": 0.30000001192092896,
+          "pitch": 1.0,
+          "loop": 0,
+          "playOnStart": 0,
+          "muted": 0,
+          "fadeInOnStart": 0,
+          "fadeInDuration": 1.0,
+          "fadeOutOnStop": 0,
+          "fadeOutDuration": 1.0,
+          "isSpatial": false,
+          "minDistance": 1.0,
+          "maxDistance": 100.0,
+          "spread": 180.0,
+          "persistOnSceneChange": false
+        },
+        "footstep4": {
+          "audioFile": "assets/Audio\\SFX\\Footsteps2_Gravel-Dirt_far-small_4.wav",
+          "volume": 0.30000001192092896,
+          "pitch": 1.0,
+          "loop": 0,
+          "playOnStart": 0,
+          "muted": 0,
+          "fadeInOnStart": 0,
+          "fadeInDuration": 1.0,
+          "fadeOutOnStop": 0,
+          "fadeOutDuration": 1.0,
+          "isSpatial": false,
+          "minDistance": 1.0,
+          "maxDistance": 100.0,
+          "spread": 180.0,
+          "persistOnSceneChange": false
+        },
+        "footstep5": {
+          "audioFile": "assets/Audio\\SFX\\Footsteps2_Gravel-Dirt_far-small_5.wav",
+          "volume": 0.30000001192092896,
+          "pitch": 1.0,
+          "loop": 0,
+          "playOnStart": 0,
+          "muted": 0,
+          "fadeInOnStart": 0,
+          "fadeInDuration": 1.0,
+          "fadeOutOnStop": 0,
+          "fadeOutDuration": 1.0,
+          "isSpatial": false,
+          "minDistance": 1.0,
+          "maxDistance": 100.0,
+          "spread": 180.0,
+          "persistOnSceneChange": false
+        },
+        "footstep6": {
+          "audioFile": "assets/Audio\\SFX\\Footsteps2_Gravel-Dirt_far-small_6.wav",
+          "volume": 0.30000001192092896,
+          "pitch": 1.0,
+          "loop": 0,
+          "playOnStart": 0,
+          "muted": 0,
+          "fadeInOnStart": 0,
+          "fadeInDuration": 1.0,
+          "fadeOutOnStop": 0,
+          "fadeOutDuration": 1.0,
           "isSpatial": false,
           "minDistance": 1.0,
           "maxDistance": 100.0,

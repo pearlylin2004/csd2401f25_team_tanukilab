@@ -26,6 +26,8 @@ set(TANUKI_THIRD_PARTY
     lua
     rapidjson
     freetype
+    plmpeg
+    glm::glm
 )
 
 # ======================= [1] TANUKI ENGINE (Static Lib) ================
@@ -104,7 +106,7 @@ macro(copy_fmod_dlls TARGET_NAME)
     )
 endmacro()
 
-# Helper — copies engine assets (shaders etc.) next to any exe
+# Helper — copies engine assets next to exe
 macro(copy_engine_assets TARGET_NAME)
     add_custom_command(TARGET ${TARGET_NAME} POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_directory
@@ -146,6 +148,7 @@ copy_engine_assets(TanukiEditor)
 target_compile_definitions(TanukiEditor PRIVATE
     TANUKI_GAMES_ROOT_R="${GAMES_DIR}"
     TANUKI_ENGINE_ASSETS_R="${ENGINE_DIR}/assets"
+    TANUKI_ENGINE_TEMPLATES_R="${ENGINE_DIR}/templates"
     #TANUKI_EDITOR
 )
 
@@ -218,11 +221,12 @@ foreach(game ${game_candidates})
     endif()
 
     # Copy game assets on top of engine assets
-    add_custom_command(TARGET ${game} POST_BUILD
+    add_custom_target(CopyGameAssets_${game} ALL
         COMMAND ${CMAKE_COMMAND} -E copy_directory
             "${GAME_DIR}/assets" "$<TARGET_FILE_DIR:${game}>/assets"
         COMMENT "Copying ${game} assets to output"
     )
+    add_dependencies(${game} CopyGameAssets_${game})
 
     # Make shaders visible in VS IDE
     file(GLOB_RECURSE ${game}_shaders

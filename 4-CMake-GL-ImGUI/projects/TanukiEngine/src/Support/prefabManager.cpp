@@ -806,6 +806,14 @@ void PrefabManager::applyPrefabComponents(GameObject* go, const rapidjson::Value
 		p->master.particleAmt = JsonIO::GetIntOr(jp, "particleAmt", 0);
 	}
 
+	//---- Video ----
+	if (comps.HasMember("Video") && comps["Video"].IsObject()) {
+		const auto& jv = comps["Video"];
+		auto* v = go->addComponent<Video>();
+		JsonIO::GetString(jv, "videoFile", v->videoFile);
+		v->loop = JsonIO::GetBoolOr(jv, "loop", false);
+	}
+
 	// ---- Input (presence only) ----
 	if (comps.HasMember("Input") && comps["Input"].IsObject()) {
 		go->addComponent<Input>();
@@ -1307,7 +1315,7 @@ void PrefabManager::serializeComponents(const GameObject* obj, rapidjson::Value&
 		comps.AddMember("Transform", jt, a);
 	}
 
-	//// ---- Render ----
+	// ---- Render ----
 	if (auto r = obj->getComponent<Render>()) {
 		rapidjson::Value jr(rapidjson::kObjectType);
 
@@ -1316,14 +1324,14 @@ void PrefabManager::serializeComponents(const GameObject* obj, rapidjson::Value&
 		if (r->hasTex && !r->texFile.empty())
 			jr.AddMember("texture", rapidjson::Value(r->texFile.c_str(), a), a);
 		jr.AddMember("hasAnimation", r->hasAnimation ? 1 : 0, a);
-		if (r->clr.r != 1.f || r->clr.g != 1.f || r->clr.b != 1.f) {
+		if (r->clr.r != 1.f || r->clr.g != 1.f || r->clr.b != 1.f || r->clr.a != 1.f) {
 			JsonIO::WriteVec4(jr, "clr", r->clr.r, r->clr.g, r->clr.b, r->clr.a, a);
 		}
 
 		comps.AddMember("Render", jr, a);
 	}
 
-	//// ---- Particle ----
+	// ---- Particle ----
 	if (auto p = obj->getComponent<Particle>()) {
 		// Only serialize if this is a master particle
 		if (p->isMaster) {
@@ -1345,6 +1353,16 @@ void PrefabManager::serializeComponents(const GameObject* obj, rapidjson::Value&
 			jp.AddMember("particleAmt", p->master.particleAmt, a);
 
 			comps.AddMember("Particle", jp, a);
+		}
+	}
+
+	// ---- Video ----
+	if (auto v = obj->getComponent<Video>()) {
+		if (!v->videoFile.empty()) {
+			rapidjson::Value jv(rapidjson::kObjectType);
+			jv.AddMember("videoFile", rapidjson::Value(v->videoFile.c_str(), a), a);
+			jv.AddMember("loop", v->loop ? 1 : 0, a);
+			comps.AddMember("Video", jv, a);
 		}
 	}
 

@@ -19,6 +19,7 @@ Technology is prohibited.
 #include "GameObjectManager.h"
 #include "renderer.h"
 #include "PathManager.h"
+#include "Systems/Systems.h"
 
 #ifndef RUNTIME_SCENE_DIR_R
 #define RUNTIME_SCENE_DIR_R "./assets/Scene"
@@ -250,16 +251,16 @@ namespace JsonIO {
         case ButtonAction::YES_EXIT:      return "yes_exit";
         case ButtonAction::NO_EXIT:       return "no_exit";
         case ButtonAction::BACK:          return "back";
-
         case ButtonAction::MUSIC_VOL_UP:   return "music_vol_up";
         case ButtonAction::MUSIC_VOL_DOWN: return "music_vol_down";
         case ButtonAction::SFX_VOL_UP:     return "sfx_vol_up";
         case ButtonAction::SFX_VOL_DOWN:   return "sfx_vol_down";
-
+        case ButtonAction::OPEN_LEADERBOARD: return "open_leaderboard";
         case ButtonAction::MUTE:   return "mute";
-        case ButtonAction::UNMUTE: return "unmute";
-
-        default: return "none";
+        case ButtonAction::UNMUTE:   return "unmute";
+        /*case ButtonAction::WATCH_REPLAY: return "watch_replay";
+        case ButtonAction::OPEN_REPLAY_SELECT: return "open_replay_select";*/
+        default:                           return "none";
         }
     }
 
@@ -277,10 +278,11 @@ namespace JsonIO {
         if (s == "music_vol_down") return ButtonAction::MUSIC_VOL_DOWN;
         if (s == "sfx_vol_up") return ButtonAction::SFX_VOL_UP;
         if (s == "sfx_vol_down") return ButtonAction::SFX_VOL_DOWN;
-
+        if (s == "open_leaderboard") return ButtonAction::OPEN_LEADERBOARD;
         if (s == "mute") return ButtonAction::MUTE;
-        if (s == "unmute") return ButtonAction::UNMUTE;
-
+        if (s == "unmute") return ButtonAction::UNMUTE;/*
+        if (s == "watch_replay") return ButtonAction::WATCH_REPLAY;
+        if (s == "open_replay_select") return ButtonAction::OPEN_REPLAY_SELECT;*/
         return ButtonAction::NONE;
 	}
 
@@ -327,6 +329,7 @@ namespace JsonIO {
 		if (str == "Reset Timer") return NodeImplementation::RESET_TIMER;
         if (str == "Set Texture") return NodeImplementation::SET_TEXTURE;
 		if (str == "Set Position On Collided") return NodeImplementation::SET_POSITION_ON_COLLIDED;
+        if (str == "Lift Collided") return NodeImplementation::LIFT_COLLIDED;
 		if (str == "Set State On Collided") return NodeImplementation::SET_STATE_ON_COLLIDED;
 		if (str == "Apply Force On Collided") return NodeImplementation::APPLY_FORCE_ON_COLLIDED;
         if (str == "Set Global Float") return NodeImplementation::SET_GLOBAL_FLOAT;
@@ -345,7 +348,8 @@ namespace JsonIO {
         if (str == "Change Acceleration Direction") return NodeImplementation::CHANGE_ACCEL_DIRECTION;
         if (str == "Set Sinle Acceleration") return NodeImplementation::SET_SINLE_ACCEL;
         if (str == "Play Random Sound") return NodeImplementation::PLAY_RANDOM_SOUND;
-        if (str == "Check Animation End") return NodeImplementation::CHECK_ANIMATION_END;
+        if (str == "Lock Position") return NodeImplementation::LOCK_POSITION;
+        if (str == "Unlock Position") return NodeImplementation::UNLOCK_POSITION;
 
 		if (str == "Check Key Held") return NodeImplementation::CHECK_KEY_HELD;
 		if (str == "Compare Value") return NodeImplementation::COMPARE_VALUE;
@@ -354,6 +358,8 @@ namespace JsonIO {
 		if (str == "Check Timer") return NodeImplementation::CHECK_TIMER;
         if (str == "Compare Global Float") return NodeImplementation::COMPARE_GLOBAL_FLOAT;
 		if (str == "Check Collided State") return NodeImplementation::CHECK_COLLIDED_STATE;
+        if (str == "Check Animation End") return NodeImplementation::CHECK_ANIMATION_END;
+        if (str == "Is Video End") return NodeImplementation::IS_VIDEO_END;
 
         return NodeImplementation::DEFAULT;
     }
@@ -392,6 +398,7 @@ namespace JsonIO {
             case NodeImplementation::SET_POSITION_ON_COLLIDED: return "Set Position On Collided";
 			case NodeImplementation::SET_STATE_ON_COLLIDED: return "Set State On Collided";
 			case NodeImplementation::APPLY_FORCE_ON_COLLIDED: return "Apply Force On Collided";
+			case NodeImplementation::LIFT_COLLIDED: return "Lift Collided";
 			case NodeImplementation::SET_GLOBAL_FLOAT: return "Set Global Float";
 			case NodeImplementation::MODIFY_GLOBAL_FLOAT: return "Modify Global Float";
 			case NodeImplementation::TRIGGER_BULLET_REFILL_EVENT: return "Trigger Bullet Refill Event";
@@ -408,7 +415,8 @@ namespace JsonIO {
             case NodeImplementation::CHANGE_ACCEL_DIRECTION: return "Change Acceleration Direction";
             case NodeImplementation::SET_SINLE_ACCEL: return "Set Sinle Acceleration";
             case NodeImplementation::PLAY_RANDOM_SOUND: return "Play Random Sound";
-            case NodeImplementation::CHECK_ANIMATION_END: return "Check Animation End";
+            case NodeImplementation::LOCK_POSITION: return "Lock Position";
+            case NodeImplementation::UNLOCK_POSITION: return "Unlock Position";
 
             case NodeImplementation::CHECK_KEY_HELD: return "Check Key Held";
             case NodeImplementation::COMPARE_VALUE: return "Compare Value";
@@ -416,7 +424,9 @@ namespace JsonIO {
 			case NodeImplementation::CHECK_STATE: return "Check State";
 			case NodeImplementation::CHECK_TIMER: return "Check Timer";
 			case NodeImplementation::COMPARE_GLOBAL_FLOAT: return "Compare Global Float";
+            case NodeImplementation::CHECK_ANIMATION_END: return "Check Animation End";
 			case NodeImplementation::CHECK_COLLIDED_STATE: return "Check Collided State";
+            case NodeImplementation::IS_VIDEO_END: return "Is Video End";
 
             default: return "Default";
         }
@@ -429,6 +439,7 @@ namespace JsonIO {
 		if (stateStr == "PAUSED") return GameState::PAUSED;
         if (stateStr == "EXIT") return GameState::EXIT;
         if (stateStr == "EXITCONFIRMATION") return GameState::EXITCONFIRMATION;
+        //if (stateStr == "REPLAY") return GameState::REPLAY;
         //if (stateStr == "LEVELS") return GameState::LEVELS;
 		return GameState::NONE;
 	}
@@ -441,6 +452,7 @@ namespace JsonIO {
 		case GameState::PAUSED: return "PAUSED";
 		case GameState::EXIT: return "EXIT";
 		case GameState::EXITCONFIRMATION: return "EXITCONFIRMATION";
+		//case GameState::REPLAY: return "REPLAY";
 		//case GameState::LEVELS: return "LEVELS";
 		default: return "NONE";
 		}
@@ -873,7 +885,7 @@ namespace JsonIO {
     /* ---------- Load/Save collision tags ---------- */
     bool LoadCollisionTags(const std::string& filepath, std::vector<std::string>& outTags, std::string* err) {
         rapidjson::Document doc;
-        if (!ReadFileToDocument(RUNTIME_DIR_R + filepath, doc, err)) return false;
+        if (!ReadFileToDocument(filepath, doc, err)) return false;
 
         if (!doc.IsObject()) {
             if (err) *err = "Collision tag file is not a JSON object";
@@ -1049,6 +1061,41 @@ namespace JsonIO {
         if (jp.HasMember("timer") && jp["timer"].IsNumber())      p->master.timer = jp["timer"].GetFloat();
         if (jp.HasMember("offset") && jp["offset"].IsNumber())     p->master.offset = jp["offset"].GetFloat();
         if (jp.HasMember("particleAmt") && jp["particleAmt"].IsInt())   p->master.particleAmt = jp["particleAmt"].GetInt();
+    }
+
+    std::string serializeVideo(GameObject* obj) {
+        Video* v = obj ? obj->getComponent<Video>() : nullptr;
+        if (!v) return "";
+        using namespace rapidjson;
+        Document doc; doc.SetObject();
+        auto& a = doc.GetAllocator();
+        Value jv(kObjectType);
+        jv.AddMember("videoFile", Value(v->videoFile.c_str(), a), a);
+        jv.AddMember("loop", Value(v->loop ? 1 : 0), a);
+        doc.AddMember("Video", jv, a);
+        StringBuffer buf; Writer<StringBuffer> w(buf); doc.Accept(w);
+        return buf.GetString();
+    }
+
+    void deserializeVideo(GameObject* obj, const std::string& json) {
+        if (!obj || json.empty()) return;
+        using namespace rapidjson;
+        Document doc; doc.Parse(json.c_str());
+        if (doc.HasParseError() || !doc.HasMember("Video")) return;
+        const Value& jv = doc["Video"];
+        Video* v = obj->hasComponent<Video>()
+            ? obj->getComponent<Video>()
+            : obj->addComponent<Video>();
+        if (jv.HasMember("videoFile") && jv["videoFile"].IsString())
+            v->videoFile = jv["videoFile"].GetString();
+        if (jv.HasMember("loop") && jv["loop"].IsNumber())
+            v->loop = jv["loop"].GetInt() != 0;
+
+        if (v->plm) VideoSystem::cleanup(v);
+        v->isPlaying = false;
+        v->isPaused = false;
+        v->accumTime = 0.f;
+        v->videoTexID = 0;
     }
 
     std::string serializePhysics(GameObject* obj) {
@@ -2030,310 +2077,6 @@ namespace JsonIO {
 //==============================================================================
 // GameObjectManager JSON serialization
 //==============================================================================
-
-/**
- * \brief Serializes all current game objects (and components) to a JSON file.
- * \param filename Destination JSON path.
- * \param isNew    If \c true , writes only a version header (empty scene shell).
- *
- * \details
- * Layout (version 1):
- * \code{.json}
- * {
- *   "version": 1,
- *   "objects": [
- *     {
- *       "name": "player",
- *       "components": {
- *         "Transform": { "pos":[x,y,z], "rotation":r, "scale":[sx,sy,sz] },
- *         "Render":    { "shape":"square|circle|triangle", "hasTex":true, "texture":"..." , "hasAnimation":0|1 },
- *         "Input":     {},
- *         "Physics":   { "inWater":0|1, "buoyancy":0|1 },
- *         "CollisionInfo": {},
- *         "Animation": { "loop":0|1, "currentFrameColumn":i, "currentFrameRow":i, "totalColumn":i, "totalRow":i, "frameTime":f }
- *       }
- *     }
- *   ]
- * }
- * \endcode
- */
-void GameObjectManager::saveToJson(const std::string& filename, bool isNew) const {
-    rapidjson::Document doc;
-    doc.SetObject();
-    auto& a = doc.GetAllocator();
-
-    // Version header
-    doc.AddMember("version", rapidjson::Value(1), a);
-
-    if (!isNew) {
-        rapidjson::Value objects(rapidjson::kArrayType);
-
-        for (auto const& kv : m_gameObjects) {
-            const GameObject* obj = kv.second.get();
-
-            rapidjson::Value jObj(rapidjson::kObjectType);
-
-            // Object name
-            jObj.AddMember("name",
-                rapidjson::Value(obj->getObjectName().c_str(), a),
-                a);
-
-            // Components container
-            rapidjson::Value comps(rapidjson::kObjectType);
-
-            // ---- Transform ----
-            if (auto t = obj->getComponent<Transform>()) {
-                rapidjson::Value jt(rapidjson::kObjectType);
-
-                // pos / rotation / scale
-                JsonIO::WriteVec3(jt, "pos", t->x, t->y, t->z, a);
-                jt.AddMember("rotation", rapidjson::Value().SetFloat(t->rotation), a);
-                JsonIO::WriteVec3(jt, "scale", t->scaleX, t->scaleY, t->scaleZ, a);
-
-                comps.AddMember("Transform", jt, a);
-            }
-
-            // ---- Render ----
-            if (auto r = obj->getComponent<Render>()) {
-                rapidjson::Value jr(rapidjson::kObjectType);
-
-                // shape
-                jr.AddMember("shape",
-                    rapidjson::Value(JsonIO::ShapeToStr(r->modelRef.shape), a),
-                    a);
-
-                // hasTex / texture
-                jr.AddMember("hasTex", rapidjson::Value().SetBool(r->hasTex), a);
-                if (r->hasTex && !r->texFile.empty()) {
-                    jr.AddMember("texture",
-                        rapidjson::Value(r->texFile.c_str(), a),
-                        a);
-                }
-
-                // 0/1 to mirror prior text formats
-                jr.AddMember("hasAnimation", rapidjson::Value(r->hasAnimation ? 1 : 0), a);
-
-                // Optional future flags:
-                // jr.AddMember("visible",     rapidjson::Value().SetBool(r->visible), a);
-                // jr.AddMember("transparent", rapidjson::Value().SetBool(r->isTransparent), a);
-                // jr.AddMember("wireframe",   rapidjson::Value().SetBool(r->wireframe), a);
-
-                comps.AddMember("Render", jr, a);
-            }
-
-            // ---- Input (presence only) ----
-            if (obj->hasComponent<Input>()) {
-                comps.AddMember("Input", rapidjson::Value(rapidjson::kObjectType), a);
-            }
-
-            // ---- Physics ----
-            if (auto p = obj->getComponent<Physics>()) {
-                rapidjson::Value jp(rapidjson::kObjectType);
-                // store as 0/1 to mirror .txt
-                jp.AddMember("inWater", rapidjson::Value(p->inWater ? 1 : 0), a);
-                jp.AddMember("buoyancy", rapidjson::Value(p->buoyancy ? 1 : 0), a); // member is 'buoyancy' in struct
-                comps.AddMember("Physics", jp, a);
-            }
-
-            // ---- CollisionInfo (presence only) ----
-            if (obj->hasComponent<CollisionInfo>()) {
-                comps.AddMember("CollisionInfo", rapidjson::Value(rapidjson::kObjectType), a);
-            }
-
-            // ---- Animation ----
-            /*if (auto an = obj->getComponent<Animation>()) {
-                rapidjson::Value ja(rapidjson::kObjectType);
-                ja.AddMember("loop", rapidjson::Value(an->loop ? 1 : 0), a);
-                ja.AddMember("currentFrameColumn", rapidjson::Value(an->currentFrameColumn), a);
-                ja.AddMember("currentFrameRow", rapidjson::Value(an->currentFrameRow), a);
-                ja.AddMember("totalColumn", rapidjson::Value(an->totalColumn), a);
-                ja.AddMember("totalRow", rapidjson::Value(an->totalRow), a);
-                ja.AddMember("frameTime", rapidjson::Value().SetFloat(an->frameTime), a);
-                comps.AddMember("Animation", ja, a);
-            }*/
-
-            // ---- Button ----
-            if (auto b = obj->getComponent<Button>()) {
-                rapidjson::Value jb(rapidjson::kObjectType);
-
-                jb.AddMember("action", rapidjson::Value(static_cast<int>(b->actionName)), a);
-
-                //add boolean states
-                jb.AddMember("isHovered", b->isHovered ? 1 : 0, a);
-                jb.AddMember("isPressed", b->isPressed ? 1 : 0, a);
-
-                //add the Button object to your main JSON
-                comps.AddMember("Button", jb, a);
-			}
-
-            jObj.AddMember("components", comps, a);
-            objects.PushBack(jObj, a);
-        }
-
-        // Attach the objects array
-        doc.AddMember("objects", objects, a);
-    }
-
-    std::string err;
-    if (!JsonIO::WriteDocumentToFile(filename, doc, /*pretty=*/true, &err)) {
-        std::cerr << "Scene save failed: " << err << "\n";
-    }
-    else {
-        std::cout << "Scene saved (JSON): " << filename << "\n";
-    }
-}
-
-
-/**
- * \brief Loads a scene from a JSON file and rebuilds all game objects.
- * \param filename Source JSON path.
- *
- * \details
- * Behavior:
- * - Validates version (warns on mismatch, still attempts to load).
- * - Clears existing scene before creation.
- * - Accepts booleans and numeric 0/1 for legacy compatibility.
- * - Defers texture upload by setting \c texHDL=0 and \c texChanged=true when needed.
- */
-void GameObjectManager::loadFromJson(const std::string& filename) {
-    rapidjson::Document doc;
-    std::string err;
-    if (!JsonIO::ReadFileToDocument(filename, doc, &err)) {
-        std::cerr << "Scene load failed: " << err << "\n";
-        return;
-    }
-
-    // Version check (non-fatal warning)
-    int version = 1;
-    if (doc.HasMember("version") && doc["version"].IsInt())
-        version = doc["version"].GetInt();
-    if (version != 1)
-        std::cerr << "Warning: unsupported scene version " << version << "\n";
-
-    // Start fresh
-    m_gameObjects.clear();
-
-    // Validate presence of objects array
-    if (!doc.HasMember("objects") || !doc["objects"].IsArray()) {
-        std::cerr << "Scene JSON missing 'objects' array.\n";
-        return;
-    }
-
-    // Rebuild objects
-    for (auto& jObj : doc["objects"].GetArray()) {
-        if (!jObj.IsObject()) continue;
-
-        std::string name = (jObj.HasMember("name") && jObj["name"].IsString())
-            ? jObj["name"].GetString()
-            : ("Object_" + std::to_string(m_gameObjects.size()));
-
-        GameObject* go = createGameObject(name);
-
-        if (!jObj.HasMember("components") || !jObj["components"].IsObject())
-            continue;
-
-        const auto& comps = jObj["components"];
-
-        // ---- Transform ----
-        if (comps.HasMember("Transform") && comps["Transform"].IsObject()) {
-            const auto& jt = comps["Transform"];
-            auto* t = go->addComponent<Transform>();
-
-            (void)JsonIO::ReadVec3(jt, "pos", t->x, t->y, t->z);
-            (void)JsonIO::GetFloat(jt, "rotation", t->rotation);
-            (void)JsonIO::ReadVec3(jt, "scale", t->scaleX, t->scaleY, t->scaleZ);
-        }
-
-        // ---- Render ----
-        if (comps.HasMember("Render") && comps["Render"].IsObject()) {
-            const auto& jr = comps["Render"];
-            auto* r = go->addComponent<Render>();
-
-            // shape
-            std::string shp = (jr.HasMember("shape") && jr["shape"].IsString())
-                ? jr["shape"].GetString()
-                : "square";
-            r->modelRef = renderer::models[static_cast<int>(JsonIO::StrToShape(shp))];
-
-            // hasTex / texture (accept bool or 0/1)
-            if (jr.HasMember("hasTex")) {
-                r->hasTex = jr["hasTex"].IsBool()
-                    ? jr["hasTex"].GetBool()
-                    : (jr["hasTex"].GetInt() != 0);
-            }
-            else {
-                r->hasTex = false;
-            }
-
-            if (r->hasTex && jr.HasMember("texture") && jr["texture"].IsString()) {
-                r->texFile = jr["texture"].GetString();
-                r->texHDL = 0;         // will be uploaded later by renderer
-                r->texChanged = true;     // flag for upload
-            }
-            else {
-                r->texFile.clear();
-                r->texHDL = 0;
-                r->texChanged = false;
-            }
-
-            if (jr.HasMember("hasAnimation")) {
-                r->hasAnimation = jr["hasAnimation"].IsBool()
-                    ? jr["hasAnimation"].GetBool()
-                    : (jr["hasAnimation"].GetInt() != 0);
-            }
-            else {
-                r->hasAnimation = false;
-            }
-
-            // Optional future flags:
-            // if (jr.HasMember("visible")     && jr["visible"].IsBool())     r->visible       = jr["visible"].GetBool();
-            // if (jr.HasMember("transparent") && jr["transparent"].IsBool()) r->isTransparent = jr["transparent"].GetBool();
-            // if (jr.HasMember("wireframe")   && jr["wireframe"].IsBool())   r->wireframe     = jr["wireframe"].GetBool();
-        }
-
-        // ---- Input (presence only) ----
-        if (comps.HasMember("Input") && comps["Input"].IsObject()) {
-            go->addComponent<Input>();
-        }
-
-        // ---- Physics ----
-        if (comps.HasMember("Physics") && comps["Physics"].IsObject()) {
-            const auto& jp = comps["Physics"];
-            auto* p = go->addComponent<Physics>();
-            if (jp.HasMember("inWater")) {
-                p->inWater = jp["inWater"].IsBool()
-                    ? jp["inWater"].GetBool()
-                    : (jp["inWater"].GetInt() != 0);
-            }
-            if (jp.HasMember("buoyancy")) {
-                p->buoyancy = jp["buoyancy"].IsBool()
-                    ? jp["buoyancy"].GetBool()
-                    : (jp["buoyancy"].GetInt() != 0);
-            }
-        }
-
-        // ---- CollisionInfo (presence only) ----
-        if (comps.HasMember("CollisionInfo") && comps["CollisionInfo"].IsObject()) {
-            go->addComponent<CollisionInfo>();
-        }
-
-		// ---- Button ----
-        if (comps.HasMember("Button") && comps["Button"].IsObject()) {
-			const auto& jb = comps["Button"];
-			auto* b = go->addComponent<Button>();
-
-            if (jb.HasMember("action") && jb["action"].IsInt()) {
-                b->actionName = static_cast<ButtonAction>(jb["action"].GetInt());
-            }
-
-            if (jb.HasMember("scenePath") && jb["scenePath"].IsString()) {
-                b->scenePath = jb["scenePath"].GetString();
-            }
-        }
-    }
-
-    std::cout << "Scene loaded (JSON): " << filename << "\n";
-}
 
 /**
  * \brief Serializes a layer reference with both ID and name.

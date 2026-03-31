@@ -67,6 +67,8 @@ void WaterSystem::init() {
 }
 
 void WaterSystem::update(GameObjectManager& manager, float deltaTime) {
+    if (EditorManager::isEditingMode() || EditorManager::isPaused()) return;
+
     std::vector<GameObject*> allObjects;
     manager.getAllGameObjects(allObjects);
 
@@ -75,10 +77,6 @@ void WaterSystem::update(GameObjectManager& manager, float deltaTime) {
         WaterBody* water = obj->getComponent<WaterBody>();
 
         if (water) {
-            if (water->renderWaves) {
-                water->waveTime += deltaTime;
-            }
-
             if (water->pendingHeightIncrease > 0.0f) {
                 float rise = water->heightRiseSpeed * deltaTime;
                 rise = Math_Min(rise, water->pendingHeightIncrease);

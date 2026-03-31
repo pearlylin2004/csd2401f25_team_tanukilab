@@ -17,6 +17,8 @@ Technology is prohibited.
 #include "Systems.h"
 #include "JsonIO.h"
 #include "SceneManager.h"
+#include "GUISystem.h"
+#include "GameState.h"
 
 std::map<std::string, float> VisualLC::globalFloatVar;
 GameObjectManager* VisualLogicSystem::m_manager = nullptr;
@@ -206,7 +208,7 @@ void VisualLogicSystem::update(GameObject* obj, VisualLC* logic, float dt) {
 		if (transform) {
 			Vector2D mouseWorldPos = InputHandler::getWorldMousePosition();
 
-#ifdef _DEBUG
+
 			// if playing in editor then use ImGui viewport mouse pos
 			if (UISystem::isShowUI()) {
 				ImVec2 scenePos; ImVec2 sceneSize;
@@ -214,7 +216,7 @@ void VisualLogicSystem::update(GameObject* obj, VisualLC* logic, float dt) {
 
 				mouseWorldPos = InputHandler::getMousePositionInImGuiViewport(scenePos, sceneSize);
 			}
-#endif
+//#endif
 
 			float halfW = transform->scaleX / 2.f;
 			float halfH = transform->scaleY / 2.f;
@@ -223,6 +225,13 @@ void VisualLogicSystem::update(GameObject* obj, VisualLC* logic, float dt) {
 				mouseWorldPos.x <= transform->x + halfW &&
 				mouseWorldPos.y >= transform->y - halfH &&
 				mouseWorldPos.y <= transform->y + halfH);
+
+			// gamepad selection hovering
+			if (!isHoveringNow && InputHandler::isGamepadConnected()) {
+				if (Button* btn = obj->getComponent<Button>()) {
+					isHoveringNow = btn->isHovered;
+				}
+			}
 
 			// ON HOVER ENTER
 			if (isHoveringNow && !logic->wasHoveredLastFrame) {
@@ -269,13 +278,13 @@ void VisualLogicSystem::update(GameObject* obj, VisualLC* logic, float dt) {
 		if (transform) {
 			Vector2D mouseWorldPos = InputHandler::getWorldMousePosition();
 
-#ifdef _DEBUG
+//#ifdef _DEBUG
 			if (UISystem::isShowUI()) {
 				ImVec2 scenePos; ImVec2 sceneSize;
 				EditorManager::getScenePosNSize(scenePos, sceneSize);
 				mouseWorldPos = InputHandler::getMousePositionInImGuiViewport(scenePos, sceneSize);
 			}
-#endif
+//#endif
 
 			float halfW = transform->scaleX / 2.f;
 			float halfH = transform->scaleY / 2.f;
@@ -286,6 +295,13 @@ void VisualLogicSystem::update(GameObject* obj, VisualLC* logic, float dt) {
 				mouseWorldPos.y <= transform->y + halfH);
 
 			bool isClickedNow = isOverObject && InputHandler::isMouseLeftHeld();
+
+			// gamepad selection click (CROSS X button)
+			if (!isClickedNow && InputHandler::isGamepadConnected()) {
+				if (Button* btn = obj->getComponent<Button>()) {
+					isClickedNow = btn->isHovered && InputHandler::isGamepadButtonHeld(GLFW_GAMEPAD_BUTTON_A);
+				}
+			}
 
 			// ON CLICK ENTER
 			if (isClickedNow && !logic->wasClickedLastFrame) {
@@ -579,7 +595,6 @@ void VisualLogicSystem::executeActionNode(GameObject* obj, VisualLC* logic, Logi
 
 		if (channel->state == AudioState::Stopped) {
 			channel->isPendingPlay = true;
-			channel->persistOnSceneChange = true;
 			std::cout << "[VisualLogic] Triggering play for channel: " << channelName << std::endl;
 		}
 	}
@@ -592,6 +607,9 @@ void VisualLogicSystem::executeActionNode(GameObject* obj, VisualLC* logic, Logi
 		}
 
 		std::string stateName = node.parameters.count("state") ? node.parameters["state"] : JsonIO::stateNames[0];
+
+		// Block setting Dead state during replay to prevent spurious deaths
+		/*if (stateName == "Dead" && GUISystem::getInstance().getCurrentState() == GameState::REPLAY) return;*/
 
 		sm->state = JsonIO::parsePlayerState(stateName);
 		sm->stateTime = 0.f;
@@ -668,6 +686,19 @@ void VisualLogicSystem::executeActionNode(GameObject* obj, VisualLC* logic, Logi
 
 		//std::cout << "Put force on collided object to (" << collidedPhysic->dynamics.velocity.x << ", " << collidedPhysic->dynamics.velocity.y << ")\n";
 	}
+	else if (node.imp == NodeImplementation::LIFT_COLLIDED) {
+		GameObject* collidedObj = logic->lastCollidedObj;
+		if (!collidedObj) return;
+		Physics* p = collidedObj->getComponent<Physics>();
+		if (!p) return;
+
+		float force = node.parameters.count("liftForce") ? std::stof(node.parameters["liftForce"]) : 20.f;
+		float duration = node.parameters.count("liftDuration") ? std::stof(node.parameters["liftDuration"]) : 0.5f;
+
+		p->liftForce = force;
+		p->liftDuration = duration;
+		p->onGround = false;  // kick off ground so physics takes over
+		}
 	else if (node.imp == NodeImplementation::SET_GLOBAL_FLOAT) {
 		std::string varName = node.parameters.count("variable") ?
 			node.parameters["variable"] : "var";
@@ -749,9 +780,7 @@ void VisualLogicSystem::executeActionNode(GameObject* obj, VisualLC* logic, Logi
 	}
 	else if (node.imp == NodeImplementation::LOAD_LEVEL) {
 		std::string levelName = node.parameters.count("Game_Level_") ?
-			node.parameters["levelName"] : "Game_Level_1.json";
-		//GUISystem::getInstance().m_pendingLevelLoad = true;
-		//GUISystem::getInstance().m_pendingLevelName = levelName;
+			node.parameters["Game_Level_"] : "";
 		SceneManager::getInstance().requestLevelLoad(levelName);
 	}
 	else if (node.imp == NodeImplementation::DISABLE_COLLISION) {
@@ -906,10 +935,26 @@ void VisualLogicSystem::executeActionNode(GameObject* obj, VisualLC* logic, Logi
 		if (channel->state == AudioState::Playing || channel->isPendingPlay) return;
 
 		channel->isPendingPlay = true;
-		channel->persistOnSceneChange = true;
 
 		logic->intVar[lastKey] = newIndex;
 		logic->timers[cooldownKey] = 0.f;
+	}
+	else if (node.imp == NodeImplementation::LOCK_POSITION) {
+		Physics* physics = obj->getComponent<Physics>();
+
+		if (physics) {
+			physics->canMove = false;
+			physics->dynamics.velocity.x = 0.f;
+			physics->dynamics.velocity.y = 0.f;
+			physics->velX = 0.f;
+			physics->velY = 0.f;
+		}
+	}
+	else if (node.imp == NodeImplementation::UNLOCK_POSITION) {
+		Physics* physics = obj->getComponent<Physics>();
+
+		if (physics)
+			physics->canMove = true;
 	}
 }
 
@@ -1097,6 +1142,12 @@ bool VisualLogicSystem::executeConditionNode(GameObject* obj, VisualLC* logic, L
 		// true when the current frame has reached the last frame of the animation
 		return (as.currentFrameColumn >= (int)as.lastFrame.x &&
 			as.currentFrameRow >= (int)as.lastFrame.y);
+	}
+	else if (node.imp == NodeImplementation::IS_VIDEO_END) {
+		if (obj->hasComponent<Video>())
+			return obj->getComponent<Video>()->videoEnded;
+
+		return false;
 	}
 
 	return true;

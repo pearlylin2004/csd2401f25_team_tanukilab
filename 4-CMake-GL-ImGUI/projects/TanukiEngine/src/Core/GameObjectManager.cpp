@@ -23,6 +23,7 @@ Technology is prohibited.
 #include "Editor/editorState.h"
 #include "Editor/undoRedo.h"
 #include "GUISystem.h"
+#include "Systems/Systems.h"
 
 #ifndef RUNTIME_SCENE_DIR_R
 #define RUNTIME_SCENE_DIR_R "./assets/Scene"
@@ -260,8 +261,9 @@ void GameObjectManager::loadSceneFromJson(const std::string& filename) {
 	auto t1 = std::chrono::high_resolution_clock::now();
 
 	// set to false to make sure one scene can only have one camera component (set to true if obj has cam component)
+#ifdef _DEBUG
 	Editor::hasCam = false;
-
+#endif
 	rapidjson::Document doc;
 	std::string err;
 	if (!JsonIO::ReadFileToDocument(filename, doc, &err)) {
@@ -517,7 +519,9 @@ void GameObjectManager::loadSceneFromJson(const std::string& filename) {
 
 		// ---- Camera ----
 		if (comps.HasMember("Camera") && comps["Camera"].IsObject()) {
+#ifdef _DEBUG
 			Editor::hasCam = true;
+#endif
 			const auto& jcam = comps["Camera"];
 			auto* cam = go->getComponent<camera>();
 			if (!cam) cam = go->addComponent<camera>();
@@ -547,6 +551,18 @@ void GameObjectManager::loadSceneFromJson(const std::string& filename) {
 
 			if (jcam.HasMember("mapHeight") && jcam["mapHeight"].IsNumber())
 				cam->mapHeight = jcam["mapHeight"].GetFloat();
+		}
+
+		//----- Video -----
+		if (comps.HasMember("Video") && comps["Video"].IsObject()) {
+			const auto& jvid = comps["Video"];
+			auto* vid = go->getComponent<Video>();
+			if (!vid) vid = go->addComponent<Video>();
+
+			if (jvid.HasMember("videoFile") && jvid["videoFile"].IsString())
+				vid->videoFile = jvid["videoFile"].GetString();
+			if (jvid.HasMember("loop") && jvid["loop"].IsNumber())
+				vid->loop = jvid["loop"].GetInt() != 0;
 		}
 
 		// ---- Input (presence only) ----
@@ -1222,7 +1238,7 @@ void GameObjectManager::saveSceneToJson(const std::string& filename, bool isNew)
 
 		doc.AddMember("layers", layersArr, a);
 	
-		bool bulletSerialized = false;
+		//bool bulletSerialized = false;
 		// objects array
 		rapidjson::Value objects(rapidjson::kArrayType);
 
@@ -1233,19 +1249,21 @@ void GameObjectManager::saveSceneToJson(const std::string& filename, bool isNew)
 		for (auto const& kv : m_gameObjects) {
 			const GameObject* obj = kv.second.get();
 
+			if (obj->isExcludeFromSave()) continue;
+
 			std::string objName = obj->getObjectName();
 
 			// if its a clone of bullet, serialize only the first one
-			if (obj->getObjectPrefabID() == "b1a12273-a692-4ce0-8072-156da2c70842") {
-				// if its a bullet, change name to bullet
-				if (!bulletSerialized) {
-					objName = "bullet";
-					bulletSerialized = true;
-				}
-				else {
-					continue;
-				}
-			}
+			//if (obj->getObjectPrefabID() == "b1a12273-a692-4ce0-8072-156da2c70842") {
+			//	// if its a bullet, change name to bullet
+			//	if (!bulletSerialized) {
+			//		objName = "bullet";
+			//		bulletSerialized = true;
+			//	}
+			//	else {
+			//		continue;
+			//	}
+			//}
 
 			rapidjson::Value jObj(rapidjson::kObjectType);
 
@@ -1453,6 +1471,32 @@ void GameObjectManager::saveSceneToJson(const std::string& filename, bool isNew)
 				pushIfDiffFloat("mapHeight", cam->mapHeight);
 
 				if (!jcam.ObjectEmpty()) comps.AddMember("Camera", jcam, a);
+			}
+
+			//---- Video -------
+			if (auto vid = obj->getComponent<Video>()) {
+				rapidjson::Value jvid(rapidjson::kObjectType);
+				const rapidjson::Value* prefabVid = PM.getPrefabJsonComp(prefabDoc, "Video");
+
+				auto pushIfDiffString = [&](const char* key, const std::string& val) {
+					if (!prefabVid || !prefabVid->HasMember(key) ||
+						!(*prefabVid)[key].IsString() ||
+						((*prefabVid)[key].GetString() != val)) {
+						jvid.AddMember(rapidjson::Value(key, a), rapidjson::Value(val.c_str(), a), a);
+					}
+					};
+				auto pushIfDiffBool = [&](const char* key, bool val) {
+					if (!prefabVid || !prefabVid->HasMember(key) ||
+						!(*prefabVid)[key].IsNumber() ||
+						((*prefabVid)[key].GetInt() != (val ? 1 : 0))) {
+						jvid.AddMember(rapidjson::Value(key, a), rapidjson::Value(val ? 1 : 0), a);
+					}
+					};
+
+				pushIfDiffString("videoFile", vid->videoFile);
+				pushIfDiffBool("loop", vid->loop);
+
+				if (!jvid.ObjectEmpty()) comps.AddMember("Video", jvid, a);
 			}
 
 			// ---- Physics ----
@@ -2047,7 +2091,7 @@ If the path ends with ".json", loads a JSON scene.
 void GameObjectManager::loadScene(const std::string& path) {
 
 	// PLEASE STOP CRASHING
-#ifdef _DEBUG
+//#ifdef _DEBUG
 	Editor::objSelectionState.selectedObject = nullptr;
 	Editor::objSelectionState.selectedPrefab = nullptr;
 	Editor::objSelectionState.draggedObject = nullptr;
@@ -2058,7 +2102,7 @@ void GameObjectManager::loadScene(const std::string& path) {
 	std::string filename = std::filesystem::path(path).filename().string();
 	if (filename != Editor::sceneState.tempSceneName)
 		Editor::sceneState.currentSceneName = filename;
-#endif
+//#endif
 
 	if (ends_with(path, ".json")) loadSceneFromJson(path);
 	//if (GameObject* p = getGameObject("player")) {
@@ -2242,6 +2286,11 @@ void GameObjectManager::initializeSimulationResources() {
 				}
 			}
 		}
+
+		if (obj->hasComponent<Video>()) {
+			VideoSystem::cleanup(obj->getComponent<Video>());
+			obj->getComponent<Video>()->isPlaying = true;
+		}
 	}
 }
 
@@ -2260,6 +2309,10 @@ void GameObjectManager::cleanupSimulationResources() {
 					channel.isPendingStop = false;
 				}
 			}
+		}
+
+		if (obj->hasComponent<Video>()) {
+			VideoSystem::cleanup(obj->getComponent<Video>());
 		}
 	}
 }

@@ -32,34 +32,6 @@ Technology is prohibited.
 #include "Component.h"
 #include "GameObjectManager.h"
 
-//enum class AudioState {
-//	Stopped,
-//	Playing,
-//	Paused
-//};
-
-//enum class soundID : int {
-//	water = 0,
-//	shoot,
-//	fire,
-//	bg,
-//	// keep this as the last, for getting the number of sound ids
-//	count
-//};
-
-//struct FadeInfo {
-//	bool isFading = false;
-//	bool isFadingIn = false;
-//	float startVolume = 0.0f;
-//	float targetVolume = 0.0f;
-//	float fadeDuration = 0.0f;
-//	float fadeTimer = 0.0f;
-//
-//	float defaultFadeInDuration = 1.0f;
-//	float defaultFadeOutDuration = 1.0f;
-//};
-
-
 class AudioHandler {
 public:
 	// get the singleton instance
@@ -71,10 +43,6 @@ public:
 	void update(float deltaTime);
 	// release all sounds and shut down the audio system (will shutdown automatically when dtor called)
 	void shutdown(); // no need to manually call, dtor will call this automatically
-
-	// load the sound from file path, if loop is true, sound will loop until stopped (default false)
-	// now done in ResourceManager
-	// bool loadSound(soundID id, const std::string& filePath, bool loop = false);
 
 	// play the sound, return the channel pointer if successful, nullptr if failed
 	FMOD::Channel* playSound(AudioChannel* audio);
@@ -152,6 +120,8 @@ public:
 	void setMasterVolume(float vol);
 	float getMasterVolume() const { return m_masterVolume; }
 
+	void setLowPassFilter(bool enable, float cutoff = 500.f);
+
 	// Register the BGM channel so setMusicVolume can update it live
 	void registerBGMChannel(FMOD::Channel* channel) { m_bgmChannel = channel; }
 
@@ -173,10 +143,25 @@ private:
 	FMOD::ChannelGroup* m_gameGroup = nullptr;  // all gameplay audio goes here
 	FMOD::ChannelGroup* m_bgmGroup = nullptr;
 
+	FMOD::DSP* m_lowPassDSP = nullptr;
+
+	std::string m_currentBGMFile = "";
+
 	float m_musicVolume = 1.0f;
 	float m_sfxVolume = 1.0f;
 	float m_bgmBaseVolume = 0.125f;
 	float m_masterVolume = 1.0f;
 	FMOD::Channel* m_bgmChannel = nullptr;
+
+
+	/* ---- for fade out previous bgm ---- */
+	// i stupid lah idk how to do it cleanly
+	struct BGMFadeOut {
+		FMOD::Channel* channel = nullptr;
+		float timer = 0.f;
+		float duration = 1.f;
+		float startVolume = 0.f;
+	};
+	std::vector<BGMFadeOut> m_fadingOutBGMs;
 
 };

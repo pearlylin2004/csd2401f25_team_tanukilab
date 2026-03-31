@@ -4,6 +4,13 @@ local player = {}
 
 local landingGrace = 0.1
 
+local footContactFrames = { 1, 4 }
+
+local footstepChannels = {
+    "footstep1", "footstep2", "footstep3",
+    "footstep4", "footstep5", "footstep6"
+}
+
 -- per-object state table (fixes hot reload nil issue)
 local objState = {}
 local function getS(obj)
@@ -15,12 +22,16 @@ local function getS(obj)
             prevOnGround    = false,
             landingTimer    = 0.0,
             initialized     = false,
+            lastFrame       = -1,
+            lastSoundIdx    = -1,
+            lastPlatformX = nil,
+            lastPlatformY = nil
         }
     end
     return objState[obj]
 end
 
--- helper func to find bullet
+-- helper func to find bullet 
 local function findBullet()
     local objs = getAllObjects()
     for i = 1, #objs do
@@ -104,6 +115,7 @@ function player.Update(obj, dt)
         end
     end
 
+
     -- ledge climb
     if getLedgeClimb(obj) then
         local x, y = getPosition(obj)
@@ -128,6 +140,7 @@ function player.Update(obj, dt)
         end
     end
 
+
     -- movement (left and right)
     local targetVelX = 0.0
 
@@ -141,22 +154,88 @@ function player.Update(obj, dt)
         SendInputEvent("D", 0, 0)
     end
 
+    -- reduce control when being lifted
+    local liftDuration = getLiftDuration(obj)
+    if liftDuration > 0 then
+        targetVelX = targetVelX * 0.3  -- only 30% horizontal control during lift
+    end
+
+    -- snap velocity on direction change
+    local velX = getVelX(obj)
+    if (targetVelX > 0 and velX < 0) or (targetVelX < 0 and velX > 0) then
+        setVelX(obj, 0)
+        setDynVelX(obj, 0)
+    end
+
     -- flip to face mouse when not moving
     if not Input_isKeyHeld("A") and not Input_isKeyHeld("D") then
-        if not isEditorOpen() or isSceneHovered() then
-            local mx = isEditorOpen() and getEditorMouseWorldX() or getMouseWorldX()
+        local rightStickUsed = isGamepadConnected() and
+            (math.abs(getGamepadAxisRX()) > 0.15 or math.abs(getGamepadAxisRY()) > 0.15)
+
+        if not isEditorOpen() or isSceneHovered() or rightStickUsed then
+            local mx = isEditorOpen() and getEditorMouseWorldX(obj) or getMouseWorldX(obj)
             local x, y = getPosition(obj)
             setFlipX(obj, mx < x)
         end
     end
+
+
+    -- snap velocity on direction change
+    local velX = getVelX(obj)
+    if (targetVelX > 0 and velX < 0) or (targetVelX < 0 and velX > 0) then
+        setVelX(obj, 0)
+        setDynVelX(obj, 0)
+    end
+
 
     -- damping + position
     local friction = getFriction(obj)
     applyDamping(obj, friction, targetVelX, dt)
     if not getLedgeClimb(obj) then
         updatePosition(obj, dt)
-        local px, py = getPosition(obj)
     end
+
+
+    -- moving platform detection
+    local platform = nil
+    if isOnGround(obj) then
+        local allObjs = getAllObjects()
+        local px, py = getPosition(obj)
+        for i = 1, #allObjs do
+            local o = allObjs[i]
+            if getCollisionTag(o) == "platform" then
+                local ox, oy = getPosition(o)
+                local dx = math.abs(ox - px)
+                local dy = (oy - py)
+                local px2, py2 = getPosition(obj)
+
+                if dx < 4.0 and dy > -2.0 and dy < 1.0 then
+                    platform = o
+                    break
+                end
+            end
+        end
+    end
+
+    if platform then
+        local ox, oy = getPosition(platform)
+        if s.lastPlatformX ~= nil then
+            local pdx = ox - s.lastPlatformX
+            local x, y = getPosition(obj)
+            setPosition(obj, x + pdx, y)
+            setDynPos(obj, x + pdx, y)
+        end
+        s.lastPlatformX = ox
+        s.lastPlatformLostTimer = 0.0  -- reset timer when on platform
+    else
+        -- keep lastPlatformX for a few frames after losing platform
+        if not s.lastPlatformLostTimer then s.lastPlatformLostTimer = 0.0 end
+        s.lastPlatformLostTimer = s.lastPlatformLostTimer + dt
+        if s.lastPlatformLostTimer > 0.1 then 
+            s.lastPlatformX = nil
+        end
+    end
+
 
     -- FSM state update
     local velY = getVelY(obj)
@@ -192,6 +271,29 @@ function player.Update(obj, dt)
 
     setStateTime(obj, getStateTime(obj) + dt)
 
+    -- footstep sync to animation
+    if state == "Walking" then
+        local frame = getAnimationFrame(obj)
+        if frame ~= s.lastFrame then
+            s.lastFrame = frame
+            for _, contactFrame in ipairs(footContactFrames) do
+                if frame == contactFrame then
+                    local idx = math.random(1, #footstepChannels)
+                    if #footstepChannels > 1 then
+                        while idx == s.lastSoundIdx do
+                            idx = math.random(1, #footstepChannels)
+                        end
+                    end
+                    s.lastSoundIdx = idx
+                    playSound(obj, footstepChannels[idx])
+                    break
+                end
+            end
+        end
+    else
+        s.lastFrame = -1
+    end
+
     if s.landingTimer > 0 then
         s.landingTimer = s.landingTimer - dt
     end
@@ -203,7 +305,9 @@ function player.Update(obj, dt)
     shootTimer = shootTimer + dt
     setShootTimer(obj, shootTimer)
 
-    if not isMouseLeftHeld() or not isSceneHovered() then
+    local canShootNow = (isMouseLeftHeld() and (not isEditorOpen() or isSceneHovered()))
+                 or (isGamepadConnected() and isGamepadButtonHeld("R1"))
+    if not canShootNow then
         setShootTimer(obj, getFireRate(obj))
         return
     end
@@ -226,15 +330,15 @@ function player.Update(obj, dt)
         local candidate = allObjs[i]
         if hasWeaponComponent(candidate) and getParentName(candidate) == getObjectName(obj) then
             spawnObj = candidate
-            break
+            break 
         end
     end
 
-    local mx = isEditorOpen() and getEditorMouseWorldX() or getMouseWorldX()
-    local my = isEditorOpen() and getEditorMouseWorldY() or getMouseWorldY()
+    local mx = isEditorOpen() and getEditorMouseWorldX(obj) or getMouseWorldX(obj)
+    local my = isEditorOpen() and getEditorMouseWorldY(obj) or getMouseWorldY(obj)
 
     -- shoot
-    playSound(bullet, "shoot")
+    playSound(bullet, "default")
     local bx, by = getPosition(spawnObj)
     local dx = mx - bx
     local dy = my - by

@@ -20,6 +20,7 @@ Technology is prohibited.
 #include "renderer.h"
 #include "input.h"
 #include "PathManager.h"
+#include "toastSystem.h"
 
 GLFWwindow* InputHandler::m_window = nullptr;
 AppConfig InputHandler::m_cfg;
@@ -39,6 +40,11 @@ bool InputHandler::m_isCursorInside = false;
 float InputHandler::m_scrollOffset = 0.0f;
 double InputHandler::m_doubleClickThreshold = 0.25;
 
+bool  InputHandler::m_gamepadButtons[InputHandler::GAMEPAD_BUTTON_COUNT] = {};
+bool  InputHandler::m_gamepadButtonsPrevious[InputHandler::GAMEPAD_BUTTON_COUNT] = {};
+float InputHandler::m_gamepadAxes[InputHandler::GAMEPAD_AXIS_COUNT] = {};
+int   InputHandler::m_activeGamepadId = -1;
+
 // initialize input handler with window and set up callbacks
 void InputHandler::init(GLFWwindow* window, const AppConfig& cfg) {
 	m_window = window;
@@ -50,9 +56,10 @@ void InputHandler::init(GLFWwindow* window, const AppConfig& cfg) {
 	glfwSetCursorPosCallback(window, cursorPositionCallback);
 	glfwSetCursorEnterCallback(window, CursorEnterCallback);
 	glfwSetScrollCallback(window, scrollCallback);
-#ifdef _DEBUG
+
+
 	glfwSetDropCallback(window, dropCallback);
-#endif
+//#endif
 }
 
 // update input states (call once per frame)
@@ -66,6 +73,46 @@ void InputHandler::update() {
 	m_scrollOffset = 0.0f;
 
 	glfwPollEvents();
+
+	// gamepad polling — capture previous connection state BEFORE resetting
+	bool wasPreviouslyConnected = (m_activeGamepadId != -1);
+	memcpy(m_gamepadButtonsPrevious, m_gamepadButtons, sizeof(m_gamepadButtons));
+
+	m_activeGamepadId = -1;
+	for (int jid = GLFW_JOYSTICK_1; jid <= GLFW_JOYSTICK_LAST; ++jid) {
+		if (glfwJoystickPresent(jid) && glfwJoystickIsGamepad(jid)) {
+			m_activeGamepadId = jid;
+			break;
+		}
+	}
+
+	bool isNowConnected = (m_activeGamepadId != -1);
+
+	// fire toast on connection change
+	if (!wasPreviouslyConnected && isNowConnected) {
+		const char* name = glfwGetGamepadName(m_activeGamepadId);
+		std::string msg = "Controller connected";
+		if (name) msg += std::string(": ") + name;
+		ToastSystem::getInstance().push(msg, 5.f);
+	}
+	else if (wasPreviouslyConnected && !isNowConnected) {
+		ToastSystem::getInstance().push("Controller disconnected", 5.f);
+	}
+
+	// read button + axis state
+	if (m_activeGamepadId != -1) {
+		GLFWgamepadstate state;
+		if (glfwGetGamepadState(m_activeGamepadId, &state)) {
+			for (int i = 0; i < GAMEPAD_BUTTON_COUNT; ++i)
+				m_gamepadButtons[i] = (state.buttons[i] == GLFW_PRESS);
+			for (int i = 0; i < GAMEPAD_AXIS_COUNT; ++i)
+				m_gamepadAxes[i] = state.axes[i];
+		}
+	}
+	else {
+		memset(m_gamepadButtons, 0, sizeof(m_gamepadButtons));
+		memset(m_gamepadAxes, 0, sizeof(m_gamepadAxes));
+	}
 }
 
 
@@ -403,7 +450,7 @@ void InputHandler::setWindowSize(int width, int height)
 }
 
 
-#ifdef _DEBUG
+//#ifdef _DEBUG
 void InputHandler::dropCallback(GLFWwindow* window, int count, const char** paths) {
 	(void)window;
 
@@ -411,58 +458,56 @@ void InputHandler::dropCallback(GLFWwindow* window, int count, const char** path
     std::filesystem::path projectDir(PathManager::Instance().getSourcePath() + "/assets");  // "./projects/WaterBound/assets"
 
 	// check if dropping onto a specific folder in editor
-	std::string targetFolder = Editor::assetBrowserState.hoverFolder;
+	//std::string hoverFolder = Editor::assetBrowserState.hoverFolder;
+	std::string currentView = Editor::assetBrowserState.currentViewFolder;
 
 	for (int i = 0; i < count; ++i) {
 		std::filesystem::path src(paths[i]);
 		std::string ext = src.extension().string();
-		std::filesystem::path dstBuild = buildDir / src.filename();
-		std::filesystem::path dstProject = projectDir / src.filename();
+		/*std::filesystem::path dstBuild = buildDir / src.filename();
+		std::filesystem::path dstProject = projectDir / src.filename();*/
 
 		std::transform(ext.begin(), ext.end(), ext.begin(), ::tolower);
 
-		// Auto-detect folder based on extension if no hover target
-		if (targetFolder.empty()) {
-			// if audio file, auto add to Audio
-			if (ext == ".wav" || ext == ".ogg" || ext == ".mp3") {
-				targetFolder = "Audio";
-			}
-			// if textures, auto add to textures
-			else if (ext == ".png" || ext == ".jpg" || ext == ".jpeg") {
-				targetFolder = "Texture";
-			}
-			// if lua, auto add to Scripts
-			else if (ext == ".lua") {
-				targetFolder = "scripting";
-			}
-		}
-		else if (targetFolder == "Misc") targetFolder.clear();
+		std::filesystem::path relTarget;
 
-		if (!targetFolder.empty()) {
+		// Auto-detect folder based on extension if no hover target
+		if (!currentView.empty() && currentView != "Misc") {
+			relTarget = std::filesystem::path(currentView);
+		}
+		else {
+			// Auto-detect from extension
+			if (ext == ".wav" || ext == ".ogg" || ext == ".mp3")
+				relTarget = "Audio";
+			else if (ext == ".png" || ext == ".jpg" || ext == ".jpeg")
+				relTarget = "Texture";
+			else if (ext == ".lua")
+				relTarget = "scripting";
+			else if (ext == ".mpg" || ext == ".mpeg")
+				relTarget = "video";
+		}
+
+		/*if (!targetFolder.empty()) {
 			dstBuild = buildDir / targetFolder / src.filename();
 			dstProject = projectDir / targetFolder / src.filename();
-		}
+		}*/
+
+		std::filesystem::path dstBuild = buildDir / relTarget / src.filename();
+		std::filesystem::path dstProject = projectDir / relTarget / src.filename();
 
 		try {
-			// Copy to build/debug folder
-			if (std::filesystem::exists(dstBuild)) {
-				std::filesystem::remove_all(dstBuild);
-			}
+			std::filesystem::create_directories(dstBuild.parent_path());
+			std::filesystem::create_directories(dstProject.parent_path());
+
+			if (std::filesystem::exists(dstBuild))   std::filesystem::remove_all(dstBuild);
+			if (std::filesystem::exists(dstProject)) std::filesystem::remove_all(dstProject);
+
 			if (std::filesystem::is_directory(src)) {
 				std::filesystem::copy(src, dstBuild, std::filesystem::copy_options::recursive);
-			}
-			else {
-				std::filesystem::copy_file(src, dstBuild, std::filesystem::copy_options::overwrite_existing);
-			}
-
-			// Copy to project folder
-			if (std::filesystem::exists(dstProject)) {
-				std::filesystem::remove_all(dstProject);
-			}
-			if (std::filesystem::is_directory(src)) {
 				std::filesystem::copy(src, dstProject, std::filesystem::copy_options::recursive);
 			}
 			else {
+				std::filesystem::copy_file(src, dstBuild, std::filesystem::copy_options::overwrite_existing);
 				std::filesystem::copy_file(src, dstProject, std::filesystem::copy_options::overwrite_existing);
 			}
 
@@ -474,4 +519,42 @@ void InputHandler::dropCallback(GLFWwindow* window, int count, const char** path
 		}
 	}
 }
-#endif
+
+bool InputHandler::isGamepadConnected() { 
+	return m_activeGamepadId != -1; 
+}
+
+bool InputHandler::isGamepadButtonTriggered(int button) {
+	if (button < 0 || button >= GAMEPAD_BUTTON_COUNT) return false;
+
+	return m_gamepadButtons[button] && !m_gamepadButtonsPrevious[button];
+}
+
+bool InputHandler::isGamepadButtonReleased(int button) {
+	if (button < 0 || button >= GAMEPAD_BUTTON_COUNT) return false;
+
+	return !m_gamepadButtons[button] && m_gamepadButtonsPrevious[button];
+}
+
+bool InputHandler::isGamepadButtonHeld(int button) {
+	if (button < 0 || button >= GAMEPAD_BUTTON_COUNT) return false;
+
+	return m_gamepadButtons[button];
+}
+
+float InputHandler::getGamepadAxis(int axis, float deadZone) {
+	if (axis < 0 || axis >= GAMEPAD_AXIS_COUNT) return 0.f;
+
+	float v = m_gamepadAxes[axis];
+	return (std::abs(v) < deadZone) ? 0.f : v;
+}
+
+// triggers: GLFW reports [-1,1], unpressed = -1. Remap to [0,1].
+float InputHandler::getGamepadLeftTrigger() {
+	return std::max(0.f, (m_gamepadAxes[GLFW_GAMEPAD_AXIS_LEFT_TRIGGER] + 1.f) * 0.5f);
+}
+
+float InputHandler::getGamepadRightTrigger() {
+	return std::max(0.f, (m_gamepadAxes[GLFW_GAMEPAD_AXIS_RIGHT_TRIGGER] + 1.f) * 0.5f);
+}
+//#endif

@@ -55,6 +55,11 @@
       "id": "979be788-8fb0-42b0-831a-273a92bc89a8",
       "name": "tree",
       "path": "/Prefab/tree.json"
+    },
+    {
+      "id": "606ecd11-ffab-4355-8153-36d2ba9a0a0f",
+      "name": "cheater",
+      "path": "/Prefab/cheater.json"
     }
   ]
 }

@@ -1,5 +1,29 @@
 {
   "version": 1,
+  "layers": [
+    {
+      "id": 0,
+      "name": "Background",
+      "enabled": 1,
+      "visible": 1,
+      "updatable": 1
+    },
+    {
+      "id": 1,
+      "name": "Game",
+      "enabled": 1,
+      "visible": 1,
+      "updatable": 1
+    },
+    {
+      "id": 2,
+      "name": "UI",
+      "enabled": 1,
+      "visible": 1,
+      "updatable": 1
+    }
+  ],
+  "onLoadScript": "assets/scripting\\pause_scene_load.lua",
   "objects": [
     {
       "name": "pause_background",
@@ -19,9 +43,12 @@
         },
         "Render": {
           "shape": "square",
+          "colorR": 1.0,
+          "colorG": 1.0,
+          "colorB": 1.0,
+          "colorA": 1.0,
           "hasTex": 1,
           "texture": "assets/Texture\\Pause_Sign_Base_V2.png",
-          "hasTex": 1,
           "hasAnimation": 0
         }
       }
@@ -44,15 +71,18 @@
         },
         "Render": {
           "shape": "square",
+          "colorR": 1.0,
+          "colorG": 1.0,
+          "colorB": 1.0,
+          "colorA": 1.0,
           "hasTex": 1,
           "texture": "assets/button.png",
-          "hasTex": 1,
           "hasAnimation": 0
-        },
-        "Button": {
-          "action": "load_scene",
-          "scenePath": "control_scene.json"
         }
+      },
+      "Button": {
+        "action": "load_scene",
+        "scenePath": "control_scene.json"
       }
     },
     {
@@ -72,7 +102,7 @@
           ]
         },
         "FontComponent": {
-          "word": "HOw to play",
+          "word": "How to play",
           "color": [
             0.0,
             0.0,
@@ -157,10 +187,16 @@
         },
         "Render": {
           "shape": "square",
+          "colorR": 1.0,
+          "colorG": 1.0,
+          "colorB": 1.0,
+          "colorA": 1.0,
           "hasTex": 1,
           "texture": "assets/button.png",
-          "hasTex": 1,
           "hasAnimation": 0
+        },
+        "VisualLC": {
+          "filename": "menu_button_Logic.json"
         },
         "Button": {
           "action": "load_scene",
@@ -186,9 +222,12 @@
         },
         "Render": {
           "shape": "square",
+          "colorR": 1.0,
+          "colorG": 1.0,
+          "colorB": 1.0,
+          "colorA": 1.0,
           "hasTex": 1,
           "texture": "assets/button.png",
-          "hasTex": 1,
           "hasAnimation": 0
         },
         "Button": {

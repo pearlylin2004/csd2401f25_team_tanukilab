@@ -1,3 +1,18 @@
+/* Start Header ************************************************************************/
+/*!
+\file       EditorLaunch.cpp
+\author     Tan Chee Qing, cheeqing.tan, 2401486
+            - 100%
+\par		cheeqing.tan@digipen.edu
+\date       March, 10th, 2026
+\brief      Implementation of editor launcher for the standalone editor.
+
+Copyright (C) 2026 DigiPen Institute of Technology.
+Reproduction or disclosure of this file or its contents
+without the prior written consent of DigiPen Institute of
+Technology is prohibited.
+*/
+/* End Header **************************************************************************/
 
 //#ifdef TANUKI_EDITOR   
 #include "editorLaunch.h"
@@ -11,9 +26,8 @@
 
 namespace fs = std::filesystem;
 
-/*
+
 //  Minimal stub for new.json  (empty scene so the editor can open it)
-// ============================================================================ */
 EditorLaunch::EditorLaunch() {}
 
 /* -------- Layout Constant -------- */
@@ -335,6 +349,7 @@ bool EditorLaunch::createNewGame(const std::string& name) {
         "assets/scripting",
         //"assets/shaders",
         "assets/Texture",
+        "assets/video"
     };
 
     std::error_code ec;
@@ -365,13 +380,48 @@ bool EditorLaunch::createNewGame(const std::string& name) {
         std::cerr << "[EditorLauncher] New game may be missing shaders/fonts!\n";
     }
 
-    // create main.cpp in /src
-    std::ofstream f(root/"src"/"main.cpp");
+    // copy main.cpp template
+    fs::path templatePath = fs::path(TANUKI_ENGINE_TEMPLATES_R) / "main.cpp";
+    fs::path destMain = root / "src" / "main.cpp";
+    std::error_code ec2;
+    fs::copy_file(templatePath, destMain, fs::copy_options::overwrite_existing, ec2);
+    if (ec2) {
+        m_errorMsg = "Failed to copy main.cpp template: " + ec2.message();
+        return false;
+    }
+
+    // copy new.json
+    fs::copy_file(fs::path(TANUKI_ENGINE_TEMPLATES_R) / "new.json",
+        root / "assets" / "Scene" / "new.json",
+        fs::copy_options::overwrite_existing, ec2);
+    if (ec2) { m_errorMsg = "Failed to copy new.json template: " + ec2.message(); return false; }
+
+
+    // copy prefab_registry.json
+    fs::copy_file(fs::path(TANUKI_ENGINE_TEMPLATES_R) / "prefab_registry.json",
+        root / "assets" / "Prefab" / "prefab_registry.json",
+        fs::copy_options::overwrite_existing, ec2);
+    if (ec2) { m_errorMsg = "Failed to copy prefab_registry.json template: " + ec2.message(); return false; }
+
+
+    // copy config.json and replace placeholder
+    std::ifstream cfgTemplate(fs::path(TANUKI_ENGINE_TEMPLATES_R) / "config.json");
+    if (!cfgTemplate) { m_errorMsg = "Failed to open config.json template"; return false; }
+    std::string cfgContent((std::istreambuf_iterator<char>(cfgTemplate)),
+        std::istreambuf_iterator<char>());
+    size_t pos = cfgContent.find("{{GAME_NAME}}");
+    if (pos != std::string::npos)
+        cfgContent.replace(pos, 13, name);
+    std::ofstream cfgOut(root / "assets" / "resources" / "config.json");
+    if (!cfgOut) { m_errorMsg = "Failed to write config.json"; return false; }
+    cfgOut << cfgContent;
+
+    /*std::ofstream f(root/"src"/"main.cpp");
     if (!f) { m_errorMsg = "Failed to create main.cpp"; return false; }
     f << "// " << name << " game entry point\n";
-    f << "// TODO: register game scripts with CoreEngine here\n";
+    f << "// TODO: register game scripts with CoreEngine here\n";*/
 
-    // create new scene new.json
+    /*// create new scene new.json
     static constexpr const char* EMPTY_SCENE_JSON = R"({
         "layers": [
             {"id": 0, "name": "Background", "enabled": 1, "visible": 1, "updatable": 1},
@@ -411,7 +461,7 @@ bool EditorLaunch::createNewGame(const std::string& name) {
     })";
     std::ofstream f3(root/"assets"/"Prefab"/"prefab_registry.json");
     if (!f3) { m_errorMsg = "Failed to create prefab_registry.json"; return false; }
-    f3 << EMPTY_PREFAB_REGISTRY << "\n";
+    f3 << EMPTY_PREFAB_REGISTRY << "\n";*/
 
     std::cout << "[EditorLauncher] Created new game: " << root.string() << "\n";
     return true;

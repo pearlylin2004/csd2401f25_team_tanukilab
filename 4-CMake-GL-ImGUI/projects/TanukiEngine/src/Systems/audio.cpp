@@ -27,17 +27,6 @@ AudioHandler& AudioHandler::getInstance() {
 	return instance;
 }
 
-// check for FMOD errors (future: can change to logging instead of exit(-1))
-//void AudioHandler::FMODErrorCheck(FMOD_RESULT result) {
-//    if (result != FMOD_OK) {
-//        std::cerr << "FMOD error: " << FMOD_ErrorString(result) << std::endl;
-//		exit(-1); // instead of terminate, can change to logging the errors
-//    }
-//}
-
-//^might have to move this to a utility file if i wanna use in resource manager
-//EDIT: moved to AudioUtility.h
-
 // initialize the audio system and load sounds
 void AudioHandler::init() {
 	FMODErrorCheck(FMOD::System_Create(&system));
@@ -61,17 +50,22 @@ void AudioHandler::update(float deltaTime) {
 	if (system) {
 		system->update();
 	}
-	//updateFades(deltaTime);
-	//for (size_t i = 0; i < channels.size(); ++i) {
-	//	if (channels[i]) {
-	//		bool isPlaying = false;
-	//		channels[i]->isPlaying(&isPlaying);  // NEED to call fmoderrorcheck() here once exit(-1) change to logging
-	//		if (!isPlaying) {
-	//			channels[i] = nullptr;
-	//			fadeInfo[i].isFading = false;
-	//		}
-	//	}
-	//}
+
+	// fade out previous bgm manually
+	for (auto it = m_fadingOutBGMs.begin(); it != m_fadingOutBGMs.end();) {
+		it->timer += deltaTime;
+		float progress = std::min(it->timer / it->duration, 1.f);
+		it->channel->setVolume(it->startVolume * (1.f - progress));
+
+		if (progress >= 1.f) {
+			it->channel->stop();
+			it = m_fadingOutBGMs.erase(it);
+		}
+		else {
+			++it;
+		}
+	}
+
 	auto end = std::chrono::high_resolution_clock::now();
 	double ms = std::chrono::duration<double, std::milli>(end - start).count(); //get elapse time in ms
 	g_SystemTimers.push_back({ "Audio", ms }); //saving timing for UI output
@@ -79,17 +73,6 @@ void AudioHandler::update(float deltaTime) {
 
 // release all sounds and shut down the audio system (will shutdown automatically when dtor called)
 void AudioHandler::shutdown() {
-	/*for (FMOD::Sound* sound : sounds) {
-		if (sound) {
-			sound->release();
-		}
-	}
-
-	sounds.clear();*/
-	//ResourceManager will handle releasing sounds now
-
-	/*channels.clear();
-	fadeInfo.clear();*/
 
 	if (system) {
 		system->close();
@@ -97,28 +80,6 @@ void AudioHandler::shutdown() {
 		system = nullptr;
 	}
 }
-
-
-/* Sound Management */
-// now done in ResourceManager
-// load the sound from file path, if loop is true, sound will loop until stopped (default false)
-//bool AudioHandler::loadSound(soundID id, const std::string& filePath, bool loop) {
-//	if (!system) {
-//		std::cerr << "Error! Audio system not initialized..." << std::endl;
-//		return false;
-//	}
-//
-//	size_t pos = static_cast<size_t>(id);
-//	if (sounds[pos] != nullptr) return true; // means sounds alr loaded, jic called multiple times
-//
-//	FMOD::Sound* sound = nullptr;
-//	FMOD_MODE mode = loop ? FMOD_LOOP_NORMAL : FMOD_DEFAULT; // by default, sound stops after playing once
-//	FMODErrorCheck(system->createSound(filePath.c_str(), mode, nullptr, &sound));
-//
-//	sounds[pos] = sound;
-//
-//	return true;
-//}
 
 // play the sound, return the channel pointer if successful, nullptr if failed
 FMOD::Channel* AudioHandler::playSound(AudioChannel* audio) {
@@ -143,9 +104,6 @@ FMOD::Channel* AudioHandler::playSound(AudioChannel* audio) {
 		std::cerr << "Error! Sound could not be loaded: " << audio->audioFile << std::endl;
 		return nullptr;
 	}
-
-	//apparently dont need this
-	//FMODErrorCheck(channel->setMode(audio->loop ? FMOD_LOOP_NORMAL : FMOD_LOOP_OFF));
 
 	// For 3D sounds, override default min/max distance with channel-specific values
 
@@ -172,8 +130,7 @@ FMOD::Channel* AudioHandler::playSound(AudioChannel* audio) {
 		}
 		audio->channel = channel;
 		audio->fadeInfo.isFading = false;
-		std::cout << "[AUDIO] Playing: " << audio->audioFile
-			<< (audio->isSpatial ? " (3D)" : " (2D)") << std::endl;
+		//std::cout << "[AUDIO] Playing: " << audio->audioFile << (audio->isSpatial ? " (3D)" : " (2D)") << std::endl;
 	}
 
 	return channel;
@@ -253,19 +210,6 @@ void AudioHandler::stopAll(GameObjectManager& manager) {
 	}
 }
 
-// PAUSE / RESUME a particular sound
-//void AudioHandler::toggleSoundPause(AudioChannel* audio) {
-//	//size_t pos = static_cast<size_t>(id);
-//	bool isPaused = false;
-//
-//	/*if (channels[pos]) {*/
-//	if(audio->channel){
-//		FMODErrorCheck(audio->channel->getPaused(&isPaused));
-//		// if paused, resume playing, if playing, pause
-//		FMODErrorCheck(audio->channel->setPaused(!isPaused));
-//	}
-//}
-
 // PAUSE sound
 void AudioHandler::pauseSound(AudioChannel* audio) {
 	if (audio->channel) {
@@ -279,18 +223,6 @@ void AudioHandler::resumeSound(AudioChannel* audio) {
 		FMODErrorCheck(audio->channel->setPaused(false));
 	}
 }
-
-
-// pause / resume all sounds
-//void AudioHandler::toggleAllSoundPause() {
-//	for (size_t i = 0; i < channels.size(); ++i) {
-//		if (channels[i]) {
-//			bool isPaused = false;
-//			FMODErrorCheck(channels[i]->getPaused(&isPaused));
-//			FMODErrorCheck(channels[i]->setPaused(!isPaused));
-//		}
-//	}
-//}
 
 // check whether sound is paused
 bool AudioHandler::isSoundPaused(AudioChannel* audio) {
@@ -346,15 +278,6 @@ void AudioHandler::muteSound(AudioChannel* audio) {
 	}
 }
 
-// mute all sounds
-//void AudioHandler::muteAllSound() {
-//	for (size_t i = 0; i < channels.size(); ++i) {
-//		if (channels[i]) {
-//			FMODErrorCheck(channels[i]->setMute(true));
-//		}
-//	}
-//}
-
 // unmute specific sound
 void AudioHandler::unmuteSound(AudioChannel* audio) {
 	//size_t pos = static_cast<size_t>(id);
@@ -363,15 +286,6 @@ void AudioHandler::unmuteSound(AudioChannel* audio) {
 		FMODErrorCheck(audio->channel->setMute(false));
 	}
 }
-
-// unmute all sounds
-//void AudioHandler::unmuteAllSound() {
-//	for (size_t i = 0; i < channels.size(); ++i) {
-//		if (channels[i]) {
-//			FMODErrorCheck(channels[i]->setMute(false));
-//		}
-//	}
-//}
 
 // increase by 0.1f
 void AudioHandler::increaseSoundVolume(AudioChannel* audio) {
@@ -401,23 +315,17 @@ void AudioHandler::decreaseSoundVolume(AudioChannel* audio) {
 
 // set volume of a sound to a specific value between 0.0f (muted) to 1.0f (full)
 void AudioHandler::setSoundVolume(AudioChannel* audio, float volume) {
-	//size_t pos = static_cast<size_t>(id);
-
 	if (audio->channel)
 		FMODErrorCheck(audio->channel->setVolume(volume));
 }
 
 // set a specific pitch between 0.5f (half speed) to 2.0f (double speed)
 void AudioHandler::setSoundpitch(AudioChannel* audio, float pitch) {
-	//size_t pos = static_cast<size_t>(id);
-
 	if (audio->channel)
 		FMODErrorCheck(audio->channel->setPitch(pitch));
 }
 
 void AudioHandler::fadeIn(AudioChannel* audio, float targetVolume, float duration) {
-	//size_t pos = static_cast<size_t>(id);
-
 	if (!audio->channel) {
 		std::cerr << "Error! Cannot fade in - channel not active..." << std::endl;
 		return;
@@ -431,13 +339,6 @@ void AudioHandler::fadeIn(AudioChannel* audio, float targetVolume, float duratio
 	audio->fadeInfo.targetVolume = targetVolume;
 	audio->fadeInfo.fadeDuration = duration;
 	audio->fadeInfo.fadeTimer = 0.0f;
-
-	/*fadeInfo[pos].isFading = true;
-	fadeInfo[pos].isFadingIn = true;
-	fadeInfo[pos].startVolume = 0.0f;
-	fadeInfo[pos].targetVolume = targetVolume;
-	fadeInfo[pos].fadeDuration = duration;
-	fadeInfo[pos].fadeTimer = 0.0f;*/
 }
 
 void AudioHandler::fadeOut(AudioChannel* audio, float duration) {
@@ -457,119 +358,20 @@ void AudioHandler::fadeOut(AudioChannel* audio, float duration) {
 	audio->fadeInfo.targetVolume = 0.f;
 	audio->fadeInfo.fadeDuration = duration;
 	audio->fadeInfo.fadeTimer = 0.f;
-
-	/*fadeInfo[pos].isFading = true;
-	fadeInfo[pos].isFadingIn = false;
-	fadeInfo[pos].startVolume = currentVolume;
-	fadeInfo[pos].targetVolume = 0.0f;
-	fadeInfo[pos].fadeDuration = duration;
-	fadeInfo[pos].fadeTimer = 0.0f;*/
 }
 
 // check if a sound is  fading
 bool AudioHandler::isFading(AudioChannel* audio) const {
-	//size_t pos = static_cast<size_t>(id);
 	return audio->fadeInfo.isFading;
 }
 
 // stop any active fade for a sound
 void AudioHandler::stopFade(AudioChannel* audio) {
-	//size_t pos = static_cast<size_t>(id);
 	audio->fadeInfo.isFading = false;
 }
 
-//void AudioHandler::updateFades(float deltaTime) {
-//
-//	//if (system) {
-//	//	system->getSoftwareFormat(&rate, nullptr, nullptr);
-//	//}
-//
-//	for (size_t i = 0; i < fadeInfo.size(); ++i) {
-//		if (!fadeInfo[i].isFading || !channels[i]) {
-//			continue;
-//		}
-//
-//
-//		fadeInfo[i].fadeTimer += deltaTime;
-//
-//		float progress = fadeInfo[i].fadeTimer / fadeInfo[i].fadeDuration;
-//		if (progress > 1.0f) progress = 1.0f;
-//
-//		float currentVolume;
-//		if (fadeInfo[i].isFadingIn) {
-//			currentVolume = fadeInfo[i].startVolume + (fadeInfo[i].targetVolume - fadeInfo[i].startVolume) * progress;
-//			std::cerr << "sound fading" << currentVolume << std::endl;
-//		}
-//		else {
-//			currentVolume = fadeInfo[i].startVolume + (fadeInfo[i].targetVolume - fadeInfo[i].startVolume) * progress;
-//		}
-//
-//		FMODErrorCheck(channels[i]->setVolume(currentVolume));
-//
-//		if (progress >= 1.0f) {
-//			fadeInfo[i].isFading = false;
-//
-//			if (!fadeInfo[i].isFadingIn && fadeInfo[i].targetVolume == 0.0f) {
-//				channels[i]->stop();
-//				channels[i] = nullptr;
-//			}
-//		}
-//	}
-//}
-
-/* HELPER FUNCTION */
-// helper function to convert soundID to file path
-//std::string AudioHandler::soundIDToFilePath(soundID id) {
-//	// for now file paths are hardcoded, to change once deserialization is implemented
-//	switch (id) {
-//	case soundID::water:
-//		return "assets/audio/water.wav";
-//	case soundID::shoot:
-//		return "assets/audio/underwater.wav";
-//	case soundID::fire:
-//		return "assets/audio/fire.wav";
-//	case soundID::bg:
-//		return "assets/audio/bg.wav";
-//	default:
-//		return "";
-//	}
-//}
-
-//pause all sounds
-//void AudioHandler::pauseAll()
-//{
-//	if (!system) return;
-//
-//	for (auto channel : channels) {
-//		if (channel) {
-//			bool isPlaying = false;
-//			channel->isPlaying(&isPlaying);
-//			if (isPlaying) {
-//				channel->setPaused(true);
-//			}
-//		}
-//	}
-//}
-
-//resume all sounds
-//void AudioHandler::resumeAll() {
-//	if (!system) return;
-//
-//	for (auto channel : channels) {
-//		if (channel) {
-//			bool isPaused = false;
-//			channel->getPaused(&isPaused);
-//			if (isPaused) {
-//				channel->setPaused(false);
-//			}
-//		}
-//	}
-//}
-
-
-// Setters for audiio fading
+// Setters for audio fading
 void AudioHandler::setFadeInDuration(AudioChannel* audio, float duration) {
-	//size_t pos = static_cast<size_t>(id);
 
 	//if (pos < fadeInfo.size() && duration > 0.0f) {
 	audio->fadeInfo.defaultFadeInDuration = duration;
@@ -577,7 +379,6 @@ void AudioHandler::setFadeInDuration(AudioChannel* audio, float duration) {
 }
 
 void AudioHandler::setFadeOutDuration(AudioChannel* audio, float duration) {
-	//size_t pos = static_cast<size_t>(id);
 
 	//if (pos < fadeInfo.size() && duration > 0.0f) {
 	audio->fadeInfo.defaultFadeOutDuration = duration;
@@ -585,33 +386,24 @@ void AudioHandler::setFadeOutDuration(AudioChannel* audio, float duration) {
 }
 
 void AudioHandler::setFadeVolume(AudioChannel* audio, float volume) {
-	//size_t pos = static_cast<size_t>(id);
-	//if (pos < fadeInfo.size()) {
 	audio->fadeInfo.targetVolume = std::max(0.0f, std::min(volume, 1.0f)); // clamp between 0 and 1
 	//}
 }
 
 // Getters
 float AudioHandler::getFadeInDuration(AudioChannel* audio) const {
-	//size_t pos = static_cast<size_t>(id);
-	//return (pos < fadeInfo.size()) ? fadeInfo[pos].defaultFadeInDuration : 1.0f;
 	return audio->fadeInfo.defaultFadeInDuration;
 }
 
 float AudioHandler::getFadeOutDuration(AudioChannel* audio) const {
-	//size_t pos = static_cast<size_t>(id);
-	//return (pos < fadeInfo.size()) ? fadeInfo[pos].defaultFadeOutDuration : 1.0f;
 	return audio->fadeInfo.defaultFadeOutDuration;
 }
 
 float AudioHandler::getFadeTargetVolume(AudioChannel* audio) const {
-	//size_t pos = static_cast<size_t>(id);
-	//return (pos < fadeInfo.size()) ? fadeInfo[pos].targetVolume : 0.0f;
 	return audio->fadeInfo.targetVolume;
 }
 
 float AudioHandler::getFadeProgress(AudioChannel* audio) const {
-	//size_t pos = static_cast<size_t>(id);
 	if (audio->fadeInfo.isFading && audio->fadeInfo.fadeDuration > 0.0f) {
 		return audio->fadeInfo.fadeTimer / audio->fadeInfo.fadeDuration;
 	}
@@ -619,12 +411,10 @@ float AudioHandler::getFadeProgress(AudioChannel* audio) const {
 }
 
 bool AudioHandler::isFadingIn(AudioChannel* audio) const {
-	//size_t pos = static_cast<size_t>(id);
 	return audio->fadeInfo.isFading && audio->fadeInfo.isFadingIn;
 }
 
 bool AudioHandler::isFadingOut(AudioChannel* audio) const {
-	//size_t pos = static_cast<size_t>(id);
 	return audio->fadeInfo.isFading && !audio->fadeInfo.isFadingIn;
 }
 
@@ -677,37 +467,65 @@ void AudioHandler::setMasterVolume(float vol) {
     }
 }
 
+void AudioHandler::setLowPassFilter(bool enable, float cutoff) {
+	if (!system) return;
+
+	if (enable) {
+		if (!m_lowPassDSP) {
+			system->createDSPByType(FMOD_DSP_TYPE_LOWPASS, &m_lowPassDSP);
+			FMOD::ChannelGroup* masterGroup = nullptr;
+			system->getMasterChannelGroup(&masterGroup);
+			if (masterGroup) {
+				masterGroup->addDSP(0, m_lowPassDSP);
+			}
+		}
+
+		m_lowPassDSP->setParameterFloat(FMOD_DSP_LOWPASS_CUTOFF, cutoff);
+		m_lowPassDSP->setParameterFloat(FMOD_DSP_LOWPASS_RESONANCE, 0.7f);
+		m_lowPassDSP->setActive(true);
+	}
+	else {
+		if (m_lowPassDSP) {
+			FMOD::ChannelGroup* masterGroup = nullptr;
+
+			system->getMasterChannelGroup(&masterGroup);
+			if (masterGroup)
+				masterGroup->removeDSP(m_lowPassDSP);
+
+			m_lowPassDSP->release();
+			m_lowPassDSP = nullptr;
+		}
+	}
+}
+
 void AudioHandler::requestBGM(const std::string& channelName, GameObjectManager& manager) {
 	// find the object that has this channel
 	std::vector<GameObject*> objs;
 	manager.getAllGameObjects(objs);
 
+
 	for (GameObject* obj : objs) {
 		if (!obj->hasComponent<AudioComponent>()) continue;
 		AudioComponent* ac = obj->getComponent<AudioComponent>();
 		if (!ac->hasChannel(channelName)) continue;
-
 		AudioChannel* ch = ac->getOrCreateChannel(channelName);
 
-		// skip if alr playing this channel
-		if (m_bgmChannel && ch->channel == m_bgmChannel) return;
+		// skip if same bgm requested
+		if (ch->audioFile == m_currentBGMFile) return;
 
-		// fade out current bgm
-		//if (m_bgmChannel) {
-		//	bool isPaused = false;
-		//	m_bgmChannel->getPaused(&isPaused);
-		//	if (!isPaused) {
-		//		// fade out over 1 sec then stop
-		//		m_bgmChannel->setVolume(0.f);
-		//		m_bgmChannel->stop();
-		//	}
-		//	m_bgmChannel = nullptr;
-		//}
+		if (m_bgmChannel) {
+			float vol = 0.f;
+			m_bgmChannel->getVolume(&vol);
+			float dur = ch->fadeOutDuration > 0.f ? ch->fadeOutDuration : 1.f;
+			m_fadingOutBGMs.push_back({ m_bgmChannel, 0.f, dur, vol });
+			m_bgmChannel = nullptr;
+		}
 
-		resetBGM();
+		//resetBGM();
 
 		// play new bgm under bgm group
 		m_bgmChannel = playBGMSound(ch);
+		m_currentBGMFile = ch->audioFile;
 		return;
 	}
 }
@@ -717,6 +535,27 @@ void AudioHandler::resetBGM() {
 		m_bgmChannel->stop();
 		m_bgmChannel = nullptr;
 	}
+
+	m_currentBGMFile.clear();
+}
+
+FMOD::Channel* AudioHandler::playBGMSound(AudioChannel* audio) {
+	FMOD::Sound* sound = ResourceManager::getInstance().getSound(audio->audioFile, audio->loop, false);
+	if (!sound) return nullptr;
+	FMOD::Channel* channel = nullptr;
+	FMODErrorCheck(system->playSound(sound, m_bgmGroup, false, &channel));
+
+	if (channel) {
+		audio->channel = channel;
+		if (audio->fadeInOnStart && audio->fadeInDuration > 0.f) {
+			channel->setVolume(0.f);
+			fadeIn(audio, audio->volume, audio->fadeInDuration);
+		}
+		else {
+			channel->setVolume(audio->volume);
+		}
+	}
+	return channel;
 }
 
 FMOD::Channel* AudioHandler::playPreviewSound(AudioChannel* audio) {
@@ -752,13 +591,4 @@ void AudioHandler::stopAllPreviews() {
 	if (m_previewGroup) {
 		m_previewGroup->stop();  // atomically kills every preview channel
 	}
-}
-
-FMOD::Channel* AudioHandler::playBGMSound(AudioChannel* audio) {
-	FMOD::Sound* sound = ResourceManager::getInstance().getSound(audio->audioFile, audio->loop, false);
-	if (!sound) return nullptr;
-	FMOD::Channel* channel = nullptr;
-	FMODErrorCheck(system->playSound(sound, m_bgmGroup, false, &channel));
-	if (channel) channel->setVolume(audio->volume);
-	return channel;
 }

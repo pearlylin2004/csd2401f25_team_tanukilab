@@ -15,7 +15,7 @@ without the prior written consent of DigiPen Institute of
 Technology is prohibited.
 */
 /* End Header **************************************************************************/
-#ifdef _DEBUG
+//#ifdef _DEBUG
 #include "JsonIO.h"
 #include "Editor/undoRedo.h"
 #include "Editor/editorManager.h"
@@ -1071,4 +1071,4 @@ void UndoRedoManager::endRenameObject(GameObjectManager& manager, GameObject* ob
 }
 /* ---------------- END ---------------- */
 
-#endif
+//#endif

@@ -65,6 +65,12 @@ void PhysicsForces::applyDamping(Physics* physics, float friction, float targetV
 void PhysicsForces::updatePosition(Transform* transform, Physics* physics, float deltaTime) {
     DynamicsSystem::UpdateForces(physics->dynamics, deltaTime);
     if (!physics->onGround) {
+        if (physics->liftDuration > 0.f) {
+            physics->dynamics.velocity.y += physics->liftForce * deltaTime;
+            physics->liftDuration -= deltaTime;
+            if (physics->liftDuration < 0.f) physics->liftDuration = 0.f;
+        }
+
         //DynamicsSystem::Integrate(physics->dynamics, deltaTime, physics->gravity, false);
         float grav = physics->gravity * physics->dynamics.mass; // gravity force F=mg
         if (physics->dynamics.velocity.y < 0.0f)
@@ -87,7 +93,9 @@ void PhysicsForces::updatePosition(Transform* transform, Physics* physics, float
     }
     else {
         // sync dynamics from transform
-        physics->dynamics.position.x = transform->x;
+        physics->dynamics.position.x = transform->x;physics->dynamics.position.x += physics->dynamics.velocity.x * deltaTime;
+        transform->x = physics->dynamics.position.x;
+
         physics->dynamics.position.y = transform->y;
         physics->dynamics.velocity.y = 0.0f;
         //physics->velY = 0.0f;

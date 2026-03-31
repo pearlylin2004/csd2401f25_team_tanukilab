@@ -15,7 +15,7 @@ Technology is prohibited.
 */
 /* End Header **************************************************************************/
 
-#ifdef _DEBUG
+//#ifdef _DEBUG
 #include "Editor/editorManager.h"
 #include "Systems.h"
 
@@ -41,6 +41,9 @@ void MenuBar::render(GameObjectManager& manager){
     /* ------------------- Editor Theme ------------------- */
     drawThemeMenu(); // change theme
 
+    /* ------------------- Tool ------------------- */
+	drawToolMenu(); // build size analyzer
+
     ImGui::EndMainMenuBar();
 }
 
@@ -50,9 +53,9 @@ void MenuBar::toggleSimulation(GameObjectManager& manager) {
     else stopSimulation(manager);
 }
 
-void MenuBar::pauseResumeSimul() {
-    if (!EditorManager::isPaused()) pauseSimulation();
-    else if (EditorManager::isPaused()) resumeSimulation();
+void MenuBar::pauseResumeSimul(GameObjectManager& manager) {
+    if (!EditorManager::isPaused()) pauseSimulation(manager);
+    else if (EditorManager::isPaused()) resumeSimulation(manager);
 }
 
 void MenuBar::drawFileMenu(GameObjectManager& manager) {
@@ -118,12 +121,12 @@ void MenuBar::drawSimulationMenu(GameObjectManager& manager) {
 
         // show PAUSE when not editing and playing simulation
         if (ImGui::MenuItem("Pause", "CTRL+F5", false, !EditorManager::isPaused()&&!EditorManager::isEditingMode())) {
-            pauseSimulation();
+            pauseSimulation(manager);
         }
 
         // show RESUME when not editing and simulation paused
         if (ImGui::MenuItem("Resume", "CTRL+F5", false, EditorManager::isPaused()&&!EditorManager::isEditingMode())) {
-            resumeSimulation();
+            resumeSimulation(manager);
         }
 
         // show STOP when playing simulation (not editing)
@@ -174,6 +177,14 @@ void MenuBar::drawFontMenu() {
     }
 }
 
+void MenuBar::drawToolMenu() {
+    if (ImGui::BeginMenu("Tools")) {
+        if (ImGui::MenuItem("Build Size Analyzer"))
+            EditorManager::getBuildAnalyzer().getShowWindow() = true; // need reference passed in
+        ImGui::EndMenu();
+    }
+}
+
 void MenuBar::playSimulation(GameObjectManager& manager) {
     EditorManager::toggleEditing(false);
 
@@ -193,6 +204,8 @@ void MenuBar::playSimulation(GameObjectManager& manager) {
 
     GUISystem::getInstance().triggerSceneLoad(manager);
 
+	GUISystem::getInstance().resetAndInitVisualLogic(manager);
+
     DebugLog::addMessage("Simulation started.\n");
 }
 
@@ -202,6 +215,7 @@ void MenuBar::stopSimulation(GameObjectManager& manager) {
     AudioHandler::getInstance().stopAllPreviews();
 
     EditorManager::toggleEditing(true);
+	EditorManager::togglePause(false); // reset pause state
     manager.cleanupSimulationResources();
 	VisualLogicEditor::Instance().clear();
 
@@ -237,14 +251,16 @@ void MenuBar::stopSimulation(GameObjectManager& manager) {
     DebugLog::addMessage("Simulation stopped.\n");
 }
 
-void MenuBar::pauseSimulation() {
+void MenuBar::pauseSimulation(GameObjectManager& manager) {
     EditorManager::togglePause(true);
+    AudioHandler::getInstance().pauseAll(manager);
 
     DebugLog::addMessage("Simulation paused.\n");
 }
 
-void MenuBar::resumeSimulation() {
+void MenuBar::resumeSimulation(GameObjectManager& manager) {
     EditorManager::togglePause(false);
+    AudioHandler::getInstance().resumeAll(manager);
 
     DebugLog::addMessage("Simulation resumed.\n");
 }
@@ -337,4 +353,4 @@ void MenuBar::themeForest() {
     colors[ImGuiCol_FrameBg] = ImVec4(0.12f, 0.18f, 0.12f, 1.00f);
 }
 
-#endif
+//#endif

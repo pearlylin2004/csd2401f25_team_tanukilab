@@ -1,6 +1,22 @@
+/* Start Header ************************************************************************/
+/*!
+\file		main.cpp
+\author     Hugo Low Ren Hao, low.h, 2402272, 40%
+\author     Varick, v.teo, 2403417, 40%
+            Tan Chee Qing, 2401486, 10%
+\par        low.h@digipen.edu
+\par        v.teo@digipen.edu
+            cheeqing.tan@digipen.edu
+\date		March, 11st, 2026
+\brief      Main entry point for the Waterbound.
 
+Copyright (C) 2026 DigiPen Institute of Technology.
+Reproduction or disclosure of this file or its contents
+without the prior written consent of DigiPen Institute of
+Technology is prohibited.
+*/
+/* End Header **************************************************************************/
 #include "CoreEngine.h"
-//#include "GameApp.h"
 #include "LuaGameScript.h"
 
 #ifdef _WIN32
@@ -33,7 +49,6 @@ int main(int argc, char** argv) {
 
     // Create the engine using a smart pointer for automatic cleanup
     auto engine = std::make_unique<CoreEngine>();
-    //auto gameApp = std::make_unique<GameApp>();
     std::unique_ptr<LuaGameScript> luaScript;
 
 
@@ -47,6 +62,36 @@ int main(int argc, char** argv) {
 
         luaScript = std::make_unique<LuaGameScript>(engine->getLuaSystem());
         engine->setGameScript(luaScript.get());
+
+        // only work for game build
+        engine->setOnUpdate([&]() {
+            // F1 or SHARE on gamepad to quit
+            if (InputHandler::isKeyTriggered(GLFW_KEY_F1) || InputHandler::isGamepadButtonTriggered(GLFW_GAMEPAD_BUTTON_BACK))
+                engine->stop();
+
+            GameState current = GUISystem::getInstance().getCurrentState();
+
+            // ESC (keyboard) -> pause
+            if (InputHandler::isKeyTriggered(GLFW_KEY_ESCAPE)) {
+                if (current != GameState::PAUSED && current != GameState::MENU) {
+                    GUISystem::getInstance().setStateBeforePause(current);
+                    GUISystem::getInstance().changeState(GameState::PAUSED, "pause_scene.json");
+                }
+            }
+
+            // START (gamepad) -> main menu
+            if (InputHandler::isGamepadButtonTriggered(GLFW_GAMEPAD_BUTTON_START)) {
+                if (current != GameState::MENU) {
+                    GUISystem::getInstance().changeState(GameState::MENU, "menu_scene.json");
+                }
+            }
+            });
+
+        GlobalRegistry::Instance().setBasePath("./assets");
+        GlobalRegistry::Instance().init();
+
+        // load menu as fir
+        GUISystem::getInstance().loadScreen(engine->getManager(), "menu_scene.json");
 
         engine->Run();
     }

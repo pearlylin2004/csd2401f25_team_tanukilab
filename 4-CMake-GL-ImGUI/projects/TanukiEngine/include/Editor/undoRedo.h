@@ -16,7 +16,7 @@ without the prior written consent of DigiPen Institute of
 Technology is prohibited.
 */
 /* End Header **************************************************************************/
-#ifdef _DEBUG
+//#ifdef _DEBUG
 #pragma once
 #include <string>
 #include <memory>
@@ -256,7 +256,10 @@ private:
 	std::string				m_after;
 };
 
-// for layer properties
+//---------------------------
+// Command to assign a GameObject to a new layer
+// Stores the previous and new layer to allow undo/redo
+//---------------------------
 class AssignLayerCmd : public CmdInterface {
 public:
 	AssignLayerCmd(GameObjectManager& manager, GameObject* obj, int layerBefore, int layerAfter);
@@ -274,6 +277,10 @@ private:
 	int						m_layerAfter;
 };
 
+//---------------------------
+// Snapshot of a layer's properties
+// Used to store layer state for undo/redo
+//---------------------------
 struct LayerSnapshot {
 	bool enabled;
 	bool visible;
@@ -282,6 +289,10 @@ struct LayerSnapshot {
 	std::string name;
 };
 
+//---------------------------
+// Command to modify a layer's properties
+// Stores previous and new LayerSnapshot for undo/redo
+//---------------------------
 class LayerPropertyCmd : public CmdInterface {
 public:
 	LayerPropertyCmd(GameObjectManager& manager, int layerID, const LayerSnapshot& before, const LayerSnapshot& after);
@@ -302,12 +313,19 @@ private:
 };
 
 
-// visual logic editor
+//---------------------------
+// Snapshot of a visual logic graph
+// Stores nodes and connections for undo/redo
+//---------------------------
 struct VLGraphSnapshot {
 	std::vector<LogicNode> nodes;
 	std::vector<LogicConnection> connections;
 };
 
+//---------------------------
+// Command to update a visual logic graph
+// Stores previous and new VLGraphSnapshot for undo/redo
+//---------------------------
 class VLGraphCmd : public CmdInterface {
 public:
 	VLGraphCmd(const VLGraphSnapshot& before, const VLGraphSnapshot& after);
@@ -325,7 +343,10 @@ private:
 	VLGraphSnapshot			m_after;
 };
 
-// for rename
+//---------------------------
+// Command to rename a GameObject
+// Stores old and new names for undo/redo
+//---------------------------
 class RenameObjectCmd : public CmdInterface {
 public:
 	RenameObjectCmd(GameObjectManager& manager, const std::string& oldName, const std::string& newName);
@@ -338,7 +359,10 @@ private:
 	std::string m_newName;
 };
 
-// for prefab aft saving propagate
+//---------------------------
+// Command to propagate changes from a prefab to its instances
+// Stores prefab and instance states before and after propagation
+//---------------------------
 class PrefabPropagateCmd : public CmdInterface {
 public:
 	PrefabPropagateCmd(GameObjectManager& manager, const std::string& prefabID,
@@ -361,7 +385,10 @@ private:
 	std::unordered_map<std::string, std::string> m_instancesAfter;
 };
 
-// for unpack prefab
+//---------------------------
+// Command to unpack a prefab from a GameObject
+// Removes prefab linkage without deleting the object
+//---------------------------
 class UnpackPrefabCmd : public CmdInterface {
 public:
 	UnpackPrefabCmd(GameObjectManager& manager, GameObject* obj);
@@ -374,7 +401,10 @@ private:
 	std::string m_prefabID;
 };
 
-// for revert to match prefab
+//---------------------------
+// Command to revert a GameObject to match its prefab
+// Stores serialized states before and after revert for undo/redo
+//---------------------------
 class RevertToPrefabCmd : public CmdInterface {
 public:
 	RevertToPrefabCmd(GameObjectManager& manager, GameObject* obj);
@@ -389,7 +419,10 @@ private:
 	std::string m_after;  // serialized state after revert
 };
 
-// for packing prefab with obj (doesnt delete created prefab, but remove reference)
+//---------------------------
+// Command to pack a GameObject into a prefab
+// Stores prefab ID for undo/redo; does not delete the prefab
+//---------------------------
 class PackPrefabCmd : public CmdInterface {
 public:
 	PackPrefabCmd(GameObjectManager& manager, GameObject* obj);
@@ -553,4 +586,4 @@ private:
 // take a snapshot of an object's transform state
 TransformSnapshot captureTransform(GameObject* obj);
 std::string docToString(const rapidjson::Document& doc);
-#endif
+//#endif

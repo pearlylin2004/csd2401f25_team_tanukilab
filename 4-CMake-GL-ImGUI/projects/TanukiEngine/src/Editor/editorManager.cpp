@@ -14,7 +14,7 @@ without the prior written consent of DigiPen Institute of
 Technology is prohibited.
 */
 /* End Header **************************************************************************/
-#ifdef _DEBUG
+//#ifdef _DEBUG
 #include "Editor/editorManager.h"
 
 EditorManager::EditorManager(GameObjectManager& manager) :
@@ -50,6 +50,7 @@ void EditorManager::update() {
     performanceWindow.render();
     scenePropertiesWindow.render();
     VisualLogicEditor::Instance().render();
+    s_buildAnalyzer.render(assetBrowser.getAssets());
 
     // only show play info when not editing
     if (!isEditing) playDebugWindow.render();
@@ -194,11 +195,11 @@ void EditorManager::handleShortcutKeys(GameObjectManager& manager) {
     /* ------------- "F5" -> Play/Stop Simulation ------------- */
     if (InputHandler::isComboKeyTriggered(GLFW_KEY_F5) ||
         InputHandler::isComboKeyTriggered(GLFW_KEY_F5, GLFW_KEY_RIGHT_CONTROL)) {
-        if (!isEditing) menuBar.pauseResumeSimul();
+        if (!isEditing) menuBar.pauseResumeSimul(manager);
     }
     else if (InputHandler::isKeyTriggered(GLFW_KEY_F5)) {
         menuBar.toggleSimulation(manager);
     }
     /* --------------- END --------------- */
 }
-#endif
+//#endif

@@ -20,9 +20,7 @@ Technology is prohibited.
 #include <cstring>
 #include <filesystem>
 #include <imgui.h>
-#ifdef _DEBUG
 #include "Editor/gameDebugLog.h"
-#endif
 #include "mathlib.h"
 #include "config.h"
 
@@ -79,7 +77,7 @@ public:
 	// get mouse position when drag started
 	static Vector2D getMouseDragStartPos(int button = GLFW_MOUSE_BUTTON_LEFT);
 
-	static Vector2D getMouseDeltaWorld();
+	//static Vector2D getMouseDeltaWorld();
 
 	/* Cursor Position */
 	// get current cursor position
@@ -120,14 +118,43 @@ public:
 	// scroll callback function
 	static void scrollCallback(GLFWwindow* window, double xoffset, double yoffset);
 
-#ifdef _DEBUG
+//#ifdef _DEBUG
 	static void dropCallback(GLFWwindow* window, int count, const char** paths);
-#endif
+//#endif
 
 	static void setWindowSize(int width, int height);
 	// Add these to the public section
 	//static bool isMouseButtonClicked(int button);
 	//static Vector2D getMousePosition();
+
+	// gamepad
+	// check if a gamepad is connected
+	static bool isGamepadConnected();
+	// check if gamepad button was just pressed (triggered once)
+	static bool isGamepadButtonTriggered(int button); // GLFW_GAMEPAD_BUTTON_*
+	// check if gamepad button was just released
+	static bool isGamepadButtonReleased(int button);
+	// check if gamepad button is currently being held down
+	static bool isGamepadButtonHeld(int button);
+	/*!
+	 * \brief Returns the value of a specified gamepad axis, applying a dead zone.
+	 *
+	 * This function reads the raw axis value from the connected gamepad and
+	 * filters out small movements that fall within the specified dead zone.
+	 * The axis value typically ranges from -1.0 (full negative) to 1.0 (full positive).
+	 *
+	 * \param axis Index of the gamepad axis to read. Must be in [0, GAMEPAD_AXIS_COUNT-1].
+	 * \param deadZone Minimum absolute value required to consider movement.
+	 *                 Any axis value whose magnitude is less than this threshold
+	 *                 will be treated as 0 to avoid unintentional drift.
+	 * \return Filtered float value of the axis, in range [-1.0, 1.0], or 0.0
+	 *         if the axis is outside range or within the dead zone.
+	 */
+	static float getGamepadAxis(int axis, float deadZone = 0.15f); // GLFW_GAMEPAD_AXIS_*
+	// raw axis value from GLFW ranges from -1.0 (not pressed) to 1.0 (fully pressed)
+	static float getGamepadLeftTrigger();
+	// Returns the current value of the right trigger on the connected gamepad.
+	static float getGamepadRightTrigger();
 
 private:
 	static GLFWwindow* m_window;
@@ -150,4 +177,11 @@ private:
 	static float m_scrollOffset;
 	static double m_doubleClickThreshold;
 
+	// gamepad
+	static constexpr int GAMEPAD_BUTTON_COUNT = GLFW_GAMEPAD_BUTTON_LAST + 1; // 15
+	static constexpr int GAMEPAD_AXIS_COUNT = GLFW_GAMEPAD_AXIS_LAST + 1;  // 6
+	static bool m_gamepadButtons[GAMEPAD_BUTTON_COUNT];
+	static bool m_gamepadButtonsPrevious[GAMEPAD_BUTTON_COUNT];
+	static float m_gamepadAxes[GAMEPAD_AXIS_COUNT];
+	static int m_activeGamepadId; // -1 if no gamepad
 };

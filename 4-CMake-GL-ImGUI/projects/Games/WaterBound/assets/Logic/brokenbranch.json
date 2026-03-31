@@ -5,10 +5,7 @@
       "id": 1,
       "implementation": "On Collision Enter",
       "type": 0,
-      "position": [
-        -266.0,
-        -34.0
-      ],
+      "position": [-266.0, -34.0],
       "hasInput": false,
       "hasOutput": true,
       "hasTrueOutput": false,
@@ -22,10 +19,7 @@
       "id": 3,
       "implementation": "On Start",
       "type": 0,
-      "position": [
-        -582.0,
-        -238.0
-      ],
+      "position": [-582.0, -238.0],
       "hasInput": false,
       "hasOutput": true,
       "hasTrueOutput": false,
@@ -35,10 +29,7 @@
       "id": 6,
       "implementation": "On Update",
       "type": 0,
-      "position": [
-        -1518.28564453125,
-        158.75001525878906
-      ],
+      "position": [-1518.28564453125, 158.75001525878906],
       "hasInput": false,
       "hasOutput": true,
       "hasTrueOutput": false,
@@ -48,10 +39,7 @@
       "id": 10,
       "implementation": "On Collision Enter",
       "type": 0,
-      "position": [
-        -852.9642333984375,
-        418.1785583496094
-      ],
+      "position": [-852.9642333984375, 418.1785583496094],
       "hasInput": false,
       "hasOutput": true,
       "hasTrueOutput": false,
@@ -65,10 +53,7 @@
       "id": 11,
       "implementation": "Set Float",
       "type": 1,
-      "position": [
-        -387.7500305175781,
-        437.75
-      ],
+      "position": [-387.7500305175781, 437.75],
       "hasInput": true,
       "hasOutput": true,
       "hasTrueOutput": false,
@@ -82,10 +67,7 @@
       "id": 12,
       "implementation": "On Collision Exit",
       "type": 0,
-      "position": [
-        438.920654296875,
-        -186.0
-      ],
+      "position": [438.920654296875, -186.0],
       "hasInput": false,
       "hasOutput": true,
       "hasTrueOutput": false,
@@ -99,10 +81,7 @@
       "id": 19,
       "implementation": "Check Timer",
       "type": 2,
-      "position": [
-        -233.000244140625,
-        73.0001220703125
-      ],
+      "position": [-233.000244140625, 73.0001220703125],
       "hasInput": true,
       "hasOutput": false,
       "hasTrueOutput": true,
@@ -116,10 +95,7 @@
       "id": 20,
       "implementation": "Play Sound",
       "type": 1,
-      "position": [
-        429.72216796875,
-        67.9166259765625
-      ],
+      "position": [429.72216796875, 67.9166259765625],
       "hasInput": true,
       "hasOutput": true,
       "hasTrueOutput": false,
@@ -132,10 +108,7 @@
       "id": 28,
       "implementation": "Modify Float Variable",
       "type": 1,
-      "position": [
-        109.99999237060547,
-        -38.00000762939453
-      ],
+      "position": [109.99999237060547, -38.00000762939453],
       "hasInput": true,
       "hasOutput": true,
       "hasTrueOutput": false,
@@ -149,10 +122,7 @@
       "id": 29,
       "implementation": "Modify Float Variable",
       "type": 1,
-      "position": [
-        748.22216796875,
-        -163.77783203125
-      ],
+      "position": [748.22216796875, -163.77783203125],
       "hasInput": true,
       "hasOutput": true,
       "hasTrueOutput": false,
@@ -166,10 +136,7 @@
       "id": 30,
       "implementation": "Compare Variable",
       "type": 2,
-      "position": [
-        -582.0,
-        56.00001525878906
-      ],
+      "position": [-582.0, 56.00001525878906],
       "hasInput": true,
       "hasOutput": false,
       "hasTrueOutput": true,
@@ -184,10 +151,7 @@
       "id": 32,
       "implementation": "Compare Global Float",
       "type": 2,
-      "position": [
-        -354.0000305175781,
-        205.9999237060547
-      ],
+      "position": [-354.0000305175781, 205.9999237060547],
       "hasInput": true,
       "hasOutput": false,
       "hasTrueOutput": true,
@@ -202,10 +166,7 @@
       "id": 33,
       "implementation": "Set Global Float",
       "type": 1,
-      "position": [
-        -120.0,
-        -258.0
-      ],
+      "position": [-120.0, -258.0],
       "hasInput": true,
       "hasOutput": true,
       "hasTrueOutput": false,
@@ -219,10 +180,7 @@
       "id": 34,
       "implementation": "Modify Global Float",
       "type": 1,
-      "position": [
-        92.0,
-        72.0
-      ],
+      "position": [92.0, 72.0],
       "hasInput": true,
       "hasOutput": true,
       "hasTrueOutput": false,
@@ -236,10 +194,7 @@
       "id": 35,
       "implementation": "On Collision Enter",
       "type": 0,
-      "position": [
-        -848.857177734375,
-        553.142822265625
-      ],
+      "position": [-848.857177734375, 553.142822265625],
       "hasInput": false,
       "hasOutput": true,
       "hasTrueOutput": false,
@@ -253,10 +208,7 @@
       "id": 36,
       "implementation": "Set Float",
       "type": 1,
-      "position": [
-        -389.9999694824219,
-        548.0
-      ],
+      "position": [-389.9999694824219, 548.0],
       "hasInput": true,
       "hasOutput": true,
       "hasTrueOutput": false,
@@ -270,10 +222,7 @@
       "id": 38,
       "implementation": "Compare Variable",
       "type": 2,
-      "position": [
-        198.0,
-        446.0
-      ],
+      "position": [198.0, 446.0],
       "hasInput": true,
       "hasOutput": false,
       "hasTrueOutput": true,
@@ -288,10 +237,7 @@
       "id": 40,
       "implementation": "Compare Value",
       "type": 2,
-      "position": [
-        514.0,
-        454.0
-      ],
+      "position": [514.0, 454.0],
       "hasInput": true,
       "hasOutput": false,
       "hasTrueOutput": true,
@@ -306,10 +252,7 @@
       "id": 43,
       "implementation": "Rotate Object",
       "type": 1,
-      "position": [
-        838.0,
-        486.0
-      ],
+      "position": [838.0, 486.0],
       "hasInput": true,
       "hasOutput": true,
       "hasTrueOutput": false,
@@ -322,10 +265,7 @@
       "id": 44,
       "implementation": "Compare Variable",
       "type": 2,
-      "position": [
-        -27.999963760375977,
-        277.99993896484375
-      ],
+      "position": [-27.999963760375977, 277.99993896484375],
       "hasInput": true,
       "hasOutput": false,
       "hasTrueOutput": true,
@@ -340,10 +280,7 @@
       "id": 52,
       "implementation": "On Collision Exit",
       "type": 0,
-      "position": [
-        -762.0,
-        788.0
-      ],
+      "position": [-762.0, 788.0],
       "hasInput": false,
       "hasOutput": true,
       "hasTrueOutput": false,
@@ -357,10 +294,7 @@
       "id": 53,
       "implementation": "Modify Float Variable",
       "type": 1,
-      "position": [
-        -414.0,
-        786.0
-      ],
+      "position": [-414.0, 786.0],
       "hasInput": true,
       "hasOutput": true,
       "hasTrueOutput": false,
@@ -373,10 +307,7 @@
       "id": 54,
       "implementation": "Set Float",
       "type": 1,
-      "position": [
-        807.5,
-        28.8055419921875
-      ],
+      "position": [807.5, 28.8055419921875],
       "hasInput": true,
       "hasOutput": true,
       "hasTrueOutput": false,
@@ -390,10 +321,7 @@
       "id": 56,
       "implementation": "Set Float",
       "type": 1,
-      "position": [
-        -192.0,
-        -416.0
-      ],
+      "position": [-192.0, -416.0],
       "hasInput": true,
       "hasOutput": true,
       "hasTrueOutput": false,
@@ -407,10 +335,7 @@
       "id": 57,
       "implementation": "Reset Timer",
       "type": 1,
-      "position": [
-        90.0,
-        -362.0
-      ],
+      "position": [90.0, -362.0],
       "hasInput": true,
       "hasOutput": true,
       "hasTrueOutput": false,
@@ -423,10 +348,7 @@
       "id": 58,
       "implementation": "Enable Physics",
       "type": 1,
-      "position": [
-        338.0000305175781,
-        156.0
-      ],
+      "position": [338.0000305175781, 156.0],
       "hasInput": true,
       "hasOutput": true,
       "hasTrueOutput": false,
@@ -436,10 +358,7 @@
       "id": 59,
       "implementation": "Set Float",
       "type": 1,
-      "position": [
-        414.0,
-        -352.0
-      ],
+      "position": [414.0, -352.0],
       "hasInput": true,
       "hasOutput": true,
       "hasTrueOutput": false,
@@ -453,10 +372,7 @@
       "id": 60,
       "implementation": "Compare Variable",
       "type": 2,
-      "position": [
-        7.999964714050293,
-        166.0
-      ],
+      "position": [7.999964714050293, 166.0],
       "hasInput": true,
       "hasOutput": false,
       "hasTrueOutput": true,
@@ -471,10 +387,7 @@
       "id": 62,
       "implementation": "Hit Ground",
       "type": 2,
-      "position": [
-        -92.0,
-        434.0
-      ],
+      "position": [-92.0, 434.0],
       "hasInput": true,
       "hasOutput": false,
       "hasTrueOutput": true,
@@ -484,10 +397,7 @@
       "id": 63,
       "implementation": "Enter Water",
       "type": 1,
-      "position": [
-        -62.000030517578125,
-        556.0
-      ],
+      "position": [-62.000030517578125, 556.0],
       "hasInput": true,
       "hasOutput": true,
       "hasTrueOutput": false,
@@ -497,10 +407,7 @@
       "id": 64,
       "implementation": "Exit Water",
       "type": 1,
-      "position": [
-        -14.0,
-        776.0
-      ],
+      "position": [-14.0, 776.0],
       "hasInput": true,
       "hasOutput": true,
       "hasTrueOutput": false,
@@ -510,10 +417,7 @@
       "id": 65,
       "implementation": "Is Sinle Physics",
       "type": 1,
-      "position": [
-        -60.0,
-        -166.0
-      ],
+      "position": [-60.0, -166.0],
       "hasInput": true,
       "hasOutput": true,
       "hasTrueOutput": false,
@@ -523,10 +427,7 @@
       "id": 66,
       "implementation": "Compare Variable",
       "type": 2,
-      "position": [
-        -1184.5716552734375,
-        297.14300537109375
-      ],
+      "position": [-1184.5716552734375, 297.14300537109375],
       "hasInput": true,
       "hasOutput": false,
       "hasTrueOutput": true,
@@ -541,10 +442,7 @@
       "id": 67,
       "implementation": "Reset Timer",
       "type": 1,
-      "position": [
-        -927.4287109375,
-        303.4286193847656
-      ],
+      "position": [-927.4287109375, 303.4286193847656],
       "hasInput": true,
       "hasOutput": true,
       "hasTrueOutput": false,
@@ -557,10 +455,7 @@
       "id": 68,
       "implementation": "Change Acceleration Direction",
       "type": 1,
-      "position": [
-        -575.7142333984375,
-        319.1786193847656
-      ],
+      "position": [-575.7142333984375, 319.1786193847656],
       "hasInput": true,
       "hasOutput": true,
       "hasTrueOutput": false,
@@ -570,10 +465,7 @@
       "id": 70,
       "implementation": "Set Sinle Acceleration",
       "type": 1,
-      "position": [
-        -574.2857055664063,
-        676.0000610351563
-      ],
+      "position": [-574.2857055664063, 676.0000610351563],
       "hasInput": true,
       "hasOutput": true,
       "hasTrueOutput": false,
@@ -582,188 +474,69 @@
         "axis": "x",
         "value": "1.000000"
       }
+    },
+    {
+      "id": 71,
+      "implementation": "Compare Global Float",
+      "type": 2,
+      "position": [250.0, 72.0],
+      "hasInput": true,
+      "hasOutput": false,
+      "hasTrueOutput": true,
+      "hasFalseOutput": true,
+      "parameters": {
+        "comparison": "equal",
+        "threshold": "1.000000",
+        "variable": "broken"
+      }
+    },
+    {
+      "id": 72,
+      "implementation": "Set Global Float",
+      "type": 1,
+      "position": [640.0, 72.0],
+      "hasInput": true,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false,
+      "parameters": {
+        "value": "99",
+        "variable": "broken"
+      }
     }
   ],
   "connections": [
-    {
-      "fromNodeId": 1,
-      "outputPin": "Out",
-      "toNodeId": 28,
-      "inputPin": "In"
-    },
-    {
-      "fromNodeId": 12,
-      "outputPin": "Out",
-      "toNodeId": 29,
-      "inputPin": "In"
-    },
-    {
-      "fromNodeId": 6,
-      "outputPin": "Out",
-      "toNodeId": 30,
-      "inputPin": "In"
-    },
-    {
-      "fromNodeId": 30,
-      "outputPin": "True",
-      "toNodeId": 19,
-      "inputPin": "In"
-    },
-    {
-      "fromNodeId": 6,
-      "outputPin": "Out",
-      "toNodeId": 32,
-      "inputPin": "In"
-    },
-    {
-      "fromNodeId": 3,
-      "outputPin": "Out",
-      "toNodeId": 33,
-      "inputPin": "In"
-    },
-    {
-      "fromNodeId": 19,
-      "outputPin": "True",
-      "toNodeId": 34,
-      "inputPin": "In"
-    },
-    {
-      "fromNodeId": 34,
-      "outputPin": "Out",
-      "toNodeId": 20,
-      "inputPin": "In"
-    },
-    {
-      "fromNodeId": 20,
-      "outputPin": "Out",
-      "toNodeId": 54,
-      "inputPin": "In"
-    },
-    {
-      "fromNodeId": 38,
-      "outputPin": "True",
-      "toNodeId": 40,
-      "inputPin": "In"
-    },
-    {
-      "fromNodeId": 35,
-      "outputPin": "Out",
-      "toNodeId": 11,
-      "inputPin": "In"
-    },
-    {
-      "fromNodeId": 32,
-      "outputPin": "True",
-      "toNodeId": 44,
-      "inputPin": "In"
-    },
-    {
-      "fromNodeId": 44,
-      "outputPin": "True",
-      "toNodeId": 38,
-      "inputPin": "In"
-    },
-    {
-      "fromNodeId": 40,
-      "outputPin": "True",
-      "toNodeId": 43,
-      "inputPin": "In"
-    },
-    {
-      "fromNodeId": 52,
-      "outputPin": "Out",
-      "toNodeId": 53,
-      "inputPin": "In"
-    },
-    {
-      "fromNodeId": 3,
-      "outputPin": "Out",
-      "toNodeId": 56,
-      "inputPin": "In"
-    },
-    {
-      "fromNodeId": 3,
-      "outputPin": "Out",
-      "toNodeId": 57,
-      "inputPin": "In"
-    },
-    {
-      "fromNodeId": 57,
-      "outputPin": "Out",
-      "toNodeId": 59,
-      "inputPin": "In"
-    },
-    {
-      "fromNodeId": 32,
-      "outputPin": "True",
-      "toNodeId": 60,
-      "inputPin": "In"
-    },
-    {
-      "fromNodeId": 60,
-      "outputPin": "True",
-      "toNodeId": 58,
-      "inputPin": "In"
-    },
-    {
-      "fromNodeId": 11,
-      "outputPin": "Out",
-      "toNodeId": 62,
-      "inputPin": "In"
-    },
-    {
-      "fromNodeId": 36,
-      "outputPin": "Out",
-      "toNodeId": 63,
-      "inputPin": "In"
-    },
-    {
-      "fromNodeId": 53,
-      "outputPin": "Out",
-      "toNodeId": 64,
-      "inputPin": "In"
-    },
-    {
-      "fromNodeId": 3,
-      "outputPin": "Out",
-      "toNodeId": 65,
-      "inputPin": "In"
-    },
-    {
-      "fromNodeId": 66,
-      "outputPin": "True",
-      "toNodeId": 67,
-      "inputPin": "In"
-    },
-    {
-      "fromNodeId": 6,
-      "outputPin": "Out",
-      "toNodeId": 66,
-      "inputPin": "In"
-    },
-    {
-      "fromNodeId": 35,
-      "outputPin": "Out",
-      "toNodeId": 70,
-      "inputPin": "In"
-    },
-    {
-      "fromNodeId": 70,
-      "outputPin": "Out",
-      "toNodeId": 36,
-      "inputPin": "In"
-    },
-    {
-      "fromNodeId": 10,
-      "outputPin": "Out",
-      "toNodeId": 68,
-      "inputPin": "In"
-    },
-    {
-      "fromNodeId": 68,
-      "outputPin": "Out",
-      "toNodeId": 11,
-      "inputPin": "In"
-    }
+    { "fromNodeId": 1, "outputPin": "Out", "toNodeId": 28, "inputPin": "In" },
+    { "fromNodeId": 12, "outputPin": "Out", "toNodeId": 29, "inputPin": "In" },
+    { "fromNodeId": 6, "outputPin": "Out", "toNodeId": 30, "inputPin": "In" },
+    { "fromNodeId": 30, "outputPin": "True", "toNodeId": 19, "inputPin": "In" },
+    { "fromNodeId": 6, "outputPin": "Out", "toNodeId": 32, "inputPin": "In" },
+    { "fromNodeId": 3, "outputPin": "Out", "toNodeId": 33, "inputPin": "In" },
+    { "fromNodeId": 19, "outputPin": "True", "toNodeId": 34, "inputPin": "In" },
+    { "fromNodeId": 34, "outputPin": "Out", "toNodeId": 71, "inputPin": "In" },
+    { "fromNodeId": 71, "outputPin": "True", "toNodeId": 20, "inputPin": "In" },
+    { "fromNodeId": 20, "outputPin": "Out", "toNodeId": 72, "inputPin": "In" },
+    { "fromNodeId": 72, "outputPin": "Out", "toNodeId": 54, "inputPin": "In" },
+    { "fromNodeId": 38, "outputPin": "True", "toNodeId": 40, "inputPin": "In" },
+    { "fromNodeId": 35, "outputPin": "Out", "toNodeId": 11, "inputPin": "In" },
+    { "fromNodeId": 32, "outputPin": "True", "toNodeId": 44, "inputPin": "In" },
+    { "fromNodeId": 44, "outputPin": "True", "toNodeId": 38, "inputPin": "In" },
+    { "fromNodeId": 40, "outputPin": "True", "toNodeId": 43, "inputPin": "In" },
+    { "fromNodeId": 52, "outputPin": "Out", "toNodeId": 53, "inputPin": "In" },
+    { "fromNodeId": 3, "outputPin": "Out", "toNodeId": 56, "inputPin": "In" },
+    { "fromNodeId": 3, "outputPin": "Out", "toNodeId": 57, "inputPin": "In" },
+    { "fromNodeId": 57, "outputPin": "Out", "toNodeId": 59, "inputPin": "In" },
+    { "fromNodeId": 32, "outputPin": "True", "toNodeId": 60, "inputPin": "In" },
+    { "fromNodeId": 60, "outputPin": "True", "toNodeId": 58, "inputPin": "In" },
+    { "fromNodeId": 11, "outputPin": "Out", "toNodeId": 62, "inputPin": "In" },
+    { "fromNodeId": 36, "outputPin": "Out", "toNodeId": 63, "inputPin": "In" },
+    { "fromNodeId": 53, "outputPin": "Out", "toNodeId": 64, "inputPin": "In" },
+    { "fromNodeId": 3, "outputPin": "Out", "toNodeId": 65, "inputPin": "In" },
+    { "fromNodeId": 66, "outputPin": "True", "toNodeId": 67, "inputPin": "In" },
+    { "fromNodeId": 6, "outputPin": "Out", "toNodeId": 66, "inputPin": "In" },
+    { "fromNodeId": 35, "outputPin": "Out", "toNodeId": 70, "inputPin": "In" },
+    { "fromNodeId": 70, "outputPin": "Out", "toNodeId": 36, "inputPin": "In" },
+    { "fromNodeId": 10, "outputPin": "Out", "toNodeId": 68, "inputPin": "In" },
+    { "fromNodeId": 68, "outputPin": "Out", "toNodeId": 11, "inputPin": "In" }
   ]
 }

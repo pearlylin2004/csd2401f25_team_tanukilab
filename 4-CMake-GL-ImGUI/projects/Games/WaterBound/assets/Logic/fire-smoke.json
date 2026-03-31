@@ -87,7 +87,7 @@
       "implementation": "Check Timer",
       "type": 2,
       "position": [
-        826.0,
+        828.0,
         91.0
       ],
       "hasInput": true,
@@ -188,7 +188,7 @@
       "implementation": "On Collision Enter",
       "type": 0,
       "position": [
-        -95.0,
+        -95.00000762939453,
         336.0
       ],
       "hasInput": false,
@@ -205,7 +205,7 @@
       "implementation": "Check State",
       "type": 2,
       "position": [
-        194.0,
+        202.57142639160156,
         335.0
       ],
       "hasInput": true,
@@ -238,14 +238,14 @@
       "type": 1,
       "position": [
         521.0,
-        370.0000305175781
+        370.0
       ],
       "hasInput": true,
       "hasOutput": true,
       "hasTrueOutput": false,
       "hasFalseOutput": false,
       "parameters": {
-        "forceY": "15.000000"
+        "forceY": "10.000000"
       }
     },
     {
@@ -262,6 +262,40 @@
       "hasFalseOutput": false,
       "parameters": {
         "channel": "steam"
+      }
+    },
+    {
+      "id": 22,
+      "implementation": "Set Global Float",
+      "type": 1,
+      "position": [
+        913.6666259765625,
+        243.33331298828125
+      ],
+      "hasInput": true,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false,
+      "parameters": {
+        "value": "1.000000",
+        "variable": "collideFire"
+      }
+    },
+    {
+      "id": 23,
+      "implementation": "Lift Collided",
+      "type": 1,
+      "position": [
+        566.0,
+        505.9999694824219
+      ],
+      "hasInput": true,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false,
+      "parameters": {
+        "liftDuration": "0.300000",
+        "liftForce": "30.000000"
       }
     }
   ],
@@ -291,12 +325,6 @@
       "inputPin": "In"
     },
     {
-      "fromNodeId": 3,
-      "outputPin": "True",
-      "toNodeId": 12,
-      "inputPin": "In"
-    },
-    {
       "fromNodeId": 12,
       "outputPin": "Out",
       "toNodeId": 11,
@@ -315,21 +343,9 @@
       "inputPin": "In"
     },
     {
-      "fromNodeId": 17,
-      "outputPin": "True",
-      "toNodeId": 18,
-      "inputPin": "In"
-    },
-    {
       "fromNodeId": 16,
       "outputPin": "Out",
       "toNodeId": 17,
-      "inputPin": "In"
-    },
-    {
-      "fromNodeId": 17,
-      "outputPin": "False",
-      "toNodeId": 20,
       "inputPin": "In"
     },
     {
@@ -342,6 +358,18 @@
       "fromNodeId": 9,
       "outputPin": "Out",
       "toNodeId": 21,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 17,
+      "outputPin": "True",
+      "toNodeId": 22,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 17,
+      "outputPin": "False",
+      "toNodeId": 23,
       "inputPin": "In"
     }
   ]

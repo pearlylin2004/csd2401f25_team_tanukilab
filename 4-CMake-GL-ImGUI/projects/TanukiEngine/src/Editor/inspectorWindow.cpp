@@ -15,7 +15,7 @@ without the prior written consent of DigiPen Institute of
 Technology is prohibited.
 */
 /* End Header **************************************************************************/
-#ifdef _DEBUG
+//#ifdef _DEBUG
 #include "Editor/editorManager.h"
 #include "Systems/Systems.h"
 
@@ -297,6 +297,15 @@ void InspectorWindow::render() {
 		}
 		/* ------------------- END ------------------- */
 
+        /* ------------------- Video ------------------- */
+        if (selected->hasComponent<Video>()) {
+            renderVideo(selected);
+            ImGui::Spacing();
+            ImGui::Separator();
+            ImGui::Spacing();
+        }
+        /* ------------------- END ------------------- */
+
         /* ------------------- Layer Controls ------------------- */
         if (selected == m_objSelectionState.selectedObject) renderLayerControls(selected);
         /* ------------------- END ------------------- */
@@ -510,15 +519,12 @@ void InspectorWindow::renderTransform(GameObject* selected) {
         if (ImGui::TreeNode("Scale")) {
             bool scaleActive = false;
 
-            ImGui::Checkbox("Aspect Ratio", &m_objSelectionState.aspectRatioLock);
-
-            if (m_objSelectionState.aspectRatioLock && !m_objSelectionState.ratioSet) {
-                m_objSelectionState.ratioY = transform->scaleY / transform->scaleX;
-                m_objSelectionState.ratioZ = transform->scaleZ / transform->scaleX;
-                m_objSelectionState.ratioSet = true;
+            if (ImGui::Checkbox("Aspect Ratio", &transform->aspectRatioLock)) {
+                if (transform->aspectRatioLock && transform->scaleX != 0.f) {
+                    transform->aspectRatioY = transform->scaleY / transform->scaleX;
+                    transform->aspectRatioZ = transform->scaleZ / transform->scaleX;
+                }
             }
-
-            if (!m_objSelectionState.aspectRatioLock) m_objSelectionState.ratioSet = false;
 
             // clamp scale to be non-negative
             if (ImGui::DragFloat("X1", &transform->scaleX, 0.1f)) {
@@ -532,7 +538,7 @@ void InspectorWindow::renderTransform(GameObject* selected) {
             }
             scaleActive |= ImGui::IsItemActive();
 
-            ImGui::BeginDisabled(m_objSelectionState.aspectRatioLock);
+            ImGui::BeginDisabled(transform->aspectRatioLock);
             if (ImGui::DragFloat("Y1", &transform->scaleY, 0.1f)) {
                 //transform->scaleY = std::max(transform->scaleY, 0.f);
 
@@ -558,9 +564,9 @@ void InspectorWindow::renderTransform(GameObject* selected) {
 
             ImGui::EndDisabled();
 
-            if (m_objSelectionState.aspectRatioLock && transform->scaleX != 0.0f) {
-                transform->scaleY = transform->scaleX * m_objSelectionState.ratioY;
-                transform->scaleZ = transform->scaleX * m_objSelectionState.ratioZ;
+            if (transform->aspectRatioLock && transform->scaleX != 0.0f) {
+                transform->scaleY = transform->scaleX * transform->aspectRatioY;
+                transform->scaleZ = transform->scaleX * transform->aspectRatioZ;
             }
 
             // if collision and its set to auto-fit scale, adjust the collider size also
@@ -1402,6 +1408,144 @@ void InspectorWindow::renderInput(GameObject* selected) {
     }
 }
 
+void InspectorWindow::renderVideo(GameObject* selected)
+{
+    Video* video = selected->getComponent<Video>();
+    const Editor::ComponentEntry* entry = Editor::findEntry("Video");
+
+    if (ImGui::CollapsingHeader("Video")) {
+
+        // Video file drag and drop button (same pattern as animation texture)
+        std::string displayName = video->videoFile.empty() ? "(Drop video file here)" : video->videoFile;
+        ImGui::Button(displayName.c_str(), ImVec2(-1, 0));
+
+        if (ImGui::BeginDragDropTarget()) {
+            if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("ASSET")) {
+                const char* droppedPath = (const char*)payload->Data;
+                std::string path = droppedPath;
+
+                const std::string debugPrefix = "Debug/";
+                std::filesystem::path fsPath(path);
+                if (fsPath.string().find(debugPrefix) == 0) {
+                    fsPath = fsPath.string().substr(debugPrefix.size());
+                }
+
+                std::string ext = fsPath.extension().string();
+                std::transform(ext.begin(), ext.end(), ext.begin(), ::tolower);
+
+                if (ext == ".mpg" || ext == ".mpeg") {
+                    if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
+
+                    // cleanup old video if one was already loaded
+                    if (video->plm) VideoSystem::cleanup(video);
+
+                    // use relative filepath
+                    std::string normalizedPath = fsPath.string();
+                    size_t pos = normalizedPath.find("assets");
+                    if (pos != std::string::npos)
+                        normalizedPath = normalizedPath.substr(pos);
+                    video->videoFile = normalizedPath;
+                    video->videoTexID = 0;
+
+                    if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
+
+                    DebugLog::addMessage("Changed video file to " + path + "\n");
+                }
+                else {
+                    Editor::popupState.videoFileTypePopup = true;
+                    Editor::popupState.filename = fsPath.filename().string();
+                    DebugLog::addMessage("Invalid video format: " + path + "\n");
+                }
+            }
+            ImGui::EndDragDropTarget();
+        }
+
+        // Clear video file button
+        if (!video->videoFile.empty()) {
+            if (ImGui::Button("Clear Video")) {
+                if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
+
+                if (video->plm) VideoSystem::cleanup(video);
+                video->videoFile.clear();
+                video->isPlaying = false;
+                video->isPaused = false;
+                video->accumTime = 0.f;
+                video->videoTexID = 0;
+
+                if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
+            }
+        }
+
+        ImGui::Spacing();
+        ImGui::Separator();
+
+        // Playback controls
+        if (ImGui::Checkbox("Loop", &video->loop)) {
+            video->loop = !video->loop;
+            if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
+            video->loop = !video->loop;
+            if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
+        }
+
+        ImGui::Spacing();
+
+        // Only show play/pause/stop during play mode
+        ImGui::BeginDisabled(EditorManager::isEditingMode() || video->videoFile.empty());
+
+        if (!video->isPlaying) {
+            if (ImGui::Button("Play", ImVec2(-1, 0))) {
+                video->isPlaying = true;
+                video->isPaused = false;
+            }
+        }
+        else {
+            if (video->isPaused) {
+                if (ImGui::Button("Resume", ImVec2(-1, 0))) {
+                    video->isPaused = false;
+                }
+            }
+            else {
+                if (ImGui::Button("Pause", ImVec2(-1, 0))) {
+                    video->isPaused = true;
+                }
+            }
+
+            if (ImGui::Button("Stop", ImVec2(-1, 0))) {
+                VideoSystem::cleanup(video);
+                video->isPlaying = false;
+                video->isPaused = false;
+                video->accumTime = 0.f;
+            }
+        }
+
+        ImGui::EndDisabled();
+
+        ImGui::Spacing();
+
+        // Read-only info
+        if (video->plm) {
+            ImGui::LabelText("FPS", "%.2f", video->fps);
+            ImGui::LabelText("Resolution", "%d x %d", video->videoWidth, video->videoHeight);
+        }
+        else {
+            ImGui::TextDisabled("No video loaded");
+        }
+
+        ImGui::Spacing();
+
+        // Remove button
+        if (entry) {
+            if (ImGui::Button("Remove Video", ImVec2(-1, 0))) {
+                if (video->plm) VideoSystem::cleanup(video);
+                UndoRedoManager::Instance().executeCmd(
+                    std::make_unique<RemoveComponentCmd>(m_manager, selected, *entry)
+                );
+                DebugLog::addMessage("Removed Video component\n");
+            }
+        }
+    }
+}
+
 void InspectorWindow::renderPhysics(GameObject* selected, bool canMove) {
     Physics* physic = selected->getComponent<Physics>();
 
@@ -1486,8 +1630,7 @@ void InspectorWindow::renderPhysics(GameObject* selected, bool canMove) {
                     if (ImGui::IsItemDeactivatedAfterEdit())
                         if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
 
-                    if (ImGui::DragFloat("Max Fall Speed", &physic->maxFallSpeed, 1.0f))
-                        physic->maxFallSpeed = std::max(physic->maxFallSpeed, 0.f); // set the min to 0.f
+                    ImGui::DragFloat("Max Fall Speed", &physic->maxFallSpeed, 1.0f);
                     if (ImGui::IsItemActivated())
                         if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
                     if (ImGui::IsItemDeactivatedAfterEdit())
@@ -1625,6 +1768,8 @@ void InspectorWindow::renderPhysics(GameObject* selected, bool canMove) {
             ImGui::Text("Coyote Available: %s", physic->coyoteAvailable ? "true" : "false");
             ImGui::Text("Jump Buffer: %.3f", physic->jumpBufferTimer);
             ImGui::Text("Ledge Climbing: %s", physic->ledgeClimb ? "true" : "false");
+            ImGui::Text("Auto update: %s", physic->autoUpdate ? "true" : "false");
+
 
             ImGui::TreePop();
         }
@@ -2721,7 +2866,7 @@ void InspectorWindow::renderWaterBody(GameObject* selected) {
             ImGui::TreePop();
         }
 
-        if (ImGui::TreeNode("Physics")) {
+        if (ImGui::TreeNode("Water Physics")) {
             bool triggerChanged = ImGui::Checkbox("Is Trigger", &w->isTrigger);
             if (triggerChanged) {
                 w->isTrigger = !w->isTrigger;
@@ -2968,6 +3113,12 @@ void InspectorWindow::wrongFileTypePopup(const std::string& filename) {
 
         Editor::popupState.message = "Unsupported file type: " + filename + "\nPlease drop a prefab file.";
     }
+    else if (Editor::popupState.videoFileTypePopup) {
+        ImGui::OpenPopup("Unsupported File Type");
+        Editor::popupState.videoFileTypePopup = false;
+
+        Editor::popupState.message = "Unsupported file type: " + filename + "\nVideo must be .mpg or .mpeg files.";
+    }
 
     ImVec2 center = ImGui::GetMainViewport()->GetCenter();
     ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
@@ -2987,4 +3138,4 @@ void InspectorWindow::wrongFileTypePopup(const std::string& filename) {
     }
 }
 
-#endif
+//#endif

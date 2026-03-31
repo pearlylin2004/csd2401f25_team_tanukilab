@@ -52,6 +52,8 @@ public:
     void setStateBeforePause(GameState s) { SceneManager::getInstance().setStateBeforePause(s); }
     void setCurrentState(GameState s) { SceneManager::getInstance().setCurrentState(s); }
 
+    const std::string& getCurrentLevel() const { return m_currentLevel; }
+
 	GameState sceneToState(const std::string& sceneName); //convert scene name to game state
 
     void resetAllObjectsToSpawn(); // helper for restart
@@ -61,9 +63,8 @@ public:
     void setOnSceneLoadCallback(std::function<void(GameObjectManager&)> cb) {
         m_onSceneLoadCallback = cb;
     }
-    void triggerSceneLoad(GameObjectManager& manager) {
-        if (m_onSceneLoadCallback) m_onSceneLoadCallback(manager);
-    }
+    void triggerSceneLoad(GameObjectManager& manager);
+    void resetAndInitVisualLogic(GameObjectManager& manager);
 
     bool m_pendingRestart = false;
     bool m_pendingLevelLoad = false;
@@ -88,4 +89,7 @@ private:
     std::string m_currentLevel = "";
 
     float m_previousVolume = 100;
+
+    // for gamepad control
+    int m_selectedButtonIdx = -1;
 };

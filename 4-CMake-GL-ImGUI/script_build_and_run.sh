@@ -7,7 +7,7 @@ set -e  # Exit on any error
 
 echo ""
 echo "==============================================="
-echo "  Minimal C++ Console Application - Unix"
+echo "  Tanuki WaterBound - Unix"
 echo "==============================================="
 echo ""
 
@@ -88,7 +88,7 @@ echo ""
 # Run the application
 echo "Running the application..."
 echo ""
-./my-gl-app
+./WaterBound
 if [ $? -ne 0 ]; then
     echo ""
     echo "Application exited with error code: $?"

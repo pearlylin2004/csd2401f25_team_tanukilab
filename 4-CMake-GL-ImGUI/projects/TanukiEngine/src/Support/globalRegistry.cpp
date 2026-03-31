@@ -25,7 +25,7 @@ GlobalRegistry& GlobalRegistry::Instance() {
 
 void GlobalRegistry::init() {
     std::string err;
-	if (!JsonIO::LoadCollisionTags(globalFilepath, collisionTags, &err)) {
+	if (!JsonIO::LoadCollisionTags(m_basePath + globalFilepath, collisionTags, &err)) {
 		std::cerr << "[GlobalRegistry] Failed to load collision tags: " << err << std::endl;
         collisionTags = { "default" };
 	}
@@ -69,7 +69,7 @@ bool GlobalRegistry::addCollisionTag(const std::string& tag) {
 
 bool GlobalRegistry::loadCollisionTag() {
 	std::string err;
-	if (!JsonIO::LoadCollisionTags(globalFilepath, collisionTags, &err)) {
+	if (!JsonIO::LoadCollisionTags(m_basePath + globalFilepath, collisionTags, &err)) {
 		std::cerr << "[GlobalRegistry] Failed to load collision tags: " << err << std::endl;
 		return false;
 	}
@@ -84,7 +84,7 @@ bool GlobalRegistry::loadCollisionTag() {
 
 bool GlobalRegistry::saveCollisionTag() {
 	std::string err;
-	if (!JsonIO::SaveCollisionTags(globalFilepath, collisionTags, &err)) {
+	if (!JsonIO::SaveCollisionTags(m_basePath + globalFilepath, collisionTags, &err)) {
 		std::cerr << "[GlobalRegistry] Failed to save collision tags: " << err << std::endl;
 		return false;
 	}

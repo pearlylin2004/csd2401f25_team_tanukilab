@@ -23,7 +23,6 @@ int TileMapSystem::brushSize = 1;
 
 void TileMapSystem::tileUpdate(GameObject* obj)
 {
-#ifdef _DEBUG
 	TileMap* tm = obj->getComponent<TileMap>();
 	Transform* transform = obj->getComponent<Transform>();
 	Vector2D world = InputHandler::getMousePositionInImGuiViewport(Editor::sceneWindowState.scenePos, Editor::sceneWindowState.sceneSize);
@@ -67,9 +66,9 @@ void TileMapSystem::tileUpdate(GameObject* obj)
 			}
 		}
 	}
-#else
-	(void)obj; // avoid unused parameter warning in release mode
-#endif
+//#else
+//	(void)obj; // avoid unused parameter warning in release mode
+//#endif
 }
 
 void TileMapSystem::update(GameObjectManager& manager)
@@ -86,7 +85,7 @@ void TileMapSystem::update(GameObjectManager& manager)
 		if (!obj->hasComponent<TileMap>() || !obj->hasComponent<Transform>())
 			continue;
 
-#ifdef _DEBUG
+//#ifdef _DEBUG
 		if (InputHandler::isMouseLeftClicked())
 		{
 			if (!TileMapSystem::filename.empty() && Editor::objSelectionState.selectedObject == obj) {
@@ -99,23 +98,23 @@ void TileMapSystem::update(GameObjectManager& manager)
 				UndoRedoManager::Instance().endTilemapEdit(manager, obj);
 			}
 		}
-#endif
+//#endif
 
 		if (InputHandler::isMouseLeftHeld())
 		{
 			//Vector2D world = InputHandler::getMousePositionInImGuiViewport(Editor::sceneWindowState.scenePos, Editor::sceneWindowState.sceneSize);
 			//std::cout << world.x << " | " << world.y << std::endl;
 			//DebugLog::addMessage("mouse pos: " + std::to_string(world.x) + " | " + std::to_string(world.y) + "\n");
-#ifdef _DEBUG
+//#ifdef _DEBUG
 			if (!TileMapSystem::filename.empty() && Editor::objSelectionState.selectedObject == obj) {
 				tileUpdate(obj);
 			}
 
-#else
-			if (!TileMapSystem::filename.empty()) {
-				tileUpdate(obj);
-			}
-#endif
+//#else
+//			if (!TileMapSystem::filename.empty()) {
+//				tileUpdate(obj);
+//			}
+//#endif
 		}
 
 		TileMap* tm = obj->getComponent<TileMap>();

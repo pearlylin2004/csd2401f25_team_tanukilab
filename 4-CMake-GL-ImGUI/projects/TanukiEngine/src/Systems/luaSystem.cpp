@@ -16,6 +16,7 @@ Technology is prohibited.
 
 #include "luaSystem.h"
 #include "Systems.h"
+#include "toastSystem.h"
 
 void LuaSystem::init(GameObjectManager& manager) {
     L = luaL_newstate();
@@ -35,6 +36,7 @@ void LuaSystem::init(GameObjectManager& manager) {
     lua_register(L, "setRenderAlpha", Lua_setRenderAlpha);
     lua_register(L, "setTexture", Lua_setTexture);
     lua_register(L, "setColliderSize", Lua_setColliderSize);
+    lua_register(L, "getAnimationFrame", Lua_getAnimationFrame);
 
     // physics getters
     lua_register(L, "getVelX", Lua_getVelX);
@@ -69,6 +71,8 @@ void LuaSystem::init(GameObjectManager& manager) {
     lua_register(L, "getWaterBounce", Lua_getWaterBounce);
     lua_register(L, "getAccelX", Lua_getAccelX);
     lua_register(L, "getAccelY", Lua_getAccelY);
+    lua_register(L, "getBuoyancy", Lua_getBuoyancy);
+    lua_register(L, "getLiftDuration", Lua_getLiftDuration);
 
 
     // physics setters
@@ -127,6 +131,12 @@ void LuaSystem::init(GameObjectManager& manager) {
     lua_register(L, "getMouseWorldY", Lua_getMouseWorldY);
     lua_register(L, "getEditorMouseWorldX", Lua_getEditorMouseWorldX);
     lua_register(L, "getEditorMouseWorldY", Lua_getEditorMouseWorldY);
+    lua_register(L, "isGamepadConnected", Lua_isGamepadConnected);
+    lua_register(L, "isComboKeyTriggered", Lua_isComboKeyTriggered);
+    lua_register(L, "isGamepadButtonHeld", Lua_isGamepadButtonHeld);
+    lua_register(L, "isGamepadButtonTriggered", Lua_isGamepadButtonTriggered);
+    lua_register(L, "getGamepadAxisRX", Lua_getGamepadAxisRX);
+    lua_register(L, "getGamepadAxisRY", Lua_getGamepadAxisRY);
 
     // FSM
     lua_register(L, "getPlayerState", Lua_getPlayerState);
@@ -143,6 +153,7 @@ void LuaSystem::init(GameObjectManager& manager) {
     lua_register(L, "stopSound", Lua_stopSound);
     lua_register(L, "setSoundVolume", Lua_setSoundVolume);
     lua_register(L, "isSoundPlaying", Lua_isSoundPlaying);
+    lua_register(L, "setLowPassFilter", Lua_setLowPassFilter);
 
     // visual script
     lua_register(L, "getVSGlobalFloat", Lua_getVSGlobalFloat);
@@ -187,6 +198,13 @@ void LuaSystem::init(GameObjectManager& manager) {
     lua_register(L, "debugLog", Lua_debugLog);
     lua_register(L, "debugLogPlay", Lua_debugLogPlay);
 
+    // scene stuff
+    lua_register(L, "loadLevel", Lua_loadLevel);
+    lua_register(L, "getCurrentScene", Lua_getCurrentScene);
+
+    // toast
+    lua_register(L, "showToast", Lua_showToast);
+
     registerManagerBindings(manager);
 }
 
@@ -217,6 +235,16 @@ int LuaSystem::Lua_IsKeyHeld(lua_State* L) {
     bool held = false;
     if (key != -1) {
         held = InputHandler::isKeyHeld(key);
+    }
+
+    // also check gamepad if keyboard not held
+    if (!held) {
+        if (strcmp(keyStr, "A") == 0) // left stick left
+            held = InputHandler::getGamepadAxis(GLFW_GAMEPAD_AXIS_LEFT_X) < -0.3f;
+        else if (strcmp(keyStr, "D") == 0) // left stick right
+            held = InputHandler::getGamepadAxis(GLFW_GAMEPAD_AXIS_LEFT_X) > 0.3f;
+        else if (strcmp(keyStr, "SPACE") == 0) // Cross
+            held = InputHandler::isGamepadButtonHeld(GLFW_GAMEPAD_BUTTON_A);
     }
 
     lua_pushboolean(L, held); //push result to Lua
@@ -340,6 +368,22 @@ int LuaSystem::Lua_setColliderSize(lua_State* L) {
     return 0;
 }
 
+int LuaSystem::Lua_getAnimationFrame(lua_State* L) {
+    GameObject* obj = static_cast<GameObject*>(lua_touserdata(L, 1));
+    if (!obj || !obj->hasComponent<Animation>() || !obj->hasComponent<StateMachine>()) {
+        lua_pushinteger(L, -1); return 1;
+    }
+
+    StateMachine* sm = obj->getComponent<StateMachine>();
+    Animation* anim = obj->getComponent<Animation>();
+    int idx = static_cast<int>(sm->state);
+
+    if (idx < 0 || idx >= (int)anim->animState.size()) { lua_pushinteger(L, -1); return 1; }
+
+    lua_pushinteger(L, anim->animState[idx].currentFrameColumn);
+
+    return 1;
+}
 
 /* ---- physics getters ---- */
 int LuaSystem::Lua_getVelX(lua_State* L) {
@@ -620,6 +664,22 @@ int LuaSystem::Lua_getAccelY(lua_State* L) {
     if (!obj || !obj->hasComponent<Physics>()) { lua_pushnumber(L, 0); return 1; }
 
     lua_pushnumber(L, obj->getComponent<Physics>()->acceleration.y);
+    return 1;
+}
+
+int LuaSystem::Lua_getBuoyancy(lua_State* L) {
+    GameObject* obj = static_cast<GameObject*>(lua_touserdata(L, 1));
+    if (!obj || !obj->hasComponent<Physics>()) { lua_pushboolean(L, 0); return 1; }
+
+    lua_pushboolean(L, obj->getComponent<Physics>()->buoyancy ? 1 : 0);
+
+    return 1;
+}
+
+int LuaSystem::Lua_getLiftDuration(lua_State* L) {
+    GameObject* obj = static_cast<GameObject*>(lua_touserdata(L, 1));
+    if (!obj || !obj->hasComponent<Physics>()) { lua_pushnumber(L, 0); return 1; }
+    lua_pushnumber(L, obj->getComponent<Physics>()->liftDuration);
     return 1;
 }
 
@@ -1008,7 +1068,17 @@ int LuaSystem::Lua_isKeyTriggered(lua_State* L) {
     else if (strcmp(keyStr, "E") == 0) key = GLFW_KEY_E;
     else if (strcmp(keyStr, "R") == 0) key = GLFW_KEY_R;
 
-    lua_pushboolean(L, key != -1 && InputHandler::isKeyTriggered(key) ? 1 : 0);
+    bool result = (key != -1 && InputHandler::isKeyTriggered(key));
+    if (!result) {
+        if (strcmp(keyStr, "SPACE") == 0) // equivalent to SPACE (cross button)
+            result = InputHandler::isGamepadButtonTriggered(GLFW_GAMEPAD_BUTTON_A);
+        else if (strcmp(keyStr, "A") == 0) // equivalent to A (d-pad left)
+            result = InputHandler::isGamepadButtonTriggered(GLFW_GAMEPAD_BUTTON_DPAD_LEFT);
+		else if (strcmp(keyStr, "D") == 0) // equivalent to D (d-pad right)
+            result = InputHandler::isGamepadButtonTriggered(GLFW_GAMEPAD_BUTTON_DPAD_RIGHT);
+    }
+    lua_pushboolean(L, result ? 1 : 0);
+
     return 1;
 }
 
@@ -1021,11 +1091,20 @@ int LuaSystem::Lua_isKeyReleased(lua_State* L) {
     else if (strcmp(keyStr, "D") == 0) key = GLFW_KEY_D;
     else if (strcmp(keyStr, "W") == 0) key = GLFW_KEY_W;
     else if (strcmp(keyStr, "S") == 0) key = GLFW_KEY_S;
-    lua_pushboolean(L, key != -1 && InputHandler::isKeyReleased(key) ? 1 : 0);
+
+    bool result = (key != -1 && InputHandler::isKeyReleased(key));
+    if (!result && strcmp(keyStr, "SPACE") == 0)
+        result = InputHandler::isGamepadButtonReleased(GLFW_GAMEPAD_BUTTON_A);
+    lua_pushboolean(L, result ? 1 : 0);
+
     return 1;
 }
 
 int LuaSystem::Lua_isMouseLeftHeld(lua_State* L) {
+    //bool result = InputHandler::isMouseLeftHeld();
+    //if (!result)
+    //    result = InputHandler::isGamepadButtonHeld(GLFW_GAMEPAD_BUTTON_RIGHT_BUMPER); // R1 = left held
+
     lua_pushboolean(L, InputHandler::isMouseLeftHeld() ? 1 : 0);
     return 1;
 }
@@ -1041,37 +1120,168 @@ int LuaSystem::Lua_isMouseLeftTriggered(lua_State* L) {
 }
 
 int LuaSystem::Lua_getMouseWorldX(lua_State* L) {
+    // if gamepad connected and right stick is being used, aim with right stick
+    if (InputHandler::isGamepadConnected()) {
+        float rx = InputHandler::getGamepadAxis(GLFW_GAMEPAD_AXIS_RIGHT_X);
+        float ry = InputHandler::getGamepadAxis(GLFW_GAMEPAD_AXIS_RIGHT_Y);
+
+        if (rx != 0.f || ry != 0.f) {
+            // if player obj provided, use its pos as origin
+            GameObject* obj = static_cast<GameObject*>(lua_touserdata(L, 1));
+            float originX = (obj && obj->hasComponent<Transform>()) ? obj->getComponent<Transform>()->x : renderer::cam.campos.x;
+
+            lua_pushnumber(L, originX + rx * 100.f);
+
+            return 1;
+        }
+    }
+
     lua_pushnumber(L, InputHandler::getWorldMousePosition().x);
     return 1;
 }
 
 int LuaSystem::Lua_getMouseWorldY(lua_State* L) {
+    if (InputHandler::isGamepadConnected()) {
+        float rx = InputHandler::getGamepadAxis(GLFW_GAMEPAD_AXIS_RIGHT_X);
+        float ry = InputHandler::getGamepadAxis(GLFW_GAMEPAD_AXIS_RIGHT_Y);
+
+        if (rx != 0.f || ry != 0.f) {
+            // if player obj provided, use its pos as origin
+            GameObject* obj = static_cast<GameObject*>(lua_touserdata(L, 1));
+            float originY = (obj && obj->hasComponent<Transform>()) ? obj->getComponent<Transform>()->y : renderer::cam.campos.y;
+
+            lua_pushnumber(L, originY - ry * 100.f); // Y is flipped
+            return 1;
+        }
+    }
+
     lua_pushnumber(L, InputHandler::getWorldMousePosition().y);
     return 1;
 }
 
 int LuaSystem::Lua_getEditorMouseWorldX(lua_State* L) {
-#ifdef _DEBUG
+    if (InputHandler::isGamepadConnected()) {
+        float rx = InputHandler::getGamepadAxis(GLFW_GAMEPAD_AXIS_RIGHT_X);
+        float ry = InputHandler::getGamepadAxis(GLFW_GAMEPAD_AXIS_RIGHT_Y);
+
+        if (rx != 0.f || ry != 0.f) {
+            GameObject* obj = static_cast<GameObject*>(lua_touserdata(L, 1));
+            float originX = (obj && obj->hasComponent<Transform>()) ? obj->getComponent<Transform>()->x : renderer::editorCam.campos.x;
+
+            lua_pushnumber(L, originX + rx * 100.f);
+            return 1;
+        }
+    }
+
     ImVec2 scenePos, sceneSize;
     EditorManager::getScenePosNSize(scenePos, sceneSize);
     lua_pushnumber(L, InputHandler::getMousePositionInImGuiViewport(scenePos, sceneSize).x);
-#else
-    lua_pushnumber(L, InputHandler::getWorldMousePosition().x);
-#endif
     return 1;
 }
 
 int LuaSystem::Lua_getEditorMouseWorldY(lua_State* L) {
-#ifdef _DEBUG
+    if (InputHandler::isGamepadConnected()) {
+        float rx = InputHandler::getGamepadAxis(GLFW_GAMEPAD_AXIS_RIGHT_X);
+        float ry = InputHandler::getGamepadAxis(GLFW_GAMEPAD_AXIS_RIGHT_Y);
+
+        if (rx != 0.f || ry != 0.f) {
+            GameObject* obj = static_cast<GameObject*>(lua_touserdata(L, 1));
+            float originY = (obj && obj->hasComponent<Transform>()) ? obj->getComponent<Transform>()->y : renderer::editorCam.campos.y;
+
+            lua_pushnumber(L, originY - ry * 100.f);
+            return 1;
+        }
+    }
+
     ImVec2 scenePos, sceneSize;
     EditorManager::getScenePosNSize(scenePos, sceneSize);
     lua_pushnumber(L, InputHandler::getMousePositionInImGuiViewport(scenePos, sceneSize).y);
-#else
-    lua_pushnumber(L, InputHandler::getWorldMousePosition().y);
-#endif
     return 1;
 }
 
+int LuaSystem::Lua_isGamepadConnected(lua_State* L) {
+    lua_pushboolean(L, InputHandler::isGamepadConnected() ? 1 : 0);
+    return 1;
+}
+
+int LuaSystem::Lua_isComboKeyTriggered(lua_State* L) {
+    const char* key1Str = lua_tostring(L, 1);
+    const char* key2Str = lua_tostring(L, 2);
+    if (!key1Str || !key2Str) { lua_pushboolean(L, 0); return 1; }
+
+    auto toGLFW = [](const char* s) -> int {
+        if (strcmp(s, "A") == 0) return GLFW_KEY_A;
+        if (strcmp(s, "D") == 0) return GLFW_KEY_D;
+        if (strcmp(s, "W") == 0) return GLFW_KEY_W;
+        if (strcmp(s, "S") == 0) return GLFW_KEY_S;
+        if (strcmp(s, "N") == 0) return GLFW_KEY_N;
+        if (strcmp(s, "E") == 0) return GLFW_KEY_E;
+        if (strcmp(s, "G") == 0) return GLFW_KEY_G;
+        if (strcmp(s, "R") == 0) return GLFW_KEY_R;
+        if (strcmp(s, "CTRL") == 0) return GLFW_KEY_LEFT_CONTROL;
+        if (strcmp(s, "SHIFT") == 0) return GLFW_KEY_LEFT_SHIFT;
+        return -1;
+        };
+
+    int k1 = toGLFW(key1Str);
+    int k2 = toGLFW(key2Str);
+    lua_pushboolean(L, (k1 != -1 && k2 != -1 && InputHandler::isComboKeyTriggered(k1, k2)) ? 1 : 0);
+    return 1;
+}
+
+int LuaSystem::Lua_isGamepadButtonHeld(lua_State* L) {
+    const char* btnStr = lua_tostring(L, 1);
+    if (!btnStr) { lua_pushboolean(L, 0); return 1; }
+
+    int btn = -1;
+    if (strcmp(btnStr, "A") == 0) btn = GLFW_GAMEPAD_BUTTON_A;          // Cross
+    else if (strcmp(btnStr, "B") == 0) btn = GLFW_GAMEPAD_BUTTON_B;     // Circle
+    else if (strcmp(btnStr, "X") == 0) btn = GLFW_GAMEPAD_BUTTON_X;     // Square
+    else if (strcmp(btnStr, "Y") == 0) btn = GLFW_GAMEPAD_BUTTON_Y;     // Triangle
+    else if (strcmp(btnStr, "L1") == 0) btn = GLFW_GAMEPAD_BUTTON_LEFT_BUMPER;
+    else if (strcmp(btnStr, "R1") == 0) btn = GLFW_GAMEPAD_BUTTON_RIGHT_BUMPER;
+    else if (strcmp(btnStr, "START") == 0) btn = GLFW_GAMEPAD_BUTTON_START;
+    else if (strcmp(btnStr, "SELECT") == 0) btn = GLFW_GAMEPAD_BUTTON_BACK;
+    else if (strcmp(btnStr, "DPAD_UP") == 0) btn = GLFW_GAMEPAD_BUTTON_DPAD_UP;
+    else if (strcmp(btnStr, "DPAD_DOWN") == 0) btn = GLFW_GAMEPAD_BUTTON_DPAD_DOWN;
+    else if (strcmp(btnStr, "DPAD_LEFT") == 0) btn = GLFW_GAMEPAD_BUTTON_DPAD_LEFT;
+    else if (strcmp(btnStr, "DPAD_RIGHT") == 0) btn = GLFW_GAMEPAD_BUTTON_DPAD_RIGHT;
+
+    lua_pushboolean(L, (btn != -1 && InputHandler::isGamepadButtonHeld(btn)) ? 1 : 0);
+    return 1;
+}
+
+int LuaSystem::Lua_isGamepadButtonTriggered(lua_State* L) {
+    const char* btnStr = lua_tostring(L, 1);
+    if (!btnStr) { lua_pushboolean(L, 0); return 1; }
+
+    int btn = -1;
+    if (strcmp(btnStr, "A") == 0) btn = GLFW_GAMEPAD_BUTTON_A;
+    else if (strcmp(btnStr, "B") == 0) btn = GLFW_GAMEPAD_BUTTON_B;
+    else if (strcmp(btnStr, "X") == 0) btn = GLFW_GAMEPAD_BUTTON_X;
+    else if (strcmp(btnStr, "Y") == 0) btn = GLFW_GAMEPAD_BUTTON_Y;
+    else if (strcmp(btnStr, "L1") == 0) btn = GLFW_GAMEPAD_BUTTON_LEFT_BUMPER;
+    else if (strcmp(btnStr, "R1") == 0) btn = GLFW_GAMEPAD_BUTTON_RIGHT_BUMPER;
+    else if (strcmp(btnStr, "START") == 0) btn = GLFW_GAMEPAD_BUTTON_START;
+    else if (strcmp(btnStr, "SELECT") == 0) btn = GLFW_GAMEPAD_BUTTON_BACK;
+    else if (strcmp(btnStr, "DPAD_UP") == 0) btn = GLFW_GAMEPAD_BUTTON_DPAD_UP;
+    else if (strcmp(btnStr, "DPAD_DOWN") == 0) btn = GLFW_GAMEPAD_BUTTON_DPAD_DOWN;
+    else if (strcmp(btnStr, "DPAD_LEFT") == 0) btn = GLFW_GAMEPAD_BUTTON_DPAD_LEFT;
+    else if (strcmp(btnStr, "DPAD_RIGHT") == 0) btn = GLFW_GAMEPAD_BUTTON_DPAD_RIGHT;
+
+    lua_pushboolean(L, (btn != -1 && InputHandler::isGamepadButtonTriggered(btn)) ? 1 : 0);
+    return 1;
+}
+
+int LuaSystem::Lua_getGamepadAxisRX(lua_State* L) {
+    lua_pushnumber(L, InputHandler::getGamepadAxis(GLFW_GAMEPAD_AXIS_RIGHT_X));
+    return 1;
+}
+
+int LuaSystem::Lua_getGamepadAxisRY(lua_State* L) {
+    lua_pushnumber(L, InputHandler::getGamepadAxis(GLFW_GAMEPAD_AXIS_RIGHT_Y));
+    return 1;
+}
 
 /* ---- FSM ---- */
 int LuaSystem::Lua_getPlayerState(lua_State* L) {
@@ -1238,6 +1448,14 @@ int LuaSystem::Lua_requestBGM(lua_State* L) {
     if (mgr)
         AudioHandler::getInstance().requestBGM(channelName, *mgr);
 
+    return 0;
+}
+
+int LuaSystem::Lua_setLowPassFilter(lua_State* L) {
+    bool enable = lua_toboolean(L, 1) != 0;
+    float cutoff = lua_isnumber(L, 2) ? (float)lua_tonumber(L, 2) : 500.f;
+
+    AudioHandler::getInstance().setLowPassFilter(enable, cutoff);
     return 0;
 }
 
@@ -1435,20 +1653,20 @@ int LuaSystem::Lua_isPaused(lua_State* L) {
 }
 
 int LuaSystem::Lua_isEditorOpen(lua_State* L) {
-#ifdef _DEBUG
+//#ifdef _DEBUG
     lua_pushboolean(L, UISystem::isShowUI() ? 1 : 0);
-#else
-    lua_pushboolean(L, 0);
-#endif
+//#else
+//    lua_pushboolean(L, 0);
+//#endif
     return 1;
 }
 
 int LuaSystem::Lua_isSceneHovered(lua_State* L) {
-#ifdef _DEBUG
+//#ifdef _DEBUG
     lua_pushboolean(L, SceneWindow::isSceneHovered() ? 1 : 0);
-#else
-    lua_pushboolean(L, 1); // in release, always true (no editor panels)
-#endif
+//#else
+//    lua_pushboolean(L, 1); // in release, always true (no editor panels)
+//#endif
     return 1;
 }
 
@@ -1517,6 +1735,38 @@ int LuaSystem::Lua_debugLogPlay(lua_State* L) {
 
     return 0;
 }
+
+
+/* --- scene stuff ---- */
+int LuaSystem::Lua_loadLevel(lua_State* L) {
+    const char* sceneName = lua_tostring(L, 1);
+    if (!sceneName) return 0;
+
+    GUISystem::getInstance().m_pendingLevelLoad = true;
+    GUISystem::getInstance().m_pendingLevelName = std::string(sceneName);
+    return 0;
+}
+
+int LuaSystem::Lua_getCurrentScene(lua_State* L) {
+    std::string scene = GUISystem::getInstance().getCurrentLevel();
+    // strip path, just return filename
+    std::filesystem::path p(scene);
+
+    lua_pushstring(L, p.filename().string().c_str());
+    return 1;
+}
+
+
+/* ---- toast ---- */
+int LuaSystem::Lua_showToast(lua_State* L) {
+    const char* msg = lua_tostring(L, 1);
+    if (!msg) return 0;
+
+    float duration = lua_isnumber(L, 2) ? static_cast<float>(lua_tonumber(L, 2)) : 5.f;
+    ToastSystem::getInstance().push(msg, duration);
+    return 0;
+}
+
 
 /* ---- object things ---- */
 int LuaSystem::Lua_getAllObjects(lua_State* L) {
@@ -1635,6 +1885,15 @@ int LuaSystem::Lua_setActive(lua_State* L) {
     return 0;
 }
 
+int LuaSystem::Lua_setExcludeFromSave(lua_State* L) {
+    GameObject* obj = static_cast<GameObject*>(lua_touserdata(L, 1));
+    if (!obj) return 0;
+
+    obj->setExcludeFromSave(lua_toboolean(L, 2) != 0);
+
+    return 0;
+}
+
 
 
 void LuaSystem::registerManagerBindings(GameObjectManager& manager) {
@@ -1669,6 +1928,7 @@ void LuaSystem::registerManagerBindings(GameObjectManager& manager) {
     lua_register(L, "getParentName", Lua_getParentName);
     lua_register(L, "hasWeaponComponent", Lua_hasWeaponComponent);
     lua_register(L, "setActive", Lua_setActive);
+    lua_register(L, "setExcludeFromSave", Lua_setExcludeFromSave);
 }
 
 
@@ -1776,6 +2036,7 @@ void LuaSystem::update(GameObjectManager& manager, float deltaTime) {
 }
 
 void LuaSystem::callSceneLoad(GameObjectManager& manager, const std::string& scriptFile) {
+    (void)manager;
     if (!L || scriptFile.empty()) return;
     std::string path = "./" + scriptFile;
     if (luaL_dofile(L, path.c_str()) != LUA_OK) {
@@ -1789,5 +2050,26 @@ void LuaSystem::callSceneLoad(GameObjectManager& manager, const std::string& scr
     if (lua_pcall(L, 0, 0, 0) != LUA_OK) {
         std::cerr << "Lua onSceneLoad error: " << lua_tostring(L, -1) << std::endl;
         lua_pop(L, 1);
+    }
+}
+
+void LuaSystem::initializeScripts(GameObjectManager& manager) {
+    if (!L) return;
+
+    std::vector<GameObject*> gameObjects;
+    manager.getAllGameObjects(gameObjects);
+
+    for (GameObject* obj : gameObjects) {
+        if (!obj->hasComponent<LuaScript>()) continue;
+
+        LuaScript* scriptComp = obj->getComponent<LuaScript>();
+
+        for (auto& entry : scriptComp->scripts) {
+            if (!entry.filename.empty() && !entry.scriptName.empty()) {
+                loadScriptForObject(entry.filename, entry.scriptName);
+                entry.changed = false;
+            }
+        }
+        scriptComp->scriptsChanged = false;
     }
 }

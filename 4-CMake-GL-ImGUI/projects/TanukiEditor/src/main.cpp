@@ -1,4 +1,21 @@
+/* Start Header ************************************************************************/
+/*!
+\file		main.cpp
+\author     Hugo Low Ren Hao, low.h, 2402272, 40%
+\author     Varick, v.teo, 2403417, 40%
+            Tan Chee Qing, 2401486, 10%
+\par        low.h@digipen.edu
+\par        v.teo@digipen.edu
+            cheeqing.tan@digipen.edu
+\date		March, 11st, 2026
+\brief      Main entry point for the Tanuki Engine Editor.
 
+Copyright (C) 2026 DigiPen Institute of Technology.
+Reproduction or disclosure of this file or its contents
+without the prior written consent of DigiPen Institute of
+Technology is prohibited.
+*/
+/* End Header **************************************************************************/
 #include "CoreEngine.h"
 #include "LuaGameScript.h"
 #include "editorLaunch.h"
@@ -55,6 +72,8 @@ int main(int argc, char** argv) {
                 Editor::sceneState.currentSceneName = defaultScene;
 
                 PrefabManager::Instance().loadPrefabRegistry();
+                GlobalRegistry::Instance().setBasePath(PathManager::Instance().getSourcePath() + "/assets");
+                GlobalRegistry::Instance().init();
 
                 if (!defaultScene.empty())
                     engine->loadInitialScene(defaultScene);
@@ -62,17 +81,14 @@ int main(int argc, char** argv) {
             return done;
         });
 
-        // set project filepath
-        //PathManager::Instance().setSourcePath(
-           // EditorLaunch::Instance().getGamePath());
-
         luaScript = std::make_unique<LuaGameScript>(engine->getLuaSystem());
         engine->setGameScript(luaScript.get());
 
-        // open first scene in scene folder
-        /*std::string defaultScene = EditorLaunch::Instance().getDefaultScene();
-        if (!defaultScene.empty())
-            engine->loadInitialScene(defaultScene);*/
+        engine->setOnUpdate([&]() {
+            // F1 to quit
+            if (InputHandler::isKeyTriggered(GLFW_KEY_F1))
+                engine->stop();
+            });
 
         engine->Run();
     }

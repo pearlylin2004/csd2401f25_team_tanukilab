@@ -23,6 +23,7 @@
       "updatable": 1
     }
   ],
+  "onLoadScript": "assets/scripting\\pause_scene_load.lua",
   "objects": [
     {
       "name": "background",
@@ -140,6 +141,20 @@
         },
         "VisualLC": {
           "filename": "Ending_Cutscene.json"
+        }
+      }
+    },
+    {
+      "prefabid": "606ecd11-ffab-4355-8153-36d2ba9a0a0f",
+      "name": "cheater",
+      "components": {
+        "LuaScript": {
+          "scripts": [
+            {
+              "filename": "assets/scripting/cheat.lua",
+              "scriptName": "cheat"
+            }
+          ]
         }
       }
     }

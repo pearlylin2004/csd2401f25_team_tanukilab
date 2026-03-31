@@ -25,6 +25,7 @@ Technology is prohibited.
 #define STB_IMAGE_IMPLEMENTATION
 #include "CoreEngine.h"
 #include "GUISystem.h"  // Add this include
+#include "toastSystem.h"
 
 CoreEngine::CoreEngine()
     : m_window(nullptr),
@@ -75,7 +76,10 @@ void CoreEngine::Init(bool forceWindowed) {
     int winHeight = cfg.height;
 
     if (wantFullscreen) {
-       
+        monitor = glfwGetPrimaryMonitor();
+        const GLFWvidmode* mode = glfwGetVideoMode(monitor);
+        winWidth = mode->width;
+        winHeight = mode->height;
 
         // remember windowed size for when we toggle back
         m_windowedWidth = cfg.width;
@@ -83,11 +87,6 @@ void CoreEngine::Init(bool forceWindowed) {
         Camera::onResize(m_windowedWidth, m_windowedHeight);
     }
     else {
-        monitor = glfwGetPrimaryMonitor();
-        const GLFWvidmode* mode = glfwGetVideoMode(monitor);
-        winWidth = mode->width;
-        winHeight = mode->height;
-
         m_windowedWidth = cfg.width;
         m_windowedHeight = cfg.height;
 		Camera::onResize(winWidth, winHeight);
@@ -139,9 +138,10 @@ void CoreEngine::Init(bool forceWindowed) {
     //m_weaponSystem = std::make_unique<WeaponSystem>();
     m_renderSystem = std::make_unique<RenderSystem>();
     m_waterSystem = std::make_unique<WaterSystem>();
-#ifdef _DEBUG
+
+
     m_uiSystem = std::make_unique<UISystem>();
-#endif
+//#endif
     m_luaSystem = std::make_unique<LuaSystem>();
     m_fontSystem = std::make_unique<FontSystem>();
     //m_guiSystem = std::make_unique<GUISystem>();
@@ -152,6 +152,7 @@ void CoreEngine::Init(bool forceWindowed) {
 	m_particleSystem = std::make_unique<ParticleSystem>();
 	m_visualLCSystem = std::make_unique<VisualLogicSystem>();
 	m_transformSystem = std::make_unique<TransformSystem>();
+	m_cameraSystem = std::make_unique<Camera>();
 
 
     PrefabManager::Instance().loadPrefabRegistry();
@@ -162,9 +163,9 @@ void CoreEngine::Init(bool forceWindowed) {
     m_luaSystem->init(*m_manager);
     m_renderSystem->init(*m_manager, winWidth, winHeight);
     m_waterSystem->init();
-#ifdef _DEBUG
+//#ifdef _DEBUG
     m_uiSystem->init(m_window, m_renderSystem.get(), *m_manager);
-#endif
+//#endif
     m_fontSystem->init(*m_manager);
     m_audioSystem->init(*m_manager);
 
@@ -175,8 +176,14 @@ void CoreEngine::Init(bool forceWindowed) {
     m_messageBus->subscribe("KeyPressed", m_playerController.get());
     m_messageBus->subscribe("KeyReleased", m_playerController.get());
 
-    // load global settings
-    GlobalRegistry::Instance().init();
+    //// load global settings
+    //GlobalRegistry::Instance().init();
+
+    // Initialize leaderboard (loads scores from disk)
+    //LeaderboardSystem::getInstance().init();
+
+    //// Initialize replay system (creates replays directory)
+    //ReplaySystem::getInstance().init();
 
     glfwPollEvents();
     m_isRunning = true;
@@ -187,6 +194,12 @@ void CoreEngine::Init(bool forceWindowed) {
 void CoreEngine::Run() {
     // run launcher first if set
     while (m_launcherFn) {
+        if (glfwWindowShouldClose(m_window)) {
+            m_isRunning = false;
+            m_launcherFn = nullptr;
+            return;
+        }
+
         glfwPollEvents();
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -203,6 +216,9 @@ void CoreEngine::Run() {
 }
 
 void CoreEngine::GameLoop() {
+    if (m_onUpdate) m_onUpdate();
+
+    if (glfwWindowShouldClose(m_window)) { m_isRunning = false; return; }
     //change to fn because Q will affect the editor
     if (glfwWindowShouldClose(m_window) || InputHandler::isKeyTriggered(GLFW_KEY_F1)) { m_isRunning = false; return; }
     //pause checking, and set it to paused state if escape is held
@@ -226,6 +242,8 @@ void CoreEngine::GameLoop() {
 
     //--- Update Timing --- 
     Perf::UpdateTime(m_delta, m_fps, 0.5);
+    m_delta = std::min(m_delta, 1.0 / 60.0); // clamp delta so its wont be too fast
+
 #if defined(_DEBUG) || defined(DEBUG)
     // Show FPS only in debug builds
     Perf::UpdateWindowTitle(m_window, m_title, m_fps, true);
@@ -263,8 +281,9 @@ void CoreEngine::Update(float deltaTime) {
     if (state != GameState::EXIT) {
         GUISystem::getInstance().update();
     }
-
     SceneManager::getInstance().update();
+    // Tick the level timer for leaderboard
+    //GUISystem::getInstance().tickLevelTimer(deltaTime);
 
 	//for other systems to update even in editor mode
     if (!EditorManager::isEditingMode() && !EditorManager::isPaused()) {
@@ -284,27 +303,60 @@ void CoreEngine::Update(float deltaTime) {
     m_tileMapSystem->update(*m_manager);
     m_particleSystem->update(*m_manager, deltaTime);;
     m_waterSystem->update(*m_manager, deltaTime);
-    m_renderSystem->update(*m_manager, deltaTime);
+
+    // // Record player state for replay and update ghost playback
+    // auto& replay = ReplaySystem::getInstance();
+    // auto currentGS = GUISystem::getInstance().getCurrentState();
+    // const bool allowReplayRuntime = !EditorManager::isEditingMode();
+    // if (allowReplayRuntime && replay.isRecording() && currentGS != GameState::PAUSED) {
+    //     replay.recordFrame(*m_manager, deltaTime);
+    // }
+    // if (allowReplayRuntime && replay.isPlaying() && currentGS != GameState::PAUSED) {
+    //     replay.updateGhost(*m_manager, deltaTime);
+    // }
+    // if (allowReplayRuntime && replay.isViewerMode() && currentGS != GameState::PAUSED) {
+    //     replay.updateViewer(deltaTime);
+    // }
+    // // Apply recorded world object state every frame in viewer mode
+    // if (allowReplayRuntime && replay.isViewerMode()) {
+    //     replay.applyWorldSnapshot(*m_manager);
+    // }
+
+    /* ---- Render ---- */
+    auto renderStart = std::chrono::high_resolution_clock::now();
+	// anyth fall below the z threhold 8 will be drawn before water
+    m_renderSystem->renderBelowZ(*m_manager, deltaTime, 8.f); // draw everything below water
     m_waterSystem->render(*m_manager);
+    m_renderSystem->renderAboveZ(*m_manager, deltaTime, 8.f); // draw nothing above
+    auto renderEnd = std::chrono::high_resolution_clock::now();
+    double renderMs = std::chrono::duration<double, std::milli>(renderEnd - renderStart).count();
+    g_SystemTimers.push_back({ "Render", renderMs });
+    /* ---- END ---- */
+
     m_fontSystem->update(*m_manager, m_fps);
     m_audioSystem->update(*m_manager, deltaTime);
     if (!EditorManager::isEditingMode() && !EditorManager::isPaused()) {
         m_luaSystem->update(*m_manager, deltaTime);
     }
-    //m_waterSystem->render(*m_manager);
-#ifdef _DEBUG
+
+    ToastSystem::getInstance().update(deltaTime);
     m_uiSystem->update();
-#endif
 
     //performance update
     LogSystemTimersEveryInterval(deltaTime, 15.0);
 
-#ifdef _DEBUG
+//#ifdef _DEBUG
     static bool wasEditingMode = true;
     bool isEditingNow = EditorManager::isEditingMode();
 
     wasEditingMode = isEditingNow;
-#endif
+//#endif
+    /*if (wasEditingMode && !isEditingNow) {
+        resumeBGM();
+    }
+    if (!wasEditingMode && isEditingNow) {
+        pauseBGM();
+    }*/
 }
 
 // ============================================================================
@@ -481,7 +533,7 @@ void CoreEngine::setGameScript(GameScript* script) {
     m_logicSystem->setGameScript(script);
     m_physicsSystem->setGameScript(script);
     m_collisionSystem->setGameScript(script);
-    m_logicSystem->setGameScript(script);
+	m_audioSystem->setGameScript(script);
 
     m_gameScript = script;
     /*if (m_luaSystem && m_gameScript)
@@ -499,4 +551,35 @@ void CoreEngine::loadInitialScene(const std::string& sceneName) {
     //use SceneManager so state is tracked correctly from the start
     SceneManager::getInstance().requestLevelLoad(sceneName);
     SceneManager::getInstance().update();
+
+    std::string fullPath = PathManager::Instance().getSourceScenePath() + sceneName;
+    m_manager->loadScene(fullPath);
+    m_manager->initializeSceneResources();
+    GUISystem::getInstance().triggerSceneLoad(*m_manager);
+    CachedGameObjects::Instance().refresh();
 }
+
+//void CoreEngine::startBGM() {
+//    if (m_bgmChannel) return;
+//    AudioChannel bgm;
+//    bgm.audioFile = m_bgmFilePath;
+//    bgm.loop = true;
+//    bgm.volume = 0.125f;
+//    m_bgmChannel = AudioHandler::getInstance().playBGMSound(&bgm);
+//    AudioHandler::getInstance().registerBGMChannel(m_bgmChannel);
+//}
+//
+//void CoreEngine::stopBGM() {
+//    if (m_bgmChannel) {
+//        m_bgmChannel->stop();
+//        m_bgmChannel = nullptr;
+//    }
+//}
+//
+//void CoreEngine::pauseBGM() {
+//    if (m_bgmChannel) m_bgmChannel->setPaused(true);
+//}
+//
+//void CoreEngine::resumeBGM() {
+//    if (m_bgmChannel) m_bgmChannel->setPaused(false);
+//}

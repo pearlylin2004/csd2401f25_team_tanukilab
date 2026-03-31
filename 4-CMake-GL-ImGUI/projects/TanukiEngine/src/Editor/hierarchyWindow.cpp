@@ -15,7 +15,7 @@ without the prior written consent of DigiPen Institute of
 Technology is prohibited.
 */
 /* End Header **************************************************************************/
-#ifdef _DEBUG
+//#ifdef _DEBUG
 #include "Editor/editorManager.h"
 #include "Systems.h"
 
@@ -457,4 +457,4 @@ void HierarchyWindow::createPrefabPopup(GameObjectManager& manager) {
         ImGui::EndPopup();
     }
 }
-#endif
+//#endif

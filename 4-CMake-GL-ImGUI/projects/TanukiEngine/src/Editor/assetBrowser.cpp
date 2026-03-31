@@ -15,7 +15,7 @@ without the prior written consent of DigiPen Institute of
 Technology is prohibited.
 */
 /* End Header **************************************************************************/
-#ifdef _DEBUG
+//#ifdef _DEBUG
 #include "Systems.h"
 #include "Editor/editorManager.h"
 
@@ -1033,4 +1033,4 @@ void AssetBrowser::deleteSubfolderPopup() {
     }
 }
 
-#endif
+//#endif

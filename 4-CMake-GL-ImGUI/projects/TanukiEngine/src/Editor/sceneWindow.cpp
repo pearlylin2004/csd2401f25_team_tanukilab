@@ -16,7 +16,7 @@ Technology is prohibited.
 */
 /* End Header **************************************************************************/
 
-#ifdef _DEBUG
+//#ifdef _DEBUG
 #include "Editor/editorManager.h"
 #include "Systems.h"
 
@@ -765,7 +765,16 @@ void SceneWindow::duplicateScenePopup(GameObjectManager& manager) {
 void SceneWindow::loadScenePopup(GameObjectManager& manager) {
     if (m_menuBarState.showLoadScenePopup) {
         m_menuBarState.showLoadScenePopup = false;
-        if (EditorManager::isEditingMode()) ImGui::OpenPopup("Confirm Load Scene"); // only load scene when not playing simulation
+        // not playing simulation
+        if (EditorManager::isEditingMode()) {
+            // got unsave changes
+            if (UndoRedoManager::Instance().canUndo()) {
+                ImGui::OpenPopup("Confirm Load Scene");
+            }
+            else {
+                loadScene(manager);
+            }
+        }
         else {
             DebugLog::addMessage("Playing simulation, cannot load scene.\n");
             DebugLog::addMessage("Playing simulation, cannot load scene.\n", DebugMode::PlaySimul);
@@ -852,14 +861,14 @@ void SceneWindow::objPicking() {
         m_objSelectionState.draggedObject = selected;
 
         // auto check aspect ratio if x == y == z
-        Transform* t = selected->getComponent<Transform>();
+        /*Transform* t = selected->getComponent<Transform>();
         if (t) {
             m_objSelectionState.aspectRatioLock = (t->scaleX == t->scaleY && t->scaleY == t->scaleZ);
         }
         else {
             m_objSelectionState.aspectRatioLock = false;
         }
-        m_objSelectionState.ratioSet = false;
+        m_objSelectionState.ratioSet = false;*/
 
         UndoRedoManager::Instance().beginTransformEdit(selected);
 
@@ -903,4 +912,4 @@ void SceneWindow::resetSelection() {
 
 	Editor::visualLogicState.targetObj = nullptr;
 }
-#endif
+//#endif

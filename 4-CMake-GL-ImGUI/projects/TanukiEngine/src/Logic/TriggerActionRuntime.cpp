@@ -17,6 +17,8 @@ Technology is prohibited.
 #include "GameObject.h"
 #include "Component.h"
 #include "Systems.h"
+#include "GUISystem.h"
+#include "GameState.h"
 #include <iostream>
 #include <cmath>
 
@@ -143,6 +145,9 @@ bool PositionTrigger::check(GameObject& obj) const {
 // ============================================================================
 
 void EnterDeadAction::execute(GameObject& obj) {
+    // Player is invulnerable during replay viewer
+    /*if (GUISystem::getInstance().getCurrentState() == GameState::REPLAY) return;*/
+
     if (StateMachine* sm = obj.getComponent<StateMachine>()) {
         sm->state = PlayerState::Dead;
         sm->stateTime = 0.0f;

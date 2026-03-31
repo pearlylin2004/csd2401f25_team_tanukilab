@@ -43,6 +43,162 @@ void GUISystem::init(GameObjectManager& manager, LuaSystem& luaSystem, VisualLog
 //update function to check for button clicking
 void GUISystem::update() {
 	ButtonSystem::getInstance().update(); //check for button clicking and handle actions
+
+
+    /* -------- Gamepad Menu Navigation -------- */
+    if (InputHandler::isGamepadConnected() && !m_buttons.empty()) {
+        // sort buttons top to bottom by Y position
+        std::vector<std::pair<ButtonAction, GameObject*>> sortedButtons(m_buttons.begin(), m_buttons.end());
+        std::sort(sortedButtons.begin(), sortedButtons.end(), [](auto& a, auto& b) {
+            Transform* ta = a.second->getComponent<Transform>();
+            Transform* tb = b.second->getComponent<Transform>();
+            if (!ta || !tb) return false;
+            return ta->y > tb->y; // higher Y go first
+            });
+
+        int btnCount = (int)sortedButtons.size();
+
+        // D-pad to cycle selection (-1 = nothing selected yet)
+        if (InputHandler::isGamepadButtonTriggered(GLFW_GAMEPAD_BUTTON_DPAD_DOWN)) {
+            if (m_selectedButtonIdx == -1)
+                m_selectedButtonIdx = 0; // first press goes to first button
+            else
+                m_selectedButtonIdx = (m_selectedButtonIdx + 1) % btnCount;
+        }
+        if (InputHandler::isGamepadButtonTriggered(GLFW_GAMEPAD_BUTTON_DPAD_UP)) {
+            if (m_selectedButtonIdx == -1)
+                m_selectedButtonIdx = 0; // first press goes to first button
+            else
+                m_selectedButtonIdx = (m_selectedButtonIdx - 1 + btnCount) % btnCount;
+        }
+
+        // update hover state for all buttons
+        if (m_selectedButtonIdx != -1) {
+            for (int i = 0; i < btnCount; ++i) {
+                GameObject* btnObj = sortedButtons[i].second;
+                Button* btnComp = btnObj->getComponent<Button>();
+                Render* render = btnObj->getComponent<Render>();
+                if (!btnComp) continue;
+
+                bool isSelected = (m_selectedButtonIdx != -1 && i == m_selectedButtonIdx);
+
+                // visual tint for gamepad selection
+                if (render) {
+                    if (isSelected)
+                        render->clr = glm::vec4(1.f, 1.f, 0.f, 1.f); // yellow tint
+                    else
+                        render->clr = glm::vec4(1.f, 1.f, 1.f, 1.f); // restore white
+                }
+
+                // trigger hover sound
+                if (isSelected && !btnComp->isHovered && !btnComp->onHoverChannel.empty()) {
+                    AudioComponent* audio = btnObj->getComponent<AudioComponent>();
+                    if (audio) {
+                        AudioChannel* ch = audio->getChannel(btnComp->onHoverChannel);
+                        if (ch) ch->isPendingPlay = true;
+                    }
+                }
+
+                // trigger hover exit sound
+                if (!isSelected && btnComp->isHovered && !btnComp->onHoverChannel.empty()) {
+                    AudioComponent* audio = btnObj->getComponent<AudioComponent>();
+                    if (audio) {
+                        AudioChannel* ch = audio->getChannel(btnComp->onHoverChannel);
+                        if (ch) ch->isPendingStop = true;
+                    }
+                }
+
+                btnComp->isHovered = isSelected;
+            }
+        }
+
+        // Cross button (X) to confirm
+        if (m_selectedButtonIdx != -1 && InputHandler::isGamepadButtonTriggered(GLFW_GAMEPAD_BUTTON_A)) {
+            GameObject* btnObj = sortedButtons[m_selectedButtonIdx].second;
+            Button* btnComp = btnObj->getComponent<Button>();
+            if (btnComp) {
+                // play click sound
+                if (!btnComp->onClickChannel.empty()) {
+                    AudioComponent* audio = btnObj->getComponent<AudioComponent>();
+                    if (audio) {
+                        AudioChannel* ch = audio->getChannel(btnComp->onClickChannel);
+                        if (ch) ch->isPendingPlay = true;
+                    }
+                }
+                // execute action
+                m_pendingAction = btnComp->actionName;
+            }
+        }
+    }
+}
+
+//creation of buttons
+void GUISystem::createButtons(/*GameObjectManager& manager*/) {
+    //clear previous references
+    removeButtons();
+    m_selectedButtonIdx = -1;
+
+    //get all game objects from manager
+    std::vector<GameObject*> allObjs;
+    g_manager->getAllGameObjects(allObjs);
+
+    if (allObjs.empty()) return; //check if its empty
+
+    //iterate through all objects to find buttons
+    for (GameObject* obj : allObjs) {
+        if (!obj) continue; //safety check
+        if (!obj->hasComponent<Button>() || !obj->hasComponent<Transform>()) continue; //check if it has button and transform component
+
+        Button* btnComp = obj->getComponent<Button>(); //get button component
+        m_buttons[btnComp->actionName] = obj; //store button in map with action name as key
+
+        if (Render* render = obj->getComponent<Render>())
+            render->clr = glm::vec4(1.f, 1.f, 1.f, 1.f);
+
+        btnComp->isHovered = false;
+
+        if (VisualLC* vlc = obj->getComponent<VisualLC>())
+            vlc->wasHoveredLastFrame = false;
+    }
+
+    if (m_buttons.empty()) {
+        std::cout << "[GUI] No buttons found in the current scene." << std::endl;
+    }
+    else {
+        createButtonActions(); //create button actions
+        std::cout << "[GUI] Menu buttons created successfully" << std::endl;
+    }
+
+    // Safe to update volume display here, after all buttons/actions are set up
+    if (m_currentState == GameState::AUDIO) {
+        updateVolumeDisplay();
+    }
+}
+
+void GUISystem::triggerSceneLoad(GameObjectManager& manager) {
+    if (m_onSceneLoadCallback) m_onSceneLoadCallback(manager);
+}
+
+void GUISystem::resetAndInitVisualLogic(GameObjectManager& manager) {
+    if (g_visualLogicSystem) {
+        VisualLC::globalFloatVar.clear();
+        g_visualLogicSystem->initAll(manager);
+    }
+}
+
+//removing of buttons 
+void GUISystem::removeButtons() {
+    m_buttons.clear(); //clear map
+}
+
+//to update state
+void GUISystem::changeState(GameState newState, const std::string& sceneName) {
+    m_previousState = m_currentState;  // store previous
+    m_currentState = newState;
+
+    if (!sceneName.empty()) {
+        loadScreen(*g_manager, sceneName);
+    }
 }
 
 void GUISystem::startGame() {
@@ -50,7 +206,7 @@ void GUISystem::startGame() {
     level = 1;
 
     // Delegate to SceneManager
-    SceneManager::getInstance().requestLevelLoad("level01.json");
+    SceneManager::getInstance().requestLevelLoad("Game_Level_1.json");
 
     // Lua script loading still lives here — runs after scene is loaded via callback
     SceneManager::getInstance().setOnSceneLoadCallback([this](GameObjectManager& mgr) {

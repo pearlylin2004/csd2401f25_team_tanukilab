@@ -27,11 +27,12 @@ function weapon.Update(obj, dt)
 
     -- check owner facing direction
     local ownerFacingLeft = false
+    local parent = nil
     local parentName = getParentName(obj)
     if parentName ~= "" then
-        local owner = getGameObject(parentName)
-        if owner and hasTransform(owner) then
-            ownerFacingLeft = getFlipX(owner)
+        parent = getGameObject(parentName)
+        if parent and hasTransform(parent) then
+            ownerFacingLeft = getFlipX(parent)
         end
     end
 
@@ -44,40 +45,45 @@ function weapon.Update(obj, dt)
     end
 
     -- update world position based on parent
-    if parentName ~= "" then
-        local owner = getGameObject(parentName)
-        if owner and hasTransform(owner) then
-            local ox, oy = getPosition(owner)
-            local parentRot = getRotation(owner)
-            local rad = math.rad(parentRot)
-            local cosA = math.cos(rad)
-            local sinA = math.sin(rad)
-            local lox = getLocalOffsetX(obj)
-            local loy = getLocalOffsetY(obj)
-            local rotX = lox * cosA - loy * sinA
-            local rotY = lox * sinA + loy * cosA
-            setPosition(obj, ox + rotX, oy + rotY)
-        end
+    if parent and hasTransform(parent) then
+        local ox, oy = getPosition(parent)
+        local parentRot = getRotation(parent)
+        local rad = math.rad(parentRot)
+        local cosA = math.cos(rad)
+        local sinA = math.sin(rad)
+        local lox = getLocalOffsetX(obj)
+        local loy = getLocalOffsetY(obj)
+        local rotX = lox * cosA - loy * sinA
+        local rotY = lox * sinA + loy * cosA
+        setPosition(obj, ox + rotX, oy + rotY)
     end
 
     -- aim at mouse
     local wx, wy = getPosition(obj)
-    local mx = isEditorOpen() and getEditorMouseWorldX() or getMouseWorldX()
-    local my = isEditorOpen() and getEditorMouseWorldY() or getMouseWorldY()
-    local dx = mx - wx
-    local dy = my - wy
+    local rightStickUsed = isGamepadConnected() and
+        (math.abs(getGamepadAxisRX()) > 0.15 or math.abs(getGamepadAxisRY()) > 0.15)
+    local shouldAim = not isEditorOpen() or isSceneHovered() or rightStickUsed
 
-    local aimRad
-    if ownerFacingLeft then
-        aimRad = math.atan(-dy, -dx)
-    else
-        aimRad = math.atan(dy, dx)
+    if shouldAim then
+        local aimOrigin = parent or obj
+        local mx = isEditorOpen() and getEditorMouseWorldX(aimOrigin) or getMouseWorldX(aimOrigin)
+        local my = isEditorOpen() and getEditorMouseWorldY(aimOrigin) or getMouseWorldY(aimOrigin)
+        local dx = mx - wx
+        local dy = my - wy
+        local aimRad
+
+        if ownerFacingLeft then
+            aimRad = math.atan(-dy, -dx)
+        else
+            aimRad = math.atan(dy, dx)
+        end
+
+        local aimDeg = math.deg(aimRad)
+        setRotation(obj, aimDeg)
+        setWeaponCurrentAngle(obj, aimDeg)
     end
-
     setFlipX(obj, ownerFacingLeft)
-    local aimDeg = math.deg(aimRad)
-    setRotation(obj, aimDeg)
-    setWeaponCurrentAngle(obj, aimDeg)
+
 end
 
 return weapon

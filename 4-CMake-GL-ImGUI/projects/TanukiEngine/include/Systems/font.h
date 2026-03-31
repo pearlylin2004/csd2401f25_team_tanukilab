@@ -25,6 +25,15 @@ Technology is prohibited.
 #include "fontTypes.h"
 #include "ResourceManager.h"
 
+/*!
+ * \struct Font
+ * \brief Handles font loading, glyph management, and rendering meshes.
+ *
+ * Provides static utilities for initializing FreeType, storing font faces,
+ * creating glyph meshes, and managing font shaders.
+ * Each character (FontCharacter) can be converted into a mesh for rendering.
+ * Font resources are shared across all font instances.
+ */
 struct Font {
     struct FontMdl {
         GLuint vao, vbo;
@@ -46,6 +55,12 @@ struct Font {
 
     static std::vector<FT_Face> face;
     static FT_Library ft;
+
+    /*!
+     * \brief Frees all font resources.
+     *
+     * Deletes loaded font faces, meshes, and resets related OpenGL resources.
+     */
     static void freeFonts();
 
     /*static std::map<char, Character> Characters;
@@ -56,7 +71,21 @@ struct Font {
     static void uploadFontTex(size_t fontElement);
     static std::vector<std::string> fonts;*/
 
-
+    /*!
+     * \brief Initializes the font system.
+     *
+     * Sets up FreeType, loads default fonts, and prepares OpenGL resources.
+     *
+     * \return 0 on success, non-zero on failure.
+     */
     static int init();
+
+    /*!
+     * \brief Creates a mesh structure for a font glyph.
+     *
+     * Initializes a VAO and VBO for a single character.
+     *
+     * \return FontMdl containing OpenGL IDs for rendering.
+     */
     static FontMdl fontMeshInit();
 };
