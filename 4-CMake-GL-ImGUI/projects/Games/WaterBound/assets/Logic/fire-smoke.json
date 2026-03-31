@@ -237,15 +237,15 @@
       "implementation": "Apply Force On Collided",
       "type": 1,
       "position": [
-        520.9999389648438,
-        370.0000305175781
+        521.0,
+        370.0
       ],
       "hasInput": true,
       "hasOutput": true,
       "hasTrueOutput": false,
       "hasFalseOutput": false,
       "parameters": {
-        "forceY": "15.000000"
+        "forceY": "10.000000"
       }
     },
     {
