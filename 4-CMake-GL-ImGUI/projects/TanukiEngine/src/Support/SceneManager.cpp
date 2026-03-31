@@ -85,7 +85,8 @@ GameState SceneManager::sceneToState(const std::string& sceneName) const {
 
     // Any level file maps to PLAYING
     if (sceneName.find("level") != std::string::npos ||
-        sceneName.find("Level") != std::string::npos)
+        sceneName.find("Level") != std::string::npos ||
+        sceneName.find("Game_Level_") != std::string::npos)
         return GameState::PLAYING;
 
     return GameState::MENU; // fallback
