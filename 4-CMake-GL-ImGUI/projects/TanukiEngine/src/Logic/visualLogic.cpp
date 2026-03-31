@@ -685,6 +685,19 @@ void VisualLogicSystem::executeActionNode(GameObject* obj, VisualLC* logic, Logi
 
 		//std::cout << "Put force on collided object to (" << collidedPhysic->dynamics.velocity.x << ", " << collidedPhysic->dynamics.velocity.y << ")\n";
 	}
+	else if (node.imp == NodeImplementation::LIFT_COLLIDED) {
+		GameObject* collidedObj = logic->lastCollidedObj;
+		if (!collidedObj) return;
+		Physics* p = collidedObj->getComponent<Physics>();
+		if (!p) return;
+
+		float force = node.parameters.count("liftForce") ? std::stof(node.parameters["liftForce"]) : 20.f;
+		float duration = node.parameters.count("liftDuration") ? std::stof(node.parameters["liftDuration"]) : 0.5f;
+
+		p->liftForce = force;
+		p->liftDuration = duration;
+		p->onGround = false;  // kick off ground so physics takes over
+		}
 	else if (node.imp == NodeImplementation::SET_GLOBAL_FLOAT) {
 		std::string varName = node.parameters.count("variable") ?
 			node.parameters["variable"] : "var";

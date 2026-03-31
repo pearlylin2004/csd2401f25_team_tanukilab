@@ -333,6 +333,7 @@ namespace JsonIO {
 		if (str == "Reset Timer") return NodeImplementation::RESET_TIMER;
         if (str == "Set Texture") return NodeImplementation::SET_TEXTURE;
 		if (str == "Set Position On Collided") return NodeImplementation::SET_POSITION_ON_COLLIDED;
+        if (str == "Lift Collided") return NodeImplementation::LIFT_COLLIDED;
 		if (str == "Set State On Collided") return NodeImplementation::SET_STATE_ON_COLLIDED;
 		if (str == "Apply Force On Collided") return NodeImplementation::APPLY_FORCE_ON_COLLIDED;
         if (str == "Set Global Float") return NodeImplementation::SET_GLOBAL_FLOAT;
@@ -401,6 +402,7 @@ namespace JsonIO {
             case NodeImplementation::SET_POSITION_ON_COLLIDED: return "Set Position On Collided";
 			case NodeImplementation::SET_STATE_ON_COLLIDED: return "Set State On Collided";
 			case NodeImplementation::APPLY_FORCE_ON_COLLIDED: return "Apply Force On Collided";
+			case NodeImplementation::LIFT_COLLIDED: return "Lift Collided";
 			case NodeImplementation::SET_GLOBAL_FLOAT: return "Set Global Float";
 			case NodeImplementation::MODIFY_GLOBAL_FLOAT: return "Modify Global Float";
 			case NodeImplementation::TRIGGER_BULLET_REFILL_EVENT: return "Trigger Bullet Refill Event";

@@ -229,6 +229,8 @@ public:
 	static int Lua_getAccelY(lua_State* L);
 	/*! \brief Gets the buoyancy value of the object. */
 	static int Lua_getBuoyancy(lua_State* L);
+	/*! \brief Gets the lift duration of the object. */
+	static int Lua_getLiftDuration(lua_State* L);
 
 
 	/* -------- Physics Setters -------- */

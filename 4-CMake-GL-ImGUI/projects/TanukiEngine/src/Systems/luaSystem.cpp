@@ -72,6 +72,7 @@ void LuaSystem::init(GameObjectManager& manager) {
     lua_register(L, "getAccelX", Lua_getAccelX);
     lua_register(L, "getAccelY", Lua_getAccelY);
     lua_register(L, "getBuoyancy", Lua_getBuoyancy);
+    lua_register(L, "getLiftDuration", Lua_getLiftDuration);
 
 
     // physics setters
@@ -672,6 +673,13 @@ int LuaSystem::Lua_getBuoyancy(lua_State* L) {
 
     lua_pushboolean(L, obj->getComponent<Physics>()->buoyancy ? 1 : 0);
 
+    return 1;
+}
+
+int LuaSystem::Lua_getLiftDuration(lua_State* L) {
+    GameObject* obj = static_cast<GameObject*>(lua_touserdata(L, 1));
+    if (!obj || !obj->hasComponent<Physics>()) { lua_pushnumber(L, 0); return 1; }
+    lua_pushnumber(L, obj->getComponent<Physics>()->liftDuration);
     return 1;
 }
 

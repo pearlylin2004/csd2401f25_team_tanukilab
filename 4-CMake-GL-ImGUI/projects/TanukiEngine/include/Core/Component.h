@@ -282,6 +282,10 @@ public:
     float ledgeTargetY = 0.f;
     bool ledgeClimb = false;
 
+    // lift effect (runtime)
+    float liftForce = 0.f;
+    float liftDuration = 0.f;
+
     //water bullet
     bool alive = false;
     float lifeTimer = 0.0f;
@@ -847,6 +851,7 @@ enum class NodeImplementation {
 	SET_POSITION_ON_COLLIDED, // might not work on those object that has input
     SET_STATE_ON_COLLIDED,
     APPLY_FORCE_ON_COLLIDED,
+    LIFT_COLLIDED,
     SET_GLOBAL_FLOAT,
     MODIFY_GLOBAL_FLOAT,
     TRIGGER_BULLET_REFILL_EVENT, // whenever bullet is refilled, add this node

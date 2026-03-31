@@ -1172,6 +1172,20 @@ void VisualLogicEditor::renderNodeProperties() {
 				node.parameters["forceY"] = std::to_string(forceY);
 			}
 		}
+		else if (node.imp == NodeImplementation::LIFT_COLLIDED) {
+
+			ImGui::Text("Lift Object Collided:");
+
+			float liftForce = node.parameters.count("liftForce") ? std::stof(node.parameters["liftForce"]) : 0.f;
+			float liftDuration = node.parameters.count("liftDuration") ? std::stof(node.parameters["liftDuration"]) : 0.f;
+
+			if (ImGui::DragFloat("Lift Force", &liftForce, 0.1f)) {
+				node.parameters["liftForce"] = std::to_string(liftForce);
+			}
+			if (ImGui::DragFloat("Lift Duration", &liftDuration, 0.1f)) {
+				node.parameters["liftDuration"] = std::to_string(liftDuration);
+			}
+			}
 		else if (node.imp == NodeImplementation::SET_GLOBAL_FLOAT) {
 			ImGui::Text("Set Global Float Variable");
 
