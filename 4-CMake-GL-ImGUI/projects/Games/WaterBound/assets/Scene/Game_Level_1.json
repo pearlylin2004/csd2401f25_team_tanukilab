@@ -154,7 +154,7 @@
           "colliderRot": 0.0,
           "colliderType": "square",
           "collisionRes": "StopWhenCollide",
-          "collisionTag": "default",
+          "collisionTag": "endgoal",
           "bounciness": 0.0,
           "friction": 0.0,
           "colliderType": "square"

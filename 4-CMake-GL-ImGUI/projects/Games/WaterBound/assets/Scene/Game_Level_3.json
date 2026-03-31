@@ -1835,13 +1835,6 @@
         },
         "VisualLC": {
           "filename": "endgoal03.json"
-        },
-        "LuaScript": {
-          "scripts": [{
-            "filename": "./assets/scripting/endgoal.lua",
-            "scriptName": "endgoal"
-            }
-          ]
         }
       }
     },
