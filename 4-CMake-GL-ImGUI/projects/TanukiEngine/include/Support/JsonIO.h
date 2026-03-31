@@ -62,19 +62,93 @@ namespace Paths {
 
 /*!
  * \namespace JsonIO
- * \brief Collection of JSON reading/writing helpers using RapidJSON.
+ * \brief Utilities for JSON reading, writing, conversion, and component serialization.
  *
- * All JSON parsing, serialization and data extraction utilities live here.
- * This keeps GameObjectManager and engine systems clean and independent of
- * RapidJSON internals.
+ * This namespace centralizes all JSON-related operations in the engine, keeping
+ * core systems independent of RapidJSON internals. It provides:
+ *
+ * 1. **Path Helpers**
+ *    - Compute source and runtime paths for scenes and project directories.
+ *      Functions: `runtimeScenePath`, `sourceScenePath`, `projectSourceRoot`.
+ *
+ * 2. **Enum/String Conversion Helpers**
+ *    - Convert enums to strings and back for serialization and editor display.
+ *      Functions: `ShapeToStr`, `StrToShape`, `CollisionResponseModeToStr`,
+ *                 `StrToCollisionResponseMode`, `ButtonActionToStr`,
+ *                 `StrToButtonAction`, `parsePlayerState`,
+ *                 `stringToNodeImpl`, `nodeImplToString`,
+ *                 `stringToGLFWKey`.
+ *
+ * 3. **JSON File I/O Helpers**
+ *    - Read and write JSON documents safely, sync runtime scenes, perform
+ *      atomic file moves, and access JSON values.
+ *      Functions: `ReadFileToDocument`, `WriteDocumentToFile`, `AtomicMove`,
+ *                 `syncSceneToRuntime`, `GetObj`, `GetString`, `GetBool`,
+ *                 `GetInt`, `GetFloat`, `GetIntOr`, `GetFloatOr`, `GetBoolOr`.
+ *
+ * 4. **Array and Vector Helpers**
+ *    - Read/write fixed-size arrays and glm::vectors to/from JSON.
+ *      Functions: `GetArray2f`, `GetArray3f`, `GetArray4f`,
+ *                 `PutArray2f`, `PutArray3f`, `PutArray4f`,
+ *                 `ReadVec2/3/4`, `WriteVec2/3/4`.
+ *
+ * 5. **Color Helpers**
+ *    - Read/write colors as either float arrays or glm::vec4 structures.
+ *      Functions: `ReadColor`, `WriteColor`.
+ *
+ * 6. **Collision Tag Helpers**
+ *    - Load and save global collision tags used for physics and gameplay.
+ *      Functions: `LoadCollisionTags`, `SaveCollisionTags`.
+ *
+ * 7. **Component Serialization/Deserialization**
+ *    - Convert `GameObject` components to JSON strings and back, enabling
+ *      undo/redo functionality, editor persistence, and runtime loading.
+ *    - Each component type has a paired serialize/deserialize function:
+ *        - Transform: `serializeTransform` / `deserializeTransform`
+ *        - Render: `serializeRender` / `deserializeRender`
+ *        - Particle: `serializeParticle` / `deserializeParticle`
+ *        - Physics: `serializePhysics` / `deserializePhysics`
+ *        - Collision: `serializeCollision` / `deserializeCollision`
+ *        - Input: `serializeInput` / `deserializeInput`
+ *        - Font: `serializeFont` / `deserializeFont`
+ *        - Audio: `serializeAudio` / `deserializeAudio`
+ *        - Animation: `serializeAnimation` / `deserializeAnimation`
+ *        - StateMachine: `serializeStateMachine` / `deserializeStateMachine`
+ *        - TileMap: `serializeTileMap` / `deserializeTileMap`
+ *        - LuaScript: `serializeLuaScript` / `deserializeLuaScript`
+ *        - Visual Logic Controller: `serializeVisualLC` / `deserializeVisualLC`
+ *        - Camera: `serializeCamera` / `deserializeCamera`
+ *        - Weapon: `serializeWeapon` / `deserializeWeapon`
+ *        - WaterBody: `serializeWaterBody` / `deserializeWaterBody`
+ *        - Button: `serializeButton` / `deserializeButton`
+ *        - Video: `serializeVideo` / `deserializeVideo`
+ *    - Function: `serializeGameObj` / `deserializeGameObj` handle full
+ *      `GameObject` serialization including all its components.
+ *
+ * 8. **Visual Logic Helpers**
+ *    - Save/load node-based visual logic graphs for editor tools.
+ *      Functions: `saveVisualLogic`, `loadVisualLogic`.
+ *
+ * 9. **Layer Serialization Helpers**
+ *    - Serialize/deserialize layer references for objects in a scene.
+ *      Functions: `SerializeLayerRef`, `DeserializeLayerRef`.
+ *
+ * Overall, `JsonIO` provides a **consistent interface** for converting
+ * engine objects and data to JSON and back, ensuring safe file operations,
+ * editor persistence, and runtime scene management.
  */
 namespace JsonIO {
 
-	// ---- Path helpers ----
+	// -----------------------
+	// Path helpers
+	// -----------------------
 	std::string runtimeScenePath(const std::string& name);
 	std::string sourceScenePath(const std::string& name);
 	std::string projectSourceRoot();
 
+	// -----------------------
+	// Enum/String conversions
+	// -----------------------
 	// ---- Shape string helpers ----
 	const char* ShapeToStr(shape s);
 	shape StrToShape(const std::string& s);
@@ -97,26 +171,27 @@ namespace JsonIO {
 	// ---- GLFW key helpers ----
 	int stringToGLFWKey(const std::string& keyStr);
 
-	// ---- JSON file IO helpers ----
+
+	// -----------------------
+	// JSON file I/O helpers
+	// -----------------------
 	bool syncSceneToRuntime(const std::string& name);
 	bool AtomicMove(const std::string& tmp, const std::string& dst, std::string* err = nullptr);
 	bool ReadFileToDocument(const std::string& path, rapidjson::Document& doc, std::string* err = nullptr);
 	bool WriteDocumentToFile(const std::string& path, rapidjson::Document& doc, bool pretty = true, std::string* err = nullptr);
 
 	const rapidjson::Value* GetObj(const rapidjson::Value& parent, const char* key);
-
 	bool GetString(const rapidjson::Value& obj, const char* key, std::string& out);
-
 	bool GetBool(const rapidjson::Value& obj, const char* key, bool& out);
-
 	bool GetInt(const rapidjson::Value& obj, const char* key, int& out);
 	bool GetFloat(const rapidjson::Value& obj, const char* key, float& out);
-
 	inline int   GetIntOr(const rapidjson::Value& obj, const char* key, int   def) { int v; return GetInt(obj, key, v) ? v : def; }
 	inline float GetFloatOr(const rapidjson::Value& obj, const char* key, float def) { float v; return GetFloat(obj, key, v) ? v : def; }
 	inline bool  GetBoolOr(const rapidjson::Value& obj, const char* key, bool  def) { bool v; return GetBool(obj, key, v) ? v : def; }
 
-	// ---------- Fixed-size array helpers (3 components) ----------
+	// -----------------------
+	// Array helpers (fixed-size and glm vectors)
+	// -----------------------
 	bool GetArray2f(const rapidjson::Value& obj, const char* key, std::array<float, 2>& out);
 	bool GetArray3f(const rapidjson::Value& obj, const char* key, std::array<float, 3>& out);
 	bool GetArray4f(const rapidjson::Value& obj, const char* key, std::array<float, 4>& out);
@@ -139,8 +214,9 @@ namespace JsonIO {
 	void WriteVec3(rapidjson::Value& obj, const char* key, float x, float y, float z, rapidjson::Document::AllocatorType& a);
 	void WriteVec4(rapidjson::Value& obj, const char* key, float x, float y, float z, float w, rapidjson::Document::AllocatorType& a);
 
-	// ---- RGBA (Color) helpers ----
-
+	// -----------------------
+	// Color helpers
+	// -----------------------
 	// Read a 4-component float color array [r,g,b,a] from JSON
 	bool ReadColor(const rapidjson::Value& obj,
 		const char* key,
@@ -163,13 +239,17 @@ namespace JsonIO {
 		const glm::vec4& v,
 		rapidjson::Document::AllocatorType& alloc);
 
-	// ---- Global Registry collision tag helpers ----
-	bool LoadCollisionTags(const std::string& filepath, std::vector<std::string>& outTags, std::string* err = nullptr);
 
+	// -----------------------
+	// Collision tag helpers
+	// -----------------------
+	bool LoadCollisionTags(const std::string& filepath, std::vector<std::string>& outTags, std::string* err = nullptr);
 	bool SaveCollisionTags(const std::string& filepath, const std::vector<std::string>& tags, std::string* err = nullptr);
 
 	// ---- for undo/redo in editor ----
-	// ---- per-component de/serialize ----
+	// -----------------------
+	// Component-level serialization for GameObjects
+	// -----------------------
 	std::string serializeTransform(GameObject* obj);
 	void deserializeTransform(GameObject* obj, const std::string& json);
 
@@ -228,18 +308,17 @@ namespace JsonIO {
 	std::string serializeGameObj(GameObject* obj);
 	GameObject* deserializeGameObj(GameObjectManager& manager, const std::string& jsonStr);
 
-	// ---- visual logic in editor ----
+	// -----------------------
+	// Visual logic (editor) helpers
+	// -----------------------
 	bool saveVisualLogic(const std::string& filepath, const std::vector<LogicNode>& nodes, const std::vector<LogicConnection>& connections, std::string* err = nullptr);
 	bool loadVisualLogic(const std::string& filepath, std::vector<LogicNode>& nodes, std::vector<LogicConnection>& connections, std::string* err = nullptr);
 
 	// ---- END ----
 
-	/* ------ moved to components.h ------ */
-	// for the indexing in animation vector
-	//inline std::vector<std::string> stateNames = { "Idle", "Walking", "Jumping", "Falling", "Shooting" };
-	/* ------- END ------- */
-
-	// ---- Layer serialization helpers ----
+	// -----------------------
+	// Layer serialization helpers
+	// -----------------------
 	void SerializeLayerRef(rapidjson::Value& parent, int layerID, 
 	                       const LayerManager& lm, 
 	                       rapidjson::Document::AllocatorType& a);

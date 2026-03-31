@@ -5,9 +5,31 @@
 			- 100%
 \par		cheeqing.tan@digipen.edu
 \date       November, 10th, 2025
-\brief      Useful structs for the the editor, e.g. selection of objects, width and height
-			of a viewport, etc. Also there is a magic vector to allow adding of components
-			in the editor.
+\brief      Central namespace defining the editor's runtime state, UI state, and component registry.
+ *
+ * This file contains structures and variables that track the state of the editor, including:
+ * - Menu bar popups and commands (`MenuBarState`)
+ * - Current object selection and prefab handling (`ObjSelectionState`)
+ * - Shape input and control states (`ShapeControlState`)
+ * - Scene viewport information (`SceneWindowState`)
+ * - Asset management and asset browser state (`Asset`, `AssetBrowserState`)
+ * - Current scene management (`SceneState`)
+ * - Lua script state for scripting support (`ScriptState`)
+ * - Popups for file validation or messages (`PopupState`)
+ * - Gizmo operation state for object transformation (`GizmoState`)
+ * - Visual logic editor nodes, connections, and editor UI (`VisualLogicState`, `VLC` constants)
+ * - Node definitions for the visual logic system (`NodeDef`, `allNodes`)
+ * - Component registry for runtime component management (`ComponentEntry`, `componentRegistry`)
+ *
+ * The namespace also includes helper variables and functions:
+ * - `hasCam` indicates whether a camera component currently exists in the scene
+ * - `findEntry()` retrieves a `ComponentEntry` from the registry by name
+ *
+ * @note Many structs include temporary UI buffers for renaming, creating, or deleting objects/folders.
+ * @note Designed for use in an ImGui-based editor environment with runtime component addition/removal.
+ * @note Components registered here include Render, Collision, Physics, Input, State Machine, Font,
+ *       Audio, Tile Map, Lua Script, Particle, Visual Logic, Animation, Water Body, Weapon, Button,
+ *       Camera, and Video.
 
 Copyright (C) 2025 DigiPen Institute of Technology.
 Reproduction or disclosure of this file or its contents

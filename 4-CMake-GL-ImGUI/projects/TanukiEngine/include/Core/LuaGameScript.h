@@ -5,7 +5,10 @@
             - 100% of the file
 \par        cheeqing.tan@digipen.edu
 \date       March, 20th, 2026
-\brief      
+\brief      This class acts as a bridge between the C++ game engine and the Lua 
+            scripting system (LuaSystem). It allows game objects to have dynamic
+            behavior defined in Lua scripts while integrating seamlessly with engine 
+            events such as scene load, updates, input, collisions and audio management.
 
 Copyright (C) 2026 DigiPen Institute of Technology.
 Reproduction or disclosure of this file or its contents
@@ -20,13 +23,18 @@ Technology is prohibited.
 
 class LuaGameScript : public GameScript {
 public:
+    // Constructor that stores a reference to the LuaSystem instance
     LuaGameScript(LuaSystem& lua) : m_lua(lua) {}
 
+    // Called when the scene is loaded
+    // - Executes the global on-load Lua script for the scene
+    // - Initializes all Lua scripts attached to objects
     void onSceneLoad(GameObjectManager& manager) override {
         m_lua.callSceneLoad(manager, manager.getOnLoadScript());
         m_lua.initializeScripts(manager);
     }
 
+    // Updates Lua scripts for a single object during normal game update
     void update(GameObject& obj, float dt) override {
         if (obj.hasComponent<Input>()) return; // handled by onPlayerInput
         if (!obj.hasComponent<LuaScript>()) return;
@@ -37,6 +45,8 @@ public:
                 m_lua.updateObjectScript(entry.scriptName, &obj, dt);
     }
 
+    // Updates Lua scripts for a single object in environment-only updates
+    // (e.g., non-player-driven physics or AI updates)
     void updateEnvironment(GameObject& obj, float dt) override {
         if (obj.hasComponent<Input>()) return;
         if (!obj.hasComponent<LuaScript>()) return;
@@ -47,6 +57,9 @@ public:
                 m_lua.updateObjectScript(entry.scriptName, &obj, dt);
     }
 
+    // Handles updates related to player input
+    // - Reloads scripts if they have changed
+    // - Updates the Lua scripts with the latest input and delta time
     void onPlayerInput(GameObject& obj, GameObjectManager& manager, MessageBus& messageBus, float dt) override {
         (void)manager; (void)messageBus;
         if (!obj.hasComponent<LuaScript>()) return;
@@ -61,10 +74,15 @@ public:
         }
     }
 
+    // Updates all Lua scripts for all objects managed by the manager
     void updateAll(GameObjectManager& manager, float dt) override {
         m_lua.update(manager, dt);
     }
 
+    // Handles collision callbacks between two objects
+    // - Calls the global Lua function "onCollision"
+    // - Passes object pointers as lightuserdata
+    // - Returns the Lua boolean result
     bool onCollision(GameObject* a, GameObject* b, CollisionInfo& info, GameObjectManager& manager) override {
         (void)info; (void)manager;
         lua_State* L = m_lua.getLuaState();
@@ -80,6 +98,9 @@ public:
         return result;
     }
 
+    // Handles collision response between two objects
+    // - Calls the global Lua function "onCollisionResponse"
+    // - Passes collision info, tags, and state to Lua
     bool onCollisionResponse(GameObject* obj, CollisionInfo* col, CollisionInfo& info, bool isStatic, CollisionInfo* otherCol) override {
         if (!col || !otherCol) return false;
         lua_State* L = m_lua.getLuaState();
@@ -100,6 +121,9 @@ public:
         return result;
     }
 
+    // Returns the position of the audio listener for 3D audio spatialization
+    // - Calls global Lua function "getAudioListenerPos"
+    // - Returns {0,0} if Lua function is missing or fails
     Vector2D getAudioListenerPos(GameObjectManager& manager) override {
         (void)manager;
         lua_State* L = m_lua.getLuaState();

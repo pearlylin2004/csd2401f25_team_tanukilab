@@ -7,8 +7,8 @@
 \date       January, 24th, 2026
 \brief      Manages global collision tags, including validation, add/remove,
 			and persistence through JSON load/save. Implemented as a singleton
-			to provide centralized access across the engine. 
-			Will implement more global settings in the future.
+			to provide centralized access across the game.
+			Customize the collsion tags by editing global_settings.json
 
 Copyright (C) 2026 DigiPen Institute of Technology.
 Reproduction or disclosure of this file or its contents
@@ -24,19 +24,28 @@ Technology is prohibited.
 
 class GlobalRegistry {
 public:
+	// Access the singleton instance of GlobalRegistry
 	static GlobalRegistry& Instance();
 
+	// Initialize the registry (load defaults or settings from file)
 	void init();
 	void shutdown();
 
-	// collision tags
+	// Get the list of all registered collision tags
 	const std::vector<std::string>& getCollisionTags() const;
+	// Check if a collision tag is valid / exists
 	bool isValidCollisionTag(const std::string& tag) const;
+	// Add a new collision tag if it does not already exist
+	// Returns true if added successfully
 	bool addCollisionTag(const std::string& tag);
 
+	// Load collision tags from persistent storage
 	bool loadCollisionTag();
+
+	// Save collision tags to persistent storage
 	bool saveCollisionTag();
 
+	// Set the base path for storing global settings
 	void setBasePath(const std::string& path) { m_basePath = path; }
 
 
@@ -44,6 +53,7 @@ private:
 	GlobalRegistry() = default;
 	~GlobalRegistry() = default;
 
+	// Delete copy constructor and assignment to enforce singleton pattern
 	GlobalRegistry(const GlobalRegistry&) = delete;
 	GlobalRegistry& operator=(const GlobalRegistry&) = delete;
 

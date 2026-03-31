@@ -3,7 +3,9 @@
 \author     Tan Chee Qing, cheeqing.tan, 2401486
 \par        cheeqing.tan@digipen.edu
 \date       March, 26rd, 2026
-\brief      Path manager to provide helper function
+\brief      Path manager to provide helper function to get paths to asset folders. 
+            The source path is   set by the editor launcher when a project is selected
+            and all other paths are derived from it.
 
 Copyright (C) 2026 DigiPen Institute of Technology.
 Reproduction or disclosure of this file or its contents
@@ -13,6 +15,17 @@ Technology is prohibited.
 #pragma once
 #include <string>
 
+/*!
+ * \class PathManager
+ * \brief Singleton that manages file system paths for project assets.
+ *
+ * Provides a central place to set the project's root source path and
+ * retrieve paths to specific asset directories such as Scene, Prefab,
+ * Scripts, Audio, Logic, Texture, and Video.
+ *
+ * All path getters automatically append the relevant subdirectory to
+ * the source root. This ensures consistent file locations across the engine.
+ */
 class PathManager {
 public:
     static PathManager& Instance() {
