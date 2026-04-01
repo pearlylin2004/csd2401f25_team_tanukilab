@@ -168,8 +168,8 @@
           "filename": "PlayButton.json"
         },
         "Button": {
-          "action": "load_scene",
-          "scenePath": "Game_Level_1.json",
+          "action": "none",
+          "scenePath": "",
           "onClickChannel": "on_click",
           "onHoverChannel": "button_hover"
         }
