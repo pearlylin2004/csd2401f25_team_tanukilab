@@ -2,18 +2,20 @@ local logo1 = nil
 local logo2 = nil
 local timer = 0.0
 local phase = 0
-
 local FADE_IN  = 2.0
 local HOLD     = 2.5
 local FADE_OUT = 2.0
-
 local SplashController = {}
-
 function SplashController.Update(obj, dt)
-    if isEditingMode() then return end
+    if isEditingMode() then
+        logo1 = nil
+        return
+    end
 
-    -- lazy init on first frame
+    -- lazy init on first frame, also resets stale state on re-simulation
     if logo1 == nil then
+        timer = 0.0
+        phase = 0
         logo1 = getGameObject("digipen")
         logo2 = getGameObject("team")
         setRenderAlpha(logo1, 0.0)
@@ -26,6 +28,7 @@ function SplashController.Update(obj, dt)
             setRenderAlpha(logo1, 0.0)
             setRenderAlpha(logo2, 0.0)
             phase = 6
+            logo1 = nil  -- force reset next simulation
             loadLevel("menu_scene.json")
             return
         end
@@ -63,9 +66,11 @@ function SplashController.Update(obj, dt)
         if timer >= FADE_OUT then
             setRenderAlpha(logo2, 0.0)
             phase = 6
+            logo1 = nil  -- force reset next simulation
             loadLevel("menu_scene.json")
         end
     end
+
 end
 
 return SplashController

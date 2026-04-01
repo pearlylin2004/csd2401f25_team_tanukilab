@@ -122,6 +122,34 @@
           ]
         }
       }
+    },
+    {
+      "name": "Rectangle_3",
+      "components": {
+        "Transform": {
+          "pos": [
+            -0.5856521129608154,
+            -9.282689094543457,
+            5.0
+          ],
+          "rotation": 0.0,
+          "scale": [
+            1.0,
+            1.0,
+            0.0
+          ]
+        },
+        "FontComponent": {
+          "word": "SPACE to skip",
+          "color": [
+            1.0,
+            1.0,
+            1.0
+          ],
+          "scale": 0.5,
+          "fontType": 0
+        }
+      }
     }
   ]
 }
