@@ -192,9 +192,9 @@
         },
         "Render": {
           "shape": "square",
-          "colorR": 1.0,
-          "colorG": 1.0,
-          "colorB": 1.0,
+          "colorR": 0.6405693888664246,
+          "colorG": 0.6405693888664246,
+          "colorB": 0.6405693888664246,
           "colorA": 1.0,
           "hasTex": 1,
           "texture": "assets/menu_background.png",

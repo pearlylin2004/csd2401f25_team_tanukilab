@@ -240,6 +240,34 @@
           "onHoverChannel": ""
         }
       }
+    },
+    {
+      "name": "Rectangle_7",
+      "components": {
+        "Transform": {
+          "pos": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "rotation": 0.0,
+          "scale": [
+            40.0,
+            22.5,
+            0.0
+          ]
+        },
+        "Render": {
+          "shape": "square",
+          "colorR": 0.3950178027153015,
+          "colorG": 0.372525691986084,
+          "colorB": 0.372525691986084,
+          "colorA": 1.0,
+          "hasTex": 1,
+          "texture": "assets/menu_background.png",
+          "hasAnimation": 0
+        }
+      }
     }
   ]
 }
