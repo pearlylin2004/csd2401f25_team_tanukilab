@@ -1352,7 +1352,7 @@ void VisualLogicEditor::renderNodeProperties() {
 			// Level name input
 			char levelBuffer[256];
 			std::string currentLevel = node.parameters.count("levelName") ?
-				node.parameters["levelName"] : "level01.json";
+				node.parameters["levelName"] : "";
 			strncpy(levelBuffer, currentLevel.c_str(), 255);
 			levelBuffer[255] = '\0';
 
@@ -1363,7 +1363,7 @@ void VisualLogicEditor::renderNodeProperties() {
 
 			ImGui::Spacing();
 			ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f),
-				"Enter the level filename (e.g., level02.json)");
+				"Enter the level filename with .json");
 
 			// Optional: Quick select dropdown for existing levels
 			ImGui::Spacing();
@@ -2111,7 +2111,7 @@ void VisualLogicEditor::addNode(NodeType type, NodeImplementation imp) {
 			node.parameters["value"] = "1";
 		}
 		else if (imp == NodeImplementation::LOAD_LEVEL) {
-			node.parameters["levelName"] = "level01.json";
+			node.parameters["levelName"] = "";
 		}
 		else if (imp == NodeImplementation::SET_SINLE_ACCEL) {
 			node.parameters["axis"] = "x";

@@ -88,7 +88,7 @@ int main(int argc, char** argv) {
         GlobalRegistry::Instance().init();
 
         // load menu as fir
-        SceneManager::getInstance().loadScene("menu_scene.json");
+        SceneManager::getInstance().loadScene("splash-screen.json");
 
         engine->Run();
     }
