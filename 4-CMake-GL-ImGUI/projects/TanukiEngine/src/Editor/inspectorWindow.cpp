@@ -2725,20 +2725,60 @@ void InspectorWindow::renderButton(GameObject* selected) {
     Button* b = selected->getComponent<Button>();
     const Editor::ComponentEntry* entry = Editor::findEntry("Button");
     if (ImGui::CollapsingHeader("Button")) {
-        // action Name dropdown
-        /*const char* actionNames[] = {
-            "NONE", "START_GAME", "OPEN_CONTROL", "OPEN_AUDIO", "EXIT_GAME",
-            "RESUME_GAME", "YES_EXIT", "NO_EXIT", "BACK", "MENU",
-            "MUSIC_VOL_UP", "MUSIC_VOL_DOWN", "SFX_VOL_UP", "SFX_VOL_DOWN"
+        /* ---------- Action Dropdown ---------- */
+        static const char* actionNames[] = {
+            "None", "Load Scene", "Restart", "Exit Game",
+            "Resume Game", "Back",
+            "Music Vol Up", "Music Vol Down", "Mute", "Unmute"
         };
+
         int currentAction = static_cast<int>(b->actionName);
         if (ImGui::Combo("Action", &currentAction, actionNames, IM_ARRAYSIZE(actionNames))) {
             if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
             b->actionName = static_cast<ButtonAction>(currentAction);
             if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
-        }*/
+        }
 
-        // audio channel dropdowns
+        /* ---------- Scene Path — only shown for LOAD_SCENE ---------- */
+        if (b->actionName == ButtonAction::LOAD_SCENE) {
+            ImGui::Spacing();
+
+            // text input
+            static char scenePathBuf[256] = {};
+            strncpy_s(scenePathBuf, b->scenePath.c_str(), sizeof(scenePathBuf) - 1);
+
+            ImGui::SetNextItemWidth(-1);
+            if (ImGui::InputText("##scenePath", scenePathBuf, sizeof(scenePathBuf),
+                ImGuiInputTextFlags_EnterReturnsTrue)) {
+                if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
+                b->scenePath = scenePathBuf;
+                if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
+            }
+            ImGui::TextDisabled("Scene Path (Drag .json from assets)");
+
+            // drag and drop a .json scene file from asset browser
+            if (ImGui::BeginDragDropTarget()) {
+                if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("ASSET")) {
+                    std::filesystem::path dropped = (const char*)payload->Data;
+                    if (dropped.extension() == ".json") {
+                        if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
+
+                        // strip to just the filename
+                        b->scenePath = dropped.filename().string();
+                        if (entry) UndoRedoManager::Instance().endComponentEdit(m_manager, selected, *entry);
+                    }
+                }
+                ImGui::EndDragDropTarget();
+            }
+        }
+
+
+        ImGui::Spacing();
+        ImGui::Separator();
+        ImGui::Spacing();
+
+
+        /* ---------- Audio Channel Dropdowns ---------- */
         AudioComponent* audio = selected->getComponent<AudioComponent>();
         if (audio && !audio->audioChannels.empty()) {
             // build channel list with "None" as first option
