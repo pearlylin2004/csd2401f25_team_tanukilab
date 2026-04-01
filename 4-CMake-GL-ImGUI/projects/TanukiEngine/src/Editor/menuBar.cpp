@@ -18,6 +18,7 @@ Technology is prohibited.
 //#ifdef _DEBUG
 #include "Editor/editorManager.h"
 #include "Systems.h"
+#include "ButtonSystem.h"
 
 MenuBar::MenuBar(AssetBrowser& aBrowser, Editor::AssetBrowserState& Astate, Editor::MenuBarState& Mstate, Editor::ObjSelectionState& Ostate, Editor::SceneState& sceneState):
     m_assetBrowser(aBrowser),

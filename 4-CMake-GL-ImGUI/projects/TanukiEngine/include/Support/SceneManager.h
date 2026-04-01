@@ -5,7 +5,7 @@
             - 100% of the file
 \par        p.lin@digipen.edu
 \date       March, 27th, 2025
-\brief      
+\brief      Handle restart/load/pause/resume of scenes, and scene history for back button.
 
 Copyright (C) 2026 DigiPen Institute of Technology.
 Reproduction or disclosure of this file or its contents
@@ -14,10 +14,11 @@ Technology is prohibited.
 */
 /* End Header **************************************************************************/
 #pragma once
-#include "GameObjectManager.h"
-#include "ButtonAction.h"
 #include <string>
 #include <unordered_map>
+#include <stack>
+#include "GameObjectManager.h"
+#include "ButtonAction.h"
 
 class VisualLogicSystem; // forward declaration
 
@@ -35,18 +36,24 @@ public:
     void restartScene();
     void pauseScene(); // pause (no scene load)
     void resumeScene();
+    void back();
 
-    bool isPaused() const { return m_paused; }
+    bool isPaused() const { return m_isPaused; }
     const std::string& getCurrentSceneName() const { return m_currentSceneName; }
-    const std::string& getPreviousSceneName() const { return m_previousSceneName; }
+    const std::string& getPreviousSceneName() const {
+        static const std::string empty;
+        return m_sceneHistory.empty() ? empty : m_sceneHistory.top();
+    }
+    void popHistory();
 
     void setOnSceneLoadCallback(std::function<void(GameObjectManager&)> callb) {
-        m_onSceneLoad = callb;
+        m_onSceneLoad = std::move(callb);
     }
 
     // pending requests (called from Lua/game code, executed next frame)
     void requestRestart();
-    void requestLoadScene(const std::string& levelSceneName);
+    void requestLoadScene(const std::string& name, bool pushHistory = true);
+    void requestPause(const std::string& pauseSceneName);
 
     void triggerSceneLoad(GameObjectManager& manager);
     void resetAndInitVisualLogic(GameObjectManager& manager);
@@ -54,6 +61,7 @@ public:
 private:
     static std::string buildScenePath(const std::string& name);
     void executeRestart();
+    void executeResume();
     void executeLoad(const std::string& levelSceneName);
     void captureSpawnPositions();
     void resetAllObjectsToSpawn();
@@ -67,10 +75,18 @@ private:
     VisualLogicSystem* g_visualLogicSystem = nullptr;
 
     std::string m_currentSceneName;
-    std::string m_previousSceneName;
     std::string m_currentSceneFullPath; // for restart
 
-    bool m_paused = false;
+    // pause
+    std::string m_pausedFromScene;
+    bool m_isPaused = false;
+    bool m_pendingResume = false;
+    std::string m_pauseSnapshot;
+
+    // previous
+    std::stack<std::string> m_sceneHistory;
+    bool m_pendingPushHistory = true;
+
     bool m_pendingRestart = false;
     bool m_pendingLoad = false;
     std::string m_pendingLoadName;

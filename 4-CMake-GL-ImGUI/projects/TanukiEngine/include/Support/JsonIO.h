@@ -42,7 +42,7 @@ Technology is prohibited.
 #include "GameObjectManager.h"
 #include "Component.h"
 #include "renderer.h"
-#include "ButtonSystem.h"
+#include "ButtonAction.h"
 
 /*!
  * \namespace Paths
@@ -189,6 +189,11 @@ namespace JsonIO {
 	inline int   GetIntOr(const rapidjson::Value& obj, const char* key, int   def) { int v; return GetInt(obj, key, v) ? v : def; }
 	inline float GetFloatOr(const rapidjson::Value& obj, const char* key, float def) { float v; return GetFloat(obj, key, v) ? v : def; }
 	inline bool  GetBoolOr(const rapidjson::Value& obj, const char* key, bool  def) { bool v; return GetBool(obj, key, v) ? v : def; }
+
+	// de/serialize to a json doc
+	std::string SceneToString(const GameObjectManager& manager);
+	bool StringToScene(GameObjectManager& manager, const std::string& json, std::string* err = nullptr);
+
 
 	// -----------------------
 	// Array helpers (fixed-size and glm vectors)

@@ -1,11 +1,12 @@
 ﻿/* Start Header ************************************************************************/
 /*!
 \file       SceneManager.cpp
-\author     Pearly Lin Lee Ying, p.lin, 2401591
-            - 100% of the file
+\author     Pearly Lin Lee Ying, p.lin, 2401591 - 50%
+            Tan Chee Qing, cheeqing.tan, 2401486 - 50%
 \par        p.lin@digipen.edu
 \date       March, 27th, 2025
-\brief      
+\brief      Implementation for the SceneManager class, which handles scene loading,
+            restarting, pausing, resuming and history management for back button.
 
 Copyright (C) 2026 DigiPen Institute of Technology.
 Reproduction or disclosure of this file or its contents
@@ -14,13 +15,14 @@ Technology is prohibited.
 */
 /* End Header **************************************************************************/
 
+#include <iostream>
+#include <filesystem>
 #include "SceneManager.h"
 #include "Systems.h"       // VisualLogicSystem
 #include "audio.h"         // AudioHandler
 #include "CoreEngine.h"    // RUNTIME_SCENE_DIR_R
 #include "collision.h"     // Collision::buildTileCollisionBox
-#include <iostream>
-#include <filesystem>
+#include "ButtonSystem.h"
 
 /*static*/ std::string SceneManager::buildScenePath(const std::string& name) {
     return std::string(RUNTIME_SCENE_DIR_R) + "/" + name;
@@ -40,6 +42,12 @@ void SceneManager::update() {
         return;
     }
 
+    if (m_pendingResume) {
+        m_pendingResume = false;
+        executeResume();
+        return;
+    }
+
     if (m_pendingLoad && !UISystem::isShowUI()) {
         m_pendingLoad = false;
         std::string name = std::move(m_pendingLoadName);
@@ -47,9 +55,29 @@ void SceneManager::update() {
     }
 }
 
-void SceneManager::requestLoadScene(const std::string& sceneName) {
+void SceneManager::requestLoadScene(const std::string& sceneName, bool pushHistory) {
     m_pendingLoad = true;
     m_pendingLoadName = sceneName;
+    m_pendingPushHistory = pushHistory;
+}
+
+void SceneManager::requestPause(const std::string& pauseSceneName) {
+    // snapshot current scene into memory
+    m_pauseSnapshot = JsonIO::SceneToString(*g_manager);
+    if (m_pauseSnapshot.empty()) {
+        std::cerr << "[SceneManager] Failed to snapshot scene for pause\n";
+        return;
+    }
+
+    m_pausedFromScene = m_currentSceneName;
+    m_isPaused = true;
+	m_sceneHistory.push(m_currentSceneName);
+    requestLoadScene(pauseSceneName, false); // no history push
+}
+
+void SceneManager::popHistory() {
+    if (!m_sceneHistory.empty())
+        m_sceneHistory.pop();
 }
 
 void SceneManager::requestRestart() {
@@ -61,15 +89,31 @@ void SceneManager::loadScene(const std::string& sceneName) {
 }
 
 void SceneManager::pauseScene() {
-    m_paused = true;
+    m_isPaused = true;
 }
 
 void SceneManager::resumeScene() {
-    m_paused = false;
+    m_isPaused = false;
 }
 
 void SceneManager::restartScene() {
     requestRestart();
+}
+
+void SceneManager::back() {
+    if (m_sceneHistory.empty()) return;
+
+    std::string prev = m_sceneHistory.top();
+    m_sceneHistory.pop();
+
+    if (m_isPaused && prev == m_pausedFromScene) {
+        //m_isPaused = false;
+        m_pendingResume = true;
+    }
+    else {
+        // normal navigation outside of pause
+        requestLoadScene(prev, false);
+    }
 }
 
 void SceneManager::executeLoad(const std::string& sceneName) {
@@ -77,7 +121,9 @@ void SceneManager::executeLoad(const std::string& sceneName) {
 
     std::string fullPath = buildScenePath(sceneName);
 
-    m_previousSceneName = m_currentSceneName;
+    if (m_pendingPushHistory && !m_currentSceneName.empty())
+        m_sceneHistory.push(m_currentSceneName);
+    m_pendingPushHistory = true;
     m_currentSceneName = sceneName;
     m_currentSceneFullPath = fullPath;
 
@@ -187,6 +233,35 @@ void SceneManager::resetAllObjectsToSpawn() {
             }
         }
     }
+}
+
+void SceneManager::executeResume() {
+    AudioHandler::getInstance().stopAll(*g_manager);
+    g_manager->clearScene();
+    
+    std::string err;
+    JsonIO::StringToScene(*g_manager, m_pauseSnapshot, &err);
+    if (!err.empty()) {
+		std::cerr << "[SceneManager] Failed to restore scene from pause snapshot: " << err << "\n";
+		return;
+    }
+
+    g_manager->initializeSceneResources();
+
+    if (g_visualLogicSystem) {
+        g_visualLogicSystem->resetLogicState();
+        g_visualLogicSystem->initAll(*g_manager);
+    }
+
+    m_currentSceneName = m_pausedFromScene;
+    m_currentSceneFullPath = buildScenePath(m_pausedFromScene);
+    m_pausedFromScene.clear();
+    m_pauseSnapshot.clear();
+    m_isPaused = false;
+
+    captureSpawnPositions();
+    ButtonSystem::getInstance().refresh();
+    //if (m_onSceneLoad) m_onSceneLoad(*g_manager);
 }
 
 void SceneManager::triggerSceneLoad(GameObjectManager& manager) {

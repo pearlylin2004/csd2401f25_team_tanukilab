@@ -2727,8 +2727,7 @@ void InspectorWindow::renderButton(GameObject* selected) {
     if (ImGui::CollapsingHeader("Button")) {
         /* ---------- Action Dropdown ---------- */
         static const char* actionNames[] = {
-            "None", "Load Scene", "Restart", "Exit Game",
-            "Resume Game", "Back",
+            "None", "Load Scene", "Pause", "Restart", "Exit Game", "Back",
             "Music Vol Up", "Music Vol Down", "Mute", "Unmute"
         };
 

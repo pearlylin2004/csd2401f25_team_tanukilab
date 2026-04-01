@@ -78,11 +78,13 @@
           "hasTex": 1,
           "texture": "assets/button.png",
           "hasAnimation": 0
+        },
+        "Button": {
+          "action": "load_scene",
+          "scenePath": "control_scene.json",
+          "onClickChannel": "",
+          "onHoverChannel": ""
         }
-      },
-      "Button": {
-        "action": "load_scene",
-        "scenePath": "control_scene.json"
       }
     },
     {
@@ -200,7 +202,9 @@
         },
         "Button": {
           "action": "load_scene",
-          "scenePath": "menu_scene.json"
+          "scenePath": "menu_scene.json",
+          "onClickChannel": "",
+          "onHoverChannel": ""
         }
       }
     },
@@ -231,7 +235,9 @@
           "hasAnimation": 0
         },
         "Button": {
-          "action": "resume_game"
+          "action": "back",
+          "onClickChannel": "",
+          "onHoverChannel": ""
         }
       }
     }

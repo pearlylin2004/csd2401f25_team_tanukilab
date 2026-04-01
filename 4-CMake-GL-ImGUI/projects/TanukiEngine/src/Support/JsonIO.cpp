@@ -247,7 +247,8 @@ namespace JsonIO {
         switch (action) {
         case ButtonAction::LOAD_SCENE:    return "load_scene";
         case ButtonAction::EXIT_GAME:     return "exit_game";
-        case ButtonAction::RESUME_GAME:   return "resume_game";
+        case ButtonAction::PAUSE:     return "pause_game";
+        //case ButtonAction::RESUME_GAME:   return "resume_game";
         //case ButtonAction::YES_EXIT:      return "yes_exit";
         //case ButtonAction::NO_EXIT:       return "no_exit";
         case ButtonAction::BACK:          return "back";
@@ -269,7 +270,7 @@ namespace JsonIO {
         if (s == "load_scene") return ButtonAction::LOAD_SCENE;
 
         if (s == "exit_game") return ButtonAction::EXIT_GAME;
-        if (s == "resume_game") return ButtonAction::RESUME_GAME;
+        //if (s == "resume_game") return ButtonAction::RESUME_GAME;
         if (s == "back") return ButtonAction::BACK;
 
         if (s == "music_vol_up") return ButtonAction::MUSIC_VOL_UP;
@@ -635,6 +636,31 @@ namespace JsonIO {
             if (v->IsNumber()) { out = static_cast<float>(v->GetDouble()); return true; }
         }
         return false;
+    }
+
+    std::string JsonIO::SceneToString(const GameObjectManager& manager) {
+        std::string tempPath = std::string(RUNTIME_SCENE_DIR_R) + "/_snapshot.json";
+        manager.saveSceneToJson(tempPath, false);
+
+        // read file into string
+        std::ifstream file(tempPath);
+        std::string json((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
+        file.close();
+        std::filesystem::remove(tempPath);
+        return json;
+    }
+
+    bool JsonIO::StringToScene(GameObjectManager& manager, const std::string& json, std::string* err) {
+        std::string tempPath = std::string(RUNTIME_SCENE_DIR_R) + "/_snapshot.json";
+
+        // write string to temp file, load from it
+        std::ofstream file(tempPath);
+        file << json;
+        file.close();
+
+        manager.loadSceneFromJson(tempPath);
+        std::filesystem::remove(tempPath);
+        return true;
     }
 
     /// @}

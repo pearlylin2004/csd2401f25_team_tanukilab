@@ -18,9 +18,10 @@ Technology is prohibited.
 enum class ButtonAction {
     NONE,
     LOAD_SCENE,
+    PAUSE, // like load scene but preserve scene before pause
     RESTART,
     EXIT_GAME,
-    RESUME_GAME,
+    //RESUME_GAME,
     BACK,
     MUSIC_VOL_UP,
     MUSIC_VOL_DOWN,

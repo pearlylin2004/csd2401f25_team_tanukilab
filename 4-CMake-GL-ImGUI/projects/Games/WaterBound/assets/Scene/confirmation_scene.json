@@ -168,7 +168,7 @@
           "hasAnimation": 0
         },
         "Button": {
-          "action": "load_scene",
+          "action": "back",
           "scenePath": "menu_scene.json",
           "onClickChannel": "",
           "onHoverChannel": ""

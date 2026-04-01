@@ -71,9 +71,8 @@ int main(int argc, char** argv) {
 
             // ESC (keyboard) -> pause
             if (InputHandler::isKeyTriggered(GLFW_KEY_ESCAPE)) {
-                if (SceneManager::getInstance().getCurrentSceneName() != "pause_scene.json") {
-                    SceneManager::getInstance().loadScene("pause_scene.json");
-                }
+                if (!SceneManager::getInstance().isPaused() && SceneManager::getInstance().getCurrentSceneName() != "menu_scene.json")
+                    SceneManager::getInstance().requestPause("pause_scene.json");
             }
 
             // START (gamepad) -> main menu

@@ -166,7 +166,7 @@ void ButtonSystem::handleAction(const Button& btn) {
 
     case ButtonAction::LOAD_SCENE:
         if (!btn.scenePath.empty()) {
-            SceneManager::getInstance().requestLoadScene(btn.scenePath);
+            SceneManager::getInstance().requestLoadScene(btn.scenePath, true);
         }
         break;
 
@@ -174,18 +174,20 @@ void ButtonSystem::handleAction(const Button& btn) {
         SceneManager::getInstance().requestRestart();
         break;
 
-    case ButtonAction::RESUME_GAME:
-        SceneManager::getInstance().resumeScene();
-        // load the level scene again if needed
-        if (!SceneManager::getInstance().getCurrentSceneName().empty())
-            SceneManager::getInstance().requestLoadScene(
-                SceneManager::getInstance().getCurrentSceneName());
+    //case ButtonAction::RESUME_GAME:
+    //    SceneManager::getInstance().resumeScene();
+    //    // load the level scene again if needed
+    //    if (!SceneManager::getInstance().getCurrentSceneName().empty())
+    //        SceneManager::getInstance().requestLoadScene(
+    //            SceneManager::getInstance().getCurrentSceneName());
+    //    break;
+
+    case ButtonAction::PAUSE:
+        SceneManager::getInstance().requestPause(btn.scenePath);
         break;
 
     case ButtonAction::BACK:
-        if (!SceneManager::getInstance().getPreviousSceneName().empty())
-            SceneManager::getInstance().requestLoadScene(
-                SceneManager::getInstance().getPreviousSceneName());
+        SceneManager::getInstance().back();
         break;
 
     case ButtonAction::EXIT_GAME:
