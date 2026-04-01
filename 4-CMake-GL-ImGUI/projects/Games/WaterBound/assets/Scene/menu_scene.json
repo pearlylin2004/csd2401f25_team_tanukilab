@@ -169,7 +169,6 @@
         },
         "Button": {
           "action": "none",
-          "scenePath": "",
           "onClickChannel": "on_click",
           "onHoverChannel": "button_hover"
         }
@@ -346,7 +345,8 @@
           "filename": "shakeWhenHover.json"
         },
         "Button": {
-          "action": "exit_game",
+          "action": "load_scene",
+          "scenePath": "confirmation_scene.json",
           "onClickChannel": "on_click",
           "onHoverChannel": "button_hover"
         }

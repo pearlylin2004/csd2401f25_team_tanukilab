@@ -77,6 +77,11 @@
           "hasTex": 1,
           "texture": "assets/button.png",
           "hasAnimation": 0
+        },
+        "Button": {
+          "action": "exit_game",
+          "onClickChannel": "",
+          "onHoverChannel": ""
         }
       }
     },
@@ -161,6 +166,12 @@
           "hasTex": 1,
           "texture": "assets/button.png",
           "hasAnimation": 0
+        },
+        "Button": {
+          "action": "load_scene",
+          "scenePath": "menu_scene.json",
+          "onClickChannel": "",
+          "onHoverChannel": ""
         }
       }
     },
