@@ -1799,7 +1799,7 @@ namespace JsonIO {
         jb.AddMember("onClickChannel", Value(b->onClickChannel.c_str(), a), a);
         jb.AddMember("onHoverChannel", Value(b->onHoverChannel.c_str(), a), a);
         // Only add scenePath if not empty
-        if (!b->scenePath.empty()) {
+        if (!b->scenePath.empty() && b->actionName == ButtonAction::LOAD_SCENE) {
             jb.AddMember("scenePath", rapidjson::Value(b->scenePath.c_str(), a), a);
         }
         doc.AddMember("Button", jb, a);
