@@ -121,11 +121,6 @@
           ],
           "scale": 1.0,
           "fontType": 1
-        },
-        "Button": {
-          "action": "none",
-          "onClickChannel": "",
-          "onHoverChannel": ""
         }
       }
     },

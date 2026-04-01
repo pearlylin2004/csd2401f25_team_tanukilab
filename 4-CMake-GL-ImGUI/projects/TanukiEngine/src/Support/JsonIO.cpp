@@ -248,6 +248,7 @@ namespace JsonIO {
         case ButtonAction::LOAD_SCENE:    return "load_scene";
         case ButtonAction::EXIT_GAME:     return "exit_game";
         case ButtonAction::PAUSE:     return "pause_game";
+        case ButtonAction::RESTART:     return "restart";
         //case ButtonAction::RESUME_GAME:   return "resume_game";
         //case ButtonAction::YES_EXIT:      return "yes_exit";
         //case ButtonAction::NO_EXIT:       return "no_exit";
@@ -268,11 +269,11 @@ namespace JsonIO {
     //for button
     ButtonAction StrToButtonAction(const std::string& s) {
         if (s == "load_scene") return ButtonAction::LOAD_SCENE;
-
         if (s == "exit_game") return ButtonAction::EXIT_GAME;
         //if (s == "resume_game") return ButtonAction::RESUME_GAME;
+        if (s == "pause_game") return ButtonAction::PAUSE;
         if (s == "back") return ButtonAction::BACK;
-
+        if (s == "restart") return ButtonAction::RESTART;
         if (s == "music_vol_up") return ButtonAction::MUSIC_VOL_UP;
         if (s == "music_vol_down") return ButtonAction::MUSIC_VOL_DOWN;
         if (s == "mute") return ButtonAction::MUTE;

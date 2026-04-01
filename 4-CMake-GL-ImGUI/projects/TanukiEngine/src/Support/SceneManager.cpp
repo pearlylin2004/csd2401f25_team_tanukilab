@@ -138,12 +138,23 @@ void SceneManager::executeLoad(const std::string& sceneName) {
     }
 
     captureSpawnPositions();
+    ButtonSystem::getInstance().refresh();
 
     if (m_onSceneLoad) m_onSceneLoad(*g_manager);
 }
 
 void SceneManager::executeRestart() {
+    std::string sceneToRestart = m_isPaused ? m_pausedFromScene : m_currentSceneName;
+    std::string pathToRestart = buildScenePath(sceneToRestart);
+
+    if (pathToRestart.empty()) {
+        std::cerr << "[SceneManager] Nothing to restart\n";
+        return;
+    }
+
     std::cout << "[SceneManager] Restarting: " << m_currentSceneName << "\n";
+
+    clearPauseState();
 
     if (m_currentSceneFullPath.empty()) {
         std::cerr << "[SceneManager] Nothing to restart\n";
@@ -152,7 +163,7 @@ void SceneManager::executeRestart() {
 
     AudioHandler::getInstance().stopAll(*g_manager);
     g_manager->clearScene();
-    g_manager->loadScene(m_currentSceneFullPath);
+    g_manager->loadScene(pathToRestart);
     g_manager->initializeSceneResources();
 
     if (g_visualLogicSystem) {
@@ -160,7 +171,11 @@ void SceneManager::executeRestart() {
         g_visualLogicSystem->initAll(*g_manager);
     }
 
+    m_currentSceneName = sceneToRestart;
+    m_currentSceneFullPath = pathToRestart;
+
     resetAllObjectsToSpawn();
+    ButtonSystem::getInstance().refresh();
 
     if (m_onSceneLoad) m_onSceneLoad(*g_manager);
 }
@@ -273,4 +288,10 @@ void SceneManager::resetAndInitVisualLogic(GameObjectManager& manager) {
         VisualLC::globalFloatVar.clear();
         g_visualLogicSystem->initAll(manager);
     }
+}
+
+void SceneManager::clearPauseState() {
+    m_isPaused = false;
+    m_pausedFromScene.clear();
+    m_pauseSnapshot.clear();
 }

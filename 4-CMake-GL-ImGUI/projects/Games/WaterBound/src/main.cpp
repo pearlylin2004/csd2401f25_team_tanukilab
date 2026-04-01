@@ -81,6 +81,9 @@ int main(int argc, char** argv) {
                     SceneManager::getInstance().loadScene("menu_scene.json");
                 }
             }
+
+            if (SceneManager::getInstance().getCurrentSceneName() == "menu_scene.json")
+                SceneManager::getInstance().clearPauseState();
             });
 
         GlobalRegistry::Instance().setBasePath("./assets");

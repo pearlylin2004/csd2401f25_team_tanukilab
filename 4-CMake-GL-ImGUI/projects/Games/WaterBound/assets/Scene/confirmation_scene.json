@@ -139,12 +139,6 @@
           "hasTex": 1,
           "texture": "assets/button.png",
           "hasAnimation": 0
-        },
-        "Button": {
-          "action": "back",
-          "scenePath": "menu_scene.json",
-          "onClickChannel": "",
-          "onHoverChannel": ""
         }
       }
     },

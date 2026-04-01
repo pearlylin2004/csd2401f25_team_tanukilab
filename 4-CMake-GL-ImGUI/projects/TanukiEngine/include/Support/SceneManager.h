@@ -57,6 +57,7 @@ public:
 
     void triggerSceneLoad(GameObjectManager& manager);
     void resetAndInitVisualLogic(GameObjectManager& manager);
+    void clearPauseState();
 
 private:
     static std::string buildScenePath(const std::string& name);

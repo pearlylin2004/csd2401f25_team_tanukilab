@@ -26,6 +26,67 @@
   "onLoadScript": "assets/scripting\\pause_scene_load.lua",
   "objects": [
     {
+      "name": "Back",
+      "components": {
+        "Transform": {
+          "pos": [
+            -16.681079864501953,
+            8.383752822875977,
+            0.20000000298023224
+          ],
+          "rotation": 0.0,
+          "scale": [
+            5.300000190734863,
+            1.3639999628067017,
+            0.0
+          ]
+        },
+        "Render": {
+          "shape": "square",
+          "colorR": 1.0,
+          "colorG": 1.0,
+          "colorB": 1.0,
+          "colorA": 1.0,
+          "hasTex": 1,
+          "texture": "assets/Texture\\Menu_Button.png",
+          "hasAnimation": 0
+        },
+        "Button": {
+          "action": "back",
+          "onClickChannel": "",
+          "onHoverChannel": ""
+        }
+      }
+    },
+    {
+      "name": "Rectangle_9",
+      "components": {
+        "Transform": {
+          "pos": [
+            -17.635011672973633,
+            8.092957496643066,
+            5.0
+          ],
+          "rotation": 0.0,
+          "scale": [
+            1.0,
+            1.0,
+            0.0
+          ]
+        },
+        "FontComponent": {
+          "word": "Back",
+          "color": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "scale": 1.0,
+          "fontType": 0
+        }
+      }
+    },
+    {
       "name": "pause_background",
       "components": {
         "Transform": {
@@ -148,7 +209,7 @@
       "components": {
         "Transform": {
           "pos": [
-            -2.4000000953674316,
+            -1.4701896905899048,
             -1.0,
             1.0
           ],
@@ -160,7 +221,7 @@
           ]
         },
         "FontComponent": {
-          "word": "RESUME GAME",
+          "word": "Restart",
           "color": [
             0.0,
             0.0,
@@ -213,7 +274,7 @@
       "components": {
         "Transform": {
           "pos": [
-            0.0,
+            -0.0634920671582222,
             -0.699999988079071,
             1.0
           ],
@@ -235,7 +296,7 @@
           "hasAnimation": 0
         },
         "Button": {
-          "action": "back",
+          "action": "restart",
           "onClickChannel": "",
           "onHoverChannel": ""
         }

@@ -83,6 +83,13 @@ void ButtonSystem::update() {
 
         btn->isHovered = isOver;
 
+        if (Render* render = obj->getComponent<Render>()) {
+            if (isOver)
+                render->clr = glm::vec4(0.9f, 0.9f, 0.9f, render->clr.a);
+            else
+                render->clr = glm::vec4(1.0f, 1.0f, 1.0f, render->clr.a);
+        }
+
         if (isOver && InputHandler::isMouseButtonClicked(GLFW_MOUSE_BUTTON_LEFT)) {
             // play click sound
             if (!btn->onClickChannel.empty()) {
