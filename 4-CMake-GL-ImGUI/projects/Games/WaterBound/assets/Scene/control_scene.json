@@ -91,8 +91,8 @@
       "components": {
         "Transform": {
           "pos": [
-            -16.5,
-            8.100000381469727,
+            -16.944442749023438,
+            7.909523963928223,
             1.0
           ],
           "rotation": 0.0,
@@ -109,8 +109,36 @@
             0.0,
             0.0
           ],
-          "scale": 0.5,
-          "fontType": 1
+          "scale": 1.5,
+          "fontType": 0
+        }
+      }
+    },
+    {
+      "name": "Rectangle_3",
+      "components": {
+        "Transform": {
+          "pos": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "rotation": 0.0,
+          "scale": [
+            40.0,
+            22.5,
+            0.0
+          ]
+        },
+        "Render": {
+          "shape": "square",
+          "colorR": 0.44128113985061646,
+          "colorG": 0.44128113985061646,
+          "colorB": 0.44128113985061646,
+          "colorA": 1.0,
+          "hasTex": 1,
+          "texture": "assets/menu_background.png",
+          "hasAnimation": 0
         }
       }
     }
