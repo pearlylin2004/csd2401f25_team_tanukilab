@@ -17,8 +17,6 @@ Technology is prohibited.
 #include "GameObject.h"
 #include "Component.h"
 #include "Systems.h"
-#include "GUISystem.h"
-#include "GameState.h"
 #include <iostream>
 #include <cmath>
 

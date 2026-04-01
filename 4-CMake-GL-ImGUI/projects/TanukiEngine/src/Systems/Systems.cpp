@@ -27,7 +27,6 @@ Technology is prohibited.
 #include "Systems.h"
 #pragma warning(pop)
 #include "Physics.h"
-#include "GUISystem.h"
 #include "toastSystem.h"
 
 std::string TileMapSystem::filename{};

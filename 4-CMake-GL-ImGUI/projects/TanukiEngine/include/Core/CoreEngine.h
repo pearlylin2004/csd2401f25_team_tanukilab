@@ -29,7 +29,6 @@ Technology is prohibited.
 #include "ResourceManager.h"
 #include "layerManager.h"
 #include "prefabManager.h"
-#include "GUISystem.h"
 #include "messageBus.h"
 #include "JsonIO.h"
 #include "globalRegistry.h"

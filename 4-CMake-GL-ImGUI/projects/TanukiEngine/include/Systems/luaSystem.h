@@ -23,7 +23,6 @@ Technology is prohibited.
 #include "Component.h"
 #include "messageBus.h"
 #include "GameObjectManager.h"
-#include "GUISystem.h"
 #include "Physics.h"
 #include "Editor/editorManager.h"
 
@@ -160,6 +159,12 @@ public:
 	static int Lua_setColliderSize(lua_State* L);
 	/*! \brief Gets the current frame of the object's animation. */
 	static int Lua_getAnimationFrame(lua_State* L);
+
+	/*! \brief get the displayed text string on an object's FontComponent */
+	static int Lua_getFontText(lua_State* L);
+
+	/*! \brief set the displayed text string on an object's FontComponent */
+	static int Lua_setFontText(lua_State* L);
 
 
 	/* -------- Physics Getters -------- */
@@ -395,6 +400,12 @@ public:
 
 	/*! \brief Applies a low-pass filter to the object's audio output. */
 	static int Lua_setLowPassFilter(lua_State* L);
+
+	/*! \brief get audio volume */
+	static int Lua_getMasterVolume(lua_State* L);
+
+	/*! \brief set audio volume */
+	static int Lua_setMasterVolume(lua_State* L);
 
 
 	/* -------- Visual Script -------- */

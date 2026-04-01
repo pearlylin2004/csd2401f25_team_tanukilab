@@ -22,7 +22,6 @@ Technology is prohibited.
 #include "JsonIO.h"
 #include "Editor/editorState.h"
 #include "Editor/undoRedo.h"
-#include "GUISystem.h"
 #include "Systems/Systems.h"
 
 #ifndef RUNTIME_SCENE_DIR_R

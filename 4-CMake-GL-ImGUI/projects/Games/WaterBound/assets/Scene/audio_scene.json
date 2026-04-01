@@ -78,6 +78,14 @@
           ],
           "scale": 0.5,
           "fontType": 1
+        },
+        "LuaScript": {
+          "scripts": [
+            {
+              "filename": "assets/scripting/audio volume.lua",
+              "scriptName": "audio volume"
+            }
+          ]
         }
       }
     },
@@ -199,34 +207,6 @@
       }
     },
     {
-      "name": "unmute_text",
-      "components": {
-        "Transform": {
-          "pos": [
-            3.5,
-            -2.799999952316284,
-            1.0
-          ],
-          "rotation": 0.0,
-          "scale": [
-            20.0,
-            20.0,
-            0.0
-          ]
-        },
-        "FontComponent": {
-          "word": "UNMUTE",
-          "color": [
-            0.0,
-            0.0,
-            0.0
-          ],
-          "scale": 0.6000000238418579,
-          "fontType": 1
-        }
-      }
-    },
-    {
       "name": "music_up_btn",
       "components": {
         "Transform": {
@@ -256,6 +236,34 @@
           "action": "music_vol_up",
           "onClickChannel": "",
           "onHoverChannel": ""
+        }
+      }
+    },
+    {
+      "name": "unmute_text",
+      "components": {
+        "Transform": {
+          "pos": [
+            3.5,
+            -2.799999952316284,
+            1.0
+          ],
+          "rotation": 0.0,
+          "scale": [
+            20.0,
+            20.0,
+            0.0
+          ]
+        },
+        "FontComponent": {
+          "word": "UNMUTE",
+          "color": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "scale": 0.6000000238418579,
+          "fontType": 1
         }
       }
     },

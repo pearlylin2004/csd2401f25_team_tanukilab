@@ -20,7 +20,6 @@ Technology is prohibited.
 #include "input.h"        // InputHandler
 #include "audio.h"        // AudioHandler, AudioComponent
 #include "Component.h"    // Button, Transform, FontComponent
-#include "GameState.h"
 #include <iostream>
 #include <unordered_map>
 

@@ -17,8 +17,6 @@ Technology is prohibited.
 #include "Systems.h"
 #include "JsonIO.h"
 #include "SceneManager.h"
-#include "GUISystem.h"
-#include "GameState.h"
 
 std::map<std::string, float> VisualLC::globalFloatVar;
 GameObjectManager* VisualLogicSystem::m_manager = nullptr;
