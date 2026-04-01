@@ -1742,13 +1742,13 @@ int LuaSystem::Lua_loadLevel(lua_State* L) {
     const char* sceneName = lua_tostring(L, 1);
     if (!sceneName) return 0;
 
-    GUISystem::getInstance().m_pendingLevelLoad = true;
-    GUISystem::getInstance().m_pendingLevelName = std::string(sceneName);
+    SceneManager::getInstance().requestLoadScene(std::string(sceneName));
+
     return 0;
 }
 
 int LuaSystem::Lua_getCurrentScene(lua_State* L) {
-    std::string scene = GUISystem::getInstance().getCurrentLevel();
+    std::string scene = SceneManager::getInstance().getCurrentSceneName();
     // strip path, just return filename
     std::filesystem::path p(scene);
 

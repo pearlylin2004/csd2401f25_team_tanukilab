@@ -18,18 +18,14 @@ Technology is prohibited.
 enum class ButtonAction {
     NONE,
     LOAD_SCENE,
+    RESTART,
     EXIT_GAME,
     RESUME_GAME,
-    YES_EXIT,
-    NO_EXIT,
     BACK,
     MUSIC_VOL_UP,
     MUSIC_VOL_DOWN,
-    SFX_VOL_UP,
-    SFX_VOL_DOWN,
     MUTE,
-    UNMUTE,
-    OPEN_LEADERBOARD
+    UNMUTE
 };
 
 //enum for button actions

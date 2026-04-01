@@ -30,21 +30,6 @@ void SceneManager::init(GameObjectManager& manager, VisualLogicSystem& vlSystem)
     g_manager = &manager;
     g_visualLogicSystem = &vlSystem;
 
-    //auto discover and sort all level files
-    m_levelList.clear();
-    for (const auto& entry : std::filesystem::directory_iterator(RUNTIME_SCENE_DIR_R)) {
-        std::string filename = entry.path().filename().string();
-        // pick up any file that starts with "level" and ends with ".json"
-        if (filename.rfind("Game_Level_", 0) == 0 && entry.path().extension() == ".json") {
-            m_levelList.push_back(filename);
-        }
-    }
-    std::sort(m_levelList.begin(), m_levelList.end()); // level01, level02... in order
-
-    std::cout << "[SceneManager] Found " << m_levelList.size() << " levels:\n";
-    for (auto& l : m_levelList)
-        std::cout << "  " << l << "\n";
-
     std::cout << "[SceneManager] init complete\n";
 }
 
@@ -55,65 +40,83 @@ void SceneManager::update() {
         return;
     }
 
-    if (m_pendingLevelLoad && !UISystem::isShowUI()) {
-        m_pendingLevelLoad = false;
-        std::string name = std::move(m_pendingLevelName);
-        m_pendingLevelName = "";
-
-        if (m_pendingIsWinScene) {
-            m_pendingIsWinScene = false;
-            loadScene(name);
-        }
-        else {
-            executeLevelLoad(name);
-        }
+    if (m_pendingLoad && !UISystem::isShowUI()) {
+        m_pendingLoad = false;
+        std::string name = std::move(m_pendingLoadName);
+        executeLoad(name);
     }
+}
+
+void SceneManager::requestLoadScene(const std::string& sceneName) {
+    m_pendingLoad = true;
+    m_pendingLoadName = sceneName;
 }
 
 void SceneManager::requestRestart() {
     m_pendingRestart = true;
 }
 
-void SceneManager::requestLevelLoad(const std::string& levelSceneName) {
-    m_pendingLevelLoad = true;
-    m_pendingLevelName = levelSceneName;
-    m_pendingIsWinScene = (levelSceneName == "win_scene.json"); // ← new flag
+void SceneManager::loadScene(const std::string& sceneName) {
+    executeLoad(sceneName);
 }
 
-void SceneManager::loadScene(const std::string& sceneName) {
-    std::cout << "[SceneManager] Loading scene: " << sceneName << "\n";
+void SceneManager::pauseScene() {
+    m_paused = true;
+}
+
+void SceneManager::resumeScene() {
+    m_paused = false;
+}
+
+void SceneManager::restartScene() {
+    requestRestart();
+}
+
+void SceneManager::executeLoad(const std::string& sceneName) {
+    std::cout << "[SceneManager] Loading: " << sceneName << "\n";
+
+    std::string fullPath = buildScenePath(sceneName);
+
+    m_previousSceneName = m_currentSceneName;
+    m_currentSceneName = sceneName;
+    m_currentSceneFullPath = fullPath;
 
     AudioHandler::getInstance().stopAll(*g_manager);
     g_manager->clearScene();
-    g_manager->init();
-    g_manager->loadScene(buildScenePath(sceneName));
+    g_manager->loadScene(fullPath);
     g_manager->initializeSceneResources();
+
+    if (g_visualLogicSystem) {
+        g_visualLogicSystem->resetLogicState();
+        g_visualLogicSystem->initAll(*g_manager);
+    }
+
+    captureSpawnPositions();
+
     if (m_onSceneLoad) m_onSceneLoad(*g_manager);
 }
 
-void SceneManager::changeState(GameState newState, const std::string& sceneName) {
-    m_previousState = m_currentState;
-    m_currentState = newState;
+void SceneManager::executeRestart() {
+    std::cout << "[SceneManager] Restarting: " << m_currentSceneName << "\n";
 
-    if (!sceneName.empty()) {
-        loadScene(sceneName);
+    if (m_currentSceneFullPath.empty()) {
+        std::cerr << "[SceneManager] Nothing to restart\n";
+        return;
     }
-}
 
-GameState SceneManager::sceneToState(const std::string& sceneName) const {
-    if (sceneName == "menu_scene.json")         return GameState::MENU;
-    if (sceneName == "control_scene.json")      return GameState::CONTROL;
-    if (sceneName == "audio_scene.json")        return GameState::AUDIO;
-    if (sceneName == "pause_scene.json")        return GameState::PAUSED;
-    if (sceneName == "confirmation_scene.json") return GameState::EXITCONFIRMATION;
+    AudioHandler::getInstance().stopAll(*g_manager);
+    g_manager->clearScene();
+    g_manager->loadScene(m_currentSceneFullPath);
+    g_manager->initializeSceneResources();
 
-    // Any level file maps to PLAYING
-    if (sceneName.find("level") != std::string::npos ||
-        sceneName.find("Level") != std::string::npos ||
-        sceneName.find("Game_Level_") != std::string::npos)
-        return GameState::PLAYING;
+    if (g_visualLogicSystem) {
+        g_visualLogicSystem->resetLogicState();
+        g_visualLogicSystem->initAll(*g_manager);
+    }
 
-    return GameState::MENU; // fallback
+    resetAllObjectsToSpawn();
+
+    if (m_onSceneLoad) m_onSceneLoad(*g_manager);
 }
 
 void SceneManager::captureSpawnPositions() {
@@ -130,7 +133,6 @@ void SceneManager::captureSpawnPositions() {
 }
 
 void SceneManager::resetAllObjectsToSpawn() {
-    std::cout << "[SceneManager] Resetting objects to spawn positions\n";
 
     std::vector<GameObject*> all;
     g_manager->getAllGameObjects(all);
@@ -187,80 +189,13 @@ void SceneManager::resetAllObjectsToSpawn() {
     }
 }
 
-void SceneManager::executeRestart() {
-    std::cout << "[SceneManager] Restarting level\n";
+void SceneManager::triggerSceneLoad(GameObjectManager& manager) {
+    if (m_onSceneLoad) m_onSceneLoad(manager);
+}
 
-    if (m_currentLevel.empty()) {
-        std::cerr << "[SceneManager] No current level to restart!\n";
-        return;
+void SceneManager::resetAndInitVisualLogic(GameObjectManager& manager) {
+    if (g_visualLogicSystem) {
+        VisualLC::globalFloatVar.clear();
+        g_visualLogicSystem->initAll(manager);
     }
-
-    AudioHandler::getInstance().stopAll(*g_manager);
-    g_manager->clearScene();
-    g_manager->loadScene(m_currentLevel);
-    g_manager->initializeSceneResources();
-
-    g_visualLogicSystem->resetLogicState();
-    g_visualLogicSystem->initAll(*g_manager);
-
-    resetAllObjectsToSpawn();
-    m_currentState = GameState::PLAYING;
-}
-
-void SceneManager::executeLevelLoad(const std::string& levelSceneName) {
-    std::cout << "[SceneManager] Loading scene: " << levelSceneName << "\n";
-
-    std::string fullPath = buildScenePath(levelSceneName);
-    m_previousSceneName = m_currentSceneName; //save current first
-    m_currentSceneName = levelSceneName;
-
-    AudioHandler::getInstance().stopAll(*g_manager);
-    g_manager->clearScene();
-    g_manager->loadScene(fullPath);
-    g_manager->initializeSceneResources();
-    ButtonSystem::getInstance().refresh();
-
-    GameState newState = sceneToState(levelSceneName);
-    m_currentState = newState;
-
-    //only run gameplay systems for actual levels
-    if (newState == GameState::PLAYING) {
-        if (g_visualLogicSystem) {
-            g_visualLogicSystem->resetLogicState();
-            g_visualLogicSystem->initAll(*g_manager);
-            m_levelSceneName = levelSceneName;
-        }
-        m_currentLevel = fullPath;
-        captureSpawnPositions();
-    }
-
-    if (m_onSceneLoad) m_onSceneLoad(*g_manager);
-}
-
-void SceneManager::pauseGame() {
-    if (m_currentState == GameState::PAUSED) return; 
-
-    m_previousState = m_currentState;
-    m_previousSceneName = m_currentSceneName; 
-    m_currentState = GameState::PAUSED;
-}
-
-void SceneManager::resumeGame() {
-    if (m_currentState != GameState::PAUSED) return;
-    m_currentState = m_previousState;
-}
-
-//request next level, if no more level, load win scene
-void SceneManager::requestNextLevel() {
-    if (m_pendingLevelLoad || m_pendingRestart) return;
-
-    int nextIndex = m_currentLevelIndex + 1;
-
-    if (nextIndex >= static_cast<int>(m_levelList.size())) {
-        requestLevelLoad("win_scene.json");
-        return;
-    }
-
-    m_currentLevelIndex = nextIndex;
-    requestLevelLoad(m_levelList[m_currentLevelIndex]);
 }

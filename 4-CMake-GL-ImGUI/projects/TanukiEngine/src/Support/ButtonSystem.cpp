@@ -43,14 +43,15 @@ void ButtonSystem::refresh() {
         m_buttons.push_back(obj);
     }
 
-    if (m_buttons.empty())
-        std::cout << "[ButtonSystem] No buttons found in current scene.\n";
-    else
-        std::cout << "[ButtonSystem] Registered " << m_buttons.size() << " button(s).\n";
+    // no need to broadcast if no buttons found, not all scene need to have buttons
+    //if (m_buttons.empty())
+    //    std::cout << "[ButtonSystem] No buttons found in current scene.\n";
+    //else
+    //    std::cout << "[ButtonSystem] Registered " << m_buttons.size() << " button(s).\n";
 
-    //refresh volume text if we are on the audio page.
-    if (SceneManager::getInstance().getCurrentState() == GameState::AUDIO)
-        updateVolumeDisplay();
+    ////refresh volume text if we are on the audio page.
+    //if (SceneManager::getInstance().getCurrentState() == GameState::AUDIO)
+    //    updateVolumeDisplay();
 }
 
 //update -- the old createButtonAction from GUI
@@ -64,6 +65,7 @@ void ButtonSystem::update() {
         Button* btn = obj->getComponent<Button>();
         if (!btn) continue;
         bool isOver = isPointInButton(mouse, obj);
+
         if (isOver && !btn->isHovered && !btn->onHoverChannel.empty()) {
             if (auto* audio = obj->getComponent<AudioComponent>()) {
                 if (auto* ch = audio->getChannel(btn->onHoverChannel)) {
@@ -71,6 +73,7 @@ void ButtonSystem::update() {
                 }
             }
         }
+
         if (!isOver && btn->isHovered && !btn->onHoverChannel.empty()) {
             if (auto* audio = obj->getComponent<AudioComponent>()) {
                 if (auto* ch = audio->getChannel(btn->onHoverChannel)) {
@@ -78,10 +81,10 @@ void ButtonSystem::update() {
                 }
             }
         }
+
         btn->isHovered = isOver;
+
         if (isOver && InputHandler::isMouseButtonClicked(GLFW_MOUSE_BUTTON_LEFT)) {
-			std::cout << "[ButtonSystem] Button '" << obj->getObjectName() << "' clicked. Action: " << static_cast<int>(btn->actionName) << "\n";
-			std::cout << "[ButtonSystem] Button scene path " << btn->scenePath << "'\n";
             // play click sound
             if (!btn->onClickChannel.empty()) {
                 if (auto* audio = obj->getComponent<AudioComponent>()) {
@@ -94,6 +97,68 @@ void ButtonSystem::update() {
             return;
         }
     }
+
+    // gamepad navigation
+    if (!InputHandler::isGamepadConnected() || m_buttons.empty()) return;
+
+    // sort top to bottom
+    std::vector<GameObject*> sorted(m_buttons.begin(), m_buttons.end());
+    std::sort(sorted.begin(), sorted.end(), [](GameObject* a, GameObject* b) {
+        Transform* ta = a->getComponent<Transform>();
+        Transform* tb = b->getComponent<Transform>();
+        if (!ta || !tb) return false;
+        return ta->y > tb->y;
+        });
+
+    int count = (int)sorted.size();
+
+    if (InputHandler::isGamepadButtonTriggered(GLFW_GAMEPAD_BUTTON_DPAD_DOWN))
+        m_selectedButtonIdx = (m_selectedButtonIdx == -1) ? 0 : (m_selectedButtonIdx + 1) % count;
+
+    if (InputHandler::isGamepadButtonTriggered(GLFW_GAMEPAD_BUTTON_DPAD_UP))
+        m_selectedButtonIdx = (m_selectedButtonIdx == -1) ? 0 : (m_selectedButtonIdx - 1 + count) % count;
+
+    // reset selection when scene changes
+    if (m_buttons.size() != m_lastButtonCount) {
+        m_selectedButtonIdx = -1;
+        m_lastButtonCount = m_buttons.size();
+    }
+
+    for (int i = 0; i < count; ++i) {
+        GameObject* obj = sorted[i];
+        Button* btn = obj->getComponent<Button>();
+        Render* render = obj->getComponent<Render>();
+        if (!btn) continue;
+
+        bool isSelected = (i == m_selectedButtonIdx);
+
+        if (render)
+            render->clr = isSelected ? glm::vec4(1.f, 1.f, 0.f, 1.f) : glm::vec4(1.f, 1.f, 1.f, 1.f);
+
+        if (isSelected && !btn->isHovered && !btn->onHoverChannel.empty())
+            if (auto* a = obj->getComponent<AudioComponent>())
+                if (auto* ch = a->getChannel(btn->onHoverChannel))
+                    ch->isPendingPlay = true;
+
+        if (!isSelected && btn->isHovered && !btn->onHoverChannel.empty())
+            if (auto* a = obj->getComponent<AudioComponent>())
+                if (auto* ch = a->getChannel(btn->onHoverChannel))
+                    ch->isPendingStop = true;
+
+        btn->isHovered = isSelected;
+    }
+
+    if (m_selectedButtonIdx != -1 && InputHandler::isGamepadButtonTriggered(GLFW_GAMEPAD_BUTTON_A)) {
+        GameObject* obj = sorted[m_selectedButtonIdx];
+        Button* btn = obj->getComponent<Button>();
+        if (btn) {
+            if (!btn->onClickChannel.empty())
+                if (auto* a = obj->getComponent<AudioComponent>())
+                    if (auto* ch = a->getChannel(btn->onClickChannel))
+                        ch->isPendingPlay = true;
+            handleAction(*btn);
+        }
+    }
 }
 
 //handle button action
@@ -102,8 +167,26 @@ void ButtonSystem::handleAction(const Button& btn) {
 
     case ButtonAction::LOAD_SCENE:
         if (!btn.scenePath.empty()) {
-            SceneManager::getInstance().requestLevelLoad(btn.scenePath);
+            SceneManager::getInstance().requestLoadScene(btn.scenePath);
         }
+        break;
+
+    case ButtonAction::RESTART:
+        SceneManager::getInstance().requestRestart();
+        break;
+
+    case ButtonAction::RESUME_GAME:
+        SceneManager::getInstance().resumeScene();
+        // load the level scene again if needed
+        if (!SceneManager::getInstance().getCurrentSceneName().empty())
+            SceneManager::getInstance().requestLoadScene(
+                SceneManager::getInstance().getCurrentSceneName());
+        break;
+
+    case ButtonAction::BACK:
+        if (!SceneManager::getInstance().getPreviousSceneName().empty())
+            SceneManager::getInstance().requestLoadScene(
+                SceneManager::getInstance().getPreviousSceneName());
         break;
 
     case ButtonAction::EXIT_GAME:
@@ -113,39 +196,28 @@ void ButtonSystem::handleAction(const Button& btn) {
     case ButtonAction::MUSIC_VOL_UP: {
         auto& ah = AudioHandler::getInstance();
         ah.setMasterVolume(ah.getMasterVolume() + 0.1f);
-        updateVolumeDisplay();
+        //updateVolumeDisplay();
         break;
     }
 
     case ButtonAction::MUSIC_VOL_DOWN: {
         auto& ah = AudioHandler::getInstance();
         ah.setMasterVolume(ah.getMasterVolume() - 0.1f);
-        updateVolumeDisplay();
+        //updateVolumeDisplay();
         break;
     }
-    case ButtonAction::BACK: {
-        SceneManager::getInstance().requestLevelLoad(
-            SceneManager::getInstance().getPreviousSceneName()
-        );
-        break;
-    }
+
     case ButtonAction::MUTE: {
         auto& ah = AudioHandler::getInstance();
-		m_previousVolume = ah.getMasterVolume();
-        ah.setMasterVolume(0);
-        updateVolumeDisplay();
+        m_previousVolume = ah.getMasterVolume();
+        ah.setMasterVolume(0.f);
+        //updateVolumeDisplay();
         break;
     }
+
     case ButtonAction::UNMUTE: {
-        auto& ah = AudioHandler::getInstance();
-        ah.setMasterVolume(m_previousVolume);
-        updateVolumeDisplay();
-        break;
-    }
-    case ButtonAction::RESUME_GAME: {
-        SceneManager::getInstance().requestLevelLoad(
-            SceneManager::getInstance().getLevelSceneName()
-        );
+        AudioHandler::getInstance().setMasterVolume(m_previousVolume);
+        //updateVolumeDisplay();
         break;
     }
 
@@ -155,14 +227,15 @@ void ButtonSystem::handleAction(const Button& btn) {
 }
 
 //volume display update
-void ButtonSystem::updateVolumeDisplay() const {
-    AudioHandler& ah = AudioHandler::getInstance();
-    GameObject* volText = g_manager->getGameObject("music_vol_text");
-    if (volText && volText->hasComponent<FontComponent>()) {
-        int pct = static_cast<int>(ah.getMasterVolume() * 100.0f + 0.5f);
-        volText->getComponent<FontComponent>()->word = std::to_string(pct) + "%";
-    }
-}
+//void ButtonSystem::updateVolumeDisplay() const {
+//    AudioHandler& ah = AudioHandler::getInstance();
+//    GameObject* volText = g_manager->getGameObject("music_vol_text");
+//
+//    if (volText && volText->hasComponent<FontComponent>()) {
+//        int pct = static_cast<int>(ah.getMasterVolume() * 100.0f + 0.5f);
+//        volText->getComponent<FontComponent>()->word = std::to_string(pct) + "%";
+//    }
+//}
 
 //clear button
 void ButtonSystem::clearButtons() {

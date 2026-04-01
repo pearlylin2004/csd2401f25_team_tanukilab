@@ -39,7 +39,7 @@ private:
     void clearButtons();
     //void dispatchAction(ButtonAction action, const std::string& scenePath);
     bool isPointInButton(const Vector2D& point, GameObject* button) const;
-    void updateVolumeDisplay() const;
+    //void updateVolumeDisplay() const;
     void handleAction(const Button& btn);
 
     ButtonSystem() = default;
@@ -54,6 +54,8 @@ private:
 
     float m_previousVolume = 1.0f;
 
-    bool m_pendingSceneChange = false;
-    GameState m_pendingState;
+    //bool m_pendingSceneChange = false;
+
+    int m_selectedButtonIdx = -1;
+    size_t m_lastButtonCount = 0;
 };

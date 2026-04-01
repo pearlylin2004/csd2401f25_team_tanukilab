@@ -248,14 +248,14 @@ namespace JsonIO {
         case ButtonAction::LOAD_SCENE:    return "load_scene";
         case ButtonAction::EXIT_GAME:     return "exit_game";
         case ButtonAction::RESUME_GAME:   return "resume_game";
-        case ButtonAction::YES_EXIT:      return "yes_exit";
-        case ButtonAction::NO_EXIT:       return "no_exit";
+        //case ButtonAction::YES_EXIT:      return "yes_exit";
+        //case ButtonAction::NO_EXIT:       return "no_exit";
         case ButtonAction::BACK:          return "back";
         case ButtonAction::MUSIC_VOL_UP:   return "music_vol_up";
         case ButtonAction::MUSIC_VOL_DOWN: return "music_vol_down";
-        case ButtonAction::SFX_VOL_UP:     return "sfx_vol_up";
-        case ButtonAction::SFX_VOL_DOWN:   return "sfx_vol_down";
-        case ButtonAction::OPEN_LEADERBOARD: return "open_leaderboard";
+        //case ButtonAction::SFX_VOL_UP:     return "sfx_vol_up";
+        //case ButtonAction::SFX_VOL_DOWN:   return "sfx_vol_down";
+        //case ButtonAction::OPEN_LEADERBOARD: return "open_leaderboard";
         case ButtonAction::MUTE:   return "mute";
         case ButtonAction::UNMUTE:   return "unmute";
         /*case ButtonAction::WATCH_REPLAY: return "watch_replay";
@@ -270,15 +270,10 @@ namespace JsonIO {
 
         if (s == "exit_game") return ButtonAction::EXIT_GAME;
         if (s == "resume_game") return ButtonAction::RESUME_GAME;
-        if (s == "yes_exit") return ButtonAction::YES_EXIT;
-        if (s == "no_exit") return ButtonAction::NO_EXIT;
         if (s == "back") return ButtonAction::BACK;
 
         if (s == "music_vol_up") return ButtonAction::MUSIC_VOL_UP;
         if (s == "music_vol_down") return ButtonAction::MUSIC_VOL_DOWN;
-        if (s == "sfx_vol_up") return ButtonAction::SFX_VOL_UP;
-        if (s == "sfx_vol_down") return ButtonAction::SFX_VOL_DOWN;
-        if (s == "open_leaderboard") return ButtonAction::OPEN_LEADERBOARD;
         if (s == "mute") return ButtonAction::MUTE;
         if (s == "unmute") return ButtonAction::UNMUTE;/*
         if (s == "watch_replay") return ButtonAction::WATCH_REPLAY;
@@ -432,31 +427,31 @@ namespace JsonIO {
         }
     }
 
-    GameState stringToGamestate(const std::string& stateStr) {
-		if (stateStr == "MENU") return GameState::MENU;
-		if (stateStr == "PLAYING") return GameState::PLAYING;
-		if (stateStr == "CONTROL") return GameState::CONTROL;
-		if (stateStr == "PAUSED") return GameState::PAUSED;
-        if (stateStr == "EXIT") return GameState::EXIT;
-        if (stateStr == "EXITCONFIRMATION") return GameState::EXITCONFIRMATION;
-        //if (stateStr == "REPLAY") return GameState::REPLAY;
-        //if (stateStr == "LEVELS") return GameState::LEVELS;
-		return GameState::NONE;
-	}
+ //   GameState stringToGamestate(const std::string& stateStr) {
+	//	if (stateStr == "MENU") return GameState::MENU;
+	//	if (stateStr == "PLAYING") return GameState::PLAYING;
+	//	if (stateStr == "CONTROL") return GameState::CONTROL;
+	//	if (stateStr == "PAUSED") return GameState::PAUSED;
+ //       if (stateStr == "EXIT") return GameState::EXIT;
+ //       if (stateStr == "EXITCONFIRMATION") return GameState::EXITCONFIRMATION;
+ //       //if (stateStr == "REPLAY") return GameState::REPLAY;
+ //       //if (stateStr == "LEVELS") return GameState::LEVELS;
+	//	return GameState::NONE;
+	//}
 
-	std::string GameStateToString(GameState gm) {
-		switch (gm) {
-		case GameState::MENU: return "MENU";
-		case GameState::PLAYING: return "PLAYING";
-		case GameState::CONTROL: return "CONTROL";
-		case GameState::PAUSED: return "PAUSED";
-		case GameState::EXIT: return "EXIT";
-		case GameState::EXITCONFIRMATION: return "EXITCONFIRMATION";
-		//case GameState::REPLAY: return "REPLAY";
-		//case GameState::LEVELS: return "LEVELS";
-		default: return "NONE";
-		}
-	}
+	//std::string GameStateToString(GameState gm) {
+	//	switch (gm) {
+	//	case GameState::MENU: return "MENU";
+	//	case GameState::PLAYING: return "PLAYING";
+	//	case GameState::CONTROL: return "CONTROL";
+	//	case GameState::PAUSED: return "PAUSED";
+	//	case GameState::EXIT: return "EXIT";
+	//	case GameState::EXITCONFIRMATION: return "EXITCONFIRMATION";
+	//	//case GameState::REPLAY: return "REPLAY";
+	//	//case GameState::LEVELS: return "LEVELS";
+	//	default: return "NONE";
+	//	}
+	//}
 
     // Add this helper function in JsonIO.cpp or create a utilities file
     int stringToGLFWKey(const std::string& keyStr) {

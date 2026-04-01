@@ -530,7 +530,7 @@ private:
 	lua_State* L = nullptr; //pointer to Lua state
 	MessageBus* messageBus = nullptr; //pointer to message bus
 	//std::unique_ptr<GameObjectManager> manager; //pointer to game object manager
-	GUISystem* guiSystem = nullptr; //pointer to GUI system
+	//GUISystem* guiSystem = nullptr; //pointer to GUI system
 
 	void registerManagerBindings(GameObjectManager& manager);
 };

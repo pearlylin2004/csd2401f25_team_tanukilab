@@ -14,18 +14,17 @@ Technology is prohibited.
 */
 /* End Header **************************************************************************/
 
-#pragma once
-
-enum class GameState {
-    NONE,
-    MENU,
-    PLAYING,
-    CONTROL,
-    AUDIO,
-    PAUSED,
-    EXIT,
-    EXITCONFIRMATION,
-    LEVELS,//maybe for future use
-    WIN,
-    LEADERBOARD
-};
+//#pragma once
+//
+//enum class GameState {
+//    NONE,
+//    MENU,
+//    PLAYING,
+//    CONTROL,
+//    AUDIO,
+//    PAUSED,
+//    EXIT,
+//    EXITCONFIRMATION,
+//    LEVELS,//maybe for future use
+//    WIN
+//};

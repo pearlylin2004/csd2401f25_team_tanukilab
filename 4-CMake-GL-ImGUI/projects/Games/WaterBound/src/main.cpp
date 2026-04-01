@@ -69,20 +69,17 @@ int main(int argc, char** argv) {
             if (InputHandler::isKeyTriggered(GLFW_KEY_F1) || InputHandler::isGamepadButtonTriggered(GLFW_GAMEPAD_BUTTON_BACK))
                 engine->stop();
 
-            GameState current = GUISystem::getInstance().getCurrentState();
-
             // ESC (keyboard) -> pause
             if (InputHandler::isKeyTriggered(GLFW_KEY_ESCAPE)) {
-                if (current != GameState::PAUSED && current != GameState::MENU) {
-                    GUISystem::getInstance().setStateBeforePause(current);
-                    SceneManager::getInstance().changeState(GameState::PAUSED, "pause_scene.json");
+                if (SceneManager::getInstance().getCurrentSceneName() != "pause_scene.json") {
+                    SceneManager::getInstance().loadScene("pause_scene.json");
                 }
             }
 
             // START (gamepad) -> main menu
             if (InputHandler::isGamepadButtonTriggered(GLFW_GAMEPAD_BUTTON_START)) {
-                if (current != GameState::MENU) {
-                    SceneManager::getInstance().changeState(GameState::MENU, "menu_scene.json");
+                if (SceneManager::getInstance().getCurrentSceneName() != "menu_scene.json") {
+                    SceneManager::getInstance().loadScene("menu_scene.json");
                 }
             }
             });
@@ -91,7 +88,7 @@ int main(int argc, char** argv) {
         GlobalRegistry::Instance().init();
 
         // load menu as fir
-        SceneManager::getInstance().executeLevelLoad("menu_scene.json");
+        SceneManager::getInstance().loadScene("menu_scene.json");
 
         engine->Run();
     }

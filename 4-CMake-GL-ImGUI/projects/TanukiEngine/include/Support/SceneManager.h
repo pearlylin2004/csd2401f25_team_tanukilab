@@ -29,43 +29,35 @@ public:
     }
 
     void init(GameObjectManager& manager, VisualLogicSystem& vlSystem);
-    void loadScene(const std::string& sceneName);
-    void requestRestart();
-    void requestLevelLoad(const std::string& levelSceneName);
     void update();
-    void changeState(GameState newState, const std::string& sceneName = "");
 
-    GameState getCurrentState()    const { return m_currentState; }
-    GameState getPreviousState()   const { return m_previousState; }
-    GameState getStateBeforePause()const { return m_stateBeforePause; }
+    void loadScene(const std::string& sceneName);
+    void restartScene();
+    void pauseScene(); // pause (no scene load)
+    void resumeScene();
 
-    void setCurrentState(GameState s) { m_currentState = s; }
-    void setPreviousState(GameState s) { m_previousState = s; }
-    void setStateBeforePause(GameState s) { m_stateBeforePause = s; }
+    bool isPaused() const { return m_paused; }
+    const std::string& getCurrentSceneName() const { return m_currentSceneName; }
     const std::string& getPreviousSceneName() const { return m_previousSceneName; }
 
-    GameState sceneToState(const std::string& sceneName) const;
+    void setOnSceneLoadCallback(std::function<void(GameObjectManager&)> callb) {
+        m_onSceneLoad = callb;
+    }
 
-    const std::string& getCurrentLevel() const { return m_currentLevel; }
-    void setCurrentLevel(const std::string& fullPath) { m_currentLevel = fullPath; }
+    // pending requests (called from Lua/game code, executed next frame)
+    void requestRestart();
+    void requestLoadScene(const std::string& levelSceneName);
+
+    void triggerSceneLoad(GameObjectManager& manager);
+    void resetAndInitVisualLogic(GameObjectManager& manager);
+
+private:
+    static std::string buildScenePath(const std::string& name);
+    void executeRestart();
+    void executeLoad(const std::string& levelSceneName);
     void captureSpawnPositions();
     void resetAllObjectsToSpawn();
 
-    void executeRestart();
-    void executeLevelLoad(const std::string& levelSceneName);
-
-    void pauseGame();
-    void resumeGame();
-    bool isPaused() const { return m_currentState == GameState::PAUSED; }
-    std::string getLevelSceneName() const { return m_levelSceneName; }
-
-    void setOnSceneLoadCallback(std::function<void(GameObjectManager&)> cb) {
-        m_onSceneLoad = cb;
-    }
-
-    void requestNextLevel();
-private:
-    static std::string buildScenePath(const std::string& name);
     SceneManager() = default;
     ~SceneManager() = default;
     SceneManager(const SceneManager&) = delete;
@@ -74,24 +66,15 @@ private:
     GameObjectManager* g_manager = nullptr;
     VisualLogicSystem* g_visualLogicSystem = nullptr;
 
-    GameState m_currentState = GameState::NONE;
-    GameState m_previousState = GameState::MENU;
-    GameState m_stateBeforePause = GameState::MENU;
-
-    //for back
-    std::string m_previousSceneName;
     std::string m_currentSceneName;
+    std::string m_previousSceneName;
+    std::string m_currentSceneFullPath; // for restart
 
-    std::string m_currentLevel;  //full path to the active level scene
+    bool m_paused = false;
+    bool m_pendingRestart = false;
+    bool m_pendingLoad = false;
+    std::string m_pendingLoadName;
+
     std::unordered_map<std::string, Vector2D> m_spawnPositions;
-    bool        m_pendingRestart = false;
-    bool        m_pendingLevelLoad = false;
-    std::string m_pendingLevelName;
     std::function<void(GameObjectManager&)> m_onSceneLoad;
-    std::string m_levelSceneName; //only set when PLAYING state
-    bool m_pendingIsWinScene = false;
-
-    //next level
-    std::vector<std::string> m_levelList;
-    int m_currentLevelIndex = 0;
 };

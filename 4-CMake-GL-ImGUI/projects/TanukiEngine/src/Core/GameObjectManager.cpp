@@ -1069,7 +1069,7 @@ void GameObjectManager::loadSceneFromJson(const std::string& filename) {
 
 			//parse action string
 			if (jb.HasMember("action") && jb["action"].IsString()) {
-				std::cout << "---------------------Button name: " << go->getObjectName() << ", Action string: " << jb["action"].GetString() << std::endl;
+	
 				std::string actionStr = jb["action"].GetString();
 				b->actionName = JsonIO::StrToButtonAction(actionStr);
 			}

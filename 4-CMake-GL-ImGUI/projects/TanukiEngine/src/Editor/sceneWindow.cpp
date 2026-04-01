@@ -656,8 +656,8 @@ void SceneWindow::loadScene(GameObjectManager& manager) {
     CachedGameObjects::Instance().refresh();
 
 	//set current scene name
-    GameState newState = GUISystem::getInstance().sceneToState(m_menuBarState.sceneToLoad);
-    GUISystem::getInstance().setCurrentState(newState);
+    /*GameState newState = GUISystem::getInstance().sceneToState(m_menuBarState.sceneToLoad);
+    GUISystem::getInstance().setCurrentState(newState);*/
 
     DebugLog::addMessage("Loaded scene: " + m_sceneState.currentSceneName + "\n");
 }
