@@ -29,12 +29,12 @@ Technology is prohibited.
 #include "ResourceManager.h"
 #include "layerManager.h"
 #include "prefabManager.h"
-#include "GUISystem.h"
 #include "messageBus.h"
 #include "JsonIO.h"
 #include "globalRegistry.h"
 #include "GameScript.h"
 #include "PathManager.h"
+#include "SceneManager.h"
 
 // @class CoreEngine
 // @brief Central class for managing the entire game engine lifecycle.

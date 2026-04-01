@@ -45,7 +45,7 @@ Technology is prohibited.
 #include "JsonIO.h"
 #include "prefabManager.h"
 #include "performance.h"
-#include "GUISystem.h"
+#include "SceneManager.h"
 #include "PathManager.h"
 
 #ifndef RUNTIME_DIR_R
@@ -518,5 +518,5 @@ private:
 	static inline bool isEditing = false;
 	static inline bool pausedSimul = false;
 	static inline bool assetsChangedFlag = true;
-	static inline bool cantoggleEditor = false;
+	static inline bool cantoggleEditor = true;
 };

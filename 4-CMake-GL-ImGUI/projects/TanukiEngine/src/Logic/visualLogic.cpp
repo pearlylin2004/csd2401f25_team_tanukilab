@@ -16,8 +16,7 @@ Technology is prohibited.
 
 #include "Systems.h"
 #include "JsonIO.h"
-#include "GUISystem.h"
-#include "GameState.h"
+#include "SceneManager.h"
 
 std::map<std::string, float> VisualLC::globalFloatVar;
 GameObjectManager* VisualLogicSystem::m_manager = nullptr;
@@ -774,13 +773,13 @@ void VisualLogicSystem::executeActionNode(GameObject* obj, VisualLC* logic, Logi
 		}
 	}
 	else if (node.imp == NodeImplementation::RESTART_LEVEL) {
-		GUISystem::getInstance().m_pendingRestart = true;
+		//GUISystem::getInstance().m_pendingRestart = true;
+		SceneManager::getInstance().requestRestart();
 	}
 	else if (node.imp == NodeImplementation::LOAD_LEVEL) {
 		std::string levelName = node.parameters.count("levelName") ?
 			node.parameters["levelName"] : "";
-		GUISystem::getInstance().m_pendingLevelLoad = true;
-		GUISystem::getInstance().m_pendingLevelName = levelName;
+		SceneManager::getInstance().requestLoadScene(levelName);
 	}
 	else if (node.imp == NodeImplementation::DISABLE_COLLISION) {
 		CollisionInfo* collision = obj->getComponent<CollisionInfo>();
@@ -1198,6 +1197,8 @@ bool VisualLogicSystem::shouldTriggerCollision(LogicNode& node, GameObject* coll
 }
 
 void VisualLogicSystem::resetLogicState(/*GameObjectManager& manager*/) {
+	if (!m_manager) return;
+
 	std::vector<GameObject*> allObjects;
 	m_manager->getAllGameObjects(allObjects);
 

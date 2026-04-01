@@ -1,4 +1,4 @@
-/* Start Header ************************************************************************/
+﻿/* Start Header ************************************************************************/
 /*!
 \file		CoreEngine.cpp
 \author 	Seow Sin Le, s.sinle, 2401084, 55%
@@ -24,7 +24,6 @@ Technology is prohibited.
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "CoreEngine.h"
-#include "GUISystem.h"  // Add this include
 #include "toastSystem.h"
 
 CoreEngine::CoreEngine()
@@ -76,10 +75,7 @@ void CoreEngine::Init(bool forceWindowed) {
     int winHeight = cfg.height;
 
     if (wantFullscreen) {
-        monitor = glfwGetPrimaryMonitor();
-        const GLFWvidmode* mode = glfwGetVideoMode(monitor);
-        winWidth = mode->width;
-        winHeight = mode->height;
+        
 
         // remember windowed size for when we toggle back
         m_windowedWidth = cfg.width;
@@ -87,6 +83,11 @@ void CoreEngine::Init(bool forceWindowed) {
         Camera::onResize(m_windowedWidth, m_windowedHeight);
     }
     else {
+        monitor = glfwGetPrimaryMonitor();
+        const GLFWvidmode* mode = glfwGetVideoMode(monitor);
+        winWidth = mode->width;
+        winHeight = mode->height;
+
         m_windowedWidth = cfg.width;
         m_windowedHeight = cfg.height;
 		Camera::onResize(winWidth, winHeight);
@@ -157,7 +158,9 @@ void CoreEngine::Init(bool forceWindowed) {
 
     PrefabManager::Instance().loadPrefabRegistry();
     //m_guiSystem->init(*m_manager, *m_luaSystem);
-    GUISystem::getInstance().init(*m_manager, *m_luaSystem, *m_visualLCSystem);
+	ButtonSystem::getInstance().init(*m_manager);
+    SceneManager::getInstance().init(*m_manager, *m_visualLCSystem);
+    //GUISystem::getInstance().init(*m_manager, *m_luaSystem, *m_visualLCSystem);
     m_luaSystem->init(*m_manager);
     m_renderSystem->init(*m_manager, winWidth, winHeight);
     m_waterSystem->init();
@@ -218,13 +221,13 @@ void CoreEngine::GameLoop() {
 
     if (glfwWindowShouldClose(m_window)) { m_isRunning = false; return; }
     //change to fn because Q will affect the editor
-    //if (glfwWindowShouldClose(m_window) || InputHandler::isKeyTriggered(GLFW_KEY_F1)) { m_isRunning = false; return; }
-    ////pause checking, and set it to paused state if escape is held
+    if (glfwWindowShouldClose(m_window) || InputHandler::isKeyTriggered(GLFW_KEY_F1)) { m_isRunning = false; return; }
+    //pause checking, and set it to paused state if escape is held
     //if (InputHandler::isKeyTriggered(GLFW_KEY_ESCAPE)) {
     //    auto current = GUISystem::getInstance().getCurrentState(); //get current state
-    //    if (current != GameState::PAUSED && current != GameState::MENU) {
+    //    if (current == GameState::PLAYING) {
     //        GUISystem::getInstance().setStateBeforePause(current); //store state before pausing
-    //        GUISystem::getInstance().changeState(GameState::PAUSED, "pause_scene.json");
+    //        SceneManager::getInstance().requestLevelLoad("pause_scene.json");
     //    }
     //}
 
@@ -275,20 +278,19 @@ void CoreEngine::Update(float deltaTime) {
         toggleFullscreen();
     }
     //menu checking
-    GameState state = GUISystem::getInstance().getCurrentState();
+    /*GameState state = GUISystem::getInstance().getCurrentState();
     if (state != GameState::EXIT) {
         GUISystem::getInstance().update();
-    }
+    }*/
 
     // Tick the level timer for leaderboard
     //GUISystem::getInstance().tickLevelTimer(deltaTime);
 
 	//for other systems to update even in editor mode
     if (!EditorManager::isEditingMode() && !EditorManager::isPaused()) {
-        //m_luaSystem->update(*m_manager, deltaTime);
         m_visualLCSystem->initAll(*m_manager);
         m_visualLCSystem->updateAll(*m_manager, deltaTime);
-    }    
+    }
 
     // Update all systems in order
     m_inputSystem->update(*m_manager, deltaTime, *m_messageBus);
@@ -302,6 +304,7 @@ void CoreEngine::Update(float deltaTime) {
     m_tileMapSystem->update(*m_manager);
     m_particleSystem->update(*m_manager, deltaTime);;
     m_waterSystem->update(*m_manager, deltaTime);
+    ButtonSystem::getInstance().update();
 
     // // Record player state for replay and update ghost playback
     // auto& replay = ReplaySystem::getInstance();
@@ -337,7 +340,7 @@ void CoreEngine::Update(float deltaTime) {
     if (!EditorManager::isEditingMode() && !EditorManager::isPaused()) {
         m_luaSystem->update(*m_manager, deltaTime);
     }
-
+    SceneManager::getInstance().update();
     ToastSystem::getInstance().update(deltaTime);
     m_uiSystem->update();
 
@@ -538,7 +541,7 @@ void CoreEngine::setGameScript(GameScript* script) {
     /*if (m_luaSystem && m_gameScript)
         m_gameScript->registerLuaBindings(*m_luaSystem);*/
 
-    GUISystem::getInstance().setOnSceneLoadCallback([this](GameObjectManager& mgr) {if (m_gameScript) m_gameScript->onSceneLoad(mgr);});
+    SceneManager::getInstance().setOnSceneLoadCallback([this](GameObjectManager& mgr) {if (m_gameScript) m_gameScript->onSceneLoad(mgr);});
 
     if (m_luaSystem)
         m_gameScript->setLuaSystem(m_luaSystem.get());
@@ -547,34 +550,13 @@ void CoreEngine::setGameScript(GameScript* script) {
 void CoreEngine::loadInitialScene(const std::string& sceneName) {
     Editor::assetBrowserState.currentFolder = PathManager::Instance().getSourcePath() + "/assets/";
 
+    //use SceneManager so state is tracked correctly from the start
+    SceneManager::getInstance().requestLoadScene(sceneName);
+    SceneManager::getInstance().update();
+
     std::string fullPath = PathManager::Instance().getSourceScenePath() + sceneName;
     m_manager->loadScene(fullPath);
     m_manager->initializeSceneResources();
-    GUISystem::getInstance().triggerSceneLoad(*m_manager);
+    SceneManager::getInstance().triggerSceneLoad(*m_manager);
     CachedGameObjects::Instance().refresh();
 }
-
-//void CoreEngine::startBGM() {
-//    if (m_bgmChannel) return;
-//    AudioChannel bgm;
-//    bgm.audioFile = m_bgmFilePath;
-//    bgm.loop = true;
-//    bgm.volume = 0.125f;
-//    m_bgmChannel = AudioHandler::getInstance().playBGMSound(&bgm);
-//    AudioHandler::getInstance().registerBGMChannel(m_bgmChannel);
-//}
-//
-//void CoreEngine::stopBGM() {
-//    if (m_bgmChannel) {
-//        m_bgmChannel->stop();
-//        m_bgmChannel = nullptr;
-//    }
-//}
-//
-//void CoreEngine::pauseBGM() {
-//    if (m_bgmChannel) m_bgmChannel->setPaused(true);
-//}
-//
-//void CoreEngine::resumeBGM() {
-//    if (m_bgmChannel) m_bgmChannel->setPaused(false);
-//}

@@ -22,7 +22,6 @@ Technology is prohibited.
 #include "JsonIO.h"
 #include "Editor/editorState.h"
 #include "Editor/undoRedo.h"
-#include "GUISystem.h"
 #include "Systems/Systems.h"
 
 #ifndef RUNTIME_SCENE_DIR_R
@@ -1069,9 +1068,13 @@ void GameObjectManager::loadSceneFromJson(const std::string& filename) {
 
 			//parse action string
 			if (jb.HasMember("action") && jb["action"].IsString()) {
+	
 				std::string actionStr = jb["action"].GetString();
 				b->actionName = JsonIO::StrToButtonAction(actionStr);
 			}
+
+			if (jb.HasMember("scenePath") && jb["scenePath"].IsString())
+				b->scenePath = jb["scenePath"].GetString();
 		}
 		// ---- WaterBody ----
 		if (comps.HasMember("WaterBody") && comps["WaterBody"].IsObject()) {
@@ -1176,7 +1179,7 @@ void GameObjectManager::loadSceneFromJson(const std::string& filename) {
 	// }
 	/* ---- END ---- */
 
-	GUISystem::getInstance().createButtons();
+	ButtonSystem::getInstance().refresh();
 
 	std::cout << "Total game objects loaded: " << m_gameObjects.size() << std::endl;
 
@@ -2032,6 +2035,14 @@ void GameObjectManager::saveSceneToJson(const std::string& filename, bool isNew)
 
 			std::string actionStr = JsonIO::ButtonActionToStr(btn->actionName);
 			jb.AddMember("action", rapidjson::Value(actionStr.c_str(), a), a);
+
+			//for scene path
+			if (!btn->scenePath.empty()) {
+				if (!prefabBtn || !prefabBtn->HasMember("scenePath") ||
+					btn->scenePath != (*prefabBtn)["scenePath"].GetString()) {
+					jb.AddMember("scenePath", rapidjson::Value(btn->scenePath.c_str(), a), a);
+				}
+			}
 
 			// onClickChannel
 			if (!prefabBtn || !prefabBtn->HasMember("onClickChannel") ||

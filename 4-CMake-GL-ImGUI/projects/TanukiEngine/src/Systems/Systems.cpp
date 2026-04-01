@@ -27,7 +27,6 @@ Technology is prohibited.
 #include "Systems.h"
 #pragma warning(pop)
 #include "Physics.h"
-#include "GUISystem.h"
 #include "toastSystem.h"
 
 std::string TileMapSystem::filename{};
@@ -60,7 +59,7 @@ void InputSystem::update(GameObjectManager& manager, const float& deltaTime, Mes
 
         // refresh cached object vector
         CachedGameObjects::Instance().refresh();
-		GUISystem::getInstance().createButtons(/*manager*/);
+		ButtonSystem::getInstance().refresh();
 
         messageBus.publish(Message("KeyPressed", nullptr, KeyEvent{ "0", true }));
 

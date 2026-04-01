@@ -31,6 +31,7 @@ Technology is prohibited.
 #include "font.h"
 #include "dynamics.h"
 #include "queue"
+#include "ButtonAction.h"
 #pragma warning(push, 0)
 #include "pl_mpeg.h"
 #pragma warning(pop)
@@ -355,40 +356,19 @@ enum class CollisionResponseMode {
     NoResponse
 };
 
-//button action 
-enum class ButtonAction {
-    NONE,
-    START_GAME,
-    OPEN_CONTROL,
-	OPEN_AUDIO,
-    EXIT_GAME,
-    RESUME_GAME,
-	YES_EXIT,
-	NO_EXIT,
-    BACK,
-    MENU,
-    MUSIC_VOL_UP,
-    MUSIC_VOL_DOWN,
-    SFX_VOL_UP,
-    SFX_VOL_DOWN,
-    OPEN_LEADERBOARD,
-    MUTE,
-    UNMUTE/*,
-    WATCH_REPLAY,
-    OPEN_REPLAY_SELECT*/
-};
-
 //Button component
 struct Button : public Component {
-    ButtonAction actionName = ButtonAction::NONE;   //action this button triggers
-    bool isHovered = false;   //hover state
-    bool isPressed = false;   //pressed state
+    ButtonAction actionName = ButtonAction::NONE;
+    std::string  scenePath = "";   // target scene filename for LOAD_SCENE buttons
+
+    bool isHovered = false;
+    bool isPressed = false;
 
     std::string onClickChannel = "";
     std::string onHoverChannel = "";
 
     Button() = default;
-    Button(ButtonAction action) : actionName(action) {} 
+    explicit Button(ButtonAction action) : actionName(action) {}
 
     std::unique_ptr<Component> clone() const override {
         return std::make_unique<Button>(*this);

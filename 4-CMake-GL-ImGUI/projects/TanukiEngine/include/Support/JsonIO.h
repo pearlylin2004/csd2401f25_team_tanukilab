@@ -42,6 +42,7 @@ Technology is prohibited.
 #include "GameObjectManager.h"
 #include "Component.h"
 #include "renderer.h"
+#include "ButtonSystem.h"
 
 /*!
  * \namespace Paths

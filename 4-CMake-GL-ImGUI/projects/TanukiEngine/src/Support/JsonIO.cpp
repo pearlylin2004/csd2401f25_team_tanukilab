@@ -245,44 +245,35 @@ namespace JsonIO {
     //for button
     const char* ButtonActionToStr(ButtonAction action) {
         switch (action) {
-        case ButtonAction::START_GAME:    return "start_game";
-        case ButtonAction::OPEN_CONTROL:   return "open_control";
-        case ButtonAction::OPEN_AUDIO:      return "open_audio";
-        case ButtonAction::EXIT_GAME:      return "exit_game";
-        case ButtonAction::RESUME_GAME:    return "resume_game";
-		case ButtonAction::YES_EXIT:       return "yes_exit";
-		case ButtonAction::NO_EXIT:        return "no_exit";
-		case ButtonAction::BACK:         return "back";
-		case ButtonAction::MENU:          return "menu";
+        case ButtonAction::LOAD_SCENE:    return "load_scene";
+        case ButtonAction::EXIT_GAME:     return "exit_game";
+        case ButtonAction::RESUME_GAME:   return "resume_game";
+        //case ButtonAction::YES_EXIT:      return "yes_exit";
+        //case ButtonAction::NO_EXIT:       return "no_exit";
+        case ButtonAction::BACK:          return "back";
         case ButtonAction::MUSIC_VOL_UP:   return "music_vol_up";
         case ButtonAction::MUSIC_VOL_DOWN: return "music_vol_down";
-        case ButtonAction::SFX_VOL_UP:     return "sfx_vol_up";
-        case ButtonAction::SFX_VOL_DOWN:   return "sfx_vol_down";
-        case ButtonAction::OPEN_LEADERBOARD: return "open_leaderboard";
+        //case ButtonAction::SFX_VOL_UP:     return "sfx_vol_up";
+        //case ButtonAction::SFX_VOL_DOWN:   return "sfx_vol_down";
+        //case ButtonAction::OPEN_LEADERBOARD: return "open_leaderboard";
         case ButtonAction::MUTE:   return "mute";
         case ButtonAction::UNMUTE:   return "unmute";
         /*case ButtonAction::WATCH_REPLAY: return "watch_replay";
         case ButtonAction::OPEN_REPLAY_SELECT: return "open_replay_select";*/
         default:                           return "none";
         }
-	}
+    }
 
     //for button
     ButtonAction StrToButtonAction(const std::string& s) {
-        if (s == "start_game") return ButtonAction::START_GAME;
-        if (s == "open_control") return ButtonAction::OPEN_CONTROL;
-        if (s == "open_audio") return ButtonAction::OPEN_AUDIO;
+        if (s == "load_scene") return ButtonAction::LOAD_SCENE;
+
         if (s == "exit_game") return ButtonAction::EXIT_GAME;
         if (s == "resume_game") return ButtonAction::RESUME_GAME;
-        if (s == "yes_exit") return ButtonAction::YES_EXIT;
-        if (s == "no_exit") return ButtonAction::NO_EXIT;
         if (s == "back") return ButtonAction::BACK;
-        if (s == "menu") return ButtonAction::MENU;
+
         if (s == "music_vol_up") return ButtonAction::MUSIC_VOL_UP;
         if (s == "music_vol_down") return ButtonAction::MUSIC_VOL_DOWN;
-        if (s == "sfx_vol_up") return ButtonAction::SFX_VOL_UP;
-        if (s == "sfx_vol_down") return ButtonAction::SFX_VOL_DOWN;
-        if (s == "open_leaderboard") return ButtonAction::OPEN_LEADERBOARD;
         if (s == "mute") return ButtonAction::MUTE;
         if (s == "unmute") return ButtonAction::UNMUTE;/*
         if (s == "watch_replay") return ButtonAction::WATCH_REPLAY;
@@ -436,31 +427,31 @@ namespace JsonIO {
         }
     }
 
-    GameState stringToGamestate(const std::string& stateStr) {
-		if (stateStr == "MENU") return GameState::MENU;
-		if (stateStr == "PLAYING") return GameState::PLAYING;
-		if (stateStr == "CONTROL") return GameState::CONTROL;
-		if (stateStr == "PAUSED") return GameState::PAUSED;
-        if (stateStr == "EXIT") return GameState::EXIT;
-        if (stateStr == "EXITCONFIRMATION") return GameState::EXITCONFIRMATION;
-        //if (stateStr == "REPLAY") return GameState::REPLAY;
-        //if (stateStr == "LEVELS") return GameState::LEVELS;
-		return GameState::NONE;
-	}
+ //   GameState stringToGamestate(const std::string& stateStr) {
+	//	if (stateStr == "MENU") return GameState::MENU;
+	//	if (stateStr == "PLAYING") return GameState::PLAYING;
+	//	if (stateStr == "CONTROL") return GameState::CONTROL;
+	//	if (stateStr == "PAUSED") return GameState::PAUSED;
+ //       if (stateStr == "EXIT") return GameState::EXIT;
+ //       if (stateStr == "EXITCONFIRMATION") return GameState::EXITCONFIRMATION;
+ //       //if (stateStr == "REPLAY") return GameState::REPLAY;
+ //       //if (stateStr == "LEVELS") return GameState::LEVELS;
+	//	return GameState::NONE;
+	//}
 
-	std::string GameStateToString(GameState gm) {
-		switch (gm) {
-		case GameState::MENU: return "MENU";
-		case GameState::PLAYING: return "PLAYING";
-		case GameState::CONTROL: return "CONTROL";
-		case GameState::PAUSED: return "PAUSED";
-		case GameState::EXIT: return "EXIT";
-		case GameState::EXITCONFIRMATION: return "EXITCONFIRMATION";
-		//case GameState::REPLAY: return "REPLAY";
-		//case GameState::LEVELS: return "LEVELS";
-		default: return "NONE";
-		}
-	}
+	//std::string GameStateToString(GameState gm) {
+	//	switch (gm) {
+	//	case GameState::MENU: return "MENU";
+	//	case GameState::PLAYING: return "PLAYING";
+	//	case GameState::CONTROL: return "CONTROL";
+	//	case GameState::PAUSED: return "PAUSED";
+	//	case GameState::EXIT: return "EXIT";
+	//	case GameState::EXITCONFIRMATION: return "EXITCONFIRMATION";
+	//	//case GameState::REPLAY: return "REPLAY";
+	//	//case GameState::LEVELS: return "LEVELS";
+	//	default: return "NONE";
+	//	}
+	//}
 
     // Add this helper function in JsonIO.cpp or create a utilities file
     int stringToGLFWKey(const std::string& keyStr) {
@@ -1802,11 +1793,15 @@ namespace JsonIO {
         auto& a = doc.GetAllocator();
         Value jb(kObjectType);
 
-        jb.AddMember("actionName", static_cast<int>(b->actionName), a);
+        jb.AddMember("action", static_cast<int>(b->actionName), a);
         jb.AddMember("isHovered", b->isHovered, a);
         jb.AddMember("isPressed", b->isPressed, a);
         jb.AddMember("onClickChannel", Value(b->onClickChannel.c_str(), a), a);
         jb.AddMember("onHoverChannel", Value(b->onHoverChannel.c_str(), a), a);
+        // Only add scenePath if not empty
+        if (!b->scenePath.empty()) {
+            jb.AddMember("scenePath", rapidjson::Value(b->scenePath.c_str(), a), a);
+        }
         doc.AddMember("Button", jb, a);
         StringBuffer buf; Writer<StringBuffer> w(buf); doc.Accept(w);
         return buf.GetString();
@@ -1824,11 +1819,14 @@ namespace JsonIO {
             ? obj->getComponent<Button>()
             : obj->addComponent<Button>();
 
-        if (jb.HasMember("actionName"))     b->actionName = static_cast<ButtonAction>(jb["actionName"].GetInt());
-        if (jb.HasMember("isHovered"))      b->isHovered = jb["isHovered"].GetBool();
-        if (jb.HasMember("isPressed"))      b->isPressed = jb["isPressed"].GetBool();
+        if (jb.HasMember("action") && jb["action"].IsString()) {
+            b->actionName = JsonIO::StrToButtonAction(jb["action"].GetString());
+        }
+        if (jb.HasMember("isHovered")) b->isHovered = jb["isHovered"].GetBool();
+        if (jb.HasMember("isPressed")) b->isPressed = jb["isPressed"].GetBool();
         if (jb.HasMember("onClickChannel")) b->onClickChannel = jb["onClickChannel"].GetString();
         if (jb.HasMember("onHoverChannel")) b->onHoverChannel = jb["onHoverChannel"].GetString();
+        if (jb.HasMember("scenePath")) b->scenePath = jb["scenePath"].GetString();
     }
 
     std::string serializeGameObj(GameObject* obj) {
@@ -1873,15 +1871,6 @@ namespace JsonIO {
         merge(serializeWaterBody(obj));
         merge(serializeWeapon(obj));
         merge(serializeButton(obj));
-
-        /*if (Button* b = obj->getComponent<Button>()) {
-            Value jb(kObjectType);
-            Value actionStr(ButtonActionToStr(b->actionName), a);
-            jb.AddMember("action", actionStr, a);
-            jb.AddMember("isHovered", b->isHovered, a);
-            jb.AddMember("isPressed", b->isPressed, a);
-            doc.AddMember("Button", jb, a);
-        }*/
 
         StringBuffer buf; Writer<StringBuffer> w(buf); doc.Accept(w);
         return buf.GetString();
@@ -2083,9 +2072,6 @@ namespace JsonIO {
 //==============================================================================
 // GameObjectManager JSON serialization
 //==============================================================================
-
-
-
 
 /**
  * \brief Serializes a layer reference with both ID and name.

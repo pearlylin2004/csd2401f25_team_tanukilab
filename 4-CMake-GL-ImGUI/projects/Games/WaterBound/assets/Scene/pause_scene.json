@@ -79,6 +79,10 @@
           "texture": "assets/button.png",
           "hasAnimation": 0
         }
+      },
+      "Button": {
+        "action": "load_scene",
+        "scenePath": "control_scene.json"
       }
     },
     {
@@ -98,7 +102,7 @@
           ]
         },
         "FontComponent": {
-          "word": "HOw to play",
+          "word": "How to play",
           "color": [
             0.0,
             0.0,
@@ -193,6 +197,10 @@
         },
         "VisualLC": {
           "filename": "menu_button_Logic.json"
+        },
+        "Button": {
+          "action": "load_scene",
+          "scenePath": "menu_scene.json"
         }
       }
     },
@@ -221,6 +229,9 @@
           "hasTex": 1,
           "texture": "assets/button.png",
           "hasAnimation": 0
+        },
+        "Button": {
+          "action": "resume_game"
         }
       }
     }

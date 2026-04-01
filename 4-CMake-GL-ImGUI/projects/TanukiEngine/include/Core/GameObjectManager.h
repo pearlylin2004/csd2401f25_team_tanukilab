@@ -22,7 +22,6 @@ Technology is prohibited.
 #include "Core/GameObject.h"
 #include "Support/layerManager.h"
 #include "Support/mathlib.h"
-#include "Core/GameState.h"
 
 // This class is responsible for creating, storing, and providing access to game objects.
 class GameObjectManager {

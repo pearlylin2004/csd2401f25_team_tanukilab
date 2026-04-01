@@ -37,6 +37,8 @@ void LuaSystem::init(GameObjectManager& manager) {
     lua_register(L, "setTexture", Lua_setTexture);
     lua_register(L, "setColliderSize", Lua_setColliderSize);
     lua_register(L, "getAnimationFrame", Lua_getAnimationFrame);
+    lua_register(L, "getFontText", Lua_getFontText);
+    lua_register(L, "setFontText", Lua_setFontText);
 
     // physics getters
     lua_register(L, "getVelX", Lua_getVelX);
@@ -154,6 +156,8 @@ void LuaSystem::init(GameObjectManager& manager) {
     lua_register(L, "setSoundVolume", Lua_setSoundVolume);
     lua_register(L, "isSoundPlaying", Lua_isSoundPlaying);
     lua_register(L, "setLowPassFilter", Lua_setLowPassFilter);
+    lua_register(L, "getMasterVolume", Lua_getMasterVolume);
+    lua_register(L, "setMasterVolume", Lua_setMasterVolume);
 
     // visual script
     lua_register(L, "getVSGlobalFloat", Lua_getVSGlobalFloat);
@@ -383,6 +387,32 @@ int LuaSystem::Lua_getAnimationFrame(lua_State* L) {
     lua_pushinteger(L, anim->animState[idx].currentFrameColumn);
 
     return 1;
+}
+
+int LuaSystem::Lua_getFontText(lua_State* L) {
+    GameObject* obj = static_cast<GameObject*>(lua_touserdata(L, 1));
+    if (!obj || !obj->hasComponent<FontComponent>()) {
+        lua_pushstring(L, ""); return 1;
+    }
+
+    lua_pushstring(L, obj->getComponent<FontComponent>()->word.c_str());
+    return 1;
+}
+
+int LuaSystem::Lua_setFontText(lua_State* L) {
+    GameObject* obj = static_cast<GameObject*>(lua_touserdata(L, 1));
+    if (!obj) return 0;
+
+    if (!obj->hasComponent<FontComponent>()) {
+        std::cout << "[Lua] " << obj->getObjectName() << " has no font component\n";
+        return 0;
+    }
+
+    const char* text = lua_tostring(L, 2);
+    if (!text) return 0;
+
+    obj->getComponent<FontComponent>()->word = text;
+    return 0;
 }
 
 /* ---- physics getters ---- */
@@ -1459,6 +1489,17 @@ int LuaSystem::Lua_setLowPassFilter(lua_State* L) {
     return 0;
 }
 
+int LuaSystem::Lua_getMasterVolume(lua_State* L) {
+    lua_pushnumber(L, AudioHandler::getInstance().getMasterVolume());
+    return 1;
+}
+
+int LuaSystem::Lua_setMasterVolume(lua_State* L) {
+    float vol = static_cast<float>(lua_tonumber(L, 1));
+
+    AudioHandler::getInstance().setMasterVolume(vol);
+    return 0;
+}
 
 /* ---- visual script ---- */
 int LuaSystem::Lua_getVSGlobalFloat(lua_State* L) {
@@ -1742,13 +1783,13 @@ int LuaSystem::Lua_loadLevel(lua_State* L) {
     const char* sceneName = lua_tostring(L, 1);
     if (!sceneName) return 0;
 
-    GUISystem::getInstance().m_pendingLevelLoad = true;
-    GUISystem::getInstance().m_pendingLevelName = std::string(sceneName);
+    SceneManager::getInstance().requestLoadScene(std::string(sceneName));
+
     return 0;
 }
 
 int LuaSystem::Lua_getCurrentScene(lua_State* L) {
-    std::string scene = GUISystem::getInstance().getCurrentLevel();
+    std::string scene = SceneManager::getInstance().getCurrentSceneName();
     // strip path, just return filename
     std::filesystem::path p(scene);
 
