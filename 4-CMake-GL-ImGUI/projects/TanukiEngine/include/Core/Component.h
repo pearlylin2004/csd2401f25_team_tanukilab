@@ -40,7 +40,7 @@ Technology is prohibited.
 // at least it works!!!
 namespace JsonIO {
     // for the indexing in animation vector
-    inline std::vector<std::string> stateNames = { "Idle", "Walking", "Jumping", "Falling", "Shooting", "Dead" };
+    inline std::vector<std::string> stateNames = { "Idle", "Walking", "Jumping", "Falling", "Shooting", "Dead", "Dancing", "Emo"};
 }
 
 // basic component class
