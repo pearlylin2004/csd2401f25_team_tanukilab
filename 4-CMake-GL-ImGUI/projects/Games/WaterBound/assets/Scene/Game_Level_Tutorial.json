@@ -2129,30 +2129,30 @@
           "facingRight": 1,
           "Idle": {
             "animState": {
-              "texture": "assets/Texture\\BG\\Wall_Of_Fire_SpriteSheet.png",
-              "loop": 1,
+              "texture": "assets/Texture\\BG\\Wall_Of_Fire_SpriteSheet_PG1.png",
+              "loop": 0,
               "play": 1,
               "totalColumn": 2,
-              "totalRow": 11,
+              "totalRow": 5,
               "frameTime": 0.05000000074505806,
               "initialFramCol": 0.0,
               "initialFramRow": 0.0,
-              "lastFramCol": 0.0,
-              "lastFramRow": 10.0
+              "lastFramCol": 1.0,
+              "lastFramRow": 4.0
             }
           },
           "Walking": {
             "animState": {
-              "texture": "",
-              "loop": 1,
-              "play": 0,
-              "totalColumn": 1,
-              "totalRow": 1,
-              "frameTime": 0.10000000149011612,
+              "texture": "assets/Texture\\BG\\Wall_Of_Fire_SpriteSheet_PG2.png",
+              "loop": 0,
+              "play": 1,
+              "totalColumn": 2,
+              "totalRow": 6,
+              "frameTime": 0.05000000074505806,
               "initialFramCol": 0.0,
               "initialFramRow": 0.0,
               "lastFramCol": 0.0,
-              "lastFramRow": 0.0
+              "lastFramRow": 5.0
             }
           },
           "Jumping": {
@@ -2260,6 +2260,9 @@
               "persistOnSceneChange": 0
             }
           }
+        },
+        "VisualLC": {
+          "filename": "background Fire_Logic.json"
         }
       }
     },
@@ -2293,30 +2296,30 @@
           "facingRight": 1,
           "Idle": {
             "animState": {
-              "texture": "assets/Texture\\BG\\Wall_Of_Fire_SpriteSheet.png",
-              "loop": 1,
+              "texture": "assets/Texture\\BG\\Wall_Of_Fire_SpriteSheet_PG1.png",
+              "loop": 0,
               "play": 1,
               "totalColumn": 2,
-              "totalRow": 11,
+              "totalRow": 5,
               "frameTime": 0.05000000074505806,
               "initialFramCol": 0.0,
               "initialFramRow": 0.0,
-              "lastFramCol": 0.0,
-              "lastFramRow": 10.0
+              "lastFramCol": 1.0,
+              "lastFramRow": 4.0
             }
           },
           "Walking": {
             "animState": {
-              "texture": "",
-              "loop": 1,
-              "play": 0,
-              "totalColumn": 1,
-              "totalRow": 1,
-              "frameTime": 0.10000000149011612,
+              "texture": "assets/Texture\\BG\\Wall_Of_Fire_SpriteSheet_PG2.png",
+              "loop": 0,
+              "play": 1,
+              "totalColumn": 2,
+              "totalRow": 6,
+              "frameTime": 0.05000000074505806,
               "initialFramCol": 0.0,
               "initialFramRow": 0.0,
               "lastFramCol": 0.0,
-              "lastFramRow": 0.0
+              "lastFramRow": 5.0
             }
           },
           "Jumping": {
@@ -2403,6 +2406,9 @@
               "lastFramRow": 0.0
             }
           }
+        },
+        "VisualLC": {
+          "filename": "background Fire_Logic.json"
         }
       }
     },

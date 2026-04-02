@@ -1,0 +1,140 @@
+{
+  "version": 1,
+  "nodes": [
+    {
+      "id": 1,
+      "implementation": "Check Animation End",
+      "type": 2,
+      "position": [
+        -34.0,
+        12.0
+      ],
+      "hasInput": true,
+      "hasOutput": false,
+      "hasTrueOutput": true,
+      "hasFalseOutput": true
+    },
+    {
+      "id": 2,
+      "implementation": "Check State",
+      "type": 2,
+      "position": [
+        -359.0,
+        21.0
+      ],
+      "hasInput": true,
+      "hasOutput": false,
+      "hasTrueOutput": true,
+      "hasFalseOutput": true,
+      "parameters": {
+        "state": "Idle"
+      }
+    },
+    {
+      "id": 3,
+      "implementation": "Set State",
+      "type": 1,
+      "position": [
+        274.0,
+        19.0
+      ],
+      "hasInput": true,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false,
+      "parameters": {
+        "state": "Walking"
+      }
+    },
+    {
+      "id": 4,
+      "implementation": "On Update",
+      "type": 0,
+      "position": [
+        -683.0,
+        117.0
+      ],
+      "hasInput": false,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false
+    },
+    {
+      "id": 5,
+      "implementation": "Check State",
+      "type": 2,
+      "position": [
+        -362.0,
+        156.0
+      ],
+      "hasInput": true,
+      "hasOutput": false,
+      "hasTrueOutput": true,
+      "hasFalseOutput": true,
+      "parameters": {
+        "state": "Walking"
+      }
+    },
+    {
+      "id": 6,
+      "implementation": "Check Animation End",
+      "type": 2,
+      "position": [
+        -48.0,
+        162.0
+      ],
+      "hasInput": true,
+      "hasOutput": false,
+      "hasTrueOutput": true,
+      "hasFalseOutput": true
+    },
+    {
+      "id": 7,
+      "implementation": "Set State",
+      "type": 1,
+      "position": [
+        324.0,
+        190.0
+      ],
+      "hasInput": true,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false,
+      "parameters": {
+        "state": "Idle"
+      }
+    }
+  ],
+  "connections": [
+    {
+      "fromNodeId": 2,
+      "outputPin": "True",
+      "toNodeId": 1,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 4,
+      "outputPin": "Out",
+      "toNodeId": 2,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 4,
+      "outputPin": "Out",
+      "toNodeId": 5,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 5,
+      "outputPin": "True",
+      "toNodeId": 6,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 6,
+      "outputPin": "True",
+      "toNodeId": 7,
+      "inputPin": "In"
+    }
+  ]
+}

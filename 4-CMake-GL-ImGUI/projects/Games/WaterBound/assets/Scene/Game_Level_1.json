@@ -26,60 +26,6 @@
   "onLoadScript": "assets/scripting\\game_level_load.lua",
   "objects": [
     {
-      "prefabid": "b1a12273-a692-4ce0-8072-156da2c70842",
-      "name": "bullet2",
-      "components": {
-        "Transform": {
-          "pos": [
-            -1000.0,
-            -1001.361572265625,
-            0.0
-          ],
-          "scale": [
-            0.5,
-            0.20676174759864807,
-            0.0
-          ]
-        },
-        "Render": {
-          "shape": "square",
-          "colorR": 1.0,
-          "colorG": 1.0,
-          "colorB": 1.0,
-          "colorA": 1.0,
-          "hasTex": 1,
-          "texture": "assets/Texture\\water_texture.png",
-          "hasAnimation": 0
-        },
-        "Physics": {
-          "autoUpdate": 0
-        },
-        "CollisionInfo": {
-          "colliderType": "square",
-          "colliderType": "square",
-          "ignoreCollisionsWith": [
-            "player",
-            "hazards"
-          ]
-        },
-        "AudioComponent": {
-          "channels": {
-            "default": {
-              "volume": 0.09000000357627869
-            }
-          }
-        },
-        "LuaScript": {
-          "scripts": [
-            {
-              "filename": "./assets/scripting\\bullet.lua",
-              "scriptName": "bullet"
-            }
-          ]
-        }
-      }
-    },
-    {
       "name": "endgoal",
       "components": {
         "Transform": {
@@ -171,60 +117,6 @@
       }
     },
     {
-      "prefabid": "b1a12273-a692-4ce0-8072-156da2c70842",
-      "name": "bullet10",
-      "components": {
-        "Transform": {
-          "pos": [
-            -1000.0,
-            -1001.05908203125,
-            0.0
-          ],
-          "scale": [
-            0.5,
-            0.20676174759864807,
-            0.0
-          ]
-        },
-        "Render": {
-          "shape": "square",
-          "colorR": 1.0,
-          "colorG": 1.0,
-          "colorB": 1.0,
-          "colorA": 1.0,
-          "hasTex": 1,
-          "texture": "assets/Texture\\water_texture.png",
-          "hasAnimation": 0
-        },
-        "Physics": {
-          "autoUpdate": 0
-        },
-        "CollisionInfo": {
-          "colliderType": "square",
-          "colliderType": "square",
-          "ignoreCollisionsWith": [
-            "player",
-            "hazards"
-          ]
-        },
-        "AudioComponent": {
-          "channels": {
-            "default": {
-              "volume": 0.09000000357627869
-            }
-          }
-        },
-        "LuaScript": {
-          "scripts": [
-            {
-              "filename": "./assets/scripting\\bullet.lua",
-              "scriptName": "bullet"
-            }
-          ]
-        }
-      }
-    },
-    {
       "name": "Game_BGM",
       "components": {
         "Transform": {
@@ -301,147 +193,6 @@
             {
               "filename": "./assets/scripting\\player.lua",
               "scriptName": "player"
-            }
-          ]
-        }
-      }
-    },
-    {
-      "prefabid": "b1a12273-a692-4ce0-8072-156da2c70842",
-      "name": "bullet9",
-      "components": {
-        "Transform": {
-          "pos": [
-            -1000.0,
-            -999.2443237304688,
-            0.0
-          ],
-          "scale": [
-            0.5,
-            0.20676174759864807,
-            0.0
-          ]
-        },
-        "Render": {
-          "shape": "square",
-          "colorR": 1.0,
-          "colorG": 1.0,
-          "colorB": 1.0,
-          "colorA": 1.0,
-          "hasTex": 1,
-          "texture": "assets/Texture\\water_texture.png",
-          "hasAnimation": 0
-        },
-        "Physics": {
-          "autoUpdate": 0
-        },
-        "CollisionInfo": {
-          "colliderType": "square",
-          "colliderType": "square",
-          "ignoreCollisionsWith": [
-            "player",
-            "hazards"
-          ]
-        },
-        "AudioComponent": {
-          "channels": {
-            "default": {
-              "volume": 0.09000000357627869
-            }
-          }
-        },
-        "LuaScript": {
-          "scripts": [
-            {
-              "filename": "./assets/scripting\\bullet.lua",
-              "scriptName": "bullet"
-            }
-          ]
-        }
-      }
-    },
-    {
-      "prefabid": "b766d355-2b28-4a0d-b54e-6e4407e18596",
-      "name": "player",
-      "components": {
-        "Transform": {
-          "pos": [
-            -17.495912551879883,
-            -4.2259697914123535,
-            0.9980000257492065
-          ]
-        },
-        "Render": {
-          "colorR": 1.0,
-          "colorG": 1.0,
-          "colorB": 1.0,
-          "colorA": 1.0,
-          "hasTex": 1,
-          "texture": "assets/Texture\\Water_Gun.png",
-          "hasAnimation": 1
-        },
-        "Physics": {
-          "autoUpdate": 0
-        },
-        "LuaScript": {
-          "scripts": [
-            {
-              "filename": "./assets/scripting\\player.lua",
-              "scriptName": "player"
-            }
-          ]
-        }
-      }
-    },
-    {
-      "prefabid": "b1a12273-a692-4ce0-8072-156da2c70842",
-      "name": "bullet14",
-      "components": {
-        "Transform": {
-          "pos": [
-            -1000.0,
-            -999.546875,
-            0.0
-          ],
-          "scale": [
-            0.5,
-            0.20676174759864807,
-            0.0
-          ]
-        },
-        "Render": {
-          "shape": "square",
-          "colorR": 1.0,
-          "colorG": 1.0,
-          "colorB": 1.0,
-          "colorA": 1.0,
-          "hasTex": 1,
-          "texture": "assets/Texture\\water_texture.png",
-          "hasAnimation": 0
-        },
-        "Physics": {
-          "autoUpdate": 0
-        },
-        "CollisionInfo": {
-          "colliderType": "square",
-          "colliderType": "square",
-          "ignoreCollisionsWith": [
-            "player",
-            "hazards"
-          ]
-        },
-        "AudioComponent": {
-          "channels": {
-            "default": {
-              "volume": 0.09000000357627869
-            }
-          }
-        },
-        "LuaScript": {
-          "scripts": [
-            {
-              "filename": "./assets/scripting\\bullet.lua",
-              "scriptName": "bullet"
             }
           ]
         }
@@ -559,61 +310,35 @@
               "lastFramCol": 0.0,
               "lastFramRow": 0.0
             }
-          }
-        }
-      }
-    },
-    {
-      "prefabid": "b1a12273-a692-4ce0-8072-156da2c70842",
-      "name": "bullet15",
-      "components": {
-        "Transform": {
-          "pos": [
-            -1000.0,
-            -1000.756591796875,
-            0.0
-          ],
-          "scale": [
-            0.5,
-            0.20676174759864807,
-            0.0
-          ]
-        },
-        "Render": {
-          "shape": "square",
-          "colorR": 1.0,
-          "colorG": 1.0,
-          "colorB": 1.0,
-          "colorA": 1.0,
-          "hasTex": 1,
-          "texture": "assets/Texture\\water_texture.png",
-          "hasAnimation": 0
-        },
-        "Physics": {
-          "autoUpdate": 0
-        },
-        "CollisionInfo": {
-          "colliderType": "square",
-          "colliderType": "square",
-          "ignoreCollisionsWith": [
-            "player",
-            "hazards"
-          ]
-        },
-        "AudioComponent": {
-          "channels": {
-            "default": {
-              "volume": 0.09000000357627869
+          },
+          "Dancing": {
+            "animState": {
+              "texture": "",
+              "loop": 1,
+              "play": 0,
+              "totalColumn": 1,
+              "totalRow": 1,
+              "frameTime": 0.10000000149011612,
+              "initialFramCol": 0.0,
+              "initialFramRow": 0.0,
+              "lastFramCol": 0.0,
+              "lastFramRow": 0.0
+            }
+          },
+          "Emo": {
+            "animState": {
+              "texture": "",
+              "loop": 1,
+              "play": 0,
+              "totalColumn": 1,
+              "totalRow": 1,
+              "frameTime": 0.10000000149011612,
+              "initialFramCol": 0.0,
+              "initialFramRow": 0.0,
+              "lastFramCol": 0.0,
+              "lastFramRow": 0.0
             }
           }
-        },
-        "LuaScript": {
-          "scripts": [
-            {
-              "filename": "./assets/scripting\\bullet.lua",
-              "scriptName": "bullet"
-            }
-          ]
         }
       }
     },
@@ -642,60 +367,6 @@
           "hasTex": 1,
           "texture": "assets/Texture\\BG\\Clouds (1).png",
           "hasAnimation": 0
-        }
-      }
-    },
-    {
-      "prefabid": "b1a12273-a692-4ce0-8072-156da2c70842",
-      "name": "bullet7",
-      "components": {
-        "Transform": {
-          "pos": [
-            -1000.0,
-            -1001.6641235351563,
-            0.0
-          ],
-          "scale": [
-            0.5,
-            0.20676174759864807,
-            0.0
-          ]
-        },
-        "Render": {
-          "shape": "square",
-          "colorR": 1.0,
-          "colorG": 1.0,
-          "colorB": 1.0,
-          "colorA": 1.0,
-          "hasTex": 1,
-          "texture": "assets/Texture\\water_texture.png",
-          "hasAnimation": 0
-        },
-        "Physics": {
-          "autoUpdate": 0
-        },
-        "CollisionInfo": {
-          "colliderType": "square",
-          "colliderType": "square",
-          "ignoreCollisionsWith": [
-            "player",
-            "hazards"
-          ]
-        },
-        "AudioComponent": {
-          "channels": {
-            "default": {
-              "volume": 0.09000000357627869
-            }
-          }
-        },
-        "LuaScript": {
-          "scripts": [
-            {
-              "filename": "./assets/scripting\\bullet.lua",
-              "scriptName": "bullet"
-            }
-          ]
         }
       }
     },
@@ -1580,30 +1251,30 @@
           "facingRight": 1,
           "Idle": {
             "animState": {
-              "texture": "assets/Texture\\BG\\Wall_Of_Fire_SpriteSheet.png",
-              "loop": 1,
+              "texture": "assets/Texture\\BG\\Wall_Of_Fire_SpriteSheet_PG1.png",
+              "loop": 0,
               "play": 1,
               "totalColumn": 2,
-              "totalRow": 11,
+              "totalRow": 5,
               "frameTime": 0.05000000074505806,
               "initialFramCol": 0.0,
               "initialFramRow": 0.0,
-              "lastFramCol": 0.0,
-              "lastFramRow": 10.0
+              "lastFramCol": 1.0,
+              "lastFramRow": 4.0
             }
           },
           "Walking": {
             "animState": {
-              "texture": "",
-              "loop": 1,
-              "play": 0,
-              "totalColumn": 1,
-              "totalRow": 1,
-              "frameTime": 0.10000000149011612,
+              "texture": "assets/Texture\\BG\\Wall_Of_Fire_SpriteSheet_PG2.png",
+              "loop": 0,
+              "play": 1,
+              "totalColumn": 2,
+              "totalRow": 6,
+              "frameTime": 0.05000000074505806,
               "initialFramCol": 0.0,
               "initialFramRow": 0.0,
               "lastFramCol": 0.0,
-              "lastFramRow": 0.0
+              "lastFramRow": 5.0
             }
           },
           "Jumping": {
@@ -1695,10 +1366,10 @@
           "channels": {
             "Ambient Fire": {
               "audioFile": "assets/Audio\\BGM\\Forest Fire Ambience_Loop.wav",
-              "volume": 0.05000000074505806,
+              "volume": 0.10000000149011612,
               "pitch": 1.0,
               "loop": 1,
-              "playOnStart": 0,
+              "playOnStart": 1,
               "muted": 0,
               "fadeInOnStart": 0,
               "fadeInDuration": 1.0,
@@ -1711,6 +1382,9 @@
               "persistOnSceneChange": 0
             }
           }
+        },
+        "VisualLC": {
+          "filename": "background Fire_Logic.json"
         }
       }
     },
@@ -1952,7 +1626,7 @@
         "Transform": {
           "pos": [
             -1000.0,
-            -996.9502563476563,
+            -997.0877685546875,
             0.0
           ]
         },
@@ -1968,762 +1642,6 @@
         },
         "Physics": {
           "autoUpdate": 0
-        }
-      }
-    },
-    {
-      "prefabid": "b1a12273-a692-4ce0-8072-156da2c70842",
-      "name": "bullet1",
-      "components": {
-        "Transform": {
-          "pos": [
-            -1000.0,
-            -998.336669921875,
-            0.0
-          ],
-          "scale": [
-            0.5,
-            0.20676174759864807,
-            0.0
-          ]
-        },
-        "Render": {
-          "shape": "square",
-          "colorR": 1.0,
-          "colorG": 1.0,
-          "colorB": 1.0,
-          "colorA": 1.0,
-          "hasTex": 1,
-          "texture": "assets/Texture\\water_texture.png",
-          "hasAnimation": 0
-        },
-        "Physics": {
-          "autoUpdate": 0
-        },
-        "CollisionInfo": {
-          "colliderType": "square",
-          "colliderType": "square",
-          "ignoreCollisionsWith": [
-            "player",
-            "hazards"
-          ]
-        },
-        "AudioComponent": {
-          "channels": {
-            "default": {
-              "volume": 0.09000000357627869
-            }
-          }
-        },
-        "LuaScript": {
-          "scripts": [
-            {
-              "filename": "./assets/scripting\\bullet.lua",
-              "scriptName": "bullet"
-            }
-          ]
-        }
-      }
-    },
-    {
-      "prefabid": "b1a12273-a692-4ce0-8072-156da2c70842",
-      "name": "bullet3",
-      "components": {
-        "Transform": {
-          "pos": [
-            -1000.0,
-            -1002.5718383789063,
-            0.0
-          ],
-          "scale": [
-            0.5,
-            0.20676174759864807,
-            0.0
-          ]
-        },
-        "Render": {
-          "shape": "square",
-          "colorR": 1.0,
-          "colorG": 1.0,
-          "colorB": 1.0,
-          "colorA": 1.0,
-          "hasTex": 1,
-          "texture": "assets/Texture\\water_texture.png",
-          "hasAnimation": 0
-        },
-        "Physics": {
-          "autoUpdate": 0
-        },
-        "CollisionInfo": {
-          "colliderType": "square",
-          "colliderType": "square",
-          "ignoreCollisionsWith": [
-            "player",
-            "hazards"
-          ]
-        },
-        "AudioComponent": {
-          "channels": {
-            "default": {
-              "volume": 0.09000000357627869
-            }
-          }
-        },
-        "LuaScript": {
-          "scripts": [
-            {
-              "filename": "./assets/scripting\\bullet.lua",
-              "scriptName": "bullet"
-            }
-          ]
-        }
-      }
-    },
-    {
-      "prefabid": "b1a12273-a692-4ce0-8072-156da2c70842",
-      "name": "bullet4",
-      "components": {
-        "Transform": {
-          "pos": [
-            -1000.0,
-            -997.7317504882813,
-            0.0
-          ],
-          "scale": [
-            0.5,
-            0.20676174759864807,
-            0.0
-          ]
-        },
-        "Render": {
-          "shape": "square",
-          "colorR": 1.0,
-          "colorG": 1.0,
-          "colorB": 1.0,
-          "colorA": 1.0,
-          "hasTex": 1,
-          "texture": "assets/Texture\\water_texture.png",
-          "hasAnimation": 0
-        },
-        "Physics": {
-          "autoUpdate": 0
-        },
-        "CollisionInfo": {
-          "colliderType": "square",
-          "colliderType": "square",
-          "ignoreCollisionsWith": [
-            "player",
-            "hazards"
-          ]
-        },
-        "AudioComponent": {
-          "channels": {
-            "default": {
-              "volume": 0.09000000357627869
-            }
-          }
-        },
-        "LuaScript": {
-          "scripts": [
-            {
-              "filename": "./assets/scripting\\bullet.lua",
-              "scriptName": "bullet"
-            }
-          ]
-        }
-      }
-    },
-    {
-      "prefabid": "b1a12273-a692-4ce0-8072-156da2c70842",
-      "name": "bullet5",
-      "components": {
-        "Transform": {
-          "pos": [
-            -1000.0,
-            -1002.8743896484375,
-            0.0
-          ],
-          "scale": [
-            0.5,
-            0.20676174759864807,
-            0.0
-          ]
-        },
-        "Render": {
-          "shape": "square",
-          "colorR": 1.0,
-          "colorG": 1.0,
-          "colorB": 1.0,
-          "colorA": 1.0,
-          "hasTex": 1,
-          "texture": "assets/Texture\\water_texture.png",
-          "hasAnimation": 0
-        },
-        "Physics": {
-          "autoUpdate": 0
-        },
-        "CollisionInfo": {
-          "colliderType": "square",
-          "colliderType": "square",
-          "ignoreCollisionsWith": [
-            "player",
-            "hazards"
-          ]
-        },
-        "AudioComponent": {
-          "channels": {
-            "default": {
-              "volume": 0.09000000357627869
-            }
-          }
-        },
-        "LuaScript": {
-          "scripts": [
-            {
-              "filename": "./assets/scripting\\bullet.lua",
-              "scriptName": "bullet"
-            }
-          ]
-        }
-      }
-    },
-    {
-      "prefabid": "b1a12273-a692-4ce0-8072-156da2c70842",
-      "name": "bullet6",
-      "components": {
-        "Transform": {
-          "pos": [
-            -1000.0,
-            -998.9417724609375,
-            0.0
-          ],
-          "scale": [
-            0.5,
-            0.20676174759864807,
-            0.0
-          ]
-        },
-        "Render": {
-          "shape": "square",
-          "colorR": 1.0,
-          "colorG": 1.0,
-          "colorB": 1.0,
-          "colorA": 1.0,
-          "hasTex": 1,
-          "texture": "assets/Texture\\water_texture.png",
-          "hasAnimation": 0
-        },
-        "Physics": {
-          "autoUpdate": 0
-        },
-        "CollisionInfo": {
-          "colliderType": "square",
-          "colliderType": "square",
-          "ignoreCollisionsWith": [
-            "player",
-            "hazards"
-          ]
-        },
-        "AudioComponent": {
-          "channels": {
-            "default": {
-              "volume": 0.09000000357627869
-            }
-          }
-        },
-        "LuaScript": {
-          "scripts": [
-            {
-              "filename": "./assets/scripting\\bullet.lua",
-              "scriptName": "bullet"
-            }
-          ]
-        }
-      }
-    },
-    {
-      "prefabid": "b1a12273-a692-4ce0-8072-156da2c70842",
-      "name": "bullet20",
-      "components": {
-        "Transform": {
-          "pos": [
-            -1000.0,
-            -998.0343017578125,
-            0.0
-          ],
-          "scale": [
-            0.5,
-            0.20676174759864807,
-            0.0
-          ]
-        },
-        "Render": {
-          "shape": "square",
-          "colorR": 1.0,
-          "colorG": 1.0,
-          "colorB": 1.0,
-          "colorA": 1.0,
-          "hasTex": 1,
-          "texture": "assets/Texture\\water_texture.png",
-          "hasAnimation": 0
-        },
-        "Physics": {
-          "autoUpdate": 0
-        },
-        "CollisionInfo": {
-          "colliderType": "square",
-          "colliderType": "square",
-          "ignoreCollisionsWith": [
-            "player",
-            "hazards"
-          ]
-        },
-        "AudioComponent": {
-          "channels": {
-            "default": {
-              "volume": 0.09000000357627869
-            }
-          }
-        },
-        "LuaScript": {
-          "scripts": [
-            {
-              "filename": "./assets/scripting\\bullet.lua",
-              "scriptName": "bullet"
-            }
-          ]
-        }
-      }
-    },
-    {
-      "prefabid": "b1a12273-a692-4ce0-8072-156da2c70842",
-      "name": "bullet8",
-      "components": {
-        "Transform": {
-          "pos": [
-            -1000.0,
-            -997.1265869140625,
-            0.0
-          ],
-          "scale": [
-            0.5,
-            0.20676174759864807,
-            0.0
-          ]
-        },
-        "Render": {
-          "shape": "square",
-          "colorR": 1.0,
-          "colorG": 1.0,
-          "colorB": 1.0,
-          "colorA": 1.0,
-          "hasTex": 1,
-          "texture": "assets/Texture\\water_texture.png",
-          "hasAnimation": 0
-        },
-        "Physics": {
-          "autoUpdate": 0
-        },
-        "CollisionInfo": {
-          "colliderType": "square",
-          "colliderType": "square",
-          "ignoreCollisionsWith": [
-            "player",
-            "hazards"
-          ]
-        },
-        "AudioComponent": {
-          "channels": {
-            "default": {
-              "volume": 0.09000000357627869
-            }
-          }
-        },
-        "LuaScript": {
-          "scripts": [
-            {
-              "filename": "./assets/scripting\\bullet.lua",
-              "scriptName": "bullet"
-            }
-          ]
-        }
-      }
-    },
-    {
-      "prefabid": "b1a12273-a692-4ce0-8072-156da2c70842",
-      "name": "bullet11",
-      "components": {
-        "Transform": {
-          "pos": [
-            -1000.0,
-            -1002.269287109375,
-            0.0
-          ],
-          "scale": [
-            0.5,
-            0.20676174759864807,
-            0.0
-          ]
-        },
-        "Render": {
-          "shape": "square",
-          "colorR": 1.0,
-          "colorG": 1.0,
-          "colorB": 1.0,
-          "colorA": 1.0,
-          "hasTex": 1,
-          "texture": "assets/Texture\\water_texture.png",
-          "hasAnimation": 0
-        },
-        "Physics": {
-          "autoUpdate": 0
-        },
-        "CollisionInfo": {
-          "colliderType": "square",
-          "colliderType": "square",
-          "ignoreCollisionsWith": [
-            "player",
-            "hazards"
-          ]
-        },
-        "AudioComponent": {
-          "channels": {
-            "default": {
-              "volume": 0.09000000357627869
-            }
-          }
-        },
-        "LuaScript": {
-          "scripts": [
-            {
-              "filename": "./assets/scripting\\bullet.lua",
-              "scriptName": "bullet"
-            }
-          ]
-        }
-      }
-    },
-    {
-      "prefabid": "b1a12273-a692-4ce0-8072-156da2c70842",
-      "name": "bullet12",
-      "components": {
-        "Transform": {
-          "pos": [
-            -1000.0,
-            -998.63916015625,
-            0.0
-          ],
-          "scale": [
-            0.5,
-            0.20676174759864807,
-            0.0
-          ]
-        },
-        "Render": {
-          "shape": "square",
-          "colorR": 1.0,
-          "colorG": 1.0,
-          "colorB": 1.0,
-          "colorA": 1.0,
-          "hasTex": 1,
-          "texture": "assets/Texture\\water_texture.png",
-          "hasAnimation": 0
-        },
-        "Physics": {
-          "autoUpdate": 0
-        },
-        "CollisionInfo": {
-          "colliderType": "square",
-          "colliderType": "square",
-          "ignoreCollisionsWith": [
-            "player",
-            "hazards"
-          ]
-        },
-        "AudioComponent": {
-          "channels": {
-            "default": {
-              "volume": 0.09000000357627869
-            }
-          }
-        },
-        "LuaScript": {
-          "scripts": [
-            {
-              "filename": "./assets/scripting\\bullet.lua",
-              "scriptName": "bullet"
-            }
-          ]
-        }
-      }
-    },
-    {
-      "prefabid": "b1a12273-a692-4ce0-8072-156da2c70842",
-      "name": "bullet13",
-      "components": {
-        "Transform": {
-          "pos": [
-            -1000.0,
-            -999.848876953125,
-            0.0
-          ],
-          "scale": [
-            0.5,
-            0.20676174759864807,
-            0.0
-          ]
-        },
-        "Render": {
-          "shape": "square",
-          "colorR": 1.0,
-          "colorG": 1.0,
-          "colorB": 1.0,
-          "colorA": 1.0,
-          "hasTex": 1,
-          "texture": "assets/Texture\\water_texture.png",
-          "hasAnimation": 0
-        },
-        "Physics": {
-          "autoUpdate": 0
-        },
-        "CollisionInfo": {
-          "colliderType": "square",
-          "colliderType": "square",
-          "ignoreCollisionsWith": [
-            "player",
-            "hazards"
-          ]
-        },
-        "AudioComponent": {
-          "channels": {
-            "default": {
-              "volume": 0.09000000357627869
-            }
-          }
-        },
-        "LuaScript": {
-          "scripts": [
-            {
-              "filename": "./assets/scripting\\bullet.lua",
-              "scriptName": "bullet"
-            }
-          ]
-        }
-      }
-    },
-    {
-      "prefabid": "b1a12273-a692-4ce0-8072-156da2c70842",
-      "name": "bullet16",
-      "components": {
-        "Transform": {
-          "pos": [
-            -1000.0,
-            -1000.4540405273438,
-            0.0
-          ],
-          "scale": [
-            0.5,
-            0.20676174759864807,
-            0.0
-          ]
-        },
-        "Render": {
-          "shape": "square",
-          "colorR": 1.0,
-          "colorG": 1.0,
-          "colorB": 1.0,
-          "colorA": 1.0,
-          "hasTex": 1,
-          "texture": "assets/Texture\\water_texture.png",
-          "hasAnimation": 0
-        },
-        "Physics": {
-          "autoUpdate": 0
-        },
-        "CollisionInfo": {
-          "colliderType": "square",
-          "colliderType": "square",
-          "ignoreCollisionsWith": [
-            "player",
-            "hazards"
-          ]
-        },
-        "AudioComponent": {
-          "channels": {
-            "default": {
-              "volume": 0.09000000357627869
-            }
-          }
-        },
-        "LuaScript": {
-          "scripts": [
-            {
-              "filename": "./assets/scripting\\bullet.lua",
-              "scriptName": "bullet"
-            }
-          ]
-        }
-      }
-    },
-    {
-      "prefabid": "b1a12273-a692-4ce0-8072-156da2c70842",
-      "name": "bullet17",
-      "components": {
-        "Transform": {
-          "pos": [
-            -1000.0,
-            -1001.9666748046875,
-            0.0
-          ],
-          "scale": [
-            0.5,
-            0.20676174759864807,
-            0.0
-          ]
-        },
-        "Render": {
-          "shape": "square",
-          "colorR": 1.0,
-          "colorG": 1.0,
-          "colorB": 1.0,
-          "colorA": 1.0,
-          "hasTex": 1,
-          "texture": "assets/Texture\\water_texture.png",
-          "hasAnimation": 0
-        },
-        "Physics": {
-          "autoUpdate": 0
-        },
-        "CollisionInfo": {
-          "colliderType": "square",
-          "colliderType": "square",
-          "ignoreCollisionsWith": [
-            "player",
-            "hazards"
-          ]
-        },
-        "AudioComponent": {
-          "channels": {
-            "default": {
-              "volume": 0.09000000357627869
-            }
-          }
-        },
-        "LuaScript": {
-          "scripts": [
-            {
-              "filename": "./assets/scripting\\bullet.lua",
-              "scriptName": "bullet"
-            }
-          ]
-        }
-      }
-    },
-    {
-      "prefabid": "b1a12273-a692-4ce0-8072-156da2c70842",
-      "name": "bullet18",
-      "components": {
-        "Transform": {
-          "pos": [
-            -1000.0,
-            -1000.1514282226563,
-            0.0
-          ],
-          "scale": [
-            0.5,
-            0.20676174759864807,
-            0.0
-          ]
-        },
-        "Render": {
-          "shape": "square",
-          "colorR": 1.0,
-          "colorG": 1.0,
-          "colorB": 1.0,
-          "colorA": 1.0,
-          "hasTex": 1,
-          "texture": "assets/Texture\\water_texture.png",
-          "hasAnimation": 0
-        },
-        "Physics": {
-          "autoUpdate": 0
-        },
-        "CollisionInfo": {
-          "colliderType": "square",
-          "colliderType": "square",
-          "ignoreCollisionsWith": [
-            "player",
-            "hazards"
-          ]
-        },
-        "AudioComponent": {
-          "channels": {
-            "default": {
-              "volume": 0.09000000357627869
-            }
-          }
-        },
-        "LuaScript": {
-          "scripts": [
-            {
-              "filename": "./assets/scripting\\bullet.lua",
-              "scriptName": "bullet"
-            }
-          ]
-        }
-      }
-    },
-    {
-      "prefabid": "b1a12273-a692-4ce0-8072-156da2c70842",
-      "name": "bullet19",
-      "components": {
-        "Transform": {
-          "pos": [
-            -1000.0,
-            -997.42919921875,
-            0.0
-          ],
-          "scale": [
-            0.5,
-            0.20676174759864807,
-            0.0
-          ]
-        },
-        "Render": {
-          "shape": "square",
-          "colorR": 1.0,
-          "colorG": 1.0,
-          "colorB": 1.0,
-          "colorA": 1.0,
-          "hasTex": 1,
-          "texture": "assets/Texture\\water_texture.png",
-          "hasAnimation": 0
-        },
-        "Physics": {
-          "autoUpdate": 0
-        },
-        "CollisionInfo": {
-          "colliderType": "square",
-          "colliderType": "square",
-          "ignoreCollisionsWith": [
-            "player",
-            "hazards"
-          ]
-        },
-        "AudioComponent": {
-          "channels": {
-            "default": {
-              "volume": 0.09000000357627869
-            }
-          }
-        },
-        "LuaScript": {
-          "scripts": [
-            {
-              "filename": "./assets/scripting\\bullet.lua",
-              "scriptName": "bullet"
-            }
-          ]
         }
       }
     },
