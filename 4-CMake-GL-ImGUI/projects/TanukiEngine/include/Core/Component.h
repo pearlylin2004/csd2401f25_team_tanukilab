@@ -500,7 +500,7 @@ public:
 };
 
 // Logic Container (FSM)
-enum class PlayerState { Idle, Walking, Jumping, Falling, Shooting, Dead };
+enum class PlayerState { Idle, Walking, Jumping, Falling, Shooting, Dead, Dancing, Emo };
 
 struct StateMachine : public Component {
     PlayerState state = PlayerState::Idle;

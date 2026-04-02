@@ -197,6 +197,8 @@ static PlayerState parsePlayerState(const std::string& s) {
 	if (s == "Falling")  return PlayerState::Falling;
 	if (s == "Shooting") return PlayerState::Shooting;
 	if (s == "Dead")     return PlayerState::Dead;
+	if (s == "Dancing") return PlayerState::Dancing;
+	if (s == "Emo")     return PlayerState::Emo;
 	return PlayerState::Idle; // default/fallback
 }
 /*!
@@ -216,6 +218,8 @@ static const char* playerStateToStr(PlayerState state) {
 	case PlayerState::Falling:  return "Falling";
 	case PlayerState::Shooting: return "Shooting";
 	case PlayerState::Dead:     return "Dead";
+	case PlayerState::Dancing: return "Dancing";
+	case PlayerState::Emo:     return "Emo";
 	default:                    return "Idle";
 	}
 }
@@ -2184,6 +2188,11 @@ void GameObjectManager::initializeSceneResources() {
 				}
 			}
 		}
+
+		if (obj->hasComponent<Physics>())
+			obj->getComponent<Physics>()->canMove = true;
+		if (obj->hasComponent<StateMachine>())
+			obj->getComponent<StateMachine>()->fixState = false;
 	}
 }
 

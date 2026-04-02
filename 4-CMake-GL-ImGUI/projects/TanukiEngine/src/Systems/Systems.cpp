@@ -2144,23 +2144,6 @@ void UISystem::renderMultipleViewPorts() {
 		glfwMakeContextCurrent(backup_current_context);
 	}
 }
-//#endif
-
-//void LogicSystem::update(GameObjectManager& manager, float const& dt) {
-//
-//	std::vector<GameObject*> objs;
-//	manager.getAllGameObjects(objs);
-//
-//	static LogicContainer container; // stateless helper
-//
-//	for (auto* go : objs) {
-//		if (!go) continue;
-//		if (!go->hasComponent<StateMachine>()) continue;
-//		if (!go->hasComponent<Transform>() || !go->hasComponent<Physics>()) continue;
-//
-//		container.update(*go, dt /*, manager */);
-//	}
-//}
 
 void LogicSystem::update(GameObjectManager& manager, float const& dt) {
 	auto start = std::chrono::high_resolution_clock::now();

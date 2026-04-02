@@ -1322,14 +1322,11 @@ int LuaSystem::Lua_getPlayerState(lua_State* L) {
 
     StateMachine* sm = obj->getComponent<StateMachine>();
 
-    switch (sm->state) {
-        case PlayerState::Idle:     lua_pushstring(L, "Idle");     break;
-        case PlayerState::Walking:  lua_pushstring(L, "Walking");  break;
-        case PlayerState::Jumping:  lua_pushstring(L, "Jumping");  break;
-        case PlayerState::Falling:  lua_pushstring(L, "Falling");  break;
-        case PlayerState::Dead:     lua_pushstring(L, "Dead");     break;
-        default:                    lua_pushstring(L, "Idle");     break;
-    }
+    int idx = static_cast<int>(sm->state);
+    if (idx >= 0 && idx < (int)JsonIO::stateNames.size())
+        lua_pushstring(L, JsonIO::stateNames[idx].c_str());
+    else
+        lua_pushstring(L, "");
 
     return 1;
 }
@@ -1340,13 +1337,9 @@ int LuaSystem::Lua_setPlayerState(lua_State* L) {
 
     const char* state = lua_tostring(L, 2);
 
+    if (!state) return 0;
     StateMachine* sm = obj->getComponent<StateMachine>();
-
-    if (strcmp(state, "Idle") == 0) sm->state = PlayerState::Idle;
-    else if (strcmp(state, "Walking") == 0) sm->state = PlayerState::Walking;
-    else if (strcmp(state, "Jumping") == 0) sm->state = PlayerState::Jumping;
-    else if (strcmp(state, "Falling") == 0) sm->state = PlayerState::Falling;
-    else if (strcmp(state, "Dead") == 0) sm->state = PlayerState::Dead;
+    sm->state = JsonIO::parsePlayerState(std::string(state));
 
     return 0;
 }
