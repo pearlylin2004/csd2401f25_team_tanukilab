@@ -42,7 +42,7 @@
       "type": 1,
       "position": [
         710.0,
-        -7.0
+        -5.0
       ],
       "hasInput": true,
       "hasOutput": true,
@@ -58,7 +58,7 @@
       "implementation": "Play Sound",
       "type": 1,
       "position": [
-        1006.0,
+        1004.0,
         -10.0
       ],
       "hasInput": true,
@@ -124,8 +124,8 @@
       "implementation": "On Update",
       "type": 0,
       "position": [
-        -238.0,
-        184.0
+        -234.0912628173828,
+        187.30296325683594
       ],
       "hasInput": false,
       "hasOutput": true,
@@ -137,8 +137,8 @@
       "implementation": "Check State",
       "type": 2,
       "position": [
-        55.0,
-        206.0
+        90.17912292480469,
+        196.87948608398438
       ],
       "hasInput": true,
       "hasOutput": false,
@@ -153,8 +153,8 @@
       "implementation": "Restart Level",
       "type": 1,
       "position": [
-        1343.0,
-        425.0
+        1251.0,
+        581.0
       ],
       "hasInput": true,
       "hasOutput": true,
@@ -182,8 +182,8 @@
       "implementation": "Play Random Sound",
       "type": 1,
       "position": [
-        660.0,
-        336.0
+        659.9999389648438,
+        336.0000305175781
       ],
       "hasInput": true,
       "hasOutput": true,
@@ -261,8 +261,8 @@
       "implementation": "Check Animation End",
       "type": 2,
       "position": [
-        518.0,
-        198.0
+        502.3648681640625,
+        207.12049865722656
       ],
       "hasInput": true,
       "hasOutput": false,
@@ -274,8 +274,8 @@
       "implementation": "Play Random Sound",
       "type": 1,
       "position": [
-        694.0,
-        1004.0
+        858.8074340820313,
+        115.57656860351563
       ],
       "hasInput": true,
       "hasOutput": true,
@@ -296,7 +296,7 @@
       "implementation": "Compare Global Float",
       "type": 2,
       "position": [
-        -38.0,
+        -38.00002670288086,
         682.0
       ],
       "hasInput": true,
@@ -314,8 +314,8 @@
       "implementation": "Set Global Float",
       "type": 1,
       "position": [
-        340.0,
-        698.0
+        340.0000305175781,
+        698.0000610351563
       ],
       "hasInput": true,
       "hasOutput": true,
@@ -347,8 +347,8 @@
       "implementation": "Play Random Sound",
       "type": 1,
       "position": [
-        754.0,
-        718.0
+        753.9998779296875,
+        718.0000610351563
       ],
       "hasInput": true,
       "hasOutput": true,
@@ -366,8 +366,8 @@
       "implementation": "Check Animation End",
       "type": 2,
       "position": [
-        1072.0,
-        558.0
+        1024.0,
+        496.0
       ],
       "hasInput": true,
       "hasOutput": false,
@@ -376,11 +376,103 @@
     },
     {
       "id": 45,
+      "implementation": "On Collision Enter",
+      "type": 0,
+      "position": [
+        -140.0,
+        -180.0
+      ],
+      "hasInput": false,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false,
+      "parameters": {
+        "colFilterType": "name",
+        "colFilterValue": "Chat Bubble"
+      }
+    },
+    {
+      "id": 46,
+      "implementation": "Lock Position",
+      "type": 1,
+      "position": [
+        252.57150268554688,
+        -184.0
+      ],
+      "hasInput": true,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false
+    },
+    {
+      "id": 49,
+      "implementation": "While Colliding",
+      "type": 0,
+      "position": [
+        -114.4999771118164,
+        -576.5
+      ],
+      "hasInput": false,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false,
+      "parameters": {
+        "colFilterType": "name",
+        "colFilterValue": "Chat Bubble"
+      }
+    },
+    {
+      "id": 50,
+      "implementation": "Unlock Position",
+      "type": 1,
+      "position": [
+        707.522705078125,
+        -331.4090576171875
+      ],
+      "hasInput": true,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false
+    },
+    {
+      "id": 52,
+      "implementation": "Check Collided State",
+      "type": 2,
+      "position": [
+        267.0,
+        -346.0
+      ],
+      "hasInput": true,
+      "hasOutput": false,
+      "hasTrueOutput": true,
+      "hasFalseOutput": true,
+      "parameters": {
+        "state": "Dead"
+      }
+    },
+    {
+      "id": 54,
+      "implementation": "Set State On Collided",
+      "type": 1,
+      "position": [
+        1112.727294921875,
+        -346.3636169433594
+      ],
+      "hasInput": true,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false,
+      "parameters": {
+        "targetStateCollided": "Idle"
+      }
+    },
+    {
+      "id": 55,
       "implementation": "Compare Global Float",
       "type": 2,
       "position": [
-        -72.0,
-        858.0
+        -68.75000762939453,
+        -381.2500305175781
       ],
       "hasInput": true,
       "hasOutput": false,
@@ -389,40 +481,88 @@
       "parameters": {
         "comparison": "greater",
         "threshold": "0",
-        "variable": "collideFire"
+        "variable": "can-unlock"
       }
     },
     {
-      "id": 46,
-      "implementation": "Set Global Float",
+      "id": 57,
+      "implementation": "Set Float",
       "type": 1,
       "position": [
-        362.0,
-        888.0
+        1205.2109375,
+        113.35497283935547
       ],
       "hasInput": true,
       "hasOutput": true,
       "hasTrueOutput": false,
       "hasFalseOutput": false,
       "parameters": {
-        "value": "0",
-        "variable": "collideFire"
+        "value": "1",
+        "variable": "playedDeath"
       }
     },
     {
-      "id": 47,
-      "implementation": "Set State",
+      "id": 58,
+      "implementation": "Compare Variable",
+      "type": 2,
+      "position": [
+        504.23419189453125,
+        109.44618225097656
+      ],
+      "hasInput": true,
+      "hasOutput": false,
+      "hasTrueOutput": true,
+      "hasFalseOutput": true,
+      "parameters": {
+        "comparison": "less",
+        "threshold": "0",
+        "variable": "playedDeath"
+      }
+    },
+    {
+      "id": 59,
+      "implementation": "Print Message",
       "type": 1,
       "position": [
-        724.0,
-        834.0
+        1516.611328125,
+        195.43960571289063
       ],
       "hasInput": true,
       "hasOutput": true,
       "hasTrueOutput": false,
       "hasFalseOutput": false,
       "parameters": {
-        "state": "Dead"
+        "message": "I love GAM"
+      }
+    },
+    {
+      "id": 60,
+      "implementation": "On Start",
+      "type": 0,
+      "position": [
+        -4.494378566741943,
+        -816.4788208007813
+      ],
+      "hasInput": false,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false
+    },
+    {
+      "id": 61,
+      "implementation": "Set Float",
+      "type": 1,
+      "position": [
+        524.3441772460938,
+        -776.0293579101563
+      ],
+      "hasInput": true,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false,
+      "parameters": {
+        "value": "-1.000000",
+        "variable": "playedDeath"
       }
     }
   ],
@@ -549,32 +689,68 @@
     },
     {
       "fromNodeId": 45,
-      "outputPin": "True",
+      "outputPin": "Out",
       "toNodeId": 46,
       "inputPin": "In"
     },
     {
-      "fromNodeId": 46,
+      "fromNodeId": 49,
       "outputPin": "Out",
-      "toNodeId": 47,
+      "toNodeId": 52,
       "inputPin": "In"
     },
     {
-      "fromNodeId": 46,
-      "outputPin": "Out",
-      "toNodeId": 32,
+      "fromNodeId": 52,
+      "outputPin": "True",
+      "toNodeId": 50,
       "inputPin": "In"
     },
     {
-      "fromNodeId": 47,
+      "fromNodeId": 50,
       "outputPin": "Out",
-      "toNodeId": 44,
+      "toNodeId": 54,
       "inputPin": "In"
     },
     {
       "fromNodeId": 11,
       "outputPin": "Out",
-      "toNodeId": 45,
+      "toNodeId": 55,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 55,
+      "outputPin": "True",
+      "toNodeId": 50,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 12,
+      "outputPin": "True",
+      "toNodeId": 58,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 58,
+      "outputPin": "True",
+      "toNodeId": 32,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 32,
+      "outputPin": "Out",
+      "toNodeId": 57,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 57,
+      "outputPin": "Out",
+      "toNodeId": 59,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 60,
+      "outputPin": "Out",
+      "toNodeId": 61,
       "inputPin": "In"
     }
   ]

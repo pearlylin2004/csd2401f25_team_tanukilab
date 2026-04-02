@@ -141,13 +141,13 @@
           "texture": "assets/Texture\\Kinuta_Death_SS.png",
           "loop": 0,
           "play": 1,
-          "totalColumn": 10,
-          "totalRow": 1,
+          "totalColumn": 4,
+          "totalRow": 4,
           "frameTime": 0.10000000149011612,
           "initialFramCol": 0.0,
           "initialFramRow": 0.0,
-          "lastFramCol": 9.0,
-          "lastFramRow": 0.0
+          "lastFramCol": 3.0,
+          "lastFramRow": 3.0
         }
       }
     },
