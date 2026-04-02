@@ -167,12 +167,12 @@
     },
     {
       "prefabid": "b766d355-2b28-4a0d-b54e-6e4407e18596",
-      "name": "player",
+      "name": "Player",
       "components": {
         "Transform": {
           "pos": [
-            -17.495912551879883,
-            -4.2259697914123535,
+            -17.77581787109375,
+            -1.2262463569641113,
             0.9980000257492065
           ]
         },
@@ -187,6 +187,64 @@
         },
         "Physics": {
           "autoUpdate": 0
+        },
+        "StateMachine": {
+          "facingRight": 0
+        },
+        "AudioComponent": {
+          "channels": {
+            "footstep": {
+              "audioFile": "assets/audio/Footsteps2_Gravel-Dirt_far-small_2.wav",
+              "volume": 0.3107266128063202,
+              "pitch": 0.9557987451553345,
+              "loop": 0,
+              "playOnStart": 0,
+              "muted": 0,
+              "fadeInOnStart": 0,
+              "fadeInDuration": 1.0,
+              "fadeOutOnStop": 0,
+              "fadeOutDuration": 1.0,
+              "isSpatial": 0,
+              "minDistance": 1.0,
+              "maxDistance": 100.0,
+              "spread": 180.0,
+              "persistOnSceneChange": 0
+            },
+            "jump-audio-1": {
+              "persistOnSceneChange": 1
+            },
+            "jump-audio-10": {
+              "persistOnSceneChange": 1
+            },
+            "jump-audio-11": {
+              "persistOnSceneChange": 1
+            },
+            "jump-audio-2": {
+              "persistOnSceneChange": 1
+            },
+            "jump-audio-3": {
+              "persistOnSceneChange": 1
+            },
+            "jump-audio-4": {
+              "persistOnSceneChange": 1
+            },
+            "jump-audio-6": {
+              "persistOnSceneChange": 1
+            },
+            "jump-audio-7": {
+              "persistOnSceneChange": 1
+            },
+            "jump-audio-8": {
+              "persistOnSceneChange": 1
+            },
+            "jump-audio-9": {
+              "persistOnSceneChange": 1
+            },
+            "landing": {
+              "volume": 0.7522843480110168,
+              "pitch": 1.0466336011886597
+            }
+          }
         },
         "LuaScript": {
           "scripts": [
@@ -385,7 +443,7 @@
             1.0,
             0.0
           ],
-          "parentName": "player",
+          "parentName": "Player",
           "localOffset": [
             0.5424396991729736,
             -0.5367894172668457
@@ -1626,8 +1684,8 @@
         "Transform": {
           "pos": [
             -1000.0,
-            -997.0877685546875,
-            0.0
+            -935.20654296875,
+            1.0
           ]
         },
         "Render": {
@@ -1637,11 +1695,27 @@
           "colorB": 1.0,
           "colorA": 1.0,
           "hasTex": 1,
-          "texture": "assets/Texture/water_texture.png",
+          "texture": "assets/Texture\\water_texture.png",
           "hasAnimation": 0
         },
         "Physics": {
           "autoUpdate": 0
+        },
+        "CollisionInfo": {
+          "colliderType": "square",
+          "colliderType": "square",
+          "ignoreCollisionsWith": [
+            "player",
+            "hazards"
+          ]
+        },
+        "LuaScript": {
+          "scripts": [
+            {
+              "filename": "./assets/scripting\\bullet.lua",
+              "scriptName": "bullet"
+            }
+          ]
         }
       }
     },
