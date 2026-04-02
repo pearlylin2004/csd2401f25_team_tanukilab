@@ -23,7 +23,7 @@
       "updatable": 1
     }
   ],
-  "onLoadScript": "assets/scripting\\pause_scene_load.lua",
+  "onLoadScript": "assets/scripting\\opening_cutscene_load.lua",
   "objects": [
     {
       "name": "background",
@@ -54,94 +54,6 @@
         "Video": {
           "videoFile": "assets/video\\output.mpg",
           "loop": 0
-        },
-        "StateMachine": {
-          "state": "Idle",
-          "facingRight": 1,
-          "Idle": {
-            "animState": {
-              "texture": "assets/Texture\\Cutscenes\\Opening_SS1.png",
-              "loop": 0,
-              "play": 1,
-              "totalColumn": 5,
-              "totalRow": 2,
-              "frameTime": 1.5,
-              "initialFramCol": 0.0,
-              "initialFramRow": 0.0,
-              "lastFramCol": 4.0,
-              "lastFramRow": 1.0
-            }
-          },
-          "Walking": {
-            "animState": {
-              "texture": "assets/Texture\\Cutscenes\\Opening_SS2.png",
-              "loop": 0,
-              "play": 1,
-              "totalColumn": 3,
-              "totalRow": 3,
-              "frameTime": 1.5,
-              "initialFramCol": 0.0,
-              "initialFramRow": 0.0,
-              "lastFramCol": 2.0,
-              "lastFramRow": 2.0
-            }
-          },
-          "Jumping": {
-            "animState": {
-              "texture": "",
-              "loop": 1,
-              "play": 0,
-              "totalColumn": 1,
-              "totalRow": 1,
-              "frameTime": 0.10000000149011612,
-              "initialFramCol": 0.0,
-              "initialFramRow": 0.0,
-              "lastFramCol": 0.0,
-              "lastFramRow": 0.0
-            }
-          },
-          "Falling": {
-            "animState": {
-              "texture": "",
-              "loop": 1,
-              "play": 0,
-              "totalColumn": 1,
-              "totalRow": 1,
-              "frameTime": 0.10000000149011612,
-              "initialFramCol": 0.0,
-              "initialFramRow": 0.0,
-              "lastFramCol": 0.0,
-              "lastFramRow": 0.0
-            }
-          },
-          "Shooting": {
-            "animState": {
-              "texture": "",
-              "loop": 1,
-              "play": 0,
-              "totalColumn": 1,
-              "totalRow": 1,
-              "frameTime": 0.10000000149011612,
-              "initialFramCol": 0.0,
-              "initialFramRow": 0.0,
-              "lastFramCol": 0.0,
-              "lastFramRow": 0.0
-            }
-          },
-          "Dead": {
-            "animState": {
-              "texture": "",
-              "loop": 1,
-              "play": 0,
-              "totalColumn": 1,
-              "totalRow": 1,
-              "frameTime": 0.10000000149011612,
-              "initialFramCol": 0.0,
-              "initialFramRow": 0.0,
-              "lastFramCol": 0.0,
-              "lastFramRow": 0.0
-            }
-          }
         },
         "VisualLC": {
           "filename": "Opening Cutscene.json"
@@ -199,6 +111,45 @@
           ],
           "scale": 1.5,
           "fontType": 0
+        }
+      }
+    },
+    {
+      "name": "bgm",
+      "components": {
+        "Transform": {
+          "pos": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "rotation": 0.0,
+          "scale": [
+            1.0,
+            1.0,
+            0.0
+          ]
+        },
+        "AudioComponent": {
+          "channels": {
+            "opening_bgm": {
+              "audioFile": "assets/Audio\\CutScene\\Tanuki Cut Scene Audio.wav",
+              "volume": 1.0,
+              "pitch": 1.0,
+              "loop": 0,
+              "playOnStart": 0,
+              "muted": 0,
+              "fadeInOnStart": 1,
+              "fadeInDuration": 1.0,
+              "fadeOutOnStop": 1,
+              "fadeOutDuration": 1.0,
+              "isSpatial": 0,
+              "minDistance": 1.0,
+              "maxDistance": 100.0,
+              "spread": 180.0,
+              "persistOnSceneChange": 0
+            }
+          }
         }
       }
     }
