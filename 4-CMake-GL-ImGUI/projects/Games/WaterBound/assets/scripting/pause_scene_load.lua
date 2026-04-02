@@ -2,7 +2,7 @@
 dofile("./assets/scripting/common.lua")
 
 function onSceneLoad()
-    setLowPassFilter(false)
+    --setLowPassFilter(false)
     -- BGM inherits from previous scene
 end
 

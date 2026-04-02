@@ -51,6 +51,10 @@
           "texture": "assets/menu_background.png",
           "hasAnimation": 1
         },
+        "Video": {
+          "videoFile": "assets/video\\output.mpg",
+          "loop": 0
+        },
         "StateMachine": {
           "state": "Idle",
           "facingRight": 1,
@@ -171,7 +175,7 @@
       }
     },
     {
-      "name": "Empty_2",
+      "name": "space to skip",
       "components": {
         "Transform": {
           "pos": [

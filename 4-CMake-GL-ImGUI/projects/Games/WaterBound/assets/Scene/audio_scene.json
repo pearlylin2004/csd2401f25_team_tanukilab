@@ -58,7 +58,7 @@
       "components": {
         "Transform": {
           "pos": [
-            -16.681079864501953,
+            -16.663793563842773,
             8.383752822875977,
             0.20000000298023224
           ],
@@ -79,9 +79,30 @@
           "texture": "assets/Texture\\Menu_Button.png",
           "hasAnimation": 0
         },
+        "AudioComponent": {
+          "channels": {
+            "onclick": {
+              "audioFile": "assets/Audio\\UI Button Hover.wav",
+              "volume": 0.5,
+              "pitch": 1.0,
+              "loop": 0,
+              "playOnStart": 0,
+              "muted": 0,
+              "fadeInOnStart": 0,
+              "fadeInDuration": 0.20000000298023224,
+              "fadeOutOnStop": 0,
+              "fadeOutDuration": 1.0,
+              "isSpatial": 0,
+              "minDistance": 1.0,
+              "maxDistance": 100.0,
+              "spread": 180.0,
+              "persistOnSceneChange": 1
+            }
+          }
+        },
         "Button": {
           "action": "back",
-          "onClickChannel": "",
+          "onClickChannel": "onclick",
           "onHoverChannel": ""
         }
       }
@@ -125,39 +146,6 @@
       }
     },
     {
-      "name": "-",
-      "components": {
-        "Transform": {
-          "pos": [
-            7.222989082336426,
-            1.414865493774414,
-            0.10000000149011612
-          ],
-          "rotation": 0.0,
-          "scale": [
-            3.200000047683716,
-            2.2714285850524902,
-            0.0
-          ]
-        },
-        "Render": {
-          "shape": "square",
-          "colorR": 1.0,
-          "colorG": 1.0,
-          "colorB": 1.0,
-          "colorA": 1.0,
-          "hasTex": 1,
-          "texture": "assets/button.png",
-          "hasAnimation": 0
-        },
-        "Button": {
-          "action": "music_vol_up",
-          "onClickChannel": "",
-          "onHoverChannel": ""
-        }
-      }
-    },
-    {
       "name": "mute",
       "components": {
         "Transform": {
@@ -183,9 +171,84 @@
           "texture": "assets/button.png",
           "hasAnimation": 0
         },
+        "AudioComponent": {
+          "channels": {
+            "onclick": {
+              "audioFile": "assets/Audio\\SFX\\UI Hover CarparkIsFullwav 1.wav",
+              "volume": 0.75,
+              "pitch": 1.0,
+              "loop": 0,
+              "playOnStart": 0,
+              "muted": 0,
+              "fadeInOnStart": 1,
+              "fadeInDuration": 0.20000000298023224,
+              "fadeOutOnStop": 0,
+              "fadeOutDuration": 1.0,
+              "isSpatial": 0,
+              "minDistance": 1.0,
+              "maxDistance": 100.0,
+              "spread": 180.0,
+              "persistOnSceneChange": 0
+            }
+          }
+        },
         "Button": {
           "action": "mute",
-          "onClickChannel": "",
+          "onClickChannel": "onclick",
+          "onHoverChannel": ""
+        }
+      }
+    },
+    {
+      "name": "-",
+      "components": {
+        "Transform": {
+          "pos": [
+            7.222989082336426,
+            1.414865493774414,
+            0.10000000149011612
+          ],
+          "rotation": 0.0,
+          "scale": [
+            3.200000047683716,
+            2.2714285850524902,
+            0.0
+          ]
+        },
+        "Render": {
+          "shape": "square",
+          "colorR": 1.0,
+          "colorG": 1.0,
+          "colorB": 1.0,
+          "colorA": 1.0,
+          "hasTex": 1,
+          "texture": "assets/button.png",
+          "hasAnimation": 0
+        },
+        "AudioComponent": {
+          "channels": {
+            "onclick": {
+              "audioFile": "assets/Audio\\SFX\\UI Hover CarparkIsFullwav 1.wav",
+              "volume": 0.75,
+              "pitch": 1.0,
+              "loop": 0,
+              "playOnStart": 0,
+              "muted": 0,
+              "fadeInOnStart": 1,
+              "fadeInDuration": 0.20000000298023224,
+              "fadeOutOnStop": 0,
+              "fadeOutDuration": 1.0,
+              "isSpatial": 0,
+              "minDistance": 1.0,
+              "maxDistance": 100.0,
+              "spread": 180.0,
+              "persistOnSceneChange": 0
+            }
+          }
+        },
+        "Button": {
+          "action": "music_vol_up",
+          "onClickChannel": "onclick",
           "onHoverChannel": ""
         }
       }
@@ -216,9 +279,30 @@
           "texture": "assets/button.png",
           "hasAnimation": 0
         },
+        "AudioComponent": {
+          "channels": {
+            "onclick": {
+              "audioFile": "assets/Audio\\SFX\\UI Hover CarparkIsFullwav 1.wav",
+              "volume": 0.75,
+              "pitch": 1.0,
+              "loop": 0,
+              "playOnStart": 0,
+              "muted": 0,
+              "fadeInOnStart": 1,
+              "fadeInDuration": 0.20000000298023224,
+              "fadeOutOnStop": 0,
+              "fadeOutDuration": 1.0,
+              "isSpatial": 0,
+              "minDistance": 1.0,
+              "maxDistance": 100.0,
+              "spread": 180.0,
+              "persistOnSceneChange": 0
+            }
+          }
+        },
         "Button": {
           "action": "music_vol_down",
-          "onClickChannel": "",
+          "onClickChannel": "onclick",
           "onHoverChannel": ""
         }
       }
@@ -249,9 +333,30 @@
           "texture": "assets/button.png",
           "hasAnimation": 0
         },
+        "AudioComponent": {
+          "channels": {
+            "onclick": {
+              "audioFile": "assets/Audio\\SFX\\UI Hover CarparkIsFullwav 1.wav",
+              "volume": 0.75,
+              "pitch": 1.0,
+              "loop": 0,
+              "playOnStart": 0,
+              "muted": 0,
+              "fadeInOnStart": 1,
+              "fadeInDuration": 0.20000000298023224,
+              "fadeOutOnStop": 0,
+              "fadeOutDuration": 1.0,
+              "isSpatial": 0,
+              "minDistance": 1.0,
+              "maxDistance": 100.0,
+              "spread": 180.0,
+              "persistOnSceneChange": 0
+            }
+          }
+        },
         "Button": {
           "action": "unmute",
-          "onClickChannel": "",
+          "onClickChannel": "onclick",
           "onHoverChannel": ""
         }
       }
