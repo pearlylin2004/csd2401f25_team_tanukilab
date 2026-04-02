@@ -93,7 +93,8 @@
           "filename": "shakeWhenHover.json"
         },
         "Button": {
-          "action": "open_audio",
+          "action": "load_scene",
+          "scenePath": "audio_scene.json",
           "onClickChannel": "on_click",
           "onHoverChannel": "button_hover"
         }
@@ -168,8 +169,8 @@
         },
         "Button": {
           "action": "none",
-          "onClickChannel": "",
-          "onHoverChannel": ""
+          "onClickChannel": "on_click",
+          "onHoverChannel": "button_hover"
         }
       }
     },
@@ -191,9 +192,9 @@
         },
         "Render": {
           "shape": "square",
-          "colorR": 1.0,
-          "colorG": 1.0,
-          "colorB": 1.0,
+          "colorR": 0.9430605173110962,
+          "colorG": 0.9430605173110962,
+          "colorB": 0.9430605173110962,
           "colorA": 1.0,
           "hasTex": 1,
           "texture": "assets/menu_background.png",
@@ -269,7 +270,8 @@
           "filename": "shakeWhenHover.json"
         },
         "Button": {
-          "action": "open_control",
+          "action": "load_scene",
+          "scenePath": "control_scene.json",
           "onClickChannel": "on_click",
           "onHoverChannel": "button_hover"
         }
@@ -343,7 +345,8 @@
           "filename": "shakeWhenHover.json"
         },
         "Button": {
-          "action": "exit_game",
+          "action": "load_scene",
+          "scenePath": "confirmation_scene.json",
           "onClickChannel": "on_click",
           "onHoverChannel": "button_hover"
         }
@@ -377,7 +380,7 @@
               "fadeInOnStart": 1,
               "fadeInDuration": 1.909999966621399,
               "fadeOutOnStop": 1,
-              "fadeOutDuration": 1.0,
+              "fadeOutDuration": 1.2000000476837158,
               "isSpatial": 0,
               "minDistance": 1.0,
               "maxDistance": 100.0,

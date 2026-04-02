@@ -16,6 +16,7 @@ Technology is prohibited.
 
 #include "Systems.h"
 #include "JsonIO.h"
+#include "SceneManager.h"
 
 std::map<std::string, float> VisualLC::globalFloatVar;
 GameObjectManager* VisualLogicSystem::m_manager = nullptr;
@@ -592,7 +593,6 @@ void VisualLogicSystem::executeActionNode(GameObject* obj, VisualLC* logic, Logi
 
 		if (channel->state == AudioState::Stopped) {
 			channel->isPendingPlay = true;
-			channel->persistOnSceneChange = true;
 			std::cout << "[VisualLogic] Triggering play for channel: " << channelName << std::endl;
 		}
 	}
@@ -605,6 +605,9 @@ void VisualLogicSystem::executeActionNode(GameObject* obj, VisualLC* logic, Logi
 		}
 
 		std::string stateName = node.parameters.count("state") ? node.parameters["state"] : JsonIO::stateNames[0];
+
+		// Block setting Dead state during replay to prevent spurious deaths
+		/*if (stateName == "Dead" && GUISystem::getInstance().getCurrentState() == GameState::REPLAY) return;*/
 
 		sm->state = JsonIO::parsePlayerState(stateName);
 		sm->stateTime = 0.f;
@@ -681,6 +684,19 @@ void VisualLogicSystem::executeActionNode(GameObject* obj, VisualLC* logic, Logi
 
 		//std::cout << "Put force on collided object to (" << collidedPhysic->dynamics.velocity.x << ", " << collidedPhysic->dynamics.velocity.y << ")\n";
 	}
+	else if (node.imp == NodeImplementation::LIFT_COLLIDED) {
+		GameObject* collidedObj = logic->lastCollidedObj;
+		if (!collidedObj) return;
+		Physics* p = collidedObj->getComponent<Physics>();
+		if (!p) return;
+
+		float force = node.parameters.count("liftForce") ? std::stof(node.parameters["liftForce"]) : 20.f;
+		float duration = node.parameters.count("liftDuration") ? std::stof(node.parameters["liftDuration"]) : 0.5f;
+
+		p->liftForce = force;
+		p->liftDuration = duration;
+		p->onGround = false;  // kick off ground so physics takes over
+		}
 	else if (node.imp == NodeImplementation::SET_GLOBAL_FLOAT) {
 		std::string varName = node.parameters.count("variable") ?
 			node.parameters["variable"] : "var";
@@ -757,13 +773,13 @@ void VisualLogicSystem::executeActionNode(GameObject* obj, VisualLC* logic, Logi
 		}
 	}
 	else if (node.imp == NodeImplementation::RESTART_LEVEL) {
-		GUISystem::getInstance().m_pendingRestart = true;
+		//GUISystem::getInstance().m_pendingRestart = true;
+		SceneManager::getInstance().requestRestart();
 	}
 	else if (node.imp == NodeImplementation::LOAD_LEVEL) {
 		std::string levelName = node.parameters.count("levelName") ?
 			node.parameters["levelName"] : "";
-		GUISystem::getInstance().m_pendingLevelLoad = true;
-		GUISystem::getInstance().m_pendingLevelName = levelName;
+		SceneManager::getInstance().requestLoadScene(levelName);
 	}
 	else if (node.imp == NodeImplementation::DISABLE_COLLISION) {
 		CollisionInfo* collision = obj->getComponent<CollisionInfo>();
@@ -917,7 +933,6 @@ void VisualLogicSystem::executeActionNode(GameObject* obj, VisualLC* logic, Logi
 		if (channel->state == AudioState::Playing || channel->isPendingPlay) return;
 
 		channel->isPendingPlay = true;
-		channel->persistOnSceneChange = true;
 
 		logic->intVar[lastKey] = newIndex;
 		logic->timers[cooldownKey] = 0.f;
@@ -1126,6 +1141,12 @@ bool VisualLogicSystem::executeConditionNode(GameObject* obj, VisualLC* logic, L
 		return (as.currentFrameColumn >= (int)as.lastFrame.x &&
 			as.currentFrameRow >= (int)as.lastFrame.y);
 	}
+	else if (node.imp == NodeImplementation::IS_VIDEO_END) {
+		if (obj->hasComponent<Video>())
+			return obj->getComponent<Video>()->videoEnded;
+
+		return false;
+	}
 
 	return true;
 }
@@ -1176,6 +1197,8 @@ bool VisualLogicSystem::shouldTriggerCollision(LogicNode& node, GameObject* coll
 }
 
 void VisualLogicSystem::resetLogicState(/*GameObjectManager& manager*/) {
+	if (!m_manager) return;
+
 	std::vector<GameObject*> allObjects;
 	m_manager->getAllGameObjects(allObjects);
 

@@ -1,3 +1,18 @@
+/* Start Header ************************************************************************/
+/*!
+\file       EditorLaunch.cpp
+\author     Tan Chee Qing, cheeqing.tan, 2401486
+            - 100%
+\par		cheeqing.tan@digipen.edu
+\date       March, 10th, 2026
+\brief      Implementation of editor launcher for the standalone editor.
+
+Copyright (C) 2026 DigiPen Institute of Technology.
+Reproduction or disclosure of this file or its contents
+without the prior written consent of DigiPen Institute of
+Technology is prohibited.
+*/
+/* End Header **************************************************************************/
 
 //#ifdef TANUKI_EDITOR   
 #include "editorLaunch.h"
@@ -334,6 +349,7 @@ bool EditorLaunch::createNewGame(const std::string& name) {
         "assets/scripting",
         //"assets/shaders",
         "assets/Texture",
+        "assets/video"
     };
 
     std::error_code ec;

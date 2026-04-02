@@ -26,6 +26,8 @@ set(TANUKI_THIRD_PARTY
     lua
     rapidjson
     freetype
+    plmpeg
+    glm::glm
 )
 
 # ======================= [1] TANUKI ENGINE (Static Lib) ================

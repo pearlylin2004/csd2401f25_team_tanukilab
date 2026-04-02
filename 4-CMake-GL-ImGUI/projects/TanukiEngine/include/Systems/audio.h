@@ -153,4 +153,15 @@ private:
 	float m_masterVolume = 1.0f;
 	FMOD::Channel* m_bgmChannel = nullptr;
 
+
+	/* ---- for fade out previous bgm ---- */
+	// i stupid lah idk how to do it cleanly
+	struct BGMFadeOut {
+		FMOD::Channel* channel = nullptr;
+		float timer = 0.f;
+		float duration = 1.f;
+		float startVolume = 0.f;
+	};
+	std::vector<BGMFadeOut> m_fadingOutBGMs;
+
 };

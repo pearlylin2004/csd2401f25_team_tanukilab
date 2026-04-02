@@ -6,19 +6,19 @@
       "pos": [
         -17.767385482788086,
         -4.7280683517456055,
-        0.9980000257492065
+        0.9980000257492064
       ],
       "rotation": 1.0,
       "scale": [
-        4.0,
-        4.0,
+        2.5,
+        2.5,
         0.0
       ]
     },
     "Render": {
       "shape": "square",
       "hasTex": 1,
-      "texture": "assets/Texture/Leaf_Gun_Empty.png",
+      "texture": "assets/Texture\\Water_Gun.png",
       "hasAnimation": 1
     },
     "Input": {},
@@ -26,7 +26,7 @@
       "physicsFlag": 1,
       "moveSpeed": 5.0,
       "jumpForce": 12.5,
-      "damping": 0.9800000190734863,
+      "damping": 0.9800000190734864,
       "maxFallSpeed": -30.0,
       "groundAccelForce": 20.0,
       "airAccelForce": 8.0,
@@ -38,19 +38,19 @@
       "mass": 1.0,
       "buoyancy": 0,
       "freezeRotation": true,
-      "angularDrag": 0.9800000190734863,
+      "angularDrag": 0.9800000190734864,
       "inertiaOverride": 0.0
     },
     "CollisionInfo": {
       "collisionFlag": 1,
       "autoFitScale": 0,
       "colliderSize": [
-        2.0,
-        3.200000047683716
+        1.600000023841858,
+        1.7999999523162842
       ],
       "colliderPos": [
-        0.0,
-        0.0
+        -0.10000000149011612,
+        -0.10000000149011612
       ],
       "colliderRot": 0.0,
       "colliderType": "square",
@@ -124,7 +124,7 @@
       },
       "Shooting": {
         "animState": {
-          "texture": "assets/Texture/Kinuta_Land_SS.png",
+          "texture": "assets/Texture\\Kinuta_Death_SS.png",
           "loop": 0,
           "play": 1,
           "totalColumn": 3,
@@ -155,7 +155,7 @@
       "channels": {
         "footstep1": {
           "audioFile": "assets/Audio\\SFX\\Footsteps2_Gravel-Dirt_far-small_1.wav",
-          "volume": 0.7200000286102295,
+          "volume": 0.30000001192092896,
           "pitch": 1.0,
           "loop": 0,
           "playOnStart": 0,
@@ -172,7 +172,7 @@
         },
         "footstep2": {
           "audioFile": "assets/Audio\\SFX\\Footsteps2_Gravel-Dirt_far-small_2.wav",
-          "volume": 1.0,
+          "volume": 0.30000001192092896,
           "pitch": 1.0,
           "loop": 0,
           "playOnStart": 0,
@@ -189,7 +189,7 @@
         },
         "footstep3": {
           "audioFile": "assets/Audio\\SFX\\Footsteps2_Gravel-Dirt_far-small_3.wav",
-          "volume": 1.0,
+          "volume": 0.30000001192092896,
           "pitch": 1.0,
           "loop": 0,
           "playOnStart": 0,
@@ -206,7 +206,7 @@
         },
         "footstep4": {
           "audioFile": "assets/Audio\\SFX\\Footsteps2_Gravel-Dirt_far-small_4.wav",
-          "volume": 1.0,
+          "volume": 0.30000001192092896,
           "pitch": 1.0,
           "loop": 0,
           "playOnStart": 0,
@@ -223,7 +223,7 @@
         },
         "footstep5": {
           "audioFile": "assets/Audio\\SFX\\Footsteps2_Gravel-Dirt_far-small_5.wav",
-          "volume": 1.0,
+          "volume": 0.30000001192092896,
           "pitch": 1.0,
           "loop": 0,
           "playOnStart": 0,
@@ -240,7 +240,7 @@
         },
         "footstep6": {
           "audioFile": "assets/Audio\\SFX\\Footsteps2_Gravel-Dirt_far-small_6.wav",
-          "volume": 1.0,
+          "volume": 0.30000001192092896,
           "pitch": 1.0,
           "loop": 0,
           "playOnStart": 0,
@@ -268,7 +268,9 @@
           "fadeOutDuration": 0.33000001311302185,
           "isSpatial": false,
           "minDistance": 1.0,
-          "maxDistance": 100.0
+          "maxDistance": 100.0,
+          "spread": 180.0,
+          "persistOnSceneChange": false
         },
         "jump-audio-10": {
           "audioFile": "assets/Audio\\SFX\\Tanuki Jump_10.wav",
@@ -283,7 +285,9 @@
           "fadeOutDuration": 0.33000001311302185,
           "isSpatial": false,
           "minDistance": 1.0,
-          "maxDistance": 100.0
+          "maxDistance": 100.0,
+          "spread": 180.0,
+          "persistOnSceneChange": false
         },
         "jump-audio-11": {
           "audioFile": "assets/Audio\\SFX\\Tanuki Jump_11.wav",
@@ -298,7 +302,9 @@
           "fadeOutDuration": 0.33000001311302185,
           "isSpatial": false,
           "minDistance": 1.0,
-          "maxDistance": 100.0
+          "maxDistance": 100.0,
+          "spread": 180.0,
+          "persistOnSceneChange": false
         },
         "jump-audio-2": {
           "audioFile": "assets/Audio\\SFX\\Tanuki Jump_2.wav",
@@ -313,7 +319,9 @@
           "fadeOutDuration": 0.33000001311302185,
           "isSpatial": false,
           "minDistance": 1.0,
-          "maxDistance": 100.0
+          "maxDistance": 100.0,
+          "spread": 180.0,
+          "persistOnSceneChange": false
         },
         "jump-audio-3": {
           "audioFile": "assets/Audio\\SFX\\Tanuki Jump_3.wav",
@@ -328,7 +336,9 @@
           "fadeOutDuration": 0.33000001311302185,
           "isSpatial": false,
           "minDistance": 1.0,
-          "maxDistance": 100.0
+          "maxDistance": 100.0,
+          "spread": 180.0,
+          "persistOnSceneChange": false
         },
         "jump-audio-4": {
           "audioFile": "assets/Audio\\SFX\\Tanuki Jump_4.wav",
@@ -343,7 +353,9 @@
           "fadeOutDuration": 0.33000001311302185,
           "isSpatial": false,
           "minDistance": 1.0,
-          "maxDistance": 100.0
+          "maxDistance": 100.0,
+          "spread": 180.0,
+          "persistOnSceneChange": false
         },
         "jump-audio-5": {
           "audioFile": "assets/Audio\\SFX\\Tanuki Jump_5.wav",
@@ -358,7 +370,9 @@
           "fadeOutDuration": 0.33000001311302185,
           "isSpatial": false,
           "minDistance": 1.0,
-          "maxDistance": 100.0
+          "maxDistance": 100.0,
+          "spread": 180.0,
+          "persistOnSceneChange": false
         },
         "jump-audio-6": {
           "audioFile": "assets/Audio\\SFX\\Tanuki Jump_6.wav",
@@ -373,7 +387,9 @@
           "fadeOutDuration": 0.33000001311302185,
           "isSpatial": false,
           "minDistance": 1.0,
-          "maxDistance": 100.0
+          "maxDistance": 100.0,
+          "spread": 180.0,
+          "persistOnSceneChange": false
         },
         "jump-audio-7": {
           "audioFile": "assets/Audio\\SFX\\Tanuki Jump_7.wav",
@@ -388,7 +404,9 @@
           "fadeOutDuration": 0.33000001311302185,
           "isSpatial": false,
           "minDistance": 1.0,
-          "maxDistance": 100.0
+          "maxDistance": 100.0,
+          "spread": 180.0,
+          "persistOnSceneChange": false
         },
         "jump-audio-8": {
           "audioFile": "assets/Audio\\SFX\\Tanuki Jump_8.wav",
@@ -403,7 +421,9 @@
           "fadeOutDuration": 0.33000001311302185,
           "isSpatial": false,
           "minDistance": 1.0,
-          "maxDistance": 100.0
+          "maxDistance": 100.0,
+          "spread": 180.0,
+          "persistOnSceneChange": false
         },
         "jump-audio-9": {
           "audioFile": "assets/Audio\\SFX\\Tanuki Jump_9.wav",
@@ -418,7 +438,9 @@
           "fadeOutDuration": 0.33000001311302185,
           "isSpatial": false,
           "minDistance": 1.0,
-          "maxDistance": 100.0
+          "maxDistance": 100.0,
+          "spread": 180.0,
+          "persistOnSceneChange": false
         },
         "landing": {
           "audioFile": "assets/audio/landing.wav",
@@ -433,7 +455,9 @@
           "fadeOutDuration": 1.0,
           "isSpatial": false,
           "minDistance": 1.0,
-          "maxDistance": 100.0
+          "maxDistance": 100.0,
+          "spread": 180.0,
+          "persistOnSceneChange": false
         },
         "refill": {
           "audioFile": "assets/Audio\\collect_water.wav",
@@ -448,7 +472,9 @@
           "fadeOutDuration": 0.7799999713897705,
           "isSpatial": false,
           "minDistance": 1.0,
-          "maxDistance": 100.0
+          "maxDistance": 100.0,
+          "spread": 180.0,
+          "persistOnSceneChange": false
         }
       }
     },

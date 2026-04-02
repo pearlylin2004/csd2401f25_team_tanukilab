@@ -26,18 +26,18 @@
   "onLoadScript": "assets/scripting\\pause_scene_load.lua",
   "objects": [
     {
-      "name": "back_button",
+      "name": "Back",
       "components": {
         "Transform": {
           "pos": [
-            -15.5,
-            8.5,
-            0.0
+            -16.681079864501953,
+            8.383752822875977,
+            0.20000000298023224
           ],
           "rotation": 0.0,
           "scale": [
-            6.0,
-            2.0,
+            5.300000190734863,
+            1.3639999628067017,
             0.0
           ]
         },
@@ -48,7 +48,7 @@
           "colorB": 1.0,
           "colorA": 1.0,
           "hasTex": 1,
-          "texture": "assets/button.png",
+          "texture": "assets/Texture\\Menu_Button.png",
           "hasAnimation": 0
         },
         "Button": {
@@ -87,30 +87,58 @@
       }
     },
     {
-      "name": "back_text",
+      "name": "Rectangle_9",
       "components": {
         "Transform": {
           "pos": [
-            -16.5,
-            8.100000381469727,
-            1.0
+            -17.635011672973633,
+            8.092957496643066,
+            5.0
           ],
           "rotation": 0.0,
           "scale": [
-            20.0,
-            20.0,
+            1.0,
+            1.0,
             0.0
           ]
         },
         "FontComponent": {
-          "word": "BACK",
+          "word": "Back",
           "color": [
             0.0,
             0.0,
             0.0
           ],
-          "scale": 0.5,
-          "fontType": 1
+          "scale": 1.0,
+          "fontType": 0
+        }
+      }
+    },
+    {
+      "name": "Rectangle_3",
+      "components": {
+        "Transform": {
+          "pos": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "rotation": 0.0,
+          "scale": [
+            40.0,
+            22.5,
+            0.0
+          ]
+        },
+        "Render": {
+          "shape": "square",
+          "colorR": 0.44128113985061646,
+          "colorG": 0.44128113985061646,
+          "colorB": 0.44128113985061646,
+          "colorA": 1.0,
+          "hasTex": 1,
+          "texture": "assets/menu_background.png",
+          "hasAnimation": 0
         }
       }
     }

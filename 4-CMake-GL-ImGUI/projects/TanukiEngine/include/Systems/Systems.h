@@ -98,7 +98,30 @@ public:
 		array of all objects
 
 	*************************************************************************/
-	void update(GameObjectManager& manager, float const& deltaTime);
+	//void update(GameObjectManager& manager, float const& deltaTime);
+
+	/*!***********************************************************************
+	\brief
+		resend matrix data to the shaders to recalculated object position and orientation to draw for the new frame
+		only draw obj that is below the z threshold, to be called before drawing water
+
+	\param[in] manager
+		array of all objects and the z threshold to determine which obj to draw
+
+	*************************************************************************/
+	void renderBelowZ(GameObjectManager& manager, float deltaTime, float zThreshold);
+
+	/*!***********************************************************************
+	\brief
+		resend matrix data to the shaders to recalculated object position and orientation to draw for the new frame
+		only draw obj that is above the z threshold, to be called after drawing water
+
+	\param[in] manager
+		array of all objects and the z threshold to determine which obj to draw
+
+	*************************************************************************/
+	void renderAboveZ(GameObjectManager& manager, float deltaTime, float zThreshold);
+
 	void renderFBO();
 	void resizeFBO(int width, int height);
 	GLuint getTexture() const { return texture; }
@@ -118,6 +141,48 @@ public:
 	//static std::unordered_map<BatchKey, std::vector<renderer::InstanceData>, BatchKeyHash> objectWithoutTex;
 	static std::map<BatchKey, std::vector<renderer::InstanceData>> objectWithTex;
 	static std::map<BatchKey, std::vector<renderer::InstanceData>> objectWithoutTex;
+
+private:
+	/*!***********************************************************************
+	\brief
+		return the camera view and projection matrix to be used for rendering
+
+	\param[in] manager
+		camview and camproj to use
+
+	*************************************************************************/
+	void getCameraMatrices(glm::mat4& camView, glm::mat4& camProj);
+
+	/*!***********************************************************************
+	\brief
+		resend matrix data to the shaders to recalculated object position and orientation to draw for the new frame
+		only draw obj that is above the z threshold, to be called after drawing water
+
+	\param[in] manager
+		camview and camproj to use, and zFilter to determine which obj to draw
+
+	*************************************************************************/
+	void drawBatches(const glm::mat4& camView, const glm::mat4& camProj, std::function<bool(float)> zFilter);
+};
+
+class VideoSystem {
+public:
+	static void update(GameObject* obj, float const deltaTime);
+	
+	void pause(Video* video) { video->isPaused = true; }
+	void resume(Video* video) { video->isPaused = false; }
+
+	void stop(Video* video) {
+		cleanup(video);
+		video->isPlaying = false;
+		video->isPaused = false;
+	}
+	static void cleanup(Video* video);
+
+	static bool loadVideo(Video* video);
+//private:
+//	
+//	
 };
 
 class ParticleSystem
@@ -428,7 +493,7 @@ public:
 	\return
 		True if point is in water, false otherwise
 	*************************************************************************/
-	bool isPointInWater(GameObject* waterObj, const Vector2D& point);
+	//bool isPointInWater(GameObject* waterObj, const Vector2D& point);
 
 	/*!***********************************************************************
 	\brief

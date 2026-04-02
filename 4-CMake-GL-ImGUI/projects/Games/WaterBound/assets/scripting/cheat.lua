@@ -32,6 +32,12 @@ function cheat.Update(obj, dt)
 
     local current = getCurrentScene()
 
+    -- SPACE: skip opening cutscene (expose to player)
+    if current == "Opening_Cutscene.json" and isKeyTriggered("SPACE") then
+        loadLevel(getNextLevel(current))
+        return
+    end
+
     -- CTRL + N: skip to next
     if isComboKeyTriggered("N", "CTRL") then
         loadLevel(getNextLevel(current))

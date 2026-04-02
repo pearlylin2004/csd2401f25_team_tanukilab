@@ -16,6 +16,7 @@ Technology is prohibited.
 
 #include "luaSystem.h"
 #include "Systems.h"
+#include "toastSystem.h"
 
 void LuaSystem::init(GameObjectManager& manager) {
     L = luaL_newstate();
@@ -36,6 +37,8 @@ void LuaSystem::init(GameObjectManager& manager) {
     lua_register(L, "setTexture", Lua_setTexture);
     lua_register(L, "setColliderSize", Lua_setColliderSize);
     lua_register(L, "getAnimationFrame", Lua_getAnimationFrame);
+    lua_register(L, "getFontText", Lua_getFontText);
+    lua_register(L, "setFontText", Lua_setFontText);
 
     // physics getters
     lua_register(L, "getVelX", Lua_getVelX);
@@ -71,6 +74,7 @@ void LuaSystem::init(GameObjectManager& manager) {
     lua_register(L, "getAccelX", Lua_getAccelX);
     lua_register(L, "getAccelY", Lua_getAccelY);
     lua_register(L, "getBuoyancy", Lua_getBuoyancy);
+    lua_register(L, "getLiftDuration", Lua_getLiftDuration);
 
 
     // physics setters
@@ -152,6 +156,8 @@ void LuaSystem::init(GameObjectManager& manager) {
     lua_register(L, "setSoundVolume", Lua_setSoundVolume);
     lua_register(L, "isSoundPlaying", Lua_isSoundPlaying);
     lua_register(L, "setLowPassFilter", Lua_setLowPassFilter);
+    lua_register(L, "getMasterVolume", Lua_getMasterVolume);
+    lua_register(L, "setMasterVolume", Lua_setMasterVolume);
 
     // visual script
     lua_register(L, "getVSGlobalFloat", Lua_getVSGlobalFloat);
@@ -199,6 +205,9 @@ void LuaSystem::init(GameObjectManager& manager) {
     // scene stuff
     lua_register(L, "loadLevel", Lua_loadLevel);
     lua_register(L, "getCurrentScene", Lua_getCurrentScene);
+
+    // toast
+    lua_register(L, "showToast", Lua_showToast);
 
     registerManagerBindings(manager);
 }
@@ -378,6 +387,32 @@ int LuaSystem::Lua_getAnimationFrame(lua_State* L) {
     lua_pushinteger(L, anim->animState[idx].currentFrameColumn);
 
     return 1;
+}
+
+int LuaSystem::Lua_getFontText(lua_State* L) {
+    GameObject* obj = static_cast<GameObject*>(lua_touserdata(L, 1));
+    if (!obj || !obj->hasComponent<FontComponent>()) {
+        lua_pushstring(L, ""); return 1;
+    }
+
+    lua_pushstring(L, obj->getComponent<FontComponent>()->word.c_str());
+    return 1;
+}
+
+int LuaSystem::Lua_setFontText(lua_State* L) {
+    GameObject* obj = static_cast<GameObject*>(lua_touserdata(L, 1));
+    if (!obj) return 0;
+
+    if (!obj->hasComponent<FontComponent>()) {
+        std::cout << "[Lua] " << obj->getObjectName() << " has no font component\n";
+        return 0;
+    }
+
+    const char* text = lua_tostring(L, 2);
+    if (!text) return 0;
+
+    obj->getComponent<FontComponent>()->word = text;
+    return 0;
 }
 
 /* ---- physics getters ---- */
@@ -668,6 +703,13 @@ int LuaSystem::Lua_getBuoyancy(lua_State* L) {
 
     lua_pushboolean(L, obj->getComponent<Physics>()->buoyancy ? 1 : 0);
 
+    return 1;
+}
+
+int LuaSystem::Lua_getLiftDuration(lua_State* L) {
+    GameObject* obj = static_cast<GameObject*>(lua_touserdata(L, 1));
+    if (!obj || !obj->hasComponent<Physics>()) { lua_pushnumber(L, 0); return 1; }
+    lua_pushnumber(L, obj->getComponent<Physics>()->liftDuration);
     return 1;
 }
 
@@ -1447,6 +1489,17 @@ int LuaSystem::Lua_setLowPassFilter(lua_State* L) {
     return 0;
 }
 
+int LuaSystem::Lua_getMasterVolume(lua_State* L) {
+    lua_pushnumber(L, AudioHandler::getInstance().getMasterVolume());
+    return 1;
+}
+
+int LuaSystem::Lua_setMasterVolume(lua_State* L) {
+    float vol = static_cast<float>(lua_tonumber(L, 1));
+
+    AudioHandler::getInstance().setMasterVolume(vol);
+    return 0;
+}
 
 /* ---- visual script ---- */
 int LuaSystem::Lua_getVSGlobalFloat(lua_State* L) {
@@ -1730,18 +1783,29 @@ int LuaSystem::Lua_loadLevel(lua_State* L) {
     const char* sceneName = lua_tostring(L, 1);
     if (!sceneName) return 0;
 
-    GUISystem::getInstance().m_pendingLevelLoad = true;
-    GUISystem::getInstance().m_pendingLevelName = std::string(sceneName);
+    SceneManager::getInstance().requestLoadScene(std::string(sceneName));
+
     return 0;
 }
 
 int LuaSystem::Lua_getCurrentScene(lua_State* L) {
-    std::string scene = GUISystem::getInstance().getCurrentLevel();
+    std::string scene = SceneManager::getInstance().getCurrentSceneName();
     // strip path, just return filename
     std::filesystem::path p(scene);
 
     lua_pushstring(L, p.filename().string().c_str());
     return 1;
+}
+
+
+/* ---- toast ---- */
+int LuaSystem::Lua_showToast(lua_State* L) {
+    const char* msg = lua_tostring(L, 1);
+    if (!msg) return 0;
+
+    float duration = lua_isnumber(L, 2) ? static_cast<float>(lua_tonumber(L, 2)) : 5.f;
+    ToastSystem::getInstance().push(msg, duration);
+    return 0;
 }
 
 

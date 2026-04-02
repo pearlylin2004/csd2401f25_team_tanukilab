@@ -18,7 +18,7 @@ if not exist build (
 )
 
 REM Check if executable exists
-if not exist build\my-gl-app.exe (
+if not exist build\Debug\WaterBound.exe (
     echo ERROR: Executable not found!
     echo Please run script_build_and_run.bat first to build the project.
     pause
@@ -27,8 +27,8 @@ if not exist build\my-gl-app.exe (
 
 echo Running the application...
 echo.
-cd build
-my-gl-app.exe
+cd build\Debug
+WaterBound.exe
 if %errorlevel% neq 0 (
     echo.
     echo Application exited with error code: %errorlevel%

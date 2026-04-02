@@ -1,4 +1,4 @@
-/* Start Header ************************************************************************/
+﻿/* Start Header ************************************************************************/
 /*!
 \file		CoreEngine.cpp
 \author 	Seow Sin Le, s.sinle, 2401084, 55%
@@ -24,7 +24,9 @@ Technology is prohibited.
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "CoreEngine.h"
-#include "GUISystem.h"  // Add this include
+#include "toastSystem.h"
+#include "ButtonSystem.h"
+
 
 CoreEngine::CoreEngine()
     : m_window(nullptr),
@@ -75,7 +77,7 @@ void CoreEngine::Init(bool forceWindowed) {
     int winHeight = cfg.height;
 
     if (wantFullscreen) {
-       
+        
 
         // remember windowed size for when we toggle back
         m_windowedWidth = cfg.width;
@@ -153,11 +155,14 @@ void CoreEngine::Init(bool forceWindowed) {
 	m_particleSystem = std::make_unique<ParticleSystem>();
 	m_visualLCSystem = std::make_unique<VisualLogicSystem>();
 	m_transformSystem = std::make_unique<TransformSystem>();
+	m_cameraSystem = std::make_unique<Camera>();
 
 
     PrefabManager::Instance().loadPrefabRegistry();
     //m_guiSystem->init(*m_manager, *m_luaSystem);
-    GUISystem::getInstance().init(*m_manager, *m_luaSystem, *m_visualLCSystem);
+	ButtonSystem::getInstance().init(*m_manager);
+    SceneManager::getInstance().init(*m_manager, *m_visualLCSystem);
+    //GUISystem::getInstance().init(*m_manager, *m_luaSystem, *m_visualLCSystem);
     m_luaSystem->init(*m_manager);
     m_renderSystem->init(*m_manager, winWidth, winHeight);
     m_waterSystem->init();
@@ -176,6 +181,12 @@ void CoreEngine::Init(bool forceWindowed) {
 
     //// load global settings
     //GlobalRegistry::Instance().init();
+
+    // Initialize leaderboard (loads scores from disk)
+    //LeaderboardSystem::getInstance().init();
+
+    //// Initialize replay system (creates replays directory)
+    //ReplaySystem::getInstance().init();
 
     glfwPollEvents();
     m_isRunning = true;
@@ -212,13 +223,13 @@ void CoreEngine::GameLoop() {
 
     if (glfwWindowShouldClose(m_window)) { m_isRunning = false; return; }
     //change to fn because Q will affect the editor
-    //if (glfwWindowShouldClose(m_window) || InputHandler::isKeyTriggered(GLFW_KEY_F1)) { m_isRunning = false; return; }
-    ////pause checking, and set it to paused state if escape is held
+    if (glfwWindowShouldClose(m_window) || InputHandler::isKeyTriggered(GLFW_KEY_F1)) { m_isRunning = false; return; }
+    //pause checking, and set it to paused state if escape is held
     //if (InputHandler::isKeyTriggered(GLFW_KEY_ESCAPE)) {
     //    auto current = GUISystem::getInstance().getCurrentState(); //get current state
-    //    if (current != GameState::PAUSED && current != GameState::MENU) {
+    //    if (current == GameState::PLAYING) {
     //        GUISystem::getInstance().setStateBeforePause(current); //store state before pausing
-    //        GUISystem::getInstance().changeState(GameState::PAUSED, "pause_scene.json");
+    //        SceneManager::getInstance().requestLevelLoad("pause_scene.json");
     //    }
     //}
 
@@ -234,6 +245,8 @@ void CoreEngine::GameLoop() {
 
     //--- Update Timing --- 
     Perf::UpdateTime(m_delta, m_fps, 0.5);
+    m_delta = std::min(m_delta, 1.0 / 60.0); // clamp delta so its wont be too fast
+
 #if defined(_DEBUG) || defined(DEBUG)
     // Show FPS only in debug builds
     Perf::UpdateWindowTitle(m_window, m_title, m_fps, true);
@@ -267,27 +280,23 @@ void CoreEngine::Update(float deltaTime) {
         toggleFullscreen();
     }
     //menu checking
-    GameState state = GUISystem::getInstance().getCurrentState();
+    /*GameState state = GUISystem::getInstance().getCurrentState();
     if (state != GameState::EXIT) {
         GUISystem::getInstance().update();
-    }
+    }*/
+
+    // Tick the level timer for leaderboard
+    //GUISystem::getInstance().tickLevelTimer(deltaTime);
 
 	//for other systems to update even in editor mode
     if (!EditorManager::isEditingMode() && !EditorManager::isPaused()) {
-        //m_luaSystem->update(*m_manager, deltaTime);
         m_visualLCSystem->initAll(*m_manager);
         m_visualLCSystem->updateAll(*m_manager, deltaTime);
     }
 
-    
-
     // Update all systems in order
-	
     m_inputSystem->update(*m_manager, deltaTime, *m_messageBus);
     m_physicsSystem->update(*m_manager, deltaTime, *m_messageBus);
-
-    
-
     m_collisionSystem->update(*m_manager, deltaTime);
 	m_transformSystem->update(*m_manager, deltaTime);//for parent->child transform
     m_cameraSystem->update(*m_manager);
@@ -297,17 +306,45 @@ void CoreEngine::Update(float deltaTime) {
     m_tileMapSystem->update(*m_manager);
     m_particleSystem->update(*m_manager, deltaTime);;
     m_waterSystem->update(*m_manager, deltaTime);
-    m_renderSystem->update(*m_manager, deltaTime);
+    ButtonSystem::getInstance().update();
+
+    // // Record player state for replay and update ghost playback
+    // auto& replay = ReplaySystem::getInstance();
+    // auto currentGS = GUISystem::getInstance().getCurrentState();
+    // const bool allowReplayRuntime = !EditorManager::isEditingMode();
+    // if (allowReplayRuntime && replay.isRecording() && currentGS != GameState::PAUSED) {
+    //     replay.recordFrame(*m_manager, deltaTime);
+    // }
+    // if (allowReplayRuntime && replay.isPlaying() && currentGS != GameState::PAUSED) {
+    //     replay.updateGhost(*m_manager, deltaTime);
+    // }
+    // if (allowReplayRuntime && replay.isViewerMode() && currentGS != GameState::PAUSED) {
+    //     replay.updateViewer(deltaTime);
+    // }
+    // // Apply recorded world object state every frame in viewer mode
+    // if (allowReplayRuntime && replay.isViewerMode()) {
+    //     replay.applyWorldSnapshot(*m_manager);
+    // }
+
+    /* ---- Render ---- */
+    auto renderStart = std::chrono::high_resolution_clock::now();
+	// anyth fall below the z threhold 8 will be drawn before water
+    m_renderSystem->renderBelowZ(*m_manager, deltaTime, 8.f); // draw everything below water
     m_waterSystem->render(*m_manager);
+    m_renderSystem->renderAboveZ(*m_manager, deltaTime, 8.f); // draw nothing above
+    auto renderEnd = std::chrono::high_resolution_clock::now();
+    double renderMs = std::chrono::duration<double, std::milli>(renderEnd - renderStart).count();
+    g_SystemTimers.push_back({ "Render", renderMs });
+    /* ---- END ---- */
+
     m_fontSystem->update(*m_manager, m_fps);
     m_audioSystem->update(*m_manager, deltaTime);
     if (!EditorManager::isEditingMode() && !EditorManager::isPaused()) {
         m_luaSystem->update(*m_manager, deltaTime);
     }
-    //m_waterSystem->render(*m_manager);
-//#ifdef _DEBUG
+    SceneManager::getInstance().update();
+    ToastSystem::getInstance().update(deltaTime);
     m_uiSystem->update();
-//#endif
 
     //performance update
     LogSystemTimersEveryInterval(deltaTime, 15.0);
@@ -500,13 +537,13 @@ void CoreEngine::setGameScript(GameScript* script) {
     m_logicSystem->setGameScript(script);
     m_physicsSystem->setGameScript(script);
     m_collisionSystem->setGameScript(script);
-    m_logicSystem->setGameScript(script);
+	m_audioSystem->setGameScript(script);
 
     m_gameScript = script;
     /*if (m_luaSystem && m_gameScript)
         m_gameScript->registerLuaBindings(*m_luaSystem);*/
 
-    GUISystem::getInstance().setOnSceneLoadCallback([this](GameObjectManager& mgr) {if (m_gameScript) m_gameScript->onSceneLoad(mgr);});
+    SceneManager::getInstance().setOnSceneLoadCallback([this](GameObjectManager& mgr) {if (m_gameScript) m_gameScript->onSceneLoad(mgr);});
 
     if (m_luaSystem)
         m_gameScript->setLuaSystem(m_luaSystem.get());
@@ -515,34 +552,13 @@ void CoreEngine::setGameScript(GameScript* script) {
 void CoreEngine::loadInitialScene(const std::string& sceneName) {
     Editor::assetBrowserState.currentFolder = PathManager::Instance().getSourcePath() + "/assets/";
 
+    //use SceneManager so state is tracked correctly from the start
+    SceneManager::getInstance().requestLoadScene(sceneName);
+    SceneManager::getInstance().update();
+
     std::string fullPath = PathManager::Instance().getSourceScenePath() + sceneName;
     m_manager->loadScene(fullPath);
     m_manager->initializeSceneResources();
-    GUISystem::getInstance().triggerSceneLoad(*m_manager);
+    SceneManager::getInstance().triggerSceneLoad(*m_manager);
     CachedGameObjects::Instance().refresh();
 }
-
-//void CoreEngine::startBGM() {
-//    if (m_bgmChannel) return;
-//    AudioChannel bgm;
-//    bgm.audioFile = m_bgmFilePath;
-//    bgm.loop = true;
-//    bgm.volume = 0.125f;
-//    m_bgmChannel = AudioHandler::getInstance().playBGMSound(&bgm);
-//    AudioHandler::getInstance().registerBGMChannel(m_bgmChannel);
-//}
-//
-//void CoreEngine::stopBGM() {
-//    if (m_bgmChannel) {
-//        m_bgmChannel->stop();
-//        m_bgmChannel = nullptr;
-//    }
-//}
-//
-//void CoreEngine::pauseBGM() {
-//    if (m_bgmChannel) m_bgmChannel->setPaused(true);
-//}
-//
-//void CoreEngine::resumeBGM() {
-//    if (m_bgmChannel) m_bgmChannel->setPaused(false);
-//}

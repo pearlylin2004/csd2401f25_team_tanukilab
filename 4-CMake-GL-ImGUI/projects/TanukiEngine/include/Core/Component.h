@@ -31,6 +31,10 @@ Technology is prohibited.
 #include "font.h"
 #include "dynamics.h"
 #include "queue"
+#include "ButtonAction.h"
+#pragma warning(push, 0)
+#include "pl_mpeg.h"
+#pragma warning(pop)
 
 
 // at least it works!!!
@@ -67,6 +71,12 @@ public:
     bool flipX = false; // flip scaleX when change direction, true means flip to left
     glm::mat4 mdlWorld = 1.f;
 
+    // runtime for editor
+    bool aspectRatioLock = false;
+    bool aspectRatioSet = false;
+    float aspectRatioY = 1.f;
+    float aspectRatioZ = 1.f;
+
     // Hierarchy (optional, null = root object)
     std::string parentName = "";   // serialised as name reference
     Vector2D    localOffset{ 0, 0 }; // position relative to parent at bind time
@@ -95,6 +105,36 @@ public:
     std::string texFile;
     glm::vec4 clr{ 1,1,1,1 };
     renderer::model modelRef;
+};
+
+struct Video : public Component {
+public:
+    std::unique_ptr<Component> clone() const override {
+        return std::make_unique<Video>(*this);
+    }
+public:
+    std::string videoFile = "";
+    plm_t* plm = nullptr;
+    bool isPlaying = true;
+    bool isPaused = false;
+	bool loop = false;
+    bool videoEnded = false; // runtime value
+    GLuint videoTexID = 0;
+    int videoWidth = 0;
+    int videoHeight = 0;
+    float accumTime = 0.0;   // accumulated delta time
+    float fps = 0.0;   // video's fps from plm_get_framerate()
+	std::function<void()> onVideoEnd; //callback function for when video ends, can use lambda to make it change scene etc
+    ~Video() {
+        if (plm) {
+            plm_destroy(plm);
+            plm = nullptr;
+        }
+        if (videoTexID) {
+            glDeleteTextures(1, &videoTexID);
+            videoTexID = 0;
+        }
+    }
 };
 
 struct camera : public Component
@@ -243,6 +283,10 @@ public:
     float ledgeTargetY = 0.f;
     bool ledgeClimb = false;
 
+    // lift effect (runtime)
+    float liftForce = 0.f;
+    float liftDuration = 0.f;
+
     //water bullet
     bool alive = false;
     float lifeTimer = 0.0f;
@@ -312,37 +356,19 @@ enum class CollisionResponseMode {
     NoResponse
 };
 
-//button action 
-enum class ButtonAction {
-    NONE,
-    START_GAME,
-    OPEN_CONTROL,
-	OPEN_AUDIO,
-    EXIT_GAME,
-    RESUME_GAME,
-	YES_EXIT,
-	NO_EXIT,
-    BACK,
-    MENU,
-    MUSIC_VOL_UP,
-    MUSIC_VOL_DOWN,
-    SFX_VOL_UP,
-    SFX_VOL_DOWN,
-    MUTE,
-    UNMUTE
-};
-
 //Button component
 struct Button : public Component {
-    ButtonAction actionName = ButtonAction::NONE;   //action this button triggers
-    bool isHovered = false;   //hover state
-    bool isPressed = false;   //pressed state
+    ButtonAction actionName = ButtonAction::NONE;
+    std::string  scenePath = "";   // target scene filename for LOAD_SCENE buttons
+
+    bool isHovered = false;
+    bool isPressed = false;
 
     std::string onClickChannel = "";
     std::string onHoverChannel = "";
 
     Button() = default;
-    Button(ButtonAction action) : actionName(action) {} 
+    explicit Button(ButtonAction action) : actionName(action) {}
 
     std::unique_ptr<Component> clone() const override {
         return std::make_unique<Button>(*this);
@@ -485,6 +511,13 @@ struct StateMachine : public Component {
         return std::make_unique<StateMachine>(*this);
     }
 };
+
+// Marker component for ghost replay entity (no physics/collision, purely visual)
+//struct GhostComponent : public Component {
+//    std::unique_ptr<Component> clone() const override {
+//        return std::make_unique<GhostComponent>(*this);
+//    }
+//};
 
 //Audio component
 struct FadeInfo {
@@ -655,9 +688,11 @@ public:
                 ch.fadeInfo.isFading = false;
 
                 if (!ch.fadeInfo.isFadingIn && ch.fadeInfo.targetVolume == 0.0f) {
-                    ch.channel->stop();
-                    ch.channel = nullptr;
-					ch.state = AudioState::Stopped;
+                    if (ch.channel) {
+                        ch.channel->stop();
+                        ch.channel = nullptr;
+                        ch.state = AudioState::Stopped;
+                    }
                 }
             }
 
@@ -796,6 +831,7 @@ enum class NodeImplementation {
 	SET_POSITION_ON_COLLIDED, // might not work on those object that has input
     SET_STATE_ON_COLLIDED,
     APPLY_FORCE_ON_COLLIDED,
+    LIFT_COLLIDED,
     SET_GLOBAL_FLOAT,
     MODIFY_GLOBAL_FLOAT,
     TRIGGER_BULLET_REFILL_EVENT, // whenever bullet is refilled, add this node
@@ -814,6 +850,7 @@ enum class NodeImplementation {
     PLAY_RANDOM_SOUND,
     LOCK_POSITION,
     UNLOCK_POSITION,
+    IS_VIDEO_END,
 
     // DEFAULT
     DEFAULT // nothing happen :)

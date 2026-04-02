@@ -154,6 +154,18 @@ function player.Update(obj, dt)
         SendInputEvent("D", 0, 0)
     end
 
+    -- reduce control when being lifted
+    local liftDuration = getLiftDuration(obj)
+    if liftDuration > 0 then
+        targetVelX = targetVelX * 0.3  -- only 30% horizontal control during lift
+    end
+
+    -- snap velocity on direction change
+    local velX = getVelX(obj)
+    if (targetVelX > 0 and velX < 0) or (targetVelX < 0 and velX > 0) then
+        setVelX(obj, 0)
+        setDynVelX(obj, 0)
+    end
 
     -- flip to face mouse when not moving
     if not Input_isKeyHeld("A") and not Input_isKeyHeld("D") then
@@ -168,12 +180,19 @@ function player.Update(obj, dt)
     end
 
 
+    -- snap velocity on direction change
+    local velX = getVelX(obj)
+    if (targetVelX > 0 and velX < 0) or (targetVelX < 0 and velX > 0) then
+        setVelX(obj, 0)
+        setDynVelX(obj, 0)
+    end
+
+
     -- damping + position
     local friction = getFriction(obj)
     applyDamping(obj, friction, targetVelX, dt)
     if not getLedgeClimb(obj) then
         updatePosition(obj, dt)
-        local px, py = getPosition(obj)
     end
 
 

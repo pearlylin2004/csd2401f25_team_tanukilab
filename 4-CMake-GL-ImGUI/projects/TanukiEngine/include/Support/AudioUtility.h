@@ -21,7 +21,8 @@ Technology is prohibited.
 
 //checks if the file used is valid for FMOD
 inline void FMODErrorCheck(FMOD_RESULT result) {
-    if (result != FMOD_OK) {
+	// FMOD_ERR_INVALID_HANDLE is a common "error" that just means the sound finished and the channel handle is no longer valid
+    if (result != FMOD_OK && result != FMOD_ERR_INVALID_HANDLE) {
         std::cerr << "FMOD error: " << FMOD_ErrorString(result) << std::endl;
         DebugLog::addMessage("Audio error: " + std::string(FMOD_ErrorString(result)), DebugMode::PlaySimul);
         //exit(-1); // instead of terminate, can change to logging the errors

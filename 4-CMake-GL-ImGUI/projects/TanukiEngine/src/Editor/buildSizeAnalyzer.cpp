@@ -77,7 +77,10 @@ static std::string openFileExplorer() {
 void BuildSizeAnalyzer::render(const std::vector<Editor::Asset>& assets) {
 	if (!m_show) return;
 
-	if (m_show && m_wasClosed) m_dirty = true;
+	if (m_show && m_wasClosed) {
+		loadSelections();
+		m_dirty = true;
+	}
 	m_wasClosed = !m_show;
 
 	if (m_dirty) refreshAssets(assets);
@@ -95,6 +98,7 @@ void BuildSizeAnalyzer::render(const std::vector<Editor::Asset>& assets) {
 			e.selected = true;
 			m_savedSelections[e.path] = true;
 		}
+		saveSelections();
 	}
 
 	ImGui::SameLine();
@@ -104,6 +108,7 @@ void BuildSizeAnalyzer::render(const std::vector<Editor::Asset>& assets) {
 			e.selected = false;
 			m_savedSelections[e.path] = false;
 		}
+		saveSelections();
 	}
 
 
@@ -114,6 +119,7 @@ void BuildSizeAnalyzer::render(const std::vector<Editor::Asset>& assets) {
 				std::string f = std::filesystem::path(e.path).parent_path().filename().string();
 				if (f == m_folderFilter) { e.selected = true; m_savedSelections[e.path] = true; }
 			}
+			saveSelections();
 		}
 
 		ImGui::SameLine();
@@ -123,6 +129,7 @@ void BuildSizeAnalyzer::render(const std::vector<Editor::Asset>& assets) {
 				std::string f = std::filesystem::path(e.path).parent_path().filename().string();
 				if (f == m_folderFilter) { e.selected = false; m_savedSelections[e.path] = false; }
 			}
+			saveSelections();
 		}
 	}
 
@@ -227,6 +234,7 @@ void BuildSizeAnalyzer::render(const std::vector<Editor::Asset>& assets) {
 			if (ImGui::Checkbox(("##chk" + entry->path).c_str(), &sel)) {
 				entry->selected = sel;
 				m_savedSelections[entry->path] = sel;
+				saveSelections();
 			}
 
 			// name column
@@ -340,6 +348,12 @@ void BuildSizeAnalyzer::refreshAssets(const std::vector<Editor::Asset>& assets) 
 	m_availableFolders.push_back("All");
 
 	for (const Editor::Asset& asset : assets) {
+		std::error_code existsEc;
+		if (!std::filesystem::exists(asset.path, existsEc) || existsEc) {
+			m_savedSelections.erase(asset.path);
+			continue;
+		}
+
 		std::string folder = std::filesystem::path(asset.path).parent_path().filename().string();
 		if (std::find(m_availableFolders.begin(), m_availableFolders.end(), folder) == m_availableFolders.end())
 			m_availableFolders.push_back(folder);
@@ -398,4 +412,61 @@ void BuildSizeAnalyzer::exportSelected() {
 		m_exportSuccessTimer = 5.f;
 	else
 		m_exportSuccessTimer = -1.f;
+}
+
+void BuildSizeAnalyzer::saveSelections() const {
+	rapidjson::Document doc;
+	doc.SetObject();
+	auto& alloc = doc.GetAllocator();
+
+	rapidjson::Value arr(rapidjson::kArrayType);
+	for (const auto& [path, selected] : m_savedSelections) {
+		rapidjson::Value entry(rapidjson::kObjectType);
+		entry.AddMember("path", rapidjson::Value(path.c_str(), alloc).Move(), alloc);
+		entry.AddMember("selected", selected, alloc);
+		arr.PushBack(entry.Move(), alloc);
+	}
+
+	doc.AddMember("selections", arr.Move(), alloc);
+
+	std::string err;
+	if (!JsonIO::WriteDocumentToFile(k_selectionFile, doc, true, &err))
+		std::cerr << "[Build Size Analyzer] Failed to save selections: " << err << std::endl;
+}
+
+void BuildSizeAnalyzer::loadSelections() {
+	m_savedSelections.clear();
+
+	rapidjson::Document doc;
+	std::string err;
+
+	// no file yet on first run —> silently skip
+	if (!std::filesystem::exists(k_selectionFile))
+		return;
+
+	if (!JsonIO::ReadFileToDocument(k_selectionFile, doc, &err)) {
+		std::cerr << "[Build Size Analyzer] Failed to load selections: " << err << std::endl;
+		return;
+	}
+
+	const rapidjson::Value* arr = JsonIO::GetObj(doc, "selections");
+	if (!arr || !arr->IsArray()) return;
+
+	for (const auto& entry : arr->GetArray()) {
+		if (!entry.IsObject()) continue;
+
+		std::string path;
+		bool selected = true;
+
+		// missing/malformed path —> skip this entry
+		if (!JsonIO::GetString(entry, "path", path) || path.empty()) continue;
+
+		JsonIO::GetBool(entry, "selected", selected);
+
+		// skip if the asset no longer exists on disk
+		std::error_code ec;
+		if (!std::filesystem::exists(path, ec) || ec) continue;
+
+		m_savedSelections[path] = selected;
+	}
 }

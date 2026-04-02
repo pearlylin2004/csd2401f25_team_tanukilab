@@ -42,7 +42,7 @@
       "type": 1,
       "position": [
         710.0,
-        -5.0
+        -7.0
       ],
       "hasInput": true,
       "hasOutput": true,
@@ -58,7 +58,7 @@
       "implementation": "Play Sound",
       "type": 1,
       "position": [
-        1004.0,
+        1006.0,
         -10.0
       ],
       "hasInput": true,
@@ -125,7 +125,7 @@
       "type": 0,
       "position": [
         -238.0,
-        186.0
+        184.0
       ],
       "hasInput": false,
       "hasOutput": true,
@@ -153,8 +153,8 @@
       "implementation": "Restart Level",
       "type": 1,
       "position": [
-        1251.0,
-        581.0
+        1343.0,
+        425.0
       ],
       "hasInput": true,
       "hasOutput": true,
@@ -274,8 +274,8 @@
       "implementation": "Play Random Sound",
       "type": 1,
       "position": [
-        322.0,
-        126.0
+        694.0,
+        1004.0
       ],
       "hasInput": true,
       "hasOutput": true,
@@ -366,8 +366,8 @@
       "implementation": "Check Animation End",
       "type": 2,
       "position": [
-        1024.0,
-        496.0
+        1072.0,
+        558.0
       ],
       "hasInput": true,
       "hasOutput": false,
@@ -376,79 +376,54 @@
     },
     {
       "id": 45,
-      "implementation": "On Collision Enter",
-      "type": 0,
-      "position": [
-        -140.0,
-        -180.0
-      ],
-      "hasInput": false,
-      "hasOutput": true,
-      "hasTrueOutput": false,
-      "hasFalseOutput": false,
-      "parameters": {
-        "colFilterType": "name",
-        "colFilterValue": "Chat Bubble"
-      }
-    },
-    {
-      "id": 46,
-      "implementation": "Lock Position",
-      "type": 1,
-      "position": [
-        252.571533203125,
-        -184.0
-      ],
-      "hasInput": true,
-      "hasOutput": true,
-      "hasTrueOutput": false,
-      "hasFalseOutput": false
-    },
-    {
-      "id": 48,
-      "implementation": "Check Collided State",
+      "implementation": "Compare Global Float",
       "type": 2,
       "position": [
-        270.0,
-        -330.0
+        -72.0,
+        858.0
       ],
       "hasInput": true,
       "hasOutput": false,
       "hasTrueOutput": true,
       "hasFalseOutput": true,
       "parameters": {
-        "state": "Dead"
+        "comparison": "greater",
+        "threshold": "0",
+        "variable": "collideFire"
       }
     },
     {
-      "id": 49,
-      "implementation": "While Colliding",
-      "type": 0,
-      "position": [
-        -132.0,
-        -334.0
-      ],
-      "hasInput": false,
-      "hasOutput": true,
-      "hasTrueOutput": false,
-      "hasFalseOutput": false,
-      "parameters": {
-        "colFilterType": "name",
-        "colFilterValue": "Chat Bubble"
-      }
-    },
-    {
-      "id": 50,
-      "implementation": "Unlock Position",
+      "id": 46,
+      "implementation": "Set Global Float",
       "type": 1,
       "position": [
-        700.25,
-        -330.4999694824219
+        362.0,
+        888.0
       ],
       "hasInput": true,
       "hasOutput": true,
       "hasTrueOutput": false,
-      "hasFalseOutput": false
+      "hasFalseOutput": false,
+      "parameters": {
+        "value": "0",
+        "variable": "collideFire"
+      }
+    },
+    {
+      "id": 47,
+      "implementation": "Set State",
+      "type": 1,
+      "position": [
+        724.0,
+        834.0
+      ],
+      "hasInput": true,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false,
+      "parameters": {
+        "state": "Dead"
+      }
     }
   ],
   "connections": [
@@ -574,20 +549,32 @@
     },
     {
       "fromNodeId": 45,
-      "outputPin": "Out",
+      "outputPin": "True",
       "toNodeId": 46,
       "inputPin": "In"
     },
     {
-      "fromNodeId": 49,
+      "fromNodeId": 46,
       "outputPin": "Out",
-      "toNodeId": 48,
+      "toNodeId": 47,
       "inputPin": "In"
     },
     {
-      "fromNodeId": 48,
-      "outputPin": "True",
-      "toNodeId": 50,
+      "fromNodeId": 46,
+      "outputPin": "Out",
+      "toNodeId": 32,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 47,
+      "outputPin": "Out",
+      "toNodeId": 44,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 11,
+      "outputPin": "Out",
+      "toNodeId": 45,
       "inputPin": "In"
     }
   ]

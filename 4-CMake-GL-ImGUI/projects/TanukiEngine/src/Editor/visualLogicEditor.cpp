@@ -1172,6 +1172,20 @@ void VisualLogicEditor::renderNodeProperties() {
 				node.parameters["forceY"] = std::to_string(forceY);
 			}
 		}
+		else if (node.imp == NodeImplementation::LIFT_COLLIDED) {
+
+			ImGui::Text("Lift Object Collided:");
+
+			float liftForce = node.parameters.count("liftForce") ? std::stof(node.parameters["liftForce"]) : 0.f;
+			float liftDuration = node.parameters.count("liftDuration") ? std::stof(node.parameters["liftDuration"]) : 0.f;
+
+			if (ImGui::DragFloat("Lift Force", &liftForce, 0.1f)) {
+				node.parameters["liftForce"] = std::to_string(liftForce);
+			}
+			if (ImGui::DragFloat("Lift Duration", &liftDuration, 0.1f)) {
+				node.parameters["liftDuration"] = std::to_string(liftDuration);
+			}
+			}
 		else if (node.imp == NodeImplementation::SET_GLOBAL_FLOAT) {
 			ImGui::Text("Set Global Float Variable");
 
@@ -1338,7 +1352,7 @@ void VisualLogicEditor::renderNodeProperties() {
 			// Level name input
 			char levelBuffer[256];
 			std::string currentLevel = node.parameters.count("levelName") ?
-				node.parameters["levelName"] : "level01.json";
+				node.parameters["levelName"] : "";
 			strncpy(levelBuffer, currentLevel.c_str(), 255);
 			levelBuffer[255] = '\0';
 
@@ -1349,7 +1363,7 @@ void VisualLogicEditor::renderNodeProperties() {
 
 			ImGui::Spacing();
 			ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f),
-				"Enter the level filename (e.g., level02.json)");
+				"Enter the level filename with .json");
 
 			// Optional: Quick select dropdown for existing levels
 			ImGui::Spacing();
@@ -1889,8 +1903,15 @@ void VisualLogicEditor::renderNodeProperties() {
 			ImGui::Spacing();
 			ImGui::TextDisabled("Requires Animation + StateMachine components.");
 			ImGui::Spacing();
-			ImGui::TextColored(ImVec4(1.f, 0.8f, 0.2f, 1.f),
-				"Tip: Pair with a non-looping animation state.");
+			ImGui::TextColored(ImVec4(1.f, 0.8f, 0.2f, 1.f), "Tip: Pair with a non-looping animation state.");
+		}
+		else if (node.imp == NodeImplementation::IS_VIDEO_END) {
+			ImGui::TextWrapped("Returns True when the video ends.");
+
+			ImGui::Spacing();
+			ImGui::TextDisabled("Requires Render + Video components.");
+			ImGui::Spacing();
+			ImGui::TextColored(ImVec4(1.f, 0.8f, 0.2f, 1.f), "Tip: Work with looping/non-looping video.");
 		}
 	}
 	/* ---------- END ---------- */
@@ -2090,7 +2111,7 @@ void VisualLogicEditor::addNode(NodeType type, NodeImplementation imp) {
 			node.parameters["value"] = "1";
 		}
 		else if (imp == NodeImplementation::LOAD_LEVEL) {
-			node.parameters["levelName"] = "level01.json";
+			node.parameters["levelName"] = "";
 		}
 		else if (imp == NodeImplementation::SET_SINLE_ACCEL) {
 			node.parameters["axis"] = "x";

@@ -48,12 +48,12 @@
               "volume": 0.009999999776482582,
               "pitch": 1.0,
               "loop": 1,
-              "playOnStart": 1,
+              "playOnStart": 0,
               "muted": 0,
-              "fadeInOnStart": 0,
-              "fadeInDuration": 1.0,
-              "fadeOutOnStop": 0,
-              "fadeOutDuration": 1.0,
+              "fadeInOnStart": 1,
+              "fadeInDuration": 1.5,
+              "fadeOutOnStop": 1,
+              "fadeOutDuration": 2.0,
               "isSpatial": 0,
               "minDistance": 1.0,
               "maxDistance": 100.0,
@@ -71,7 +71,7 @@
         "Transform": {
           "pos": [
             -1000.0,
-            -1002.85791015625,
+            -1003.0306396484375,
             0.0
           ]
         },
@@ -86,37 +86,15 @@
           "hasAnimation": 0
         },
         "Physics": {
-          "autoUpdate": 0,
-          "maxFallSpeed": -30.0,
-          "groundAccelForce": 20.0,
-          "airAccelForce": 8.0,
-          "apexHangMul": 0.20000000298023224,
-          "jumpBufferTime": 0.15000000596046448,
-          "coyoteTime": 0.15000000596046448,
-          "ledgeAssistRange": 0.800000011920929,
-          "ledgeClimbSpeed": 8.0
+          "autoUpdate": 0
         },
         "CollisionInfo": {
-          "colliderPos": [
-            0.0,
-            0.0
-          ],
-          "colliderRot": 0.0,
           "colliderType": "square",
           "colliderType": "square",
           "ignoreCollisionsWith": [
             "player",
             "hazards"
           ]
-        },
-        "AudioComponent": {
-          "channels": {
-            "default": {
-              "audioFile": "assets/Audio\\SFX\\Water Shoot.wav",
-              "spread": 180.0,
-              "persistOnSceneChange": 0
-            }
-          }
         },
         "LuaScript": {
           "scripts": [
@@ -145,32 +123,14 @@
           "colorB": 1.0,
           "colorA": 1.0,
           "hasTex": 1,
-          "texture": "assets/textures/steam.png",
+          "texture": "assets/Texture\\Bell_Heated.png",
           "hasAnimation": 1
         },
         "Physics": {
-          "autoUpdate": 0,
-          "maxFallSpeed": -30.0,
-          "groundAccelForce": 20.0,
-          "airAccelForce": 8.0,
-          "apexHangMul": 0.20000000298023224,
-          "jumpBufferTime": 0.15000000596046448,
-          "coyoteTime": 0.15000000596046448,
-          "ledgeAssistRange": 0.800000011920929,
-          "ledgeClimbSpeed": 8.0,
-          "freezeRotation": 1,
-          "angularDrag": 0.9800000190734863,
-          "inertiaOverride": 0.0
+          "autoUpdate": 0
         },
         "CollisionInfo": {
-          "colliderPos": [
-            0.0,
-            0.0
-          ],
-          "colliderRot": 0.0,
-          "collisionTag": "steam",
-          "bounciness": 0.0,
-          "friction": 0.0
+          "collisionTag": "steam"
         },
         "StateMachine": {
           "Idle": {
@@ -190,10 +150,6 @@
         },
         "AudioComponent": {
           "channels": {
-            "default": {
-              "spread": 180.0,
-              "persistOnSceneChange": 0
-            },
             "fire_loop": {
               "audioFile": "assets/Audio\\SFX\\Fire.wav",
               "volume": 0.5,
@@ -253,35 +209,17 @@
           "hasAnimation": 1
         },
         "Physics": {
-          "autoUpdate": 0,
-          "maxFallSpeed": -30.0,
-          "groundAccelForce": 20.0,
-          "airAccelForce": 8.0,
-          "apexHangMul": 0.20000000298023224,
-          "jumpBufferTime": 0.15000000596046448,
-          "coyoteTime": 0.15000000596046448,
-          "ledgeAssistRange": 0.800000011920929,
-          "ledgeClimbSpeed": 8.0,
-          "freezeRotation": 1,
-          "angularDrag": 0.9800000190734863,
-          "inertiaOverride": 0.0
+          "autoUpdate": 0
         },
         "CollisionInfo": {
           "colliderPos": [
             0.0,
             0.0
           ],
-          "colliderRot": 0.0,
-          "collisionTag": "steam",
-          "bounciness": 0.0,
-          "friction": 0.0
+          "collisionTag": "steam"
         },
         "AudioComponent": {
           "channels": {
-            "default": {
-              "spread": 180.0,
-              "persistOnSceneChange": 0
-            },
             "fire_loop": {
               "audioFile": "assets/audio/fire_crackle.wav",
               "volume": 0.5,
@@ -326,8 +264,8 @@
       "components": {
         "Transform": {
           "pos": [
-            -1.1360580921173096,
-            -2.8190503120422363,
+            1.2766402959823608,
+            -2.8803865909576416,
             0.019999999552965164
           ]
         },
@@ -337,32 +275,14 @@
           "colorB": 1.0,
           "colorA": 1.0,
           "hasTex": 1,
-          "texture": "assets/textures/steam.png",
+          "texture": "assets/Texture\\Bell_Heated.png",
           "hasAnimation": 1
         },
         "Physics": {
-          "autoUpdate": 0,
-          "maxFallSpeed": -30.0,
-          "groundAccelForce": 20.0,
-          "airAccelForce": 8.0,
-          "apexHangMul": 0.20000000298023224,
-          "jumpBufferTime": 0.15000000596046448,
-          "coyoteTime": 0.15000000596046448,
-          "ledgeAssistRange": 0.800000011920929,
-          "ledgeClimbSpeed": 8.0,
-          "freezeRotation": 1,
-          "angularDrag": 0.9800000190734863,
-          "inertiaOverride": 0.0
+          "autoUpdate": 0
         },
         "CollisionInfo": {
-          "colliderPos": [
-            0.0,
-            0.0
-          ],
-          "colliderRot": 0.0,
-          "collisionTag": "steam",
-          "bounciness": 0.0,
-          "friction": 0.0
+          "collisionTag": "steam"
         },
         "StateMachine": {
           "Idle": {
@@ -382,10 +302,6 @@
         },
         "AudioComponent": {
           "channels": {
-            "default": {
-              "spread": 180.0,
-              "persistOnSceneChange": 0
-            },
             "fire_loop": {
               "audioFile": "assets/Audio\\SFX\\Fire.wav",
               "volume": 0.5,
@@ -441,7 +357,7 @@
           "colorB": 1.0,
           "colorA": 1.0,
           "hasTex": 1,
-          "texture": "assets/Texture/Leaf_Gun_Empty.png",
+          "texture": "assets/Texture\\Water_Gun.png",
           "hasAnimation": 1
         },
         "Physics": {
@@ -746,13 +662,13 @@
               "id": "assets/Texture\\Tilemap\\Sakura\\tile009.png"
             },
             {
-              "x": 6,
-              "y": -2,
+              "x": 7,
+              "y": -4,
               "id": "assets/Texture\\Tilemap\\Sakura\\tile009.png"
             },
             {
-              "x": 7,
-              "y": -4,
+              "x": 6,
+              "y": -2,
               "id": "assets/Texture\\Tilemap\\Sakura\\tile009.png"
             },
             {
@@ -1104,8 +1020,8 @@
       "components": {
         "Transform": {
           "pos": [
-            5.949247360229492,
-            -2.661386489868164,
+            6.031237602233887,
+            -2.871837854385376,
             0.0
           ],
           "rotation": 1117.78369140625,
@@ -1149,8 +1065,8 @@
           "collisionFlag": 1,
           "autoFitScale": 0,
           "colliderSize": [
-            2.4000000953674316,
-            2.4000000953674316
+            2.0999999046325684,
+            2.0999999046325684
           ],
           "colliderPos": [
             0.0,
@@ -1364,13 +1280,13 @@
               "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
             },
             {
-              "x": 7,
-              "y": -4,
+              "x": 6,
+              "y": -2,
               "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
             },
             {
-              "x": 6,
-              "y": -2,
+              "x": 7,
+              "y": -4,
               "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
             },
             {
@@ -1746,7 +1662,7 @@
       }
     },
     {
-      "name": "End_Goal",
+      "name": "endgoal",
       "components": {
         "Transform": {
           "pos": [
@@ -1827,7 +1743,7 @@
               "minDistance": 1.0,
               "maxDistance": 100.0,
               "spread": 180.0,
-              "persistOnSceneChange": 0
+              "persistOnSceneChange": 1
             }
           }
         },

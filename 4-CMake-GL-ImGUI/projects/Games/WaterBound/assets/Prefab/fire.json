@@ -4,7 +4,7 @@
   "components": {
     "Transform": {
       "pos": [
-        1.5659589767456055,
+        1.5659589767456057,
         -5.539464950561523,
         0.019999999552965164
       ],
@@ -25,28 +25,44 @@
       "physicsFlag": 1,
       "moveSpeed": 1.0,
       "jumpForce": 100.0,
-      "damping": 0.9800000190734863,
+      "damping": 0.9800000190734864,
+      "maxFallSpeed": -30.0,
+      "groundAccelForce": 20.0,
+      "airAccelForce": 8.0,
+      "apexHangMul": 0.20000000298023224,
+      "jumpBufferTime": 0.15000000596046448,
+      "coyoteTime": 0.15000000596046448,
+      "ledgeAssistRange": 0.800000011920929,
+      "ledgeClimbSpeed": 8.0,
       "mass": 1.0,
-      "inWater": 0,
-      "buoyancy": 0
+      "buoyancy": 0,
+      "freezeRotation": true,
+      "angularDrag": 0.9800000190734864,
+      "inertiaOverride": 0.0
     },
     "CollisionInfo": {
       "collisionFlag": 1,
-      "autoFitScale": 1,
+      "autoFitScale": 0,
       "colliderSize": [
-        3.0,
-        3.0,
-        0.0
+        1.7000000476837158,
+        2.299999952316284
       ],
+      "colliderPos": [
+        0.0,
+        -0.30000001192092896
+      ],
+      "colliderRot": 0.0,
       "colliderType": "square",
       "collisionRes": "NoResponse",
       "collisionTag": "fire",
+      "bounciness": 0.0,
+      "friction": 0.0,
+      "colliderType": "square",
       "ignoreCollisionsWith": []
     },
     "StateMachine": {
       "state": "Idle",
       "facingRight": 1,
-      "stateTime": 0.0,
       "Idle": {
         "animState": {
           "texture": "assets/Texture\\sprite_fire.png",
@@ -145,9 +161,11 @@
           "fadeInDuration": 1.0,
           "fadeOutOnStop": 0,
           "fadeOutDuration": 1.0,
-          "isSpatial": 0,
+          "isSpatial": false,
           "minDistance": 5.0,
-          "maxDistance": 50.0
+          "maxDistance": 50.0,
+          "spread": 180.0,
+          "persistOnSceneChange": false
         }
       }
     },

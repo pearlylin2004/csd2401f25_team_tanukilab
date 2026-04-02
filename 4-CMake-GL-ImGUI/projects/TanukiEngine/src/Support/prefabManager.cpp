@@ -806,6 +806,14 @@ void PrefabManager::applyPrefabComponents(GameObject* go, const rapidjson::Value
 		p->master.particleAmt = JsonIO::GetIntOr(jp, "particleAmt", 0);
 	}
 
+	//---- Video ----
+	if (comps.HasMember("Video") && comps["Video"].IsObject()) {
+		const auto& jv = comps["Video"];
+		auto* v = go->addComponent<Video>();
+		JsonIO::GetString(jv, "videoFile", v->videoFile);
+		v->loop = JsonIO::GetBoolOr(jv, "loop", false);
+	}
+
 	// ---- Input (presence only) ----
 	if (comps.HasMember("Input") && comps["Input"].IsObject()) {
 		go->addComponent<Input>();
@@ -1217,6 +1225,9 @@ void PrefabManager::applyPrefabComponents(GameObject* go, const rapidjson::Value
 
 		if (jb.HasMember("onHoverChannel") && jb["onHoverChannel"].IsString())
 			b->onHoverChannel = jb["onHoverChannel"].GetString();
+
+		if (jb.HasMember("scenePath") && jb["scenePath"].IsString())
+			b->scenePath = jb["scenePath"].GetString();
 	}
 
 	// ---- Water Body ----
@@ -1307,7 +1318,7 @@ void PrefabManager::serializeComponents(const GameObject* obj, rapidjson::Value&
 		comps.AddMember("Transform", jt, a);
 	}
 
-	//// ---- Render ----
+	// ---- Render ----
 	if (auto r = obj->getComponent<Render>()) {
 		rapidjson::Value jr(rapidjson::kObjectType);
 
@@ -1323,7 +1334,7 @@ void PrefabManager::serializeComponents(const GameObject* obj, rapidjson::Value&
 		comps.AddMember("Render", jr, a);
 	}
 
-	//// ---- Particle ----
+	// ---- Particle ----
 	if (auto p = obj->getComponent<Particle>()) {
 		// Only serialize if this is a master particle
 		if (p->isMaster) {
@@ -1345,6 +1356,16 @@ void PrefabManager::serializeComponents(const GameObject* obj, rapidjson::Value&
 			jp.AddMember("particleAmt", p->master.particleAmt, a);
 
 			comps.AddMember("Particle", jp, a);
+		}
+	}
+
+	// ---- Video ----
+	if (auto v = obj->getComponent<Video>()) {
+		if (!v->videoFile.empty()) {
+			rapidjson::Value jv(rapidjson::kObjectType);
+			jv.AddMember("videoFile", rapidjson::Value(v->videoFile.c_str(), a), a);
+			jv.AddMember("loop", v->loop ? 1 : 0, a);
+			comps.AddMember("Video", jv, a);
 		}
 	}
 
@@ -1597,6 +1618,7 @@ void PrefabManager::serializeComponents(const GameObject* obj, rapidjson::Value&
 
 		jb.AddMember("onClickChannel", rapidjson::Value(btn->onClickChannel.c_str(), a), a);
 		jb.AddMember("onHoverChannel", rapidjson::Value(btn->onHoverChannel.c_str(), a), a);
+		jb.AddMember("scenePath", rapidjson::Value(btn->scenePath.c_str(), a), a);
 		comps.AddMember("Button", jb, a);
 	}
 

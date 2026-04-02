@@ -19,10 +19,10 @@ Technology is prohibited.
 #include "config.h"
 #include "prefabManager.h"
 #include "Component.h"
-#include "JsonIO.h"
+#include "ButtonSystem.h"
 #include "Editor/editorState.h"
 #include "Editor/undoRedo.h"
-#include "GUISystem.h"
+#include "Systems/Systems.h"
 
 #ifndef RUNTIME_SCENE_DIR_R
 #define RUNTIME_SCENE_DIR_R "./assets/Scene"
@@ -260,8 +260,9 @@ void GameObjectManager::loadSceneFromJson(const std::string& filename) {
 	auto t1 = std::chrono::high_resolution_clock::now();
 
 	// set to false to make sure one scene can only have one camera component (set to true if obj has cam component)
+#ifdef _DEBUG
 	Editor::hasCam = false;
-
+#endif
 	rapidjson::Document doc;
 	std::string err;
 	if (!JsonIO::ReadFileToDocument(filename, doc, &err)) {
@@ -517,7 +518,9 @@ void GameObjectManager::loadSceneFromJson(const std::string& filename) {
 
 		// ---- Camera ----
 		if (comps.HasMember("Camera") && comps["Camera"].IsObject()) {
+#ifdef _DEBUG
 			Editor::hasCam = true;
+#endif
 			const auto& jcam = comps["Camera"];
 			auto* cam = go->getComponent<camera>();
 			if (!cam) cam = go->addComponent<camera>();
@@ -547,6 +550,18 @@ void GameObjectManager::loadSceneFromJson(const std::string& filename) {
 
 			if (jcam.HasMember("mapHeight") && jcam["mapHeight"].IsNumber())
 				cam->mapHeight = jcam["mapHeight"].GetFloat();
+		}
+
+		//----- Video -----
+		if (comps.HasMember("Video") && comps["Video"].IsObject()) {
+			const auto& jvid = comps["Video"];
+			auto* vid = go->getComponent<Video>();
+			if (!vid) vid = go->addComponent<Video>();
+
+			if (jvid.HasMember("videoFile") && jvid["videoFile"].IsString())
+				vid->videoFile = jvid["videoFile"].GetString();
+			if (jvid.HasMember("loop") && jvid["loop"].IsNumber())
+				vid->loop = jvid["loop"].GetInt() != 0;
 		}
 
 		// ---- Input (presence only) ----
@@ -1053,9 +1068,13 @@ void GameObjectManager::loadSceneFromJson(const std::string& filename) {
 
 			//parse action string
 			if (jb.HasMember("action") && jb["action"].IsString()) {
+	
 				std::string actionStr = jb["action"].GetString();
 				b->actionName = JsonIO::StrToButtonAction(actionStr);
 			}
+
+			if (jb.HasMember("scenePath") && jb["scenePath"].IsString())
+				b->scenePath = jb["scenePath"].GetString();
 		}
 		// ---- WaterBody ----
 		if (comps.HasMember("WaterBody") && comps["WaterBody"].IsObject()) {
@@ -1160,7 +1179,7 @@ void GameObjectManager::loadSceneFromJson(const std::string& filename) {
 	// }
 	/* ---- END ---- */
 
-	GUISystem::getInstance().createButtons();
+	ButtonSystem::getInstance().refresh();
 
 	std::cout << "Total game objects loaded: " << m_gameObjects.size() << std::endl;
 
@@ -1451,6 +1470,32 @@ void GameObjectManager::saveSceneToJson(const std::string& filename, bool isNew)
 				pushIfDiffFloat("mapHeight", cam->mapHeight);
 
 				if (!jcam.ObjectEmpty()) comps.AddMember("Camera", jcam, a);
+			}
+
+			//---- Video -------
+			if (auto vid = obj->getComponent<Video>()) {
+				rapidjson::Value jvid(rapidjson::kObjectType);
+				const rapidjson::Value* prefabVid = PM.getPrefabJsonComp(prefabDoc, "Video");
+
+				auto pushIfDiffString = [&](const char* key, const std::string& val) {
+					if (!prefabVid || !prefabVid->HasMember(key) ||
+						!(*prefabVid)[key].IsString() ||
+						((*prefabVid)[key].GetString() != val)) {
+						jvid.AddMember(rapidjson::Value(key, a), rapidjson::Value(val.c_str(), a), a);
+					}
+					};
+				auto pushIfDiffBool = [&](const char* key, bool val) {
+					if (!prefabVid || !prefabVid->HasMember(key) ||
+						!(*prefabVid)[key].IsNumber() ||
+						((*prefabVid)[key].GetInt() != (val ? 1 : 0))) {
+						jvid.AddMember(rapidjson::Value(key, a), rapidjson::Value(val ? 1 : 0), a);
+					}
+					};
+
+				pushIfDiffString("videoFile", vid->videoFile);
+				pushIfDiffBool("loop", vid->loop);
+
+				if (!jvid.ObjectEmpty()) comps.AddMember("Video", jvid, a);
 			}
 
 			// ---- Physics ----
@@ -1991,6 +2036,14 @@ void GameObjectManager::saveSceneToJson(const std::string& filename, bool isNew)
 			std::string actionStr = JsonIO::ButtonActionToStr(btn->actionName);
 			jb.AddMember("action", rapidjson::Value(actionStr.c_str(), a), a);
 
+			//for scene path
+			if (!btn->scenePath.empty()) {
+				if (!prefabBtn || !prefabBtn->HasMember("scenePath") ||
+					btn->scenePath != (*prefabBtn)["scenePath"].GetString()) {
+					jb.AddMember("scenePath", rapidjson::Value(btn->scenePath.c_str(), a), a);
+				}
+			}
+
 			// onClickChannel
 			if (!prefabBtn || !prefabBtn->HasMember("onClickChannel") ||
 				btn->onClickChannel != (*prefabBtn)["onClickChannel"].GetString()) {
@@ -2231,6 +2284,11 @@ void GameObjectManager::initializeSimulationResources() {
 				}
 			}
 		}
+
+		if (obj->hasComponent<Video>()) {
+			VideoSystem::cleanup(obj->getComponent<Video>());
+			obj->getComponent<Video>()->isPlaying = true;
+		}
 	}
 }
 
@@ -2249,6 +2307,10 @@ void GameObjectManager::cleanupSimulationResources() {
 					channel.isPendingStop = false;
 				}
 			}
+		}
+
+		if (obj->hasComponent<Video>()) {
+			VideoSystem::cleanup(obj->getComponent<Video>());
 		}
 	}
 }

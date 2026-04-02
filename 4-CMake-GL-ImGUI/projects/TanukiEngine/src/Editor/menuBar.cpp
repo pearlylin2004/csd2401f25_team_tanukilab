@@ -18,6 +18,7 @@ Technology is prohibited.
 //#ifdef _DEBUG
 #include "Editor/editorManager.h"
 #include "Systems.h"
+#include "ButtonSystem.h"
 
 MenuBar::MenuBar(AssetBrowser& aBrowser, Editor::AssetBrowserState& Astate, Editor::MenuBarState& Mstate, Editor::ObjSelectionState& Ostate, Editor::SceneState& sceneState):
     m_assetBrowser(aBrowser),
@@ -200,11 +201,11 @@ void MenuBar::playSimulation(GameObjectManager& manager) {
     // refresh cached object vector
     CachedGameObjects::Instance().refresh();
 
-    GUISystem::getInstance().createButtons();
+    ButtonSystem::getInstance().refresh();
 
-    GUISystem::getInstance().triggerSceneLoad(manager);
+    SceneManager::getInstance().triggerSceneLoad(manager);
 
-	GUISystem::getInstance().resetAndInitVisualLogic(manager);
+	//GUISystem::getInstance().resetAndInitVisualLogic(manager);
 
     DebugLog::addMessage("Simulation started.\n");
 }
@@ -224,7 +225,7 @@ void MenuBar::stopSimulation(GameObjectManager& manager) {
 
     manager.initializeSceneResources();
 
-    GUISystem::getInstance().triggerSceneLoad(manager);
+    SceneManager::getInstance().triggerSceneLoad(manager);
 
     // refresh cached object vector
     CachedGameObjects::Instance().refresh();

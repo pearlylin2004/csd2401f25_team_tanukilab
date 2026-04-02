@@ -1,4 +1,21 @@
+/* Start Header ************************************************************************/
+/*!
+\file		main.cpp
+\author     Hugo Low Ren Hao, low.h, 2402272, 40%
+\author     Varick, v.teo, 2403417, 40%
+            Tan Chee Qing, 2401486, 10%
+\par        low.h@digipen.edu
+\par        v.teo@digipen.edu
+            cheeqing.tan@digipen.edu
+\date		March, 11st, 2026
+\brief      Main entry point for the Waterbound.
 
+Copyright (C) 2026 DigiPen Institute of Technology.
+Reproduction or disclosure of this file or its contents
+without the prior written consent of DigiPen Institute of
+Technology is prohibited.
+*/
+/* End Header **************************************************************************/
 #include "CoreEngine.h"
 #include "LuaGameScript.h"
 
@@ -38,6 +55,11 @@ int main(int argc, char** argv) {
     try {
         engine->Init(forceWindowed);
 
+        // load menu as fir
+        //SceneManager::getInstance().executeLevelLoad("menu_scene.json");
+        // register gamescript
+        //engine->setGameScript(gameApp.get());
+
         luaScript = std::make_unique<LuaGameScript>(engine->getLuaSystem());
         engine->setGameScript(luaScript.get());
 
@@ -47,22 +69,28 @@ int main(int argc, char** argv) {
             if (InputHandler::isKeyTriggered(GLFW_KEY_F1) || InputHandler::isGamepadButtonTriggered(GLFW_GAMEPAD_BUTTON_BACK))
                 engine->stop();
 
-            // ESC or OPTION on gamepad to pause
-            if (InputHandler::isKeyTriggered(GLFW_KEY_ESCAPE) ||
-                InputHandler::isGamepadButtonTriggered(GLFW_GAMEPAD_BUTTON_START)) {
-                auto current = GUISystem::getInstance().getCurrentState();
-                if (current != GameState::PAUSED && current != GameState::MENU) {
-                    GUISystem::getInstance().setStateBeforePause(current);
-                    GUISystem::getInstance().changeState(GameState::PAUSED, "pause_scene.json");
+            // ESC (keyboard) -> pause
+            if (InputHandler::isKeyTriggered(GLFW_KEY_ESCAPE)) {
+                if (!SceneManager::getInstance().isPaused() && SceneManager::getInstance().getCurrentSceneName() != "menu_scene.json")
+                    SceneManager::getInstance().requestPause("pause_scene.json");
+            }
+
+            // START (gamepad) -> main menu
+            if (InputHandler::isGamepadButtonTriggered(GLFW_GAMEPAD_BUTTON_START)) {
+                if (SceneManager::getInstance().getCurrentSceneName() != "menu_scene.json") {
+                    SceneManager::getInstance().loadScene("menu_scene.json");
                 }
             }
+
+            if (SceneManager::getInstance().getCurrentSceneName() == "menu_scene.json")
+                SceneManager::getInstance().clearPauseState();
             });
 
         GlobalRegistry::Instance().setBasePath("./assets");
         GlobalRegistry::Instance().init();
 
         // load menu as fir
-        GUISystem::getInstance().loadScreen(engine->getManager(), "menu_scene.json");
+        SceneManager::getInstance().loadScene("splash-screen.json");
 
         engine->Run();
     }
