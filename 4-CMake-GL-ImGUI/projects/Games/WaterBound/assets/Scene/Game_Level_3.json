@@ -71,7 +71,7 @@
         "Transform": {
           "pos": [
             -1000.0,
-            -1003.0306396484375,
+            -1003.07080078125,
             0.0
           ]
         },
@@ -378,14 +378,14 @@
       "components": {
         "Transform": {
           "pos": [
-            0.4000000059604645,
-            2.5,
+            -2.0,
+            1.0,
             -0.07900000363588333
           ],
           "rotation": 0.0,
           "scale": [
-            49.20000076293945,
-            20.38977813720703,
+            36.599998474121094,
+            18.290000915527344,
             0.0
           ]
         },
@@ -397,57 +397,95 @@
           "colorA": 1.0,
           "hasTex": 1,
           "texture": "assets/Texture\\BG\\Forest to Shrine Stage\\Forest to Shrine Stage Layer 2.png",
-          "hasAnimation": 0
-        }
-      }
-    },
-    {
-      "name": "water balance",
-      "components": {
-        "Transform": {
-          "pos": [
-            17.0,
-            7.5,
-            0.9800000190734863
-          ],
-          "rotation": 0.0,
-          "scale": [
-            6.588000774383545,
-            6.588000774383545,
-            0.0
-          ]
+          "hasAnimation": 1
         },
-        "Render": {
-          "shape": "square",
-          "colorR": 1.0,
-          "colorG": 1.0,
-          "colorB": 1.0,
-          "colorA": 1.0,
-          "hasTex": 1,
-          "texture": "assets/Texture\\Water_100.png",
-          "hasAnimation": 0
-        },
-        "CollisionInfo": {
-          "collisionFlag": 1,
-          "autoFitScale": 1,
-          "colliderSize": [
-            6.588000774383545,
-            6.588000774383545
-          ],
-          "colliderPos": [
-            0.0,
-            0.0
-          ],
-          "colliderRot": 0.0,
-          "colliderType": "square",
-          "collisionRes": "StopWhenCollide",
-          "collisionTag": "inventory",
-          "bounciness": 0.0,
-          "friction": 0.0,
-          "colliderType": "square"
-        },
-        "VisualLC": {
-          "filename": "bullet-inventory.json"
+        "StateMachine": {
+          "state": "Idle",
+          "facingRight": 1,
+          "Idle": {
+            "animState": {
+              "texture": "assets/Texture\\BG\\Forest to Shrine Stage\\Forest_to_Shrine_First_Layer_Spritesheet.png",
+              "loop": 1,
+              "play": 1,
+              "totalColumn": 2,
+              "totalRow": 2,
+              "frameTime": 0.15000000596046448,
+              "initialFramCol": 0.0,
+              "initialFramRow": 0.0,
+              "lastFramCol": 1.0,
+              "lastFramRow": 1.0
+            }
+          },
+          "Walking": {
+            "animState": {
+              "texture": "",
+              "loop": 1,
+              "play": 0,
+              "totalColumn": 1,
+              "totalRow": 1,
+              "frameTime": 0.10000000149011612,
+              "initialFramCol": 0.0,
+              "initialFramRow": 0.0,
+              "lastFramCol": 0.0,
+              "lastFramRow": 0.0
+            }
+          },
+          "Jumping": {
+            "animState": {
+              "texture": "",
+              "loop": 1,
+              "play": 0,
+              "totalColumn": 1,
+              "totalRow": 1,
+              "frameTime": 0.10000000149011612,
+              "initialFramCol": 0.0,
+              "initialFramRow": 0.0,
+              "lastFramCol": 0.0,
+              "lastFramRow": 0.0
+            }
+          },
+          "Falling": {
+            "animState": {
+              "texture": "",
+              "loop": 1,
+              "play": 0,
+              "totalColumn": 1,
+              "totalRow": 1,
+              "frameTime": 0.10000000149011612,
+              "initialFramCol": 0.0,
+              "initialFramRow": 0.0,
+              "lastFramCol": 0.0,
+              "lastFramRow": 0.0
+            }
+          },
+          "Shooting": {
+            "animState": {
+              "texture": "",
+              "loop": 1,
+              "play": 0,
+              "totalColumn": 1,
+              "totalRow": 1,
+              "frameTime": 0.10000000149011612,
+              "initialFramCol": 0.0,
+              "initialFramRow": 0.0,
+              "lastFramCol": 0.0,
+              "lastFramRow": 0.0
+            }
+          },
+          "Dead": {
+            "animState": {
+              "texture": "",
+              "loop": 1,
+              "play": 0,
+              "totalColumn": 1,
+              "totalRow": 1,
+              "frameTime": 0.10000000149011612,
+              "initialFramCol": 0.0,
+              "initialFramRow": 0.0,
+              "lastFramCol": 0.0,
+              "lastFramRow": 0.0
+            }
+          }
         }
       }
     },
@@ -457,13 +495,13 @@
         "Transform": {
           "pos": [
             0.4000000059604645,
-            3.5,
+            1.7000000476837158,
             -0.47999998927116394
           ],
           "rotation": 0.0,
           "scale": [
-            44.79999923706055,
-            18.566301345825195,
+            41.79999923706055,
+            16.965999603271484,
             0.0
           ]
         },
@@ -475,54 +513,95 @@
           "colorA": 1.0,
           "hasTex": 1,
           "texture": "assets/Texture\\BG\\Forest to Shrine Stage\\Forest to Shrine Stage Layer 1.png",
-          "hasAnimation": 0
-        }
-      }
-    },
-    {
-      "name": "water balance back",
-      "components": {
-        "Transform": {
-          "pos": [
-            17.0,
-            7.5,
-            0.9900000095367432
-          ],
-          "rotation": 0.0,
-          "scale": [
-            6.588000774383545,
-            6.588000774383545,
-            0.0
-          ]
+          "hasAnimation": 1
         },
-        "Render": {
-          "shape": "square",
-          "colorR": 1.0,
-          "colorG": 1.0,
-          "colorB": 1.0,
-          "colorA": 1.0,
-          "hasTex": 1,
-          "texture": "assets/Texture\\Water_ContainerRim.png",
-          "hasAnimation": 0
-        },
-        "CollisionInfo": {
-          "collisionFlag": 1,
-          "autoFitScale": 1,
-          "colliderSize": [
-            6.588000774383545,
-            6.588000774383545
-          ],
-          "colliderPos": [
-            0.0,
-            0.0
-          ],
-          "colliderRot": 0.0,
-          "colliderType": "square",
-          "collisionRes": "StopWhenCollide",
-          "collisionTag": "inventory",
-          "bounciness": 0.0,
-          "friction": 0.0,
-          "colliderType": "square"
+        "StateMachine": {
+          "state": "Idle",
+          "facingRight": 1,
+          "Idle": {
+            "animState": {
+              "texture": "assets/Texture\\BG\\Forest to Shrine Stage\\Forest_to_Shrine_Second_Layer_Spritesheet.png",
+              "loop": 1,
+              "play": 1,
+              "totalColumn": 2,
+              "totalRow": 2,
+              "frameTime": 0.15000000596046448,
+              "initialFramCol": 0.0,
+              "initialFramRow": 0.0,
+              "lastFramCol": 1.0,
+              "lastFramRow": 1.0
+            }
+          },
+          "Walking": {
+            "animState": {
+              "texture": "",
+              "loop": 1,
+              "play": 0,
+              "totalColumn": 1,
+              "totalRow": 1,
+              "frameTime": 0.10000000149011612,
+              "initialFramCol": 0.0,
+              "initialFramRow": 0.0,
+              "lastFramCol": 0.0,
+              "lastFramRow": 0.0
+            }
+          },
+          "Jumping": {
+            "animState": {
+              "texture": "",
+              "loop": 1,
+              "play": 0,
+              "totalColumn": 1,
+              "totalRow": 1,
+              "frameTime": 0.10000000149011612,
+              "initialFramCol": 0.0,
+              "initialFramRow": 0.0,
+              "lastFramCol": 0.0,
+              "lastFramRow": 0.0
+            }
+          },
+          "Falling": {
+            "animState": {
+              "texture": "",
+              "loop": 1,
+              "play": 0,
+              "totalColumn": 1,
+              "totalRow": 1,
+              "frameTime": 0.10000000149011612,
+              "initialFramCol": 0.0,
+              "initialFramRow": 0.0,
+              "lastFramCol": 0.0,
+              "lastFramRow": 0.0
+            }
+          },
+          "Shooting": {
+            "animState": {
+              "texture": "",
+              "loop": 1,
+              "play": 0,
+              "totalColumn": 1,
+              "totalRow": 1,
+              "frameTime": 0.10000000149011612,
+              "initialFramCol": 0.0,
+              "initialFramRow": 0.0,
+              "lastFramCol": 0.0,
+              "lastFramRow": 0.0
+            }
+          },
+          "Dead": {
+            "animState": {
+              "texture": "",
+              "loop": 1,
+              "play": 0,
+              "totalColumn": 1,
+              "totalRow": 1,
+              "frameTime": 0.10000000149011612,
+              "initialFramCol": 0.0,
+              "initialFramRow": 0.0,
+              "lastFramCol": 0.0,
+              "lastFramRow": 0.0
+            }
+          }
         }
       }
     },
@@ -531,14 +610,14 @@
       "components": {
         "Transform": {
           "pos": [
-            -0.5,
+            -5.0,
             3.9000000953674316,
             -0.5
           ],
           "rotation": 0.0,
           "scale": [
-            45.0,
-            18.649187088012695,
+            29.5,
+            12.225578308105469,
             0.0
           ]
         },
@@ -662,13 +741,13 @@
               "id": "assets/Texture\\Tilemap\\Sakura\\tile009.png"
             },
             {
-              "x": 7,
-              "y": -4,
+              "x": 6,
+              "y": -2,
               "id": "assets/Texture\\Tilemap\\Sakura\\tile009.png"
             },
             {
-              "x": 6,
-              "y": -2,
+              "x": 7,
+              "y": -4,
               "id": "assets/Texture\\Tilemap\\Sakura\\tile009.png"
             },
             {
@@ -1090,7 +1169,7 @@
       "components": {
         "Transform": {
           "pos": [
-            -0.3659999966621399,
+            -1.565999984741211,
             -1.2000000476837158,
             -0.4000000059604645
           ],
@@ -1280,13 +1359,13 @@
               "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
             },
             {
-              "x": 6,
-              "y": -2,
+              "x": 7,
+              "y": -4,
               "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
             },
             {
-              "x": 7,
-              "y": -4,
+              "x": 6,
+              "y": -2,
               "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
             },
             {
@@ -1638,14 +1717,14 @@
       "components": {
         "Transform": {
           "pos": [
-            28.200000762939453,
-            8.5,
+            26.700000762939453,
+            7.099999904632568,
             -0.07900000363588333
           ],
           "rotation": 0.0,
           "scale": [
-            -34.29999923706055,
-            19.35151481628418,
+            -27.299999237060547,
+            15.402226448059082,
             0.0
           ]
         },
@@ -1666,14 +1745,14 @@
       "components": {
         "Transform": {
           "pos": [
-            18.000743865966797,
-            3.9549996852874756,
+            18.637056350708008,
+            3.5216665267944336,
             0.0
           ],
           "rotation": 0.0,
           "scale": [
-            2.9000000953674316,
-            4.599999904632568,
+            2.799999952316284,
+            3.7333333492279053,
             0.0
           ]
         },
@@ -1709,10 +1788,10 @@
         },
         "CollisionInfo": {
           "collisionFlag": 1,
-          "autoFitScale": 0,
+          "autoFitScale": 1,
           "colliderSize": [
-            1.9000000953674316,
-            4.599999904632568
+            2.799999952316284,
+            3.7333333492279053
           ],
           "colliderPos": [
             0.0,
@@ -1833,6 +1912,34 @@
               "scriptName": "cheat"
             }
           ]
+        }
+      }
+    },
+    {
+      "name": "Sky",
+      "components": {
+        "Transform": {
+          "pos": [
+            0.5,
+            4.900000095367432,
+            -0.5
+          ],
+          "rotation": 0.0,
+          "scale": [
+            45.0,
+            18.649187088012695,
+            0.0
+          ]
+        },
+        "Render": {
+          "shape": "square",
+          "colorR": 1.0,
+          "colorG": 1.0,
+          "colorB": 1.0,
+          "colorA": 1.0,
+          "hasTex": 1,
+          "texture": "assets/Texture\\BG\\game_bg_layer_1.png",
+          "hasAnimation": 0
         }
       }
     }
