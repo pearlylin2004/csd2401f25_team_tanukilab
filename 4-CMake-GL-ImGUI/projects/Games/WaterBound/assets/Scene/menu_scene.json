@@ -85,7 +85,7 @@
               "minDistance": 1.0,
               "maxDistance": 100.0,
               "spread": 180.0,
-              "persistOnSceneChange": 0
+              "persistOnSceneChange": 1
             }
           }
         },
@@ -160,7 +160,7 @@
               "minDistance": 1.0,
               "maxDistance": 100.0,
               "spread": 180.0,
-              "persistOnSceneChange": 0
+              "persistOnSceneChange": 1
             }
           }
         },
@@ -248,7 +248,7 @@
               "persistOnSceneChange": 0
             },
             "on_click": {
-              "audioFile": "assets/Audio\\UI Button Hover.wav",
+              "audioFile": "assets/Audio\\SFX\\Game Start SFX.wav",
               "volume": 0.10000000149011612,
               "pitch": 1.0,
               "loop": 0,
@@ -262,7 +262,7 @@
               "minDistance": 1.0,
               "maxDistance": 100.0,
               "spread": 180.0,
-              "persistOnSceneChange": 0
+              "persistOnSceneChange": 1
             }
           }
         },
@@ -323,7 +323,7 @@
               "persistOnSceneChange": 0
             },
             "on_click": {
-              "audioFile": "assets/Audio\\SFX\\UI Button Hover.wav",
+              "audioFile": "assets/Audio\\SFX\\Game Start SFX.wav",
               "volume": 0.10000000149011612,
               "pitch": 1.0,
               "loop": 0,
@@ -337,7 +337,7 @@
               "minDistance": 1.0,
               "maxDistance": 100.0,
               "spread": 180.0,
-              "persistOnSceneChange": 0
+              "persistOnSceneChange": 1
             }
           }
         },
