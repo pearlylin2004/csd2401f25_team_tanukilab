@@ -7,7 +7,7 @@
       "type": 0,
       "position": [
         -334.0,
-        -57.999996185302734
+        -58.0
       ],
       "hasInput": false,
       "hasOutput": true,
@@ -15,28 +15,12 @@
       "hasFalseOutput": false
     },
     {
-      "id": 2,
-      "implementation": "Check State",
+      "id": 9,
+      "implementation": "Is Video End",
       "type": 2,
       "position": [
-        -19.000017166137695,
-        -57.0000114440918
-      ],
-      "hasInput": true,
-      "hasOutput": false,
-      "hasTrueOutput": true,
-      "hasFalseOutput": true,
-      "parameters": {
-        "state": "Idle"
-      }
-    },
-    {
-      "id": 3,
-      "implementation": "Check Animation End",
-      "type": 2,
-      "position": [
-        275.0,
-        -71.0
+        -3.333251953125,
+        -63.66668701171875
       ],
       "hasInput": true,
       "hasOutput": false,
@@ -44,57 +28,12 @@
       "hasFalseOutput": true
     },
     {
-      "id": 4,
-      "implementation": "Set State",
-      "type": 1,
-      "position": [
-        607.0,
-        -63.0
-      ],
-      "hasInput": true,
-      "hasOutput": true,
-      "hasTrueOutput": false,
-      "hasFalseOutput": false,
-      "parameters": {
-        "state": "Walking"
-      }
-    },
-    {
-      "id": 5,
-      "implementation": "Check State",
-      "type": 2,
-      "position": [
-        6.25,
-        82.5
-      ],
-      "hasInput": true,
-      "hasOutput": false,
-      "hasTrueOutput": true,
-      "hasFalseOutput": true,
-      "parameters": {
-        "state": "Walking"
-      }
-    },
-    {
-      "id": 6,
-      "implementation": "Check Animation End",
-      "type": 2,
-      "position": [
-        312.5,
-        115.0
-      ],
-      "hasInput": true,
-      "hasOutput": false,
-      "hasTrueOutput": true,
-      "hasFalseOutput": true
-    },
-    {
-      "id": 8,
+      "id": 10,
       "implementation": "Load Level",
       "type": 1,
       "position": [
-        772.75,
-        94.0
+        924.666748046875,
+        61.33331298828125
       ],
       "hasInput": true,
       "hasOutput": true,
@@ -103,43 +42,170 @@
       "parameters": {
         "levelName": "Game_Level_Tutorial.json"
       }
+    },
+    {
+      "id": 13,
+      "implementation": "Set Global Float",
+      "type": 1,
+      "position": [
+        1190.0,
+        -50.0
+      ],
+      "hasInput": true,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false,
+      "parameters": {
+        "value": "1.000000",
+        "variable": "videoEndedLiao"
+      }
+    },
+    {
+      "id": 14,
+      "implementation": "Set Float",
+      "type": 1,
+      "position": [
+        612.0,
+        -65.0
+      ],
+      "hasInput": true,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false,
+      "parameters": {
+        "value": "1",
+        "variable": "setLiao"
+      }
+    },
+    {
+      "id": 15,
+      "implementation": "On Start",
+      "type": 0,
+      "position": [
+        -351.0,
+        -197.0
+      ],
+      "hasInput": false,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false
+    },
+    {
+      "id": 16,
+      "implementation": "Set Float",
+      "type": 1,
+      "position": [
+        7.0,
+        -194.0
+      ],
+      "hasInput": true,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false,
+      "parameters": {
+        "value": "0.000000",
+        "variable": "setLiao"
+      }
+    },
+    {
+      "id": 17,
+      "implementation": "Compare Variable",
+      "type": 2,
+      "position": [
+        313.0,
+        -68.0
+      ],
+      "hasInput": true,
+      "hasOutput": false,
+      "hasTrueOutput": true,
+      "hasFalseOutput": true,
+      "parameters": {
+        "comparison": "less",
+        "threshold": "1.000000",
+        "variable": "setLiao"
+      }
+    },
+    {
+      "id": 18,
+      "implementation": "Reset Timer",
+      "type": 1,
+      "position": [
+        906.0,
+        -59.0
+      ],
+      "hasInput": true,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false,
+      "parameters": {
+        "timerName": "timer_0"
+      }
+    },
+    {
+      "id": 19,
+      "implementation": "Check Timer",
+      "type": 2,
+      "position": [
+        620.0,
+        60.0
+      ],
+      "hasInput": true,
+      "hasOutput": false,
+      "hasTrueOutput": true,
+      "hasFalseOutput": true,
+      "parameters": {
+        "threshold": "1.5",
+        "timerName": "timer_0"
+      }
     }
   ],
   "connections": [
     {
       "fromNodeId": 1,
       "outputPin": "Out",
-      "toNodeId": 2,
+      "toNodeId": 9,
       "inputPin": "In"
     },
     {
-      "fromNodeId": 2,
-      "outputPin": "True",
-      "toNodeId": 3,
-      "inputPin": "In"
-    },
-    {
-      "fromNodeId": 3,
-      "outputPin": "True",
-      "toNodeId": 4,
-      "inputPin": "In"
-    },
-    {
-      "fromNodeId": 1,
+      "fromNodeId": 15,
       "outputPin": "Out",
-      "toNodeId": 5,
+      "toNodeId": 16,
       "inputPin": "In"
     },
     {
-      "fromNodeId": 5,
+      "fromNodeId": 9,
       "outputPin": "True",
-      "toNodeId": 6,
+      "toNodeId": 17,
       "inputPin": "In"
     },
     {
-      "fromNodeId": 6,
+      "fromNodeId": 17,
       "outputPin": "True",
-      "toNodeId": 8,
+      "toNodeId": 14,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 14,
+      "outputPin": "Out",
+      "toNodeId": 18,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 18,
+      "outputPin": "Out",
+      "toNodeId": 13,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 19,
+      "outputPin": "True",
+      "toNodeId": 10,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 17,
+      "outputPin": "False",
+      "toNodeId": 19,
       "inputPin": "In"
     }
   ]
