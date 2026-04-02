@@ -61,32 +61,6 @@
       }
     },
     {
-      "name": "cheater",
-      "components": {
-        "Transform": {
-          "pos": [
-            0.0,
-            0.0,
-            0.0
-          ],
-          "rotation": 0.0,
-          "scale": [
-            1.0,
-            1.0,
-            0.0
-          ]
-        },
-        "LuaScript": {
-          "scripts": [
-            {
-              "filename": "assets/scripting/cheat.lua",
-              "scriptName": "cheat"
-            }
-          ]
-        }
-      }
-    },
-    {
       "name": "space to skip",
       "components": {
         "Transform": {
@@ -347,6 +321,32 @@
         },
         "VisualLC": {
           "filename": "load-text-move2.json"
+        }
+      }
+    },
+    {
+      "name": "cheater",
+      "components": {
+        "Transform": {
+          "pos": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "rotation": 0.0,
+          "scale": [
+            1.0,
+            1.0,
+            0.0
+          ]
+        },
+        "LuaScript": {
+          "scripts": [
+            {
+              "filename": "assets/scripting/cheat.lua",
+              "scriptName": "cheat"
+            }
+          ]
         }
       }
     },
