@@ -5,7 +5,8 @@
             - 100% of the file
 \par        p.lin@digipen.edu
 \date       March, 27th, 2025
-\brief      
+\brief      Handles mouse hover, click detection, audio feedback,
+            and gamepad navigation for Button-component objects.
 
 Copyright (C) 2026 DigiPen Institute of Technology.
 Reproduction or disclosure of this file or its contents
