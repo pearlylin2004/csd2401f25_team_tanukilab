@@ -25,6 +25,42 @@
   ],
   "objects": [
     {
+      "name": "fmod",
+      "components": {
+        "Transform": {
+          "pos": [
+            0.0,
+            0.0,
+            4.0
+          ],
+          "rotation": 0.0,
+          "scale": [
+            30.0,
+            8.04377555847168,
+            0.0
+          ]
+        },
+        "Render": {
+          "shape": "square",
+          "colorR": 1.0,
+          "colorG": 1.0,
+          "colorB": 1.0,
+          "colorA": 1.0,
+          "hasTex": 1,
+          "texture": "assets/Texture\\credits\\FMOD Logo White - Transparent Background.png",
+          "hasAnimation": 0
+        },
+        "LuaScript": {
+          "scripts": [
+            {
+              "filename": "assets/scripting/splash.lua",
+              "scriptName": "splash"
+            }
+          ]
+        }
+      }
+    },
+    {
       "name": "black bg",
       "components": {
         "Transform": {
@@ -124,7 +160,7 @@
       }
     },
     {
-      "name": "Rectangle_3",
+      "name": "space to skip",
       "components": {
         "Transform": {
           "pos": [
