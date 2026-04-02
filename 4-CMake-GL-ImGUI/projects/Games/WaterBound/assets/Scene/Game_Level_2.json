@@ -1024,13 +1024,13 @@
               "id": "assets/Texture\\Tilemap\\Forest\\tile005.png"
             },
             {
-              "x": 2,
-              "y": -1,
+              "x": 12,
+              "y": -5,
               "id": "assets/Texture\\Tilemap\\Forest\\tile005.png"
             },
             {
-              "x": 12,
-              "y": -5,
+              "x": 2,
+              "y": -1,
               "id": "assets/Texture\\Tilemap\\Forest\\tile005.png"
             },
             {
@@ -2030,14 +2030,14 @@
       "components": {
         "Transform": {
           "pos": [
-            0.5,
-            1.899999976158142,
+            0.0,
+            -0.30000001192092896,
             -0.800000011920929
           ],
           "rotation": 0.0,
           "scale": [
-            39.599998474121094,
-            18.069000244140625,
+            46.20000076293945,
+            20.460487365722656,
             0.0
           ]
         },
