@@ -942,6 +942,27 @@
           "friction": 0.0,
           "colliderType": "square"
         },
+        "AudioComponent": {
+          "channels": {
+            "water": {
+              "audioFile": "assets/Audio\\River Sound.wav",
+              "volume": 1.0,
+              "pitch": 1.0,
+              "loop": 1,
+              "playOnStart": 1,
+              "muted": 0,
+              "fadeInOnStart": 0,
+              "fadeInDuration": 1.0,
+              "fadeOutOnStop": 0,
+              "fadeOutDuration": 1.0,
+              "isSpatial": 1,
+              "minDistance": 0.10000000149011612,
+              "maxDistance": 30.0,
+              "spread": 180.0,
+              "persistOnSceneChange": 0
+            }
+          }
+        },
         "WaterBody": {
           "waveAmplitude": 0.20000000298023224,
           "waveFrequency": 2.0,
