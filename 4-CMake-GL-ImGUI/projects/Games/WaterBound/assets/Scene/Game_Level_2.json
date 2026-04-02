@@ -164,14 +164,14 @@
       "components": {
         "Transform": {
           "pos": [
-            2.5,
+            3.0999999046325684,
             -0.4000000059604645,
             -0.07900000363588333
           ],
           "rotation": 0.0,
           "scale": [
-            42.70000076293945,
-            20.812999725341797,
+            42.599998474121094,
+            21.01300048828125,
             0.0
           ]
         },
@@ -448,56 +448,6 @@
       }
     },
     {
-      "name": "water balance",
-      "components": {
-        "Transform": {
-          "pos": [
-            17.0,
-            7.5,
-            0.9800000190734863
-          ],
-          "rotation": 0.0,
-          "scale": [
-            6.588000774383545,
-            6.588000774383545,
-            0.0
-          ]
-        },
-        "Render": {
-          "shape": "square",
-          "colorR": 1.0,
-          "colorG": 1.0,
-          "colorB": 1.0,
-          "colorA": 1.0,
-          "hasTex": 1,
-          "texture": "assets/Texture\\Water_100.png",
-          "hasAnimation": 0
-        },
-        "CollisionInfo": {
-          "collisionFlag": 1,
-          "autoFitScale": 1,
-          "colliderSize": [
-            6.588000774383545,
-            6.588000774383545
-          ],
-          "colliderPos": [
-            0.0,
-            0.0
-          ],
-          "colliderRot": 0.0,
-          "colliderType": "square",
-          "collisionRes": "StopWhenCollide",
-          "collisionTag": "inventory",
-          "bounciness": 0.0,
-          "friction": 0.0,
-          "colliderType": "square"
-        },
-        "VisualLC": {
-          "filename": "bullet-inventory.json"
-        }
-      }
-    },
-    {
       "name": "player-head-collider",
       "components": {
         "Transform": {
@@ -575,18 +525,18 @@
       }
     },
     {
-      "name": "Clouds",
+      "name": "water balance",
       "components": {
         "Transform": {
           "pos": [
-            -0.5,
-            0.8999999761581421,
-            -0.800000011920929
+            17.0,
+            7.5,
+            0.9800000190734863
           ],
           "rotation": 0.0,
           "scale": [
-            39.599998474121094,
-            18.069000244140625,
+            6.588000774383545,
+            6.588000774383545,
             0.0
           ]
         },
@@ -597,8 +547,30 @@
           "colorB": 1.0,
           "colorA": 1.0,
           "hasTex": 1,
-          "texture": "assets/Texture\\BG\\Clouds.png",
+          "texture": "assets/Texture\\Water_100.png",
           "hasAnimation": 0
+        },
+        "CollisionInfo": {
+          "collisionFlag": 1,
+          "autoFitScale": 1,
+          "colliderSize": [
+            6.588000774383545,
+            6.588000774383545
+          ],
+          "colliderPos": [
+            0.0,
+            0.0
+          ],
+          "colliderRot": 0.0,
+          "colliderType": "square",
+          "collisionRes": "StopWhenCollide",
+          "collisionTag": "inventory",
+          "bounciness": 0.0,
+          "friction": 0.0,
+          "colliderType": "square"
+        },
+        "VisualLC": {
+          "filename": "bullet-inventory.json"
         }
       }
     },
@@ -646,6 +618,34 @@
           "bounciness": 0.0,
           "friction": 0.0,
           "colliderType": "square"
+        }
+      }
+    },
+    {
+      "name": "Clouds",
+      "components": {
+        "Transform": {
+          "pos": [
+            -0.5,
+            0.8999999761581421,
+            -0.800000011920929
+          ],
+          "rotation": 0.0,
+          "scale": [
+            39.599998474121094,
+            18.069000244140625,
+            0.0
+          ]
+        },
+        "Render": {
+          "shape": "square",
+          "colorR": 1.0,
+          "colorG": 1.0,
+          "colorB": 1.0,
+          "colorA": 1.0,
+          "hasTex": 1,
+          "texture": "assets/Texture\\BG\\Clouds.png",
+          "hasAnimation": 0
         }
       }
     },
@@ -727,22 +727,22 @@
               "id": "assets/Texture\\tilemap\\Forest\\tile001.png"
             },
             {
-              "x": 2,
-              "y": -5,
-              "id": "assets/Texture\\Tilemap\\Forest\\tile005.png"
-            },
-            {
-              "x": -9,
-              "y": -1,
-              "id": "assets/Texture\\tilemap\\Forest\\tile001.png"
-            },
-            {
               "x": 10,
               "y": -5,
               "id": "assets/Texture\\tilemap\\Sakura\\tile001.png"
             },
             {
               "x": -1,
+              "y": -1,
+              "id": "assets/Texture\\tilemap\\Forest\\tile001.png"
+            },
+            {
+              "x": 2,
+              "y": -5,
+              "id": "assets/Texture\\Tilemap\\Forest\\tile005.png"
+            },
+            {
+              "x": -9,
               "y": -1,
               "id": "assets/Texture\\tilemap\\Forest\\tile001.png"
             },
@@ -762,17 +762,22 @@
               "id": "assets/Texture\\tilemap\\Forest\\tile001.png"
             },
             {
-              "x": 14,
-              "y": -5,
-              "id": "assets/Texture\\tilemap\\Sakura\\tile001.png"
-            },
-            {
               "x": 0,
               "y": -1,
               "id": "assets/Texture\\tilemap\\Forest\\tile001.png"
             },
             {
+              "x": 14,
+              "y": -5,
+              "id": "assets/Texture\\tilemap\\Sakura\\tile001.png"
+            },
+            {
               "x": 1,
+              "y": -1,
+              "id": "assets/Texture\\tilemap\\Sakura\\tile001.png"
+            },
+            {
+              "x": 2,
               "y": -1,
               "id": "assets/Texture\\tilemap\\Sakura\\tile001.png"
             },
@@ -782,22 +787,12 @@
               "id": "assets/Texture\\tilemap\\Sakura\\tile001.png"
             },
             {
-              "x": 2,
-              "y": -1,
-              "id": "assets/Texture\\tilemap\\Sakura\\tile001.png"
-            },
-            {
-              "x": 2,
-              "y": -3,
-              "id": "assets/Texture\\Tilemap\\Forest\\tile005.png"
-            },
-            {
               "x": 13,
               "y": -5,
               "id": "assets/Texture\\tilemap\\Sakura\\tile001.png"
             },
             {
-              "x": -1,
+              "x": 2,
               "y": -3,
               "id": "assets/Texture\\Tilemap\\Forest\\tile005.png"
             },
@@ -805,6 +800,11 @@
               "x": 11,
               "y": -5,
               "id": "assets/Texture\\tilemap\\Sakura\\tile001.png"
+            },
+            {
+              "x": -1,
+              "y": -3,
+              "id": "assets/Texture\\Tilemap\\Forest\\tile005.png"
             },
             {
               "x": 9,
@@ -832,14 +832,14 @@
               "id": "assets/Texture\\tilemap\\Sakura\\tile001.png"
             },
             {
-              "x": -1,
-              "y": -5,
-              "id": "assets/Texture\\Tilemap\\Forest\\tile005.png"
-            },
-            {
               "x": 4,
               "y": -5,
               "id": "assets/Texture\\tilemap\\Sakura\\tile001.png"
+            },
+            {
+              "x": -1,
+              "y": -5,
+              "id": "assets/Texture\\Tilemap\\Forest\\tile005.png"
             },
             {
               "x": 2,
@@ -862,13 +862,13 @@
               "id": "assets/Texture\\Tilemap\\Forest\\tile005.png"
             },
             {
-              "x": -1,
-              "y": -6,
+              "x": -8,
+              "y": -4,
               "id": "assets/Texture\\Tilemap\\Forest\\tile005.png"
             },
             {
-              "x": -8,
-              "y": -4,
+              "x": -1,
+              "y": -6,
               "id": "assets/Texture\\Tilemap\\Forest\\tile005.png"
             },
             {
@@ -877,13 +877,13 @@
               "id": "assets/Texture\\Tilemap\\Forest\\tile005.png"
             },
             {
-              "x": -1,
-              "y": -4,
+              "x": -8,
+              "y": -6,
               "id": "assets/Texture\\Tilemap\\Forest\\tile005.png"
             },
             {
-              "x": -8,
-              "y": -6,
+              "x": -1,
+              "y": -4,
               "id": "assets/Texture\\Tilemap\\Forest\\tile005.png"
             },
             {
@@ -994,13 +994,13 @@
               "id": "assets/Texture\\Tilemap\\Forest\\tile005.png"
             },
             {
-              "x": -10,
-              "y": -3,
+              "x": -9,
+              "y": -1,
               "id": "assets/Texture\\Tilemap\\Forest\\tile005.png"
             },
             {
-              "x": -9,
-              "y": -1,
+              "x": -10,
+              "y": -3,
               "id": "assets/Texture\\Tilemap\\Forest\\tile005.png"
             },
             {
@@ -1009,18 +1009,13 @@
               "id": "assets/Texture\\Tilemap\\Forest\\tile005.png"
             },
             {
-              "x": -10,
-              "y": -1,
-              "id": "assets/Texture\\Tilemap\\Forest\\tile005.png"
-            },
-            {
               "x": -9,
               "y": -3,
               "id": "assets/Texture\\Tilemap\\Forest\\tile005.png"
             },
             {
-              "x": -9,
-              "y": -5,
+              "x": -10,
+              "y": -1,
               "id": "assets/Texture\\Tilemap\\Forest\\tile005.png"
             },
             {
@@ -1034,7 +1029,7 @@
               "id": "assets/Texture\\Tilemap\\Forest\\tile005.png"
             },
             {
-              "x": 0,
+              "x": -9,
               "y": -5,
               "id": "assets/Texture\\Tilemap\\Forest\\tile005.png"
             },
@@ -1049,6 +1044,11 @@
               "id": "assets/Texture\\Tilemap\\Forest\\tile005.png"
             },
             {
+              "x": 0,
+              "y": -5,
+              "id": "assets/Texture\\Tilemap\\Forest\\tile005.png"
+            },
+            {
               "x": -10,
               "y": -4,
               "id": "assets/Texture\\Tilemap\\Forest\\tile005.png"
@@ -1066,6 +1066,11 @@
             {
               "x": -9,
               "y": -4,
+              "id": "assets/Texture\\Tilemap\\Forest\\tile005.png"
+            },
+            {
+              "x": -9,
+              "y": -6,
               "id": "assets/Texture\\Tilemap\\Forest\\tile005.png"
             },
             {
@@ -1074,7 +1079,7 @@
               "id": "assets/Texture\\Tilemap\\Forest\\tile005.png"
             },
             {
-              "x": -9,
+              "x": -10,
               "y": -6,
               "id": "assets/Texture\\Tilemap\\Forest\\tile005.png"
             },
@@ -1085,16 +1090,11 @@
             },
             {
               "x": -10,
-              "y": -6,
-              "id": "assets/Texture\\Tilemap\\Forest\\tile005.png"
-            },
-            {
-              "x": 13,
               "y": -5,
               "id": "assets/Texture\\Tilemap\\Forest\\tile005.png"
             },
             {
-              "x": -10,
+              "x": 13,
               "y": -5,
               "id": "assets/Texture\\Tilemap\\Forest\\tile005.png"
             },
@@ -1106,11 +1106,6 @@
             {
               "x": -11,
               "y": -2,
-              "id": "assets/Texture\\Tilemap\\Forest\\tile005.png"
-            },
-            {
-              "x": 1,
-              "y": -5,
               "id": "assets/Texture\\Tilemap\\Forest\\tile005.png"
             },
             {
@@ -1124,6 +1119,11 @@
               "id": "assets/Texture\\Tilemap\\Forest\\tile005.png"
             },
             {
+              "x": 1,
+              "y": -5,
+              "id": "assets/Texture\\Tilemap\\Forest\\tile005.png"
+            },
+            {
               "x": -12,
               "y": -2,
               "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
@@ -1131,6 +1131,11 @@
             {
               "x": -11,
               "y": -4,
+              "id": "assets/Texture\\Tilemap\\Forest\\tile005.png"
+            },
+            {
+              "x": -11,
+              "y": -5,
               "id": "assets/Texture\\Tilemap\\Forest\\tile005.png"
             },
             {
@@ -1141,16 +1146,6 @@
             {
               "x": 0,
               "y": -1,
-              "id": "assets/Texture\\Tilemap\\Forest\\tile005.png"
-            },
-            {
-              "x": -11,
-              "y": -5,
-              "id": "assets/Texture\\Tilemap\\Forest\\tile005.png"
-            },
-            {
-              "x": -11,
-              "y": -6,
               "id": "assets/Texture\\Tilemap\\Forest\\tile005.png"
             },
             {
@@ -1159,8 +1154,8 @@
               "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
             },
             {
-              "x": 10,
-              "y": -5,
+              "x": -11,
+              "y": -6,
               "id": "assets/Texture\\Tilemap\\Forest\\tile005.png"
             },
             {
@@ -1169,9 +1164,9 @@
               "id": "assets/Texture\\Tilemap\\Forest\\tile005.png"
             },
             {
-              "x": -12,
+              "x": 10,
               "y": -5,
-              "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
+              "id": "assets/Texture\\Tilemap\\Forest\\tile005.png"
             },
             {
               "x": 0,
@@ -1182,6 +1177,11 @@
               "x": 1,
               "y": -1,
               "id": "assets/Texture\\Tilemap\\Forest\\tile005.png"
+            },
+            {
+              "x": -12,
+              "y": -5,
+              "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
             },
             {
               "x": 4,
@@ -1590,97 +1590,6 @@
       }
     },
     {
-      "name": "endgoal end",
-      "components": {
-        "Transform": {
-          "pos": [
-            17.756013870239258,
-            -6.503542900085449,
-            0.0
-          ],
-          "rotation": 0.0,
-          "scale": [
-            3.0,
-            4.0,
-            0.0
-          ]
-        },
-        "Render": {
-          "shape": "square",
-          "colorR": 1.0,
-          "colorG": 1.0,
-          "colorB": 1.0,
-          "colorA": 1.0,
-          "hasTex": 1,
-          "texture": "assets/Texture\\endgoal.png",
-          "hasAnimation": 0
-        },
-        "Physics": {
-          "physicsFlag": 1,
-          "autoUpdate": 0,
-          "buoyancy": 1,
-          "moveSpeed": 1.0,
-          "jumpForce": 100.0,
-          "mass": 1.0,
-          "damping": 0.9800000190734863,
-          "maxFallSpeed": -20.0,
-          "groundAccelForce": 20.0,
-          "airAccelForce": 8.0,
-          "apexHangMul": 0.20000000298023224,
-          "jumpBufferTime": 0.15000000596046448,
-          "coyoteTime": 0.3499999940395355,
-          "ledgeAssistRange": 0.800000011920929,
-          "ledgeClimbSpeed": 1.0,
-          "freezeRotation": 1,
-          "angularDrag": 0.9800000190734863,
-          "inertiaOverride": 0.0
-        },
-        "CollisionInfo": {
-          "collisionFlag": 1,
-          "autoFitScale": 0,
-          "colliderSize": [
-            3.0999999046325684,
-            3.0999999046325684
-          ],
-          "colliderPos": [
-            0.0,
-            0.0
-          ],
-          "colliderRot": 0.0,
-          "colliderType": "square",
-          "collisionRes": "StopWhenCollide",
-          "collisionTag": "default",
-          "bounciness": 0.0,
-          "friction": 0.0,
-          "colliderType": "square"
-        },
-        "AudioComponent": {
-          "channels": {
-            "change": {
-              "audioFile": "assets/Audio\\SFX\\Japanese-CheckPoint-C_YAAY_SFX.wav",
-              "volume": 0.10000000149011612,
-              "pitch": 1.0,
-              "loop": 0,
-              "playOnStart": 0,
-              "muted": 0,
-              "fadeInOnStart": 0,
-              "fadeInDuration": 1.0,
-              "fadeOutOnStop": 0,
-              "fadeOutDuration": 1.0,
-              "isSpatial": 0,
-              "minDistance": 1.0,
-              "maxDistance": 100.0,
-              "spread": 180.0,
-              "persistOnSceneChange": 1
-            }
-          }
-        },
-        "VisualLC": {
-          "filename": "endgoal02.json"
-        }
-      }
-    },
-    {
       "name": "Small branch",
       "components": {
         "Transform": {
@@ -1773,6 +1682,97 @@
               "scriptName": "buoyancy"
             }
           ]
+        }
+      }
+    },
+    {
+      "name": "endgoal end",
+      "components": {
+        "Transform": {
+          "pos": [
+            17.756013870239258,
+            -6.503542900085449,
+            0.0
+          ],
+          "rotation": 0.0,
+          "scale": [
+            3.0,
+            4.0,
+            0.0
+          ]
+        },
+        "Render": {
+          "shape": "square",
+          "colorR": 1.0,
+          "colorG": 1.0,
+          "colorB": 1.0,
+          "colorA": 1.0,
+          "hasTex": 1,
+          "texture": "assets/Texture\\endgoal.png",
+          "hasAnimation": 0
+        },
+        "Physics": {
+          "physicsFlag": 1,
+          "autoUpdate": 0,
+          "buoyancy": 1,
+          "moveSpeed": 1.0,
+          "jumpForce": 100.0,
+          "mass": 1.0,
+          "damping": 0.9800000190734863,
+          "maxFallSpeed": -20.0,
+          "groundAccelForce": 20.0,
+          "airAccelForce": 8.0,
+          "apexHangMul": 0.20000000298023224,
+          "jumpBufferTime": 0.15000000596046448,
+          "coyoteTime": 0.3499999940395355,
+          "ledgeAssistRange": 0.800000011920929,
+          "ledgeClimbSpeed": 1.0,
+          "freezeRotation": 1,
+          "angularDrag": 0.9800000190734863,
+          "inertiaOverride": 0.0
+        },
+        "CollisionInfo": {
+          "collisionFlag": 1,
+          "autoFitScale": 0,
+          "colliderSize": [
+            3.0999999046325684,
+            3.0999999046325684
+          ],
+          "colliderPos": [
+            0.0,
+            0.0
+          ],
+          "colliderRot": 0.0,
+          "colliderType": "square",
+          "collisionRes": "StopWhenCollide",
+          "collisionTag": "default",
+          "bounciness": 0.0,
+          "friction": 0.0,
+          "colliderType": "square"
+        },
+        "AudioComponent": {
+          "channels": {
+            "change": {
+              "audioFile": "assets/Audio\\SFX\\Japanese-CheckPoint-C_YAAY_SFX.wav",
+              "volume": 0.10000000149011612,
+              "pitch": 1.0,
+              "loop": 0,
+              "playOnStart": 0,
+              "muted": 0,
+              "fadeInOnStart": 0,
+              "fadeInDuration": 1.0,
+              "fadeOutOnStop": 0,
+              "fadeOutDuration": 1.0,
+              "isSpatial": 0,
+              "minDistance": 1.0,
+              "maxDistance": 100.0,
+              "spread": 180.0,
+              "persistOnSceneChange": 1
+            }
+          }
+        },
+        "VisualLC": {
+          "filename": "endgoal02.json"
         }
       }
     },
