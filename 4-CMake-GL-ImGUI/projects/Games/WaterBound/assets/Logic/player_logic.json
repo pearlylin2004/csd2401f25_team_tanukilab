@@ -5,7 +5,10 @@
       "id": 1,
       "implementation": "On Collision Enter",
       "type": 0,
-      "position": [-200.0, 0.0],
+      "position": [
+        -200.0,
+        0.0
+      ],
       "hasInput": false,
       "hasOutput": true,
       "hasTrueOutput": false,
@@ -19,7 +22,10 @@
       "id": 2,
       "implementation": "Compare Global Float",
       "type": 2,
-      "position": [401.0, 4.0],
+      "position": [
+        401.0,
+        4.0
+      ],
       "hasInput": true,
       "hasOutput": false,
       "hasTrueOutput": true,
@@ -34,7 +40,10 @@
       "id": 3,
       "implementation": "Set Global Float",
       "type": 1,
-      "position": [710.0, -7.0],
+      "position": [
+        710.0,
+        -5.0
+      ],
       "hasInput": true,
       "hasOutput": true,
       "hasTrueOutput": false,
@@ -48,7 +57,10 @@
       "id": 4,
       "implementation": "Play Sound",
       "type": 1,
-      "position": [1006.0, -10.0],
+      "position": [
+        1004.0,
+        -10.0
+      ],
       "hasInput": true,
       "hasOutput": true,
       "hasTrueOutput": false,
@@ -61,7 +73,10 @@
       "id": 5,
       "implementation": "Trigger Bullet Refill Event",
       "type": 1,
-      "position": [1319.0, -14.0],
+      "position": [
+        1319.0,
+        -14.0
+      ],
       "hasInput": true,
       "hasOutput": true,
       "hasTrueOutput": false,
@@ -75,7 +90,10 @@
       "id": 6,
       "implementation": "Check Collided State",
       "type": 2,
-      "position": [109.0, -2.0],
+      "position": [
+        109.0,
+        -2.0
+      ],
       "hasInput": true,
       "hasOutput": false,
       "hasTrueOutput": true,
@@ -88,7 +106,10 @@
       "id": 7,
       "implementation": "Trigger Bullet Refill Event",
       "type": 1,
-      "position": [1685.0, -16.0],
+      "position": [
+        1685.0,
+        -16.0
+      ],
       "hasInput": true,
       "hasOutput": true,
       "hasTrueOutput": false,
@@ -102,7 +123,10 @@
       "id": 11,
       "implementation": "On Update",
       "type": 0,
-      "position": [-238.0, 186.0],
+      "position": [
+        -238.0,
+        186.0
+      ],
       "hasInput": false,
       "hasOutput": true,
       "hasTrueOutput": false,
@@ -112,7 +136,10 @@
       "id": 12,
       "implementation": "Check State",
       "type": 2,
-      "position": [55.0, 206.0],
+      "position": [
+        55.0,
+        206.0
+      ],
       "hasInput": true,
       "hasOutput": false,
       "hasTrueOutput": true,
@@ -125,7 +152,10 @@
       "id": 13,
       "implementation": "Restart Level",
       "type": 1,
-      "position": [1251.0, 581.0],
+      "position": [
+        1251.0,
+        581.0
+      ],
       "hasInput": true,
       "hasOutput": true,
       "hasTrueOutput": false,
@@ -135,7 +165,10 @@
       "id": 14,
       "implementation": "Check State",
       "type": 2,
-      "position": [34.0, 336.0],
+      "position": [
+        34.0,
+        336.0
+      ],
       "hasInput": true,
       "hasOutput": false,
       "hasTrueOutput": true,
@@ -148,7 +181,10 @@
       "id": 15,
       "implementation": "Play Random Sound",
       "type": 1,
-      "position": [660.0, 336.0],
+      "position": [
+        660.0,
+        336.0
+      ],
       "hasInput": true,
       "hasOutput": true,
       "hasTrueOutput": false,
@@ -172,7 +208,10 @@
       "id": 17,
       "implementation": "Compare Variable",
       "type": 2,
-      "position": [330.0, 336.0],
+      "position": [
+        330.0,
+        336.0
+      ],
       "hasInput": true,
       "hasOutput": false,
       "hasTrueOutput": true,
@@ -187,7 +226,10 @@
       "id": 18,
       "implementation": "Set Float",
       "type": 1,
-      "position": [368.0, 438.0],
+      "position": [
+        368.0,
+        438.0
+      ],
       "hasInput": true,
       "hasOutput": true,
       "hasTrueOutput": false,
@@ -201,7 +243,10 @@
       "id": 19,
       "implementation": "Set Float",
       "type": 1,
-      "position": [960.0, 336.0],
+      "position": [
+        960.0,
+        336.0
+      ],
       "hasInput": true,
       "hasOutput": true,
       "hasTrueOutput": false,
@@ -215,7 +260,10 @@
       "id": 31,
       "implementation": "Check Animation End",
       "type": 2,
-      "position": [518.0, 198.0],
+      "position": [
+        518.0,
+        198.0
+      ],
       "hasInput": true,
       "hasOutput": false,
       "hasTrueOutput": true,
@@ -225,7 +273,10 @@
       "id": 32,
       "implementation": "Play Random Sound",
       "type": 1,
-      "position": [322.0, 126.0],
+      "position": [
+        322.0,
+        126.0
+      ],
       "hasInput": true,
       "hasOutput": true,
       "hasTrueOutput": false,
@@ -244,7 +295,10 @@
       "id": 40,
       "implementation": "Compare Global Float",
       "type": 2,
-      "position": [-38.0, 682.0],
+      "position": [
+        -38.0,
+        682.0
+      ],
       "hasInput": true,
       "hasOutput": false,
       "hasTrueOutput": true,
@@ -259,7 +313,10 @@
       "id": 41,
       "implementation": "Set Global Float",
       "type": 1,
-      "position": [340.0, 698.0],
+      "position": [
+        340.0,
+        698.0
+      ],
       "hasInput": true,
       "hasOutput": true,
       "hasTrueOutput": false,
@@ -273,7 +330,10 @@
       "id": 42,
       "implementation": "Set State",
       "type": 1,
-      "position": [726.0, 566.0],
+      "position": [
+        726.0,
+        566.0
+      ],
       "hasInput": true,
       "hasOutput": true,
       "hasTrueOutput": false,
@@ -286,7 +346,10 @@
       "id": 43,
       "implementation": "Play Random Sound",
       "type": 1,
-      "position": [754.0, 718.0],
+      "position": [
+        754.0,
+        718.0
+      ],
       "hasInput": true,
       "hasOutput": true,
       "hasTrueOutput": false,
@@ -302,11 +365,90 @@
       "id": 44,
       "implementation": "Check Animation End",
       "type": 2,
-      "position": [1024.0, 496.0],
+      "position": [
+        1024.0,
+        496.0
+      ],
       "hasInput": true,
       "hasOutput": false,
       "hasTrueOutput": true,
       "hasFalseOutput": true
+    },
+    {
+      "id": 45,
+      "implementation": "On Collision Enter",
+      "type": 0,
+      "position": [
+        -140.0,
+        -180.0
+      ],
+      "hasInput": false,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false,
+      "parameters": {
+        "colFilterType": "name",
+        "colFilterValue": "Chat Bubble"
+      }
+    },
+    {
+      "id": 46,
+      "implementation": "Lock Position",
+      "type": 1,
+      "position": [
+        252.571533203125,
+        -184.0
+      ],
+      "hasInput": true,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false
+    },
+    {
+      "id": 48,
+      "implementation": "Check Collided State",
+      "type": 2,
+      "position": [
+        270.0,
+        -330.0
+      ],
+      "hasInput": true,
+      "hasOutput": false,
+      "hasTrueOutput": true,
+      "hasFalseOutput": true,
+      "parameters": {
+        "state": "Dead"
+      }
+    },
+    {
+      "id": 49,
+      "implementation": "While Colliding",
+      "type": 0,
+      "position": [
+        -132.0,
+        -334.0
+      ],
+      "hasInput": false,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false,
+      "parameters": {
+        "colFilterType": "name",
+        "colFilterValue": "Chat Bubble"
+      }
+    },
+    {
+      "id": 50,
+      "implementation": "Unlock Position",
+      "type": 1,
+      "position": [
+        700.25,
+        -330.4999694824219
+      ],
+      "hasInput": true,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false
     }
   ],
   "connections": [
@@ -428,6 +570,24 @@
       "fromNodeId": 44,
       "outputPin": "True",
       "toNodeId": 13,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 45,
+      "outputPin": "Out",
+      "toNodeId": 46,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 49,
+      "outputPin": "Out",
+      "toNodeId": 48,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 48,
+      "outputPin": "True",
+      "toNodeId": 50,
       "inputPin": "In"
     }
   ]

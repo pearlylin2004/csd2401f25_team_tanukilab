@@ -1,0 +1,416 @@
+{
+  "version": 1,
+  "nodes": [
+    {
+      "id": 1,
+      "implementation": "On Collision Enter",
+      "type": 0,
+      "position": [
+        -265.99993896484375,
+        106.00000762939453
+      ],
+      "hasInput": false,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false,
+      "parameters": {
+        "colFilterType": "tag",
+        "colFilterValue": "player"
+      }
+    },
+    {
+      "id": 2,
+      "implementation": "Set Position",
+      "type": 1,
+      "position": [
+        64.00003814697266,
+        103.99998474121094
+      ],
+      "hasInput": true,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false,
+      "parameters": {
+        "x": "2.83",
+        "y": "1.9"
+      }
+    },
+    {
+      "id": 3,
+      "implementation": "Check Animation End",
+      "type": 2,
+      "position": [
+        106.5714111328125,
+        276.0
+      ],
+      "hasInput": true,
+      "hasOutput": false,
+      "hasTrueOutput": true,
+      "hasFalseOutput": true
+    },
+    {
+      "id": 4,
+      "implementation": "Set State",
+      "type": 1,
+      "position": [
+        472.2857666015625,
+        279.71435546875
+      ],
+      "hasInput": true,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false,
+      "parameters": {
+        "state": "Walking"
+      }
+    },
+    {
+      "id": 5,
+      "implementation": "Check State",
+      "type": 2,
+      "position": [
+        -266.0,
+        282.0
+      ],
+      "hasInput": true,
+      "hasOutput": false,
+      "hasTrueOutput": true,
+      "hasFalseOutput": true,
+      "parameters": {
+        "state": "Idle"
+      }
+    },
+    {
+      "id": 6,
+      "implementation": "Check State",
+      "type": 2,
+      "position": [
+        -258.0,
+        436.0
+      ],
+      "hasInput": true,
+      "hasOutput": false,
+      "hasTrueOutput": true,
+      "hasFalseOutput": true,
+      "parameters": {
+        "state": "Walking"
+      }
+    },
+    {
+      "id": 7,
+      "implementation": "Check Animation End",
+      "type": 2,
+      "position": [
+        118.0,
+        458.0
+      ],
+      "hasInput": true,
+      "hasOutput": false,
+      "hasTrueOutput": true,
+      "hasFalseOutput": true
+    },
+    {
+      "id": 8,
+      "implementation": "Set State",
+      "type": 1,
+      "position": [
+        498.0,
+        438.0
+      ],
+      "hasInput": true,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false,
+      "parameters": {
+        "state": "Jumping"
+      }
+    },
+    {
+      "id": 9,
+      "implementation": "Check State",
+      "type": 2,
+      "position": [
+        -250.0,
+        602.0
+      ],
+      "hasInput": true,
+      "hasOutput": false,
+      "hasTrueOutput": true,
+      "hasFalseOutput": true,
+      "parameters": {
+        "state": "Jumping"
+      }
+    },
+    {
+      "id": 10,
+      "implementation": "Check Animation End",
+      "type": 2,
+      "position": [
+        86.0,
+        598.0
+      ],
+      "hasInput": true,
+      "hasOutput": false,
+      "hasTrueOutput": true,
+      "hasFalseOutput": true
+    },
+    {
+      "id": 11,
+      "implementation": "Set State",
+      "type": 1,
+      "position": [
+        478.0,
+        620.0
+      ],
+      "hasInput": true,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false,
+      "parameters": {
+        "state": "Falling"
+      }
+    },
+    {
+      "id": 12,
+      "implementation": "Check State",
+      "type": 2,
+      "position": [
+        -250.0,
+        752.0
+      ],
+      "hasInput": true,
+      "hasOutput": false,
+      "hasTrueOutput": true,
+      "hasFalseOutput": true,
+      "parameters": {
+        "state": "Falling"
+      }
+    },
+    {
+      "id": 13,
+      "implementation": "Check Animation End",
+      "type": 2,
+      "position": [
+        88.0,
+        742.0
+      ],
+      "hasInput": true,
+      "hasOutput": false,
+      "hasTrueOutput": true,
+      "hasFalseOutput": true
+    },
+    {
+      "id": 14,
+      "implementation": "Set State",
+      "type": 1,
+      "position": [
+        486.0,
+        746.0
+      ],
+      "hasInput": true,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false,
+      "parameters": {
+        "state": "Shooting"
+      }
+    },
+    {
+      "id": 15,
+      "implementation": "Check State",
+      "type": 2,
+      "position": [
+        -270.0,
+        910.0
+      ],
+      "hasInput": true,
+      "hasOutput": false,
+      "hasTrueOutput": true,
+      "hasFalseOutput": true,
+      "parameters": {
+        "state": "Shooting"
+      }
+    },
+    {
+      "id": 16,
+      "implementation": "Check Animation End",
+      "type": 2,
+      "position": [
+        86.0,
+        908.0
+      ],
+      "hasInput": true,
+      "hasOutput": false,
+      "hasTrueOutput": true,
+      "hasFalseOutput": true
+    },
+    {
+      "id": 17,
+      "implementation": "Set State",
+      "type": 1,
+      "position": [
+        478.0,
+        902.0
+      ],
+      "hasInput": true,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false,
+      "parameters": {
+        "state": "Dead"
+      }
+    },
+    {
+      "id": 18,
+      "implementation": "On Update",
+      "type": 0,
+      "position": [
+        -672.0,
+        452.0
+      ],
+      "hasInput": false,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false
+    },
+    {
+      "id": 19,
+      "implementation": "Set State",
+      "type": 1,
+      "position": [
+        393.33331298828125,
+        108.33332824707031
+      ],
+      "hasInput": true,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false,
+      "parameters": {
+        "state": "Idle"
+      }
+    },
+    {
+      "id": 20,
+      "implementation": "Play Sound",
+      "type": 1,
+      "position": [
+        710.0,
+        140.0
+      ],
+      "hasInput": true,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false
+    }
+  ],
+  "connections": [
+    {
+      "fromNodeId": 1,
+      "outputPin": "Out",
+      "toNodeId": 2,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 3,
+      "outputPin": "True",
+      "toNodeId": 4,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 5,
+      "outputPin": "True",
+      "toNodeId": 3,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 6,
+      "outputPin": "True",
+      "toNodeId": 7,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 7,
+      "outputPin": "True",
+      "toNodeId": 8,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 9,
+      "outputPin": "True",
+      "toNodeId": 10,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 10,
+      "outputPin": "True",
+      "toNodeId": 11,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 12,
+      "outputPin": "True",
+      "toNodeId": 13,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 13,
+      "outputPin": "True",
+      "toNodeId": 14,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 16,
+      "outputPin": "True",
+      "toNodeId": 17,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 15,
+      "outputPin": "True",
+      "toNodeId": 16,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 18,
+      "outputPin": "Out",
+      "toNodeId": 5,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 18,
+      "outputPin": "Out",
+      "toNodeId": 6,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 18,
+      "outputPin": "Out",
+      "toNodeId": 9,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 18,
+      "outputPin": "Out",
+      "toNodeId": 12,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 18,
+      "outputPin": "Out",
+      "toNodeId": 15,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 2,
+      "outputPin": "Out",
+      "toNodeId": 19,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 19,
+      "outputPin": "Out",
+      "toNodeId": 20,
+      "inputPin": "In"
+    }
+  ]
+}
