@@ -291,6 +291,8 @@ namespace JsonIO {
         if (s == "Falling")  return PlayerState::Falling;
         if (s == "Shooting") return PlayerState::Shooting;
         if (s == "Dead")     return PlayerState::Dead;
+        if (s == "Dancing") return PlayerState::Dancing;
+        if (s == "Emo")     return PlayerState::Emo;
         return PlayerState::Idle; // default/fallback
     }
 

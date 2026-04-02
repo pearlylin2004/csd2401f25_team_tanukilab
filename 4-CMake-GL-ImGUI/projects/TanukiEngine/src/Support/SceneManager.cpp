@@ -217,6 +217,7 @@ void SceneManager::resetAllObjectsToSpawn() {
 
         // --- physics ---
         if (Physics* phys = obj->getComponent<Physics>()) {
+            phys->canMove = true;
             phys->velX = 0.f;
             phys->velY = 0.f;
         }
