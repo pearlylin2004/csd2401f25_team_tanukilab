@@ -121,30 +121,30 @@
           },
           "Dancing": {
             "animState": {
-              "texture": "",
+              "texture": "assets/Texture\\Kinuta_Dance2_SS2.png",
               "loop": 1,
-              "play": 0,
-              "totalColumn": 1,
-              "totalRow": 1,
-              "frameTime": 0.10000000149011612,
+              "play": 1,
+              "totalColumn": 4,
+              "totalRow": 4,
+              "frameTime": 0.1469999998807907,
               "initialFramCol": 0.0,
               "initialFramRow": 0.0,
-              "lastFramCol": 0.0,
-              "lastFramRow": 0.0
+              "lastFramCol": 3.0,
+              "lastFramRow": 3.0
             }
           },
           "Emo": {
             "animState": {
-              "texture": "",
-              "loop": 1,
-              "play": 0,
-              "totalColumn": 1,
-              "totalRow": 1,
-              "frameTime": 0.10000000149011612,
+              "texture": "assets/Texture\\Kinuta_Watering_SS1.png",
+              "loop": 0,
+              "play": 1,
+              "totalColumn": 2,
+              "totalRow": 2,
+              "frameTime": 0.1469999998807907,
               "initialFramCol": 0.0,
               "initialFramRow": 0.0,
-              "lastFramCol": 0.0,
-              "lastFramRow": 0.0
+              "lastFramCol": 1.0,
+              "lastFramRow": 1.0
             }
           }
         },
@@ -800,6 +800,11 @@
               "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
             },
             {
+              "x": 24,
+              "y": -6,
+              "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
+            },
+            {
               "x": 6,
               "y": -2,
               "id": "assets/Texture\\Tilemap\\Forest\\tile001.png"
@@ -807,11 +812,6 @@
             {
               "x": 7,
               "y": -4,
-              "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
-            },
-            {
-              "x": 24,
-              "y": -6,
               "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
             },
             {
@@ -2076,7 +2076,7 @@
         "AudioComponent": {
           "channels": {
             "change": {
-              "audioFile": "assets/Audio\\SFX\\Japanese-CheckPoint-C_YAAY_SFX.wav",
+              "audioFile": "assets/Audio\\SFX\\Japanese-CheckPoint-C_SFX.wav",
               "volume": 0.10000000149011612,
               "pitch": 1.0,
               "loop": 0,
@@ -2096,173 +2096,6 @@
         },
         "VisualLC": {
           "filename": "Tutorial_EndGoal.json"
-        }
-      }
-    },
-    {
-      "name": "background Fire",
-      "components": {
-        "Transform": {
-          "pos": [
-            16.634000778198242,
-            0.20000000298023224,
-            -0.6000000238418579
-          ],
-          "rotation": 0.0,
-          "scale": [
-            40.5,
-            16.74770164489746,
-            0.0
-          ]
-        },
-        "Render": {
-          "shape": "square",
-          "colorR": 1.0,
-          "colorG": 1.0,
-          "colorB": 1.0,
-          "colorA": 1.0,
-          "hasTex": 0,
-          "hasAnimation": 1
-        },
-        "StateMachine": {
-          "state": "Idle",
-          "facingRight": 1,
-          "Idle": {
-            "animState": {
-              "texture": "assets/Texture\\BG\\Wall_Of_Fire_SpriteSheet_PG1.png",
-              "loop": 0,
-              "play": 1,
-              "totalColumn": 2,
-              "totalRow": 5,
-              "frameTime": 0.05000000074505806,
-              "initialFramCol": 0.0,
-              "initialFramRow": 0.0,
-              "lastFramCol": 1.0,
-              "lastFramRow": 4.0
-            }
-          },
-          "Walking": {
-            "animState": {
-              "texture": "assets/Texture\\BG\\Wall_Of_Fire_SpriteSheet_PG2.png",
-              "loop": 0,
-              "play": 1,
-              "totalColumn": 2,
-              "totalRow": 6,
-              "frameTime": 0.05000000074505806,
-              "initialFramCol": 0.0,
-              "initialFramRow": 0.0,
-              "lastFramCol": 0.0,
-              "lastFramRow": 5.0
-            }
-          },
-          "Jumping": {
-            "animState": {
-              "texture": "",
-              "loop": 1,
-              "play": 0,
-              "totalColumn": 1,
-              "totalRow": 1,
-              "frameTime": 0.10000000149011612,
-              "initialFramCol": 0.0,
-              "initialFramRow": 0.0,
-              "lastFramCol": 0.0,
-              "lastFramRow": 0.0
-            }
-          },
-          "Falling": {
-            "animState": {
-              "texture": "",
-              "loop": 1,
-              "play": 0,
-              "totalColumn": 1,
-              "totalRow": 1,
-              "frameTime": 0.10000000149011612,
-              "initialFramCol": 0.0,
-              "initialFramRow": 0.0,
-              "lastFramCol": 0.0,
-              "lastFramRow": 0.0
-            }
-          },
-          "Shooting": {
-            "animState": {
-              "texture": "",
-              "loop": 1,
-              "play": 0,
-              "totalColumn": 1,
-              "totalRow": 1,
-              "frameTime": 0.10000000149011612,
-              "initialFramCol": 0.0,
-              "initialFramRow": 0.0,
-              "lastFramCol": 0.0,
-              "lastFramRow": 0.0
-            }
-          },
-          "Dead": {
-            "animState": {
-              "texture": "",
-              "loop": 1,
-              "play": 0,
-              "totalColumn": 1,
-              "totalRow": 1,
-              "frameTime": 0.10000000149011612,
-              "initialFramCol": 0.0,
-              "initialFramRow": 0.0,
-              "lastFramCol": 0.0,
-              "lastFramRow": 0.0
-            }
-          },
-          "Dancing": {
-            "animState": {
-              "texture": "",
-              "loop": 1,
-              "play": 0,
-              "totalColumn": 1,
-              "totalRow": 1,
-              "frameTime": 0.10000000149011612,
-              "initialFramCol": 0.0,
-              "initialFramRow": 0.0,
-              "lastFramCol": 0.0,
-              "lastFramRow": 0.0
-            }
-          },
-          "Emo": {
-            "animState": {
-              "texture": "",
-              "loop": 1,
-              "play": 0,
-              "totalColumn": 1,
-              "totalRow": 1,
-              "frameTime": 0.10000000149011612,
-              "initialFramCol": 0.0,
-              "initialFramRow": 0.0,
-              "lastFramCol": 0.0,
-              "lastFramRow": 0.0
-            }
-          }
-        },
-        "AudioComponent": {
-          "channels": {
-            "Ambient Fire": {
-              "audioFile": "assets/Audio\\BGM\\Forest Fire Ambience_Loop.wav",
-              "volume": 0.05000000074505806,
-              "pitch": 1.0,
-              "loop": 1,
-              "playOnStart": 1,
-              "muted": 0,
-              "fadeInOnStart": 0,
-              "fadeInDuration": 1.0,
-              "fadeOutOnStop": 0,
-              "fadeOutDuration": 1.0,
-              "isSpatial": 0,
-              "minDistance": 1.0,
-              "maxDistance": 100.0,
-              "spread": 180.0,
-              "persistOnSceneChange": 0
-            }
-          }
-        },
-        "VisualLC": {
-          "filename": "background Fire_Logic.json"
         }
       }
     },

@@ -296,8 +296,8 @@
       "implementation": "Compare Global Float",
       "type": 2,
       "position": [
-        -38.0,
-        682.0
+        62.0,
+        520.0
       ],
       "hasInput": true,
       "hasOutput": false,
@@ -564,6 +564,51 @@
         "value": "-1.000000",
         "variable": "playedDeath"
       }
+    },
+    {
+      "id": 62,
+      "implementation": "Check State",
+      "type": 2,
+      "position": [
+        54.0,
+        864.0
+      ],
+      "hasInput": true,
+      "hasOutput": false,
+      "hasTrueOutput": true,
+      "hasFalseOutput": true,
+      "parameters": {
+        "state": "Emo"
+      }
+    },
+    {
+      "id": 63,
+      "implementation": "Check Animation End",
+      "type": 2,
+      "position": [
+        398.0,
+        902.0
+      ],
+      "hasInput": true,
+      "hasOutput": false,
+      "hasTrueOutput": true,
+      "hasFalseOutput": true
+    },
+    {
+      "id": 64,
+      "implementation": "Set State",
+      "type": 1,
+      "position": [
+        730.0,
+        900.0
+      ],
+      "hasInput": true,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false,
+      "parameters": {
+        "state": "Dancing"
+      }
     }
   ],
   "connections": [
@@ -751,6 +796,24 @@
       "fromNodeId": 60,
       "outputPin": "Out",
       "toNodeId": 61,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 11,
+      "outputPin": "Out",
+      "toNodeId": 62,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 62,
+      "outputPin": "True",
+      "toNodeId": 63,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 63,
+      "outputPin": "True",
+      "toNodeId": 64,
       "inputPin": "In"
     }
   ]

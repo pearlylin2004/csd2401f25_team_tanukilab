@@ -152,30 +152,30 @@
       },
       "Dancing": {
         "animState": {
-          "texture": "",
+          "texture": "assets/Texture\\Kinuta_Dance2_SS2.png",
           "loop": 1,
-          "play": 0,
-          "totalColumn": 1,
-          "totalRow": 1,
-          "frameTime": 0.10000000149011612,
+          "play": 1,
+          "totalColumn": 4,
+          "totalRow": 4,
+          "frameTime": 0.1469999998807907,
           "initialFramCol": 0.0,
           "initialFramRow": 0.0,
-          "lastFramCol": 0.0,
-          "lastFramRow": 0.0
+          "lastFramCol": 3.0,
+          "lastFramRow": 3.0
         }
       },
       "Emo": {
         "animState": {
-          "texture": "",
-          "loop": 1,
-          "play": 0,
-          "totalColumn": 1,
-          "totalRow": 1,
-          "frameTime": 0.10000000149011612,
+          "texture": "assets/Texture\\Kinuta_Watering_SS1.png",
+          "loop": 0,
+          "play": 1,
+          "totalColumn": 2,
+          "totalRow": 2,
+          "frameTime": 0.1469999998807907,
           "initialFramCol": 0.0,
           "initialFramRow": 0.0,
-          "lastFramCol": 0.0,
-          "lastFramRow": 0.0
+          "lastFramCol": 1.0,
+          "lastFramRow": 1.0
         }
       }
     },

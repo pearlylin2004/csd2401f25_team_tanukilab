@@ -93,8 +93,8 @@
       "implementation": "Set State",
       "type": 1,
       "position": [
-        324.0,
-        190.0
+        264.0,
+        164.0
       ],
       "hasInput": true,
       "hasOutput": true,
@@ -134,6 +134,12 @@
       "fromNodeId": 6,
       "outputPin": "True",
       "toNodeId": 7,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 1,
+      "outputPin": "True",
+      "toNodeId": 3,
       "inputPin": "In"
     }
   ]

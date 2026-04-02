@@ -23,7 +23,7 @@
       "updatable": 1
     }
   ],
-  "onLoadScript": "assets/scripting\\pause_scene_load.lua",
+  "onLoadScript": "assets/scripting\\ending_cutscene_load.lua",
   "objects": [
     {
       "name": "background",
@@ -137,6 +137,34 @@
               "lastFramCol": 0.0,
               "lastFramRow": 0.0
             }
+          },
+          "Dancing": {
+            "animState": {
+              "texture": "",
+              "loop": 1,
+              "play": 0,
+              "totalColumn": 1,
+              "totalRow": 1,
+              "frameTime": 0.10000000149011612,
+              "initialFramCol": 0.0,
+              "initialFramRow": 0.0,
+              "lastFramCol": 0.0,
+              "lastFramRow": 0.0
+            }
+          },
+          "Emo": {
+            "animState": {
+              "texture": "",
+              "loop": 1,
+              "play": 0,
+              "totalColumn": 1,
+              "totalRow": 1,
+              "frameTime": 0.10000000149011612,
+              "initialFramCol": 0.0,
+              "initialFramRow": 0.0,
+              "lastFramCol": 0.0,
+              "lastFramRow": 0.0
+            }
           }
         },
         "VisualLC": {
@@ -155,6 +183,45 @@
               "scriptName": "cheat"
             }
           ]
+        }
+      }
+    },
+    {
+      "name": "BGM",
+      "components": {
+        "Transform": {
+          "pos": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "rotation": 0.0,
+          "scale": [
+            1.0,
+            1.0,
+            0.0
+          ]
+        },
+        "AudioComponent": {
+          "channels": {
+            "endscene_bgm": {
+              "audioFile": "assets/Audio\\CutScene\\Tanuki End Cut Scene Audio.wav",
+              "volume": 1.0,
+              "pitch": 1.0,
+              "loop": 0,
+              "playOnStart": 0,
+              "muted": 0,
+              "fadeInOnStart": 1,
+              "fadeInDuration": 1.0,
+              "fadeOutOnStop": 1,
+              "fadeOutDuration": 1.0,
+              "isSpatial": 0,
+              "minDistance": 1.0,
+              "maxDistance": 100.0,
+              "spread": 180.0,
+              "persistOnSceneChange": 0
+            }
+          }
         }
       }
     }
