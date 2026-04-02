@@ -7,14 +7,14 @@
       "path": "/Prefab/bullet.json"
     },
     {
-      "id": "dd60e1e1-641c-4ed5-b69d-ffadfa02fb7a",
-      "name": "player",
-      "path": "/Prefab/player.json"
-    },
-    {
       "id": "b766d355-2b28-4a0d-b54e-6e4407e18596",
       "name": "player",
       "path": "/Prefab/player_1.json"
+    },
+    {
+      "id": "dd60e1e1-641c-4ed5-b69d-ffadfa02fb7a",
+      "name": "player",
+      "path": "/Prefab/player.json"
     },
     {
       "id": "f7665aa3-619e-49a1-892a-31fbc8b377a2",
@@ -32,14 +32,14 @@
       "path": "/Prefab/water_source.json"
     },
     {
-      "id": "1cf017e5-1c34-47f6-8056-6c92723f25ad",
-      "name": "fire_game",
-      "path": "/Prefab/fire(21).json"
-    },
-    {
       "id": "8b8d44fa-ed22-4288-98ee-c476958f5b5b",
       "name": "endgoal",
       "path": "/Prefab/endgoal.json"
+    },
+    {
+      "id": "1cf017e5-1c34-47f6-8056-6c92723f25ad",
+      "name": "fire_game",
+      "path": "/Prefab/fire(21).json"
     },
     {
       "id": "94d018f7-a766-4ee6-95be-f39272697938",
