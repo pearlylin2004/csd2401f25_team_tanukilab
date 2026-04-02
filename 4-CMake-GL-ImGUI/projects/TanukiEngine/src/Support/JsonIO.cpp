@@ -654,6 +654,7 @@ namespace JsonIO {
     }
 
     bool JsonIO::StringToScene(GameObjectManager& manager, const std::string& json, std::string* err) {
+		(void)err;
         std::string tempPath = std::string(RUNTIME_SCENE_DIR_R) + "/_snapshot.json";
 
         // write string to temp file, load from it
