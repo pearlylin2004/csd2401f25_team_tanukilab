@@ -292,13 +292,46 @@
       }
     },
     {
+      "prefabid": "b766d355-2b28-4a0d-b54e-6e4407e18596",
+      "name": "player",
+      "components": {
+        "Transform": {
+          "pos": [
+            -17.495912551879883,
+            -4.2259697914123535,
+            0.9980000257492065
+          ]
+        },
+        "Render": {
+          "colorR": 1.0,
+          "colorG": 1.0,
+          "colorB": 1.0,
+          "colorA": 1.0,
+          "hasTex": 1,
+          "texture": "assets/Texture\\Water_Gun.png",
+          "hasAnimation": 1
+        },
+        "Physics": {
+          "autoUpdate": 0
+        },
+        "LuaScript": {
+          "scripts": [
+            {
+              "filename": "./assets/scripting\\player.lua",
+              "scriptName": "player"
+            }
+          ]
+        }
+      }
+    },
+    {
       "prefabid": "b1a12273-a692-4ce0-8072-156da2c70842",
       "name": "bullet9",
       "components": {
         "Transform": {
           "pos": [
             -1000.0,
-            -999.2442626953125,
+            -999.2443237304688,
             0.0
           ],
           "scale": [
@@ -340,39 +373,6 @@
             {
               "filename": "./assets/scripting\\bullet.lua",
               "scriptName": "bullet"
-            }
-          ]
-        }
-      }
-    },
-    {
-      "prefabid": "b766d355-2b28-4a0d-b54e-6e4407e18596",
-      "name": "player",
-      "components": {
-        "Transform": {
-          "pos": [
-            -17.495912551879883,
-            -4.2259697914123535,
-            0.9980000257492065
-          ]
-        },
-        "Render": {
-          "colorR": 1.0,
-          "colorG": 1.0,
-          "colorB": 1.0,
-          "colorA": 1.0,
-          "hasTex": 1,
-          "texture": "assets/Texture\\Water_Gun.png",
-          "hasAnimation": 1
-        },
-        "Physics": {
-          "autoUpdate": 0
-        },
-        "LuaScript": {
-          "scripts": [
-            {
-              "filename": "./assets/scripting\\player.lua",
-              "scriptName": "player"
             }
           ]
         }
@@ -435,7 +435,7 @@
         "Transform": {
           "pos": [
             -1000.0,
-            -999.546630859375,
+            -999.546875,
             0.0
           ],
           "scale": [
@@ -699,7 +699,7 @@
         "Transform": {
           "pos": [
             -16.94418716430664,
-            -4.753210544586182,
+            -4.75321102142334,
             0.0
           ],
           "rotation": 27.641786575317383,
@@ -710,8 +710,8 @@
           ],
           "parentName": "player",
           "localOffset": [
-            0.5424397587776184,
-            -0.5367889404296875
+            0.5424396991729736,
+            -0.5367894172668457
           ],
           "localRotation": 26.641786575317383
         },
@@ -1655,6 +1655,34 @@
               "lastFramCol": 0.0,
               "lastFramRow": 0.0
             }
+          },
+          "Dancing": {
+            "animState": {
+              "texture": "",
+              "loop": 1,
+              "play": 0,
+              "totalColumn": 1,
+              "totalRow": 1,
+              "frameTime": 0.10000000149011612,
+              "initialFramCol": 0.0,
+              "initialFramRow": 0.0,
+              "lastFramCol": 0.0,
+              "lastFramRow": 0.0
+            }
+          },
+          "Emo": {
+            "animState": {
+              "texture": "",
+              "loop": 1,
+              "play": 0,
+              "totalColumn": 1,
+              "totalRow": 1,
+              "frameTime": 0.10000000149011612,
+              "initialFramCol": 0.0,
+              "initialFramRow": 0.0,
+              "lastFramCol": 0.0,
+              "lastFramRow": 0.0
+            }
           }
         },
         "AudioComponent": {
@@ -1864,6 +1892,36 @@
         },
         "Physics": {
           "autoUpdate": 0
+        },
+        "StateMachine": {
+          "Dancing": {
+            "animState": {
+              "texture": "",
+              "loop": 1,
+              "play": 0,
+              "totalColumn": 1,
+              "totalRow": 1,
+              "frameTime": 0.10000000149011612,
+              "initialFramCol": 0.0,
+              "initialFramRow": 0.0,
+              "lastFramCol": 0.0,
+              "lastFramRow": 0.0
+            }
+          },
+          "Emo": {
+            "animState": {
+              "texture": "",
+              "loop": 1,
+              "play": 0,
+              "totalColumn": 1,
+              "totalRow": 1,
+              "frameTime": 0.10000000149011612,
+              "initialFramCol": 0.0,
+              "initialFramRow": 0.0,
+              "lastFramCol": 0.0,
+              "lastFramRow": 0.0
+            }
+          }
         }
       }
     },
@@ -2400,7 +2458,7 @@
         "Transform": {
           "pos": [
             -1000.0,
-            -999.8492431640625,
+            -999.848876953125,
             0.0
           ],
           "scale": [
@@ -2454,7 +2512,7 @@
         "Transform": {
           "pos": [
             -1000.0,
-            -1000.4541015625,
+            -1000.4540405273438,
             0.0
           ],
           "scale": [
@@ -2562,7 +2620,7 @@
         "Transform": {
           "pos": [
             -1000.0,
-            -1000.1514892578125,
+            -1000.1514282226563,
             0.0
           ],
           "scale": [
@@ -2678,6 +2736,36 @@
         },
         "Physics": {
           "autoUpdate": 0
+        },
+        "StateMachine": {
+          "Dancing": {
+            "animState": {
+              "texture": "",
+              "loop": 1,
+              "play": 0,
+              "totalColumn": 1,
+              "totalRow": 1,
+              "frameTime": 0.10000000149011612,
+              "initialFramCol": 0.0,
+              "initialFramRow": 0.0,
+              "lastFramCol": 0.0,
+              "lastFramRow": 0.0
+            }
+          },
+          "Emo": {
+            "animState": {
+              "texture": "",
+              "loop": 1,
+              "play": 0,
+              "totalColumn": 1,
+              "totalRow": 1,
+              "frameTime": 0.10000000149011612,
+              "initialFramCol": 0.0,
+              "initialFramRow": 0.0,
+              "lastFramCol": 0.0,
+              "lastFramRow": 0.0
+            }
+          }
         }
       }
     }

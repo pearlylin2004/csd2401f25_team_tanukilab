@@ -679,8 +679,11 @@ void VisualLogicSystem::executeActionNode(GameObject* obj, VisualLC* logic, Logi
 		float forceX = node.parameters.count("forceX") ? std::stof(node.parameters["forceX"]) : 0.f;
 		float forceY = node.parameters.count("forceY") ? std::stof(node.parameters["forceY"]) : 0.f;
 
-		collidedPhysic->dynamics.velocity.x += forceX;
-		collidedPhysic->dynamics.velocity.y += forceY;
+		collidedPhysic->dynamics.velocity.x = forceX;
+		collidedPhysic->dynamics.velocity.y = forceY;
+		collidedPhysic->velX = forceX;
+		collidedPhysic->velY = forceY;
+		collidedPhysic->onGround = false;
 
 		//std::cout << "Put force on collided object to (" << collidedPhysic->dynamics.velocity.x << ", " << collidedPhysic->dynamics.velocity.y << ")\n";
 	}
