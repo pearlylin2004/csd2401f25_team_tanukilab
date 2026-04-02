@@ -747,6 +747,9 @@ void VideoSystem::update(GameObject* obj, float const deltaTime)
 			video->isPlaying = false;
 			return;
 		}
+		Render* render = obj->getComponent<Render>();
+		if (!render->visible) render->visible = true;
+
 		video->accumTime = 0.f; // reset accum time so if we start playing again it doesn't immediately skip frames
 		// if first frame lags, return this immediately so we don't have a frozen frame until the next update
 		//return;
@@ -780,6 +783,9 @@ void VideoSystem::update(GameObject* obj, float const deltaTime)
 		cleanup(video);
 		video->accumTime = 0.f;
 		video->videoEnded = true;
+
+		Render* render = obj->getComponent<Render>();
+		if (render->visible) render->visible = false; // hide the object if video ended (for visual logic)
 
 		if (video->loop) {
 			video->isPlaying = true;  // next iteration reloads plm
