@@ -1,0 +1,42 @@
+{
+  "version": 1,
+  "nodes": [
+    {
+      "id": 1,
+      "implementation": "On Click Enter",
+      "type": 0,
+      "position": [
+        388.0,
+        523.0
+      ],
+      "hasInput": false,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false
+    },
+    {
+      "id": 2,
+      "implementation": "Play Sound",
+      "type": 1,
+      "position": [
+        803.0,
+        513.0
+      ],
+      "hasInput": true,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false,
+      "parameters": {
+        "channel": "onclick"
+      }
+    }
+  ],
+  "connections": [
+    {
+      "fromNodeId": 1,
+      "outputPin": "Out",
+      "toNodeId": 2,
+      "inputPin": "In"
+    }
+  ]
+}

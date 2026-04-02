@@ -2,7 +2,7 @@
 dofile("./assets/scripting/common.lua")
 
 function onSceneLoad()
-    setLowPassFilter(false)
+    --setLowPassFilter(false)
     requestBGM("BGM")
 
     -- bullet pool setup

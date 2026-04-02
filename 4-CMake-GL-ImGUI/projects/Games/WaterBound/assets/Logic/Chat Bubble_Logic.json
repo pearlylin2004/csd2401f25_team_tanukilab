@@ -23,15 +23,15 @@
       "implementation": "Set Position",
       "type": 1,
       "position": [
-        64.00003814697266,
-        103.99998474121094
+        64.00005340576172,
+        103.99995422363281
       ],
       "hasInput": true,
       "hasOutput": true,
       "hasTrueOutput": false,
       "hasFalseOutput": false,
       "parameters": {
-        "x": "2.83",
+        "x": "1.021",
         "y": "1.9"
       }
     },
@@ -236,7 +236,7 @@
       "implementation": "Check Animation End",
       "type": 2,
       "position": [
-        86.0,
+        85.99999237060547,
         908.0
       ],
       "hasInput": true,
@@ -249,7 +249,7 @@
       "implementation": "Set State",
       "type": 1,
       "position": [
-        478.0,
+        477.9999084472656,
         902.0
       ],
       "hasInput": true,
@@ -279,7 +279,7 @@
       "type": 1,
       "position": [
         393.33331298828125,
-        108.33332824707031
+        108.33336639404297
       ],
       "hasInput": true,
       "hasOutput": true,
@@ -290,17 +290,38 @@
       }
     },
     {
-      "id": 20,
-      "implementation": "Play Sound",
+      "id": 23,
+      "implementation": "Set Global Float",
       "type": 1,
       "position": [
-        710.0,
-        140.0
+        847.5000610351563,
+        898.7500610351563
       ],
       "hasInput": true,
       "hasOutput": true,
       "hasTrueOutput": false,
-      "hasFalseOutput": false
+      "hasFalseOutput": false,
+      "parameters": {
+        "value": "1.000000",
+        "variable": "can-unlock"
+      }
+    },
+    {
+      "id": 24,
+      "implementation": "Set Position",
+      "type": 1,
+      "position": [
+        1162.2222900390625,
+        938.888916015625
+      ],
+      "hasInput": true,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false,
+      "parameters": {
+        "x": "100",
+        "y": "0"
+      }
     }
   ],
   "connections": [
@@ -407,9 +428,15 @@
       "inputPin": "In"
     },
     {
-      "fromNodeId": 19,
+      "fromNodeId": 17,
       "outputPin": "Out",
-      "toNodeId": 20,
+      "toNodeId": 23,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 23,
+      "outputPin": "Out",
+      "toNodeId": 24,
       "inputPin": "In"
     }
   ]

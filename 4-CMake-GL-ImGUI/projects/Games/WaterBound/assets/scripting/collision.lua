@@ -5,9 +5,9 @@ function onCollision(a, b)
     local tagB = getCollisionTag(b)
 
     -- player enters water -> muffle audio
-    if (tagA == "player-body" and tagB == "water") or (tagB == "player-body" and tagA == "water") then
-        setLowPassFilter(true, 500.0)
-    end
+    --if (tagA == "player-body" and tagB == "water") or (tagB == "player-body" and tagA == "water") then
+        --setLowPassFilter(true, 500.0)
+    --end
 
     -- floatingObject + water
     if (tagA == "floatingObject" and hasWaterBody(b)) or

@@ -31,7 +31,7 @@
         "Transform": {
           "pos": [
             -16.681079864501953,
-            8.383752822875977,
+            8.366436958312988,
             0.20000000298023224
           ],
           "rotation": 0.0,
@@ -51,9 +51,30 @@
           "texture": "assets/Texture\\Menu_Button.png",
           "hasAnimation": 0
         },
+        "AudioComponent": {
+          "channels": {
+            "onclick": {
+              "audioFile": "assets/Audio\\SFX\\UI Hover CarparkIsFullwav 1.wav",
+              "volume": 0.5,
+              "pitch": 1.0,
+              "loop": 0,
+              "playOnStart": 0,
+              "muted": 0,
+              "fadeInOnStart": 0,
+              "fadeInDuration": 0.20000000298023224,
+              "fadeOutOnStop": 0,
+              "fadeOutDuration": 1.0,
+              "isSpatial": 0,
+              "minDistance": 1.0,
+              "maxDistance": 100.0,
+              "spread": 180.0,
+              "persistOnSceneChange": 1
+            }
+          }
+        },
         "Button": {
           "action": "back",
-          "onClickChannel": "",
+          "onClickChannel": "onclick",
           "onHoverChannel": ""
         }
       }
@@ -140,10 +161,31 @@
           "texture": "assets/button.png",
           "hasAnimation": 0
         },
+        "AudioComponent": {
+          "channels": {
+            "onclick": {
+              "audioFile": "assets/Audio\\SFX\\UI Hover CarparkIsFullwav 1.wav",
+              "volume": 0.5,
+              "pitch": 1.0,
+              "loop": 0,
+              "playOnStart": 0,
+              "muted": 0,
+              "fadeInOnStart": 0,
+              "fadeInDuration": 0.20000000298023224,
+              "fadeOutOnStop": 0,
+              "fadeOutDuration": 1.0,
+              "isSpatial": 0,
+              "minDistance": 1.0,
+              "maxDistance": 100.0,
+              "spread": 180.0,
+              "persistOnSceneChange": 1
+            }
+          }
+        },
         "Button": {
           "action": "load_scene",
           "scenePath": "control_scene.json",
-          "onClickChannel": "",
+          "onClickChannel": "onclick",
           "onHoverChannel": ""
         }
       }
@@ -258,13 +300,34 @@
           "texture": "assets/button.png",
           "hasAnimation": 0
         },
+        "AudioComponent": {
+          "channels": {
+            "onclick": {
+              "audioFile": "assets/Audio\\SFX\\UI Hover CarparkIsFullwav 1.wav",
+              "volume": 0.5,
+              "pitch": 1.0,
+              "loop": 0,
+              "playOnStart": 0,
+              "muted": 0,
+              "fadeInOnStart": 0,
+              "fadeInDuration": 0.20000000298023224,
+              "fadeOutOnStop": 0,
+              "fadeOutDuration": 1.0,
+              "isSpatial": 0,
+              "minDistance": 1.0,
+              "maxDistance": 100.0,
+              "spread": 180.0,
+              "persistOnSceneChange": 1
+            }
+          }
+        },
         "VisualLC": {
           "filename": "menu_button_Logic.json"
         },
         "Button": {
           "action": "load_scene",
           "scenePath": "menu_scene.json",
-          "onClickChannel": "",
+          "onClickChannel": "onclick",
           "onHoverChannel": ""
         }
       }
@@ -295,9 +358,30 @@
           "texture": "assets/button.png",
           "hasAnimation": 0
         },
+        "AudioComponent": {
+          "channels": {
+            "onclick": {
+              "audioFile": "assets/Audio\\SFX\\UI Hover CarparkIsFullwav 1.wav",
+              "volume": 0.5,
+              "pitch": 1.0,
+              "loop": 0,
+              "playOnStart": 0,
+              "muted": 0,
+              "fadeInOnStart": 0,
+              "fadeInDuration": 0.20000000298023224,
+              "fadeOutOnStop": 0,
+              "fadeOutDuration": 1.0,
+              "isSpatial": 0,
+              "minDistance": 1.0,
+              "maxDistance": 100.0,
+              "spread": 180.0,
+              "persistOnSceneChange": 1
+            }
+          }
+        },
         "Button": {
           "action": "restart",
-          "onClickChannel": "",
+          "onClickChannel": "onclick",
           "onHoverChannel": ""
         }
       }
