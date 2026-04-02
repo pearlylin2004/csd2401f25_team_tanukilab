@@ -2130,7 +2130,7 @@
           "Idle": {
             "animState": {
               "texture": "assets/Texture\\BG\\Wall_Of_Fire_SpriteSheet_PG1.png",
-              "loop": 0,
+              "loop": 1,
               "play": 1,
               "totalColumn": 2,
               "totalRow": 5,
@@ -3293,7 +3293,7 @@
           "Idle": {
             "animState": {
               "texture": "assets/Texture\\BG\\Wall_Of_Fire_SpriteSheet_PG1.png",
-              "loop": 0,
+              "loop": 1,
               "play": 1,
               "totalColumn": 2,
               "totalRow": 5,
@@ -3307,7 +3307,7 @@
           "Walking": {
             "animState": {
               "texture": "assets/Texture\\BG\\Wall_Of_Fire_SpriteSheet_PG2.png",
-              "loop": 0,
+              "loop": 1,
               "play": 1,
               "totalColumn": 2,
               "totalRow": 6,
