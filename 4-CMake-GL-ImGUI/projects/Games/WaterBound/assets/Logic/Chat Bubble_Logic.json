@@ -40,7 +40,7 @@
       "implementation": "Check Animation End",
       "type": 2,
       "position": [
-        106.5714111328125,
+        106.57144927978516,
         276.0
       ],
       "hasInput": true,
@@ -53,7 +53,7 @@
       "implementation": "Set State",
       "type": 1,
       "position": [
-        472.2857666015625,
+        472.2857360839844,
         279.71435546875
       ],
       "hasInput": true,
@@ -69,7 +69,7 @@
       "implementation": "Check State",
       "type": 2,
       "position": [
-        -266.0,
+        -265.99993896484375,
         282.0
       ],
       "hasInput": true,
@@ -77,7 +77,7 @@
       "hasTrueOutput": true,
       "hasFalseOutput": true,
       "parameters": {
-        "state": "Idle"
+        "state": "Walking"
       }
     },
     {
