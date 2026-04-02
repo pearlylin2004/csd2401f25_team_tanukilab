@@ -556,6 +556,7 @@ void RenderSystem::batchingSetUp(GameObjectManager& manager, float const& deltaT
 				else if (video->isPlaying)
 				{
 					VideoSystem::update(obj, deltaTime); // Update video frame and texture
+					if (!video->isPlaying) continue;
 					if (video->videoTexID)
 					{
 						BatchKey key{ transform->z, video->videoTexID, render->modelRef.shape };
