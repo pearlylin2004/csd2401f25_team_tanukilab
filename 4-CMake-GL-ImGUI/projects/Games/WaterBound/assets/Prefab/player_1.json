@@ -25,7 +25,7 @@
     "Physics": {
       "physicsFlag": 1,
       "moveSpeed": 5.0,
-      "jumpForce": 12.5,
+      "jumpForce": 11.5,
       "damping": 0.9800000190734864,
       "maxFallSpeed": -30.0,
       "groundAccelForce": 20.0,
@@ -148,6 +148,34 @@
           "initialFramRow": 0.0,
           "lastFramCol": 3.0,
           "lastFramRow": 3.0
+        }
+      },
+      "Dancing": {
+        "animState": {
+          "texture": "",
+          "loop": 1,
+          "play": 0,
+          "totalColumn": 1,
+          "totalRow": 1,
+          "frameTime": 0.10000000149011612,
+          "initialFramCol": 0.0,
+          "initialFramRow": 0.0,
+          "lastFramCol": 0.0,
+          "lastFramRow": 0.0
+        }
+      },
+      "Emo": {
+        "animState": {
+          "texture": "",
+          "loop": 1,
+          "play": 0,
+          "totalColumn": 1,
+          "totalRow": 1,
+          "frameTime": 0.10000000149011612,
+          "initialFramCol": 0.0,
+          "initialFramRow": 0.0,
+          "lastFramCol": 0.0,
+          "lastFramRow": 0.0
         }
       }
     },
