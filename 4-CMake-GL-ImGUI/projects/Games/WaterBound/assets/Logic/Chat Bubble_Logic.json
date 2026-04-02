@@ -402,22 +402,6 @@
       "parameters": {
         "channel": "Speech_5"
       }
-    },
-    {
-      "id": 32,
-      "implementation": "Print Message",
-      "type": 1,
-      "position": [
-        -16.0,
-        -94.0
-      ],
-      "hasInput": true,
-      "hasOutput": true,
-      "hasTrueOutput": false,
-      "hasFalseOutput": false,
-      "parameters": {
-        "message": "i love gam"
-      }
     }
   ],
   "connections": [
@@ -569,12 +553,6 @@
       "fromNodeId": 14,
       "outputPin": "Out",
       "toNodeId": 31,
-      "inputPin": "In"
-    },
-    {
-      "fromNodeId": 1,
-      "outputPin": "Out",
-      "toNodeId": 32,
       "inputPin": "In"
     }
   ]

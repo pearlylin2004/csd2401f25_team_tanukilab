@@ -1626,8 +1626,8 @@
         "Transform": {
           "pos": [
             -1000.0,
-            -997.0877685546875,
-            0.0
+            -935.20654296875,
+            1.0
           ]
         },
         "Render": {
@@ -1637,11 +1637,27 @@
           "colorB": 1.0,
           "colorA": 1.0,
           "hasTex": 1,
-          "texture": "assets/Texture/water_texture.png",
+          "texture": "assets/Texture\\water_texture.png",
           "hasAnimation": 0
         },
         "Physics": {
           "autoUpdate": 0
+        },
+        "CollisionInfo": {
+          "colliderType": "square",
+          "colliderType": "square",
+          "ignoreCollisionsWith": [
+            "player",
+            "hazards"
+          ]
+        },
+        "LuaScript": {
+          "scripts": [
+            {
+              "filename": "./assets/scripting\\bullet.lua",
+              "scriptName": "bullet"
+            }
+          ]
         }
       }
     },

@@ -39,7 +39,7 @@
       "implementation": "Load Level",
       "type": 1,
       "position": [
-        904.6666870117188,
+        904.666748046875,
         -141.66668701171875
       ],
       "hasInput": true,
@@ -111,22 +111,6 @@
       "hasOutput": true,
       "hasTrueOutput": false,
       "hasFalseOutput": false
-    },
-    {
-      "id": 8,
-      "implementation": "Print Message",
-      "type": 1,
-      "position": [
-        868.33349609375,
-        -273.0000305175781
-      ],
-      "hasInput": true,
-      "hasOutput": true,
-      "hasTrueOutput": false,
-      "hasFalseOutput": false,
-      "parameters": {
-        "message": "go next"
-      }
     },
     {
       "id": 12,
@@ -230,12 +214,6 @@
       "fromNodeId": 2,
       "outputPin": "Out",
       "toNodeId": 6,
-      "inputPin": "In"
-    },
-    {
-      "fromNodeId": 5,
-      "outputPin": "True",
-      "toNodeId": 8,
       "inputPin": "In"
     },
     {
