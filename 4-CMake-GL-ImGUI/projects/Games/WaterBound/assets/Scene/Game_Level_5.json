@@ -71,7 +71,7 @@
         "Transform": {
           "pos": [
             -1000.0,
-            -996.904296875,
+            -996.824951171875,
             0.0
           ]
         },
@@ -182,7 +182,7 @@
       "components": {
         "Transform": {
           "pos": [
-            -7.939000129699707,
+            -8.781999588012695,
             -1.399999976158142,
             0.30000001192092896
           ],
@@ -283,20 +283,20 @@
       "components": {
         "Transform": {
           "pos": [
-            -16.909564971923828,
-            -0.4755763113498688,
+            -17.010000228881836,
+            0.2240000069141388,
             5.0
           ],
           "rotation": 0.0,
           "scale": [
-            1.100000023841858,
+            0.6000000238418579,
             0.6000000238418579,
             0.0
           ],
           "parentName": "Player",
           "localOffset": [
-            0.2254457026720047,
-            -0.5498881340026855
+            0.13723504543304443,
+            0.1513344645500183
           ],
           "localRotation": -1.0
         },
@@ -324,7 +324,7 @@
           "collisionFlag": 1,
           "autoFitScale": 1,
           "colliderSize": [
-            1.100000023841858,
+            0.6000000238418579,
             0.6000000238418579
           ],
           "colliderPos": [
@@ -361,13 +361,13 @@
         "Transform": {
           "pos": [
             -0.5,
-            1.600000023841858,
+            2.799999952316284,
             -2.0999999046325684
           ],
           "rotation": 0.0,
           "scale": [
-            45.0,
-            18.709999084472656,
+            42.70000076293945,
+            12.00937557220459,
             0.0
           ]
         },
@@ -550,72 +550,22 @@
           "enableCol": 1,
           "tiles": [
             {
-              "x": 14,
-              "y": -5,
-              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
-            },
-            {
-              "x": 13,
-              "y": -3,
-              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
-            },
-            {
-              "x": 15,
-              "y": -5,
-              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
-            },
-            {
-              "x": 12,
-              "y": -3,
-              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
-            },
-            {
-              "x": 15,
-              "y": -3,
-              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
-            },
-            {
-              "x": 14,
-              "y": -3,
-              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
-            },
-            {
-              "x": 15,
-              "y": -6,
-              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
-            },
-            {
-              "x": 14,
-              "y": -6,
-              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
-            },
-            {
-              "x": 13,
-              "y": -6,
-              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
-            },
-            {
-              "x": 10,
-              "y": -3,
-              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
-            },
-            {
-              "x": 11,
-              "y": -3,
-              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
-            },
-            {
               "x": -7,
               "y": 0,
               "id": "assets/Texture\\tilemap\\Shrine\\tile001.png"
             },
             {
-              "x": 9,
-              "y": -3,
-              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+              "x": 13,
+              "y": -2,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile001.png"
             },
             {
               "x": 9,
+              "y": -2,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile001.png"
+            },
+            {
+              "x": 14,
               "y": -2,
               "id": "assets/Texture\\tilemap\\Shrine\\tile001.png"
             },
@@ -625,64 +575,19 @@
               "id": "assets/Texture\\tilemap\\Shrine\\tile001.png"
             },
             {
-              "x": 11,
-              "y": -4,
-              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
-            },
-            {
-              "x": 11,
-              "y": -2,
-              "id": "assets/Texture\\tilemap\\Shrine\\tile001.png"
-            },
-            {
-              "x": 10,
-              "y": -4,
-              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
-            },
-            {
-              "x": 12,
-              "y": -2,
-              "id": "assets/Texture\\tilemap\\Shrine\\tile001.png"
-            },
-            {
-              "x": 13,
-              "y": -4,
-              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
-            },
-            {
-              "x": 13,
-              "y": -2,
-              "id": "assets/Texture\\tilemap\\Shrine\\tile001.png"
-            },
-            {
-              "x": 12,
-              "y": -4,
-              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
-            },
-            {
-              "x": 14,
-              "y": -2,
-              "id": "assets/Texture\\tilemap\\Shrine\\tile001.png"
-            },
-            {
-              "x": 15,
-              "y": -4,
-              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
-            },
-            {
               "x": 15,
               "y": -2,
               "id": "assets/Texture\\tilemap\\Shrine\\tile001.png"
             },
             {
-              "x": 14,
-              "y": -4,
-              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+              "x": 11,
+              "y": -2,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile001.png"
             },
             {
-              "x": 9,
-              "y": -4,
-              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+              "x": 12,
+              "y": -2,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile001.png"
             },
             {
               "x": -8,
@@ -968,12 +873,528 @@
       }
     },
     {
+      "name": "no collision bg tile",
+      "components": {
+        "Transform": {
+          "pos": [
+            -2.3450000286102295,
+            -2.3450000286102295,
+            -0.05000000074505806
+          ],
+          "rotation": 0.0,
+          "scale": [
+            1.0,
+            1.0,
+            0.0
+          ]
+        },
+        "CollisionInfo": {
+          "collisionFlag": 0,
+          "autoFitScale": 1,
+          "colliderSize": [
+            1.0,
+            1.0
+          ],
+          "colliderPos": [
+            0.0,
+            0.0
+          ],
+          "colliderRot": 0.0,
+          "colliderType": "square",
+          "collisionRes": "StopWhenCollide",
+          "collisionTag": "default",
+          "bounciness": 0.0,
+          "friction": 0.0,
+          "colliderType": "square"
+        },
+        "TileMap": {
+          "tileW": 1.5,
+          "tileH": 1.5,
+          "columns": 100,
+          "rows": 100,
+          "enableCol": 0,
+          "tiles": [
+            {
+              "x": 13,
+              "y": -5,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": 12,
+              "y": -5,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": 11,
+              "y": -5,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": 10,
+              "y": -5,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": 10,
+              "y": -6,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": 11,
+              "y": -6,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": -9,
+              "y": -6,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": 12,
+              "y": -6,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": -10,
+              "y": -6,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": 13,
+              "y": -6,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": 15,
+              "y": -5,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": 14,
+              "y": -5,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": -11,
+              "y": -6,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": 14,
+              "y": -6,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": -12,
+              "y": -6,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": 15,
+              "y": -6,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": -13,
+              "y": -6,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": 0,
+              "y": -6,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": 9,
+              "y": -5,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": 9,
+              "y": -3,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": 6,
+              "y": -5,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": -3,
+              "y": -6,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": 6,
+              "y": -6,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": -2,
+              "y": -6,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": 5,
+              "y": -6,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": -8,
+              "y": -4,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": -1,
+              "y": -6,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": 4,
+              "y": -6,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": 3,
+              "y": -6,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": 2,
+              "y": -6,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": 1,
+              "y": -6,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": 7,
+              "y": -6,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": -4,
+              "y": -6,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": -5,
+              "y": -6,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": 7,
+              "y": -4,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": -6,
+              "y": -6,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": -7,
+              "y": -6,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": 5,
+              "y": -5,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": 10,
+              "y": -3,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": 4,
+              "y": -5,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": 11,
+              "y": -3,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": 14,
+              "y": -3,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": 1,
+              "y": -5,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": 2,
+              "y": -5,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": 13,
+              "y": -3,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": 3,
+              "y": -5,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": 12,
+              "y": -3,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": 8,
+              "y": -6,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": 9,
+              "y": -6,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": 15,
+              "y": -3,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": -12,
+              "y": -4,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": 15,
+              "y": -4,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": 14,
+              "y": -4,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": 13,
+              "y": -4,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": 12,
+              "y": -4,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": 11,
+              "y": -4,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": 10,
+              "y": -4,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": 9,
+              "y": -4,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": -1,
+              "y": -4,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": -8,
+              "y": -6,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": -13,
+              "y": -4,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": 8,
+              "y": -4,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": 8,
+              "y": -5,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": 7,
+              "y": -5,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": 0,
+              "y": -5,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": -1,
+              "y": -5,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": -2,
+              "y": -5,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": -3,
+              "y": -5,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": -4,
+              "y": -5,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": -5,
+              "y": -5,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": -6,
+              "y": -5,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": -7,
+              "y": -5,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": -8,
+              "y": -5,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": -9,
+              "y": -5,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": -13,
+              "y": -5,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": -12,
+              "y": -5,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": -11,
+              "y": -5,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": -10,
+              "y": -5,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": -11,
+              "y": -4,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": -10,
+              "y": -4,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": -9,
+              "y": -4,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": -7,
+              "y": -4,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": -6,
+              "y": -4,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": -5,
+              "y": -4,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": -4,
+              "y": -4,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": -3,
+              "y": -4,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": 1,
+              "y": -4,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": 2,
+              "y": -4,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": 3,
+              "y": -4,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": 4,
+              "y": -4,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": 5,
+              "y": -4,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": 6,
+              "y": -4,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": 0,
+              "y": -4,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": -2,
+              "y": -4,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            }
+          ]
+        }
+      }
+    },
+    {
       "name": "waterbody",
       "components": {
         "Transform": {
           "pos": [
             -8.793999671936035,
-            -7.525827884674072,
+            -8.095000267028809,
             0.0
           ],
           "rotation": 0.0,
@@ -1081,25 +1502,34 @@
             0.0
           ]
         },
+        "CollisionInfo": {
+          "collisionFlag": 1,
+          "autoFitScale": 1,
+          "colliderSize": [
+            1.0,
+            1.0
+          ],
+          "colliderPos": [
+            0.0,
+            0.0
+          ],
+          "colliderRot": 0.0,
+          "colliderType": "square",
+          "collisionRes": "StopWhenCollide",
+          "collisionTag": "default",
+          "bounciness": 0.0,
+          "friction": 0.0,
+          "colliderType": "square"
+        },
         "TileMap": {
           "tileW": 1.5,
           "tileH": 1.5,
           "columns": 100,
           "rows": 100,
-          "enableCol": 0,
+          "enableCol": 1,
           "tiles": [
             {
-              "x": -10,
-              "y": -5,
-              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
-            },
-            {
               "x": 13,
-              "y": -5,
-              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
-            },
-            {
-              "x": -9,
               "y": -5,
               "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
             },
@@ -1149,17 +1579,7 @@
               "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
             },
             {
-              "x": -12,
-              "y": -5,
-              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
-            },
-            {
               "x": 15,
-              "y": -5,
-              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
-            },
-            {
-              "x": -11,
               "y": -5,
               "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
             },
@@ -1189,27 +1609,12 @@
               "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
             },
             {
-              "x": 0,
-              "y": -5,
-              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
-            },
-            {
-              "x": -13,
-              "y": -5,
-              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
-            },
-            {
-              "x": 0,
-              "y": -6,
-              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
-            },
-            {
               "x": -13,
               "y": -6,
               "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
             },
             {
-              "x": -8,
+              "x": 0,
               "y": -6,
               "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
             },
@@ -1219,28 +1624,8 @@
               "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
             },
             {
-              "x": 8,
-              "y": -5,
-              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
-            },
-            {
-              "x": -4,
-              "y": -5,
-              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
-            },
-            {
-              "x": 7,
-              "y": -5,
-              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
-            },
-            {
-              "x": -3,
-              "y": -5,
-              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
-            },
-            {
-              "x": 6,
-              "y": -5,
+              "x": 9,
+              "y": -3,
               "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
             },
             {
@@ -1314,58 +1699,28 @@
               "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
             },
             {
-              "x": -8,
-              "y": -5,
+              "x": 10,
+              "y": -3,
               "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
             },
             {
-              "x": -7,
-              "y": -5,
+              "x": 11,
+              "y": -3,
               "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
             },
             {
-              "x": -6,
-              "y": -5,
+              "x": 14,
+              "y": -3,
               "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
             },
             {
-              "x": -5,
-              "y": -5,
+              "x": 13,
+              "y": -3,
               "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
             },
             {
-              "x": 5,
-              "y": -5,
-              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
-            },
-            {
-              "x": -2,
-              "y": -5,
-              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
-            },
-            {
-              "x": 4,
-              "y": -5,
-              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
-            },
-            {
-              "x": -1,
-              "y": -5,
-              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
-            },
-            {
-              "x": 1,
-              "y": -5,
-              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
-            },
-            {
-              "x": 2,
-              "y": -5,
-              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
-            },
-            {
-              "x": 3,
-              "y": -5,
+              "x": 12,
+              "y": -3,
               "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
             },
             {
@@ -1375,6 +1730,51 @@
             },
             {
               "x": 9,
+              "y": -6,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": 15,
+              "y": -3,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": 15,
+              "y": -4,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": 14,
+              "y": -4,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": 13,
+              "y": -4,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": 12,
+              "y": -4,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": 11,
+              "y": -4,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": 10,
+              "y": -4,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": 9,
+              "y": -4,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": -8,
               "y": -6,
               "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
             }
@@ -1387,14 +1787,14 @@
       "components": {
         "Transform": {
           "pos": [
-            -0.6639999747276306,
-            2.2290000915527344,
+            -0.30000001192092896,
+            1.600000023841858,
             -2.0789999961853027
           ],
           "rotation": 0.0,
           "scale": [
-            54.79999923706055,
-            17.52507209777832,
+            55.70000076293945,
+            16.982343673706055,
             0.0
           ]
         },
@@ -1416,7 +1816,7 @@
       "components": {
         "Transform": {
           "pos": [
-            -6.709000110626221,
+            -7.391551494598389,
             0.12244479358196259,
             -0.0010000000474974513
           ],
@@ -1684,7 +2084,7 @@
           "channels": {
             "change": {
               "audioFile": "assets/Audio\\SFX\\Japanese-CheckPoint-C_YAAY_SFX.wav",
-              "volume": 0.07000000029802322,
+              "volume": 0.10000000149011612,
               "pitch": 1.0,
               "loop": 0,
               "playOnStart": 0,
@@ -1697,7 +2097,7 @@
               "minDistance": 1.0,
               "maxDistance": 100.0,
               "spread": 180.0,
-              "persistOnSceneChange": 1
+              "persistOnSceneChange": 0
             }
           }
         },
@@ -1804,7 +2204,7 @@
         "Transform": {
           "pos": [
             0.5,
-            1.7000000476837158,
+            0.800000011920929,
             -2.4000000953674316
           ],
           "rotation": 0.0,

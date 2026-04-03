@@ -102,7 +102,7 @@
           "colorB": 1.0,
           "colorA": 1.0,
           "hasTex": 1,
-          "texture": "assets/control_background.png",
+          "texture": "assets/Texture\\Controls.png",
           "hasAnimation": 0
         }
       }

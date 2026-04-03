@@ -70,8 +70,8 @@
       "components": {
         "Transform": {
           "pos": [
-            -21.977895736694336,
-            -3.976008415222168,
+            -23.002620697021484,
+            -4.0320000648498535,
             0.9980000257492065
           ]
         },
@@ -135,12 +135,12 @@
           },
           "Emo": {
             "animState": {
-              "texture": "assets/Texture\\Kinuta_Watering_SS1.png",
+              "texture": "assets/Texture\\Kinuta_Dance_SS.png",
               "loop": 0,
               "play": 1,
-              "totalColumn": 2,
-              "totalRow": 2,
-              "frameTime": 0.1469999998807907,
+              "totalColumn": 4,
+              "totalRow": 4,
+              "frameTime": 0.10000000149011612,
               "initialFramCol": 0.0,
               "initialFramRow": 0.0,
               "lastFramCol": 1.0,
@@ -422,8 +422,8 @@
       "components": {
         "Transform": {
           "pos": [
-            -21.50900650024414,
-            -4.5337324142456055,
+            -22.35199737548828,
+            -4.506191253662109,
             0.0
           ],
           "rotation": 0.0,
@@ -434,8 +434,8 @@
           ],
           "parentName": "player",
           "localOffset": [
-            0.4590842127799988,
-            -0.5658223032951355
+            0.6422485113143921,
+            -0.4854739308357239
           ],
           "localRotation": -1.0
         },
@@ -490,18 +490,18 @@
           "enableCol": 1,
           "tiles": [
             {
-              "x": -7,
-              "y": -3,
-              "id": "assets/Texture\\Tilemap\\Forest\\tile001.png"
-            },
-            {
               "x": -11,
               "y": -3,
               "id": "assets/Texture\\Tilemap\\Forest\\tile001.png"
             },
             {
-              "x": 10,
-              "y": 0,
+              "x": -7,
+              "y": -3,
+              "id": "assets/Texture\\Tilemap\\Forest\\tile001.png"
+            },
+            {
+              "x": -10,
+              "y": -3,
               "id": "assets/Texture\\Tilemap\\Forest\\tile001.png"
             },
             {
@@ -510,8 +510,8 @@
               "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
             },
             {
-              "x": -6,
-              "y": -3,
+              "x": 10,
+              "y": 0,
               "id": "assets/Texture\\Tilemap\\Forest\\tile001.png"
             },
             {
@@ -520,8 +520,18 @@
               "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
             },
             {
-              "x": -10,
+              "x": -6,
               "y": -3,
+              "id": "assets/Texture\\Tilemap\\Forest\\tile001.png"
+            },
+            {
+              "x": 4,
+              "y": -4,
+              "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
+            },
+            {
+              "x": 5,
+              "y": -2,
               "id": "assets/Texture\\Tilemap\\Forest\\tile001.png"
             },
             {
@@ -536,16 +546,6 @@
             },
             {
               "x": -2,
-              "y": -2,
-              "id": "assets/Texture\\Tilemap\\Forest\\tile001.png"
-            },
-            {
-              "x": 4,
-              "y": -4,
-              "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
-            },
-            {
-              "x": 5,
               "y": -2,
               "id": "assets/Texture\\Tilemap\\Forest\\tile001.png"
             },
@@ -591,11 +591,6 @@
             },
             {
               "x": -7,
-              "y": -4,
-              "id": "assets/Texture\\Tilemap\\Forest\\tile005.png"
-            },
-            {
-              "x": -6,
               "y": -4,
               "id": "assets/Texture\\Tilemap\\Forest\\tile005.png"
             },
@@ -605,9 +600,24 @@
               "id": "assets/Texture\\Tilemap\\Forest\\tile001.png"
             },
             {
+              "x": -6,
+              "y": -4,
+              "id": "assets/Texture\\Tilemap\\Forest\\tile005.png"
+            },
+            {
               "x": -12,
               "y": -4,
               "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
+            },
+            {
+              "x": 19,
+              "y": 0,
+              "id": "assets/Texture\\Tilemap\\Forest\\tile001.png"
+            },
+            {
+              "x": -13,
+              "y": -3,
+              "id": "assets/Texture\\Tilemap\\Forest\\tile001.png"
             },
             {
               "x": -11,
@@ -618,16 +628,6 @@
               "x": -12,
               "y": -5,
               "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
-            },
-            {
-              "x": -13,
-              "y": -3,
-              "id": "assets/Texture\\Tilemap\\Forest\\tile001.png"
-            },
-            {
-              "x": 19,
-              "y": 0,
-              "id": "assets/Texture\\Tilemap\\Forest\\tile001.png"
             },
             {
               "x": -12,
@@ -650,9 +650,14 @@
               "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
             },
             {
-              "x": -7,
-              "y": -6,
+              "x": 5,
+              "y": -4,
               "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
+            },
+            {
+              "x": 4,
+              "y": -2,
+              "id": "assets/Texture\\Tilemap\\Forest\\tile001.png"
             },
             {
               "x": -2,
@@ -665,29 +670,9 @@
               "id": "assets/Texture\\Tilemap\\Forest\\tile001.png"
             },
             {
-              "x": 5,
-              "y": -4,
-              "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
-            },
-            {
-              "x": 4,
-              "y": -2,
-              "id": "assets/Texture\\Tilemap\\Forest\\tile001.png"
-            },
-            {
-              "x": -6,
+              "x": -7,
               "y": -6,
               "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
-            },
-            {
-              "x": -3,
-              "y": -4,
-              "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
-            },
-            {
-              "x": -4,
-              "y": -2,
-              "id": "assets/Texture\\Tilemap\\Forest\\tile001.png"
             },
             {
               "x": 6,
@@ -700,6 +685,21 @@
               "id": "assets/Texture\\Tilemap\\Forest\\tile001.png"
             },
             {
+              "x": -3,
+              "y": -4,
+              "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
+            },
+            {
+              "x": -4,
+              "y": -2,
+              "id": "assets/Texture\\Tilemap\\Forest\\tile001.png"
+            },
+            {
+              "x": -6,
+              "y": -6,
+              "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
+            },
+            {
               "x": 23,
               "y": -1,
               "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
@@ -710,12 +710,17 @@
               "id": "assets/Texture\\Tilemap\\Forest\\tile005.png"
             },
             {
+              "x": -18,
+              "y": -3,
+              "id": "assets/Texture\\Tilemap\\Forest\\tile001.png"
+            },
+            {
               "x": -7,
               "y": -5,
               "id": "assets/Texture\\Tilemap\\Forest\\tile005.png"
             },
             {
-              "x": -18,
+              "x": -17,
               "y": -3,
               "id": "assets/Texture\\Tilemap\\Forest\\tile001.png"
             },
@@ -725,19 +730,9 @@
               "id": "assets/Texture\\Tilemap\\Forest\\tile005.png"
             },
             {
-              "x": -17,
-              "y": -3,
+              "x": 16,
+              "y": 0,
               "id": "assets/Texture\\Tilemap\\Forest\\tile001.png"
-            },
-            {
-              "x": -10,
-              "y": -7,
-              "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
-            },
-            {
-              "x": -9,
-              "y": -5,
-              "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
             },
             {
               "x": -16,
@@ -745,17 +740,12 @@
               "id": "assets/Texture\\Tilemap\\Forest\\tile001.png"
             },
             {
-              "x": 16,
-              "y": 0,
-              "id": "assets/Texture\\Tilemap\\Forest\\tile001.png"
-            },
-            {
-              "x": -9,
+              "x": -10,
               "y": -7,
               "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
             },
             {
-              "x": -10,
+              "x": -9,
               "y": -5,
               "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
             },
@@ -766,6 +756,36 @@
             },
             {
               "x": -15,
+              "y": -3,
+              "id": "assets/Texture\\Tilemap\\Forest\\tile001.png"
+            },
+            {
+              "x": -9,
+              "y": -7,
+              "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
+            },
+            {
+              "x": -10,
+              "y": -5,
+              "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
+            },
+            {
+              "x": 14,
+              "y": -5,
+              "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
+            },
+            {
+              "x": 15,
+              "y": -7,
+              "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
+            },
+            {
+              "x": 18,
+              "y": 0,
+              "id": "assets/Texture\\Tilemap\\Forest\\tile001.png"
+            },
+            {
+              "x": -14,
               "y": -3,
               "id": "assets/Texture\\Tilemap\\Forest\\tile001.png"
             },
@@ -780,26 +800,6 @@
               "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
             },
             {
-              "x": -14,
-              "y": -3,
-              "id": "assets/Texture\\Tilemap\\Forest\\tile001.png"
-            },
-            {
-              "x": 14,
-              "y": -5,
-              "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
-            },
-            {
-              "x": 15,
-              "y": -7,
-              "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
-            },
-            {
-              "x": 18,
-              "y": 0,
-              "id": "assets/Texture\\Tilemap\\Forest\\tile001.png"
-            },
-            {
               "x": 6,
               "y": -2,
               "id": "assets/Texture\\Tilemap\\Forest\\tile001.png"
@@ -815,17 +815,12 @@
               "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
             },
             {
-              "x": -3,
-              "y": -2,
-              "id": "assets/Texture\\Tilemap\\Forest\\tile001.png"
-            },
-            {
               "x": -4,
               "y": -4,
               "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
             },
             {
-              "x": 0,
+              "x": -3,
               "y": -2,
               "id": "assets/Texture\\Tilemap\\Forest\\tile001.png"
             },
@@ -835,7 +830,7 @@
               "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
             },
             {
-              "x": 1,
+              "x": 0,
               "y": -2,
               "id": "assets/Texture\\Tilemap\\Forest\\tile001.png"
             },
@@ -845,7 +840,7 @@
               "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
             },
             {
-              "x": 2,
+              "x": 1,
               "y": -2,
               "id": "assets/Texture\\Tilemap\\Forest\\tile001.png"
             },
@@ -855,7 +850,7 @@
               "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
             },
             {
-              "x": 3,
+              "x": 2,
               "y": -2,
               "id": "assets/Texture\\Tilemap\\Forest\\tile001.png"
             },
@@ -865,7 +860,7 @@
               "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
             },
             {
-              "x": 8,
+              "x": 3,
               "y": -2,
               "id": "assets/Texture\\Tilemap\\Forest\\tile001.png"
             },
@@ -875,7 +870,7 @@
               "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
             },
             {
-              "x": 9,
+              "x": 8,
               "y": -2,
               "id": "assets/Texture\\Tilemap\\Forest\\tile001.png"
             },
@@ -885,14 +880,19 @@
               "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
             },
             {
-              "x": 11,
-              "y": 0,
+              "x": 9,
+              "y": -2,
               "id": "assets/Texture\\Tilemap\\Forest\\tile001.png"
             },
             {
               "x": 22,
               "y": -7,
               "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
+            },
+            {
+              "x": 11,
+              "y": 0,
+              "id": "assets/Texture\\Tilemap\\Forest\\tile001.png"
             },
             {
               "x": 12,
@@ -905,17 +905,12 @@
               "id": "assets/Texture\\Tilemap\\Forest\\tile001.png"
             },
             {
-              "x": 14,
-              "y": 0,
-              "id": "assets/Texture\\Tilemap\\Forest\\tile001.png"
-            },
-            {
               "x": 18,
               "y": -5,
               "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
             },
             {
-              "x": 15,
+              "x": 14,
               "y": 0,
               "id": "assets/Texture\\Tilemap\\Forest\\tile001.png"
             },
@@ -923,6 +918,11 @@
               "x": 18,
               "y": -7,
               "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
+            },
+            {
+              "x": 15,
+              "y": 0,
+              "id": "assets/Texture\\Tilemap\\Forest\\tile001.png"
             },
             {
               "x": 20,
@@ -935,13 +935,8 @@
               "id": "assets/Texture\\Tilemap\\Forest\\tile001.png"
             },
             {
-              "x": 22,
-              "y": 0,
-              "id": "assets/Texture\\Tilemap\\Forest\\tile001.png"
-            },
-            {
-              "x": 5,
-              "y": -3,
+              "x": 10,
+              "y": -5,
               "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
             },
             {
@@ -950,9 +945,14 @@
               "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
             },
             {
-              "x": 10,
-              "y": -5,
+              "x": 5,
+              "y": -3,
               "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
+            },
+            {
+              "x": 22,
+              "y": 0,
+              "id": "assets/Texture\\Tilemap\\Forest\\tile001.png"
             },
             {
               "x": 23,
@@ -1010,17 +1010,12 @@
               "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
             },
             {
-              "x": -16,
-              "y": -5,
-              "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
-            },
-            {
               "x": -15,
               "y": -7,
               "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
             },
             {
-              "x": -15,
+              "x": -16,
               "y": -5,
               "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
             },
@@ -1030,7 +1025,7 @@
               "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
             },
             {
-              "x": -14,
+              "x": -15,
               "y": -5,
               "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
             },
@@ -1040,13 +1035,18 @@
               "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
             },
             {
-              "x": -13,
+              "x": -14,
               "y": -5,
               "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
             },
             {
               "x": -14,
               "y": -7,
+              "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
+            },
+            {
+              "x": -13,
+              "y": -5,
               "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
             },
             {
@@ -1085,8 +1085,8 @@
               "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
             },
             {
-              "x": 2,
-              "y": -3,
+              "x": 13,
+              "y": -5,
               "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
             },
             {
@@ -1095,8 +1095,18 @@
               "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
             },
             {
-              "x": 13,
+              "x": 2,
+              "y": -3,
+              "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
+            },
+            {
+              "x": 12,
               "y": -5,
+              "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
+            },
+            {
+              "x": 13,
+              "y": -7,
               "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
             },
             {
@@ -1105,18 +1115,8 @@
               "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
             },
             {
-              "x": 13,
-              "y": -7,
-              "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
-            },
-            {
-              "x": 12,
+              "x": 11,
               "y": -5,
-              "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
-            },
-            {
-              "x": 4,
-              "y": -3,
               "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
             },
             {
@@ -1125,8 +1125,8 @@
               "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
             },
             {
-              "x": 11,
-              "y": -5,
+              "x": 4,
+              "y": -3,
               "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
             },
             {
@@ -1150,13 +1150,8 @@
               "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
             },
             {
-              "x": 10,
-              "y": -3,
-              "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
-            },
-            {
-              "x": 11,
-              "y": -1,
+              "x": 5,
+              "y": -5,
               "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
             },
             {
@@ -1165,23 +1160,13 @@
               "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
             },
             {
-              "x": 5,
-              "y": -5,
-              "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
-            },
-            {
               "x": 11,
-              "y": -3,
-              "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
-            },
-            {
-              "x": 10,
               "y": -1,
               "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
             },
             {
-              "x": 5,
-              "y": -7,
+              "x": 10,
+              "y": -3,
               "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
             },
             {
@@ -1190,8 +1175,18 @@
               "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
             },
             {
+              "x": 5,
+              "y": -7,
+              "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
+            },
+            {
+              "x": 10,
+              "y": -1,
+              "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
+            },
+            {
               "x": 11,
-              "y": -2,
+              "y": -3,
               "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
             },
             {
@@ -1200,8 +1195,13 @@
               "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
             },
             {
-              "x": 10,
+              "x": 11,
               "y": -2,
+              "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
+            },
+            {
+              "x": 11,
+              "y": -4,
               "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
             },
             {
@@ -1210,23 +1210,8 @@
               "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
             },
             {
-              "x": 11,
-              "y": -4,
-              "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
-            },
-            {
-              "x": 12,
-              "y": -1,
-              "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
-            },
-            {
-              "x": 13,
-              "y": -3,
-              "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
-            },
-            {
-              "x": 3,
-              "y": -7,
+              "x": 10,
+              "y": -2,
               "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
             },
             {
@@ -1235,18 +1220,18 @@
               "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
             },
             {
-              "x": 13,
-              "y": -1,
+              "x": 3,
+              "y": -7,
               "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
             },
             {
-              "x": 12,
+              "x": 13,
               "y": -3,
               "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
             },
             {
-              "x": 2,
-              "y": -7,
+              "x": 12,
+              "y": -1,
               "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
             },
             {
@@ -1255,7 +1240,17 @@
               "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
             },
             {
-              "x": 14,
+              "x": 2,
+              "y": -7,
+              "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
+            },
+            {
+              "x": 12,
+              "y": -3,
+              "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
+            },
+            {
+              "x": 13,
               "y": -1,
               "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
             },
@@ -1265,13 +1260,18 @@
               "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
             },
             {
-              "x": 15,
+              "x": 14,
               "y": -1,
               "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
             },
             {
               "x": 14,
               "y": -3,
+              "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
+            },
+            {
+              "x": 15,
+              "y": -1,
               "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
             },
             {
@@ -1321,11 +1321,6 @@
             },
             {
               "x": 25,
-              "y": -2,
-              "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
-            },
-            {
-              "x": 24,
               "y": -2,
               "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
             },
@@ -1335,6 +1330,11 @@
               "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
             },
             {
+              "x": 24,
+              "y": -2,
+              "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
+            },
+            {
               "x": 23,
               "y": -2,
               "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
@@ -1346,11 +1346,6 @@
             },
             {
               "x": 21,
-              "y": -2,
-              "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
-            },
-            {
-              "x": 20,
               "y": -2,
               "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
             },
@@ -1360,6 +1355,11 @@
               "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
             },
             {
+              "x": 20,
+              "y": -2,
+              "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
+            },
+            {
               "x": 19,
               "y": -2,
               "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
@@ -1375,17 +1375,12 @@
               "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
             },
             {
-              "x": 16,
-              "y": -2,
-              "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
-            },
-            {
               "x": 14,
               "y": -6,
               "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
             },
             {
-              "x": 15,
+              "x": 16,
               "y": -2,
               "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
             },
@@ -1395,13 +1390,8 @@
               "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
             },
             {
-              "x": 14,
+              "x": 15,
               "y": -2,
-              "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
-            },
-            {
-              "x": 16,
-              "y": -6,
               "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
             },
             {
@@ -1410,7 +1400,12 @@
               "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
             },
             {
-              "x": 13,
+              "x": 16,
+              "y": -6,
+              "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
+            },
+            {
+              "x": 14,
               "y": -2,
               "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
             },
@@ -1420,13 +1415,18 @@
               "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
             },
             {
-              "x": 12,
+              "x": 13,
               "y": -2,
               "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
             },
             {
               "x": 13,
               "y": -4,
+              "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
+            },
+            {
+              "x": 12,
+              "y": -2,
               "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
             },
             {
@@ -1461,11 +1461,6 @@
             },
             {
               "x": 22,
-              "y": -3,
-              "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
-            },
-            {
-              "x": 23,
               "y": -3,
               "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
             },
@@ -1475,6 +1470,11 @@
               "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
             },
             {
+              "x": 23,
+              "y": -3,
+              "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
+            },
+            {
               "x": 24,
               "y": -3,
               "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
@@ -1535,17 +1535,12 @@
               "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
             },
             {
-              "x": 14,
-              "y": -7,
-              "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
-            },
-            {
               "x": 15,
               "y": -5,
               "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
             },
             {
-              "x": 9,
+              "x": 14,
               "y": -7,
               "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
             },
@@ -1555,7 +1550,7 @@
               "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
             },
             {
-              "x": 8,
+              "x": 9,
               "y": -7,
               "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
             },
@@ -1565,7 +1560,7 @@
               "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
             },
             {
-              "x": 7,
+              "x": 8,
               "y": -7,
               "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
             },
@@ -1575,7 +1570,7 @@
               "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
             },
             {
-              "x": 6,
+              "x": 7,
               "y": -7,
               "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
             },
@@ -1585,7 +1580,7 @@
               "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
             },
             {
-              "x": 1,
+              "x": 6,
               "y": -7,
               "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
             },
@@ -1595,7 +1590,7 @@
               "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
             },
             {
-              "x": 0,
+              "x": 1,
               "y": -7,
               "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
             },
@@ -1605,7 +1600,7 @@
               "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
             },
             {
-              "x": -1,
+              "x": 0,
               "y": -7,
               "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
             },
@@ -1615,13 +1610,18 @@
               "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
             },
             {
-              "x": -2,
+              "x": -1,
               "y": -7,
               "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
             },
             {
               "x": -1,
               "y": -5,
+              "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
+            },
+            {
+              "x": -2,
+              "y": -7,
               "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
             },
             {
@@ -1640,23 +1640,23 @@
               "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
             },
             {
-              "x": -3,
-              "y": -7,
-              "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
-            },
-            {
               "x": -4,
               "y": -5,
               "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
             },
             {
-              "x": -4,
+              "x": -3,
               "y": -7,
               "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
             },
             {
               "x": -3,
               "y": -5,
+              "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
+            },
+            {
+              "x": -4,
+              "y": -7,
               "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
             },
             {
@@ -1745,16 +1745,16 @@
               "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
             },
             {
-              "x": 24,
-              "y": -4,
-              "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
-            },
-            {
               "x": 7,
               "y": -6,
               "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
             },
             {
+              "x": 24,
+              "y": -4,
+              "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
+            },
+            {
               "x": 21,
               "y": -5,
               "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
@@ -1772,11 +1772,6 @@
             {
               "x": 20,
               "y": -5,
-              "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
-            },
-            {
-              "x": 20,
-              "y": -4,
               "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
             },
             {
@@ -1785,6 +1780,11 @@
               "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
             },
             {
+              "x": 20,
+              "y": -4,
+              "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
+            },
+            {
               "x": 19,
               "y": -6,
               "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
@@ -1827,16 +1827,16 @@
             {
               "x": 16,
               "y": -5,
-              "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
-            },
-            {
-              "x": 16,
-              "y": -4,
               "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
             },
             {
               "x": 15,
               "y": -6,
+              "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
+            },
+            {
+              "x": 16,
+              "y": -4,
               "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
             },
             {
@@ -1925,13 +1925,13 @@
               "id": "assets/Texture\\Tilemap\\Forest\\tile001.png"
             },
             {
-              "x": -21,
-              "y": -7,
+              "x": -22,
+              "y": -5,
               "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
             },
             {
-              "x": -22,
-              "y": -5,
+              "x": -21,
+              "y": -7,
               "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
             },
             {
@@ -1960,13 +1960,13 @@
               "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
             },
             {
-              "x": -21,
-              "y": -5,
+              "x": -22,
+              "y": -7,
               "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
             },
             {
-              "x": -22,
-              "y": -7,
+              "x": -21,
+              "y": -5,
               "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
             },
             {
@@ -2240,8 +2240,57 @@
             }
           }
         },
+        "AudioComponent": {
+          "channels": {
+            "Fire": {
+              "audioFile": "assets/Audio\\SFX\\Fire.wav",
+              "volume": 0.699999988079071,
+              "pitch": 1.0,
+              "loop": 1,
+              "playOnStart": 1,
+              "muted": 0,
+              "fadeInOnStart": 0,
+              "fadeInDuration": 1.0,
+              "fadeOutOnStop": 0,
+              "fadeOutDuration": 1.0,
+              "isSpatial": 0,
+              "minDistance": 1.0,
+              "maxDistance": 100.0,
+              "spread": 180.0,
+              "persistOnSceneChange": 0
+            }
+          }
+        },
         "VisualLC": {
           "filename": "background Fire_Logic.json"
+        }
+      }
+    },
+    {
+      "name": "Sky17",
+      "components": {
+        "Transform": {
+          "pos": [
+            14.0,
+            2.5999999046325684,
+            -0.7789999842643738
+          ],
+          "rotation": 0.0,
+          "scale": [
+            45.0,
+            20.0,
+            0.0
+          ]
+        },
+        "Render": {
+          "shape": "square",
+          "colorR": 1.0,
+          "colorG": 1.0,
+          "colorB": 1.0,
+          "colorA": 1.0,
+          "hasTex": 1,
+          "texture": "assets/Texture\\BG\\game_bg_layer_1.png",
+          "hasAnimation": 0
         }
       }
     },
@@ -2269,11 +2318,6 @@
           "enableCol": 1,
           "tiles": [
             {
-              "x": -10,
-              "y": -3,
-              "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
-            },
-            {
               "x": 10,
               "y": 0,
               "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
@@ -2284,7 +2328,7 @@
               "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
             },
             {
-              "x": -11,
+              "x": -10,
               "y": -3,
               "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
             },
@@ -2294,7 +2338,7 @@
               "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
             },
             {
-              "x": -12,
+              "x": -11,
               "y": -3,
               "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
             },
@@ -2304,12 +2348,12 @@
               "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
             },
             {
-              "x": -9,
+              "x": -12,
               "y": -3,
               "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
             },
             {
-              "x": -13,
+              "x": -9,
               "y": -3,
               "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
             },
@@ -2319,7 +2363,7 @@
               "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
             },
             {
-              "x": -14,
+              "x": -13,
               "y": -3,
               "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
             },
@@ -2329,8 +2373,8 @@
               "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
             },
             {
-              "x": 17,
-              "y": 0,
+              "x": -14,
+              "y": -3,
               "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
             },
             {
@@ -2339,8 +2383,8 @@
               "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
             },
             {
-              "x": -16,
-              "y": -3,
+              "x": 17,
+              "y": 0,
               "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
             },
             {
@@ -2349,12 +2393,12 @@
               "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
             },
             {
-              "x": -5,
-              "y": -2,
+              "x": -16,
+              "y": -3,
               "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
             },
             {
-              "x": -4,
+              "x": -5,
               "y": -2,
               "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
             },
@@ -2364,7 +2408,7 @@
               "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
             },
             {
-              "x": -3,
+              "x": -4,
               "y": -2,
               "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
             },
@@ -2374,7 +2418,7 @@
               "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
             },
             {
-              "x": -2,
+              "x": -3,
               "y": -2,
               "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
             },
@@ -2384,12 +2428,17 @@
               "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
             },
             {
-              "x": -1,
+              "x": -2,
               "y": -2,
               "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
             },
             {
               "x": 4,
+              "y": -2,
+              "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
+            },
+            {
+              "x": -1,
               "y": -2,
               "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
             },
@@ -2509,34 +2558,6 @@
               "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
             }
           ]
-        }
-      }
-    },
-    {
-      "name": "Sky17",
-      "components": {
-        "Transform": {
-          "pos": [
-            14.0,
-            2.5999999046325684,
-            -0.7789999842643738
-          ],
-          "rotation": 0.0,
-          "scale": [
-            45.0,
-            20.0,
-            0.0
-          ]
-        },
-        "Render": {
-          "shape": "square",
-          "colorR": 1.0,
-          "colorG": 1.0,
-          "colorB": 1.0,
-          "colorA": 1.0,
-          "hasTex": 1,
-          "texture": "assets/Texture\\BG\\game_bg_layer_1.png",
-          "hasAnimation": 0
         }
       }
     },
@@ -2719,7 +2740,7 @@
           "pos": [
             4.077927112579346,
             -2.0950002670288086,
-            0.0
+            -0.009999999776482582
           ],
           "rotation": 0.0,
           "scale": [
@@ -2973,7 +2994,7 @@
       "components": {
         "Transform": {
           "pos": [
-            2.3828446865081787,
+            2.382999897003174,
             1.9220000505447388,
             0.0
           ],
@@ -3038,9 +3059,9 @@
             "bullet",
             "water",
             "inventory",
-            "hazards",
-            "platform",
             "environment",
+            "platform",
+            "hazards",
             "floatingObject",
             "player-body"
           ]
@@ -3164,7 +3185,7 @@
         "AudioComponent": {
           "channels": {
             "Speech_1": {
-              "audioFile": "assets/Audio\\NPC_1.wav",
+              "audioFile": "assets/Audio\\SFX\\NPC_Voice\\NPC_1.wav",
               "volume": 0.5,
               "pitch": 1.0,
               "loop": 0,
@@ -3181,7 +3202,7 @@
               "persistOnSceneChange": 0
             },
             "Speech_2": {
-              "audioFile": "assets/Audio\\NPC_2.wav",
+              "audioFile": "assets/Audio\\SFX\\NPC_Voice\\NPC_2.wav",
               "volume": 0.5,
               "pitch": 1.0,
               "loop": 0,
@@ -3198,7 +3219,7 @@
               "persistOnSceneChange": 0
             },
             "Speech_3": {
-              "audioFile": "assets/Audio\\NPC_3.wav",
+              "audioFile": "assets/Audio\\SFX\\NPC_Voice\\NPC_3.wav",
               "volume": 0.5,
               "pitch": 1.0,
               "loop": 0,
@@ -3215,7 +3236,7 @@
               "persistOnSceneChange": 0
             },
             "Speech_4": {
-              "audioFile": "assets/Audio\\NPC_4.wav",
+              "audioFile": "assets/Audio\\SFX\\NPC_Voice\\NPC_4.wav",
               "volume": 0.5,
               "pitch": 1.0,
               "loop": 0,
@@ -3232,7 +3253,7 @@
               "persistOnSceneChange": 0
             },
             "Speech_5": {
-              "audioFile": "assets/Audio\\NPC_5.wav",
+              "audioFile": "assets/Audio\\SFX\\NPC_Voice\\NPC_5.wav",
               "volume": 0.5,
               "pitch": 1.0,
               "loop": 0,
@@ -3400,6 +3421,27 @@
               "initialFramRow": 0.0,
               "lastFramCol": 0.0,
               "lastFramRow": 0.0
+            }
+          }
+        },
+        "AudioComponent": {
+          "channels": {
+            "Fire": {
+              "audioFile": "assets/Audio\\SFX\\Fire.wav",
+              "volume": 0.699999988079071,
+              "pitch": 1.0,
+              "loop": 1,
+              "playOnStart": 1,
+              "muted": 0,
+              "fadeInOnStart": 0,
+              "fadeInDuration": 1.0,
+              "fadeOutOnStop": 0,
+              "fadeOutDuration": 1.0,
+              "isSpatial": 0,
+              "minDistance": 1.0,
+              "maxDistance": 100.0,
+              "spread": 180.0,
+              "persistOnSceneChange": 0
             }
           }
         },
