@@ -8,11 +8,11 @@ function audioDelay.Update(obj, dt)
     if bgmPlayed then return end
 
     timer = timer + dt
-    print("saghfksdhjfkl")
-    if timer >= 1.0 then
+    --print("saghfksdhjfkl")
+    --if timer >= 1.0 then
         requestBGM("opening_bgm")
-        bgmPlayed = true
-    end
+        --bgmPlayed = true
+    --end
 end
 
 return audioDelay

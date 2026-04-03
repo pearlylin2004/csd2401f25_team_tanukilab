@@ -32,6 +32,9 @@ Technology is prohibited.
 #include "dynamics.h"
 #include "queue"
 #include "ButtonAction.h"
+#include <thread>
+#include <mutex>
+#include <atomic>
 #pragma warning(push, 0)
 #include "pl_mpeg.h"
 #pragma warning(pop)
@@ -110,9 +113,17 @@ public:
 struct Video : public Component {
 public:
     std::unique_ptr<Component> clone() const override {
-        return std::make_unique<Video>(*this);
+        auto v = std::make_unique<Video>();
+        v->videoFile = videoFile;
+        v->isPlaying = isPlaying;
+        v->isPaused = isPaused;
+        v->loop = loop;
+        v->onVideoEnd = onVideoEnd;
+        return v;
     }
 public:
+    GLuint pbo[3] = { 0, 0, 0 };
+    int pboIndex = 0;
     std::string videoFile = "";
     plm_t* plm = nullptr;
     bool isPlaying = true;
@@ -124,8 +135,18 @@ public:
     int videoHeight = 0;
     float accumTime = 0.0;   // accumulated delta time
     float fps = 0.0;   // video's fps from plm_get_framerate()
+
+    std::thread decodeThread;
+    static constexpr int FRAME_QUEUE_SIZE = 4;
+    std::vector<uint8_t> frameQueue[FRAME_QUEUE_SIZE];
+    std::atomic<int> frameQueueHead = 0; // decode thread writes here
+    std::atomic<int> frameQueueTail = 0; // main thread reads here
+    std::atomic<bool> stopDecode = false;
+
 	std::function<void()> onVideoEnd; //callback function for when video ends, can use lambda to make it change scene etc
     ~Video() {
+        stopDecode = true;                                     
+        if (decodeThread.joinable()) decodeThread.join();
         if (plm) {
             plm_destroy(plm);
             plm = nullptr;
@@ -134,6 +155,7 @@ public:
             glDeleteTextures(1, &videoTexID);
             videoTexID = 0;
         }
+        if (pbo[0]) { glDeleteBuffers(3, pbo); pbo[0] = pbo[1] = pbo[2] = 0; }
     }
 };
 
