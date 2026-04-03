@@ -1436,8 +1436,7 @@ void InspectorWindow::renderVideo(GameObject* selected)
                 if (ext == ".mpg" || ext == ".mpeg") {
                     if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
 
-                    // cleanup old video if one was already loaded
-                    if (video->plm) VideoSystem::cleanup(video);
+                    VideoSystem::cleanup(video);
 
                     // use relative filepath
                     std::string normalizedPath = fsPath.string();
@@ -1465,7 +1464,7 @@ void InspectorWindow::renderVideo(GameObject* selected)
             if (ImGui::Button("Clear Video")) {
                 if (entry) UndoRedoManager::Instance().beginComponentEdit(selected, *entry);
 
-                if (video->plm) VideoSystem::cleanup(video);
+                VideoSystem::cleanup(video);
                 video->videoFile.clear();
                 video->isPlaying = false;
                 video->isPaused = false;
