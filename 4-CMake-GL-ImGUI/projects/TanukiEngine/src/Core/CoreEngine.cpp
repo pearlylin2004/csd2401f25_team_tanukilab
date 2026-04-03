@@ -77,22 +77,23 @@ void CoreEngine::Init(bool forceWindowed) {
     int winHeight = cfg.height;
 
     if (wantFullscreen) {
-        
-
-        // remember windowed size for when we toggle back
-        m_windowedWidth = cfg.width;
-        m_windowedHeight = cfg.height;
-        Camera::onResize(m_windowedWidth, m_windowedHeight);
-    }
-    else {
         monitor = glfwGetPrimaryMonitor();
         const GLFWvidmode* mode = glfwGetVideoMode(monitor);
         winWidth = mode->width;
         winHeight = mode->height;
 
+        // remember windowed size for when we toggle back
         m_windowedWidth = cfg.width;
         m_windowedHeight = cfg.height;
-		Camera::onResize(winWidth, winHeight);
+        //Camera::onResize(m_windowedWidth, m_windowedHeight);
+        Camera::onResize(m_windowedWidth, m_windowedHeight);
+		std::cout << "Width: " << m_windowedWidth << " Height: " << m_windowedHeight << std::endl;
+    }
+    else {
+        m_windowedWidth = cfg.width;
+        m_windowedHeight = cfg.height;
+        Camera::onResize(winWidth, winHeight);
+		std::cout << "Width: " << winWidth << " Height: " << winHeight << std::endl;
     }
 
     cfg.width = winWidth;
@@ -116,6 +117,7 @@ void CoreEngine::Init(bool forceWindowed) {
 
     glfwMakeContextCurrent(m_window);
     glViewport(0, 0, winWidth, winHeight);
+    std::cout << "Viewport: " << winWidth << "x" << winHeight << std::endl;
     glewExperimental = GL_TRUE;
     if (glewInit() != GLEW_OK) {
         glfwTerminate();
@@ -411,6 +413,9 @@ void CoreEngine::toggleFullscreen()
             mode->height,
             mode->refreshRate
         );
+        renderer::onResize(mode->width, mode->height);
+        Camera::onResize(mode->width, mode->height);
+		std::cout << "Width: " << mode->width << " Height: " << mode->height << "Aspect Ratio: " << static_cast<float>(mode->width) / mode->height << std::endl;
     }
     else
     {
@@ -431,7 +436,6 @@ void CoreEngine::toggleFullscreen()
             0                     ///< Refresh rate ignored for windowed mode
         );
     }
-
     /**
      * --------------------------------------------------------------------
      * UPDATE GL FRAMEBUFFER SIZE & VIEWPORT
@@ -443,6 +447,7 @@ void CoreEngine::toggleFullscreen()
 
     // Update OpenGL viewport to new framebuffer resolution
     glViewport(0, 0, fbw, fbh);
+
 
     /**
      * --------------------------------------------------------------------
@@ -462,6 +467,8 @@ void CoreEngine::toggleFullscreen()
      */
     renderer::onResize(fbw, fbh);
     Camera::onResize(fbw, fbh);
+	std::cout << "Framebuffer Width: " << fbw << " Framebuffer Height: " << fbh  << "Aspect Ratio: " << static_cast<float>(fbw)/fbh << std::endl;
+    
 
     // Update both gameplay camera and editor camera to new aspect ratios
     renderer::cam.update();

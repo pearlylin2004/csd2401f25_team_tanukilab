@@ -286,7 +286,8 @@ void renderer::setup_shdrpgm()
 
 void renderer::camera::init(int w, int h)
 {
-	ar = static_cast<float>(w) / h;
+	//ar = static_cast<float>(w) / h;
+	ar = 2;
 	width = w;
 	rot = 0;
 	zoom = 10;

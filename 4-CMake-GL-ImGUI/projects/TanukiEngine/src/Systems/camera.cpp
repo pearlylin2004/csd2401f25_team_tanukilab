@@ -30,15 +30,17 @@ void Camera::update(GameObjectManager& manager)
 		{
 			const camera* camInfo = obj->getComponent<camera>();
 			const Transform* transform = obj->getComponent<Transform>();
+			renderer::cam.ar = 2;
+			//std::cout << "Camera found, Aspect Ratio: " << renderer::cam.ar << "\n";
 			if (camInfo->useScreenSize)
 			{
 				renderer::cam.width = (screenWidth);
-				renderer::cam.ar = static_cast<GLfloat>(screenWidth) / screenHeight;
+				//renderer::cam.ar = static_cast<GLfloat>(screenWidth) / screenHeight;
 			}
 			else
 			{
 				renderer::cam.width = camInfo->width;
-				renderer::cam.ar = camInfo->width / camInfo->height;
+				//renderer::cam.ar = camInfo->width / camInfo->height;
 			}
 			renderer::cam.campos = glm::vec3(transform->x, transform->y, transform->z);
 			renderer::cam.zoom = camInfo->zoom;
@@ -69,7 +71,9 @@ void Camera::update(GameObjectManager& manager)
 void Camera::camDefault()
 {
 	
-	renderer::cam.ar = static_cast<GLfloat>(screenWidth) / screenHeight;
+	//renderer::cam.ar = static_cast<GLfloat>(screenWidth) / screenHeight;
+	renderer::cam.ar = 2;
+	//std::cout << "No camera component found, using default camera. Aspect Ratio: " << renderer::cam.ar << "\n";
 	renderer::cam.width = (screenWidth);
 	renderer::cam.rot = 0;
 	renderer::cam.zoom = 10;
