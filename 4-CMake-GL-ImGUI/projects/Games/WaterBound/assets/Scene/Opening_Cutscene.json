@@ -52,7 +52,7 @@
           "hasAnimation": 1
         },
         "Video": {
-          "videoFile": "assets/video\\output.mpg",
+          "videoFile": "assets/video\\Opening cutscene.mpg",
           "loop": 0
         },
         "VisualLC": {
