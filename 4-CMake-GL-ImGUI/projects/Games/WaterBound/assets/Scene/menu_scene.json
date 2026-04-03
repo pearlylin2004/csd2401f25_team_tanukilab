@@ -26,12 +26,40 @@
   "onLoadScript": "assets/scripting\\menu_scene_load.lua",
   "objects": [
     {
+      "name": "WaterBound_Logo",
+      "components": {
+        "Transform": {
+          "pos": [
+            -7.599999904632568,
+            4.400000095367432,
+            1.0
+          ],
+          "rotation": 0.0,
+          "scale": [
+            20.100000381469727,
+            3.8884148597717285,
+            0.0
+          ]
+        },
+        "Render": {
+          "shape": "square",
+          "colorR": 1.0,
+          "colorG": 1.0,
+          "colorB": 1.0,
+          "colorA": 1.0,
+          "hasTex": 1,
+          "texture": "assets/Texture\\WaterBound_Final_Logo.png",
+          "hasAnimation": 0
+        }
+      }
+    },
+    {
       "name": "audio_button",
       "components": {
         "Transform": {
           "pos": [
             -8.088594436645508,
-            -4.8862762451171875,
+            -4.886275768280029,
             1.0
           ],
           "rotation": 0.0,
@@ -97,34 +125,6 @@
           "scenePath": "audio_scene.json",
           "onClickChannel": "on_click",
           "onHoverChannel": "button_hover"
-        }
-      }
-    },
-    {
-      "name": "WaterBound_Logo",
-      "components": {
-        "Transform": {
-          "pos": [
-            -7.599999904632568,
-            4.400000095367432,
-            0.0
-          ],
-          "rotation": 0.0,
-          "scale": [
-            20.100000381469727,
-            3.8884148597717285,
-            0.0
-          ]
-        },
-        "Render": {
-          "shape": "square",
-          "colorR": 1.0,
-          "colorG": 1.0,
-          "colorB": 1.0,
-          "colorA": 1.0,
-          "hasTex": 1,
-          "texture": "assets/Texture\\WaterBound_Final_Logo.png",
-          "hasAnimation": 0
         }
       }
     },
