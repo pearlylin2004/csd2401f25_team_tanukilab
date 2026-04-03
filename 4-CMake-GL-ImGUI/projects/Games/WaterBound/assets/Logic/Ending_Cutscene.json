@@ -6,8 +6,8 @@
       "implementation": "On Update",
       "type": 0,
       "position": [
-        -14.0,
-        632.0
+        -158.0,
+        320.0
       ],
       "hasInput": false,
       "hasOutput": true,
@@ -15,41 +15,12 @@
       "hasFalseOutput": false
     },
     {
-      "id": 2,
-      "implementation": "Check State",
-      "type": 2,
-      "position": [
-        292.0,
-        634.0
-      ],
-      "hasInput": true,
-      "hasOutput": false,
-      "hasTrueOutput": true,
-      "hasFalseOutput": true,
-      "parameters": {
-        "state": "Idle"
-      }
-    },
-    {
-      "id": 3,
-      "implementation": "Check Animation End",
-      "type": 2,
-      "position": [
-        562.0,
-        634.0
-      ],
-      "hasInput": true,
-      "hasOutput": false,
-      "hasTrueOutput": true,
-      "hasFalseOutput": true
-    },
-    {
       "id": 4,
       "implementation": "Load Level",
       "type": 1,
       "position": [
-        906.0,
-        610.0
+        804.0,
+        320.0
       ],
       "hasInput": true,
       "hasOutput": true,
@@ -58,25 +29,93 @@
       "parameters": {
         "levelName": "menu_scene.json"
       }
+    },
+    {
+      "id": 5,
+      "implementation": "Check Timer",
+      "type": 2,
+      "position": [
+        350.9999694824219,
+        332.4285888671875
+      ],
+      "hasInput": true,
+      "hasOutput": false,
+      "hasTrueOutput": true,
+      "hasFalseOutput": true,
+      "parameters": {
+        "threshold": "5.0",
+        "timerName": "timer_0"
+      }
+    },
+    {
+      "id": 6,
+      "implementation": "On Start",
+      "type": 0,
+      "position": [
+        148.0,
+        150.0
+      ],
+      "hasInput": false,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false
+    },
+    {
+      "id": 7,
+      "implementation": "Reset Timer",
+      "type": 1,
+      "position": [
+        531.0,
+        149.0
+      ],
+      "hasInput": true,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false,
+      "parameters": {
+        "timerName": "timer_0"
+      }
+    },
+    {
+      "id": 8,
+      "implementation": "Print Message",
+      "type": 1,
+      "position": [
+        1128.0,
+        319.0
+      ],
+      "hasInput": true,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false,
+      "parameters": {
+        "message": "I love GAM"
+      }
     }
   ],
   "connections": [
     {
-      "fromNodeId": 1,
+      "fromNodeId": 6,
       "outputPin": "Out",
-      "toNodeId": 2,
+      "toNodeId": 7,
       "inputPin": "In"
     },
     {
-      "fromNodeId": 3,
+      "fromNodeId": 1,
+      "outputPin": "Out",
+      "toNodeId": 5,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 5,
       "outputPin": "True",
       "toNodeId": 4,
       "inputPin": "In"
     },
     {
-      "fromNodeId": 2,
-      "outputPin": "True",
-      "toNodeId": 3,
+      "fromNodeId": 4,
+      "outputPin": "Out",
+      "toNodeId": 8,
       "inputPin": "In"
     }
   ]

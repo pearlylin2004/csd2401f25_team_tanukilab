@@ -77,7 +77,10 @@ void CoreEngine::Init(bool forceWindowed) {
     int winHeight = cfg.height;
 
     if (wantFullscreen) {
-        
+        monitor = glfwGetPrimaryMonitor();
+        const GLFWvidmode* mode = glfwGetVideoMode(monitor);
+        winWidth = mode->width;
+        winHeight = mode->height;
 
         // remember windowed size for when we toggle back
         m_windowedWidth = cfg.width;
@@ -87,11 +90,6 @@ void CoreEngine::Init(bool forceWindowed) {
 		std::cout << "Width: " << m_windowedWidth << " Height: " << m_windowedHeight << std::endl;
     }
     else {
-        monitor = glfwGetPrimaryMonitor();
-        const GLFWvidmode* mode = glfwGetVideoMode(monitor);
-        winWidth = mode->width;
-        winHeight = mode->height;
-
         m_windowedWidth = cfg.width;
         m_windowedHeight = cfg.height;
         Camera::onResize(winWidth, winHeight);

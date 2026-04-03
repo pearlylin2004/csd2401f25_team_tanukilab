@@ -434,11 +434,11 @@
               "minDistance": 1.0,
               "maxDistance": 100.0,
               "spread": 180.0,
-              "persistOnSceneChange": 1
+              "persistOnSceneChange": 0
             },
             "on_click": {
               "audioFile": "assets/Audio\\UI Button Hover.wav",
-              "volume": 0.029999999329447746,
+              "volume": 0.44999998807907104,
               "pitch": 1.0,
               "loop": 0,
               "playOnStart": 0,
@@ -451,7 +451,7 @@
               "minDistance": 1.0,
               "maxDistance": 100.0,
               "spread": 180.0,
-              "persistOnSceneChange": 0
+              "persistOnSceneChange": 1
             }
           }
         },
@@ -461,8 +461,8 @@
         "Button": {
           "action": "load_scene",
           "scenePath": "credit_scene.json",
-          "onClickChannel": "",
-          "onHoverChannel": ""
+          "onClickChannel": "on_click",
+          "onHoverChannel": "button_hover"
         }
       }
     },
