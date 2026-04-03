@@ -751,7 +751,7 @@ void VideoSystem::update(GameObject* obj, float const deltaTime)
 		Render* render = obj->getComponent<Render>();
 		if (!render->visible) render->visible = true;
 
-		video->accumTime = 0.f; // reset accum time so if we start playing again it doesn't immediately skip frames
+		video->accumTime = 1.f / video->fps; // reset accum time so if we start playing again it doesn't immediately skip frames
 		// if first frame lags, return this immediately so we don't have a frozen frame until the next update
 		//return;
 	}
@@ -826,7 +826,7 @@ bool VideoSystem::loadVideo(Video* video) {
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	plm_frame_t* firstFrame = plm_decode_video(video->plm);
+	/*plm_frame_t* firstFrame = plm_decode_video(video->plm);
 	if (firstFrame) {
 		std::vector<uint8_t> pixels(video->videoWidth * video->videoHeight * 4);
 		plm_frame_to_rgba(firstFrame, pixels.data(), video->videoWidth * 4);
@@ -844,7 +844,7 @@ bool VideoSystem::loadVideo(Video* video) {
 
 		glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, video->videoWidth, video->videoHeight,
 			GL_RGBA, GL_UNSIGNED_BYTE, flipped.data());
-	}
+	}*/
 
 	return true;
 }

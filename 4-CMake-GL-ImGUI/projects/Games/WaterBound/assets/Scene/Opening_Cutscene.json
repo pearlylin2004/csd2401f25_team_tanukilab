@@ -386,6 +386,14 @@
               "persistOnSceneChange": 0
             }
           }
+        },
+        "LuaScript": {
+          "scripts": [
+            {
+              "filename": "assets/scripting/audio_delay.lua",
+              "scriptName": "audio_delay"
+            }
+          ]
         }
       }
     }
