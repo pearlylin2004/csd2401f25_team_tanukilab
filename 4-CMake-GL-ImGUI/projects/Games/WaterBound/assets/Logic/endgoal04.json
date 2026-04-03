@@ -6,8 +6,8 @@
       "implementation": "On Collision Enter",
       "type": 0,
       "position": [
-        -149.0,
-        29.0
+        -268.0,
+        -4.0
       ],
       "hasInput": false,
       "hasOutput": true,
@@ -23,8 +23,8 @@
       "implementation": "Play Sound",
       "type": 1,
       "position": [
-        183.0,
-        19.0
+        64.00006103515625,
+        -17.0
       ],
       "hasInput": true,
       "hasOutput": true,
@@ -35,12 +35,12 @@
       }
     },
     {
-      "id": 5,
+      "id": 3,
       "implementation": "Load Level",
       "type": 1,
       "position": [
-        625.0,
-        19.0
+        878.666748046875,
+        -242.66668701171875
       ],
       "hasInput": true,
       "hasOutput": true,
@@ -48,6 +48,210 @@
       "hasFalseOutput": false,
       "parameters": {
         "levelName": "Ending_Cutscene.json"
+      }
+    },
+    {
+      "id": 4,
+      "implementation": "Set State On Collided",
+      "type": 1,
+      "position": [
+        272.0,
+        154.0
+      ],
+      "hasInput": true,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false,
+      "parameters": {
+        "targetStateCollided": "Emo"
+      }
+    },
+    {
+      "id": 5,
+      "implementation": "Check Timer",
+      "type": 2,
+      "position": [
+        518.666748046875,
+        -266.0
+      ],
+      "hasInput": true,
+      "hasOutput": false,
+      "hasTrueOutput": true,
+      "hasFalseOutput": true,
+      "parameters": {
+        "threshold": "3",
+        "timerName": "timer_0"
+      }
+    },
+    {
+      "id": 6,
+      "implementation": "Reset Timer",
+      "type": 1,
+      "position": [
+        450.333251953125,
+        -91.0
+      ],
+      "hasInput": true,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false,
+      "parameters": {
+        "timerName": "timer_0"
+      }
+    },
+    {
+      "id": 7,
+      "implementation": "On Update",
+      "type": 0,
+      "position": [
+        -164.66677856445313,
+        -262.6666564941406
+      ],
+      "hasInput": false,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false
+    },
+    {
+      "id": 12,
+      "implementation": "Set Float",
+      "type": 1,
+      "position": [
+        423.3333740234375,
+        38.3333740234375
+      ],
+      "hasInput": true,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false,
+      "parameters": {
+        "value": "1",
+        "variable": "Timer"
+      }
+    },
+    {
+      "id": 14,
+      "implementation": "Compare Variable",
+      "type": 2,
+      "position": [
+        165.0,
+        -266.33343505859375
+      ],
+      "hasInput": true,
+      "hasOutput": false,
+      "hasTrueOutput": true,
+      "hasFalseOutput": true,
+      "parameters": {
+        "comparison": "equal",
+        "threshold": "1.000000",
+        "variable": "Timer"
+      }
+    },
+    {
+      "id": 15,
+      "implementation": "On Start",
+      "type": 0,
+      "position": [
+        -171.66668701171875,
+        -395.00006103515625
+      ],
+      "hasInput": false,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false
+    },
+    {
+      "id": 16,
+      "implementation": "Set Float",
+      "type": 1,
+      "position": [
+        158.3333740234375,
+        -403.3334045410156
+      ],
+      "hasInput": true,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false,
+      "parameters": {
+        "value": "0.000000",
+        "variable": "Timer"
+      }
+    },
+    {
+      "id": 17,
+      "implementation": "Lock Position",
+      "type": 1,
+      "position": [
+        272.0,
+        300.0
+      ],
+      "hasInput": true,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false
+    },
+    {
+      "id": 18,
+      "implementation": "Print Message",
+      "type": 1,
+      "position": [
+        723.0,
+        36.0
+      ],
+      "hasInput": true,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false,
+      "parameters": {
+        "message": "set float"
+      }
+    },
+    {
+      "id": 19,
+      "implementation": "Print Message",
+      "type": 1,
+      "position": [
+        1209.0,
+        -254.0
+      ],
+      "hasInput": true,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false,
+      "parameters": {
+        "message": "load scene"
+      }
+    },
+    {
+      "id": 20,
+      "implementation": "Print Message",
+      "type": 1,
+      "position": [
+        844.0,
+        -384.0
+      ],
+      "hasInput": true,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false,
+      "parameters": {
+        "message": "more than 3sec"
+      }
+    },
+    {
+      "id": 21,
+      "implementation": "Print Message",
+      "type": 1,
+      "position": [
+        488.0,
+        -411.0
+      ],
+      "hasInput": true,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false,
+      "parameters": {
+        "message": "timer yes"
       }
     }
   ],
@@ -59,9 +263,75 @@
       "inputPin": "In"
     },
     {
+      "fromNodeId": 1,
+      "outputPin": "Out",
+      "toNodeId": 4,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 5,
+      "outputPin": "True",
+      "toNodeId": 3,
+      "inputPin": "In"
+    },
+    {
       "fromNodeId": 2,
       "outputPin": "Out",
+      "toNodeId": 6,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 7,
+      "outputPin": "Out",
+      "toNodeId": 14,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 14,
+      "outputPin": "True",
       "toNodeId": 5,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 15,
+      "outputPin": "Out",
+      "toNodeId": 16,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 2,
+      "outputPin": "Out",
+      "toNodeId": 12,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 1,
+      "outputPin": "Out",
+      "toNodeId": 17,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 12,
+      "outputPin": "Out",
+      "toNodeId": 18,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 3,
+      "outputPin": "Out",
+      "toNodeId": 19,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 5,
+      "outputPin": "True",
+      "toNodeId": 20,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 14,
+      "outputPin": "True",
+      "toNodeId": 21,
       "inputPin": "In"
     }
   ]

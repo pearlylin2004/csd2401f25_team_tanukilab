@@ -51,10 +51,6 @@
           "texture": "assets/menu_background.png",
           "hasAnimation": 1
         },
-        "Video": {
-          "videoFile": "assets/video\\endCutScene.mpg",
-          "loop": 0
-        },
         "StateMachine": {
           "state": "Idle",
           "facingRight": 1,
@@ -209,8 +205,8 @@
         "AudioComponent": {
           "channels": {
             "endscene_bgm": {
-              "audioFile": "assets/Audio\\CutScene\\Tanuki End Cut Scene Audio.wav",
-              "volume": 0.5,
+              "audioFile": "assets/Audio\\CutScene\\Ending cutscene.wav",
+              "volume": 1.0,
               "pitch": 1.0,
               "loop": 0,
               "playOnStart": 0,
@@ -218,7 +214,7 @@
               "fadeInOnStart": 1,
               "fadeInDuration": 1.0,
               "fadeOutOnStop": 1,
-              "fadeOutDuration": 2.0,
+              "fadeOutDuration": 1.0,
               "isSpatial": 0,
               "minDistance": 1.0,
               "maxDistance": 100.0,

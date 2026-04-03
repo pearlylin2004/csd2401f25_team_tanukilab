@@ -71,7 +71,7 @@
         "Transform": {
           "pos": [
             -1000.0,
-            -996.904296875,
+            -996.824951171875,
             0.0
           ]
         },
@@ -112,8 +112,8 @@
       "components": {
         "Transform": {
           "pos": [
-            -15.977181434631348,
-            -1.2262463569641113,
+            -17.144573211669922,
+            0.07029351592063904,
             0.9980000257492065
           ]
         },
@@ -182,8 +182,8 @@
       "components": {
         "Transform": {
           "pos": [
-            -7.638551235198975,
-            -2.9000000953674316,
+            -8.781999588012695,
+            -1.399999976158142,
             0.30000001192092896
           ],
           "scale": [
@@ -234,8 +234,8 @@
       "components": {
         "Transform": {
           "pos": [
-            -15.43198299407959,
-            -1.6520887613296509,
+            -16.599374771118164,
+            -0.3555489182472229,
             0.0
           ],
           "rotation": 0.0,
@@ -283,20 +283,20 @@
       "components": {
         "Transform": {
           "pos": [
-            -15.894761085510254,
-            -0.9074442386627197,
+            -17.010000228881836,
+            0.2240000069141388,
             5.0
           ],
           "rotation": 0.0,
           "scale": [
-            1.100000023841858,
+            0.6000000238418579,
             0.6000000238418579,
             0.0
           ],
           "parentName": "Player",
           "localOffset": [
-            0.08797165751457214,
-            0.31731513142585754
+            0.13723504543304443,
+            0.1513344645500183
           ],
           "localRotation": -1.0
         },
@@ -324,7 +324,7 @@
           "collisionFlag": 1,
           "autoFitScale": 1,
           "colliderSize": [
-            1.100000023841858,
+            0.6000000238418579,
             0.6000000238418579
           ],
           "colliderPos": [
@@ -356,41 +356,13 @@
       }
     },
     {
-      "name": "Clouds",
-      "components": {
-        "Transform": {
-          "pos": [
-            -0.5,
-            1.600000023841858,
-            -2.4000000953674316
-          ],
-          "rotation": 0.0,
-          "scale": [
-            45.0,
-            18.709999084472656,
-            0.0
-          ]
-        },
-        "Render": {
-          "shape": "square",
-          "colorR": 1.0,
-          "colorG": 1.0,
-          "colorB": 1.0,
-          "colorA": 1.0,
-          "hasTex": 1,
-          "texture": "assets/Texture\\BG\\Clouds.png",
-          "hasAnimation": 0
-        }
-      }
-    },
-    {
       "name": "background_Layer_1",
       "components": {
         "Transform": {
           "pos": [
             2.200000047683716,
             5.900000095367432,
-            -1.0800000429153442
+            -2.0799999237060547
           ],
           "rotation": 0.0,
           "scale": [
@@ -527,6 +499,34 @@
       }
     },
     {
+      "name": "Clouds",
+      "components": {
+        "Transform": {
+          "pos": [
+            -0.5,
+            2.799999952316284,
+            -2.0999999046325684
+          ],
+          "rotation": 0.0,
+          "scale": [
+            42.70000076293945,
+            12.00937557220459,
+            0.0
+          ]
+        },
+        "Render": {
+          "shape": "square",
+          "colorR": 1.0,
+          "colorG": 1.0,
+          "colorB": 1.0,
+          "colorA": 1.0,
+          "hasTex": 1,
+          "texture": "assets/Texture\\BG\\Clouds (1).png",
+          "hasAnimation": 0
+        }
+      }
+    },
+    {
       "name": "tile",
       "components": {
         "Transform": {
@@ -550,121 +550,677 @@
           "enableCol": 1,
           "tiles": [
             {
-              "x": 2,
-              "y": -3,
-              "id": "assets/Texture\\tilemap\\Shrine\\tile001.png"
-            },
-            {
-              "x": -8,
-              "y": -1,
-              "id": "assets/Texture\\tilemap\\Shrine\\tile001.png"
-            },
-            {
-              "x": 14,
-              "y": -5,
-              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
-            },
-            {
-              "x": 1,
-              "y": -3,
-              "id": "assets/Texture\\tilemap\\Shrine\\tile001.png"
-            },
-            {
-              "x": -9,
-              "y": -1,
-              "id": "assets/Texture\\tilemap\\Shrine\\tile001.png"
-            },
-            {
-              "x": 15,
-              "y": -5,
-              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
-            },
-            {
-              "x": 0,
-              "y": -3,
-              "id": "assets/Texture\\tilemap\\Shrine\\tile001.png"
-            },
-            {
-              "x": -10,
-              "y": -1,
-              "id": "assets/Texture\\tilemap\\Shrine\\tile001.png"
-            },
-            {
               "x": -7,
-              "y": -1,
+              "y": 0,
               "id": "assets/Texture\\tilemap\\Shrine\\tile001.png"
             },
             {
-              "x": -11,
-              "y": -1,
+              "x": 9,
+              "y": -2,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile001.png"
+            },
+            {
+              "x": 13,
+              "y": -2,
               "id": "assets/Texture\\tilemap\\Shrine\\tile001.png"
             },
             {
               "x": 10,
-              "y": -4,
+              "y": -2,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile001.png"
+            },
+            {
+              "x": 14,
+              "y": -2,
               "id": "assets/Texture\\tilemap\\Shrine\\tile001.png"
             },
             {
               "x": 11,
-              "y": -4,
+              "y": -2,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile001.png"
+            },
+            {
+              "x": 15,
+              "y": -2,
               "id": "assets/Texture\\tilemap\\Shrine\\tile001.png"
             },
             {
               "x": 12,
-              "y": -4,
+              "y": -2,
               "id": "assets/Texture\\tilemap\\Shrine\\tile001.png"
             },
             {
-              "x": 13,
-              "y": -4,
+              "x": -8,
+              "y": 0,
               "id": "assets/Texture\\tilemap\\Shrine\\tile001.png"
             },
             {
-              "x": -2,
-              "y": -3,
+              "x": -9,
+              "y": 0,
               "id": "assets/Texture\\tilemap\\Shrine\\tile001.png"
             },
             {
-              "x": -1,
-              "y": -3,
+              "x": -10,
+              "y": 0,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile001.png"
+            },
+            {
+              "x": -11,
+              "y": 0,
               "id": "assets/Texture\\tilemap\\Shrine\\tile001.png"
             },
             {
               "x": -12,
-              "y": -1,
+              "y": 0,
               "id": "assets/Texture\\tilemap\\Shrine\\tile001.png"
             },
             {
-              "x": 14,
-              "y": -4,
+              "x": -2,
+              "y": -2,
               "id": "assets/Texture\\tilemap\\Shrine\\tile001.png"
             },
             {
-              "x": 15,
-              "y": -4,
+              "x": -1,
+              "y": -2,
               "id": "assets/Texture\\tilemap\\Shrine\\tile001.png"
             },
             {
-              "x": 15,
+              "x": 0,
+              "y": -2,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile001.png"
+            },
+            {
+              "x": 1,
+              "y": -2,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile001.png"
+            },
+            {
+              "x": 2,
+              "y": -2,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile001.png"
+            },
+            {
+              "x": -3,
+              "y": -2,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile001.png"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "no collision bg tile",
+      "components": {
+        "Transform": {
+          "pos": [
+            -2.3450000286102295,
+            -2.3450000286102295,
+            -0.05000000074505806
+          ],
+          "rotation": 0.0,
+          "scale": [
+            1.0,
+            1.0,
+            0.0
+          ]
+        },
+        "CollisionInfo": {
+          "collisionFlag": 0,
+          "autoFitScale": 1,
+          "colliderSize": [
+            1.0,
+            1.0
+          ],
+          "colliderPos": [
+            0.0,
+            0.0
+          ],
+          "colliderRot": 0.0,
+          "colliderType": "square",
+          "collisionRes": "StopWhenCollide",
+          "collisionTag": "default",
+          "bounciness": 0.0,
+          "friction": 0.0,
+          "colliderType": "square"
+        },
+        "TileMap": {
+          "tileW": 1.5,
+          "tileH": 1.5,
+          "columns": 100,
+          "rows": 100,
+          "enableCol": 0,
+          "tiles": [
+            {
+              "x": 13,
+              "y": -5,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": 12,
+              "y": -5,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": 11,
+              "y": -5,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": 10,
+              "y": -5,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": 10,
               "y": -6,
               "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
             },
             {
-              "x": 14,
+              "x": 11,
+              "y": -6,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": -9,
+              "y": -6,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": 12,
               "y": -6,
               "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
             },
             {
               "x": 13,
+              "y": -6,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": -10,
+              "y": -6,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": 15,
+              "y": -5,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": 14,
+              "y": -5,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": 14,
+              "y": -6,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": -11,
+              "y": -6,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": 15,
+              "y": -6,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": -12,
+              "y": -6,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": 0,
+              "y": -6,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": -13,
               "y": -6,
               "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
             },
             {
               "x": 9,
+              "y": -5,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": 6,
+              "y": -5,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": 9,
+              "y": -3,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": 6,
+              "y": -6,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": -3,
+              "y": -6,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": 5,
+              "y": -6,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": -2,
+              "y": -6,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": 4,
+              "y": -6,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": -8,
               "y": -4,
-              "id": "assets/Texture\\tilemap\\Shrine\\tile001.png"
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": -1,
+              "y": -6,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": 3,
+              "y": -6,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": 2,
+              "y": -6,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": 1,
+              "y": -6,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": -4,
+              "y": -6,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": 7,
+              "y": -6,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": 7,
+              "y": -4,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": -5,
+              "y": -6,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": -6,
+              "y": -6,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": -7,
+              "y": -6,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": 5,
+              "y": -5,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": 10,
+              "y": -3,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": 4,
+              "y": -5,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": 11,
+              "y": -3,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": 1,
+              "y": -5,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": 14,
+              "y": -3,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": 2,
+              "y": -5,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": 13,
+              "y": -3,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": 3,
+              "y": -5,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": 12,
+              "y": -3,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": 8,
+              "y": -6,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": 9,
+              "y": -6,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": 15,
+              "y": -3,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": 15,
+              "y": -4,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": -12,
+              "y": -4,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": 14,
+              "y": -4,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": 13,
+              "y": -4,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": 12,
+              "y": -4,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": 11,
+              "y": -4,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": 10,
+              "y": -4,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": 9,
+              "y": -4,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": -1,
+              "y": -4,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": -8,
+              "y": -6,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": -13,
+              "y": -4,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": 8,
+              "y": -4,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": 8,
+              "y": -5,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": 7,
+              "y": -5,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": 0,
+              "y": -5,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": -1,
+              "y": -5,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": -2,
+              "y": -5,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": -3,
+              "y": -5,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": -4,
+              "y": -5,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": -5,
+              "y": -5,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": -6,
+              "y": -5,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": -7,
+              "y": -5,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": -8,
+              "y": -5,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": -9,
+              "y": -5,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": -13,
+              "y": -5,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": -12,
+              "y": -5,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": -11,
+              "y": -5,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": -10,
+              "y": -5,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": -11,
+              "y": -4,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": -10,
+              "y": -4,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": -9,
+              "y": -4,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": -7,
+              "y": -4,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": -6,
+              "y": -4,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": -5,
+              "y": -4,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": -4,
+              "y": -4,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": -3,
+              "y": -4,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": 1,
+              "y": -4,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": 2,
+              "y": -4,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": 3,
+              "y": -4,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": 4,
+              "y": -4,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": 5,
+              "y": -4,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": 6,
+              "y": -4,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": 0,
+              "y": -4,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": -2,
+              "y": -4,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
             }
           ]
+        }
+      }
+    },
+    {
+      "name": "branch collision 2",
+      "components": {
+        "Transform": {
+          "pos": [
+            -8.800000190734863,
+            -2.799999952316284,
+            0.0
+          ],
+          "rotation": 0.0,
+          "scale": [
+            1.600000023841858,
+            0.8533334136009216,
+            0.0
+          ]
+        },
+        "Physics": {
+          "physicsFlag": 1,
+          "autoUpdate": 0,
+          "buoyancy": 1,
+          "moveSpeed": 1.0,
+          "jumpForce": 10.0,
+          "mass": 1.0,
+          "damping": 0.9800000190734863,
+          "maxFallSpeed": -20.0,
+          "groundAccelForce": 20.0,
+          "airAccelForce": 8.0,
+          "apexHangMul": 0.20000000298023224,
+          "jumpBufferTime": 0.15000000596046448,
+          "coyoteTime": 0.3499999940395355,
+          "ledgeAssistRange": 0.800000011920929,
+          "ledgeClimbSpeed": 1.0,
+          "freezeRotation": 1,
+          "angularDrag": 0.9800000190734863,
+          "inertiaOverride": 0.0
+        },
+        "CollisionInfo": {
+          "collisionFlag": 0,
+          "autoFitScale": 1,
+          "colliderSize": [
+            1.600000023841858,
+            0.8533334136009216
+          ],
+          "colliderPos": [
+            0.0,
+            0.0
+          ],
+          "colliderRot": 0.0,
+          "colliderType": "square",
+          "collisionRes": "StopWhenCollide",
+          "collisionTag": "default",
+          "bounciness": 0.0,
+          "friction": 0.0,
+          "colliderType": "square"
+        },
+        "VisualLC": {
+          "filename": "branch collision 2_Logic.json"
         }
       }
     },
@@ -833,78 +1389,18 @@
       }
     },
     {
-      "name": "branch collision 2",
-      "components": {
-        "Transform": {
-          "pos": [
-            -8.800000190734863,
-            -2.799999952316284,
-            0.0
-          ],
-          "rotation": 0.0,
-          "scale": [
-            1.600000023841858,
-            0.8533334136009216,
-            0.0
-          ]
-        },
-        "Physics": {
-          "physicsFlag": 1,
-          "autoUpdate": 0,
-          "buoyancy": 1,
-          "moveSpeed": 1.0,
-          "jumpForce": 10.0,
-          "mass": 1.0,
-          "damping": 0.9800000190734863,
-          "maxFallSpeed": -20.0,
-          "groundAccelForce": 20.0,
-          "airAccelForce": 8.0,
-          "apexHangMul": 0.20000000298023224,
-          "jumpBufferTime": 0.15000000596046448,
-          "coyoteTime": 0.3499999940395355,
-          "ledgeAssistRange": 0.800000011920929,
-          "ledgeClimbSpeed": 1.0,
-          "freezeRotation": 1,
-          "angularDrag": 0.9800000190734863,
-          "inertiaOverride": 0.0
-        },
-        "CollisionInfo": {
-          "collisionFlag": 0,
-          "autoFitScale": 1,
-          "colliderSize": [
-            1.600000023841858,
-            0.8533334136009216
-          ],
-          "colliderPos": [
-            0.0,
-            0.0
-          ],
-          "colliderRot": 0.0,
-          "colliderType": "square",
-          "collisionRes": "StopWhenCollide",
-          "collisionTag": "default",
-          "bounciness": 0.0,
-          "friction": 0.0,
-          "colliderType": "square"
-        },
-        "VisualLC": {
-          "filename": "branch collision 2_Logic.json"
-        }
-      }
-    },
-    {
       "name": "waterbody",
       "components": {
         "Transform": {
           "pos": [
             -8.793999671936035,
-            -9.095000267028809,
+            -8.095000267028809,
             0.0
           ],
           "rotation": 0.0,
           "scale": [
             9.0,
-            7.5,
+            7.699999809265137,
             0.10000000149011612
           ]
         },
@@ -1006,45 +1502,34 @@
             0.0
           ]
         },
+        "CollisionInfo": {
+          "collisionFlag": 1,
+          "autoFitScale": 1,
+          "colliderSize": [
+            1.0,
+            1.0
+          ],
+          "colliderPos": [
+            0.0,
+            0.0
+          ],
+          "colliderRot": 0.0,
+          "colliderType": "square",
+          "collisionRes": "StopWhenCollide",
+          "collisionTag": "default",
+          "bounciness": 0.0,
+          "friction": 0.0,
+          "colliderType": "square"
+        },
         "TileMap": {
           "tileW": 1.5,
           "tileH": 1.5,
           "columns": 100,
           "rows": 100,
-          "enableCol": 0,
+          "enableCol": 1,
           "tiles": [
             {
-              "x": 10,
-              "y": -4,
-              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
-            },
-            {
-              "x": 11,
-              "y": -4,
-              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
-            },
-            {
-              "x": 12,
-              "y": -4,
-              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
-            },
-            {
               "x": 13,
-              "y": -4,
-              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
-            },
-            {
-              "x": -10,
-              "y": -5,
-              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
-            },
-            {
-              "x": 13,
-              "y": -5,
-              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
-            },
-            {
-              "x": -9,
               "y": -5,
               "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
             },
@@ -1084,28 +1569,13 @@
               "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
             },
             {
-              "x": -10,
-              "y": -6,
-              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
-            },
-            {
               "x": 13,
               "y": -6,
               "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
             },
             {
-              "x": 15,
-              "y": -4,
-              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
-            },
-            {
-              "x": 14,
-              "y": -4,
-              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
-            },
-            {
-              "x": -12,
-              "y": -5,
+              "x": -10,
+              "y": -6,
               "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
             },
             {
@@ -1114,13 +1584,13 @@
               "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
             },
             {
-              "x": -11,
+              "x": 14,
               "y": -5,
               "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
             },
             {
               "x": 14,
-              "y": -5,
+              "y": -6,
               "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
             },
             {
@@ -1129,7 +1599,7 @@
               "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
             },
             {
-              "x": 14,
+              "x": 15,
               "y": -6,
               "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
             },
@@ -1139,32 +1609,12 @@
               "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
             },
             {
-              "x": 15,
-              "y": -6,
-              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
-            },
-            {
-              "x": 0,
-              "y": -5,
-              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
-            },
-            {
-              "x": -13,
-              "y": -5,
-              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
-            },
-            {
               "x": 0,
               "y": -6,
               "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
             },
             {
               "x": -13,
-              "y": -6,
-              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
-            },
-            {
-              "x": -8,
               "y": -6,
               "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
             },
@@ -1174,33 +1624,8 @@
               "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
             },
             {
-              "x": 8,
-              "y": -5,
-              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
-            },
-            {
-              "x": -4,
-              "y": -5,
-              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
-            },
-            {
-              "x": 7,
-              "y": -5,
-              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
-            },
-            {
-              "x": -3,
-              "y": -5,
-              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
-            },
-            {
-              "x": 6,
-              "y": -5,
-              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
-            },
-            {
-              "x": -3,
-              "y": -6,
+              "x": 9,
+              "y": -3,
               "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
             },
             {
@@ -1209,7 +1634,7 @@
               "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
             },
             {
-              "x": -2,
+              "x": -3,
               "y": -6,
               "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
             },
@@ -1219,12 +1644,17 @@
               "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
             },
             {
-              "x": -1,
+              "x": -2,
               "y": -6,
               "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
             },
             {
               "x": 4,
+              "y": -6,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": -1,
               "y": -6,
               "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
             },
@@ -1244,16 +1674,16 @@
               "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
             },
             {
-              "x": 7,
-              "y": -6,
-              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
-            },
-            {
               "x": -4,
               "y": -6,
               "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
             },
             {
+              "x": 7,
+              "y": -6,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
               "x": -5,
               "y": -6,
               "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
@@ -1269,58 +1699,28 @@
               "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
             },
             {
-              "x": -8,
-              "y": -5,
+              "x": 10,
+              "y": -3,
               "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
             },
             {
-              "x": -7,
-              "y": -5,
+              "x": 11,
+              "y": -3,
               "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
             },
             {
-              "x": -6,
-              "y": -5,
+              "x": 14,
+              "y": -3,
               "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
             },
             {
-              "x": -5,
-              "y": -5,
+              "x": 13,
+              "y": -3,
               "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
             },
             {
-              "x": 5,
-              "y": -5,
-              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
-            },
-            {
-              "x": -2,
-              "y": -5,
-              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
-            },
-            {
-              "x": 4,
-              "y": -5,
-              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
-            },
-            {
-              "x": -1,
-              "y": -5,
-              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
-            },
-            {
-              "x": 1,
-              "y": -5,
-              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
-            },
-            {
-              "x": 2,
-              "y": -5,
-              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
-            },
-            {
-              "x": 3,
-              "y": -5,
+              "x": 12,
+              "y": -3,
               "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
             },
             {
@@ -1330,6 +1730,51 @@
             },
             {
               "x": 9,
+              "y": -6,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": 15,
+              "y": -3,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": 15,
+              "y": -4,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": 14,
+              "y": -4,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": 13,
+              "y": -4,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": 12,
+              "y": -4,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": 11,
+              "y": -4,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": 10,
+              "y": -4,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": 9,
+              "y": -4,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": -8,
               "y": -6,
               "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
             }
@@ -1342,14 +1787,14 @@
       "components": {
         "Transform": {
           "pos": [
-            -3.204281806945801,
-            1.6518731117248535,
-            -0.5789999961853027
+            -0.30000001192092896,
+            1.600000023841858,
+            -2.0789999961853027
           ],
           "rotation": 0.0,
           "scale": [
-            49.900001525878906,
-            18.27899932861328,
+            55.70000076293945,
+            16.982343673706055,
             0.0
           ]
         },
@@ -1371,8 +1816,8 @@
       "components": {
         "Transform": {
           "pos": [
-            -6.355999946594238,
-            -1.377555251121521,
+            -7.391551494598389,
+            0.12244479358196259,
             -0.0010000000474974513
           ],
           "scale": [
@@ -1484,15 +1929,15 @@
       "components": {
         "Transform": {
           "pos": [
-            -14.212808609008789,
-            -6.973832607269287,
+            -14.512999534606934,
+            -5.528890609741211,
             0.0
           ],
           "rotation": 1117.78369140625,
           "scale": [
             3.0271999835968018,
             3.0271999835968018,
-            0.0
+            0.10000000149011612
           ]
         },
         "Render": {
@@ -1575,8 +2020,8 @@
       "components": {
         "Transform": {
           "pos": [
-            16.6179256439209,
-            -5.178610324859619,
+            17.811569213867188,
+            -2.17861008644104,
             0.0
           ],
           "rotation": 0.0,
@@ -1618,14 +2063,14 @@
         },
         "CollisionInfo": {
           "collisionFlag": 1,
-          "autoFitScale": 1,
+          "autoFitScale": 0,
           "colliderSize": [
             2.5,
-            3.3333334922790527
+            2.8329999446868896
           ],
           "colliderPos": [
             0.0,
-            0.0
+            -0.20000000298023224
           ],
           "colliderRot": 0.0,
           "colliderType": "square",
@@ -1639,7 +2084,7 @@
           "channels": {
             "change": {
               "audioFile": "assets/Audio\\SFX\\Japanese-CheckPoint-C_YAAY_SFX.wav",
-              "volume": 0.07000000029802322,
+              "volume": 0.10000000149011612,
               "pitch": 1.0,
               "loop": 0,
               "playOnStart": 0,
@@ -1652,7 +2097,7 @@
               "minDistance": 1.0,
               "maxDistance": 100.0,
               "spread": 180.0,
-              "persistOnSceneChange": 1
+              "persistOnSceneChange": 0
             }
           }
         },
@@ -1666,8 +2111,8 @@
       "components": {
         "Transform": {
           "pos": [
-            -8.041744232177734,
-            -7.546594619750977,
+            -8.748807907104492,
+            -6.135000228881836,
             8.0
           ],
           "rotation": 0.0,
@@ -1759,7 +2204,7 @@
         "Transform": {
           "pos": [
             0.5,
-            1.7000000476837158,
+            0.800000011920929,
             -2.4000000953674316
           ],
           "rotation": 0.0,
@@ -1787,8 +2232,8 @@
       "components": {
         "Transform": {
           "pos": [
-            12.592476844787598,
-            -5.38066291809082,
+            12.246700286865234,
+            -2.3710641860961914,
             2.020000457763672
           ]
         },
@@ -1842,8 +2287,8 @@
       "components": {
         "Transform": {
           "pos": [
-            0.4114569425582886,
-            -3.8806629180908203,
+            0.34384411573410034,
+            -2.3806629180908203,
             2.020000457763672
           ]
         },
