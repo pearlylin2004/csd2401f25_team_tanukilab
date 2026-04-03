@@ -223,13 +223,13 @@
         "Transform": {
           "pos": [
             13.606788635253906,
-            -1.0,
+            -1.2999999523162842,
             -0.07900000363588333
           ],
           "rotation": 0.0,
           "scale": [
-            45.70000076293945,
-            18.957000732421875,
+            47.0,
+            19.496259689331055,
             0.0
           ]
         },
@@ -800,11 +800,6 @@
               "id": "assets/Texture\\Tilemap\\Forest\\tile001.png"
             },
             {
-              "x": 24,
-              "y": -6,
-              "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
-            },
-            {
               "x": 6,
               "y": -2,
               "id": "assets/Texture\\Tilemap\\Forest\\tile001.png"
@@ -812,6 +807,11 @@
             {
               "x": 7,
               "y": -4,
+              "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
+            },
+            {
+              "x": 24,
+              "y": -6,
               "id": "assets/Texture\\Tilemap\\Forest\\tile009.png"
             },
             {
@@ -3405,6 +3405,34 @@
         },
         "VisualLC": {
           "filename": "background Fire_Logic.json"
+        }
+      }
+    },
+    {
+      "name": "BG TREEE",
+      "components": {
+        "Transform": {
+          "pos": [
+            -17.299999237060547,
+            -0.5,
+            0.0
+          ],
+          "rotation": 0.0,
+          "scale": [
+            35.900001525878906,
+            9.699999809265137,
+            0.0
+          ]
+        },
+        "Render": {
+          "shape": "square",
+          "colorR": 1.0,
+          "colorG": 1.0,
+          "colorB": 1.0,
+          "colorA": 1.0,
+          "hasTex": 1,
+          "texture": "assets/Texture\\BG\\Forest Stage Layer 3.png",
+          "hasAnimation": 0
         }
       }
     }

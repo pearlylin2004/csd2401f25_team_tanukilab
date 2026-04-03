@@ -112,8 +112,8 @@
       "components": {
         "Transform": {
           "pos": [
-            -15.977181434631348,
-            -1.2262463569641113,
+            -17.144573211669922,
+            0.07029351592063904,
             0.9980000257492065
           ]
         },
@@ -182,8 +182,8 @@
       "components": {
         "Transform": {
           "pos": [
-            -7.638551235198975,
-            -2.9000000953674316,
+            -7.939000129699707,
+            -1.399999976158142,
             0.30000001192092896
           ],
           "scale": [
@@ -234,8 +234,8 @@
       "components": {
         "Transform": {
           "pos": [
-            -15.43198299407959,
-            -1.6520887613296509,
+            -16.599374771118164,
+            -0.3555489182472229,
             0.0
           ],
           "rotation": 0.0,
@@ -283,8 +283,8 @@
       "components": {
         "Transform": {
           "pos": [
-            -15.894761085510254,
-            -0.9074442386627197,
+            -16.909564971923828,
+            -0.4755763113498688,
             5.0
           ],
           "rotation": 0.0,
@@ -295,8 +295,8 @@
           ],
           "parentName": "Player",
           "localOffset": [
-            0.08797165751457214,
-            0.31731513142585754
+            0.2254457026720047,
+            -0.5498881340026855
           ],
           "localRotation": -1.0
         },
@@ -362,7 +362,7 @@
           "pos": [
             -0.5,
             1.600000023841858,
-            -2.4000000953674316
+            -2.0999999046325684
           ],
           "rotation": 0.0,
           "scale": [
@@ -378,7 +378,7 @@
           "colorB": 1.0,
           "colorA": 1.0,
           "hasTex": 1,
-          "texture": "assets/Texture\\BG\\Clouds.png",
+          "texture": "assets/Texture\\BG\\Clouds (1).png",
           "hasAnimation": 0
         }
       }
@@ -390,7 +390,7 @@
           "pos": [
             2.200000047683716,
             5.900000095367432,
-            -1.0800000429153442
+            -2.0799999237060547
           ],
           "rotation": 0.0,
           "scale": [
@@ -550,29 +550,14 @@
           "enableCol": 1,
           "tiles": [
             {
-              "x": 2,
-              "y": -3,
-              "id": "assets/Texture\\tilemap\\Shrine\\tile001.png"
-            },
-            {
-              "x": -8,
-              "y": -1,
-              "id": "assets/Texture\\tilemap\\Shrine\\tile001.png"
-            },
-            {
               "x": 14,
               "y": -5,
               "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
             },
             {
-              "x": 1,
+              "x": 13,
               "y": -3,
-              "id": "assets/Texture\\tilemap\\Shrine\\tile001.png"
-            },
-            {
-              "x": -9,
-              "y": -1,
-              "id": "assets/Texture\\tilemap\\Shrine\\tile001.png"
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
             },
             {
               "x": 15,
@@ -580,88 +565,178 @@
               "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
             },
             {
-              "x": 0,
+              "x": 12,
               "y": -3,
-              "id": "assets/Texture\\tilemap\\Shrine\\tile001.png"
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
             },
             {
-              "x": -10,
-              "y": -1,
-              "id": "assets/Texture\\tilemap\\Shrine\\tile001.png"
+              "x": 15,
+              "y": -3,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": 14,
+              "y": -3,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": 15,
+              "y": -6,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": 14,
+              "y": -6,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": 13,
+              "y": -6,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": 10,
+              "y": -3,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": 11,
+              "y": -3,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
             },
             {
               "x": -7,
-              "y": -1,
+              "y": 0,
               "id": "assets/Texture\\tilemap\\Shrine\\tile001.png"
             },
             {
-              "x": -11,
-              "y": -1,
+              "x": 9,
+              "y": -3,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": 9,
+              "y": -2,
               "id": "assets/Texture\\tilemap\\Shrine\\tile001.png"
             },
             {
               "x": 10,
-              "y": -4,
+              "y": -2,
               "id": "assets/Texture\\tilemap\\Shrine\\tile001.png"
             },
             {
               "x": 11,
               "y": -4,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": 11,
+              "y": -2,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile001.png"
+            },
+            {
+              "x": 10,
+              "y": -4,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": 12,
+              "y": -2,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile001.png"
+            },
+            {
+              "x": 13,
+              "y": -4,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": 13,
+              "y": -2,
               "id": "assets/Texture\\tilemap\\Shrine\\tile001.png"
             },
             {
               "x": 12,
               "y": -4,
-              "id": "assets/Texture\\tilemap\\Shrine\\tile001.png"
-            },
-            {
-              "x": 13,
-              "y": -4,
-              "id": "assets/Texture\\tilemap\\Shrine\\tile001.png"
-            },
-            {
-              "x": -2,
-              "y": -3,
-              "id": "assets/Texture\\tilemap\\Shrine\\tile001.png"
-            },
-            {
-              "x": -1,
-              "y": -3,
-              "id": "assets/Texture\\tilemap\\Shrine\\tile001.png"
-            },
-            {
-              "x": -12,
-              "y": -1,
-              "id": "assets/Texture\\tilemap\\Shrine\\tile001.png"
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
             },
             {
               "x": 14,
-              "y": -4,
+              "y": -2,
               "id": "assets/Texture\\tilemap\\Shrine\\tile001.png"
             },
             {
               "x": 15,
               "y": -4,
-              "id": "assets/Texture\\tilemap\\Shrine\\tile001.png"
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
             },
             {
               "x": 15,
-              "y": -6,
-              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+              "y": -2,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile001.png"
             },
             {
               "x": 14,
-              "y": -6,
-              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
-            },
-            {
-              "x": 13,
-              "y": -6,
+              "y": -4,
               "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
             },
             {
               "x": 9,
               "y": -4,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
+            },
+            {
+              "x": -8,
+              "y": 0,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile001.png"
+            },
+            {
+              "x": -9,
+              "y": 0,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile001.png"
+            },
+            {
+              "x": -10,
+              "y": 0,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile001.png"
+            },
+            {
+              "x": -11,
+              "y": 0,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile001.png"
+            },
+            {
+              "x": -12,
+              "y": 0,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile001.png"
+            },
+            {
+              "x": -2,
+              "y": -2,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile001.png"
+            },
+            {
+              "x": -1,
+              "y": -2,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile001.png"
+            },
+            {
+              "x": 0,
+              "y": -2,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile001.png"
+            },
+            {
+              "x": 1,
+              "y": -2,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile001.png"
+            },
+            {
+              "x": 2,
+              "y": -2,
+              "id": "assets/Texture\\tilemap\\Shrine\\tile001.png"
+            },
+            {
+              "x": -3,
+              "y": -2,
               "id": "assets/Texture\\tilemap\\Shrine\\tile001.png"
             }
           ]
@@ -898,13 +973,13 @@
         "Transform": {
           "pos": [
             -8.793999671936035,
-            -9.095000267028809,
+            -7.525827884674072,
             0.0
           ],
           "rotation": 0.0,
           "scale": [
             9.0,
-            7.5,
+            7.699999809265137,
             0.10000000149011612
           ]
         },
@@ -1014,26 +1089,6 @@
           "enableCol": 0,
           "tiles": [
             {
-              "x": 10,
-              "y": -4,
-              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
-            },
-            {
-              "x": 11,
-              "y": -4,
-              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
-            },
-            {
-              "x": 12,
-              "y": -4,
-              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
-            },
-            {
-              "x": 13,
-              "y": -4,
-              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
-            },
-            {
               "x": -10,
               "y": -5,
               "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
@@ -1091,16 +1146,6 @@
             {
               "x": 13,
               "y": -6,
-              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
-            },
-            {
-              "x": 15,
-              "y": -4,
-              "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
-            },
-            {
-              "x": 14,
-              "y": -4,
               "id": "assets/Texture\\tilemap\\Shrine\\tile005.png"
             },
             {
@@ -1342,14 +1387,14 @@
       "components": {
         "Transform": {
           "pos": [
-            -3.204281806945801,
-            1.6518731117248535,
-            -0.5789999961853027
+            -0.6639999747276306,
+            2.2290000915527344,
+            -2.0789999961853027
           ],
           "rotation": 0.0,
           "scale": [
-            49.900001525878906,
-            18.27899932861328,
+            54.79999923706055,
+            17.52507209777832,
             0.0
           ]
         },
@@ -1371,8 +1416,8 @@
       "components": {
         "Transform": {
           "pos": [
-            -6.355999946594238,
-            -1.377555251121521,
+            -6.709000110626221,
+            0.12244479358196259,
             -0.0010000000474974513
           ],
           "scale": [
@@ -1484,15 +1529,15 @@
       "components": {
         "Transform": {
           "pos": [
-            -14.212808609008789,
-            -6.973832607269287,
+            -14.512999534606934,
+            -5.528890609741211,
             0.0
           ],
           "rotation": 1117.78369140625,
           "scale": [
             3.0271999835968018,
             3.0271999835968018,
-            0.0
+            0.10000000149011612
           ]
         },
         "Render": {
@@ -1575,8 +1620,8 @@
       "components": {
         "Transform": {
           "pos": [
-            16.6179256439209,
-            -5.178610324859619,
+            16.49781036376953,
+            -2.17861008644104,
             0.0
           ],
           "rotation": 0.0,
@@ -1666,8 +1711,8 @@
       "components": {
         "Transform": {
           "pos": [
-            -8.041744232177734,
-            -7.546594619750977,
+            -8.748807907104492,
+            -6.135000228881836,
             8.0
           ],
           "rotation": 0.0,
@@ -1787,8 +1832,8 @@
       "components": {
         "Transform": {
           "pos": [
-            12.592476844787598,
-            -5.38066291809082,
+            12.402276039123535,
+            -2.3806629180908203,
             2.020000457763672
           ]
         },
@@ -1842,8 +1887,8 @@
       "components": {
         "Transform": {
           "pos": [
-            0.4114569425582886,
-            -3.8806629180908203,
+            0.34384411573410034,
+            -2.3806629180908203,
             2.020000457763672
           ]
         },
