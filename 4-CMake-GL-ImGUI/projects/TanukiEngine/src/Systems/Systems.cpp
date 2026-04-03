@@ -872,12 +872,9 @@ void VideoSystem::startDecodeThread(Video* video) {
 void VideoSystem::cleanup(Video* video) {
 	video->stopDecode = true;
 	if (video->decodeThread.joinable()) video->decodeThread.join();
-	{
-		std::lock_guard<std::mutex> lock(video->plmMutex);
-		video->frameQueueHead = 0;
-		video->frameQueueTail = 0;
-		if (video->plm) { plm_destroy(video->plm); video->plm = nullptr; }
-	}
+	video->frameQueueHead = 0;
+	video->frameQueueTail = 0;
+	if (video->plm) { plm_destroy(video->plm); video->plm = nullptr; }
 	if (video->pbo[0]) { glDeleteBuffers(3, video->pbo); video->pbo[0] = video->pbo[1] = video->pbo[2] = 0; }
 	if (video->videoTexID) { glDeleteTextures(1, &video->videoTexID); video->videoTexID = 0; }
 }
