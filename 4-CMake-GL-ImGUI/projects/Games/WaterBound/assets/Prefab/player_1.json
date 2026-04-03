@@ -25,12 +25,12 @@
     "Physics": {
       "physicsFlag": 1,
       "moveSpeed": 5.0,
-      "jumpForce": 12.5,
+      "jumpForce": 11.5,
       "damping": 0.9800000190734864,
       "maxFallSpeed": -30.0,
       "groundAccelForce": 20.0,
       "airAccelForce": 8.0,
-      "apexHangMul": 0.20000000298023224,
+      "apexHangMul": 0.8500000238418579,
       "jumpBufferTime": 0.15000000596046448,
       "coyoteTime": 0.15000000596046448,
       "ledgeAssistRange": 0.800000011920929,
@@ -148,6 +148,34 @@
           "initialFramRow": 0.0,
           "lastFramCol": 3.0,
           "lastFramRow": 3.0
+        }
+      },
+      "Dancing": {
+        "animState": {
+          "texture": "assets/Texture\\Kinuta_Dance2_SS2.png",
+          "loop": 1,
+          "play": 1,
+          "totalColumn": 4,
+          "totalRow": 4,
+          "frameTime": 0.1469999998807907,
+          "initialFramCol": 0.0,
+          "initialFramRow": 0.0,
+          "lastFramCol": 3.0,
+          "lastFramRow": 3.0
+        }
+      },
+      "Emo": {
+        "animState": {
+          "texture": "assets/Texture\\Kinuta_Watering_SS1.png",
+          "loop": 0,
+          "play": 1,
+          "totalColumn": 2,
+          "totalRow": 2,
+          "frameTime": 0.1469999998807907,
+          "initialFramCol": 0.0,
+          "initialFramRow": 0.0,
+          "lastFramCol": 1.0,
+          "lastFramRow": 1.0
         }
       }
     },

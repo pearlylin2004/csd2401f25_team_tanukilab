@@ -112,7 +112,7 @@
       "hasTrueOutput": false,
       "hasFalseOutput": false,
       "parameters": {
-        "channel": "Spin"
+        "channel": "wheel"
       }
     }
   ],

@@ -23,7 +23,7 @@
       "updatable": 1
     }
   ],
-  "onLoadScript": "assets/scripting\\pause_scene_load.lua",
+  "onLoadScript": "assets/scripting\\opening_cutscene_load.lua",
   "objects": [
     {
       "name": "background",
@@ -32,7 +32,7 @@
           "pos": [
             0.0,
             0.0,
-            0.0
+            4.0
           ],
           "rotation": 0.0,
           "scale": [
@@ -48,42 +48,103 @@
           "colorB": 1.0,
           "colorA": 1.0,
           "hasTex": 1,
-          "texture": "assets/menu_background.png",
+          "texture": "assets/Texture\\loading screen.jpg",
           "hasAnimation": 1
         },
         "Video": {
           "videoFile": "assets/video\\output.mpg",
           "loop": 0
         },
+        "VisualLC": {
+          "filename": "Opening Cutscene.json"
+        }
+      }
+    },
+    {
+      "name": "space to skip",
+      "components": {
+        "Transform": {
+          "pos": [
+            10.920638084411621,
+            7.936514377593994,
+            2.0
+          ],
+          "rotation": 0.0,
+          "scale": [
+            1.0,
+            1.0,
+            0.0
+          ]
+        },
+        "FontComponent": {
+          "word": "SPACE to skip",
+          "color": [
+            0.9466192126274109,
+            0.9466192126274109,
+            0.9466192126274109
+          ],
+          "scale": 1.5,
+          "fontType": 0
+        },
+        "VisualLC": {
+          "filename": "space-skip-move.json"
+        }
+      }
+    },
+    {
+      "name": "dancing kinuta",
+      "components": {
+        "Transform": {
+          "pos": [
+            2.3428680896759033,
+            -4.835268497467041,
+            1.0
+          ],
+          "rotation": 0.0,
+          "scale": [
+            4.5,
+            4.5,
+            0.0
+          ]
+        },
+        "Render": {
+          "shape": "square",
+          "colorR": 1.0,
+          "colorG": 1.0,
+          "colorB": 1.0,
+          "colorA": 1.0,
+          "hasTex": 0,
+          "hasAnimation": 1
+        },
         "StateMachine": {
           "state": "Idle",
           "facingRight": 1,
           "Idle": {
             "animState": {
-              "texture": "assets/Texture\\Cutscenes\\Opening_SS1.png",
-              "loop": 0,
-              "play": 1,
-              "totalColumn": 5,
-              "totalRow": 2,
-              "frameTime": 1.5,
-              "initialFramCol": 0.0,
+              "texture": "assets/Texture\\Kinuta_Dance_SS.png",
+              "loop": 1,
+              "play": 0,
+              "totalColumn": 4,
+              "totalRow": 4,
+              "frameTime": 0.09000000357627869,
+              "initialFramCol": 1.0,
               "initialFramRow": 0.0,
-              "lastFramCol": 4.0,
-              "lastFramRow": 1.0
+              "lastFramCol": 1.0,
+              "lastFramRow": 0.0
             }
           },
           "Walking": {
             "animState": {
-              "texture": "assets/Texture\\Cutscenes\\Opening_SS2.png",
-              "loop": 0,
-              "play": 1,
-              "totalColumn": 3,
-              "totalRow": 3,
-              "frameTime": 1.5,
+              "texture": "",
+              "loop": 1,
+              "play": 0,
+              "totalColumn": 1,
+              "totalRow": 1,
+              "frameTime": 0.10000000149011612,
               "initialFramCol": 0.0,
               "initialFramRow": 0.0,
-              "lastFramCol": 2.0,
-              "lastFramRow": 2.0
+              "lastFramCol": 0.0,
+              "lastFramRow": 0.0
             }
           },
           "Jumping": {
@@ -141,10 +202,125 @@
               "lastFramCol": 0.0,
               "lastFramRow": 0.0
             }
+          },
+          "Dancing": {
+            "animState": {
+              "texture": "",
+              "loop": 1,
+              "play": 0,
+              "totalColumn": 1,
+              "totalRow": 1,
+              "frameTime": 0.10000000149011612,
+              "initialFramCol": 0.0,
+              "initialFramRow": 0.0,
+              "lastFramCol": 0.0,
+              "lastFramRow": 0.0
+            }
+          },
+          "Emo": {
+            "animState": {
+              "texture": "",
+              "loop": 1,
+              "play": 0,
+              "totalColumn": 1,
+              "totalRow": 1,
+              "frameTime": 0.10000000149011612,
+              "initialFramCol": 0.0,
+              "initialFramRow": 0.0,
+              "lastFramCol": 0.0,
+              "lastFramRow": 0.0
+            }
           }
+        }
+      }
+    },
+    {
+      "name": "Rectangle_4",
+      "components": {
+        "Transform": {
+          "pos": [
+            0.0,
+            0.0,
+            1.0
+          ],
+          "rotation": 0.0,
+          "scale": [
+            40.0,
+            20.0,
+            0.0
+          ]
+        },
+        "Render": {
+          "shape": "square",
+          "colorR": 1.0,
+          "colorG": 1.0,
+          "colorB": 1.0,
+          "colorA": 1.0,
+          "hasTex": 1,
+          "texture": "assets/Texture\\loading screen.jpg",
+          "hasAnimation": 0
+        }
+      }
+    },
+    {
+      "name": "Loading text",
+      "components": {
+        "Transform": {
+          "pos": [
+            24.417999267578125,
+            -8.725790977478027,
+            2.0
+          ],
+          "rotation": 0.0,
+          "scale": [
+            1.0,
+            1.0,
+            0.0
+          ]
+        },
+        "FontComponent": {
+          "word": "Loading",
+          "color": [
+            1.0,
+            1.0,
+            1.0
+          ],
+          "scale": 1.5,
+          "fontType": 0
         },
         "VisualLC": {
-          "filename": "Opening Cutscene.json"
+          "filename": "load-text-move1.json"
+        }
+      }
+    },
+    {
+      "name": "dot dot",
+      "components": {
+        "Transform": {
+          "pos": [
+            29.31100082397461,
+            -8.623848915100098,
+            2.0
+          ],
+          "rotation": 0.0,
+          "scale": [
+            1.0,
+            1.0,
+            0.0
+          ]
+        },
+        "FontComponent": {
+          "word": "...",
+          "color": [
+            1.0,
+            1.0,
+            1.0
+          ],
+          "scale": 1.5,
+          "fontType": 2
+        },
+        "VisualLC": {
+          "filename": "load-text-move2.json"
         }
       }
     },
@@ -175,13 +351,13 @@
       }
     },
     {
-      "name": "space to skip",
+      "name": "bgm",
       "components": {
         "Transform": {
           "pos": [
-            10.920638084411621,
-            7.936514377593994,
-            2.0
+            0.0,
+            0.0,
+            0.0
           ],
           "rotation": 0.0,
           "scale": [
@@ -190,15 +366,26 @@
             0.0
           ]
         },
-        "FontComponent": {
-          "word": "SPACE to skip",
-          "color": [
-            0.9466192126274109,
-            0.9466192126274109,
-            0.9466192126274109
-          ],
-          "scale": 1.5,
-          "fontType": 0
+        "AudioComponent": {
+          "channels": {
+            "opening_bgm": {
+              "audioFile": "assets/Audio\\CutScene\\Tanuki Cut Scene Audio.wav",
+              "volume": 1.0,
+              "pitch": 1.0,
+              "loop": 0,
+              "playOnStart": 0,
+              "muted": 0,
+              "fadeInOnStart": 1,
+              "fadeInDuration": 1.0,
+              "fadeOutOnStop": 1,
+              "fadeOutDuration": 1.0,
+              "isSpatial": 0,
+              "minDistance": 1.0,
+              "maxDistance": 100.0,
+              "spread": 180.0,
+              "persistOnSceneChange": 0
+            }
+          }
         }
       }
     }

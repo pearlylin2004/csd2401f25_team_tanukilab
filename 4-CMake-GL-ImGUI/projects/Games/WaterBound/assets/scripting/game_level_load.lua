@@ -5,6 +5,8 @@ function onSceneLoad()
     --setLowPassFilter(false)
     requestBGM("BGM")
 
+    setVSGlobalFloat("bullets", 1000)
+
     -- bullet pool setup
     local template = getGameObject("bullet")
     if not template then return end

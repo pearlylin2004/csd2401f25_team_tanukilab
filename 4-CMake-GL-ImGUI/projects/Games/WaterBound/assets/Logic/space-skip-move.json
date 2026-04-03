@@ -1,0 +1,67 @@
+{
+  "version": 1,
+  "nodes": [
+    {
+      "id": 1,
+      "implementation": "On Update",
+      "type": 0,
+      "position": [
+        -75.55554962158203,
+        6.666666030883789
+      ],
+      "hasInput": false,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false
+    },
+    {
+      "id": 2,
+      "implementation": "Compare Global Float",
+      "type": 2,
+      "position": [
+        265.5555419921875,
+        11.111109733581543
+      ],
+      "hasInput": true,
+      "hasOutput": false,
+      "hasTrueOutput": true,
+      "hasFalseOutput": true,
+      "parameters": {
+        "comparison": "greater",
+        "threshold": "0",
+        "variable": "videoEndedLiao"
+      }
+    },
+    {
+      "id": 3,
+      "implementation": "Set Position",
+      "type": 1,
+      "position": [
+        594.4443969726563,
+        21.111108779907227
+      ],
+      "hasInput": true,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false,
+      "parameters": {
+        "x": "40",
+        "y": "0"
+      }
+    }
+  ],
+  "connections": [
+    {
+      "fromNodeId": 1,
+      "outputPin": "Out",
+      "toNodeId": 2,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 2,
+      "outputPin": "True",
+      "toNodeId": 3,
+      "inputPin": "In"
+    }
+  ]
+}

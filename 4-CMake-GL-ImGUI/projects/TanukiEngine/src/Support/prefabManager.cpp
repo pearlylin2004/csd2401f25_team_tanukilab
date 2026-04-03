@@ -101,6 +101,8 @@ static const char* playerStateToStr(PlayerState state) {
 	case PlayerState::Falling:  return "Falling";
 	case PlayerState::Shooting: return "Shooting";
 	case PlayerState::Dead:     return "Dead";
+	case PlayerState::Dancing: return "Dancing";
+	case PlayerState::Emo:     return "Emo";
 	default:                    return "Idle";
 	}
 }

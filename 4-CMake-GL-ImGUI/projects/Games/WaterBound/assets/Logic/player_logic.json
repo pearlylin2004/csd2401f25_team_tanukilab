@@ -296,8 +296,8 @@
       "implementation": "Compare Global Float",
       "type": 2,
       "position": [
-        -38.00002670288086,
-        682.0
+        62.0,
+        520.0
       ],
       "hasInput": true,
       "hasOutput": false,
@@ -314,7 +314,7 @@
       "implementation": "Set Global Float",
       "type": 1,
       "position": [
-        340.0000305175781,
+        340.0,
         698.0000610351563
       ],
       "hasInput": true,
@@ -379,7 +379,7 @@
       "implementation": "On Collision Enter",
       "type": 0,
       "position": [
-        -140.0,
+        136.0,
         -180.0
       ],
       "hasInput": false,
@@ -396,8 +396,8 @@
       "implementation": "Lock Position",
       "type": 1,
       "position": [
-        252.57150268554688,
-        -184.0
+        580.571533203125,
+        -182.0
       ],
       "hasInput": true,
       "hasOutput": true,
@@ -409,7 +409,7 @@
       "implementation": "While Colliding",
       "type": 0,
       "position": [
-        -114.4999771118164,
+        -114.5,
         -576.5
       ],
       "hasInput": false,
@@ -447,7 +447,7 @@
       "hasTrueOutput": true,
       "hasFalseOutput": true,
       "parameters": {
-        "state": "Dead"
+        "state": "Dancing"
       }
     },
     {
@@ -471,7 +471,7 @@
       "implementation": "Compare Global Float",
       "type": 2,
       "position": [
-        -68.75000762939453,
+        -68.75,
         -381.2500305175781
       ],
       "hasInput": true,
@@ -540,7 +540,7 @@
       "implementation": "On Start",
       "type": 0,
       "position": [
-        -4.494378566741943,
+        -4.494384765625,
         -816.4788208007813
       ],
       "hasInput": false,
@@ -553,7 +553,7 @@
       "implementation": "Set Float",
       "type": 1,
       "position": [
-        524.3441772460938,
+        524.34423828125,
         -776.0293579101563
       ],
       "hasInput": true,
@@ -563,6 +563,51 @@
       "parameters": {
         "value": "-1.000000",
         "variable": "playedDeath"
+      }
+    },
+    {
+      "id": 62,
+      "implementation": "Check State",
+      "type": 2,
+      "position": [
+        54.0,
+        864.0
+      ],
+      "hasInput": true,
+      "hasOutput": false,
+      "hasTrueOutput": true,
+      "hasFalseOutput": true,
+      "parameters": {
+        "state": "Emo"
+      }
+    },
+    {
+      "id": 63,
+      "implementation": "Check Animation End",
+      "type": 2,
+      "position": [
+        398.0,
+        902.0
+      ],
+      "hasInput": true,
+      "hasOutput": false,
+      "hasTrueOutput": true,
+      "hasFalseOutput": true
+    },
+    {
+      "id": 64,
+      "implementation": "Set State",
+      "type": 1,
+      "position": [
+        730.0,
+        900.0
+      ],
+      "hasInput": true,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false,
+      "parameters": {
+        "state": "Dancing"
       }
     }
   ],
@@ -751,6 +796,24 @@
       "fromNodeId": 60,
       "outputPin": "Out",
       "toNodeId": 61,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 11,
+      "outputPin": "Out",
+      "toNodeId": 62,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 62,
+      "outputPin": "True",
+      "toNodeId": 63,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 63,
+      "outputPin": "True",
+      "toNodeId": 64,
       "inputPin": "In"
     }
   ]

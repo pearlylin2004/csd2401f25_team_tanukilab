@@ -6,8 +6,8 @@
       "implementation": "On Collision Enter",
       "type": 0,
       "position": [
-        -265.99993896484375,
-        106.00000762939453
+        -266.0,
+        106.0
       ],
       "hasInput": false,
       "hasOutput": true,
@@ -23,16 +23,16 @@
       "implementation": "Set Position",
       "type": 1,
       "position": [
-        64.00005340576172,
-        103.99995422363281
+        54.0,
+        -7.42864990234375
       ],
       "hasInput": true,
       "hasOutput": true,
       "hasTrueOutput": false,
       "hasFalseOutput": false,
       "parameters": {
-        "x": "1.021",
-        "y": "1.9"
+        "x": "2.383",
+        "y": "1.922"
       }
     },
     {
@@ -40,7 +40,7 @@
       "implementation": "Check Animation End",
       "type": 2,
       "position": [
-        106.5714111328125,
+        106.57144927978516,
         276.0
       ],
       "hasInput": true,
@@ -53,7 +53,7 @@
       "implementation": "Set State",
       "type": 1,
       "position": [
-        472.2857666015625,
+        472.2857360839844,
         279.71435546875
       ],
       "hasInput": true,
@@ -61,7 +61,7 @@
       "hasTrueOutput": false,
       "hasFalseOutput": false,
       "parameters": {
-        "state": "Walking"
+        "state": "Jumping"
       }
     },
     {
@@ -69,7 +69,7 @@
       "implementation": "Check State",
       "type": 2,
       "position": [
-        -266.0,
+        -265.99993896484375,
         282.0
       ],
       "hasInput": true,
@@ -77,7 +77,7 @@
       "hasTrueOutput": true,
       "hasFalseOutput": true,
       "parameters": {
-        "state": "Idle"
+        "state": "Walking"
       }
     },
     {
@@ -122,7 +122,7 @@
       "hasTrueOutput": false,
       "hasFalseOutput": false,
       "parameters": {
-        "state": "Jumping"
+        "state": "Falling"
       }
     },
     {
@@ -167,7 +167,7 @@
       "hasTrueOutput": false,
       "hasFalseOutput": false,
       "parameters": {
-        "state": "Falling"
+        "state": "Shooting"
       }
     },
     {
@@ -212,7 +212,7 @@
       "hasTrueOutput": false,
       "hasFalseOutput": false,
       "parameters": {
-        "state": "Shooting"
+        "state": "Dead"
       }
     },
     {
@@ -249,7 +249,7 @@
       "implementation": "Set State",
       "type": 1,
       "position": [
-        477.9999084472656,
+        477.9998779296875,
         902.0
       ],
       "hasInput": true,
@@ -257,7 +257,7 @@
       "hasTrueOutput": false,
       "hasFalseOutput": false,
       "parameters": {
-        "state": "Dead"
+        "state": "Dancing"
       }
     },
     {
@@ -278,15 +278,15 @@
       "implementation": "Set State",
       "type": 1,
       "position": [
-        393.33331298828125,
-        108.33336639404297
+        393.333251953125,
+        108.3333740234375
       ],
       "hasInput": true,
       "hasOutput": true,
       "hasTrueOutput": false,
       "hasFalseOutput": false,
       "parameters": {
-        "state": "Idle"
+        "state": "Walking"
       }
     },
     {
@@ -321,6 +321,86 @@
       "parameters": {
         "x": "100",
         "y": "0"
+      }
+    },
+    {
+      "id": 27,
+      "implementation": "Play Sound",
+      "type": 1,
+      "position": [
+        796.0,
+        124.0
+      ],
+      "hasInput": true,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false,
+      "parameters": {
+        "channel": "Speech_1"
+      }
+    },
+    {
+      "id": 28,
+      "implementation": "Play Sound",
+      "type": 1,
+      "position": [
+        792.0,
+        280.0
+      ],
+      "hasInput": true,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false,
+      "parameters": {
+        "channel": "Speech_2"
+      }
+    },
+    {
+      "id": 29,
+      "implementation": "Play Sound",
+      "type": 1,
+      "position": [
+        792.0,
+        444.0
+      ],
+      "hasInput": true,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false,
+      "parameters": {
+        "channel": "Speech_3"
+      }
+    },
+    {
+      "id": 30,
+      "implementation": "Play Sound",
+      "type": 1,
+      "position": [
+        848.0,
+        608.0
+      ],
+      "hasInput": true,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false,
+      "parameters": {
+        "channel": "Speech_4"
+      }
+    },
+    {
+      "id": 31,
+      "implementation": "Play Sound",
+      "type": 1,
+      "position": [
+        858.0,
+        752.0
+      ],
+      "hasInput": true,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false,
+      "parameters": {
+        "channel": "Speech_5"
       }
     }
   ],
@@ -437,6 +517,42 @@
       "fromNodeId": 23,
       "outputPin": "Out",
       "toNodeId": 24,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 1,
+      "outputPin": "Out",
+      "toNodeId": 19,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 19,
+      "outputPin": "Out",
+      "toNodeId": 27,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 4,
+      "outputPin": "Out",
+      "toNodeId": 28,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 8,
+      "outputPin": "Out",
+      "toNodeId": 29,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 11,
+      "outputPin": "Out",
+      "toNodeId": 30,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 14,
+      "outputPin": "Out",
+      "toNodeId": 31,
       "inputPin": "In"
     }
   ]

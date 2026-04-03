@@ -291,6 +291,8 @@ namespace JsonIO {
         if (s == "Falling")  return PlayerState::Falling;
         if (s == "Shooting") return PlayerState::Shooting;
         if (s == "Dead")     return PlayerState::Dead;
+        if (s == "Dancing") return PlayerState::Dancing;
+        if (s == "Emo")     return PlayerState::Emo;
         return PlayerState::Idle; // default/fallback
     }
 
@@ -652,6 +654,7 @@ namespace JsonIO {
     }
 
     bool JsonIO::StringToScene(GameObjectManager& manager, const std::string& json, std::string* err) {
+		(void)err;
         std::string tempPath = std::string(RUNTIME_SCENE_DIR_R) + "/_snapshot.json";
 
         // write string to temp file, load from it
