@@ -733,8 +733,9 @@ void RenderSystem::drawBatches(const glm::mat4& camView, const glm::mat4& camPro
 void VideoSystem::update(GameObject* obj, float const deltaTime)
 {
 	if (EditorManager::isEditingMode() || EditorManager::isPaused()) return;
-
+	if (!obj->hasComponent<Video>()) return;
 	Video* video = obj->getComponent<Video>();
+	if (!video) return;
 	if (!video->isPlaying) return;
 	if (video->isPaused) return;
 
@@ -748,66 +749,134 @@ void VideoSystem::update(GameObject* obj, float const deltaTime)
 			video->isPlaying = false;
 			return;
 		}
+		//std::cerr << "[VIDEO] fps=" << video->fps << " deltaTime=" << deltaTime << "\n";
 		Render* render = obj->getComponent<Render>();
 		if (!render->visible) render->visible = true;
 
-		video->accumTime = 0.f; // reset accum time so if we start playing again it doesn't immediately skip frames
+		video->accumTime = 1.f / video->fps; // reset accum time so if we start playing again it doesn't immediately skip frames
 		// if first frame lags, return this immediately so we don't have a frozen frame until the next update
 		//return;
 	}
 	video->accumTime += deltaTime;
-	while (video->accumTime >= 1.f / video->fps)
-	{
+	if (video->accumTime >= 1.f / video->fps) {
 		video->accumTime -= 1.f / video->fps;
-		// Decode and update texture
-		plm_frame_t* frame = plm_decode_video(video->plm);
-		//std::cerr << "[VIDEO] decode attempt, frame=" << frame << "\n";
-		if (frame) {
-			std::vector<uint8_t> pixels(video->videoWidth * video->videoHeight * 4);
-			plm_frame_to_rgba(frame, pixels.data(), video->videoWidth * 4);
-			for (int i = 3; i < (int)pixels.size(); i += 4)
-				pixels[i] = 255;
-			std::vector<uint8_t> flipped(pixels.size());
-			int rowSize = video->videoWidth * 4;
-			for (int y = 0; y < video->videoHeight; y++) {
-				memcpy(flipped.data() + y * rowSize,
-					pixels.data() + (video->videoHeight - 1 - y) * rowSize,
-					rowSize);
-			}
+
+		//std::lock_guard<std::mutex> lock(video->frameMutex);
+		int head = video->frameQueueHead.load();
+		int tail = video->frameQueueTail.load();
+		if (head != tail) {  // frame available
+			uint8_t* src = video->frameQueue[tail].data();
+			int size = video->videoWidth * video->videoHeight * 4;
+			int nextIndex = (video->pboIndex + 1) % 2;
+
+			glBindBuffer(GL_PIXEL_UNPACK_BUFFER, video->pbo[video->pboIndex]);
 			glBindTexture(GL_TEXTURE_2D, video->videoTexID);
-			glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, video->videoWidth, video->videoHeight,
-				GL_RGBA, GL_UNSIGNED_BYTE, flipped.data());
-			//std::cerr << "[VIDEO] uploaded frame to texID=" << video->videoTexID << "\n";
+			glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0,
+				video->videoWidth, video->videoHeight,
+				GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+
+			glBindBuffer(GL_PIXEL_UNPACK_BUFFER, video->pbo[nextIndex]);
+			// Orphan the buffer instead of re-allocating
+			glBufferData(GL_PIXEL_UNPACK_BUFFER, size, nullptr, GL_STREAM_DRAW);
+			uint8_t* ptr = (uint8_t*)glMapBufferRange(
+				GL_PIXEL_UNPACK_BUFFER, 0, size,
+				GL_MAP_WRITE_BIT | GL_MAP_INVALIDATE_BUFFER_BIT);
+			if (ptr) {
+				memcpy(ptr, src, size);
+				glUnmapBuffer(GL_PIXEL_UNPACK_BUFFER);
+			}
+			glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
+
+			video->pboIndex = nextIndex;
+			video->frameQueueTail = (tail + 1) % Video::FRAME_QUEUE_SIZE;  // consume
 		}
 	}
-	if (plm_has_ended(video->plm)) {
-		cleanup(video);
-		video->accumTime = 0.f;
-		video->videoEnded = true;
+	{
+		std::lock_guard<std::mutex> lock(video->plmMutex);
+		if (video->plm && plm_has_ended(video->plm)) {
+			cleanup(video);
+			video->accumTime = 0.f;
+			video->videoEnded = true;
 
-		Render* render = obj->getComponent<Render>();
-		if (render->visible) render->visible = false; // hide the object if video ended (for visual logic)
+			Render* render = obj->getComponent<Render>();
+			if (render->visible) render->visible = false;
 
-		if (video->loop) {
-			video->isPlaying = true;  // next iteration reloads plm
-		}
-		else {
-			video->isPlaying = false;
-			if (video->onVideoEnd) video->onVideoEnd();
+			if (video->loop) {
+				video->isPlaying = true;
+			}
+			else {
+				video->isPlaying = false;
+				if (video->onVideoEnd) video->onVideoEnd();
+			}
 		}
 	}
 }
 
-void VideoSystem::cleanup(Video* video)
-{
-	if (video->plm) {
-		plm_destroy(video->plm);
-		video->plm = nullptr;
-	}
-	if (video->videoTexID) {
-		glDeleteTextures(1, &video->videoTexID);
-		video->videoTexID = 0;
-	}
+void VideoSystem::startDecodeThread(Video* video) {
+	video->stopDecode = false;
+	int size = video->videoWidth * video->videoHeight * 4;
+	int rowSize = video->videoWidth * 4;
+
+	for (auto& f : video->frameQueue)
+		f.resize(size);
+
+	video->decodeThread = std::thread([video, size, rowSize]() {
+		std::vector<uint8_t> rowBuf(rowSize); // FIXED: allocated once outside loop
+
+		while (!video->stopDecode) {
+			int nextHead = (video->frameQueueHead + 1) % Video::FRAME_QUEUE_SIZE;
+
+			// Spin-wait if queue is full
+			while (nextHead == video->frameQueueTail && !video->stopDecode)
+				std::this_thread::sleep_for(std::chrono::milliseconds(1));
+			if (video->stopDecode) break;
+
+			plm_frame_t* frame = nullptr;
+			{
+				std::lock_guard<std::mutex> lock(video->plmMutex);
+				if (video->stopDecode || !video->plm) break;
+				frame = plm_decode_video(video->plm);
+			}
+			if (!frame) break;
+
+			uint8_t* dst = video->frameQueue[video->frameQueueHead].data();
+			plm_frame_to_rgba(frame, dst, rowSize);
+
+			// Vertical flip in-place
+			for (int y = 0; y < video->videoHeight / 2; y++) {
+				int mirrorY = video->videoHeight - 1 - y;
+				memcpy(rowBuf.data(), dst + y * rowSize, rowSize);
+				memcpy(dst + y * rowSize, dst + mirrorY * rowSize, rowSize);
+				memcpy(dst + mirrorY * rowSize, rowBuf.data(), rowSize);
+			}
+
+			// Fix alpha
+			for (int i = 3; i < size; i += 4) dst[i] = 255;
+
+			video->frameQueueHead = nextHead;
+		}
+		});
+}
+
+//void VideoSystem::cleanup(Video* video)
+//{
+//	if (video->plm) {
+//		plm_destroy(video->plm);
+//		video->plm = nullptr;
+//	}
+//	if (video->videoTexID) {
+//		glDeleteTextures(1, &video->videoTexID);
+//		video->videoTexID = 0;
+//	}
+//}
+void VideoSystem::cleanup(Video* video) {
+	video->stopDecode = true;
+	if (video->decodeThread.joinable()) video->decodeThread.join();
+	video->frameQueueHead = 0;
+	video->frameQueueTail = 0;
+	if (video->plm) { plm_destroy(video->plm); video->plm = nullptr; }
+	if (video->pbo[0]) { glDeleteBuffers(3, video->pbo); video->pbo[0] = video->pbo[1] = video->pbo[2] = 0; }
+	if (video->videoTexID) { glDeleteTextures(1, &video->videoTexID); video->videoTexID = 0; }
 }
 
 bool VideoSystem::loadVideo(Video* video) {
@@ -826,25 +895,19 @@ bool VideoSystem::loadVideo(Video* video) {
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	plm_frame_t* firstFrame = plm_decode_video(video->plm);
-	if (firstFrame) {
-		std::vector<uint8_t> pixels(video->videoWidth * video->videoHeight * 4);
-		plm_frame_to_rgba(firstFrame, pixels.data(), video->videoWidth * 4);
 
-		for (int i = 3; i < (int)pixels.size(); i += 4)
-			pixels[i] = 255;
+	int size = video->videoWidth * video->videoHeight * 4;
+	glGenBuffers(3, video->pbo);
+	glBindBuffer(GL_PIXEL_UNPACK_BUFFER, video->pbo[0]);
+	glBufferData(GL_PIXEL_UNPACK_BUFFER, size, nullptr, GL_STREAM_DRAW);
+	glBindBuffer(GL_PIXEL_UNPACK_BUFFER, video->pbo[1]);
+	glBufferData(GL_PIXEL_UNPACK_BUFFER, size, nullptr, GL_STREAM_DRAW);
+	glBindBuffer(GL_PIXEL_UNPACK_BUFFER, video->pbo[2]);
+	glBufferData(GL_PIXEL_UNPACK_BUFFER, size, nullptr, GL_STREAM_DRAW);
+	glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
+	video->pboIndex = 0;
 
-		std::vector<uint8_t> flipped(pixels.size());
-		int rowSize = video->videoWidth * 4;
-		for (int y = 0; y < video->videoHeight; y++) {
-			memcpy(flipped.data() + y * rowSize,
-				pixels.data() + (video->videoHeight - 1 - y) * rowSize,
-				rowSize);
-		}
-
-		glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, video->videoWidth, video->videoHeight,
-			GL_RGBA, GL_UNSIGNED_BYTE, flipped.data());
-	}
+	startDecodeThread(video);
 
 	return true;
 }

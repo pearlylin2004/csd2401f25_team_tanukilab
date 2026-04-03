@@ -71,7 +71,7 @@
         "Transform": {
           "pos": [
             -1000.0,
-            -1003.07080078125,
+            -1003.1702880859375,
             0.0
           ]
         },
@@ -103,106 +103,6 @@
               "scriptName": "bullet"
             }
           ]
-        }
-      }
-    },
-    {
-      "prefabid": "eaa2ba42-971a-413b-b8c4-99b2f5ab674d",
-      "name": "fire(21)22",
-      "components": {
-        "Transform": {
-          "pos": [
-            1000.0,
-            -5.871227264404297,
-            0.019999999552965164
-          ]
-        },
-        "Render": {
-          "colorR": 1.0,
-          "colorG": 1.0,
-          "colorB": 1.0,
-          "colorA": 1.0,
-          "hasTex": 1,
-          "texture": "assets/textures/steam.png",
-          "hasAnimation": 1
-        },
-        "Physics": {
-          "autoUpdate": 0
-        },
-        "CollisionInfo": {
-          "colliderPos": [
-            0.0,
-            0.0
-          ],
-          "collisionTag": "steam"
-        },
-        "StateMachine": {
-          "Dancing": {
-            "animState": {
-              "texture": "",
-              "loop": 1,
-              "play": 0,
-              "totalColumn": 1,
-              "totalRow": 1,
-              "frameTime": 0.10000000149011612,
-              "initialFramCol": 0.0,
-              "initialFramRow": 0.0,
-              "lastFramCol": 0.0,
-              "lastFramRow": 0.0
-            }
-          },
-          "Emo": {
-            "animState": {
-              "texture": "",
-              "loop": 1,
-              "play": 0,
-              "totalColumn": 1,
-              "totalRow": 1,
-              "frameTime": 0.10000000149011612,
-              "initialFramCol": 0.0,
-              "initialFramRow": 0.0,
-              "lastFramCol": 0.0,
-              "lastFramRow": 0.0
-            }
-          }
-        },
-        "AudioComponent": {
-          "channels": {
-            "fire_loop": {
-              "audioFile": "assets/audio/fire_crackle.wav",
-              "volume": 0.5,
-              "pitch": 1.0,
-              "loop": 1,
-              "playOnStart": 0,
-              "muted": 0,
-              "fadeInOnStart": 0,
-              "fadeInDuration": 1.0,
-              "fadeOutOnStop": 1,
-              "fadeOutDuration": 0.30000001192092896,
-              "isSpatial": 1,
-              "minDistance": 5.0,
-              "maxDistance": 75.0,
-              "spread": 180.0,
-              "persistOnSceneChange": 0
-            },
-            "steam": {
-              "audioFile": "assets/audio/steam_hiss.wav",
-              "volume": 0.6000000238418579,
-              "pitch": 1.0,
-              "loop": 0,
-              "playOnStart": 0,
-              "muted": 0,
-              "fadeInOnStart": 0,
-              "fadeInDuration": 1.0,
-              "fadeOutOnStop": 0,
-              "fadeOutDuration": 1.0,
-              "isSpatial": 0,
-              "minDistance": 1.0,
-              "maxDistance": 100.0,
-              "spread": 180.0,
-              "persistOnSceneChange": 0
-            }
-          }
         }
       }
     },
@@ -309,6 +209,106 @@
               "isSpatial": 1,
               "minDistance": 1.399999976158142,
               "maxDistance": 53.0,
+              "spread": 180.0,
+              "persistOnSceneChange": 0
+            }
+          }
+        }
+      }
+    },
+    {
+      "prefabid": "eaa2ba42-971a-413b-b8c4-99b2f5ab674d",
+      "name": "fire(21)22",
+      "components": {
+        "Transform": {
+          "pos": [
+            1000.0,
+            -5.871227264404297,
+            0.019999999552965164
+          ]
+        },
+        "Render": {
+          "colorR": 1.0,
+          "colorG": 1.0,
+          "colorB": 1.0,
+          "colorA": 1.0,
+          "hasTex": 1,
+          "texture": "assets/textures/steam.png",
+          "hasAnimation": 1
+        },
+        "Physics": {
+          "autoUpdate": 0
+        },
+        "CollisionInfo": {
+          "colliderPos": [
+            0.0,
+            0.0
+          ],
+          "collisionTag": "steam"
+        },
+        "StateMachine": {
+          "Dancing": {
+            "animState": {
+              "texture": "",
+              "loop": 1,
+              "play": 0,
+              "totalColumn": 1,
+              "totalRow": 1,
+              "frameTime": 0.10000000149011612,
+              "initialFramCol": 0.0,
+              "initialFramRow": 0.0,
+              "lastFramCol": 0.0,
+              "lastFramRow": 0.0
+            }
+          },
+          "Emo": {
+            "animState": {
+              "texture": "",
+              "loop": 1,
+              "play": 0,
+              "totalColumn": 1,
+              "totalRow": 1,
+              "frameTime": 0.10000000149011612,
+              "initialFramCol": 0.0,
+              "initialFramRow": 0.0,
+              "lastFramCol": 0.0,
+              "lastFramRow": 0.0
+            }
+          }
+        },
+        "AudioComponent": {
+          "channels": {
+            "fire_loop": {
+              "audioFile": "assets/audio/fire_crackle.wav",
+              "volume": 0.5,
+              "pitch": 1.0,
+              "loop": 1,
+              "playOnStart": 0,
+              "muted": 0,
+              "fadeInOnStart": 0,
+              "fadeInDuration": 1.0,
+              "fadeOutOnStop": 1,
+              "fadeOutDuration": 0.30000001192092896,
+              "isSpatial": 1,
+              "minDistance": 5.0,
+              "maxDistance": 75.0,
+              "spread": 180.0,
+              "persistOnSceneChange": 0
+            },
+            "steam": {
+              "audioFile": "assets/audio/steam_hiss.wav",
+              "volume": 0.6000000238418579,
+              "pitch": 1.0,
+              "loop": 0,
+              "playOnStart": 0,
+              "muted": 0,
+              "fadeInOnStart": 0,
+              "fadeInDuration": 1.0,
+              "fadeOutOnStop": 0,
+              "fadeOutDuration": 1.0,
+              "isSpatial": 0,
+              "minDistance": 1.0,
+              "maxDistance": 100.0,
               "spread": 180.0,
               "persistOnSceneChange": 0
             }
@@ -432,8 +432,8 @@
       "components": {
         "Transform": {
           "pos": [
-            -18.257816314697266,
-            -5.2259697914123535,
+            -17.923847198486328,
+            -5.070173263549805,
             0.9980000257492065
           ]
         },
@@ -780,8 +780,8 @@
       "components": {
         "Transform": {
           "pos": [
-            -17.700252532958984,
-            -5.6861772537231445,
+            -17.366283416748047,
+            -5.530380725860596,
             0.0
           ],
           "rotation": 29.884000778198242,
@@ -848,18 +848,8 @@
           "enableCol": 1,
           "tiles": [
             {
-              "x": -7,
-              "y": -4,
-              "id": "assets/Texture\\Tilemap\\Sakura\\tile009.png"
-            },
-            {
               "x": 7,
               "y": -2,
-              "id": "assets/Texture\\Tilemap\\Sakura\\tile009.png"
-            },
-            {
-              "x": 6,
-              "y": -4,
               "id": "assets/Texture\\Tilemap\\Sakura\\tile009.png"
             },
             {
@@ -868,18 +858,33 @@
               "id": "assets/Texture\\Tilemap\\Sakura\\tile009.png"
             },
             {
+              "x": 9,
+              "y": 1,
+              "id": "assets/Texture\\Tilemap\\Sakura\\tile001.png"
+            },
+            {
+              "x": -7,
+              "y": -4,
+              "id": "assets/Texture\\Tilemap\\Sakura\\tile009.png"
+            },
+            {
+              "x": 10,
+              "y": 1,
+              "id": "assets/Texture\\Tilemap\\Sakura\\tile001.png"
+            },
+            {
               "x": -6,
               "y": -4,
               "id": "assets/Texture\\Tilemap\\Sakura\\tile009.png"
             },
             {
-              "x": -5,
-              "y": -4,
-              "id": "assets/Texture\\Tilemap\\Sakura\\tile009.png"
+              "x": 11,
+              "y": 1,
+              "id": "assets/Texture\\Tilemap\\Sakura\\tile001.png"
             },
             {
-              "x": 6,
-              "y": -2,
+              "x": -5,
+              "y": -4,
               "id": "assets/Texture\\Tilemap\\Sakura\\tile009.png"
             },
             {
@@ -908,9 +913,24 @@
               "id": "assets/Texture\\Tilemap\\Sakura\\tile001.png"
             },
             {
+              "x": 10,
+              "y": 0,
+              "id": "assets/Texture\\Tilemap\\Sakura\\tile009.png"
+            },
+            {
               "x": -5,
               "y": -3,
               "id": "assets/Texture\\Tilemap\\Sakura\\tile001.png"
+            },
+            {
+              "x": 11,
+              "y": 0,
+              "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
+            },
+            {
+              "x": 7,
+              "y": -3,
+              "id": "assets/Texture\\Tilemap\\Sakura\\tile009.png"
             },
             {
               "x": -4,
@@ -919,12 +939,12 @@
             },
             {
               "x": 6,
-              "y": -1,
-              "id": "assets/Texture\\Tilemap\\Sakura\\tile009.png"
+              "y": -3,
+              "id": "assets/Texture\\tilemap\\Sakura\\tile001.png"
             },
             {
               "x": 7,
-              "y": -3,
+              "y": -1,
               "id": "assets/Texture\\Tilemap\\Sakura\\tile009.png"
             },
             {
@@ -933,13 +953,8 @@
               "id": "assets/Texture\\Tilemap\\Sakura\\tile001.png"
             },
             {
-              "x": 6,
-              "y": -3,
-              "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
-            },
-            {
-              "x": 7,
-              "y": -1,
+              "x": 4,
+              "y": -4,
               "id": "assets/Texture\\Tilemap\\Sakura\\tile009.png"
             },
             {
@@ -953,22 +968,7 @@
               "id": "assets/Texture\\Tilemap\\Sakura\\tile009.png"
             },
             {
-              "x": 4,
-              "y": -4,
-              "id": "assets/Texture\\Tilemap\\Sakura\\tile009.png"
-            },
-            {
-              "x": 5,
-              "y": -2,
-              "id": "assets/Texture\\Tilemap\\Sakura\\tile009.png"
-            },
-            {
               "x": -2,
-              "y": -3,
-              "id": "assets/Texture\\Tilemap\\Sakura\\tile009.png"
-            },
-            {
-              "x": 5,
               "y": -3,
               "id": "assets/Texture\\Tilemap\\Sakura\\tile009.png"
             },
@@ -984,27 +984,12 @@
             },
             {
               "x": 4,
-              "y": -2,
-              "id": "assets/Texture\\Tilemap\\Sakura\\tile001.png"
-            },
-            {
-              "x": 5,
-              "y": -4,
-              "id": "assets/Texture\\Tilemap\\Sakura\\tile009.png"
+              "y": -3,
+              "id": "assets/Texture\\tilemap\\Sakura\\tile001.png"
             },
             {
               "x": -1,
               "y": -3,
-              "id": "assets/Texture\\Tilemap\\Sakura\\tile009.png"
-            },
-            {
-              "x": 4,
-              "y": -3,
-              "id": "assets/Texture\\Tilemap\\Sakura\\tile009.png"
-            },
-            {
-              "x": 5,
-              "y": -1,
               "id": "assets/Texture\\Tilemap\\Sakura\\tile009.png"
             },
             {
@@ -1043,11 +1028,21 @@
               "id": "assets/Texture\\Tilemap\\Sakura\\tile009.png"
             },
             {
+              "x": 8,
+              "y": 1,
+              "id": "assets/Texture\\Tilemap\\Sakura\\tile001.png"
+            },
+            {
               "x": -8,
               "y": -3,
               "id": "assets/Texture\\Tilemap\\Sakura\\tile001.png"
             },
             {
+              "x": 8,
+              "y": 0,
+              "id": "assets/Texture\\Tilemap\\Sakura\\tile009.png"
+            },
+            {
               "x": -9,
               "y": -3,
               "id": "assets/Texture\\Tilemap\\Sakura\\tile001.png"
@@ -1060,7 +1055,7 @@
             {
               "x": 2,
               "y": -2,
-              "id": "assets/Texture\\Tilemap\\Sakura\\tile001.png"
+              "id": "assets/Texture\\tilemap\\Sakura\\tile001.png"
             },
             {
               "x": 3,
@@ -1073,21 +1068,16 @@
               "id": "assets/Texture\\Tilemap\\Sakura\\tile009.png"
             },
             {
+              "x": 3,
+              "y": -2,
+              "id": "assets/Texture\\tilemap\\Sakura\\tile001.png"
+            },
+            {
               "x": 2,
               "y": -4,
               "id": "assets/Texture\\Tilemap\\Sakura\\tile009.png"
             },
             {
-              "x": 3,
-              "y": -2,
-              "id": "assets/Texture\\Tilemap\\Sakura\\tile001.png"
-            },
-            {
-              "x": 3,
-              "y": -3,
-              "id": "assets/Texture\\Tilemap\\Sakura\\tile009.png"
-            },
-            {
               "x": 8,
               "y": -1,
               "id": "assets/Texture\\Tilemap\\Sakura\\tile009.png"
@@ -1166,16 +1156,6 @@
               "x": 11,
               "y": -2,
               "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
-            },
-            {
-              "x": 5,
-              "y": 0,
-              "id": "assets/Texture\\Tilemap\\Sakura\\tile009.png"
-            },
-            {
-              "x": 6,
-              "y": 0,
-              "id": "assets/Texture\\Tilemap\\Sakura\\tile009.png"
             },
             {
               "x": 7,
@@ -1183,54 +1163,19 @@
               "id": "assets/Texture\\Tilemap\\Sakura\\tile009.png"
             },
             {
-              "x": 8,
-              "y": 0,
-              "id": "assets/Texture\\Tilemap\\Sakura\\tile009.png"
-            },
-            {
-              "x": 10,
-              "y": 0,
-              "id": "assets/Texture\\Tilemap\\Sakura\\tile009.png"
-            },
-            {
-              "x": 11,
-              "y": 0,
-              "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
-            },
-            {
-              "x": 5,
-              "y": 1,
-              "id": "assets/Texture\\Tilemap\\Sakura\\tile001.png"
-            },
-            {
-              "x": 6,
-              "y": 1,
-              "id": "assets/Texture\\Tilemap\\Sakura\\tile001.png"
-            },
-            {
               "x": 7,
               "y": 1,
               "id": "assets/Texture\\Tilemap\\Sakura\\tile001.png"
             },
             {
-              "x": 8,
-              "y": 1,
-              "id": "assets/Texture\\Tilemap\\Sakura\\tile001.png"
+              "x": 3,
+              "y": -3,
+              "id": "assets/Texture\\tilemap\\Sakura\\tile005.png"
             },
             {
-              "x": 9,
-              "y": 1,
-              "id": "assets/Texture\\Tilemap\\Sakura\\tile001.png"
-            },
-            {
-              "x": 10,
-              "y": 1,
-              "id": "assets/Texture\\Tilemap\\Sakura\\tile001.png"
-            },
-            {
-              "x": 11,
-              "y": 1,
-              "id": "assets/Texture\\Tilemap\\Sakura\\tile001.png"
+              "x": 5,
+              "y": -3,
+              "id": "assets/Texture\\tilemap\\Sakura\\tile001.png"
             }
           ]
         }
@@ -1241,8 +1186,8 @@
       "components": {
         "Transform": {
           "pos": [
-            6.031237602233887,
-            -2.871837854385376,
+            10.08578872680664,
+            -4.871838092803955,
             0.0
           ],
           "rotation": 1117.78369140625,
@@ -1518,24 +1463,34 @@
           "enableCol": 1,
           "tiles": [
             {
-              "x": -7,
-              "y": -4,
-              "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
-            },
-            {
               "x": 6,
               "y": -4,
-              "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
+              "id": "assets/Texture\\tilemap\\Sakura\\tile005.png"
             },
             {
               "x": 7,
               "y": -2,
-              "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
+              "id": "assets/Texture\\tilemap\\Sakura\\tile005.png"
             },
             {
               "x": -3,
               "y": -4,
               "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
+            },
+            {
+              "x": 9,
+              "y": 1,
+              "id": "assets/Texture\\Tilemap\\Sakura\\tile009.png"
+            },
+            {
+              "x": -7,
+              "y": -4,
+              "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
+            },
+            {
+              "x": 10,
+              "y": 1,
+              "id": "assets/Texture\\Tilemap\\Sakura\\tile009.png"
             },
             {
               "x": -6,
@@ -1550,12 +1505,7 @@
             {
               "x": 7,
               "y": -4,
-              "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
-            },
-            {
-              "x": 6,
-              "y": -2,
-              "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
+              "id": "assets/Texture\\tilemap\\Sakura\\tile005.png"
             },
             {
               "x": -4,
@@ -1578,9 +1528,24 @@
               "id": "assets/Texture\\Tilemap\\Sakura\\tile009.png"
             },
             {
+              "x": 10,
+              "y": 0,
+              "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
+            },
+            {
               "x": -5,
               "y": -3,
               "id": "assets/Texture\\Tilemap\\Sakura\\tile009.png"
+            },
+            {
+              "x": 11,
+              "y": 0,
+              "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
+            },
+            {
+              "x": 7,
+              "y": -3,
+              "id": "assets/Texture\\tilemap\\Sakura\\tile005.png"
             },
             {
               "x": -4,
@@ -1588,14 +1553,14 @@
               "id": "assets/Texture\\Tilemap\\Sakura\\tile009.png"
             },
             {
-              "x": 7,
+              "x": 6,
               "y": -3,
-              "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
+              "id": "assets/Texture\\tilemap\\Sakura\\tile005.png"
             },
             {
-              "x": 6,
+              "x": 7,
               "y": -1,
-              "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
+              "id": "assets/Texture\\tilemap\\Sakura\\tile005.png"
             },
             {
               "x": -3,
@@ -1603,14 +1568,9 @@
               "id": "assets/Texture\\Tilemap\\Sakura\\tile009.png"
             },
             {
-              "x": 7,
-              "y": -1,
-              "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
-            },
-            {
-              "x": 6,
-              "y": -3,
-              "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
+              "x": 4,
+              "y": -4,
+              "id": "assets/Texture\\tilemap\\Sakura\\tile005.png"
             },
             {
               "x": -1,
@@ -1623,22 +1583,7 @@
               "id": "assets/Texture\\Tilemap\\Sakura\\tile009.png"
             },
             {
-              "x": 5,
-              "y": -2,
-              "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
-            },
-            {
-              "x": 4,
-              "y": -4,
-              "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
-            },
-            {
               "x": -2,
-              "y": -3,
-              "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
-            },
-            {
-              "x": 5,
               "y": -3,
               "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
             },
@@ -1653,27 +1598,12 @@
               "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
             },
             {
-              "x": 5,
-              "y": -4,
-              "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
-            },
-            {
               "x": 4,
-              "y": -2,
-              "id": "assets/Texture\\Tilemap\\Sakura\\tile009.png"
+              "y": -3,
+              "id": "assets/Texture\\tilemap\\Sakura\\tile005.png"
             },
             {
               "x": -1,
-              "y": -3,
-              "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
-            },
-            {
-              "x": 5,
-              "y": -1,
-              "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
-            },
-            {
-              "x": 4,
               "y": -3,
               "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
             },
@@ -1713,11 +1643,21 @@
               "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
             },
             {
+              "x": 8,
+              "y": 1,
+              "id": "assets/Texture\\Tilemap\\Sakura\\tile009.png"
+            },
+            {
               "x": -8,
               "y": -3,
               "id": "assets/Texture\\Tilemap\\Sakura\\tile009.png"
             },
             {
+              "x": 8,
+              "y": 0,
+              "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
+            },
+            {
               "x": -9,
               "y": -3,
               "id": "assets/Texture\\Tilemap\\Sakura\\tile009.png"
@@ -1745,7 +1685,7 @@
             {
               "x": 3,
               "y": -2,
-              "id": "assets/Texture\\Tilemap\\Sakura\\tile009.png"
+              "id": "assets/Texture\\tilemap\\Sakura\\tile005.png"
             },
             {
               "x": 2,
@@ -1755,7 +1695,7 @@
             {
               "x": 3,
               "y": -3,
-              "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
+              "id": "assets/Texture\\tilemap\\Sakura\\tile005.png"
             },
             {
               "x": 9,
@@ -1835,72 +1775,32 @@
             {
               "x": 10,
               "y": -4,
-              "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
-            },
-            {
-              "x": 5,
-              "y": 0,
-              "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
-            },
-            {
-              "x": 6,
-              "y": 0,
               "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
             },
             {
               "x": 7,
               "y": 0,
-              "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
-            },
-            {
-              "x": 8,
-              "y": 0,
-              "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
-            },
-            {
-              "x": 10,
-              "y": 0,
-              "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
-            },
-            {
-              "x": 11,
-              "y": 0,
-              "id": "assets/Texture\\Platform_Tile_Map_Sakura.png"
-            },
-            {
-              "x": 5,
-              "y": 1,
-              "id": "assets/Texture\\Tilemap\\Sakura\\tile009.png"
-            },
-            {
-              "x": 6,
-              "y": 1,
-              "id": "assets/Texture\\Tilemap\\Sakura\\tile009.png"
+              "id": "assets/Texture\\tilemap\\Sakura\\tile005.png"
             },
             {
               "x": 7,
               "y": 1,
-              "id": "assets/Texture\\Tilemap\\Sakura\\tile009.png"
-            },
-            {
-              "x": 8,
-              "y": 1,
-              "id": "assets/Texture\\Tilemap\\Sakura\\tile009.png"
-            },
-            {
-              "x": 9,
-              "y": 1,
-              "id": "assets/Texture\\Tilemap\\Sakura\\tile009.png"
-            },
-            {
-              "x": 10,
-              "y": 1,
-              "id": "assets/Texture\\Tilemap\\Sakura\\tile009.png"
+              "id": "assets/Texture\\tilemap\\Sakura\\tile005.png"
             },
             {
               "x": 11,
               "y": 1,
               "id": "assets/Texture\\Tilemap\\Sakura\\tile009.png"
+            },
+            {
+              "x": 5,
+              "y": -4,
+              "id": "assets/Texture\\tilemap\\Sakura\\tile005.png"
+            },
+            {
+              "x": 5,
+              "y": -3,
+              "id": "assets/Texture\\tilemap\\Sakura\\tile005.png"
             }
           ]
         }
@@ -2003,7 +1903,7 @@
           "channels": {
             "change": {
               "audioFile": "assets/Audio\\SFX\\Japanese-CheckPoint-C_YAAY_SFX.wav",
-              "volume": 0.07000000029802322,
+              "volume": 0.10000000149011612,
               "pitch": 1.0,
               "loop": 0,
               "playOnStart": 0,
@@ -2030,8 +1930,8 @@
       "components": {
         "Transform": {
           "pos": [
-            5.991283416748047,
-            -0.6364603638648987,
+            10.079888343811035,
+            -3.0834245681762695,
             0.9599999785423279
           ],
           "rotation": 0.0,

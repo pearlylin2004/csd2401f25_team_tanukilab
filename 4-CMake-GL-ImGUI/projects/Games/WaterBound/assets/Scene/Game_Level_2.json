@@ -164,8 +164,8 @@
       "components": {
         "Transform": {
           "pos": [
-            3.0999999046325684,
-            -0.4000000059604645,
+            3.156022310256958,
+            -0.4560224115848541,
             -0.07900000363588333
           ],
           "rotation": 0.0,
@@ -529,14 +529,14 @@
       "components": {
         "Transform": {
           "pos": [
-            -0.5,
-            0.8999999761581421,
-            -0.800000011920929
+            5.900000095367432,
+            -1.100000023841858,
+            -0.6000000238418579
           ],
           "rotation": 0.0,
           "scale": [
-            39.599998474121094,
-            18.069000244140625,
+            52.400001525878906,
+            14.737500190734863,
             0.0
           ]
         },
@@ -547,7 +547,7 @@
           "colorB": 1.0,
           "colorA": 1.0,
           "hasTex": 1,
-          "texture": "assets/Texture\\BG\\Clouds.png",
+          "texture": "assets/Texture\\BG\\Clouds (1).png",
           "hasAnimation": 0
         }
       }
@@ -1349,8 +1349,8 @@
               "fadeOutOnStop": 0,
               "fadeOutDuration": 1.0,
               "isSpatial": 1,
-              "minDistance": 1.0,
-              "maxDistance": 64.0,
+              "minDistance": 0.10000000149011612,
+              "maxDistance": 133.0,
               "spread": 180.0,
               "persistOnSceneChange": 0
             }
@@ -1934,7 +1934,7 @@
         "Transform": {
           "pos": [
             0.0,
-            -0.30000001192092896,
+            4.599999904632568,
             -0.800000011920929
           ],
           "rotation": 0.0,

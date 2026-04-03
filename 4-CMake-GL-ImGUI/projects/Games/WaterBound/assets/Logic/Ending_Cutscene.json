@@ -35,7 +35,7 @@
       "implementation": "Check Timer",
       "type": 2,
       "position": [
-        350.9999694824219,
+        349.0,
         332.4285888671875
       ],
       "hasInput": true,
@@ -81,7 +81,7 @@
       "implementation": "Print Message",
       "type": 1,
       "position": [
-        1128.0,
+        1126.0,
         319.0
       ],
       "hasInput": true,
@@ -110,12 +110,6 @@
       "fromNodeId": 5,
       "outputPin": "True",
       "toNodeId": 4,
-      "inputPin": "In"
-    },
-    {
-      "fromNodeId": 4,
-      "outputPin": "Out",
-      "toNodeId": 8,
       "inputPin": "In"
     }
   ]

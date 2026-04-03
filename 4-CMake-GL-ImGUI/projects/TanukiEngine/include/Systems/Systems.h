@@ -171,6 +171,7 @@ public:
 	
 	void pause(Video* video) { video->isPaused = true; }
 	void resume(Video* video) { video->isPaused = false; }
+	static void startDecodeThread(Video* video);
 
 	void stop(Video* video) {
 		cleanup(video);
