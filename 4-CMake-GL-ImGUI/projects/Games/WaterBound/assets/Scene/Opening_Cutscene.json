@@ -369,7 +369,7 @@
         "AudioComponent": {
           "channels": {
             "opening_bgm": {
-              "audioFile": "assets/Audio\\CutScene\\Tanuki Cut Scene Audio.wav",
+              "audioFile": "assets/Audio\\CutScene\\Opening cutscene.wav",
               "volume": 1.0,
               "pitch": 1.0,
               "loop": 0,
