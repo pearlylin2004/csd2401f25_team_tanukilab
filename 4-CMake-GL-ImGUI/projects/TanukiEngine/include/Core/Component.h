@@ -141,6 +141,7 @@ public:
     std::vector<uint8_t> frameQueue[FRAME_QUEUE_SIZE];
     std::atomic<int> frameQueueHead = 0; // decode thread writes here
     std::atomic<int> frameQueueTail = 0; // main thread reads here
+    std::mutex plmMutex;
     std::atomic<bool> stopDecode = false;
 
 	std::function<void()> onVideoEnd; //callback function for when video ends, can use lambda to make it change scene etc
