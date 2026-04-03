@@ -71,10 +71,13 @@ int main(int argc, char** argv) {
 
             // ESC (keyboard) -> pause
             if (InputHandler::isKeyTriggered(GLFW_KEY_ESCAPE)) {
-                if (!SceneManager::getInstance().isPaused() && SceneManager::getInstance().getCurrentSceneName() != "menu_scene.json")
+                if (!SceneManager::getInstance().isPaused() &&
+                    SceneManager::getInstance().getCurrentSceneName() != "menu_scene.json" &&
+                    SceneManager::getInstance().getCurrentSceneName() != "Ending_Cutscene.json" &&
+                    SceneManager::getInstance().getCurrentSceneName() != "Opening_Cutscene.json")
                     SceneManager::getInstance().requestPause("pause_scene.json");
             }
-
+                
             // START (gamepad) -> main menu
             if (InputHandler::isGamepadButtonTriggered(GLFW_GAMEPAD_BUTTON_START)) {
                 if (SceneManager::getInstance().getCurrentSceneName() != "menu_scene.json") {

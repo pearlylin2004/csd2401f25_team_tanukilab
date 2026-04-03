@@ -542,9 +542,15 @@ void RenderSystem::batchingSetUp(GameObjectManager& manager, float const& deltaT
 				if (EditorManager::isEditingMode()) {
 					if (!video->videoTexID && !video->videoFile.empty()) {
 						VideoSystem::loadVideo(video);
-						if (video->plm) {
+						// stop decode thread and clean up plm
+						video->stopDecode = true;
+
+						if (video->decodeThread.joinable()) 
+							video->decodeThread.join();
+
+						if (video->plm) { 
 							plm_destroy(video->plm);
-							video->plm = nullptr;
+							video->plm = nullptr; 
 						}
 					}
 					if (video->videoTexID) {
