@@ -23,8 +23,8 @@
       "implementation": "Play Sound",
       "type": 1,
       "position": [
-        64.00005340576172,
-        -17.000022888183594
+        64.00006103515625,
+        -17.0
       ],
       "hasInput": true,
       "hasOutput": true,
@@ -39,8 +39,8 @@
       "implementation": "Load Level",
       "type": 1,
       "position": [
-        904.666748046875,
-        -141.66668701171875
+        878.666748046875,
+        -242.66668701171875
       ],
       "hasInput": true,
       "hasOutput": true,
@@ -71,7 +71,7 @@
       "implementation": "Check Timer",
       "type": 2,
       "position": [
-        518.6666870117188,
+        518.666748046875,
         -266.0
       ],
       "hasInput": true,
@@ -88,8 +88,8 @@
       "implementation": "Reset Timer",
       "type": 1,
       "position": [
-        450.33331298828125,
-        -91.0000228881836
+        450.333251953125,
+        -91.0
       ],
       "hasInput": true,
       "hasOutput": true,
@@ -117,8 +117,8 @@
       "implementation": "Set Float",
       "type": 1,
       "position": [
-        423.3334045410156,
-        38.33333969116211
+        423.3333740234375,
+        38.3333740234375
       ],
       "hasInput": true,
       "hasOutput": true,
@@ -134,8 +134,8 @@
       "implementation": "Compare Variable",
       "type": 2,
       "position": [
-        155.00003051757813,
-        -263.33343505859375
+        165.0,
+        -266.33343505859375
       ],
       "hasInput": true,
       "hasOutput": false,
@@ -165,7 +165,7 @@
       "implementation": "Set Float",
       "type": 1,
       "position": [
-        158.33335876464844,
+        158.3333740234375,
         -403.3334045410156
       ],
       "hasInput": true,
@@ -189,6 +189,70 @@
       "hasOutput": true,
       "hasTrueOutput": false,
       "hasFalseOutput": false
+    },
+    {
+      "id": 18,
+      "implementation": "Print Message",
+      "type": 1,
+      "position": [
+        723.0,
+        36.0
+      ],
+      "hasInput": true,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false,
+      "parameters": {
+        "message": "set float"
+      }
+    },
+    {
+      "id": 19,
+      "implementation": "Print Message",
+      "type": 1,
+      "position": [
+        1209.0,
+        -254.0
+      ],
+      "hasInput": true,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false,
+      "parameters": {
+        "message": "load scene"
+      }
+    },
+    {
+      "id": 20,
+      "implementation": "Print Message",
+      "type": 1,
+      "position": [
+        844.0,
+        -384.0
+      ],
+      "hasInput": true,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false,
+      "parameters": {
+        "message": "more than 3sec"
+      }
+    },
+    {
+      "id": 21,
+      "implementation": "Print Message",
+      "type": 1,
+      "position": [
+        488.0,
+        -411.0
+      ],
+      "hasInput": true,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false,
+      "parameters": {
+        "message": "timer yes"
+      }
     }
   ],
   "connections": [
@@ -244,6 +308,30 @@
       "fromNodeId": 1,
       "outputPin": "Out",
       "toNodeId": 17,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 12,
+      "outputPin": "Out",
+      "toNodeId": 18,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 3,
+      "outputPin": "Out",
+      "toNodeId": 19,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 5,
+      "outputPin": "True",
+      "toNodeId": 20,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 14,
+      "outputPin": "True",
+      "toNodeId": 21,
       "inputPin": "In"
     }
   ]
