@@ -114,6 +114,36 @@
       "parameters": {
         "channel": "Spin"
       }
+    },
+    {
+      "id": 8,
+      "implementation": "On Start",
+      "type": 0,
+      "position": [
+        -152.0,
+        -212.0
+      ],
+      "hasInput": false,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false
+    },
+    {
+      "id": 9,
+      "implementation": "Set Global Float",
+      "type": 1,
+      "position": [
+        178.0,
+        -224.0
+      ],
+      "hasInput": true,
+      "hasOutput": true,
+      "hasTrueOutput": false,
+      "hasFalseOutput": false,
+      "parameters": {
+        "value": "0",
+        "variable": "wheelSpin2"
+      }
     }
   ],
   "connections": [
@@ -145,6 +175,12 @@
       "fromNodeId": 5,
       "outputPin": "True",
       "toNodeId": 7,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 8,
+      "outputPin": "Out",
+      "toNodeId": 9,
       "inputPin": "In"
     }
   ]
