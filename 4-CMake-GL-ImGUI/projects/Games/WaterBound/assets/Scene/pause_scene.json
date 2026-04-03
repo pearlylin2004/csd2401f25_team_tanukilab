@@ -26,88 +26,6 @@
   "onLoadScript": "assets/scripting\\pause_scene_load.lua",
   "objects": [
     {
-      "name": "Back",
-      "components": {
-        "Transform": {
-          "pos": [
-            -16.681079864501953,
-            8.366436958312988,
-            0.20000000298023224
-          ],
-          "rotation": 0.0,
-          "scale": [
-            5.300000190734863,
-            1.3639999628067017,
-            0.0
-          ]
-        },
-        "Render": {
-          "shape": "square",
-          "colorR": 1.0,
-          "colorG": 1.0,
-          "colorB": 1.0,
-          "colorA": 1.0,
-          "hasTex": 1,
-          "texture": "assets/Texture\\Menu_Button.png",
-          "hasAnimation": 0
-        },
-        "AudioComponent": {
-          "channels": {
-            "onclick": {
-              "audioFile": "assets/Audio\\SFX\\UI Hover CarparkIsFullwav 1.wav",
-              "volume": 0.5,
-              "pitch": 1.0,
-              "loop": 0,
-              "playOnStart": 0,
-              "muted": 0,
-              "fadeInOnStart": 0,
-              "fadeInDuration": 0.20000000298023224,
-              "fadeOutOnStop": 0,
-              "fadeOutDuration": 1.0,
-              "isSpatial": 0,
-              "minDistance": 1.0,
-              "maxDistance": 100.0,
-              "spread": 180.0,
-              "persistOnSceneChange": 1
-            }
-          }
-        },
-        "Button": {
-          "action": "back",
-          "onClickChannel": "onclick",
-          "onHoverChannel": ""
-        }
-      }
-    },
-    {
-      "name": "Rectangle_9",
-      "components": {
-        "Transform": {
-          "pos": [
-            -17.635011672973633,
-            8.092957496643066,
-            5.0
-          ],
-          "rotation": 0.0,
-          "scale": [
-            1.0,
-            1.0,
-            0.0
-          ]
-        },
-        "FontComponent": {
-          "word": "Back",
-          "color": [
-            0.0,
-            0.0,
-            0.0
-          ],
-          "scale": 1.0,
-          "fontType": 0
-        }
-      }
-    },
-    {
       "name": "pause_background",
       "components": {
         "Transform": {
@@ -140,14 +58,14 @@
       "components": {
         "Transform": {
           "pos": [
-            0.0,
-            0.800000011920929,
+            -0.15000000596046448,
+            1.0,
             1.0
           ],
           "rotation": 0.0,
           "scale": [
-            7.0,
-            1.5,
+            8.25,
+            2.9000000953674316,
             0.0
           ]
         },
@@ -158,7 +76,7 @@
           "colorB": 1.0,
           "colorA": 1.0,
           "hasTex": 1,
-          "texture": "assets/button.png",
+          "texture": "assets/Texture\\button_pause_how_to_play.png",
           "hasAnimation": 0
         },
         "AudioComponent": {
@@ -191,102 +109,18 @@
       }
     },
     {
-      "name": "control_text",
-      "components": {
-        "Transform": {
-          "pos": [
-            -2.200000047683716,
-            0.5,
-            1.0
-          ],
-          "rotation": 0.0,
-          "scale": [
-            1.0,
-            1.0,
-            0.0
-          ]
-        },
-        "FontComponent": {
-          "word": "How to play",
-          "color": [
-            0.0,
-            0.0,
-            0.0
-          ],
-          "scale": 0.8999999761581421,
-          "fontType": 0
-        }
-      }
-    },
-    {
-      "name": "menu_text",
-      "components": {
-        "Transform": {
-          "pos": [
-            -2.200000047683716,
-            -2.700000047683716,
-            1.0
-          ],
-          "rotation": 0.0,
-          "scale": [
-            1.0,
-            1.0,
-            0.0
-          ]
-        },
-        "FontComponent": {
-          "word": "MAIN MENU",
-          "color": [
-            0.0,
-            0.0,
-            0.0
-          ],
-          "scale": 0.8999999761581421,
-          "fontType": 0
-        }
-      }
-    },
-    {
-      "name": "resume_text",
-      "components": {
-        "Transform": {
-          "pos": [
-            -1.4701896905899048,
-            -1.0,
-            1.0
-          ],
-          "rotation": 0.0,
-          "scale": [
-            1.0,
-            1.0,
-            0.0
-          ]
-        },
-        "FontComponent": {
-          "word": "Restart",
-          "color": [
-            0.0,
-            0.0,
-            0.0
-          ],
-          "scale": 0.8999999761581421,
-          "fontType": 0
-        }
-      }
-    },
-    {
       "name": "menu_button",
       "components": {
         "Transform": {
           "pos": [
-            0.0,
+            -0.10000000149011612,
             -2.4000000953674316,
             1.0
           ],
           "rotation": 0.0,
           "scale": [
-            7.0,
-            1.5,
+            8.399999618530273,
+            2.9000000953674316,
             0.0
           ]
         },
@@ -297,7 +131,7 @@
           "colorB": 1.0,
           "colorA": 1.0,
           "hasTex": 1,
-          "texture": "assets/button.png",
+          "texture": "assets/Texture\\button_pause_mainmenu.png",
           "hasAnimation": 0
         },
         "AudioComponent": {
@@ -338,13 +172,13 @@
         "Transform": {
           "pos": [
             -0.0634920671582222,
-            -0.699999988079071,
+            -0.8999999761581421,
             1.0
           ],
           "rotation": 0.0,
           "scale": [
-            7.0,
-            1.5,
+            8.300000190734863,
+            3.0999999046325684,
             0.0
           ]
         },
@@ -355,7 +189,7 @@
           "colorB": 1.0,
           "colorA": 1.0,
           "hasTex": 1,
-          "texture": "assets/button.png",
+          "texture": "assets/Texture\\Button_pause_restart.png",
           "hasAnimation": 0
         },
         "AudioComponent": {
@@ -411,6 +245,60 @@
           "hasTex": 1,
           "texture": "assets/menu_background.png",
           "hasAnimation": 0
+        }
+      }
+    },
+    {
+      "name": "Back7",
+      "components": {
+        "Transform": {
+          "pos": [
+            -16.545948028564453,
+            8.293000221252441,
+            0.20000000298023224
+          ],
+          "rotation": 0.0,
+          "scale": [
+            6.300000190734863,
+            2.1640000343322754,
+            0.0
+          ]
+        },
+        "Render": {
+          "shape": "square",
+          "colorR": 1.0,
+          "colorG": 1.0,
+          "colorB": 1.0,
+          "colorA": 1.0,
+          "hasTex": 1,
+          "texture": "assets/Texture\\Button_pause_back.png",
+          "hasAnimation": 0
+        },
+        "AudioComponent": {
+          "channels": {
+            "onclick": {
+              "audioFile": "assets/Audio\\SFX\\UI Hover CarparkIsFullwav 1.wav",
+              "volume": 0.5,
+              "pitch": 1.0,
+              "loop": 0,
+              "playOnStart": 0,
+              "muted": 0,
+              "fadeInOnStart": 0,
+              "fadeInDuration": 0.20000000298023224,
+              "fadeOutOnStop": 0,
+              "fadeOutDuration": 1.0,
+              "isSpatial": 0,
+              "minDistance": 1.0,
+              "maxDistance": 100.0,
+              "spread": 180.0,
+              "persistOnSceneChange": 1
+            }
+          }
+        },
+        "Button": {
+          "action": "back",
+          "onClickChannel": "onclick",
+          "onHoverChannel": ""
         }
       }
     }

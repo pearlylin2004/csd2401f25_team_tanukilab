@@ -26,46 +26,18 @@
   "onLoadScript": "assets/scripting\\menu_scene_load.lua",
   "objects": [
     {
-      "name": "WaterBound_Logo",
-      "components": {
-        "Transform": {
-          "pos": [
-            -7.599999904632568,
-            4.400000095367432,
-            1.0
-          ],
-          "rotation": 0.0,
-          "scale": [
-            20.100000381469727,
-            3.8884148597717285,
-            0.0
-          ]
-        },
-        "Render": {
-          "shape": "square",
-          "colorR": 1.0,
-          "colorG": 1.0,
-          "colorB": 1.0,
-          "colorA": 1.0,
-          "hasTex": 1,
-          "texture": "assets/Texture\\WaterBound_Final_Logo.png",
-          "hasAnimation": 0
-        }
-      }
-    },
-    {
       "name": "audio_button",
       "components": {
         "Transform": {
           "pos": [
-            -8.088594436645508,
-            -4.886275768280029,
+            -7.689000129699707,
+            -4.986000061035156,
             1.0
           ],
           "rotation": 0.0,
           "scale": [
-            8.5,
-            3.1875,
+            13.5,
+            3.4875001907348633,
             0.0
           ]
         },
@@ -76,7 +48,7 @@
           "colorB": 1.0,
           "colorA": 1.0,
           "hasTex": 1,
-          "texture": "assets/Texture\\Button_Settings.png",
+          "texture": "assets/Texture\\button_settings.png",
           "hasAnimation": 0
         },
         "AudioComponent": {
@@ -129,18 +101,18 @@
       }
     },
     {
-      "name": "play_button",
+      "name": "WaterBound_Logo",
       "components": {
         "Transform": {
           "pos": [
-            -7.8987274169921875,
-            0.5949365496635437,
+            -7.599999904632568,
+            4.400000095367432,
             1.0
           ],
           "rotation": 0.0,
           "scale": [
-            7.599999904632568,
-            2.8499999046325684,
+            20.100000381469727,
+            3.8884148597717285,
             0.0
           ]
         },
@@ -151,7 +123,35 @@
           "colorB": 1.0,
           "colorA": 1.0,
           "hasTex": 1,
-          "texture": "assets/Texture\\Button_Start.png",
+          "texture": "assets/Texture\\WaterBound_Final_Logo.png",
+          "hasAnimation": 0
+        }
+      }
+    },
+    {
+      "name": "play_button",
+      "components": {
+        "Transform": {
+          "pos": [
+            -7.89900016784668,
+            0.9950000047683716,
+            1.0
+          ],
+          "rotation": 0.0,
+          "scale": [
+            14.5,
+            3.7875001430511475,
+            0.0
+          ]
+        },
+        "Render": {
+          "shape": "square",
+          "colorR": 1.0,
+          "colorG": 1.0,
+          "colorB": 1.0,
+          "colorA": 1.0,
+          "hasTex": 1,
+          "texture": "assets/Texture\\button_start.png",
           "hasAnimation": 0
         },
         "AudioComponent": {
@@ -235,14 +235,14 @@
       "components": {
         "Transform": {
           "pos": [
-            -8.023622512817383,
-            -2.2088606357574463,
+            -7.723999977111816,
+            -2.009000062942505,
             1.0
           ],
           "rotation": 0.0,
           "scale": [
-            8.0,
-            3.0,
+            15.199999809265137,
+            4.180743217468262,
             0.0
           ]
         },
@@ -253,7 +253,7 @@
           "colorB": 1.0,
           "colorA": 1.0,
           "hasTex": 1,
-          "texture": "assets/Texture\\Button_How_to_play.png",
+          "texture": "assets/Texture\\button_how_to_play.png",
           "hasAnimation": 0
         },
         "AudioComponent": {
@@ -311,13 +311,13 @@
         "Transform": {
           "pos": [
             -8.088598251342773,
-            -7.753164291381836,
+            -7.953000068664551,
             1.0
           ],
           "rotation": 0.0,
           "scale": [
-            8.5,
-            3.1875,
+            12.699999809265137,
+            3.4125001430511475,
             0.0
           ]
         },
@@ -328,7 +328,7 @@
           "colorB": 1.0,
           "colorA": 1.0,
           "hasTex": 1,
-          "texture": "assets/Texture\\Button_Quit.png",
+          "texture": "assets/Texture\\button_quit.png",
           "hasAnimation": 0
         },
         "AudioComponent": {

@@ -26,18 +26,18 @@
   "onLoadScript": "assets/scripting\\pause_scene_load.lua",
   "objects": [
     {
-      "name": "Back",
+      "name": "Back4",
       "components": {
         "Transform": {
           "pos": [
-            -16.681079864501953,
+            -16.481000900268555,
             8.383999824523926,
             0.20000000298023224
           ],
           "rotation": 0.0,
           "scale": [
-            5.300000190734863,
-            1.3639999628067017,
+            6.300000190734863,
+            2.1640000343322754,
             0.0
           ]
         },
@@ -48,7 +48,7 @@
           "colorB": 1.0,
           "colorA": 1.0,
           "hasTex": 1,
-          "texture": "assets/Texture\\Menu_Button.png",
+          "texture": "assets/Texture\\Button_pause_back.png",
           "hasAnimation": 0
         },
         "AudioComponent": {
@@ -108,18 +108,18 @@
       }
     },
     {
-      "name": "box",
+      "name": "box4",
       "components": {
         "Transform": {
           "pos": [
-            0.0,
-            -0.4000000059604645,
+            -0.10000000149011612,
+            -0.10000000149011612,
             0.0
           ],
           "rotation": 0.0,
           "scale": [
-            30.0,
-            21.0,
+            30.5,
+            19.0,
             0.0
           ]
         },
@@ -130,372 +130,8 @@
           "colorB": 1.0,
           "colorA": 1.0,
           "hasTex": 1,
-          "texture": "assets/Texture\\Pause_Sign_Base_V2.png",
+          "texture": "assets/Texture\\Sign_Credits.png",
           "hasAnimation": 0
-        }
-      }
-    },
-    {
-      "name": "credit_title",
-      "components": {
-        "Transform": {
-          "pos": [
-            -2.5,
-            4.0,
-            5.0
-          ],
-          "rotation": 0.0,
-          "scale": [
-            1.0,
-            1.0,
-            0.0
-          ]
-        },
-        "FontComponent": {
-          "word": "Credit",
-          "color": [
-            0.0,
-            0.0,
-            0.0
-          ],
-          "scale": 2.0,
-          "fontType": 0
-        }
-      }
-    },
-    {
-      "name": "President",
-      "components": {
-        "Transform": {
-          "pos": [
-            -7.0,
-            2.5,
-            5.0
-          ],
-          "rotation": 0.0,
-          "scale": [
-            1.0,
-            1.0,
-            0.0
-          ]
-        },
-        "FontComponent": {
-          "word": "President                   Artist",
-          "color": [
-            0.0,
-            0.0,
-            0.0
-          ],
-          "scale": 1.0,
-          "fontType": 0
-        }
-      }
-    },
-    {
-      "name": "Product Manager",
-      "components": {
-        "Transform": {
-          "pos": [
-            -8.5,
-            0.0,
-            5.0
-          ],
-          "rotation": 0.0,
-          "scale": [
-            1.0,
-            1.0,
-            0.0
-          ]
-        },
-        "FontComponent": {
-          "word": "Product Manager            Tech Lead",
-          "color": [
-            0.0,
-            0.0,
-            0.0
-          ],
-          "scale": 1.0,
-          "fontType": 0
-        }
-      }
-    },
-    {
-      "name": "pa_name",
-      "components": {
-        "Transform": {
-          "pos": [
-            -7.5,
-            1.5,
-            5.0
-          ],
-          "rotation": 0.0,
-          "scale": [
-            1.0,
-            1.0,
-            0.0
-          ]
-        },
-        "FontComponent": {
-          "word": "Claude Comair         Barry      Aaron",
-          "color": [
-            0.0,
-            0.0,
-            0.0
-          ],
-          "scale": 1.0,
-          "fontType": 0
-        }
-      }
-    },
-    {
-      "name": "pt_name",
-      "components": {
-        "Transform": {
-          "pos": [
-            -7.5,
-            -1.0,
-            5.0
-          ],
-          "rotation": 0.0,
-          "scale": [
-            1.0,
-            1.0,
-            0.0
-          ]
-        },
-        "FontComponent": {
-          "word": "Yeo Zhi Ming              Varick Teo   ",
-          "color": [
-            0.0,
-            0.0,
-            0.0
-          ],
-          "scale": 1.0,
-          "fontType": 0
-        }
-      }
-    },
-    {
-      "name": "Programmers",
-      "components": {
-        "Transform": {
-          "pos": [
-            -2.5,
-            -2.5,
-            5.0
-          ],
-          "rotation": 0.0,
-          "scale": [
-            1.0,
-            1.0,
-            0.0
-          ]
-        },
-        "FontComponent": {
-          "word": "Programmer",
-          "color": [
-            0.0,
-            0.0,
-            0.0
-          ],
-          "scale": 1.0,
-          "fontType": 0
-        }
-      }
-    },
-    {
-      "name": "programmer_name",
-      "components": {
-        "Transform": {
-          "pos": [
-            -12.0,
-            -3.5,
-            5.0
-          ],
-          "rotation": 0.0,
-          "scale": [
-            1.0,
-            1.0,
-            0.0
-          ]
-        },
-        "FontComponent": {
-          "word": "Tan Chee Qing       Asha Mathyalakan       Seow Sin Le",
-          "color": [
-            0.0,
-            0.0,
-            0.0
-          ],
-          "scale": 1.0,
-          "fontType": 0
-        }
-      }
-    },
-    {
-      "name": "programmer_name2",
-      "components": {
-        "Transform": {
-          "pos": [
-            -5.0,
-            -4.5,
-            5.0
-          ],
-          "rotation": 0.0,
-          "scale": [
-            1.0,
-            1.0,
-            0.0
-          ]
-        },
-        "FontComponent": {
-          "word": "Pearly Lin       Hugo Low",
-          "color": [
-            0.0,
-            0.0,
-            0.0
-          ],
-          "scale": 1.0,
-          "fontType": 0
-        }
-      }
-    },
-    {
-      "name": "Instructors",
-      "components": {
-        "Transform": {
-          "pos": [
-            -2.5,
-            -6.0,
-            5.0
-          ],
-          "rotation": 0.0,
-          "scale": [
-            1.0,
-            1.0,
-            0.0
-          ]
-        },
-        "FontComponent": {
-          "word": "Instructor",
-          "color": [
-            0.0,
-            0.0,
-            0.0
-          ],
-          "scale": 1.0,
-          "fontType": 0
-        }
-      }
-    },
-    {
-      "name": "i_name3",
-      "components": {
-        "Transform": {
-          "pos": [
-            -12.0,
-            -9.0,
-            5.0
-          ],
-          "rotation": 0.0,
-          "scale": [
-            1.0,
-            1.0,
-            0.0
-          ]
-        },
-        "FontComponent": {
-          "word": "Richard Tsao     Vuk Krakovic     Raymond Teo      Issac Tan",
-          "color": [
-            0.0,
-            0.0,
-            0.0
-          ],
-          "scale": 1.0,
-          "fontType": 0
-        }
-      }
-    },
-    {
-      "name": "i_name2",
-      "components": {
-        "Transform": {
-          "pos": [
-            -12.0,
-            -8.0,
-            5.0
-          ],
-          "rotation": 0.0,
-          "scale": [
-            1.0,
-            1.0,
-            0.0
-          ]
-        },
-        "FontComponent": {
-          "word": "Cheng ding xiang      Parminder Singh     Choon wee Keh",
-          "color": [
-            0.0,
-            0.0,
-            0.0
-          ],
-          "scale": 1.0,
-          "fontType": 0
-        }
-      }
-    },
-    {
-      "name": "i_name1",
-      "components": {
-        "Transform": {
-          "pos": [
-            -13.0,
-            -7.0,
-            5.0
-          ],
-          "rotation": 0.0,
-          "scale": [
-            1.0,
-            1.0,
-            0.0
-          ]
-        },
-        "FontComponent": {
-          "word": "Gavin Paker     Danielle Fong     Holger Liebnitz     Elie Hosry",
-          "color": [
-            0.0,
-            0.0,
-            0.0
-          ],
-          "scale": 1.0,
-          "fontType": 0
-        }
-      }
-    },
-    {
-      "name": "back_text",
-      "components": {
-        "Transform": {
-          "pos": [
-            -17.635011672973633,
-            8.093000411987305,
-            5.0
-          ],
-          "rotation": 0.0,
-          "scale": [
-            1.0,
-            1.0,
-            0.0
-          ]
-        },
-        "FontComponent": {
-          "word": "Back",
-          "color": [
-            0.0,
-            0.0,
-            0.0
-          ],
-          "scale": 1.0,
-          "fontType": 0
         }
       }
     }

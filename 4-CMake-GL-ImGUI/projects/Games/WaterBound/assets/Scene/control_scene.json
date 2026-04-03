@@ -26,29 +26,29 @@
   "onLoadScript": "assets/scripting\\pause_scene_load.lua",
   "objects": [
     {
-      "name": "Back",
+      "name": "Back4",
       "components": {
         "Transform": {
           "pos": [
-            -16.681079864501953,
-            8.383752822875977,
+            -16.538000106811523,
+            8.307000160217285,
             0.20000000298023224
           ],
           "rotation": 0.0,
           "scale": [
-            5.300000190734863,
-            1.3639999628067017,
+            6.400000095367432,
+            2.2639999389648438,
             0.0
           ]
         },
         "Render": {
           "shape": "square",
-          "colorR": 1.0,
-          "colorG": 1.0,
-          "colorB": 1.0,
+          "colorR": 0.8999999761581421,
+          "colorG": 0.8999999761581421,
+          "colorB": 0.8999999761581421,
           "colorA": 1.0,
           "hasTex": 1,
-          "texture": "assets/Texture\\Menu_Button.png",
+          "texture": "assets/Texture\\Button_pause_back.png",
           "hasAnimation": 0
         },
         "AudioComponent": {
@@ -104,34 +104,6 @@
           "hasTex": 1,
           "texture": "assets/Texture\\Controls.png",
           "hasAnimation": 0
-        }
-      }
-    },
-    {
-      "name": "Rectangle_9",
-      "components": {
-        "Transform": {
-          "pos": [
-            -17.635011672973633,
-            8.092957496643066,
-            5.0
-          ],
-          "rotation": 0.0,
-          "scale": [
-            1.0,
-            1.0,
-            0.0
-          ]
-        },
-        "FontComponent": {
-          "word": "Back",
-          "color": [
-            0.0,
-            0.0,
-            0.0
-          ],
-          "scale": 1.0,
-          "fontType": 0
         }
       }
     },

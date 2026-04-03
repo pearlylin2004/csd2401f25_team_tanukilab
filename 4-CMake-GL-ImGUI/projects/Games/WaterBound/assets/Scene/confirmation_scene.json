@@ -26,34 +26,6 @@
   "onLoadScript": "assets/scripting\\pause_scene_load.lua",
   "objects": [
     {
-      "name": "Empty_567",
-      "components": {
-        "Transform": {
-          "pos": [
-            3.2576913833618164,
-            -4.151748180389404,
-            5.0
-          ],
-          "rotation": 0.0,
-          "scale": [
-            1.0,
-            1.0,
-            0.0
-          ]
-        },
-        "FontComponent": {
-          "word": "No",
-          "color": [
-            0.0,
-            0.0,
-            0.0
-          ],
-          "scale": 1.5,
-          "fontType": 0
-        }
-      }
-    },
-    {
       "name": "confirmation_background",
       "components": {
         "Transform": {
@@ -82,51 +54,18 @@
       }
     },
     {
-      "name": "yes_button",
-      "components": {
-        "Transform": {
-          "pos": [
-            -4.74196195602417,
-            -3.741971731185913,
-            1.0
-          ],
-          "rotation": 0.0,
-          "scale": [
-            7.699999809265137,
-            2.1202898025512695,
-            0.0
-          ]
-        },
-        "Render": {
-          "shape": "square",
-          "colorR": 1.0,
-          "colorG": 1.0,
-          "colorB": 1.0,
-          "colorA": 1.0,
-          "hasTex": 1,
-          "texture": "assets/Texture\\Menu_Button.png",
-          "hasAnimation": 0
-        },
-        "Button": {
-          "action": "exit_game",
-          "onClickChannel": "",
-          "onHoverChannel": ""
-        }
-      }
-    },
-    {
       "name": "no_button",
       "components": {
         "Transform": {
           "pos": [
-            -0.015379564836621284,
-            0.5232398509979248,
+            -0.26630109548568726,
+            0.6096862554550171,
             1.0
           ],
           "rotation": 0.0,
           "scale": [
-            13.699999809265137,
-            5.3515625,
+            16.200000762939453,
+            6.328125476837158,
             0.0
           ]
         },
@@ -137,65 +76,8 @@
           "colorB": 1.0,
           "colorA": 1.0,
           "hasTex": 1,
-          "texture": "assets/button.png",
+          "texture": "assets/Texture\\Button_exit_quit.png",
           "hasAnimation": 0
-        }
-      }
-    },
-    {
-      "name": "yes_button3",
-      "components": {
-        "Transform": {
-          "pos": [
-            4.159608840942383,
-            -3.7535934448242188,
-            1.0
-          ],
-          "rotation": 0.0,
-          "scale": [
-            7.699999809265137,
-            2.1202898025512695,
-            0.0
-          ]
-        },
-        "Render": {
-          "shape": "square",
-          "colorR": 1.0,
-          "colorG": 1.0,
-          "colorB": 1.0,
-          "colorA": 1.0,
-          "hasTex": 1,
-          "texture": "assets/Texture\\Menu_Button.png",
-          "hasAnimation": 0
-        },
-        "AudioComponent": {
-          "channels": {
-            "onclick": {
-              "audioFile": "assets/Audio\\UI Button Hover.wav",
-              "volume": 0.5,
-              "pitch": 1.0,
-              "loop": 0,
-              "playOnStart": 0,
-              "muted": 0,
-              "fadeInOnStart": 0,
-              "fadeInDuration": 0.6100000143051147,
-              "fadeOutOnStop": 0,
-              "fadeOutDuration": 1.0,
-              "isSpatial": 0,
-              "minDistance": 1.0,
-              "maxDistance": 100.0,
-              "spread": 180.0,
-              "persistOnSceneChange": 1
-            }
-          }
-        },
-        "VisualLC": {
-          "filename": "button-onclicl-sound.json"
-        },
-        "Button": {
-          "action": "back",
-          "onClickChannel": "",
-          "onHoverChannel": ""
         }
       }
     },
@@ -228,58 +110,92 @@
       }
     },
     {
-      "name": "Empty_5",
+      "name": "yes_button7",
       "components": {
         "Transform": {
           "pos": [
-            -2.542719602584839,
-            -0.5468223094940186,
-            5.0
+            -4.742000102996826,
+            -3.6419999599456787,
+            1.0
           ],
           "rotation": 0.0,
           "scale": [
-            1.0,
-            1.0,
+            8.899999618530273,
+            3.119999885559082,
             0.0
           ]
         },
-        "FontComponent": {
-          "word": "Quit",
-          "color": [
-            0.0,
-            0.0,
-            0.0
-          ],
-          "scale": 3.0,
-          "fontType": 0
+        "Render": {
+          "shape": "square",
+          "colorR": 1.0,
+          "colorG": 1.0,
+          "colorB": 1.0,
+          "colorA": 1.0,
+          "hasTex": 1,
+          "texture": "assets/Texture\\Button_exit_yes.png",
+          "hasAnimation": 0
+        },
+        "Button": {
+          "action": "exit_game",
+          "onClickChannel": "",
+          "onHoverChannel": ""
         }
       }
     },
     {
-      "name": "Empty_56",
+      "name": "yes_button35",
       "components": {
         "Transform": {
           "pos": [
-            -5.917293548583984,
-            -4.222151279449463,
-            5.0
+            4.260000228881836,
+            -3.753999948501587,
+            1.0
           ],
           "rotation": 0.0,
           "scale": [
-            1.0,
-            1.0,
+            8.600000381469727,
+            2.819999933242798,
             0.0
           ]
         },
-        "FontComponent": {
-          "word": "Yes",
-          "color": [
-            0.0,
-            0.0,
-            0.0
-          ],
-          "scale": 1.5,
-          "fontType": 0
+        "Render": {
+          "shape": "square",
+          "colorR": 1.0,
+          "colorG": 1.0,
+          "colorB": 1.0,
+          "colorA": 1.0,
+          "hasTex": 1,
+          "texture": "assets/Texture\\Button_exit_no.png",
+          "hasAnimation": 0
+        },
+        "AudioComponent": {
+          "channels": {
+            "onclick": {
+              "audioFile": "assets/Audio\\UI Button Hover.wav",
+              "volume": 0.5,
+              "pitch": 1.0,
+              "loop": 0,
+              "playOnStart": 0,
+              "muted": 0,
+              "fadeInOnStart": 0,
+              "fadeInDuration": 0.6100000143051147,
+              "fadeOutOnStop": 0,
+              "fadeOutDuration": 1.0,
+              "isSpatial": 0,
+              "minDistance": 1.0,
+              "maxDistance": 100.0,
+              "spread": 180.0,
+              "persistOnSceneChange": 1
+            }
+          }
+        },
+        "VisualLC": {
+          "filename": "button-onclicl-sound.json"
+        },
+        "Button": {
+          "action": "back",
+          "onClickChannel": "",
+          "onHoverChannel": ""
         }
       }
     }

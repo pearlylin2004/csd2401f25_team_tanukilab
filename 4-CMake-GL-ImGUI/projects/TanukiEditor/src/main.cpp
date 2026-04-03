@@ -56,7 +56,7 @@ int main(int argc, char** argv) {
         // enable editor by default
         UISystem::toggleUI();
         EditorManager::toggleEditing(true); 
-        EditorManager::setCanToggleEditor(false); // cannot ctrl-0 to hide editor
+        EditorManager::setCanToggleEditor(true); // cannot ctrl-0 to hide editor
 
         // run launcher
         //engine->runLauncher([&]() {return EditorLaunch::Instance().render();});
