@@ -205,7 +205,7 @@
         "AudioComponent": {
           "channels": {
             "endscene_bgm": {
-              "audioFile": "assets/Audio\\CutScene\\Ending cutscene.wav",
+              "audioFile": "assets/Audio\\CutScene\\Tanuki End Cut Scene Audio.wav",
               "volume": 1.0,
               "pitch": 1.0,
               "loop": 0,
