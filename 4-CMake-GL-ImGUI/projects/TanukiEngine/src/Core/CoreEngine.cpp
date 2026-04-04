@@ -205,7 +205,20 @@ void CoreEngine::Run() {
             return;
         }
 
-        glfwPollEvents();
+        InputHandler::update();
+
+        // f1 to quit
+        if (InputHandler::isKeyTriggered(GLFW_KEY_F1)) {
+            m_isRunning = false;
+            m_launcherFn = nullptr;
+            return;
+        }
+
+        // f11 to toggle fullscreen
+        if (InputHandler::isKeyTriggered(GLFW_KEY_F11)) {
+            toggleFullscreen();
+        }
+
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         bool done = false;
