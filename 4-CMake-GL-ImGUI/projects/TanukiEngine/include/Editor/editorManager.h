@@ -518,5 +518,5 @@ private:
 	static inline bool isEditing = false;
 	static inline bool pausedSimul = false;
 	static inline bool assetsChangedFlag = true;
-	static inline bool cantoggleEditor = true;
+	static inline bool cantoggleEditor = false;
 };
