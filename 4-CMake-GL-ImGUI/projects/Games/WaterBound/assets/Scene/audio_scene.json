@@ -54,314 +54,6 @@
       }
     },
     {
-      "name": "Back",
-      "components": {
-        "Transform": {
-          "pos": [
-            -16.663793563842773,
-            8.383752822875977,
-            0.20000000298023224
-          ],
-          "rotation": 0.0,
-          "scale": [
-            5.300000190734863,
-            1.3639999628067017,
-            0.0
-          ]
-        },
-        "Render": {
-          "shape": "square",
-          "colorR": 1.0,
-          "colorG": 1.0,
-          "colorB": 1.0,
-          "colorA": 1.0,
-          "hasTex": 1,
-          "texture": "assets/Texture\\Menu_Button.png",
-          "hasAnimation": 0
-        },
-        "AudioComponent": {
-          "channels": {
-            "onclick": {
-              "audioFile": "assets/Audio\\UI Button Hover.wav",
-              "volume": 0.5,
-              "pitch": 1.0,
-              "loop": 0,
-              "playOnStart": 0,
-              "muted": 0,
-              "fadeInOnStart": 0,
-              "fadeInDuration": 0.20000000298023224,
-              "fadeOutOnStop": 0,
-              "fadeOutDuration": 1.0,
-              "isSpatial": 0,
-              "minDistance": 1.0,
-              "maxDistance": 100.0,
-              "spread": 180.0,
-              "persistOnSceneChange": 1
-            }
-          }
-        },
-        "Button": {
-          "action": "back",
-          "onClickChannel": "onclick",
-          "onHoverChannel": ""
-        }
-      }
-    },
-    {
-      "name": "Back37",
-      "components": {
-        "Transform": {
-          "pos": [
-            0.8418270349502563,
-            6.356098651885986,
-            0.20000000298023224
-          ],
-          "rotation": 0.0,
-          "scale": [
-            9.800000190734863,
-            2.563999891281128,
-            0.0
-          ]
-        },
-        "Render": {
-          "shape": "square",
-          "colorR": 1.0,
-          "colorG": 1.0,
-          "colorB": 1.0,
-          "colorA": 1.0,
-          "hasTex": 1,
-          "texture": "assets/Texture\\Menu_Button.png",
-          "hasAnimation": 0
-        },
-        "FontComponent": {
-          "word": "",
-          "color": [
-            0.0,
-            0.0,
-            0.0
-          ],
-          "scale": 1.0,
-          "fontType": 1
-        }
-      }
-    },
-    {
-      "name": "mute",
-      "components": {
-        "Transform": {
-          "pos": [
-            0.3923927843570709,
-            -2.373379707336426,
-            0.10000000149011612
-          ],
-          "rotation": 0.0,
-          "scale": [
-            5.300000190734863,
-            2.2714285850524902,
-            0.0
-          ]
-        },
-        "Render": {
-          "shape": "square",
-          "colorR": 1.0,
-          "colorG": 1.0,
-          "colorB": 1.0,
-          "colorA": 1.0,
-          "hasTex": 1,
-          "texture": "assets/button.png",
-          "hasAnimation": 0
-        },
-        "AudioComponent": {
-          "channels": {
-            "onclick": {
-              "audioFile": "assets/Audio\\SFX\\UI Hover CarparkIsFullwav 1.wav",
-              "volume": 0.75,
-              "pitch": 1.0,
-              "loop": 0,
-              "playOnStart": 0,
-              "muted": 0,
-              "fadeInOnStart": 1,
-              "fadeInDuration": 0.20000000298023224,
-              "fadeOutOnStop": 0,
-              "fadeOutDuration": 1.0,
-              "isSpatial": 0,
-              "minDistance": 1.0,
-              "maxDistance": 100.0,
-              "spread": 180.0,
-              "persistOnSceneChange": 0
-            }
-          }
-        },
-        "Button": {
-          "action": "mute",
-          "onClickChannel": "onclick",
-          "onHoverChannel": ""
-        }
-      }
-    },
-    {
-      "name": "-",
-      "components": {
-        "Transform": {
-          "pos": [
-            7.222989082336426,
-            1.414865493774414,
-            0.10000000149011612
-          ],
-          "rotation": 0.0,
-          "scale": [
-            3.200000047683716,
-            2.2714285850524902,
-            0.0
-          ]
-        },
-        "Render": {
-          "shape": "square",
-          "colorR": 1.0,
-          "colorG": 1.0,
-          "colorB": 1.0,
-          "colorA": 1.0,
-          "hasTex": 1,
-          "texture": "assets/button.png",
-          "hasAnimation": 0
-        },
-        "AudioComponent": {
-          "channels": {
-            "onclick": {
-              "audioFile": "assets/Audio\\SFX\\UI Hover CarparkIsFullwav 1.wav",
-              "volume": 0.75,
-              "pitch": 1.0,
-              "loop": 0,
-              "playOnStart": 0,
-              "muted": 0,
-              "fadeInOnStart": 1,
-              "fadeInDuration": 0.20000000298023224,
-              "fadeOutOnStop": 0,
-              "fadeOutDuration": 1.0,
-              "isSpatial": 0,
-              "minDistance": 1.0,
-              "maxDistance": 100.0,
-              "spread": 180.0,
-              "persistOnSceneChange": 0
-            }
-          }
-        },
-        "Button": {
-          "action": "music_vol_up",
-          "onClickChannel": "onclick",
-          "onHoverChannel": ""
-        }
-      }
-    },
-    {
-      "name": "-12",
-      "components": {
-        "Transform": {
-          "pos": [
-            0.5128034353256226,
-            1.403245449066162,
-            0.10000000149011612
-          ],
-          "rotation": 0.0,
-          "scale": [
-            3.200000047683716,
-            2.2714285850524902,
-            0.0
-          ]
-        },
-        "Render": {
-          "shape": "square",
-          "colorR": 1.0,
-          "colorG": 1.0,
-          "colorB": 1.0,
-          "colorA": 1.0,
-          "hasTex": 1,
-          "texture": "assets/button.png",
-          "hasAnimation": 0
-        },
-        "AudioComponent": {
-          "channels": {
-            "onclick": {
-              "audioFile": "assets/Audio\\SFX\\UI Hover CarparkIsFullwav 1.wav",
-              "volume": 0.75,
-              "pitch": 1.0,
-              "loop": 0,
-              "playOnStart": 0,
-              "muted": 0,
-              "fadeInOnStart": 1,
-              "fadeInDuration": 0.20000000298023224,
-              "fadeOutOnStop": 0,
-              "fadeOutDuration": 1.0,
-              "isSpatial": 0,
-              "minDistance": 1.0,
-              "maxDistance": 100.0,
-              "spread": 180.0,
-              "persistOnSceneChange": 0
-            }
-          }
-        },
-        "Button": {
-          "action": "music_vol_down",
-          "onClickChannel": "onclick",
-          "onHoverChannel": ""
-        }
-      }
-    },
-    {
-      "name": "unmute",
-      "components": {
-        "Transform": {
-          "pos": [
-            7.3733720779418945,
-            -2.3759725093841553,
-            0.10000000149011612
-          ],
-          "rotation": 0.0,
-          "scale": [
-            5.300000190734863,
-            2.2714285850524902,
-            0.0
-          ]
-        },
-        "Render": {
-          "shape": "square",
-          "colorR": 1.0,
-          "colorG": 1.0,
-          "colorB": 1.0,
-          "colorA": 1.0,
-          "hasTex": 1,
-          "texture": "assets/button.png",
-          "hasAnimation": 0
-        },
-        "AudioComponent": {
-          "channels": {
-            "onclick": {
-              "audioFile": "assets/Audio\\SFX\\UI Hover CarparkIsFullwav 1.wav",
-              "volume": 0.75,
-              "pitch": 1.0,
-              "loop": 0,
-              "playOnStart": 0,
-              "muted": 0,
-              "fadeInOnStart": 1,
-              "fadeInDuration": 0.20000000298023224,
-              "fadeOutOnStop": 0,
-              "fadeOutDuration": 1.0,
-              "isSpatial": 0,
-              "minDistance": 1.0,
-              "maxDistance": 100.0,
-              "spread": 180.0,
-              "persistOnSceneChange": 0
-            }
-          }
-        },
-        "Button": {
-          "action": "unmute",
-          "onClickChannel": "onclick",
-          "onHoverChannel": ""
-        }
-      }
-    },
-    {
       "name": "current volume text",
       "components": {
         "Transform": {
@@ -398,34 +90,6 @@
       }
     },
     {
-      "name": "Rectangle_910",
-      "components": {
-        "Transform": {
-          "pos": [
-            -1.7614630460739136,
-            6.167465686798096,
-            5.0
-          ],
-          "rotation": 0.0,
-          "scale": [
-            1.0,
-            1.0,
-            0.0
-          ]
-        },
-        "FontComponent": {
-          "word": "Audio Setting",
-          "color": [
-            0.0,
-            0.0,
-            0.0
-          ],
-          "scale": 1.0,
-          "fontType": 0
-        }
-      }
-    },
-    {
       "name": "volume button",
       "components": {
         "Transform": {
@@ -454,142 +118,310 @@
       }
     },
     {
-      "name": "Rectangle_91011",
+      "name": "-15",
       "components": {
         "Transform": {
           "pos": [
-            6.675311088562012,
-            0.7149707674980164,
-            5.0
+            7.123000144958496,
+            1.4149999618530273,
+            0.10000000149011612
           ],
           "rotation": 0.0,
           "scale": [
-            1.0,
-            1.0,
+            4.699999809265137,
+            3.33616042137146,
             0.0
           ]
         },
-        "FontComponent": {
-          "word": "+",
-          "color": [
-            0.0,
-            0.0,
-            0.0
-          ],
-          "scale": 1.5,
-          "fontType": 2
+        "Render": {
+          "shape": "square",
+          "colorR": 1.0,
+          "colorG": 1.0,
+          "colorB": 1.0,
+          "colorA": 1.0,
+          "hasTex": 1,
+          "texture": "assets/Texture\\Button_settings_+.png",
+          "hasAnimation": 0
+        },
+        "AudioComponent": {
+          "channels": {
+            "onclick": {
+              "audioFile": "assets/Audio\\SFX\\UI Hover CarparkIsFullwav 1.wav",
+              "volume": 0.75,
+              "pitch": 1.0,
+              "loop": 0,
+              "playOnStart": 0,
+              "muted": 0,
+              "fadeInOnStart": 1,
+              "fadeInDuration": 0.20000000298023224,
+              "fadeOutOnStop": 0,
+              "fadeOutDuration": 1.0,
+              "isSpatial": 0,
+              "minDistance": 1.0,
+              "maxDistance": 100.0,
+              "spread": 180.0,
+              "persistOnSceneChange": 0
+            }
+          }
+        },
+        "Button": {
+          "action": "music_vol_up",
+          "onClickChannel": "onclick",
+          "onHoverChannel": ""
         }
       }
     },
     {
-      "name": "Rectangle_9",
+      "name": "-1214",
       "components": {
         "Transform": {
           "pos": [
-            -17.635011672973633,
-            8.092957496643066,
-            5.0
+            0.21299999952316284,
+            1.402999997138977,
+            0.10000000149011612
           ],
           "rotation": 0.0,
           "scale": [
-            1.0,
-            1.0,
+            5.599999904632568,
+            3.6489999294281006,
             0.0
           ]
         },
+        "Render": {
+          "shape": "square",
+          "colorR": 1.0,
+          "colorG": 1.0,
+          "colorB": 1.0,
+          "colorA": 1.0,
+          "hasTex": 1,
+          "texture": "assets/Texture\\Button_settings_-.png",
+          "hasAnimation": 0
+        },
+        "AudioComponent": {
+          "channels": {
+            "onclick": {
+              "audioFile": "assets/Audio\\SFX\\UI Hover CarparkIsFullwav 1.wav",
+              "volume": 0.75,
+              "pitch": 1.0,
+              "loop": 0,
+              "playOnStart": 0,
+              "muted": 0,
+              "fadeInOnStart": 1,
+              "fadeInDuration": 0.20000000298023224,
+              "fadeOutOnStop": 0,
+              "fadeOutDuration": 1.0,
+              "isSpatial": 0,
+              "minDistance": 1.0,
+              "maxDistance": 100.0,
+              "spread": 180.0,
+              "persistOnSceneChange": 0
+            }
+          }
+        },
+        "Button": {
+          "action": "music_vol_down",
+          "onClickChannel": "onclick",
+          "onHoverChannel": ""
+        }
+      }
+    },
+    {
+      "name": "unmute12",
+      "components": {
+        "Transform": {
+          "pos": [
+            7.672999858856201,
+            -2.4760000705718994,
+            0.10000000149011612
+          ],
+          "rotation": 0.0,
+          "scale": [
+            6.300000190734863,
+            3.299999952316284,
+            0.0
+          ]
+        },
+        "Render": {
+          "shape": "square",
+          "colorR": 1.0,
+          "colorG": 1.0,
+          "colorB": 1.0,
+          "colorA": 1.0,
+          "hasTex": 1,
+          "texture": "assets/Texture\\Button_settings_unmute.png",
+          "hasAnimation": 0
+        },
+        "AudioComponent": {
+          "channels": {
+            "onclick": {
+              "audioFile": "assets/Audio\\SFX\\UI Hover CarparkIsFullwav 1.wav",
+              "volume": 0.75,
+              "pitch": 1.0,
+              "loop": 0,
+              "playOnStart": 0,
+              "muted": 0,
+              "fadeInOnStart": 1,
+              "fadeInDuration": 0.20000000298023224,
+              "fadeOutOnStop": 0,
+              "fadeOutDuration": 1.0,
+              "isSpatial": 0,
+              "minDistance": 1.0,
+              "maxDistance": 100.0,
+              "spread": 180.0,
+              "persistOnSceneChange": 0
+            }
+          }
+        },
+        "Button": {
+          "action": "unmute",
+          "onClickChannel": "onclick",
+          "onHoverChannel": ""
+        }
+      }
+    },
+    {
+      "name": "mute12",
+      "components": {
+        "Transform": {
+          "pos": [
+            0.3919999897480011,
+            -2.372999906539917,
+            0.10000000149011612
+          ],
+          "rotation": 0.0,
+          "scale": [
+            6.900000095367432,
+            3.556999921798706,
+            0.0
+          ]
+        },
+        "Render": {
+          "shape": "square",
+          "colorR": 1.0,
+          "colorG": 1.0,
+          "colorB": 1.0,
+          "colorA": 1.0,
+          "hasTex": 1,
+          "texture": "assets/Texture\\Button_settings_mute.png",
+          "hasAnimation": 0
+        },
+        "AudioComponent": {
+          "channels": {
+            "onclick": {
+              "audioFile": "assets/Audio\\SFX\\UI Hover CarparkIsFullwav 1.wav",
+              "volume": 0.75,
+              "pitch": 1.0,
+              "loop": 0,
+              "playOnStart": 0,
+              "muted": 0,
+              "fadeInOnStart": 1,
+              "fadeInDuration": 0.20000000298023224,
+              "fadeOutOnStop": 0,
+              "fadeOutDuration": 1.0,
+              "isSpatial": 0,
+              "minDistance": 1.0,
+              "maxDistance": 100.0,
+              "spread": 180.0,
+              "persistOnSceneChange": 0
+            }
+          }
+        },
+        "Button": {
+          "action": "mute",
+          "onClickChannel": "onclick",
+          "onHoverChannel": ""
+        }
+      }
+    },
+    {
+      "name": "Back11",
+      "components": {
+        "Transform": {
+          "pos": [
+            -16.56399917602539,
+            8.284000396728516,
+            0.20000000298023224
+          ],
+          "rotation": 0.0,
+          "scale": [
+            6.300000190734863,
+            2.4700000286102295,
+            0.0
+          ]
+        },
+        "Render": {
+          "shape": "square",
+          "colorR": 1.0,
+          "colorG": 1.0,
+          "colorB": 1.0,
+          "colorA": 1.0,
+          "hasTex": 1,
+          "texture": "assets/Texture\\Button_pause_back.png",
+          "hasAnimation": 0
+        },
+        "AudioComponent": {
+          "channels": {
+            "onclick": {
+              "audioFile": "assets/Audio\\UI Button Hover.wav",
+              "volume": 0.5,
+              "pitch": 1.0,
+              "loop": 0,
+              "playOnStart": 0,
+              "muted": 0,
+              "fadeInOnStart": 0,
+              "fadeInDuration": 0.20000000298023224,
+              "fadeOutOnStop": 0,
+              "fadeOutDuration": 1.0,
+              "isSpatial": 0,
+              "minDistance": 1.0,
+              "maxDistance": 100.0,
+              "spread": 180.0,
+              "persistOnSceneChange": 1
+            }
+          }
+        },
+        "Button": {
+          "action": "back",
+          "onClickChannel": "onclick",
+          "onHoverChannel": ""
+        }
+      }
+    },
+    {
+      "name": "Back3710",
+      "components": {
+        "Transform": {
+          "pos": [
+            1.0420000553131104,
+            6.25600004196167,
+            0.20000000298023224
+          ],
+          "rotation": 0.0,
+          "scale": [
+            11.300000190734863,
+            3.9779999256134033,
+            0.0
+          ]
+        },
+        "Render": {
+          "shape": "square",
+          "colorR": 1.0,
+          "colorG": 1.0,
+          "colorB": 1.0,
+          "colorA": 1.0,
+          "hasTex": 1,
+          "texture": "assets/Texture\\Button_settings_AudioSettings.png",
+          "hasAnimation": 0
+        },
         "FontComponent": {
-          "word": "Back",
+          "word": "",
           "color": [
             0.0,
             0.0,
             0.0
           ],
           "scale": 1.0,
-          "fontType": 0
-        }
-      }
-    },
-    {
-      "name": "Rectangle_9101112",
-      "components": {
-        "Transform": {
-          "pos": [
-            0.23853431642055511,
-            0.9220797419548035,
-            5.0
-          ],
-          "rotation": 0.0,
-          "scale": [
-            1.0,
-            1.0,
-            0.0
-          ]
-        },
-        "FontComponent": {
-          "word": "-",
-          "color": [
-            0.0,
-            0.0,
-            0.0
-          ],
-          "scale": 1.5,
-          "fontType": 2
-        }
-      }
-    },
-    {
-      "name": "Rectangle_9101113",
-      "components": {
-        "Transform": {
-          "pos": [
-            -0.6363775134086609,
-            -2.7963080406188965,
-            5.0
-          ],
-          "rotation": 0.0,
-          "scale": [
-            1.0,
-            1.0,
-            0.0
-          ]
-        },
-        "FontComponent": {
-          "word": "Mute",
-          "color": [
-            0.0,
-            0.0,
-            0.0
-          ],
-          "scale": 1.0,
-          "fontType": 0
-        }
-      }
-    },
-    {
-      "name": "Rectangle_910111314",
-      "components": {
-        "Transform": {
-          "pos": [
-            5.968542575836182,
-            -2.807929039001465,
-            5.0
-          ],
-          "rotation": 0.0,
-          "scale": [
-            1.0,
-            1.0,
-            0.0
-          ]
-        },
-        "FontComponent": {
-          "word": "Unmute",
-          "color": [
-            0.0,
-            0.0,
-            0.0
-          ],
-          "scale": 1.0,
-          "fontType": 0
+          "fontType": 1
         }
       }
     }
