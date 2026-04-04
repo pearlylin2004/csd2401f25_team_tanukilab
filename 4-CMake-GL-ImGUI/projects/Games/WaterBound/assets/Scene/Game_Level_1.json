@@ -1572,36 +1572,6 @@
         },
         "Physics": {
           "autoUpdate": 0
-        },
-        "StateMachine": {
-          "Dancing": {
-            "animState": {
-              "texture": "",
-              "loop": 1,
-              "play": 0,
-              "totalColumn": 1,
-              "totalRow": 1,
-              "frameTime": 0.10000000149011612,
-              "initialFramCol": 0.0,
-              "initialFramRow": 0.0,
-              "lastFramCol": 0.0,
-              "lastFramRow": 0.0
-            }
-          },
-          "Emo": {
-            "animState": {
-              "texture": "",
-              "loop": 1,
-              "play": 0,
-              "totalColumn": 1,
-              "totalRow": 1,
-              "frameTime": 0.10000000149011612,
-              "initialFramCol": 0.0,
-              "initialFramRow": 0.0,
-              "lastFramCol": 0.0,
-              "lastFramRow": 0.0
-            }
-          }
         }
       }
     },
@@ -1662,54 +1632,6 @@
       }
     },
     {
-      "prefabid": "1cf017e5-1c34-47f6-8056-6c92723f25ad",
-      "name": "fire_game(35)",
-      "components": {
-        "Render": {
-          "colorR": 1.0,
-          "colorG": 1.0,
-          "colorB": 1.0,
-          "colorA": 1.0,
-          "hasTex": 1,
-          "texture": "assets/Texture/water_texture.png",
-          "hasAnimation": 1
-        },
-        "Physics": {
-          "autoUpdate": 0
-        },
-        "StateMachine": {
-          "Dancing": {
-            "animState": {
-              "texture": "",
-              "loop": 1,
-              "play": 0,
-              "totalColumn": 1,
-              "totalRow": 1,
-              "frameTime": 0.10000000149011612,
-              "initialFramCol": 0.0,
-              "initialFramRow": 0.0,
-              "lastFramCol": 0.0,
-              "lastFramRow": 0.0
-            }
-          },
-          "Emo": {
-            "animState": {
-              "texture": "",
-              "loop": 1,
-              "play": 0,
-              "totalColumn": 1,
-              "totalRow": 1,
-              "frameTime": 0.10000000149011612,
-              "initialFramCol": 0.0,
-              "initialFramRow": 0.0,
-              "lastFramCol": 0.0,
-              "lastFramRow": 0.0
-            }
-          }
-        }
-      }
-    },
-    {
       "name": "background136",
       "components": {
         "Transform": {
@@ -1734,6 +1656,24 @@
           "hasTex": 1,
           "texture": "assets/Texture\\BG\\Forest Stage\\Forest Stage Layer 1.png",
           "hasAnimation": 1
+        }
+      }
+    },
+    {
+      "prefabid": "1cf017e5-1c34-47f6-8056-6c92723f25ad",
+      "name": "fire_game(35)",
+      "components": {
+        "Render": {
+          "colorR": 1.0,
+          "colorG": 1.0,
+          "colorB": 1.0,
+          "colorA": 1.0,
+          "hasTex": 1,
+          "texture": "assets/Texture/water_texture.png",
+          "hasAnimation": 1
+        },
+        "Physics": {
+          "autoUpdate": 0
         }
       }
     }

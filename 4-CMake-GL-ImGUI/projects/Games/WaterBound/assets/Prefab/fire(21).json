@@ -79,16 +79,16 @@
       },
       "Walking": {
         "animState": {
-          "texture": "assets/Texture\\Smoke_Sprite_Sheet.png",
+          "texture": "assets/Texture\\New_Smoke Sprite Sheet.png",
           "loop": 1,
           "play": 1,
-          "totalColumn": 6,
-          "totalRow": 4,
-          "frameTime": 0.1469999998807907,
+          "totalColumn": 4,
+          "totalRow": 6,
+          "frameTime": 0.10000000149011612,
           "initialFramCol": 0.0,
           "initialFramRow": 0.0,
-          "lastFramCol": 5.0,
-          "lastFramRow": 3.0
+          "lastFramCol": 3.0,
+          "lastFramRow": 5.0
         }
       },
       "Jumping": {
@@ -134,6 +134,34 @@
         }
       },
       "Dead": {
+        "animState": {
+          "texture": "",
+          "loop": 1,
+          "play": 0,
+          "totalColumn": 1,
+          "totalRow": 1,
+          "frameTime": 0.10000000149011612,
+          "initialFramCol": 0.0,
+          "initialFramRow": 0.0,
+          "lastFramCol": 0.0,
+          "lastFramRow": 0.0
+        }
+      },
+      "Dancing": {
+        "animState": {
+          "texture": "",
+          "loop": 1,
+          "play": 0,
+          "totalColumn": 1,
+          "totalRow": 1,
+          "frameTime": 0.10000000149011612,
+          "initialFramCol": 0.0,
+          "initialFramRow": 0.0,
+          "lastFramCol": 0.0,
+          "lastFramRow": 0.0
+        }
+      },
+      "Emo": {
         "animState": {
           "texture": "",
           "loop": 1,
