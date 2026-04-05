@@ -93,18 +93,18 @@
       },
       "Jumping": {
         "animState": {
-          "texture": "",
+          "texture": "assets/Texture\\Smoke Continuous Sprite Sheet_resized.png",
           "loop": 1,
-          "play": 0,
-          "totalColumn": 1,
-          "totalRow": 1,
+          "play": 1,
+          "totalColumn": 4,
+          "totalRow": 3,
           "frameTime": 0.10000000149011612,
           "initialFramCol": 0.0,
           "initialFramRow": 0.0,
-          "lastFramCol": 0.0,
-          "lastFramRow": 0.0
+          "lastFramCol": 3.0,
+          "lastFramRow": 2.0
         }
-      },
+    },
       "Falling": {
         "animState": {
           "texture": "",

@@ -6,8 +6,8 @@
       "implementation": "On Collision Enter",
       "type": 0,
       "position": [
-        -84.0,
-        -59.0
+        -83.99996185302734,
+        -58.99996566772461
       ],
       "hasInput": false,
       "hasOutput": true,
@@ -23,8 +23,8 @@
       "implementation": "Reset Timer",
       "type": 1,
       "position": [
-        519.0,
-        -53.0
+        519.0000610351563,
+        -54.11111831665039
       ],
       "hasInput": true,
       "hasOutput": true,
@@ -40,7 +40,7 @@
       "type": 1,
       "position": [
         814.0,
-        -52.0
+        -51.99998092651367
       ],
       "hasInput": true,
       "hasOutput": true,
@@ -56,8 +56,8 @@
       "implementation": "On Update",
       "type": 0,
       "position": [
-        -92.0,
-        100.0
+        -88.88890838623047,
+        102.00004577636719
       ],
       "hasInput": false,
       "hasOutput": true,
@@ -69,8 +69,8 @@
       "implementation": "Compare Variable",
       "type": 2,
       "position": [
-        203.0,
-        105.0
+        202.99998474121094,
+        104.99999237060547
       ],
       "hasInput": true,
       "hasOutput": false,
@@ -87,8 +87,8 @@
       "implementation": "Check Timer",
       "type": 2,
       "position": [
-        872.0,
-        109.0
+        960.6666870117188,
+        71.2221908569336
       ],
       "hasInput": true,
       "hasOutput": false,
@@ -104,8 +104,8 @@
       "implementation": "Set State",
       "type": 1,
       "position": [
-        510.0,
-        94.0
+        548.4445190429688,
+        87.33330535888672
       ],
       "hasInput": true,
       "hasOutput": true,
@@ -120,8 +120,8 @@
       "implementation": "Set Float",
       "type": 1,
       "position": [
-        1483.0,
-        82.0
+        1286.3333740234375,
+        107.55559539794922
       ],
       "hasInput": true,
       "hasOutput": true,
@@ -137,8 +137,8 @@
       "implementation": "Set Position",
       "type": 1,
       "position": [
-        1169.0,
-        101.0
+        1599.666748046875,
+        498.7777404785156
       ],
       "hasInput": true,
       "hasOutput": true,
@@ -154,8 +154,8 @@
       "implementation": "Scale Proportional",
       "type": 1,
       "position": [
-        1130.0,
-        -46.0
+        1132.2222900390625,
+        -46.000022888183594
       ],
       "hasInput": true,
       "hasOutput": true,
@@ -170,8 +170,8 @@
       "implementation": "Compare Variable",
       "type": 2,
       "position": [
-        220.0,
-        -59.0
+        221.111083984375,
+        -57.88885498046875
       ],
       "hasInput": true,
       "hasOutput": false,
@@ -188,8 +188,8 @@
       "implementation": "On Collision Enter",
       "type": 0,
       "position": [
-        -95.00000762939453,
-        336.0
+        -119.4444351196289,
+        503.7777404785156
       ],
       "hasInput": false,
       "hasOutput": true,
@@ -205,8 +205,8 @@
       "implementation": "Check State",
       "type": 2,
       "position": [
-        203.50819396972656,
-        336.8735046386719
+        211.28591918945313,
+        544.6512451171875
       ],
       "hasInput": true,
       "hasOutput": false,
@@ -221,8 +221,8 @@
       "implementation": "Set State On Collided",
       "type": 1,
       "position": [
-        536.7353515625,
-        224.07493591308594
+        545.624267578125,
+        417.40826416015625
       ],
       "hasInput": true,
       "hasOutput": true,
@@ -237,8 +237,8 @@
       "implementation": "Apply Force On Collided",
       "type": 1,
       "position": [
-        520.9999389648438,
-        370.0
+        529.8888549804688,
+        691.1110229492188
       ],
       "hasInput": true,
       "hasOutput": true,
@@ -254,7 +254,7 @@
       "type": 1,
       "position": [
         1224.857177734375,
-        -168.5714111328125
+        -194.12696838378906
       ],
       "hasInput": true,
       "hasOutput": true,
@@ -269,8 +269,8 @@
       "implementation": "Set Global Float",
       "type": 1,
       "position": [
-        913.6665649414063,
-        243.33328247070313
+        547.0,
+        552.22216796875
       ],
       "hasInput": true,
       "hasOutput": true,
@@ -282,20 +282,48 @@
       }
     },
     {
-      "id": 23,
-      "implementation": "Lift Collided",
+      "id": 24,
+      "implementation": "Check State",
+      "type": 2,
+      "position": [
+        207.44442749023438,
+        253.33334350585938
+      ],
+      "hasInput": true,
+      "hasOutput": false,
+      "hasTrueOutput": true,
+      "hasFalseOutput": true,
+      "parameters": {
+        "state": "Walking"
+      }
+    },
+    {
+      "id": 25,
+      "implementation": "Check Animation End",
+      "type": 2,
+      "position": [
+        540.1110229492188,
+        258.6665954589844
+      ],
+      "hasInput": true,
+      "hasOutput": false,
+      "hasTrueOutput": true,
+      "hasFalseOutput": true
+    },
+    {
+      "id": 26,
+      "implementation": "Set State",
       "type": 1,
       "position": [
-        566.0,
-        505.9999694824219
+        889.5555419921875,
+        253.99996948242188
       ],
       "hasInput": true,
       "hasOutput": true,
       "hasTrueOutput": false,
       "hasFalseOutput": false,
       "parameters": {
-        "liftDuration": "0.300000",
-        "liftForce": "30.000000"
+        "state": "Jumping"
       }
     }
   ],
@@ -322,12 +350,6 @@
       "fromNodeId": 2,
       "outputPin": "Out",
       "toNodeId": 3,
-      "inputPin": "In"
-    },
-    {
-      "fromNodeId": 12,
-      "outputPin": "Out",
-      "toNodeId": 11,
       "inputPin": "In"
     },
     {
@@ -382,6 +404,24 @@
       "fromNodeId": 17,
       "outputPin": "True",
       "toNodeId": 18,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 8,
+      "outputPin": "Out",
+      "toNodeId": 24,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 24,
+      "outputPin": "True",
+      "toNodeId": 25,
+      "inputPin": "In"
+    },
+    {
+      "fromNodeId": 25,
+      "outputPin": "True",
+      "toNodeId": 26,
       "inputPin": "In"
     }
   ]
